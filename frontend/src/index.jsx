@@ -31,6 +31,7 @@ const AppWithProfiler = Sentry.withProfiler(RootRouter);
 // Set it as a first-party cookie before any route mounts, so the session payload carries it
 // through login and HomePage deploys the template.
 const TEMPLATE_ID_PARAM = 'tj_template_id';
+const SET_COOKIE_TIMEOUT_MS = 5000;
 
 const readTemplateIdFromUrl = () => {
   const query = new URLSearchParams(window.location.search);
@@ -43,17 +44,29 @@ const persistTemplateIdFromUrl = async () => {
   const templateId = readTemplateIdFromUrl();
   if (!templateId || !/^[a-z0-9-]{1,100}$/.test(templateId)) return;
 
+  // Boot waits for this call so the cookie exists before the first session request. The timeout keeps
+  // a hung request from holding the render, so this visitor sees the app instead of the spinner forever.
+  let timer;
+  try {
+    await Promise.race([
+      aiOnboardingService.setAiCookie({ [TEMPLATE_ID_PARAM]: templateId }),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('set-ai-cookie timed out')), SET_COOKIE_TIMEOUT_MS);
+      }),
+    ]);
+  } catch (error) {
+    // Keep the param in the URL: the id is the only copy, and a reload retries
+    console.error('Failed to set template cookie:', error);
+    return;
+  } finally {
+    clearTimeout(timer);
+  }
+
   // Drop the param so a reload does not deploy the template a second time
   const url = new URL(window.location.href);
   if (url.searchParams.has(TEMPLATE_ID_PARAM)) {
     url.searchParams.delete(TEMPLATE_ID_PARAM);
     window.history.replaceState(window.history.state, '', url);
-  }
-
-  try {
-    await aiOnboardingService.setAiCookie({ [TEMPLATE_ID_PARAM]: templateId });
-  } catch (error) {
-    console.error('Failed to set template cookie:', error);
   }
 };
 

@@ -43,6 +43,7 @@ import {
   appTypeToDisplayNameMapping,
   getFolderPermissionField,
   isAppNameTakenError,
+  getAiOnboardingAction,
 } from './helper';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
@@ -170,43 +171,38 @@ class HomePageComponent extends React.Component {
     });
   };
 
-  checkIfUserHasBuilderAccess = () => {
-    const role = authenticationService.currentSessionValue?.role.name;
-    const hasBuilderAccess = role === 'admin' || role === 'builder';
-    return hasBuilderAccess;
-  };
-
   /* For cloud ai onboarding */
   handleAiOnboarding = () => {
     const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
-    const latestPrompt = aiCookies?.tj_ai_prompt;
-    const templateId = aiCookies?.tj_template_id;
+    const action = getAiOnboardingAction({
+      aiCookies,
+      canCreateApp: this.canCreateApp(),
+      appType: this.props.appType,
+    });
 
-    /* First check the user permission */
-    if (latestPrompt || templateId) {
-      if (!this.checkIfUserHasBuilderAccess()) {
+    switch (action) {
+      case 'denied':
+        // Erase now, not on dismiss: closing the tab must not bring the modal back on the next visit
         this.setState({ showInsufficentPermissionModal: true });
-        return;
-      }
-    }
-
-    switch (true) {
-      case !!latestPrompt:
-        // toast.success(`Prompt you have entered: ${decodeURIComponent(latestPrompt)}`, {
-        //   duration: 10000,
-        // });
-        // Optional: Clear the cookie after showing toast
-        this.setState({ showAIOnboardingLoadingScreen: true });
-        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
+        this.eraseAIOnboardingRelatedCookies();
         break;
-      case !!templateId: {
+      case 'prompt':
+        this.setState({ showAIOnboardingLoadingScreen: true });
+        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(aiCookies.tj_ai_prompt)}`);
+        break;
+      case 'template': {
+        const templateId = aiCookies.tj_template_id;
         this.setState({ showAIOnboardingLoadingScreen: true });
         const { activeBranchId } = useWorkspaceBranchesStore.getState();
         libraryAppService
           .defaultAppName(templateId, activeBranchId)
           .then(({ name } = {}) => name || templateId.replace(/-/g, ' '))
           .catch(() => templateId.replace(/-/g, ' '))
-          .then((appName) => this.deployApp(new Event('deploy'), appName, { id: templateId }));
+          .then((appName) => this.deployApp(new Event('deploy'), appName, { id: templateId }))
+          .then((result) => {
+            // deployApp stays silent on a taken name because the name dialog shows it. There is no dialog here.
+            if (result === false) toast.error('Could not create the app from the template. The app name is taken.');
+          });
         break;
       }
       default:
@@ -431,6 +427,9 @@ class HomePageComponent extends React.Component {
           toast.error(
             'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
           );
+          // Website onboarding opened the loading screen and holds the cookie: close one, drop the other
+          this.setState({ showAIOnboardingLoadingScreen: false });
+          this.eraseAIOnboardingRelatedCookies();
           return;
         }
       } catch (_err) {
@@ -757,6 +756,9 @@ class HomePageComponent extends React.Component {
           toast.error(
             'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
           );
+          // Website onboarding opened the loading screen and holds the cookie: close one, drop the other
+          this.setState({ showAIOnboardingLoadingScreen: false });
+          this.eraseAIOnboardingRelatedCookies();
           return;
         }
       } catch (_err) {
