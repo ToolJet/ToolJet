@@ -72,7 +72,7 @@ function sseRefusal(text: string): { category: string; content: string } | null 
 }
 
 /** @group ai */
-describe('AI credit enforcement: whether an AI action may start', () => {
+describe('AI credit enforcement', () => {
   const previous = {
     gateway: process.env.TJ_AI_GATEWAY_URL,
     features: process.env.ENABLE_AI_FEATURES,
@@ -101,9 +101,9 @@ describe('AI credit enforcement: whether an AI action may start', () => {
   });
 
   afterAll(() => {
-    process.env.TJ_AI_GATEWAY_URL = previous.gateway;
-    process.env.ENABLE_AI_FEATURES = previous.features;
     for (const [key, value] of [
+      ['TJ_AI_GATEWAY_URL', previous.gateway],
+      ['ENABLE_AI_FEATURES', previous.features],
       ['AI_CREDIT_MAX_PARALLEL_RUNS', previous.maxRuns],
       ['AI_CREDIT_PARALLEL_HEADROOM_PERCENT', previous.headroom],
     ]) {
@@ -124,13 +124,17 @@ describe('AI credit enforcement: whether an AI action may start', () => {
     afterEach(() => {
       restoreLicence?.();
       restoreLicence = undefined;
+      delete process.env.AI_CREDIT_MAX_PARALLEL_RUNS;
     });
 
     afterAll(async () => {
       await closeTestApp(app);
     }, 60_000);
 
-    /** Admin + 3 builders = 4 builders, plus an end user. On 1,000 + 100 each builder's limit is 250 + 25 = 275. */
+    /**
+     * Seeds an admin, 3 builders and an end user. The admin counts as a builder, so 4 builders share the pool.
+     * On a 1,000 monthly + 100 add-on pool, each builder's limit is 250 monthly + 25 add-on: 275 in total.
+     */
     async function seed(name: string) {
       const admin = await createUser(app, { email: `${name}-admin@tooljet.io`, groups: ['admin'] });
       const workspace = admin.organization;
@@ -191,11 +195,11 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         .send({ enabled })
         .expect(200);
 
-    describe('the spend check', () => {
-      it('a builder at their limit is refused on the SSE routes, and no agent runs', async () => {
+    describe('when the builder is at their limit', () => {
+      it('should refuse the SSE message and docs-message routes with a credit_limit_reached message and start no agent', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
-        // A new workspace has limits on: 275 spent is the whole 250 + 25.
+        // A new workspace has limits on. 275 spent is the builder's whole limit (250 monthly + 25 add-on).
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 275 }));
 
         const sent = await message(s);
@@ -213,7 +217,7 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(util.callAgent).not.toHaveBeenCalled();
       });
 
-      it('a builder at their limit is refused on the HTTP routes with 402, and no agent runs', async () => {
+      it('should refuse fix-with-ai, autosort and copilot with 402 credit_limit_reached and start no agent', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 275 }));
@@ -229,8 +233,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(util.callAgent).not.toHaveBeenCalled();
         expect(util.callAgentLegacy).not.toHaveBeenCalled();
       });
+    });
 
-      it('a builder who has used 85% of their limit, with nothing running, can send a message', async () => {
+    describe('when the builder has used 85% of their limit with nothing running', () => {
+      it('should let them send a message', async () => {
         const s = await seed('sales');
         stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 233 }));
@@ -240,8 +246,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(sseRefusal(res.text)).toBeNull();
         expect(res.text).toContain('event: generation');
       });
+    });
 
-      it('an empty pool refuses every builder with the same copy whether limits are on or off', async () => {
+    describe('when the pool is empty', () => {
+      it('should refuse every builder with pool_empty "Your workspace is out of AI credits. Ask your admin to add more." whether limits are on or off', async () => {
         const s = await seed('sales');
         stubAgents(app);
         // Another builder drained the pool; this builder has spent nothing.
@@ -263,8 +271,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(onAutosort.statusCode).toBe(402);
         expect(onAutosort.body).toMatchObject({ code: 'pool_empty', message: copy });
       });
+    });
 
-      it('balance read fails: SSE routes send a balance_unavailable message, HTTP routes return 503', async () => {
+    describe('when the balance read fails', () => {
+      it('should send a balance_unavailable message on SSE routes and return 503 balance_unavailable on HTTP routes', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         stubGateway({});
@@ -278,8 +288,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(sorted.body.code).toBe('balance_unavailable');
         expect(util.callAgentLegacy).not.toHaveBeenCalled();
       });
+    });
 
-      it('balance read hangs: the action is refused with 503 within the read budget', async () => {
+    describe('when the balance read hangs', () => {
+      it('should refuse the action with 503 balance_unavailable within the read budget', async () => {
         const s = await seed('sales');
         stubAgents(app);
         const routes = gatewayFor(s.owner, { monthly: 1000, addon: 100 });
@@ -292,8 +304,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(res.statusCode).toBe(503);
         expect(res.body.code).toBe('balance_unavailable');
       });
+    });
 
-      it('usage read hangs: the action starts and the fail-open count goes up', async () => {
+    describe('when the usage read hangs', () => {
+      it('should start the action and count one fail-open', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         // At the limit: if the usage read answered, this would be refused.
@@ -308,9 +322,11 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(util.callAgentLegacy).toHaveBeenCalled();
         expect(failOpenCount).toHaveBeenCalledWith(1);
       });
+    });
 
+    describe('when the limits read fails', () => {
       // The database failure is injected at our own read: there is no other way to fail it.
-      it('limits read fails: the action starts and the fail-open count goes up', async () => {
+      it('should start the action and count one fail-open', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 275 }));
@@ -322,8 +338,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(util.callAgentLegacy).toHaveBeenCalled();
         expect(failOpenCount).toHaveBeenCalledWith(1);
       });
+    });
 
-      it('fix-with-ai has no floor of its own: 2 credits left is not a credits refusal', async () => {
+    describe('with 2 credits left in the pool and limits off', () => {
+      it('should not refuse fix-with-ai for credits', async () => {
         const s = await seed('sales');
         stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 2, addon: 0 }));
@@ -334,8 +352,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         // Past the spend check, the run itself fails on the unknown component.
         expect(res.statusCode).toBe(500);
       });
+    });
 
-      it('an end user cannot call fix-with-ai or copilot (403)', async () => {
+    describe('when an end user calls fix-with-ai or copilot', () => {
+      it('should return 403 and start no agent', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
@@ -349,22 +369,13 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(util.callAgent).not.toHaveBeenCalled();
         expect(util.callAgentLegacy).not.toHaveBeenCalled();
       });
+    });
 
-      it('on a Team licence a builder over the limit is not refused', async () => {
-        const s = await seed('team');
-        restoreLicence = useLicence(app, TEAM_TERMS);
-        const util = stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 600 }));
-
-        const res = await autosort(s);
-
-        expect(res.statusCode).toBe(201);
-        expect(util.callAgentLegacy).toHaveBeenCalled();
-      });
-
-      it('a build that crosses the limit finishes; the next action is refused', async () => {
+    describe('when a build crosses the limit', () => {
+      it('should finish the build and refuse the next action with 402 credit_limit_reached', async () => {
         const s = await seed('sales');
-        // 28 spent leaves 90%; the build itself spends past the limit.
+        // The builder starts with 28 of their 275 spent, about 90% left.
+        // The stubbed build raises their spend to 315, past the limit.
         const routes = gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 });
         stubGateway(routes);
         jest.spyOn(routeServices(app).aiService.aiUtilService, 'callAgentLegacy').mockImplementation(async () => {
@@ -381,12 +392,8 @@ describe('AI credit enforcement: whether an AI action may start', () => {
       });
     });
 
-    describe('parallel actions', () => {
-      afterEach(() => {
-        delete process.env.AI_CREDIT_MAX_PARALLEL_RUNS;
-      });
-
-      it('with half their limit left and one action running, a builder can start another', async () => {
+    describe('with half their limit left and one action already running', () => {
+      it('should let the builder start another', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 138 }));
@@ -397,8 +404,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(res.statusCode).toBe(201);
         expect(util.callAgentLegacy).toHaveBeenCalled();
       });
+    });
 
-      it('a builder with three actions running is refused a fourth (409)', async () => {
+    describe('with three actions already running', () => {
+      it('should refuse a fourth with 409 run_in_progress "Finish one of your running AI actions first."', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 }));
@@ -414,11 +423,14 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(util.callAgentLegacy).not.toHaveBeenCalled();
         expect(await runCount(s.builder.id)).toBe(3);
       });
+    });
 
-      it('with 15% left and one action running, a second is refused with the headroom copy over HTTP and SSE', async () => {
+    describe('with 15% of their limit left and one action already running', () => {
+      it(`should refuse a second with 409 run_in_progress "You're close to your limit. Finish your running AI action first." over HTTP and SSE`, async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
-        // 234 of 275 spent: 41 left, 14.9%.
+        // The builder spent 234 of their 275 limit: 41 left, which is 14.9%.
+        // A second action needs at least 20% left.
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 234 }));
         await seedRuns(s.builder.id, s.workspace.id, 1);
 
@@ -432,8 +444,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(util.callAgentLegacy).not.toHaveBeenCalled();
         expect(await runCount(s.builder.id)).toBe(1);
       });
+    });
 
-      it('actions running in another workspace do not count', async () => {
+    describe('with three actions running in another workspace', () => {
+      it('should not count them toward the cap', async () => {
         const s = await seed('sales');
         stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 }));
@@ -442,8 +456,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
 
         expect((await autosort(s)).statusCode).toBe(201);
       });
+    });
 
-      it('a run whose heartbeat stopped does not count toward the cap', async () => {
+    describe('with a run whose heartbeat stopped', () => {
+      it('should not count it toward the cap', async () => {
         const s = await seed('sales');
         stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 }));
@@ -452,8 +468,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
 
         expect((await autosort(s)).statusCode).toBe(201);
       });
+    });
 
-      it('usage read fails with two actions running: a third starts, the cap still applies', async () => {
+    describe('when the usage read fails with two actions running', () => {
+      it('should start a third and refuse a fourth with 409 run_in_progress', async () => {
         const s = await seed('sales');
         stubAgents(app);
         const routes = gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 262 });
@@ -465,13 +483,16 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         await seedRuns(s.builder.id, s.workspace.id, 1);
         const fourth = await autosort(s);
 
-        // 262 spent is 5% left: the headroom would refuse, but it is unknown.
+        // 262 of 275 spent leaves 13, under 5%: the 20% headroom rule would refuse a second action.
+        // But the usage read fails, so spend is unknown and only the 3-run cap applies.
         expect(third.statusCode).toBe(201);
         expect(fourth.statusCode).toBe(409);
         expect(fourth.body.code).toBe('run_in_progress');
       });
+    });
 
-      it('limits off: a builder over the default with three actions running still starts one', async () => {
+    describe('with limits off and a builder over the default with three actions running', () => {
+      it('should start one more action', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 600 }));
@@ -483,8 +504,10 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(res.statusCode).toBe(201);
         expect(util.callAgentLegacy).toHaveBeenCalled();
       });
+    });
 
-      it('the max parallel runs setting is read on each run start', async () => {
+    describe('when the max parallel runs setting changes', () => {
+      it('should apply the new value on the next run start', async () => {
         const s = await seed('sales');
         stubAgents(app);
         stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 }));
@@ -498,9 +521,11 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         expect(after.statusCode).toBe(409);
         expect(after.body.message).toBe('Finish one of your running AI actions first.');
       });
+    });
 
+    describe('with six simultaneous requests', () => {
       // Real transactions: inside the suite transaction every request shares one session, so the lock never blocks.
-      it('simultaneous requests start no more than three runs', async () => {
+      it('should start no more than three runs', async () => {
         await withRealTransactions(async () => {
           const s = await seed(`race-${uuidv4().slice(0, 6)}`);
           try {
@@ -509,7 +534,7 @@ describe('AI credit enforcement: whether an AI action may start', () => {
             let release: () => void;
             const held = new Promise<void>((resolve) => (release = resolve));
             const begin = jest.spyOn(util, 'beginActiveRun');
-            // Widen the count → insert window so starts that are not serialized all read 0.
+            // Delay between counting runs and inserting one, so starts that are not serialized would all count 0.
             const realCount = EntityManager.prototype.count;
             jest.spyOn(EntityManager.prototype, 'count').mockImplementation(async function (
               this: EntityManager,
@@ -543,6 +568,22 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         });
       }, 60_000);
     });
+
+    describe('on the team plan', () => {
+      describe('when a builder over the limit starts an action', () => {
+        it('should not refuse it', async () => {
+          const s = await seed('team');
+          restoreLicence = useLicence(app, TEAM_TERMS);
+          const util = stubAgents(app);
+          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 600 }));
+
+          const res = await autosort(s);
+
+          expect(res.statusCode).toBe(201);
+          expect(util.callAgentLegacy).toHaveBeenCalled();
+        });
+      });
+    });
   });
 
   describe('Self-hosted (ee)', () => {
@@ -561,7 +602,7 @@ describe('AI credit enforcement: whether an AI action may start', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    /** Super admin + 1 builder = 2 builders on the instance; on 1,000 each builder's limit is 500. */
+    /** Seeds a super admin and 1 builder: 2 builders on the instance, so on a 1,000 pool each builder's limit is 500. */
     async function seed() {
       const superAdmin = await createUser(app, { email: 'super@tooljet.io', userType: 'instance', groups: ['admin'] });
       const workspace = superAdmin.organization;
@@ -581,28 +622,32 @@ describe('AI credit enforcement: whether an AI action may start', () => {
         .set('Cookie', s.builderCookie)
         .send({ queries: [{ id: uuidv4(), name: 'q', kind: 'restapi' }], folders: [] });
 
-    it('a builder at their instance-wide limit is refused (402)', async () => {
-      const s = await seed();
-      stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }, { [s.builder.id]: 500 }));
+    describe('when the builder is at their instance-wide limit', () => {
+      it('should refuse the action with 402 credit_limit_reached', async () => {
+        const s = await seed();
+        stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }, { [s.builder.id]: 500 }));
 
-      const res = await autosort(s);
+        const res = await autosort(s);
 
-      expect(res.statusCode).toBe(402);
-      expect(res.body.code).toBe('credit_limit_reached');
+        expect(res.statusCode).toBe(402);
+        expect(res.body.code).toBe('credit_limit_reached');
+      });
     });
 
-    it('actions running in another workspace count toward the cap', async () => {
-      const s = await seed();
-      stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
-      const other = await createUser(app, { email: 'other-admin@tooljet.io', groups: ['admin'] });
-      await seedRuns(s.builder.id, other.organization.id, 3);
+    describe('with three actions running in another workspace', () => {
+      it('should count them toward the cap and refuse with 409 run_in_progress', async () => {
+        const s = await seed();
+        stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
+        const other = await createUser(app, { email: 'other-admin@tooljet.io', groups: ['admin'] });
+        await seedRuns(s.builder.id, other.organization.id, 3);
 
-      const res = await autosort(s);
+        const res = await autosort(s);
 
-      expect(res.statusCode).toBe(409);
-      expect(res.body).toMatchObject({
-        code: 'run_in_progress',
-        message: 'Finish one of your running AI actions first.',
+        expect(res.statusCode).toBe(409);
+        expect(res.body).toMatchObject({
+          code: 'run_in_progress',
+          message: 'Finish one of your running AI actions first.',
+        });
       });
     });
   });
@@ -619,23 +664,25 @@ describe('AI credit enforcement: whether an AI action may start', () => {
       await closeTestApp(app);
     }, 60_000);
 
-    it('fix-with-ai and copilot are not served (404)', async () => {
-      const builder = await createUser(app, { email: 'builder@tooljet.io', groups: ['builder'] });
-      const cookie = await sessionFor(builder.user, builder.organization.id);
+    describe('when a builder calls fix-with-ai or copilot', () => {
+      it('should return 404', async () => {
+        const builder = await createUser(app, { email: 'builder@tooljet.io', groups: ['builder'] });
+        const cookie = await sessionFor(builder.user, builder.organization.id);
 
-      const fix = await request(app.getHttpServer())
-        .post('/api/ai/fix-with-ai')
-        .set('tj-workspace-id', builder.organization.id)
-        .set('Cookie', cookie)
-        .send({});
-      const copilot = await request(app.getHttpServer())
-        .post('/api/ai/copilot')
-        .set('tj-workspace-id', builder.organization.id)
-        .set('Cookie', cookie)
-        .send({});
+        const fix = await request(app.getHttpServer())
+          .post('/api/ai/fix-with-ai')
+          .set('tj-workspace-id', builder.organization.id)
+          .set('Cookie', cookie)
+          .send({});
+        const copilot = await request(app.getHttpServer())
+          .post('/api/ai/copilot')
+          .set('tj-workspace-id', builder.organization.id)
+          .set('Cookie', cookie)
+          .send({});
 
-      expect(fix.statusCode).toBe(404);
-      expect(copilot.statusCode).toBe(404);
+        expect(fix.statusCode).toBe(404);
+        expect(copilot.statusCode).toBe(404);
+      });
     });
   });
 });

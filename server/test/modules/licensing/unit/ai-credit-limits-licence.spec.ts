@@ -24,55 +24,71 @@ const cloud = (terms: Partial<Terms>, expiry = inDays(30)) =>
 const limitsAvailable = (license: LicenseBase) => getLicenseFieldValue(LICENSE_FIELD.AI_CREDIT_LIMITS, license);
 
 /** @group ai */
-describe('Per-builder AI credit limits: which licences have them', () => {
-  it.each([
-    [LICENSE_TYPE.ENTERPRISE, true],
-    [LICENSE_TYPE.TRIAL, true],
-    [LICENSE_TYPE.BUSINESS, false],
-    [LICENSE_TYPE.BASIC, false],
-  ])('self-hosted licence of type %s: %s', (type, available) => {
-    expect(limitsAvailable(selfHosted({ type, features: { ai: true } } as Partial<Terms>))).toBe(available);
-  });
+describe('LicenseBase', () => {
+  describe('aiCreditLimits', () => {
+    describe('on a self-hosted licence', () => {
+      it.each([
+        [LICENSE_TYPE.ENTERPRISE, true],
+        [LICENSE_TYPE.TRIAL, true],
+        [LICENSE_TYPE.BUSINESS, false],
+        [LICENSE_TYPE.BASIC, false],
+      ])('should map type %s to %s', (type, available) => {
+        expect(limitsAvailable(selfHosted({ type, features: { ai: true } } as Partial<Terms>))).toBe(available);
+      });
+    });
 
-  it.each([
-    [LICENSE_TYPE.ENTERPRISE, true],
-    [LICENSE_TYPE.TRIAL, true],
-    [LICENSE_TYPE.BUSINESS, false],
-    [LICENSE_TYPE.BASIC, false],
-  ])('Cloud licence of type %s: %s', (type, available) => {
-    expect(limitsAvailable(cloud({ type, features: { ai: true } } as Partial<Terms>))).toBe(available);
-  });
+    describe('on a Cloud licence', () => {
+      it.each([
+        [LICENSE_TYPE.ENTERPRISE, true],
+        [LICENSE_TYPE.TRIAL, true],
+        [LICENSE_TYPE.BUSINESS, false],
+        [LICENSE_TYPE.BASIC, false],
+      ])('should map type %s to %s', (type, available) => {
+        expect(limitsAvailable(cloud({ type, features: { ai: true } } as Partial<Terms>))).toBe(available);
+      });
+    });
 
-  it('an explicit ai.creditLimits term wins over the type', () => {
-    const businessOn = { type: LICENSE_TYPE.BUSINESS, features: { ai: true }, ai: { creditLimits: true } };
-    const enterpriseOff = { type: LICENSE_TYPE.ENTERPRISE, features: { ai: true }, ai: { creditLimits: false } };
+    describe('with an explicit ai.creditLimits term', () => {
+      it('should let it win over the type', () => {
+        const businessOn = { type: LICENSE_TYPE.BUSINESS, features: { ai: true }, ai: { creditLimits: true } };
+        const enterpriseOff = { type: LICENSE_TYPE.ENTERPRISE, features: { ai: true }, ai: { creditLimits: false } };
 
-    expect(limitsAvailable(selfHosted(businessOn as Partial<Terms>))).toBe(true);
-    expect(limitsAvailable(cloud(businessOn as Partial<Terms>))).toBe(true);
-    expect(limitsAvailable(selfHosted(enterpriseOff as Partial<Terms>))).toBe(false);
-    expect(limitsAvailable(cloud(enterpriseOff as Partial<Terms>))).toBe(false);
-  });
+        expect(limitsAvailable(selfHosted(businessOn as Partial<Terms>))).toBe(true);
+        expect(limitsAvailable(cloud(businessOn as Partial<Terms>))).toBe(true);
+        expect(limitsAvailable(selfHosted(enterpriseOff as Partial<Terms>))).toBe(false);
+        expect(limitsAvailable(cloud(enterpriseOff as Partial<Terms>))).toBe(false);
+      });
+    });
 
-  it('needs the AI feature', () => {
-    const aiOff = { type: LICENSE_TYPE.ENTERPRISE, features: { ai: false } } as Partial<Terms>;
+    describe('without the AI feature', () => {
+      it('should be false', () => {
+        const aiOff = { type: LICENSE_TYPE.ENTERPRISE, features: { ai: false } } as Partial<Terms>;
 
-    expect(limitsAvailable(selfHosted(aiOff))).toBe(false);
-    expect(limitsAvailable(cloud(aiOff))).toBe(false);
-  });
+        expect(limitsAvailable(selfHosted(aiOff))).toBe(false);
+        expect(limitsAvailable(cloud(aiOff))).toBe(false);
+      });
+    });
 
-  // A missing licence can't be built here: NODE_ENV=test turns a licence without data into a test enterprise one.
-  it('an expired licence has none, even with an Enterprise type and the explicit term', () => {
-    const terms = {
-      type: LICENSE_TYPE.ENTERPRISE,
-      features: { ai: true },
-      ai: { creditLimits: true },
-    } as Partial<Terms>;
+    describe('with an expired licence', () => {
+      // A missing licence can't be built here: NODE_ENV=test turns a licence without data into a test enterprise one.
+      it('should be false even with an Enterprise type and the explicit term', () => {
+        const terms = {
+          type: LICENSE_TYPE.ENTERPRISE,
+          features: { ai: true },
+          ai: { creditLimits: true },
+        } as Partial<Terms>;
 
-    expect(limitsAvailable(selfHosted(terms, inDays(-1)))).toBe(false);
-    expect(limitsAvailable(cloud(terms, inDays(-1)))).toBe(false);
-  });
+        expect(limitsAvailable(selfHosted(terms, inDays(-1)))).toBe(false);
+        expect(limitsAvailable(cloud(terms, inDays(-1)))).toBe(false);
+      });
+    });
 
-  it('a Cloud trial as trial signup writes it (no ai feature key, which means on) has them', () => {
-    expect(limitsAvailable(cloud({ type: LICENSE_TYPE.TRIAL, features: { oidc: true } } as Partial<Terms>))).toBe(true);
+    describe('with a Cloud trial written by trial signup (no ai feature key, which means on)', () => {
+      it('should be true', () => {
+        expect(limitsAvailable(cloud({ type: LICENSE_TYPE.TRIAL, features: { oidc: true } } as Partial<Terms>))).toBe(
+          true
+        );
+      });
+    });
   });
 });
