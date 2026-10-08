@@ -321,5 +321,98 @@ describe('DashboardAppsController', () => {
         );
       });
     });
+
+    describe('GET /api/v2/apps?folder_id | Folder contents', () => {
+      it('should page a folder’s visible apps with offset pages and return the folder ref', async () => {
+        const admin = await createAdmin(nestApp, 'dash-folder-page@tooljet.io');
+        const folder = await createFolder(nestApp, { name: 'HR', organizationId: admin.workspace.id });
+        for (let i = 0; i < 3; i++) await seedDashboardApp(nestApp, { user: admin.user, name: `HR${i}`, folder });
+        await seedDashboardApp(nestApp, { user: admin.user, name: 'Outside' });
+
+        const p1 = await list(nestApp, admin.cookie, admin.workspace.id, {
+          type: 'front-end',
+          folder_id: folder.id,
+          page_size: 2,
+        });
+        const p2 = await list(nestApp, admin.cookie, admin.workspace.id, {
+          type: 'front-end',
+          folder_id: folder.id,
+          page_size: 2,
+          page: 2,
+        });
+
+        expect(p1.body).toMatchObject({
+          total: 3,
+          counts: { pinned: 0, folders: 0, apps: 3 },
+          folder: { id: folder.id, name: 'HR' },
+          items: [
+            { kind: 'app', folder: { id: folder.id, name: 'HR' } },
+            { kind: 'app', folder: { id: folder.id, name: 'HR' } },
+          ],
+        });
+        expect(p2.body.items).toHaveLength(1);
+      });
+
+      it('should put the folder’s pinned apps first by position, counted only in counts.pinned', async () => {
+        const admin = await createAdmin(nestApp, 'dash-folder-pins@tooljet.io');
+        const branch = await resolveOrSeedDefaultBranch(admin.workspace.id);
+        const folder = await createFolder(nestApp, { name: 'Ops', organizationId: admin.workspace.id });
+        const apps: App[] = [];
+        for (let i = 0; i < 3; i++)
+          apps.push((await seedDashboardApp(nestApp, { user: admin.user, name: `Ops${i}`, folder })).app);
+        await seedPin(admin.user, { appId: apps[2].id, branchId: branch.id, position: 0 });
+        await seedPin(admin.user, { appId: apps[1].id, branchId: branch.id, position: 1 });
+
+        const p1 = await list(nestApp, admin.cookie, admin.workspace.id, {
+          type: 'front-end',
+          folder_id: folder.id,
+          page_size: 2,
+        });
+        const p2 = await list(nestApp, admin.cookie, admin.workspace.id, {
+          type: 'front-end',
+          folder_id: folder.id,
+          page_size: 2,
+          page: 2,
+        });
+
+        expect(p1.body).toMatchObject({
+          total: 3,
+          counts: { pinned: 2, folders: 0, apps: 1 },
+          items: [
+            { id: apps[2].id, pinned: true },
+            { id: apps[1].id, pinned: true },
+          ],
+        });
+        expect(p2.body.items).toMatchObject([{ id: apps[0].id, pinned: false }]);
+      });
+
+      it('should 404 for a folder the user cannot see', async () => {
+        const admin = await createAdmin(nestApp, 'dash-folder-404-admin@tooljet.io');
+        const endUser = await createEndUser(nestApp, 'dash-folder-404@tooljet.io', { workspace: admin.workspace });
+        const folder = await createFolder(nestApp, { name: 'Drafts', organizationId: admin.workspace.id });
+        await seedDashboardApp(nestApp, { user: admin.user, name: 'Draft', folder });
+
+        const res = await list(nestApp, endUser.cookie, admin.workspace.id, {
+          type: 'front-end',
+          folder_id: folder.id,
+        });
+
+        expect(res.statusCode).toBe(404);
+      });
+
+      it('should 404 for another workspace’s folder', async () => {
+        const owner = await createAdmin(nestApp, 'dash-folder-xws-owner@tooljet.io');
+        const outsider = await createAdmin(nestApp, 'dash-folder-xws-outsider@tooljet.io');
+        const folder = await createFolder(nestApp, { name: 'Private', organizationId: owner.workspace.id });
+        await seedDashboardApp(nestApp, { user: owner.user, name: 'Secret', folder });
+
+        const res = await list(nestApp, outsider.cookie, outsider.workspace.id, {
+          type: 'front-end',
+          folder_id: folder.id,
+        });
+
+        expect(res.statusCode).toBe(404);
+      });
+    });
   });
 });

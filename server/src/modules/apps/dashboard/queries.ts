@@ -138,3 +138,33 @@ export function rootCountsQuery(s: DashboardScope): BuiltQuery {
     FROM root_entries`;
   return { sql, params: p.values };
 }
+
+export function folderHeaderQuery(s: DashboardScope, folderId: string): BuiltQuery {
+  const p = new SqlParams();
+  const ctes = dashboardCtes(s, p);
+  const folder = p.add(folderId);
+  const sql = `${ctes}
+    SELECT vf.id, vf.name, c.total, c.pinned
+    FROM visible_folders vf
+    CROSS JOIN LATERAL (
+      SELECT COUNT(*)::int AS total, COUNT(pins.app_id)::int AS pinned
+      FROM visible_apps va LEFT JOIN pins ON pins.app_id = va.id
+      WHERE va.folder_id = vf.id
+    ) c
+    WHERE vf.id = ${folder}`;
+  return { sql, params: p.values };
+}
+
+export function folderPageQuery(s: DashboardScope, folderId: string, limit: number, offset: number): BuiltQuery {
+  const p = new SqlParams();
+  const ctes = dashboardCtes(s, p);
+  const sql = `${ctes}
+    SELECT *, pin_position IS NOT NULL AS pinned FROM (
+      SELECT ${APP_COLUMNS}, pins.position AS pin_position
+      FROM visible_apps va LEFT JOIN pins ON pins.app_id = va.id
+      WHERE va.folder_id = ${p.add(folderId)}
+    ) e
+    ORDER BY ${PIN_ORDER}, ${ENTRY_ORDER}
+    LIMIT ${p.add(limit)} OFFSET ${p.add(offset)}`;
+  return { sql, params: p.values };
+}
