@@ -306,7 +306,8 @@ export const validateStaticId = (value, existingIds = [], currentId = null, mess
     return [false, bindingMessage];
   }
 
-  if (existingIds.some((id) => id === trimmedValue && id !== currentId)) {
+  // Compare by string value: Steps stores numeric ids while the editor always types strings.
+  if (existingIds.some((id) => String(id) === trimmedValue && String(id) !== String(currentId))) {
     return [false, duplicateMessage];
   }
 

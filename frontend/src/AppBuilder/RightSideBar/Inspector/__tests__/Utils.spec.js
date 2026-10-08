@@ -93,6 +93,16 @@ describe('validateStaticId', () => {
       expect(validateStaticId('newItem', ['item1', 'item2'], 'item3')).toEqual([true, null]);
     });
 
+    test('numeric existing ids (Steps stores numbers, the editor types strings) are compared by value', () => {
+      // Break this catches: strict equality between a typed '2' and a stored 2, which lets a
+      // duplicate step id through and makes the runtime select the first matching step.
+      const [isValid, message] = validateStaticId('2', [1, 2, 3], 1);
+      expect(isValid).toBe(false);
+      expect(message).toBe('ID must be unique. This ID is already used by another item.');
+      expect(validateStaticId('1', [1, 2, 3], 1)).toEqual([true, null]);
+      expect(validateStaticId('4', [1, 2, 3], 1)).toEqual([true, null]);
+    });
+
     test('leading/trailing whitespace is trimmed before the duplicate check', () => {
       expect(validateStaticId('  item2  ', ['item1', 'item2'], 'item1')).toEqual([
         false,

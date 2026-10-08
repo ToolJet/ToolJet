@@ -150,12 +150,10 @@ export const Steps = function Steps({
       setActiveStepId(stepsArr.filter((step) => step.visible)?.[0]?.id);
     });
 
-    setExposedVariable('setStep', (stepId) => {
-      if (!disabledState) setActiveStepId(stepId);
-    });
+    setExposedVariable('setStep', (stepId) => setActiveStepId(stepId));
     setExposedVariable('setVisibility', (visibility) => setIsVisible(!!visibility));
     setExposedVariable('setDisabled', (disabled) => setIsDisabled(!!disabled));
-  }, [isVisible, isDisabled, activeStepId, stepsArr, disabledState]);
+  }, [isVisible, isDisabled, activeStepId, stepsArr]);
 
   // Update state from props
   useEffect(() => setIsVisible(visibility), [visibility]);
