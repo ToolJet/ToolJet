@@ -15575,23 +15575,83 @@ textarea.tj-text-input-widget {
   }
 }
 
-.dark-theme {
-  .canvas-container {
-    &:hover {
-      scrollbar-color: #6a727c4d;
+.dark-theme,
+.theme-dark {
+  scrollbar-color: var(--interactive-selected) transparent !important;
 
-      &::-webkit-scrollbar-thumb {
-        background-color: #6a727c4d !important;
-      }
-    }
+  &::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-track {
+    background-color: transparent !important;
   }
 
-  .jet-listview {
-    &:hover {
-      &::-webkit-scrollbar-thumb {
-        background-color: #6a727c4d !important;
-      }
-    }
+  &::-webkit-scrollbar-thumb,
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--interactive-selected) !important;
+  }
+}
+
+.dark-theme *,
+.theme-dark * {
+  scrollbar-color: var(--interactive-selected) transparent !important;
+}
+
+// These surfaces intentionally keep their scrollbar hidden until hover.
+.dark-theme.canvas-container,
+.theme-dark.canvas-container,
+.dark-theme .canvas-container,
+.theme-dark .canvas-container,
+.dark-theme .jet-listview,
+.theme-dark .jet-listview,
+.dark-theme .real-canvas.flex-container-canvas:not(.has-no-scroll),
+.theme-dark .real-canvas.flex-container-canvas:not(.has-no-scroll),
+.dark-theme .files-pane-scrollable,
+.theme-dark .files-pane-scrollable,
+.dark-theme .text-widget-section,
+.theme-dark .text-widget-section,
+.dark-theme .navigation-vertical,
+.theme-dark .navigation-vertical,
+.dark-theme .tw-transparent-scrollbar,
+.theme-dark .tw-transparent-scrollbar {
+  scrollbar-color: transparent transparent !important;
+}
+
+.dark-theme.canvas-container::-webkit-scrollbar-thumb,
+.theme-dark.canvas-container::-webkit-scrollbar-thumb,
+.dark-theme .canvas-container::-webkit-scrollbar-thumb,
+.theme-dark .canvas-container::-webkit-scrollbar-thumb,
+.dark-theme .jet-listview::-webkit-scrollbar-thumb,
+.theme-dark .jet-listview::-webkit-scrollbar-thumb,
+.dark-theme .real-canvas.flex-container-canvas:not(.has-no-scroll)::-webkit-scrollbar-thumb,
+.theme-dark .real-canvas.flex-container-canvas:not(.has-no-scroll)::-webkit-scrollbar-thumb,
+.dark-theme .files-pane-scrollable::-webkit-scrollbar-thumb,
+.theme-dark .files-pane-scrollable::-webkit-scrollbar-thumb,
+.dark-theme .text-widget-section::-webkit-scrollbar-thumb,
+.theme-dark .text-widget-section::-webkit-scrollbar-thumb,
+.dark-theme .navigation-vertical::-webkit-scrollbar-thumb,
+.theme-dark .navigation-vertical::-webkit-scrollbar-thumb,
+.dark-theme .tw-transparent-scrollbar::-webkit-scrollbar-thumb,
+.theme-dark .tw-transparent-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent !important;
+}
+
+.dark-theme.canvas-container:hover,
+.theme-dark.canvas-container:hover,
+.dark-theme .canvas-container:hover,
+.theme-dark .canvas-container:hover,
+.dark-theme .jet-listview:hover,
+.theme-dark .jet-listview:hover,
+.dark-theme .real-canvas.flex-container-canvas:not(.has-no-scroll):hover,
+.theme-dark .real-canvas.flex-container-canvas:not(.has-no-scroll):hover,
+.dark-theme .files-pane-scrollable:hover,
+.theme-dark .files-pane-scrollable:hover,
+.dark-theme .text-widget-section:hover,
+.theme-dark .text-widget-section:hover,
+.dark-theme .navigation-vertical:hover,
+.theme-dark .navigation-vertical:hover {
+  scrollbar-color: var(--interactive-selected) transparent !important;
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--interactive-selected) !important;
   }
 }
 
