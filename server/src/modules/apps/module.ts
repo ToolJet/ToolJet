@@ -27,6 +27,9 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { DashboardActivityService } from './dashboard/activity.service';
+import { DashboardActivityInterceptor } from './dashboard/activity.interceptor';
 @Module({})
 export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -97,6 +100,8 @@ export class AppsModule extends SubModule {
         UserSessionRepository,
         UserRepository,
         GroupPermissionsRepository,
+        DashboardActivityService,
+        ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DashboardActivityInterceptor }] : []),
       ],
       exports: [AppsUtilService, AppImportExportService],
     });

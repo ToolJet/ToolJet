@@ -44,6 +44,7 @@ Workspace is the user-facing term for the `Organization` entity (legacy name).
 - **Clones must not inherit identity.** `clonePage` copies component/layout rows by spread, so any new identity column has to be reset alongside `id` — `co_relation_id`, `createdAt` and `updatedAt` are cleared so push mints fresh git ids. Sharing a `co_relation_id` makes both rows resolve to the same `components/<co_relation_id>.json` on push (one silently overwrites the other) and lets `module-ref.util.ts` inherit a ModuleViewer pin across unrelated components.
 - Wrap multi-step writes in `dbTransactionWrap`; branch-aware reads take an optional `branchId` throughout (repository + services).
 - Non-admin/non-builder users are denied MODULE-type resources in `ability/app.ability.ts`.
+- **Dashboard attribution** — `dashboard/activity.interceptor.ts` (global `APP_INTERCEPTOR`) upserts `user_app_activity.last_edited_at` after any successful non-GET request with `:versionId` and `request.tj_app` (except query run/preview and git push), and after `PUT /apps/:id[/icons|/public]`, and `last_viewed_at` after `GET apps/slugs/:slug` of a released app. Modified by is derived (latest `last_edited_at` per app + branch), so the edit throttle skips only when the user is still the latest editor. A subscriber can't do this: child-table DB triggers bump `app_versions.updated_at` outside TypeORM.
 
 ## Related modules
 
