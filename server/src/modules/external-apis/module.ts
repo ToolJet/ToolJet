@@ -23,6 +23,10 @@ import { AppsRepository } from '@modules/apps/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { OrganizationUsersModule } from '@modules/organization-users/module';
+import { FolderAppsModule } from '@modules/folder-apps/module';
+import { FoldersModule } from '@modules/folders/module';
+import { AppHistoryModule } from '@modules/app-history/module';
+import { DataSourcesModule } from '@modules/data-sources/module';
 
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -36,7 +40,18 @@ export class ExternalApiModule extends SubModule {
       ExternalApiUtilService,
       ExternalApisAppsController,
       ExternalApisGroupsController,
+      ExternalApisAppsControllerV2,
       ExternalApisModulesController,
+      ExternalApisModulesControllerV2,
+      ExternalApisWorkflowsControllerV2,
+      ExternalApisAppFoldersControllerV2,
+      ExternalApisModuleFoldersControllerV2,
+      ExternalApisWorkflowFoldersControllerV2,
+      ExternalApisEnvironmentsControllerV2,
+      ExternalApisAppVersionsControllerV2,
+      ExternalApisModuleVersionsControllerV2,
+      ExternalApisWorkflowVersionsControllerV2,
+      ExternalApisDataSourcesControllerV2,
       ExternalApisTjdbController,
       ExternalApisBanController,
       ExternalApisAppExportController,
@@ -46,7 +61,18 @@ export class ExternalApiModule extends SubModule {
       'util.service',
       'controllers/apps.controller',
       'controllers/groups.controller',
+      'controllers/apps.controller.v2',
       'controllers/modules.controller',
+      'controllers/modules.controller.v2',
+      'controllers/workflows.controller.v2',
+      'controllers/app-folders.controller.v2',
+      'controllers/module-folders.controller.v2',
+      'controllers/workflow-folders.controller.v2',
+      'controllers/environments.controller.v2',
+      'controllers/app-versions.controller.v2',
+      'controllers/module-versions.controller.v2',
+      'controllers/workflow-versions.controller.v2',
+      'controllers/data-sources.controller.v2',
       'controllers/tooljet-db.controller',
       'controllers/ban.controller',
       'controllers/app-export.controller',
@@ -68,6 +94,10 @@ export class ExternalApiModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await SessionModule.register(configs),
         await OrganizationUsersModule.register(configs),
+        await FolderAppsModule.register(configs),
+        await FoldersModule.register(configs),
+        await AppHistoryModule.register(configs),
+        await DataSourcesModule.register(configs),
       ],
       providers: [
         ExternalApiUtilService,
@@ -90,7 +120,18 @@ export class ExternalApiModule extends SubModule {
             ExternalApisController,
             ExternalApisAppsController,
             ExternalApisGroupsController,
+            ExternalApisAppsControllerV2,
             ExternalApisModulesController,
+            ExternalApisModulesControllerV2,
+            ExternalApisWorkflowsControllerV2,
+            ExternalApisAppFoldersControllerV2,
+            ExternalApisModuleFoldersControllerV2,
+            ExternalApisWorkflowFoldersControllerV2,
+            ExternalApisEnvironmentsControllerV2,
+            ExternalApisAppVersionsControllerV2,
+            ExternalApisModuleVersionsControllerV2,
+            ExternalApisWorkflowVersionsControllerV2,
+            ExternalApisDataSourcesControllerV2,
             ExternalApisTjdbController,
             ExternalApisBanController,
             ExternalApisAppExportController,
