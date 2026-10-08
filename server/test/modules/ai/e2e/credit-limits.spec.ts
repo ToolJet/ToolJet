@@ -609,6 +609,31 @@ describe('AI credit limits', () => {
         });
       });
 
+      describe('when a bulk upload archives a builder and makes another an end user', () => {
+        it('should remove their custom limits and raise the equal share', async () => {
+          const s = await seed('sales');
+          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          const [archived, demoted] = s.builders;
+          await putBuilderLimit(s.cookie, s.workspace.id, archived.user.id, { monthly: 400 }).expect(200);
+          await putBuilderLimit(s.cookie, s.workspace.id, demoted.user.id, { monthly: 300 }).expect(200);
+          const csv =
+            'email,user role,status\nsales-b1@tooljet.io,Builder,Archived\nsales-b2@tooljet.io,End User,Active\n';
+
+          const upload = await request(app.getHttpServer())
+            .post('/api/organization-users/upload-csv')
+            .set('tj-workspace-id', s.workspace.id)
+            .set('Cookie', s.cookie)
+            .attach('file', Buffer.from(csv), 'users.csv');
+          const limits = (await getUsage(s.cookie, s.workspace.id)).body.limits;
+
+          expect(upload.statusCode).toBe(201);
+          expect(await customRows(archived.user.id)).toEqual([]);
+          expect(await customRows(demoted.user.id)).toEqual([]);
+          // The admin and 1 builder are left, with no custom limits: 1,000 ÷ 2 = 500 each.
+          expect(limits).toMatchObject({ builderCount: 2, customCount: 0, monthly: { effective: 500 } });
+        });
+      });
+
       describe('when removing the custom limit fails', () => {
         // Failure injected at our own listener: no other way to make the cleanup fail.
         it('should fail the archive and the role change with 500 and change nothing', async () => {
