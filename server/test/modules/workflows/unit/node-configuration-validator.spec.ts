@@ -102,6 +102,23 @@ describe('validateReachedNodeConfiguration', () => {
     expect(() => validateReachedNodeConfiguration(input)).not.toThrow();
   });
 
+  it.each([
+    [
+      'human',
+      { outcomes: [{ key: 'yes' }] },
+      'Human nodes are not supported in workflows called from another workflow',
+    ],
+    ['wait', { durationSeconds: 5 }, 'Wait nodes are not supported in workflows called from another workflow'],
+  ])('rejects a valid %s node in a workflow called from another workflow', (type, definition, message) => {
+    expect(() => validateReachedNodeConfiguration({ type, definition, calledFromWorkflow: true })).toThrow(message);
+  });
+
+  it.each([['human'], ['wait']])('accepts a %s node in a workflow run directly', (type) => {
+    const definition = type === 'human' ? { outcomes: [{ key: 'yes' }] } : { durationSeconds: 5 };
+
+    expect(() => validateReachedNodeConfiguration({ type, definition, calledFromWorkflow: false })).not.toThrow();
+  });
+
   it('uses a distinct error type for missing configuration', () => {
     expect(() => validateReachedNodeConfiguration({ type: 'wait', definition: { durationSeconds: 0 } })).toThrow(
       WorkflowNodeConfigurationError

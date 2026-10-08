@@ -31,6 +31,7 @@ export interface ExecuteWorkflowOptions {
   executionStartTime?: Date;
   startNodeId?: string; // Start execution from a specific node (for preview)
   injectedState?: object; // Inject state when starting from a specific node (for preview)
+  calledFromWorkflow?: boolean; // Child workflow run; cannot pause
 }
 
 // Feature configuration interfaces

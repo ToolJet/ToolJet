@@ -3,6 +3,8 @@ export type ReachedNodeValidationInput = {
   definition?: Record<string, unknown>;
   incomingEdgeCount?: number;
   isResume?: boolean;
+  // Child workflow runs cannot pause.
+  calledFromWorkflow?: boolean;
 };
 
 export class WorkflowNodeConfigurationError extends Error {
@@ -19,7 +21,14 @@ export function validateReachedNodeConfiguration({
   definition = {},
   incomingEdgeCount,
   isResume = false,
+  calledFromWorkflow = false,
 }: ReachedNodeValidationInput): void {
+  if (calledFromWorkflow && (type === 'human' || type === 'wait')) {
+    throw new WorkflowNodeConfigurationError(
+      `${type === 'human' ? 'Human' : 'Wait'} nodes are not supported in workflows called from another workflow`
+    );
+  }
+
   switch (type) {
     case 'if-condition': {
       const conditions = Array.isArray(definition.conditions)
