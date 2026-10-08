@@ -7,6 +7,15 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkflowExecutionNode } from '@entities/workflow_execution_node.entity';
 import { ApprovalListFilters, ApprovalListRow } from '../types/approval-list';
 
+const APPROVER_SNAPSHOT_KEYS = ['users', 'groups', 'emails', 'notificationEmails'] as const;
+
+export const escapeLikePattern = (value: string): string => value.replace(/[\\%_]/g, (char) => `\\${char}`);
+
+const approverValuesSql = (column: string): string =>
+  APPROVER_SNAPSHOT_KEYS.map(
+    (key) => `CASE WHEN jsonb_typeof(${column}->'${key}') = 'array' THEN ${column}->'${key}' ELSE '[]'::jsonb END`
+  ).join(' || ');
+
 @Injectable()
 export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprovalRequest> {
   constructor(
@@ -94,7 +103,11 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
       query.andWhere('request.created_at <= :to', { to: filters.to });
     }
     if (filters.approver) {
-      query.andWhere('request.approvers_snapshot::text ILIKE :approver', { approver: `%${filters.approver}%` });
+      query.andWhere(
+        `EXISTS (SELECT 1 FROM jsonb_array_elements_text(${approverValuesSql('request.approvers_snapshot')}) AS approver_value
+          WHERE approver_value ILIKE :approver ESCAPE '\\')`,
+        { approver: `%${escapeLikePattern(filters.approver)}%` }
+      );
     }
   }
 }

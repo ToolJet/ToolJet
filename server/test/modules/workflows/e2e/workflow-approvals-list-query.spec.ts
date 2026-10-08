@@ -282,6 +282,53 @@ describe('approval requests list query', () => {
     expect(rows.map((r) => r.token)).toEqual(['approver-match']);
   });
 
+  describe('approver filter matches approver identities only', () => {
+    const tokens = (rows: { token: string }[]) => rows.map((r) => r.token).filter((t) => t.startsWith('identity-'));
+
+    beforeAll(async () => {
+      await seed({
+        versionId: versionAId,
+        organizationId: orgA,
+        appId: appAId,
+        token: 'identity-notified',
+        status: 'pending',
+        approversSnapshot: {
+          users: ['identity-user-id'],
+          groups: [],
+          emails: [],
+          notificationEmails: ['approver.one@tooljet.io'],
+          tokenBypass: true,
+        },
+      });
+      await seed({
+        versionId: versionAId,
+        organizationId: orgA,
+        appId: appAId,
+        token: 'identity-none',
+        status: 'pending',
+        approversSnapshot: { users: [], groups: [], emails: [], notificationEmails: [], tokenBypass: true },
+      });
+    });
+
+    it('should find a picked user by email, ignoring case', async () => {
+      const { rows } = await repository.listForOrganization(orgA, { approver: 'APPROVER.ONE@' }, 1, 50);
+
+      expect(tokens(rows)).toEqual(['identity-notified']);
+    });
+
+    it.each([['users'], ['tokenBypass'], ['true']])('should not match the snapshot key or flag %s', async (term) => {
+      const { rows } = await repository.listForOrganization(orgA, { approver: term }, 1, 50);
+
+      expect(tokens(rows)).toEqual([]);
+    });
+
+    it.each([['%'], ['_']])('should treat %s literally, not as a wildcard', async (term) => {
+      const { rows } = await repository.listForOrganization(orgA, { approver: term }, 1, 50);
+
+      expect(tokens(rows)).toEqual([]);
+    });
+  });
+
   it('filters by `from`, including a row exactly on the boundary', async () => {
     const boundary = new Date('2021-02-01T00:00:00Z');
     await seed({
