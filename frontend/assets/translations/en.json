@@ -478,6 +478,11 @@
             "noResultsHint": "Try another search or clear the filters.",
             "clearFilters": "Clear filters",
             "clearFiltersCount": "Clear filters ({{count}})",
+            "clearSearch": "Clear search",
+            "noTemplatesFound": "No templates found",
+            "noTemplatesMatching": "We couldn’t find any templates matching “{{query}}”. Try a different keyword or clear the search.",
+            "noCategoriesMatch": "No categories match “{{query}}”",
+            "noDataSourcesMatch": "No data sources match “{{query}}”",
             "loadError": "Could not load templates",
             "loadErrorHint": "Check your connection and try again.",
             "retry": "Retry"

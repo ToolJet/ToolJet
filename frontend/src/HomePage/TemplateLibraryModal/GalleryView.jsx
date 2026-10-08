@@ -1,5 +1,6 @@
 import React, { forwardRef, useEffect, useMemo, useState } from 'react';
 import _ from 'lodash';
+import { Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
@@ -7,6 +8,7 @@ import {
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
   Input,
   Skeleton,
@@ -23,6 +25,9 @@ const toggle = (set, id, checked) => {
   checked ? next.add(id) : next.delete(id);
   return next;
 };
+
+// The query is rendered by React, which escapes it; i18next must not escape it a second time
+const NO_ESCAPE = { escapeValue: false };
 
 const GalleryView = forwardRef(function GalleryView(
   { templates, loadStatus, onRetry, categoryTitles, onOpen },
@@ -72,6 +77,13 @@ const GalleryView = forwardRef(function GalleryView(
           options={categoryList}
           selected={categories}
           counts={counts.category}
+          noMatchText={(text) =>
+            t('homePage.templateLibraryModal.noCategoriesMatch', {
+              query: text,
+              defaultValue: 'No categories match “{{query}}”',
+              interpolation: NO_ESCAPE,
+            })
+          }
           dataCySuffix="category"
           rowDataCy="list-item"
           onToggle={(id, checked) => {
@@ -85,6 +97,13 @@ const GalleryView = forwardRef(function GalleryView(
           options={sourceList}
           selected={sources}
           counts={counts.source}
+          noMatchText={(text) =>
+            t('homePage.templateLibraryModal.noDataSourcesMatch', {
+              query: text,
+              defaultValue: 'No data sources match “{{query}}”',
+              interpolation: NO_ESCAPE,
+            })
+          }
           dataCySuffix="data-source"
           rowDataCy="source-list-item"
           onToggle={(id, checked) => {
@@ -165,6 +184,29 @@ const GalleryView = forwardRef(function GalleryView(
                 />
               ))}
             </div>
+          ) : query.trim() ? (
+            <Empty data-cy="templates-search-empty-state">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Search />
+                </EmptyMedia>
+                <EmptyTitle>{t('homePage.templateLibraryModal.noTemplatesFound', 'No templates found')}</EmptyTitle>
+                <EmptyDescription>
+                  {t('homePage.templateLibraryModal.noTemplatesMatching', {
+                    query: query.trim(),
+                    defaultValue:
+                      'We couldn’t find any templates matching “{{query}}”. Try a different keyword or clear the search.',
+                    interpolation: NO_ESCAPE,
+                  })}
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button variant="outline" onClick={() => setQuery('')} data-cy="clear-template-search">
+                  <X className="tw-size-4 tw-text-icon-default" />
+                  {t('homePage.templateLibraryModal.clearSearch', 'Clear search')}
+                </Button>
+              </EmptyContent>
+            </Empty>
           ) : (
             <Empty data-cy="templates-empty-state">
               <EmptyHeader>
