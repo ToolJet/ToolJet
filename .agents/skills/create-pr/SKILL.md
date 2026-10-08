@@ -108,7 +108,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - **PRD and design:** `PRD: [title](url)`, `Design: [title](url)`, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
 - **Sub-issues:** `Sub-issues: #124, #125` — numbers only (GitHub renders titles). Multiple parents: one bullet each, `Sub-issues (#123): #124, #125`. More than ~6 → wrap in `<details>`.
 
-**Submodules:** `**Submodules:**` then one bullet per submodule PR, `- [ee-server #123](url)`. Omit unchanged submodules, and the block when neither changed.
+**Submodules:** one line above Sources, `🧩 **Submodules:** [ee-server #123](url) · [ee-frontend #124](url)`. Omit unchanged submodules, and the line when neither changed.
 
 **Conditional sections — only when they apply:**
 - **Architecture:** when the change has a shape worth seeing (new entities, permission models, flows, a cross-file refactor). Smallest view that makes the point, next to the sentence it supports; pick one or two:
@@ -139,15 +139,13 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 ## 📝 What this does
 <1-2 sentence elevator pitch — what changed and why it matters>
 
+🧩 **Submodules:** [ee-server #<n>](<url>) · [ee-frontend #<n>](<url>)
+
 📎 **Sources:**
 - Closes <#issue>
 - PRD: [title](url)
 - Design: [title](url)
 - Sub-issues: <#num, #num>
-
-**Submodules:**
-- [ee-server #<n>](<url>)
-- [ee-frontend #<n>](<url>)
 
 ## 🔀 Changes
 - <what changed, past tense, no prefixes, max 5 bullets>
@@ -194,8 +192,7 @@ Section order follows the reviewer's questions: why, how risky, what changed, wh
 ## 📝 What this does
 <1-2 sentence summary>
 
-**Main PR:**
-- [ToolJet #<n>](<main repo PR url or PENDING>)
+🔗 **Main PR:** [ToolJet #<n>](<main repo PR url or PENDING>)
 
 ## 🔀 Changes
 - <what changed, past tense, no prefixes>
@@ -234,7 +231,7 @@ Capture the PR URLs. Pointer changes but no submodule branch → skip its PR; in
 
 ### Step 3: Link submodules
 
-Fill the main PR's Submodules block with the URLs from Step 2. Once the main PR exists, replace `PENDING` in each submodule PR's Main PR link with its URL.
+Fill the main PR's Submodules line with the URLs from Step 2. Once the main PR exists, replace `PENDING` in each submodule PR's Main PR link with its URL.
 
 ### Step 4: Main PR
 
