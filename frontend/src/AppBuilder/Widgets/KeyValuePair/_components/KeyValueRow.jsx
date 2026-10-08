@@ -82,6 +82,12 @@ const KeyValueRow = ({
     }
   };
 
+  // Fired on press, not click: focusing a markdown/html field swaps its rendered markup for raw text before
+  // mouseup, detaching the pressed element so the browser never dispatches the click.
+  const handleRowMouseDown = (e) => {
+    if (e.button === 0) onFieldClick?.();
+  };
+
   const handleBlur = () => {
     setIsEditing(false);
   };
@@ -170,7 +176,7 @@ const KeyValueRow = ({
   };
 
   return (
-    <div className="kv-row-container" onClick={() => onFieldClick && onFieldClick()}>
+    <div className="kv-row-container" onMouseDown={handleRowMouseDown}>
       <div className={rowClassName}>
         <Label
           label={displayLabel}
