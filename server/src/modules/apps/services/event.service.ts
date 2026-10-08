@@ -4,6 +4,8 @@ import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionWrap, getDBConnection } from 'src/helpers/database.helper';
 import { CreateEventHandlerDto, UpdateEvent, BulkCreateEventHandlerDto } from '../dto/event';
 import { App } from '@entities/app.entity';
+import { AppValidationService } from '@modules/app-validation/service';
+import { EventWrite } from '@modules/app-validation/types';
 import {
   IEventsService,
   EventCreateContext,
@@ -13,8 +15,25 @@ import {
 } from '../interfaces/services/IEventService';
 import { RequestContext } from '@modules/request-context/service';
 
+// Validation input for an event the request creates. The id is not known yet; rules only
+// use it to exclude the row from "already exists" lookups.
+function toCreateEventWrite(eventHandler: CreateEventHandlerDto): EventWrite {
+  return {
+    op: 'create',
+    id: 'new',
+    data: {
+      name: eventHandler.name,
+      target: eventHandler.eventType,
+      sourceId: eventHandler.attachedTo,
+      index: eventHandler.index,
+      event: eventHandler.event,
+    },
+  };
+}
+
 @Injectable()
 export class EventsService implements IEventsService {
+  constructor(protected readonly appValidationService: AppValidationService) {}
   /**
    * Hook called before event creation - override in EE to capture state for history
    */
@@ -156,6 +175,11 @@ export class EventsService implements IEventsService {
     const context = skipHistoryCapture ? null : await this.beforeEventCreate(eventHandler, versionId);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.appValidationService.check('events', [toCreateEventWrite(eventHandler)], {
+        appVersionId: versionId,
+        manager,
+      });
+
       if (
         eventHandler.eventType === 'component' ||
         eventHandler.eventType === 'table_column' ||
@@ -230,6 +254,14 @@ export class EventsService implements IEventsService {
     options: { skipValidation?: boolean } = {}
   ): Promise<EventHandler[]> {
     const createdEvents: EventHandler[] = [];
+
+    // Through `manager` the lookup also sees sources created earlier in this transaction
+    // (batchOperations saves components before their events).
+    const completeEvents = events.filter((event) => event.attachedTo && event.eventType && event.event);
+    await this.appValidationService.check('events', completeEvents.map(toCreateEventWrite), {
+      appVersionId: versionId,
+      manager,
+    });
 
     for (const eventHandler of events) {
       // Skip events with missing required fields
@@ -320,14 +352,38 @@ export class EventsService implements IEventsService {
     const context = await this.beforeEventUpdate(events, updateType, appVersionId);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      const found = await Promise.all(
+        events.map(async (event) => ({
+          event,
+          stored: await manager.findOne(EventHandler, { where: { id: event.event_id } }),
+        }))
+      );
+
+      if (updateType === 'update') {
+        // The save replaces the whole payload, so the diff is validated as the new content.
+        const writes: EventWrite[] = found
+          .filter(({ stored }) => !!stored)
+          .map(({ event, stored }) => ({
+            op: 'update',
+            id: stored.id,
+            data: {
+              name: event.diff?.name,
+              target: stored.target,
+              sourceId: stored.sourceId,
+              index: stored.index,
+              event: event.diff?.event,
+            },
+            touched: ['event', 'name'],
+          }));
+        await this.appValidationService.check('events', writes, { appVersionId, manager });
+      }
+
       return await Promise.all(
-        events.map(async (event) => {
-          const { event_id, diff } = event;
+        found.map(async ({ event, stored }) => {
+          const { diff } = event;
 
           const eventDiff = diff?.event;
-          const eventToUpdate = await manager.findOne(EventHandler, {
-            where: { id: event_id },
-          });
+          const eventToUpdate = stored;
 
           if (!eventToUpdate) {
             return new BadRequestException('No event found');

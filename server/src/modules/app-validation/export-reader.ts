@@ -1,5 +1,5 @@
-import { ComponentWrite, ValidationArea } from './types';
-import { VersionIndexData } from './version-index';
+import { ComponentWrite, EventWrite, LayoutWrite, QueryWrite, ValidationArea } from './types';
+import { toIndexedEvent, VersionIndexData } from './version-index';
 
 // Scoped by appVersionId: pooling versions reports fake duplicates.
 export interface ExportedAppVersion {
@@ -14,6 +14,7 @@ export interface ExportedAppVersion {
   components: any[];
   events: any[];
   queries: any[];
+  dataSources: any[];
 }
 
 // Includes modules nested under `appV2.modules`.
@@ -33,6 +34,7 @@ function versionsOf(appV2: any, toolJetVersion?: string): ExportedAppVersion[] {
   const components: any[] = appV2.components ?? [];
   const events: any[] = appV2.events ?? [];
   const queries: any[] = appV2.dataQueries ?? [];
+  const dataSources: any[] = appV2.dataSources ?? [];
   const versions: any[] = appV2.appVersions?.length ? appV2.appVersions : [appV2.editingVersion].filter(Boolean);
 
   // Older exports don't tag rows with appVersionId; with one version everything belongs to it.
@@ -57,6 +59,7 @@ function versionsOf(appV2: any, toolJetVersion?: string): ExportedAppVersion[] {
       components: components.filter((c) => pageIds.has(c.pageId)),
       events: events.filter((e) => belongsTo(e, version.id)),
       queries: queries.filter((q) => belongsTo(q, version.id)),
+      dataSources: dataSources.filter((d) => belongsTo(d, version.id)),
     };
   });
 
@@ -82,6 +85,13 @@ export function toIndexData(version: ExportedAppVersion): VersionIndexData {
       hidden: p.hidden,
     })),
     queries: version.queries.map((q) => ({ id: q.id, name: q.name, dataSourceId: q.dataSourceId })),
+    events: version.events.map((e) => toIndexedEvent(e)),
+    dataSources: version.dataSources.map((d) => ({
+      id: d.id,
+      kind: d.kind,
+      scope: d.scope,
+      organizationId: d.organizationId ?? null,
+    })),
     homePageId: version.homePageId,
   };
 }
@@ -106,9 +116,61 @@ export function toComponentWrites(version: ExportedAppVersion): ComponentWrite[]
   }));
 }
 
+// One write per stored layout row: (componentId, type). Old exports store `layouts` as an
+// array of rows with a `type` field; newer ones as an object keyed by type.
+export function toLayoutWrites(version: ExportedAppVersion): LayoutWrite[] {
+  return version.components.flatMap((c) =>
+    Object.entries(c.layouts ?? {}).map(([key, layout]: [string, any]) => ({
+      op: 'create' as const,
+      id: c.id,
+      data: {
+        componentId: c.id,
+        type: layout?.type ?? key,
+        top: layout?.top,
+        left: layout?.left,
+        width: layout?.width,
+        height: layout?.height,
+        widthPx: layout?.widthPx,
+        fillWidth: layout?.fillWidth,
+      },
+    }))
+  );
+}
+
+export function toEventWrites(version: ExportedAppVersion): EventWrite[] {
+  return version.events.map((e) => ({
+    op: 'create',
+    id: e.id,
+    data: {
+      name: e.name,
+      target: e.target,
+      sourceId: e.sourceId,
+      index: e.index,
+      event: e.event,
+    },
+  }));
+}
+
+// Exports don't store `kind` on the query row; rules that need it skip.
+export function toQueryWrites(version: ExportedAppVersion): QueryWrite[] {
+  return version.queries.map((q) => ({
+    op: 'create',
+    id: q.id,
+    data: {
+      name: q.name,
+      kind: q.kind,
+      dataSourceId: q.dataSourceId,
+      options: q.options,
+    },
+  }));
+}
+
 // Each work package adds its area here so imports validate it too.
 export function inputsByArea(version: ExportedAppVersion): Partial<Record<ValidationArea, unknown[]>> {
   return {
     components: toComponentWrites(version),
+    layouts: toLayoutWrites(version),
+    events: toEventWrites(version),
+    queries: toQueryWrites(version),
   };
 }

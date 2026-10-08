@@ -28,6 +28,8 @@ import {
   assertGitSyncEditAllowedForOrg,
   assertVersionEditable,
 } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+import { AppValidationService } from '@modules/app-validation/service';
+import { VersionSettingsWrite } from '@modules/app-validation/types';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -38,7 +40,8 @@ export class VersionUtilService implements IVersionUtilService {
     protected readonly createVersionService: VersionsCreateService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
-    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    protected readonly appValidationService: AppValidationService
   ) {}
   protected mergeDeep(target, source, seen = new WeakMap()) {
     if (!this.isObject(target)) {
@@ -73,6 +76,28 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto, manager?: EntityManager) {
+    const touched = ['homePageId', 'globalSettings', 'pageSettings'].filter(
+      (field) => appVersionUpdateDto?.[field] !== undefined
+    );
+    if (touched.length) {
+      await this.appValidationService.check(
+        'versionSettings',
+        [
+          {
+            op: 'update',
+            id: appVersion.id,
+            data: {
+              homePageId: appVersionUpdateDto?.homePageId,
+              globalSettings: appVersionUpdateDto?.globalSettings,
+              pageSettings: appVersionUpdateDto?.pageSettings,
+            },
+            touched,
+          } as VersionSettingsWrite,
+        ],
+        { appVersionId: appVersion.id, manager }
+      );
+    }
+
     const editableParams = {};
 
     const { globalSettings, homePageId, pageSettings, name } = appVersion;
