@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Grok datasource",
+  "description": "A schema defining Grok (xAI) datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "Grok",
+    "kind": "grok",
+    "type": "ai"
+  },
+  "properties": {
+    "apiKey": {
+      "type": "string",
+      "title": "API Key",
+      "description": "Enter your xAI API Key"
+    }
+  },
+  "tj:encrypted": [
+    "apiKey"
+  ],
+  "required": [
+    "apiKey"
+  ],
+  "tj:ui:properties": {
+    "apiKey": {
+      "order": 10,
+      "$ref": "#/properties/apiKey",
+      "key": "apiKey",
+      "label": "API Key",
+      "widget": "password-v3",
+      "placeholder": "xai-...",
+      "help_text": "For generating API Key, visit: <a href='https://console.x.ai/' target='_blank' rel='noreferrer'>xAI Console</a>"
+    }
+  }
+}
