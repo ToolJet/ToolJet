@@ -125,7 +125,6 @@ export default function TemplateLibraryModal(props) {
               loadStatus={loadStatus}
               onRetry={loadTemplates}
               categoryTitles={categoryTitles}
-              darkMode={props.darkMode}
               onOpen={openDetails}
             />
           </div>

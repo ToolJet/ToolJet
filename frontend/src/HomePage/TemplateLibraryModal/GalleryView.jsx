@@ -25,7 +25,7 @@ const toggle = (set, id, checked) => {
 };
 
 const GalleryView = forwardRef(function GalleryView(
-  { templates, loadStatus, onRetry, categoryTitles, darkMode, onOpen },
+  { templates, loadStatus, onRetry, categoryTitles, onOpen },
   scrollRef
 ) {
   const { t } = useTranslation();
@@ -38,6 +38,8 @@ const GalleryView = forwardRef(function GalleryView(
   const counts = useMemo(() => facetCounts(templates, filters), [templates, query, categories, sources]); // eslint-disable-line react-hooks/exhaustive-deps
   const categoryList = useMemo(() => categoryOptions(templates, categoryTitles ?? {}), [templates, categoryTitles]);
   const sourceList = useMemo(() => sourceOptions(templates), [templates]);
+  // Colour follows a template's place in the full catalog, so it does not change as filters narrow the grid
+  const colorIndexById = useMemo(() => new Map(templates.map((template, index) => [template.id, index])), [templates]);
 
   // One event per pause in typing; the query text is never sent
   const trackSearch = useMemo(
@@ -155,7 +157,12 @@ const GalleryView = forwardRef(function GalleryView(
           (visible.length ? (
             <div className="tw-grid tw-grid-cols-1 tw-gap-6 md:tw-grid-cols-2 xl:tw-grid-cols-3">
               {visible.map((template) => (
-                <TemplateCard key={template.id} template={template} darkMode={darkMode} onOpen={onOpen} />
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  colorIndex={colorIndexById.get(template.id)}
+                  onOpen={onOpen}
+                />
               ))}
             </div>
           ) : (
