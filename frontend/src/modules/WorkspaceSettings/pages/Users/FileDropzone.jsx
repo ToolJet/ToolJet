@@ -3,11 +3,6 @@ import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { toast } from 'react-hot-toast';
-import {
-  bulkUploadFileTooLargeMessage,
-  getBulkUploadMaxFileSizeBytes,
-  isBulkUploadFileTooLarge,
-} from './bulkUploadLimits';
 
 export function FileDropzone({
   handleClick,
@@ -27,10 +22,9 @@ export function FileDropzone({
       setFileData(file);
     },
     noClick: true,
-    maxSize: getBulkUploadMaxFileSizeBytes(),
-    onDropRejected: (rejections) => {
-      if (rejections[0]?.errors?.some((error) => error.code === 'file-too-large')) {
-        toast.error(bulkUploadFileTooLargeMessage());
+    onDropRejected: (files) => {
+      if (files[0].size > 1048576) {
+        toast.error('File size cannot exceed more than 1MB');
       } else {
         toast.error('Please upload a CSV file');
       }
@@ -71,8 +65,8 @@ export function FileDropzone({
               if (file === undefined) {
                 setFileUpload(false);
               }
-              if (isBulkUploadFileTooLarge(file)) {
-                toast.error(bulkUploadFileTooLargeMessage());
+              if (Math.round(file.size / 1024) > 1024) {
+                toast.error('File size cannot exceed more than 1MB');
                 e.target.value = null;
               } else {
                 handleFileChange(file);

@@ -35,8 +35,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         FEATURE_KEY.EXPORT_MODULE,
         FEATURE_KEY.IMPORT_MODULE,
         FEATURE_KEY.GET_WORKSPACE_USERS_BY_GROUPS,
-        FEATURE_KEY.LIST_WORKSPACE_USER_APPS_V2,
-        FEATURE_KEY.LIST_WORKSPACE_APP_USERS_V2,
       ],
       User
     );

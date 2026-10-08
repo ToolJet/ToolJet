@@ -288,8 +288,8 @@ function testDeclarations(source) {
           titleNode?.type === 'StringLiteral'
             ? titleNode.value
             : titleNode?.type === 'TemplateLiteral'
-              ? titleNode.quasis[0].value.cooked
-              : null;
+            ? titleNode.quasis[0].value.cooked
+            : null;
         if (title !== null) {
           if (!parts[0].includes('describe')) {
             const id = title.match(/^\[([A-Za-z0-9-]+)\]/)?.[1];
@@ -476,7 +476,9 @@ function validateWidgetTestingContracts(frontendRoot, { changedFiles = [], desig
       // contract then keeps asserting behavior the fix already changed — which is how deferred
       // scenarios go stale. Requiring the contract in the same change forces a human to look; it
       // does not judge what they wrote.
-      const contractChanged = changedFiles.some((changedFile) => stripFrontend(changedFile.path) === widget.contract);
+      const contractChanged = changedFiles.some(
+        (changedFile) => stripFrontend(changedFile.path) === widget.contract
+      );
       if (!contractChanged) {
         scopeErrors.push(
           `${widget.componentType}: ${stripFrontend(changedProduction[0].path)} changed but ${

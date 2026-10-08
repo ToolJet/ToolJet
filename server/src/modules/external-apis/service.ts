@@ -1,14 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import {
-  CreateUserDto,
-  GetWorkspaceUsersByGroupsDto,
-  ListWorkspaceAppUsersV2QueryDto,
-  ListWorkspaceUserAppsV2QueryDto,
-  UpdateGivenWorkspaceDto,
-  UpdateUserDto,
-  WorkspaceDto,
-} from './dto';
+import { CreateUserDto, GetWorkspaceUsersByGroupsDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from './dto';
 import { IExternalApisService } from './Interfaces/IService';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
 
@@ -34,20 +26,6 @@ export class ExternalApisService implements IExternalApisService {
     throw new Error('Method not implemented.');
   }
   async getWorkspaceUsersByGroups(_workspaceId: string, _body: GetWorkspaceUsersByGroupsDto): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-  async listWorkspaceUserAppsV2(
-    _workspaceIdentifier: string,
-    _userIdentifier: string,
-    _query: ListWorkspaceUserAppsV2QueryDto
-  ): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-  async listWorkspaceAppUsersV2(
-    _workspaceIdentifier: string,
-    _appIdentifier: string,
-    _query: ListWorkspaceAppUsersV2QueryDto
-  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }

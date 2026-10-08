@@ -15,8 +15,6 @@ import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import EditRoleErrorModal from '@/modules/common/components/ErrorModal';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { isBulkUpsertEnabled } from './bulkUploadLimits';
-import BulkUploadUsersDrawer from './components/BulkUploadUsersDrawer';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -39,7 +37,6 @@ class ManageOrgUsersComponent extends React.Component {
       options: {},
       file: null,
       isInviteUsersDrawerOpen: false,
-      isBulkUploadDrawerOpen: false,
       userLimits: {},
       currentEditingUser: null,
       userDrawerMode: USER_DRAWER_MODES.CREATE,
@@ -447,16 +444,6 @@ class ManageOrgUsersComponent extends React.Component {
             iconName={errorIconName}
             onClose={this.clearErrorState}
           />
-          {this.state.isBulkUploadDrawerOpen && (
-            <BulkUploadUsersDrawer
-              isOpen={this.state.isBulkUploadDrawerOpen}
-              onClose={() => this.setState({ isBulkUploadDrawerOpen: false })}
-              onUploaded={() => {
-                this.fetchUsers();
-                this.fetchUserLimits();
-              }}
-            />
-          )}
           {this.state.isInviteUsersDrawerOpen && (
             <ManageOrgUsersDrawer
               isInviteUsersDrawerOpen={this.state.isInviteUsersDrawerOpen}
@@ -490,45 +477,15 @@ class ManageOrgUsersComponent extends React.Component {
                       {meta?.total_count} users
                     </div>
                     <div className=" workspace-setting-buttons-wrap">
-                      {isBulkUpsertEnabled() && (
-                        <ButtonSolid
-                          data-cy="button-bulk-upload-users"
-                          variant="tertiary"
-                          size="md"
-                          className="bulk-upload-header-btn"
-                          onClick={() => this.setState({ isBulkUploadDrawerOpen: true })}
-                          leftIcon="IconUsers"
-                          isTablerIcon
-                          iconWidth="16"
-                          fill="var(--icon-default)"
-                        >
-                          Bulk upload users
-                        </ButtonSolid>
-                      )}
-                      {isBulkUpsertEnabled() ? (
-                        <ButtonSolid
-                          data-cy="button-invite-new-user"
-                          size="md"
-                          className="bulk-upload-header-btn"
-                          onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
-                          leftIcon="IconPlus"
-                          isTablerIcon
-                          iconWidth="16"
-                          fill="#FDFDFE"
-                        >
-                          Add user
-                        </ButtonSolid>
-                      ) : (
-                        <ButtonSolid
-                          data-cy="button-invite-new-user"
-                          className="singleuser-btn"
-                          onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
-                          leftIcon="usergroup"
-                          fill={'#FDFDFE'}
-                        >
-                          {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
-                        </ButtonSolid>
-                      )}
+                      <ButtonSolid
+                        data-cy="button-invite-new-user"
+                        className="singleuser-btn"
+                        onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
+                        leftIcon="usergroup"
+                        fill={'#FDFDFE'}
+                      >
+                        {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
+                      </ButtonSolid>
                     </div>
                   </div>
                 </div>

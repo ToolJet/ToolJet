@@ -169,24 +169,6 @@ export class AbilityUtilService {
     appType: APP_TYPES = APP_TYPES.FRONT_END,
     ownerGetsViewAccess = false
   ): Promise<UserAppsPermissions> {
-    const appsOwnedByUser = await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.find(AppBase, {
-        where: { userId: user.id, organizationId: user.organizationId, type: appType },
-      });
-    }, manager);
-
-    return this.buildUserAppsPermissions(
-      appsGranularPermissions,
-      appsOwnedByUser.map((app) => app.id),
-      ownerGetsViewAccess
-    );
-  }
-
-  private buildUserAppsPermissions(
-    appsGranularPermissions: GranularPermissions[],
-    ownedAppsId: string[] = [],
-    ownerGetsViewAccess = false
-  ): UserAppsPermissions {
     const userAppsPermissions: UserAppsPermissions = {
       editableAppsId: [],
       isAllEditable: false,
@@ -270,12 +252,23 @@ export class AbilityUtilService {
       }
     });
 
-    userAppsPermissions.ownedAppsId = ownedAppsId;
-    userAppsPermissions.editableAppsId = Array.from(new Set([...userAppsPermissions.editableAppsId, ...ownedAppsId]));
-    // Modules: the creator irrevocably gets Build-with (view) in addition to Edit.
-    if (ownerGetsViewAccess) {
-      userAppsPermissions.viewableAppsId = Array.from(new Set([...userAppsPermissions.viewableAppsId, ...ownedAppsId]));
-    }
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const appsOwnedByUser = await manager.find(AppBase, {
+        where: { userId: user.id, organizationId: user.organizationId, type: appType },
+      });
+
+      const appsIdOwnedByUser = appsOwnedByUser.map((app) => app.id);
+      userAppsPermissions.ownedAppsId = appsIdOwnedByUser;
+      userAppsPermissions.editableAppsId = Array.from(
+        new Set([...userAppsPermissions.editableAppsId, ...appsIdOwnedByUser])
+      );
+      // Modules: the creator irrevocably gets Build-with (view) in addition to Edit.
+      if (ownerGetsViewAccess) {
+        userAppsPermissions.viewableAppsId = Array.from(
+          new Set([...userAppsPermissions.viewableAppsId, ...appsIdOwnedByUser])
+        );
+      }
+    }, manager);
 
     return userAppsPermissions;
   }

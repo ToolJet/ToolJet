@@ -16,7 +16,6 @@ import { UserMetadata } from './components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { bulkUploadFileTooLargeMessage, isBulkUpsertEnabled, isBulkUploadFileTooLarge } from './bulkUploadLimits';
 
 function InviteUsersForm({
   onClose,
@@ -176,8 +175,8 @@ function InviteUsersForm({
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
-    if (isBulkUploadFileTooLarge(file)) {
-      toast.error(bulkUploadFileTooLargeMessage());
+    if (Math.round(file.size / 1024) > 1024) {
+      toast.error('File size cannot exceed more than 1MB');
     } else {
       handleFileChange(file);
       setFileUpload(true);
@@ -300,11 +299,9 @@ function InviteUsersForm({
           <div className="card-header">
             <div className="card-header-inner-wrap">
               <h3 className="tj-text-lg tj-text font-weight-500" data-cy="add-users-card-title">
-                {isEditing
-                  ? 'Edit user details'
-                  : isBulkUpsertEnabled()
-                    ? 'Invite user'
-                    : t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
+                {!isEditing
+                  ? t('header.organization.menus.manageUsers.addNewUser', 'Add new user')
+                  : 'Edit user details'}
               </h3>
               <div
                 onClick={() => {
@@ -317,8 +314,7 @@ function InviteUsersForm({
                 <SolidIcon name="remove" width="16" />
               </div>
             </div>
-            {/* EE opens bulk upload from its own drawer (BulkUploadUsersDrawer), so only CE shows these tabs. */}
-            {!isEditing && !isBulkUpsertEnabled() && (
+            {!isEditing && (
               <div className="tj-drawer-tabs-container-outer">
                 <div className="tj-drawer-tabs-container">
                   <button

@@ -3,10 +3,7 @@ import { usersSelector } from "Selectors/platform/manageUsers";
 import { groupsSelector } from "Selectors/platform/manageGroups";
 import { fake } from "Fixtures/fake";
 import * as common from "Support/utils/common";
-import {
-  bulkUserUpload,
-  verifyBulkUploadDrawerElements,
-} from "Support/utils/manageUsers";
+import { bulkUserUpload } from "Support/utils/manageUsers";
 import { smtpConfig } from "Constants/constants/whitelabel";
 
 // Helper to resolve correct test data based on env
@@ -27,10 +24,8 @@ describe("Bulk User Upload", () => {
       alt: {
         path: "cypress/fixtures/bulkUser/missing_name_ee.csv",
         fileName: "missing_name_ee",
-        error: [
-          "Row 2: First name or last name is required",
-          "Row 3: First name or last name is required",
-        ],
+        error:
+          "Missing first_name,last_name,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
       },
     },
     MISSING_EMAIL: {
@@ -43,7 +38,8 @@ describe("Bulk User Upload", () => {
       alt: {
         path: "cypress/fixtures/bulkUser/missing_email_ee.csv",
         fileName: "missing_email_ee",
-        error: ["Row 2: Email is required", "Row 3: Email is required"],
+        error:
+          "Missing first_name,last_name,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
       },
     },
     DUPLICATE_EMAIL: {
@@ -56,8 +52,7 @@ describe("Bulk User Upload", () => {
       alt: {
         path: "cypress/fixtures/bulkUser/same_email_ee.csv",
         fileName: "same_email_ee",
-        error:
-          "Row 2 & 3: Duplicate email found in more than one row. Email must be unique per user/row",
+        error: "Duplicate email found. Please provide a unique email address.",
         isDuplicate: true,
       },
     },
@@ -71,10 +66,8 @@ describe("Bulk User Upload", () => {
       alt: {
         path: "cypress/fixtures/bulkUser/empty_names_ee.csv",
         fileName: "empty_names_ee",
-        error: [
-          "Row 2: First name or last name is required",
-          'Row 3: Group "Builder" doesn\'t exist',
-        ],
+        error:
+          "Missing first_name,last_name,groups,metadata,userMetadata information in 1 row(s);. No users were uploaded, please update and try again.",
       },
     },
     LIMIT_EXCEEDED: {
@@ -86,8 +79,7 @@ describe("Bulk User Upload", () => {
       alt: {
         path: "cypress/fixtures/bulkUser/limit_exceeded_ee.csv",
         fileName: "limit_exceeded_ee",
-        error:
-          "The file has 251 rows. You can upload at most 250 rows at a time.",
+        error: "You can only invite 250 users at a time",
       },
     },
     MISSING_ROLE: {
@@ -100,7 +92,8 @@ describe("Bulk User Upload", () => {
       alt: {
         path: "cypress/fixtures/bulkUser/missing_role_ee.csv",
         fileName: "missing_role_ee",
-        error: ["Row 2: User role is required", "Row 3: User role is required"],
+        error:
+          "Missing user_role,groups,metadata,userMetadata information in 2 row(s);. No users were uploaded, please update and try again.",
       },
     },
     NONEXISTENT_GROUP: {
@@ -112,10 +105,7 @@ describe("Bulk User Upload", () => {
       alt: {
         path: "cypress/fixtures/bulkUser/non_existing_group_ee.csv",
         fileName: "non_existing_group_ee",
-        error: [
-          'Row 2: Group "test" doesn\'t exist',
-          'Row 3: Group "abc" doesn\'t exist',
-        ],
+        error: "2 groups doesn't exist. No users were uploaded",
       },
     },
     VALID_USERS: {
@@ -128,7 +118,7 @@ describe("Bulk User Upload", () => {
       alt: {
         path: "cypress/fixtures/bulkUser/3_users_upload_ee.csv",
         fileName: "3_users_upload_ee",
-        successMessage: /Users \d+ (added|updated)/,
+        successMessage: "3 users are being added",
         email: "test12@gmail.com",
       },
     },
@@ -145,16 +135,9 @@ describe("Bulk User Upload", () => {
     cy.apiConfigureSmtp(smtpConfig);
   });
 
-  it("Should verify the bulk upload drawer UI and CSV downloads", () => {
-    cy.get(usersSelector.bulkUploadUsers).click();
-    verifyBulkUploadDrawerElements();
-    cy.get(commonSelectors.closeButton).click();
-    cy.get(usersSelector.bulkUploadDrawerTitle).should("not.exist");
-  });
-
   it("Should validate error cases for invalid bulk user uploads", () => {
-    // cy.get(usersSelector.buttonAddUsers).click();
-    cy.get(usersSelector.bulkUploadUsers).click();
+    cy.get(usersSelector.buttonAddUsers).click();
+    cy.get(usersSelector.buttonUploadCsvFile).click();
 
     [
       TEST_FILES.MISSING_ROLE,
@@ -177,22 +160,18 @@ describe("Bulk User Upload", () => {
 
   it("Should successfully upload valid users", () => {
     const file = getFile(TEST_FILES.VALID_USERS);
-    cy.get(usersSelector.bulkUploadUsers).click();
+    cy.get(usersSelector.buttonAddUsers).click();
+    cy.get(usersSelector.buttonUploadCsvFile).click();
 
     cy.get(usersSelector.inputFieldBulkUpload).selectFile(file.path, {
       force: true,
     });
 
-    cy.get(usersSelector.uploadedFileData).should("contain", file.fileName);
-    cy.get(usersSelector.bulkUserUploadSuccess).should(
-      "contain",
-      "Ready to upload:"
-    );
-    cy.get(usersSelector.buttonUploadUsers).should("be.enabled").click();
-    cy.get('[role="status"]')
+    cy.get(commonSelectors.fileSelector).should("contain", file.fileName);
+    cy.get(usersSelector.buttonUploadUsers).click();
+    cy.get(".go2072408551")
       .should("be.visible")
-      .invoke("text")
-      .should("match", new RegExp(file.successMessage));
+      .and("have.text", file.successMessage);
 
     common.searchUser(file.email);
     cy.contains("td", file.email)
