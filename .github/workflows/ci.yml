@@ -793,16 +793,43 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
+  # 3c-bis. Migration entity check — new or edited migrations must not import TypeORM
+  # entities: entities change over time, an old migration must keep working unchanged.
+  # Use queryRunner.query() with SQL instead. Existing migrations aren't checked until edited.
+  # ---------------------------------------------------------------------------
+  migration-entity-check:
+    name: 'Migration entity check'
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.migrations == 'true'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2   # HEAD^1 = PR base
+      - name: Fail if a new or edited migration imports an entity
+        shell: bash
+        run: |
+          mapfile -t files < <(git diff --name-only --diff-filter=AMR HEAD^1 HEAD -- server/migrations server/data-migrations)
+          [ ${#files[@]} -eq 0 ] && exit 0
+          # covers '@entities/…', 'src/entities/…', '../src/entities/…' and any '….entity' module
+          if hits=$(grep -nE "from ['\"][^'\"]*(@entities/|/entities/|\.entity)['\"]" "${files[@]}"); then
+            echo "$hits"
+            echo "::error::Migrations must not import TypeORM entities; use queryRunner.query() with SQL."
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
   # 3c. Migration timing — times pending migrations
   # ---------------------------------------------------------------------------
   migration-timing:
     name: 'Migration timing'
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    needs: [detect-changes, build-plugins]
+    needs: [detect-changes, build-plugins, migration-entity-check]
     if: >-
       !cancelled()
       && github.event_name == 'pull_request'
+      && needs.migration-entity-check.result == 'success'
       && needs.detect-changes.outputs.snapshot == 'true'
       && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.migrations == 'true'
@@ -1002,6 +1029,7 @@ jobs:
       - cypress-platform
       - cypress-marketplace
       - vulnerability-gate
+      - migration-entity-check
       - migration-timing
     steps:
       # Comment pipeline — one path for both lanes: download jest JSONs,
@@ -1101,6 +1129,7 @@ jobs:
             "build-plugins:${{ needs.build-plugins.result }}"
             "build-marketplace:${{ needs.build-marketplace.result }}"
             "test-frontend:${{ needs.test-frontend.result }}"
+            "migration-entity-check:${{ needs.migration-entity-check.result }}"
           )
           if [[ "$MODE" == "changed" ]]; then
             results=("${builds[@]}" "test-changed:${{ needs.test-changed.result }}")
