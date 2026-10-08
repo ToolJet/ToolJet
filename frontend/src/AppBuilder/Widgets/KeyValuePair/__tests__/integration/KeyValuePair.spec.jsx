@@ -631,4 +631,59 @@ describe('KeyValuePair: fieldType adapter wiring', () => {
     expect(htmlCell.querySelector('em')).toHaveTextContent('hi');
     expect(htmlCell.querySelector('img')).not.toHaveAttribute('onerror');
   });
+
+  test('[KeyValuePair-FIELDTYPE-013] string: shows the row validation error against the in-progress draft value while typing, before blur', async () => {
+    // Break this catches: validation only recomputed from the committed value (e.g. on blur),
+    // leaving an invalid in-progress draft looking valid while the user is still typing.
+    renderField({ fieldType: 'string', isEditable: true, regex: '^[A-Z].*' }, { v: 'Ada' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const editable = await waitFor(() => document.getElementById(`${ID}-v`));
+    expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument();
+
+    editable.textContent = 'lowercase';
+    fireEvent.input(editable);
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+
+    editable.textContent = 'Uppercase';
+    fireEvent.input(editable);
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument());
+  });
+
+  test('[KeyValuePair-FIELDTYPE-014] text: shows the row validation error against the in-progress draft value while typing, before blur', async () => {
+    // Break this catches: validation only recomputed from the committed value (e.g. on blur),
+    // leaving an invalid in-progress draft looking valid while the user is still typing.
+    renderField({ fieldType: 'text', isEditable: true, maxLength: 3 }, { v: 'ok' });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const editable = await waitFor(() => document.getElementById(`${ID}-v`));
+    expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument();
+
+    editable.textContent = 'toolong';
+    fireEvent.input(editable);
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+
+    editable.textContent = 'ok';
+    fireEvent.input(editable);
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument());
+  });
+
+  test('[KeyValuePair-FIELDTYPE-015] number: shows the row validation error against the in-progress draft value while typing, before blur', async () => {
+    // Break this catches: validation only recomputed from the committed value (e.g. on blur),
+    // leaving an invalid in-progress draft looking valid while the user is still typing.
+    renderField({ fieldType: 'number', isEditable: true, maxValue: 40 }, { v: 30 });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    const input = document.querySelector(`#${ID}-v`);
+    expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument();
+
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: '99' } });
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+
+    fireEvent.change(input, { target: { value: '20' } });
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument());
+  });
 });
