@@ -52,6 +52,24 @@ export interface IPlatformGitPullService {
    */
   hydrateStaleReferencedModules(parentApp: any, user: any, branchId: string): Promise<void>;
   /**
+   * Workflow twin of hydrateStaleReferencedModules. Parent may be any app type — modules and
+   * workflows can both embed a workflow.
+   */
+  hydrateStaleReferencedWorkflows(parentApp: any, user: any, branchId: string): Promise<void>;
+  /**
+   * Create + hydrate every workflow referenced by `resourceJson.appV2.dataQueries`, including
+   * ones this workspace has never pulled. `resourceJson` must carry `appV2` at the top level.
+   */
+  hydrateReferencedWorkflowStubs(
+    resourceJson: any,
+    user: any,
+    branchId: string,
+    organizationId: string,
+    repoPath: string,
+    parentTagSha?: string,
+    installationToken?: string
+  ): Promise<void>;
+  /**
    * Create stub module rows + branch-specific AppVersion rows for every module
    * listed in the repo's `.meta/moduleMeta.json`. Used by the single-app git
    * import flow so ModuleViewer components in the imported app have valid

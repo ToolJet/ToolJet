@@ -62,6 +62,7 @@ describe('OAuthController', () => {
             sub: 'someSSOId',
             email: 'ssouser@tooljet.io',
             name: 'SSO User',
+            email_verified: true,
             hd: 'tooljet.io',
           }),
         }));
@@ -89,6 +90,7 @@ describe('OAuthController', () => {
             sub: 'someSSOId',
             email: 'ssouser@tooljet.io',
             name: 'SSO User',
+            email_verified: true,
             hd: 'tooljet.io',
           }),
         }));
@@ -122,6 +124,7 @@ describe('OAuthController', () => {
             sub: 'someSSOId',
             email: 'ssouser@tooljet.io',
             name: 'SSO User',
+            email_verified: true,
             hd: 'tooljet.io',
           }),
         }));
@@ -149,6 +152,7 @@ describe('OAuthController', () => {
             sub: 'someSSOId',
             email: 'ssouser@tooljet.io',
             name: 'SSO User',
+            email_verified: true,
             hd: 'tooljet.io',
           }),
         }));
@@ -173,6 +177,7 @@ describe('OAuthController', () => {
             sub: 'someSSOId',
             email: 'ssouser@tooljet.io',
             name: 'SSO User',
+            email_verified: true,
             hd: 'tooljet.io',
           }),
         }));

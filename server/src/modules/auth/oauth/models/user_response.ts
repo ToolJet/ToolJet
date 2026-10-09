@@ -5,6 +5,7 @@ export default interface UserResponse {
   firstName?: string;
   lastName?: string;
   email: string;
+  emailVerified?: boolean;
   sso: string;
   groups?: string[];
   profilePhoto?: any;

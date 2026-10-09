@@ -1,3 +1,3 @@
-npx lint-staged
+npx lint-staged --no-stash
 bash scripts/sync-skills.sh --check
 if git diff --cached --name-only | grep -q '^tools/tj/'; then npm run --silent tj:check; fi

@@ -79,7 +79,7 @@ export class OrganizationUsersController implements IOrganizationUsersController
 
   @InitFeature(FEATURE_KEY.USER_ARCHIVE)
   @Post(':id/archive')
-  async archive(@User() user: UserEntity, @Param('id') id: string, @Body() body) {
+  async archive(@User() user: UserEntity, @Param('id') id: string, @Body() body: ArchiveOrgUserDto) {
     const organizationId = user.isPATLogin
       ? user.organizationId
       : isSuperAdmin(user) && body?.organizationId

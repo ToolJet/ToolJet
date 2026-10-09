@@ -3,6 +3,8 @@ import { App } from '@entities/app.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+// Workflow query resolution lives in workflow-ref.util.ts; the two share only this sentinel.
+import { DRAFT_SENTINEL } from './ref-sentinels';
 
 /**
  * Module version resolution.
@@ -88,7 +90,6 @@ export async function listModuleVersions(
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const DRAFT_SENTINEL = '__default_branch_draft__';
 
 /**
  * Resolve a ModuleViewer reference to an actual AppVersion row.
@@ -420,6 +421,7 @@ export interface ResolvedModuleViewer {
  * Save/promote/release guards filter resolved rows for DRAFT / under target env /
  * not module's current_version_id, instead of replicating JOIN logic per guard.
  */
+
 export async function resolveAllModuleViewersForVersion(
   manager: EntityManager,
   parentVersionId: string,

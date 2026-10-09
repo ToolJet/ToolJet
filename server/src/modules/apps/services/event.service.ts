@@ -326,7 +326,7 @@ export class EventsService implements IEventsService {
 
           const eventDiff = diff?.event;
           const eventToUpdate = await manager.findOne(EventHandler, {
-            where: { id: event_id },
+            where: { id: event_id, appVersionId },
           });
 
           if (!eventToUpdate) {
@@ -370,7 +370,7 @@ export class EventsService implements IEventsService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const event = await manager.findOne(EventHandler, {
-        where: { id: eventId },
+        where: { id: eventId, appVersionId },
       });
 
       if (!event) {
