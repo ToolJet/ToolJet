@@ -3563,3 +3563,51 @@ describe('Table: server-config parity', () => {
     expect(serverHandles).toEqual(frontendHandles);
   });
 });
+
+describe('Table: multiselect column dropdown', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test.each(['newMultiSelect', 'tagsV2'])(
+    '[Table-BUG-MULTISELECT-001] %s column: the dropdown stays open after picking an option',
+    async (columnType) => {
+      // Break this catches: the Table cell's menu is uncontrolled (menuIsOpen undefined), so react-select's own
+      // closeMenuOnSelect, or blurInputOnSelect on touch-capable browsers (jsdom is one), closes it after every pick.
+      // jsdom doesn't implement scrollIntoView, which the open menu calls once an option is selected.
+      Element.prototype.scrollIntoView = jest.fn();
+      widget.render({
+        properties: {
+          data: binding(`{{${JSON.stringify([{ id: 1, tags: [] }])}}}`),
+          columns: {
+            value: [
+              {
+                name: 'tags',
+                key: 'tags',
+                id: 'col-tags',
+                columnType,
+                columnSize: 200,
+                isEditable: true,
+                allowMultipleSelection: true,
+                options: [
+                  { label: 'Alpha', value: 'a' },
+                  { label: 'Beta', value: 'b' },
+                ],
+              },
+            ],
+          },
+        },
+      });
+
+      const menu = () => document.querySelector('.table-select-custom-menu-list');
+
+      await waitFor(() => expect(cell('tags', 0)).toBeInTheDocument());
+      await widget.session.user.click(cell('tags', 0).querySelector('.react-select__control'));
+      await waitFor(() => expect(menu()).toBeInTheDocument());
+
+      rtlFireEvent.click(within(menu()).getByText('Alpha'));
+      await drain();
+
+      expect(menu()).toBeInTheDocument();
+    }
+  );
+});
