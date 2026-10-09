@@ -170,8 +170,8 @@ const KeyValueRow = ({
   // Get error offset based on label width for alignment
   const getErrorOffset = () => {
     if (isTopAlignment) return {};
-    if (autoLabelWidth) return {};
     if (isRightDirection) return {};
+    if (autoLabelWidth) return maxLabelWidth > 0 ? { paddingLeft: `${maxLabelWidth}px` } : {};
     return { paddingLeft: `${labelWidth}%` };
   };
 
