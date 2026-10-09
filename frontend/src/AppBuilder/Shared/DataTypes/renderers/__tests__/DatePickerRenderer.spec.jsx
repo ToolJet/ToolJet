@@ -9,10 +9,13 @@
  * so this is a unit spec despite rendering with RTL.
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import toast from 'react-hot-toast';
 import userEvent from '@testing-library/user-event';
 import moment from 'moment-timezone';
 import { DatePickerRenderer } from '../DatePickerRenderer';
+
+jest.mock('react-hot-toast', () => ({ __esModule: true, default: { error: jest.fn() } }));
 
 const baseProps = {
   isEditable: true,
@@ -191,5 +194,46 @@ describe('[Table-BUG] DatePickerRenderer: truncated validation error tooltip', (
 
     const tooltip = await screen.findByText(validationError, { selector: '.overlay-cell-table' });
     expect(tooltip).toBeInTheDocument();
+  });
+});
+
+/**
+ * [Table-COLTYPE-DATEPICKER-005] Typing a disabled date and blurring must be rejected with an alert,
+ * matching the calendar UI, which refuses to select disabled dates.
+ */
+describe('[Table-COLTYPE-DATEPICKER-005] typed disabled date', () => {
+  const setup = (typed) => {
+    const onChange = jest.fn();
+    render(
+      <DatePickerRenderer
+        {...baseProps}
+        value="01/10/2024"
+        onChange={onChange}
+        isInputFocused
+        disabledDates={['01/15/2024']}
+      />
+    );
+    const input = document.querySelector('input.table-column-datepicker-input');
+    fireEvent.focus(input);
+    fireEvent.click(input);
+    fireEvent.change(input, { target: { value: typed } });
+    fireEvent.mouseDown(document.body);
+    return onChange;
+  };
+
+  beforeEach(() => toast.error.mockClear());
+
+  test('alerts and does not commit when the typed date is disabled', () => {
+    const onChange = setup('01/15/2024');
+
+    expect(toast.error).toHaveBeenCalledWith('01/15/2024 is a disabled date. Please enter a valid date');
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  test('commits without alert when the typed date is not disabled', () => {
+    const onChange = setup('01/16/2024');
+
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(onChange).toHaveBeenCalledWith('01/16/2024');
   });
 });
