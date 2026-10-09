@@ -131,6 +131,20 @@ LucideButton.parameters = {
   },
 };
 
+// Check disabled leading/trailing icons, both renderers, and custom fills in either Storybook theme.
+export const DisabledIcons = () => (
+  <div className="tw-flex tw-gap-3">
+    <Button disabled leadingIcon="smilerectangle">Solid leading</Button>
+    <Button disabled trailingIcon="smilerectangle" fill="var(--icon-brand)">
+      Solid trailing
+    </Button>
+    <Button disabled isLucid leadingIcon="rocket">Lucide leading</Button>
+    <Button disabled isLucid trailingIcon="rocket" fill="var(--icon-brand)">
+      Lucide trailing
+    </Button>
+  </div>
+);
+
 // Lucide icon only button story (async dynamic import)
 export const LucideIconOnly = (args) => {
   const variant = args.variant || 'primary';
