@@ -55,6 +55,7 @@ import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
+import { getAiOnboardingAction } from './helper';
 import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
@@ -142,43 +143,30 @@ class HomePageComponent extends React.Component {
     });
   };
 
-  checkIfUserHasBuilderAccess = () => {
-    const role = authenticationService.currentSessionValue?.role.name;
-    const hasBuilderAccess = role === 'admin' || role === 'builder';
-    return hasBuilderAccess;
-  };
-
   /* For cloud ai onboarding */
   handleAiOnboarding = () => {
     const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
-    const latestPrompt = aiCookies?.tj_ai_prompt;
-    const templateId = aiCookies?.tj_template_id;
+    const action = getAiOnboardingAction({
+      aiCookies,
+      canCreateApp: this.canCreateApp(),
+      appType: this.props.appType,
+    });
 
-    /* First check the user permission */
-    if (latestPrompt || templateId) {
-      if (!this.checkIfUserHasBuilderAccess()) {
+    switch (action) {
+      case 'denied':
+        // Erase now, not on dismiss: closing the tab must not bring the modal back on the next visit
         this.setState({ showInsufficentPermissionModal: true });
-        return;
-      }
-    }
-
-    switch (true) {
-      case !!latestPrompt:
-        // toast.success(`Prompt you have entered: ${decodeURIComponent(latestPrompt)}`, {
-        //   duration: 10000,
-        // });
-        // Optional: Clear the cookie after showing toast
-        this.setState({ showAIOnboardingLoadingScreen: true });
-        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(latestPrompt)}`);
+        this.eraseAIOnboardingRelatedCookies();
         break;
-      case !!templateId: {
+      case 'prompt':
         this.setState({ showAIOnboardingLoadingScreen: true });
-        if (templateId) {
-          /*TODO: I Believe the people who will try the templates from site should be new to tooljet. so making name unique for existed user can be do it in sometime */
-          this.deployApp(new Event('deploy'), `${templateId.replace(/-/g, ' ')}`, {
-            id: templateId,
-          });
-        }
+        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(aiCookies.tj_ai_prompt)}`);
+        break;
+      case 'template': {
+        const templateId = aiCookies.tj_template_id;
+        this.setState({ showAIOnboardingLoadingScreen: true });
+        /*TODO: I Believe the people who will try the templates from site should be new to tooljet. so making name unique for existed user can be do it in sometime */
+        this.deployApp(new Event('deploy'), `${templateId.replace(/-/g, ' ')}`, { id: templateId });
         break;
       }
       default:
@@ -1503,8 +1491,8 @@ class HomePageComponent extends React.Component {
               this.props.appType === 'workflow'
                 ? 'homePage.deleteWorkflowAndData'
                 : this.props.appType === 'front-end'
-                  ? 'homePage.deleteAppAndData'
-                  : deleteModuleText,
+                ? 'homePage.deleteAppAndData'
+                : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1751,8 +1739,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                          ? 'modules'
-                          : 'apps'
+                        ? 'modules'
+                        : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -1771,8 +1759,8 @@ class HomePageComponent extends React.Component {
                             this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                                ? 'modules'
-                                : 'apps'
+                              ? 'modules'
+                              : 'apps'
                           }-button`}
                         >
                           <>
@@ -1988,8 +1976,8 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                          ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
+                        : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}
