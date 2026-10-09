@@ -1,0 +1,7 @@
+id,name,owner,sensitivity,availability,revision,policy
+,Revenue workspace,Morgan Ellis,Confidential,Open,1,
+,Analytics studio,Priya Shah,Internal,Open,1,
+,People operations,Dana Lee,Restricted,Open,1,
+,Finance console,Sam Patel,Restricted,Paused,1,
+,Cloud platform,Rina Shah,Restricted,Open,1,"{""roles"":[""Production observer"",""Platform administrator""],""maxDays"":45,""securityOwner"":""Omar Ellis""}"
+,Deployment console,Evan Brooks,Confidential,Open,1,"{""roles"":[""Release observer"",""Release operator""],""maxDays"":30,""securityOwner"":""Omar Ellis""}"

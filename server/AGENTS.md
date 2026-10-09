@@ -68,9 +68,11 @@ modules/{feature}/
 
 ### Migrations
 
-- **Schema migrations** (`src/migrations/`, EE: `ee/migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
+- **Schema migrations** (`migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
 - **Data migrations** (`data-migrations/`): any data manipulation that must run on deployment goes here, never in schema migrations.
 - Data migrations MUST log progress — `{MIGRATION_NAME}: [START] {action}: {total}`, `[PROGRESS] {i}/{total} ({%}%)`, `[SUCCESS] {action} finished.` No silent bulk updates. Exemplar: `data-migrations/1783372800000-MoveNavigationLayoutStylesToStyles.ts`.
+- **Runner / atomicity:** `db:migrate` (and `:prod`) run through `src/migration-helpers/run-all-migrations.ts`, which normally executes all schema migrations then all data migrations in **one transaction** via two `MigrationExecutor` passes sharing a single query runner. A failure in either phase rolls back both — schema no longer commits ahead of a failing data migration. (Exception: enum additions on a fresh install force a two-transaction fallback — see the enum bullet below.) Don't merge the two migration globs into one datasource: TypeORM sorts by class-name timestamp and schema/data timestamps interleave, which would break the all-schema-before-all-data ordering. Keep long-running backfills mindful of `statement_timeout` — the schema locks are held for the whole combined transaction in atomic mode.
+- **Enum `ADD VALUE` + same-deploy use (conditional atomicity):** PostgreSQL forbids using an enum value in the transaction that added it via `ALTER TYPE ... ADD VALUE` (55P04) — with **no** exemption for a type created in that same transaction (verified on PG 13). So "add a value in a schema migration, read/write it in a data migration" cannot be one transaction. `run-all-migrations.ts` reconciles this: `planEnumAdditions` scans pending schema migrations for `ALTER TYPE ... ADD VALUE` and checks whether each target type already exists. (a) All target types exist (**upgrade**) → pre-commit those values on a separate connection *before* the shared transaction, then run schema+data atomically. (b) Any target type does **not** exist yet — fresh install / `db:reset`, or a brand-new enum type introduced this run → fall back to two separate transactions (schema commits, then data), the enum-safe ordering; atomicity is lost only for that run (a fresh DB has no data to protect, and PG offers no atomic alternative). Keep new enum additions as literal `ALTER TYPE ... ADD VALUE IF NOT EXISTS '<value>'` SQL so the scanner finds them and the migration's own statement no-ops after pre-commit. Extraction logic + test: `src/migration-helpers/enum-value-additions.ts`, `test/modules/migrations/unit/enum-value-additions.spec.ts`.
 - Prefer runtime interpretation of existing values over new sentinel columns + migrations; repurpose existing columns/tables over adding parallel structures.
 
 ### Widget config sync (CRITICAL)
@@ -106,18 +108,20 @@ Full reference: `docs/testing.md` — part 1 is judgment (behavior matrix across
 5. Which matrix cells does this cover — and which are deliberately skipped because they short-circuit or don't interact?
 
 - Location: `test/modules/` mirrors `src/modules/`; each module gets `e2e/` and optional `unit/`.
+- Placement: a spec lives where the code it needs lives. `test/` runs as CE and must pass without the private submodules. Specs that import EE code or need an `ee`/`cloud` app go in `ee/test/` (same layout). Mixed specs get split. `scripts/check-ee-leak.sh` enforces this on pre-push and in CI.
 - Isolation: one-time TRUNCATE in global setup, then **suite-level transaction per spec file with per-test SAVEPOINTs** (no per-test TRUNCATE). A no-op QueryRunner proxy routes service "transactions" through the suite TX; `withRealTransactions(fn)` opts out for tests verifying real rollback.
 - Seed data in `beforeAll` (persists across tests in the suite); per-test mocks/config in `beforeEach`; `jest.resetAllMocks()` in `afterEach`; `closeTestApp(app)` in `afterAll` (60s timeout).
-- Describe naming: `Controller` → edition (`EE (plan: enterprise)` / `CE` / `Cloud`) → `POST /api/x | Intent` → `it('should ... with ...')`. Reads top-to-bottom as a sentence.
-- Edition/plan blocks only when behavior differs: EE-only features add a `CE` block asserting the 403/gating error; plan-variant features get one describe per plan.
+- Describe naming: `Controller` → (only when the plan varies) `on the <plan> plan` → `POST /api/x | Intent` → `it('should ... with ...')`. Reads top-to-bottom as a sentence.
+- The tree picks the edition: shared behavior is tested once in `test/` with a bare `initTestApp()` (CE). Behavior that differs gets a case in each tree: the CE outcome (403/404/451) in `test/`, the EE/Cloud outcome in the same-named `ee/test/` file; plan variance is one describe per plan in `ee/test/`.
 - Assert shape with `toMatchObject()` + `expect.any()`, not per-field assertions. Test failure paths (401/403/404) too.
 - Helpers are stratified (import from `'test-helper'` barrel, never direct files): setup (bootstrap) / seed (factories) / api (HTTP) / utils (TypeORM) / domain files. New domain helpers → new file, added to barrel. Use seed helpers, not inline entity construction.
 - Tag suites with `/** @group platform|workflows|database|marketplace */` before the outermost describe.
-- `run-ci` coverage gate: changed server lines ≥ 80% covered, no 0% new files, overall coverage not below base branch (`scripts/coverage-gate.sh`). Details: `docs/testing.md` § Coverage.
+- `run-ci` coverage gate: changed server lines ≥ 80% covered, no 0% new files, overall coverage not below base branch (`../scripts/coverage-gate.sh`). Details: `docs/testing.md` § Coverage.
 - Run: `npm test`, `npm run test:e2e` (`--testPathPatterns`, `-t`, `--group=` filters). `DEBUG_TESTS=true` restores console output.
+- Test DB: a stale schema fails with `column ... does not exist`. Use `tools/tj/bin/tj db migrate --test`. `NODE_ENV=test npm run db:migrate` is a silent no-op, and the root `.env` overrides shell vars. In a `tj wt add` worktree the test DB is isolated per branch.
 
 ## Module context files
 
-Per-module context lives in `src/modules/<module>/AGENTS.md`. Existing: app, apps, auth, data-queries, data-sources, git-sync, group-permissions, licensing, versions, workflows.
+Per-module context lives in `src/modules/<module>/AGENTS.md`. Existing: app, apps, auth, data-queries, data-sources, git-sync, group-permissions, licensing, personal-access-tokens, templates, versions, workflows.
 
 **Maintenance rule:** meaningfully changing a module (new service, changed invariant, renamed concept, discovered gotcha) means updating its `AGENTS.md` in the same PR. No file yet? Create one from `docs/agents-module-template.md`. Keep them ≤80 lines — pointers and invariants, not prose dumps.

@@ -1,0 +1,5 @@
+id,name,owner,detail,capacity,extras,revision
+,Customer payments,Elena Park,"Critical checkout and payment authorization. Depends on identity, gateway and regional connectivity.",60,[],1
+,Warehouse fulfillment,Marcus Bell,"Order release, pick/pack and carrier manifesting. Depends on order platform and site operations.",120,[],1
+,Customer support,Maya Patel,Customer support intake and urgent case handling. Depends on CRM and telephony.,240,[],1
+,Corporate identity,Samira Khan,"Employee identity and privileged access. Depends on directory, network and recovery credentials.",90,[],1

@@ -9,10 +9,12 @@
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.57.0",
+    "ajv": "^6.15.0",
     "eslint": "^8.37.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-jest": "^27.2.1",
     "eslint-plugin-prettier": "^4.2.1",
+    "js-yaml": "^4.1.1",
     "lerna": "^9.0.3",
     "mime-types": "^2.1.35",
     "prettier": "^2.8.7",
@@ -20,7 +22,10 @@
     "ts-jest": "^29.0.5"
   },
   "overrides": {
-    "axios": "^1.16.1"
+    "axios": "^1.16.1",
+    "tar": "^7.5.22",
+    "websocket-driver": "^0.7.5",
+    "handlebars": "^4.7.10"
   },
   "peerDependencies": {
     "typescript": "^4.9.5"
@@ -31,6 +36,7 @@
     "start:dev": "npm run build && npm run start:watch",
     "upload-to-s3": "bash scripts/upload-to-s3.sh",
     "lint": "eslint .  '**/*.ts'",
+    "validate:plugin": "node scripts/validate-plugin.js",
     "format": "eslint . --fix '**/*.ts'"
   }
 }

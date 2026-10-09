@@ -46,11 +46,6 @@ while IFS= read -r file; do
       mod=$(echo "$file" | sed 's|server/test/modules/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
       ;;
-    server/test/ee/*)
-      # test/ee specs aren't matched by the per-module unit regex — run everything
-      echo "EE test change in: $file"
-      RUN_ALL=true
-      ;;
     server/ee/*)
       mod=$(echo "$file" | sed 's|server/ee/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")

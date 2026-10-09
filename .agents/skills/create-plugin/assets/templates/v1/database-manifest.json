@@ -1,0 +1,48 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "{{PLUGIN_TITLE}} datasource",
+  "description": "A schema defining {{PLUGIN_TITLE}} datasource",
+  "type": "database",
+  "source": {
+    "name": "{{PLUGIN_NAME}}",
+    "kind": "{{PLUGIN_KIND}}",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "connection_url": {
+        "type": "string"
+      },
+      "auth_token": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": false
+  },
+  "defaults": {
+    "connection_url": {
+      "value": ""
+    },
+    "auth_token": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "connection_url": {
+      "label": "Connection URL",
+      "key": "connection_url",
+      "type": "text",
+      "description": "Enter the database URL"
+    },
+    "auth_token": {
+      "label": "Auth token",
+      "key": "auth_token",
+      "type": "password",
+      "description": "Enter the auth token"
+    }
+  },
+  "required": ["connection_url"]
+}

@@ -194,24 +194,17 @@
         text-decoration: underline !important;
         color: #4368E3 !important;
       }
+      /* Spacing between the icons is table-cell padding in footer.hbs, not `gap` —
+         mail clients do not support flex, which is what left this row staggered. */
       .social-links {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 16px;
+        width: auto;
         margin-top: 10px;
       }
       .social-icons {
         width: 20px;
-        height: 20px !important;
+        height: 20px;
         display: block;
-      }
-       .social-icon-fit {
-        margin-top: 5px;
-      }
-      .social-icon-large {
-        height: 22px !important;
-        
+        border: 0;
       }
 
       /* RESPONSIVE */

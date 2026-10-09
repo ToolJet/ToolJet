@@ -608,7 +608,6 @@ export const trackUserActivity = (attributes: {
 // ConfigModule hasn't loaded yet, so we need to manually load .env
 // Use the same pattern as the rest of the codebase (from database-config-utils.ts)
 /* eslint-disable @typescript-eslint/no-require-imports */
-const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 /* eslint-enable @typescript-eslint/no-require-imports */
@@ -619,11 +618,8 @@ function loadEnvVars() {
       ? path.resolve(process.cwd(), '../.env.test')
       : path.resolve(process.cwd(), '../.env');
 
-  if (fs.existsSync(envFilePath)) {
-    const envConfig = dotenv.parse(fs.readFileSync(envFilePath));
-    // Merge with existing process.env (existing env vars take precedence)
-    Object.assign(process.env, envConfig, process.env);
-  }
+  // dotenv skips keys already set (existing env vars take precedence) and ignores a missing file
+  dotenv.config({ path: envFilePath });
 }
 
 // Load environment variables

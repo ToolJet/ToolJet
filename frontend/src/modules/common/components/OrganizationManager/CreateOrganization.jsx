@@ -80,6 +80,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 },
               }
             );
+          } else if (error?.error && error.error.includes('reached the number of workspaces')) {
+            closeModal();
           } else {
             handleHttpErrorMessages(error, 'workspace');
           }
