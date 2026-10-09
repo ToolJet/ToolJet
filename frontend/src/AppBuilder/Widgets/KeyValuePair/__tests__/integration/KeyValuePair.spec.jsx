@@ -960,3 +960,113 @@ describe('KeyValuePair: fieldType adapter wiring', () => {
     expect(document.querySelectorAll('.option-wrapper')).toHaveLength(2);
   });
 });
+
+describe('KeyValuePair: overflow tooltip placement', () => {
+  let canvas;
+  let clientHeightSpy;
+  let offsetHeightSpy;
+
+  beforeEach(() => {
+    widget.setup();
+    // The canvas is the clipping boundary of the editor's canvas area; the query panel sits outside it.
+    canvas = document.createElement('div');
+    canvas.id = 'real-canvas';
+    document.body.appendChild(canvas);
+    // jsdom has no layout: report every element as 10px visible against 100px of content so the renderer sees overflow.
+    clientHeightSpy = jest.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(10);
+    offsetHeightSpy = jest.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(100);
+  });
+
+  afterEach(() => {
+    clientHeightSpy.mockRestore();
+    offsetHeightSpy.mockRestore();
+    canvas.remove();
+    widget.teardown();
+  });
+
+  test.each([
+    ['markdown', '# Heading\n\nlong body'],
+    ['html', '<p>long body</p>'],
+  ])(
+    '[KeyValuePair-BUG-TOOLTIP-001] %s field: the overflow tooltip renders inside the canvas, not on document.body',
+    async (fieldType, value) => {
+      // Break this catches: the shared renderers portal the overflow tooltip to document.body, so the canvas's
+      // overflow clipping never applies and it paints over the query panel when the field sits at the canvas edge.
+      widget.render({
+        properties: {
+          fields: binding([field({ key: 'v', name: 'Value', fieldType })]),
+          data: binding({ v: value }),
+        },
+      });
+
+      await waitFor(() => expect(rows()).toHaveLength(1));
+      await widget.session.user.hover(valueContainer(rows()[0]).firstElementChild);
+
+      const tooltip = await waitFor(() => {
+        const el = document.querySelector('.overlay-cell-table');
+        expect(el).toBeInTheDocument();
+        return el;
+      });
+      expect(canvas.contains(tooltip)).toBe(true);
+    }
+  );
+
+  test.each([
+    ['markdown', '# Heading\n\nlong body'],
+    ['html', '<p>long body</p>'],
+  ])(
+    '[KeyValuePair-BUG-TOOLTIP-002] %s field: the overflow tooltip content is capped to the field width',
+    async (fieldType, value) => {
+      // Break this catches: KeyValueRow never passes containerWidth to the adapters, so the renderer builds
+      // `width: undefinedpx`, the browser drops it, and the tooltip grows to its content width.
+      const offsetWidthSpy = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(240);
+      try {
+        widget.render({
+          properties: {
+            fields: binding([field({ key: 'v', name: 'Value', fieldType })]),
+            data: binding({ v: value }),
+          },
+        });
+
+        await waitFor(() => expect(rows()).toHaveLength(1));
+        await widget.session.user.hover(valueContainer(rows()[0]).firstElementChild);
+
+        const tooltip = await waitFor(() => {
+          const el = document.querySelector('.overlay-cell-table');
+          expect(el).toBeInTheDocument();
+          return el;
+        });
+        expect(tooltip.firstElementChild.style.width).toBe('240px');
+      } finally {
+        offsetWidthSpy.mockRestore();
+      }
+    }
+  );
+});
+
+describe('KeyValuePair: widget tooltip width', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[KeyValuePair-BUG-TOOLTIP-003] the widget tooltip is limited to the widget width', async () => {
+    // Break this catches: WidgetTooltip sets no max width, so a long single-line tooltip text grows wider than the
+    // widget and the container and spills over neighbouring panels.
+    widget.render({
+      properties: {
+        tooltip: binding('{ name: "Olivia Nguyen", date: "15/05/2022", email: "olivia.nguyen@example.com" }'),
+        tooltipFormat: binding('plainText'),
+      },
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await widget.session.user.hover(container());
+
+    const tooltip = await waitFor(() => {
+      const el = document.querySelector('[data-cy="widget-tooltip"]');
+      expect(el).toBeInTheDocument();
+      return el;
+    });
+    // Radix exposes the trigger's rendered width as this CSS variable.
+    expect(tooltip.style.maxWidth).toBe('var(--radix-tooltip-trigger-width)');
+  });
+});
