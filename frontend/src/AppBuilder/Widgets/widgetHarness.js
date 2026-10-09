@@ -25,6 +25,7 @@
 import React from 'react';
 import { waitFor } from '@testing-library/react';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
+import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import {
   AppBuilderTestSession,
@@ -102,6 +103,51 @@ export function widgetProps(
 }
 
 /**
+ * Lazy components must be loaded before a test starts, never by its first render.
+ *
+ * Under babel-jest a React.lazy import is a synchronous require. Left to a render inside the test,
+ * a cold one (a widget chunk, Plotly, ConfigHandle's AI chat tree) blocks the event loop; waitFor's
+ * timeout and Jest's own test timeout keep counting, and both fire before Suspense can retry. That
+ * is a CI-only flake no timeout value fixes. A hook is safe however long the load takes: it settles
+ * as soon as the require returns, before any timer can fire.
+ */
+const isLazy = (component) => component?.$$typeof === Symbol.for('react.lazy');
+const isLoaded = (component) => component._payload._status === 1; // React's "resolved" lazy status
+
+/**
+ * Loads a React.lazy component through its own initializer (which throws its pending import, then
+ * marks itself resolved), so its first render reads the module synchronously and never suspends.
+ * Await it from a hook. No-op for anything that is not lazy, or is already loaded.
+ */
+export async function preloadLazyComponent(component) {
+  if (!isLazy(component) || isLoaded(component)) return;
+  try {
+    component._init(component._payload);
+  } catch (pending) {
+    if (typeof pending?.then !== 'function') throw pending;
+    await pending;
+  }
+}
+
+const typesOf = (also, extraComponents) => [
+  ...also.map(({ componentType }) => componentType),
+  ...Object.values(extraComponents).map((definition) => definition.component.component),
+];
+
+/** Fails fast, on every machine, when a test would render a lazy widget its harness never loaded. */
+function assertLazyWidgetsLoaded(types) {
+  for (const type of new Set(types)) {
+    const component = getComponentToRender(type);
+    if (isLazy(component) && !isLoaded(component)) {
+      throw new Error(
+        `${type} is lazy-loaded and was not preloaded, so this test would load it inside its own ` +
+          `timeout and flake on slow machines. Add it to createWidgetHarness({ preload: ['${type}'] }).`
+      );
+    }
+  }
+}
+
+/**
  * Builds everything one widget's spec file needs: a scenario, a session per
  * test, and a `render()` that seeds the widget (plus any siblings) and
  * mounts it through the real RenderWidget.
@@ -112,6 +158,8 @@ export function widgetProps(
  * @param defaultProperties  properties every test gets unless overridden
  * @param capabilities   extra AppBuilderTestSession capabilities beyond the
  *                        observers/media baseline every widget spec needs
+ * @param preload        other lazy widget types a test renders (as a sibling or
+ *                        child) that `setup()` must load; see preloadLazyComponent
  */
 export function createWidgetHarness({
   componentType,
@@ -126,6 +174,7 @@ export function createWidgetHarness({
   widgetHeight = 40,
   widgetWidth = 200,
   offsetHeight,
+  preload = [],
 }) {
   const scenario = defineAppBuilderScenario({
     id: `${componentType.toLowerCase()}-widget`,
@@ -143,6 +192,7 @@ export function createWidgetHarness({
 
   let session;
   let restoreOffsetHeight;
+  const lazyTypes = [...new Set([componentType, ...preload, ...typesOf(defaultAlso, defaultExtraComponents)])];
 
   /**
    * Seeds the widget (`properties`/`styles`/`validation` merged over the
@@ -161,6 +211,7 @@ export function createWidgetHarness({
     afterSeed,
     also = defaultAlso,
   } = {}) {
+    assertLazyWidgetsLoaded([componentType, ...typesOf(also, { ...defaultExtraComponents, ...extraComponents })]);
     const definition = componentDefinition(componentId, handle, componentType, {
       ...defaultProperties,
       ...properties,
@@ -207,6 +258,8 @@ export function createWidgetHarness({
         restoreOffsetHeight = () => Object.defineProperty(HTMLElement.prototype, 'offsetHeight', descriptor);
       }
       session = new AppBuilderTestSession({ scenario });
+      // Returned so `beforeEach(() => widget.setup())` awaits it; see preloadLazyComponent.
+      return Promise.all(lazyTypes.map((type) => preloadLazyComponent(getComponentToRender(type))));
     },
     // A failed assertion skips a test's own inline cleanup, and a leaked
     // exposed-value bracket silently buffers the NEXT test's writes (see
@@ -226,6 +279,7 @@ export function createWidgetHarness({
       return result;
     },
     renderInsideForm({ validation, properties = {}, formId = 'form1' } = {}) {
+      assertLazyWidgetsLoaded([componentType]);
       session = new AppBuilderTestSession({
         scenario: defineAppBuilderScenario({
           id: `${componentType.toLowerCase()}-inside-form`,

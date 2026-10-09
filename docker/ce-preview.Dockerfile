@@ -32,6 +32,7 @@ ENV NODE_ENV=production
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
+RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build

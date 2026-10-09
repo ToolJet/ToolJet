@@ -1,12 +1,18 @@
-import { CallHandler, ExecutionContext, ForbiddenException, Injectable, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, ForbiddenException, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { MODULES } from '@modules/app/constants/modules';
 import { User } from '@entities/user.entity';
-import { PAT_ALLOWED_BUNDLES, patCanAccess } from '@modules/personal-access-tokens/constants/scopes';
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
+import {
+  PAT_ALLOWED_BUNDLES,
+  PAT_APP_VIEWER_MODULES,
+  patAppViewerCanAccess,
+  patCanAccess,
+} from '@modules/personal-access-tokens/constants/scopes';
 
 /**
- * Confines workspace personal access tokens to the modules PAT_ALLOWED_BUNDLES permits.
+ * Session kinds and the rules behind them: see this module's AGENTS.md.
  *
  * An INTERCEPTOR rather than a guard, deliberately. Global guards run BEFORE route-level guards,
  * so a global guard would execute before JwtAuthGuard has populated request.user and could never
@@ -29,16 +35,39 @@ export class PatScopeInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const user: User | undefined = context.switchToHttp().getRequest()?.user;
+    const request = context.switchToHttp().getRequest();
+    const user: User | undefined = request?.user;
 
-    /* Browser sessions, SSO sessions, and the app-scoped embed flow pass straight through — the
-       embed viewer legitimately needs far more surface than an automation client. */
-    if (!user?.isPATLogin || user.patAppId) {
+    if (!user?.isPATLogin) {
       return next.handle();
     }
 
     const module = this.reflector.get<MODULES>('tjModuleId', context.getClass());
     const feature = this.reflector.get<string>('tjFeatureId', context.getHandler());
+
+    if (user.patScope === PersonalAccessTokenScope.APP) {
+      return next.handle();
+    }
+
+    // TRANSITIONAL: pre-patScope embed JWTs; drop once sessions minted before deploy expire.
+    if (!user.patScope && user.patAppId) {
+      return next.handle();
+    }
+
+    if (user.patAppId) {
+      const denial = this.denyViewer(user, request, module, feature);
+      if (denial) {
+        if (auditOnly()) {
+          logAudit('DENY', request, module, feature, denial);
+        } else {
+          throw new ForbiddenException(denial);
+        }
+      } else if (auditOnly()) {
+        logAudit('ALLOW', request, module, feature);
+      }
+      return next.handle();
+    }
+
     if (!patCanAccess(module, feature)) {
       throw new ForbiddenException(
         `This personal access token cannot access ${feature ?? module ?? 'this resource'}. ` +
@@ -48,4 +77,70 @@ export class PatScopeInterceptor implements NestInterceptor {
 
     return next.handle();
   }
+
+  /** Returns the denial message, or undefined if the request is allowed. */
+  private denyViewer(
+    user: User,
+    request: { method?: string; originalUrl?: string; url?: string; tj_app?: { id: string } },
+    module: MODULES | undefined,
+    feature: string | undefined
+  ): string | undefined {
+    if (request?.method && request.method !== 'GET' && !isViewerWriteException(request)) {
+      return `This session is read-only. App-scoped render sessions may only issue GET requests.`;
+    }
+
+    /* Pin to the app. Guards resolved it already (slug routes and query runs never carry the uuid
+       in the path); the regex is the fallback for routes with no app guard. */
+    const requestedAppId: string | undefined =
+      request?.tj_app?.id ?? extractAppIdFromPath(request?.originalUrl || request?.url);
+    if (requestedAppId && requestedAppId !== user.patAppId) {
+      return `This session is scoped to a single app and cannot access ${requestedAppId}.`;
+    }
+
+    if (!patAppViewerCanAccess(module, feature)) {
+      return (
+        `This app-scoped session cannot access ${feature ?? module ?? 'this resource'}. ` +
+        `Render sessions are limited to: ${PAT_APP_VIEWER_MODULES.join(', ')}.`
+      );
+    }
+
+    return undefined;
+  }
+}
+
+// Local copy of the @otel/tracing helper: importing it drags an ESM-only uuid into Jest.
+const APP_ID_IN_PATH = /\/apps\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:[/?#]|$)/i;
+
+function extractAppIdFromPath(path?: string): string | undefined {
+  if (!path) return undefined;
+  return APP_ID_IN_PATH.exec(path)?.[1];
+}
+
+function isViewerWriteException(request: { originalUrl?: string; url?: string }): boolean {
+  const path = (request?.originalUrl || request?.url || '').split('?')[0];
+  /* BOTH run routes: `:id/run` is the released-viewer path, and `:id/versions/:versionId/run/:envId`
+     is the builder path — the one the render check uses, since an unreleased app can only be opened
+     in the editor. */
+  return /\/data-queries\/[^/]+\/run$/.test(path) || /\/data-queries\/[^/]+\/versions\/[^/]+\/run\/[^/]+$/.test(path);
+}
+
+const auditLogger = new Logger('PatScopeAudit');
+
+// TEMPORARY dev-only audit: logs verdicts instead of denying; never set in prod; remove once
+// PAT_APP_VIEWER_MODULES settles.
+function auditOnly(): boolean {
+  return process.env.NODE_ENV !== 'production' && process.env.PAT_SCOPE_AUDIT === 'true';
+}
+
+function logAudit(
+  verdict: 'ALLOW' | 'DENY',
+  request: { method?: string; originalUrl?: string; url?: string },
+  module: MODULES | undefined,
+  feature: string | undefined,
+  reason?: string
+): void {
+  auditLogger.log(
+    `${verdict} ${request?.method ?? '?'} ${request?.originalUrl || request?.url || '?'} ` +
+      `module=${module ?? 'NONE'} feature=${feature ?? 'NONE'}${reason ? ` reason=${reason}` : ''}`
+  );
 }

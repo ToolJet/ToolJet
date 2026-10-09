@@ -3,6 +3,8 @@ import { EntityManager } from 'typeorm';
 import {
   CreateUserDto,
   GetWorkspaceUsersByGroupsDto,
+  ListWorkspaceAppUsersV2QueryDto,
+  ListWorkspaceUserAppsV2QueryDto,
   UpdateGivenWorkspaceDto,
   UpdateUserDto,
   WorkspaceDto,
@@ -45,6 +47,20 @@ export class ExternalApisService implements IExternalApisService {
     throw new Error('Method not implemented.');
   }
   async getWorkspaceUsersByGroups(_workspaceId: string, _body: GetWorkspaceUsersByGroupsDto): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  async listWorkspaceUserAppsV2(
+    _workspaceIdentifier: string,
+    _userIdentifier: string,
+    _query: ListWorkspaceUserAppsV2QueryDto
+  ): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  async listWorkspaceAppUsersV2(
+    _workspaceIdentifier: string,
+    _appIdentifier: string,
+    _query: ListWorkspaceAppUsersV2QueryDto
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }
