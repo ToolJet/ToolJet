@@ -21,7 +21,11 @@ const Icon = ({
   const { icon, loadingState, disabledState } = properties;
   const { iconAlign, iconColor, boxShadow } = styles;
 
+  // Saved apps from before the theme-token default (D-08) still carry the literal '#000'; keep its dark-mode remap.
   const color = iconColor === '#000' ? (darkMode ? '#fff' : '#000') : iconColor;
+  // A theme token cannot go through Tabler's `color` prop (it becomes the SVG `stroke` attribute, where
+  // `var()` is discarded); leave it undefined so the SVG uses `currentColor` from the inline `color` style.
+  const isThemeToken = typeof iconColor === 'string' && iconColor.startsWith('var(');
   const { moduleId } = useModuleContext();
   // Pointer affordance only when the builder wired an onClick event (restores the pre-Sprint-19 rule).
   const hasClickEvent = useStore((state) =>
@@ -114,7 +118,7 @@ const Icon = ({
     >
       <TablerIcon
         iconName={icon}
-        color={color}
+        color={isThemeToken ? undefined : color}
         style={{
           width: height < width ? 'auto' : width,
           height: height < width ? '100%' : 'auto',

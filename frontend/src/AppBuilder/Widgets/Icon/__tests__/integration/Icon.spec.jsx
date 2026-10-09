@@ -33,8 +33,10 @@ const defaultProperties = {
   disabledState: binding('{{false}}'),
 };
 
+const TOKEN_COLOR = 'var(--cc-default-icon)';
+
 const defaultStyles = {
-  iconColor: binding('#000'),
+  iconColor: binding(TOKEN_COLOR),
   iconAlign: binding('center'),
   padding: binding('default'),
   boxShadow: binding('0px 0px 0px 0px #00000040'),
@@ -342,6 +344,7 @@ describe('Icon widget', () => {
     // or letting the universal box shadow overwrite Icon's own registered shadow.
     const { container } = widget.render({
       darkMode: true,
+      styles: { iconColor: binding('#000') }, // the pre-D-08 literal default, kept for saved apps
       afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', GENERAL_SHADOW, 'generalStyles'),
     });
     await waitFor(() => expect(iconSvg(container)).toBeInTheDocument());
@@ -369,6 +372,22 @@ describe('Icon widget', () => {
     });
     expect(canvasNode(container)).toHaveStyle({ padding: '0px' });
     expect(iconSvg(container)).toHaveAttribute('stroke', COLOR);
+  });
+
+  test('[Icon-STY-002] The registered default is the theme icon token and tokens render via currentColor', async () => {
+    // Break this catches: a literal #000 default that ignores the app theme, and forwarding a
+    // `var(...)` token as the SVG `stroke` attribute, where browsers discard it and the glyph vanishes.
+    expect(frontendConfig.definition.styles.iconColor.value).toBe(TOKEN_COLOR);
+    expect(frontendConfig.styles.iconColor.validation.defaultValue).toBe(TOKEN_COLOR);
+
+    const { container } = widget.render();
+    await waitFor(() => expect(iconSvg(container)).toBeInTheDocument());
+    // jsdom's cssstyle drops `var()` for `color`, so the inline token itself is not observable here;
+    // `stroke="currentColor"` is the behaviour that makes the token resolve in a real browser.
+    expect(iconSvg(container)).toHaveAttribute('stroke', 'currentColor');
+
+    await setStyle('iconColor', COLOR);
+    await waitFor(() => expect(iconSvg(container)).toHaveAttribute('stroke', COLOR));
   });
 
   test('[Icon-SIZ-001] Both registered aspect branches emit stable sizing rules', async () => {
