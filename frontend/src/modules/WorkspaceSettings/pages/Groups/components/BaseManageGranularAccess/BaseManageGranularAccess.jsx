@@ -141,7 +141,8 @@ class BaseManageGranularAccess extends React.Component {
   }
 
   fetchAppsCanBeAdded = () => {
-    if (this.props.isBasicPlan) {
+    // Addable resources only feed the add-permission modal, which read-only group admins never open
+    if (this.props.isBasicPlan || this.isGroupAdminReadOnly()) {
       return;
     }
     groupPermissionV2Service

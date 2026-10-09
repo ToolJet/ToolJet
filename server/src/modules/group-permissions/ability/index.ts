@@ -102,10 +102,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET_ADDABLE_USERS,
           FEATURE_KEY.GET_ALL_GROUP_USER,
           FEATURE_KEY.GET_GROUP_ADMINS,
+          FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS,
         ],
         GroupPermissions
       );
-      if (isBuilder) can(FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS, GroupPermissions);
     } else if (isBuilder && requestedGroup?.type === GROUP_PERMISSIONS_TYPE.DEFAULT) {
       can(
         [FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_ALL_GROUP_USER, FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS],

@@ -72,9 +72,7 @@ const END_USER_BLOCKED_ADDABLE_FEATURES = [
 ];
 
 // Membership-only features an end-user group admin gets on their own administered custom group
-const END_USER_ADMIN_GROUP_FEATURES = BUILDER_ADMIN_GROUP_FEATURES.filter(
-  (f) => f !== FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS
-);
+const END_USER_ADMIN_GROUP_FEATURES = BUILDER_ADMIN_GROUP_FEATURES;
 
 // Features that builders must NEVER get (admin-escalation guard)
 const BUILDER_BLOCKED_FEATURES = [
@@ -306,7 +304,7 @@ describe('FeatureAbilityFactory :: group permissions', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // End-user admin — membership management only
+  // End-user admin — membership management + read-only granular permissions
   // ---------------------------------------------------------------------------
 
   describe('end-user-admin — no group context (list-level)', () => {
@@ -345,9 +343,13 @@ describe('FeatureAbilityFactory :: group permissions', () => {
       }
     });
 
-    it('does not grant granular-permission reads or addable-resource reads', async () => {
+    it('grants read-only access to the granular permissions of the administered group', async () => {
       const ability = await build({ isEndUser: true }, request);
-      expect(ability.can(FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS, GroupPermissions)).toBe(false);
+      expect(ability.can(FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS, GroupPermissions)).toBe(true);
+    });
+
+    it('does not grant addable-resource reads', async () => {
+      const ability = await build({ isEndUser: true }, request);
       for (const feature of END_USER_BLOCKED_ADDABLE_FEATURES) {
         expect(ability.can(feature, GroupPermissions)).toBe(false);
       }

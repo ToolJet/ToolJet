@@ -921,10 +921,9 @@ class BaseManageGroupPermissionResources extends React.Component {
       featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter' && plan !== 'basicplus';
     const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
-    // Workspace admin has full edit access; group-admin builders are read-only on permissions/granular tabs
-    // and cannot change user roles (but can still add/remove users). Group-admin end-users only manage users.
+    // Workspace admin has full edit access; group admins (builders and end-users) see the permissions/granular
+    // tabs read-only and cannot change user roles (but can still add/remove users).
     const isAdmin = !!authenticationService.currentSessionValue?.admin;
-    const canViewPermissionTabs = isAdmin || !!authenticationService.currentSessionValue?.user_permissions?.is_builder;
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
     const showPermissionInfo =
@@ -1098,19 +1097,15 @@ class BaseManageGroupPermissionResources extends React.Component {
                     Group admins
                   </a>
                 )}
-                {/* End-user group admins see these tabs disabled: they have no read access to permission data */}
                 <a
                   onClick={() => {
-                    if (!canViewPermissionTabs) return;
                     this.setState({ currentTab: 'permissions', showUserSearchBox: false });
                     this.setSelectedUsers([]);
                   }}
                   className={cx('nav-item nav-link', {
                     active: currentTab === 'permissions' && !isBasicPlan,
                     'expired-gradient-border': currentTab === 'permissions' && isBasicPlan,
-                    disabled: !canViewPermissionTabs,
                   })}
-                  aria-disabled={!canViewPermissionTabs}
                   data-cy="permissions-link"
                 >
                   {isBasicPlan && currentTab === 'permissions' ? (
@@ -1132,16 +1127,13 @@ class BaseManageGroupPermissionResources extends React.Component {
                 </a>
                 <a
                   onClick={() => {
-                    if (!canViewPermissionTabs) return;
                     this.setState({ currentTab: 'granularAccess', showUserSearchBox: false });
                     this.setSelectedUsers([]);
                   }}
                   className={cx('nav-item nav-link', {
                     active: currentTab === 'granularAccess' && !isBasicPlan,
                     'expired-gradient-border': currentTab === 'granularAccess' && isBasicPlan,
-                    disabled: !canViewPermissionTabs,
                   })}
-                  aria-disabled={!canViewPermissionTabs}
                   data-cy="granular-access-link"
                 >
                   {isBasicPlan && currentTab === 'granularAccess' ? (
@@ -1596,21 +1588,19 @@ class BaseManageGroupPermissionResources extends React.Component {
 
                   {/* Granular Access */}
                   <aside className={`tab-pane ${currentTab === 'granularAccess' ? 'active show' : ''}`}>
-                    {canViewPermissionTabs && (
-                      <ManageGranularAccess
-                        groupPermissionId={groupPermission.id}
-                        groupPermission={groupPermission}
-                        setErrorState={this.setErrorState}
-                        updateParentState={this.changeThisComponentState}
-                        fetchGroup={this.fetchGroupPermission}
-                        darkMode={this.props.darkMode}
-                        isBasicPlan={isBasicPlan}
-                        isFeatureEnabled={isFeatureEnabled}
-                        isModulesEnabled={isModulesEnabled}
-                        hasEndUsers={hasEndUsers}
-                        isAdmin={isAdmin}
-                      />
-                    )}
+                    <ManageGranularAccess
+                      groupPermissionId={groupPermission.id}
+                      groupPermission={groupPermission}
+                      setErrorState={this.setErrorState}
+                      updateParentState={this.changeThisComponentState}
+                      fetchGroup={this.fetchGroupPermission}
+                      darkMode={this.props.darkMode}
+                      isBasicPlan={isBasicPlan}
+                      isFeatureEnabled={isFeatureEnabled}
+                      isModulesEnabled={isModulesEnabled}
+                      hasEndUsers={hasEndUsers}
+                      isAdmin={isAdmin}
+                    />
                   </aside>
 
                   {/* Group Admins Tab */}

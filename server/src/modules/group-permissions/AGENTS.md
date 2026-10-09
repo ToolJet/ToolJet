@@ -13,7 +13,7 @@ and granular permissions; the `ability` module consumes them to build `UserAllPe
 - **Custom Group** — admin-created group; grants extra permissions on top of a user's role. License-gated at runtime (see Edition split).
 - **Group-level permission** — boolean columns on the group row (`appCreate`, `dataSourceDelete`, `orgConstantCRUD`, `tjdbCRUD`, ...).
 - **Granular permission** — `GranularPermissions` entity scoping a group to specific resources; `ResourceType`: `app`, `data_source`, `workflow`, `folder`. Workspace-constant access is NOT a granular type — it's the group-level `orgConstantCRUD` flag.
-- **Group admin** (EE) — a workspace member of any role (Admin, Builder or End User) assigned to administer specific custom groups (`GroupAdmin` entity). End User group admins manage membership only.
+- **Group admin** (EE) — a workspace member of any role (Admin, Builder or End User) assigned to administer specific custom groups (`GroupAdmin` entity). End User group admins manage membership and can read (never edit) their group's granular permissions.
 
 ## Key files
 
@@ -47,7 +47,7 @@ and granular permissions; the `ability` module consumes them to build `UserAllPe
 - Admin group cannot have granular permissions (`ADMIN_DEFAULT_GROUP_GRANULAR_PERMISSIONS`).
 - Cannot demote/remove the last Admin (`EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED`).
 - Group names: unique per workspace (DB constraint) and role names are reserved keywords.
-- `ability/index.ts`: super admins + workspace Admins get all `FEATURE_KEY`s; Builders and End Users get anything only via `request.tj_admin_groups` (populated by the EE guard — always empty in CE, so CE gets nothing). Group admins can never assign/revoke other group admins. End User group admins get membership actions only (no granular/addable-resource reads, no default groups in the list); Builder group admins additionally get read-only permission views.
+- `ability/index.ts`: super admins + workspace Admins get all `FEATURE_KEY`s; Builders and End Users get anything only via `request.tj_admin_groups` (populated by the EE guard — always empty in CE, so CE gets nothing). Group admins can never assign/revoke other group admins. Group admins of any role get membership actions plus `GET_ALL_GRANULAR_PERMISSIONS` on their own groups (read-only; they never get granular create/update/delete). Only Builder group admins also get the addable-resource reads (`GET_ADDABLE_*`, workspace-wide app/data-source/folder names) and default-group views; End User group admins don't, and the UI skips those fetches for read-only group admins.
 - Role change (`allowRoleChange`) is workspace-Admin-only: `addUsersToGroup(..., canChangeRole)` throws 409 `USER_ROLE_CHANGE_ADMIN_REQUIRED` for any other actor, whatever the client sends. `request.user.roleGroup` is set per handler (not global) via `roleGroupFor(userPermissions)` (`constants/index.ts`) — call it in any new handler that passes `user` to the service.
 - Demoting a group admin to End User keeps their `GroupAdmin` rows; archiving the user still revokes them.
 - `getAllGroupUsers`/`getAddableUser` wrap queries in `skipAppEditingVersionHydration.run(true, ...)` to muzzle `AppsSubscriber` fan-out — keep this when touching those paths.
