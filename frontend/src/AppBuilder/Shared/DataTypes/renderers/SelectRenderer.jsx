@@ -348,8 +348,8 @@ export const SelectRenderer = ({
           ? defaultOptionsList
           : defaultOptionsList.slice(-1)[0]
         : isMulti
-        ? []
-        : {},
+          ? []
+          : {},
     [isMulti, defaultOptionsList]
   );
 
@@ -367,7 +367,7 @@ export const SelectRenderer = ({
 
   const handleChange = useCallback(
     (newValue) => {
-      setIsFocused(false);
+      if (!isMulti) setIsFocused(false);
       if (!isMulti && newValue === selectedValue?.value) {
         onChange('');
       } else {
