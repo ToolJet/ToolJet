@@ -419,5 +419,15 @@
     "tags": [
       "AI"
     ]
+  },
+  {
+    "name": "Cloudflare Workers KV",
+    "description": "Read, write and manage keys and namespaces in Cloudflare Workers KV",
+    "version": "1.0.0",
+    "id": "cloudflare_workers_kv",
+    "author": "Tooljet",
+    "timestamp": "Fri, 09 Oct 2026 16:24:39 GMT",
+    "repo": "",
+    "tags": ["Database"]
   }
 ]

@@ -1,0 +1,473 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Cloudflare Workers KV datasource",
+  "description": "A schema defining Cloudflare Workers KV datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_namespaces",
+          "name": "List namespaces"
+        },
+        {
+          "value": "create_namespace",
+          "name": "Create namespace"
+        },
+        {
+          "value": "get_namespace",
+          "name": "Get namespace"
+        },
+        {
+          "value": "rename_namespace",
+          "name": "Rename namespace"
+        },
+        {
+          "value": "delete_namespace",
+          "name": "Delete namespace"
+        },
+        {
+          "value": "list_keys",
+          "name": "List keys"
+        },
+        {
+          "value": "read_value",
+          "name": "Read value"
+        },
+        {
+          "value": "read_metadata",
+          "name": "Read key metadata"
+        },
+        {
+          "value": "write_value",
+          "name": "Write value"
+        },
+        {
+          "value": "delete_key",
+          "name": "Delete key"
+        },
+        {
+          "value": "bulk_write",
+          "name": "Bulk write"
+        },
+        {
+          "value": "bulk_read",
+          "name": "Bulk read"
+        },
+        {
+          "value": "bulk_delete",
+          "name": "Bulk delete"
+        }
+      ]
+    },
+    "list_namespaces": {
+      "page": {
+        "label": "Page",
+        "key": "page",
+        "type": "codehinter",
+        "description": "Page number of paginated results",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "1",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "per_page": {
+        "label": "Per page",
+        "key": "per_page",
+        "type": "codehinter",
+        "description": "Maximum number of namespaces per page (1-1000)",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "20",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "order": {
+        "label": "Order by",
+        "key": "order",
+        "type": "dropdown",
+        "description": "Namespace field to sort by",
+        "list": [
+          {
+            "name": "ID",
+            "value": "id"
+          },
+          {
+            "name": "Title",
+            "value": "title"
+          }
+        ]
+      },
+      "direction": {
+        "label": "Direction",
+        "key": "direction",
+        "type": "dropdown",
+        "description": "Sort direction",
+        "list": [
+          {
+            "name": "Ascending",
+            "value": "asc"
+          },
+          {
+            "name": "Descending",
+            "value": "desc"
+          }
+        ]
+      }
+    },
+    "create_namespace": {
+      "title": {
+        "label": "Title",
+        "key": "title",
+        "type": "codehinter",
+        "description": "A human-readable name for the namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "My namespace",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "get_namespace": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "rename_namespace": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "title": {
+        "label": "New title",
+        "key": "title",
+        "type": "codehinter",
+        "description": "The new name for the namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "My renamed namespace",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "delete_namespace": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "list_keys": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "prefix": {
+        "label": "Prefix",
+        "key": "prefix",
+        "type": "codehinter",
+        "description": "Only return keys that start with this prefix",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "user:",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "description": "Maximum number of keys to return (10-1000)",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "1000",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "cursor": {
+        "label": "Cursor",
+        "key": "cursor",
+        "type": "codehinter",
+        "description": "Cursor from a previous response, to fetch the next page",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "{{queries.listKeys.data.cursor}}",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "read_value": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "key_name": {
+        "label": "Key",
+        "key": "key_name",
+        "type": "codehinter",
+        "description": "Name of the key (max 512 bytes)",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "user:123",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "read_metadata": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "key_name": {
+        "label": "Key",
+        "key": "key_name",
+        "type": "codehinter",
+        "description": "Name of the key (max 512 bytes)",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "user:123",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "write_value": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "key_name": {
+        "label": "Key",
+        "key": "key_name",
+        "type": "codehinter",
+        "description": "Name of the key (max 512 bytes)",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "user:123",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "value": {
+        "label": "Value",
+        "key": "value",
+        "type": "codehinter",
+        "description": "Value to store. Strings are stored as-is; objects and arrays are stored as JSON",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "{\"name\": \"Jane\"}",
+        "height": "150px"
+      },
+      "metadata": {
+        "label": "Metadata",
+        "key": "metadata",
+        "type": "codehinter",
+        "description": "Optional JSON object to store with the key (max 1024 bytes)",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "{\"source\": \"tooljet\"}",
+        "height": "100px"
+      },
+      "expiration": {
+        "label": "Expiration",
+        "key": "expiration",
+        "type": "codehinter",
+        "description": "Optional absolute expiry, in seconds since the UNIX epoch",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "1767225600",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "expiration_ttl": {
+        "label": "Expiration TTL",
+        "key": "expiration_ttl",
+        "type": "codehinter",
+        "description": "Optional expiry in seconds from now (minimum 60)",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "3600",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "delete_key": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "key_name": {
+        "label": "Key",
+        "key": "key_name",
+        "type": "codehinter",
+        "description": "Name of the key (max 512 bytes)",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "user:123",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "bulk_write": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "items": {
+        "label": "Key-value pairs",
+        "key": "items",
+        "type": "codehinter",
+        "description": "JSON array of up to 10,000 objects with key, value and optional expiration, expiration_ttl, metadata and base64",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "[{\"key\": \"a\", \"value\": \"1\"}, {\"key\": \"b\", \"value\": \"2\", \"expiration_ttl\": 3600}]",
+        "height": "150px"
+      }
+    },
+    "bulk_read": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "keys": {
+        "label": "Keys",
+        "key": "keys",
+        "type": "codehinter",
+        "description": "JSON array of up to 100 key names",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "[\"a\", \"b\"]",
+        "height": "100px"
+      },
+      "type": {
+        "label": "Value type",
+        "key": "type",
+        "type": "dropdown",
+        "description": "Return values as text, or parse stored JSON values",
+        "list": [
+          {
+            "name": "Text",
+            "value": "text"
+          },
+          {
+            "name": "JSON",
+            "value": "json"
+          }
+        ]
+      },
+      "with_metadata": {
+        "label": "Include metadata",
+        "key": "with_metadata",
+        "type": "dropdown",
+        "description": "Whether to include each key's metadata",
+        "list": [
+          {
+            "name": "No",
+            "value": "false"
+          },
+          {
+            "name": "Yes",
+            "value": "true"
+          }
+        ]
+      }
+    },
+    "bulk_delete": {
+      "namespace_id": {
+        "label": "Namespace ID",
+        "key": "namespace_id",
+        "type": "codehinter",
+        "description": "ID of the KV namespace",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "0f2ac74b498b48028cb68387c421e279",
+        "height": "36px",
+        "editorType": "extendedSingleLine"
+      },
+      "keys": {
+        "label": "Keys",
+        "key": "keys",
+        "type": "codehinter",
+        "description": "JSON array of up to 10,000 key names to delete",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "placeholder": "[\"a\", \"b\"]",
+        "height": "100px"
+      }
+    }
+  }
+}

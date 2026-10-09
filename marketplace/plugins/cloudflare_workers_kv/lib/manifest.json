@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Cloudflare Workers KV datasource",
+  "description": "A schema defining Cloudflare Workers KV datasource",
+  "type": "api",
+  "source": {
+    "name": "Cloudflare Workers KV",
+    "kind": "cloudflare_workers_kv",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "account_id": {
+        "type": "string"
+      },
+      "api_token": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": false
+  },
+  "defaults": {},
+  "properties": {
+    "account_id": {
+      "label": "Account ID",
+      "key": "account_id",
+      "type": "text",
+      "description": "Your Cloudflare account ID (Dashboard → Workers & Pages → Account details)"
+    },
+    "api_token": {
+      "label": "API token",
+      "key": "api_token",
+      "type": "password",
+      "description": "Cloudflare API token with the Account → Workers KV Storage → Edit permission"
+    }
+  },
+  "required": ["account_id", "api_token"]
+}
