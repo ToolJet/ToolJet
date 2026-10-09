@@ -12,7 +12,7 @@
     "disabledState": { "value": "{{false}}" }
   },
   "general_properties": {
-    "tooltip": { "value": "Tooooldip" }
+    "tooltip": { "value": "Select a start and end date" }
   },
   "general_styles": {
     "boxShadow": { "value": "0px 0px 0px 0px #00000040" }

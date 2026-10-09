@@ -155,7 +155,7 @@ describe('helpers/component-migration.helper', () => {
           format: { value: 'DD/MM/YYYY' },
           visibility: { value: '{{true}}' },
           disabledState: { value: '{{false}}' },
-          tooltip: { value: 'Tooooldip' },
+          tooltip: { value: 'Select a start and end date' },
           label: '',
         },
         styles: {
