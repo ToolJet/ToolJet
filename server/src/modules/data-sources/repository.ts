@@ -92,6 +92,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
       .createQueryBuilder(DataSource, 'data_source')
       .leftJoinAndSelect('data_source.plugin', 'plugin')
       .leftJoinAndSelect('plugin.iconFile', 'iconFile')
+      .leftJoinAndSelect('plugin.darkIconFile', 'darkIconFile')
       .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
       .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
 
@@ -227,6 +228,9 @@ export class DataSourcesRepository extends Repository<DataSource> {
       if (dataSource.plugin) {
         if (dataSource.plugin.iconFile) {
           dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
+        }
+        if (dataSource.plugin.darkIconFile) {
+          dataSource.plugin.darkIconFile.data = dataSource.plugin.darkIconFile.data.toString('utf8');
         }
         if (dataSource.plugin.manifestFile) {
           dataSource.plugin.manifestFile.data = JSON.parse(

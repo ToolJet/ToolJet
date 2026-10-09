@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
 import { DataSourceTypes } from '../../../common/components/DataSourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import { pluginIconFile } from '@/_helpers/pluginIcon';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
@@ -74,7 +75,7 @@ export const ListItem = ({
     dataSource.type === DATA_SOURCE_TYPE.SAMPLE ? (
       <img src="assets/images/tj-logo.svg" style={{ padding: '0px' }} />
     ) : (
-      getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data)
+      getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, pluginIconFile(dataSource?.plugin))
     );
 
   const focusModal = () => {

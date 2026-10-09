@@ -86,6 +86,9 @@ export class DataSourcesService implements IDataSourcesService {
           if (Buffer.isBuffer(dataSource.plugin.iconFile.data)) {
             dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
           }
+          if (Buffer.isBuffer(dataSource.plugin.darkIconFile?.data)) {
+            dataSource.plugin.darkIconFile.data = dataSource.plugin.darkIconFile.data.toString('utf8');
+          }
           dataSource.plugin.manifestFile.data = parseIfNeeded(dataSource.plugin.manifestFile.data);
           dataSource.plugin.operationsFile.data = parseIfNeeded(dataSource.plugin.operationsFile.data);
         }

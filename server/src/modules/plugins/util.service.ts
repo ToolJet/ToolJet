@@ -15,6 +15,10 @@ import { Injectable } from '@nestjs/common';
 
 const jszipInstance = new jszip();
 
+// A plugin's optional icon for the dark theme, beside lib/icon.svg.
+const DARK_ICON_FILENAME = 'darkIcon';
+const DARK_ICON_PATH = 'lib/darkIcon.svg';
+
 /**
  * Extracts @spec/ references from operations.json content to discover spec file names.
  * Handles both string specUrl ("@spec/kind/name") and object specUrl ({ "Label": "@spec/kind/name" }).
@@ -67,7 +71,8 @@ export class PluginsUtilService implements IPluginsUtilService {
       icon: ArrayBuffer;
       manifest: ArrayBuffer;
     },
-    specFiles?: Record<string, string>
+    specFiles?: Record<string, string>,
+    darkIcon?: string
   ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const queryRunner = manager.connection.createQueryRunner();
@@ -108,6 +113,7 @@ export class PluginsUtilService implements IPluginsUtilService {
         plugin.operationsFileId = uploadedFiles.operations.id;
         plugin.iconFileId = uploadedFiles.icon.id;
         plugin.manifestFileId = uploadedFiles.manifest.id;
+        plugin.darkIconFileId = await this.storeDarkIcon(null, darkIcon, manager);
         plugin.specFilesMap = specFilesMap;
 
         return await manager.save(plugin);
@@ -221,7 +227,11 @@ export class PluginsUtilService implements IPluginsUtilService {
         await Promise.all(specPromises);
       }
 
-      return [indexFile, operationsFile, iconFile, manifestFile, undefined, specFiles];
+      // Optional: most plugins ship one icon, and a missing file answers 403 or 404.
+      const darkIconResponse = await fetch(`${host}/marketplace-assets/${id}/${DARK_ICON_PATH}`);
+      const darkIcon = darkIconResponse.ok ? await darkIconResponse.text() : undefined;
+
+      return [indexFile, operationsFile, iconFile, manifestFile, undefined, specFiles, darkIcon];
     }
 
     async function readFile(filePath) {
@@ -263,7 +273,10 @@ export class PluginsUtilService implements IPluginsUtilService {
       );
     }
 
-    return [indexFile, operationsFile, iconFile, manifestFile, undefined, specFiles];
+    const darkIconPath = `../marketplace/plugins/${id}/${DARK_ICON_PATH}`;
+    const darkIcon = fs.existsSync(darkIconPath) ? ((await readFile(darkIconPath)) as string) : undefined;
+
+    return [indexFile, operationsFile, iconFile, manifestFile, undefined, specFiles, darkIcon];
   }
 
   async upgrade(
@@ -276,7 +289,8 @@ export class PluginsUtilService implements IPluginsUtilService {
       icon: ArrayBuffer;
       manifest: ArrayBuffer;
     },
-    specFiles?: Record<string, string>
+    specFiles?: Record<string, string>,
+    darkIcon?: string
   ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const queryRunner = manager.connection.createQueryRunner();
@@ -313,6 +327,7 @@ export class PluginsUtilService implements IPluginsUtilService {
         plugin.id = currentPlugin.id;
         plugin.repo = updatePluginDto.repo || '';
         plugin.version = version ?? updatePluginDto.version;
+        plugin.darkIconFileId = await this.storeDarkIcon(currentPlugin.darkIconFileId, darkIcon, manager);
         plugin.specFilesMap = specFilesMap;
 
         return manager.save(plugin);
@@ -323,6 +338,32 @@ export class PluginsUtilService implements IPluginsUtilService {
         await queryRunner.release();
       }
     });
+  }
+
+  /**
+   * Store a plugin's optional dark-theme icon and return its file id, or null when the
+   * plugin ships none. On an upgrade or reload the existing file is updated in place; an
+   * icon the plugin no longer ships leaves its file behind, like a stale spec file.
+   */
+  async storeDarkIcon(
+    currentFileId: string | null | undefined,
+    darkIcon: string | undefined,
+    manager: EntityManager
+  ): Promise<string | null> {
+    if (!darkIcon) return null;
+
+    if (currentFileId) {
+      const fileDto = new UpdateFileDto();
+      fileDto.data = encode(darkIcon);
+      fileDto.filename = DARK_ICON_FILENAME;
+      await this.filesRepository.updateOne(currentFileId, fileDto, manager);
+      return currentFileId;
+    }
+
+    const fileDto = new CreateFileDto();
+    fileDto.data = encode(darkIcon);
+    fileDto.filename = DARK_ICON_FILENAME;
+    return (await this.filesRepository.createOne(fileDto, manager)).id;
   }
 
   /**

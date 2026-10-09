@@ -6,6 +6,7 @@ import { Modal, Button, Tab, Row, Col, ListGroup, ModalBody } from 'react-bootst
 import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import { pluginIconFile } from '@/_helpers/pluginIcon';
 import { TestConnection } from './TestConnection';
 import { getWorkspaceId, deepEqual, returnDevelopmentEnv, decodeEntities } from '@/_helpers/utils';
 import { getSubpath } from '@/_helpers/routes';
@@ -72,7 +73,8 @@ class DataSourceManagerComponent extends React.Component {
 
     let selectedDataSource = null;
     let dataSourceSchema = null;
-    let selectedDataSourceIcon = null;
+    // The marketplace plugin whose icon the header shows; resolved at render so it follows the theme.
+    let selectedDataSourcePlugin = null;
     let options = {};
     let dataSourceMeta = {};
     let datasourceName = '';
@@ -85,7 +87,7 @@ class DataSourceManagerComponent extends React.Component {
       }
       dataSourceMeta = this.getDataSourceMeta(selectedDataSource);
       dataSourceSchema = props.selectedDataSource?.plugin?.manifestFile?.data;
-      selectedDataSourceIcon = props.selectDataSource?.plugin?.iconFile.data;
+      selectedDataSourcePlugin = props.selectDataSource?.plugin;
       datasourceName = props.selectedDataSource?.name;
     }
 
@@ -94,7 +96,7 @@ class DataSourceManagerComponent extends React.Component {
       appId: props.appId,
       selectedDataSource,
       dataSourceSchema,
-      selectedDataSourceIcon,
+      selectedDataSourcePlugin,
       options,
       dataSourceMeta,
       isSaving: false,
@@ -152,7 +154,7 @@ class DataSourceManagerComponent extends React.Component {
         options: nextOptions,
         dataSourceMeta,
         dataSourceSchema: this.props.selectedDataSource?.plugin?.manifestFile?.data,
-        selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
+        selectedDataSourcePlugin: this.props.selectedDataSource?.plugin,
         connectionTestError: null,
         datasourceName: this.props.selectedDataSource?.name,
         validationMessages: {},
@@ -196,7 +198,7 @@ class DataSourceManagerComponent extends React.Component {
         dataSourceMeta: source.manifestFile?.data?.source ?? source,
         selectedDataSource: source.manifestFile?.data?.source ?? source,
         options: source?.defaults ?? source?.options,
-        selectedDataSourceIcon: source.iconFile?.data,
+        selectedDataSourcePlugin: source,
         name: source.manifestFile?.data?.source?.kind ?? source.kind,
         dataSourceSchema: source.manifestFile?.data,
         selectedDataSourcePluginId: source.id,
@@ -802,9 +804,8 @@ class DataSourceManagerComponent extends React.Component {
 
     if (this.state.queryString && this.state.queryString.length > 0) {
       const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
-        const src = datasource?.iconFile?.data
-          ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
-          : datasource?.kind?.toLowerCase();
+        const iconFile = pluginIconFile(datasource, this.props.darkMode);
+        const src = iconFile ? `data:image/svg+xml;base64,${iconFile}` : datasource?.kind?.toLowerCase();
 
         return {
           ...datasource,
@@ -911,9 +912,8 @@ class DataSourceManagerComponent extends React.Component {
     }
 
     const datasources = source.map((datasource) => {
-      const src = datasource?.iconFile?.data
-        ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
-        : datasource?.kind?.toLowerCase();
+      const iconFile = pluginIconFile(datasource, this.props.darkMode);
+      const src = iconFile ? `data:image/svg+xml;base64,${iconFile}` : datasource?.kind?.toLowerCase();
 
       return {
         ...datasource,
@@ -1013,7 +1013,7 @@ class DataSourceManagerComponent extends React.Component {
     const {
       dataSourceMeta,
       selectedDataSource,
-      selectedDataSourceIcon,
+      selectedDataSourcePlugin,
       options,
       isSaving,
       connectionTestError,
@@ -1153,7 +1153,12 @@ class DataSourceManagerComponent extends React.Component {
                   <Modal.Title className={cn('mt-3', classes?.modalTitleContainer)}>
                     {selectedDataSource && !isSampleDb ? (
                       <div className="row selected-ds img-container">
-                        {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
+                        {getSvgIcon(
+                          dataSourceMeta?.kind?.toLowerCase(),
+                          35,
+                          35,
+                          pluginIconFile(selectedDataSourcePlugin, this.props.darkMode)
+                        )}
                         <div className="tw-flex tw-items-center tw-gap-2 tw-w-auto">
                           <div className="input-icon" style={{ width: '160px' }}>
                             <input

@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { pluginsService, marketplaceService, globalDatasourceService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
+import { pluginIconFile } from '@/_helpers/pluginIcon';
 import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
 import { ConfirmDialog, SearchBox } from '@/_components';
 import Icon from '@/_ui/Icon/SolidIcons';
@@ -228,7 +229,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
             <div className="row align-items-center">
               <div className="col-auto">
                 <span className="text-white avatar">
-                  <img height="32" width="32" src={`data:image/svg+xml;base64,${plugin.iconFile.data}`} />
+                  <img height="32" width="32" src={`data:image/svg+xml;base64,${pluginIconFile(plugin, darkMode)}`} />
                 </span>
               </div>
               <div className="col">

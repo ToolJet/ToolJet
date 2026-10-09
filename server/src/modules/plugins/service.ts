@@ -30,7 +30,7 @@ export class PluginsService implements IPluginsService {
     if (existingPlugin) throw new BadRequestException(`Plugin '${name}' is already installed.`);
 
     const result = await this.pluginsUtilService.fetchPluginFiles(id, repo);
-    const [index, operations, icon, manifest, version, specFiles] = result;
+    const [index, operations, icon, manifest, version, specFiles, darkIcon] = result;
     let shouldCreate = false;
 
     try {
@@ -47,13 +47,16 @@ export class PluginsService implements IPluginsService {
 
     return (
       shouldCreate &&
-      (await this.pluginsUtilService.create(body, version, { index, operations, icon, manifest }, specFiles))
+      (await this.pluginsUtilService.create(body, version, { index, operations, icon, manifest }, specFiles, darkIcon))
     );
   }
 
   async findAll() {
     return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(Plugin, { relations: ['iconFile', 'manifestFile'], order: { name: 'ASC' } });
+      return manager.find(Plugin, {
+        relations: ['iconFile', 'darkIconFile', 'manifestFile'],
+        order: { name: 'ASC' },
+      });
     });
   }
 
@@ -72,8 +75,15 @@ export class PluginsService implements IPluginsService {
   async update(id: string, body: UpdatePluginDto) {
     const { pluginId, repo } = body;
     const result = await this.pluginsUtilService.fetchPluginFiles(pluginId, repo);
-    const [index, operations, icon, manifest, version, specFiles] = result;
-    return await this.pluginsUtilService.upgrade(id, body, version, { index, operations, icon, manifest }, specFiles);
+    const [index, operations, icon, manifest, version, specFiles, darkIcon] = result;
+    return await this.pluginsUtilService.upgrade(
+      id,
+      body,
+      version,
+      { index, operations, icon, manifest },
+      specFiles,
+      darkIcon
+    );
   }
 
   async remove(id: string) {
@@ -105,7 +115,7 @@ export class PluginsService implements IPluginsService {
         const { pluginId, repo, version } = plugin;
 
         const result = await this.pluginsUtilService.fetchPluginFiles(pluginId, repo);
-        const [index, operations, icon, manifest, , specFiles] = result;
+        const [index, operations, icon, manifest, , specFiles, darkIcon] = result;
 
         const files = { index, operations, icon, manifest };
 
@@ -134,6 +144,11 @@ export class PluginsService implements IPluginsService {
         updatedPlugin.id = plugin.id;
         updatedPlugin.repo = repo || '';
         updatedPlugin.version = version;
+        updatedPlugin.darkIconFileId = await this.pluginsUtilService.storeDarkIcon(
+          plugin.darkIconFileId,
+          darkIcon,
+          manager
+        );
         updatedPlugin.specFilesMap = specFilesMap;
 
         return manager.save(updatedPlugin);
