@@ -2,6 +2,10 @@
 import { QueryRunner } from 'typeorm';
 import { ComponentJsonRow, migrateComponentsByType } from '@helpers/component-migration.helper';
 import { MoveVisibilityDisabledStatesToPropertiesDaterangePicker1733771653728 } from '../../../../data-migrations/1733771653728-MoveVisibilityDisabledStatesToPropertiesDaterangePicker';
+// Real `components` row captured from a v3.0.37-ee-lts database before the upgrade.
+import * as daterangePickerV3_0Fixture from './__fixtures__/daterangepicker.v3.0.37-ee-lts.json';
+
+const daterangePickerV3_0 = structuredClone(daterangePickerV3_0Fixture) as unknown as ComponentJsonRow;
 
 type UpdateParams = [string | null, string | null, string | null, string | null, string | null, string];
 
@@ -137,31 +141,41 @@ describe('helpers/component-migration.helper', () => {
   });
 
   describe('MoveVisibilityDisabledStatesToPropertiesDaterangePicker1733771653728', () => {
-    it('should move legacy state keys to properties/styles and default the label', async () => {
+    it('should migrate a DaterangePicker saved by v3.0.37-ee-lts to the current shape', async () => {
+      const db = fakeComponentsTable([daterangePickerV3_0]);
+
+      await new MoveVisibilityDisabledStatesToPropertiesDaterangePicker1733771653728().up(db.queryRunner);
+
+      expect(db.table.get(daterangePickerV3_0.id)).toEqual({
+        id: daterangePickerV3_0.id,
+        type: 'DaterangePicker',
+        properties: {
+          defaultStartDate: { value: '01/04/2022' },
+          defaultEndDate: { value: '10/04/2022' },
+          format: { value: 'DD/MM/YYYY' },
+          visibility: { value: '{{true}}' },
+          disabledState: { value: '{{false}}' },
+          tooltip: { value: 'Tooooldip' },
+          label: '',
+        },
+        styles: {
+          borderRadius: { value: '4' },
+          boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        },
+        general_properties: {},
+        general_styles: {},
+        validation: {},
+      });
+    });
+
+    it('should keep an existing label and leave other component types untouched', async () => {
       const db = fakeComponentsTable([
-        component(1, 'DaterangePicker', {
-          properties: {},
-          styles: { visibility: { value: '{{true}}' }, disabledState: { value: '{{false}}' } },
-          general_properties: { tooltip: { value: 'tip' } },
-          general_styles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
-        }),
         component(2, 'DaterangePicker', { properties: { label: { value: 'Dates' } } }),
         component(3, 'DatePicker', { styles: { visibility: { value: '{{true}}' } } }),
       ]);
 
       await new MoveVisibilityDisabledStatesToPropertiesDaterangePicker1733771653728().up(db.queryRunner);
 
-      expect(db.table.get(id(1))).toMatchObject({
-        properties: {
-          visibility: { value: '{{true}}' },
-          disabledState: { value: '{{false}}' },
-          tooltip: { value: 'tip' },
-          label: '',
-        },
-        styles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
-        general_properties: {},
-        general_styles: {},
-      });
       expect(db.table.get(id(2)).properties).toEqual({ label: { value: 'Dates' } });
       expect(db.table.get(id(3)).styles).toEqual({ visibility: { value: '{{true}}' } });
     });
