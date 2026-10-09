@@ -6,6 +6,7 @@ import Spinner from '@/_ui/Spinner';
 import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
 import { ConfirmDialog, SearchBox } from '@/_components';
 import Icon from '@/_ui/Icon/SolidIcons';
+import { PluginIcon } from '@/_ui/PluginIcon';
 import config from 'config';
 import Modal from '@/HomePage/Modal';
 
@@ -228,7 +229,13 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
             <div className="row align-items-center">
               <div className="col-auto">
                 <span className="text-white avatar">
-                  <img height="32" width="32" src={`data:image/svg+xml;base64,${plugin.iconFile.data}`} />
+                  <PluginIcon
+                    pluginKind={pluginId}
+                    src={`data:image/svg+xml;base64,${plugin.iconFile.data}`}
+                    alt={name}
+                    height={32}
+                    width={32}
+                  />
                 </span>
               </div>
               <div className="col">

@@ -6,6 +6,7 @@ import { Modal, Button, Tab, Row, Col, ListGroup, ModalBody } from 'react-bootst
 import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import { resolvePluginKind } from '@/_helpers/pluginKind';
 import { TestConnection } from './TestConnection';
 import { getWorkspaceId, deepEqual, returnDevelopmentEnv, decodeEntities } from '@/_helpers/utils';
 import { getSubpath } from '@/_helpers/routes';
@@ -824,6 +825,7 @@ class DataSourceManagerComponent extends React.Component {
                 src={item.src}
                 handleClick={() => openDataSourceConfirmModal(item)}
                 usePluginIcon={isEmpty(item?.iconFile?.data)}
+                iconKind={resolvePluginKind(item)}
                 height="35px"
                 width="35px"
               />
@@ -933,6 +935,7 @@ class DataSourceManagerComponent extends React.Component {
               src={item?.src}
               handleClick={() => openDataSourceConfirmModal(item)}
               usePluginIcon={isEmpty(item?.iconFile?.data)}
+              iconKind={resolvePluginKind(item)}
               height="35px"
               width="35px"
             />
