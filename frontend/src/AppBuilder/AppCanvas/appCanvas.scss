@@ -161,6 +161,11 @@
     // }
 }
 
+.canvas-content {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+}
+
 #main-editor-canvas.disable-moveable-line #real-canvas {
     transform: none !important;
     position: relative;
@@ -190,14 +195,16 @@
 }
 
 .scrollbar-hidden {
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE and Edge */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
 
     &::-webkit-scrollbar {
-        width: 0;
-        height: 0;
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb,
+    &::-webkit-scrollbar-track {
+        background: transparent;
     }
 }
 
