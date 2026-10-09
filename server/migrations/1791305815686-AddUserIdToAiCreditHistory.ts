@@ -1,6 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-// No FK: billing history outlives users. Spend indexes are built CONCURRENTLY by ops, outside this transaction.
+// No FK: billing history outlives users. No spend index yet: usage reads use the existing owner-id index.
+// TODO: add (owner, created_at) spend indexes once history grows; CONCURRENTLY can't run in this transaction.
 export class AddUserIdToAiCreditHistory1791305815686 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Fail the deploy rather than queue every AI charge behind a long read on these tables.
