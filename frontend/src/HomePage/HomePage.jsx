@@ -75,7 +75,7 @@ import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullCo
 import { TriangleAlert } from 'lucide-react';
 
 const MAX_APPS_PER_PAGE = 9; // Keep in sync with server pagination limit
-class HomePageComponent extends React.Component {
+export class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -1690,7 +1690,6 @@ class HomePageComponent extends React.Component {
 
   onPermissionDeniedModalHide = () => {
     this.setState({ showInsufficentPermissionModal: false });
-    this.eraseAIOnboardingRelatedCookies();
   };
 
   generateVersionOptions = () => {
