@@ -7,6 +7,7 @@ const { validateWidgetTestingContracts } = require('../widgetContractValidator')
 const temporaryRoots = [];
 const SPEC = 'src/AppBuilder/Widgets/DropdownV2/__tests__/integration/DropdownV2.spec.jsx';
 const DEFINITION = 'src/AppBuilder/WidgetManager/widgets/dropdownV2.js';
+const CONTRACT = 'src/test/app-builder/widgets/DropdownV2/TESTING.md';
 
 function write(root, relative, contents) {
   const absolute = path.join(root, relative);
@@ -24,9 +25,7 @@ function validContract({
   decisions = '- None.',
 } = {}) {
   return `---
-component_type: DropdownV2
 baseline: lts-3.16
-contract_status: ${status}
 development_type: ${developmentType}
 production_changes: forbidden
 product_approval: Nakul, 2026-09-10
@@ -211,6 +210,31 @@ describe('widget testing contract command', () => {
     expect(result.stderr).toContain(`production_changes is forbidden but ${runtime} was modified`);
   });
 
+  test('checks committed PR diffs against the merge-base with an upstream branch', () => {
+    const root = cliFixture();
+    git(root, 'branch', 'upstream');
+    write(root, runtime, 'export const value = 2;\n');
+    git(root, 'add', runtime);
+    git(root, 'commit', '-qm', 'change');
+    expect(cli(root).status).toBe(0);
+    const result = cli(root, ['--merge-base-with', 'upstream']);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('working tree against merge-base with upstream');
+    expect(result.stderr).toContain(`production_changes is forbidden but ${runtime} was modified`);
+  });
+
+  test('lets --merge-base-with override --pr fallback', () => {
+    const root = cliFixture();
+    git(root, 'branch', 'upstream');
+    write(root, runtime, 'export const value = 2;\n');
+    git(root, 'add', runtime);
+    git(root, 'commit', '-qm', 'change');
+    expect(cli(root, ['--pr']).stderr).toContain('Cannot resolve merge base with origin/lts-3.16');
+    expect(cli(root, ['--pr', '--merge-base-with', 'upstream']).stderr).toContain(
+      `production_changes is forbidden but ${runtime} was modified`
+    );
+  });
+
   test('reopens and reapproves a design while preserving previously approved test edits', () => {
     // Break this catches: retained test work makes the required preapproval audit unreachable.
     const root = cliFixture();
@@ -272,10 +296,14 @@ describe('widget testing contract command', () => {
     const root = cliFixture();
     for (const args of [
       ['--changed-files-stdin', '--base-ref', 'HEAD'],
+      ['--changed-files-stdin', '--pr'],
       ['--base-ref'],
+      ['--base-ref', 'HEAD', '--pr'],
+      ['--merge-base-with'],
       ['--unknown'],
       ['--base-ref', 'missing-ref'],
       ['--design-only', '--design-only'],
+      ['--pr', '--pr'],
     ]) {
       expect(cli(root, [...modeArgs, ...args]).status).toBe(1);
     }
@@ -287,14 +315,11 @@ describe('widget testing contract command', () => {
 });
 
 describe('widget testing contract validator', () => {
-  test('requires both recorded approvals and matching manifest/contract states', () => {
+  test('requires both recorded approvals', () => {
     for (const field of ['product_approval', 'test_design_approval']) {
       const contract = validContract().replace(new RegExp(`${field}:.*`), `${field}: "  "`);
       expect(run({ contract }).errors).toContain(`DropdownV2: approved contract requires ${field}`);
     }
-    expect(run({ manifestStatus: 'verified' }).errors).toContain(
-      'DropdownV2: contract_status approved does not match manifest status verified'
-    );
   });
 
   test('routes an unavailable approved seam back to grilling without turning it into a deferral', () => {
@@ -556,10 +581,34 @@ describe('widget testing contract validator', () => {
           contract: validContract().replace('production_changes: forbidden', 'production_changes: allowed'),
         },
         {
-          changedFiles,
+          changedFiles: [...changedFiles, { status: 'modified', path: `frontend/${CONTRACT}` }],
         }
       ).errors
     ).toEqual([]);
+  });
+
+  test('requires the contract to travel with an allowed production change', () => {
+    // Break this catches: a behavior fix that adds no registered surface key lands with the
+    // contract still describing the old behavior, which is how deferred scenarios go stale.
+    const runtime = 'src/AppBuilder/Widgets/DropdownV2/DropdownV2.jsx';
+    const allowed = validContract().replace('production_changes: forbidden', 'production_changes: allowed');
+    const changedFiles = [{ status: 'modified', path: `frontend/${runtime}` }];
+
+    expect(run({ contract: allowed }, { changedFiles }).errors).toContain(
+      `DropdownV2: ${runtime} changed but ${CONTRACT} was not updated in the same change — ` +
+        'record the behavior change and re-check deferred scenarios'
+    );
+    expect(
+      run(
+        { contract: allowed },
+        { changedFiles: [...changedFiles, { status: 'modified', path: `frontend/${CONTRACT}` }] }
+      ).errors
+    ).toEqual([]);
+    // Unapproved widgets are still queued for backfill — nothing to keep in step yet.
+    expect(run({ contract: allowed, manifestStatus: 'researching' }, { changedFiles }).errors).not.toContain(
+      `DropdownV2: ${runtime} changed but ${CONTRACT} was not updated in the same change — ` +
+        'record the behavior change and re-check deferred scenarios'
+    );
   });
 
   test('requires an explicit production change policy for spec-gated contracts', () => {
@@ -654,16 +703,12 @@ describe('widget testing contract validator', () => {
 
   test('rejects mismatched or empty approved frontmatter', () => {
     const bad = validContract()
-      .replace('component_type: DropdownV2', 'component_type: Nope')
       .replace('baseline: lts-3.16', 'baseline: main')
-      .replace('contract_status: approved', 'contract_status: shipped')
       .replace(/research_docs: .*/, 'research_docs:')
       .replace(/research_git_history: .*/, 'research_git_history:');
     expect(run({ contract: bad }).errors).toEqual(
       expect.arrayContaining([
-        'DropdownV2: contract component_type does not match the manifest',
         'DropdownV2: contract baseline does not match the manifest',
-        'DropdownV2: unknown contract_status shipped',
         'DropdownV2: approved contract requires research_docs',
         'DropdownV2: approved contract requires research_git_history',
       ])
