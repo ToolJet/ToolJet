@@ -887,6 +887,52 @@ describe('KeyValuePair: fieldType adapter wiring', () => {
       expect(store().getVariable('seen', MODULE_ID)).toBe('YES');
     }
   );
+  test.each([
+    ['an object', { a: 1, b: [2, 3] }],
+    ['an array', [1, { a: 2 }]],
+    ['a compact JSON string', '{"a":1,"b":[2,3]}'],
+  ])(
+    '[KeyValuePair-BUG-JSON-001] json field with %s value: focusing and blurring without editing leaves the changeSet empty',
+    async (_label, value) => {
+      // Break this catches: JSONRenderer.handleChange compares the raw value to the field's formatted display text
+      // ("{  "a":  1  }"), which never match, so a no-op blur is committed through onChange as an edit.
+      widget.render({
+        properties: {
+          fields: binding([field({ key: 'v', name: 'Value', fieldType: 'json', isEditable: true })]),
+          data: binding({ v: value }),
+        },
+        events: setVariableOn(ID, 'onFieldValueChanged'),
+      });
+
+      await waitFor(() => expect(rows()).toHaveLength(1));
+      await widget.session.user.click(valueContainer(rows()[0]));
+      const input = await waitFor(() => document.getElementById(`${ID}-v`));
+      input.blur();
+
+      await waitFor(() => expect(document.querySelector('.kv-value-editing')).toBeNull());
+      expect(exposed('changeSet')).toEqual({});
+      expect(saveButton()).toBeNull();
+      expect(store().getVariable('seen', MODULE_ID)).not.toBe('YES');
+    }
+  );
+
+  test('[KeyValuePair-BUG-JSON-001] json field: a genuine edit still lands in the changeSet as compact JSON', async () => {
+    widget.render({
+      properties: {
+        fields: binding([field({ key: 'v', name: 'Value', fieldType: 'json', isEditable: true })]),
+        data: binding({ v: { a: 1 } }),
+      },
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.getElementById(`${ID}-v`));
+    input.textContent = '{"a": 2}';
+    input.blur();
+
+    await waitFor(() => expect(exposed('changeSet')).toEqual({ v: '{"a":2}' }));
+  });
+
   test('[KeyValuePair-BUG-MULTISELECT-001] newMultiSelect: the dropdown stays open after picking an option', async () => {
     // Break this catches: SelectRenderer.handleChange calls setIsFocused(false) for every selection, so a multiselect
     // menu closes after each pick instead of staying open until the user clicks outside.
