@@ -53,17 +53,17 @@
   },
   "slack": {
     "authorize": "Mengizinkan",
-    "connectToolJetToSlack": "ToolJet dapat terhubung ke Slack dan membuat daftar pengguna, mengirim pesan, dll. Pilih cakupan izin yang sesuai.",
+    "connectToolJetToSlack": "{{whiteLabelText}} dapat terhubung ke Slack dan membuat daftar pengguna, mengirim pesan, dll. Pilih cakupan izin yang sesuai.",
     "chatWrite": "chat:write",
-    "listUsersAndSendMessage": "Aplikasi ToolJet Anda akan dapat membuat daftar pengguna dan mengirim pesan ke pengguna & saluran.",
+    "listUsersAndSendMessage": "Aplikasi {{whiteLabelText}} Anda akan dapat membuat daftar pengguna dan mengirim pesan ke pengguna & saluran.",
     "connectSlack": "Hubungkan ke Slack"
   },
   "googleSheets": {
     "readOnly": "Read only",
-    "enableReadAndWrite": "Jika Anda ingin aplikasi ToolJet Anda mengubah Google Spreadsheet Anda, pastikan untuk memilih akses baca dan tulis",
-    "readDataFromSheets": "Aplikasi ToolJet Anda hanya dapat membaca data dari Google Spreadsheet",
+    "enableReadAndWrite": "Jika Anda ingin aplikasi {{whiteLabelText}} Anda mengubah Google Spreadsheet Anda, pastikan untuk memilih akses baca dan tulis",
+    "readDataFromSheets": "Aplikasi {{whiteLabelText}} Anda hanya dapat membaca data dari Google Spreadsheet",
     "readWrite": "Baca dan tulis",
-    "readModifySheets": "Aplikasi ToolJet Anda dapat membaca data dari sheet, memodifikasi sheet, dan banyak lagi.",
+    "readModifySheets": "Aplikasi {{whiteLabelText}} Anda dapat membaca data dari sheet, memodifikasi sheet, dan banyak lagi.",
     "toGoogleSheets": "ke Google Sheets"
   },
   "profile": {
@@ -382,7 +382,7 @@
     "noApplicationFound": "Tidak ada aplikasi yang ditemukan",
     "noWorkflowFound": "Tidak ada alur kerja yang ditemukan",
     "thisFolderIsEmpty": "Folder ini kosong",
-    "deleteAppAndData": "Aplikasi dan data terkait akan dihapus secara permanen, apakah Anda ingin melanjutkan?",
+    "deleteAppAndData": "Aplikasi {{appName}} dan data terkait akan dihapus secara permanen, apakah Anda ingin melanjutkan?",
     "removeAppFromFolder": "Aplikasi ini akan dihapus dari folder ini, apakah Anda ingin melanjutkan?",
     "change": "Mengubah",
     "templateCard": {
