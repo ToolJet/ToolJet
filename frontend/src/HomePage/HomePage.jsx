@@ -60,7 +60,7 @@ import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
 const MAX_APPS_PER_PAGE = 9;
-class HomePageComponent extends React.Component {
+export class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -1221,7 +1221,6 @@ class HomePageComponent extends React.Component {
 
   onPermissionDeniedModalHide = () => {
     this.setState({ showInsufficentPermissionModal: false });
-    this.eraseAIOnboardingRelatedCookies();
   };
 
   render() {

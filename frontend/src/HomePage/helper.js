@@ -1,5 +1,4 @@
-// What HomePage does with the cookies the website leaves for onboarding. Prompt wins over template.
-// Only front-end app lists act on them: workflow and module lists share HomePage but cannot create these apps.
+// front-end lists only: workflow and module lists share HomePage but cannot create these apps
 export const getAiOnboardingAction = ({ aiCookies, canCreateApp, appType }) => {
   if (appType !== 'front-end') return 'none';
   const hasPrompt = !!aiCookies?.tj_ai_prompt;
