@@ -1,8 +1,11 @@
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import { AppVersion } from '@entities/app_version.entity';
 import { Component } from '@entities/component.entity';
 import { DataQuery } from '@entities/data_query.entity';
+import { DataSource } from '@entities/data_source.entity';
+import { EventHandler } from '@entities/event_handler.entity';
 import { Page } from '@entities/page.entity';
+import { actionEntityRef } from './event-actions';
 
 export interface IndexedComponent {
   id: string;
@@ -28,10 +31,30 @@ export interface IndexedQuery {
   dataSourceId?: string;
 }
 
+export interface IndexedEvent {
+  id: string;
+  sourceId: string;
+  target: string;
+  index?: number;
+  eventId?: string;
+  actionId?: string;
+  // The entity id the action points at (e.g. run-query's queryId), when the action has one.
+  refId?: string;
+}
+
+export interface IndexedDataSource {
+  id: string;
+  kind?: string;
+  scope?: string;
+  organizationId?: string | null;
+}
+
 export interface VersionIndexData {
   components?: IndexedComponent[];
   pages?: IndexedPage[];
   queries?: IndexedQuery[];
+  events?: IndexedEvent[];
+  dataSources?: IndexedDataSource[];
   homePageId?: string | null;
 }
 
@@ -43,6 +66,9 @@ export class VersionIndex {
   private readonly pagesById = new Map<string, IndexedPage>();
   private readonly queriesById = new Map<string, IndexedQuery>();
   private readonly queriesByName = new Map<string, IndexedQuery[]>();
+  private readonly eventsById = new Map<string, IndexedEvent>();
+  private readonly eventsBySource = new Map<string, IndexedEvent[]>();
+  private readonly dataSourcesById = new Map<string, IndexedDataSource>();
 
   private constructor(data: VersionIndexData) {
     this.homePageId = data.homePageId ?? null;
@@ -54,6 +80,13 @@ export class VersionIndex {
       sameName.push(query);
       this.queriesByName.set(query.name, sameName);
     }
+    for (const event of data.events ?? []) {
+      this.eventsById.set(event.id, event);
+      const onSource = this.eventsBySource.get(event.sourceId) ?? [];
+      onSource.push(event);
+      this.eventsBySource.set(event.sourceId, onSource);
+    }
+    for (const dataSource of data.dataSources ?? []) this.dataSourcesById.set(dataSource.id, dataSource);
   }
 
   static fromData(data: VersionIndexData): VersionIndex {
@@ -82,9 +115,23 @@ export class VersionIndex {
       select: ['id', 'name', 'dataSourceId'],
     });
 
+    const eventRows = await manager.find(EventHandler, {
+      where: { appVersionId },
+      select: ['id', 'sourceId', 'target', 'index', 'event'],
+    });
+    const events: IndexedEvent[] = eventRows.map((row) => toIndexedEvent(row));
+
+    // Local data sources carry the version id; global ones are reachable only through the
+    // queries that use them.
+    const referencedIds = [...new Set(queries.map((q) => q.dataSourceId).filter(Boolean))];
+    const dataSources: IndexedDataSource[] = await manager.find(DataSource, {
+      where: referencedIds.length ? [{ appVersionId }, { id: In(referencedIds) }] : { appVersionId },
+      select: ['id', 'kind', 'scope', 'organizationId'],
+    });
+
     const version = await manager.findOne(AppVersion, { where: { id: appVersionId }, select: ['id', 'homePageId'] });
 
-    return new VersionIndex({ components, pages, queries, homePageId: version?.homePageId });
+    return new VersionIndex({ components, pages, queries, events, dataSources, homePageId: version?.homePageId });
   }
 
   // Adds components created or moved in the same request.
@@ -95,6 +142,8 @@ export class VersionIndex {
       components: [...merged.values()],
       pages: [...this.pagesById.values()],
       queries: [...this.queriesById.values()],
+      events: [...this.eventsById.values()],
+      dataSources: [...this.dataSourcesById.values()],
       homePageId: this.homePageId,
     });
   }
@@ -128,10 +177,45 @@ export class VersionIndex {
     return this.queriesByName.get(name) ?? [];
   }
 
+  event(id: string): IndexedEvent | undefined {
+    return this.eventsById.get(id);
+  }
+
+  eventsForSource(sourceId: string): IndexedEvent[] {
+    return this.eventsBySource.get(sourceId) ?? [];
+  }
+
+  events(): IndexedEvent[] {
+    return [...this.eventsById.values()];
+  }
+
+  dataSource(id: string): IndexedDataSource | undefined {
+    return this.dataSourcesById.get(id);
+  }
+
   private addComponent(component: IndexedComponent) {
     this.componentsById.set(component.id, component);
     const onPage = this.componentsByPage.get(component.pageId) ?? [];
     onPage.push(component);
     this.componentsByPage.set(component.pageId, onPage);
   }
+}
+
+export function toIndexedEvent(row: {
+  id: string;
+  sourceId: string;
+  target: string;
+  index?: number;
+  event?: Record<string, any>;
+}): IndexedEvent {
+  const ref = actionEntityRef(row.event);
+  return {
+    id: row.id,
+    sourceId: row.sourceId,
+    target: row.target,
+    index: row.index,
+    eventId: row.event?.eventId,
+    actionId: row.event?.actionId,
+    refId: typeof ref?.value === 'string' ? ref.value : undefined,
+  };
 }

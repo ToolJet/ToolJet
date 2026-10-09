@@ -29,7 +29,10 @@ export type WidgetDefinition = { component: string; events?: Record<string, unkn
 >;
 
 // Inspector controls whose `options` are the complete set of allowed plain values.
-const OPTION_CONTROLS = new Set(['switch', 'select', 'dropdownMenu', 'clientServerSwitch']);
+// `select` is excluded: the editor extends its options at runtime (Form's buttonToSubmit
+// lists only "none" but stores Button ids). `clientServerSwitch` is excluded: its declared
+// schema is boolean and old rows store true/false, not the option values.
+const OPTION_CONTROLS = new Set(['switch', 'dropdownMenu']);
 
 let widgetsByType: Map<string, WidgetDefinition> | undefined;
 
@@ -54,8 +57,13 @@ export function valueSchemaOf(type: string, section: SettingSection, key: string
   return getSetting(type, section, key)?.validation?.schema;
 }
 
+// Settings whose stored values predate an options redesign and are still rendered fine.
+// `padding` was a free number before the default/custom switch; templates ship "0", "1", "2".
+const LEGACY_OPTION_SETTINGS = new Set(['padding']);
+
 // Undefined when the setting takes free input.
 export function allowedOptionValues(type: string, section: SettingSection, key: string): unknown[] | undefined {
+  if (LEGACY_OPTION_SETTINGS.has(key)) return undefined;
   const setting = getSetting(type, section, key);
   if (!setting?.options?.length || !OPTION_CONTROLS.has(setting.type)) return undefined;
   if (!setting.options.every((option) => option && 'value' in option)) return undefined;

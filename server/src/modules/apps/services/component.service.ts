@@ -10,6 +10,10 @@ import { EventsService } from './event.service';
 import { LayoutData } from '../dto/component';
 import { CreateEventHandlerDto } from '../dto/event';
 import { APP_TYPES, LayoutDimensionUnits } from '../constants';
+import { AppValidationService } from '@modules/app-validation/service';
+import { lockForValidation } from '@modules/app-validation/lock';
+import { ComponentWrite, LayoutWrite } from '@modules/app-validation/types';
+import { VersionIndex } from '@modules/app-validation/version-index';
 import {
   IComponentsService,
   ComponentCreateContext,
@@ -28,7 +32,8 @@ export class ComponentsService implements IComponentsService {
   constructor(
     protected eventHandlerService: EventsService,
     private readonly abilityService: AbilityService,
-    private readonly appsRepository: AppsRepository
+    private readonly appsRepository: AppsRepository,
+    protected readonly appValidationService: AppValidationService
   ) {}
 
   findOne(id: string): Promise<Component> {
@@ -152,6 +157,11 @@ export class ComponentsService implements IComponentsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.appValidationService.check('layouts', this.layoutWritesFromDiff(componenstLayoutDiff), {
+        appVersionId,
+        manager,
+      });
+
       const parentWrites = this.collectParentWritesFromDiff(componenstLayoutDiff);
       if (Object.keys(parentWrites).length > 0) {
         await this.assertNoParentCycle(parentWrites, appVersionId, manager);
@@ -448,6 +458,11 @@ export class ComponentsService implements IComponentsService {
       // Handle layout operation if present
       if (batchOperations.layout) {
         const { diff } = batchOperations.layout;
+        // With `manager`, the lookup also sees components created earlier in this transaction.
+        await this.appValidationService.check('layouts', this.layoutWritesFromDiff(diff), {
+          appVersionId,
+          manager,
+        });
         await this.updateComponentLayouts(diff, manager);
         results.layout = Object.keys(diff).length;
       }
@@ -561,6 +576,90 @@ export class ComponentsService implements IComponentsService {
     return writes;
   }
 
+  // One validation write per (component, layout type) in a layout diff. `touched` lists the
+  // fields the request sends, so the rules only judge what this save changes.
+  private layoutWritesFromDiff(
+    diff: Record<string, { layouts: LayoutData; component?: { parent?: string | null } }>
+  ): LayoutWrite[] {
+    const writes: LayoutWrite[] = [];
+    for (const componentId in diff) {
+      const layouts = diff[componentId]?.layouts ?? {};
+      for (const key in layouts) {
+        const layout = layouts[key] ?? {};
+        writes.push({
+          op: 'update',
+          id: componentId,
+          data: { componentId, type: layout.type ?? key, ...layout },
+          touched: Object.keys(layout),
+        });
+      }
+    }
+    return writes;
+  }
+
+  // Validation writes for components this request creates, after module-parent resolution.
+  private createWritesFromComponents(components: Component[], pageId: string): ComponentWrite[] {
+    return components.map((c) => ({
+      op: 'create',
+      id: c.id,
+      data: {
+        name: c.name,
+        type: c.type,
+        pageId,
+        parent: c.parent ?? null,
+        properties: c.properties,
+        styles: c.styles,
+        general: c.general,
+        generalStyles: c.generalStyles,
+        validation: c.validation,
+        displayPreferences: c.displayPreferences,
+      },
+    }));
+  }
+
+  // Validation writes for an update diff. `data` carries the request's values plus the stored
+  // type and page (partial MCP updates don't send them); `touched` lists what the request
+  // changes, so old mistakes elsewhere stay warnings. Definition sections arrive under the
+  // editor's names ('others'), stored under their column names.
+  private async updateWritesFromDiff(diff: Record<string, any>, manager: EntityManager): Promise<ComponentWrite[]> {
+    const ids = Object.keys(diff);
+    if (!ids.length) return [];
+    const storedRows = await manager.find(Component, {
+      where: { id: In(ids) },
+      select: ['id', 'name', 'type', 'pageId'],
+    });
+    const storedById = new Map(storedRows.map((row) => [row.id, row]));
+
+    return ids.map((componentId) => {
+      const request = diff[componentId]?.component ?? {};
+      const stored = storedById.get(componentId);
+      const touched: string[] = [];
+      const data: Record<string, any> = {
+        name: stored?.name,
+        type: stored?.type,
+        pageId: stored?.pageId,
+      };
+
+      for (const field of ['name', 'type', 'parent'] as const) {
+        if (field in request) {
+          data[field] = request[field];
+          touched.push(field);
+        }
+      }
+
+      const definition = request.definition ?? {};
+      for (const section of Object.keys(definition)) {
+        const column = section === 'others' ? 'displayPreferences' : section;
+        data[column] = definition[section];
+        for (const key of Object.keys(definition[section] ?? {})) {
+          touched.push(`${section}.${key}`);
+        }
+      }
+
+      return { op: 'update', id: componentId, data, touched } as ComponentWrite;
+    });
+  }
+
   // Common methods used by both the original methods and batch operations
   protected async createComponentsAndLayouts(
     diff: object,
@@ -600,6 +699,20 @@ export class ComponentsService implements IComponentsService {
         }
       }
     }
+
+    // Name lock first, cycle lock second — every component write path takes them in this
+    // order. The index overlays the components this request creates, so siblings can
+    // reference each other as parents and in-batch duplicate names are caught.
+    await lockForValidation(manager, 'component_name', appVersionId);
+    const index = (await VersionIndex.load(manager, appVersionId)).withComponents(
+      newComponents.map((c) => ({ id: c.id, name: c.name, type: c.type, parent: c.parent ?? null, pageId }))
+    );
+    await this.appValidationService.check('components', this.createWritesFromComponents(newComponents, pageId), {
+      appVersionId,
+      appType: moduleContainerId ? APP_TYPES.MODULE : undefined,
+      manager,
+      index,
+    });
 
     // Validate the proposed graph BEFORE inserting. New components overlay the
     // existing tree so a cycle introduced by a buggy paste/import gets caught
@@ -677,13 +790,21 @@ export class ComponentsService implements IComponentsService {
   }
 
   protected async updateComponents(diff: object, appVersionId: string, manager: EntityManager) {
+    // For module apps, resolve ModuleContainer id once for the entire batch
+    const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
+
+    // Name lock first, cycle lock second — same order as the create path.
+    await lockForValidation(manager, 'component_name', appVersionId);
+    await this.appValidationService.check(
+      'components',
+      await this.updateWritesFromDiff(diff as Record<string, any>, manager),
+      { appVersionId, appType: moduleContainerId ? APP_TYPES.MODULE : undefined, manager }
+    );
+
     const parentWrites = this.collectParentWritesFromDiff(diff as any);
     if (Object.keys(parentWrites).length > 0) {
       await this.assertNoParentCycle(parentWrites, appVersionId, manager);
     }
-
-    // For module apps, resolve ModuleContainer id once for the entire batch
-    const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
 
     for (const componentId in diff) {
       let { component } = diff[componentId];
@@ -828,6 +949,12 @@ export class ComponentsService implements IComponentsService {
     isComponentCut: boolean,
     manager: EntityManager
   ) {
+    await this.appValidationService.check(
+      'components',
+      componentIds.map((id): ComponentWrite => ({ op: 'delete', id })),
+      { appVersionId, manager }
+    );
+
     const components = await manager.findBy(Component, {
       id: In(componentIds),
     });
