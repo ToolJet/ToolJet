@@ -24,7 +24,8 @@
   "overrides": {
     "axios": "^1.16.1",
     "tar": "^7.5.22",
-    "websocket-driver": "^0.7.5"
+    "websocket-driver": "^0.7.5",
+    "handlebars": "^4.7.10"
   },
   "peerDependencies": {
     "typescript": "^4.9.5"
