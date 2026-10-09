@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef, forwardRef } from 'rea
 import DatePickerComponent from 'react-datepicker';
 import moment from 'moment-timezone';
 import cx from 'classnames';
+import toast from 'react-hot-toast';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import CustomDatePickerHeader from '@/AppBuilder/Widgets/NewTable/_components/DataTypes/_components/CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -242,9 +243,13 @@ export const DatePickerRenderer = ({
   const handleInputDateChange = useCallback(
     (value) => {
       const inputDate = moment(value, parseDateFormat).toDate();
+      if (excludedDates.some((excluded) => moment(excluded).isSame(inputDate, 'day'))) {
+        toast.error(`${moment(inputDate).format(DISABLED_DATE_FORMAT)} is a disabled date. Please enter a valid date`);
+        return;
+      }
       handleDateChange(inputDate);
     },
-    [parseDateFormat, handleDateChange]
+    [parseDateFormat, handleDateChange, excludedDates]
   );
 
   // Initialize date from value
