@@ -1,12 +1,10 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { ComponentJsonRow, migrateComponentsByType } from '@helpers/component-migration.helper';
 
-const MIGRATION_NAME = 'MoveVisibilityDisabledStatesToPropertiesDaterangePicker1733771653728';
-
 export class MoveVisibilityDisabledStatesToPropertiesDaterangePicker1733771653728 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await migrateComponentsByType(queryRunner, {
-      migrationName: MIGRATION_NAME,
+      migrationName: this.constructor.name,
       componentTypes: ['DaterangePicker'],
       transform: (component) => this.transform(component),
     });
