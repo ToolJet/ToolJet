@@ -4,6 +4,7 @@ import { render } from 'react-dom';
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { appService } from '@/_services';
+import { persistTemplateIdFromUrl } from '@/_helpers/templateCookie';
 import { initFrontendMetrics } from '@/_services/frontend-metrics.service';
 import { RootRouter } from './RootRouter';
 // eslint-disable-next-line import/no-unresolved
@@ -79,6 +80,7 @@ appService
       });
     }
   })
+  .then(persistTemplateIdFromUrl)
   .then(() => {
     render(<AppWithProfiler />, document.getElementById('app'));
     // .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
