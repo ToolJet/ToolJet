@@ -887,4 +887,30 @@ describe('KeyValuePair: fieldType adapter wiring', () => {
       expect(store().getVariable('seen', MODULE_ID)).toBe('YES');
     }
   );
+  test('[KeyValuePair-BUG-MULTISELECT-001] newMultiSelect: the dropdown stays open after picking an option', async () => {
+    // Break this catches: SelectRenderer.handleChange calls setIsFocused(false) for every selection, so a multiselect
+    // menu closes after each pick instead of staying open until the user clicks outside.
+    // jsdom doesn't implement scrollIntoView, which the open menu calls once an option is selected.
+    Element.prototype.scrollIntoView = jest.fn();
+    renderField(
+      {
+        fieldType: 'newMultiSelect',
+        isEditable: true,
+        options: [
+          { label: 'A', value: 'a' },
+          { label: 'B', value: 'b' },
+        ],
+      },
+      { v: [] }
+    );
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    await waitFor(() => expect(document.querySelectorAll('.option-wrapper')).toHaveLength(2));
+
+    await widget.session.user.click(document.querySelectorAll('.option-wrapper')[0]);
+
+    await waitFor(() => expect(document.querySelectorAll('.react-select__multi-value__label')).toHaveLength(1));
+    expect(document.querySelectorAll('.option-wrapper')).toHaveLength(2);
+  });
 });
