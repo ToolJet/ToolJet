@@ -93,3 +93,47 @@ describe('[Table-BUG] SelectRenderer: customRule validation error tooltip', () =
     expect(invalidContainer.querySelector('.invalid-feedback')).toBeInTheDocument();
   });
 });
+
+describe('[Table-BUG] SelectRenderer: multi-select dropdown stays open after picking an option', () => {
+  beforeAll(() => {
+    // jsdom doesn't implement scrollIntoView, which the open menu calls once an option is selected.
+    Element.prototype.scrollIntoView = jest.fn();
+  });
+
+  it('does not close the menu when an option is picked in a multi-select cell', async () => {
+    // Break this catches: handleChange calls setIsFocused(false) for every selection, so a multi-select
+    // menu closes after each pick instead of staying open until the user clicks outside.
+    const setIsFocused = jest.fn();
+    const onChange = jest.fn();
+    const ui = (
+      <SelectRenderer
+        {...baseProps}
+        isEditable={true}
+        isMulti={true}
+        value={[]}
+        onChange={onChange}
+        setIsFocused={setIsFocused}
+      />
+    );
+    const { container } = render(ui);
+    await userEvent.click(container.querySelector('.react-select__control'));
+
+    await userEvent.click(await screen.findByText('A'));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(setIsFocused).not.toHaveBeenCalledWith(false);
+  });
+
+  it('still closes the menu when an option is picked in a single-select cell', async () => {
+    const setIsFocused = jest.fn();
+    const ui = (
+      <SelectRenderer {...baseProps} isEditable={true} isMulti={false} value={null} setIsFocused={setIsFocused} />
+    );
+    const { container } = render(ui);
+    await userEvent.click(container.querySelector('.react-select__control'));
+
+    await userEvent.click(await screen.findByText('A'));
+
+    expect(setIsFocused).toHaveBeenCalledWith(false);
+  });
+});
