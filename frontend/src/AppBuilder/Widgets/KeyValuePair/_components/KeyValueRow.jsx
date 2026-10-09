@@ -111,6 +111,7 @@ const KeyValueRow = ({
       textColor,
       accentColor,
       darkMode,
+      containerWidth: valueRef.current?.offsetWidth,
       // Pass edit state
       isEditable,
       autoFocus: true, // Auto focus when switching to edit mode
