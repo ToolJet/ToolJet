@@ -197,7 +197,7 @@ export const verifyUserPrivileges = (
   userRole = "End-user",
   shouldHaveWorkspaceSettings
 ) => {
-  cy.get(commonSelectors.dashboardAppCreateButton).should(expectedButtonState);
+  cy.get(commonSelectors.appCreateButton).should(expectedButtonState);
   cy.get(commonSelectors.settingsIcon).click();
   if (!shouldHaveWorkspaceSettings) {
     cy.get(commonSelectors.workspaceSettings).should("not.exist");

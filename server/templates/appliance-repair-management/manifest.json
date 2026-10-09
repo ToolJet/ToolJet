@@ -1,0 +1,21 @@
+{
+  "name": "Appliance repair management",
+  "description": "Manage appliance repairs from fault report to diagnosis, quote and completed repair.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "appliance-repair-management",
+  "category": "field-services"
+}
