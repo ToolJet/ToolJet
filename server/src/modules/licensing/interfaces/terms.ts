@@ -105,7 +105,5 @@ export interface Terms {
   ai?: {
     apiKey?: string;
     plan?: 'byok' | 'selfhostai' | 'credits';
-    /** Per-builder credit limits; absent = by licence type (Enterprise, trial). */
-    creditLimits?: boolean;
   };
 }
