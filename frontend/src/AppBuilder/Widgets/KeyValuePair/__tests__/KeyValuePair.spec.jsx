@@ -110,6 +110,18 @@ describe('KeyValuePair label alignment/direction/width', () => {
     await waitFor(() => expect(container.querySelector('.key-value-label').style.minWidth).not.toBe(''));
   });
 
+  it('[KeyValuePair-LABEL-004] autoLabelWidth: true indents the row validation error by the measured label width', async () => {
+    const container = renderKeyValuePair(
+      { autoLabelWidth: true, alignment: 'side' },
+      { fields: [{ ...ONE_FIELD[0], minLength: 10 }] }
+    );
+
+    await waitFor(() => expect(container.querySelector('.key-value-label').style.minWidth).not.toBe(''));
+    const labelMinWidth = container.querySelector('.key-value-label').style.minWidth;
+    await waitFor(() => expect(container.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+    expect(container.querySelector('.kv-row-validation-error').style.paddingLeft).toBe(labelMinWidth);
+  });
+
   it('[KeyValuePair-LABEL-003] autoLabelWidth: true resets under alignment: top instead of measuring a width', async () => {
     const container = renderKeyValuePair({ autoLabelWidth: true, alignment: 'top' });
 
