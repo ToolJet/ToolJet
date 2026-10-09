@@ -74,8 +74,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "1",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "per_page": {
         "label": "Per page",
@@ -85,8 +84,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "20",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "order": {
         "label": "Order by",
@@ -130,8 +128,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "My namespace",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       }
     },
     "get_namespace": {
@@ -143,8 +140,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       }
     },
     "rename_namespace": {
@@ -156,8 +152,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "title": {
         "label": "New title",
@@ -167,8 +162,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "My renamed namespace",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       }
     },
     "delete_namespace": {
@@ -180,8 +174,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       }
     },
     "list_keys": {
@@ -193,8 +186,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "prefix": {
         "label": "Prefix",
@@ -204,8 +196,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "user:",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "limit": {
         "label": "Limit",
@@ -215,8 +206,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "1000",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "cursor": {
         "label": "Cursor",
@@ -226,8 +216,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "{{queries.listKeys.data.cursor}}",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       }
     },
     "read_value": {
@@ -239,8 +228,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "key_name": {
         "label": "Key",
@@ -250,8 +238,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "user:123",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       }
     },
     "read_metadata": {
@@ -263,8 +250,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "key_name": {
         "label": "Key",
@@ -274,8 +260,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "user:123",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       }
     },
     "write_value": {
@@ -287,8 +272,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "key_name": {
         "label": "Key",
@@ -298,8 +282,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "user:123",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "value": {
         "label": "Value",
@@ -329,8 +312,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "1767225600",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "expiration_ttl": {
         "label": "Expiration TTL",
@@ -340,8 +322,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "3600",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       }
     },
     "delete_key": {
@@ -353,8 +334,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "key_name": {
         "label": "Key",
@@ -364,8 +344,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "user:123",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       }
     },
     "bulk_write": {
@@ -377,8 +356,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "items": {
         "label": "Key-value pairs",
@@ -400,8 +378,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "keys": {
         "label": "Keys",
@@ -413,9 +390,9 @@
         "placeholder": "[\"a\", \"b\"]",
         "height": "100px"
       },
-      "type": {
+      "value_type": {
         "label": "Value type",
-        "key": "type",
+        "key": "value_type",
         "type": "dropdown",
         "description": "Return values as text, or parse stored JSON values",
         "list": [
@@ -455,8 +432,7 @@
         "className": "codehinter-plugins",
         "lineNumbers": false,
         "placeholder": "0f2ac74b498b48028cb68387c421e279",
-        "height": "36px",
-        "editorType": "extendedSingleLine"
+        "height": "36px"
       },
       "keys": {
         "label": "Keys",

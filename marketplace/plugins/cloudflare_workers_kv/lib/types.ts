@@ -24,7 +24,7 @@ export type QueryOptions = {
   expiration_ttl?: InputValue;
   items?: InputValue;
   keys?: InputValue;
-  type?: string;
+  value_type?: string;
   with_metadata?: string;
 };
 

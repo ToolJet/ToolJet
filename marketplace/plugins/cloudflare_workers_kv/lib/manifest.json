@@ -28,13 +28,13 @@
       "label": "Account ID",
       "key": "account_id",
       "type": "text",
-      "description": "Your Cloudflare account ID (Dashboard → Workers & Pages → Account details)"
+      "description": "Enter your Cloudflare account ID"
     },
     "api_token": {
       "label": "API token",
       "key": "api_token",
       "type": "password",
-      "description": "Cloudflare API token with the Account → Workers KV Storage → Edit permission"
+      "description": "Enter your Cloudflare API token"
     }
   },
   "required": ["account_id", "api_token"]

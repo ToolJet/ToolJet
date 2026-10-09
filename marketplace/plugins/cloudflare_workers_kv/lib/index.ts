@@ -157,7 +157,7 @@ export default class CloudflareWorkersKV implements QueryService {
         const response = await this.requestJson(sourceOptions, 'POST', `${this.namespacePath(queryOptions)}/bulk/get`, {
           json: {
             keys,
-            type: queryOptions.type || 'text',
+            type: queryOptions.value_type || 'text',
             withMetadata: queryOptions.with_metadata === 'true',
           },
         });
