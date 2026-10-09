@@ -47,7 +47,12 @@ export default class Salesforce implements QueryService {
     const isAuthCodeGrant = !grantType || grantType === GRANT_AUTHORIZATION_CODE || grantType === GRANT_AUTHORIZATION_CODE_PKCE;
 
     if (authType === 'oauth2' && isAuthCodeGrant && multipleAuthEnabled === true) {
-      const authValidationResult = initializeOAuth(sourceOptions, context, this.authUrl.bind(this));
+      // initializeOAuth prompts only for authorization_code; PKCE is the same flow, so pass it as such.
+      const authValidationResult = initializeOAuth(
+        { ...sourceOptions, grant_type: GRANT_AUTHORIZATION_CODE },
+        context,
+        () => this.authUrl(sourceOptions)
+      );
 
       if (authValidationResult.status === 'needs_oauth') return authValidationResult as any;
       // Based on multui-user auth - token will be fetched.
