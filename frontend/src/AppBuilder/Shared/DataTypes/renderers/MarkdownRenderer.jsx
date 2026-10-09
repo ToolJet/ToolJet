@@ -15,6 +15,7 @@ import DOMPurify from 'dompurify';
  * @param {Function} props.onChange - Callback when value changes
  * @param {string} props.textColor - Text color
  * @param {string} props.horizontalAlignment - Horizontal alignment
+ * @param {Function} [props.overlayContainer] - Returns the element the overflow overlay is portaled into (default: body)
  * @param {number} props.containerWidth - Container width for overlay
  * @param {boolean} props.darkMode - Whether dark mode is enabled
  * @param {string} props.maxHeight - Max height CSS value
@@ -31,6 +32,7 @@ export const MarkdownRenderer = ({
   isEditing,
   setIsEditing,
   id,
+  overlayContainer,
 }) => {
   const ref = useRef(null);
   const [hovered, setHovered] = useState(false);
@@ -127,6 +129,7 @@ export const MarkdownRenderer = ({
       overlay={_showOverlay ? getOverlay() : <div></div>}
       trigger={_showOverlay && ['hover', 'focus']}
       rootClose={true}
+      container={overlayContainer}
       show={_showOverlay && hovered && !isEditing}
     >
       {!isEditable ? (
