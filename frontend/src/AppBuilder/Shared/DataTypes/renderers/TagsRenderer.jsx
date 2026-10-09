@@ -384,7 +384,7 @@ export const TagsRenderer = ({
 
   const handleChange = useCallback(
     (newValue) => {
-      setIsFocused(false);
+      if (!isMulti) setIsFocused(false);
       if (!isMulti && newValue === selectedValue?.value) {
         onChange('');
       } else {
@@ -464,6 +464,8 @@ export const TagsRenderer = ({
           defaultValue={defaultValue}
           placeholder={placeholder}
           isMulti={isMulti}
+          closeMenuOnSelect={!isMulti}
+          blurInputOnSelect={!isMulti}
           hideSelectedOptions
           isClearable={false}
           clearIndicator={false}

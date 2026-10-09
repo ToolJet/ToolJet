@@ -369,7 +369,7 @@ export const SelectRenderer = ({
 
   const handleChange = useCallback(
     (newValue) => {
-      setIsFocused(false);
+      if (!isMulti) setIsFocused(false);
       if (!isMulti && newValue === selectedValue?.value) {
         onChange('');
       } else {
@@ -439,6 +439,8 @@ export const SelectRenderer = ({
           defaultValue={defaultValue}
           placeholder={placeholder}
           isMulti={isMulti}
+          closeMenuOnSelect={!isMulti}
+          blurInputOnSelect={!isMulti}
           hideSelectedOptions={false}
           isClearable={false}
           clearIndicator={false}
