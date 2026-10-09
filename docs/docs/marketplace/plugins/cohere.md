@@ -3,7 +3,7 @@ id: marketplace-plugin-cohere
 title: Cohere
 ---
 
-Cohere can be integrated with ToolJet to use its advanced AI models for tasks such as text generation or building a chatbot assistant by configuring parameters to optimize results.
+Cohere can be integrated with ToolJet to use its advanced AI models for tasks such as text generation, embeddings, reranking, or building a chatbot assistant by configuring parameters to optimize results.
 
 ## Connection
 
@@ -19,20 +19,7 @@ Use this operation to generate creative text content by selecting the desired mo
 
 **Required Parameters**
 
-- **Model**: The model to use for generating the text. The available models are:
-    - command-r7b-12-2024
-    - command-r-plus-08-2024
-    - command-r-plus-04-2024
-    - command-r-plus
-    - command-r-08-2024
-    - command-r-03-2024
-    - command-r
-    - command
-    - command-nightly
-    - command-light
-    - command-light-nightly
-    - c4ai-aya-expanse-8b
-    - c4ai-aya-expanse-32b
+- **Model**: The model to use for generating the text. Models are loaded live from Cohere for the selected operation, so new releases appear without a plugin update and deprecated models are hidden. A query that already has a saved model keeps using it even if it is no longer listed.
 
 - **Message**: The main user input for generating response.
 
@@ -97,20 +84,7 @@ Use this operation for a chat-like conversation, where the model responds based 
 
 **Required Parameters**
 
-- **Model**: Specifies the model to use for generating responses in the chat. The available models are:
-    - command-r7b-12-2024
-    - command-r-plus-08-2024
-    - command-r-plus-04-2024
-    - command-r-plus
-    - command-r-08-2024
-    - command-r-03-2024
-    - command-r
-    - command
-    - command-nightly
-    - command-light
-    - command-light-nightly
-    - c4ai-aya-expanse-8b
-    - c4ai-aya-expanse-32b
+- **Model**: Specifies the model to use for generating responses in the chat. Models are loaded live from Cohere, the same way as for Text Generation.
 
 - **History**: Keeps track of previous interactions to maintain context in the conversation.
 
@@ -151,7 +125,60 @@ As a next step, you can refer to our documentation to see a step-by-step guide t
 
 </details>
 
+### Embed
+
+Use this operation to convert text into vector embeddings, which can then be used for semantic search, classification, or clustering.
+
+**Required Parameters**
+
+- **Model**: The embedding model to use. Models are loaded live from Cohere, filtered to the models that support embeddings.
+
+- **Texts**: The texts to embed, as a JSON array of strings. Example: `["What is the capital of France?", "How does photosynthesis work?"]`
+
+- **Input Type**: The type of input being embedded. Allowed values: Search document, Search query, Classification, Clustering, Image.
+
+**Optional Parameter**
+
+- **Advanced parameters**: Additional parameters to configure the embedding response. Refer [Advanced Parameters](#advanced-parameters) for more information.
+
+Example Parameters:
+
+```js
+{
+    "embedding_types": ["float"],
+    "output_dimension": 1024,
+    "truncate": "END"
+}
+```
+
+### Rerank
+
+Use this operation to reorder a list of documents by how relevant each one is to a query. It is commonly used to improve the results of a search or retrieval step.
+
+**Required Parameters**
+
+- **Model**: The rerank model to use. Models are loaded live from Cohere, filtered to the models that support reranking.
+
+- **Query**: The search query to rank the documents against.
+
+- **Documents**: The documents to rerank, as a JSON array of strings. Example: `["Carson City is the capital city of the American state of Nevada.", "Washington, D.C. is the capital of the United States."]`
+
+**Optional Parameter**
+
+- **Advanced parameters**: Additional parameters to configure the rerank response. Refer [Advanced Parameters](#advanced-parameters) for more information.
+
+Example Parameters:
+
+```js
+{
+    "top_n": 3,
+    "max_tokens_per_doc": 4096
+}
+```
+
 ## Advanced Parameters
+
+The table below describes the parameters accepted by **Text Generation** and **Chat**. **Embed** and **Rerank** accept their own parameters, as shown in the examples above, and the full list for each is available in the [Cohere API reference](https://docs.cohere.com/reference/about).
 
 | Parameter| Description |
 |----------|-------------|
