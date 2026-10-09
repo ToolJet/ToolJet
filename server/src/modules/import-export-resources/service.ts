@@ -131,7 +131,8 @@ export class ImportExportResourcesService {
             importResourcesDto.tooljet_version,
             cloning,
             manager,
-            importResourcesDto.branchId
+            importResourcesDto.branchId,
+            isTemplateApp
           );
 
           imports.app.push({ id: createdApp.newApp.id, name: createdApp.newApp.name });

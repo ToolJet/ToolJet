@@ -1,0 +1,5 @@
+id,supplier_code,name,specialty,contact,email,location
+,SUP-01,Arcwell Automation,Packaging & controls,Jamie Chen,jamie@arcwell.example.com,"Columbus, OH"
+,SUP-02,Northstar Industrial,Factory systems,Jordan Ellis,jordan@northstar.example.com,"Chicago, IL"
+,SUP-03,Forma Systems,Robotics & integration,Riley Shah,riley@forma.example.com,"Austin, TX"
+,SUP-04,Bayline Engineering,Compressed air & utilities,Sam Rivera,sam@bayline.example.com,"Cleveland, OH"

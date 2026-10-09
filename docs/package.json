@@ -36,6 +36,7 @@
   },
   "overrides": {
     "got": "^12.1.0",
+    "tinypool": "^2.1.2",
     "trim": "^0.0.3"
   },
   "browserslist": {

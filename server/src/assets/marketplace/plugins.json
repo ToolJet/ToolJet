@@ -380,7 +380,9 @@
     "author": "Tooljet",
     "timestamp": "Mon, 08 Jun 2026 14:10:00 GMT",
     "repo": "",
-    "tags": ["IT Service Management"]
+    "tags": [
+      "IT Service Management"
+    ]
   },
   {
     "name": "Confluence",
@@ -390,6 +392,32 @@
     "author": "Tooljet",
     "timestamp": "Fri, 14 Aug 2026 00:00:00 GMT",
     "repo": "",
-    "tags": ["Collaboration"]
+    "tags": [
+      "Collaboration"
+    ]
+  },
+  {
+    "name": "OpenRouter",
+    "description": "One key for hundreds of models, and any OpenAI-compatible endpoint",
+    "version": "1.0.0",
+    "id": "openrouter",
+    "author": "Tooljet",
+    "timestamp": "Fri, 19 Sep 2026 00:00:00 GMT",
+    "repo": "",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "TypeSafe",
+    "description": "Typed decisions from the Jev model: route, classify, score, yes/no. Direct or via OpenRouter.",
+    "version": "1.0.0",
+    "id": "typesafe",
+    "author": "Tooljet",
+    "timestamp": "Sat, 19 Sep 2026 22:30:00 GMT",
+    "repo": "",
+    "tags": [
+      "AI"
+    ]
   }
 ]
