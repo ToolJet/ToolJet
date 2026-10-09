@@ -139,7 +139,7 @@
     "global-agent": "^3.0.0",
     "google-auth-library": "^7.9.2",
     "got": "^11.8.2",
-    "handlebars": "^4.7.7",
+    "handlebars": "^4.7.10",
     "helmet": "^8.1.0",
     "humps": "^2.0.1",
     "ioredis": "^5.0.4",
