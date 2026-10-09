@@ -55,7 +55,6 @@ import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
-import { getAiOnboardingAction } from './helper';
 import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
@@ -146,31 +145,24 @@ export class HomePageComponent extends React.Component {
   /* For cloud ai onboarding */
   handleAiOnboarding = () => {
     const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
-    const action = getAiOnboardingAction({
-      aiCookies,
-      canCreateApp: this.canCreateApp(),
-      appType: this.props.appType,
-    });
+    const prompt = aiCookies?.tj_ai_prompt;
+    const templateId = aiCookies?.tj_template_id;
+    // front-end lists only: workflow and module lists share HomePage but cannot create these apps
+    if (this.props.appType !== 'front-end' || !(prompt || templateId)) return;
 
-    switch (action) {
-      case 'denied':
-        // Erase now, not on dismiss: closing the tab must not bring the modal back on the next visit
-        this.setState({ showInsufficentPermissionModal: true });
-        this.eraseAIOnboardingRelatedCookies();
-        break;
-      case 'prompt':
-        this.setState({ showAIOnboardingLoadingScreen: true });
-        this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(aiCookies.tj_ai_prompt)}`);
-        break;
-      case 'template': {
-        const templateId = aiCookies.tj_template_id;
-        this.setState({ showAIOnboardingLoadingScreen: true });
-        /*TODO: I Believe the people who will try the templates from site should be new to tooljet. so making name unique for existed user can be do it in sometime */
-        this.deployApp(new Event('deploy'), `${templateId.replace(/-/g, ' ')}`, { id: templateId });
-        break;
-      }
-      default:
-        break;
+    if (!this.canCreateApp()) {
+      // Erase now, not on dismiss: closing the tab must not bring the modal back on the next visit
+      this.setState({ showInsufficentPermissionModal: true });
+      this.eraseAIOnboardingRelatedCookies();
+      return;
+    }
+
+    this.setState({ showAIOnboardingLoadingScreen: true });
+    if (prompt) {
+      this.createApp(`Untitled App: ${uuidv4()}`, undefined, `${decodeURIComponent(prompt)}`);
+    } else {
+      /*TODO: I Believe the people who will try the templates from site should be new to tooljet. so making name unique for existed user can be do it in sometime */
+      this.deployApp(new Event('deploy'), `${templateId.replace(/-/g, ' ')}`, { id: templateId });
     }
   };
 

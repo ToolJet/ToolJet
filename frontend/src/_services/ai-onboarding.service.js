@@ -54,12 +54,13 @@ function deleteAiCookies() {
   return fetch(`${config.apiUrl}/ai/onboarding/delete-ai-cookies`, requestOptions).then(handleResponse);
 }
 
-function setAiCookie(cookieData) {
+function setAiCookie(cookieData, signal) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(cookieData),
+    signal,
   };
 
   return fetch(`${config.apiUrl}/ai/onboarding/set-ai-cookie`, requestOptions).then(handleResponse);

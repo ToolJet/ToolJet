@@ -12,7 +12,6 @@ describe('persistTemplateIdFromUrl', () => {
   });
 
   afterEach(() => {
-    jest.useRealTimers();
     jest.restoreAllMocks();
     visit('/');
   });
@@ -21,7 +20,7 @@ describe('persistTemplateIdFromUrl', () => {
     visit('/?tj_template_id=expense-reimbursement&utm=x');
     await persistTemplateIdFromUrl();
 
-    expect(setAiCookie).toHaveBeenCalledWith({ tj_template_id: 'expense-reimbursement' });
+    expect(setAiCookie).toHaveBeenCalledWith({ tj_template_id: 'expense-reimbursement' }, expect.any(AbortSignal));
     expect(window.location.search).toBe('?utm=x');
   });
 
@@ -29,7 +28,7 @@ describe('persistTemplateIdFromUrl', () => {
     visit('/#state=tj_template_id%3Dexpense-reimbursement%26redirectTo%3D%2F');
     await persistTemplateIdFromUrl();
 
-    expect(setAiCookie).toHaveBeenCalledWith({ tj_template_id: 'expense-reimbursement' });
+    expect(setAiCookie).toHaveBeenCalledWith({ tj_template_id: 'expense-reimbursement' }, expect.any(AbortSignal));
   });
 
   it('ignores an id with characters outside a template slug', async () => {
@@ -54,15 +53,13 @@ describe('persistTemplateIdFromUrl', () => {
     expect(window.location.search).toBe('?tj_template_id=expense-reimbursement');
   });
 
-  it('stops waiting after the timeout and keeps the param when the call hangs', async () => {
-    jest.useFakeTimers();
-    setAiCookie.mockReturnValue(new Promise(() => {}));
+  it('gives the call a timeout and keeps the param when it aborts', async () => {
+    const timeout = jest.spyOn(AbortSignal, 'timeout').mockReturnValue(AbortSignal.abort());
+    setAiCookie.mockImplementation((_, signal) => (signal.aborted ? Promise.reject(signal.reason) : Promise.resolve()));
     visit('/?tj_template_id=expense-reimbursement');
+    await persistTemplateIdFromUrl();
 
-    const done = persistTemplateIdFromUrl();
-    await jest.advanceTimersByTimeAsync(SET_COOKIE_TIMEOUT_MS);
-    await done;
-
+    expect(timeout).toHaveBeenCalledWith(SET_COOKIE_TIMEOUT_MS);
     expect(window.location.search).toBe('?tj_template_id=expense-reimbursement');
   });
 });

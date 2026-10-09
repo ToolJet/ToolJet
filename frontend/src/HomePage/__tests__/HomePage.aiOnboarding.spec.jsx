@@ -22,10 +22,14 @@ describe('HomePage.handleAiOnboarding', () => {
   afterEach(() => jest.restoreAllMocks());
 
   it('deploys the template when the user can create apps', () => {
-    const page = build({ aiCookies: { tj_template_id: 'expense-reimbursement' } });
+    const page = build({
+      aiCookies: { tj_template_id: 'expense-reimbursement' },
+    });
     page.handleAiOnboarding();
 
-    expect(page.setState).toHaveBeenCalledWith({ showAIOnboardingLoadingScreen: true });
+    expect(page.setState).toHaveBeenCalledWith({
+      showAIOnboardingLoadingScreen: true,
+    });
     expect(page.deployApp).toHaveBeenCalledWith(expect.any(Event), 'expense reimbursement', {
       id: 'expense-reimbursement',
     });
@@ -33,20 +37,30 @@ describe('HomePage.handleAiOnboarding', () => {
   });
 
   it('opens the access modal and erases the cookies at once when the user cannot create apps', () => {
-    const page = build({ aiCookies: { tj_template_id: 'expense-reimbursement' }, canCreate: false });
+    const page = build({
+      aiCookies: { tj_template_id: 'expense-reimbursement' },
+      canCreate: false,
+    });
     page.handleAiOnboarding();
 
-    expect(page.setState).toHaveBeenCalledWith({ showInsufficentPermissionModal: true });
+    expect(page.setState).toHaveBeenCalledWith({
+      showInsufficentPermissionModal: true,
+    });
     expect(page.eraseAIOnboardingRelatedCookies).toHaveBeenCalledTimes(1);
     expect(page.deployApp).not.toHaveBeenCalled();
     expect(page.createApp).not.toHaveBeenCalled();
   });
 
   it('does not erase the cookies a second time when the modal is dismissed', () => {
-    const page = build({ aiCookies: { tj_template_id: 'x' }, canCreate: false });
+    const page = build({
+      aiCookies: { tj_template_id: 'x' },
+      canCreate: false,
+    });
     page.onPermissionDeniedModalHide();
 
-    expect(page.setState).toHaveBeenCalledWith({ showInsufficentPermissionModal: false });
+    expect(page.setState).toHaveBeenCalledWith({
+      showInsufficentPermissionModal: false,
+    });
     expect(page.eraseAIOnboardingRelatedCookies).not.toHaveBeenCalled();
   });
 
@@ -59,11 +73,36 @@ describe('HomePage.handleAiOnboarding', () => {
   });
 
   it('does nothing on the workflow home page', () => {
-    const page = build({ aiCookies: { tj_template_id: 'x' }, appType: 'workflow' });
+    const page = build({
+      aiCookies: { tj_template_id: 'x' },
+      appType: 'workflow',
+    });
     page.handleAiOnboarding();
 
     expect(page.setState).not.toHaveBeenCalled();
     expect(page.deployApp).not.toHaveBeenCalled();
     expect(page.eraseAIOnboardingRelatedCookies).not.toHaveBeenCalled();
   });
+
+  it('prefers the prompt when both cookies are set', () => {
+    const page = build({
+      aiCookies: { tj_ai_prompt: 'a%20crm', tj_template_id: 'x' },
+    });
+    page.handleAiOnboarding();
+
+    expect(page.createApp).toHaveBeenCalledTimes(1);
+    expect(page.deployApp).not.toHaveBeenCalled();
+  });
+
+  it.each([[{}], [{ tj_template_id: null }], [undefined]])(
+    'does nothing when no onboarding cookie is set (%j)',
+    (aiCookies) => {
+      const page = build({ aiCookies });
+      page.handleAiOnboarding();
+
+      expect(page.setState).not.toHaveBeenCalled();
+      expect(page.canCreateApp).not.toHaveBeenCalled();
+      expect(page.eraseAIOnboardingRelatedCookies).not.toHaveBeenCalled();
+    }
+  );
 });
