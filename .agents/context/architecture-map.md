@@ -39,6 +39,7 @@ graph LR
 | `server/src/modules/apps/` | App aggregate, versions/pages/components/events, release, viewer hydration, and import/export. |
 | `server/src/modules/data-sources/` + `data-queries/` | Connector configuration, environment-scoped credentials, template resolution, query execution, throttling, and result status. |
 | `plugins/packages/` | Built-in connector implementations for databases, APIs, storage, email, and SaaS systems. |
+| `marketplace/plugins/` | Installable third-party connector workspaces. See `marketplace/AGENTS.md`. |
 | `server/src/modules/tooljet-db/` | Built-in database schema operations and authenticated PostgREST proxy. |
 | `server/src/modules/workflows/` | Workflow models, schedules, queues, execution records, and edition-extension points. Some CE controller methods are stubs. |
 | `docker/`, `deploy/` | Development/production images and Docker, Kubernetes, Helm, OpenShift deployment definitions. |
@@ -118,6 +119,9 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 ## Deployment and observability
 
 - Development Compose runs frontend, server, plugin watcher, PostgreSQL, Redis, and PostgREST (`docker-compose.yaml`).
+- Local development without Compose runs through the dev toolkit `tools/tj/bin/tj` (`tools/tj/README.md`). It needs PostgreSQL and Redis running.
+  - Per-branch worktrees each get their own DBs (`tooljet_<slug>_<hash>[_test]`) and their own free ports.
+  - Server and frontend run as background processes and are health-checked through `/api/health`.
 - Production assets support CE images plus Docker Compose, Kubernetes, Helm, and OpenShift (`docker/`; `deploy/`). Nest can serve `frontend/build` or run with `SERVE_CLIENT=false`.
 - `/health` and `/api/health` are prefix-exempt health endpoints (`AppController.healthCheck`).
 - Pino supplies structured/redacted HTTP logs and transaction IDs (`AppModuleLoader`).

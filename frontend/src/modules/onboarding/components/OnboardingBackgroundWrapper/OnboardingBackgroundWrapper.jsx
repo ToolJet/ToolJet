@@ -9,6 +9,7 @@ const OnboardingBackgroundWrapper = ({
   MiddleComponent,
   rightSize = 7,
   leftSize = 5,
+  className = '',
 }) => {
   const whiteLabelFavIcon = useWhiteLabellingStore((state) => state.whiteLabelFavicon);
   const isDefaultWhiteLabel = useWhiteLabellingStore((state) => state.isDefaultWhiteLabel);
@@ -22,7 +23,7 @@ const OnboardingBackgroundWrapper = ({
     return <WhiteLabellingBackgroundWrapper MiddleComponent={() => <ContentComponent />} />;
   }
   return (
-    <div className="onboarding-background-wrapper">
+    <div className={`onboarding-background-wrapper ${className}`}>
       <div className="container-fluid h-100">
         {MiddleComponent ? (
           <div className="row h-100">

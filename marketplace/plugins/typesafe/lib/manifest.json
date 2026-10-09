@@ -1,0 +1,80 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "TypeSafe datasource",
+  "description": "A schema defining TypeSafe datasource",
+  "type": "api",
+  "source": {
+    "name": "TypeSafe",
+    "kind": "typesafe",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "customTesting": false,
+    "options": {
+      "auth_type": {
+        "type": "string"
+      },
+      "base_url": {
+        "type": "string"
+      },
+      "api_key": {
+        "encrypted": true
+      },
+      "openrouter_api_key": {
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "auth_type": {
+      "value": "typesafe"
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "Where the Jev model is reached",
+      "list": [
+        {
+          "value": "typesafe",
+          "name": "TypeSafe API key"
+        },
+        {
+          "value": "openrouter",
+          "name": "OpenRouter API key"
+        }
+      ],
+      "commonFields": {
+        "base_url": {
+          "label": "Base URL (optional)",
+          "key": "base_url",
+          "type": "text",
+          "description": "Leave blank. TypeSafe: https://api.typesafe.ai/v1/systemone. OpenRouter: https://openrouter.ai/api/alpha/decisions."
+        }
+      }
+    },
+    "typesafe": {
+      "api_key": {
+        "label": "API key",
+        "key": "api_key",
+        "type": "password",
+        "description": "TypeSafe API key from console.typesafe.ai",
+        "encrypted": true
+      }
+    },
+    "openrouter": {
+      "openrouter_api_key": {
+        "label": "OpenRouter API key",
+        "key": "openrouter_api_key",
+        "type": "password",
+        "description": "OpenRouter key; Jev is served on its decisions endpoint. Output tokens are free, input is metered.",
+        "encrypted": true
+      }
+    }
+  },
+  "required": []
+}
