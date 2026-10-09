@@ -75,7 +75,10 @@ export const useDropVirtualMoveableGhost = () => {
   const updateMoveableGhostPosition = (mousePosition, canvasRef) => {
     if (!ghostElementRef.current || !canvasRef?.current || !mousePosition) return;
 
-    const canvasRect = canvasRef.current.getBoundingClientRect();
+    // Measure from the element the ghost is attached to (the main canvas), not the hovered container:
+    // a sub-canvas can be the first to activate the ghost when the canvas shifts under the cursor at drag start, and its rect would misplace the ghost.
+    const ghostParent = ghostElementRef.current.parentElement || canvasRef.current;
+    const canvasRect = ghostParent.getBoundingClientRect();
     const relativeX = mousePosition.x - canvasRect.left;
     const relativeY = mousePosition.y - canvasRect.top;
 
