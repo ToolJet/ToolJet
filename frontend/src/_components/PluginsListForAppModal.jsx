@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { PluginIcon } from '@/_ui/PluginIcon';
 import config from 'config';
 
 export const PluginsListForAppModal = ({ dependentPlugins, dependentPluginsDetail }) => {
@@ -47,7 +48,7 @@ export const PluginsListForAppModal = ({ dependentPlugins, dependentPluginsDetai
                 className="d-flex custom-gap-6 flex-row align-items-center"
                 style={{ padding: '8px 7px' }}
               >
-                <img height="15" width="15" src={iconSrc} />
+                <PluginIcon pluginKind={plugin} src={iconSrc} alt={pluginsName} height={15} width={15} />
                 <span className="tj-text-xsm text-default">{pluginsName}</span>
               </div>
             );
