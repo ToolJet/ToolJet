@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { getPathname, getRedirectURL, isCustomDomain, redirectToMainHost } from '@/_helpers/routes';
+import { ERROR_TYPES } from '@/_helpers/constants';
 import { authenticationService, loginConfigsService, sessionService } from '@/_services';
 import { customDomainService } from '@/_services/custom-domain.service';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -89,12 +90,23 @@ export const AuthRoute = ({ children }) => {
   const fetchOrganizationDetails = (resolvedSlug) => {
     loginConfigsService.getOrganizationConfigs(resolvedSlug || organizationSlug).then(
       (configs) => {
+        // Defensive guard: a malformed/empty success response should never leave the
+        // loading spinner stuck forever — fall through as if configs were unavailable.
+        if (!configs) {
+          setGettingConfig(false);
+          return;
+        }
         setOrganizationId(configs.id);
         setConfigs(configs);
         setGettingConfig(false);
       },
       async (response) => {
-        if (response.data.statusCode !== 404 && response.data.statusCode !== 422) {
+        // An archived workspace, looked up anonymously, should show the same
+        // invalid-link error as a nonexistent one (below, via LoginPage's own
+        // configs?.id check) instead of the generic "error while login" bounce.
+        const isArchivedWorkspace =
+          response.data.statusCode === 400 && response.data.message === ERROR_TYPES.WORKSPACE_ARCHIVED;
+        if (response.data.statusCode !== 404 && response.data.statusCode !== 422 && !isArchivedWorkspace) {
           return navigate({
             pathname: '/',
             state: { errorMessage: 'Error while login, please try again' },

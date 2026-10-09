@@ -1,0 +1,21 @@
+{
+  "name": "Bakery production management",
+  "description": "Plan the bake schedule, coordinate production batches and hand over orders on time.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "bakery-production-management",
+  "category": "manufacturing-and-production"
+}

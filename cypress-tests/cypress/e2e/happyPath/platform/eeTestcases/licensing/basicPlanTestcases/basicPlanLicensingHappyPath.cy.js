@@ -6,10 +6,10 @@ import {
   instanceSettingsSelector,
   whiteLabellingSelectors,
 
-} from "Selectors/eeCommon";
-import { licenseSelectors } from "Selectors/license";
-import { groupsSelector } from "Selectors/manageGroups";
-import { usersSelector } from "Selectors/manageUsers";
+} from "Selectors/platform/eeCommon";
+import { licenseSelectors } from "Selectors/platform/license";
+import { groupsSelector } from "Selectors/platform/manageGroups";
+import { usersSelector } from "Selectors/platform/manageUsers";
 import * as common from "Support/utils/common";
 import {
   switchTabs,
@@ -23,9 +23,9 @@ import {
 } from "Support/utils/license";
 import { navigateToEditUser } from "Support/utils/manageUsers";
 import { commonText, settingsText, workspaceSettingsText } from "Texts/common";
-import { licenseText } from "Texts/license";
-import { dashboardSelector } from "Selectors/dashboard";
-import { workflowSelector } from "Selectors/workflows";
+import { licenseText } from "Texts/platform/license";
+import { dashboardSelector } from "Selectors/platform/dashboard";
+import { workflowSelector } from "Selectors/platform/workflows";
 
 
 describe("License Page", () => {
@@ -36,7 +36,9 @@ describe("License Page", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.apiDeleteAllApps();
-    cy.apiCreateApp(data.appName1);
+    for (let i = 0; i < 9; i++) {
+      cy.apiCreateApp(`${data.appName1}-${i}`);
+    }
     cy.visit("/my-workspace");
     cy.intercept("GET", "/api/v2/group-permissions/**").as(
       "getGroupPermissions"
@@ -45,7 +47,7 @@ describe("License Page", () => {
 
   after(() => {
     cy.apiDeleteAllApps();
-    cy.apiDeleteWorkflow(data.workflowName);
+    cy.apiDeleteAllWorkflows();
   });
 
   it("Should verify license page elements with the basic plan", () => {
@@ -97,6 +99,8 @@ describe("License Page", () => {
     verifyResourceLimit("workspace", planName);
 
     cy.get(dashboardSelector.homePageContent).click();
+
+    cy.get(commonSelectors.dashboardIcon).click();
 
     verifyResourceLimit("apps", planName);
 

@@ -29,7 +29,7 @@
  *
  * `test.failing` marks real, still-unfixed bugs, each one naming its production line.
  */
-import { resolveReferences, resolveCode } from '@/_helpers/utils';
+import { resolveReferences, resolveCode, removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 
 // The resolver receives the already-flattened exposed-value state; `components`,
 // `queries`, `secrets`, ... become the argument names of the generated Function.
@@ -332,35 +332,92 @@ describe('resolveReferences — whitespace inside the braces', () => {
   });
 
   test('tab padding also survives', () => {
-    // Tabs are not stripped by this copy (see the failing test below), but `return \tx\t`
-    // is still valid JavaScript, so only the newline case is broken.
+    // On its own this case never broke: `return \tx\t` is valid JavaScript whether or not
+    // the tab is stripped, so this assertion passes against either implementation. What
+    // the tab half of the trim actually buys is the guard matching pinned at the end of
+    // this block.
     expect(resolveReferences('{{\tcomponents.c1.value\t}}', withComponent(7))).toBe(7);
   });
 
-  test.failing('a NEWLINE-padded binding must resolve — utils.js:1357,1371', () => {
-    // The `_helpers` copy of removeNestedDoubleCurlyBraces trims only `' '`:
-    //     if (transformedInput[iter] === ' ' && shouldRemoveSpace)
-    // The store copy trims `[' ', '\n', '\t']`. So here the newline survives, resolveCode
-    // builds `return \n components.c1.value \n`, and JavaScript's automatic semicolon
-    // insertion turns that into a bare `return;` — the expression is never evaluated and
-    // the binding resolves to `undefined`, silently.
+  test('a NEWLINE-padded binding resolves — utils.js:1357,1371', () => {
+    // removeNestedDoubleCurlyBraces trims `[' ', '\n', '\t']` in both copies of the
+    // resolver. Before that, the `_helpers` copy trimmed only `' '`, so the newline
+    // survived, resolveCode built `return \n components.c1.value \n`, and JavaScript's
+    // automatic semicolon insertion turned it into a bare `return;` — the expression was
+    // never evaluated and the binding resolved to `undefined`, silently.
     //
     // Multi-line bindings come out of the CodeEditor with real newlines, so this is
     // reachable by anyone who presses Enter inside `{{ }}` on a field that goes through
     // this resolver.
-    const result = resolveReferences('{{\n components.c1.value \n}}', withComponent(7));
-
-    // Actual today: undefined.
-    expect(result).toBe(7);
+    expect(resolveReferences('{{\n components.c1.value \n}}', withComponent(7))).toBe(7);
   });
 
-  test('a newline-padded binding embedded in text is not even recognised as a binding', () => {
-    // getDynamicVariables (utils.js:312) uses `/\{\{(.*?)\}\}/g`, and `.` does not match
-    // a newline — so the interpolation path leaves the raw text on screen. Pinned as the
-    // second half of the same defect.
-    expect(resolveReferences('x {{\n components.c1.value \n}} y', withComponent(7))).toBe(
-      'x {{\n components.c1.value \n}} y'
-    );
+  test('a newline-padded binding embedded in text resolves', () => {
+    // getDynamicVariables (utils.js:312) uses `/\{\{(.*?)\}\}/gs`. The `s` flag is what
+    // lets `.` match a newline, so the interpolation path finds the binding; the trim
+    // above is what lets it evaluate. Both halves are required — with the regex alone
+    // this returned 'x undefined y'.
+    expect(resolveReferences('x {{\n components.c1.value \n}} y', withComponent(7))).toBe('x 7 y');
+  });
+
+  test('removeNestedDoubleCurlyBraces strips space, tab and newline padding', () => {
+    // Asserted on the strip function rather than through resolveReferences on purpose.
+    // Only `\n` is a JS line terminator, so a TAB-padded binding produces the right ANSWER
+    // either way — `return \tx\t` is valid JavaScript — and a test that only checked the
+    // resolved value pins nothing about tabs. The stripped code is what the utils.js:99
+    // guard string-matches on, so the strip output is the real contract.
+    for (const pad of [' ', '\t', '\n', ' \n\t ']) {
+      expect(removeNestedDoubleCurlyBraces(`{{${pad}components.c1.value${pad}}}`)).toBe('components.c1.value');
+    }
+  });
+
+  test('only the OUTER padding is stripped — interior whitespace survives', () => {
+    // The other half of the contract, and the half a `.trim()`-everything or
+    // `.replace(/\s/g, '')` implementation would break: a multi-line expression must still
+    // be multi-line when it reaches Function(), and its interior spaces must survive or
+    // `a in b` becomes `ainb`. A template literal is the sharpest case, because there the
+    // newline is DATA, not padding.
+    expect(removeNestedDoubleCurlyBraces('{{\n a\nb \n}}')).toBe('a\nb');
+    expect(resolveReferences('{{\n `a\nb`\n}}', {})).toBe('a\nb');
+    expect(resolveReferences('{{\n components.c1.value\n ? "yes"\n : "no"\n}}', withComponent(true))).toBe('yes');
+  });
+
+  test('newline padding survives the other two interpolation loops as well', () => {
+    // Three code paths reach removeNestedDoubleCurlyBraces with different regexes, and a
+    // binding can be padded on any of them. The multi-binding whole-string loop
+    // (utils.js:237-254, via resolveString's `/(\{\{.+?\}\})/gs`) and the mixed
+    // `{{}}`+`%%` entry at utils.js:217 both need the `s` flag to even find the binding;
+    // the trim is what lets it evaluate.
+    expect(
+      resolveReferences('{{\n components.c1.value \n}} and {{\n components.c2.value \n}}', {
+        components: { c1: { value: 'A' }, c2: { value: 'B' } },
+      })
+    ).toBe('A and B');
+
+    expect(
+      resolveReferences('a {{\n components.c1.value \n}} b %%server.foo%% c', {
+        components: { c1: { value: 'C' } },
+        server: { foo: 'S' },
+      })
+    ).toBe('a C b S c');
+  });
+
+  test('tab or newline padding cannot smuggle a query past the run() refusal guard', () => {
+    // Why the tab half of the trim is a correctness guard and not cosmetics. utils.js:99
+    // refuses `queries.*.run()` by STRING MATCH on the stripped code, so a padding
+    // character the strip misses breaks `endsWith('run()')` — and a TRAILING one is not
+    // saved by ASI the way a leading one is, so the query really would fire on every
+    // recompute.
+    let calls = 0;
+    const state = { queries: { q1: { run: () => ++calls } } };
+
+    for (const pad of [' ', '\t', '\n']) {
+      expect(resolveReferences(`{{queries.q1.run()${pad}}}`, state, null, {}, true)).toEqual([
+        '',
+        'Cannot resolve function call queries.q1.run()',
+      ]);
+    }
+    expect(calls).toBe(0);
   });
 });
 

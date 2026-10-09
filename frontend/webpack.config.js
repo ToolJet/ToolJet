@@ -401,6 +401,13 @@ module.exports = {
     client: {
       overlay: false,
     },
+    // The custom-component shell iframe is sandboxed (opaque origin), so its import()/fetch()
+    // of these vendor files sends `Origin: null` and needs an explicit ACAO — see
+    // server/ee/custom-component-libraries/controller.ts for the matching header on the
+    // bundle/css serve routes. webpack-dev-server's array/object `headers` form applies to
+    // every request, so this needs the function form to scope it to just this path.
+    headers: (req) =>
+      req.url.startsWith('/assets/custom-components/') ? { 'Access-Control-Allow-Origin': 'null' } : {},
   },
   output: {
     filename: environment === 'production' ? '[name].[contenthash:8].js' : '[name].js',

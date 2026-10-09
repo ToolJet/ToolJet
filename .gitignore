@@ -47,3 +47,5 @@ docs/superpowers/
 taskfile.yml
 
 memory/
+
+frontend/assets/custom-components/vendor/

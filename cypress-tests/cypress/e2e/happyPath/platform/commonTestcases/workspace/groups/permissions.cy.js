@@ -1,9 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
-import { dataSourceSelector } from "Selectors/dataSource";
-import { importSelectors } from "Selectors/exportImport";
-import { groupsSelector } from "Selectors/manageGroups";
+import { dataSourceSelector } from "Selectors/marketplace/dataSource";
+import { importSelectors } from "Selectors/platform/exportImport";
+import { groupsSelector } from "Selectors/platform/manageGroups";
 import {
     navigateToAppEditor,
     navigateToManageGroups,
@@ -18,8 +17,8 @@ import {
     verifyUserPrivileges,
 } from "Support/utils/manageGroups";
 import { getGroupPermissionInput } from "Support/utils/userPermissions";
-import { importText } from "Texts/exportImport";
-import { groupsText } from "Texts/manageGroups";
+import { importText } from "Texts/platform/exportImport";
+import { groupsText } from "Texts/platform/manageGroups";
 
 describe("Manage Groups", () => {
     let data = {};
@@ -176,7 +175,7 @@ describe("Manage Groups", () => {
                 cy.apiLogin(data.email);
                 cy.visit(data.workspaceSlug);
                 verifyUserPrivileges(
-                    buttonEnabled ? "be.enabled" : "be.disabled",
+                    buttonEnabled ? "be.enabled" : "not.exist",
                     to,
                     hasSettings
                 );
@@ -202,7 +201,7 @@ describe("Manage Groups", () => {
 
                 cy.intercept("GET", "/api/apps/*").as("getApp");
 
-                cy.get(dashboardSelector.importAppButton).click();
+                cy.get(importSelectors.dropDownMenu).should("be.visible").click();
                 cy.get(importSelectors.importOptionInput)
                     .eq(0)
                     .selectFile(appImportFile, { force: true });

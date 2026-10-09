@@ -23,13 +23,13 @@ const srcRoot = path.join(frontendRoot, 'src');
 // a spec that stubs the store is a unit spec, and the opposite of an integration
 // one. Matching the bare path treats those two as the same thing.
 //
-// Also matches a sibling `./widgetHarness` import: AppBuilder/Widgets/__tests__/
-// integration/widgetHarness.js is a shared per-directory harness that imports
-// the real store on every spec's behalf, so a spec built on it never writes
-// the store's own import path — checking only the direct form would misfile
-// every widget behaviour spec as a unit test.
+// Also matches the shared widgetHarness, whether imported by an older sibling
+// spec or by a widget-colocated spec. The harness imports the real store on
+// every spec's behalf, so a spec built on it never writes the store's own
+// import path — checking only the direct form would misfile every widget
+// behaviour spec as a unit test.
 const REAL_STORE_IMPORT =
-  /(?:from\s+['"]@\/AppBuilder\/_stores\/store['"]|require\(\s*['"]@\/AppBuilder\/_stores\/store['"]|from\s+['"]\.\/widgetHarness['"])/;
+  /(?:from\s+['"]@\/AppBuilder\/_stores\/store['"]|require\(\s*['"]@\/AppBuilder\/_stores\/store['"]|from\s+['"](?:\.\/widgetHarness|(?:\.\.\/)+__tests__\/integration\/widgetHarness|@\/AppBuilder\/Widgets\/__tests__\/integration\/widgetHarness)['"])/;
 // Harness self-tests describe the test infrastructure itself, not product code.
 const EXEMPT_PREFIXES = ['src/test/'];
 

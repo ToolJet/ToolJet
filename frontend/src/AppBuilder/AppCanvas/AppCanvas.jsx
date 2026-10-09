@@ -287,9 +287,9 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 >
                   {environmentLoadingState !== 'loading' && !isCanvasReloading && (
                     <SuspenseCountProvider
-                      // Also keyed on pageKey — a same-page "switch page" CSA changes pageKey
-                      // but not currentPageId, so without this the provider wouldn't remount
-                      // and the batch that switch opens would never flush.
+                      // Also keyed on pageKey: a same-page switch changes pageKey but not
+                      // currentPageId, so without it this wouldn't remount and the batch
+                      // that switch opens would never flush.
                       key={`${currentPageId}-${pageKey}`}
                       disabled={pageLoader}
                       onAllResolved={handleAllSuspenseResolved}

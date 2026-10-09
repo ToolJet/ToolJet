@@ -13,6 +13,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
     height,
     exposedVariablesTemporaryState,
     updateExposedVariablesState,
+    openPopoverOnHover,
+    scheduleClosePopoverOnHover,
     transformedOptions,
     trigger,
     label,
@@ -57,7 +59,11 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       : textColor;
 
   const computedLoaderColor =
-    '#FFFFFF' === loaderColor ? (buttonType === 'primary' ? loaderColor : 'var(--cc-primary-brand)') : loaderColor;
+    'var(--cc-surface1-surface)' === loaderColor
+      ? buttonType === 'primary'
+        ? loaderColor
+        : 'var(--cc-primary-brand)'
+      : loaderColor;
 
   const computedBgColor =
     '#4368E3' === backgroundColor
@@ -145,9 +151,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       disabled={exposedVariablesTemporaryState.isDisabled || exposedVariablesTemporaryState.isLoading}
       ref={forwardedRef}
       {...(trigger === 'hover' && {
-        onMouseOver: () => {
-          updateExposedVariablesState('showPopover', true);
-        },
+        onMouseEnter: openPopoverOnHover,
+        onMouseLeave: scheduleClosePopoverOnHover,
       })}
     >
       <button

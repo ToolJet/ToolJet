@@ -3,7 +3,7 @@ import {
     createUser, getAllUsers, getUser, updateUser, createGroup, verifyUserInGroups, updateUserRole,
     getAllWorkspaces, replaceUserWorkspace, replaceUserWorkspacesRelations
 } from 'Support/utils/externalApi';
-import { groupsSelector } from "Selectors/manageGroups";
+import { groupsSelector } from "Selectors/platform/manageGroups";
 import { commonSelectors } from 'Selectors/common';
 import { searchUser, navigateToManageUsers, logout, navigateToManageGroups } from 'Support/utils/common';
 describe("API Test", () => {

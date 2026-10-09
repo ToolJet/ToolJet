@@ -1,14 +1,26 @@
+import { FEATURE_KEY as GROUP_FEATURE } from '@modules/group-permissions/constants';
 import { ForbiddenException } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
 import {
   PAT_ALLOWED_BUNDLES,
+  PAT_APP_VIEWER_FEATURES,
+  PAT_APP_VIEWER_MODULES,
+  PAT_APP_VIEWER_NEVER_GRANTABLE,
   PAT_BUNDLE_MODULES,
   PAT_NEVER_GRANTABLE,
   PAT_UNASSIGNED_MODULES,
+  patAppViewerCanAccess,
   patCanAccess,
 } from '@modules/personal-access-tokens/constants/scopes';
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
 import { FEATURE_KEY as ORGANIZATION_USER_FEATURE } from '@modules/organization-users/constants';
+import { FEATURE_KEY as AUTH_FEATURE } from '@modules/auth/constants';
+import { FEATURE_KEY as ORGANIZATION_CONSTANT_FEATURE } from '@modules/organization-constants/constants';
+import { FEATURE_KEY as VERSION_FEATURE } from '@modules/versions/constants';
+import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
+import { FEATURE_KEY as APP_FEATURE } from '@modules/apps/constants';
+import { FEATURE_KEY as DATA_QUERY_FOLDER_FEATURE } from '@modules/data-query-folders/constants';
 
 /**
  * Tagged `security` because CI's unit step runs only --group=working|workflows|security, and
@@ -62,10 +74,38 @@ describe('PAT scope definition', () => {
     expect(patCanAccess(MODULES.ORGANIZATION_USER, ORGANIZATION_USER_FEATURE.USER_ARCHIVE_ALL)).toBe(false);
   });
 
+  it.each([MODULES.WORKFLOWS])('allows workflow module %s', (module) => {
+    expect(patCanAccess(module)).toBe(true);
+  });
+
+  it.each(PAT_UNASSIGNED_MODULES)('denies unassigned module %s', (module) => {
+    expect(patCanAccess(module)).toBe(false);
+  });
+
+  it('allows only the group operations needed for custom group management', () => {
+    const allowed = new Set([
+      GROUP_FEATURE.GET_ALL, GROUP_FEATURE.GET_ONE, GROUP_FEATURE.GET_ALL_GROUP_USER,
+      GROUP_FEATURE.CREATE, GROUP_FEATURE.UPDATE, GROUP_FEATURE.DELETE, GROUP_FEATURE.DELETE_GROUP_USER,
+      GROUP_FEATURE.DUPLICATE,
+      GROUP_FEATURE.GET_ADDABLE_APPS,
+      GROUP_FEATURE.GET_ADDABLE_DS,
+      GROUP_FEATURE.GET_ALL_GRANULAR_PERMISSIONS,
+      GROUP_FEATURE.CREATE_GRANULAR_APP_PERMISSIONS,
+      GROUP_FEATURE.CREATE_GRANULAR_DATA_PERMISSIONS,
+      GROUP_FEATURE.UPDATE_GRANULAR_APP_PERMISSIONS,
+      GROUP_FEATURE.UPDATE_GRANULAR_DATA_PERMISSIONS,
+      GROUP_FEATURE.DELETE_GRANULAR_APP_PERMISSIONS,
+      GROUP_FEATURE.DELETE_GRANULAR_DATA_PERMISSIONS,
+    ]);
+    for (const feature of Object.values(GROUP_FEATURE)) {
+      expect(patCanAccess(MODULES.GROUP_PERMISSIONS, feature)).toBe(allowed.has(feature));
+    }
+    expect(patCanAccess(MODULES.GROUP_PERMISSIONS)).toBe(false);
+  });
+
   it('denies workspace and instance administration', () => {
     for (const module of [
       MODULES.ORGANIZATIONS,
-      MODULES.GROUP_PERMISSIONS,
       MODULES.LOGIN_CONFIGS,
       MODULES.INSTANCE_SETTINGS,
       MODULES.LICENSING,
@@ -75,12 +115,54 @@ describe('PAT scope definition', () => {
     }
   });
 
+  it('allows installed spec reads without granting plugin administration', () => {
+    expect(patCanAccess(MODULES.PLUGINS, PLUGIN_FEATURE.GET_SPEC)).toBe(true);
+    for (const feature of Object.values(PLUGIN_FEATURE).filter((value) => value !== PLUGIN_FEATURE.GET_SPEC)) {
+      expect(patCanAccess(MODULES.PLUGINS, feature)).toBe(false);
+    }
+    expect(patCanAccess(MODULES.PLUGINS)).toBe(false);
+    expect(patCanAccess(MODULES.PLUGINS, 'unknown-feature')).toBe(false);
+  });
+
   it('classifies every module, so a new area of the API cannot slip through unconsidered', () => {
     // Fails when someone adds a MODULES member without deciding whether a token may reach it.
     // Without this the default is a silent 403 that surfaces as a mystery integration bug.
     const classified = new Set([...allBundledModules(), ...PAT_UNASSIGNED_MODULES]);
     const unclassified = Object.values(MODULES).filter((m) => !classified.has(m));
     expect(unclassified).toEqual([]);
+  });
+
+  it('never lets naming an app WIDEN the session', () => {
+    /* Any feature the viewer surface grants must ALSO be reachable by the same token without an
+       appId, OR be a deliberate viewer-only exception listed here. */
+    const VIEWER_ONLY: Array<[MODULES, string | undefined]> = [
+      [MODULES.AUTH, AUTH_FEATURE.AUTHORIZE],
+      [MODULES.ORGANIZATION_CONSTANT, ORGANIZATION_CONSTANT_FEATURE.GET_FROM_APP],
+      [MODULES.ORGANIZATION_CONSTANT, ORGANIZATION_CONSTANT_FEATURE.GET_FROM_ENVIRONMENT],
+      [MODULES.CUSTOM_STYLES, undefined],
+    ];
+    const isViewerOnly = (module: MODULES, feature?: string) =>
+      VIEWER_ONLY.some(([m, f]) => m === module && f === feature);
+
+    for (const feature of [
+      ORGANIZATION_CONSTANT_FEATURE.GET_DECRYPTED_CONSTANTS,
+      ORGANIZATION_CONSTANT_FEATURE.GET_SECRETS,
+    ]) {
+      expect(patAppViewerCanAccess(MODULES.ORGANIZATION_CONSTANT, feature)).toBe(false);
+      expect(patCanAccess(MODULES.ORGANIZATION_CONSTANT, feature)).toBe(false);
+    }
+    expect(patAppViewerCanAccess(MODULES.AUTH, AUTH_FEATURE.SWITCH_WORKSPACE)).toBe(false);
+
+    for (const module of PAT_APP_VIEWER_MODULES) {
+      const features = PAT_APP_VIEWER_FEATURES[module];
+      if (!features) {
+        if (!isViewerOnly(module)) expect(patCanAccess(module)).toBe(true);
+        continue;
+      }
+      for (const feature of features) {
+        if (!isViewerOnly(module, feature)) expect(patCanAccess(module, feature)).toBe(true);
+      }
+    }
   });
 
   it('grants a non-empty set of modules', () => {
@@ -101,15 +183,29 @@ describe('PAT scope definition', () => {
 describe('PatScopeInterceptor', () => {
   const nextHandler = { handle: () => 'HANDLED' } as any;
 
-  const contextFor = (user: any, type = 'http') =>
+  const APP_ID = '11111111-1111-1111-1111-111111111111';
+  const contextFor = (user: any, type = 'http', request: any = {}) =>
     ({
       getType: () => type,
-      switchToHttp: () => ({ getRequest: () => ({ user }) }),
+      switchToHttp: () => ({
+        getRequest: () => ({ user, method: 'GET', originalUrl: `/api/apps/${APP_ID}`, ...request }),
+      }),
       getClass: () => class {},
       getHandler: () => () => undefined,
     }) as any;
 
   const interceptorFor = (module?: MODULES) => new PatScopeInterceptor({ get: () => module } as any);
+
+  const pluginInterceptorFor = (feature: PLUGIN_FEATURE) =>
+    new PatScopeInterceptor({ get: (key: string) => (key === 'tjModuleId' ? MODULES.PLUGINS : feature) } as any);
+
+  it('lets a workspace PAT read installed specs but blocks plugin mutations', () => {
+    const context = contextFor({ isPATLogin: true });
+    expect(pluginInterceptorFor(PLUGIN_FEATURE.GET_SPEC).intercept(context, nextHandler)).toBe('HANDLED');
+    for (const feature of [PLUGIN_FEATURE.INSTALL, PLUGIN_FEATURE.UPDATE, PLUGIN_FEATURE.DELETE]) {
+      expect(() => pluginInterceptorFor(feature).intercept(context, nextHandler)).toThrow(ForbiddenException);
+    }
+  });
 
   it('ignores browser and SSO sessions entirely', () => {
     const user = { isPasswordLogin: true };
@@ -122,10 +218,25 @@ describe('PatScopeInterceptor', () => {
   });
 
   it('exempts the app-scoped embed flow', () => {
-    // An embedded app runs a whole viewer and legitimately needs more surface than an
-    // automation client. Restricting it would regress a shipped feature.
-    const embedSession = { isPATLogin: true, patAppId: 'some-app-id' };
+    // Keyed on patScope, NOT on patAppId: a workspace token can pin a session to an app too.
+    const embedSession = { isPATLogin: true, patScope: PersonalAccessTokenScope.APP, patAppId: 'some-app-id' };
     expect(interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(embedSession), nextHandler)).toBe('HANDLED');
+  });
+
+  it('still exempts a pre-patScope embed session', () => {
+    const legacyEmbed = { isPATLogin: true, patAppId: 'some-app-id' };
+    expect(interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(legacyEmbed), nextHandler)).toBe('HANDLED');
+  });
+
+  it('does NOT exempt a workspace token merely because the session names an app', () => {
+    const renderSession = {
+      isPATLogin: true,
+      patScope: PersonalAccessTokenScope.WORKSPACE,
+      patAppId: APP_ID,
+    };
+    expect(() => interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(renderSession), nextHandler)).toThrow(
+      ForbiddenException
+    );
   });
 
   it('ignores non-HTTP contexts', () => {
@@ -135,14 +246,31 @@ describe('PatScopeInterceptor', () => {
     expect(interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(patSession, 'ws'), nextHandler)).toBe('HANDLED');
   });
 
-  it('lets a workspace PAT through on an allowed module', () => {
+  it.each([MODULES.APP, MODULES.WORKFLOWS])('lets a workspace PAT through on allowed module %s', (module) => {
     const patSession = { isPATLogin: true };
-    expect(interceptorFor(MODULES.APP).intercept(contextFor(patSession), nextHandler)).toBe('HANDLED');
+    expect(interceptorFor(module).intercept(contextFor(patSession), nextHandler)).toBe('HANDLED');
+  });
+
+  it('enforces group feature limits for workspace PAT sessions', () => {
+    for (const feature of [GROUP_FEATURE.CREATE, GROUP_FEATURE.DELETE_GROUP_USER, GROUP_FEATURE.DUPLICATE, GROUP_FEATURE.USER_ROLE_CHANGE]) {
+      const interceptor = new PatScopeInterceptor({
+        get: (key: string) => key === 'tjModuleId' ? MODULES.GROUP_PERMISSIONS : feature,
+      } as any);
+      const invoke = () => interceptor.intercept(contextFor({ isPATLogin: true }), nextHandler);
+      if (feature === GROUP_FEATURE.USER_ROLE_CHANGE) expect(invoke).toThrow(ForbiddenException);
+      else expect(invoke()).toBe('HANDLED');
+    }
   });
 
   it('blocks a workspace PAT on a module outside the allowlist', () => {
     const patSession = { isPATLogin: true };
     expect(() => interceptorFor(MODULES.ORGANIZATIONS).intercept(contextFor(patSession), nextHandler)).toThrow(
+      ForbiddenException
+    );
+  });
+
+  it('blocks a workspace PAT on an unassigned module', () => {
+    expect(() => interceptorFor(MODULES.AI).intercept(contextFor({ isPATLogin: true }), nextHandler)).toThrow(
       ForbiddenException
     );
   });
@@ -157,5 +285,199 @@ describe('PatScopeInterceptor', () => {
   it('blocks a workspace PAT on a route with no module metadata', () => {
     const patSession = { isPATLogin: true };
     expect(() => interceptorFor(undefined).intercept(contextFor(patSession), nextHandler)).toThrow(ForbiddenException);
+  });
+});
+
+describe('PatScopeInterceptor — app-pinned render session', () => {
+  const nextHandler = { handle: () => 'HANDLED' } as any;
+  const APP_ID = '11111111-1111-1111-1111-111111111111';
+  const OTHER_APP_ID = '22222222-2222-2222-2222-222222222222';
+
+  const session = { isPATLogin: true, patScope: PersonalAccessTokenScope.WORKSPACE, patAppId: APP_ID };
+
+  const run = (module: MODULES | undefined, feature?: string, request: any = {}) =>
+    new PatScopeInterceptor({ get: (key: string) => (key === 'tjFeatureId' ? feature : module) } as any).intercept(
+      {
+        getType: () => 'http',
+        switchToHttp: () => ({
+          getRequest: () => ({ user: session, method: 'GET', originalUrl: `/api/apps/${APP_ID}`, ...request }),
+        }),
+        getClass: () => class {},
+        getHandler: () => () => undefined,
+      } as any,
+      nextHandler
+    );
+
+  it('reaches /api/authorize, which an automation token may never touch', () => {
+    expect(run(MODULES.AUTH, AUTH_FEATURE.AUTHORIZE)).toBe('HANDLED');
+  });
+
+  it('reaches /api/authorize and nothing else on AUTH', () => {
+    // switchWorkspace is a GET on a workspace-level path: neither the pin nor read-only catches it.
+    expect(() => run(MODULES.AUTH, AUTH_FEATURE.SWITCH_WORKSPACE)).toThrow(ForbiddenException);
+  });
+
+  it('reads constants by app and environment, but never decrypts them', () => {
+    // The module as a whole reaches plaintext workspace secrets on a path neither narrowing catches.
+    for (const feature of [
+      ORGANIZATION_CONSTANT_FEATURE.GET_FROM_APP,
+      ORGANIZATION_CONSTANT_FEATURE.GET_FROM_ENVIRONMENT,
+    ]) {
+      expect(run(MODULES.ORGANIZATION_CONSTANT, feature)).toBe('HANDLED');
+    }
+    for (const feature of [
+      ORGANIZATION_CONSTANT_FEATURE.GET_DECRYPTED_CONSTANTS,
+      ORGANIZATION_CONSTANT_FEATURE.GET_SECRETS,
+    ]) {
+      expect(() => run(MODULES.ORGANIZATION_CONSTANT, feature)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('fetches the app definition on a versioned boot', () => {
+    expect(run(MODULES.VERSION, VERSION_FEATURE.GET_ONE)).toBe('HANDLED');
+    expect(() => run(MODULES.VERSION, VERSION_FEATURE.APP_VERSION_UPDATE)).toThrow(ForbiddenException);
+  });
+
+  it('does not reach the rest of the credential surface', () => {
+    for (const module of [MODULES.SESSION, MODULES.PROFILE]) {
+      expect(() => run(module)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('reads query folders, but cannot reorganise them', () => {
+    // The editor's query list returns null until the folder fetch resolves, so denying the read
+    // leaves the panel empty even though the queries themselves loaded.
+    expect(run(MODULES.DATA_QUERY_FOLDERS, DATA_QUERY_FOLDER_FEATURE.GET)).toBe('HANDLED');
+    for (const feature of [
+      DATA_QUERY_FOLDER_FEATURE.CREATE,
+      DATA_QUERY_FOLDER_FEATURE.UPDATE,
+      DATA_QUERY_FOLDER_FEATURE.DELETE,
+      DATA_QUERY_FOLDER_FEATURE.REORDER,
+    ]) {
+      expect(() => run(MODULES.DATA_QUERY_FOLDERS, feature)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('cannot enumerate the workspace through the app list', () => {
+    // GET carries no app id, so the pin cannot fire on it — the session would reach the dashboard
+    // and every other app's name. The by-id and by-slug reads the boot uses stay open.
+    expect(() => run(MODULES.APP, APP_FEATURE.GET)).toThrow(ForbiddenException);
+    expect(run(MODULES.APP, APP_FEATURE.GET_ONE)).toBe('HANDLED');
+    expect(run(MODULES.APP, APP_FEATURE.GET_BY_SLUG)).toBe('HANDLED');
+  });
+
+  it('reaches what the editor actually needs to paint', () => {
+    expect(run(MODULES.APP, APP_FEATURE.GET_ONE)).toBe('HANDLED');
+    for (const module of [
+      MODULES.APP_ENVIRONMENTS,
+      MODULES.DATA_QUERY,
+      MODULES.GLOBAL_DATA_SOURCE,
+      MODULES.CUSTOM_STYLES,
+    ]) {
+      expect(run(module)).toBe('HANDLED');
+    }
+  });
+
+  it('does not reach what the editor asked for but the render does not need', () => {
+    for (const module of [MODULES.AI, MODULES.APP_GIT]) {
+      expect(() => run(module)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('cannot reach workspace or instance administration', () => {
+    for (const module of [MODULES.GIT_SYNC, MODULES.SMTP, MODULES.LICENSING, MODULES.AUDIT_LOGS, MODULES.AI]) {
+      expect(() => run(module)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('cannot mint further tokens', () => {
+    expect(() => run(MODULES.PERSONAL_ACCESS_TOKENS)).toThrow(ForbiddenException);
+  });
+
+  it('is pinned to its own app', () => {
+    const GET_ONE = APP_FEATURE.GET_ONE;
+    expect(() => run(MODULES.APP, GET_ONE, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, GET_ONE, { originalUrl: `/api/apps/${OTHER_APP_ID}/versions` })).toThrow(
+      ForbiddenException
+    );
+    expect(run(MODULES.APP, GET_ONE, { originalUrl: `/api/apps/${APP_ID}/versions` })).toBe('HANDLED');
+  });
+
+  it('is pinned on routes that carry no app uuid, via the app the guard resolved', () => {
+    // Slug lookups and query runs never put the uuid in the path; without tj_app they slipped the pin.
+    expect(() =>
+      run(MODULES.APP, APP_FEATURE.GET_BY_SLUG, { originalUrl: '/api/apps/slugs/some-slug', tj_app: { id: OTHER_APP_ID } })
+    ).toThrow(ForbiddenException);
+    expect(() =>
+      run(MODULES.DATA_QUERY, undefined, {
+        method: 'POST',
+        originalUrl: '/api/data-queries/abc-123/run',
+        tj_app: { id: OTHER_APP_ID },
+      })
+    ).toThrow(ForbiddenException);
+    expect(
+      run(MODULES.APP, APP_FEATURE.GET_BY_SLUG, { originalUrl: '/api/apps/slugs/some-slug', tj_app: { id: APP_ID } })
+    ).toBe('HANDLED');
+  });
+
+  it('names the app it refused, so the mismatch is debuggable', () => {
+    expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { originalUrl: `/api/apps/${OTHER_APP_ID}` })).toThrow(
+      new RegExp(`scoped to a single app and cannot access ${OTHER_APP_ID}`)
+    );
+  });
+
+  it("is read-only, except for running the app's queries", () => {
+    expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'POST' })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'DELETE' })).toThrow(ForbiddenException);
+    expect(() => run(MODULES.APP, APP_FEATURE.GET_ONE, { method: 'PUT' })).toThrow(ForbiddenException);
+    expect(run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: '/api/data-queries/abc-123/run' })).toBe(
+      'HANDLED'
+    );
+    // The BUILDER run route, the one the render check uses: an unreleased app opens only in the editor.
+    expect(
+      run(MODULES.DATA_QUERY, undefined, {
+        method: 'POST',
+        originalUrl: '/api/data-queries/abc-123/versions/v-1/run/env-1?mode=edit',
+      })
+    ).toBe('HANDLED');
+    expect(() => run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: '/api/data-queries' })).toThrow(
+      ForbiddenException
+    );
+  });
+
+  it('fails closed on a route with no module metadata', () => {
+    expect(() => run(undefined)).toThrow(ForbiddenException);
+  });
+});
+
+describe('PAT app-viewer surface', () => {
+  it('keeps token minting unreachable', () => {
+    for (const module of PAT_APP_VIEWER_NEVER_GRANTABLE) {
+      expect(patAppViewerCanAccess(module)).toBe(false);
+      expect(PAT_APP_VIEWER_MODULES).not.toContain(module);
+    }
+  });
+
+  it('fails closed when a route carries no module metadata', () => {
+    expect(patAppViewerCanAccess(undefined)).toBe(false);
+  });
+
+  it('grants a non-empty set of modules', () => {
+    expect(PAT_APP_VIEWER_MODULES.length).toBeGreaterThan(0);
+  });
+
+  it('stays narrower than the workspace allowlist on administration', () => {
+    for (const module of [
+      MODULES.GIT_SYNC,
+      MODULES.SMTP,
+      MODULES.LICENSING,
+      MODULES.AUDIT_LOGS,
+      MODULES.INSTANCE_SETTINGS,
+      MODULES.ORGANIZATIONS,
+      MODULES.GROUP_PERMISSIONS,
+      MODULES.AI,
+    ]) {
+      expect(patAppViewerCanAccess(module)).toBe(false);
+    }
   });
 });

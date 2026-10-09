@@ -34,6 +34,9 @@ export class AiActiveRun {
   @Column({ name: 'heartbeat_at', type: 'timestamp', default: () => 'now()' })
   heartbeatAt: Date;
 
+  @Column({ name: 'cancel_requested', type: 'boolean', default: false })
+  cancelRequested: boolean;
+
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;

@@ -1,16 +1,15 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
-import { importSelectors } from "Selectors/exportImport";
-import { versionSwitcherSelectors } from "Selectors/version";
-import { renameApp } from "Support/utils/editor/editorHeaderOperations";
+import { importSelectors } from "Selectors/platform/exportImport";
+import { versionSwitcherSelectors } from "Selectors/platform/version";
+import { renameApp } from "Support/utils/appBuilder/editorHeader";
 import {
   importAndVerifyApp,
   setupDataSourceWithConstants,
   verifyImportModalElements,
 } from "Support/utils/exportImport";
 import { switchVersionAndVerify } from "Support/utils/version";
-import { importText } from "Texts/exportImport";
+import { importText } from "Texts/platform/exportImport";
 
 describe("App Import", () => {
   const TEST_DATA = {
@@ -86,13 +85,12 @@ describe("App Import", () => {
       importText.importOption
     );
 
-    cy.get(dashboardSelector.importAppButton).click();
     importAndVerifyApp(
       TEST_DATA.toolJetImage,
       importText.couldNotImportAppToastMessage
     );
 
-    cy.get(dashboardSelector.importAppButton).should("be.visible").click();
+    cy.get(importSelectors.dropDownMenu).should("be.visible").click();
     importAndVerifyApp(
       TEST_DATA.invalidApp,
       "Could not import: SyntaxError: Expected ',' or '}' after property value in JSON at position 246 (line 11 column 13)"
@@ -102,6 +100,7 @@ describe("App Import", () => {
   it("should verify app with multiple version", () => {
     cy.intercept("POST", "/api/v2/resources/import").as("importApp");
 
+    cy.get(importSelectors.dropDownMenu).should("be.visible").click();
     cy.get(importSelectors.importOptionInput)
       .eq(0)
       .selectFile(TEST_DATA.appFiles.multiVersion, { force: true });

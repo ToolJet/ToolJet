@@ -1,6 +1,17 @@
 import { INestApplication } from '@nestjs/common';
-import { createUser, initTestApp, login, closeTestApp, getDefaultDataSource } from 'test-helper';
+import {
+  createUser,
+  initTestApp,
+  login,
+  closeTestApp,
+  getDefaultDataSource,
+  createCompleteWorkflow,
+  ensureAppEnvironments,
+  createGroupPermission,
+} from 'test-helper';
+import { createApplication } from '../../../helpers/seed';
 import { UserPersonalAccessToken } from '@entities/user_personal_access_tokens.entity';
+import { User } from '@entities/user.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import * as request from 'supertest';
 
@@ -16,6 +27,7 @@ describe('Personal access token session exchange', () => {
   let tokenCookie: string[];
   let orgId: string;
   let userId: string;
+  let owner: User;
 
   const futureDate = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 
@@ -34,6 +46,22 @@ describe('Personal access token session exchange', () => {
     return { token: res.body.token, id: res.body.id };
   };
 
+  const createApp = async (name: string): Promise<string> => {
+    const application = await createApplication(app, { name, user: owner });
+    return application.id;
+  };
+
+  const createAppInOtherWorkspace = async (): Promise<string> => {
+    const { user: outsider } = await createUser(app, {
+      email: 'outsider@tooljet.io',
+      firstName: 'other',
+      lastName: 'workspace',
+      organizationName: 'Other workspace',
+    });
+    const application = await createApplication(app, { name: 'foreign-app', user: outsider });
+    return application.id;
+  };
+
   const exchange = (token: string) =>
     request
       .agent(app.getHttpServer())
@@ -49,6 +77,10 @@ describe('Personal access token session exchange', () => {
     });
     orgId = organization.id;
     userId = user.id;
+    // organizationId is in-memory only; a findOne-loaded user lacks it, apps.organization_id NOT NULL
+    owner = user;
+    owner.organizationId = orgId;
+    await ensureAppEnvironments(app, orgId);
     ({ tokenCookie } = await login(app));
   });
 
@@ -88,6 +120,51 @@ describe('Personal access token session exchange', () => {
       expect(payload.appId).toBeUndefined();
       // Attribution: PAT-driven writes must be distinguishable from a human's in audit logs.
       expect(payload.tj_api_source).toBe('personal_access_token');
+    });
+
+    it('should mint an app-scoped session for an app in the token workspace', async () => {
+      const { token } = await createPat('app-scoped');
+      const appId = await createApp('render-target');
+
+      const res = await exchange(token).send({ appId }).expect(201);
+
+      const payload = JSON.parse(Buffer.from(res.body.authToken.split('.')[1], 'base64').toString());
+      // patScope stays 'workspace': pinning to an app must not hand it the embed flow's exemption.
+      expect(payload).toMatchObject({ isPATLogin: true, appId, organizationIds: [orgId], patScope: 'workspace' });
+    });
+
+    it('should reject a malformed appId with 400, not 500', async () => {
+      const { token } = await createPat('bad-app-id');
+      await exchange(token).send({ appId: 'not-a-uuid' }).expect(400);
+    });
+
+    it('should refuse an app in another workspace', async () => {
+      const { token } = await createPat('foreign-app');
+      const foreignAppId = await createAppInOtherWorkspace();
+
+      await exchange(token).send({ appId: foreignAppId }).expect(404);
+    });
+
+    it.each(['workflow', 'module'])('should refuse a %s id in place of an app', async (type) => {
+      const { token } = await createPat(`not-an-app-${type}`);
+      const resource = await createApplication(app, { name: `pinned-${type}`, user: owner, type });
+
+      await exchange(token).send({ appId: resource.id }).expect(404);
+    });
+
+    it('should refuse an app that does not exist', async () => {
+      const { token } = await createPat('missing-app');
+      await exchange(token).send({ appId: '00000000-0000-0000-0000-000000000000' }).expect(404);
+    });
+
+    it('should still mint a workspace session when no app is named', async () => {
+      const { token } = await createPat('no-app-named');
+      const res = await exchange(token).expect(201);
+
+      const payload = JSON.parse(Buffer.from(res.body.authToken.split('.')[1], 'base64').toString());
+      expect(payload.appId).toBeUndefined();
+      expect(payload.scope).toBeUndefined();
+      expect(payload.patScope).toBe('workspace');
     });
 
     it('should reject an expired token', async () => {
@@ -216,6 +293,105 @@ describe('Personal access token session exchange', () => {
         .expect(200);
     });
 
+    it('should create a workflow with a workspace PAT session', async () => {
+      const { token } = await createPat('workflow-create');
+      const { body } = await exchange(token).expect(201);
+
+      const res = await request(app.getHttpServer())
+        .post('/api/workflows')
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .send({ name: 'PAT workflow', type: 'workflow' })
+        .expect(201);
+
+      expect(res.body).toMatchObject({ id: expect.any(String), name: 'PAT workflow' });
+    });
+
+    it('should execute a workflow and read its status and nodes with a workspace PAT session', async () => {
+      const { app: workflow, appVersion } = await createCompleteWorkflow(app, owner, {
+        name: 'PAT execution',
+        nodes: [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+          },
+        ],
+        edges: [],
+        queries: [],
+      });
+      const { token } = await createPat('workflow-execute');
+      const { body } = await exchange(token).expect(201);
+      const headers = { Cookie: `tj_auth_token=${body.authToken}`, 'tj-workspace-id': orgId };
+
+      const execution = await request(app.getHttpServer())
+        .post('/api/workflow_executions')
+        .set(headers)
+        .send({ appId: workflow.id, executeUsing: 'app', userId, environmentId: appVersion.currentEnvironmentId })
+        .expect(201);
+      expect(execution.body).toMatchObject({ workflowExecution: { id: expect.any(String) } });
+
+      const executionId = execution.body.workflowExecution.id;
+      const status = await request(app.getHttpServer())
+        .get(`/api/workflow_executions/${executionId}/status`)
+        .set(headers)
+        .expect(200);
+      expect(status.body).toMatchObject({ status: expect.any(Boolean) });
+
+      await request(app.getHttpServer()).get(`/api/workflow_executions/${executionId}/nodes`).set(headers).expect(200);
+    });
+
+    it('should create, rename, remove membership and delete custom groups through a PAT session', async () => {
+      const { token } = await createPat('dispatch-group-lifecycle');
+      const { body } = await exchange(token).expect(201);
+      const api = request.agent(app.getHttpServer());
+      const headers = { tj_auth_token: body.authToken, 'tj-workspace-id': orgId };
+      const base = '/api/v2/group-permissions';
+      const created = await api.post(base).set(headers).send({ name: 'Dispatch Roster' }).expect(201);
+      const groupId = created.body.id;
+      const listed = await api.get(base).set(headers).expect(200);
+      expect(listed.body.groupPermissions).toEqual(expect.arrayContaining([expect.objectContaining({ id: groupId })]));
+      await api.put(`${base}/${groupId}`).set(headers).send({ name: 'Regional Dispatch' }).expect(200);
+      const renamed = await api.get(`${base}/${groupId}`).set(headers).expect(200);
+      expect(renamed.body.group.name).toBe('Regional Dispatch');
+
+      // Seed membership using the existing browser endpoint; the MCP adds via organization-users.
+      await api.post(`${base}/${groupId}/users`).set('Cookie', tokenCookie).set('tj-workspace-id', orgId)
+        .send({ userIds: [userId], groupId }).expect(201);
+      const members = await api.get(`${base}/${groupId}/users`).set(headers).expect(200);
+      const membership = members.body.find((member) => member.userId === userId);
+      expect(membership.id).toBeDefined();
+      await api.delete(`${base}/users/${membership.id}`).set(headers).expect(200);
+      const afterRemoval = await api.get(`${base}/${groupId}/users`).set(headers).expect(200);
+      expect(afterRemoval.body).toEqual([]);
+      expect(await getDefaultDataSource().getRepository(OrganizationUser).findOneBy({ userId, organizationId: orgId }))
+        .toMatchObject({ status: 'active' });
+      await api.delete(`${base}/${groupId}`).set(headers).expect(200);
+      const afterDelete = await api.get(base).set(headers).expect(200);
+      expect(afterDelete.body.groupPermissions.some((group) => group.id === groupId)).toBe(false);
+    });
+
+    it('should preserve default groups and reject group ids in a different workspace', async () => {
+      const { token } = await createPat('group-boundaries');
+      const { body } = await exchange(token).expect(201);
+      const api = request.agent(app.getHttpServer());
+      const headers = { tj_auth_token: body.authToken, 'tj-workspace-id': orgId };
+      const base = '/api/v2/group-permissions';
+      const listed = await api.get(base).set(headers).expect(200);
+      const defaultGroup = listed.body.groupPermissions.find((group) => group.type === 'default');
+      expect((await api.delete(`${base}/${defaultGroup.id}`).set(headers)).status).toBe(400);
+      expect((await api.put(`${base}/${defaultGroup.id}`).set(headers).send({ name: 'Reserved Rename' })).status).toBe(400);
+      const outsider = await createUser(app, { email: 'warehouse-admin@example.test' });
+      const foreignGroup = await createGroupPermission(app, { name: 'Warehouse Staff', organization: outsider.organization });
+      for (const method of ['get', 'put', 'delete'] as const) {
+        const res = await api[method](`${base}/${foreignGroup.id}`).set(headers).send({ name: 'Unreachable' });
+        expect(res.status).toBe(400);
+      }
+      await foreignGroup.reload();
+      expect(foreignGroup.name).toBe('Warehouse Staff');
+    });
+
     it('should ignore a body workspace override for archive and unarchive', async () => {
       const outsider = await createUser(app, {
         email: 'pat-scope-outsider@tooljet.io',
@@ -256,7 +432,7 @@ describe('Personal access token session exchange', () => {
       // which is the whole point of the allowlist.
       const res = await request
         .agent(app.getHttpServer())
-        .get('/api/v2/group-permissions')
+        .get('/api/organizations')
         .set('Cookie', `tj_auth_token=${body.authToken}`)
         .set('tj-workspace-id', orgId)
         .expect(403);

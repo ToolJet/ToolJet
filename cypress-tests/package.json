@@ -12,6 +12,7 @@
     "@faker-js/faker": "^7.3.0",
     "chrome-remote-interface": "^0.34.0",
     "cypress": "^15.18.0",
+    "cypress-live-reporter": "^0.1.0",
     "cypress-mailhog": "^2.5.0",
     "cypress-real-dnd": "^0.1.4"
   },

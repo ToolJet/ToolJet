@@ -232,6 +232,7 @@ const FilePicker = (props) => {
               data-cy={`${dataCy}-upload-files-label`}
             >
               {labelText}
+              {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)' }}>*</span>}
             </h3>
             <ValidationBar
               minSize={minSize}

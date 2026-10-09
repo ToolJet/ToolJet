@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
+import { dashboardSelector } from "Selectors/platform/dashboard";
 import { logout, apiUpdateInstanceSettings } from "Support/utils/common";
 import { allowPersonalWorkspace, passwordToggle, updateInstanceSettings } from "Support/utils/platform/eeCommon";
 

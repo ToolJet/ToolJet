@@ -69,8 +69,14 @@ jobs:
           echo "::error title=Frontend tests not run::This PR changes frontend/ but does not carry the 'run-frontend-tests' label, so the suite has not run. Add the label to run it. This check must pass before the PR can be merged."
           exit 1
 
+      # Default GITHUB_TOKEN only authenticates for this repo, not the private
+      # ee-frontend/ee-server submodules — submodule checkout needs a PAT with
+      # cross-repo read access, same as merging-pr.yml and render-preview-deploy-v2.yml.
       - uses: actions/checkout@v4
         if: steps.scope.outputs.frontend == 'true'
+        with:
+          submodules: recursive
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         if: steps.scope.outputs.frontend == 'true'
@@ -102,3 +108,56 @@ jobs:
       - name: Validate App Builder coverage manifest
         if: steps.scope.outputs.frontend == 'true'
         run: npm run validate:app-builder-coverage-manifest
+
+  # Separate job, and therefore a SEPARATE STATUS CHECK, on purpose: a contract
+  # violation used to abort the job before jest ran, so an unrelated bookkeeping
+  # failure destroyed the test signal. Splitting them means "Frontend tests" answers
+  # "do the tests pass?" and nothing else.
+  #
+  # Unlike "Frontend tests" this one is genuinely ON DEMAND — no label, no run, no
+  # status reported. Do NOT mark it required in the ruleset: a required check that
+  # never reports leaves every PR pending forever.
+  widget-contracts:
+    name: Widget contracts
+    # Label-gated rather than path-gated. The changed-file rules (production_changes,
+    # new-widget contracts) only carry meaning on a PR where a human authored the
+    # change, so back-merges and release PRs simply do not carry the label.
+    if: >-
+      github.event_name != 'pull_request' ||
+      contains(github.event.pull_request.labels.*.name, 'run-validate-widget-contracts')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      # Contracts live in the private frontend/ee submodule, so this needs the same
+      # cross-repo PAT as the test job — the default token cannot read it.
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.15.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Existing untouched widgets remain a report-only backfill. New widget
+      # definitions and modified widget tests must already have an approved
+      # behavior contract before CI accepts them.
+      - name: Validate widget testing contracts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+              --paginate --jq '.[] | [.status, .filename] | @tsv' | \
+              npm run validate:widget-testing-contracts -- --changed-files-stdin
+          else
+            npm run validate:widget-testing-contracts
+          fi

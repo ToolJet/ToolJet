@@ -15,6 +15,7 @@ export function SortableTree({
   onReorder,
   onDeleteItem,
   onItemChange,
+  validateItemId,
   getResolvedValue,
   collapsible = true,
   indicator = true,
@@ -30,6 +31,7 @@ export function SortableTree({
           item={item}
           onDeleteItem={onDeleteItem}
           onItemChange={onItemChange}
+          validateItemId={validateItemId}
           getResolvedValue={getResolvedValue}
         />
       );
@@ -43,6 +45,7 @@ export function SortableTree({
         onCollapse={props.onCollapse}
         onDeleteItem={onDeleteItem}
         onItemChange={onItemChange}
+        validateItemId={validateItemId}
         getResolvedValue={getResolvedValue}
       />
     );
@@ -52,6 +55,9 @@ export function SortableTree({
     <NavMenuItemGhost darkMode={darkMode} item={item} getResolvedValue={getResolvedValue} />
   );
 
+  // Keyed by `_key`, not `id` — editing an item's id must not remount its row.
+  const getItemKey = (item) => item._key || item.id;
+
   return (
     <SharedSortableTree
       items={menuItems}
@@ -59,6 +65,7 @@ export function SortableTree({
       propertyNames={PROPERTY_NAMES}
       renderItem={renderItem}
       renderGhost={renderGhost}
+      getItemKey={getItemKey}
       collapsible={collapsible}
       indicator={indicator}
       indentationWidth={indentationWidth}

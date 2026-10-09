@@ -6,19 +6,15 @@ import useStore from '@/AppBuilder/_stores/store';
 
 /**
  * "Agent is building" overlay for the editor. While an AI build or modification is in progress
- * (ai.isLoading in the generate conversation), it disables the canvas and the left icon toolbar and
+ * (ai.isLoading in the generate conversation), it disables the canvas and the editing panels and
  * warns the user not to refresh — a mid-build refresh interrupts a live direct-build and can leave a
  * half-applied app. Applies to new builds and edits of existing apps alike.
  *
  * The editor z-order is: canvas (auto) < AI-chat popover (z-2) < left toolbar (z-10) < header (z-12).
- * Because the chat sits BELOW the toolbar, one overlay can't cover the toolbar and still keep the chat
- * usable. So we use two dim layers:
- *   - canvas layer at z-1 — above the canvas, BELOW the chat popover, so the chat and its live progress
- *     stay visible and interactive. Carries the message card.
- *   - toolbar layer at z-11 — above the toolbar (z-10), but x-clamped to the 48px toolbar strip so it
- *     never overlaps the chat panel to its right.
- * Both mounted inside #main-editor-canvas (which spans the editor from 0,0), so absolute offsets map to
- * viewport coordinates without a fixed-position/transform-ancestor gamble.
+ * One dim layer, at z-1 — above the canvas but BELOW the chat popover, so the chat and its live
+ * progress stay visible and interactive. It carries the message card, and starts at x=48 so it never
+ * covers the left toolbar. Mounted inside #main-editor-canvas (which spans the editor from 0,0), so
+ * absolute offsets map to viewport coordinates without a fixed-position/transform-ancestor gamble.
  */
 const TOOLBAR_W = 48; // ToolJet left icon strip width
 const HEADER_H = 48; // editor header height
@@ -37,13 +33,17 @@ const AgentBuildingOverlay = () => {
     return () => window.removeEventListener('beforeunload', warn);
   }, [isBuilding]);
 
-  // Disable the surrounding editor chrome IN PLACE — the left icon toolbar, the right properties
-  // panel, and the queries panel — by fading them and blocking clicks, instead of laying a dark
-  // rectangle over each (which read as odd). Toggled imperatively because these are separate React
-  // subtrees from this overlay. The canvas itself keeps its dim layer below.
+  // Disable the surrounding editor chrome IN PLACE — the right properties panel and the queries
+  // panel — by fading them and blocking clicks, instead of laying a dark rectangle over each (which
+  // read as odd). Toggled imperatively because these are separate React subtrees from this overlay.
+  // The canvas itself keeps its dim layer below.
+  //
+  // The left sidebar is deliberately NOT in this list. It edits nothing — it is the chat, the
+  // debugger, version history — and disabling it removed the only way to see what the agent was
+  // doing or to recover if the build indicator ever got stuck, since the chat lives behind it.
   useEffect(() => {
     if (!isBuilding) return undefined;
-    const selectors = ['.left-sidebar', '.right-sidebar', '[class*="query-manager"]'];
+    const selectors = ['.right-sidebar', '[class*="query-manager"]'];
     const restore = [];
     selectors.forEach((sel) => {
       document.querySelectorAll(sel).forEach((el) => {

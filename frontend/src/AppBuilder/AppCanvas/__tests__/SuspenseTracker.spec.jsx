@@ -1,6 +1,6 @@
 /**
  * Unit coverage for SuspenseCountProvider's remount/key contract, which
- * AppCanvas.jsx's page-switch fix depends on (AppCanvas.jsx:288).
+ * AppCanvas.jsx's page-switch fix depends on (AppCanvas.jsx:289).
  *
  * onAllResolved only ever fires once PER PROVIDER INSTANCE — hasResolved is a
  * one-shot latch (SuspenseTracker.jsx:19-24) that never resets on its own.
@@ -30,9 +30,9 @@ function createLazyChild(label) {
   return { LazyChild, resolveImport, label };
 }
 
-function Harness({ providerKey, onAllResolved, LazyChild }) {
+function Harness({ providerKey, onAllResolved, LazyChild, disabled }) {
   return (
-    <SuspenseCountProvider key={providerKey} onAllResolved={onAllResolved}>
+    <SuspenseCountProvider key={providerKey} onAllResolved={onAllResolved} disabled={disabled}>
       <TrackedSuspense fallback={<div>loading</div>}>
         <LazyChild />
       </TrackedSuspense>
@@ -97,5 +97,37 @@ describe('SuspenseCountProvider', () => {
     await waitFor(() => expect(screen.getByText(second.label)).toBeInTheDocument());
 
     expect(onAllResolved).toHaveBeenCalledTimes(2);
+  });
+
+  // Regression guard: checkAndResolve used to depend on `disabled`, so every
+  // disabled toggle on an ALREADY-MOUNTED instance gave it a new identity —
+  // which made the mount effect (which depends on it) think a fresh mount had
+  // happened and re-run its init check. If a child is still genuinely pending
+  // at that moment, this must NOT resolve — only the child actually finishing
+  // should. checkAndResolve now reads disabled via a ref instead, so toggling
+  // it can't spuriously re-run the mount effect's init logic; a dedicated
+  // `disabled` dependency on that effect is what correctly re-checks readiness.
+  test('regression guard: toggling disabled while a child is still pending does not resolve early', async () => {
+    const onAllResolved = jest.fn();
+    const { LazyChild, resolveImport, label } = createLazyChild('loaded-1');
+
+    const { rerender } = render(
+      <Harness providerKey="page-a" onAllResolved={onAllResolved} LazyChild={LazyChild} disabled={true} />
+    );
+    expect(onAllResolved).not.toHaveBeenCalled();
+
+    // disabled flips false while the child is still suspended (pendingCount > 0).
+    rerender(<Harness providerKey="page-a" onAllResolved={onAllResolved} LazyChild={LazyChild} disabled={false} />);
+    expect(onAllResolved).not.toHaveBeenCalled();
+
+    // Flip it back true and false again — repeated toggling alone must never resolve.
+    rerender(<Harness providerKey="page-a" onAllResolved={onAllResolved} LazyChild={LazyChild} disabled={true} />);
+    rerender(<Harness providerKey="page-a" onAllResolved={onAllResolved} LazyChild={LazyChild} disabled={false} />);
+    expect(onAllResolved).not.toHaveBeenCalled();
+
+    resolveImport();
+    await waitFor(() => expect(screen.getByText(label)).toBeInTheDocument());
+
+    expect(onAllResolved).toHaveBeenCalledTimes(1);
   });
 });

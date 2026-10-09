@@ -4,6 +4,7 @@ import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
+import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 var _ = require('lodash');
 
@@ -182,6 +183,7 @@ export const resolveCode = (
     }
   }
 
+  result = materializeFileHandleRefs(result);
   if (withError) return [result, error];
   return result;
 };
@@ -190,8 +192,7 @@ export const resolveCode = (
 // Eg, input: "Hello, {{name}}! Welcome to {{city}}."
 //     output: ["{{name}}", "{{city}}"]
 export const getDynamicVariables = (text) => {
-  /* eslint-disable no-useless-escape */
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/gs) || text.match(/%%(.*?)%%/gs);
   return matchedParams;
 };
 
@@ -345,8 +346,14 @@ export const checkSubstringRegex = (mainString, subString) => {
   // Escape special characters in the subString
   const escapedSubString = subString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  // Create a regular expression
-  const regex = new RegExp(`(^|[^a-zA-Z0-9\\].])(${escapedSubString})($|[.\\[])`);
+  // Matches `subString` used as a standalone reference.
+  // - The trailing set is deliberately narrow —
+  // - a property access (`.`), an index (`[`), optional chaining (`?.`), whitespace, or end of string.
+  //
+  // Whitespace is what a bare identifier is followed by in practice.
+  // Optional chaining is matched as the two-character `?.`.
+  // The cost is the unspaced ternary `listItem?a:b`; the spaced form is covered by whitespace.
+  const regex = new RegExp(`(^|[^a-zA-Z0-9\\].])(${escapedSubString})($|[.\\[\\s]|\\?\\.)`);
 
   // Test the mainString against the regex
   return regex.test(mainString);

@@ -223,13 +223,8 @@ const useAppData = (
     }
   };
 
-  // Only OBSERVES pageSwitchInProgress to remember (locally, in a ref) that a
-  // switch is under way, for the onPageLoad-vs-runOnLoadQueries branch further
-  // below. Must NOT reset the flag itself — that's appSlice.js's re-entrancy
-  // guard, and resetting it here as soon as this effect fires (essentially
-  // immediately after switchPage sets it) silently defeated the guard for
-  // virtually its entire intended lifetime, regardless of how long doSwitch
-  // actually takes to finish.
+  // Only observes pageSwitchInProgress — must not reset it. Ownership of that flag's
+  // lifecycle belongs solely to appSlice.js's switchPage/doSwitch.
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
       isPageSwitchRef.current = true;
@@ -276,6 +271,11 @@ const useAppData = (
     if (!currentSession) {
       return;
     }
+    // Guards against a Module unmounted mid-load by rapid page switching: its stale promise
+    // would otherwise still call startExposedValueBatch() below, opening a batch nothing
+    // will ever flush (its own layout-ready cycle belongs to a fresh mount that already
+    // ran its own load-and-flush) — an orphaned +1 that leaves the shared batch stuck open.
+    let isCancelled = false;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess =
@@ -427,15 +427,43 @@ const useAppData = (
           const taggedResources = state?.taggedResources;
           const hasTaggedResources =
             taggedResources && (taggedResources.datasources?.length ?? 0) + (taggedResources.tables?.length ?? 0) > 0;
-          sendMessage(state.prompt, {}, hasTaggedResources ? { taggedResources } : {}, moduleId);
+          const clearKickoffDraft = () => {
+            const {
+              prompt: _prompt,
+              taggedResources: _taggedResources,
+              attachments: _attachments,
+              kickoffAttempted: _kickoffAttempted,
+              ...restUsrState
+            } = window.history.state?.usr || {};
+            window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
+          };
+          if (state.kickoffAttempted) {
+            // A reload restores an unaccepted draft for explicit retry, never silently resubmits it.
+            useStore.setState((draft) => {
+              draft.ai.failedSubmission = {
+                conversationId: conversation.id,
+                content: state.prompt,
+                attachments: state.attachments || [],
+              };
+            });
+          } else {
+            window.history.replaceState(
+              { ...window.history.state, usr: { ...window.history.state?.usr, kickoffAttempted: true } },
+              '', window.location.href
+            );
+            sendMessage(
+              state.prompt,
+              {},
+              {
+                ...(hasTaggedResources ? { taggedResources } : {}),
+                attachments: state.attachments,
+                restoreDraftOnFailure: true,
+                onAccepted: clearKickoffDraft,
+              },
+              moduleId
+            );
+          }
           setIsQueryPaneExpanded(false);
-          // Clear prompt from navigation state so it doesn't re-trigger on page refresh
-          const {
-            prompt: _prompt,
-            taggedResources: _taggedResources,
-            ...restUsrState
-          } = window.history.state?.usr || {};
-          window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
         if (initialLoadRef.current) {
@@ -451,17 +479,18 @@ const useAppData = (
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
         }
-        // Load global settings (app/module mode, theme, canvas styles) from the backend for BOTH apps
-        // and modules — the module editor's Canvas styles fields read these, so gating this to
-        // non-modules left module mode/theme unpopulated.
-        const global_settings = mapKeys(
-          appData.editing_version?.global_settings || appData.global_settings,
-          (value, key) => camelCase(key)
-        );
-        if (!global_settings?.theme) {
-          global_settings.theme = baseTheme;
+        // Skip overriding global settings so an embedded module's own settings never overwrite the app's.
+        if (!isEmbeddedModuleInstance(mode, moduleMode)) {
+          const global_settings = mapKeys(
+            appData.editing_version?.global_settings || appData.global_settings,
+            (value, key) => camelCase(key)
+          );
+          if (!global_settings?.theme) {
+            global_settings.theme = baseTheme;
+          }
+          setGlobalSettings(global_settings);
         }
-        setGlobalSettings(global_settings);
+
         setPages(pages, moduleId);
         if (!moduleMode) {
           setPageSettings(
@@ -646,6 +675,10 @@ const useAppData = (
           updateReleasedVersionId(appData.current_version_id);
         }
 
+        // This instance was torn down (e.g. its Module got unmounted by a rapid page
+        // switch) before its own load finished — skip opening a batch nobody will flush.
+        if (isCancelled) return;
+
         startExposedValueBatch();
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
@@ -660,6 +693,10 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
+
+    return () => {
+      isCancelled = true;
+    };
   }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
@@ -712,10 +749,10 @@ const useAppData = (
           // Apps that need data refresh on navigation should trigger queries from the
           // onPageLoad event instead of relying on runOnPageLoad.
           isPageSwitchRef.current = false;
-          handleEvent('onPageLoad', currentPageEvents, {});
+          handleEvent('onPageLoad', currentPageEvents, {}, moduleId);
         } else {
           runOnLoadQueries(moduleId).then(() => {
-            handleEvent('onPageLoad', currentPageEvents, {});
+            handleEvent('onPageLoad', currentPageEvents, {}, moduleId);
           });
         }
       };
@@ -958,3 +995,9 @@ const useAppData = (
 };
 
 export default useAppData;
+
+export function isEmbeddedModuleInstance(mode, moduleMode) {
+  // As of now this would be True only when Viewer is mounted by ModuleViewer for an embedded module (module
+  // preview uses the same Viewer path but with moduleMode false, so it's unaffected).
+  return mode === 'view' && moduleMode;
+}

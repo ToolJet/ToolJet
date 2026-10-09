@@ -4,7 +4,7 @@ import { commonSelectors } from "Selectors/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
 import { fillDSConnectionForm } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { graphqlUIConfig, graphqlFormConfig, graphqlApiOptions } from "Constants/constants/marketplace/datasources/graphql";
-import { dataSourceSelector } from "Constants/selectors/dataSource";
+import { dataSourceSelector } from "Constants/selectors/marketplace/dataSource";
 
 const data = {};
 

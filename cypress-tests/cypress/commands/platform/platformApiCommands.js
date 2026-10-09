@@ -518,6 +518,30 @@ Cypress.Commands.add("apiDeleteAllApps", () => {
   });
 });
 
+/**
+ * @tjCmd   api · delete every workflow in the workspace via the REST API, mirroring apiDeleteAllApps
+ * @tjUsage cy.apiDeleteAllWorkflows()
+ */
+Cypress.Commands.add("apiDeleteAllWorkflows", () => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/apps?page=1&type=workflow`,
+      headers,
+      log: false,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+      const workflows = response.body.apps || [];
+      const workflowIds = workflows.map((workflow) => workflow.id);
+      if (workflowIds.length > 0) {
+        cy.wrap(workflowIds).each((id) => {
+          cy.apiDeleteApp(id);
+        });
+      }
+    });
+  });
+});
+
 Cypress.Commands.add(
   "apiUpdateSSOConfig",
   (ssoConfig, level = "workspace", cachedHeaders = false) => {

@@ -33,7 +33,7 @@ export function defineAppBuilderScenario(input) {
   if (!APP_BUILDER_SEAMS.includes(input.primarySeam)) throw new Error(`Unknown primarySeam: ${input.primarySeam}`);
   if (!APP_BUILDER_SURFACES.includes(input.surface)) throw new Error(`Unknown surface: ${input.surface}`);
   if (!['ce', 'ee'].includes(input.edition)) throw new Error(`Unknown edition: ${input.edition}`);
-  const allowedCapabilities = ['network', 'time', 'ids', 'geometry', 'observers', 'media', 'storage'];
+  const allowedCapabilities = ['network', 'time', 'ids', 'geometry', 'observers', 'media', 'storage', 'dnd'];
   for (const capability of Object.keys(input.capabilities)) {
     if (!allowedCapabilities.includes(capability)) throw new Error(`Unknown capability: ${capability}`);
   }

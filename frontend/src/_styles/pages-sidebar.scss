@@ -248,7 +248,7 @@
             gap: 12px;
             font-weight: 500;
             font-size: 16px;
-            color: var(--cc-primary-text);
+            color: var(--app-title-color, var(--cc-primary-text));
             padding: 24px 16px;
             align-items: center;
             width: 100% !important;

@@ -39,6 +39,20 @@ const initialState = {
   },
 };
 
+// Lets a newer switchPage cancel an older, still-running doSwitch instead of it
+// mutating state in the background after being superseded. Keyed by `get`
+// (stable per store instance) rather than closure state, so createAppSlice can
+// stay a plain object-literal factory like every other slice.
+const _switchGenerationByStore = new WeakMap();
+const getSwitchGeneration = (get) => {
+  let generations = _switchGenerationByStore.get(get);
+  if (!generations) {
+    generations = {};
+    _switchGenerationByStore.set(get, generations);
+  }
+  return generations;
+};
+
 export const createAppSlice = (set, get) => ({
   ...initialState,
   initializeAppSlice: (moduleId) => {
@@ -255,11 +269,16 @@ export const createAppSlice = (set, get) => ({
     get().debugger.resetUnreadErrorCount();
 
     if (get().pageSwitchInProgress) {
-      toast('Please wait, page switch in progress', {
-        icon: '⚠️',
-      });
-      return;
+      // Reclaim this switch's batch slot rather than rejecting the call — discards only
+      // this moduleId's buffered writes, leaving any other module's untouched. The old
+      // doSwitch itself is stopped via the generation check below, not by this call.
+      get().cancelExposedValueBatch(moduleId);
     }
+
+    // Lets an older, still-running doSwitch detect it's been superseded.
+    const _switchGeneration = getSwitchGeneration(get);
+    const myGeneration = (_switchGeneration[moduleId] = (_switchGeneration[moduleId] || 0) + 1);
+    const isSuperseded = () => _switchGeneration[moduleId] !== myGeneration;
 
     // Set the flag synchronously before the first yieldToMain so rapid back-to-back
     // switchPage calls don't slip through the guard above while doSwitch is awaiting.
@@ -291,6 +310,10 @@ export const createAppSlice = (set, get) => ({
 
       setPageLoader(true);
       await yieldToMain(); // Paint the loader before doing heavy work
+      // Bail if superseded, before touching cleanUpStore/setCurrentPageId/navigate.
+      if (isSuperseded()) {
+        return;
+      }
 
       // Capture the current page BEFORE updating so isSamePage is correct.
       // Reading getCurrentPageId after setCurrentPageId would always return pageId
@@ -351,18 +374,16 @@ export const createAppSlice = (set, get) => ({
       initDependencyGraph('canvas');
       setIsComponentLayoutReady(false, moduleId);
       await yieldToMain(); // Let React commit all state changes before showing the Container
+      // Bail if superseded, before opening a batch for a page nobody's waiting on.
+      if (isSuperseded()) {
+        return;
+      }
 
       startExposedValueBatch();
       setPageLoader(false);
-      // Held until the batch this switch opened is actually flushed (by the
-      // isComponentLayoutReady effect in useAppData.js once Suspense/layout
-      // settles for the new page) — not merely until doSwitch's own
-      // synchronous work is done. Releasing it earlier let a second,
-      // perfectly legitimate switchPage (no race needed, just two normal
-      // clicks before the previous page finished settling) open a second
-      // nested batch that only one flush would ever close, freezing every
-      // exposed-value write in the app until reload.
-      bufferExposedValuePostFlush(() => setPageSwitchInProgress(false), `pageSwitchGuard|${moduleId}`);
+      // Released once this switch's batch actually flushes (isComponentLayoutReady
+      // effect in useAppData.js), not merely once doSwitch's own code finishes.
+      bufferExposedValuePostFlush(() => setPageSwitchInProgress(false), moduleId, `pageSwitchGuard|${moduleId}`);
     };
 
     doSwitch().catch((error) => {

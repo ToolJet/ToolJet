@@ -5,8 +5,17 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import NavItemPopover from './NavItemPopover';
+import { isClickInsidePortaledOverlay } from '@/AppBuilder/RightSideBar/Inspector/Utils';
 
-export const GroupMenuItem = ({ darkMode, item, highlight, onDeleteItem, onItemChange, getResolvedValue }) => {
+export const GroupMenuItem = ({
+  darkMode,
+  item,
+  highlight,
+  onDeleteItem,
+  onItemChange,
+  validateItemId,
+  getResolvedValue,
+}) => {
   const [showActionsPopover, setShowActionsPopover] = useState(false);
   const [showEditPopover, setShowEditPopover] = useState(false);
   const optionsBtnRef = useRef(null);
@@ -21,7 +30,7 @@ export const GroupMenuItem = ({ darkMode, item, highlight, onDeleteItem, onItemC
 
   const handleDelete = () => {
     setShowActionsPopover(false);
-    onDeleteItem?.(item.id);
+    onDeleteItem?.(item._key);
   };
 
   return (
@@ -100,13 +109,19 @@ export const GroupMenuItem = ({ darkMode, item, highlight, onDeleteItem, onItemC
               show={showEditPopover}
               placement="left-start"
               rootClose
-              onHide={() => setShowEditPopover(false)}
+              rootCloseEvent="mousedown"
+              onHide={(e) => {
+                if (isClickInsidePortaledOverlay(e?.target)) return;
+                // Defer so a field's blur-commit (e.g. Id) runs before this mousedown-triggered close.
+                setTimeout(() => setShowEditPopover(false), 0);
+              }}
             >
               <NavItemPopover
                 item={item}
                 darkMode={darkMode}
                 onItemChange={onItemChange}
                 onDeleteItem={onDeleteItem}
+                validateItemId={validateItemId}
                 getResolvedValue={getResolvedValue}
               />
             </Overlay>
