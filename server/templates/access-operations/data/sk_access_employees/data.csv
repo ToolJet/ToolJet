@@ -1,0 +1,13 @@
+id,employee_code,name,email,department,manager
+,EMP-101,Nora Bennett,nora.bennett@example.com,Finance,Samuel Ortiz
+,EMP-102,Ethan Park,ethan.park@example.com,Engineering,Owen Brooks
+,EMP-103,Amara Okafor,amara.okafor@example.com,People operations,Elena Rossi
+,EMP-104,Luca Martin,luca.martin@example.com,Revenue operations,Maya Chen
+,EMP-105,Sofia Alvarez,sofia.alvarez@example.com,Design,Theo Clarke
+,EMP-106,Noah Kim,noah.kim@example.com,Data platform,Priya Shah
+,EMP-107,Isla Wilson,isla.wilson@example.com,Finance,Samuel Ortiz
+,EMP-108,Arjun Mehta,arjun.mehta@example.com,Engineering,Owen Brooks
+,EMP-109,Camille Dubois,camille.dubois@example.com,Revenue operations,Maya Chen
+,EMP-110,Oliver Grant,oliver.grant@example.com,Data platform,Priya Shah
+,EMP-111,Aisha Hassan,aisha.hassan@example.com,People operations,Elena Rossi
+,EMP-112,Leo Thompson,leo.thompson@example.com,Design,Theo Clarke

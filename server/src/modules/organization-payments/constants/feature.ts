@@ -19,5 +19,9 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.VALID,
     },
     [FEATURE_KEY.GET_AI_CREDITS_BALANCE]: {},
+    // Public: list prices aren't secret, and self-hosted servers read cloud's copy without a session.
+    [FEATURE_KEY.GET_PLAN_PRICES]: {
+      isPublic: true,
+    },
   },
 };

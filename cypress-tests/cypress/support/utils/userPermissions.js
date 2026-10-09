@@ -118,8 +118,8 @@ export const verifyBuilderPermissions = (
 };
 
 export const verifyBasicPermissions = (canCreate = true) => {
-  cy.get(commonSelectors.dashboardAppCreateButton).should(
-    canCreate ? "be.enabled" : "be.disabled"
+  cy.get(commonSelectors.appCreateButton).should(
+    canCreate ? "be.enabled" : "not.exist"
   );
   cy.get(commonSelectors.createNewFolderButton).should(
     canCreate ? "exist" : "not.exist"

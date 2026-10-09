@@ -1,4 +1,5 @@
 import { cyParamName } from "Selectors/common";
+import { bulkUserUpload } from "../../../support/utils/manageUsers";
 
 export const usersSelector = {
   dropdown: "[data-cy=workspace-dropdown]",
@@ -11,7 +12,7 @@ export const usersSelector = {
       '[data-cy="users-table-status-column-header"]',
     usersFilterLabel: '[data-cy="users-filter-label"]',
   },
-  usersPageTitle: '[data-cy="title-users-page"]',
+  usersPageTitle: '[data-cy="button-invite-new-user"]',
   userFilterInput: '[data-cy="users-filter-input"]',
   adminUserName: "[data-cy=user-name]",
   adminUserEmail: "[data-cy=user-email]",
@@ -24,8 +25,12 @@ export const usersSelector = {
   emailInput: "[data-cy=email-input]",
   cancelButton: "[data-cy=cancel-button]",
   buttonInviteUsers: '[data-cy="button-invite-users"]',
-  buttonInviteWithEmail: '[data-cy="button-invite-with-email"]',
-  buttonUploadCsvFile: '[data-cy="button-upload-csv-file"]',
+  bulkUploadUsers: '[data-cy="button-bulk-upload-users"]',
+  bulkUploadDrawerTitle: '[data-cy="bulk-upload-drawer-title"]',
+  buttonDownloadEmptyTemplate: '[data-cy="button-download-empty-template"]',
+  buttonDownloadCurrentUsers: '[data-cy="button-download-current-users"]',
+  bulkUploadDropzone: '[data-cy="bulk-upload-dropzone"]',
+  buttonReadDocs: '[data-cy="button-read-docs"]',
   fullNameError: '[data-cy="error-message-fullname"]',
   emailError: '[data-cy="error-message-email"]',
   pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy=page-logo]',
@@ -52,7 +57,8 @@ export const usersSelector = {
   },
   inviteBulkUserButton: '[data-cy="invite-bulk-user-button"]',
   bulkUserUploadPageTitle: '[data-cy="bulk-user-upload-page-title"]',
-  bulkUSerUploadInput: '[data-cy="bulk-user-upload-input"]',
+  bulkUUserUploadInput: '[data-cy="bulk-user-upload-input"]',
+  bulkUserUploadSuccess: '[data-cy="valid-file-success"]',
   buttonDownloadTemplate: '[data-cy="button-download-template"]',
   buttonUploadUsers: '[data-cy="button-upload-users"]',
   helperTextBulkUpload: '[data-cy="helper-text-bulk-upload"]',
@@ -61,7 +67,7 @@ export const usersSelector = {
   helperTextDropFile: '[data-cy="helper-text-drop-file"]',
   inputFieldBulkUpload: '[data-cy="input-field-bulk-upload"]',
   copyInvitationLink: '[data-cy="copy-invitation-link"]',
-  uploadedFileData: '[data-cy="uploaded-file-data"]',
+  uploadedFileData: '[data-cy="uploaded-file-name"]',
   modalClose: '.tj-base-btn.tj-large-btn.tj-primary-btn.close-btn',
   toastCloseButton: '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > [data-cy="toast-close-button"]',
   userName: (userName) => {
