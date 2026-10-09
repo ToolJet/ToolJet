@@ -14,7 +14,10 @@ import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { SquareDashedMousePointer, Bug, Bolt, History } from 'lucide-react';
+import { SquareDashedMousePointer, Bug, Bolt, History, Search } from 'lucide-react';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { EditorView } from '@codemirror/view';
+import CodeSearch from './CodeSearch/CodeSearch';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
@@ -31,6 +34,7 @@ import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasCons
 const LEFT_SIDEBAR_PANEL_LABELS = {
   page: 'Inspector',
   inspect: 'Inspector',
+  search: 'Code search',
   tooljetai: 'AI chat',
   apphistory: 'App history',
   libraries: 'Libraries',
@@ -101,6 +105,29 @@ export const BaseLeftSidebar = ({
     if (!isSidebarOpen) toggleLeftSidebar(true);
   };
 
+  // Same shortcut builders know from code editors' app-wide search; toggles the panel.
+  useHotkeys(
+    'mod+shift+f',
+    () => {
+      // Seed the search with the word selected in a code editor, as code editors do.
+      const editorElement = document.activeElement?.closest?.('.cm-editor');
+      const view = editorElement && EditorView.findFromDOM(editorElement);
+      const { from, to } = view?.state.selection.main || {};
+      const selected = view && from !== to ? view.state.sliceDoc(from, to) : '';
+      if (selected && selected.length <= 100 && !selected.includes('\n')) {
+        useStore.getState().setCodeSearchTerm(selected);
+        setSelectedSidebarItem('search');
+        if (!isSidebarOpen) toggleLeftSidebar(true);
+        return;
+      }
+      if (selectedSidebarItem === 'search' && isSidebarOpen) return toggleLeftSidebar(false);
+      setSelectedSidebarItem('search');
+      if (!isSidebarOpen) toggleLeftSidebar(true);
+    },
+    { enabled: currentMode !== 'view', enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true },
+    [selectedSidebarItem, isSidebarOpen, currentMode]
+  );
+
   const setSideBarBtnRefs = (page) => (ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
@@ -146,6 +173,8 @@ export const BaseLeftSidebar = ({
             appType={appType}
           />
         );
+      case 'search':
+        return <CodeSearch darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'tooljetai':
         return renderAIChat({ darkMode });
       case 'apphistory':
@@ -184,6 +213,18 @@ export const BaseLeftSidebar = ({
           ref={setSideBarBtnRefs('inspect')}
         >
           <SquareDashedMousePointer width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
+
+        <SidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => handleSelectedSidebarItem('search')}
+          darkMode={darkMode}
+          icon="search"
+          className={`left-sidebar-item left-sidebar-layout`}
+          tip="Code search"
+          ref={setSideBarBtnRefs('search')}
+        >
+          <Search width="16" height="16" className="tw-text-icon-strong" />
         </SidebarItem>
 
         <SidebarItem
@@ -278,7 +319,8 @@ export const BaseLeftSidebar = ({
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
-          if (['tooljetai', 'inspect', 'debugger', 'settings', 'libraries'].includes(selectedSidebarItem)) return;
+          if (['tooljetai', 'inspect', 'search', 'debugger', 'settings', 'libraries'].includes(selectedSidebarItem))
+            return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;
