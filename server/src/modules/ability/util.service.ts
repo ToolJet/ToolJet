@@ -143,6 +143,7 @@ export class AbilityUtilService {
         'foldersGroupPermissions.canEditFolder',
         'foldersGroupPermissions.canEditApps',
         'foldersGroupPermissions.canViewApps',
+        'groupFolders.id',
         'groupFolders.folderId',
       ]);
   }

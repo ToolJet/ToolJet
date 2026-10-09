@@ -46,9 +46,18 @@ export const CustomDropdownIndicator = (props) => {
 };
 
 export const CustomClearIndicator = (props) => {
+  const { ['aria-hidden']: _ariaHidden, className, ...innerProps } = props.innerProps;
   return (
-    <ClearIndicator {...props}>
-      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+    <ClearIndicator
+      {...props}
+      innerProps={{
+        ...innerProps,
+        className: [className, 'clear-indicator'].filter(Boolean).join(' '),
+        role: 'button',
+        'aria-label': 'Clear selection',
+      }}
+    >
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer" />
     </ClearIndicator>
   );
 };
@@ -107,9 +116,9 @@ export const DropdownV2 = ({
   } = styles;
   const isInitialRender = useRef(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [currentValue, setCurrentValue] = useState(() => findDefaultItem(schema));
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
+  const [currentValue, setCurrentValue] = useState(() => findDefaultItem(advanced ? schema : options));
   const [validationStatus, setValidationStatus] = useState(validate(currentValue));
   const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
@@ -379,7 +388,7 @@ export const DropdownV2 = ({
         boxShadow: state.isFocused ? boxShadow : boxShadow,
         borderRadius: Number.parseFloat(fieldBorderRadius),
         borderColor: getInputBorderColor({
-          isFocused: state.isFocused,
+          isFocused: state.isFocused || state.menuIsOpen,
           isValid,
           fieldBorderColor,
           accentColor,
@@ -394,7 +403,18 @@ export const DropdownV2 = ({
           isDisabled: isDropdownDisabled,
         }),
         '&:hover': {
-          borderColor: getModifiedColor(fieldBorderColor, 24),
+          borderColor:
+            state.isFocused || state.menuIsOpen
+              ? getInputBorderColor({
+                  isFocused: true,
+                  isValid,
+                  fieldBorderColor,
+                  accentColor,
+                  isLoading: isDropdownLoading,
+                  isDisabled: isDropdownDisabled,
+                  userInteracted,
+                })
+              : getModifiedColor(fieldBorderColor, 24),
         },
       };
     },
@@ -584,6 +604,7 @@ export const DropdownV2 = ({
             aria-busy={isDropdownLoading}
             aria-required={isMandatory}
             aria-invalid={!isValid}
+            aria-errormessage={userInteracted && !isValid ? `${id}-validation-error` : undefined}
             id={`component-${id}`}
             aria-labelledby={`${id}-label`}
             aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
@@ -608,6 +629,7 @@ export const DropdownV2 = ({
             icon={icon}
             doShowIcon={iconVisibility}
             iconColor={iconColor}
+            accentColor={accentColor}
             isSearchable={false}
             darkMode={darkMode}
             menuBackgroundColor={menuBackgroundColor}
@@ -633,6 +655,7 @@ export const DropdownV2 = ({
       </div>
       {userInteracted && visibility && !isValid && (
         <div
+          id={`${id}-validation-error`}
           className={'d-flex'}
           style={{
             color: errTextColor,

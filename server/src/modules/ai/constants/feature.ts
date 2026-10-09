@@ -53,5 +53,11 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_THREAD_TOKEN_USAGE]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },
+    [FEATURE_KEY.GET_LLM_PREFERENCE]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.UPDATE_LLM_PREFERENCE]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
   },
 };

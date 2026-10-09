@@ -20,6 +20,13 @@ export const cascaderConfig = {
     },
   },
   properties: {
+    legacyInputSize: {
+      type: 'toggle',
+      displayName: 'Legacy input size',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'deprecatedStyles',
+      isFxNotRequired: true,
+    },
     label: {
       type: 'code',
       displayName: 'Label',
@@ -406,6 +413,7 @@ export const cascaderConfig = {
       customRule: { value: null },
     },
     properties: {
+      legacyInputSize: { value: '{{false}}' },
       label: { value: 'Select' },
       placeholder: { value: 'Select an option' },
       value: { value: '' },

@@ -124,19 +124,28 @@
   "allOf": [
     {
       "if": {
-        "properties": { "ssl_certificate": { "const": "ca_certificate" } }
+        "properties": {
+          "ssl_enabled": { "const": true },
+          "ssl_certificate": { "const": "ca_certificate" }
+        },
+        "required": ["ssl_enabled", "ssl_certificate"]
       },
       "then": { "required": ["ca"] }
     },
     {
       "if": {
-        "properties": { "ssl_certificate": { "const": "self_signed" } }
+        "properties": {
+          "ssl_enabled": { "const": true },
+          "ssl_certificate": { "const": "self_signed" }
+        },
+        "required": ["ssl_enabled", "ssl_certificate"]
       },
       "then": { "required": ["ca", "cert", "key"] }
     },
     {
       "if": {
-        "properties": { "ssh_enabled": { "const": "enabled" } }
+        "properties": { "ssh_enabled": { "const": "enabled" } },
+        "required": ["ssh_enabled"]
       },
       "then": { "required": ["ssh_host", "ssh_port", "ssh_username", "ssh_auth_type"] }
     }

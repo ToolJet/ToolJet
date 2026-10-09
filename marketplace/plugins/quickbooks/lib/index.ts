@@ -1,4 +1,11 @@
-import { QueryError, QueryService, OAuthUnauthorizedClientError } from '@tooljet-marketplace/common';
+import {
+  QueryError,
+  QueryService,
+  OAuthUnauthorizedClientError,
+  getCurrentToken,
+  User,
+  App,
+} from '@tooljet-marketplace/common';
 import { SourceOptions, QueryResult } from './types';
 import got from 'got';
 import crypto from 'crypto';
@@ -17,7 +24,7 @@ function isFileObject(value: unknown): value is { name?: string; type?: string; 
 
 export default class QuickBooks implements QueryService {
   authUrl(source_options: SourceOptions): string {
-    const host = process.env.TOOLJET_HOST;
+    const host = source_options?.tj_redirect_host?.value || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
 
@@ -58,7 +65,8 @@ export default class QuickBooks implements QueryService {
 
     const clientId = getOption('client_id');
     const clientSecret = getOption('client_secret');
-    const redirectUri = `${process.env.TOOLJET_HOST}${process.env.SUB_PATH || '/'}oauth2/authorize`;
+    const redirectHost = getOption('tj_redirect_host') || process.env.TOOLJET_HOST;
+    const redirectUri = `${redirectHost}${process.env.SUB_PATH || '/'}oauth2/authorize`;
 
     console.log('[QuickBooks] Token exchange — redirectUri:', redirectUri);
 
@@ -101,7 +109,11 @@ export default class QuickBooks implements QueryService {
   }
 
   async refreshToken(sourceOptions: any, dataSourceId?: string, userId?: string, isAppPublic?: boolean) {
-    const refreshTokenValue = sourceOptions['refresh_token'];
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    const currentToken = isMultiAuthEnabled
+      ? getCurrentToken(true, sourceOptions['tokenData'], userId, isAppPublic)
+      : null;
+    const refreshTokenValue = isMultiAuthEnabled ? currentToken?.['refresh_token'] : sourceOptions['refresh_token'];
 
     if (!refreshTokenValue) {
       throw new QueryError('Query could not be completed', 'Missing refresh_token', { code: 'MISSING_REFRESH_TOKEN' });
@@ -151,8 +163,17 @@ export default class QuickBooks implements QueryService {
     }
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
-    const accessToken = sourceOptions['access_token'];
+  async run(
+    sourceOptions: any,
+    queryOptions: any,
+    dataSourceId: string,
+    dataSourceUpdatedAt?: string,
+    context?: { user?: User; app?: App }
+  ): Promise<QueryResult> {
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    const accessToken = isMultiAuthEnabled
+      ? getCurrentToken(true, sourceOptions['tokenData'], context?.user?.id, context?.app?.isPublic)?.['access_token']
+      : sourceOptions['access_token'];
     const companyId = sourceOptions['company_id'];
 
     if (!accessToken) {

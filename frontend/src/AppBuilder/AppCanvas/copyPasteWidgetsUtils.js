@@ -8,6 +8,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
+import { utilityFuncForNameSeed } from '@/_helpers/utils';
 
 const getSelectedText = () => {
   let selectedText = '';
@@ -275,14 +276,21 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
 
 export const debouncedPasteComponents = debounce(pasteComponents, 300);
 
-export function resolvePastedComponentName({ isCut, isCloning, originalName, componentType, mergedComponents }) {
+export function resolvePastedComponentName({
+  isCut,
+  isCloning,
+  originalName,
+  componentType,
+  mergedComponents,
+  componentDef = {},
+}) {
   if (isCut && !isCloning && typeof originalName === 'string' && originalName.length > 0) {
     const taken = Object.values(mergedComponents).some((c) => c.component.name === originalName);
     if (!taken) {
       return originalName;
     }
   }
-  return computeComponentName(componentType, mergedComponents);
+  return computeComponentName(utilityFuncForNameSeed(componentDef), mergedComponents);
 }
 
 export async function pasteComponents(targetParentId, copiedComponentObj) {
@@ -333,6 +341,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
       originalName: component.component.name,
       componentType: component.component.component,
       mergedComponents,
+      componentDef: component,
     });
     const parentRef = component.isParentTabORCalendar
       ? component.component.parent.split('-').slice(0, -1).join('-')

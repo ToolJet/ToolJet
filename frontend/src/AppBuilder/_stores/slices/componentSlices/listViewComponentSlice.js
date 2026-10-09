@@ -126,6 +126,7 @@ export const listViewComponentSlice = (set, get) => {
             }
             current[lastIdx][property] = value;
           },
+          moduleId,
           isUpdate ? [{ path: `components.${componentId}.${property}`, moduleId }] : []
         );
         // _deriveListviewChain reads from the store — it must run after all buffered mutations
@@ -135,6 +136,7 @@ export const listViewComponentSlice = (set, get) => {
         if (nearestListviewId) {
           get().bufferExposedValuePostFlush(
             () => get()._deriveListviewChain(nearestListviewId, indices, moduleId),
+            moduleId,
             `${nearestListviewId}|${indices.join(',')}|${moduleId}`
           );
         }
@@ -158,29 +160,34 @@ export const listViewComponentSlice = (set, get) => {
           : Object.keys(values)
               .filter((key) => typeof values[key] !== 'function')
               .map((key) => ({ path: `components.${componentId}.${key}`, moduleId }));
-        get().bufferExposedValueMutation((state) => {
-          const components = state.resolvedStore.modules[moduleId].exposedValues.components;
-          if (!Array.isArray(components[componentId])) components[componentId] = [];
-          let current = components[componentId];
-          for (let i = 0; i < indices.length - 1; i++) {
-            const idx = indices[i];
-            if (!current[idx]) current[idx] = [];
-            else if (!Array.isArray(current[idx])) current[idx] = [current[idx]];
-            current = current[idx];
-          }
-          const lastIdx = indices[indices.length - 1];
-          if (!current[lastIdx] || typeof current[lastIdx] !== 'object' || Array.isArray(current[lastIdx])) {
-            current[lastIdx] = {};
-          }
-          Object.entries(values).forEach(([key, value]) => {
-            current[lastIdx][key] = value;
-          });
-        }, depPaths);
+        get().bufferExposedValueMutation(
+          (state) => {
+            const components = state.resolvedStore.modules[moduleId].exposedValues.components;
+            if (!Array.isArray(components[componentId])) components[componentId] = [];
+            let current = components[componentId];
+            for (let i = 0; i < indices.length - 1; i++) {
+              const idx = indices[i];
+              if (!current[idx]) current[idx] = [];
+              else if (!Array.isArray(current[idx])) current[idx] = [current[idx]];
+              current = current[idx];
+            }
+            const lastIdx = indices[indices.length - 1];
+            if (!current[lastIdx] || typeof current[lastIdx] !== 'object' || Array.isArray(current[lastIdx])) {
+              current[lastIdx] = {};
+            }
+            Object.entries(values).forEach(([key, value]) => {
+              current[lastIdx][key] = value;
+            });
+          },
+          moduleId,
+          depPaths
+        );
         const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
         const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
         if (nearestListviewId) {
           get().bufferExposedValuePostFlush(
             () => get()._deriveListviewChain(nearestListviewId, indices, moduleId),
+            moduleId,
             `${nearestListviewId}|${indices.join(',')}|${moduleId}`
           );
         }
@@ -190,10 +197,49 @@ export const listViewComponentSlice = (set, get) => {
       scheduleExposedValuesPerRow(componentId, values, indices, moduleId);
     },
 
+    // Clears every exposed variable (except id) for ONE row of a ListView child —
+    // the per-row counterpart to resolvedSlice's resetComponentExposedValues, which
+    // would blindly overwrite the whole per-row array (all rows) with a single flat
+    // object. Walks `indices` the same way setExposedValuePerRow does to reach the
+    // leaf row object.
+    resetComponentExposedValuesPerRow: (componentId, indices, moduleId = 'canvas') => {
+      const components = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
+      const lastIdx = indices[indices.length - 1];
+      let existingRow = Array.isArray(components?.[componentId]) ? components[componentId] : null;
+      for (let i = 0; existingRow && i < indices.length - 1; i++) existingRow = existingRow[indices[i]];
+      const existing = existingRow?.[lastIdx];
+
+      if (!existing || Object.keys(existing).length === 0) return;
+
+      const { id, ...rest } = existing;
+      const keys = Object.keys(rest);
+
+      if (keys.length === 0) return;
+
+      set(
+        (state) => {
+          let current = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+          for (let i = 0; i < indices.length - 1; i++) current = current[indices[i]];
+          current[lastIdx] = id !== undefined ? { id } : {};
+        },
+        false,
+        { type: 'resetComponentExposedValuesPerRow', payload: { componentId, indices, moduleId } }
+      );
+
+      keys.forEach((key) => get().updateDependencyValues(`components.${componentId}.${key}`, moduleId, []));
+
+      const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
+      const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
+      if (nearestListviewId) {
+        get()._deriveListviewChain(nearestListviewId, indices, moduleId);
+      }
+    },
+
     // Initialize exposed value arrays for all children of a ListView
     initExposedValueArrayForChildren: (listviewId, rowCount, moduleId = 'canvas', parentIndices = []) => {
       const { getContainerChildrenMapping } = get();
       const childComponents = getContainerChildrenMapping(listviewId, moduleId);
+      let pruned = false;
       set((state) => {
         const components = state.resolvedStore.modules[moduleId].exposedValues.components;
         childComponents.forEach((childId) => {
@@ -231,17 +277,34 @@ export const listViewComponentSlice = (set, get) => {
           }
         });
 
-        // Also clean up stale rows from the ListView's own children/data
-        const lvExposed = components[listviewId];
-        if (lvExposed && !Array.isArray(lvExposed)) {
-          if (lvExposed.children) {
-            Object.keys(lvExposed.children).forEach((key) => {
-              if (parseInt(key) >= rowCount) {
-                delete lvExposed.children[key];
-                if (lvExposed.data) delete lvExposed.data[key];
-              }
-            });
-          }
+        // Also clean up stale rows from the ListView's own children/data. A nested
+        // ListView keeps one exposed object per outer row, so walk parentIndices to it.
+        let lvExposed = components[listviewId];
+        for (const idx of parentIndices) {
+          lvExposed = Array.isArray(lvExposed) ? lvExposed[idx] : undefined;
+        }
+        if (lvExposed && !Array.isArray(lvExposed) && lvExposed.children) {
+          Object.keys(lvExposed.children).forEach((key) => {
+            if (parseInt(key) >= rowCount) {
+              delete lvExposed.children[key];
+              if (lvExposed.data) delete lvExposed.data[key];
+              pruned = true;
+            }
+          });
+        }
+      });
+
+      if (!pruned) return;
+      // Runs during the ListView's render, so notify dependents after it. Bindings to
+      // this ListView's children/data re-resolve, and an outer ListView re-derives the
+      // row that holds this one so its own children stop carrying the removed rows.
+      queueMicrotask(() => {
+        get().updateDependencyValues(`components.${listviewId}.children`, moduleId, []);
+        get().updateDependencyValues(`components.${listviewId}.data`, moduleId, []);
+        if (parentIndices.length > 0) {
+          const parentId = get().getComponentDefinition(listviewId, moduleId)?.component?.parent;
+          const outerListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
+          if (outerListviewId) get()._deriveListviewChain(outerListviewId, parentIndices, moduleId);
         }
       });
     },

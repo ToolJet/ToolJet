@@ -20,7 +20,9 @@
             "sourceMaps": true,
             "cwd": "${workspaceRoot}/server",
             "console": "integratedTerminal",
-            "skipFiles": ["<node_internals>/**"]
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         },
         {
             "type": "node",
@@ -48,7 +50,9 @@
             "preLaunchTask": "docker-compose: debug:client",
             "url": "http://127.0.0.1:8082",
             "webRoot": "${workspaceFolder}/frontend",
-            "skipFiles": ["<node_internals>/**"]
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         },
         {
             "name": "Docker Debug Server",
@@ -62,8 +66,44 @@
                 "localRoot": "${workspaceRoot}/server",
                 "remoteRoot": "/app/server",
                 "sourceMaps": true,
-                "skipFiles": ["<node_internals>/**"]
+                "skipFiles": [
+                    "<node_internals>/**"
+                ]
             }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest: current file (frontend)",
+            "cwd": "${workspaceFolder}/frontend",
+            "program": "${workspaceFolder}/frontend/node_modules/jest/bin/jest.js",
+            "args": [
+                "--runInBand",
+                "--no-cache",
+                "--watchAll=false",
+                "${file}"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest: all frontend tests",
+            "cwd": "${workspaceFolder}/frontend",
+            "program": "${workspaceFolder}/frontend/node_modules/jest/bin/jest.js",
+            "args": [
+                "--runInBand",
+                "--watchAll=false"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         }
     ]
 }

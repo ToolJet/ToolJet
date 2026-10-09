@@ -1,7 +1,7 @@
 import React from 'react';
 //TODO: Inspector folder needs to be refactored
 import { Inspector } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
-import ErrorBoundary from '@/_ui/ErrorBoundary';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import useStore from '@/AppBuilder/_stores/store';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { shallow } from 'zustand/shallow';
@@ -50,7 +50,12 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
     );
   }
   return (
-    <ErrorBoundary key={selectedComponentId}>
+    <FallbackBoundary
+      label="Properties panel"
+      location="Properties Panel"
+      darkMode={darkMode}
+      resetKeys={[selectedComponentId]}
+    >
       <Inspector
         componentDefinitionChanged={() => {}}
         darkMode={darkMode}
@@ -59,6 +64,6 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
         isModuleEditor={isModuleEditor}
         handleRightSidebarToggle={handleToggle}
       />
-    </ErrorBoundary>
+    </FallbackBoundary>
   );
 };

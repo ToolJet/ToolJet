@@ -2,11 +2,11 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteWorkflowAndDS } from "Support/utils/dataSource";
+import { deleteWorkflowAndDS } from "Support/utils/marketplace/datasources/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { harperDbText } from "Texts/harperDb";
-import { workflowsText } from "Texts/workflows";
-import { workflowSelector } from "Selectors/workflows";
+import { workflowsText } from "Texts/platform/workflows";
+import { workflowSelector } from "Selectors/platform/workflows";
 import {
   fillDataSourceTextField,
   selectAndAddDataSource,

@@ -1,11 +1,11 @@
 import { commonSelectors } from "Selectors/common";
-import { ssoSelector } from "Selectors/manageSSO";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { ssoSelector } from "Selectors/platform/manageSSO";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { logout, navigateToManageUsers } from "Support/utils/common";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { commonText } from "Texts/common";
-import { ssoText } from "Texts/manageSSO";
-import { onboardingText } from "Texts/onboarding";
+import { ssoText } from "Texts/platform/manageSSO";
+import { onboardingText } from "Texts/platform/onboarding";
 
 export const verifyConfirmEmailPage = (email) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");

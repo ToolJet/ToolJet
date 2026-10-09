@@ -3,6 +3,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import BrokenImage from '@/AppBuilder/Widgets/Image/icons/broken-image.svg';
 import ZoomInImage from '@/AppBuilder/Widgets/Image/icons/zoomin-image.svg';
 import ZoomOutImage from '@/AppBuilder/Widgets/Image/icons/zoomout-image.svg';
@@ -21,6 +23,10 @@ export default function Image({
   parentId = null,
   dataCy,
   id,
+  currentLayout,
+  currentMode,
+  subContainerIndex,
+  componentType,
 }) {
   const { imageFormat, source, jsSchema, alternativeText, zoomButtons, rotateButton, loadingState, disabledState } =
     properties;
@@ -57,6 +63,26 @@ export default function Image({
   const [zoomMode, setZoomMode] = useState('in');
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // ===== DYNAMIC HEIGHT =====
+  // For an image, "dynamic height" means: let the widget take the image's natural
+  // aspect-ratio height at the current width (instead of the authored fixed box).
+  // We measure the wrapper (imageRef) — it grows once the image loads at its natural
+  // size — and reflow siblings. Enabled only in view mode.
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(imageRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility,
+    subContainerIndex,
+    componentType,
+  });
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -177,7 +203,7 @@ export default function Image({
         cursor: hasOnClickEvent ? 'pointer' : 'inherit',
         pointerEvents: 'auto',
         width,
-        height,
+        height: isDynamicHeightEnabled ? 'auto' : height,
         transform: `rotate(${rotation}deg)`,
         border: '1px solid',
         borderRadius:
@@ -189,7 +215,7 @@ export default function Image({
         borderColor: borderColor || (borderType === 'img-thumbnail' ? '#e7eaef' : 'transparent'),
         objectPosition: alignment,
       }}
-      height={height}
+      height={isDynamicHeightEnabled ? undefined : height}
       onClick={() => !isDisabled && fireEvent('onClick')}
       alt={alternativeText}
       width={width}
@@ -319,7 +345,8 @@ export default function Image({
       data-disabled={isDisabled}
       data-cy={`draggable-widget-${String(componentName).toLowerCase()}`}
       style={{
-        height,
+        height: isDynamicHeightEnabled ? 'auto' : height,
+        ...(isDynamicHeightEnabled && { minHeight: height, alignItems: 'flex-start' }),
         display: visibility ? 'flex' : 'none',
         boxShadow,
       }}

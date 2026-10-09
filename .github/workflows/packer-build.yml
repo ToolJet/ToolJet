@@ -19,6 +19,9 @@ on:
         required: false
         default: "us-west-1"
 
+permissions:
+  contents: read
+
 jobs:
   check-version:
     runs-on: ubuntu-latest

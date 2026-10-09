@@ -4,8 +4,8 @@ import {
   commonWidgetSelector,
   cyParamName,
 } from "Selectors/common";
-import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
-import { profileSelector } from "Selectors/profile";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/platform/eeCommon";
+import { profileSelector } from "Selectors/platform/profile";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText, path } from "Texts/common";
 

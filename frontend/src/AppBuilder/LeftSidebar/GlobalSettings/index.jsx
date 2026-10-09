@@ -12,13 +12,13 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import Accordion from '@/_ui/Accordion';
 import './styles.scss';
 
-const GlobalSettings = ({ darkMode, onClose }) => {
+const GlobalSettings = ({ darkMode, onClose, isModuleEditor = false }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
   const canvasStylesContent = (
     <>
-      <CanvasSettings darkMode={darkMode} />
-      <AppModeToggle darkMode={darkMode} />
+      <CanvasSettings darkMode={darkMode} isModuleEditor={isModuleEditor} />
+      <AppModeToggle darkMode={darkMode} isModuleEditor={isModuleEditor} />
       <ThemeSelect darkMode={darkMode} />
     </>
   );
@@ -39,9 +39,14 @@ const GlobalSettings = ({ darkMode, onClose }) => {
 
         {/* Main Content Section */}
         <div className="global-settings-main-content">
-          <SlugInput />
-          <MaintenanceMode darkMode={darkMode} />
-          <AppExport darkMode={darkMode} />
+          {/* Slug and maintenance mode are app-launch concepts that do not apply to modules */}
+          {!isModuleEditor && (
+            <>
+              <SlugInput />
+              <MaintenanceMode darkMode={darkMode} />
+            </>
+          )}
+          <AppExport darkMode={darkMode} isModuleEditor={isModuleEditor} />
         </div>
 
         {/* Canvas Styles Accordion */}

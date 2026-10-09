@@ -6,10 +6,11 @@
 #   SHA, RUN_URL, VERDICT              — always
 #   BASE_REF, SCOPE                    — changed lane
 #   RESULT_BUILD_{SERVER,PLUGINS,FRONTEND,MARKETPLACE}
-#   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}  — full lane
+#   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}, RESULT_VULN_GATE  — full lane
 #   RESULT_CHANGED                     — changed lane
+#   RESULT_FRONTEND                    — both lanes
 #   UNIT_JSON, E2E_JSON_DIR, UNIT_STEP_URL, E2E_STEP_URL — for render-failed-tests.mjs
-#   COVERAGE_SUMMARY, COVERAGE_ARTIFACT_URL — for render-coverage.mjs, full lane only
+#   COVERAGE_MD — coverage gate section from coverage-gate.sh, full lane only
 
 set -euo pipefail
 MODE="$1"
@@ -47,11 +48,22 @@ echo
 echo "| Step | Result |"
 echo "|------|--------|"
 echo "| **Lint & Build** | $(icon "$RESULT_BUILD_SERVER") server · $(icon "$RESULT_BUILD_PLUGINS") plugins · $(icon "$RESULT_BUILD_FRONTEND") frontend · $(icon "$RESULT_BUILD_MARKETPLACE") marketplace |"
+echo "| **Frontend tests** | $(cell "${RESULT_FRONTEND:-skipped}") |"
 if [ "$MODE" = "full" ]; then
   echo "| **Unit tests** | $(row unit "$RESULT_UNIT") |"
   echo "| **E2E tests** | $(row e2e "$RESULT_E2E") |"
   echo "| **Cypress — Platform** | $(cell "$RESULT_CYPRESS_PLATFORM") |"
   echo "| **Cypress — Marketplace** | $(cell "$RESULT_CYPRESS_MARKETPLACE") |"
+  echo "| **Vulnerability gate** | $(cell "${RESULT_VULN_GATE:-skipped}") |"
+  # coverage.md line 1 = row cell, rest = details (scripts/render-coverage.mjs).
+  # No file = gate didn't run: no server code changed, or a suite already failed.
+  if [ -s "${COVERAGE_MD:-}" ]; then
+    echo "| **Coverage — server** | $(head -n 1 "$COVERAGE_MD") |"
+  elif [ "$RESULT_UNIT" = "skipped" ]; then
+    echo "| **Coverage — server** | ⏭️ skipped — no server code changed |"
+  else
+    echo "| **Coverage — server** | ⏭️ skipped — needs green server suites |"
+  fi
 else
   echo "| **Unit tests** | $(row unit "$RESULT_CHANGED") |"
   echo "| **E2E tests** | $(row e2e "$RESULT_CHANGED") |"
@@ -96,22 +108,10 @@ if [ -n "$details" ]; then
   echo
 fi
 
-# Coverage only in full mode — the changed lane runs a filtered test subset against
-# the full collectCoverageFrom denominator, which would report a misleading number.
-if [ "$MODE" = "full" ]; then
-  coverage=$(node "$SCRIPT_DIR/render-coverage.mjs" || true)
-  if [ -n "$coverage" ]; then
-    echo "$coverage"
-    echo
-  fi
-
-  # Patch coverage (combined + server/git-sync) — full mode only, informational.
-  # Reads PATCH_COV_INPUTS (comma-separated patch-coverage JSONs); empty if none.
-  patchcov=$(node "$SCRIPT_DIR/render-patch-coverage.mjs" || true)
-  if [ -n "$patchcov" ]; then
-    echo "$patchcov"
-    echo
-  fi
+# Uncovered changed lines (coverage gate), full PR runs only
+if [ -s "${COVERAGE_MD:-}" ] && [ "$(wc -l < "$COVERAGE_MD")" -gt 1 ]; then
+  tail -n +2 "$COVERAGE_MD"
+  echo
 fi
 
 if [ "$MODE" = "full" ]; then

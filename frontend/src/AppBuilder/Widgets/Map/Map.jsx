@@ -134,7 +134,8 @@ export default function Map({
   }
 
   function onPlaceChanged() {
-    const location = autoComplete.getPlace().geometry.location?.toJSON();
+    const location = autoComplete?.getPlace()?.geometry?.location?.toJSON();
+    if (!location) return;
     setMapCenter(location);
     handleBoundsChange();
   }

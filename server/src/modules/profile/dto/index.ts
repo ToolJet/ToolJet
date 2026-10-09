@@ -1,5 +1,5 @@
 import { sanitizeInput } from '@helpers/utils.helper';
-import { IsString, IsOptional, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MaxLength, Length, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class ProfileUpdateDto {
@@ -14,4 +14,23 @@ export class ProfileUpdateDto {
   @Transform(({ value }) => sanitizeInput(value))
   @MaxLength(500)
   last_name: string;
+}
+
+export class ProfilePreferencesDto {
+  @IsBoolean()
+  ai_build_notifications_enabled: boolean;
+}
+
+export class MfaConfirmDto {
+  @IsString()
+  @IsNotEmpty()
+  @Length(6, 6)
+  otp: string;
+}
+
+export class MfaDisableDto {
+  @IsString()
+  @IsNotEmpty()
+  @Length(6, 6)
+  otp: string;
 }

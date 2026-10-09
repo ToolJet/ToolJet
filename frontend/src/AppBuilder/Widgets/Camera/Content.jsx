@@ -107,6 +107,20 @@ export const Content = ({
       return 'No camera device found. Please connect a camera and try again.';
     }
 
+    // Phones list secondary lenses (ultra wide, depth, monochrome) that enumerate but
+    // cannot be opened, and another app may already hold the camera.
+    if (
+      permissionError === 'NotReadableError' ||
+      permissionError === 'TrackStartError' ||
+      permissionError === 'AbortError'
+    ) {
+      return 'This camera could not be started. It may be in use by another app, or unavailable on this device.';
+    }
+
+    if (permissionError === 'OverconstrainedError' || permissionError === 'ConstraintNotSatisfiedError') {
+      return 'This camera does not support the requested settings. Try a different camera.';
+    }
+
     return 'Camera preview is not available.';
   }, [permissionError]);
 

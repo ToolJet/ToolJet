@@ -1,5 +1,5 @@
 import { commonSelectors } from 'Selectors/common';
-import { dashboardSelector } from 'Selectors/dashboard';
+import { dashboardSelector } from 'Selectors/platform/dashboard';
 import { moduleSelectors } from 'Selectors/platform/modules';
 import { viewAppCardOptions } from 'Support/utils/common';
 import { apiCreateGroup } from 'Support/utils/manageGroups';

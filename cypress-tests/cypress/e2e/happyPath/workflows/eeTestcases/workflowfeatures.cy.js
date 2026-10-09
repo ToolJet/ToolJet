@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
-import { workflowsText } from "Texts/workflows";
-import { workflowSelector } from "Selectors/workflows";
+import { workflowsText } from "Texts/platform/workflows";
+import { workflowSelector } from "Selectors/platform/workflows";
 
 import {
   enterJsonInputInStartNode,

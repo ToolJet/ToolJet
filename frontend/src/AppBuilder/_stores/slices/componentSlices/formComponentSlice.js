@@ -310,18 +310,25 @@ export const createFormComponentSlice = (set, get) => ({
       // Process only the diff through dependency graph
       const resolvedDiffValues = addToDependencyGraph(moduleId, componentId, componentDiff.component);
 
-      // Merge the resolved diff values with existing resolved values
-      const mergedResolvedValues = deepClone(existingResolvedValues);
-
       // Merge at each property type level (properties, styles, validation, etc.)
-      ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'].forEach((propType) => {
-        if (resolvedDiffValues[propType]) {
-          mergedResolvedValues[propType] = {
-            ...(mergedResolvedValues[propType] || {}),
-            ...resolvedDiffValues[propType],
-          };
-        }
-      });
+      const mergeInto = (target) => {
+        const merged = deepClone(target || {});
+        ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'].forEach((propType) => {
+          if (resolvedDiffValues[propType]) {
+            merged[propType] = {
+              ...(merged[propType] || {}),
+              ...resolvedDiffValues[propType],
+            };
+          }
+        });
+        return merged;
+      };
+
+      // A row-scoped entry is one resolved object per row. Merging onto the array itself left a
+      // hybrid { 0: {...}, properties: {...} } that is neither shape, so merge into each row.
+      const mergedResolvedValues = Array.isArray(existingResolvedValues)
+        ? existingResolvedValues.map(mergeInto)
+        : mergeInto(existingResolvedValues);
 
       // Update the resolved component in store with merged values
       setResolvedComponent(componentId, mergedResolvedValues, moduleId);

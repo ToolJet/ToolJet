@@ -85,6 +85,8 @@ export class LicenseModule extends SubModule {
         LicenseTermsService,
         LicenseCountsService,
         LicenseUtilService,
+        LicenseInitService,
+        LicenseDecryptService,
       ],
     };
   }

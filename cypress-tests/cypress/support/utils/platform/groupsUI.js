@@ -1,6 +1,6 @@
 import { commonSelectors } from "Selectors/common";
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
+import { groupsSelector } from "Selectors/platform/manageGroups";
+import { groupsText } from "Texts/platform/manageGroups";
 
 export const verifyAdminHelperText = (index = 0) => {
     cy.get(groupsSelector.helperTextAdminAppAccess)

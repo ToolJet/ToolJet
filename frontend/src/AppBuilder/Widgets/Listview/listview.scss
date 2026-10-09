@@ -9,3 +9,11 @@
         }
     }
 }
+
+.listview-scroll-container {
+    scrollbar-color: var(--interactive-selected) transparent;
+}
+
+.real-canvas.flex-container-canvas .listview-scroll-container {
+    scrollbar-color: inherit;
+}

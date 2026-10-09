@@ -41,6 +41,20 @@ const initialState = {
   },
 };
 
+// Lets a newer switchPage cancel an older, still-running doSwitch instead of it
+// mutating state in the background after being superseded. Keyed by `get`
+// (stable per store instance) rather than closure state, so createAppSlice can
+// stay a plain object-literal factory like every other slice.
+const _switchGenerationByStore = new WeakMap();
+const getSwitchGeneration = (get) => {
+  let generations = _switchGenerationByStore.get(get);
+  if (!generations) {
+    generations = {};
+    _switchGenerationByStore.set(get, generations);
+  }
+  return generations;
+};
+
 export const createAppSlice = (set, get) => ({
   ...initialState,
   initializeAppSlice: (moduleId) => {
@@ -212,9 +226,35 @@ export const createAppSlice = (set, get) => ({
       }
     }
 
-    const bottomPadding = currentMode === 'view' ? 100 : 300;
+    // Mobile auto-layout has no manual drop zone, so it skips the 300px editor drop-zone padding.
+    const bottomPadding = currentMode === 'view' ? 100 : currentLayout === 'mobile' ? 16 : 300;
     const frameHeight =
       currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
+    // Mobile editor: measure the DOM, since stored layout lags dynamic-height widgets by a reflow cycle.
+    // The 100% floor keeps the page background filling the frame when every component is hidden.
+    if (currentLayout === 'mobile' && currentMode === 'edit') {
+      const realCanvasEl =
+        typeof document !== 'undefined'
+          ? document.getElementById(moduleId === 'canvas' ? 'real-canvas' : `canvas-${moduleId}`)
+          : null;
+      if (realCanvasEl) {
+        const canvasTop = realCanvasEl.getBoundingClientRect().top;
+        let contentBottom = 0;
+        realCanvasEl.querySelectorAll('.widget-target').forEach((widgetEl) => {
+          const bottom = widgetEl.getBoundingClientRect().bottom - canvasTop;
+          if (bottom > contentBottom) contentBottom = bottom;
+        });
+        if (contentBottom > 0) {
+          setCanvasHeight(`max(100%, ${Math.round(contentBottom) + bottomPadding}px)`, moduleId);
+          return;
+        }
+      }
+      // Fallback before widgets mount; a later reflow re-runs this.
+      setCanvasHeight(`max(100%, ${maxHeight + bottomPadding}px)`, moduleId);
+      return;
+    }
+
+    // Mobile view / desktop: keep the 100vh floor so published pages fill the screen.
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(canvasHeight, moduleId);
   },
@@ -276,11 +316,16 @@ export const createAppSlice = (set, get) => ({
     get().debugger.resetUnreadErrorCount();
 
     if (get().pageSwitchInProgress) {
-      toast('Please wait, page switch in progress', {
-        icon: '⚠️',
-      });
-      return;
+      // Reclaim this switch's batch slot rather than rejecting the call — discards only
+      // this moduleId's buffered writes, leaving any other module's untouched. The old
+      // doSwitch itself is stopped via the generation check below, not by this call.
+      get().cancelExposedValueBatch(moduleId);
     }
+
+    // Lets an older, still-running doSwitch detect it's been superseded.
+    const _switchGeneration = getSwitchGeneration(get);
+    const myGeneration = (_switchGeneration[moduleId] = (_switchGeneration[moduleId] || 0) + 1);
+    const isSuperseded = () => _switchGeneration[moduleId] !== myGeneration;
 
     // Set the flag synchronously before the first yieldToMain so rapid back-to-back
     // switchPage calls don't slip through the guard above while doSwitch is awaiting.
@@ -305,11 +350,17 @@ export const createAppSlice = (set, get) => ({
         },
         getCurrentMode,
         setPageLoader,
+        setPageSwitchInProgress,
+        bufferExposedValuePostFlush,
       } = get();
       const isPreview = getCurrentMode(moduleId) !== 'edit';
 
       setPageLoader(true);
       await yieldToMain(); // Paint the loader before doing heavy work
+      // Bail if superseded, before touching cleanUpStore/setCurrentPageId/navigate.
+      if (isSuperseded()) {
+        return;
+      }
 
       // Capture the current page BEFORE updating so isSamePage is correct.
       // Reading getCurrentPageId after setCurrentPageId would always return pageId
@@ -317,7 +368,7 @@ export const createAppSlice = (set, get) => ({
       const previousPageId = getCurrentPageId(moduleId);
       const isSamePage = previousPageId === pageId;
 
-      cleanUpStore(true);
+      cleanUpStore();
       clearTemporaryLayouts();
       setCurrentPageId(pageId, moduleId);
       setComponentNameIdMapping(moduleId);
@@ -370,9 +421,16 @@ export const createAppSlice = (set, get) => ({
       initDependencyGraph('canvas');
       setIsComponentLayoutReady(false, moduleId);
       await yieldToMain(); // Let React commit all state changes before showing the Container
+      // Bail if superseded, before opening a batch for a page nobody's waiting on.
+      if (isSuperseded()) {
+        return;
+      }
 
       startExposedValueBatch();
       setPageLoader(false);
+      // Released once this switch's batch actually flushes (isComponentLayoutReady
+      // effect in useAppData.js), not merely once doSwitch's own code finishes.
+      bufferExposedValuePostFlush(() => setPageSwitchInProgress(false), moduleId, `pageSwitchGuard|${moduleId}`);
     };
 
     doSwitch().catch((error) => {
@@ -386,15 +444,12 @@ export const createAppSlice = (set, get) => ({
     set(() => ({ pageSwitchInProgress: isInProgress }), false, 'setPageSwitchInProgress'),
   setPageLoader: (isInProgress) => set(() => ({ pageLoader: isInProgress }), false, 'setPageLoader'),
 
-  cleanUpStore: (isPageSwitch = false, moduleId) => {
+  cleanUpStore: (moduleId) => {
     const { resetUndoRedoStack, initModules, clearSelectedComponents } = get();
     resetUndoRedoStack();
     clearSelectedComponents();
     set((state) => {
       state.modules.canvas.componentNameIdMapping = {};
-      if (isPageSwitch) {
-        state.pageSwitchInProgress = false;
-      }
       state.containerChildrenMapping = {
         canvas: [],
       };

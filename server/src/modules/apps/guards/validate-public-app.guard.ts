@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { LICENSE_FIELD, LICENSE_TYPE } from '@modules/licensing/constants';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
@@ -17,13 +17,11 @@ export class ValidatePublicAppGuard implements CanActivate {
     }
 
     if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
-      const licenseTerms = await this.licenseTermsService.getLicenseTerms(
-        [LICENSE_FIELD.STATUS, LICENSE_FIELD.PLAN],
+      const isPublicAppEnabled = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.PUBLIC_APP,
         app.organizationId
       );
-      const { licenseType } = licenseTerms[LICENSE_FIELD.STATUS] ?? {};
-      const planType: string | undefined = licenseTerms[LICENSE_FIELD.PLAN];
-      if (licenseType === LICENSE_TYPE.BASIC || licenseType === LICENSE_TYPE.TRIAL || planType === 'starter') {
+      if (!isPublicAppEnabled) {
         throw new ForbiddenException('public-app-plan-restricted');
       }
     }

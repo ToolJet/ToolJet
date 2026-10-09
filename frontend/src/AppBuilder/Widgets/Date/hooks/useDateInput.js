@@ -7,7 +7,7 @@ const useDateInput = ({ validation = {}, dateFormat, setExposedVariable, setExpo
   const [excludedDates, setExcludedDates] = useState([]);
   const [minDate, setMinDate] = useState(moment(validation.minDate, dateFormat).toDate());
   const [maxDate, setMaxDate] = useState(moment(validation.maxDate, dateFormat).toDate());
-  console.log('This is the excludedDates ', excludedDates);
+
   useEffect(() => {
     if (isInitialRender.current) return;
     const momentDate = moment(validation.minDate, dateFormat);

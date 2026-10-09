@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { usersSelector } from "Selectors/manageUsers";
+import { usersSelector } from "Selectors/platform/manageUsers";
 import { navigateToManageUsers } from "Support/utils/common";
 import {
   archiveUserAndVerify,
@@ -117,6 +117,11 @@ describe("License - User Limits", () => {
     cy.wait(500);
 
     changeUserRole(builderEmail, "end-user");
+
+    /* Workaround: the upgrade modal only renders once per page load, so reload
+       before the second limit-reached invite. Remove once the modal bug is fixed. */
+    cy.reload();
+    cy.get(usersSelector.buttonAddUsers).click();
 
     openInviteUserModal(thirdBuilderEmail, thirdBuilderEmail, "builder");
 

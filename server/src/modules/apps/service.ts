@@ -1,5 +1,4 @@
 import { User } from '@entities/user.entity';
-import { FolderApp } from '@entities/folder_app.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import {
   BadRequestException,
@@ -14,6 +13,7 @@ import {
   AppCreateDto,
   AppListDto,
   AppUpdateDto,
+  RestrictedAccessInfoDto,
   ValidateAppAccessDto,
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
@@ -70,6 +70,7 @@ import {
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Component } from '@entities/component.entity';
 import { Page } from '@entities/page.entity';
+import { FolderApp } from '@entities/folder_app.entity';
 
 // App type → the UserPermissions bucket holding its folder's resolved access.
 // Add an entry here (not another ternary arm) when a new folder-owning app type is introduced.
@@ -339,6 +340,25 @@ export class AppsService implements IAppsService {
       isPublic: app.isPublic,
       organizationId: app.organizationId,
     };
+  }
+
+  async getRestrictedAccessInfo(slug: string, user: User): Promise<RestrictedAccessInfoDto> {
+    // Scoped to the requesting user's organization so this never leaks app names across workspaces.
+    // null lets the repository resolve the workspace's default branch itself.
+    const app = await this.appRepository.findBySlug(slug, user.organizationId, null);
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    const folderApp = await dbTransactionWrap((manager: EntityManager) =>
+      manager.findOne(FolderApp, { where: { appId: app.id }, relations: ['folder'] })
+    );
+
+    return plainToClass(RestrictedAccessInfoDto, {
+      appName: app.name,
+      folderName: folderApp?.folder?.name ?? null,
+    });
   }
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {

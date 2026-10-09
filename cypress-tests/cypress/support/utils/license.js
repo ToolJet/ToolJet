@@ -1,10 +1,10 @@
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors } from "Selectors/eeCommon";
-import { importSelectors } from "Selectors/exportImport";
-import { licenseSelectors } from "Selectors/license";
+import { commonEeSelectors } from "Selectors/platform/eeCommon";
+import { importSelectors } from "Selectors/platform/exportImport";
+import { licenseSelectors } from "Selectors/platform/license";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
 import { createAndUpdateConstant } from "Support/utils/workspaceConstants";
-import { licenseText } from "Texts/license";
+import { licenseText } from "Texts/platform/license";
 
 export const getLicenseExpiryDate = () => {
   return cy
@@ -109,7 +109,7 @@ export const verifyAccessTab = (isPlanEnabled = false) => {
     );
 
     const toggleIcon =
-      label === "Workflows" || label === "Google" || label === "GitHub"
+      label === "Workflows" || label === "Google SSO" || label === "GitHub SSO"
         ? licenseSelectors.circularToggleEnabledIcon
         : isPlanEnabled
           ? licenseSelectors.circularToggleEnabledIcon
@@ -361,7 +361,7 @@ export const verifyTotalLimitsWithPlan = (
       resources.forEach((resource) => {
         const lowerRes = resource.toLowerCase();
         const key = keyMap[lowerRes] || resource;
-        const current = currentLimits[key];
+        const current = currentLimits[key] ?? currentLimits[key.toLowerCase()];
         const limit = plan[key];
         const expectedLabel = labelMap[lowerRes] || resource.toUpperCase();
 

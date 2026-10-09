@@ -20,6 +20,7 @@ import cx from 'classnames';
 import { findDefault } from '../_utils/component-properties-validation';
 import FixWithAi from './FixWithAi';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
+import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -511,7 +512,7 @@ const PreviewContainer = ({
                   <div className="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
 
-                {aiFeaturesEnabled && !isAiBlockedByBranch && (
+                {aiFeaturesEnabled && INLINE_AI_FEATURES_ENABLED && !isAiBlockedByBranch && (
                   <ToolTip
                     placement="left"
                     message={<FixIssueTooltipContent />}

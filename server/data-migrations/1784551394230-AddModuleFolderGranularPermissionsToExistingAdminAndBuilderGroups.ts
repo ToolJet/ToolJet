@@ -42,15 +42,20 @@ export class AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups17
       }
 
       // Self-hosted plan is instance-level — resolve it once. Cloud is per-org (resolved in the loop).
-      const instancePlan = isCloud ? null : await licenseInitService.getPlanForMigration(manager);
+      let isSelfHostedFreePlan = false;
+      if (!isCloud) {
+        const { isValid } = await licenseInitService.initForMigration(manager);
+        isSelfHostedFreePlan = !isValid;
+      }
 
       const organizations = await manager.query(`SELECT id FROM organizations`);
 
       for (const { id: organizationId } of organizations) {
-        const plan = isCloud
-          ? await licenseInitService.getPlanForMigrationCloud(manager, organizationId)
-          : instancePlan;
-        const isFreePlan = plan === 'basic' || plan === 'starter';
+        let isFreePlan = isSelfHostedFreePlan;
+        if (isCloud) {
+          const plan = await licenseInitService.getPlanForMigrationCloud(manager, organizationId);
+          isFreePlan = plan === 'basic' || plan === 'starter';
+        }
         const roleNamesToUpdate = isFreePlan ? [USER_ROLE.ADMIN, USER_ROLE.BUILDER] : [USER_ROLE.ADMIN];
 
         const groups = await manager.query(
@@ -102,7 +107,7 @@ export class AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups17
           await manager.save(foldersGroupPermissions);
 
           console.log(
-            `Created module folder granular permission and folders group permission for group ${groupId} (org ${organizationId}, plan ${plan}).`
+            `Created module folder granular permission and folders group permission for group ${groupId} (org ${organizationId}, isFreePlan ${isFreePlan}).`
           );
         }
       }

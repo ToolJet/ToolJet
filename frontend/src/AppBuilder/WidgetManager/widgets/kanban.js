@@ -139,6 +139,12 @@ export const kanbanConfig = {
       placeholder: 'Enter tooltip text',
       showLabel: false,
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {
     onUpdate: { displayName: 'On update' },
@@ -236,6 +242,7 @@ export const kanbanConfig = {
       modalHeight: { value: 400 },
       tooltipFormat: { value: 'plainText' },
       tooltip: { value: '' },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {

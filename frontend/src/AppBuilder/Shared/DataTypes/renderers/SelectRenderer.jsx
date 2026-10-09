@@ -110,7 +110,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
   );
 };
 
-const CustomOption = ({ innerRef, innerProps, children, isSelected, ...props }) => {
+const CustomOption = ({ innerRef, innerProps, children, isSelected, isFocused, ...props }) => {
   const { label, value, data } = props;
   const { optionColors } = props.selectProps;
 
@@ -118,7 +118,7 @@ const CustomOption = ({ innerRef, innerProps, children, isSelected, ...props }) 
     <div
       ref={innerRef}
       {...innerProps}
-      className="option-wrapper d-flex"
+      className={`option-wrapper d-flex ${isFocused ? 'option-focused' : ''}`}
       style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
     >
       {props.selectProps.isMulti ? (

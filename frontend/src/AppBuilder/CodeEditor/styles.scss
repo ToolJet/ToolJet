@@ -46,6 +46,40 @@
     border-radius: 0px 0px 6px 6px !important;
     box-shadow: 0px 4px 8px 0px rgba(48, 49, 51, 0.10), 0px 0px 1px 0px rgba(48, 49, 51, 0.05);
     font-weight: 400;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cm-completion-overflow-tooltip {
+    display: none;
+    position: fixed;
+    z-index: 999999;
+    background-color: #000;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 18px;
+    max-width: 400px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    white-space: normal;
+    pointer-events: none;
+    opacity: 0.9;
+    text-align: center;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 0 6px 6px 6px;
+        border-style: solid;
+        border-color: transparent transparent #000 transparent;
+    }
 }
 
 .cm-base-autocomplete, .cm-tooltip-autocomplete {
@@ -167,6 +201,7 @@
             width: 16px !important;
             height: 16px !important;
         }
+
     }
 
     .cm-custom-completion-info {
