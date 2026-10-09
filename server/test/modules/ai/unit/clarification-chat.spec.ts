@@ -35,7 +35,7 @@ describe('AI clarification presentation', () => {
     service = Object.create(AiService.prototype);
     Object.assign(service, {
       attachmentService: { retain: jest.fn() },
-      getCreditsBalance: jest.fn().mockResolvedValue({ balance: 100 }),
+      checkSpend: jest.fn().mockResolvedValue({ refusal: null }),
       sendSSE: jest.fn(),
       maybeSendBuildCompletionEmail: jest.fn(),
       generateErrorMessageForUser: jest.fn().mockResolvedValue({ content: 'Unexpected failure' }),
@@ -146,9 +146,7 @@ describe('AI clarification presentation', () => {
     conversation.app.aiGenerationMetadata = { interrupt: true, interruptId: 'calculation-question' };
     const answer = 'Leave the additional total out and keep the equipment fields unchanged.';
     await send(answer);
-    expect(mockSaveMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ messageType: 'user', content: answer })
-    );
+    expect(mockSaveMessage).toHaveBeenCalledWith(expect.objectContaining({ messageType: 'user', content: answer }));
     expect(service.aiUtilService.callAgent).toHaveBeenCalledWith(
       'deep-agent-resume',
       expect.objectContaining({ interrupt_id: 'calculation-question', interruptConfig: answer }),

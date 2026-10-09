@@ -56,6 +56,12 @@ export class SelfhostCustomersAiCreditHistory extends BaseEntity {
   @Column({ name: 'selfhost_customer_id', type: 'uuid' })
   selfhostCustomerId: string;
 
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
+  userId: string | null;
+
+  @Column({ name: 'organization_id', type: 'uuid', nullable: true })
+  organizationId: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 

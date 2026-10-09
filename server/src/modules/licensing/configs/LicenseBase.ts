@@ -575,6 +575,12 @@ export default class LicenseBase {
     return this._aiPlan || 'credits';
   }
 
+  /** Per-builder AI credit limits: Enterprise and trial; Team (business) and basic don't. */
+  public get aiCreditLimits(): boolean {
+    if (!this.aiFeature || this.IsBasicPlan) return false;
+    return this.licenseType === LICENSE_TYPE.ENTERPRISE || this.licenseType === LICENSE_TYPE.TRIAL;
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -628,6 +634,7 @@ export default class LicenseBase {
       queryFolders: this.queryFolders,
       customComponentLibraries: this.customComponentLibraries,
       aiPlan: this.aiPlan,
+      aiCreditLimits: this.aiCreditLimits,
       publicApp: this.publicApp,
     };
   }

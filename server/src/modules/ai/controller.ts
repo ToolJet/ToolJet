@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Res, NotFoundException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Res, NotFoundException, Query } from '@nestjs/common';
 import { User } from '@modules/app/decorators/user.decorator';
 import { Response } from 'express';
 import { IAiController } from './interfaces/IController';
@@ -7,7 +7,7 @@ import { FEATURE_KEY } from './constants';
 
 @Controller('ai')
 export class AiController implements IAiController {
-  constructor() { }
+  constructor() {}
 
   @InitFeature(FEATURE_KEY.FETCH_ZERO_STATE)
   @Get('/zero-state')
@@ -80,6 +80,30 @@ export class AiController implements IAiController {
   @InitFeature(FEATURE_KEY.CREATE_CONVERSATION)
   @Post('conversation')
   async createConversation(@User() user, @Body() body) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.GET_CREDITS_USAGE)
+  @Get('/credits-usage')
+  async getCreditsUsage(@User() user) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.GET_MY_CREDITS)
+  @Get('/credits-usage/me')
+  async getMyCredits(@User() user) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE_CREDIT_LIMITS)
+  @Put('/credits-usage/limits')
+  async updateCreditLimits(@User() user, @Body() body) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE_CREDIT_LIMITS)
+  @Put('/credits-usage/limits/builders/:userId')
+  async updateBuilderLimit(@User() user, @Param('userId') userId: string, @Body() body) {
     throw new NotFoundException();
   }
 

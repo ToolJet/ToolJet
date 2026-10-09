@@ -148,6 +148,7 @@ export enum LICENSE_FIELD {
   QUERY_FOLDERS = 'queryFoldersEnabled',
   PUBLIC_APP = 'publicAppEnabled',
   CUSTOM_COMPONENT_LIBRARIES = 'customComponentLibrariesEnabled',
+  AI_CREDIT_LIMITS = 'aiCreditLimitsEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

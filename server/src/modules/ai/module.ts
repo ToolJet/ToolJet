@@ -36,6 +36,7 @@ export class AiModule extends SubModule {
     const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
     const { AiCacheService } = await import(`${importPath}/ai/ai-cache`);
+    const { BuilderUsageService } = await import(`${importPath}/ai/services/builder-usage.service`);
 
     return {
       module: AiModule,
@@ -76,7 +77,7 @@ export class AiModule extends SubModule {
         PageHelperService,
         AppsUtilService,
         AiCacheService,
-        ...(isMainImport ? [AiService, AiCacheService, AiAttachmentCleanupListener] : []),
+        ...(isMainImport ? [AiService, AiCacheService, AiAttachmentCleanupListener, BuilderUsageService] : []),
       ],
       exports: [AiUtilService],
     };
