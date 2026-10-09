@@ -19,7 +19,10 @@ const index = VersionIndex.fromData({
     { id: 'c1', name: 'button1', type: 'Button', parent: null, pageId: 'p1' },
     { id: 'c2', name: 'modal1', type: 'Modal', parent: null, pageId: 'p1' },
   ],
-  pages: [{ id: 'p1', name: 'Home', handle: 'home' }],
+  pages: [
+    { id: 'p1', name: 'Home', handle: 'home' },
+    { id: 'p2', name: 'Form', handle: 'form', type: 'custom' },
+  ],
   queries: [{ id: 'q1', name: 'getUsers' }],
   events: [{ id: 'e1', sourceId: 'c1', target: 'component', index: 0, eventId: 'onClick', actionId: 'show-alert' }],
 });
@@ -173,6 +176,59 @@ describe('event rules', () => {
       expect(await eventFiredBySource.check(withEvent({ eventId: 'onClick', actionId: 'show-alert' }), ctx)).toEqual(
         []
       );
+    });
+
+    it('warns when a page handler listens for an event pages do not fire', async () => {
+      expect(
+        await eventFiredBySource.check(
+          withEvent({ eventId: 'onClick', actionId: 'show-alert' }, { target: 'page', sourceId: 'p1' }),
+          ctx
+        )
+      ).toEqual([expect.objectContaining({ code: 'EVENT_NOT_FIRED_BY_SOURCE', confidence: 'heuristic' })]);
+    });
+
+    it('accepts onPageLoad on default pages and onClick on custom pages', async () => {
+      expect(
+        await eventFiredBySource.check(
+          withEvent({ eventId: 'onPageLoad', actionId: 'show-alert' }, { target: 'page', sourceId: 'p1' }),
+          ctx
+        )
+      ).toEqual([]);
+      expect(
+        await eventFiredBySource.check(
+          withEvent({ eventId: 'onClick', actionId: 'show-alert' }, { target: 'page', sourceId: 'p2' }),
+          ctx
+        )
+      ).toEqual([]);
+    });
+
+    it('warns when a query handler listens for an event queries do not fire', async () => {
+      expect(
+        await eventFiredBySource.check(
+          withEvent({ eventId: 'onClick', actionId: 'show-alert' }, { target: 'data_query', sourceId: 'q1' }),
+          ctx
+        )
+      ).toEqual([expect.objectContaining({ code: 'EVENT_NOT_FIRED_BY_SOURCE', confidence: 'heuristic' })]);
+    });
+
+    it('accepts the two events queries fire', async () => {
+      for (const eventId of ['onDataQuerySuccess', 'onDataQueryFailure']) {
+        expect(
+          await eventFiredBySource.check(
+            withEvent({ eventId, actionId: 'show-alert' }, { target: 'data_query', sourceId: 'q1' }),
+            ctx
+          )
+        ).toEqual([]);
+      }
+    });
+
+    it('stays silent for sources that are not in this version', async () => {
+      expect(
+        await eventFiredBySource.check(
+          withEvent({ eventId: 'onClick', actionId: 'show-alert' }, { target: 'data_query', sourceId: 'foreign' }),
+          ctx
+        )
+      ).toEqual([]);
     });
   });
 

@@ -108,6 +108,23 @@ export interface QueryData {
 
 export type QueryWrite = Write<QueryData>;
 
+export interface PageData {
+  name?: string;
+  handle?: string;
+  index?: unknown;
+  // jsonb column holding either a raw boolean or the fx shape { value, fxActive }.
+  hidden?: unknown;
+  disabled?: unknown;
+  isPageGroup?: boolean;
+  pageGroupId?: string | null;
+  // PageType: 'default' | 'group' | 'url' | 'app' | 'custom'
+  type?: string;
+  // Delete op context: a group delete that also deletes its child pages.
+  deleteAssociatedPages?: boolean;
+}
+
+export type PageWrite = Write<PageData>;
+
 export interface VersionSettingsData {
   homePageId?: string;
   globalSettings?: unknown;

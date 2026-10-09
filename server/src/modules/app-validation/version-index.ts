@@ -23,6 +23,7 @@ export interface IndexedPage {
   pageGroupId?: string | null;
   disabled?: boolean;
   hidden?: unknown;
+  type?: string;
 }
 
 export interface IndexedQuery {
@@ -107,7 +108,7 @@ export class VersionIndex {
 
     const pages: IndexedPage[] = await manager.find(Page, {
       where: { appVersionId },
-      select: ['id', 'name', 'handle', 'isPageGroup', 'pageGroupId', 'disabled', 'hidden'],
+      select: ['id', 'name', 'handle', 'isPageGroup', 'pageGroupId', 'disabled', 'hidden', 'type'],
     });
 
     const queries: IndexedQuery[] = await manager.find(DataQuery, {
@@ -154,6 +155,14 @@ export class VersionIndex {
 
   componentsOnPage(pageId: string): IndexedComponent[] {
     return this.componentsByPage.get(pageId) ?? [];
+  }
+
+  // E.g. a version containing a ModuleContainer is a module's version.
+  hasComponentOfType(type: string): boolean {
+    for (const component of this.componentsById.values()) {
+      if (component.type === type) return true;
+    }
+    return false;
   }
 
   isComponentNameTaken(pageId: string, name: string, excludeIds: Iterable<string> = []): boolean {

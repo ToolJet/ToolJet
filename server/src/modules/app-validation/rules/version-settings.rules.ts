@@ -1,5 +1,6 @@
 import { isPlainObject } from 'lodash';
 import { Issue, Rule, RuleContext, VersionSettingsWrite } from '../types';
+import { isLiterallyTrue } from '../values';
 
 function touchedField(write: VersionSettingsWrite, field: string): boolean {
   if (write.op !== 'update' || !write.touched) return true;
@@ -39,6 +40,33 @@ export const versionHomePageExists: Rule<VersionSettingsWrite> = {
           path: 'homePageId',
           message: `home page: ${page.name ?? write.data.homePageId} is a page group, not a page`,
           entity: { type: 'version', id: write.id },
+        },
+      ];
+    }
+    // `hidden` is fx-able jsonb, so only a literal true is judged — dynamic expressions pass.
+    if (isLiterallyTrue(page.hidden)) {
+      return [
+        {
+          code: 'VERSION_HOME_PAGE_HIDDEN',
+          severity: 'high',
+          confidence: 'certain',
+          path: 'homePageId',
+          message: `home page: ${page.name ?? write.data.homePageId} is hidden, the app would open on an invisible page`,
+          entity: { type: 'version', id: write.id },
+          fix: 'Unhide the page or pick a visible one as home.',
+        },
+      ];
+    }
+    if (page.disabled === true) {
+      return [
+        {
+          code: 'VERSION_HOME_PAGE_DISABLED',
+          severity: 'high',
+          confidence: 'certain',
+          path: 'homePageId',
+          message: `home page: ${page.name ?? write.data.homePageId} is disabled and cannot be opened`,
+          entity: { type: 'version', id: write.id },
+          fix: 'Enable the page or pick an enabled one as home.',
         },
       ];
     }

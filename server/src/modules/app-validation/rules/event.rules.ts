@@ -2,6 +2,7 @@ import { widgetEvents } from '../catalog';
 import { actionEntityRef, isKnownActionId } from '../event-actions';
 import { EventWrite, Rule, RuleContext, Severity, WriteSource } from '../types';
 import { hasBraces } from '../values';
+import type { VersionIndex } from '../version-index';
 
 export const EVENT_TARGETS = ['component', 'page', 'data_query', 'table_column', 'table_action'] as const;
 
@@ -172,21 +173,57 @@ export const eventNoSwitchPageInModule: Rule<EventWrite> = {
 // nothing, so a static list can't judge them.
 const DYNAMIC_EVENT_SOURCES = new Set(['ModuleViewer', 'ModuleContainer', 'CustomComponent']);
 
+// What a page fires depends on its type (AddNewPagePopup.jsx / SettingsModal.jsx):
+// 'default' pages fire onPageLoad, 'custom' pages render a clickable element and fire
+// onClick, and url/app/group pages never fire events — but attaching one to them is the
+// editor's own doing, so no type entry means the rule stays silent.
+const PAGE_EVENT_IDS_BY_TYPE: Record<string, readonly string[]> = {
+  default: ['onPageLoad'],
+  custom: ['onClick'],
+};
+
+// The complete list the query editor offers (frontend QueryManager/constants.js).
+export const DATA_QUERY_EVENT_IDS = ['onDataQuerySuccess', 'onDataQueryFailure'] as const;
+
+interface FiredBySource {
+  declared: readonly string[];
+  label: string;
+}
+
+function firedEventsOf(write: EventWrite, index: VersionIndex): FiredBySource | null {
+  const { target, sourceId } = write.data ?? {};
+  if (!sourceId) return null;
+  if (target === 'component') {
+    const source = index.component(sourceId);
+    if (!source || DYNAMIC_EVENT_SOURCES.has(source.type)) return null;
+    return { declared: widgetEvents(source.type), label: `${source.name || source.type} (${source.type})` };
+  }
+  if (target === 'page') {
+    const page = index.page(sourceId);
+    if (!page) return null; // reported by event-source-exists
+    return { declared: PAGE_EVENT_IDS_BY_TYPE[page.type ?? 'default'] ?? [], label: `page ${page.name ?? sourceId}` };
+  }
+  if (target === 'data_query') {
+    const query = index.query(sourceId);
+    if (!query) return null;
+    return { declared: DATA_QUERY_EVENT_IDS, label: `query ${query.name ?? sourceId}` };
+  }
+  return null;
+}
+
 // Heuristic: the widget config is the editor's own list, but columns, actions and dynamic
 // options fire events the top-level list doesn't mention. Warns, never blocks.
 export const eventFiredBySource: Rule<EventWrite> = {
   id: 'event-fired-by-source',
-  description: 'The source widget fires the handled event',
+  description: 'The source component, page or query fires the handled event',
   async check(write, ctx: RuleContext) {
     if (write.op === 'delete' || eventUntouched(write)) return [];
     const eventId = write.data?.event?.eventId;
-    if (!eventId || write.data?.target !== 'component' || !write.data.sourceId) return [];
+    if (!eventId) return [];
 
     const index = await ctx.index();
-    const source = index.component(write.data.sourceId);
-    if (!source || DYNAMIC_EVENT_SOURCES.has(source.type)) return [];
-    const declared = widgetEvents(source.type);
-    if (!declared.length || declared.includes(eventId)) return [];
+    const source = firedEventsOf(write, index);
+    if (!source || !source.declared.length || source.declared.includes(eventId)) return [];
 
     return [
       {
@@ -194,9 +231,9 @@ export const eventFiredBySource: Rule<EventWrite> = {
         severity: 'medium',
         confidence: 'heuristic',
         path: `${labelOf(write)}.event.eventId`,
-        message: `${labelOf(write)} → event: ${source.name || source.type} (${source.type}) does not fire "${eventId}", so the handler would never run`,
+        message: `${labelOf(write)} → event: ${source.label} does not fire "${eventId}", so the handler would never run`,
         entity: { type: 'event', id: write.id },
-        fix: `Use one of: ${declared.join(', ')}.`,
+        fix: `Use one of: ${source.declared.join(', ')}.`,
       },
     ];
   },

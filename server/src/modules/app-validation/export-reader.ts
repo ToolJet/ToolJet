@@ -1,4 +1,4 @@
-import { ComponentWrite, EventWrite, LayoutWrite, QueryWrite, ValidationArea } from './types';
+import { ComponentWrite, EventWrite, LayoutWrite, PageWrite, QueryWrite, ValidationArea } from './types';
 import { toIndexedEvent, VersionIndexData } from './version-index';
 
 // Scoped by appVersionId: pooling versions reports fake duplicates.
@@ -83,6 +83,7 @@ export function toIndexData(version: ExportedAppVersion): VersionIndexData {
       pageGroupId: p.pageGroupId,
       disabled: p.disabled,
       hidden: p.hidden,
+      type: p.type,
     })),
     queries: version.queries.map((q) => ({ id: q.id, name: q.name, dataSourceId: q.dataSourceId })),
     events: version.events.map((e) => toIndexedEvent(e)),
@@ -165,6 +166,23 @@ export function toQueryWrites(version: ExportedAppVersion): QueryWrite[] {
   }));
 }
 
+export function toPageWrites(version: ExportedAppVersion): PageWrite[] {
+  return version.pages.map((p) => ({
+    op: 'create',
+    id: p.id,
+    data: {
+      name: p.name,
+      handle: p.handle,
+      index: p.index,
+      hidden: p.hidden,
+      disabled: p.disabled,
+      isPageGroup: p.isPageGroup,
+      pageGroupId: p.pageGroupId,
+      type: p.type,
+    },
+  }));
+}
+
 // Each work package adds its area here so imports validate it too.
 export function inputsByArea(version: ExportedAppVersion): Partial<Record<ValidationArea, unknown[]>> {
   return {
@@ -172,5 +190,6 @@ export function inputsByArea(version: ExportedAppVersion): Partial<Record<Valida
     layouts: toLayoutWrites(version),
     events: toEventWrites(version),
     queries: toQueryWrites(version),
+    pages: toPageWrites(version),
   };
 }

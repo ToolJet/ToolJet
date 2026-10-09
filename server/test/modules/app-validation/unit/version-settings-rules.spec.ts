@@ -6,6 +6,9 @@ const index = VersionIndex.fromData({
   pages: [
     { id: 'p1', name: 'Home', handle: 'home' },
     { id: 'g1', name: 'Group', handle: 'group', isPageGroup: true },
+    { id: 'p2', name: 'Secret', handle: 'secret', hidden: { value: '{{true}}' } },
+    { id: 'p3', name: 'Legacy', handle: 'legacy', disabled: true },
+    { id: 'p4', name: 'Maybe', handle: 'maybe', hidden: { value: '{{globals.flag}}' } },
   ],
   homePageId: 'p1',
 });
@@ -30,6 +33,19 @@ describe('version settings rules', () => {
       expect(await versionHomePageExists.check(write({ homePageId: 'g1' }), ctx)).toEqual([
         expect.objectContaining({ code: 'VERSION_HOME_PAGE_IS_GROUP' }),
       ]);
+    });
+
+    it('rejects a literally hidden or disabled page as home page', async () => {
+      expect(await versionHomePageExists.check(write({ homePageId: 'p2' }), ctx)).toEqual([
+        expect.objectContaining({ code: 'VERSION_HOME_PAGE_HIDDEN', severity: 'high', confidence: 'certain' }),
+      ]);
+      expect(await versionHomePageExists.check(write({ homePageId: 'p3' }), ctx)).toEqual([
+        expect.objectContaining({ code: 'VERSION_HOME_PAGE_DISABLED' }),
+      ]);
+    });
+
+    it('never judges a dynamically hidden page', async () => {
+      expect(await versionHomePageExists.check(write({ homePageId: 'p4' }), ctx)).toEqual([]);
     });
 
     it('accepts a page of the version and skips untouched updates', async () => {

@@ -148,6 +148,15 @@ export interface ValueSchema {
 const isScalar = (v: unknown) => v === null || ['string', 'number', 'boolean'].includes(typeof v);
 const isNumericText = (v: string) => v.trim() !== '' && Number.isFinite(Number(v));
 
+// Whether an fx-able stored value is literally true: raw `true`, 'true', the constant
+// expression '{{true}}', or any of those inside the { value } wrapper. Dynamic expressions
+// return false — the server cannot judge them.
+export function isLiterallyTrue(value: unknown): boolean {
+  if (value === true || value === 'true' || value === '{{true}}') return true;
+  if (isPlainObject(value)) return isLiterallyTrue((value as { value?: unknown }).value);
+  return false;
+}
+
 export function plainValueFit(value: unknown, schema: ValueSchema | undefined): ValueFit {
   if (!schema?.type || value === undefined || value === null || value === '' || hasBraces(value)) return 'ok';
 
