@@ -298,7 +298,9 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {options?.map((item, index) => {
                   return (
-                    <Draggable key={item.name} draggableId={item.name} index={index}>
+                    // Keyed by position, not by the editable label: a label commit (on blur) must not
+                    // remount the row, which would close its open popover.
+                    <Draggable key={index} draggableId={`step-${index}`} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
@@ -313,7 +315,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
                             rootClose
                             overlay={_renderOverlay(item, index)}
                           >
-                            <div key={item.name + item.id}>
+                            <div key={index}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
                                 onMouseEnter={() => setHoveredOptionIndex(index)}
