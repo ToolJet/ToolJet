@@ -32,7 +32,9 @@ export default function Chart({
     return '#fff';
   };
 
-  const { padding, visibility, disabledState, boxShadow, backgroundColor, borderRadius, borderColor } = styles;
+  const { padding, margin, visibility, disabledState, boxShadow, backgroundColor, borderRadius, borderColor } = styles;
+  // RenderWidget pads the widget box 2px/side unless the margin switch is 'none'; width arrives un-inset.
+  const boxPadding = margin === 'none' ? 0 : 4;
   const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes, barmode } =
     properties;
 
@@ -51,7 +53,7 @@ export default function Chart({
   }, [properties.loadingState]);
 
   const computedStyles = {
-    width: width - 4,
+    width: width - boxPadding,
     height,
     display: visibility ? '' : 'none',
     // background: darkMode ? '#1f2936' : 'white',
@@ -106,7 +108,7 @@ export default function Chart({
 
   const layout = {
     ...chartLayout,
-    width: width - 6,
+    width: width - boxPadding - 2,
     height: height - 2,
     plot_bgcolor: updatedBgColor,
     paper_bgcolor: updatedBgColor,

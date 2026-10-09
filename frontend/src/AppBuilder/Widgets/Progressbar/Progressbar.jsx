@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Label from '@/_ui/Label';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './progressbar.scss';
-import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExposedVariables, dataCy, height }) => {
   // ===== PROPS DESTRUCTURING =====
   const { labelType, label, progress, visibility, loadingState } = properties;
@@ -19,11 +18,10 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
     progressBarThickness,
     boxShadow,
     textSize,
-    padding,
   } = styles;
 
   // ===== COMPUTED VALUES =====
-  const computedHeight = padding !== 'none' ? height - 2 * BOX_PADDING : height;
+  const computedHeight = height; // already inset by RenderWidget according to the margin switch
 
   // Calculate font size as percentage of component height (textSize: 1-100, default 26)
   const validTextSize = textSize >= 1 && textSize <= 50 ? textSize : 26;

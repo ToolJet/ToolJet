@@ -74,7 +74,7 @@ const FilePicker = (props) => {
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   // Base (authored) pixel height — used as the dropzone's floor so it keeps its size
   // while the widget grows downward to reveal the selected-file list.
-  const dropzoneBaseHeight = numericWidgetHeight + (containerPadding === 'default' ? 0 : 4);
+  const dropzoneBaseHeight = numericWidgetHeight; // already inset by RenderWidget according to the Margin switch
 
   // FilePicker height is deterministic: a fixed-height dropzone plus fixed-height file rows.
   // Drive the reflow off the file count (and the error/uploading state, which can change a

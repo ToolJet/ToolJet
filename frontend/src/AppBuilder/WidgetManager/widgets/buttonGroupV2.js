@@ -339,7 +339,7 @@ export const buttonGroupV2Config = {
     },
     padding: {
       type: 'switch',
-      displayName: 'Padding',
+      displayName: 'Margin',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: 'default',

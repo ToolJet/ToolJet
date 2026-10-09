@@ -144,6 +144,16 @@ export const jsonExplorerConfig = {
       },
       accordian: 'container',
     },
+    padding: {
+      type: 'switch',
+      displayName: 'Margin',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'container',
+    },
   },
   exposedVariables: {
     value: {
@@ -204,6 +214,7 @@ export const jsonExplorerConfig = {
     },
     events: [],
     styles: {
+      padding: { value: 'default' },
       borderRadius: { value: '{{6}}' },
       borderColor: { value: 'var(--cc-weak-border)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },

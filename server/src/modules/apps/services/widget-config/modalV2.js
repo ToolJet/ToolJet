@@ -255,6 +255,16 @@ export const modalV2Config = {
       },
       accordian: 'header',
     },
+    padding: {
+      type: 'switch',
+      displayName: 'Margin',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'container',
+    },
     bodyBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
@@ -455,6 +465,7 @@ export const modalV2Config = {
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       bodyBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      padding: { value: 'default' },
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonHoverBackgroundMode: { value: 'auto' },
       triggerButtonHoverBackgroundColor: { value: 'var(--cc-primary-brand)' },

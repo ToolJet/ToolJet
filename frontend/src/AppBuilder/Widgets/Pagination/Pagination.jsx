@@ -152,7 +152,7 @@ export const Pagination = ({
       id={`component-${id}`}
     >
       <ul
-        className="pagination m-0"
+        className="pagination pagination-widget m-0"
         style={{ ...computedStyles, ...(isLoading ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
       >
         <Pagination.Operator

@@ -80,6 +80,16 @@ export const timelineConfig = {
       },
       accordian: 'container',
     },
+    padding: {
+      type: 'switch',
+      displayName: 'Margin',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'container',
+    },
   },
   exposedVariables: {
     value: {},
@@ -103,6 +113,7 @@ export const timelineConfig = {
     },
     events: [],
     styles: {
+      padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },

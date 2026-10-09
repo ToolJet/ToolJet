@@ -7,6 +7,7 @@ import { OverlayTrigger } from 'react-bootstrap';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
+import { resolveContainerBoxPadding } from './appCanvasUtils';
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
@@ -339,7 +340,7 @@ const RenderWidget = ({
     <div
       style={{
         height: '100%',
-        padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
+        padding: resolveContainerBoxPadding(resolvedStyles),
       }}
       className={innerWidgetClassName}
       data-cy={`draggable-widget-${componentName}`}
@@ -352,7 +353,7 @@ const RenderWidget = ({
           currentLayout={currentLayout}
           setExposedVariable={setExposedVariable}
           setExposedVariables={setExposedVariables}
-          height={widgetHeight - 4}
+          height={widgetHeight - (resolveContainerBoxPadding(resolvedStyles) === '0px' ? 0 : 2 * BOX_PADDING)}
           width={widgetWidth}
           parentId={parentId}
           fireEvent={fireEventWrapper}

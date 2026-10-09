@@ -405,7 +405,7 @@ export const fileinputConfig = {
     },
     padding: {
       type: 'switch',
-      displayName: 'Padding',
+      displayName: 'Margin',
       validation: {
         schema: {
           type: 'union',

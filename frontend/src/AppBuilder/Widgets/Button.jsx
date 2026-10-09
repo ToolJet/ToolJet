@@ -106,7 +106,7 @@ export const Button = function Button(props) {
     color: computedTextColor,
     width: '100%',
     borderRadius: `${borderRadius}px`,
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    height,
     '--tblr-btn-color-darker': computedHoverBgColor,
     '--tblr-btn-color-clicked': getModifiedColor(computedBgColor, 'active'),
     '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),

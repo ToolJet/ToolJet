@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/Button/Button';
 import RemoveRectangle from '@/_ui/Icon/bulkIcons/RemoveRectangle';
 
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   getLabelFontSize,
   getLabelWidthOfInput,
@@ -57,7 +56,6 @@ export const FileInput = (props) => {
     accentColor = 'var(--cc-primary-brand)',
     textColor = 'var(--cc-primary-text)',
     errTextColor = 'var(--cc-error-systemStatus)',
-    padding = 'default',
     boxShadow = '0px 0px 0px 0px #00000040',
     labelWidth = 0,
     auto: labelAutoWidth = true,
@@ -78,20 +76,13 @@ export const FileInput = (props) => {
   const wrapperRef = useRef(null);
   const browseButtonRef = useRef(null);
 
-  const _height = useMemo(() => {
-    const baseHeight = height || 60;
-    return padding === 'default' ? `${baseHeight}px` : `${baseHeight + 4}px`;
-  }, [height, padding]);
+  const _height = useMemo(() => `${height || 60}px`, [height]);
 
   // For 'top' alignment, reduce height to account for label space
   const inputElementHeight = useMemo(() => {
-    if (alignment === 'top') {
-      const baseHeight = height || 60;
-      const calculatedHeight = padding === 'default' ? baseHeight : baseHeight + 4;
-      return `${calculatedHeight - 18}px`;
-    }
+    if (alignment === 'top') return `${(height || 60) - 18}px`;
     return _height;
-  }, [_height, alignment, height, padding]);
+  }, [_height, alignment, height]);
 
   const focusFn = useCallback(() => {
     if (browseButtonRef.current && !browseButtonRef.current.disabled) {
