@@ -10,24 +10,19 @@ export const useResetZIndex = ({ showModal, id, mode }) => {
       controlBoxRef.current?.classList?.remove('modal-moveable');
       controlBoxRef.current = null;
     }
-    if (showModal) {
-      useGridStore.getState().actions.setOpenModalWidgetId(id);
-    } else {
-      if (useGridStore.getState().openModalWidgetId === id) {
-        useGridStore.getState().actions.setOpenModalWidgetId(null);
-      }
-    }
-  }, [showModal, id, mode]);
+  }, [showModal, mode]);
 
-  // If the modal unmounts while still open (e.g. a page switch fired from inside it), the effect above never
-  // sees showModal flip to false. Clear the stale id, otherwise Grid keeps hiding every widget's resize controls.
+  // Owns the editor open-modal record. The cleanup runs both when the modal closes
+  // and when it unmounts while still open (e.g. a page switch fired from inside it).
   useEffect(() => {
+    if (!showModal) return;
+    useGridStore.getState().actions.setOpenModalWidgetId(id);
     return () => {
       if (useGridStore.getState().openModalWidgetId === id) {
         useGridStore.getState().actions.setOpenModalWidgetId(null);
       }
     };
-  }, [id]);
+  }, [showModal, id]);
   /**** End - Logic to reset the zIndex of modal control box ****/
 
   return {
