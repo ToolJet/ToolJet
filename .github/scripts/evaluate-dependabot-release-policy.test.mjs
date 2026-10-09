@@ -284,3 +284,19 @@ test('without --tree, a fixed branch still blocks (default-branch-only behavior)
   );
   assert.equal(result.status, 1);
 });
+
+test('ignores alerts in the docs/ site, which is not shipped', () => {
+  const result = evaluate(
+    [alert({ severity: 'critical', scope: 'runtime', manifest: 'docs/package-lock.json' })],
+    '2026-12-31T00:00:00Z'
+  );
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('still blocks lockfiles that only contain "docs" deeper in the path', () => {
+  const result = evaluate(
+    [alert({ severity: 'critical', scope: 'runtime', manifest: 'plugins/packages/docs/package-lock.json' })],
+    '2026-12-31T00:00:00Z'
+  );
+  assert.equal(result.status, 1);
+});
