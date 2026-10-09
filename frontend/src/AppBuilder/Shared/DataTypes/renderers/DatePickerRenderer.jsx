@@ -157,6 +157,8 @@ export const DatePickerRenderer = ({
   const textRef = useRef(null);
   // Ref to track if date change was already handled (prevents double-call from onChange + onCalendarClose)
   const dateChangeHandledRef = useRef(false);
+  // Last value emitted via onChange, so it isn't re-parsed when it comes back in as `value`
+  const lastEmittedRef = useRef({ value: undefined, date: undefined });
 
   const readOnly = !isEditable;
 
@@ -199,9 +201,17 @@ export const DatePickerRenderer = ({
 
   const handleDateChange = useCallback(
     (newDate) => {
+      if (!newDate || Number.isNaN(new Date(newDate).getTime())) {
+        setDate(null);
+        lastEmittedRef.current = { value: null, date: null };
+        onChange?.(null);
+        return;
+      }
+
+      const isUnixMs = unixTimestamp === 'milliseconds';
       let processedValue = newDate;
       if (parseInUnixTimestamp && unixTimestamp) {
-        processedValue = moment(newDate).unix();
+        processedValue = isUnixMs ? moment(newDate).valueOf() : moment(newDate).unix();
       }
 
       const parsedDate = parseDate({
@@ -220,11 +230,14 @@ export const DatePickerRenderer = ({
       });
 
       setDate(parsedDate);
-      if (parseInUnixTimestamp && unixTimestamp) {
-        onChange?.(moment(parsedDate).unix());
-      } else {
-        onChange?.(computeDateString(parsedDate));
-      }
+      const emittedValue =
+        parseInUnixTimestamp && unixTimestamp
+          ? isUnixMs
+            ? moment(parsedDate).valueOf()
+            : moment(parsedDate).unix()
+          : computeDateString(parsedDate);
+      lastEmittedRef.current = { value: emittedValue, date: parsedDate };
+      onChange?.(emittedValue);
     },
     [
       parseInUnixTimestamp,
@@ -254,6 +267,10 @@ export const DatePickerRenderer = ({
 
   // Initialize date from value
   useEffect(() => {
+    if (lastEmittedRef.current.value !== undefined && value === lastEmittedRef.current.value) {
+      setDate(lastEmittedRef.current.date);
+      return;
+    }
     const parsedDate = parseDate({
       value,
       parseDateFormat: getDateTimeFormat(
