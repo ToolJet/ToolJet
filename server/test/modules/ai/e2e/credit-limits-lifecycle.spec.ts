@@ -15,7 +15,7 @@ import {
   SELF_HOSTED_TERMS,
   TEAM_TERMS,
   auditRows,
-  gatewayFor,
+  gatewayWallet,
   sessionFor,
   stubGateway,
   useLicence,
@@ -131,12 +131,12 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
       it('should show the monthly and add-on pools and every builder', async () => {
         const ws = await seedWsSales();
         stubGateway(
-          gatewayFor(
-            ws.owner,
-            { monthly: 10_000, addon: 2000 },
-            { [ws.priya.id]: 1200 },
-            { addonSpend: { [ws.omar.id]: 300 } }
-          )
+          gatewayWallet({
+            owner: ws.owner,
+            pool: { monthly: 10_000, addon: 2000 },
+            monthlySpent: { [ws.priya.id]: 1200 },
+            addonSpent: { [ws.omar.id]: 300 },
+          })
         );
 
         const res = await getUsage(ws);
@@ -157,7 +157,7 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
     describe('limits start on with an equal share', () => {
       it('should give each of 4 builders 2,500 monthly and 500 add-on', async () => {
         const ws = await seedWsSales();
-        stubGateway(gatewayFor(ws.owner, { monthly: 10_000, addon: 2000 }));
+        stubGateway(gatewayWallet({ owner: ws.owner, pool: { monthly: 10_000, addon: 2000 } }));
 
         const res = await getUsage(ws);
 
@@ -177,12 +177,12 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
         const ws = await seedWsSales();
         // Priya was billed 2,200 from the monthly wallet and 100 from the add-on wallet: 2,300 in total.
         stubGateway(
-          gatewayFor(
-            ws.owner,
-            { monthly: 10_000, addon: 2000 },
-            { [ws.priya.id]: 2200 },
-            { addonSpend: { [ws.priya.id]: 100 } }
-          )
+          gatewayWallet({
+            owner: ws.owner,
+            pool: { monthly: 10_000, addon: 2000 },
+            monthlySpent: { [ws.priya.id]: 2200 },
+            addonSpent: { [ws.priya.id]: 100 },
+          })
         );
 
         const res = await getMine(ws, ws.priya);
@@ -200,12 +200,12 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
     describe('buying an add-on grows the add-on pool', () => {
       it("should raise the add-on equal share, keep Omar's custom limit and show no notice", async () => {
         const ws = await seedWsSales();
-        const routes = gatewayFor(
-          ws.owner,
-          { monthly: 10_000, addon: 2000 },
-          {},
-          { plan: { monthly: 10_000, addon: 2000 }, cycleStart: CYCLE_START }
-        );
+        const routes = gatewayWallet({
+          owner: ws.owner,
+          pool: { monthly: 10_000, addon: 2000 },
+          plan: { monthly: 10_000, addon: 2000 },
+          cycleStart: CYCLE_START,
+        });
         stubGateway(routes);
         await putBuilderLimit(ws, ws.omar, { monthly: 4000, addon: 800 }).expect(200);
         const before = await getUsage(ws);
@@ -214,12 +214,12 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
         // gateway answers from here on.
         Object.assign(
           routes,
-          gatewayFor(
-            ws.owner,
-            { monthly: 10_000, addon: 4000 },
-            {},
-            { plan: { monthly: 10_000, addon: 4000 }, cycleStart: CYCLE_START }
-          )
+          gatewayWallet({
+            owner: ws.owner,
+            pool: { monthly: 10_000, addon: 4000 },
+            plan: { monthly: 10_000, addon: 4000 },
+            cycleStart: CYCLE_START,
+          })
         );
         const after = await getUsage(ws);
 
@@ -236,24 +236,24 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
       it('should keep the default share when the pool grows by 2,000 for the new builder', async () => {
         const ws = await seedWsSales();
         await createUser(app, { email: 'mei@tooljet.io', groups: ['builder'], organization: ws.workspace });
-        const routes = gatewayFor(
-          ws.owner,
-          { monthly: 10_000, addon: 0 },
-          {},
-          { plan: { monthly: 10_000, addon: 0 }, cycleStart: CYCLE_START }
-        );
+        const routes = gatewayWallet({
+          owner: ws.owner,
+          pool: { monthly: 10_000, addon: 0 },
+          plan: { monthly: 10_000, addon: 0 },
+          cycleStart: CYCLE_START,
+        });
         stubGateway(routes);
         const before = await getUsage(ws);
 
         // A seat is bought: the plan and balance grow to 12,000 and the cycle restarts, so nothing is spent yet.
         Object.assign(
           routes,
-          gatewayFor(
-            ws.owner,
-            { monthly: 12_000, addon: 0 },
-            {},
-            { plan: { monthly: 12_000, addon: 0 }, cycleStart: NEW_CYCLE }
-          )
+          gatewayWallet({
+            owner: ws.owner,
+            pool: { monthly: 12_000, addon: 0 },
+            plan: { monthly: 12_000, addon: 0 },
+            cycleStart: NEW_CYCLE,
+          })
         );
         await createUser(app, {
           email: 'kenji@tooljet.io',
@@ -279,12 +279,23 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
     describe("a refund lowers a builder's spend", () => {
       it('should give Priya back the refunded credits', async () => {
         const ws = await seedWsSales();
-        const routes = gatewayFor(ws.owner, { monthly: 10_000, addon: 2000 }, { [ws.priya.id]: 2000 });
+        const routes = gatewayWallet({
+          owner: ws.owner,
+          pool: { monthly: 10_000, addon: 2000 },
+          monthlySpent: { [ws.priya.id]: 2000 },
+        });
         stubGateway(routes);
         const before = await getMine(ws, ws.priya);
 
         // A failed action refunds 300: the gateway reports spend net of the credit row, 2,000 − 300 = 1,700.
-        Object.assign(routes, gatewayFor(ws.owner, { monthly: 10_000, addon: 2000 }, { [ws.priya.id]: 1700 }));
+        Object.assign(
+          routes,
+          gatewayWallet({
+            owner: ws.owner,
+            pool: { monthly: 10_000, addon: 2000 },
+            monthlySpent: { [ws.priya.id]: 1700 },
+          })
+        );
         const after = await getMine(ws, ws.priya);
 
         expect(before.body.monthly).toMatchObject({ used: 2000, left: 500 });
@@ -297,7 +308,13 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
         const ws = await seedWsSales();
         stubAgents();
         // Priya spent 3,000: her whole limit (2,500 monthly + 500 add-on). Omar spent nothing.
-        stubGateway(gatewayFor(ws.owner, { monthly: 10_000, addon: 2000 }, { [ws.priya.id]: 3000 }));
+        stubGateway(
+          gatewayWallet({
+            owner: ws.owner,
+            pool: { monthly: 10_000, addon: 2000 },
+            monthlySpent: { [ws.priya.id]: 3000 },
+          })
+        );
 
         const priya = await autosort(ws, ws.priya);
         const omar = await autosort(ws, ws.omar);
@@ -312,7 +329,13 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
       it("should let Priya act again and lower the others' equal share", async () => {
         const ws = await seedWsSales();
         stubAgents();
-        stubGateway(gatewayFor(ws.owner, { monthly: 10_000, addon: 2000 }, { [ws.priya.id]: 3000 }));
+        stubGateway(
+          gatewayWallet({
+            owner: ws.owner,
+            pool: { monthly: 10_000, addon: 2000 },
+            monthlySpent: { [ws.priya.id]: 3000 },
+          })
+        );
 
         const atLimit = await autosort(ws, ws.priya);
         await putBuilderLimit(ws, ws.priya, { monthly: 4000 }).expect(200);
@@ -330,24 +353,25 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
     describe('the add-on expires', () => {
       it('should drop add-on limits only, with a notice and an AI_CREDIT_LIMITS_ADJUSTED audit entry', async () => {
         const ws = await seedWsSales();
-        const routes = gatewayFor(
-          ws.owner,
-          { monthly: 10_000, addon: 2000 },
-          {},
-          { plan: { monthly: 10_000, addon: 2000 }, cycleStart: CYCLE_START, addonEndsAt: ADDON_END }
-        );
+        const routes = gatewayWallet({
+          owner: ws.owner,
+          pool: { monthly: 10_000, addon: 2000 },
+          plan: { monthly: 10_000, addon: 2000 },
+          cycleStart: CYCLE_START,
+          addonEndsAt: ADDON_END,
+        });
         stubGateway(routes);
         await putBuilderLimit(ws, ws.omar, { monthly: 4000, addon: 800 }).expect(200);
 
         // The add-on wallet expires: plan and balance go to 0 add-on.
         Object.assign(
           routes,
-          gatewayFor(
-            ws.owner,
-            { monthly: 10_000, addon: 0 },
-            {},
-            { plan: { monthly: 10_000, addon: 0 }, cycleStart: CYCLE_START }
-          )
+          gatewayWallet({
+            owner: ws.owner,
+            pool: { monthly: 10_000, addon: 0 },
+            plan: { monthly: 10_000, addon: 0 },
+            cycleStart: CYCLE_START,
+          })
         );
         const res = await getUsage(ws);
 
@@ -373,12 +397,12 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
     describe('the plan shrinks', () => {
       it('should reset the largest custom limit that no longer fits to the default, with a notice', async () => {
         const ws = await seedWsSales();
-        const routes = gatewayFor(
-          ws.owner,
-          { monthly: 10_000, addon: 0 },
-          {},
-          { plan: { monthly: 10_000, addon: 0 }, cycleStart: CYCLE_START }
-        );
+        const routes = gatewayWallet({
+          owner: ws.owner,
+          pool: { monthly: 10_000, addon: 0 },
+          plan: { monthly: 10_000, addon: 0 },
+          cycleStart: CYCLE_START,
+        });
         stubGateway(routes);
         await putBuilderLimit(ws, ws.priya, { monthly: 4000 }).expect(200);
         await putBuilderLimit(ws, ws.omar, { monthly: 3000 }).expect(200);
@@ -386,12 +410,12 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
         // The plan drops to 6,000 monthly at a new cycle.
         Object.assign(
           routes,
-          gatewayFor(
-            ws.owner,
-            { monthly: 6000, addon: 0 },
-            {},
-            { plan: { monthly: 6000, addon: 0 }, cycleStart: NEW_CYCLE }
-          )
+          gatewayWallet({
+            owner: ws.owner,
+            pool: { monthly: 6000, addon: 0 },
+            plan: { monthly: 6000, addon: 0 },
+            cycleStart: NEW_CYCLE,
+          })
         );
         const res = await getUsage(ws);
 
@@ -419,7 +443,13 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
         stubAgents();
         // Priya and Omar overshot their limits (actions in flight always finish) and spent the whole 10,000.
         // Ada and Lee spent nothing, but there is nothing left to spend.
-        stubGateway(gatewayFor(ws.owner, { monthly: 10_000, addon: 0 }, { [ws.priya.id]: 5000, [ws.omar.id]: 5000 }));
+        stubGateway(
+          gatewayWallet({
+            owner: ws.owner,
+            pool: { monthly: 10_000, addon: 0 },
+            monthlySpent: { [ws.priya.id]: 5000, [ws.omar.id]: 5000 },
+          })
+        );
 
         const results = [];
         for (const user of [ws.ada, ws.priya, ws.omar, ws.lee]) results.push(await autosort(ws, user));
@@ -438,7 +468,9 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
       it('should show usage with limitsAvailable false and refuse saving limits with 451', async () => {
         const ws = await seedWsSales();
         restoreLicence = useLicence(app, TEAM_TERMS);
-        stubGateway(gatewayFor(ws.owner, { monthly: 10_000, addon: 0 }, { [ws.priya.id]: 1200 }));
+        stubGateway(
+          gatewayWallet({ owner: ws.owner, pool: { monthly: 10_000, addon: 0 }, monthlySpent: { [ws.priya.id]: 1200 } })
+        );
 
         const usage = await getUsage(ws);
         const save = await request(app.getHttpServer())
@@ -479,7 +511,12 @@ describe('AI credit limits: lifecycle of a workspace pool', () => {
           organizationName: 'ws-sales',
         });
         await createUser(app, { email: 'fatima@tooljet.io', groups: ['admin'], organizationName: 'ws-finance' });
-        stubGateway(gatewayFor(`/api/ai/selfhost-customers/${SELF_HOSTED_CUSTOMER}`, { monthly: 10_000, addon: 0 }));
+        stubGateway(
+          gatewayWallet({
+            owner: `/api/ai/selfhost-customers/${SELF_HOSTED_CUSTOMER}`,
+            pool: { monthly: 10_000, addon: 0 },
+          })
+        );
 
         const res = await request(app.getHttpServer())
           .get('/api/ai/credits-usage')

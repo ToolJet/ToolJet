@@ -16,7 +16,7 @@ import {
   SELF_HOSTED_TERMS,
   TEAM_TERMS,
   dropSeed,
-  gatewayFor,
+  gatewayWallet,
   sessionFor,
   stubGateway,
   useLicence,
@@ -219,7 +219,9 @@ describe('AI credit enforcement', () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         // A new workspace has limits on. 275 spent is the builder's whole limit (250 monthly + 25 add-on).
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 275 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 275 } })
+        );
 
         const sent = await message(s);
         const docs = await post(s, 'conversation/docs-message', {
@@ -239,7 +241,9 @@ describe('AI credit enforcement', () => {
       it('should refuse fix-with-ai, autosort and copilot with 402 credit_limit_reached and start no agent', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 275 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 275 } })
+        );
 
         const fix = await post(s, 'fix-with-ai', { componentId: uuidv4(), message: 'x', key: 'y' });
         const sorted = await autosort(s);
@@ -258,7 +262,9 @@ describe('AI credit enforcement', () => {
       it('should let them send a message', async () => {
         const s = await seed('sales');
         stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 233 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 233 } })
+        );
 
         const res = await message(s);
 
@@ -273,7 +279,9 @@ describe('AI credit enforcement', () => {
         stubAgents(app);
         // Another builder drained the pool; this builder has spent nothing.
         const drainer = (await createUser(app, { groups: ['builder'], organization: s.workspace })).user;
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 0 }, { [drainer.id]: 1000 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 0 }, monthlySpent: { [drainer.id]: 1000 } })
+        );
 
         await setLimits(s, false);
         const offMessage = await message(s);
@@ -313,7 +321,10 @@ describe('AI credit enforcement', () => {
       it('should refuse the action with 503 balance_unavailable within the read budget', async () => {
         const s = await seed('sales');
         stubAgents(app);
-        const routes: Record<string, GatewayRoute> = gatewayFor(s.owner, { monthly: 1000, addon: 100 });
+        const routes: Record<string, GatewayRoute> = gatewayWallet({
+          owner: s.owner,
+          pool: { monthly: 1000, addon: 100 },
+        });
         routes[`${s.owner}/balance`] = () => new Promise(() => undefined);
         stubGateway(routes);
         jest.replaceProperty(routeServices(app).builderUsageService, 'spendCheckTimeoutMs', 50);
@@ -330,11 +341,11 @@ describe('AI credit enforcement', () => {
         const s = await seed('sales');
         const util = stubAgents(app);
         // At the limit: if the usage read answered, this would be refused.
-        const routes: Record<string, GatewayRoute> = gatewayFor(
-          s.owner,
-          { monthly: 1000, addon: 100 },
-          { [s.builder.id]: 275 }
-        );
+        const routes: Record<string, GatewayRoute> = gatewayWallet({
+          owner: s.owner,
+          pool: { monthly: 1000, addon: 100 },
+          monthlySpent: { [s.builder.id]: 275 },
+        });
         routes[`${s.owner}/usage`] = () => new Promise(() => undefined);
         stubGateway(routes);
         jest.replaceProperty(routeServices(app).builderUsageService, 'spendCheckTimeoutMs', 50);
@@ -352,7 +363,9 @@ describe('AI credit enforcement', () => {
       it('should start the action and count one fail-open', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 275 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 275 } })
+        );
         jest.spyOn(creditLimits, 'loadScopeLimits').mockRejectedValue(new Error('db down'));
 
         const res = await autosort(s);
@@ -367,7 +380,7 @@ describe('AI credit enforcement', () => {
       it('should not refuse fix-with-ai for credits', async () => {
         const s = await seed('sales');
         stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 2, addon: 0 }));
+        stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 2, addon: 0 } }));
         await setLimits(s, false);
 
         const res = await post(s, 'fix-with-ai', { componentId: uuidv4(), message: 'x', key: 'y' });
@@ -381,7 +394,7 @@ describe('AI credit enforcement', () => {
       it('should return 403 and start no agent', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+        stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
         const cookie = await sessionFor(s.endUser, s.workspace.id);
 
         const fix = await post(s, 'fix-with-ai', { componentId: uuidv4(), message: 'x', key: 'y' }, cookie);
@@ -399,10 +412,21 @@ describe('AI credit enforcement', () => {
         const s = await seed('sales');
         // The builder starts with 28 of their 275 spent, about 90% left.
         // The stubbed build raises their spend to 315, past the limit.
-        const routes = gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 });
+        const routes = gatewayWallet({
+          owner: s.owner,
+          pool: { monthly: 1000, addon: 100 },
+          monthlySpent: { [s.builder.id]: 28 },
+        });
         stubGateway(routes);
         jest.spyOn(routeServices(app).aiService.aiUtilService, 'callAgentLegacy').mockImplementation(async () => {
-          Object.assign(routes, gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 315 }));
+          Object.assign(
+            routes,
+            gatewayWallet({
+              owner: s.owner,
+              pool: { monthly: 1000, addon: 100 },
+              monthlySpent: { [s.builder.id]: 315 },
+            })
+          );
           return [null, { assignments: [], newFolders: [] }];
         });
 
@@ -419,7 +443,9 @@ describe('AI credit enforcement', () => {
       it('should let the builder start another', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 138 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 138 } })
+        );
         await seedRuns(s.builder.id, s.workspace.id, 1);
 
         const res = await autosort(s);
@@ -433,7 +459,9 @@ describe('AI credit enforcement', () => {
       it('should refuse a fourth with 409 run_in_progress "Finish one of your running AI actions first."', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 28 } })
+        );
         await seedRuns(s.builder.id, s.workspace.id, 3);
 
         const res = await autosort(s);
@@ -454,7 +482,9 @@ describe('AI credit enforcement', () => {
         const util = stubAgents(app);
         // The builder spent 234 of their 275 limit: 41 left, which is 14.9%.
         // A second action needs at least 20% left.
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 234 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 234 } })
+        );
         await seedRuns(s.builder.id, s.workspace.id, 1);
 
         const sorted = await autosort(s);
@@ -473,7 +503,9 @@ describe('AI credit enforcement', () => {
       it(`should refuse a second with "You're close to your limit. Finish your running AI action in Orders first." and the app over HTTP and SSE`, async () => {
         const s = await seed('sales');
         stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 234 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 234 } })
+        );
         const orders = await createApplication(app, { name: 'Orders', user: s.builder });
         await seedRunInApp(s.builder.id, s.workspace.id, orders.id);
 
@@ -499,7 +531,9 @@ describe('AI credit enforcement', () => {
       it('should refuse a fourth with "Finish one of your running AI actions first." and no app', async () => {
         const s = await seed('sales');
         stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 28 } })
+        );
         const orders = await createApplication(app, { name: 'Orders', user: s.builder });
         for (let i = 0; i < 3; i++) await seedRunInApp(s.builder.id, s.workspace.id, orders.id);
 
@@ -515,7 +549,9 @@ describe('AI credit enforcement', () => {
       it('should not count them toward the cap', async () => {
         const s = await seed('sales');
         stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 28 } })
+        );
         const other = await createUser(app, { email: 'other-admin@tooljet.io', groups: ['admin'] });
         await seedRuns(s.builder.id, other.organization.id, 3);
 
@@ -527,7 +563,9 @@ describe('AI credit enforcement', () => {
       it('should not count it toward the cap', async () => {
         const s = await seed('sales');
         stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 28 } })
+        );
         await seedRuns(s.builder.id, s.workspace.id, 2);
         await seedRuns(s.builder.id, s.workspace.id, 1, 3 * 60 * 1000);
 
@@ -539,7 +577,11 @@ describe('AI credit enforcement', () => {
       it('should start a third and refuse a fourth with 409 run_in_progress', async () => {
         const s = await seed('sales');
         stubAgents(app);
-        const routes = gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 262 });
+        const routes = gatewayWallet({
+          owner: s.owner,
+          pool: { monthly: 1000, addon: 100 },
+          monthlySpent: { [s.builder.id]: 262 },
+        });
         delete routes[`${s.owner}/usage`];
         stubGateway(routes);
         await seedRuns(s.builder.id, s.workspace.id, 2);
@@ -560,7 +602,9 @@ describe('AI credit enforcement', () => {
       it('should start one more action', async () => {
         const s = await seed('sales');
         const util = stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 600 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 600 } })
+        );
         await setLimits(s, false);
         await seedRuns(s.builder.id, s.workspace.id, 3);
 
@@ -575,7 +619,9 @@ describe('AI credit enforcement', () => {
       it('should apply the new value on the next run start', async () => {
         const s = await seed('sales');
         stubAgents(app);
-        stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 28 }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, monthlySpent: { [s.builder.id]: 28 } })
+        );
         await seedRuns(s.builder.id, s.workspace.id, 1);
 
         const before = await autosort(s);
@@ -594,7 +640,7 @@ describe('AI credit enforcement', () => {
         await withRealTransactions(async () => {
           const s = await seed(`race-${uuidv4().slice(0, 6)}`);
           try {
-            stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+            stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
             const util = routeServices(app).aiService.aiUtilService;
             let release: () => void;
             const held = new Promise<void>((resolve) => (release = resolve));
@@ -640,7 +686,13 @@ describe('AI credit enforcement', () => {
           const s = await seed('team');
           restoreLicence = useLicence(app, TEAM_TERMS);
           const util = stubAgents(app);
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, { [s.builder.id]: 600 }));
+          stubGateway(
+            gatewayWallet({
+              owner: s.owner,
+              pool: { monthly: 1000, addon: 100 },
+              monthlySpent: { [s.builder.id]: 600 },
+            })
+          );
 
           const res = await autosort(s);
 
@@ -690,7 +742,9 @@ describe('AI credit enforcement', () => {
     describe('when the builder is at their instance-wide limit', () => {
       it('should refuse the action with 402 credit_limit_reached', async () => {
         const s = await seed();
-        stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }, { [s.builder.id]: 500 }));
+        stubGateway(
+          gatewayWallet({ owner: owner, pool: { monthly: 1000, addon: 0 }, monthlySpent: { [s.builder.id]: 500 } })
+        );
 
         const res = await autosort(s);
 
@@ -703,7 +757,9 @@ describe('AI credit enforcement', () => {
       it(`should refuse with "You're close to your limit. Finish your running AI action first." and no app`, async () => {
         const s = await seed();
         // The other workspace's admin makes 3 builders on the instance: 333 each. 300 spent leaves 33, 9.9%.
-        stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }, { [s.builder.id]: 300 }));
+        stubGateway(
+          gatewayWallet({ owner: owner, pool: { monthly: 1000, addon: 0 }, monthlySpent: { [s.builder.id]: 300 } })
+        );
         const other = await createUser(app, { email: 'other-admin@tooljet.io', groups: ['admin'] });
         const elsewhere = await createApplication(app, { name: 'Elsewhere', user: other.user });
         await seedRunInApp(s.builder.id, other.organization.id, elsewhere.id);
@@ -719,7 +775,7 @@ describe('AI credit enforcement', () => {
     describe('with three actions running in another workspace', () => {
       it('should count them toward the cap and refuse with 409 run_in_progress', async () => {
         const s = await seed();
-        stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
+        stubGateway(gatewayWallet({ owner: owner, pool: { monthly: 1000, addon: 0 } }));
         const other = await createUser(app, { email: 'other-admin@tooljet.io', groups: ['admin'] });
         await seedRuns(s.builder.id, other.organization.id, 3);
 

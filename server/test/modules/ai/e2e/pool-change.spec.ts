@@ -13,7 +13,7 @@ import {
   TEAM_TERMS,
   auditRows,
   dropSeed,
-  gatewayFor,
+  gatewayWallet,
   sessionFor,
   stubGateway,
   useLicence,
@@ -92,7 +92,13 @@ describe('AI credit limit adjustment on a pool change', () => {
       const cookie = await sessionFor(admin.user, workspace.id);
       const pool = { monthly: 10_000, addon };
       const gateway = stubGateway(
-        gatewayFor(owner, pool, {}, { plan: pool, cycleStart: CYCLE_START, addonEndsAt: addon ? ADDON_END : null })
+        gatewayWallet({
+          owner: owner,
+          pool: pool,
+          plan: pool,
+          cycleStart: CYCLE_START,
+          addonEndsAt: addon ? ADDON_END : null,
+        })
       );
       await request(app.getHttpServer())
         .put(`/api/ai/credits-usage/limits/builders/${builders[0].id}`)
@@ -109,7 +115,10 @@ describe('AI credit limit adjustment on a pool change', () => {
      * so builder 1 may now hold up to 2,003 − 3 = 2,000, and their custom 3,000 no longer fits.
      */
     const smallerPlan = (owner: string, spend: Record<string, number> = {}) =>
-      gatewayFor(owner, { monthly: 2003, addon: 0 }, spend, {
+      gatewayWallet({
+        owner: owner,
+        pool: { monthly: 2003, addon: 0 },
+        monthlySpent: spend,
         plan: { monthly: 2003, addon: 0 },
         cycleStart: NEW_CYCLE,
       });
@@ -182,12 +191,12 @@ describe('AI credit limit adjustment on a pool change', () => {
         const s = await seed('sales');
         // Same 10,000 plan, but 9,000 of overdraft carried in, so the new cycle starts with 1,000 remaining.
         stubGateway(
-          gatewayFor(
-            s.owner,
-            { monthly: 1000, addon: 0 },
-            {},
-            { plan: { monthly: 10_000, addon: 0 }, cycleStart: NEW_CYCLE }
-          )
+          gatewayWallet({
+            owner: s.owner,
+            pool: { monthly: 1000, addon: 0 },
+            plan: { monthly: 10_000, addon: 0 },
+            cycleStart: NEW_CYCLE,
+          })
         );
 
         const res = await getUsage(s.cookie, s.workspace.id);
@@ -205,7 +214,9 @@ describe('AI credit limit adjustment on a pool change', () => {
         // The 3 others share the remaining 500 add-on: 166 each (rounded down).
         // The add-on then expires, so the add-on default falls from 166 to 0.
         const s = await seed('sales', 2000);
-        stubGateway(gatewayFor(s.owner, { monthly: 10_000, addon: 0 }, {}, { plan: { monthly: 10_000, addon: 0 } }));
+        stubGateway(
+          gatewayWallet({ owner: s.owner, pool: { monthly: 10_000, addon: 0 }, plan: { monthly: 10_000, addon: 0 } })
+        );
 
         const res = await getUsage(s.cookie, s.workspace.id);
 
@@ -289,7 +300,11 @@ describe('AI credit limit adjustment on a pool change', () => {
           .builderUsageService;
         // Long enough for the dashboard read below to finish while the action waits on its balance.
         jest.replaceProperty(usageService, 'spendCheckTimeoutMs', 10_000);
-        const older = gatewayFor(s.owner, { monthly: 10_000, addon: 0 }, {}, { plan: { monthly: 10_000, addon: 0 } });
+        const older = gatewayWallet({
+          owner: s.owner,
+          pool: { monthly: 10_000, addon: 0 },
+          plan: { monthly: 10_000, addon: 0 },
+        });
         const newer = smallerPlan(s.owner);
         let olderAsked: () => void;
         const asked = new Promise<void>((resolve) => (olderAsked = resolve));
@@ -403,12 +418,12 @@ describe('AI credit limit adjustment on a pool change', () => {
         const workspaceId = superAdmin.organization.id;
         const cookie = await sessionFor(superAdmin.user, workspaceId);
         const gateway = stubGateway(
-          gatewayFor(
-            owner,
-            { monthly: 10_000, addon: 0 },
-            {},
-            { plan: { monthly: 10_000, addon: 0 }, cycleStart: CYCLE_START }
-          )
+          gatewayWallet({
+            owner: owner,
+            pool: { monthly: 10_000, addon: 0 },
+            plan: { monthly: 10_000, addon: 0 },
+            cycleStart: CYCLE_START,
+          })
         );
         await request(app.getHttpServer())
           .put(`/api/ai/credits-usage/limits/builders/${builder.user.id}`)
@@ -421,12 +436,12 @@ describe('AI credit limit adjustment on a pool change', () => {
         // The builder may now hold at most 1,000 − 1 = 999, so their custom 3,000 is reset.
         // The default falls from 7,000 (10,000 − 3,000) to 500 (1,000 ÷ 2).
         stubGateway(
-          gatewayFor(
-            owner,
-            { monthly: 1000, addon: 0 },
-            {},
-            { plan: { monthly: 1000, addon: 0 }, cycleStart: NEW_CYCLE }
-          )
+          gatewayWallet({
+            owner: owner,
+            pool: { monthly: 1000, addon: 0 },
+            plan: { monthly: 1000, addon: 0 },
+            cycleStart: NEW_CYCLE,
+          })
         );
 
         const res = await request(app.getHttpServer())

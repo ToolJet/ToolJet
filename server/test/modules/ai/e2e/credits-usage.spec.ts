@@ -13,7 +13,7 @@ import {
   SELF_HOSTED_CUSTOMER,
   SELF_HOSTED_TERMS,
   TEAM_TERMS,
-  gatewayFor,
+  gatewayWallet,
   sessionFor,
   stubGateway,
   useLicence,
@@ -190,7 +190,7 @@ describe('AI credits usage', () => {
       describe('when a builder reads it', () => {
         it('should return 403', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 0 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 0 } }));
 
           const res = await getUsage(await sessionFor(s.builderOne.user, s.workspace.id), s.workspace.id);
 
@@ -203,7 +203,11 @@ describe('AI credits usage', () => {
           const sales = await seed('sales');
           const finance = await seed('finance');
           const gateway = stubGateway(
-            gatewayFor(finance.owner, { monthly: 1000, addon: 0 }, { [sales.builderOne.user.id]: 100 })
+            gatewayWallet({
+              owner: finance.owner,
+              pool: { monthly: 1000, addon: 0 },
+              monthlySpent: { [sales.builderOne.user.id]: 100 },
+            })
           );
 
           const res = await getUsage(finance.adminCookie, finance.workspace.id);
@@ -228,7 +232,7 @@ describe('AI credits usage', () => {
             .getRepository(OrganizationAiKey)
             .save({ organizationId: s.workspace.id, encryptedKey: 'x', provider: 'anthropic' });
           restoreLicence = useLicence(app, { ...ENTERPRISE_TEST_TERMS, ai: { plan: 'byok' } } as Partial<Terms>);
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 0 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 0 } }));
 
           const usage = await getUsage(s.adminCookie, s.workspace.id);
           const mine = await getMine(await sessionFor(s.builderOne.user, s.workspace.id), s.workspace.id);
@@ -243,7 +247,7 @@ describe('AI credits usage', () => {
         it('should fall back to ToolJet credits and return 200', async () => {
           const s = await seed('fallback');
           restoreLicence = useLicence(app, { ...ENTERPRISE_TEST_TERMS, ai: { plan: 'byok' } } as Partial<Terms>);
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 0 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 0 } }));
 
           const res = await getUsage(s.adminCookie, s.workspace.id);
 
@@ -261,12 +265,12 @@ describe('AI credits usage', () => {
           // Limits off: the row shows spend as billed (1,700 + 340).
           // Limits on: monthly counts first, so 2,000 monthly (the full limit), then 40 add-on.
           stubGateway(
-            gatewayFor(
-              s.owner,
-              { monthly: 6000, addon: 1200 },
-              { [s.builderOne.user.id]: 1700 },
-              { addonSpend: { [s.builderOne.user.id]: 340 } }
-            )
+            gatewayWallet({
+              owner: s.owner,
+              pool: { monthly: 6000, addon: 1200 },
+              monthlySpent: { [s.builderOne.user.id]: 1700 },
+              addonSpent: { [s.builderOne.user.id]: 340 },
+            })
           );
           const setLimits = (enabled: boolean) =>
             request(app.getHttpServer())
@@ -302,7 +306,13 @@ describe('AI credits usage', () => {
           // Pool: 1,500 monthly and no add-on, shared by 3 builders, so each builder's limit is 500 monthly.
           // Builder one's last action took their spend to 1,600, past the whole pool: remaining is 1,500 − 1,600 = −100.
           // With no add-on limit, all 1,600 stays on monthly.
-          stubGateway(gatewayFor(s.owner, { monthly: 1500, addon: 0 }, { [s.builderOne.user.id]: 1600 }));
+          stubGateway(
+            gatewayWallet({
+              owner: s.owner,
+              pool: { monthly: 1500, addon: 0 },
+              monthlySpent: { [s.builderOne.user.id]: 1600 },
+            })
+          );
 
           const res = await getUsage(s.adminCookie, s.workspace.id);
 
@@ -321,7 +331,13 @@ describe('AI credits usage', () => {
           it('should serve pool cards and rows without limits', async () => {
             const s = await seed('team');
             restoreLicence = useLicence(app, TEAM_TERMS);
-            stubGateway(gatewayFor(s.owner, { monthly: 1500, addon: 0 }, { [s.builderOne.user.id]: 600 }));
+            stubGateway(
+              gatewayWallet({
+                owner: s.owner,
+                pool: { monthly: 1500, addon: 0 },
+                monthlySpent: { [s.builderOne.user.id]: 600 },
+              })
+            );
 
             const usage = await getUsage(s.adminCookie, s.workspace.id);
             const mine = await getMine(await sessionFor(s.builderOne.user, s.workspace.id), s.workspace.id);
@@ -344,11 +360,11 @@ describe('AI credits usage', () => {
           // Pool: 900 monthly + 90 add-on, shared by 3 builders, so each builder's limit is 300 monthly + 30 add-on.
           // Builder one spent 250 (50 left of 300). With builder two's 40, the pool balance is 990 − 290 = 700.
           stubGateway(
-            gatewayFor(
-              s.owner,
-              { monthly: 900, addon: 90 },
-              { [s.builderOne.user.id]: 250, [s.builderTwo.user.id]: 40 }
-            )
+            gatewayWallet({
+              owner: s.owner,
+              pool: { monthly: 900, addon: 90 },
+              monthlySpent: { [s.builderOne.user.id]: 250, [s.builderTwo.user.id]: 40 },
+            })
           );
 
           const res = await getMine(await sessionFor(s.builderOne.user, s.workspace.id), s.workspace.id);
@@ -368,11 +384,11 @@ describe('AI credits usage', () => {
         it("should ignore it and return the builder's own numbers", async () => {
           const s = await seed('mine');
           stubGateway(
-            gatewayFor(
-              s.owner,
-              { monthly: 900, addon: 90 },
-              { [s.builderOne.user.id]: 250, [s.builderTwo.user.id]: 40 }
-            )
+            gatewayWallet({
+              owner: s.owner,
+              pool: { monthly: 900, addon: 90 },
+              monthlySpent: { [s.builderOne.user.id]: 250, [s.builderTwo.user.id]: 40 },
+            })
           );
 
           const res = await getMine(
@@ -389,7 +405,7 @@ describe('AI credits usage', () => {
       describe('with limits off', () => {
         it('should return enabled false and the pool balance', async () => {
           const s = await seed('mine');
-          stubGateway(gatewayFor(s.owner, { monthly: 900, addon: 90 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 900, addon: 90 } }));
           await request(app.getHttpServer())
             .put('/api/ai/credits-usage/limits')
             .set('tj-workspace-id', s.workspace.id)
@@ -410,7 +426,7 @@ describe('AI credits usage', () => {
       describe('when an end user reads it', () => {
         it('should return 403', async () => {
           const s = await seed('mine');
-          stubGateway(gatewayFor(s.owner, { monthly: 900, addon: 90 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 900, addon: 90 } }));
 
           const res = await getMine(await sessionFor(s.endUser.user, s.workspace.id), s.workspace.id);
 
@@ -537,7 +553,7 @@ describe('AI credits usage', () => {
       describe('when a workspace admin who is not a super admin reads it', () => {
         it('should return 403', async () => {
           const admin = await createUser(app, { email: 'admin@tooljet.io', groups: ['admin'] });
-          stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
+          stubGateway(gatewayWallet({ owner: owner, pool: { monthly: 1000, addon: 0 } }));
 
           const res = await request(app.getHttpServer())
             .get('/api/ai/credits-usage')
@@ -564,7 +580,9 @@ describe('AI credits usage', () => {
           });
           // The super admin and the builder share a 1,000 monthly pool: 500 each.
           // The builder spent 100, so 400 is left.
-          stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }, { [builder.user.id]: 100 }));
+          stubGateway(
+            gatewayWallet({ owner: owner, pool: { monthly: 1000, addon: 0 }, monthlySpent: { [builder.user.id]: 100 } })
+          );
 
           const res = await request(app.getHttpServer())
             .get('/api/ai/credits-usage/me')

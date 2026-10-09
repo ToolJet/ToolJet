@@ -33,37 +33,53 @@ export function stubGateway(routes: Record<string, GatewayRoute>) {
   });
 }
 
-const wallet = (recurring: number, topup = 0) => ({ recurring, topup, total: recurring + topup });
+type Credits = { monthly: number; addon: number };
+
+// The gateway's names: recurring = monthly pool, topup = add-on pool.
+const gatewayCredits = (monthly: number, addon = 0) => ({ recurring: monthly, topup: addon, total: monthly + addon });
+const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 
 /**
- * Balance and usage answers for one owner (`/api/ai/organizations/:id` or `/api/ai/selfhost-customers/:id`).
- * `spend` is monthly spend per user id; the balance is the pool minus all spend. `plan` = the plan sizes the
- * gateway reports, which is how a plan change or add-on expiry shows; without it nothing records plan sizes.
+ * What the gateway reports about one wallet: its balance and its usage per builder. Pass the result to
+ * `stubGateway`. The balance is the pool minus everything spent.
+ *
+ *   stubGateway(gatewayWallet({
+ *     owner: ws.owner,                          // `/api/ai/organizations/:id` or `/api/ai/selfhost-customers/:id`
+ *     pool: { monthly: 1000, addon: 100 },      // credits the wallet started the cycle with
+ *     monthlySpent: { [priya.id]: 234 },        // spent this cycle, per builder
+ *     addonSpent: { [priya.id]: 10 },
+ *     plan: { monthly: 1000, addon: 100 },      // plan sizes; set it to show a plan change or add-on expiry
+ *   }))
  */
-export function gatewayFor(
-  owner: string,
-  pool: { monthly: number; addon: number },
-  spend: Record<string, number> = {},
-  more: {
-    addonSpend?: Record<string, number>;
-    plan?: { monthly: number; addon: number };
-    cycleStart?: string;
-    addonEndsAt?: string | null;
-  } = {}
-): Record<string, GatewayResponse> {
-  const { addonSpend = {}, plan, cycleStart = CYCLE_START, addonEndsAt = null } = more;
-  const userIds = [...new Set([...Object.keys(spend), ...Object.keys(addonSpend)])];
-  const users = userIds.map((userId) => ({ userId, ...wallet(spend[userId] ?? 0, addonSpend[userId] ?? 0) }));
-  const used = wallet(
-    users.reduce((acc, u) => acc + u.recurring, 0),
-    users.reduce((acc, u) => acc + u.topup, 0)
-  );
-  const remaining = wallet(pool.monthly - used.recurring, pool.addon - used.topup);
-  const usage = { cycleStart, trackingSince: null, users, unattributed: wallet(0), pool: used };
+export function gatewayWallet({
+  owner,
+  pool,
+  monthlySpent = {},
+  addonSpent = {},
+  plan,
+  cycleStart = CYCLE_START,
+  addonEndsAt = null,
+}: {
+  owner: string;
+  pool: Credits;
+  monthlySpent?: Record<string, number>;
+  addonSpent?: Record<string, number>;
+  plan?: Credits;
+  cycleStart?: string;
+  addonEndsAt?: string | null;
+}): Record<string, GatewayResponse> {
+  const builderIds = [...new Set([...Object.keys(monthlySpent), ...Object.keys(addonSpent)])];
+  const users = builderIds.map((userId) => ({
+    userId,
+    ...gatewayCredits(monthlySpent[userId] ?? 0, addonSpent[userId] ?? 0),
+  }));
+  const spent = gatewayCredits(sum(users.map((u) => u.recurring)), sum(users.map((u) => u.topup)));
+  const remaining = gatewayCredits(pool.monthly - spent.recurring, pool.addon - spent.topup);
+  const usage = { cycleStart, trackingSince: null, users, unattributed: gatewayCredits(0), pool: spent };
   return {
     [`${owner}/balance`]: {
       balance: remaining.total,
-      ...(plan && { plan: wallet(plan.monthly, plan.addon) }),
+      ...(plan && { plan: gatewayCredits(plan.monthly, plan.addon) }),
       remaining,
       expiry: { recurringExpiryDate: RENEWS, topupExpiryDate: addonEndsAt },
       cycleStart,

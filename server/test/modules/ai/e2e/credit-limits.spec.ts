@@ -13,7 +13,7 @@ import {
   TEAM_TERMS,
   auditRows,
   dropSeed,
-  gatewayFor,
+  gatewayWallet,
   sessionFor,
   stubGateway,
   useLicence,
@@ -143,7 +143,9 @@ describe('AI credit limits', () => {
       describe('when no admin has acted on a new workspace', () => {
         it('should report limits on with an equal share', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }, {}, { plan: { monthly: 1000, addon: 100 } }));
+          stubGateway(
+            gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 }, plan: { monthly: 1000, addon: 100 } })
+          );
 
           const res = await getUsage(s.cookie, s.workspace.id);
 
@@ -170,7 +172,7 @@ describe('AI credit limits', () => {
       describe('when a new workspace is turned off', () => {
         it('should save both pool rows off and log only AI_CREDIT_LIMIT_DISABLED', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
 
           const res = await putLimits(s.cookie, s.workspace.id, { enabled: false });
 
@@ -187,7 +189,7 @@ describe('AI credit limits', () => {
       describe('with a custom default', () => {
         it('should shrink it when a builder joins and restore it when they leave', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           await putLimits(s.cookie, s.workspace.id, {
             defaults: { monthly: { mode: 'custom', value: 250 }, addon: { mode: 'equal_share' } },
           }).expect(200);
@@ -218,7 +220,7 @@ describe('AI credit limits', () => {
       describe('with a custom default over the per-builder max', () => {
         it('should refuse with 400 and save nothing', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
 
           const res = await putLimits(s.cookie, s.workspace.id, {
             enabled: true,
@@ -234,7 +236,7 @@ describe('AI credit limits', () => {
       describe('with a zero, fractional or empty body', () => {
         it('should refuse with 400 and save nothing', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
 
           const zero = await putLimits(s.cookie, s.workspace.id, {
             defaults: { monthly: { mode: 'custom', value: 0 }, addon: { mode: 'equal_share' } },
@@ -261,7 +263,7 @@ describe('AI credit limits', () => {
             const s = await seed(`race-${uuidv4().slice(0, 6)}`);
             try {
               await seedLimitsOff(s.workspace.id);
-              stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+              stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
 
               const results = await Promise.all(
                 [110, 120, 130, 140, 150].map((value) =>
@@ -288,7 +290,7 @@ describe('AI credit limits', () => {
       describe('when only defaults are saved', () => {
         it('should keep limits off', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           await putLimits(s.cookie, s.workspace.id, { enabled: false }).expect(200);
 
           const res = await putLimits(s.cookie, s.workspace.id, {
@@ -306,7 +308,7 @@ describe('AI credit limits', () => {
       describe('when limits are turned off and on again', () => {
         it("should keep the saved default and every builder's custom limit", async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           const builder = s.builders[0].user.id;
           await putBuilderLimit(s.cookie, s.workspace.id, builder, { monthly: 400 }).expect(200);
           await putLimits(s.cookie, s.workspace.id, {
@@ -333,7 +335,7 @@ describe('AI credit limits', () => {
       describe('when a builder or end user saves', () => {
         it('should return 403', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
 
           const builder = await putLimits(await sessionFor(s.builders[0].user, s.workspace.id), s.workspace.id, {
             enabled: false,
@@ -355,11 +357,11 @@ describe('AI credit limits', () => {
           // A custom 100 monthly default plus the equal-share 25 add-on gives each builder a 125 limit.
           // Two builders spent 200 each, over that limit; the admin spent 5.
           stubGateway(
-            gatewayFor(
-              s.owner,
-              { monthly: 1000, addon: 100 },
-              { [s.builders[0].user.id]: 200, [s.builders[1].user.id]: 200, [s.admin.user.id]: 5 }
-            )
+            gatewayWallet({
+              owner: s.owner,
+              pool: { monthly: 1000, addon: 100 },
+              monthlySpent: { [s.builders[0].user.id]: 200, [s.builders[1].user.id]: 200, [s.admin.user.id]: 5 },
+            })
           );
 
           await putLimits(s.cookie, s.workspace.id, {
@@ -391,8 +393,8 @@ describe('AI credit limits', () => {
           const sales = await seed('sales');
           const finance = await seed('finance');
           stubGateway({
-            ...gatewayFor(sales.owner, { monthly: 1000, addon: 100 }),
-            ...gatewayFor(finance.owner, { monthly: 1000, addon: 100 }),
+            ...gatewayWallet({ owner: sales.owner, pool: { monthly: 1000, addon: 100 } }),
+            ...gatewayWallet({ owner: finance.owner, pool: { monthly: 1000, addon: 100 } }),
           });
 
           await putLimits(sales.cookie, sales.workspace.id, { enabled: false }).expect(200);
@@ -407,7 +409,7 @@ describe('AI credit limits', () => {
           it('should refuse both with 451 and save nothing', async () => {
             const s = await seed('team');
             restoreLicence = useLicence(app, TEAM_TERMS);
-            stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+            stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
 
             const toggle = await putLimits(s.cookie, s.workspace.id, { enabled: false });
             const custom = await putBuilderLimit(s.cookie, s.workspace.id, s.builders[0].user.id, { monthly: 100 });
@@ -425,7 +427,7 @@ describe('AI credit limits', () => {
       describe('when a custom limit is set and then reset', () => {
         it("should lower everyone else's default, then restore it", async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           const builder = s.builders[0].user.id;
 
           await putBuilderLimit(s.cookie, s.workspace.id, builder, { monthly: 400, addon: null }).expect(200);
@@ -451,7 +453,7 @@ describe('AI credit limits', () => {
       describe('with a value over the max or not a whole number', () => {
         it('should refuse 998, 0 and 1.5 with 400 and accept the max of 997', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           const builder = s.builders[0].user.id;
 
           // The 3 other builders must keep at least 1 credit each, so the max is 1,000 − 3 = 997.
@@ -476,7 +478,7 @@ describe('AI credit limits', () => {
         it('should return 404', async () => {
           const sales = await seed('sales');
           const finance = await seed('finance');
-          stubGateway(gatewayFor(sales.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: sales.owner, pool: { monthly: 1000, addon: 100 } }));
           const unknownUserId = uuidv4();
 
           const endUser = await putBuilderLimit(sales.cookie, sales.workspace.id, sales.endUser.user.id, {
@@ -499,7 +501,7 @@ describe('AI credit limits', () => {
       describe('when a builder or end user saves', () => {
         it('should return 403', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           const target = s.builders[0].user.id;
 
           const builder = await putBuilderLimit(
@@ -528,7 +530,7 @@ describe('AI credit limits', () => {
       describe('when a save changes one pool and then the other', () => {
         it('should log one AI_CREDIT_BUILDER_LIMIT_UPDATED per changed pool with the actor, builder, before and after', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           const builder = s.builders[0].user;
 
           await putBuilderLimit(s.cookie, s.workspace.id, builder.id, { monthly: 400 }).expect(200);
@@ -569,7 +571,7 @@ describe('AI credit limits', () => {
           await withRealTransactions(async () => {
             const s = await seed(`race-${uuidv4().slice(0, 6)}`);
             try {
-              stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+              stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
               const builder = s.builders[0];
 
               const [save, archived] = await Promise.all([
@@ -591,7 +593,7 @@ describe('AI credit limits', () => {
       describe('when a builder is archived or made an end user', () => {
         it('should remove their custom limit', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           const [archived, demoted] = s.builders;
           await putBuilderLimit(s.cookie, s.workspace.id, archived.user.id, { monthly: 400 }).expect(200);
           await putBuilderLimit(s.cookie, s.workspace.id, demoted.user.id, { monthly: 300 }).expect(200);
@@ -612,7 +614,7 @@ describe('AI credit limits', () => {
       describe('when a bulk upload archives a builder and makes another an end user', () => {
         it('should remove their custom limits and raise the equal share', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           const [archived, demoted] = s.builders;
           await putBuilderLimit(s.cookie, s.workspace.id, archived.user.id, { monthly: 400 }).expect(200);
           await putBuilderLimit(s.cookie, s.workspace.id, demoted.user.id, { monthly: 300 }).expect(200);
@@ -640,7 +642,7 @@ describe('AI credit limits', () => {
           await withRealTransactions(async () => {
             const s = await seed(`failing-${uuidv4().slice(0, 6)}`);
             try {
-              stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+              stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
               const [archived, demoted] = s.builders;
               await putBuilderLimit(s.cookie, s.workspace.id, archived.user.id, { monthly: 400 }).expect(200);
               await putBuilderLimit(s.cookie, s.workspace.id, demoted.user.id, { monthly: 300 }).expect(200);
@@ -695,7 +697,7 @@ describe('AI credit limits', () => {
 
         it('should remove the custom limit on archive through PATCH /ext/user/:id', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           const builder = s.builders[0].user.id;
           await putBuilderLimit(s.cookie, s.workspace.id, builder, { monthly: 400 }).expect(200);
 
@@ -710,7 +712,7 @@ describe('AI credit limits', () => {
 
         it('should remove the custom limit on archive in one workspace through PATCH /ext/user/:id/workspace/:id', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           const builder = s.builders[0].user.id;
           await putBuilderLimit(s.cookie, s.workspace.id, builder, { monthly: 400 }).expect(200);
 
@@ -725,7 +727,7 @@ describe('AI credit limits', () => {
 
         it('should remove the custom limit on demotion to end user through PUT /ext/user/:id/workspaces', async () => {
           const s = await seed('sales');
-          stubGateway(gatewayFor(s.owner, { monthly: 1000, addon: 100 }));
+          stubGateway(gatewayWallet({ owner: s.owner, pool: { monthly: 1000, addon: 100 } }));
           const builder = s.builders[0].user.id;
           await putBuilderLimit(s.cookie, s.workspace.id, builder, { monthly: 400 }).expect(200);
 
@@ -768,7 +770,7 @@ describe('AI credit limits', () => {
         const workspaceId = superAdmin.organization.id;
         const cookie = await sessionFor(superAdmin.user, workspaceId);
         await seedLimitsOff(null);
-        stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
+        stubGateway(gatewayWallet({ owner: owner, pool: { monthly: 1000, addon: 0 } }));
 
         const res = await request(app.getHttpServer())
           .put('/api/ai/credits-usage/limits')
@@ -814,7 +816,7 @@ describe('AI credit limits', () => {
         const workspaceId = superAdmin.organization.id;
         const cookie = await sessionFor(superAdmin.user, workspaceId);
         const builderId = inHome.user.id;
-        stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
+        stubGateway(gatewayWallet({ owner: owner, pool: { monthly: 1000, addon: 0 } }));
 
         await request(app.getHttpServer())
           .put(`/api/ai/credits-usage/limits/builders/${builderId}`)
@@ -848,7 +850,7 @@ describe('AI credit limits', () => {
     describe('when a workspace admin who is not a super admin saves', () => {
       it('should return 403', async () => {
         const admin = await createUser(app, { email: 'admin@tooljet.io', groups: ['admin'] });
-        stubGateway(gatewayFor(owner, { monthly: 1000, addon: 0 }));
+        stubGateway(gatewayWallet({ owner: owner, pool: { monthly: 1000, addon: 0 } }));
 
         const res = await request(app.getHttpServer())
           .put('/api/ai/credits-usage/limits')
