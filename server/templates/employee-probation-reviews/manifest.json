@@ -1,0 +1,16 @@
+{
+  "name": "Employee probation reviews",
+  "description": "Run probation reviews with dates, manager assessments and support plans, ending in a clear decision.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "employee-probation-reviews",
+  "category": "people-and-hr"
+}

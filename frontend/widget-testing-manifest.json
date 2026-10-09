@@ -226,7 +226,8 @@
     },
     {
       "componentType": "Tags",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Tags/TESTING.md"
     },
     {
       "componentType": "CircularProgressBar",
