@@ -20,6 +20,8 @@ To connect ToolJet with Cloudflare Workers KV, you need your **Account ID** and 
 
 Enter both values in the data source configuration and click **Test connection**. The API token is stored encrypted.
 
+<img className="screenshot-full" src="/img/marketplace/plugins/cloudflare_workers_kv/config.png" alt="Cloudflare Workers KV connection" />
+
 ## Supported Operations
 
 | Operation          | Description                                                              |
@@ -37,6 +39,8 @@ Enter both values in the data source configuration and click **Test connection**
 | Bulk write         | Writes up to 10,000 key-value pairs in one request.                      |
 | Bulk read          | Reads up to 100 keys in one request.                                     |
 | Bulk delete        | Deletes up to 10,000 keys in one request.                                |
+
+<img className="screenshot-full" src="/img/marketplace/plugins/cloudflare_workers_kv/operations.png" alt="Cloudflare Workers KV operations" />
 
 ### List Namespaces
 
@@ -71,6 +75,8 @@ Enter both values in the data source configuration and click **Test connection**
 
 - **Title**: A human-readable name for the namespace.
 
+<img className="screenshot-full" src="/img/marketplace/plugins/cloudflare_workers_kv/create-namespace.png" alt="Create namespace" />
+
 ### Get Namespace
 
 **Required Parameter**
@@ -104,6 +110,10 @@ Enter both values in the data source configuration and click **Test connection**
 
 For example, to page through keys, set **Cursor** to `{{queries.listKeys.data.cursor}}` and run the query again.
 
+<img className="screenshot-full" src="/img/marketplace/plugins/cloudflare_workers_kv/list-keys.png" alt="List keys with a cursor for the next page" />
+
+<img className="screenshot-full" src="/img/marketplace/plugins/cloudflare_workers_kv/list-keys-next-page.png" alt="List keys using the cursor from the previous page" />
+
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
@@ -128,6 +138,8 @@ For example, to page through keys, set **Cursor** to `{{queries.listKeys.data.cu
 - **Key**: Name of the key.
 
 The value is returned as text. If you stored JSON, parse it with `JSON.parse(data.value)` in a transformation.
+
+<img className="screenshot-full" src="/img/marketplace/plugins/cloudflare_workers_kv/read-value.png" alt="Read value" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -174,6 +186,8 @@ The value is returned as text. If you stored JSON, parse it with `JSON.parse(dat
 - **Expiration**: When the key expires, in seconds since the UNIX epoch.
 - **Expiration TTL**: How many seconds from now the key expires. The minimum is 60.
 
+<img className="screenshot-full" src="/img/marketplace/plugins/cloudflare_workers_kv/write-value.png" alt="Write value" />
+
 ### Delete Key
 
 **Required Parameters**
@@ -219,6 +233,8 @@ The value is returned as text. If you stored JSON, parse it with `JSON.parse(dat
 - **Value type**: `Text` returns values as strings. `JSON` parses values that were stored as JSON.
 - **Include metadata**: Also return each key's metadata.
 
+<img className="screenshot-full" src="/img/marketplace/plugins/cloudflare_workers_kv/bulk-read.png" alt="Bulk read" />
+
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
@@ -243,3 +259,5 @@ The value is returned as text. If you stored JSON, parse it with `JSON.parse(dat
 ## Errors
 
 If Cloudflare rejects a request, the query fails and shows the error message and code returned by the Cloudflare API, for example `Authentication error (code 10000)` for an invalid API token.
+
+<img className="screenshot-full" src="/img/marketplace/plugins/cloudflare_workers_kv/error.png" alt="Cloudflare error shown for a missing key" />
