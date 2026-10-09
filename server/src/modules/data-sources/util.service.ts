@@ -62,9 +62,9 @@ import {
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
   constructor(
-    // Kept away from the @InjectQueue/@InjectRepository custom-token cluster below: a plain
-    // class-typed param placed adjacent to those was observed resolving to the wrong provider
-    // (the Queue meant for the next param) at full-app bootstrap.
+    // Explicit token kept in sync with the EE subclass's matching param: Nest inherits custom-token
+    // metadata by raw parameter index across extends, so this index must line up with EE's - see
+    // the EE class's constructor comment for the full explanation.
     @Inject(GitSyncConfigsUtilService) protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly credentialService: CredentialsService,
@@ -884,9 +884,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         }
       });
     } finally {
-      // Guarded: "inMemoryCacheService.clear is not a function" was seen on save (root cause
-      // unknown). A stale OAuth cache entry is better than a 500.
-      this.inMemoryCacheService?.clear?.();
+      this.inMemoryCacheService.clear();
     }
   }
 
