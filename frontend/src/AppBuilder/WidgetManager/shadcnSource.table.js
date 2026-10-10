@@ -28,6 +28,7 @@ export const shadTableConfig = shadConfig({
   name: 'ShadTable',
   displayName: 'Table',
   description:
+    'Superseded for new builds: use Table with styles.tableLook "shadcn" (ToolJet\'s own Table drawn in the shadcn/ui look, with every Table feature and convention). Kept so existing apps keep working. ' +
     'shadcn/ui data table: typed columns (text, number, currency, date, badge, tags, boolean, link, image, avatar, progress, buttons), search, sort, filters, pagination (client or server side), single or bulk selection, inline editing with save/discard, CSV export, column chooser. Native Table conventions',
   defaultSize: { width: 30, height: 440 },
   withHeight: true,
