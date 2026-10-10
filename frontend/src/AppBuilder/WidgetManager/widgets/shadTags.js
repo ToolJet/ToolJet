@@ -2,11 +2,12 @@
 export const shadTagsConfig = {
   name: 'ShadTags',
   displayName: 'Tags',
-  description: 'shadcn/ui tags',
+  description:
+    "shadcn/ui read-only tag chips: tags is an array or a comma-separated string; tagColors maps a value to a colour ({ Paid: '#16a34a' }: tinted chip, light background and strong text of that hue); variant ('soft', 'outline', 'solid'), size ('sm', 'default', 'lg'), overflow ('wrap', or 'single' for one line with +N), pill. Clicking a tag sets lastClickedTag and fires onTagClick. Height: 24px per line",
   component: 'ShadTags',
   defaultSize: {
-    width: 10,
-    height: 40,
+    width: 12,
+    height: 24,
   },
   others: {
     showOnDesktop: {
@@ -19,6 +20,131 @@ export const shadTagsConfig = {
     },
   },
   properties: {
+    tags: {
+      type: 'code',
+      displayName: 'Tags (array or comma-separated)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'array',
+            },
+            {
+              type: 'string',
+            },
+          ],
+        },
+        defaultValue: [],
+      },
+      placeholder: "['Design', 'Urgent']",
+    },
+    tagColors: {
+      type: 'code',
+      displayName: 'Colours by tag',
+      validation: {
+        schema: {
+          type: 'object',
+        },
+        defaultValue: {},
+      },
+      placeholder: "{ Urgent: '#dc2626', Design: '#7c3aed' }",
+    },
+    variant: {
+      type: 'switch',
+      displayName: 'Variant',
+      options: [
+        {
+          displayName: 'Soft',
+          value: 'soft',
+        },
+        {
+          displayName: 'Outline',
+          value: 'outline',
+        },
+        {
+          displayName: 'Solid',
+          value: 'solid',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'soft',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    size: {
+      type: 'switch',
+      displayName: 'Size',
+      options: [
+        {
+          displayName: 'Sm',
+          value: 'sm',
+        },
+        {
+          displayName: 'Default',
+          value: 'default',
+        },
+        {
+          displayName: 'Lg',
+          value: 'lg',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    overflow: {
+      type: 'switch',
+      displayName: 'Overflow',
+      options: [
+        {
+          displayName: 'Wrap',
+          value: 'wrap',
+        },
+        {
+          displayName: 'One line, +N',
+          value: 'single',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'wrap',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    pill: {
+      type: 'toggle',
+      displayName: 'Pill shape',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -90,7 +216,11 @@ export const shadTagsConfig = {
       showLabel: false,
     },
   },
-  events: {},
+  events: {
+    onTagClick: {
+      displayName: 'On tag click',
+    },
+  },
   styles: {
     boxShadow: {
       type: 'boxShadow',
@@ -111,11 +241,57 @@ export const shadTagsConfig = {
       },
       accordian: 'Container',
     },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Tag background (unmapped tags)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Tag text color (unmapped tags)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Tag border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Tag radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    lastClickedTag: '',
+    tags: [],
   },
   actions: [
     {
@@ -165,6 +341,27 @@ export const shadTagsConfig = {
       },
     },
     properties: {
+      tags: {
+        value: "{{['Design', 'Frontend', 'Urgent']}}",
+      },
+      tagColors: {
+        value: "{{{ Urgent: '#dc2626' }}}",
+      },
+      variant: {
+        value: 'soft',
+      },
+      size: {
+        value: 'default',
+      },
+      overflow: {
+        value: 'wrap',
+      },
+      pill: {
+        value: '{{false}}',
+      },
+      dynamicHeight: {
+        value: '{{true}}',
+      },
       loadingState: {
         value: '{{false}}',
       },

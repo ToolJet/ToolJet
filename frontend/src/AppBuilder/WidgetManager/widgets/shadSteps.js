@@ -2,11 +2,12 @@
 export const shadStepsConfig = {
   name: 'ShadSteps',
   displayName: 'Steps',
-  description: 'shadcn/ui steps',
+  description:
+    "shadcn/ui stepper (native Steps names): steps [{ id, name, description?, visible?, disabled?, tooltip? }]; currentStep is the current step's id; numbered circles (variant 'dots' for small dots), check marks on completed steps, connecting lines; orientation 'horizontal' or 'vertical'. stepsSelectable lets users click a step (onSelect; exposed currentStepId, currentStepIndex). Actions setStep(id), nextStep, previousStep, resetSteps, setStepVisible(id, visible), setStepDisable(id, disabled). Height: 60px horizontal (78px with descriptions); vertical about 66px per step",
   component: 'ShadSteps',
   defaultSize: {
-    width: 10,
-    height: 40,
+    width: 24,
+    height: 80,
   },
   others: {
     showOnDesktop: {
@@ -19,6 +20,100 @@ export const shadStepsConfig = {
     },
   },
   properties: {
+    steps: {
+      type: 'code',
+      displayName: 'Steps',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "[{ id: 1, name: 'Details' }, { id: 2, name: 'Review' }]",
+    },
+    currentStep: {
+      type: 'code',
+      displayName: 'Current step (id)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+        defaultValue: 1,
+      },
+    },
+    stepsSelectable: {
+      type: 'toggle',
+      displayName: 'Steps selectable',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
+    orientation: {
+      type: 'switch',
+      displayName: 'Orientation',
+      options: [
+        {
+          displayName: 'Horizontal',
+          value: 'horizontal',
+        },
+        {
+          displayName: 'Vertical',
+          value: 'vertical',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'horizontal',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    variant: {
+      type: 'switch',
+      displayName: 'Marker',
+      options: [
+        {
+          displayName: 'Numbers',
+          value: 'numbers',
+        },
+        {
+          displayName: 'Dots',
+          value: 'dots',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'numbers',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -90,7 +185,11 @@ export const shadStepsConfig = {
       showLabel: false,
     },
   },
-  events: {},
+  events: {
+    onSelect: {
+      displayName: 'On select',
+    },
+  },
   styles: {
     boxShadow: {
       type: 'boxShadow',
@@ -111,13 +210,128 @@ export const shadStepsConfig = {
       },
       accordian: 'Container',
     },
+    completedAccent: {
+      type: 'colorSwatches',
+      displayName: 'Completed and current accent',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    incompletedAccent: {
+      type: 'colorSwatches',
+      displayName: 'Upcoming step accent (circle border, line)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    completedLabel: {
+      type: 'colorSwatches',
+      displayName: 'Completed step label',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    currentStepLabel: {
+      type: 'colorSwatches',
+      displayName: 'Current step label',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    incompletedLabel: {
+      type: 'colorSwatches',
+      displayName: 'Upcoming step label',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    descriptionColor: {
+      type: 'colorSwatches',
+      displayName: 'Description color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    currentStepId: 1,
+    currentStepIndex: 0,
+    steps: [],
   },
   actions: [
+    {
+      handle: 'setStep',
+      displayName: 'Set step',
+      params: [
+        {
+          handle: 'option',
+          displayName: 'Step id',
+          defaultValue: '{{1}}',
+        },
+      ],
+    },
+    {
+      handle: 'nextStep',
+      displayName: 'Next step',
+      params: [],
+    },
+    {
+      handle: 'previousStep',
+      displayName: 'Previous step',
+      params: [],
+    },
+    {
+      handle: 'resetSteps',
+      displayName: 'Reset steps',
+      params: [],
+    },
+    {
+      handle: 'setStepVisible',
+      displayName: 'Set step visible',
+      params: [
+        {
+          handle: 'id',
+          displayName: 'Step id',
+        },
+        {
+          handle: 'visibility',
+          displayName: 'Visible',
+          defaultValue: '{{false}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setStepDisable',
+      displayName: 'Set step disable',
+      params: [
+        {
+          handle: 'id',
+          displayName: 'Step id',
+        },
+        {
+          handle: 'disabled',
+          displayName: 'Disabled',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
@@ -165,6 +379,25 @@ export const shadStepsConfig = {
       },
     },
     properties: {
+      steps: {
+        value:
+          "{{[{ id: 1, name: 'Account', description: 'Your details' }, { id: 2, name: 'Company', description: 'Team and size' }, { id: 3, name: 'Billing', description: 'Plan and payment' }, { id: 4, name: 'Done', description: 'Review and finish' }]}}",
+      },
+      currentStep: {
+        value: '{{2}}',
+      },
+      stepsSelectable: {
+        value: '{{true}}',
+      },
+      orientation: {
+        value: 'horizontal',
+      },
+      variant: {
+        value: 'numbers',
+      },
+      dynamicHeight: {
+        value: '{{true}}',
+      },
       loadingState: {
         value: '{{false}}',
       },
