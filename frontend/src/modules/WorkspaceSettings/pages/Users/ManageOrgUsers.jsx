@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService, organizationUserService, userService, groupPermissionV2Service } from '@/_services';
+import { authenticationService, organizationUserService, userService } from '@/_services';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
@@ -348,29 +348,6 @@ class ManageOrgUsersComponent extends React.Component {
             statusCode !== 451 && toast.error(error);
           });
       };
-
-      if (isEditing && role === 'end-user') {
-        const userId = this.state.currentEditingUser?.user_id;
-        if (userId) {
-          groupPermissionV2Service
-            .getUserAdminGroups(userId)
-            .then(({ groups }) => {
-              if (groups.length > 0) {
-                this.setState({
-                  creatingUser: false,
-                  isInviteUsersDrawerOpen: false,
-                  showAutoRoleChangeModal: true,
-                  autoRoleChangeMessageType: 'DOWNGRADE_BLOCKED_BY_GROUP_ADMIN',
-                  autoRoleChangeModalList: groups.map((g) => g.name),
-                });
-              } else {
-                proceed();
-              }
-            })
-            .catch(() => proceed());
-          return;
-        }
-      }
 
       proceed();
     } else {

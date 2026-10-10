@@ -409,27 +409,7 @@ class BaseManageGroupPermissionResources extends React.Component {
         });
     };
 
-    if (selectedNewRole === 'end-user') {
-      groupPermissionV2Service
-        .getUserAdminGroups(updatingUserRole.id)
-        .then(({ groups }) => {
-          if (groups.length > 0) {
-            this.closeChangeRoleModal();
-            this.setState({
-              showAutoRoleChangeModal: true,
-              autoRoleChangeMessageType: 'DOWNGRADE_BLOCKED_BY_GROUP_ADMIN',
-              autoRoleChangeModalList: groups.map((g) => g.name),
-            });
-          } else {
-            proceedWithRoleChange();
-          }
-        })
-        .catch(() => {
-          proceedWithRoleChange();
-        });
-    } else {
-      proceedWithRoleChange();
-    }
+    proceedWithRoleChange();
   };
   closeChangeRoleModal = () =>
     this.setState({
@@ -548,12 +528,8 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   fetchAddableAdmins = () => {
-    const isBuilder = authenticationService.currentSessionValue?.user_permissions?.is_builder;
-
-    console.log('isBuilder', isBuilder);
-
-    // if the user is a builder, don't fetch addable admins as they won't have permissions to add any admins to the group
-    if (isBuilder === true) {
+    // only workspace admins can assign group admins, so group admins don't fetch the addable list
+    if (!authenticationService.currentSessionValue?.admin) {
       return;
     }
 
@@ -567,22 +543,14 @@ class BaseManageGroupPermissionResources extends React.Component {
       });
   };
 
-  searchAddableAdmins = (query) => {
-    const q = (query || '').toLowerCase();
-    const filtered = this.state.addableAdmins.filter((u) => {
-      const name = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
-      return name.includes(q) || (u.email || '').toLowerCase().includes(q);
-    });
-    return Promise.resolve(
-      filtered.map((u) => ({
-        name: `${u.firstName || ''} ${u.lastName || ''} (${u.email})`.trim(),
-        value: u.id,
-        email: u.email,
-        first_name: u.firstName,
-        last_name: u.lastName,
-      }))
-    );
-  };
+  getAddableAdminOptions = () =>
+    this.state.addableAdmins.map((u) => ({
+      name: `${u.firstName || ''} ${u.lastName || ''} (${u.email})`.trim(),
+      value: u.id,
+      email: u.email,
+      first_name: u.firstName,
+      last_name: u.lastName,
+    }));
 
   addSelectedAdminsToGroup = () => {
     const { selectedAdminUsers } = this.state;
@@ -953,8 +921,8 @@ class BaseManageGroupPermissionResources extends React.Component {
       featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter' && plan !== 'basicplus';
     const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
-    // Workspace admin has full edit access; group-admin builders are read-only on permissions/granular tabs
-    // and cannot change user roles (but can still add/remove users).
+    // Workspace admin has full edit access; group admins (builders and end-users) see the permissions/granular
+    // tabs read-only and cannot change user roles (but can still add/remove users).
     const isAdmin = !!authenticationService.currentSessionValue?.admin;
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
@@ -1681,7 +1649,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     'not-found': `${searchSelectClass}__not-found`,
                                   }}
                                   onSelect={(val) => this.setState({ selectedAdminUsers: val })}
-                                  onSearch={this.searchAddableAdmins}
+                                  options={this.getAddableAdminOptions()}
                                   selectedValues={selectedAdminUsers}
                                   onReset={() => this.setState({ selectedAdminUsers: [] })}
                                   placeholder="Select users to assign as group admins"

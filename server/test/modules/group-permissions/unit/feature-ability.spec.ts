@@ -40,7 +40,6 @@ const ALL_ADMIN_FEATURES = [
   FEATURE_KEY.REVOKE_GROUP_ADMIN,
   FEATURE_KEY.GET_GROUP_ADMINS,
   FEATURE_KEY.GET_ADDABLE_ADMINS,
-  FEATURE_KEY.GET_USER_ADMIN_GROUPS,
 ];
 
 // Features a group-admin builder gets regardless of which group is requested
@@ -50,7 +49,6 @@ const BUILDER_LIST_FEATURES = [
   FEATURE_KEY.GET_ADDABLE_DS,
   FEATURE_KEY.GET_ADDABLE_FOLDERS,
   FEATURE_KEY.GET_ADDABLE_WORKFLOW_FOLDERS,
-  FEATURE_KEY.GET_USER_ADMIN_GROUPS,
 ];
 
 // Features a group-admin builder gets on their own administered custom group
@@ -63,6 +61,18 @@ const BUILDER_ADMIN_GROUP_FEATURES = [
   FEATURE_KEY.GET_GROUP_ADMINS,
   FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS,
 ];
+
+// Addable-resource reads an end-user group admin must never get
+const END_USER_BLOCKED_ADDABLE_FEATURES = [
+  FEATURE_KEY.GET_ADDABLE_APPS,
+  FEATURE_KEY.GET_ADDABLE_DS,
+  FEATURE_KEY.GET_ADDABLE_FOLDERS,
+  FEATURE_KEY.GET_ADDABLE_WORKFLOW_FOLDERS,
+  FEATURE_KEY.GET_ADDABLE_MODULE_FOLDERS,
+];
+
+// Membership-only features an end-user group admin gets on their own administered custom group
+const END_USER_ADMIN_GROUP_FEATURES = BUILDER_ADMIN_GROUP_FEATURES;
 
 // Features that builders must NEVER get (admin-escalation guard)
 const BUILDER_BLOCKED_FEATURES = [
@@ -290,6 +300,82 @@ describe('FeatureAbilityFactory :: group permissions', () => {
       for (const feature of BUILDER_BLOCKED_FEATURES) {
         expect(ability.can(feature, GroupPermissions)).toBe(false);
       }
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // End-user admin — membership management + read-only granular permissions
+  // ---------------------------------------------------------------------------
+
+  describe('end-user-admin — no group context (list-level)', () => {
+    const request = {
+      tj_admin_groups: [{ id: 'group-1', name: 'ops' }],
+      params: {},
+    };
+
+    it('grants only the group list', async () => {
+      const ability = await build({ isEndUser: true }, request);
+      expect(ability.can(FEATURE_KEY.GET_ALL, GroupPermissions)).toBe(true);
+    });
+
+    it('does not grant addable-resource reads, group-specific or write features', async () => {
+      const ability = await build({ isEndUser: true }, request);
+      for (const feature of [...END_USER_BLOCKED_ADDABLE_FEATURES, ...BUILDER_BLOCKED_FEATURES]) {
+        expect(ability.can(feature, GroupPermissions)).toBe(false);
+      }
+      expect(ability.can(FEATURE_KEY.GET_ONE, GroupPermissions)).toBe(false);
+      expect(ability.can(FEATURE_KEY.ADD_GROUP_USER, GroupPermissions)).toBe(false);
+    });
+  });
+
+  describe('end-user-admin — their own administered custom group', () => {
+    const request = {
+      tj_admin_groups: [{ id: 'group-1', name: 'ops' }],
+      tj_group: { id: 'group-1', type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP },
+      tj_resource_id: 'group-1',
+      params: {},
+    };
+
+    it('grants membership-management features on the administered group', async () => {
+      const ability = await build({ isEndUser: true }, request);
+      for (const feature of END_USER_ADMIN_GROUP_FEATURES) {
+        expect(ability.can(feature, GroupPermissions)).toBe(true);
+      }
+    });
+
+    it('grants read-only access to the granular permissions of the administered group', async () => {
+      const ability = await build({ isEndUser: true }, request);
+      expect(ability.can(FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS, GroupPermissions)).toBe(true);
+    });
+
+    it('does not grant addable-resource reads', async () => {
+      const ability = await build({ isEndUser: true }, request);
+      for (const feature of END_USER_BLOCKED_ADDABLE_FEATURES) {
+        expect(ability.can(feature, GroupPermissions)).toBe(false);
+      }
+    });
+
+    it('never grants write/destructive or admin-escalation features', async () => {
+      const ability = await build({ isEndUser: true }, request);
+      for (const feature of BUILDER_BLOCKED_FEATURES) {
+        expect(ability.can(feature, GroupPermissions)).toBe(false);
+      }
+    });
+  });
+
+  describe('end-user-admin — default group (not administered)', () => {
+    const request = {
+      tj_admin_groups: [{ id: 'group-1', name: 'ops' }],
+      tj_group: { id: 'default-group', type: GROUP_PERMISSIONS_TYPE.DEFAULT },
+      tj_resource_id: 'default-group',
+      params: {},
+    };
+
+    it('cannot read group details, users or granular permissions', async () => {
+      const ability = await build({ isEndUser: true }, request);
+      expect(ability.can(FEATURE_KEY.GET_ONE, GroupPermissions)).toBe(false);
+      expect(ability.can(FEATURE_KEY.GET_ALL_GROUP_USER, GroupPermissions)).toBe(false);
+      expect(ability.can(FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS, GroupPermissions)).toBe(false);
     });
   });
 });
