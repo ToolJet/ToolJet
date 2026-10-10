@@ -1,0 +1,124 @@
+// The Table's shadcn/ui look (styles.tableLook = 'shadcn'): the same table, drawn like shadcn's data table. Only
+// appearance changes; every property, column type, event and action behaves as in the ToolJet look. Colours come
+// from the app theme (--cc-*), so the look follows light, dark and brand themes. The frame overrides the Table's own
+// radius, border and shadow styles, which the ToolJet look keeps.
+$shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$radius: var(--cc-radius-default, 6px);
+
+.jet-table.tj-table-look-shadcn {
+  border: 1px solid var(--cc-weak-border) !important;
+  border-radius: calc(var(--cc-radius-default, 8px) + 4px) !important;
+  box-shadow: $shadow-sm !important;
+  background: var(--cc-surface1-surface) !important;
+  overflow: hidden;
+
+  // Toolbar: search first, like shadcn's data table, then the filter and column buttons.
+  .table-card-header {
+    flex-direction: row-reverse;
+    padding: 16px 16px 12px !important;
+    min-height: 64px;
+  }
+  .table-global-search {
+    height: 36px !important;
+    width: 280px !important;
+    max-width: 100%;
+    padding: 0 10px;
+    border: 1px solid var(--cc-default-border) !important;
+    border-radius: $radius !important;
+    background: var(--cc-surface1-surface);
+    box-shadow: $shadow-sm;
+    &:focus-within {
+      outline: 2px solid color-mix(in srgb, var(--cc-primary-brand) 30%, transparent);
+      outline-offset: 1px;
+    }
+  }
+  .table-card-header .tj-base-btn {
+    height: 36px !important;
+    min-width: 36px;
+    border: 1px solid var(--cc-default-border) !important;
+    border-radius: $radius !important;
+    background: var(--cc-surface1-surface) !important;
+    color: var(--cc-primary-text) !important;
+    box-shadow: $shadow-sm;
+    font-size: 14px !important;
+    font-weight: 500;
+  }
+
+  // Header: quiet, muted labels on the table surface.
+  thead th {
+    height: 40px !important;
+    padding: 0 12px !important;
+    background: transparent !important;
+    border-bottom: 1px solid var(--cc-weak-border) !important;
+    .header-text {
+      color: var(--cc-placeholder-text) !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+    }
+  }
+
+  // Rows: hairline dividers and a soft hover.
+  tbody tr.table-row {
+    border-bottom: 1px solid var(--cc-weak-border) !important;
+    transition: background-color 0.15s;
+    &:hover {
+      background: color-mix(in srgb, var(--cc-surface3-surface) 55%, transparent) !important;
+    }
+  }
+  tbody td {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    color: var(--cc-primary-text);
+  }
+
+  // Row action buttons keep their configured colours; the size and shape follow shadcn's small button.
+  tbody td button {
+    height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: $radius !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    box-shadow: $shadow-sm;
+  }
+
+  // Selection checkboxes: shadcn's square checkbox in the brand colour.
+  input[type='checkbox'] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    border: 1px solid var(--cc-primary-brand);
+    border-radius: 4px;
+    background: var(--cc-surface1-surface) center / 12px no-repeat;
+    cursor: pointer;
+    &:checked {
+      background-color: var(--cc-primary-brand);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+    }
+    &:indeterminate {
+      background-color: var(--cc-primary-brand);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E");
+    }
+  }
+
+  // Footer and pagination: shadcn's outline page buttons.
+  .table-footer {
+    font-size: 14px;
+    color: var(--cc-placeholder-text);
+  }
+  .table-pagination-btn {
+    height: 32px !important;
+    min-width: 32px !important;
+    border-radius: $radius !important;
+    color: var(--cc-primary-text) !important;
+    font-weight: 500;
+    &.selected {
+      border: 1px solid var(--cc-default-border) !important;
+      background: var(--cc-surface1-surface) !important;
+      box-shadow: $shadow-sm;
+    }
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+}

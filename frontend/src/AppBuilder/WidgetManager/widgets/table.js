@@ -371,6 +371,21 @@ export const tableConfig = {
     onHeaderClick: { displayName: 'Header clicked' },
   },
   styles: {
+    // Look: the shadcn/ui skin (NewTable/shadcnLook.scss) restyles the same table (frame, toolbar, header, rows,
+    // buttons, pagination); every property, column type, event and action works the same in both looks.
+    tableLook: {
+      type: 'select',
+      displayName: 'Look',
+      options: [
+        { name: 'ToolJet', value: 'default' },
+        { name: 'shadcn/ui', value: 'shadcn' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'default',
+      },
+      accordian: 'Container',
+    },
     columnTitleColor: {
       type: 'colorSwatches',
       displayName: 'Column title',
@@ -849,6 +864,7 @@ export const tableConfig = {
     },
     events: [],
     styles: {
+      tableLook: { value: 'default' },
       columnTitleColor: { value: 'var(--cc-primary-text)' },
       columnBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },

@@ -56,7 +56,9 @@ export const addNewWidgetToTheEditor = (
   realCanvasRef,
   parentId,
   moduleInfo = undefined,
-  libraryComponentInfo = undefined
+  libraryComponentInfo = undefined,
+  // A palette preset's styles (ComponentsManagerTab PRESETS), e.g. the shadcn/ui Table's { tableLook: 'shadcn' }.
+  stylePreset = undefined
 ) => {
   const canvasBoundingRect = realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
@@ -69,6 +71,12 @@ export const addNewWidgetToTheEditor = (
   );
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
+  if (stylePreset && componentData?.definition) {
+    componentData.definition.styles = { ...(componentData.definition.styles ?? {}) };
+    Object.entries(stylePreset).forEach(([key, value]) => {
+      componentData.definition.styles[key] = { value };
+    });
+  }
 
   // Custom tab (LibraryComponent host widget): stamp WHICH library component this
   // instance renders — mirrors the moduleInfo pattern below. Must run before the

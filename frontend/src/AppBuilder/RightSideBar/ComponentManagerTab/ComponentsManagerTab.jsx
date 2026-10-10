@@ -13,6 +13,17 @@ import sectionConfig from './sectionConfig';
 import { ANT_DESIGN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/antDesign';
 import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 
+// Presets (component packs): a palette entry that adds a native widget with some styles set. The shadcn/ui Table is
+// ToolJet's own Table in its shadcn look, so it keeps every Table feature and convention (the older ShadTable widget
+// stays registered for apps that use it, but leaves the palette).
+const SHADCN_TABLE = 'Table:shadcn';
+const PRESETS = { [SHADCN_TABLE]: { base: 'Table', stylePreset: { tableLook: 'shadcn' } } };
+const presetDefinition = (name) => {
+  const preset = PRESETS[name];
+  const base = preset && componentTypeDefinitionMap[preset.base];
+  return base ? { ...base, stylePreset: preset.stylePreset } : undefined;
+};
+
 const SHADCN_SECTIONS = [
   {
     title: 'Layout',
@@ -22,7 +33,7 @@ const SHADCN_SECTIONS = [
   {
     title: 'Data display',
     items: [
-      'ShadTable',
+      SHADCN_TABLE,
       'ShadKanban',
       'ShadStat',
       'ShadBadge',
@@ -100,7 +111,12 @@ const SHADCN_SECTIONS = [
 // A pack lists its own widgets plus FlexContainer, which composes them.
 const COMPONENT_LIBRARIES = [
   { value: 'tooljet', label: 'ToolJet' },
-  { value: 'shadcn', label: 'shadcn/ui', sections: SHADCN_SECTIONS, components: SHADCN_COMPONENTS },
+  {
+    value: 'shadcn',
+    label: 'shadcn/ui',
+    sections: SHADCN_SECTIONS,
+    components: [...SHADCN_COMPONENTS.filter((name) => name !== 'ShadTable'), SHADCN_TABLE],
+  },
 ];
 // Pack widgets never appear in the ToolJet list. The Ant Design pack is parked: still registered, so apps that use it
 // render, but listed in no library.
@@ -178,17 +194,25 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   );
 
   const componentList = useMemo(() => {
-    return componentTypes
-      .map((component) => component.component)
-      .filter((component) => !IGNORED_ITEMS.includes(component) && inLibrary(component));
+    return [
+      ...componentTypes
+        .map((component) => component.component)
+        .filter((component) => !IGNORED_ITEMS.includes(component) && inLibrary(component)),
+      ...Object.keys(PRESETS).filter(inLibrary),
+    ];
   }, [componentTypes, inLibrary]);
 
   const searchList = useMemo(() => {
-    return componentTypes
-      .filter((component) => !IGNORED_ITEMS.includes(component.component) && inLibrary(component.component))
-      .map((component) => {
-        return { component: component.component, displayName: component.displayName };
-      });
+    return [
+      ...componentTypes
+        .filter((component) => !IGNORED_ITEMS.includes(component.component) && inLibrary(component.component))
+        .map((component) => {
+          return { component: component.component, displayName: component.displayName };
+        }),
+      ...Object.keys(PRESETS)
+        .filter(inLibrary)
+        .map((name) => ({ component: name, displayName: presetDefinition(name)?.displayName ?? name })),
+    ];
   }, [componentTypes, inLibrary]);
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
@@ -264,7 +288,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   function renderComponentCard(component, index) {
     return (
       <div key={component} className="text-center align-items-center clearfix draggable-box-wrapper">
-        <DragLayer index={index} component={componentTypeDefinitionMap[component]} />
+        <DragLayer index={index} component={presetDefinition(component) ?? componentTypeDefinitionMap[component]} />
       </div>
     );
   }

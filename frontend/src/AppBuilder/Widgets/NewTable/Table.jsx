@@ -16,6 +16,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './table.scss';
+import './shadcnLook.scss';
 
 const Table = memo(
   ({
@@ -342,7 +343,9 @@ const Table = memo(
         ref={tableRef}
         data-cy={`draggable-widget-${componentName}`}
         data-disabled={exposedVariablesTemporaryState.isDisabled}
-        className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
+        className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}${
+          styles?.tableLook === 'shadcn' ? ' tj-table-look-shadcn' : ''
+        }`}
         style={{
           height: isDynamicHeightEnabled ? (subContainerIndex != null ? 'auto' : '100%') : `${height}px`,
           ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
