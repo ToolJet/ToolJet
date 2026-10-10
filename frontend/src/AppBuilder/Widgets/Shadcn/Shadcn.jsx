@@ -48,6 +48,7 @@ import { fontStack, textCase, typeClasses } from './typeLook';
 import { useSizedBox } from './boxFit';
 import { GROUP_LOADING } from './looks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { stringify } from '../packJson';
 import './shadcn.scss';
 
@@ -440,8 +441,12 @@ export const ShadStat = (props) => {
   const TrendIcon = trend === 'down' ? TrendingDown : TrendingUp;
   // The change badge takes the positive or negative colour for its trend (text, on a light tint) when set.
   const trendColor = { up: props.styles?.positiveColor, down: props.styles?.negativeColor }[trend];
+  // In a fixed box (dynamic height off, or the editor) the card fills the box and its content stays inside it: a
+  // footnote that wrapped past the box cut the card's bottom edge off. It keeps two lines, the rest in its title. An
+  // auto-height box keeps fitting the content (the card is not stretched there, or the height could only grow).
+  const fixed = !(fitsContentInView(props.componentType, properties) && props.currentMode === 'view');
   const body = (
-    <div className="flex flex-col gap-1.5">
+    <div className={cn('flex flex-col gap-1.5', fixed && 'min-h-0 overflow-hidden')}>
       <div className="flex items-start justify-between gap-2">
         <span
           className={cn(
@@ -475,7 +480,10 @@ export const ShadStat = (props) => {
         {properties.loadingState ? <Skeleton className="h-8 w-24" /> : String(properties.value ?? '')}
       </span>
       {properties.footnote ? (
-        <span className="text-sm text-[color:var(--lk-help,var(--sc-muted-foreground))]">
+        <span
+          className={cn('text-sm text-[color:var(--lk-help,var(--sc-muted-foreground))]', fixed && 'line-clamp-2')}
+          title={fixed ? String(properties.footnote) : undefined}
+        >
           {String(properties.footnote)}
         </span>
       ) : null}
@@ -486,7 +494,13 @@ export const ShadStat = (props) => {
       {properties.card === false ? (
         body
       ) : (
-        <Card className="rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--lk-bg,var(--sc-card))] px-6 py-5">
+        <Card
+          className={cn(
+            'rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--lk-bg,var(--sc-card))] px-6 py-5',
+            fixed && 'flex flex-col overflow-hidden'
+          )}
+          style={fixed && Number(props.height) > 0 ? { height: Number(props.height) } : undefined}
+        >
           {body}
         </Card>
       )}
@@ -543,25 +557,30 @@ export const ShadAvatar = (props) => {
   const max = Math.max(1, Math.min(50, Math.floor(Number(properties.maxVisible)) || 5));
   const shown = people.slice(0, max);
   const extra = people.length - shown.length;
+  // The pack's utilities are !important, so an inline width lost to the Avatar's h-8 w-8 and every avatar drew at
+  // 32px. The size, the initials' font and the overlap of a group are variables the classes read, all scaled to the
+  // size (a fixed 12px font and 8px overlap hid the second letter of small avatars).
   const ring = 'ring-2 ring-[color:var(--lk-ring,var(--sc-background))]';
-  const fill = 'bg-[color:var(--lk-bg,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-foreground))]';
+  const box = 'h-[var(--av-size)] w-[var(--av-size)]';
+  const fill =
+    'bg-[color:var(--lk-bg,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-foreground))] text-[length:var(--av-font)] leading-none';
+  const vars = {
+    '--av-size': `${size}px`,
+    '--av-font': `${Math.max(9, Math.round(size * 0.4))}px`,
+    '--av-overlap': `${Math.round(size * 0.2)}px`,
+  };
   return (
     <Shell {...props}>
-      <div className="flex -space-x-2">
+      <div className="flex [&>*+*]:ml-[calc(var(--av-overlap)*-1)]" style={vars}>
         {shown.map((person, i) => (
-          <Avatar
-            key={`${person.name}-${i}`}
-            className={ring}
-            style={{ width: size, height: size }}
-            title={person.name}
-          >
+          <Avatar key={`${person.name}-${i}`} className={cn(ring, box)} title={person.name}>
             {person.src ? <AvatarImage src={person.src} alt={person.name} /> : null}
             <AvatarFallback className={fill}>{initials(person.name)}</AvatarFallback>
           </Avatar>
         ))}
         {extra > 0 ? (
-          <Avatar className={ring} style={{ width: size, height: size }} title={`${extra} more`}>
-            <AvatarFallback className={cn(fill, 'text-xs font-medium')}>+{extra}</AvatarFallback>
+          <Avatar className={cn(ring, box)} title={`${extra} more`}>
+            <AvatarFallback className={cn(fill, 'font-medium')}>+{extra}</AvatarFallback>
           </Avatar>
         ) : null}
       </div>

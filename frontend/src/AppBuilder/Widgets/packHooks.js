@@ -85,13 +85,16 @@ export const useAutoHeight = (
   });
 };
 
-export const initials = (name) =>
-  String(name || '')
+/** Two initials: of the first and the last word, so "Yusuf & Leyla Demir" reads YD. Words without a letter or a
+ *  digit ("&", "-") are skipped (they gave "Y&"); the initial is the word's first letter or digit. */
+export const initials = (name) => {
+  const words = String(name || '')
     .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join('');
+    .map((w) => w.match(/[\p{L}\p{N}]/u)?.[0])
+    .filter(Boolean);
+  const picked = words.length > 1 ? [words[0], words[words.length - 1]] : words;
+  return picked.join('').toUpperCase();
+};
 
 /** Options as { label, value }: accepts plain values (['A', 'B']) as well as objects. Entries that cannot be an option
  *  (null, empty objects, object values) are dropped, a missing or non-text label falls back to the value, and only the
