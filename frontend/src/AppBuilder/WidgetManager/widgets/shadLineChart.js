@@ -2,11 +2,12 @@
 export const shadLineChartConfig = {
   name: 'ShadLineChart',
   displayName: 'Line chart',
-  description: 'shadcn/ui line chart',
+  description:
+    "shadcn/ui line chart for trends: data [{ month: 'Jan', revenue: 18600, expenses: 8000 }], xField 'month', yFields 'revenue,expenses' (one line each); curve monotone/linear/step, dots, strokeWidth, dashedFields, an optional target line (referenceValue, referenceLabel) and yAxisFormat number/currency/percent/compact. Height 200-320 px; clicking a point sets clickedDatum and fires onClick.",
   component: 'ShadLineChart',
   defaultSize: {
-    width: 10,
-    height: 40,
+    width: 20,
+    height: 280,
   },
   others: {
     showOnDesktop: {
@@ -19,6 +20,258 @@ export const shadLineChartConfig = {
     },
   },
   properties: {
+    data: {
+      type: 'code',
+      displayName: 'Data',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "[{ month: 'Jan', revenue: 18600, expenses: 8000 }]",
+    },
+    xField: {
+      type: 'code',
+      displayName: 'X field',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'month',
+      },
+    },
+    yFields: {
+      type: 'code',
+      displayName: 'Series fields (one or many)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'array',
+            },
+          ],
+        },
+        defaultValue: 'revenue',
+      },
+    },
+    curve: {
+      type: 'switch',
+      displayName: 'Curve',
+      options: [
+        {
+          displayName: 'Monotone',
+          value: 'monotone',
+        },
+        {
+          displayName: 'Linear',
+          value: 'linear',
+        },
+        {
+          displayName: 'Step',
+          value: 'step',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'monotone',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    showDots: {
+      type: 'toggle',
+      displayName: 'Dots',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    strokeWidth: {
+      type: 'code',
+      displayName: 'Line width (px)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+        defaultValue: 2,
+      },
+    },
+    dashedFields: {
+      type: 'code',
+      displayName: 'Dashed series (fields)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'array',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+      placeholder: "'target' or ['forecast']",
+    },
+    referenceValue: {
+      type: 'code',
+      displayName: 'Target line value',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+      placeholder: '25000',
+    },
+    referenceLabel: {
+      type: 'code',
+      displayName: 'Target line label',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    yAxisFormat: {
+      type: 'switch',
+      displayName: 'Value format',
+      options: [
+        {
+          displayName: 'Number',
+          value: 'number',
+        },
+        {
+          displayName: 'Currency',
+          value: 'currency',
+        },
+        {
+          displayName: 'Percent',
+          value: 'percent',
+        },
+        {
+          displayName: 'Compact',
+          value: 'compact',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'number',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    currency: {
+      type: 'code',
+      displayName: 'Currency code',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'USD',
+      },
+    },
+    valuePrefix: {
+      type: 'code',
+      displayName: 'Value prefix',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    valueSuffix: {
+      type: 'code',
+      displayName: 'Value suffix',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    emptyText: {
+      type: 'code',
+      displayName: 'Empty message',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'No data',
+      },
+    },
+    animate: {
+      type: 'toggle',
+      displayName: 'Animate',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
+    showGrid: {
+      type: 'toggle',
+      displayName: 'Grid',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
+    showLegend: {
+      type: 'toggle',
+      displayName: 'Legend',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    colors: {
+      type: 'code',
+      displayName: 'Series colors (in order)',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "['#0f766e', '#f59e0b']",
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -90,7 +343,11 @@ export const shadLineChartConfig = {
       showLabel: false,
     },
   },
-  events: {},
+  events: {
+    onClick: {
+      displayName: 'On click',
+    },
+  },
   styles: {
     boxShadow: {
       type: 'boxShadow',
@@ -111,11 +368,57 @@ export const shadLineChartConfig = {
       },
       accordian: 'Container',
     },
+    chartColor: {
+      type: 'colorSwatches',
+      displayName: 'Chart color (series palette from it)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    gridColor: {
+      type: 'colorSwatches',
+      displayName: 'Grid line color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    axisTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Axis label color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    legendTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Legend text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    referenceLineColor: {
+      type: 'colorSwatches',
+      displayName: 'Target line color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    clickedDatum: {},
   },
   actions: [
     {
@@ -165,6 +468,61 @@ export const shadLineChartConfig = {
       },
     },
     properties: {
+      data: {
+        value:
+          "{{[{ month: 'Jan', revenue: 18600, expenses: 8000 }, { month: 'Feb', revenue: 30500, expenses: 20000 }, { month: 'Mar', revenue: 23700, expenses: 12000 }, { month: 'Apr', revenue: 7300, expenses: 19000 }, { month: 'May', revenue: 20900, expenses: 13000 }, { month: 'Jun', revenue: 21400, expenses: 14000 }]}}",
+      },
+      xField: {
+        value: 'month',
+      },
+      yFields: {
+        value: "{{['revenue', 'expenses']}}",
+      },
+      curve: {
+        value: 'monotone',
+      },
+      showDots: {
+        value: '{{false}}',
+      },
+      strokeWidth: {
+        value: '{{2}}',
+      },
+      dashedFields: {
+        value: '',
+      },
+      referenceValue: {
+        value: '',
+      },
+      referenceLabel: {
+        value: '',
+      },
+      yAxisFormat: {
+        value: 'currency',
+      },
+      currency: {
+        value: 'USD',
+      },
+      valuePrefix: {
+        value: '',
+      },
+      valueSuffix: {
+        value: '',
+      },
+      emptyText: {
+        value: 'No data',
+      },
+      animate: {
+        value: '{{true}}',
+      },
+      showGrid: {
+        value: '{{true}}',
+      },
+      showLegend: {
+        value: '{{true}}',
+      },
+      colors: {
+        value: '{{[]}}',
+      },
       loadingState: {
         value: '{{false}}',
       },

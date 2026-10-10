@@ -2,11 +2,12 @@
 export const shadRadarChartConfig = {
   name: 'ShadRadarChart',
   displayName: 'Radar chart',
-  description: 'shadcn/ui radar chart',
+  description:
+    "shadcn/ui radar (spider) chart comparing scores across categories: data [{ skill: 'Speed', alex: 86, jordan: 65 }], categoryField 'skill' (one spoke per row), yFields 'alex,jordan' (one filled polygon each); fillOpacity, gridShape polygon/circle, dots, legend, maxValue (blank = auto). Best square, 240-320 px; clicking sets clickedDatum and fires onClick.",
   component: 'ShadRadarChart',
   defaultSize: {
-    width: 10,
-    height: 40,
+    width: 12,
+    height: 300,
   },
   others: {
     showOnDesktop: {
@@ -19,6 +20,185 @@ export const shadRadarChartConfig = {
     },
   },
   properties: {
+    data: {
+      type: 'code',
+      displayName: 'Data',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "[{ skill: 'Speed', alex: 86, jordan: 65 }]",
+    },
+    categoryField: {
+      type: 'code',
+      displayName: 'Category field',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'skill',
+      },
+    },
+    yFields: {
+      type: 'code',
+      displayName: 'Series fields (one or many)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'array',
+            },
+          ],
+        },
+        defaultValue: 'alex',
+      },
+    },
+    maxValue: {
+      type: 'code',
+      displayName: 'Max value (blank = auto)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+      placeholder: '100',
+    },
+    fillOpacity: {
+      type: 'code',
+      displayName: 'Fill opacity (0 to 1)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+        defaultValue: 0.5,
+      },
+    },
+    gridShape: {
+      type: 'switch',
+      displayName: 'Grid shape',
+      options: [
+        {
+          displayName: 'Polygon',
+          value: 'polygon',
+        },
+        {
+          displayName: 'Circle',
+          value: 'circle',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'polygon',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    showGrid: {
+      type: 'toggle',
+      displayName: 'Grid',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
+    showDots: {
+      type: 'toggle',
+      displayName: 'Dots',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    valuePrefix: {
+      type: 'code',
+      displayName: 'Value prefix',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    valueSuffix: {
+      type: 'code',
+      displayName: 'Value suffix',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    emptyText: {
+      type: 'code',
+      displayName: 'Empty message',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'No data',
+      },
+    },
+    animate: {
+      type: 'toggle',
+      displayName: 'Animate',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
+    showLegend: {
+      type: 'toggle',
+      displayName: 'Legend',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
+    colors: {
+      type: 'code',
+      displayName: 'Series colors (in order)',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "['#0f766e', '#f59e0b']",
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -90,7 +270,11 @@ export const shadRadarChartConfig = {
       showLabel: false,
     },
   },
-  events: {},
+  events: {
+    onClick: {
+      displayName: 'On click',
+    },
+  },
   styles: {
     boxShadow: {
       type: 'boxShadow',
@@ -111,11 +295,48 @@ export const shadRadarChartConfig = {
       },
       accordian: 'Container',
     },
+    chartColor: {
+      type: 'colorSwatches',
+      displayName: 'Chart color (series palette from it)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    gridColor: {
+      type: 'colorSwatches',
+      displayName: 'Grid line color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    axisTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Axis label color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    legendTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Legend text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    clickedDatum: {},
   },
   actions: [
     {
@@ -165,6 +386,49 @@ export const shadRadarChartConfig = {
       },
     },
     properties: {
+      data: {
+        value:
+          "{{[{ skill: 'Speed', alex: 86, jordan: 65 }, { skill: 'Quality', alex: 72, jordan: 90 }, { skill: 'Support', alex: 64, jordan: 78 }, { skill: 'Pricing', alex: 90, jordan: 58 }, { skill: 'Reach', alex: 58, jordan: 84 }, { skill: 'Design', alex: 75, jordan: 70 }]}}",
+      },
+      categoryField: {
+        value: 'skill',
+      },
+      yFields: {
+        value: "{{['alex', 'jordan']}}",
+      },
+      maxValue: {
+        value: '{{100}}',
+      },
+      fillOpacity: {
+        value: '{{0.5}}',
+      },
+      gridShape: {
+        value: 'polygon',
+      },
+      showGrid: {
+        value: '{{true}}',
+      },
+      showDots: {
+        value: '{{false}}',
+      },
+      valuePrefix: {
+        value: '',
+      },
+      valueSuffix: {
+        value: '',
+      },
+      emptyText: {
+        value: 'No data',
+      },
+      animate: {
+        value: '{{true}}',
+      },
+      showLegend: {
+        value: '{{true}}',
+      },
+      colors: {
+        value: '{{[]}}',
+      },
       loadingState: {
         value: '{{false}}',
       },
