@@ -10573,10 +10573,14 @@ tbody {
     border-color: var(--indigo9) !important;
   }
 
+  // Keep the 1px border box that `.nav-tabs .nav-link` already reserves and
+  // only neutralise the border colour. Dropping the border outright made the
+  // hovered flex item 2px narrower and 1px shorter, so the remaining tabs slid
+  // left and the content jumped up. Dark mode already worked this way.
   .nav-link:hover {
-    border-right: none !important;
-    border-left: none !important;
-    border-top: none !important;
+    border-right-color: transparent !important;
+    border-left-color: transparent !important;
+    border-top-color: transparent !important;
 
     color: var(--indigo9);
   }
