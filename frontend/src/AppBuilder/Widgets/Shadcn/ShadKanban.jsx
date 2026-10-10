@@ -19,6 +19,7 @@ import { initials, list, useAutoHeight, useExposed } from '../packHooks';
 import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from './ui';
 import { Shell } from './Shadcn';
 import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from './kanbanBoard';
+import { SHADOWS, badgeLook, isSet, kanbanLook, px } from './kanbanLook';
 
 // shadcn/ui pack Kanban (experiment): a data-driven board. Columns are values of a status field and cards are rows
 // of data shown by the fields the author maps (title, description, badge, tags, progress, meta, avatar), so an agent
@@ -38,40 +39,15 @@ const BADGE_BY_WORD = {
   done: 'success',
 };
 
-const SHADOWS = {
-  none: 'none',
-  sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-  md: '0 4px 10px -2px rgb(0 0 0 / 0.08)',
-  lg: '0 12px 24px -6px rgb(0 0 0 / 0.16)',
-};
-
-const isSet = (value) => value !== undefined && value !== null && String(value).trim() !== '';
-const px = (value) => (/^\d+(\.\d+)?$/.test(String(value).trim()) ? `${value}px` : String(value));
-
-/** Column and card looks: the author's styles where set, else shadcn's from the app theme. Applied inline, so the
- *  pack's Tailwind utilities (which are !important) are left off those properties; hover, selected and drop states
- *  keep their utilities and so still win. */
-const boardLook = (styles = {}) => ({
-  column: {
-    background: isSet(styles.columnBackgroundColor)
-      ? styles.columnBackgroundColor
-      : 'color-mix(in srgb, var(--sc-muted) 60%, transparent)',
-    borderRadius: isSet(styles.columnBorderRadius) ? px(styles.columnBorderRadius) : 'calc(var(--sc-radius) + 4px)',
-  },
-  card: {
-    background: isSet(styles.cardBackgroundColor) ? styles.cardBackgroundColor : 'var(--sc-card)',
-    borderColor: isSet(styles.cardBorderColor) ? styles.cardBorderColor : 'var(--sc-border)',
-    borderRadius: isSet(styles.cardBorderRadius) ? px(styles.cardBorderRadius) : 'var(--sc-radius)',
-    boxShadow: SHADOWS[styles.cardShadow] ?? (isSet(styles.cardShadow) ? styles.cardShadow : SHADOWS.sm),
-  },
-});
+// A card's secondary text (description, meta, progress): the cardTextColor style, else the theme's muted text.
+const SECONDARY_TEXT = 'text-[color:var(--kb-card-text,var(--sc-muted-foreground))]';
 
 const asTags = (value) =>
   (Array.isArray(value) ? value : isSet(value) ? String(value).split(',') : [])
     .map((tag) => String(tag?.label ?? tag).trim())
     .filter(Boolean);
 
-const CardBody = ({ card, fields, compact }) => {
+const CardBody = ({ card, fields, compact, badgeColors, progressStyle }) => {
   const badge = fields.badge ? card[fields.badge] : undefined;
   const avatar = fields.avatar ? card[fields.avatar] : undefined;
   const meta = fields.meta ? card[fields.meta] : undefined;
@@ -79,11 +55,16 @@ const CardBody = ({ card, fields, compact }) => {
   const progress = fields.progress ? Number(card[fields.progress]) : NaN;
   return (
     <>
-      <p className={cn('pr-5 font-medium leading-snug', compact ? 'text-[13px]' : 'text-sm')}>
+      <p
+        className={cn(
+          'pr-5 font-medium leading-snug text-[color:var(--kb-card-title,var(--sc-card-foreground))]',
+          compact ? 'text-[13px]' : 'text-sm'
+        )}
+      >
         {String(card[fields.title] ?? '')}
       </p>
       {fields.description && isSet(card[fields.description]) ? (
-        <p className={cn('line-clamp-2 text-xs text-muted-foreground', compact ? 'mt-0.5' : 'mt-1')}>
+        <p className={cn('line-clamp-2 text-xs', SECONDARY_TEXT, compact ? 'mt-0.5' : 'mt-1')}>
           {String(card[fields.description])}
         </p>
       ) : null}
@@ -97,17 +78,27 @@ const CardBody = ({ card, fields, compact }) => {
         </div>
       ) : null}
       {Number.isFinite(progress) ? (
-        <div className={cn('flex items-center gap-2', compact ? 'mt-1.5' : 'mt-2.5')}>
+        <div style={progressStyle} className={cn('flex items-center gap-2', compact ? 'mt-1.5' : 'mt-2.5')}>
           <Progress value={Math.max(0, Math.min(100, progress))} className="h-1.5" />
-          <span className="text-[11px] tabular-nums text-muted-foreground">{Math.round(progress)}%</span>
+          <span className={cn('text-[11px] tabular-nums', SECONDARY_TEXT)}>{Math.round(progress)}%</span>
         </div>
       ) : null}
       {isSet(badge) || isSet(avatar) || isSet(meta) ? (
         <div className={cn('flex items-center gap-2', compact ? 'mt-2' : 'mt-3')}>
           {isSet(badge) ? (
-            <Badge variant={BADGE_BY_WORD[String(badge).toLowerCase()] || 'outline'}>{String(badge)}</Badge>
+            badgeLook(badge, badgeColors) ? (
+              <Badge
+                variant="outline"
+                style={badgeLook(badge, badgeColors)}
+                className="border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]"
+              >
+                {String(badge)}
+              </Badge>
+            ) : (
+              <Badge variant={BADGE_BY_WORD[String(badge).toLowerCase()] || 'outline'}>{String(badge)}</Badge>
+            )
           ) : null}
-          {isSet(meta) ? <span className="text-xs text-muted-foreground">{String(meta)}</span> : null}
+          {isSet(meta) ? <span className={cn('text-xs', SECONDARY_TEXT)}>{String(meta)}</span> : null}
           {isSet(avatar) ? (
             <Avatar className="ml-auto h-6 w-6">
               <AvatarFallback className="text-[10px]">{initials(avatar)}</AvatarFallback>
@@ -158,7 +149,7 @@ const KanbanCard = ({
       onClick={() => onSelect(card)}
       style={look.card}
       className={cn(
-        'group relative overflow-hidden border text-card-foreground transition-colors hover:border-primary/40',
+        'group/card relative overflow-hidden border text-card-foreground transition-colors hover:border-primary/40',
         padding,
         draggable && 'cursor-grab active:cursor-grabbing',
         selected && 'border-primary ring-1 ring-primary',
@@ -176,7 +167,7 @@ const KanbanCard = ({
             e.stopPropagation();
             onDelete(card);
           }}
-          className="absolute right-1.5 top-1.5 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+          className="absolute right-1.5 top-1.5 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/card:opacity-100"
         >
           <X className="h-3.5 w-3.5" />
         </button>
@@ -204,7 +195,7 @@ const KanbanCard = ({
             e.stopPropagation();
             collapse.onToggle(card.__key);
           }}
-          className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border bg-card px-2 py-0.5 text-[11px] text-muted-foreground opacity-0 shadow-sm transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+          className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border bg-card px-2 py-0.5 text-[11px] text-muted-foreground opacity-0 shadow-sm transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover/card:opacity-100"
         >
           {collapse.expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
           {collapse.expanded ? 'Show less' : 'Show more'}
@@ -213,6 +204,11 @@ const KanbanCard = ({
     </div>
   );
 };
+
+// Column title and count colours: the columnTitleColor and count styles, else the theme's.
+const COLUMN_TITLE = 'text-[color:var(--kb-col-title,var(--sc-foreground))]';
+const COUNT_BADGE =
+  'bg-[color:var(--kb-count-bg,var(--sc-secondary))] text-[color:var(--kb-count-fg,var(--sc-secondary-foreground))]';
 
 const KanbanColumn = ({
   column,
@@ -253,17 +249,19 @@ const KanbanColumn = ({
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onCollapse(column.id)}
         style={{ ...look.column, width: 44, flex: '0 0 44px' }}
         className={cn(
-          'flex cursor-pointer flex-col items-center gap-2 px-1 py-3 transition-shadow hover:ring-1 hover:ring-border',
+          'group/col flex cursor-pointer flex-col items-center gap-2 px-1 py-3 transition-shadow hover:ring-1 hover:ring-border',
           isOver && 'ring-1 ring-primary'
         )}
       >
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/col:opacity-100" />
         {showCount ? (
-          <Badge variant="secondary" className="px-1.5 tabular-nums">
+          <Badge variant="secondary" className={cn('px-1.5 tabular-nums', COUNT_BADGE)}>
             {column.cards.length}
           </Badge>
         ) : null}
-        <span className="truncate text-sm font-semibold [writing-mode:vertical-rl]">{column.title}</span>
+        <span className={cn('truncate text-sm font-semibold [writing-mode:vertical-rl]', COLUMN_TITLE)}>
+          {column.title}
+        </span>
       </div>
     );
   }
@@ -274,17 +272,17 @@ const KanbanColumn = ({
       // A set column width is inline; without one the columns share the board, at least 240px each.
       style={width ? { ...look.column, width, flex: `0 0 ${width}` } : look.column}
       className={cn(
-        'flex flex-col p-3 transition-shadow',
+        'group/col flex flex-col p-3 transition-shadow',
         !width && 'min-w-[240px] flex-1',
         compact ? 'gap-1.5' : 'gap-2',
         isOver && 'ring-1 ring-border'
       )}
     >
       <div className="mb-1 flex items-center justify-between gap-2 px-1">
-        <span className="truncate text-sm font-semibold">{column.title}</span>
+        <span className={cn('truncate text-sm font-semibold', COLUMN_TITLE)}>{column.title}</span>
         <div className="flex shrink-0 items-center gap-1">
           {showCount ? (
-            <Badge variant="secondary" className="tabular-nums">
+            <Badge variant="secondary" className={cn('tabular-nums', COUNT_BADGE)}>
               {column.cards.length}
             </Badge>
           ) : null}
@@ -295,7 +293,7 @@ const KanbanColumn = ({
               aria-label={`Collapse ${column.title}`}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => onCollapse(column.id)}
-              className="rounded-md p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-md p-0.5 text-muted-foreground opacity-0 transition hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/col:opacity-100"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -359,7 +357,7 @@ export const ShadKanban = (props) => {
     meta: properties.metaField || '',
   };
   const compact = properties.density === 'compact';
-  const look = boardLook(styles);
+  const look = kanbanLook(styles);
   const fromData = useMemo(
     () => boardColumns(list(properties.data), list(properties.columns), statusField, idField),
     [properties.data, properties.columns, statusField, idField]
@@ -491,7 +489,15 @@ export const ShadKanban = (props) => {
           ) : null}
         </div>
       )
-    : (card) => <CardBody card={card} fields={fields} compact={compact} />;
+    : (card) => (
+        <CardBody
+          card={card}
+          fields={fields}
+          compact={compact}
+          badgeColors={properties.badgeColors}
+          progressStyle={look.progress}
+        />
+      );
   const padding = custom ? 'p-0' : compact ? 'p-2.5' : 'p-3';
 
   const enabled = !properties.disabledState;
@@ -530,7 +536,7 @@ export const ShadKanban = (props) => {
         onDragCancel={() => setActiveKey(null)}
         onDragEnd={onDragEnd}
       >
-        <div ref={boardRef} className="flex gap-4 overflow-x-auto pb-1">
+        <div ref={boardRef} style={look.vars} className="flex gap-[var(--kb-col-gap,1rem)] overflow-x-auto pb-1">
           {columns.map((column) => (
             <KanbanColumn
               key={column.id}
@@ -562,7 +568,7 @@ export const ShadKanban = (props) => {
           <DragOverlay>
             {activeCard ? (
               <div
-                style={{ ...look.card, boxShadow: SHADOWS.lg }}
+                style={{ ...look.vars, ...look.card, boxShadow: SHADOWS.lg }}
                 className={cn('h-full w-full rotate-1 overflow-hidden border text-card-foreground', padding)}
               >
                 {renderBody(activeCard)}

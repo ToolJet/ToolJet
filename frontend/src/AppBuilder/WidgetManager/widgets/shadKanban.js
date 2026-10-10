@@ -291,6 +291,17 @@ export const shadKanbanConfig = {
         defaultValue: 'No cards',
       },
     },
+    badgeColors: {
+      type: 'code',
+      displayName: 'Badge colours by value',
+      validation: {
+        schema: {
+          type: 'object',
+        },
+        defaultValue: {},
+      },
+      placeholder: "{ High: '#dc2626', Low: '#16a34a' }",
+    },
     dynamicHeight: {
       type: 'toggle',
       displayName: 'Dynamic height',
@@ -376,12 +387,74 @@ export const shadKanbanConfig = {
       },
       accordian: 'Container',
     },
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Accent (selection, progress, drop line)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
     columnBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Column background',
       validation: {
         schema: {
           type: 'string',
+        },
+      },
+    },
+    columnBorderColor: {
+      type: 'colorSwatches',
+      displayName: 'Column border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    columnTitleColor: {
+      type: 'colorSwatches',
+      displayName: 'Column title color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    columnCountBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Column count background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    columnCountTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Column count text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    columnGap: {
+      type: 'numberInput',
+      displayName: 'Gap between columns',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
         },
       },
     },
@@ -414,6 +487,33 @@ export const shadKanbanConfig = {
     cardBorderColor: {
       type: 'colorSwatches',
       displayName: 'Card border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    cardTitleColor: {
+      type: 'colorSwatches',
+      displayName: 'Card title color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    cardTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Card secondary text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    progressColor: {
+      type: 'colorSwatches',
+      displayName: 'Progress color (else the accent)',
       validation: {
         schema: {
           type: 'string',
@@ -621,6 +721,9 @@ export const shadKanbanConfig = {
       },
       emptyText: {
         value: 'No cards',
+      },
+      badgeColors: {
+        value: '{{{}}}',
       },
       dynamicHeight: {
         value: '{{true}}',

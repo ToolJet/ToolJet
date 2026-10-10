@@ -663,6 +663,13 @@ export const shadKanbanConfig = shadConfig({
     allowAdd: toggle('Add card button on columns'),
     allowDelete: toggle('Delete button on cards'),
     emptyText: code('Empty column message', STRING, 'No cards'),
+    // Value -> colour for the badge field, e.g. { High: '#dc2626' }; values it does not name keep the built-in colours.
+    badgeColors: code(
+      'Badge colours by value',
+      { type: 'object' },
+      {},
+      { placeholder: "{ High: '#dc2626', Low: '#16a34a' }" }
+    ),
   },
   defaults: {
     data: {
@@ -694,13 +701,44 @@ export const shadKanbanConfig = shadConfig({
     allowAdd: { value: '{{false}}' },
     allowDelete: { value: '{{false}}' },
     emptyText: { value: 'No cards' },
+    badgeColors: { value: '{{{}}}' },
   },
   // Each falls back to the app theme when unset.
   styles: {
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Accent (selection, progress, drop line)',
+      validation: { schema: { type: 'string' } },
+    },
     columnBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Column background',
       validation: { schema: { type: 'string' } },
+    },
+    columnBorderColor: {
+      type: 'colorSwatches',
+      displayName: 'Column border color',
+      validation: { schema: { type: 'string' } },
+    },
+    columnTitleColor: {
+      type: 'colorSwatches',
+      displayName: 'Column title color',
+      validation: { schema: { type: 'string' } },
+    },
+    columnCountBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Column count background',
+      validation: { schema: { type: 'string' } },
+    },
+    columnCountTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Column count text color',
+      validation: { schema: { type: 'string' } },
+    },
+    columnGap: {
+      type: 'numberInput',
+      displayName: 'Gap between columns',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
     },
     columnBorderRadius: {
       type: 'numberInput',
@@ -720,6 +758,21 @@ export const shadKanbanConfig = shadConfig({
     cardBorderColor: {
       type: 'colorSwatches',
       displayName: 'Card border color',
+      validation: { schema: { type: 'string' } },
+    },
+    cardTitleColor: {
+      type: 'colorSwatches',
+      displayName: 'Card title color',
+      validation: { schema: { type: 'string' } },
+    },
+    cardTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Card secondary text color',
+      validation: { schema: { type: 'string' } },
+    },
+    progressColor: {
+      type: 'colorSwatches',
+      displayName: 'Progress color (else the accent)',
       validation: { schema: { type: 'string' } },
     },
     cardBorderRadius: {
