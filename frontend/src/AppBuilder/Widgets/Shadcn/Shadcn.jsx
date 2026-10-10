@@ -43,6 +43,7 @@ import {
 import { badgeLook, isSet } from './kanbanLook';
 import { lookVars, whenSet } from './shadcnLook';
 import { fontStack, textCase, typeClasses } from './typeLook';
+import { useSizedBox } from './boxFit';
 import { GROUP_LOADING } from './looks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import './shadcn.scss';
@@ -264,18 +265,24 @@ export const textAlign = (styles) =>
 export const ShadButton = (props) => {
   const { properties, styles, setExposedVariables, fireEvent } = props;
   useExposed(setExposedVariables, properties, {});
+  // Like ToolJet's Button, it fills its box's height, and its width when the box was sized for it (grid, or a
+  // fixed-width flex child); as a flex fill child it keeps its own width. Full width always fills. A fixed 36px
+  // button in a 36px box overflowed the box's padding and lost its bottom edge.
+  const boxRef = useRef(null);
+  const fillsBox = useSizedBox(boxRef);
   // Each variant has its own colours, so a style replaces them only when set. A set background darkens a little on
   // hover unless the hover background is set too.
   const hover = isSet(styles?.hoverBackgroundColor)
     ? 'hover:bg-[color:var(--lk-hover)]'
     : whenSet(styles, 'backgroundColor', 'hover:bg-[color:color-mix(in_srgb,var(--lk-bg)_88%,#000)]');
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={boxRef} className="h-full">
       <Button
         variant={properties.variant || 'default'}
         size={properties.size || 'default'}
         className={cn(
-          properties.fullWidth === true && 'w-full',
+          'h-full',
+          (properties.fullWidth === true || fillsBox) && 'w-full',
           whenSet(styles, 'backgroundColor', 'bg-[color:var(--lk-bg)]'),
           hover,
           whenSet(styles, 'textColor', 'text-[color:var(--lk-fg)] hover:text-[color:var(--lk-fg)]'),

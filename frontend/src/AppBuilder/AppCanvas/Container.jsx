@@ -81,6 +81,10 @@ const Container = React.memo(
       shallow
     );
     const flexDirectionForFlex = isFlexContainer ? flexEffectiveDirection ?? flexDirection : flexDirection;
+    const flexAlignItems = useStore(
+      (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.alignItems : undefined),
+      shallow
+    );
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
@@ -335,6 +339,7 @@ const Container = React.memo(
                 layoutMode="flex"
                 containerWidth={containerCanvasWidth}
                 flexDirection={flexDirectionForFlex}
+                flexAlignItems={flexAlignItems}
                 flexShouldStack={flexShouldStack}
               />
             ))}

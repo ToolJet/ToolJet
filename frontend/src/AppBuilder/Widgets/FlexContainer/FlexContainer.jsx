@@ -10,6 +10,8 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import Spinner from '@/_ui/Spinner';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import './flexContainer.scss';
 
 export const FlexContainer = ({
   id,
@@ -70,6 +72,16 @@ export const FlexContainer = ({
 
   const childIds = useStore((state) => state.containerChildrenMapping?.[id] ?? [], shallow);
 
+  // Inside a row whose Align is Stretch, this container fills the line's height (its wrapper is stretched), so the
+  // cards of a row share one height. Its own content height stays its floor and still drives the reflow.
+  const { moduleId } = useModuleContext();
+  const isStretched = useStore((state) => {
+    const parentId = state.getComponentDefinition?.(id, moduleId)?.component?.parent;
+    if (!parentId) return false;
+    const parent = state.getResolvedComponent?.(parentId);
+    return parent?.properties?.alignItems === 'stretch' && (parent?.properties?.direction ?? 'column') === 'row';
+  }, shallow);
+
   useDynamicHeight({
     isDynamicHeightEnabled,
     id,
@@ -114,6 +126,7 @@ export const FlexContainer = ({
   const outerStyles = {
     height: isDynamicHeightEnabled ? 'auto' : '100%',
     ...(isDynamicHeightEnabled && !isCardSurface ? { minHeight: `${height}px` } : {}),
+    ...(isDynamicHeightEnabled && isStretched ? { minHeight: isCardSurface ? '100%' : `max(100%, ${height}px)` } : {}),
     display: isVisible ? 'flex' : 'none',
     flexDirection: isCard ? 'column' : effectiveDirection,
     backgroundColor: isCard ? 'var(--cc-surface1-surface)' : backgroundColor,

@@ -58,6 +58,7 @@ export const flexContainerConfig = {
         { displayName: 'flex-start', value: 'flex-start', lucideIconName: 'align-horizontal-justify-start' },
         { displayName: 'center', value: 'center', lucideIconName: 'align-horizontal-justify-center' },
         { displayName: 'flex-end', value: 'flex-end', lucideIconName: 'align-horizontal-justify-end' },
+        { displayName: 'space-between', value: 'space-between', lucideIconName: 'align-horizontal-space-between' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -73,6 +74,10 @@ export const flexContainerConfig = {
         { displayName: 'flex-start', value: 'flex-start', lucideIconName: 'align-vertical-justify-start' },
         { displayName: 'center', value: 'center', lucideIconName: 'align-vertical-justify-center' },
         { displayName: 'flex-end', value: 'flex-end', lucideIconName: 'align-vertical-justify-end' },
+        // Stretch: in a row, child containers (cards) fill the line's height, so siblings share one height.
+        { displayName: 'stretch', value: 'stretch', lucideIconName: 'stretch-vertical' },
+        // Baseline: the last text lines of a row's children line up (a labelled field's value, a badge, a button).
+        { displayName: 'baseline', value: 'last baseline', lucideIconName: 'baseline' },
       ],
       validation: {
         schema: { type: 'string' },

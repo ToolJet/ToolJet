@@ -6,7 +6,7 @@ import { shallow } from 'zustand/shallow';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
-import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT, SUBCONTAINER_WIDGETS } from './appCanvasConstants';
+import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT, SUBCONTAINER_WIDGETS, isModalType } from './appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
@@ -54,6 +54,7 @@ const WidgetWrapper = memo(
     layoutMode = 'grid',
     containerWidth,
     flexDirection = 'column',
+    flexAlignItems,
     flexShouldStack = false,
   }) => {
     const { contextPath } = useSubcontainerContext();
@@ -146,6 +147,13 @@ const WidgetWrapper = memo(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [visibility]);
 
+    const modalWithoutTrigger = useStore(
+      (state) =>
+        isFlexLayout &&
+        isModalType(componentType) &&
+        state.getResolvedComponent?.(id, resolveIndex, moduleId)?.properties?.useDefaultButton === false,
+      shallow
+    );
     const flexLayout = useFlexWidgetLayout({
       layoutData,
       gridWidth,
@@ -159,6 +167,9 @@ const WidgetWrapper = memo(
       measureWidth: isFlexSubcontainer,
       dynamicHeight: isDynamicHeightEnabledInModeView,
       temporaryHeight: temporaryLayouts?.height,
+      // Only a FlexContainer child stretches: containers take their height from their children's layout, never from
+      // a DOM measurement, so a stretched card cannot feed its stretched size back into the reflow. Leaves keep theirs.
+      stretch: flexAlignItems === 'stretch' && componentType === 'FlexContainer',
     });
 
     if (!canShowInCurrentLayout || !layoutData) {
@@ -212,7 +223,13 @@ const WidgetWrapper = memo(
       display: !visibility && mode === 'view' ? 'none' : 'block',
     };
 
-    const outerStyle = isFlexLayout ? flexLayout.outerStyle : gridOuterStyle;
+    // A dialog without its trigger button draws nothing in place, so in a flex container it leaves the flow: it took a
+    // slot and a gap, and a header's action button stopped short of the row's end.
+    const outerStyle = isFlexLayout
+      ? modalWithoutTrigger && mode === 'view'
+        ? { ...flexLayout.outerStyle, position: 'absolute', flex: 'none', width: 0, height: 0, minHeight: 0 }
+        : flexLayout.outerStyle
+      : gridOuterStyle;
     const renderWidgetWidth = isFlexLayout
       ? isFlexSubcontainer && flexLayout.measuredWidth != null
         ? flexLayout.measuredWidth
@@ -262,6 +279,7 @@ const WidgetWrapper = memo(
             'module-container': isModuleContainer,
             'dynamic-height-target': isDynamicHeightEnabled,
             'flex-child-wrapper': isFlexLayout,
+            'flex-stretch-child': isFlexLayout && flexLayout.isStretched,
           })}
           data-id={`${id}`}
           id={id}

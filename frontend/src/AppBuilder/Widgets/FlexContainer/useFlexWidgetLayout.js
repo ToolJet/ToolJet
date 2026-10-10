@@ -17,6 +17,7 @@ export const useFlexWidgetLayout = ({
   measureWidth = false,
   dynamicHeight = false,
   temporaryHeight,
+  stretch = false,
 }) => {
   const wrapperRef = useRef(null);
   const [configWidgetTop, setConfigWidgetTop] = useState(0);
@@ -108,6 +109,7 @@ export const useFlexWidgetLayout = ({
     return () => resizeObserver.disconnect();
   }, [enabled, shouldMeasure]);
 
+  const isStretched = stretch && isFlexRow && !flexShouldStack && !!visibility;
   const outerStyle = {
     ...computeFlexChildFlexStyle({
       isFlexRow,
@@ -119,6 +121,8 @@ export const useFlexWidgetLayout = ({
       effectiveHeightPx,
       availableWidth,
     }),
+    // A stretched child of a row fills the line's height (its own height stays the floor); the card inside fills it.
+    ...(isStretched ? { height: 'auto', minHeight: `${effectiveHeightPx}px`, alignSelf: 'stretch' } : {}),
     position: 'relative',
     display: !visibility && mode === 'view' ? 'none' : 'block',
     boxSizing: 'content-box',
@@ -134,6 +138,7 @@ export const useFlexWidgetLayout = ({
     configWidgetTop,
     configWidgetHeight: effectiveHeightPx || flexLayoutData.height,
     configHandleClassName: 'flex-child-config-handle',
+    isStretched,
     refreshConfigWidgetTop,
   };
 };
