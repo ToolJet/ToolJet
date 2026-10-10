@@ -20,7 +20,7 @@ import {
   Search,
 } from 'lucide-react';
 import { CONTROL, Field, HELP, Shell, busy, useTextBox, useValidation, useValue } from './Shadcn';
-import { useExposed } from '../packHooks';
+import { useExposed, useAutoHeight } from '../packHooks';
 import {
   Button,
   Calendar,
@@ -118,6 +118,9 @@ const useNumberBox = (props, { initial, round, parse }) => {
 // ---- Number input --------------------------------------------------------------------------------------------------
 
 export const ShadNumberInput = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, validation, setExposedVariables, fireEvent, id } = props;
   const decimals = M.clampInt(properties.decimalPlaces, 0, 10, 2);
   const round = (n) => M.roundTo(n, decimals);
@@ -152,7 +155,7 @@ export const ShadNumberInput = (props) => {
   const shown =
     draft !== null ? draft : M.formatNumber(value, { decimals, grouping: properties.thousandSeparator !== false });
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         id={`shad-${id}`}
         label={properties.label}
@@ -269,6 +272,9 @@ const currencyName = (code, locale) => {
 };
 
 export const ShadCurrencyInput = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
   const locale = M.isBlank(properties.locale) || typeof properties.locale !== 'string' ? 'en-US' : properties.locale;
   const options = M.toCurrencyList(properties.currencyOptions);
@@ -312,7 +318,7 @@ export const ShadCurrencyInput = (props) => {
       : M.formatNumber(value, { decimals, grouping: properties.thousandSeparator !== false, locale, fixed: true });
   const vars = lookVars(componentType, styles);
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         id={`shad-${id}`}
         label={properties.label}
@@ -410,6 +416,9 @@ const STRENGTH_TEXT = {
 };
 
 export const ShadPasswordInput = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
   const [value, change] = useValue(props, text(properties.defaultValue), (set) => ({
     setText: async (t) => set(text(t)),
@@ -428,7 +437,7 @@ export const ShadPasswordInput = (props) => {
   const loading = !!properties.loadingState;
   const meter = properties.showStrength === true && !loading;
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         id={`shad-${id}`}
         label={properties.label}
@@ -508,6 +517,9 @@ const FlagIcon = ({ country, title }) => {
 };
 
 export const ShadPhoneInput = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
   const listKey = JSON.stringify(Array.isArray(properties.onlyCountries) ? properties.onlyCountries : null);
   const start = useMemo(
@@ -566,7 +578,7 @@ export const ShadPhoneInput = (props) => {
     </>
   );
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         id={`shad-${id}`}
         label={properties.label}
@@ -672,6 +684,9 @@ const SLOT_JOINED =
   'border-y border-r first:border-l first:rounded-l-[var(--lk-radius,calc(var(--sc-radius)-2px))] last:rounded-r-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
 
 export const ShadOtpInput = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, id } = props;
   const length = M.otpLength(properties.length);
   const characters = properties.characters === 'alphanumeric' ? 'alphanumeric' : 'numeric';
@@ -747,7 +762,7 @@ export const ShadOtpInput = (props) => {
     );
   };
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         id={`shad-${id}`}
         label={properties.label}
@@ -914,6 +929,9 @@ const timeColumns = ({ minutes, use24, step, bounds, onPick }) => {
 };
 
 export const ShadTimePicker = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
   const use24 = M.is24h(properties.timeFormat);
   const step = M.minuteStep(properties.minuteStep, 15);
@@ -952,7 +970,7 @@ export const ShadTimePicker = (props) => {
   const shown = M.formatTime(minutes, use24);
   const listMode = properties.pickerStyle === 'list';
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         id={`shad-${id}`}
         label={properties.label}
@@ -1035,6 +1053,9 @@ const TimeSelect = ({ label, value, options, onChange, disabled, style }) => (
 );
 
 export const ShadDateTimePicker = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
   const dateFormat =
     typeof properties.dateFormat === 'string' && properties.dateFormat.trim() ? properties.dateFormat : 'DD MMM YYYY';
@@ -1111,7 +1132,7 @@ export const ShadDateTimePicker = (props) => {
   const shown = date ? M.safeFormat(date, displayFormat) : '';
   const vars = lookVars(componentType, styles);
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         id={`shad-${id}`}
         label={properties.label}

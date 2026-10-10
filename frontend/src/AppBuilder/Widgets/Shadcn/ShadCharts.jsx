@@ -133,6 +133,29 @@ const ChartFrame = ({ props, empty, children }) => {
   );
 };
 
+/** A value axis as wide as its longest tick label (a suffix such as " seats" or a currency needs more than a fixed
+ *  48px, or the labels wrap and the top one clips). The top tick is the max rounded up the way the axis rounds it. */
+const niceCeil = (v) => {
+  if (!(v > 0)) return v;
+  const step = 10 ** Math.floor(Math.log10(v));
+  return Math.ceil(v / step) * step;
+};
+export const valueAxisWidth = (data, series, format, stacked = false) => {
+  const values = list(data).flatMap((row) => {
+    const nums = series.map((key) => Number(row?.[key])).filter((n) => Number.isFinite(n));
+    return stacked ? [nums.reduce((a, b) => a + b, 0)] : nums;
+  });
+  if (!values.length) return 40;
+  const max = Math.max(...values);
+  const min = Math.min(0, ...values);
+  const longest = Math.max(...[max, niceCeil(max), min].map((v) => String(format(v) ?? '').length));
+  return Math.min(110, Math.max(32, longest * 7 + 12));
+};
+const categoryAxisWidth = (data, key) => {
+  const longest = Math.max(0, ...list(data).map((row) => String(row?.[key] ?? '').length));
+  return Math.min(180, Math.max(48, longest * 7 + 16));
+};
+
 export const ShadAreaChart = (props) => {
   const p = props.properties;
   const data = list(p.data);
@@ -144,7 +167,7 @@ export const ShadAreaChart = (props) => {
       {(onDatum) => (
         <Chart
           data={data}
-          margin={{ left: 4, right: 12, top: 8 }}
+          margin={{ left: 4, right: 12, top: 12 }}
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
           <defs>
@@ -157,7 +180,11 @@ export const ShadAreaChart = (props) => {
           </defs>
           <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey={p.xField} {...AXIS} minTickGap={24} />
-          <YAxis {...AXIS} width={48} tickFormatter={fmt(p, true)} />
+          <YAxis
+            {...AXIS}
+            width={valueAxisWidth(data, series, fmt(p, true), p.stack === true && p.lineOnly !== true)}
+            tickFormatter={fmt(p, true)}
+          />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={fmt(p, false)} />} />
           {p.showLegend === true ? <Legend content={<LegendContent />} /> : null}
           {series.map((s, i) =>
@@ -193,19 +220,23 @@ export const ShadBarChart = (props) => {
         <BarChart
           data={data}
           layout={horizontal ? 'vertical' : 'horizontal'}
-          margin={{ left: 4, right: 12, top: 8 }}
+          margin={{ left: 4, right: 12, top: 12 }}
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
           <CartesianGrid vertical={horizontal} horizontal={!horizontal} stroke={GRID} />
           {horizontal ? (
             <>
               <XAxis type="number" {...AXIS} tickFormatter={fmt(p, true)} />
-              <YAxis type="category" dataKey={p.xField} {...AXIS} width={96} />
+              <YAxis type="category" dataKey={p.xField} {...AXIS} width={categoryAxisWidth(data, p.xField)} />
             </>
           ) : (
             <>
               <XAxis dataKey={p.xField} {...AXIS} minTickGap={16} />
-              <YAxis {...AXIS} width={48} tickFormatter={fmt(p, true)} />
+              <YAxis
+                {...AXIS}
+                width={valueAxisWidth(data, series, fmt(p, true), p.stack === true)}
+                tickFormatter={fmt(p, true)}
+              />
             </>
           )}
           <Tooltip cursor={{ fill: 'var(--sc-muted)' }} content={<ChartTooltip format={fmt(p, false)} />} />

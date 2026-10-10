@@ -732,6 +732,9 @@ export const useTextBox = (props, touch) => {
 };
 
 export const ShadInput = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, fireEvent, id } = props;
   const [value, change] = useValue(props, String(properties.defaultValue ?? ''), (set) => ({
     setText: async (t) => set(String(t ?? '')),
@@ -740,7 +743,7 @@ export const ShadInput = (props) => {
   const check = useValidation(props, value, () => change('', 'onChange'));
   const box = useTextBox(props, check.touch);
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         id={`shad-${id}`}
         label={properties.label}
@@ -806,6 +809,9 @@ export const ShadTextarea = (props) => {
 const EMPTY_OPTION_KEY = '\u0000empty';
 
 export const ShadSelect = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
   // Radix Select keys its items by string; keep the original values for the exposed value. It refuses an item keyed
   // by the empty string (that means "nothing selected"), so an option valued '' (an "All" choice) gets its own key.
@@ -829,7 +835,7 @@ export const ShadSelect = (props) => {
     setExposedVariable('selectedOption', {});
   });
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         id={`shad-${id}`}
         label={properties.label}
@@ -902,11 +908,14 @@ export const CheckedRow = ({ id, control, label, description, error, required })
 );
 
 export const ShadCheckbox = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const [checked, change] = useChecked(props);
   const check = useValidation(props, checked, () => change(false));
   const id = `shad-${props.id}`;
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <CheckedRow
         id={id}
         label={props.properties.label}
@@ -932,10 +941,13 @@ export const ShadCheckbox = (props) => {
 };
 
 export const ShadSwitch = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const [checked, change] = useChecked(props);
   const id = `shad-${props.id}`;
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <CheckedRow
         id={id}
         label={props.properties.label}
@@ -955,6 +967,9 @@ export const ShadSwitch = (props) => {
 };
 
 export const ShadRadioGroup = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, id } = props;
   const options = toOptions(properties.options);
   const byKey = new Map(options.map((o) => [String(o.value), o]));
@@ -968,7 +983,7 @@ export const ShadRadioGroup = (props) => {
   );
   const check = useValidation(props, byKey.get(key)?.value ?? '', () => change(''));
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         label={properties.label}
         description={properties.description}
@@ -1006,6 +1021,9 @@ export const ShadRadioGroup = (props) => {
 };
 
 export const ShadSlider = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties } = props;
   const raw = properties.defaultValue;
   const isRange = Array.isArray(raw);
@@ -1014,7 +1032,7 @@ export const ShadSlider = (props) => {
   const [live, setLive] = useState(initial);
   useEffect(() => setLive(Array.isArray(value) ? value : [Number(value) || 0]), [JSON.stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         label={properties.label ? `${properties.label}${live.length ? `: ${live.join(' to ')}` : ''}` : ''}
         description={properties.description}
@@ -1038,6 +1056,9 @@ export const ShadSlider = (props) => {
 const ymd = (d) => (d ? dayjs(d).format('YYYY-MM-DD') : '');
 
 export const ShadDatePicker = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
   const range = properties.mode === 'range';
   const format = properties.format || 'DD MMM YYYY';
@@ -1076,7 +1097,7 @@ export const ShadDatePicker = (props) => {
     ? dayjs(selected).format(format)
     : '';
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <Field
         id={`shad-${id}`}
         label={properties.label}
@@ -1134,6 +1155,9 @@ export const ShadDatePicker = (props) => {
 };
 
 export const ShadToggleGroup = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
   const { properties } = props;
   const options = toOptions(properties.options);
   const byKey = new Map(options.map((o) => [String(o.value), o]));
@@ -1141,7 +1165,7 @@ export const ShadToggleGroup = (props) => {
     properties.defaultValue === '' || properties.defaultValue === undefined ? '' : String(properties.defaultValue);
   const [key, change] = useValue(props, initial, undefined, (k) => byKey.get(k)?.value ?? '');
   return (
-    <Shell {...props}>
+    <Shell {...props} innerRef={fit}>
       <ToggleGroup
         type="single"
         value={key}
