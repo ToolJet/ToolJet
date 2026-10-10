@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import dayjs from 'dayjs';
 import {
   Area,
   AreaChart,
@@ -151,6 +152,16 @@ export const valueAxisWidth = (data, series, format, stacked = false) => {
   const longest = Math.max(...[max, niceCeil(max), min].map((v) => String(format(v) ?? '').length));
   return Math.min(110, Math.max(32, longest * 7 + 12));
 };
+/** An x axis of ISO dates ("2026-09-10") reads as "10 Sep", the pack's date style; other values are shown as they are. */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:[T ][\d:.]+(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+export const dateTicks = (data, key) => {
+  const sample = list(data)
+    .map((row) => row?.[key])
+    .find((v) => v !== null && v !== undefined && v !== '');
+  if (typeof sample !== 'string' || !ISO_DATE.test(sample)) return undefined;
+  return (v) => (typeof v === 'string' && ISO_DATE.test(v) ? dayjs(v).format('D MMM') : v);
+};
+
 const categoryAxisWidth = (data, key) => {
   const longest = Math.max(0, ...list(data).map((row) => String(row?.[key] ?? '').length));
   return Math.min(180, Math.max(48, longest * 7 + 16));
@@ -179,7 +190,7 @@ export const ShadAreaChart = (props) => {
             ))}
           </defs>
           <CartesianGrid vertical={false} stroke={GRID} />
-          <XAxis dataKey={p.xField} {...AXIS} minTickGap={24} />
+          <XAxis dataKey={p.xField} {...AXIS} minTickGap={24} tickFormatter={dateTicks(data, p.xField)} />
           <YAxis
             {...AXIS}
             width={valueAxisWidth(data, series, fmt(p, true), p.stack === true && p.lineOnly !== true)}
@@ -231,7 +242,7 @@ export const ShadBarChart = (props) => {
             </>
           ) : (
             <>
-              <XAxis dataKey={p.xField} {...AXIS} minTickGap={16} />
+              <XAxis dataKey={p.xField} {...AXIS} minTickGap={16} tickFormatter={dateTicks(data, p.xField)} />
               <YAxis
                 {...AXIS}
                 width={valueAxisWidth(data, series, fmt(p, true), p.stack === true)}
@@ -418,7 +429,7 @@ export const ShadLineChart = (props) => {
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
           {p.showGrid !== false ? <CartesianGrid vertical={false} stroke={GRID} /> : null}
-          <XAxis dataKey={xField} {...AXIS} minTickGap={24} />
+          <XAxis dataKey={xField} {...AXIS} minTickGap={24} tickFormatter={dateTicks(rows, xField)} />
           <YAxis {...AXIS} width={yWidth} tickFormatter={tick} />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={full} />} />
           {p.showLegend === true ? <Legend content={<LegendContent />} /> : null}

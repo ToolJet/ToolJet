@@ -20,3 +20,13 @@ describe('valueAxisWidth', () => {
     );
   });
 });
+
+describe('dateTicks', () => {
+  it('formats an axis of ISO dates as day and month, and leaves other axes alone', () => {
+    const { dateTicks } = require('../ShadCharts');
+    expect(dateTicks([{ d: '2026-09-10' }], 'd')('2026-09-10')).toBe('10 Sep');
+    expect(dateTicks([{ d: '2026-09-10T06:30:00Z' }], 'd')('2026-10-04T06:30:00Z')).toMatch(/^\d+ Oct$/);
+    expect(dateTicks([{ d: 'Jan' }], 'd')).toBeUndefined();
+    expect(dateTicks([], 'd')).toBeUndefined();
+  });
+});
