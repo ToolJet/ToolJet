@@ -100,7 +100,14 @@ export const ModalWidget = ({ ...restProps }) => {
       const modalContent = document.querySelector(`.tj-modal-content-${id}`);
       if (restProps.show && modalContent) {
         if (sheetSide) {
-          // A side sheet spans the full height of the viewport; its body scrolls.
+          // A side sheet spans the visible height of the window; its body scrolls. The modal layer is as tall as the
+          // window but can start below a bar (the viewer's Preview header), so 100% ran past the bottom and hid the
+          // footer buttons: size the dialog to what is visible from the layer's top.
+          const layerTop = Math.max(0, modalContent.closest('.modal')?.getBoundingClientRect().top ?? 0);
+          const visibleHeight = `${Math.max(0, window.innerHeight - layerTop)}px`;
+          const dialog = modalContent.closest('.modal-dialog');
+          dialog?.style.setProperty('height', visibleHeight, 'important');
+          dialog?.style.setProperty('max-height', visibleHeight, 'important');
           modalContent.style.setProperty('height', '100%', 'important');
           modalContent.style.setProperty('max-height', '100%', 'important');
           setNeedsBodyScroll(true);
