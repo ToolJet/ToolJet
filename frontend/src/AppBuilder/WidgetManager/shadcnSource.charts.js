@@ -244,3 +244,165 @@ export const shadSparklineConfig = shadConfig({
   events: clickEvents,
   exposedVariables: { trend: 'flat', lastValue: null },
 });
+
+// ---- Combo ---------------------------------------------------------------------------------------------------------
+
+const COMBO_DATA =
+  "{{[{ month: 'Jan', revenue: 42000, orders: 310, margin: 31 }, { month: 'Feb', revenue: 47500, orders: 342, margin: 33 }, { month: 'Mar', revenue: 45200, orders: 328, margin: 29 }, { month: 'Apr', revenue: 52800, orders: 371, margin: 34 }, { month: 'May', revenue: 58100, orders: 402, margin: 36 }, { month: 'Jun', revenue: 61400, orders: 425, margin: 35 }]}}";
+
+export const shadComboChartConfig = shadConfig({
+  name: 'ShadComboChart',
+  displayName: 'Combo chart',
+  description:
+    "shadcn/ui bar and line chart on one axis pair: data [{ month: 'Jan', revenue: 42000, margin: 31 }], xField 'month', barFields 'revenue' (bars), lineFields 'margin' (lines), rightAxisFields 'margin' (those series on a second, right axis with its own rightAxisFormat, e.g. percent); stackBars, curve, dots, yAxisFormat number/currency/percent/compact. Height 240-340 px; clicking sets clickedDatum and fires onClick.",
+  defaultSize: { width: 20, height: 300 },
+  properties: {
+    data: code('Data', ARRAY, [], { placeholder: "[{ month: 'Jan', revenue: 42000, margin: 31 }]" }),
+    xField: code('X field', STRING, 'month'),
+    barFields: code('Bar series (fields)', SERIES_FIELDS, 'revenue'),
+    lineFields: code('Line series (fields)', SERIES_FIELDS, 'margin'),
+    rightAxisFields: code('Right axis series (fields)', SERIES_FIELDS, '', { placeholder: "'margin'" }),
+    stackBars: toggle('Stack bars'),
+    curve: choice('Line curve', ['monotone', 'linear', 'step'], 'monotone'),
+    showDots: toggle('Line dots', true),
+    strokeWidth: code('Line width (px)', OPTIONAL_NUMBER, 2),
+    yAxisFormat: choice('Value format', ['number', 'currency', 'percent', 'compact'], 'number'),
+    rightAxisFormat: choice('Right axis format', ['number', 'currency', 'percent', 'compact'], 'percent'),
+    currency: code('Currency code', STRING, 'USD'),
+    ...common,
+    showGrid: toggle('Grid', true),
+    showLegend: toggle('Legend', true),
+    seriesLabels: code(
+      'Series labels ({ field: label })',
+      { type: 'object' },
+      {},
+      { placeholder: "{ revenue: 'Revenue', margin: 'Margin %' }" }
+    ),
+    colors: SERIES_COLORS,
+  },
+  defaults: {
+    data: { value: COMBO_DATA },
+    xField: { value: 'month' },
+    barFields: { value: "{{['revenue']}}" },
+    lineFields: { value: "{{['margin']}}" },
+    rightAxisFields: { value: "{{['margin']}}" },
+    stackBars: { value: '{{false}}' },
+    curve: { value: 'monotone' },
+    showDots: { value: '{{true}}' },
+    strokeWidth: { value: '{{2}}' },
+    yAxisFormat: { value: 'currency' },
+    rightAxisFormat: { value: 'percent' },
+    currency: { value: 'USD' },
+    ...commonDefaults,
+    showGrid: { value: '{{true}}' },
+    showLegend: { value: '{{true}}' },
+    seriesLabels: { value: "{{{ revenue: 'Revenue', margin: 'Margin' }}}" },
+    colors: { value: '{{[]}}' },
+  },
+  styles: chartStyles,
+  events: clickEvents,
+  exposedVariables: { clickedDatum: {} },
+});
+
+// ---- Scatter -------------------------------------------------------------------------------------------------------
+
+const SCATTER_DATA =
+  "{{[{ account: 'Northwind', spend: 12, revenue: 48, seats: 40, segment: 'Mid-market' }, { account: 'Globex', spend: 30, revenue: 95, seats: 120, segment: 'Enterprise' }, { account: 'Initech', spend: 8, revenue: 21, seats: 15, segment: 'SMB' }, { account: 'Umbrella', spend: 26, revenue: 61, seats: 90, segment: 'Enterprise' }, { account: 'Hooli', spend: 18, revenue: 70, seats: 55, segment: 'Mid-market' }, { account: 'Vandelay', spend: 5, revenue: 14, seats: 10, segment: 'SMB' }, { account: 'Stark', spend: 34, revenue: 128, seats: 150, segment: 'Enterprise' }, { account: 'Wonka', spend: 14, revenue: 33, seats: 30, segment: 'SMB' }]}}";
+
+export const shadScatterChartConfig = shadConfig({
+  name: 'ShadScatterChart',
+  displayName: 'Scatter chart',
+  description:
+    "shadcn/ui scatter or bubble chart relating two measures: data [{ account: 'Globex', spend: 30, revenue: 95, seats: 120, segment: 'Enterprise' }], xField 'spend', yField 'revenue', optional sizeField (bubbles), groupField (one colour and legend entry per value), nameField (tooltip title), xLabel/yLabel axis titles, referenceX/referenceY dashed quadrant lines, x and y formats. Height 260-360 px; clicking a point sets clickedDatum to its row and fires onClick.",
+  defaultSize: { width: 16, height: 320 },
+  properties: {
+    data: code('Data', ARRAY, [], { placeholder: "[{ account: 'Globex', spend: 30, revenue: 95 }]" }),
+    xField: code('X field', STRING, 'spend'),
+    yField: code('Y field', STRING, 'revenue'),
+    sizeField: code('Size field (bubbles)', STRING, '', { placeholder: 'seats' }),
+    groupField: code('Group field (one colour each)', STRING, '', { placeholder: 'segment' }),
+    nameField: code('Name field (tooltip title)', STRING, '', { placeholder: 'account' }),
+    xLabel: code('X axis title', STRING, ''),
+    yLabel: code('Y axis title', STRING, ''),
+    xAxisFormat: choice('X format', ['number', 'currency', 'percent', 'compact'], 'number'),
+    yAxisFormat: choice('Y format', ['number', 'currency', 'percent', 'compact'], 'number'),
+    currency: code('Currency code', STRING, 'USD'),
+    referenceX: code('Vertical line at x', OPTIONAL_NUMBER, '', { placeholder: '20' }),
+    referenceY: code('Horizontal line at y', OPTIONAL_NUMBER, '', { placeholder: '60' }),
+    pointSize: code('Point size (px)', OPTIONAL_NUMBER, 6),
+    fillOpacity: code('Fill opacity (0 to 1)', OPTIONAL_NUMBER, '', { placeholder: '0.7' }),
+    ...common,
+    showGrid: toggle('Grid', true),
+    showLegend: toggle('Legend', true),
+    colors: SERIES_COLORS,
+  },
+  defaults: {
+    data: { value: SCATTER_DATA },
+    xField: { value: 'spend' },
+    yField: { value: 'revenue' },
+    sizeField: { value: 'seats' },
+    groupField: { value: 'segment' },
+    nameField: { value: 'account' },
+    xLabel: { value: 'Marketing spend ($k)' },
+    yLabel: { value: 'Revenue ($k)' },
+    xAxisFormat: { value: 'number' },
+    yAxisFormat: { value: 'number' },
+    currency: { value: 'USD' },
+    referenceX: { value: '' },
+    referenceY: { value: '' },
+    pointSize: { value: '{{6}}' },
+    fillOpacity: { value: '' },
+    ...commonDefaults,
+    showGrid: { value: '{{true}}' },
+    showLegend: { value: '{{true}}' },
+    colors: { value: '{{[]}}' },
+  },
+  styles: { ...chartStyles, referenceLineColor: colorStyle('Reference line color') },
+  events: clickEvents,
+  exposedVariables: { clickedDatum: {} },
+});
+
+// ---- Funnel --------------------------------------------------------------------------------------------------------
+
+const FUNNEL_DATA =
+  "{{[{ stage: 'Visited', count: 12480 }, { stage: 'Signed up', count: 3920 }, { stage: 'Activated', count: 2210 }, { stage: 'Trial', count: 1180 }, { stage: 'Paid', count: 412 }]}}";
+
+export const shadFunnelChartConfig = shadConfig({
+  name: 'ShadFunnelChart',
+  displayName: 'Funnel chart',
+  description:
+    "shadcn/ui funnel of stages in order: data [{ stage: 'Visited', count: 12480 }, { stage: 'Paid', count: 412 }], stageField 'stage', valueField 'count'; one bar per stage sized to the widest, its value, and its conversion % from the stage before (conversionBase 'previous') or from the first ('first'); align center/left, colorByStage (palette per stage, else one colour fading down), yAxisFormat for values. About 44 px per stage; clicking a stage sets clickedDatum to its row and fires onClick.",
+  defaultSize: { width: 16, height: 240 },
+  properties: {
+    data: code('Data', ARRAY, [], { placeholder: "[{ stage: 'Visited', count: 12480 }]" }),
+    stageField: code('Stage field', STRING, 'stage'),
+    valueField: code('Value field', STRING, 'count'),
+    showConversion: toggle('Conversion %', true),
+    conversionBase: choice('Conversion from', ['previous', 'first'], 'previous'),
+    align: choice('Bar alignment', ['center', 'left'], 'center'),
+    colorByStage: toggle('Colour per stage'),
+    yAxisFormat: choice('Value format', ['number', 'currency', 'percent', 'compact'], 'number'),
+    currency: code('Currency code', STRING, 'USD'),
+    ...common,
+    colors: SERIES_COLORS,
+  },
+  defaults: {
+    data: { value: FUNNEL_DATA },
+    stageField: { value: 'stage' },
+    valueField: { value: 'count' },
+    showConversion: { value: '{{true}}' },
+    conversionBase: { value: 'previous' },
+    align: { value: 'center' },
+    colorByStage: { value: '{{false}}' },
+    yAxisFormat: { value: 'number' },
+    currency: { value: 'USD' },
+    ...commonDefaults,
+    colors: { value: '{{[]}}' },
+  },
+  styles: {
+    chartColor: colorStyle('Chart color (series palette from it)'),
+    axisTextColor: colorStyle('Stage label color'),
+  },
+  events: clickEvents,
+  exposedVariables: { clickedDatum: {} },
+});

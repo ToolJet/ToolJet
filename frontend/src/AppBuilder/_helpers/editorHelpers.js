@@ -298,6 +298,9 @@ const ShadCalendar = controlledShadWidget(shadcnActions, 'ShadCalendar');
 const ShadCarousel = controlledShadWidget(shadcnActions, 'ShadCarousel');
 const ShadLineChart = controlledShadWidget(shadcnCharts, 'ShadLineChart');
 const ShadRadarChart = controlledShadWidget(shadcnCharts, 'ShadRadarChart');
+const ShadComboChart = controlledShadWidget(shadcnCharts, 'ShadComboChart');
+const ShadScatterChart = controlledShadWidget(shadcnCharts, 'ShadScatterChart');
+const ShadFunnelChart = controlledShadWidget(shadcnCharts, 'ShadFunnelChart');
 const ShadRadialChart = controlledShadWidget(shadcnCharts, 'ShadRadialChart');
 const ShadSparkline = controlledShadWidget(shadcnCharts, 'ShadSparkline');
 
@@ -469,6 +472,9 @@ export const AllComponents = {
   ShadCarousel,
   ShadLineChart,
   ShadRadarChart,
+  ShadComboChart,
+  ShadScatterChart,
+  ShadFunnelChart,
   ShadRadialChart,
   ShadSparkline,
   CircularProgressBar,

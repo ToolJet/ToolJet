@@ -7,6 +7,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  ComposedChart,
   Label as ChartLabel,
   Legend,
   Line,
@@ -23,9 +24,12 @@ import {
   ReferenceArea,
   ReferenceLine,
   ResponsiveContainer,
+  Scatter,
+  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
+  ZAxis,
 } from 'recharts';
 import { list, useExposed } from '../packHooks';
 import { Shell } from './Shadcn';
@@ -50,6 +54,9 @@ import {
   resolveChartFields,
   seriesLabel,
   highlightIndexes,
+  comboSeries,
+  funnelStages,
+  scatterGroups,
   MAX_ROWS,
   MAX_SERIES,
 } from './chartsModel';
@@ -816,5 +823,345 @@ export const ShadSparkline = (props) => {
         </Chart>
       )}
     </SafeFrame>
+  );
+};
+
+// ---- Combo ---------------------------------------------------------------------------------------------------------
+
+/** Width of a value axis for the given values under the given tick formatter. */
+const axisWidthFor = (values, tick) => {
+  if (!values.length) return 40;
+  const longest = Math.max(...[Math.max(...values), Math.min(...values)].map((v) => String(tick(v)).length));
+  return Math.min(96, Math.max(32, longest * 7 + 10));
+};
+
+export const ShadComboChart = (props) => {
+  const p = props.properties;
+  const named = comboSeries(p.barFields, p.lineFields, p.rightAxisFields);
+  const { x: xField } = resolveChartFields(list(p.data), isSet(p.xField) ? String(p.xField) : undefined, []);
+  const series = named.filter((s) => list(p.data).some((row) => row && typeof row === 'object' && s.field in row));
+  const rows = seriesRows(
+    p.data,
+    xField,
+    series.map((s) => s.field)
+  ).slice(0, MAX_BARS);
+  const compact = isCompactChart(props.height);
+  const left = formatter(valueFormat(p), true);
+  const right = formatter({ format: p.rightAxisFormat, currency: p.currency }, true);
+  const leftFull = formatter(valueFormat(p), false);
+  const rightFull = formatter({ format: p.rightAxisFormat, currency: p.currency }, false);
+  const rightKeys = new Set(series.filter((s) => s.axis === 'right').map((s) => s.field));
+  const hasRight = rightKeys.size > 0;
+  const valuesOn = (axis) =>
+    rows.flatMap((r) => series.filter((s) => s.axis === axis).map((s) => r[s.field])).filter((v) => v !== null);
+  const stackedBars = p.stackBars === true;
+  const leftValues = stackedBars
+    ? [
+        ...rows.map((r) =>
+          series.filter((s) => s.kind === 'bar' && s.axis === 'left').reduce((sum, s) => sum + (r[s.field] ?? 0), 0)
+        ),
+        ...valuesOn('left'),
+      ]
+    : valuesOn('left');
+  const tipFormat = (v, key) => (rightKeys.has(key) ? rightFull(v) : leftFull(v));
+  const color = (i) => seriesColor(p.colors, i);
+  const curve = curveOf(p.curve);
+  return (
+    <SafeFrame
+      props={props}
+      empty={
+        !series.length ||
+        !hasValues(
+          rows,
+          series.map((s) => s.field)
+        )
+      }
+    >
+      {(onDatum) => (
+        <ComposedChart
+          data={rows}
+          accessibilityLayer
+          margin={{ left: 4, right: hasRight ? 4 : 12, top: 12 }}
+          onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
+        >
+          {p.showGrid !== false && !compact ? <CartesianGrid vertical={false} stroke={GRID} /> : null}
+          <XAxis dataKey={xField} {...AXIS} hide={compact} minTickGap={16} tickFormatter={dateTicks(rows, xField)} />
+          <YAxis yAxisId="left" {...AXIS} hide={compact} width={axisWidthFor(leftValues, left)} tickFormatter={left} />
+          {hasRight ? (
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              {...AXIS}
+              hide={compact}
+              width={axisWidthFor(valuesOn('right'), right)}
+              tickFormatter={right}
+            />
+          ) : null}
+          <Tooltip cursor={{ fill: 'var(--sc-muted)', fillOpacity: 0.6 }} content={<ComboTip format={tipFormat} />} />
+          {p.showLegend !== false && !compact ? <Legend content={<LegendContent />} /> : null}
+          {series.map((s, i) =>
+            s.kind === 'bar' ? (
+              <Bar
+                key={s.field}
+                yAxisId={s.axis}
+                dataKey={s.field}
+                name={seriesLabel(s.field, p.seriesLabels)}
+                fill={color(i)}
+                radius={stackedBars ? 0 : [4, 4, 0, 0]}
+                stackId={stackedBars ? 'bars' : undefined}
+                maxBarSize={56}
+                isAnimationActive={animated(p)}
+              />
+            ) : (
+              <Line
+                key={s.field}
+                yAxisId={s.axis}
+                dataKey={s.field}
+                name={seriesLabel(s.field, p.seriesLabels)}
+                type={curve}
+                stroke={color(i)}
+                strokeWidth={clamp(p.strokeWidth, 0.5, 12, 2)}
+                dot={p.showDots !== false ? { r: 3, fill: color(i), strokeWidth: 0 } : false}
+                activeDot={{ r: 5, strokeWidth: 0 }}
+                isAnimationActive={animated(p)}
+              />
+            )
+          )}
+        </ComposedChart>
+      )}
+    </SafeFrame>
+  );
+};
+
+const ComboTip = ({ active, payload, label, format }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="tj-shadcn">
+      <div className="grid min-w-[8rem] gap-1.5 rounded-lg border bg-background px-2.5 py-1.5 text-xs shadow-xl">
+        {label !== undefined ? <div className="font-medium">{String(label)}</div> : null}
+        {payload.map((item) => (
+          <div key={item.dataKey ?? item.name} className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 shrink-0 rounded-[2px]" style={{ background: item.color }} />
+            <span className="flex-1 text-muted-foreground">{String(item.name)}</span>
+            <span className="font-mono font-medium tabular-nums">{format(item.value, item.dataKey)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ---- Scatter -------------------------------------------------------------------------------------------------------
+
+const ScatterTip = ({ active, payload, p, fx, fy }) => {
+  const point = active ? payload?.[0]?.payload : null;
+  if (!point) return null;
+  const label = (key, fallback) => (isSet(p[key]) ? String(p[key]) : fallback);
+  return (
+    <div className="tj-shadcn">
+      <div className="grid min-w-[8rem] gap-1 rounded-lg border bg-background px-2.5 py-1.5 text-xs shadow-xl">
+        {point.label ? <div className="font-medium">{String(point.label)}</div> : null}
+        {[
+          [label('xLabel', seriesLabel(p.xField)), fx(point.x)],
+          [label('yLabel', seriesLabel(p.yField)), fy(point.y)],
+          ...(point.z !== null && isSet(p.sizeField)
+            ? [[label('sizeLabel', seriesLabel(p.sizeField)), full.format(point.z)]]
+            : []),
+        ].map(([name, value]) => (
+          <div key={name} className="flex items-center gap-2">
+            <span className="flex-1 text-muted-foreground">{name}</span>
+            <span className="font-mono font-medium tabular-nums">{value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export const ShadScatterChart = (props) => {
+  const p = props.properties;
+  const groups = scatterGroups(p.data, {
+    xField: p.xField,
+    yField: p.yField,
+    sizeField: p.sizeField,
+    groupField: p.groupField,
+    nameField: p.nameField,
+  });
+  const compact = isCompactChart(props.height);
+  const fxTick = formatter({ format: p.xAxisFormat, currency: p.currency }, true);
+  const fyTick = formatter(
+    { format: p.yAxisFormat, currency: p.currency, prefix: p.valuePrefix, suffix: p.valueSuffix },
+    true
+  );
+  const fx = formatter({ format: p.xAxisFormat, currency: p.currency }, false);
+  const fy = formatter(
+    { format: p.yAxisFormat, currency: p.currency, prefix: p.valuePrefix, suffix: p.valueSuffix },
+    false
+  );
+  const ys = groups.flatMap((g) => g.points.map((pt) => pt.y));
+  const bubbles = isSet(p.sizeField);
+  const size = clamp(p.pointSize, 2, 40, 6);
+  const opacity = clamp(p.fillOpacity, 0.1, 1, bubbles ? 0.6 : 0.85);
+  const refX = num(p.referenceX);
+  const refY = num(p.referenceY);
+  const refColor = 'var(--lk-ref, var(--sc-muted-foreground))';
+  const color = (i) => seriesColor(p.colors, i);
+  const axisTitle = (text, axis) =>
+    isSet(text) && !compact
+      ? {
+          value: String(text),
+          position: axis === 'x' ? 'insideBottom' : 'insideLeft',
+          angle: axis === 'x' ? 0 : -90,
+          offset: axis === 'x' ? -2 : 10,
+          style: { fill: AXIS_FILL, fontSize: 12, textAnchor: 'middle' },
+        }
+      : undefined;
+  return (
+    <SafeFrame props={props} empty={!groups.length}>
+      {(onDatum) => (
+        <ScatterChart margin={{ left: 4, right: 16, top: 12, bottom: isSet(p.xLabel) && !compact ? 12 : 0 }}>
+          {p.showGrid !== false && !compact ? <CartesianGrid stroke={GRID} /> : null}
+          <XAxis
+            type="number"
+            dataKey="x"
+            name={String(p.xLabel || p.xField || 'x')}
+            {...AXIS}
+            hide={compact}
+            domain={['auto', 'auto']}
+            tickFormatter={fxTick}
+            label={axisTitle(p.xLabel, 'x')}
+          />
+          <YAxis
+            type="number"
+            dataKey="y"
+            {...AXIS}
+            hide={compact}
+            domain={['auto', 'auto']}
+            width={axisWidthFor(ys, fyTick) + (isSet(p.yLabel) ? 18 : 0)}
+            tickFormatter={fyTick}
+            label={axisTitle(p.yLabel, 'y')}
+          />
+          {bubbles ? (
+            <ZAxis type="number" dataKey="z" range={[size * 8, size * 120]} />
+          ) : (
+            <ZAxis range={[size * size * 3, size * size * 3]} />
+          )}
+          <Tooltip
+            cursor={{ strokeDasharray: '3 3', stroke: 'var(--sc-border)' }}
+            content={<ScatterTip p={p} fx={fx} fy={fy} />}
+          />
+          {p.showLegend !== false && groups.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
+          {refX !== null ? (
+            <ReferenceLine x={refX} stroke={refColor} strokeDasharray="4 4" ifOverflow="extendDomain" />
+          ) : null}
+          {refY !== null ? (
+            <ReferenceLine y={refY} stroke={refColor} strokeDasharray="4 4" ifOverflow="extendDomain" />
+          ) : null}
+          {groups.map((g, i) => (
+            <Scatter
+              key={g.name || 'points'}
+              name={g.name || seriesLabel(p.yField)}
+              data={g.points}
+              fill={color(i)}
+              fillOpacity={opacity}
+              stroke={bubbles ? color(i) : 'none'}
+              isAnimationActive={animated(p)}
+              onClick={(pt) => onDatum(pt?.payload?.row ?? pt?.row)}
+            />
+          ))}
+        </ScatterChart>
+      )}
+    </SafeFrame>
+  );
+};
+
+// ---- Funnel --------------------------------------------------------------------------------------------------------
+
+/** Stages as centred (or left-aligned) bars, widest first, with each stage's value and its conversion from the stage
+ *  before (or from the first). Plain HTML rather than an SVG: labels never clip, and the bars follow the theme. */
+export const ShadFunnelChart = (props) => {
+  const p = props.properties;
+  const { setExposedVariables, height } = props;
+  const [clicked, setClicked] = useState({});
+  useExposed(setExposedVariables, p, { clickedDatum: clicked });
+  const stages = funnelStages(p.data, p.stageField, p.valueField).slice(0, 24);
+  const format = formatter(valueFormat(p), p.yAxisFormat === 'compact');
+  const base = p.conversionBase === 'first' ? 'ofFirst' : 'ofPrevious';
+  const centred = p.align !== 'left';
+  const showConversion = p.showConversion !== false;
+  const byStage = p.colorByStage === true;
+  const fade = (i) => (stages.length > 1 ? 1 - (i / (stages.length - 1)) * 0.45 : 1);
+  const onStage = (stage) => {
+    setClicked(stage.row);
+    props.setExposedVariable?.('clickedDatum', stage.row);
+    props.fireEvent?.('onClick');
+  };
+  const labelWidth = Math.min(180, Math.max(56, Math.max(0, ...stages.map((s) => String(s.label).length)) * 7 + 12));
+  const valueWidth =
+    Math.max(40, Math.max(0, ...stages.map((s) => String(format(s.value)).length)) * 7.5 + 4) +
+    (showConversion ? 52 : 0);
+  const empty = !stages.length || stages.every((s) => s.value === null);
+  const emptyView = <EmptyChart text={String(p.emptyText || 'No data')} />;
+  return (
+    <Shell {...props}>
+      <div style={{ height }} className="w-full overflow-hidden text-xs">
+        {empty ? (
+          emptyView
+        ) : (
+          <ChartBoundary resetKey={p} fallback={emptyView}>
+            <div className="flex h-full flex-col justify-center gap-1.5 py-1">
+              {stages.map((stage, i) => {
+                const conversion = i > 0 ? stage[base] : null;
+                return (
+                  <button
+                    type="button"
+                    key={`${stage.label}-${i}`}
+                    onClick={() => onStage(stage)}
+                    className="group flex min-h-0 w-full flex-1 items-center gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--sc-ring)]"
+                    style={{ maxHeight: 52 }}
+                  >
+                    <span
+                      className="shrink-0 truncate text-[13px] text-[color:var(--lk-axis,var(--sc-muted-foreground))]"
+                      style={{ width: labelWidth }}
+                      title={String(stage.label)}
+                    >
+                      {String(stage.label)}
+                    </span>
+                    <span
+                      className={cn(
+                        'flex h-full min-w-0 flex-1 items-center',
+                        centred ? 'justify-center' : 'justify-start'
+                      )}
+                    >
+                      <span
+                        className="h-full min-h-[10px] rounded-[6px] transition-opacity group-hover:opacity-90"
+                        style={{
+                          width: `${Math.max(stage.value ? 1.5 : 0, stage.width * 100)}%`,
+                          background: byStage ? seriesColor(p.colors, i) : seriesColor(p.colors, 0),
+                          opacity: byStage ? 1 : fade(i),
+                        }}
+                      />
+                    </span>
+                    <span
+                      className="flex shrink-0 items-baseline justify-end gap-2 tabular-nums"
+                      style={{ width: valueWidth }}
+                    >
+                      <span className="text-[13px] font-medium text-[color:var(--sc-foreground)]">
+                        {format(stage.value)}
+                      </span>
+                      {showConversion ? (
+                        <span className="w-[44px] text-right text-[color:var(--sc-muted-foreground)]">
+                          {conversion === null ? '' : `${conversion}%`}
+                        </span>
+                      ) : null}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </ChartBoundary>
+        )}
+      </div>
+    </Shell>
   );
 };

@@ -178,6 +178,9 @@ const SHADCN_ICONS = {
   shadcarousel: Image,
   shadlinechart: Chart,
   shadradarchart: Chart,
+  shadcombochart: Chart,
+  shadscatterchart: Chart,
+  shadfunnelchart: Chart,
   shadradialchart: Circularprogressbar,
   shadsparkline: Chart,
 };

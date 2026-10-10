@@ -285,3 +285,85 @@ export const highlightIndexes = (data, xField, series, highlight) => {
   }
   return picked.size ? picked : null;
 };
+
+// ---- Combo, scatter and funnel -------------------------------------------------------------------------------------
+
+/** The series a combo chart draws: the bar fields, then the line fields not already drawn as bars, each on the left
+ *  value axis or, when listed in rightFields, the right one (a margin % line over revenue bars). */
+export const comboSeries = (barFields, lineFields, rightFields) => {
+  const bars = fieldList(barFields);
+  const right = fieldList(rightFields);
+  const lines = fieldList(lineFields).filter((f) => !bars.includes(f));
+  return [
+    ...bars.map((field) => ({ field, kind: 'bar', axis: right.includes(field) ? 'right' : 'left' })),
+    ...lines.map((field) => ({ field, kind: 'line', axis: right.includes(field) ? 'right' : 'left' })),
+  ].slice(0, MAX_SERIES);
+};
+
+const round1 = (v) => Math.round(v * 10) / 10;
+
+/** A funnel's stages in data order: label, value (negative reads as 0, a non-number as null), width (share of the
+ *  widest stage, 0 to 1), ofFirst and ofPrevious (percent of the first stage and of the stage before, null when that
+ *  stage is empty) and the source row. A stage or value field the data lacks falls back to the data's own. */
+export const funnelStages = (data, stageField, valueField) => {
+  const rows = (Array.isArray(data) ? data : []).filter(isPlain).slice(0, MAX_ROWS);
+  if (!rows.length) return [];
+  const { x, series } = resolveChartFields(
+    rows,
+    isSet(stageField) ? String(stageField) : undefined,
+    fieldList(valueField)
+  );
+  const field = series[0];
+  const values = rows.map((row) => {
+    const n = num(row[field]);
+    return n === null ? null : Math.max(0, n);
+  });
+  const max = Math.max(0, ...values.filter((v) => v !== null));
+  const first = values[0];
+  return rows.map((row, i) => {
+    const value = values[i];
+    const prev = i > 0 ? values[i - 1] : null;
+    return {
+      label: axisLabel(row[x]),
+      value,
+      width: max > 0 && value !== null ? value / max : 0,
+      ofFirst: first > 0 && value !== null ? round1((value / first) * 100) : null,
+      ofPrevious: prev > 0 && value !== null ? round1((value / prev) * 100) : null,
+      row,
+    };
+  });
+};
+
+/** A scatter's points, one group per groupField value (one group without it) in order of first appearance: x and y
+ *  (rows without both numbers are left out), z from sizeField for bubbles, label from nameField, and the row. When the
+ *  data has neither named axis field, its first two numeric fields are used. */
+// A point is an SVG symbol with its own handlers: past this many the chart is a blot and slow to draw.
+export const MAX_POINTS = 1000;
+
+export const scatterGroups = (data, { xField, yField, sizeField, groupField, nameField } = {}) => {
+  const rows = (Array.isArray(data) ? data : []).filter(isPlain).slice(0, MAX_POINTS);
+  if (!rows.length) return [];
+  let xKey = isSet(xField) ? String(xField) : undefined;
+  let yKey = isSet(yField) ? String(yField) : undefined;
+  const present = (key) => key !== undefined && rows.some((row) => num(row[key]) !== null);
+  if (!present(xKey) && !present(yKey)) {
+    const keys = [...new Set(rows.slice(0, 50).flatMap((row) => Object.keys(row)))].filter(present);
+    [xKey, yKey] = keys;
+  }
+  const groups = new Map();
+  rows.forEach((row) => {
+    const x = num(row[xKey]);
+    const y = num(row[yKey]);
+    if (x === null || y === null) return;
+    const name = isSet(groupField) ? axisLabel(row[groupField]) || 'Other' : '';
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push({
+      x,
+      y,
+      z: isSet(sizeField) ? num(row[sizeField]) ?? 0 : null,
+      label: isSet(nameField) ? axisLabel(row[nameField]) : '',
+      row,
+    });
+  });
+  return [...groups.entries()].slice(0, MAX_SERIES).map(([name, points]) => ({ name, points }));
+};

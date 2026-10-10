@@ -4,9 +4,12 @@ import { shadCalendarConfig } from './shadCalendar';
 import { shadCarouselConfig } from './shadCarousel';
 import { shadDropdownMenuConfig } from './shadDropdownMenu';
 import { shadNavigationConfig } from './shadNavigation';
+import { shadComboChartConfig } from './shadComboChart';
+import { shadFunnelChartConfig } from './shadFunnelChart';
 import { shadLineChartConfig } from './shadLineChart';
 import { shadRadarChartConfig } from './shadRadarChart';
 import { shadRadialChartConfig } from './shadRadialChart';
+import { shadScatterChartConfig } from './shadScatterChart';
 import { shadSparklineConfig } from './shadSparkline';
 import { shadCircularProgressConfig } from './shadCircularProgress';
 import { shadIconConfig } from './shadIcon';
@@ -68,9 +71,12 @@ export const shadcnConfigs = [
   shadCarouselConfig,
   shadDropdownMenuConfig,
   shadNavigationConfig,
+  shadComboChartConfig,
+  shadFunnelChartConfig,
   shadLineChartConfig,
   shadRadarChartConfig,
   shadRadialChartConfig,
+  shadScatterChartConfig,
   shadSparklineConfig,
   shadCircularProgressConfig,
   shadIconConfig,

@@ -1,12 +1,23 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import {
+  shadComboChartConfig,
+  shadFunnelChartConfig,
+  shadScatterChartConfig,
   shadLineChartConfig,
   shadRadarChartConfig,
   shadRadialChartConfig,
   shadSparklineConfig,
 } from '../../../WidgetManager/shadcnSource.charts';
-import { ShadLineChart, ShadRadarChart, ShadRadialChart, ShadSparkline } from '../ShadCharts';
+import {
+  ShadComboChart,
+  ShadFunnelChart,
+  ShadLineChart,
+  ShadRadarChart,
+  ShadRadialChart,
+  ShadScatterChart,
+  ShadSparkline,
+} from '../ShadCharts';
 
 // jsdom has no layout: give the charts a fixed box instead of measuring one.
 jest.mock('recharts', () => {
@@ -65,6 +76,14 @@ const WIDGETS = [
   ['ShadRadarChart', ShadRadarChart, shadRadarChartConfig],
   ['ShadRadialChart', ShadRadialChart, shadRadialChartConfig],
   ['ShadSparkline', ShadSparkline, shadSparklineConfig],
+  ['ShadComboChart', ShadComboChart, shadComboChartConfig],
+  ['ShadScatterChart', ShadScatterChart, shadScatterChartConfig],
+];
+
+const JUNK_MORE = [
+  { barFields: null, lineFields: 7, rightAxisFields: {}, stackBars: 'yes', rightAxisFormat: 9 },
+  { sizeField: {}, groupField: [], nameField: null, referenceX: 'x', referenceY: {}, pointSize: -3, xAxisFormat: 1 },
+  { stageField: null, valueField: {}, conversionBase: 3, align: [], colorByStage: 'x' },
 ];
 
 describe.each(WIDGETS)('%s', (name, Widget, config) => {
@@ -80,7 +99,7 @@ describe.each(WIDGETS)('%s', (name, Widget, config) => {
     expect(container.textContent).toContain('Nothing yet');
   });
 
-  it.each(JUNK.map((junk) => [JSON.stringify(junk), junk]))('never throws on junk %s', (_, junk) => {
+  it.each([...JUNK, ...JUNK_MORE].map((junk) => [JSON.stringify(junk), junk]))('never throws on junk %s', (_, junk) => {
     // Not even caught by the chart's error boundary (React reports those as console errors).
     const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => mount(Widget, config, junk)).not.toThrow();
@@ -181,5 +200,62 @@ describe('ShadSparkline', () => {
     expect(container.querySelector('.recharts-line-curve')).toBeTruthy();
     expect(container.querySelector('.recharts-reference-area')).toBeTruthy();
     expect(container.querySelectorAll('circle')).toHaveLength(1);
+  });
+});
+
+describe('ShadComboChart', () => {
+  it('draws bars and a line, the line on a right percent axis', () => {
+    const { container } = mount(ShadComboChart, shadComboChartConfig);
+    expect(container.querySelectorAll('.recharts-bar-rectangle')).toHaveLength(6);
+    expect(container.querySelectorAll('.recharts-line-curve')).toHaveLength(1);
+    expect(container.querySelectorAll('.recharts-yAxis')).toHaveLength(2);
+    expect(container.textContent).toContain('%');
+    expect(container.textContent).toContain('$');
+  });
+
+  it('has one axis when nothing is on the right', () => {
+    const { container } = mount(ShadComboChart, shadComboChartConfig, { rightAxisFields: [] });
+    expect(container.querySelectorAll('.recharts-yAxis')).toHaveLength(1);
+  });
+});
+
+describe('ShadScatterChart', () => {
+  it('draws a point per row, one legend entry per group', () => {
+    const { container } = mount(ShadScatterChart, shadScatterChartConfig);
+    expect(container.querySelectorAll('.recharts-scatter-symbol')).toHaveLength(8);
+    expect(container.textContent).toContain('Enterprise');
+    expect(container.textContent).toContain('Revenue ($k)');
+  });
+});
+
+describe('ShadFunnelChart', () => {
+  it('draws a stage per row with its value and conversion from the one before', () => {
+    const { container } = mount(ShadFunnelChart, shadFunnelChartConfig);
+    const stages = container.querySelectorAll('button');
+    expect(stages).toHaveLength(5);
+    expect(stages[0].textContent).toContain('Visited');
+    expect(stages[0].textContent).toContain('12,480');
+    expect(stages[1].textContent).toContain('31.4%');
+  });
+
+  it('measures conversion from the first stage when asked', () => {
+    const { container } = mount(ShadFunnelChart, shadFunnelChartConfig, { conversionBase: 'first' });
+    expect(container.querySelectorAll('button')[4].textContent).toContain('3.3%');
+  });
+
+  it('sets clickedDatum to the clicked stage row and fires onClick', () => {
+    const { container, exposed, events } = mount(ShadFunnelChart, shadFunnelChartConfig);
+    fireEvent.click(container.querySelectorAll('button')[2]);
+    expect(exposed.clickedDatum).toEqual({ stage: 'Activated', count: 2210 });
+    expect(events).toEqual(['onClick']);
+  });
+
+  it('shows the empty message and never throws on junk', () => {
+    const { container } = mount(ShadFunnelChart, shadFunnelChartConfig, { data: [], emptyText: 'Nothing yet' });
+    expect(container.textContent).toContain('Nothing yet');
+    const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+    [...JUNK, ...JUNK_MORE].forEach((junk) => mount(ShadFunnelChart, shadFunnelChartConfig, junk));
+    expect(errors).not.toHaveBeenCalled();
+    errors.mockRestore();
   });
 });
