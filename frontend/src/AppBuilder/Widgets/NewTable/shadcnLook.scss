@@ -53,6 +53,15 @@ $radius: var(--cc-radius-default, 6px);
     padding: 0 12px !important;
     background: transparent !important;
     border-bottom: 1px solid var(--cc-weak-border) !important;
+    // ToolJet's header hover draws a box (borders, 1px less padding); with the look's fixed padding the border pushed
+    // the label 1px and the box jumped from column to column. A soft fill only, like a row's hover.
+    &:hover,
+    &.th:hover {
+      border-top: none !important;
+      border-left: none !important;
+      border-right: none !important;
+      background: color-mix(in srgb, var(--cc-surface3-surface) 55%, transparent) !important;
+    }
     .header-text {
       color: var(--cc-placeholder-text) !important;
       font-size: 13px !important;

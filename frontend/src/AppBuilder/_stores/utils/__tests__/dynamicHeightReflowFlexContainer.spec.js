@@ -1,8 +1,17 @@
 import { resolveFlexContainerHeight } from '../dynamicHeightReflowFlexContainer';
-import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { BOX_PADDING, SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 // A FlexContainer 'flex' with children, rendered `wrapperWidth` wide. Layouts are canonical; no temp heights.
-const resolve = ({ properties, children, height = 40, wrapperWidth = 1264, temps = {}, bump, hidden = [] }) => {
+const resolve = ({
+  properties,
+  children,
+  height = 40,
+  wrapperWidth = 1264,
+  temps = {},
+  bump,
+  hidden = [],
+  styles = {},
+}) => {
   const layouts = { flex: { height }, ...Object.fromEntries(children.map((c) => [c.id, c.layout])) };
   const components = {
     flex: { component: { definition: { properties: { childOrder: { value: children.map((c) => c.id) } } } } },
@@ -17,7 +26,7 @@ const resolve = ({ properties, children, height = 40, wrapperWidth = 1264, temps
     temporaryLayouts: {},
     contextIndices: [],
     getResolvedComponent: (id) =>
-      id === 'flex' ? { properties } : { properties: children.find((c) => c.id === id)?.properties ?? {} },
+      id === 'flex' ? { properties, styles } : { properties: children.find((c) => c.id === id)?.properties ?? {} },
     getContainerChildrenMapping: () => children.map((c) => c.id),
     getExposedPropertyForAdditionalActions: () => undefined,
     calculateMoveableBoxHeightWithId: bump,
@@ -29,7 +38,7 @@ const resolve = ({ properties, children, height = 40, wrapperWidth = 1264, temps
   });
 };
 
-const chrome = (padding) => padding * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2;
+const chrome = (padding) => padding * 2 + BOX_PADDING * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2;
 const cards = (n, layout) => Array.from({ length: n }, (_, i) => ({ id: `c${i}`, layout }));
 
 describe('FlexContainer dynamic height', () => {
@@ -77,7 +86,7 @@ describe('FlexContainer dynamic height', () => {
       children: cards(1, { height: 120 }),
       height: 600,
     });
-    expect(height).toBe(48 + 24 * 2 + 120 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2);
+    expect(height).toBe(48 + 120 + chrome(24));
   });
 
   it('fits a row to its tallest child, below its authored height too', () => {
@@ -141,6 +150,13 @@ describe('FlexContainer dynamic height', () => {
       height: 100,
     });
     expect(height).toBe(390 + chrome(0));
+  });
+
+  it("counts the widget's box padding, which wraps the canvas (a button row came out 4px short)", () => {
+    const row = (styles) =>
+      resolve({ properties: { direction: 'row', padding: 0 }, children: cards(1, { width: 6, height: 36 }), styles });
+    expect(row()).toBe(36 + BOX_PADDING * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2);
+    expect(row({ padding: 'none' })).toBe(36 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2);
   });
 
   it('keeps the authored height as the floor', () => {

@@ -1,4 +1,4 @@
-import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { BOX_PADDING, SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   computeEffectiveFlexDirection,
   flexCardHeaderPx,
@@ -198,8 +198,11 @@ export const resolveFlexContainerHeight = ({
   // a floor so enabling dynamic height never silently shrinks the component
   // below the size the app author drew in the editor; a card surface (component
   // packs) fits its content instead, so a card never leaves an empty band.
+  // The widget's own box padding (RenderWidget's BOX_PADDING, unless styles.padding is 'none') wraps the canvas too:
+  // left out, every flex container came out 4px short and its content scrolled by that much (a 36px button row).
+  const boxPadding = component?.styles?.padding === 'none' ? 0 : BOX_PADDING;
   const heightWithChrome =
-    contentHeight + padding * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2 + flexCardHeaderPx(properties);
+    contentHeight + padding * 2 + boxPadding * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2 + flexCardHeaderPx(properties);
   // A card and a row always fit their content (dynamicHeightPolicy.fitsContentInView): no floor, so a row of cards
   // whose content is shorter than drawn leaves no empty band under it.
   if (

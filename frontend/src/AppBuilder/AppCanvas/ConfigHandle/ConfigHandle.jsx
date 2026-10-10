@@ -61,6 +61,7 @@ export const ConfigHandle = ({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const timeoutRef = useRef(null);
   const position = widgetTop < 15 ? 'bottom' : 'top';
+  const insideFlex = String(customClassName ?? '').includes('flex-child-config-handle');
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
@@ -217,7 +218,14 @@ export const ConfigHandle = ({
             ? '0px'
             : position === 'top'
             ? '-26px'
+            : insideFlex
+            ? 'auto'
             : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+        // In a flex container the handle anchors to the widget's bottom edge: placed from the height it hung 3px below
+        // it (the handle is 24px, not 20), and the flex canvas scrolled by that much under the pointer on hover.
+        ...(insideFlex && position !== 'top' && !(componentType === 'Modal' && isModalOpen)
+          ? { bottom: `${BUFFER_HEIGHT}px` }
+          : {}),
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',

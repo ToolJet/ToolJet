@@ -62,6 +62,12 @@
     }
 }
 
+// A flex child often sits flush against its container's edge, and the container clips overflow: an outline drawn
+// outside the widget lost its top or sides there. Inside a flex container it is drawn just inside the edge.
+.main-editor-canvas .flex-container-canvas .widget-target {
+    outline-offset: -1px;
+}
+
 .main-editor-canvas .nested-target:not(:has(.nested-target:hover)):hover {
     // outline: 1px solid #4af;
     z-index: 4 !important;
