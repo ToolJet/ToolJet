@@ -54,8 +54,11 @@ export { withControlState } from '../packHooks';
 // ---- Loading ------------------------------------------------------------------------------------------------------
 
 // How each widget looks while loading (the loadingState property or the setLoading action). Controls stay in place,
-// non-interactive, with a spinner; text and media become skeletons in their own shape; the rest a skeleton block at the
-// widget's size. Widgets marked 'own' draw their loading state themselves (or have none to draw).
+// non-interactive, with a spinner: 'field' inside the text box (Field draws it), 'inline' right after the control,
+// 'inline-top' after a multi-line control on its first line, 'wide' at the end of a control that spans the widget.
+// Text and media become skeletons in their own shape ('heading', 'text', 'line', 'pill', 'avatar', 'bar',
+// 'columns'); the rest a skeleton block at the widget's size ('block', the default). 'own': the widget draws its
+// loading state itself (or has none to draw). Groups in their own modules add theirs in looks/<group>.js (LOADING).
 const LOADING_LOOK = {
   ShadButton: 'own',
   ShadStat: 'own',
@@ -64,15 +67,15 @@ const LOADING_LOOK = {
   ShadTable: 'own',
   ShadTabs: 'own',
   ShadListView: 'own',
-  ShadInput: 'control',
-  ShadTextarea: 'control',
-  ShadSelect: 'control',
-  ShadDatePicker: 'control',
-  ShadCheckbox: 'control',
-  ShadSwitch: 'control',
-  ShadRadioGroup: 'control',
-  ShadSlider: 'control',
-  ShadToggleGroup: 'control',
+  ShadInput: 'field',
+  ShadTextarea: 'field',
+  ShadSelect: 'field',
+  ShadDatePicker: 'field',
+  ShadCheckbox: 'inline',
+  ShadSwitch: 'inline',
+  ShadRadioGroup: 'inline-top',
+  ShadSlider: 'wide',
+  ShadToggleGroup: 'inline',
   ShadHeading: 'heading',
   ShadText: 'text',
   ShadBreadcrumb: 'line',
@@ -83,12 +86,12 @@ const LOADING_LOOK = {
 };
 
 /** A control is non-interactive while it is disabled or loading. */
-const busy = (properties) => !!properties.disabledState || !!properties.loadingState;
+export const busy = (properties) => !!properties.disabledState || !!properties.loadingState;
 
-// True for the text-box controls (input, textarea, select, date picker): Field then puts the spinner inside the box.
+// True for the 'field' loading look (text-box controls): Field then puts the spinner inside the box.
 const LoadingContext = createContext(false);
 
-const Spinner = ({ className }) => (
+export const Spinner = ({ className }) => (
   <span
     role="status"
     aria-label="Loading"
@@ -165,28 +168,24 @@ export const Shell = (props) => {
   const loading = !!properties.loadingState;
   const look = LOADING_LOOK[componentType] || GROUP_LOADING[componentType] || 'block';
   let content = children;
-  if (loading && look === 'control') {
-    // Fields draw the spinner inside their control; inline controls (checkbox, switch, radio, toggle group) carry it
-    // right after their content; the slider, which spans the widget, at the row's end.
-    const field = ['ShadInput', 'ShadTextarea', 'ShadSelect', 'ShadDatePicker'].includes(componentType);
-    const inline = componentType !== 'ShadSlider';
+  if (loading && ['field', 'inline', 'inline-top', 'wide'].includes(look)) {
     content = (
-      <LoadingContext.Provider value={field}>
-        {field ? (
+      <LoadingContext.Provider value={look === 'field'}>
+        {look === 'field' ? (
           children
-        ) : inline ? (
-          <div
-            className={cn(
-              'inline-flex max-w-full gap-3',
-              componentType === 'ShadRadioGroup' ? 'items-start [&>[role=status]]:mt-0.5' : 'items-center'
-            )}
-          >
-            {children}
+        ) : look === 'wide' ? (
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">{children}</div>
             <Spinner />
           </div>
         ) : (
-          <div className="flex items-center gap-3">
-            <div className="min-w-0 flex-1">{children}</div>
+          <div
+            className={cn(
+              'inline-flex max-w-full gap-3',
+              look === 'inline-top' ? 'items-start [&>[role=status]]:mt-0.5' : 'items-center'
+            )}
+          >
+            {children}
             <Spinner />
           </div>
         )}
@@ -214,20 +213,20 @@ export const Shell = (props) => {
 };
 
 // Label and help text colours of form controls: the labelColor and helpTextColor styles, else the theme's.
-const LABEL = 'text-[color:var(--lk-label,var(--sc-foreground))]';
-const HELP = 'text-[color:var(--lk-help,var(--sc-muted-foreground))]';
+export const LABEL = 'text-[color:var(--lk-label,var(--sc-foreground))]';
+export const HELP = 'text-[color:var(--lk-help,var(--sc-muted-foreground))]';
 // A form control's box: the background, text, placeholder, border and radius styles, else shadcn's.
-const CONTROL =
+export const CONTROL =
   'bg-[color:var(--lk-bg,transparent)] text-[color:var(--lk-fg,var(--sc-foreground))] border-[color:var(--lk-invalid,var(--lk-border,var(--sc-input)))] rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] placeholder:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
 
 // A failed validation's colour: the errorColor style, else the theme's error colour.
-const ERROR = 'text-[color:var(--lk-error,var(--sc-destructive))]';
-const INVALID_VARS = { '--lk-invalid': 'var(--lk-error, var(--sc-destructive))' };
+export const ERROR = 'text-[color:var(--lk-error,var(--sc-destructive))]';
+export const INVALID_VARS = { '--lk-invalid': 'var(--lk-error, var(--sc-destructive))' };
 
 /** shadcn's form field: label above (with a mark when mandatory), control, then the validation error or the help
  *  text below. While loading, a spinner sits inside the control. An error also turns the control's border to the
  *  error colour (CONTROL reads --lk-invalid). */
-const Field = ({ id, label, description, error, required, children }) => {
+export const Field = ({ id, label, description, error, required, children }) => {
   const loading = useContext(LoadingContext);
   return (
     <div className="flex w-full flex-col gap-2" style={error ? INVALID_VARS : undefined}>
@@ -256,7 +255,8 @@ const Field = ({ id, label, description, error, required, children }) => {
   );
 };
 
-const textAlign = (styles) => (['left', 'center', 'right'].includes(styles?.textAlign) ? styles.textAlign : undefined);
+export const textAlign = (styles) =>
+  ['left', 'center', 'right'].includes(styles?.textAlign) ? styles.textAlign : undefined;
 
 // ---- Actions and feedback ------------------------------------------------------------------------------------------
 
@@ -668,7 +668,7 @@ export const ShadEmpty = (props) => {
 
 /** A single-value input: local state seeded from defaultValue, published as `value` (through `toExposed`, for
  *  controls that key options by string), plus actions built from the setter. */
-const useValue = (props, initial, actions = () => ({}), toExposed = (v) => v) => {
+export const useValue = (props, initial, actions = () => ({}), toExposed = (v) => v) => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   const [value, setValue] = useState(initial);
   const key = JSON.stringify(initial ?? null);
@@ -685,7 +685,7 @@ const useValue = (props, initial, actions = () => ({}), toExposed = (v) => v) =>
 /** Validation the native way: validate(value) (the widget's Validation section) gives isValid and the message, both
  *  exposed with isMandatory; the message shows once the user has left the control (touch) or a form around it tried to
  *  submit. A form's clearForm calls `clear`. */
-const useValidation = (props, value, clear) => {
+export const useValidation = (props, value, clear) => {
   const { validate, validation, setExposedVariable } = props;
   const status = (typeof validate === 'function' ? validate(value) : null) || {};
   const isValid = status.isValid !== false;
@@ -712,7 +712,7 @@ const useValidation = (props, value, clear) => {
 
 /** Text box events and actions shared by Input and Textarea: focus and blur (events and actions), and blur marks
  *  the field touched for validation. */
-const useTextBox = (props, touch) => {
+export const useTextBox = (props, touch) => {
   const { fireEvent, setExposedVariables } = props;
   const ref = useRef(null);
   useEffect(() => {
@@ -868,7 +868,7 @@ export const ShadSelect = (props) => {
   );
 };
 
-const useChecked = (props) => {
+export const useChecked = (props) => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   const [checked, setChecked] = useState(!!properties.defaultChecked);
   useEffect(() => setChecked(!!properties.defaultChecked), [properties.defaultChecked]);
@@ -882,7 +882,7 @@ const useChecked = (props) => {
   return [checked, change];
 };
 
-const CheckedRow = ({ id, control, label, description, error, required }) => (
+export const CheckedRow = ({ id, control, label, description, error, required }) => (
   <div className="flex items-start gap-3" style={error ? INVALID_VARS : undefined}>
     {control}
     <div className="grid gap-1.5 leading-none">
