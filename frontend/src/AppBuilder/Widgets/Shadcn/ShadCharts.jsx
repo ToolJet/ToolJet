@@ -254,3 +254,12 @@ export const ShadPieChart = (props) => {
     </ChartFrame>
   );
 };
+
+// STUB: filled in by the charts batch.
+export const ShadLineChart = (props) => <Shell {...props}>{null}</Shell>;
+// STUB: filled in by the charts batch.
+export const ShadRadarChart = (props) => <Shell {...props}>{null}</Shell>;
+// STUB: filled in by the charts batch.
+export const ShadRadialChart = (props) => <Shell {...props}>{null}</Shell>;
+// STUB: filled in by the charts batch.
+export const ShadSparkline = (props) => <Shell {...props}>{null}</Shell>;

@@ -42,6 +42,7 @@ import {
 } from './ui';
 import { badgeLook, isSet } from './kanbanLook';
 import { lookVars, whenSet } from './shadcnLook';
+import { GROUP_LOADING } from './looks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import './shadcn.scss';
 
@@ -162,7 +163,7 @@ const loadingSkeleton = (look, { properties, height }) => {
 export const Shell = (props) => {
   const { properties, styles, componentType, dataCy, children, innerRef, className } = props;
   const loading = !!properties.loadingState;
-  const look = LOADING_LOOK[componentType] || 'block';
+  const look = LOADING_LOOK[componentType] || GROUP_LOADING[componentType] || 'block';
   let content = children;
   if (loading && look === 'control') {
     // Fields draw the spinner inside their control; inline controls (checkbox, switch, radio, toggle group) carry it

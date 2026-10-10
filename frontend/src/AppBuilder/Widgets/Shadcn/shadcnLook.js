@@ -5,6 +5,7 @@
 // (checked states, focus rings, the progress bar, the chart palette) follows at once. Kanban keeps its own module
 // (kanbanLook.js). Style keys match the configs in WidgetManager/shadcnSource.js.
 import { isSet, px } from './kanbanLook';
+import { GROUP_LOOKS } from './looks';
 
 const ACCENT = ['--sc-primary', '--sc-ring'];
 
@@ -138,6 +139,8 @@ export const LOOKS = {
     ['centerValueColor', '--lk-center-value'],
     ['centerLabelColor', '--lk-center-label'],
   ],
+  // The widget groups with their own modules (looks/).
+  ...GROUP_LOOKS,
 };
 
 /** The CSS variables for a widget's set styles; unset styles add nothing, so the theme's values apply. */

@@ -230,6 +230,10 @@ const shadcnKanban = () => import('@/AppBuilder/Widgets/Shadcn/ShadKanban');
 const shadcnTable = () => import('@/AppBuilder/Widgets/Shadcn/ShadTable');
 const shadcnTabs = () => import('@/AppBuilder/Widgets/Shadcn/ShadTabs');
 const shadcnListView = () => import('@/AppBuilder/Widgets/Shadcn/ShadListView');
+const shadcnInputs = () => import('@/AppBuilder/Widgets/Shadcn/ShadInputs');
+const shadcnPickers = () => import('@/AppBuilder/Widgets/Shadcn/ShadPickers');
+const shadcnDisplay = () => import('@/AppBuilder/Widgets/Shadcn/ShadDisplay');
+const shadcnActions = () => import('@/AppBuilder/Widgets/Shadcn/ShadActions');
 const shadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m[name] })));
 const controlledShadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m.withControlState(m[name]) })));
 const ShadButton = controlledShadWidget(shadcnWidgets, 'ShadButton');
@@ -261,6 +265,38 @@ const ShadPieChart = controlledShadWidget(shadcnCharts, 'ShadPieChart');
 const ShadKanban = controlledShadWidget(shadcnKanban, 'ShadKanban');
 const ShadTabs = shadWidget(shadcnTabs, 'ShadTabs');
 const ShadListView = shadWidget(shadcnListView, 'ShadListView');
+const ShadNumberInput = controlledShadWidget(shadcnInputs, 'ShadNumberInput');
+const ShadPasswordInput = controlledShadWidget(shadcnInputs, 'ShadPasswordInput');
+const ShadPhoneInput = controlledShadWidget(shadcnInputs, 'ShadPhoneInput');
+const ShadCurrencyInput = controlledShadWidget(shadcnInputs, 'ShadCurrencyInput');
+const ShadOtpInput = controlledShadWidget(shadcnInputs, 'ShadOtpInput');
+const ShadTimePicker = controlledShadWidget(shadcnInputs, 'ShadTimePicker');
+const ShadDateTimePicker = controlledShadWidget(shadcnInputs, 'ShadDateTimePicker');
+const ShadCombobox = controlledShadWidget(shadcnPickers, 'ShadCombobox');
+const ShadMultiselect = controlledShadWidget(shadcnPickers, 'ShadMultiselect');
+const ShadTagsInput = controlledShadWidget(shadcnPickers, 'ShadTagsInput');
+const ShadColorPicker = controlledShadWidget(shadcnPickers, 'ShadColorPicker');
+const ShadRating = controlledShadWidget(shadcnPickers, 'ShadRating');
+const ShadFileUpload = controlledShadWidget(shadcnPickers, 'ShadFileUpload');
+const ShadImage = controlledShadWidget(shadcnDisplay, 'ShadImage');
+const ShadIcon = controlledShadWidget(shadcnDisplay, 'ShadIcon');
+const ShadLink = controlledShadWidget(shadcnDisplay, 'ShadLink');
+const ShadTags = controlledShadWidget(shadcnDisplay, 'ShadTags');
+const ShadCircularProgress = controlledShadWidget(shadcnDisplay, 'ShadCircularProgress');
+const ShadSpinner = controlledShadWidget(shadcnDisplay, 'ShadSpinner');
+const ShadKeyValue = controlledShadWidget(shadcnDisplay, 'ShadKeyValue');
+const ShadTimeline = controlledShadWidget(shadcnDisplay, 'ShadTimeline');
+const ShadSteps = controlledShadWidget(shadcnDisplay, 'ShadSteps');
+const ShadPagination = controlledShadWidget(shadcnDisplay, 'ShadPagination');
+const ShadDropdownMenu = controlledShadWidget(shadcnActions, 'ShadDropdownMenu');
+const ShadButtonGroup = controlledShadWidget(shadcnActions, 'ShadButtonGroup');
+const ShadNavigation = controlledShadWidget(shadcnActions, 'ShadNavigation');
+const ShadCalendar = controlledShadWidget(shadcnActions, 'ShadCalendar');
+const ShadCarousel = controlledShadWidget(shadcnActions, 'ShadCarousel');
+const ShadLineChart = controlledShadWidget(shadcnCharts, 'ShadLineChart');
+const ShadRadarChart = controlledShadWidget(shadcnCharts, 'ShadRadarChart');
+const ShadRadialChart = controlledShadWidget(shadcnCharts, 'ShadRadialChart');
+const ShadSparkline = controlledShadWidget(shadcnCharts, 'ShadSparkline');
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -399,6 +435,38 @@ export const AllComponents = {
   ShadKanban,
   ShadTabs,
   ShadListView,
+  ShadNumberInput,
+  ShadPasswordInput,
+  ShadPhoneInput,
+  ShadCurrencyInput,
+  ShadOtpInput,
+  ShadTimePicker,
+  ShadDateTimePicker,
+  ShadCombobox,
+  ShadMultiselect,
+  ShadTagsInput,
+  ShadColorPicker,
+  ShadRating,
+  ShadFileUpload,
+  ShadImage,
+  ShadIcon,
+  ShadLink,
+  ShadTags,
+  ShadCircularProgress,
+  ShadSpinner,
+  ShadKeyValue,
+  ShadTimeline,
+  ShadSteps,
+  ShadPagination,
+  ShadDropdownMenu,
+  ShadButtonGroup,
+  ShadNavigation,
+  ShadCalendar,
+  ShadCarousel,
+  ShadLineChart,
+  ShadRadarChart,
+  ShadRadialChart,
+  ShadSparkline,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,

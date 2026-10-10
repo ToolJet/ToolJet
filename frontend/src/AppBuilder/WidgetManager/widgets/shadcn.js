@@ -1,4 +1,30 @@
 // shadcn/ui pack (experiment): registry of the generated shadcn widget configs.
+import { shadButtonGroupConfig } from './shadButtonGroup';
+import { shadCalendarConfig } from './shadCalendar';
+import { shadCarouselConfig } from './shadCarousel';
+import { shadDropdownMenuConfig } from './shadDropdownMenu';
+import { shadNavigationConfig } from './shadNavigation';
+import { shadLineChartConfig } from './shadLineChart';
+import { shadRadarChartConfig } from './shadRadarChart';
+import { shadRadialChartConfig } from './shadRadialChart';
+import { shadSparklineConfig } from './shadSparkline';
+import { shadCircularProgressConfig } from './shadCircularProgress';
+import { shadIconConfig } from './shadIcon';
+import { shadImageConfig } from './shadImage';
+import { shadKeyValueConfig } from './shadKeyValue';
+import { shadLinkConfig } from './shadLink';
+import { shadPaginationConfig } from './shadPagination';
+import { shadSpinnerConfig } from './shadSpinner';
+import { shadStepsConfig } from './shadSteps';
+import { shadTagsConfig } from './shadTags';
+import { shadTimelineConfig } from './shadTimeline';
+import { shadCurrencyInputConfig } from './shadCurrencyInput';
+import { shadDateTimePickerConfig } from './shadDateTimePicker';
+import { shadNumberInputConfig } from './shadNumberInput';
+import { shadOtpInputConfig } from './shadOtpInput';
+import { shadPasswordInputConfig } from './shadPasswordInput';
+import { shadPhoneInputConfig } from './shadPhoneInput';
+import { shadTimePickerConfig } from './shadTimePicker';
 import { shadAccordionConfig } from './shadAccordion';
 import { shadAlertConfig } from './shadAlert';
 import { shadAreaChartConfig } from './shadAreaChart';
@@ -27,9 +53,41 @@ import { shadTextareaConfig } from './shadTextarea';
 import { shadToggleGroupConfig } from './shadToggleGroup';
 import { shadListViewConfig } from './shadListView';
 import { shadTabsConfig } from './shadTabs';
+import { shadColorPickerConfig } from './shadColorPicker';
+import { shadComboboxConfig } from './shadCombobox';
+import { shadFileUploadConfig } from './shadFileUpload';
+import { shadMultiselectConfig } from './shadMultiselect';
+import { shadRatingConfig } from './shadRating';
+import { shadTagsInputConfig } from './shadTagsInput';
 import { shadTableConfig } from './shadTable';
 
 export const shadcnConfigs = [
+  shadButtonGroupConfig,
+  shadCalendarConfig,
+  shadCarouselConfig,
+  shadDropdownMenuConfig,
+  shadNavigationConfig,
+  shadLineChartConfig,
+  shadRadarChartConfig,
+  shadRadialChartConfig,
+  shadSparklineConfig,
+  shadCircularProgressConfig,
+  shadIconConfig,
+  shadImageConfig,
+  shadKeyValueConfig,
+  shadLinkConfig,
+  shadPaginationConfig,
+  shadSpinnerConfig,
+  shadStepsConfig,
+  shadTagsConfig,
+  shadTimelineConfig,
+  shadCurrencyInputConfig,
+  shadDateTimePickerConfig,
+  shadNumberInputConfig,
+  shadOtpInputConfig,
+  shadPasswordInputConfig,
+  shadPhoneInputConfig,
+  shadTimePickerConfig,
   shadAccordionConfig,
   shadAlertConfig,
   shadAreaChartConfig,
@@ -58,6 +116,12 @@ export const shadcnConfigs = [
   shadToggleGroupConfig,
   shadListViewConfig,
   shadTabsConfig,
+  shadColorPickerConfig,
+  shadComboboxConfig,
+  shadFileUploadConfig,
+  shadMultiselectConfig,
+  shadRatingConfig,
+  shadTagsInputConfig,
   shadTableConfig,
 ];
 export const SHADCN_COMPONENTS = shadcnConfigs.map((c) => c.name);
