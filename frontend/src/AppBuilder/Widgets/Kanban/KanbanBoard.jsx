@@ -440,6 +440,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
                           setShowModal={setShowModal}
                           cardDataAsObj={cardDataAsObj}
                           setLastSelectedCard={setLastSelectedCard}
+                          selected={lastSelectedCard?.id !== undefined && String(lastSelectedCard.id) === String(value)}
                           cardData={flatCardData}
                           dataCy={dataCy}
                         />
@@ -451,8 +452,12 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
             );
           })}
           <button
-            className={cx('kanban-add-card-button jet-button btn', !enableAddCard && 'invisible')}
-            style={colAccentColor}
+            className={cx(
+              'kanban-add-card-button jet-button btn',
+              !enableAddCard && 'invisible',
+              properties.skin === 'shadcn' && 'skin-shadcn'
+            )}
+            style={properties.skin === 'shadcn' ? undefined : colAccentColor}
             onClick={() => enableAddCard && fireEvent('onAddCardClick')}
             data-cy={`${dataCy}-add-card-button`}
           >
@@ -466,7 +471,13 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
           document.body
         )}
         {showDeleteButton ? (
-          <Trash id={TRASH_ID} deleteLabel={deleteLabel} dataCy={`${dataCy}-drag-delete-button`} />
+          <Trash
+            id={TRASH_ID}
+            deleteLabel={deleteLabel}
+            dataCy={`${dataCy}-drag-delete-button`}
+            shadcn={properties.skin === 'shadcn'}
+            dragging={activeId !== null}
+          />
         ) : null}
       </DndContext>
       <Modal
@@ -508,6 +519,7 @@ function SortableItem({
   setShowModal,
   cardDataAsObj,
   setLastSelectedCard,
+  selected,
   cardData,
   dataCy,
 }) {
@@ -535,6 +547,7 @@ function SortableItem({
       setShowModal={setShowModal}
       cardDataAsObj={cardDataAsObj}
       setLastSelectedCard={setLastSelectedCard}
+      selected={selected}
       cardData={cardData}
       dataCy={dataCy}
     />

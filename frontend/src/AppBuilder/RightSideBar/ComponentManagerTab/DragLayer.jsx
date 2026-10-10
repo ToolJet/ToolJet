@@ -30,7 +30,8 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
         handleDrop(item, currentDragCanvasId);
       },
     }),
-    [component.component, component.moduleId]
+    // presetProperties: the same widget can appear in two libraries, preset in one (shadcn/ui Kanban) and not the other.
+    [component.component, component.moduleId, component.presetProperties]
   );
 
   useEffect(() => {

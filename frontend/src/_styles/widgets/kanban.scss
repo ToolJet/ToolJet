@@ -98,14 +98,14 @@ $focused-outline-color: #4c9ffe;
     display: flex;
     flex-grow: 1;
     align-items: center;
-    background-color: $background-color;
-    box-shadow: $box-shadow;
+    background-color: var(--kb-card-bg, #{$background-color});
+    box-shadow: var(--kb-card-shadow, #{$box-shadow});
     outline: none;
-    border-radius: 4px;
+    border-radius: var(--kb-card-radius, 4px);
     box-sizing: border-box;
     list-style: none;
     transform-origin: 50% 50%;
-    border: 1px solid var(--cc-default-border);
+    border: 1px solid var(--kb-card-border, var(--cc-default-border));
 
     -webkit-tap-highlight-color: transparent;
 
@@ -180,11 +180,11 @@ $focused-outline-color: #4c9ffe;
   outline: none;
   min-width: 150px;
   margin: 10px;
-  border-radius: 5px;
+  border-radius: var(--kb-col-radius, 5px);
   min-height: 200px;
   transition: background-color 350ms ease;
-  background-color: rgba(246, 246, 246, 1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: var(--kb-col-bg, rgba(246, 246, 246, 1));
+  border: 1px solid var(--kb-col-border, rgba(0, 0, 0, 0.05));
   font-size: 1em;
 
   .container-name {
@@ -297,3 +297,143 @@ $focused-outline-color: #4c9ffe;
     background-color: $bg-dark-light ;
   }
 
+
+// Component packs (experiment): the shadcn/ui look for the Kanban (properties.skin = 'shadcn'). Each piece carries
+// .skin-shadcn itself, because the drag overlay and the detail modal render outside the board. Colours come from the
+// app theme, as the shadcn/ui pack's do.
+// Listed again under .canvas-component to outrank the theme's column colour (theme.scss).
+.kanban-container.skin-shadcn,
+.canvas-component .kanban-container.skin-shadcn {
+  margin: 8px;
+  min-height: 160px;
+  border: 1px solid var(--kb-col-border, transparent);
+  border-radius: var(--kb-col-radius, 12px);
+  background-color: var(--kb-col-bg, var(--cc-surface3-surface, #f4f4f5));
+  transition: background-color 150ms ease;
+
+  // A column is always the card width + 48px, so a 23px gutter centres the cards.
+  .header {
+    padding: 14px 23px 6px;
+    background-color: transparent;
+    border-bottom: none;
+    gap: 8px;
+  }
+
+  .container-name {
+    height: auto;
+    padding: 0;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--kb-col-title, var(--cc-primary-text, #0a0a0a));
+    background: transparent;
+  }
+
+  .container-count {
+    min-width: 22px;
+    padding: 1px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    color: var(--cc-primary-text, #0a0a0a);
+    background-color: var(--cc-surface1-surface, #ffffff);
+    box-shadow: inset 0 0 0 1px var(--cc-weak-border, #e5e5e5);
+  }
+
+  ul {
+    padding: 8px 23px 14px;
+    grid-gap: 8px;
+  }
+}
+
+.kanban-item.skin-shadcn {
+  .item {
+    border-radius: var(--kb-card-radius, 10px);
+    border: 1px solid var(--kb-card-border, var(--cc-weak-border, #e5e5e5));
+    background-color: var(--kb-card-bg, var(--cc-surface1-surface, #ffffff));
+    box-shadow: var(--kb-card-shadow, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+    overflow: hidden;
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--cc-primary-brand, #171717) 40%, var(--cc-weak-border, #e5e5e5));
+    }
+
+    &.selected {
+      border-color: var(--cc-primary-brand, #171717);
+      box-shadow: 0 0 0 1px var(--cc-primary-brand, #171717), var(--kb-card-shadow, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+    }
+
+    &.dragOverlay,
+    &.dragging {
+      box-shadow: 0 10px 24px -6px rgb(0 0 0 / 0.18);
+    }
+  }
+
+  .handle {
+    opacity: 0.45;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.kanban-add-card-button.skin-shadcn {
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--cc-default-border, #e5e5e5);
+  background-color: var(--cc-surface1-surface, #ffffff);
+  color: var(--cc-primary-text, #0a0a0a);
+  font-weight: 500;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+
+  &:hover {
+    background-color: var(--cc-surface2-surface, #f5f5f5);
+  }
+}
+
+.kanban-trash.skin-shadcn {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  width: 300px;
+  height: 56px;
+  margin-left: -150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px dashed var(--cc-default-border, #d4d4d4);
+  background-color: var(--cc-surface1-surface, #ffffff);
+  color: var(--cc-placeholder-text, #737373);
+  font-size: 13px;
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  box-shadow: 0 8px 20px -6px rgb(0 0 0 / 0.15);
+  transition: opacity 150ms ease, transform 150ms ease, border-color 150ms ease, color 150ms ease,
+    background-color 150ms ease;
+
+  &.dragging {
+    opacity: 1;
+    transform: none;
+  }
+
+  &.over {
+    border-color: var(--cc-error-systemStatus, #dc2626);
+    color: var(--cc-error-systemStatus, #dc2626);
+    background-color: color-mix(in srgb, var(--cc-error-systemStatus, #dc2626) 6%, var(--cc-surface1-surface, #ffffff));
+  }
+}
+
+.kanban-modal.skin-shadcn {
+  border-radius: 14px;
+  border: 1px solid var(--cc-weak-border, #e5e5e5);
+  box-shadow: 0 20px 40px -12px rgb(0 0 0 / 0.25);
+  overflow: hidden;
+}
