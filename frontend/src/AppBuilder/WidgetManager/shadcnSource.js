@@ -620,7 +620,7 @@ export const shadKanbanConfig = shadConfig({
   name: 'ShadKanban',
   displayName: 'Kanban',
   description:
-    'shadcn/ui Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar). Drag to move, optional add and delete buttons, and addCard/updateCard/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.movedCard, lastAddedCard, lastRemovedCard, lastUpdatedCard, cards)',
+    'shadcn/ui Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar), or, with Card content Custom, child components laid out on the card and bound to {{cardData.<field>}}. Drag to move, optional add and delete buttons, and addCard/updateCard/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.movedCard, lastAddedCard, lastRemovedCard, lastUpdatedCard, cards)',
   defaultSize: { width: 43, height: 420 },
   withHeight: true,
   properties: {
@@ -632,7 +632,11 @@ export const shadKanbanConfig = shadConfig({
     }),
     statusField: code('Status field', STRING, 'status'),
     idField: code('Id field', STRING, 'id'),
-    // Card content: each field is optional; a card shows only the parts that have a field and a value.
+    // Card content: Fields shows the mapped fields below; Custom makes the card a canvas: components dropped on the
+    // first card repeat on every card and read the card with {{cardData.<field>}}, as in a list view row.
+    cardLayout: choice('Card content', ['fields', 'custom'], 'fields'),
+    cardHeight: code('Card height (custom content)', NUMBER, 96),
+    // Fields: each is optional; a card shows only the parts that have a field and a value.
     titleField: code('Title field', STRING, 'title'),
     descriptionField: code('Description field', STRING, ''),
     badgeField: code('Badge field (priority, severity)', STRING, ''),
@@ -658,6 +662,8 @@ export const shadKanbanConfig = shadConfig({
     },
     statusField: { value: 'status' },
     idField: { value: 'id' },
+    cardLayout: { value: 'fields' },
+    cardHeight: { value: '{{96}}' },
     titleField: { value: 'title' },
     descriptionField: { value: '' },
     badgeField: { value: 'priority' },

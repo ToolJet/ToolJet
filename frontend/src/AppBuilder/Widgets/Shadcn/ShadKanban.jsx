@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DndContext,
@@ -12,6 +12,9 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { Plus, X } from 'lucide-react';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { initials, list, useAutoHeight, useExposed } from '../packHooks';
 import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from './ui';
 import { Shell } from './Shadcn';
@@ -116,7 +119,7 @@ const CardBody = ({ card, fields, compact }) => {
   );
 };
 
-const KanbanCard = ({ card, columnId, fields, look, compact, selected, draggable, onSelect, onDelete }) => {
+const KanbanCard = ({ card, columnId, renderBody, padding, look, selected, draggable, onSelect, onDelete }) => {
   const data = { type: 'card', key: card.__key, columnId };
   const drag = useDraggable({ id: card.__key, data, disabled: !draggable });
   const drop = useDroppable({ id: `drop-${card.__key}`, data });
@@ -131,8 +134,8 @@ const KanbanCard = ({ card, columnId, fields, look, compact, selected, draggable
       onClick={() => onSelect(card)}
       style={look.card}
       className={cn(
-        'group relative border text-card-foreground transition-colors hover:border-primary/40',
-        compact ? 'p-2.5' : 'p-3',
+        'group relative overflow-hidden border text-card-foreground transition-colors hover:border-primary/40',
+        padding,
         draggable && 'cursor-grab active:cursor-grabbing',
         selected && 'border-primary ring-1 ring-primary',
         drop.isOver && 'border-t-2 border-t-primary',
@@ -154,14 +157,15 @@ const KanbanCard = ({ card, columnId, fields, look, compact, selected, draggable
           <X className="h-3.5 w-3.5" />
         </button>
       ) : null}
-      <CardBody card={card} fields={fields} compact={compact} />
+      {renderBody(card)}
     </div>
   );
 };
 
 const KanbanColumn = ({
   column,
-  fields,
+  renderBody,
+  padding,
   look,
   compact,
   showCount,
@@ -200,9 +204,9 @@ const KanbanColumn = ({
             key={card.__key}
             card={card}
             columnId={column.id}
-            fields={fields}
+            renderBody={renderBody}
+            padding={padding}
             look={look}
-            compact={compact}
             selected={card.__key === selectedKey}
             draggable={draggable}
             onSelect={onSelect}
@@ -308,8 +312,64 @@ export const ShadKanban = (props) => {
     deleteCard: async (id) => doDelete(id),
   });
 
+  // Custom card content: every card renders the board's one card canvas (the components dropped on the first card)
+  // with its own row of cardData, as a list view renders its rows. The canvas is laid out at the card's width.
+  const { moduleId } = useModuleContext();
+  const updateCustomResolvables = useStore((state) => state.updateCustomResolvables);
+  const custom = properties.cardLayout === 'custom';
+  const editing = props.currentMode === 'edit';
+  const cardHeight = Number(properties.cardHeight) || 96;
+  const order = useMemo(
+    () => new Map(columns.flatMap((c) => c.cards).map((card, index) => [card.__key, index])),
+    [columns]
+  );
+  useLayoutEffect(() => {
+    if (!custom) return;
+    updateCustomResolvables(
+      props.id,
+      boardCards(columns).map((card) => ({ cardData: card })),
+      'cardData',
+      moduleId
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [custom, columns, props.id, moduleId]);
+  const boardRef = useRef(null);
+  const [cardWidth, setCardWidth] = useState(0);
+  useLayoutEffect(() => {
+    if (!custom || !boardRef.current) return undefined;
+    // A column's content box less the card's 1px borders; every column has the same width.
+    const measure = () => {
+      const column = boardRef.current?.firstElementChild;
+      if (column) setCardWidth(Math.max(0, column.clientWidth - 24 - 2));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(boardRef.current);
+    return () => observer.disconnect();
+  }, [custom, columns.length]);
+  const renderBody = custom
+    ? (card) => (
+        // In the editor, a press inside the card edits its components instead of starting a card drag.
+        <div style={{ height: cardHeight }} onPointerDown={editing ? (e) => e.stopPropagation() : undefined}>
+          {cardWidth > 0 ? (
+            <SubContainer
+              id={props.id}
+              index={order.get(card.__key) ?? 0}
+              canvasWidth={cardWidth}
+              canvasHeight={cardHeight}
+              componentType="ShadKanban"
+              styles={{ backgroundColor: 'transparent' }}
+              darkMode={props.darkMode}
+            />
+          ) : null}
+        </div>
+      )
+    : (card) => <CardBody card={card} fields={fields} compact={compact} />;
+  const padding = custom ? 'p-0' : compact ? 'p-2.5' : 'p-3';
+
   const enabled = !properties.disabledState;
-  const draggable = properties.allowDrag !== false && enabled;
+  // Custom cards don't drag in the editor, where a press edits the card's components.
+  const draggable = properties.allowDrag !== false && enabled && !(custom && editing);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor)
@@ -343,12 +403,13 @@ export const ShadKanban = (props) => {
         onDragCancel={() => setActiveKey(null)}
         onDragEnd={onDragEnd}
       >
-        <div className="flex gap-4 overflow-x-auto pb-1">
+        <div ref={boardRef} className="flex gap-4 overflow-x-auto pb-1">
           {columns.map((column) => (
             <KanbanColumn
               key={column.id}
               column={column}
-              fields={fields}
+              renderBody={renderBody}
+              padding={padding}
               look={look}
               compact={compact}
               showCount={properties.showCount !== false}
@@ -369,9 +430,9 @@ export const ShadKanban = (props) => {
             {activeCard ? (
               <div
                 style={{ ...look.card, boxShadow: SHADOWS.lg }}
-                className={cn('h-full w-full rotate-1 border text-card-foreground', compact ? 'p-2.5' : 'p-3')}
+                className={cn('h-full w-full rotate-1 overflow-hidden border text-card-foreground', padding)}
               >
-                <CardBody card={activeCard} fields={fields} compact={compact} />
+                {renderBody(activeCard)}
               </div>
             ) : null}
           </DragOverlay>,

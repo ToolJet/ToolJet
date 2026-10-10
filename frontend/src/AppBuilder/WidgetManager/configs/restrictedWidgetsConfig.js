@@ -1,6 +1,17 @@
 export const RESTRICTED_WIDGETS_CONFIG = {
   Form: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Accordion'],
-  Kanban_card: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container', 'Accordion', 'Table'],
+  Kanban_card: [
+    'Calendar',
+    'Kanban',
+    'ShadKanban',
+    'Form',
+    'Tabs',
+    'Modal',
+    'Listview',
+    'Container',
+    'Accordion',
+    'Table',
+  ],
   Calendar: ['Calendar', 'Kanban'],
   Container: ['Calendar', 'Kanban'],
   Modal: ['Calendar', 'Kanban'],
@@ -8,7 +19,7 @@ export const RESTRICTED_WIDGETS_CONFIG = {
   ModalSlot: ['Calendar', 'Kanban', 'Table', 'Listview', 'Container', 'Accordion'],
   Tabs: ['Calendar', 'Kanban'],
   Kanban_popout: ['Calendar', 'Kanban'],
-  Listview: ['Calendar', 'Kanban'],
+  Listview: ['Calendar', 'Kanban', 'ShadKanban'],
   Table: ['Kanban'],
 };
 

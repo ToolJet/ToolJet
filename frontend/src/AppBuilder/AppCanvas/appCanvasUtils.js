@@ -463,7 +463,7 @@ export const getParentWidgetFromId = (parentType, parentId) => {
 
   if (parentType === 'ModalV2' && isAddingToSlot) {
     return 'ModalSlot';
-  } else if (parentType === 'Kanban') {
+  } else if (parentType === 'Kanban' || parentType === 'ShadKanban') {
     return 'Kanban_card';
   }
   return parentType;

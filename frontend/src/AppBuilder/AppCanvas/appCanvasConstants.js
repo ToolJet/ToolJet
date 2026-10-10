@@ -37,13 +37,28 @@ export const PAGES_SIDEBAR_WIDTH_EXPANDED = 256;
 
 export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 54;
 
-export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form', 'Accordion', 'FlexContainer'];
+export const SUBCONTAINER_WIDGETS = [
+  'Container',
+  'Tabs',
+  'Listview',
+  'Kanban',
+  'Form',
+  'Accordion',
+  'FlexContainer',
+  // shadcn/ui pack Kanban (experiment): its custom card layout is a per-card canvas, as the native Kanban's.
+  'ShadKanban',
+];
 
 // Subcontainer widget types that use per-row resolution (customResolvables)
-export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table'];
+export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table', 'ShadKanban'];
 
 // Maps per-row subcontainer type → custom resolvable key used inside {{ }} expressions
-export const ROW_SCOPED_RESOLVABLE_KEY_MAP = { Listview: 'listItem', Kanban: 'cardData', Table: 'rowData' };
+export const ROW_SCOPED_RESOLVABLE_KEY_MAP = {
+  Listview: 'listItem',
+  Kanban: 'cardData',
+  Table: 'rowData',
+  ShadKanban: 'cardData',
+};
 
 // Max allowed nesting levels per widget type. Add a new entry to restrict any future widget.
 export const NESTING_LEVEL_LIMITS = { Listview: 2, Table: 3 };
@@ -59,6 +74,7 @@ export const BOX_PADDING = 2;
 export const DROPPABLE_PARENTS = new Set([
   'Calendar',
   'Kanban',
+  'ShadKanban',
   'Form',
   'Tabs',
   'Modal',

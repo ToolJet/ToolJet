@@ -482,6 +482,7 @@ export const handleActivateTargets = (parentId) => {
     'Form',
     'Listview',
     'Kanban',
+    'ShadKanban',
     'ModalV2',
     'Accordion',
     'Table',

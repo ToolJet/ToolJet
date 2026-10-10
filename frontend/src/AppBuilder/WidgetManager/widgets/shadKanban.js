@@ -3,7 +3,7 @@ export const shadKanbanConfig = {
   name: 'ShadKanban',
   displayName: 'Kanban',
   description:
-    'shadcn/ui Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar). Drag to move, optional add and delete buttons, and addCard/updateCard/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.movedCard, lastAddedCard, lastRemovedCard, lastUpdatedCard, cards)',
+    'shadcn/ui Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar), or, with Card content Custom, child components laid out on the card and bound to {{cardData.<field>}}. Drag to move, optional add and delete buttons, and addCard/updateCard/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.movedCard, lastAddedCard, lastRemovedCard, lastUpdatedCard, cards)',
   component: 'ShadKanban',
   defaultSize: {
     width: 43,
@@ -60,6 +60,38 @@ export const shadKanbanConfig = {
           type: 'string',
         },
         defaultValue: 'id',
+      },
+    },
+    cardLayout: {
+      type: 'switch',
+      displayName: 'Card content',
+      options: [
+        {
+          displayName: 'Fields',
+          value: 'fields',
+        },
+        {
+          displayName: 'Custom',
+          value: 'custom',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'fields',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    cardHeight: {
+      type: 'code',
+      displayName: 'Card height (custom content)',
+      validation: {
+        schema: {
+          type: 'number',
+        },
+        defaultValue: 96,
       },
     },
     titleField: {
@@ -476,6 +508,12 @@ export const shadKanbanConfig = {
       },
       idField: {
         value: 'id',
+      },
+      cardLayout: {
+        value: 'fields',
+      },
+      cardHeight: {
+        value: '{{96}}',
       },
       titleField: {
         value: 'title',
