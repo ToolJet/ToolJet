@@ -2,7 +2,7 @@ import { resolveFlexContainerHeight } from '../dynamicHeightReflowFlexContainer'
 import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 // A FlexContainer 'flex' with children, rendered `wrapperWidth` wide. Layouts are canonical; no temp heights.
-const resolve = ({ properties, children, height = 40, wrapperWidth = 1264 }) => {
+const resolve = ({ properties, children, height = 40, wrapperWidth = 1264, temps = {}, bump }) => {
   const layouts = { flex: { height }, ...Object.fromEntries(children.map((c) => [c.id, c.layout])) };
   const components = {
     flex: { component: { definition: { properties: { childOrder: { value: children.map((c) => c.id) } } } } },
@@ -16,14 +16,15 @@ const resolve = ({ properties, children, height = 40, wrapperWidth = 1264 }) => 
     currentPageComponents: components,
     temporaryLayouts: {},
     contextIndices: [],
-    getResolvedComponent: (id) => (id === 'flex' ? { properties } : { properties: {} }),
+    getResolvedComponent: (id) =>
+      id === 'flex' ? { properties } : { properties: children.find((c) => c.id === id)?.properties ?? {} },
     getContainerChildrenMapping: () => children.map((c) => c.id),
     getExposedPropertyForAdditionalActions: () => undefined,
-    calculateMoveableBoxHeightWithId: undefined,
-    getComponentDefinition: () => undefined,
+    calculateMoveableBoxHeightWithId: bump,
+    getComponentDefinition: (id) => ({ component: { component: children.find((c) => c.id === id)?.type } }),
     getCanonicalLayout: (id) => layouts[id],
     getDynamicElementSelector: () => '#flex-wrapper',
-    getEffectiveLayout: (id) => layouts[id],
+    getEffectiveLayout: (id) => (temps[id] ? { ...layouts[id], ...temps[id] } : layouts[id]),
     resolveWidgetVisibility: () => true,
   });
 };
@@ -77,6 +78,54 @@ describe('FlexContainer dynamic height', () => {
       height: 600,
     });
     expect(height).toBe(48 + 24 * 2 + 120 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2);
+  });
+
+  it('fits a row to its tallest child, below its authored height too', () => {
+    // A Luna clinic build drew a row of two cards at 430px; the cards fit their tables at ~260px and the row kept
+    // 170px of empty band under them.
+    const height = resolve({
+      properties: { direction: 'row', padding: 0 },
+      children: cards(2, { width: 20, height: 260 }),
+      height: 430,
+    });
+    expect(height).toBe(260 + chrome(0));
+  });
+
+  it("lets a pack widget's measured height below its drawn height count (a card of a short table)", () => {
+    // The bump floor (calculateMoveableBoxHeightWithId) returns the drawn height for non-input widgets, so a ShadTable
+    // drawn at 340 that renders 161 kept its card at 440.
+    const bump = (id) => (id === 't' ? 340 : 40);
+    const height = resolve({
+      properties: { direction: 'column', padding: 0, cardStyle: 'shadcnCard' },
+      children: [{ id: 't', type: 'ShadTable', layout: { height: 340 } }],
+      temps: { t: { height: 161 } },
+      bump,
+      height: 440,
+    });
+    expect(height).toBe(161 + chrome(0));
+    // A native widget keeps the floor (its label bump).
+    const native = resolve({
+      properties: { direction: 'column', padding: 0, cardStyle: 'shadcnCard' },
+      children: [{ id: 't', type: 'Table', layout: { height: 340 } }],
+      temps: { t: { height: 161 } },
+      bump,
+      height: 440,
+    });
+    expect(native).toBe(340 + chrome(0));
+  });
+
+  it('lets a card child of a row count at its fitted height', () => {
+    const height = resolve({
+      properties: { direction: 'row', padding: 0 },
+      children: [
+        { id: 'a', type: 'FlexContainer', properties: { cardStyle: 'shadcnCard' }, layout: { width: 20, height: 410 } },
+        { id: 'b', type: 'FlexContainer', properties: { cardStyle: 'shadcnCard' }, layout: { width: 20, height: 410 } },
+      ],
+      temps: { a: { height: 264 }, b: { height: 264 } },
+      bump: () => 410,
+      height: 430,
+    });
+    expect(height).toBe(264 + chrome(0));
   });
 
   it('keeps the authored height as the floor', () => {

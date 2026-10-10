@@ -112,8 +112,18 @@ export const resolveFlexContainerHeight = ({
       contextIndices
     );
     let childHeight = effectiveLayout?.height ?? childLayout.height ?? 0;
-    if (typeof calculateMoveableBoxHeightWithId === 'function') {
-      const childDefinition = getComponentDefinition?.(childId);
+    const childDefinition = getComponentDefinition?.(childId);
+    // A component-pack widget fits its content (dynamicHeightPolicy), so its measured height stands even below the
+    // drawn one. The bump below returns the drawn height for every non-input widget, which floored a short ShadTable
+    // at its drawn 340px and left an empty band in its card (2026-10-10).
+    // The same holds for a FlexContainer drawn as a card or a row (a row of cards kept its drawn 430px).
+    const childType = childDefinition?.component?.component ?? '';
+    const fitsContent =
+      /^(Shad|Ant)[A-Z]/.test(childType) ||
+      (childType === 'FlexContainer' &&
+        (['antCard', 'shadcnCard'].includes(childResolved?.properties?.cardStyle) ||
+          childResolved?.properties?.direction === 'row'));
+    if (typeof calculateMoveableBoxHeightWithId === 'function' && !fitsContent) {
       const childStylesDefinition = childDefinition?.component?.definition?.styles;
       const bumpedHeight = calculateMoveableBoxHeightWithId(childId, currentLayout, childStylesDefinition);
       if (typeof bumpedHeight === 'number') {
@@ -191,6 +201,14 @@ export const resolveFlexContainerHeight = ({
   // packs) fits its content instead, so a card never leaves an empty band.
   const heightWithChrome =
     contentHeight + padding * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2 + flexCardHeaderPx(properties);
-  if (flexCardHeaderPx(properties) || ['antCard', 'shadcnCard'].includes(properties.cardStyle)) return heightWithChrome;
+  // A card and a row always fit their content (dynamicHeightPolicy.fitsContentInView): no floor, so a row of cards
+  // whose content is shorter than drawn leaves no empty band under it.
+  if (
+    flexCardHeaderPx(properties) ||
+    ['antCard', 'shadcnCard'].includes(properties.cardStyle) ||
+    properties.direction === 'row'
+  ) {
+    return heightWithChrome;
+  }
   return Math.max(heightWithChrome, canonicalLayout?.height ?? 0);
 };
