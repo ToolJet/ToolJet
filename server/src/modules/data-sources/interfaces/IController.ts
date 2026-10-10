@@ -47,6 +47,8 @@ export interface IDataSourcesController {
     user: User,
     dataSourceId: string,
     testDataSourceDto: TestDataSourceDto,
+    dataSource: DataSourceEntity,
+    userPermissions: UserPermissions,
     branchId?: string
   ): Promise<object>;
 
