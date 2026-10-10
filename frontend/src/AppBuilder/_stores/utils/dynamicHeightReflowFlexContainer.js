@@ -1,6 +1,8 @@
 import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   computeEffectiveFlexDirection,
+  flexCardHeaderPx,
+  flexChildLineWidth,
   normalizeChildOrder,
   resolveFlexChildSizing,
 } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
@@ -120,7 +122,7 @@ export const resolveFlexContainerHeight = ({
     }
 
     const fallbackWidth = childLayout.widthPx ?? effectiveLayout?.widthPx ?? availableWidth;
-    const { fillWidth, widthPx } = resolveFlexChildSizing(effectiveLayout, {
+    const { fillWidth, widthPx, minWidthPx } = resolveFlexChildSizing(effectiveLayout, {
       widthPx: fallbackWidth,
       height: childHeight,
     });
@@ -130,6 +132,7 @@ export const resolveFlexContainerHeight = ({
       height: childHeight,
       width: childWidth,
       fillWidth,
+      minWidthPx,
     });
     return accumulator;
   }, []);
@@ -155,19 +158,15 @@ export const resolveFlexContainerHeight = ({
     // available width, then start a new line. Each line contributes its tallest
     // child's height; gaps are added between lines.
     //
-    // fillWidth children render with `flex: '1 0 auto'` and no explicit outer
-    // width (see useFlexWidgetLayout.js). Their basis resolves to content
-    // size, which for our wrappers is `availableWidth` (the widget fills the
-    // parent). Since `flex-shrink: 0`, the browser cannot shrink that basis to
-    // fit siblings, so each fillWidth child effectively claims the full line.
-    // Pack them with `availableWidth` so the resolver matches: 1 fillWidth
-    // child = 1 line, and a fillWidth child placed after a non-fill child
-    // forces a wrap to a new line.
+    // fillWidth children render with a zero basis and their `minWidthPx` as
+    // min-width (see computeFlexChildFlexStyle), so the browser packs them at
+    // that minimum and grows them afterwards. Pack the same way: fill children
+    // share a line until their minimum widths no longer fit.
     const lines = childMetrics.reduce(
       (accumulator, child) => {
         const currentLine = accumulator[accumulator.length - 1];
         const rawChildWidth = Number.isFinite(child.width) ? child.width : availableWidth;
-        const childWidth = child.fillWidth ? availableWidth : rawChildWidth;
+        const childWidth = Math.min(flexChildLineWidth({ ...child, width: rawChildWidth }), availableWidth);
         const nextWidth = currentLine.items === 0 ? childWidth : currentLine.width + gap + childWidth;
 
         if (currentLine.items > 0 && nextWidth > availableWidth) {
@@ -189,6 +188,7 @@ export const resolveFlexContainerHeight = ({
   // Add FlexContainer chrome after content height. The canonical layout remains
   // a floor so enabling dynamic height never silently shrinks the component
   // below the size the app author drew in the editor.
-  const heightWithChrome = contentHeight + padding * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2;
+  const heightWithChrome =
+    contentHeight + padding * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2 + flexCardHeaderPx(properties);
   return Math.max(heightWithChrome, canonicalLayout?.height ?? 0);
 };

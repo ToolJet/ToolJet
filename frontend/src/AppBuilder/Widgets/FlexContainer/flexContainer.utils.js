@@ -108,7 +108,70 @@ export const resolveFlexChildSizing = (layoutData = {}, fallbacks = {}) => {
   const widthPx = layoutData.widthPx ?? fallbackWidthPx ?? null;
   const height = layoutData.height ?? fallbackHeight ?? null;
 
-  return { fillWidth, widthPx, height };
+  // Row fill children share the free space by `grow` (2 next to 1 takes two thirds) and wrap to a new line once
+  // narrower than `minWidthPx` (when the container wraps).
+  const grow = Number(layoutData.grow);
+  const minWidthPx = Number(layoutData.minWidthPx);
+
+  return {
+    fillWidth,
+    widthPx,
+    height,
+    grow: Number.isFinite(grow) && grow > 0 ? grow : 1,
+    minWidthPx: Number.isFinite(minWidthPx) && minWidthPx > 0 ? minWidthPx : 0,
+  };
+};
+
+/**
+ * Flex sizing of a FlexContainer child's wrapper.
+ *
+ * A fill child in a row starts from a zero basis and may shrink, so siblings share the line by `grow` and the
+ * child's own content can never claim the row. (A content-sized basis let a fill child rendered at the row's width
+ * push its siblings off the line, and a nested container measuring its own width grew without end.)
+ */
+export const computeFlexChildFlexStyle = ({
+  isFlexRow,
+  flexShouldStack,
+  fillWidth,
+  grow = 1,
+  minWidthPx = 0,
+  effectiveWidthPx,
+  effectiveHeightPx,
+  availableWidth,
+}) => {
+  if (flexShouldStack && !isFlexRow) {
+    return {
+      flex: `0 0 ${effectiveHeightPx}px`,
+      height: `${effectiveHeightPx}px`,
+      minHeight: 0,
+      ...(fillWidth
+        ? { width: '100%', minWidth: 0 }
+        : { width: `${Math.min(effectiveWidthPx, availableWidth)}px`, maxWidth: '100%', minWidth: 0 }),
+    };
+  }
+  if (isFlexRow) {
+    return fillWidth
+      ? { flex: `${grow} 1 0px`, minWidth: `${minWidthPx}px`, height: `${effectiveHeightPx}px` }
+      : { flex: `0 0 ${effectiveWidthPx}px`, minWidth: 0, maxWidth: '100%', height: `${effectiveHeightPx}px` };
+  }
+  return { flex: `0 0 ${effectiveHeightPx}px`, width: fillWidth ? '100%' : `${effectiveWidthPx}px`, minHeight: 0 };
+};
+
+/** Width a child takes on a wrapping line, as the browser packs it: a fill child its minimum, a fixed child its width. */
+export const flexChildLineWidth = ({ fillWidth, minWidthPx = 0, width }) => (fillWidth ? minWidthPx || 0 : width);
+
+/** Height of the card header a FlexContainer draws above its body (component packs): an Ant card's 56px bar with
+ *  title and extra, or a shadcn card's title with an optional description beneath it. */
+export const FLEX_CARD_HEADER_PX = 56;
+export const SHADCN_CARD_HEADER_PX = { title: 48, withDescription: 70 };
+export const flexCardHeaderPx = (properties = {}) => {
+  const { cardStyle, cardTitle, cardExtra } = properties;
+  if (cardStyle === 'antCard') return cardTitle || cardExtra ? FLEX_CARD_HEADER_PX : 0;
+  if (cardStyle === 'shadcnCard') {
+    if (!cardTitle && !cardExtra) return 0;
+    return cardExtra ? SHADCN_CARD_HEADER_PX.withDescription : SHADCN_CARD_HEADER_PX.title;
+  }
+  return 0;
 };
 
 /** Default flex-child layout when a widget is first dropped into a FlexContainer. */

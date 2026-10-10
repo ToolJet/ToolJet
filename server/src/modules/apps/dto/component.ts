@@ -45,6 +45,14 @@ export class ComponentLayoutDto {
   @IsOptional()
   fillWidth?: boolean;
 
+  @IsNumber()
+  @IsOptional()
+  grow?: number;
+
+  @IsNumber()
+  @IsOptional()
+  minWidthPx?: number;
+
 }
 
 export class LayoutData {
