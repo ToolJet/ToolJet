@@ -311,7 +311,8 @@ const onWindowError = (event) => {
 const onRejection = (reason) => {
   if (current) current.errors.push(`unhandled rejection: ${describeError(reason)}`);
 };
-const LOOP_WARNING = /Maximum update depth|Too many re-renders|infinite loop/i;
+// Update loops, and a store write during render (another component updated while this one rendered).
+const LOOP_WARNING = /Maximum update depth|Too many re-renders|infinite loop|Cannot update a component/i;
 let consoleSpy;
 export const installGuards = () => {
   beforeAll(() => {

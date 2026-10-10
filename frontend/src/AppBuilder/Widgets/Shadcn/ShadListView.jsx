@@ -108,17 +108,16 @@ export const ShadListView = (props) => {
     if (paged.page !== page) setPage(paged.page);
   }, [paged.page]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Each row reads its item as {{listItem}}; written before the rows render, as the native Listview does, and only
-  // when the page's items, the row template or the nesting changes.
+  // Each row reads its item as {{listItem}}, written when the page's items, the row template or the nesting changes.
+  // Written in a layout effect, not during render (the native Listview's way), which updated the store, and so other
+  // components, while this one rendered: React warned, and it risked a render loop. The layout effect runs before
+  // paint and before the rows' mount effects; the rows wait for the first write, and after a change they re-render
+  // with the new items before the page paints.
   const itemsKey = stringify(items);
-  const published = useRef({ itemsKey: null, childCount: -1, parent: '' });
   const parentKey = parentIndices.join(',');
-  if (
-    published.current.itemsKey !== itemsKey ||
-    published.current.childCount !== childCount ||
-    published.current.parent !== parentKey
-  ) {
-    published.current = { itemsKey, childCount, parent: parentKey };
+  const signature = `${itemsKey}|${childCount}|${parentKey}`;
+  const [published, setPublished] = useState(null);
+  useLayoutEffect(() => {
     if (items.length) {
       updateCustomResolvables(
         id,
@@ -129,7 +128,8 @@ export const ShadListView = (props) => {
       );
       initExposedValueArrayForChildren(id, items.length, moduleId, parentIndices);
     }
-  }
+    setPublished(signature);
+  }, [signature]); // eslint-disable-line react-hooks/exhaustive-deps
   useExposedValueBatch(items.length);
 
   // Selection by item key, so it survives a refetch that reorders or reloads the data.
@@ -246,7 +246,7 @@ export const ShadListView = (props) => {
             gap: mode === 'list' && properties.showBorder ? 0 : gap,
           }}
         >
-          {items.map((item, index) => (
+          {(published === null ? [] : items).map((item, index) => (
             <Row
               key={keys[index]}
               id={id}
