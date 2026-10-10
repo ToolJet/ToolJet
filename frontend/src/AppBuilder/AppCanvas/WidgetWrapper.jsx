@@ -149,7 +149,6 @@ const WidgetWrapper = memo(
 
     const modalWithoutTrigger = useStore(
       (state) =>
-        isFlexLayout &&
         isModalType(componentType) &&
         state.getResolvedComponent?.(id, resolveIndex, moduleId)?.properties?.useDefaultButton === false,
       shallow
@@ -223,12 +222,16 @@ const WidgetWrapper = memo(
       display: !visibility && mode === 'view' ? 'none' : 'block',
     };
 
-    // A dialog without its trigger button draws nothing in place, so in a flex container it leaves the flow: it took a
-    // slot and a gap, and a header's action button stopped short of the row's end.
+    // A dialog without its trigger button draws nothing in place (the open dialog renders outside this box). In a flex
+    // container it leaves the flow: it took a slot and a gap, and a header's action button stopped short of the row's
+    // end. On the grid its empty box stays where it was drawn, so it lets presses through: a closed sheet drawn over a
+    // Kanban board swallowed every card drag.
     const outerStyle = isFlexLayout
       ? modalWithoutTrigger && mode === 'view'
         ? { ...flexLayout.outerStyle, position: 'absolute', flex: 'none', width: 0, height: 0, minHeight: 0 }
         : flexLayout.outerStyle
+      : modalWithoutTrigger && mode === 'view'
+      ? { ...gridOuterStyle, pointerEvents: 'none' }
       : gridOuterStyle;
     const renderWidgetWidth = isFlexLayout
       ? isFlexSubcontainer && flexLayout.measuredWidth != null
