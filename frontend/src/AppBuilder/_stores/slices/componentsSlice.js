@@ -1440,7 +1440,7 @@ export const createComponentsSlice = (set, get) => ({
 
         // For ListView, initialize customResolvables immediately after processing
         // so that child components processed later can access them
-        if (newComponent.component.component === 'Listview') {
+        if (['Listview', 'ShadListView'].includes(newComponent.component.component)) {
           const { getResolvedComponent, updateCustomResolvables, getBaseParentId, getComponentDefinition } = get();
           const resolvedComponent = getResolvedComponent(newComponent.id, null, moduleId);
           const data = resolvedComponent?.properties?.data;
@@ -3603,7 +3603,7 @@ export const createComponentsSlice = (set, get) => ({
     // For ListView, we use the last index (immediate parent's row index)
     const lastIndex = Array.isArray(indices) ? indices[indices.length - 1] : indices;
 
-    if (parentType === 'Listview') {
+    if (parentType === 'Listview' || parentType === 'ShadListView') {
       let parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
       if (lastIndex == null) {
         return undefined;

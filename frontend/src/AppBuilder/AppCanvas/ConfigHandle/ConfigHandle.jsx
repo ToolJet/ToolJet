@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { DROPPABLE_PARENTS } from '../appCanvasConstants';
+import { DROPPABLE_PARENTS, isTabsType } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
@@ -52,7 +52,7 @@ export const ConfigHandle = ({
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation, shallow);
   const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
   const currentTab = useStore(
-    (state) => componentType === 'Tabs' && state.getExposedValueOfComponent(id)?.currentTab,
+    (state) => isTabsType(componentType) && state.getExposedValueOfComponent(id)?.currentTab,
     shallow
   );
   const [hideDynamicHeightInfo, setHideDynamicHeightInfo] = useState(
@@ -229,7 +229,7 @@ export const ConfigHandle = ({
         if (isModal) {
           setSelectedComponentAsModal(id);
         }
-        if (componentType === 'Tabs') {
+        if (isTabsType(componentType)) {
           setFocusedParentId(`${id}-${currentTab}`);
         } else {
           if (DROPPABLE_PARENTS.has(componentType)) {

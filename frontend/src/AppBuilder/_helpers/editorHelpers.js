@@ -278,6 +278,10 @@ const ShadPieChart = lazy(() =>
 const ShadKanban = lazy(() =>
   import('@/AppBuilder/Widgets/Shadcn/ShadKanban').then((m) => ({ default: m.ShadKanban }))
 );
+const ShadTabs = lazy(() => import('@/AppBuilder/Widgets/Shadcn/ShadTabs').then((m) => ({ default: m.ShadTabs })));
+const ShadListView = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/ShadListView').then((m) => ({ default: m.ShadListView }))
+);
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -414,6 +418,8 @@ export const AllComponents = {
   ShadBarChart,
   ShadPieChart,
   ShadKanban,
+  ShadTabs,
+  ShadListView,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,

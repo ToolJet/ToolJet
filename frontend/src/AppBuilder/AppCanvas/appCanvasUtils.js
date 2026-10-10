@@ -16,6 +16,7 @@ import {
   MODAL_CANVAS_PADDING,
   LISTVIEW_CANVAS_PADDING,
   HOVER_CLICK_OUTLINE_BORDER,
+  isTabsType,
 } from './appCanvasConstants';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
@@ -375,7 +376,7 @@ const collectChildComponents = (allComponents, parentId, visited) => {
     const componentParentId = allComponents[componentId].component?.parent;
 
     const isParentTabORCalendar =
-      allComponents[parentId]?.component?.component === 'Tabs' ||
+      isTabsType(allComponents[parentId]?.component?.component) ||
       allComponents[parentId]?.component?.component === 'Calendar' ||
       allComponents[parentId]?.component?.component === 'Kanban' ||
       allComponents[parentId]?.component?.component === 'Container' ||
@@ -445,7 +446,7 @@ export const computeViewerBackgroundColor = (isAppDarkMode, canvasBgColor) => {
 export const getParentComponentIdByType = ({ child, parentComponent, parentId, slotName }) => {
   const { tab } = child;
 
-  if (parentComponent === 'Tabs') return `${parentId}-${tab}`;
+  if (isTabsType(parentComponent)) return `${parentId}-${tab}`;
   else if (
     slotName &&
     (parentComponent === 'Form' ||
@@ -515,7 +516,7 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
   if (componentType === 'Listview') {
     padding = 2 * LISTVIEW_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 5 + 2 * HOVER_CLICK_OUTLINE_BORDER; // 5 is accounting for scrollbar
   }
-  if (componentType === 'Tabs') {
+  if (isTabsType(componentType)) {
     padding =
       2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * HOVER_CLICK_OUTLINE_BORDER;
   }
@@ -525,7 +526,7 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
 
 export const getSubContainerHeightAfterPadding = (componentType) => {
   let height = '100%';
-  if (componentType === 'Tabs') {
+  if (isTabsType(componentType)) {
     height = `calc(100% + ${HOVER_CLICK_OUTLINE_BORDER}px + 2.5px)`;
   } else {
     height = `calc(100% + ${HOVER_CLICK_OUTLINE_BORDER}px)`;

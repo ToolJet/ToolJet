@@ -683,6 +683,10 @@ export class AppsUtilService implements IAppsUtilService {
         componentTypes.find((comp) => currentComponentData.component.component === comp.component)
       );
 
+      // A type the server has no widget config for (e.g. the frontend's component packs) is served as stored, as the
+      // EE override does; without this the app fails to load.
+      if (!componentMeta) continue;
+
       const mergedDefinition = {
         // ...componentMeta.definition,
         properties: mergeWith(

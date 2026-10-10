@@ -5,6 +5,7 @@ import {
   MODAL_CANVAS_PADDING,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
   TAB_CANVAS_PADDING,
+  isTabsType,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
@@ -323,6 +324,7 @@ const getExtraContainerHeight = ({
   getComponentDefinition,
   isAccordionExpanded,
   hideTabs,
+  tabsExtraChrome = 0,
 }) => {
   let extraHeight = 0;
   let nextCurrentMax = currentMax;
@@ -365,14 +367,14 @@ const getExtraContainerHeight = ({
         extraHeight += footerHeight + 14;
       }
     }
-  } else if (componentType === 'Tabs') {
+  } else if (isTabsType(componentType)) {
     // Tab pane chrome: TAB_CANVAS_PADDING (8) top + bottom around the
     // SubContainer canvas, plus the tab strip (50) unless `hideTabs` is on
     // (strip becomes `display:none`). +16 covers the .real-canvas
     // `calc(100% + 3.5px)` extension plus the ~7px scrollHeight overshoot
     // that growing leaf widgets (e.g. TextArea labels) report past their
     // moveable-box height.
-    extraHeight = TAB_CANVAS_PADDING * 2 + 16 + (hideTabs ? 0 : TABS_TAB_BAR_HEIGHT);
+    extraHeight = TAB_CANVAS_PADDING * 2 + 16 + (hideTabs ? 0 : TABS_TAB_BAR_HEIGHT) + tabsExtraChrome;
   } else if (componentType === 'ModalV2') {
     // Modal body chrome: MODAL_CANVAS_PADDING (5) top + bottom around the
     // SubContainer canvas (stylesFactory.js modalBody) + safety for the
@@ -626,7 +628,7 @@ export const resolveContainerHeight = ({
   // Tabs: resolve active tab and pretend the container id is `<id>-<tabId>`
   // when looking up children. Fallback chain handles nested/inactive cases
   // where the DOM attribute isn't present.
-  if (componentType === 'Tabs') {
+  if (isTabsType(componentType)) {
     const activeTabFromElement = element?.getAttribute('activetab');
     const activeTabFromExposedState = getExposedPropertyForAdditionalActions(componentId, context, 'currentTab');
     const configuredTabs = component?.properties?.tabItems || component?.properties?.tabs;
@@ -719,7 +721,7 @@ export const resolveContainerHeight = ({
   } = getExtraContainerHeight({
     componentId: modifiedComponentId,
     componentType,
-    contextIndices: componentType === 'Tabs' ? null : context,
+    contextIndices: isTabsType(componentType) ? null : context,
     element,
     currentMax,
     getResolvedComponent,
@@ -727,6 +729,11 @@ export const resolveContainerHeight = ({
     getComponentDefinition,
     isAccordionExpanded,
     hideTabs: component?.properties?.hideTabs === true,
+    // shadcn/ui Tabs (experiment): its 1px frame, and the wizard's Back/Next footer (ShadTabs STEP_NAV_HEIGHT).
+    tabsExtraChrome:
+      componentType === 'ShadTabs'
+        ? 2 + (component?.properties?.variant === 'steps' && component?.properties?.showStepNav !== false ? 56 : 0)
+        : 0,
   });
 
   currentMax = nextCurrentMax;

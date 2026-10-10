@@ -20,6 +20,7 @@ export const RESTRICTED_WIDGETS_CONFIG = {
   Tabs: ['Calendar', 'Kanban'],
   Kanban_popout: ['Calendar', 'Kanban'],
   Listview: ['Calendar', 'Kanban', 'ShadKanban'],
+  ShadListView: ['Calendar', 'Kanban', 'ShadKanban'],
   Table: ['Kanban'],
 };
 

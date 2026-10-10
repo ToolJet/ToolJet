@@ -54,6 +54,7 @@ import {
   SUBCONTAINER_WIDGETS,
   TOP_ALIGNMENT_HEIGHT_INCREMENT,
   NESTING_LEVEL_LIMITS,
+  isTabsType,
 } from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
@@ -217,7 +218,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
           const componentType = boxList.find((box) => box.id === parentId)?.component.component;
           var parentHeight = parentElem?.clientHeight || height;
-          if (height > parentHeight && ['Tabs', 'Listview'].includes(componentType)) {
+          if (height > parentHeight && (isTabsType(componentType) || componentType === 'Listview')) {
             height = parentHeight;
             y = 0;
           }

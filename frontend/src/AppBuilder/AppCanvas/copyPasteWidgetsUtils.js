@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
-import { NO_OF_GRIDS } from './appCanvasConstants';
+import { NO_OF_GRIDS, isTabsType } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
 
@@ -117,7 +117,7 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
   const parentComponent = allComponents?.[parentId];
   if (parentComponent) {
     return (
-      parentComponent.component.component === 'Tabs' ||
+      isTabsType(parentComponent.component.component) ||
       parentComponent.component.component === 'Calendar' ||
       parentComponent.component.component === 'Container' ||
       parentComponent.component.component === 'Accordion' ||
@@ -309,7 +309,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     !Object.keys(components).find(
       (key) =>
         targetParentId === key ||
-        (components?.[key]?.component.component === 'Tabs' &&
+        (isTabsType(components?.[key]?.component.component) &&
           targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
         (['Container', 'Form', 'ModalV2', 'Accordion'].includes(components?.[key]?.component.component) &&
           ['header', 'footer'].some((section) => targetParentId.includes(section)))

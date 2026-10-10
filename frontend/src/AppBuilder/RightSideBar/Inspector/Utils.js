@@ -196,7 +196,8 @@ export function renderElement(
     componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'FileInput' ||
     componentConfig.component == 'FileButton' ||
-    componentConfig.component == 'Tabs'
+    componentConfig.component == 'Tabs' ||
+    componentConfig.component == 'ShadTabs'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

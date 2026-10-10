@@ -26,6 +26,8 @@ import { shadTableConfig } from './shadTable';
 import { shadTextConfig } from './shadText';
 import { shadTextareaConfig } from './shadTextarea';
 import { shadToggleGroupConfig } from './shadToggleGroup';
+import { shadListViewConfig } from './shadListView';
+import { shadTabsConfig } from './shadTabs';
 
 export const shadcnConfigs = [
   shadAccordionConfig,
@@ -55,5 +57,7 @@ export const shadcnConfigs = [
   shadTextConfig,
   shadTextareaConfig,
   shadToggleGroupConfig,
+  shadListViewConfig,
+  shadTabsConfig,
 ];
 export const SHADCN_COMPONENTS = shadcnConfigs.map((c) => c.name);

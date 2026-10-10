@@ -2,7 +2,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
-import { NO_OF_GRIDS } from '../appCanvasConstants';
+import { NO_OF_GRIDS, isTabsType } from '../appCanvasConstants';
 import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
@@ -483,6 +483,7 @@ export const handleActivateTargets = (parentId) => {
     'Listview',
     'Kanban',
     'ShadKanban',
+    'ShadListView',
     'ModalV2',
     'Accordion',
     'Table',
@@ -490,7 +491,7 @@ export const handleActivateTargets = (parentId) => {
 
   const newParentType = document.getElementById('canvas-' + parentId)?.getAttribute('component-type');
   let _parentId = parentId;
-  if (newParentType === 'Tabs') {
+  if (isTabsType(newParentType)) {
     _parentId = getTabId(parentId);
   } else if (WIDGETS_WITH_CANVAS_OUTLINE.includes(newParentType)) {
     _parentId = getSubContainerIdWithSlots(parentId);

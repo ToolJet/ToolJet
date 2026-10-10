@@ -941,6 +941,7 @@ const GetAccordion = React.memo(
         return <Table {...restProps} />;
 
       case 'Tabs':
+      case 'ShadTabs':
         return <TabsLayout {...restProps} key={tabsPropertiesPanelKey} />;
 
       case 'Chart':
