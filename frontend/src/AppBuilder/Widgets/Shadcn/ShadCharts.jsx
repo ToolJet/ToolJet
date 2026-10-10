@@ -175,7 +175,7 @@ const categoryAxisWidth = (data, key) => {
 export const ShadAreaChart = (props) => {
   const p = props.properties;
   const data = list(p.data);
-  const { x: xField, series } = resolveChartFields(data, xField, seriesOf(p));
+  const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
   const Chart = p.lineOnly === true ? LineChart : AreaChart;
   const compact = isCompactChart(props.height);
   const color = (i) => seriesColor(p.colors, i);
@@ -229,7 +229,7 @@ export const ShadAreaChart = (props) => {
 export const ShadBarChart = (props) => {
   const p = props.properties;
   const data = list(p.data);
-  const { x: xField, series } = resolveChartFields(data, xField, seriesOf(p));
+  const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
   const horizontal = p.horizontal === true;
   const compact = isCompactChart(props.height);
   const color = (i) => seriesColor(p.colors, i);
