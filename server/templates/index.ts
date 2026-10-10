@@ -12,3 +12,7 @@ function getTemplateManifests() {
 }
 
 export const TemplateAppManifests = getTemplateManifests();
+
+export const TemplateCategories: Record<string, string> = JSON.parse(
+  readFileSync('templates/categories.json', 'utf-8')
+);

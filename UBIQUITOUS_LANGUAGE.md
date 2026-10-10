@@ -51,7 +51,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | — |
 | **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | "module" also means a NestJS backend module — always qualify |
 | **Module Pin** | A ModuleViewer component pinning a specific module version via `moduleReferenceId` (stable UUID per version row, survives git/zip round-trips); publishing blocks on draft/orphan/unpinned modules | — |
-| **Template** | A pre-built app sample that users can clone as a starting point (60+ across 10 categories) | — |
+| **Template** | A pre-built app sample that users can clone as a starting point; the set and its categories are defined in `server/templates` | — |
 | **Conditional Styling** | Dynamic styles applied to components based on runtime conditions | — |
 | **Custom CSS** | User-defined free-form CSS applied at component or app level | Custom Styling (related but different — see Flagged Ambiguities) |
 | **Theme** | A workspace-wide color and font scheme (EE feature) | — |

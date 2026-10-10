@@ -56,7 +56,9 @@ jobs:
           predicate-quantifier: 'every'
           filters: |
             server:
-              - 'server/**'
+              # braces: with the 'every' quantifier each list item must match, so extra paths cannot be extra items.
+              # the template preview HTML and plugin manifests are inputs of server's templates:generate --check
+              - '{server/**,frontend/assets/custom-components/templates/**,plugins/packages/*/lib/manifest.json}'
               - '!**/*.md'
               - '!server/ee'
             frontend:
@@ -180,6 +182,7 @@ jobs:
       - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix server lint 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; npm run --prefix server build 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; bash server/scripts/check-ee-leak.sh 2>&1 | tee -a /tmp/buildlog/server.log
+      - run: set -o pipefail; npm run --prefix server templates:generate -- --check 2>&1 | tee -a /tmp/buildlog/server.log
       - name: Upload lint/build log for the PR comment
         if: failure()
         uses: actions/upload-artifact@v7

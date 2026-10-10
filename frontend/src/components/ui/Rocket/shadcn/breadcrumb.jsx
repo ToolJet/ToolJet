@@ -28,7 +28,7 @@ function BreadcrumbItem({ className, ...props }) {
 }
 
 function BreadcrumbLink({ asChild, className, ...props }) {
-  const Comp = asChild ? Slot.Root : 'a';
+  const Comp = asChild ? Slot : 'a';
 
   return (
     <Comp

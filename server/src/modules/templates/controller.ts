@@ -1,14 +1,26 @@
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
-import { Controller, Post, UseGuards, Get, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Get,
+  Body,
+  Param,
+  Query,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+} from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { User } from '@modules/app/decorators/user.decorator';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { TemplateAppManifests } from 'src/../templates';
+import { TemplateAppManifests, TemplateCategories } from 'src/../templates';
 import { TemplatesService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FeatureAbilityGuard } from './ability/guard';
 import { FEATURE_KEY } from './constants';
+import { TemplateDefaultNameQueryDto, TemplateDefaultNameResponseDto, TemplateListResponseDto } from './dto';
 
 @InitModule(MODULES.TEMPLATES)
 @Controller('library_apps')
@@ -55,8 +67,25 @@ export class TemplateAppsController {
   @InitFeature(FEATURE_KEY.FETCH_TEMPLATES_LIST)
   @Get()
   @UseGuards(JwtAuthGuard)
-  async index() {
-    return { template_app_manifests: TemplateAppManifests };
+  @UseInterceptors(ClassSerializerInterceptor)
+  async index(): Promise<TemplateListResponseDto> {
+    return plainToInstance(TemplateListResponseDto, {
+      template_app_manifests: TemplateAppManifests,
+      categories: TemplateCategories,
+    });
+  }
+
+  @InitFeature(FEATURE_KEY.GET_TEMPLATE_DEFAULT_NAME)
+  @Get(':identifier/default-name')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  async getDefaultAppName(
+    @User() user,
+    @Param('identifier') identifier: string,
+    @Query() query: TemplateDefaultNameQueryDto
+  ): Promise<TemplateDefaultNameResponseDto> {
+    const name = await this.templatesService.getDefaultAppName(user, identifier, query.branchId);
+    return plainToInstance(TemplateDefaultNameResponseDto, { name });
   }
 
   @Get(':identifier/plugins')

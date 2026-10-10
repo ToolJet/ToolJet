@@ -1,167 +1,144 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Container, Row, Col } from 'react-bootstrap';
-import Categories, { categoryTitles } from './Categories';
-import AppList from './AppList';
-import { libraryAppService, authenticationService } from '@/_services';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import _ from 'lodash';
-import TemplateDisplay from './TemplateDisplay';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Rocket';
+import { cn } from '@/lib/utils';
+import { libraryAppService } from '@/_services';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
-
-// Categories are listed alphabetically by their display title, after "All categories".
-const categoryTitle = (categoryId) => categoryTitles[categoryId] || categoryId;
-
-const identifyUniqueCategories = (templates) =>
-  [
-    'all',
-    ...[...new Set(_.map(templates, 'category'))].sort((a, b) => categoryTitle(a).localeCompare(categoryTitle(b))),
-  ].map((categoryId) => ({
-    id: categoryId,
-    count: templates.filter((template) => categoryId === 'all' || template.category === categoryId).length,
-  }));
+import GalleryView from './GalleryView';
+import TemplateDetailsView, { TemplateBreadcrumb } from './TemplateDetailsView';
+import { trackTemplateEvent } from './analytics';
 
 export default function TemplateLibraryModal(props) {
-  const navigate = useNavigate();
-  const [libraryApps, setLibraryApps] = useState([]);
-  const [selectedCategory, selectCategory] = useState({ id: 'all', count: 0 });
-  const filteredApps = libraryApps.filter(
-    (app) => selectedCategory.id === 'all' || app.category === selectedCategory.id
-  );
-  const [selectedApp, selectApp] = useState(undefined);
-  const [showCreateAppFromTemplateModal, setShowCreateAppFromTemplateModal] = useState(false);
   const { t } = useTranslation();
-
-  useEffect(() => {
-    selectApp(filteredApps[0]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory]);
-
-  const selectApplication = (app) => {
-    posthogHelper.captureEvent('click_template_name', {
-      workspace_id:
-        authenticationService?.currentUserValue?.organization_id ||
-        authenticationService?.currentSessionValue?.current_organization_id,
-      template_category_id: selectedCategory?.id,
-      template_name: app?.name,
-    });
-    selectApp(app);
-  };
-
-  useEffect(() => {
-    libraryAppService
-      .templateManifests()
-      .then((data) => {
-        if (data['template_app_manifests']) {
-          setLibraryApps(data['template_app_manifests']);
-          selectApp(data['template_app_manifests'][0]);
-        }
-      })
-      .catch(() => {
-        toast.error('Could not fetch library apps', {
-          position: 'top-center',
-        });
-        setLibraryApps([]);
-      });
-  }, []);
-
-  const [deploying, setDeploying] = useState(false);
+  const [templates, setTemplates] = useState([]);
+  const [categoryTitles, setCategoryTitles] = useState({});
+  const [loadStatus, setLoadStatus] = useState('loading'); // 'loading' | 'loaded' | 'error'
+  const hasRequested = useRef(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const galleryScrollRef = useRef(null);
+  const galleryScrollTop = useRef(0);
+  const detailsOpenedAt = useRef(0);
 
   const { currentBranch, orgGitConfig } = useWorkspaceBranchesStore((state) => ({
     currentBranch: state.currentBranch,
     orgGitConfig: state.orgGitConfig,
   }));
-
   const isOnDefaultBranch =
     (orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled) &&
     (currentBranch?.is_default || currentBranch?.isDefault);
 
+  const loadTemplates = useCallback(() => {
+    setLoadStatus('loading');
+    libraryAppService
+      .templateManifests()
+      .then((data) => {
+        setTemplates(data?.template_app_manifests ?? []);
+        setCategoryTitles(data?.categories ?? {});
+        setLoadStatus('loaded');
+      })
+      .catch(() => setLoadStatus('error'));
+  }, []);
+
+  // The manifest list is large, so it is fetched on first open rather than on every dashboard load
+  useEffect(() => {
+    if (props.show && !hasRequested.current) {
+      hasRequested.current = true;
+      loadTemplates();
+    }
+  }, [props.show, loadTemplates]);
+
+  // Reopening the modal always starts on the grid, whoever closed it
+  useEffect(() => {
+    if (!props.show) setSelectedTemplate(null);
+  }, [props.show]);
+
+  // The gallery stays mounted while details are open; restore its scroll position on the way back
+  useLayoutEffect(() => {
+    if (!selectedTemplate && galleryScrollRef.current) galleryScrollRef.current.scrollTop = galleryScrollTop.current;
+  }, [selectedTemplate]);
+
+  const categoryTitle = (categoryId) => categoryTitles[categoryId] || categoryId;
+
+  const openDetails = (template) => {
+    galleryScrollTop.current = galleryScrollRef.current?.scrollTop ?? 0;
+    detailsOpenedAt.current = Date.now();
+    trackTemplateEvent('click_template_name', {
+      template_category_id: template.category,
+      template_name: template.name,
+    });
+    setSelectedTemplate(template);
+  };
+
+  const backToGallery = () => {
+    trackTemplateEvent('template_details_back', {
+      template_name: selectedTemplate?.name,
+      seconds_on_details: Math.round((Date.now() - detailsOpenedAt.current) / 1000),
+    });
+    setSelectedTemplate(null);
+  };
+
+  const close = () => {
+    setSelectedTemplate(null);
+    props.onCloseButtonClick();
+  };
+
+  const createFromTemplate = () => {
+    if (isOnDefaultBranch) {
+      toast.error('Master is locked. Create a branch to create an app from template.', { position: 'top-center' });
+      return;
+    }
+    const template = selectedTemplate;
+    trackTemplateEvent('create_application_from_template', {
+      template_category_id: template.category,
+      template_name: template.name,
+      button_name: 'create_application_from_template',
+      previous_action_button_name: props.fromButton,
+    });
+    close();
+    props.openCreateAppFromTemplateModal(template);
+  };
+
   return (
-    <Modal
-      show={props.show}
-      onHide={props.onCloseButtonClick}
-      className={`template-library-modal ${props.darkMode ? 'dark-mode dark-theme' : ''}`}
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-    >
-      <Modal.Header>
-        <Modal.Title data-cy="select-template-header">
-          {t('homePage.templateLibraryModal.select', 'Select template')}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Container fluid>
-          <Row>
-            <Col
-              className="categories-column"
-              xs={3}
-              style={{ borderRight: '1px solid #D2DDEC', height: '100%', overflowY: 'auto' }}
-            >
-              <Categories
-                categories={identifyUniqueCategories(libraryApps)}
-                selectedCategory={selectedCategory}
-                selectCategory={selectCategory}
-              />
-            </Col>
-            <Col xs={9} style={{ height: '100%' }}>
-              <Container fluid>
-                <Row style={{ height: '90%' }}>
-                  <Col className="template-list-column" xs={3} style={{ height: '100%', overflowY: 'auto' }}>
-                    <AppList apps={filteredApps} selectApp={selectApplication} selectedApp={selectedApp} />
-                  </Col>
-                  <Col xs={9} style={{}}>
-                    <TemplateDisplay app={selectedApp} darkMode={props.darkMode} />
-                  </Col>
-                </Row>
-                <Row style={{ height: '10%' }}>
-                  <Col
-                    xs={12}
-                    className="d-flex flex-column align-items-end template-modal-control-column"
-                    style={{ borderTop: '1px solid #D2DDEC', zIndex: 1 }}
-                  >
-                    <div className="d-flex flex-row align-items-center" style={{ height: '100%' }}>
-                      <ButtonSolid variant="tertiary" onClick={props.onCloseButtonClick} data-cy="cancel-button">
-                        {t('globals.cancel', 'Cancel')}
-                      </ButtonSolid>
-                      <ButtonSolid
-                        onClick={() => {
-                          if (isOnDefaultBranch) {
-                            toast.error('Master is locked. Create a branch to create an app from template.', {
-                              position: 'top-center',
-                            });
-                            return;
-                          }
-                          props.openCreateAppFromTemplateModal(selectedApp);
-                          setShowCreateAppFromTemplateModal(false);
-                          props.onCloseButtonClick();
-                          posthogHelper.captureEvent('create_application_from_template', {
-                            workspace_id:
-                              authenticationService?.currentUserValue?.organization_id ||
-                              authenticationService?.currentSessionValue?.current_organization_id,
-                            template_category_id: selectedCategory?.id,
-                            template_name: selectedApp?.name,
-                            button_name: 'create_application_from_template',
-                            previous_action_button_name: props.fromButton,
-                          });
-                        }}
-                        isLoading={deploying}
-                        className="ms-2"
-                        disabled={props.appCreationDisabled}
-                        data-cy="create-application-from-template-button"
-                      >
-                        {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
-                      </ButtonSolid>
-                    </div>
-                  </Col>
-                </Row>
-              </Container>
-            </Col>
-          </Row>
-        </Container>
-      </Modal.Body>
-    </Modal>
+    <Dialog open={!!props.show} onOpenChange={(open) => !open && close()}>
+      <DialogContent
+        size="extraLarge"
+        className={cn('tw-h-[85vh] tw-max-w-[1200px]', { 'dark-theme theme-dark': props.darkMode })}
+      >
+        <DialogHeader>
+          {selectedTemplate ? (
+            <>
+              <DialogTitle className="tw-sr-only">{selectedTemplate.name}</DialogTitle>
+              <TemplateBreadcrumb template={selectedTemplate} onBack={backToGallery} />
+            </>
+          ) : (
+            <DialogTitle data-cy="select-template-header">
+              {t('homePage.templateLibraryModal.select', 'Select template')}
+            </DialogTitle>
+          )}
+        </DialogHeader>
+        <DialogBody noPadding>
+          <div className={selectedTemplate ? 'tw-hidden' : 'tw-h-full'}>
+            <GalleryView
+              ref={galleryScrollRef}
+              templates={templates}
+              loadStatus={loadStatus}
+              onRetry={loadTemplates}
+              categoryTitles={categoryTitles}
+              onOpen={openDetails}
+            />
+          </div>
+          {selectedTemplate && (
+            <TemplateDetailsView
+              template={selectedTemplate}
+              categoryTitle={categoryTitle(selectedTemplate.category)}
+              darkMode={props.darkMode}
+              onCreate={createFromTemplate}
+              createDisabled={props.appCreationDisabled}
+            />
+          )}
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
   );
 }

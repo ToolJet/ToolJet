@@ -7,6 +7,7 @@ interface Features {
   [FEATURE_KEY.CREATE_SAMPLE_APP]: FeatureConfig;
   [FEATURE_KEY.CREATE_SAMPLE_ONBOARD_APP]: FeatureConfig;
   [FEATURE_KEY.FETCH_TEMPLATES_LIST]: FeatureConfig;
+  [FEATURE_KEY.GET_TEMPLATE_DEFAULT_NAME]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
