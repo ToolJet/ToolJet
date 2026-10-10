@@ -415,6 +415,11 @@ const download = (name, content, mime) => {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
+const RIGHT_FADE = {
+  maskImage: 'linear-gradient(to right, #000 calc(100% - 40px), transparent)',
+  WebkitMaskImage: 'linear-gradient(to right, #000 calc(100% - 40px), transparent)',
+};
+
 export const ShadTable = (props) => {
   const { id, height, properties, styles, setExposedVariable, setExposedVariables, fireEvent, componentName, dataCy } =
     props;
@@ -768,14 +773,18 @@ export const ShadTable = (props) => {
   const scrollRef = useRef(null);
   // A fixed-height table that has more rows below its edge fades them out, so it reads as scrollable (macOS hides
   // scrollbars, and a row cut off at the edge looks broken).
+  // Columns wider than the table do the same at its right edge (a narrow card cut its last column).
   const [moreBelow, setMoreBelow] = useState(false);
+  const [moreRight, setMoreRight] = useState(false);
+  const [boxWidth, setBoxWidth] = useState(0);
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || !fixedHeight) {
-      setMoreBelow(false);
-      return undefined;
-    }
-    const check = () => setMoreBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+    if (!el) return undefined;
+    const check = () => {
+      setMoreBelow(fixedHeight && el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+      setMoreRight(el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
+      setBoxWidth(el.clientWidth);
+    };
     check();
     el.addEventListener('scroll', check, { passive: true });
     const observer = new ResizeObserver(check);
@@ -800,6 +809,10 @@ export const ShadTable = (props) => {
 
   const striped = properties.tableType === 'striped';
   const bordered = properties.tableType === 'bordered';
+  // Column widths are preferences: when they add up to more than the table's width (a narrow card), they are dropped
+  // and the table shares its width among the columns instead of cutting the last one off.
+  const requestedWidth = shownColumns.reduce((sum, column) => sum + (Number(column.width) || 0), 0);
+  const fitWidths = !boxWidth || requestedWidth <= boxWidth;
   const toolbar =
     properties.displaySearchBox !== false ||
     properties.showFilterButton !== false ||
@@ -953,9 +966,10 @@ export const ShadTable = (props) => {
             styles?.showBorder !== false && 'rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] border',
             ROW_BORDER
           )}
-          style={
-            fixedHeight ? { maxHeight: Math.max(160, (Number(height) || 440) - (toolbar ? 56 : 0) - 52) } : undefined
-          }
+          style={{
+            ...(fixedHeight ? { maxHeight: Math.max(160, (Number(height) || 440) - (toolbar ? 56 : 0) - 52) } : {}),
+            ...(moreRight ? RIGHT_FADE : {}),
+          }}
         >
           <table className="w-full caption-bottom border-collapse text-[length:inherit]">
             <thead
@@ -985,25 +999,27 @@ export const ShadTable = (props) => {
                       scope="col"
                       aria-sort={active === 'asc' ? 'ascending' : active === 'desc' ? 'descending' : undefined}
                       className={cn(
-                        'h-10 whitespace-nowrap px-3 text-left align-middle text-xs font-medium text-[color:var(--lk-head-fg,var(--sc-muted-foreground))]',
+                        // Header labels wrap between words when the table is narrower than its headers (a narrow card
+                        // otherwise cut its last column); with room to spare they stay on one line.
+                        'h-10 px-3 py-2 text-left align-middle text-xs font-medium leading-tight text-[color:var(--lk-head-fg,var(--sc-muted-foreground))]',
                         styles?.headerCasing === 'uppercase' && 'uppercase tracking-wide',
                         column.align === 'right' && 'text-right',
                         column.align === 'center' && 'text-center',
                         bordered && cn('border-r last:border-r-0', ROW_BORDER)
                       )}
-                      style={{ width: column.width, minWidth: column.minWidth }}
+                      style={{ width: fitWidths ? column.width : undefined, minWidth: column.minWidth }}
                     >
                       {sortable ? (
                         <button
                           type="button"
                           onClick={() => clickHeader(column)}
                           className={cn(
-                            'inline-flex items-center gap-1 rounded hover:text-[color:var(--lk-fg,var(--sc-foreground))]',
+                            'inline-flex items-center gap-1 rounded text-left hover:text-[color:var(--lk-fg,var(--sc-foreground))]',
                             column.align === 'right' && 'flex-row-reverse'
                           )}
                         >
-                          {column.name}
-                          <SortIcon className={cn('h-3 w-3', active ? 'opacity-90' : 'opacity-40')} />
+                          <span>{column.name}</span>
+                          <SortIcon className={cn('h-3 w-3 shrink-0', active ? 'opacity-90' : 'opacity-40')} />
                         </button>
                       ) : (
                         column.name
