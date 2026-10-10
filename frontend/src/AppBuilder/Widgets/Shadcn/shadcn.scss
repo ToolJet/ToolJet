@@ -120,3 +120,13 @@
     letter-spacing: var(--lk-label-tracking);
   }
 }
+
+// Funnel chart bars grow in when the chart's Animate property is on.
+@keyframes tj-funnel-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
