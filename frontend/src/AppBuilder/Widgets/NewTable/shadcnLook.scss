@@ -44,7 +44,10 @@ $radius: var(--cc-radius-default, 6px);
     font-weight: 500;
   }
 
-  // Header: quiet, muted labels on the table surface.
+  // Header: quiet, muted labels on the table surface (the dark theme's filled header row included).
+  thead tr {
+    background: transparent !important;
+  }
   thead th {
     height: 40px !important;
     padding: 0 12px !important;
@@ -69,6 +72,11 @@ $radius: var(--cc-radius-default, 6px);
     padding: 8px 12px !important;
     font-size: 14px !important;
     color: var(--cc-primary-text);
+  }
+
+  // A date cell's picker wraps its text in an inline-block, whose baseline gap lifted dates 3px above the row's text.
+  tbody td .react-datepicker__input-container {
+    display: block;
   }
 
   // Row action buttons keep their configured colours; the size and shape follow shadcn's small button.
@@ -133,6 +141,10 @@ $radius: var(--cc-radius-default, 6px);
   .table-card-header {
     padding: 4px 0 12px !important;
     min-height: 0;
+  }
+  // The sticky header row needs an opaque fill: the card's, not the theme surface.
+  thead {
+    background-color: var(--tj-table-surface, var(--cc-surface1-surface)) !important;
   }
   thead th:first-child,
   tbody td:first-child {
