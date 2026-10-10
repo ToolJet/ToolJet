@@ -54,6 +54,7 @@ import {
   toCsv,
 } from './tableModel';
 import { stringify } from '../packJson';
+import { LoadingBox, wantsSkeleton } from './loadingLook';
 
 // shadcn/ui pack Table (experiment). Native Table conventions (property, event, exposed and action names; server-side
 // pagination, search, sort and filters), the shadcn data-table look, and none of the native table's known failure
@@ -1052,7 +1053,13 @@ export const ShadTable = (props) => {
               </tr>
             </thead>
             <tbody className="text-[color:var(--lk-fg,var(--sc-foreground))]">
-              {isLoading ? (
+              {isLoading && !wantsSkeleton(properties) ? (
+                <tr>
+                  <td colSpan={colCount} style={{ padding: 0 }}>
+                    <LoadingBox height={rowHeight * Math.min(5, Number(properties.rowsPerPage) || 5)} />
+                  </td>
+                </tr>
+              ) : isLoading ? (
                 Array.from({ length: Math.min(5, Number(properties.rowsPerPage) || 5) }, (_, i) => (
                   <tr key={i} className={cn('border-b', ROW_BORDER)}>
                     {Array.from({ length: colCount }, (__, j) => (

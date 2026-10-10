@@ -50,6 +50,7 @@ import { GROUP_LOADING } from './looks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { stringify } from '../packJson';
+import { LoadingBox, Spinner, wantsSkeleton } from './loadingLook';
 import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
@@ -97,16 +98,7 @@ export const busy = (properties) => !!properties.disabledState || !!properties.l
 // True for the 'field' loading look (text-box controls): Field then puts the spinner inside the box.
 const LoadingContext = createContext(false);
 
-export const Spinner = ({ className }) => (
-  <span
-    role="status"
-    aria-label="Loading"
-    className={cn(
-      'inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[color:var(--sc-muted-foreground)] border-t-transparent',
-      className
-    )}
-  />
-);
+export { Spinner, LoadingBox, wantsSkeleton };
 
 const loadingSkeleton = (look, { properties, height }) => {
   const h = Number(height) || 40;
@@ -198,7 +190,7 @@ export const Shell = (props) => {
       </LoadingContext.Provider>
     );
   } else if (loading && look !== 'own') {
-    content = loadingSkeleton(look, props);
+    content = wantsSkeleton(properties) ? loadingSkeleton(look, props) : <LoadingBox height={props.height} />;
   }
   return (
     <div
@@ -477,7 +469,17 @@ export const ShadStat = (props) => {
           fontStack(props.styles?.valueFontFamily) && 'lk-value-font'
         )}
       >
-        {properties.loadingState ? <Skeleton className="h-8 w-24" /> : String(properties.value ?? '')}
+        {properties.loadingState ? (
+          wantsSkeleton(properties) ? (
+            <Skeleton className="h-8 w-24" />
+          ) : (
+            <span className="flex h-8 items-center">
+              <Spinner />
+            </span>
+          )
+        ) : (
+          String(properties.value ?? '')
+        )}
       </span>
       {properties.footnote ? (
         <span

@@ -185,6 +185,29 @@ export const shadListViewConfig = {
       },
       section: 'additionalActions',
     },
+    loadingIndicator: {
+      type: 'switch',
+      displayName: 'Loading look',
+      options: [
+        {
+          displayName: 'Spinner',
+          value: 'spinner',
+        },
+        {
+          displayName: 'Skeleton',
+          value: 'skeleton',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'spinner',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+      section: 'additionalActions',
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
@@ -544,6 +567,9 @@ export const shadListViewConfig = {
       },
       loadingState: {
         value: '{{false}}',
+      },
+      loadingIndicator: {
+        value: 'spinner',
       },
       visibility: {
         value: '{{true}}',

@@ -3,7 +3,7 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronDown, ChevronLeft, ChevronRight, Ellipsis, ImageOff } from 'lucide-react';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useAutoHeight, useExposed } from '../packHooks';
-import { Field, Shell, Spinner, busy, useValidation } from './Shadcn';
+import { Field, LoadingBox, Shell, Spinner, busy, useValidation, wantsSkeleton } from './Shadcn';
 import { Button, Calendar, Skeleton, buttonVariants, cn, getPortalRoot } from './ui';
 import { lookVars, whenSet } from './shadcnLook';
 import { isSet } from './kanbanLook';
@@ -508,6 +508,13 @@ export const ShadNavigation = (props) => {
       extra
     );
 
+  if (properties.loadingState && !wantsSkeleton(properties)) {
+    return (
+      <Shell {...props}>
+        <LoadingBox height={height} />
+      </Shell>
+    );
+  }
   if (properties.loadingState) {
     return (
       <Shell {...props}>

@@ -12,6 +12,7 @@ import { Skeleton, cn } from './ui';
 import { Pager } from './Pager';
 import { itemKey, listLook, pageOf } from './listModel';
 import { stringify } from '../packJson';
+import { LoadingBox, wantsSkeleton } from './loadingLook';
 import './shadcn.scss';
 
 // shadcn/ui pack List view (experiment). Row-scoped like the native Listview: one canvas (the components parented to
@@ -226,7 +227,9 @@ export const ShadListView = (props) => {
         ...look.vars,
       }}
     >
-      {isLoading ? (
+      {isLoading && !wantsSkeleton(properties) ? (
+        <LoadingBox height={props.height} />
+      ) : isLoading ? (
         <div className="flex flex-col" style={{ gap }}>
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} style={{ height: rowHeight }} className="w-full rounded-lg" />

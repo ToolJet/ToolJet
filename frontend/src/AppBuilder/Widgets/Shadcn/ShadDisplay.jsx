@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import * as Lucide from 'lucide-react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import useStore from '@/AppBuilder/_stores/store';
-import { Shell, Spinner, busy } from './Shadcn';
+import { LoadingBox, Shell, Spinner, busy, wantsSkeleton } from './Shadcn';
 import { initials, useAutoHeight, useExposed } from '../packHooks';
 import { Button, Skeleton, cn, getPortalRoot } from './ui';
 import { isSet } from './kanbanLook';
@@ -241,10 +241,19 @@ export const ShadIcon = (props) => {
         style={{ minHeight: Math.min(height || 0, 2000) }}
       >
         {p.loadingState ? (
-          <Skeleton
-            className={cn('shrink-0', chip === 'none' ? 'rounded-md' : shape)}
-            style={{ width: chipSize, height: chipSize }}
-          />
+          wantsSkeleton(p) ? (
+            <Skeleton
+              className={cn('shrink-0', chip === 'none' ? 'rounded-md' : shape)}
+              style={{ width: chipSize, height: chipSize }}
+            />
+          ) : (
+            <span
+              className="inline-flex shrink-0 items-center justify-center"
+              style={{ width: chipSize, height: chipSize }}
+            >
+              <Spinner />
+            </span>
+          )
         ) : (
           <span
             role={clickable ? 'button' : 'img'}
@@ -456,7 +465,9 @@ export const ShadTags = (props) => {
   };
   const hidden = tags.length - shown;
   let body;
-  if (p.loadingState) {
+  if (p.loadingState && !wantsSkeleton(p)) {
+    body = <LoadingBox height={props.height} />;
+  } else if (p.loadingState) {
     body = (
       <div className="flex flex-wrap gap-1.5">
         {[56, 72, 48].map((w) => (
@@ -528,7 +539,13 @@ export const ShadCircularProgress = (props) => {
     <Shell {...props} innerRef={ref}>
       <div className={cn('flex', justify(props.styles, 'center'))}>
         {p.loadingState ? (
-          <Skeleton className="rounded-full" style={{ width: g.size, height: g.size }} />
+          wantsSkeleton(p) ? (
+            <Skeleton className="rounded-full" style={{ width: g.size, height: g.size }} />
+          ) : (
+            <span className="flex items-center justify-center" style={{ width: g.size, height: g.size }}>
+              <Spinner className={g.size >= 48 ? 'h-6 w-6' : undefined} />
+            </span>
+          )
         ) : (
           <div
             role="progressbar"
@@ -764,7 +781,9 @@ export const ShadKeyValue = (props) => {
   const defaults = { currency: p.currency || 'USD', locale: p.locale || 'en-US', dateFormat: p.dateFormat };
   const lastRowStart = rows.length - (rows.length % columns || columns);
   let body;
-  if (p.loadingState) {
+  if (p.loadingState && !wantsSkeleton(p)) {
+    body = <LoadingBox height={props.height} />;
+  } else if (p.loadingState) {
     body = (
       <div className="flex flex-col">
         {[0, 1, 2, 3].map((i) => (
@@ -843,7 +862,9 @@ export const ShadTimeline = (props) => {
     fireEvent('onItemClick');
   };
   let body;
-  if (p.loadingState) {
+  if (p.loadingState && !wantsSkeleton(p)) {
+    body = <LoadingBox height={props.height} />;
+  } else if (p.loadingState) {
     body = (
       <div className="flex flex-col gap-5">
         {[0, 1, 2].map((i) => (
@@ -1046,6 +1067,13 @@ export const ShadSteps = (props) => {
   const vertical = p.orientation === 'vertical';
   const dots = p.variant === 'dots';
   const markerSize = dots ? 12 : 32;
+  if (p.loadingState && !wantsSkeleton(p)) {
+    return (
+      <Shell {...props} innerRef={ref}>
+        <LoadingBox height={props.height} />
+      </Shell>
+    );
+  }
   if (p.loadingState) {
     const n = Math.max(2, Math.min(6, shown.length || 4));
     return (

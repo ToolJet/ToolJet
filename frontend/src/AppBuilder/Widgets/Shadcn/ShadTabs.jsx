@@ -11,6 +11,7 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { Button, Skeleton, cn } from './ui';
 import { tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
 import { stringify } from '../packJson';
+import { wantsSkeleton } from './loadingLook';
 import './shadcn.scss';
 
 // shadcn/ui pack Tabs (experiment). Same contract as the native Tabs (tabItems or dynamic tabs, defaultTab,
@@ -335,7 +336,7 @@ export const ShadTabs = (props) => {
         ...look.vars,
       }}
     >
-      {isLoading ? (
+      {isLoading && wantsSkeleton(properties) ? (
         <div className="flex h-[50px] items-center gap-2 px-3">
           <Skeleton className="h-7 w-24" />
           <Skeleton className="h-7 w-20" />
@@ -349,7 +350,8 @@ export const ShadTabs = (props) => {
           align={properties.tabsAlign}
           stepIndex={stepIndex}
           linear={properties.linearSteps !== false}
-          onPick={onPick}
+          // With the spinner look the real tabs show while loading; picking one waits for the content.
+          onPick={isLoading ? () => {} : onPick}
         />
       )}
       <div className="relative min-h-0 w-full flex-1" style={{ background: look.panelBackground }}>

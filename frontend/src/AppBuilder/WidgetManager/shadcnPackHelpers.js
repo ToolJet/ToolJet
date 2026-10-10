@@ -56,9 +56,60 @@ export const sizeStyle = (displayName) => ({
   validation: { schema: NUMBER_OR_STRING },
 });
 
-const commonProperties = (withHeight) => ({
+// Widgets whose loading look is a picture of their content: they let the author pick a spinner (the default, easy to
+// get right) or a skeleton. Controls (inputs, pickers, buttons) always show a spinner in place. Shadcn/loadingLook.jsx
+// reads the choice; __tests__/fuzz/loading.spec checks this list against what the widgets draw.
+export const SKELETON_CAPABLE = new Set([
+  'ShadAccordion',
+  'ShadAlert',
+  'ShadAreaChart',
+  'ShadAvatar',
+  'ShadBadge',
+  'ShadBarChart',
+  'ShadBreadcrumb',
+  'ShadCalendar',
+  'ShadCarousel',
+  'ShadCircularProgress',
+  'ShadEmpty',
+  'ShadHeading',
+  'ShadIcon',
+  'ShadImage',
+  'ShadKanban',
+  'ShadKeyValue',
+  'ShadLineChart',
+  'ShadLink',
+  'ShadListView',
+  'ShadNavigation',
+  'ShadPieChart',
+  'ShadProgress',
+  'ShadRadarChart',
+  'ShadRadialChart',
+  'ShadSparkline',
+  'ShadStat',
+  'ShadSteps',
+  'ShadTable',
+  'ShadTabs',
+  'ShadTags',
+  'ShadText',
+  'ShadTimeline',
+]);
+const loadingIndicator = {
+  type: 'switch',
+  displayName: 'Loading look',
+  options: [
+    { displayName: 'Spinner', value: 'spinner' },
+    { displayName: 'Skeleton', value: 'skeleton' },
+  ],
+  validation: { schema: STRING, defaultValue: 'spinner' },
+  isFxNotRequired: true,
+  fullWidth: true,
+  section: 'additionalActions',
+};
+
+const commonProperties = (withHeight, name) => ({
   ...(withHeight ? { dynamicHeight: toggle('Dynamic height', true, { section: 'additionalActions' }) } : {}),
   loadingState: toggle('Loading state', false, { section: 'additionalActions' }),
+  ...(SKELETON_CAPABLE.has(name) ? { loadingIndicator } : {}),
   visibility: toggle('Visibility', true, { section: 'additionalActions' }),
   disabledState: toggle('Disable', false, { section: 'additionalActions' }),
   // The native tooltip pair (RenderWidget shows it on hover for pack widgets).
@@ -85,9 +136,10 @@ const commonProperties = (withHeight) => ({
     showLabel: false,
   },
 });
-const commonDefinition = (withHeight) => ({
+const commonDefinition = (withHeight, name) => ({
   ...(withHeight ? { dynamicHeight: { value: '{{true}}' } } : {}),
   loadingState: { value: '{{false}}' },
+  ...(SKELETON_CAPABLE.has(name) ? { loadingIndicator: { value: 'spinner' } } : {}),
   visibility: { value: '{{true}}' },
   disabledState: { value: '{{false}}' },
   tooltipFormat: { value: 'plainText' },
@@ -157,7 +209,7 @@ export const shadConfig = ({
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  properties: { ...properties, ...commonProperties(withHeight) },
+  properties: { ...properties, ...commonProperties(withHeight, name) },
   ...(validation ? { validation } : {}),
   events,
   styles: {
@@ -173,7 +225,7 @@ export const shadConfig = ({
   actions: withStandardActions(actions),
   definition: {
     others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
-    properties: { ...defaults, ...commonDefinition(withHeight) },
+    properties: { ...defaults, ...commonDefinition(withHeight, name) },
     ...(validation ? { validation: validationDefaults(validation) } : {}),
     events: [],
     styles: { boxShadow: { value: '0px 0px 0px 0px #00000040' }, ...styleDefaults },
