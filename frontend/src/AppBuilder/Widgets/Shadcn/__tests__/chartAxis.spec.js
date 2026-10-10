@@ -51,3 +51,12 @@ describe('resolveChartFields', () => {
     expect(resolveChartFields([null, 'x'], 'month', ['revenue'])).toEqual({ x: 'month', series: ['revenue'] });
   });
 });
+
+describe('isCompactChart', () => {
+  it('treats a chart under 150px as a sparkline-sized trend', () => {
+    const { isCompactChart } = require('../ShadCharts');
+    expect(isCompactChart(56)).toBe(true);
+    expect(isCompactChart(280)).toBe(false);
+    expect(isCompactChart(undefined)).toBe(false);
+  });
+});

@@ -163,6 +163,10 @@ export const dateTicks = (data, key) => {
   return (v) => (typeof v === 'string' && ISO_DATE.test(v) ? dayjs(v).format('D MMM') : v);
 };
 
+/** A chart drawn under 150px tall (a trend in a KPI tile) has no room for axes, grid or legend: it draws the shape
+ *  alone, like a sparkline, instead of squeezing tick labels into it. */
+export const isCompactChart = (height) => (Number(height) || 300) < 150;
+
 const categoryAxisWidth = (data, key) => {
   const longest = Math.max(0, ...list(data).map((row) => String(row?.[key] ?? '').length));
   return Math.min(180, Math.max(48, longest * 7 + 16));
@@ -173,6 +177,7 @@ export const ShadAreaChart = (props) => {
   const data = list(p.data);
   const { x: xField, series } = resolveChartFields(data, xField, seriesOf(p));
   const Chart = p.lineOnly === true ? LineChart : AreaChart;
+  const compact = isCompactChart(props.height);
   const color = (i) => seriesColor(p.colors, i);
   return (
     <ChartFrame props={props} empty={!data.length || !series.length}>
@@ -190,23 +195,24 @@ export const ShadAreaChart = (props) => {
               </linearGradient>
             ))}
           </defs>
-          <CartesianGrid vertical={false} stroke={GRID} />
-          <XAxis dataKey={xField} {...AXIS} minTickGap={24} tickFormatter={dateTicks(data, xField)} />
+          {compact ? null : <CartesianGrid vertical={false} stroke={GRID} />}
+          <XAxis dataKey={xField} {...AXIS} hide={compact} minTickGap={24} tickFormatter={dateTicks(data, xField)} />
           <YAxis
             {...AXIS}
+            hide={compact}
             width={valueAxisWidth(data, series, fmt(p, true), p.stack === true && p.lineOnly !== true)}
             tickFormatter={fmt(p, true)}
           />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={fmt(p, false)} />} />
-          {p.showLegend === true ? <Legend content={<LegendContent />} /> : null}
+          {p.showLegend === true && !compact ? <Legend content={<LegendContent />} /> : null}
           {series.map((s, i) =>
             p.lineOnly === true ? (
-              <Line key={s} dataKey={s} type={p.curve || 'natural'} stroke={color(i)} strokeWidth={2} dot={false} />
+              <Line key={s} dataKey={s} type={p.curve || 'monotone'} stroke={color(i)} strokeWidth={2} dot={false} />
             ) : (
               <Area
                 key={s}
                 dataKey={s}
-                type={p.curve || 'natural'}
+                type={p.curve || 'monotone'}
                 stroke={color(i)}
                 strokeWidth={2}
                 fill={`url(#sc-fill-${props.id}-${i})`}
@@ -225,6 +231,7 @@ export const ShadBarChart = (props) => {
   const data = list(p.data);
   const { x: xField, series } = resolveChartFields(data, xField, seriesOf(p));
   const horizontal = p.horizontal === true;
+  const compact = isCompactChart(props.height);
   const color = (i) => seriesColor(p.colors, i);
   return (
     <ChartFrame props={props} empty={!data.length || !series.length}>
@@ -235,24 +242,37 @@ export const ShadBarChart = (props) => {
           margin={{ left: 4, right: 12, top: 12 }}
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
-          <CartesianGrid vertical={horizontal} horizontal={!horizontal} stroke={GRID} />
+          {compact ? null : <CartesianGrid vertical={horizontal} horizontal={!horizontal} stroke={GRID} />}
           {horizontal ? (
             <>
-              <XAxis type="number" {...AXIS} tickFormatter={fmt(p, true)} />
-              <YAxis type="category" dataKey={xField} {...AXIS} width={categoryAxisWidth(data, xField)} />
+              <XAxis type="number" {...AXIS} hide={compact} tickFormatter={fmt(p, true)} />
+              <YAxis
+                type="category"
+                dataKey={xField}
+                {...AXIS}
+                hide={compact}
+                width={categoryAxisWidth(data, xField)}
+              />
             </>
           ) : (
             <>
-              <XAxis dataKey={xField} {...AXIS} minTickGap={16} tickFormatter={dateTicks(data, xField)} />
+              <XAxis
+                dataKey={xField}
+                {...AXIS}
+                hide={compact}
+                minTickGap={16}
+                tickFormatter={dateTicks(data, xField)}
+              />
               <YAxis
                 {...AXIS}
+                hide={compact}
                 width={valueAxisWidth(data, series, fmt(p, true), p.stack === true)}
                 tickFormatter={fmt(p, true)}
               />
             </>
           )}
           <Tooltip cursor={{ fill: 'var(--sc-muted)' }} content={<ChartTooltip format={fmt(p, false)} />} />
-          {p.showLegend === true ? <Legend content={<LegendContent />} /> : null}
+          {p.showLegend === true && !compact ? <Legend content={<LegendContent />} /> : null}
           {series.map((s, i) => (
             <Bar
               key={s}
@@ -408,6 +428,7 @@ export const ShadLineChart = (props) => {
   );
   const rows = seriesRows(p.data, xField, series);
   const dashed = fieldList(p.dashedFields);
+  const compact = isCompactChart(props.height);
   const tick = formatter(valueFormat(p), true);
   const full = formatter(valueFormat(p), false);
   const target = num(p.referenceValue);
@@ -432,11 +453,11 @@ export const ShadLineChart = (props) => {
           margin={{ left: 4, right: 12, top: target !== null && targetLabel ? 20 : 8 }}
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
-          {p.showGrid !== false ? <CartesianGrid vertical={false} stroke={GRID} /> : null}
-          <XAxis dataKey={xField} {...AXIS} minTickGap={24} tickFormatter={dateTicks(rows, xField)} />
-          <YAxis {...AXIS} width={yWidth} tickFormatter={tick} />
+          {p.showGrid !== false && !compact ? <CartesianGrid vertical={false} stroke={GRID} /> : null}
+          <XAxis dataKey={xField} {...AXIS} hide={compact} minTickGap={24} tickFormatter={dateTicks(rows, xField)} />
+          <YAxis {...AXIS} hide={compact} width={yWidth} tickFormatter={tick} />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={full} />} />
-          {p.showLegend === true ? <Legend content={<LegendContent />} /> : null}
+          {p.showLegend === true && !compact ? <Legend content={<LegendContent />} /> : null}
           {target !== null ? (
             <ReferenceLine
               y={target}

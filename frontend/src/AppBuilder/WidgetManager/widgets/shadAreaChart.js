@@ -134,6 +134,10 @@ export const shadAreaChartConfig = {
       displayName: 'Curve',
       options: [
         {
+          displayName: 'Monotone',
+          value: 'monotone',
+        },
+        {
           displayName: 'Natural',
           value: 'natural',
         },
@@ -150,7 +154,7 @@ export const shadAreaChartConfig = {
         schema: {
           type: 'string',
         },
-        defaultValue: 'natural',
+        defaultValue: 'monotone',
       },
       isFxNotRequired: true,
       fullWidth: true,
@@ -374,7 +378,7 @@ export const shadAreaChartConfig = {
         value: '{{false}}',
       },
       curve: {
-        value: 'natural',
+        value: 'monotone',
       },
       loadingState: {
         value: '{{false}}',
