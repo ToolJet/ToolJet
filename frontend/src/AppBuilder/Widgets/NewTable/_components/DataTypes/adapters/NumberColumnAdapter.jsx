@@ -59,6 +59,7 @@ export const NumberColumn = ({
       containerWidth={containerWidth}
       darkMode={darkMode}
       decimalPlaces={allowedDecimalPlaces}
+      thousandSeparator={getResolvedValue(column?.thousandSeparator) === true}
       isValid={isValid}
       validationError={validationError}
       searchText={searchText}

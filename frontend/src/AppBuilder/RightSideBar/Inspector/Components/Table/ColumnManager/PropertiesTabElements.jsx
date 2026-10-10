@@ -382,6 +382,22 @@ export const PropertiesTabElements = ({
           />
         </div>
       )}
+      {column.columnType === 'number' && (
+        <div className="field mb-2 px-3">
+          <ProgramaticallyHandleProperties
+            label="Thousands separator"
+            currentState={currentState}
+            index={index}
+            darkMode={darkMode}
+            callbackFunction={onColumnItemChange}
+            property="thousandSeparator"
+            props={column}
+            component={component}
+            paramMeta={{ type: 'toggle', displayName: 'Thousands separator' }}
+            paramType="properties"
+          />
+        </div>
+      )}
       {!['image', 'link', 'button'].includes(column.columnType) && (
         <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px' }}>
           <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>

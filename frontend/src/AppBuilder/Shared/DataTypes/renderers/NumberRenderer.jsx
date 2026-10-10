@@ -34,6 +34,26 @@ const removingExcessDecimalPlaces = (value, allowedDecimalPlaces) => {
 };
 
 /**
+ * A number with thousands separators in the viewer's locale (1234567.5 reads 1,234,567.5), keeping the decimals it
+ * has, or exactly `decimalPlaces` of them when set. Anything that is not a finite number is returned as it is.
+ */
+export const groupDigits = (value, decimalPlaces = null) => {
+  if (value === null || value === undefined || value === '' || typeof value === 'boolean') return value;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return value;
+  const places = Number(decimalPlaces);
+  const fixed = decimalPlaces !== null && decimalPlaces !== undefined && Number.isFinite(places) && places >= 0;
+  try {
+    return new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: fixed ? Math.min(20, Math.floor(places)) : 0,
+      maximumFractionDigits: fixed ? Math.min(20, Math.floor(places)) : 20,
+    }).format(n);
+  } catch {
+    return value;
+  }
+};
+
+/**
  * NumberRenderer - Pure number value renderer with editing support
  *
  * Renders numeric values with increment/decrement controls, validation, and search highlighting.
@@ -61,6 +81,7 @@ export const NumberRenderer = ({
   containerWidth,
   darkMode = false,
   decimalPlaces = null,
+  thousandSeparator = false,
   isValid = true,
   validationError,
   searchText,
@@ -214,7 +235,7 @@ export const NumberRenderer = ({
         onMouseLeave={() => setHovered(false)}
         ref={ref}
       >
-        {renderText(cellValue)}
+        {renderText(thousandSeparator ? groupDigits(cellValue, decimalPlaces) : cellValue)}
       </div>
     </OverlayTrigger>
   );
