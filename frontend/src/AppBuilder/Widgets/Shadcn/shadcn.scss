@@ -12,23 +12,26 @@
   --sc-popover: var(--cc-surface1-surface, #ffffff);
   --sc-popover-foreground: var(--cc-primary-text, #0a0a0a);
   --sc-primary: var(--cc-primary-brand, #171717);
-  --sc-primary-foreground: #ffffff;
-  --sc-secondary: var(--cc-surface2-surface, #f5f5f5);
+  --sc-primary-foreground: var(--cc-on-primary-brand, #ffffff);
+  // Muted surfaces use surface3: shadcn's muted (#f4f4f5) matches it in light themes, and in dark themes surface2
+  // often equals surface1 (ToolJet Modern: both #1F2937), which would hide pill bars and hover states.
+  --sc-secondary: var(--cc-surface3-surface, #f5f5f5);
   --sc-secondary-foreground: var(--cc-primary-text, #171717);
-  --sc-muted: var(--cc-surface2-surface, #f5f5f5);
+  --sc-muted: var(--cc-surface3-surface, #f5f5f5);
   --sc-muted-foreground: var(--cc-placeholder-text, #737373);
-  --sc-accent: var(--cc-surface2-surface, #f5f5f5);
+  --sc-accent: var(--cc-surface3-surface, #f5f5f5);
   --sc-accent-foreground: var(--cc-primary-text, #171717);
   --sc-destructive: var(--cc-error-systemStatus, #dc2626);
   --sc-destructive-foreground: #ffffff;
   --sc-success: var(--cc-success-systemStatus, #16a34a);
   --sc-success-foreground: #ffffff;
-  --sc-warning: #d97706;
+  --sc-warning: var(--cc-warning-systemStatus, #d97706);
   --sc-warning-foreground: #ffffff;
   --sc-border: var(--cc-weak-border, #e5e5e5);
   --sc-input: var(--cc-default-border, #e5e5e5);
   --sc-ring: var(--cc-primary-brand, #a3a3a3);
-  --sc-radius: 0.625rem;
+  // The theme's radius scale (default 8 / small 6 / large 12 on ToolJet Modern), else shadcn's.
+  --sc-radius: var(--cc-radius-default, 0.625rem);
   // Chart series: the theme's primary and its shades, so a chart never brings in a second accent the app does not
   // have (a teal and a yellow beside an amber theme read as off-brand). Lighter tints, then a deeper shade, then grey.
   --sc-chart-1: var(--cc-primary-brand, #2563eb);
@@ -39,6 +42,8 @@
 
   color: var(--sc-foreground);
   font-family: inherit;
+  // Scroll areas (a table, a tab strip) take the theme's colours, so a dark theme has no light scrollbar track.
+  scrollbar-color: var(--sc-border) transparent;
 }
 
 // Tailwind's preflight is off in ToolJet; shadcn relies on its box model and border reset, so restore just those

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import tinycolor from 'tinycolor2';
 import {
   setCurrentAppName,
   setCurrentAppMeta,
@@ -449,7 +450,8 @@ const useAppData = (
           } else {
             window.history.replaceState(
               { ...window.history.state, usr: { ...window.history.state?.usr, kickoffAttempted: true } },
-              '', window.location.href
+              '',
+              window.location.href
             );
             sendMessage(
               state.prompt,
@@ -795,6 +797,22 @@ const useAppData = (
         });
       });
     });
+    // Values the loop above does not set as variables: the radius scale (numbers, not light/dark pairs) and a text
+    // colour readable on the brand colour (component packs draw primary buttons and chips with it).
+    const radius = themeObj?.border?.radius;
+    ['default', 'small', 'large'].forEach((size) => {
+      const value = Number(radius?.[size]);
+      if (Number.isFinite(value)) root.style.setProperty(`--cc-radius-${size}`, `${value}px`);
+      else root.style.removeProperty(`--cc-radius-${size}`);
+    });
+    const brand = themeObj?.brand?.colors?.primary?.[mode];
+    if (brand && tinycolor(brand).isValid()) {
+      const onBrand =
+        tinycolor.readability(brand, '#ffffff') >= tinycolor.readability(brand, '#0a0a0a') ? '#ffffff' : '#0a0a0a';
+      root.style.setProperty('--cc-on-primary-brand', onBrand);
+    } else {
+      root.style.removeProperty('--cc-on-primary-brand');
+    }
     detectThemeChange();
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
