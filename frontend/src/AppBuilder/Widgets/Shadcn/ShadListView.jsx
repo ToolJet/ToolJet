@@ -1,5 +1,4 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { shallow } from 'zustand/shallow';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import useStore from '@/AppBuilder/_stores/store';
@@ -9,7 +8,8 @@ import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useAutoHeight } from '../packHooks';
-import { Button, Skeleton, cn } from './ui';
+import { Skeleton, cn } from './ui';
+import { Pager } from './Pager';
 import { itemKey, listLook, pageOf } from './listModel';
 import './shadcn.scss';
 
@@ -53,19 +53,6 @@ const Row = ({ id, index, parentPath, height, width, onPick, selected, look, mod
       </div>
     </SubcontainerContext.Provider>
   );
-};
-
-/** Page numbers around the current one: 1 … 4 5 6 … 20. */
-const pageWindow = (page, count) => {
-  if (!count) return [page];
-  const pages = new Set([1, count, page - 1, page, page + 1].filter((p) => p >= 1 && p <= count));
-  const sorted = [...pages].sort((a, b) => a - b);
-  const out = [];
-  sorted.forEach((p, i) => {
-    if (i && p - sorted[i - 1] > 1) out.push(`gap-${p}`);
-    out.push(p);
-  });
-  return out;
 };
 
 export const ShadListView = (props) => {
@@ -273,47 +260,14 @@ export const ShadListView = (props) => {
           <span className="text-xs tabular-nums text-muted-foreground">
             {paged.pageCount ? `Page ${paged.page} of ${paged.pageCount}` : `Page ${paged.page}`}
           </span>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 p-0"
-              aria-label="Previous page"
-              disabled={!paged.hasPrevious || isDisabled}
-              onClick={() => goTo(paged.page - 1)}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            {pageWindow(paged.page, paged.pageCount).map((p) =>
-              typeof p === 'string' ? (
-                <span key={p} className="px-1 text-xs text-muted-foreground">
-                  …
-                </span>
-              ) : (
-                <Button
-                  key={p}
-                  variant={p === paged.page ? 'outline' : 'ghost'}
-                  size="sm"
-                  className="h-8 min-w-8 px-2 tabular-nums"
-                  aria-current={p === paged.page ? 'page' : undefined}
-                  disabled={isDisabled}
-                  onClick={() => p !== paged.page && goTo(p)}
-                >
-                  {p}
-                </Button>
-              )
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 p-0"
-              aria-label="Next page"
-              disabled={!paged.hasNext || isDisabled}
-              onClick={() => goTo(paged.page + 1)}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <Pager
+            page={paged.page}
+            pageCount={paged.pageCount}
+            hasPrevious={paged.hasPrevious}
+            hasNext={paged.hasNext}
+            disabled={isDisabled}
+            onPage={(p) => goTo(p)}
+          />
         </nav>
       ) : null}
     </div>

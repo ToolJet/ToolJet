@@ -230,7 +230,7 @@ const ShadBreadcrumb = lazy(() =>
 );
 const ShadHeading = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadHeading })));
 const ShadText = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadText })));
-const ShadTable = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadTable })));
+const ShadTable = lazy(() => import('@/AppBuilder/Widgets/Shadcn/ShadTable').then((m) => ({ default: m.ShadTable })));
 const ShadStat = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadStat })));
 const ShadBadge = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadBadge })));
 const ShadAvatar = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadAvatar })));

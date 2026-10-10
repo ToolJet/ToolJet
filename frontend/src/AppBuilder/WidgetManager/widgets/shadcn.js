@@ -22,12 +22,12 @@ import { shadSkeletonConfig } from './shadSkeleton';
 import { shadSliderConfig } from './shadSlider';
 import { shadStatConfig } from './shadStat';
 import { shadSwitchConfig } from './shadSwitch';
-import { shadTableConfig } from './shadTable';
 import { shadTextConfig } from './shadText';
 import { shadTextareaConfig } from './shadTextarea';
 import { shadToggleGroupConfig } from './shadToggleGroup';
 import { shadListViewConfig } from './shadListView';
 import { shadTabsConfig } from './shadTabs';
+import { shadTableConfig } from './shadTable';
 
 export const shadcnConfigs = [
   shadAccordionConfig,
@@ -53,11 +53,11 @@ export const shadcnConfigs = [
   shadSliderConfig,
   shadStatConfig,
   shadSwitchConfig,
-  shadTableConfig,
   shadTextConfig,
   shadTextareaConfig,
   shadToggleGroupConfig,
   shadListViewConfig,
   shadTabsConfig,
+  shadTableConfig,
 ];
 export const SHADCN_COMPONENTS = shadcnConfigs.map((c) => c.name);

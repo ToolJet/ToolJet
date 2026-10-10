@@ -269,54 +269,7 @@ export const shadTextConfig = shadConfig({
 
 // ---- Data display --------------------------------------------------------------------------------------------------
 
-export const shadTableConfig = shadConfig({
-  name: 'ShadTable',
-  displayName: 'Table',
-  description: 'shadcn/ui data table (TanStack): sortable columns, row selection, pagination',
-  defaultSize: { width: 28, height: 420 },
-  withHeight: true,
-  properties: {
-    data: code('Data', ARRAY, []),
-    columns: code('Columns', ARRAY, [], {
-      placeholder: "[{ title: 'Name', dataIndex: 'name', kind: 'text|badge|money|date|number', align: 'right' }]",
-    }),
-    pageSize: code('Rows per page (0 = all)', NUMBER, 10),
-    currency: code('Currency (money columns)', STRING, 'USD'),
-    emptyText: code('Empty message', STRING, 'No results.'),
-    // Value -> colour for badge columns, e.g. { Paid: '#16a34a' }; values it does not name keep the built-in colours.
-    badgeColors: code(
-      'Badge colours by value',
-      { type: 'object' },
-      {},
-      { placeholder: "{ Paid: '#16a34a', Overdue: '#dc2626' }" }
-    ),
-  },
-  defaults: {
-    data: {
-      value: "{{[{ id: 1, name: 'Sample', status: 'active', amount: 1200 }]}}",
-    },
-    columns: {
-      value:
-        "{{[{ title: 'Name', dataIndex: 'name' }, { title: 'Status', dataIndex: 'status', kind: 'badge' }, { title: 'Amount', dataIndex: 'amount', kind: 'money' }]}}",
-    },
-    pageSize: { value: '{{10}}' },
-    currency: { value: 'USD' },
-    emptyText: { value: 'No results.' },
-    badgeColors: { value: '{{{}}}' },
-  },
-  styles: {
-    backgroundColor: colorStyle('Table background'),
-    headerBackgroundColor: colorStyle('Header row background'),
-    headerTextColor: colorStyle('Header text color'),
-    textColor: colorStyle('Cell text color'),
-    borderColor: colorStyle('Table border and row divider color'),
-    rowHoverColor: colorStyle('Row hover background'),
-    selectedRowColor: colorStyle('Selected row background'),
-    borderRadius: sizeStyle('Table radius'),
-  },
-  events: { onRowClicked: { displayName: 'On row clicked' } },
-  exposedVariables: { selectedRow: {}, selectedRowIndex: null },
-});
+// The Table lives in shadcnSource.table.js.
 
 export const shadStatConfig = shadConfig({
   name: 'ShadStat',
@@ -1125,7 +1078,6 @@ export const shadcnConfigs = [
   shadBreadcrumbConfig,
   shadHeadingConfig,
   shadTextConfig,
-  shadTableConfig,
   shadStatConfig,
   shadBadgeConfig,
   shadAvatarConfig,

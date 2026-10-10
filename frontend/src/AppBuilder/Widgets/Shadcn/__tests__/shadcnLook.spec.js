@@ -1,5 +1,5 @@
 import { LOOKS, lookVars, seriesColor, whenSet } from '../shadcnLook';
-import { shadcnConfigs } from '../../../WidgetManager/shadcnSource';
+import { shadcnConfigs } from '../../../WidgetManager/widgets/shadcn';
 
 describe('lookVars', () => {
   it('adds nothing for unset styles, so the theme applies', () => {
@@ -25,14 +25,16 @@ describe('lookVars', () => {
     expect(lookVars('ShadBarChart', { chartColor: '#7c3aed' })).toEqual({ '--sc-chart-1': '#7c3aed' });
   });
 
-  it('maps only styles each widget config declares, and every pack widget but Kanban has a map', () => {
+  // Kanban, Tabs and List view map their styles in their own modules (kanbanLook, tabsModel, listModel).
+  it('maps only styles each widget config declares, and every other pack widget has a map', () => {
     const configs = Object.fromEntries(shadcnConfigs.map((c) => [c.name, c]));
     Object.entries(LOOKS).forEach(([name, map]) => {
       map.forEach(([key]) =>
         expect([name, key, configs[name]?.styles?.[key]?.displayName]).toEqual([name, key, expect.any(String)])
       );
     });
-    expect(shadcnConfigs.map((c) => c.name).filter((n) => !LOOKS[n] && n !== 'ShadKanban')).toEqual([]);
+    const ownModules = ['ShadKanban', 'ShadTabs', 'ShadListView'];
+    expect(shadcnConfigs.map((c) => c.name).filter((n) => !LOOKS[n] && !ownModules.includes(n))).toEqual([]);
   });
 });
 

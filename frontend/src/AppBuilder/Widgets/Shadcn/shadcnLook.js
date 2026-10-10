@@ -56,6 +56,9 @@ export const LOOKS = {
   ShadHeading: [['textColor', '--lk-fg']],
   ShadText: [['textColor', '--lk-fg']],
   ShadTable: [
+    ['accentColor', ACCENT],
+    ['mutedTextColor', '--lk-muted'],
+    ['stripedRowColor', '--lk-striped'],
     ['backgroundColor', '--lk-bg'],
     ['headerBackgroundColor', '--lk-head-bg'],
     ['headerTextColor', '--lk-head-fg'],
