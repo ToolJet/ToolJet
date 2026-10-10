@@ -85,7 +85,9 @@
 
 // ToolJet's global stylesheet has `.text-center { display: flex }`, which turns any pack element using Tailwind's
 // text-center into a flex box (a table's empty-state cell stopped spanning its columns and sat in the first one).
-// Give the element its own display back; a display utility on it (flex, grid, ...) is !important and still wins.
-.tj-shadcn .text-center {
+// Give the element its own display back, unless a display utility on it sets one (this file's rules are made
+// !important by the pack's PostCSS step, so the utility would otherwise lose).
+.tj-shadcn
+  .text-center:not(.flex):not(.inline-flex):not(.grid):not(.inline-grid):not(.block):not(.inline-block):not(.inline):not(.hidden):not(.table-cell) {
   display: revert;
 }
