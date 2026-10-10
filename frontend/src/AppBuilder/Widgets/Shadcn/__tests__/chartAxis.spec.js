@@ -53,9 +53,10 @@ describe('resolveChartFields', () => {
 });
 
 describe('isCompactChart', () => {
-  it('treats a chart under 150px as a sparkline-sized trend', () => {
+  it('treats a chart under 100px as a sparkline-sized trend', () => {
     const { isCompactChart } = require('../ShadCharts');
-    expect(isCompactChart(56)).toBe(true);
+    expect(isCompactChart(76)).toBe(true);
+    expect(isCompactChart(135)).toBe(false);
     expect(isCompactChart(280)).toBe(false);
     expect(isCompactChart(undefined)).toBe(false);
   });

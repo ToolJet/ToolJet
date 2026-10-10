@@ -164,9 +164,10 @@ export const dateTicks = (data, key) => {
   return (v) => (typeof v === 'string' && ISO_DATE.test(v) ? dayjs(v).format('D MMM') : v);
 };
 
-/** A chart drawn under 150px tall (a trend in a KPI tile) has no room for axes, grid or legend: it draws the shape
- *  alone, like a sparkline, instead of squeezing tick labels into it. */
-export const isCompactChart = (height) => (Number(height) || 300) < 150;
+/** A chart drawn under 100px tall (a trend in a KPI tile) has no room for axes, grid or legend: it draws the shape
+ *  alone, like a sparkline, instead of squeezing tick labels into it. Taller ones keep their labels (a 135px bar chart
+ *  without its category names meant nothing). */
+export const isCompactChart = (height) => (Number(height) || 300) < 100;
 
 const categoryAxisWidth = (data, key) => {
   const longest = Math.max(0, ...list(data).map((row) => String(row?.[key] ?? '').length));
