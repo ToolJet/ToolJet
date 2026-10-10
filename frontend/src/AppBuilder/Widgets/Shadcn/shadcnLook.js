@@ -17,6 +17,7 @@ const FIELD = [
   ['placeholderColor', '--lk-placeholder'],
   ['borderColor', '--lk-border'],
   ['accentColor', ACCENT],
+  ['errorColor', '--lk-error'],
   ['borderRadius', '--lk-radius', px],
 ];
 // Controls beside a label: checkbox, switch, radio group.
@@ -118,9 +119,9 @@ export const LOOKS = {
   ShadTextarea: FIELD,
   ShadSelect: FIELD,
   ShadDatePicker: FIELD,
-  ShadCheckbox: [...CHOICE, ['borderColor', '--lk-border']],
+  ShadCheckbox: [...CHOICE, ['borderColor', '--lk-border'], ['errorColor', '--lk-error']],
   ShadSwitch: [...CHOICE, ['offColor', '--lk-off']],
-  ShadRadioGroup: [...CHOICE, ['optionTextColor', '--lk-fg']],
+  ShadRadioGroup: [...CHOICE, ['optionTextColor', '--lk-fg'], ['errorColor', '--lk-error']],
   ShadSlider: [...CHOICE, ['trackColor', '--lk-track']],
   ShadToggleGroup: [
     ['backgroundColor', '--lk-bg'],

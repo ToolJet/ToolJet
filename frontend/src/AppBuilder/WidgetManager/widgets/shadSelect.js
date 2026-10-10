@@ -159,6 +159,17 @@ export const shadSelectConfig = {
       showLabel: false,
     },
   },
+  validation: {
+    mandatory: {
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+    },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      placeholder: "{{components.text1.text === 'yes' || 'Enter yes'}}",
+    },
+  },
   events: {
     onChange: {
       displayName: 'On change',
@@ -247,6 +258,15 @@ export const shadSelectConfig = {
         },
       },
     },
+    errorColor: {
+      type: 'colorSwatches',
+      displayName: 'Error color (message and border)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Field radius',
@@ -269,6 +289,8 @@ export const shadSelectConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    isValid: true,
+    isMandatory: false,
     value: '',
     selectedOption: {},
   },
@@ -363,6 +385,14 @@ export const shadSelectConfig = {
         value: 'plainText',
       },
       tooltip: {
+        value: '',
+      },
+    },
+    validation: {
+      mandatory: {
+        value: '{{false}}',
+      },
+      customRule: {
         value: '',
       },
     },

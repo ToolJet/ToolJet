@@ -42,6 +42,7 @@ import {
 } from './ui';
 import { badgeLook, isSet } from './kanbanLook';
 import { lookVars, whenSet } from './shadcnLook';
+import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
@@ -220,16 +221,23 @@ const LABEL = 'text-[color:var(--lk-label,var(--sc-foreground))]';
 const HELP = 'text-[color:var(--lk-help,var(--sc-muted-foreground))]';
 // A form control's box: the background, text, placeholder, border and radius styles, else shadcn's.
 const CONTROL =
-  'bg-[color:var(--lk-bg,transparent)] text-[color:var(--lk-fg,var(--sc-foreground))] border-[color:var(--lk-border,var(--sc-input))] rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] placeholder:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
+  'bg-[color:var(--lk-bg,transparent)] text-[color:var(--lk-fg,var(--sc-foreground))] border-[color:var(--lk-invalid,var(--lk-border,var(--sc-input)))] rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] placeholder:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
 
-/** shadcn's form field: label above, control, help text below. While loading, a spinner sits inside the control. */
-const Field = ({ id, label, description, children }) => {
+// A failed validation's colour: the errorColor style, else the theme's error colour.
+const ERROR = 'text-[color:var(--lk-error,var(--sc-destructive))]';
+const INVALID_VARS = { '--lk-invalid': 'var(--lk-error, var(--sc-destructive))' };
+
+/** shadcn's form field: label above (with a mark when mandatory), control, then the validation error or the help
+ *  text below. While loading, a spinner sits inside the control. An error also turns the control's border to the
+ *  error colour (CONTROL reads --lk-invalid). */
+const Field = ({ id, label, description, error, required, children }) => {
   const loading = useContext(LoadingContext);
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div className="flex w-full flex-col gap-2" style={error ? INVALID_VARS : undefined}>
       {label ? (
         <Label htmlFor={id} className={LABEL}>
           {String(label)}
+          {required ? <span className={cn('ml-0.5', ERROR)}>*</span> : null}
         </Label>
       ) : null}
       {loading ? (
@@ -240,7 +248,13 @@ const Field = ({ id, label, description, children }) => {
       ) : (
         children
       )}
-      {description ? <p className={cn('text-[0.8rem]', HELP)}>{String(description)}</p> : null}
+      {error ? (
+        <p role="alert" className={cn('text-[0.8rem] font-medium', ERROR)}>
+          {String(error)}
+        </p>
+      ) : description ? (
+        <p className={cn('text-[0.8rem]', HELP)}>{String(description)}</p>
+      ) : null}
     </div>
   );
 };
@@ -646,20 +660,81 @@ const useValue = (props, initial, actions = () => ({}), toExposed = (v) => v) =>
   return [value, change];
 };
 
+/** Validation the native way: validate(value) (the widget's Validation section) gives isValid and the message, both
+ *  exposed with isMandatory; the message shows once the user has left the control (touch) or a form around it tried to
+ *  submit. A form's clearForm calls `clear`. */
+const useValidation = (props, value, clear) => {
+  const { validate, validation, setExposedVariable } = props;
+  const status = (typeof validate === 'function' ? validate(value) : null) || {};
+  const isValid = status.isValid !== false;
+  const isMandatory = validation?.mandatory === true;
+  const [touched, setTouched] = useState(false);
+  useShowValidationOnFormSubmit(setTouched);
+  useFormClear(() => {
+    clear?.();
+    setTouched(false);
+  });
+  useEffect(() => {
+    setExposedVariable('isValid', isValid);
+  }, [isValid]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory]); // eslint-disable-line react-hooks/exhaustive-deps
+  return {
+    error: touched && !isValid ? status.validationError || 'Invalid value' : '',
+    required: isMandatory,
+    touch: () => setTouched(true),
+    untouch: () => setTouched(false),
+  };
+};
+
+/** Text box events and actions shared by Input and Textarea: focus and blur (events and actions), and blur marks
+ *  the field touched for validation. */
+const useTextBox = (props, touch) => {
+  const { fireEvent, setExposedVariables } = props;
+  const ref = useRef(null);
+  useEffect(() => {
+    setExposedVariables({
+      setFocus: async () => ref.current?.focus(),
+      setBlur: async () => ref.current?.blur(),
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return {
+    ref,
+    onFocus: () => setTimeout(() => fireEvent('onFocus'), 0),
+    onBlur: () => {
+      touch();
+      fireEvent('onBlur');
+    },
+  };
+};
+
 export const ShadInput = (props) => {
   const { properties, fireEvent, id } = props;
   const [value, change] = useValue(props, String(properties.defaultValue ?? ''), (set) => ({
     setText: async (t) => set(String(t ?? '')),
     clear: async () => set(''),
   }));
+  const check = useValidation(props, value, () => change('', 'onChange'));
+  const box = useTextBox(props, check.touch);
   return (
     <Shell {...props}>
-      <Field id={`shad-${id}`} label={properties.label} description={properties.description}>
+      <Field
+        id={`shad-${id}`}
+        label={properties.label}
+        description={properties.description}
+        error={check.error}
+        required={check.required}
+      >
         <Input
+          ref={box.ref}
           id={`shad-${id}`}
           type={properties.inputType || 'text'}
           className={CONTROL}
           value={value}
+          aria-invalid={!!check.error || undefined}
+          onFocus={box.onFocus}
+          onBlur={box.onBlur}
           placeholder={String(properties.placeholder ?? '')}
           disabled={busy(properties)}
           onChange={(e) => change(e.target.value)}
@@ -676,14 +751,26 @@ export const ShadTextarea = (props) => {
     setText: async (t) => set(String(t ?? '')),
     clear: async () => set(''),
   }));
-  const chrome = (properties.label ? 22 : 0) + (properties.description ? 24 : 0);
+  const check = useValidation(props, value, () => change('', 'onChange'));
+  const box = useTextBox(props, check.touch);
+  const chrome = (properties.label ? 22 : 0) + (properties.description || check.error ? 24 : 0);
   return (
     <Shell {...props}>
-      <Field id={`shad-${id}`} label={properties.label} description={properties.description}>
+      <Field
+        id={`shad-${id}`}
+        label={properties.label}
+        description={properties.description}
+        error={check.error}
+        required={check.required}
+      >
         <Textarea
+          ref={box.ref}
           id={`shad-${id}`}
           className={CONTROL}
           value={value}
+          aria-invalid={!!check.error || undefined}
+          onFocus={box.onFocus}
+          onBlur={box.onBlur}
           placeholder={String(properties.placeholder ?? '')}
           disabled={busy(properties)}
           style={{ height: Math.max(60, (Number(height) || 96) - chrome) }}
@@ -710,12 +797,24 @@ export const ShadSelect = (props) => {
     selectOption: async (v) => setKey(v === undefined || v === null ? '' : String(v)),
     clear: async () => setKey(''),
   });
+  const check = useValidation(props, selectedOption.value ?? '', () => {
+    setKey('');
+    setExposedVariable('value', '');
+    setExposedVariable('selectedOption', {});
+  });
   return (
     <Shell {...props}>
-      <Field id={`shad-${id}`} label={properties.label} description={properties.description}>
+      <Field
+        id={`shad-${id}`}
+        label={properties.label}
+        description={properties.description}
+        error={check.error}
+        required={check.required}
+      >
         <Select
           value={key}
           disabled={busy(properties)}
+          onOpenChange={(open) => !open && check.touch()}
           onValueChange={(next) => {
             setKey(next);
             setExposedVariable('value', byKey.get(next)?.value ?? '');
@@ -752,24 +851,33 @@ const useChecked = (props) => {
     setChecked(v === true);
     setExposedVariable('value', v === true);
     fireEvent('onChange');
+    if (props.componentType === 'ShadCheckbox') fireEvent(v === true ? 'onCheck' : 'onUnCheck');
   };
   return [checked, change];
 };
 
-const CheckedRow = ({ id, control, label, description }) => (
-  <div className="flex items-start gap-3">
+const CheckedRow = ({ id, control, label, description, error, required }) => (
+  <div className="flex items-start gap-3" style={error ? INVALID_VARS : undefined}>
     {control}
     <div className="grid gap-1.5 leading-none">
       <Label htmlFor={id} className={LABEL}>
         {String(label ?? '')}
+        {required ? <span className={cn('ml-0.5', ERROR)}>*</span> : null}
       </Label>
-      {description ? <p className={cn('text-sm', HELP)}>{String(description)}</p> : null}
+      {error ? (
+        <p role="alert" className={cn('text-sm font-medium', ERROR)}>
+          {String(error)}
+        </p>
+      ) : description ? (
+        <p className={cn('text-sm', HELP)}>{String(description)}</p>
+      ) : null}
     </div>
   </div>
 );
 
 export const ShadCheckbox = (props) => {
   const [checked, change] = useChecked(props);
+  const check = useValidation(props, checked, () => change(false));
   const id = `shad-${props.id}`;
   return (
     <Shell {...props}>
@@ -777,13 +885,19 @@ export const ShadCheckbox = (props) => {
         id={id}
         label={props.properties.label}
         description={props.properties.description}
+        error={check.error}
+        required={check.required}
         control={
           <Checkbox
             id={id}
             checked={checked}
             disabled={busy(props.properties)}
-            onCheckedChange={change}
-            className="data-[state=unchecked]:border-[color:var(--lk-border,var(--sc-primary))]"
+            onCheckedChange={(v) => {
+              change(v);
+              check.touch();
+            }}
+            aria-invalid={!!check.error || undefined}
+            className="data-[state=unchecked]:border-[color:var(--lk-invalid,var(--lk-border,var(--sc-primary)))]"
           />
         }
       />
@@ -826,20 +940,33 @@ export const ShadRadioGroup = (props) => {
     (set) => ({ selectOption: async (v) => set(v === undefined || v === null ? '' : String(v)) }),
     (k) => byKey.get(k)?.value ?? ''
   );
+  const check = useValidation(props, byKey.get(key)?.value ?? '', () => change(''));
   return (
     <Shell {...props}>
-      <Field label={properties.label} description={properties.description}>
+      <Field
+        label={properties.label}
+        description={properties.description}
+        error={check.error}
+        required={check.required}
+      >
         <RadioGroup
           value={key}
           disabled={busy(properties)}
           className={properties.horizontal === true ? 'flex flex-wrap gap-4' : undefined}
-          onValueChange={(next) => change(next)}
+          onValueChange={(next) => {
+            change(next);
+            check.touch();
+          }}
         >
           {options.map((o) => {
             const itemId = `shad-${id}-${String(o.value)}`;
             return (
               <div key={String(o.value)} className="flex items-center gap-2">
-                <RadioGroupItem value={String(o.value)} id={itemId} />
+                <RadioGroupItem
+                  value={String(o.value)}
+                  id={itemId}
+                  className="border-[color:var(--lk-invalid,var(--sc-primary))]"
+                />
                 <Label htmlFor={itemId} className="font-normal text-[color:var(--lk-fg,var(--sc-foreground))]">
                   {o.label}
                 </Label>
@@ -904,6 +1031,17 @@ export const ShadDatePicker = (props) => {
     ? { value: [ymd(selected?.from), ymd(selected?.to)], startDate: ymd(selected?.from), endDate: ymd(selected?.to) }
     : { value: ymd(selected), startDate: '', endDate: '' };
   useExposed(setExposedVariables, properties, { ...values, clear: async () => setSelected(range ? {} : undefined) });
+  // A range counts as filled once both ends are picked.
+  const check = useValidation(
+    props,
+    range ? (values.startDate && values.endDate ? values.value : '') : values.value,
+    () => {
+      setSelected(range ? {} : undefined);
+      setExposedVariables(
+        range ? { value: ['', ''], startDate: '', endDate: '' } : { value: '', startDate: '', endDate: '' }
+      );
+    }
+  );
   const text = range
     ? selected?.from
       ? `${dayjs(selected.from).format(format)}${selected.to ? ` – ${dayjs(selected.to).format(format)}` : ''}`
@@ -913,8 +1051,20 @@ export const ShadDatePicker = (props) => {
     : '';
   return (
     <Shell {...props}>
-      <Field id={`shad-${id}`} label={properties.label} description={properties.description}>
-        <Popover open={open} onOpenChange={setOpen}>
+      <Field
+        id={`shad-${id}`}
+        label={properties.label}
+        description={properties.description}
+        error={check.error}
+        required={check.required}
+      >
+        <Popover
+          open={open}
+          onOpenChange={(next) => {
+            setOpen(next);
+            if (!next) check.touch();
+          }}
+        >
           <PopoverTrigger asChild>
             <Button
               id={`shad-${id}`}

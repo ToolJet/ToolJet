@@ -158,6 +158,17 @@ export const shadRadioGroupConfig = {
       showLabel: false,
     },
   },
+  validation: {
+    mandatory: {
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+    },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      placeholder: "{{components.text1.text === 'yes' || 'Enter yes'}}",
+    },
+  },
   events: {
     onChange: {
       displayName: 'On change',
@@ -219,11 +230,22 @@ export const shadRadioGroupConfig = {
         },
       },
     },
+    errorColor: {
+      type: 'colorSwatches',
+      displayName: 'Error color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    isValid: true,
+    isMandatory: false,
     value: '',
   },
   actions: [
@@ -313,6 +335,14 @@ export const shadRadioGroupConfig = {
         value: 'plainText',
       },
       tooltip: {
+        value: '',
+      },
+    },
+    validation: {
+      mandatory: {
+        value: '{{false}}',
+      },
+      customRule: {
         value: '',
       },
     },

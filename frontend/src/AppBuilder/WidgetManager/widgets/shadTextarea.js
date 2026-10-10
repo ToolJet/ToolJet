@@ -130,7 +130,39 @@ export const shadTextareaConfig = {
       showLabel: false,
     },
   },
+  validation: {
+    mandatory: {
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+    },
+    regex: {
+      type: 'code',
+      displayName: 'Regex',
+      placeholder: '^[a-zA-Z0-9_ -]{3,16}$',
+    },
+    minLength: {
+      type: 'code',
+      displayName: 'Min length',
+      placeholder: 'Enter min length',
+    },
+    maxLength: {
+      type: 'code',
+      displayName: 'Max length',
+      placeholder: 'Enter max length',
+    },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      placeholder: "{{components.text1.text === 'yes' || 'Enter yes'}}",
+    },
+  },
   events: {
+    onFocus: {
+      displayName: 'On focus',
+    },
+    onBlur: {
+      displayName: 'On blur',
+    },
     onChange: {
       displayName: 'On change',
     },
@@ -218,6 +250,15 @@ export const shadTextareaConfig = {
         },
       },
     },
+    errorColor: {
+      type: 'colorSwatches',
+      displayName: 'Error color (message and border)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Field radius',
@@ -240,6 +281,8 @@ export const shadTextareaConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    isValid: true,
+    isMandatory: false,
     value: '',
   },
   actions: [
@@ -257,6 +300,14 @@ export const shadTextareaConfig = {
     {
       handle: 'clear',
       displayName: 'Clear',
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
     },
     {
       handle: 'setVisibility',
@@ -330,6 +381,23 @@ export const shadTextareaConfig = {
         value: 'plainText',
       },
       tooltip: {
+        value: '',
+      },
+    },
+    validation: {
+      mandatory: {
+        value: '{{false}}',
+      },
+      regex: {
+        value: '',
+      },
+      minLength: {
+        value: '',
+      },
+      maxLength: {
+        value: '',
+      },
+      customRule: {
         value: '',
       },
     },

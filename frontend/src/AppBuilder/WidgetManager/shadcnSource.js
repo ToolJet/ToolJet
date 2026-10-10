@@ -10,10 +10,12 @@ import {
   NUMBER,
   STRING,
   choice,
+  choiceValidation,
   code,
   colorStyle,
   shadConfig,
   sizeStyle,
+  textValidation,
   toggle,
 } from './shadcnPackHelpers.js';
 
@@ -33,6 +35,7 @@ const fieldStyles = {
   placeholderColor: colorStyle('Placeholder color'),
   borderColor: colorStyle('Field border color'),
   accentColor: colorStyle('Accent (focus ring, selection)'),
+  errorColor: colorStyle('Error color (message and border)'),
   borderRadius: sizeStyle('Field radius'),
 };
 // Controls beside a label (checkbox, switch, radio group, slider).
@@ -370,11 +373,14 @@ export const shadInputConfig = shadConfig({
     inputType: { value: 'text' },
   },
   styles: fieldStyles,
+  validation: textValidation,
   events: {
+    onFocus: { displayName: 'On focus' },
+    onBlur: { displayName: 'On blur' },
     onChange: { displayName: 'On change' },
     onEnterPressed: { displayName: 'On enter pressed' },
   },
-  exposedVariables: { value: '' },
+  exposedVariables: { isValid: true, isMandatory: false, value: '' },
   actions: [
     {
       handle: 'setText',
@@ -382,6 +388,8 @@ export const shadInputConfig = shadConfig({
       params: [{ handle: 'text', displayName: 'Text', defaultValue: '' }],
     },
     { handle: 'clear', displayName: 'Clear' },
+    { handle: 'setFocus', displayName: 'Set focus' },
+    { handle: 'setBlur', displayName: 'Set blur' },
   ],
 });
 
@@ -401,8 +409,13 @@ export const shadTextareaConfig = shadConfig({
     defaultValue: { value: '' },
   },
   styles: fieldStyles,
-  events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { value: '' },
+  validation: textValidation,
+  events: {
+    onFocus: { displayName: 'On focus' },
+    onBlur: { displayName: 'On blur' },
+    onChange: { displayName: 'On change' },
+  },
+  exposedVariables: { isValid: true, isMandatory: false, value: '' },
   actions: [
     {
       handle: 'setText',
@@ -410,6 +423,8 @@ export const shadTextareaConfig = shadConfig({
       params: [{ handle: 'text', displayName: 'Text', defaultValue: '' }],
     },
     { handle: 'clear', displayName: 'Clear' },
+    { handle: 'setFocus', displayName: 'Set focus' },
+    { handle: 'setBlur', displayName: 'Set blur' },
   ],
 });
 
@@ -434,8 +449,9 @@ export const shadSelectConfig = shadConfig({
     defaultValue: { value: '' },
   },
   styles: fieldStyles,
+  validation: choiceValidation,
   events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { value: '', selectedOption: {} },
+  exposedVariables: { isValid: true, isMandatory: false, value: '', selectedOption: {} },
   actions: [
     {
       handle: 'selectOption',
@@ -464,9 +480,15 @@ export const shadCheckboxConfig = shadConfig({
   styles: {
     ...choiceStyles('Checked color'),
     borderColor: colorStyle('Unchecked box border color'),
+    errorColor: colorStyle('Error color'),
   },
-  events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { value: false },
+  validation: choiceValidation,
+  events: {
+    onChange: { displayName: 'On change' },
+    onCheck: { displayName: 'On check' },
+    onUnCheck: { displayName: 'On uncheck' },
+  },
+  exposedVariables: { isValid: true, isMandatory: false, value: false },
 });
 
 export const shadSwitchConfig = shadConfig({
@@ -506,9 +528,14 @@ export const shadRadioGroupConfig = shadConfig({
     defaultValue: { value: 'Standard' },
     horizontal: { value: '{{false}}' },
   },
-  styles: { ...choiceStyles('Selected color'), optionTextColor: colorStyle('Option text color') },
+  styles: {
+    ...choiceStyles('Selected color'),
+    optionTextColor: colorStyle('Option text color'),
+    errorColor: colorStyle('Error color'),
+  },
+  validation: choiceValidation,
   events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { value: '' },
+  exposedVariables: { isValid: true, isMandatory: false, value: '' },
   actions: [
     {
       handle: 'selectOption',
@@ -568,8 +595,9 @@ export const shadDatePickerConfig = shadConfig({
     format: { value: 'DD MMM YYYY' },
   },
   styles: fieldStyles,
+  validation: choiceValidation,
   events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { value: '', startDate: '', endDate: '' },
+  exposedVariables: { isValid: true, isMandatory: false, value: '', startDate: '', endDate: '' },
   actions: [{ handle: 'clear', displayName: 'Clear' }],
 });
 

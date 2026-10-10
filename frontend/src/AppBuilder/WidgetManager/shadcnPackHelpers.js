@@ -94,6 +94,32 @@ const commonDefinition = (withHeight) => ({
   tooltip: { value: '' },
 });
 
+// Validation sections, with the native widgets' keys: RenderWidget's validate(value) runs them (validateWidget), and
+// the inspector shows them under Validation.
+const MANDATORY = { type: 'toggle', displayName: 'Make this field mandatory' };
+const CUSTOM_RULE = {
+  type: 'code',
+  displayName: 'Custom validation',
+  placeholder: "{{components.text1.text === 'yes' || 'Enter yes'}}",
+};
+export const textValidation = {
+  mandatory: MANDATORY,
+  regex: { type: 'code', displayName: 'Regex', placeholder: '^[a-zA-Z0-9_ -]{3,16}$' },
+  minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
+  maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
+  customRule: CUSTOM_RULE,
+};
+export const numberValidation = {
+  mandatory: MANDATORY,
+  minValue: { type: 'code', displayName: 'Min value', placeholder: 'Enter min value' },
+  maxValue: { type: 'code', displayName: 'Max value', placeholder: 'Enter max value' },
+  customRule: CUSTOM_RULE,
+};
+export const choiceValidation = { mandatory: MANDATORY, customRule: CUSTOM_RULE };
+/** The definition values for a validation section: mandatory off, every rule empty. */
+export const validationDefaults = (section) =>
+  Object.fromEntries(Object.keys(section).map((key) => [key, { value: key === 'mandatory' ? '{{false}}' : '' }]));
+
 // The control actions every ToolJet widget has (Control component → Set visibility, Set disable, Set loading),
 // added to each pack widget unless its own actions already define them.
 const valueParam = { handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' };
@@ -120,6 +146,7 @@ export const shadConfig = ({
   withHeight = false,
   styles = {},
   styleDefaults = {},
+  validation,
 }) => ({
   name,
   displayName,
@@ -131,6 +158,7 @@ export const shadConfig = ({
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: { ...properties, ...commonProperties(withHeight) },
+  ...(validation ? { validation } : {}),
   events,
   styles: {
     boxShadow: {
@@ -146,6 +174,7 @@ export const shadConfig = ({
   definition: {
     others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
     properties: { ...defaults, ...commonDefinition(withHeight) },
+    ...(validation ? { validation: validationDefaults(validation) } : {}),
     events: [],
     styles: { boxShadow: { value: '0px 0px 0px 0px #00000040' }, ...styleDefaults },
   },

@@ -120,9 +120,26 @@ export const shadCheckboxConfig = {
       showLabel: false,
     },
   },
+  validation: {
+    mandatory: {
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+    },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      placeholder: "{{components.text1.text === 'yes' || 'Enter yes'}}",
+    },
+  },
   events: {
     onChange: {
       displayName: 'On change',
+    },
+    onCheck: {
+      displayName: 'On check',
+    },
+    onUnCheck: {
+      displayName: 'On uncheck',
     },
   },
   styles: {
@@ -181,11 +198,22 @@ export const shadCheckboxConfig = {
         },
       },
     },
+    errorColor: {
+      type: 'colorSwatches',
+      displayName: 'Error color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    isValid: true,
+    isMandatory: false,
     value: false,
   },
   actions: [
@@ -258,6 +286,14 @@ export const shadCheckboxConfig = {
         value: 'plainText',
       },
       tooltip: {
+        value: '',
+      },
+    },
+    validation: {
+      mandatory: {
+        value: '{{false}}',
+      },
+      customRule: {
         value: '',
       },
     },

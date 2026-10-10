@@ -180,6 +180,17 @@ export const shadDatePickerConfig = {
       showLabel: false,
     },
   },
+  validation: {
+    mandatory: {
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+    },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      placeholder: "{{components.text1.text === 'yes' || 'Enter yes'}}",
+    },
+  },
   events: {
     onChange: {
       displayName: 'On change',
@@ -268,6 +279,15 @@ export const shadDatePickerConfig = {
         },
       },
     },
+    errorColor: {
+      type: 'colorSwatches',
+      displayName: 'Error color (message and border)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Field radius',
@@ -290,6 +310,8 @@ export const shadDatePickerConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    isValid: true,
+    isMandatory: false,
     value: '',
     startDate: '',
     endDate: '',
@@ -377,6 +399,14 @@ export const shadDatePickerConfig = {
         value: 'plainText',
       },
       tooltip: {
+        value: '',
+      },
+    },
+    validation: {
+      mandatory: {
+        value: '{{false}}',
+      },
+      customRule: {
         value: '',
       },
     },
