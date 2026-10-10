@@ -8,6 +8,7 @@ import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 // import { AllComponents } from '@/Editor/Box';
 import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
+import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 const SHOW_ADDITIONAL_ACTIONS = [
@@ -172,10 +173,13 @@ export const baseComponentProperties = (
     Properties: [],
     Events: [],
     Validation: [],
+    // shadcn pack widgets keep loading, visibility, disable, dynamic height and the tooltip under Additional Actions
+    // (RenderWidget reads their tooltip from properties), so they show it and hide General, whose tooltip they ignore.
     'Additional Actions': Object.keys(AllComponents).filter(
-      (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
+      (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component) && !SHADCN_COMPONENTS.includes(component)
     ),
     General: [
+      ...SHADCN_COMPONENTS,
       'Modal',
       'Pagination',
       'TextInput',
