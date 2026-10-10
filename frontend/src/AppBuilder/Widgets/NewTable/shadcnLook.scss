@@ -6,6 +6,9 @@ $shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 $radius: var(--cc-radius-default, 6px);
 
 .jet-table.tj-table-look-shadcn {
+  // A container, so the footer can compact itself in a narrow table (four tables in a row of cards).
+  container-type: inline-size;
+  container-name: tj-shadcn-table;
   border: 1px solid var(--cc-weak-border) !important;
   border-radius: calc(var(--cc-radius-default, 8px) + 4px) !important;
   box-shadow: $shadow-sm !important;
@@ -158,5 +161,26 @@ $radius: var(--cc-radius-default, 6px);
   thead th:first-child,
   tbody td:first-child {
     padding-left: 4px !important;
+  }
+}
+
+// A narrow table (a quarter-width card): the footer keeps one line. First and last page buttons go, the record count
+// does not wrap ("14 / Records"), and the page buttons tighten.
+@container tj-shadcn-table (max-width: 440px) {
+  .jet-table.tj-table-look-shadcn {
+    .pagination-container > button:first-child,
+    .pagination-container > button:last-child {
+      display: none !important;
+    }
+    .table-pagination-btn {
+      min-width: 28px !important;
+      padding: 0 6px !important;
+    }
+    .table-footer {
+      gap: 8px;
+      span {
+        white-space: nowrap;
+      }
+    }
   }
 }
