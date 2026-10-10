@@ -72,7 +72,16 @@ const SHADCN_SECTIONS = [
   { title: 'Typography', items: ['ShadHeading', 'ShadText'] },
   {
     title: 'Data display',
-    items: ['ShadTable', 'Kanban', 'ShadStat', 'ShadBadge', 'ShadAvatar', 'ShadProgress', 'ShadEmpty', 'ShadSkeleton'],
+    items: [
+      'ShadTable',
+      'ShadKanban',
+      'ShadStat',
+      'ShadBadge',
+      'ShadAvatar',
+      'ShadProgress',
+      'ShadEmpty',
+      'ShadSkeleton',
+    ],
   },
   { title: 'Charts', items: ['ShadAreaChart', 'ShadBarChart', 'ShadPieChart'] },
   {
@@ -97,19 +106,11 @@ const SHADCN_SECTIONS = [
 const COMPONENT_LIBRARIES = [
   { value: 'tooljet', label: 'ToolJet' },
   { value: 'antd', label: 'Ant Design', sections: ANT_DESIGN_SECTIONS, components: ANT_DESIGN_COMPONENTS },
-  {
-    value: 'shadcn',
-    label: 'shadcn/ui',
-    sections: SHADCN_SECTIONS,
-    components: SHADCN_COMPONENTS,
-    // Native containers the library offers in its own look: they keep their child slots, actions and events. The
-    // Kanban's card modal starts off: on by default it opens an empty dialog until someone fills it.
-    presets: { Kanban: { skin: 'shadcn', openModalOnCardClick: '{{false}}' } },
-  },
+  { value: 'shadcn', label: 'shadcn/ui', sections: SHADCN_SECTIONS, components: SHADCN_COMPONENTS },
 ];
 const PACK_COMPONENTS = new Set(COMPONENT_LIBRARIES.flatMap((library) => library.components ?? []));
 const libraryComponentNames = (library) =>
-  library.components ? new Set(['FlexContainer', ...library.components, ...Object.keys(library.presets ?? {})]) : null;
+  library.components ? new Set(['FlexContainer', ...library.components]) : null;
 import { Button } from '@/components/ui/Button/Button';
 import { ModuleManager } from '@/modules/Modules/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
@@ -265,14 +266,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   function renderComponentCard(component, index) {
     return (
       <div key={component} className="text-center align-items-center clearfix draggable-box-wrapper">
-        <DragLayer
-          index={index}
-          component={
-            library.presets?.[component]
-              ? { ...componentTypeDefinitionMap[component], presetProperties: library.presets[component] }
-              : componentTypeDefinitionMap[component]
-          }
-        />
+        <DragLayer index={index} component={componentTypeDefinitionMap[component]} />
       </div>
     );
   }

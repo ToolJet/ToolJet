@@ -17613,19 +17613,18 @@ section.ai-message-prompt-input-wrapper {
   }
 
 
-  // The Kanban's column and card style properties arrive as --kb-* variables (Widgets/Kanban/helpers/styleVars.js).
   .kanban-container {
-    background-color: var(--kb-col-bg, var(--cc-surface1-surface));
+    background-color: var(--cc-surface1-surface);
 
     .header {
-      background-color: var(--kb-col-bg, var(--cc-surface1-surface));
+      background-color: var(--cc-surface1-surface);
     }
 
     .subcontainer-container {
-      background-color: var(--kb-card-bg, var(--cc-surface1-surface));
+      background-color: var(--cc-surface1-surface);
 
       .real-canvas {
-        background-color: var(--kb-card-bg, var(--cc-surface1-surface)) !important;
+        background-color: var(--cc-surface1-surface) !important;
       }
     }
   }

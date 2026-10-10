@@ -63,8 +63,6 @@ export const useCanvasDropHandler = () => {
 
       // Custom-tab drops carry which library component the LibraryComponent instance renders.
       const libraryComponentInfo = component?.libraryComponentInfo;
-      // A component library's preset for a native widget (the shadcn/ui Kanban skin), applied on drop.
-      const presetProperties = component?.presetProperties;
 
       let addedComponent;
 
@@ -75,8 +73,7 @@ export const useCanvasDropHandler = () => {
           realCanvasRef,
           canvasId,
           moduleInfo,
-          libraryComponentInfo,
-          presetProperties
+          libraryComponentInfo
         );
         const childComponents = addChildrenWidgetsToParent(draggedComponentType, parentComponent?.id, currentLayout);
         if (draggedComponentType === 'Form') {
@@ -91,8 +88,7 @@ export const useCanvasDropHandler = () => {
           realCanvasRef,
           canvasId,
           moduleInfo,
-          libraryComponentInfo,
-          presetProperties
+          libraryComponentInfo
         );
         addedComponent = [newComponent];
         await addComponentToCurrentPage(addedComponent);

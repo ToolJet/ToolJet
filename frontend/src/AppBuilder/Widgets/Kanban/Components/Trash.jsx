@@ -1,23 +1,10 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 
-export const Trash = ({ id, deleteLabel, dataCy, shadcn = false, dragging = false }) => {
+export const Trash = ({ id, deleteLabel, dataCy }) => {
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
-
-  // The shadcn/ui style shows the zone only while a card is dragged; the default style keeps it on screen.
-  if (shadcn) {
-    return (
-      <div
-        ref={setNodeRef}
-        className={`kanban-trash skin-shadcn${dragging ? ' dragging' : ''}${isOver ? ' over' : ''}`}
-        data-cy={dataCy}
-      >
-        {deleteLabel}
-      </div>
-    );
-  }
 
   return (
     <div

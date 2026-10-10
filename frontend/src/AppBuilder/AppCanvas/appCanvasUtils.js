@@ -54,8 +54,7 @@ export const addNewWidgetToTheEditor = (
   realCanvasRef,
   parentId,
   moduleInfo = undefined,
-  libraryComponentInfo = undefined,
-  presetProperties = undefined
+  libraryComponentInfo = undefined
 ) => {
   const canvasBoundingRect = realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
@@ -86,12 +85,6 @@ export const addNewWidgetToTheEditor = (
       componentData.defaultSize.width = libraryComponentInfo.defaultSize.width;
     if (libraryComponentInfo.defaultSize?.height)
       componentData.defaultSize.height = libraryComponentInfo.defaultSize.height;
-  }
-
-  // A component library in the panel (experiment) can offer a native widget with properties preset, for example the
-  // Kanban with the shadcn/ui skin from the shadcn/ui library.
-  for (const [key, value] of Object.entries(presetProperties ?? {})) {
-    componentData.definition.properties[key] = { value };
   }
 
   const defaultWidth = componentData.defaultSize.width;

@@ -73,20 +73,6 @@ export const kanbanConfig = {
       },
       accordian: 'Board configuration',
     },
-    // Component packs (experiment): the board's look. 'shadcn' draws shadcn/ui columns and cards; the card template,
-    // detail modal, actions and events are the same either way.
-    skin: {
-      type: 'switch',
-      displayName: 'Style',
-      options: [
-        { displayName: 'Default', value: 'default' },
-        { displayName: 'shadcn/ui', value: 'shadcn' },
-      ],
-      validation: { schema: { type: 'string' }, defaultValue: 'default' },
-      accordian: 'Board configuration',
-      isFxNotRequired: true,
-      fullWidth: true,
-    },
     enableAddCard: { type: 'toggle', displayName: 'Enable adding card', accordian: 'Board configuration' },
     showDeleteButton: { type: 'toggle', displayName: 'Enable card deletion zone', accordian: 'Board configuration' },
     deleteLabel: {
@@ -172,62 +158,6 @@ export const kanbanConfig = {
     disabledState: { type: 'toggle', displayName: 'Disable' },
     visibility: { type: 'toggle', displayName: 'Visibility' },
     accentColor: { type: 'colorSwatches', displayName: 'Accent color' },
-    // Board and card styling (2026-10-10): each falls back to the board's style (default or shadcn/ui) when unset.
-    columnBackgroundColor: {
-      type: 'colorSwatches',
-      displayName: 'Column background',
-      validation: { schema: { type: 'string' } },
-      accordian: 'Columns',
-    },
-    columnBorderColor: {
-      type: 'colorSwatches',
-      displayName: 'Column border color',
-      validation: { schema: { type: 'string' } },
-      accordian: 'Columns',
-    },
-    columnBorderRadius: {
-      type: 'numberInput',
-      displayName: 'Column radius',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-      accordian: 'Columns',
-    },
-    columnTitleColor: {
-      type: 'colorSwatches',
-      displayName: 'Column title color',
-      validation: { schema: { type: 'string' } },
-      accordian: 'Columns',
-    },
-    cardBackgroundColor: {
-      type: 'colorSwatches',
-      displayName: 'Card background',
-      validation: { schema: { type: 'string' } },
-      accordian: 'Cards',
-    },
-    cardBorderColor: {
-      type: 'colorSwatches',
-      displayName: 'Card border color',
-      validation: { schema: { type: 'string' } },
-      accordian: 'Cards',
-    },
-    cardBorderRadius: {
-      type: 'numberInput',
-      displayName: 'Card radius',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-      accordian: 'Cards',
-    },
-    cardBoxShadow: {
-      type: 'select',
-      displayName: 'Card shadow',
-      options: [
-        { name: 'Board default', value: 'default' },
-        { name: 'None', value: 'none' },
-        { name: 'Small', value: 'sm' },
-        { name: 'Medium', value: 'md' },
-        { name: 'Large', value: 'lg' },
-      ],
-      validation: { schema: { type: 'string' } },
-      accordian: 'Cards',
-    },
   },
   actions: [
     {
@@ -296,7 +226,6 @@ export const kanbanConfig = {
       cardHeight: {
         value: '{{100}}',
       },
-      skin: { value: 'default' },
       enableAddCard: {
         value: `{{true}}`,
       },
@@ -320,7 +249,6 @@ export const kanbanConfig = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       accentColor: { value: 'var(--cc-primary-brand)' },
-      cardBoxShadow: { value: 'default' },
     },
   },
 };

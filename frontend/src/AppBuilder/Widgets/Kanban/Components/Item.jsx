@@ -3,12 +3,6 @@ import '@/_styles/widgets/kanban.scss';
 import cx from 'classnames';
 import { Handle } from './Handle';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
-import { cardStyleVars } from '../helpers/styleVars';
-
-const isResizeTarget = (target) =>
-  target.style.cursor.includes('resize') ||
-  target?.classList?.contains('delete-icon') ||
-  target?.parent?.classList?.contains('resizer-active');
 
 export const Item = React.memo(
   forwardRef(
@@ -33,7 +27,6 @@ export const Item = React.memo(
         setShowModal = () => {},
         cardDataAsObj = {},
         setLastSelectedCard,
-        selected = false,
         cardData,
         dataCy,
         ...props
@@ -41,7 +34,6 @@ export const Item = React.memo(
       ref
     ) => {
       const { id, component, containerProps, fireEvent, darkMode, setExposedVariable } = kanbanProps;
-      const shadcn = kanbanProps.properties?.skin === 'shadcn';
       useEffect(() => {
         if (!dragOverlay) {
           return;
@@ -52,7 +44,7 @@ export const Item = React.memo(
 
       return (
         <li
-          className={cx('kanban-item', sorting && 'sorting', dragOverlay && 'dragOverlay', shadcn && 'skin-shadcn')}
+          className={cx('kanban-item', sorting && 'sorting', dragOverlay && 'dragOverlay')}
           style={{
             transition: [transition].filter(Boolean).join(', '),
             '--translate-x': transform ? `${Math.round(transform.x)}px` : undefined,
@@ -60,7 +52,6 @@ export const Item = React.memo(
             '--scale-x': transform?.scaleX ? `${transform.scaleX}` : undefined,
             '--scale-y': transform?.scaleY ? `${transform.scaleY}` : undefined,
             '--index': index,
-            ...cardStyleVars(kanbanProps.styles),
             width: `${Number(cardWidth) || 300}px`,
             height: `${Number(cardHeight) || 100}px`,
           }}
@@ -69,28 +60,18 @@ export const Item = React.memo(
           onClick={({ target }) => {
             const { properties } = kanbanProps;
             const { openModalOnCardClick } = properties;
-            if (!openModalOnCardClick || isResizeTarget(target)) return;
-            if (shadcn) {
-              setShowModal(true);
+            if (!openModalOnCardClick) return;
+            if (
+              target.style.cursor.includes('resize') ||
+              target?.classList?.contains('delete-icon') ||
+              target?.parent?.classList?.contains('resizer-active')
+            )
               return;
-            }
             setExposedVariable('lastSelectedCard', cardDataAsObj[value]);
             setLastSelectedCard(cardDataAsObj[value]);
             setShowModal(true);
             fireEvent('onCardSelected');
           }}
-          // The shadcn/ui style selects a card on any click inside it, modal or not: the card's child canvas stops a
-          // click on its empty space from bubbling, and a button in the card can then act on this card.
-          onClickCapture={
-            shadcn
-              ? ({ target }) => {
-                  if (isResizeTarget(target)) return;
-                  setExposedVariable('lastSelectedCard', cardDataAsObj[value]);
-                  setLastSelectedCard(cardDataAsObj[value]);
-                  fireEvent('onCardSelected');
-                }
-              : undefined
-          }
         >
           <div
             className={cx(
@@ -99,8 +80,7 @@ export const Item = React.memo(
               dragging && 'dragging',
               dragOverlay && 'dragOverlay',
               disabled && 'disabled',
-              darkMode && 'dark-light',
-              selected && 'selected'
+              darkMode && 'dark-light'
             )}
             {...props}
           >
@@ -111,10 +91,7 @@ export const Item = React.memo(
                 id={id}
                 index={cardData.findIndex((card) => card.id === value)}
                 styles={{
-                  // The card template fills the card, so it carries the card background.
-                  backgroundColor: shadcn
-                    ? 'var(--kb-card-bg, var(--cc-surface1-surface))'
-                    : 'var(--kb-card-bg, var(--base))',
+                  backgroundColor: 'var(--base)',
                 }}
                 darkMode={darkMode}
                 componentType="Kanban"

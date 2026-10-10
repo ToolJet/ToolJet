@@ -93,7 +93,7 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
   return (
     <BootstrapModal
       show={showModal}
-      contentClassName={`modal-component kanban-modal${properties.skin === 'shadcn' ? ' skin-shadcn' : ''}`}
+      contentClassName="modal-component kanban-modal"
       container={document.getElementsByClassName('real-canvas')[0]}
       size={size}
       keyboard={true}
