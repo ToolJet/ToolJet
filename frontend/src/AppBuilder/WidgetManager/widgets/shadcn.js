@@ -12,6 +12,7 @@ import { shadDatePickerConfig } from './shadDatePicker';
 import { shadEmptyConfig } from './shadEmpty';
 import { shadHeadingConfig } from './shadHeading';
 import { shadInputConfig } from './shadInput';
+import { shadKanbanConfig } from './shadKanban';
 import { shadPieChartConfig } from './shadPieChart';
 import { shadProgressConfig } from './shadProgress';
 import { shadRadioGroupConfig } from './shadRadioGroup';
@@ -40,6 +41,7 @@ export const shadcnConfigs = [
   shadEmptyConfig,
   shadHeadingConfig,
   shadInputConfig,
+  shadKanbanConfig,
   shadPieChartConfig,
   shadProgressConfig,
   shadRadioGroupConfig,

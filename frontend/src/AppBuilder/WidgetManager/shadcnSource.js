@@ -530,6 +530,55 @@ export const shadToggleGroupConfig = shadConfig({
   exposedVariables: { value: '' },
 });
 
+// ---- Kanban ------------------------------------------------------------------------------------------------------
+
+export const shadKanbanConfig = shadConfig({
+  name: 'ShadKanban',
+  displayName: 'Kanban',
+  description:
+    'shadcn/ui Kanban board from data: columns are values of a status field, cards show title, description, badge, avatar and meta fields; drag a card to move it, then save the move with a query on onCardMoved (components.<name>.movedCard)',
+  defaultSize: { width: 43, height: 420 },
+  withHeight: true,
+  properties: {
+    data: code('Cards', ARRAY, [], {
+      placeholder: "[{ id: 1, title: 'Fix login', status: 'todo', priority: 'High' }]",
+    }),
+    columns: code('Columns (in order)', ARRAY, [], {
+      placeholder: "['todo', 'doing', 'done'] or [{ id: 'todo', title: 'To do' }]",
+    }),
+    statusField: code('Status field', STRING, 'status'),
+    idField: code('Id field', STRING, 'id'),
+    titleField: code('Title field', STRING, 'title'),
+    descriptionField: code('Description field', STRING, ''),
+    badgeField: code('Badge field', STRING, ''),
+    avatarField: code('Avatar field (a name)', STRING, ''),
+    metaField: code('Meta field (a date, a count)', STRING, ''),
+    allowDrag: toggle('Drag to move', true),
+    emptyText: code('Empty column message', STRING, 'No cards'),
+  },
+  defaults: {
+    data: {
+      value:
+        "{{[{ id: 1, title: 'Draft the brief', status: 'todo', priority: 'High', owner: 'Ada Lovelace' }, { id: 2, title: 'Review designs', status: 'doing', priority: 'Medium', owner: 'Alan Turing' }, { id: 3, title: 'Ship v1', status: 'done', priority: 'Low', owner: 'Grace Hopper' }]}}",
+    },
+    columns: {
+      value:
+        "{{[{ id: 'todo', title: 'To do' }, { id: 'doing', title: 'In progress' }, { id: 'done', title: 'Done' }]}}",
+    },
+    statusField: { value: 'status' },
+    idField: { value: 'id' },
+    titleField: { value: 'title' },
+    descriptionField: { value: '' },
+    badgeField: { value: 'priority' },
+    avatarField: { value: 'owner' },
+    metaField: { value: '' },
+    allowDrag: { value: '{{true}}' },
+    emptyText: { value: 'No cards' },
+  },
+  events: { onCardClicked: { displayName: 'On card clicked' }, onCardMoved: { displayName: 'On card moved' } },
+  exposedVariables: { selectedCard: {}, movedCard: {}, lastMove: {} },
+});
+
 // ---- Charts (Recharts, styled like shadcn/ui charts) ------------------------------------------------------------------
 
 const CHART_DATA =
@@ -647,5 +696,6 @@ export const shadcnConfigs = [
   shadAreaChartConfig,
   shadBarChartConfig,
   shadPieChartConfig,
+  shadKanbanConfig,
 ];
 export const SHADCN_COMPONENTS = shadcnConfigs.map((c) => c.name);

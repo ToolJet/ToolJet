@@ -72,7 +72,16 @@ const SHADCN_SECTIONS = [
   { title: 'Typography', items: ['ShadHeading', 'ShadText'] },
   {
     title: 'Data display',
-    items: ['ShadTable', 'ShadStat', 'ShadBadge', 'ShadAvatar', 'ShadProgress', 'ShadEmpty', 'ShadSkeleton'],
+    items: [
+      'ShadTable',
+      'ShadKanban',
+      'ShadStat',
+      'ShadBadge',
+      'ShadAvatar',
+      'ShadProgress',
+      'ShadEmpty',
+      'ShadSkeleton',
+    ],
   },
   { title: 'Charts', items: ['ShadAreaChart', 'ShadBarChart', 'ShadPieChart'] },
   {

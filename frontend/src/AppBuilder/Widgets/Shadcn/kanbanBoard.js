@@ -1,0 +1,48 @@
+// shadcn/ui pack Kanban (experiment): the board's data logic, kept apart from the drag-and-drop UI so it is tested on
+// its own. Cards are rows of data; a column is a value of the status field.
+
+const keyOf = (value) => String(value ?? '');
+
+/** Columns in the order given ({ id, title } objects or plain values), each with its cards; a status value no column
+ *  lists gets a column at the end, so no card disappears. With no columns given, they come from the data. */
+export const boardColumns = (cards, columns, statusField, idField) => {
+  const listed = (Array.isArray(columns) ? columns : []).map((c) =>
+    c !== null && typeof c === 'object'
+      ? { id: keyOf(c.id ?? c.value ?? c.title), title: String(c.title ?? c.label ?? c.id ?? c.value ?? '') }
+      : { id: keyOf(c), title: String(c) }
+  );
+  const byId = new Map(listed.map((c) => [c.id, { ...c, cards: [] }]));
+  for (const card of Array.isArray(cards) ? cards : []) {
+    const status = keyOf(card?.[statusField]);
+    if (!byId.has(status)) byId.set(status, { id: status, title: status, cards: [] });
+    byId.get(status).cards.push(card);
+  }
+  // Keep a stable id on every card for drag and drop.
+  for (const column of byId.values()) {
+    column.cards = column.cards.map((card, i) => ({ ...card, __key: keyOf(card?.[idField] ?? `${column.id}-${i}`) }));
+  }
+  return [...byId.values()];
+};
+
+/** Moves a card to a column, before `beforeCardKey` (or at the end). Returns the new columns and the move (null when
+ *  the card is already there): the card with its status set to the new column, where it came from and where it went. */
+export const moveCard = (columns, cardKey, toColumnId, beforeCardKey, statusField) => {
+  const key = keyOf(cardKey);
+  const from = columns.find((c) => c.cards.some((card) => card.__key === key));
+  const to = columns.find((c) => c.id === keyOf(toColumnId));
+  if (!from || !to) return { columns, move: null };
+  const card = from.cards.find((c) => c.__key === key);
+  const fromIndex = from.cards.indexOf(card);
+  const next = columns.map((c) => ({ ...c, cards: c.cards.filter((x) => x.__key !== key) }));
+  const target = next.find((c) => c.id === to.id);
+  const before =
+    beforeCardKey === null || beforeCardKey === undefined
+      ? -1
+      : target.cards.findIndex((x) => x.__key === keyOf(beforeCardKey));
+  const toIndex = before < 0 ? target.cards.length : before;
+  if (from.id === to.id && toIndex === fromIndex) return { columns, move: null };
+  const moved = { ...card, [statusField]: to.id };
+  target.cards.splice(toIndex, 0, moved);
+  const { __key, ...plain } = moved;
+  return { columns: next, move: { cardId: plain.id ?? key, card: plain, from: from.id, to: to.id, toIndex } };
+};
