@@ -838,7 +838,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p /tmp/tj-e2e-json
-          BASE_BRANCH="${{ github.base_ref }}" bash scripts/test-changed.sh 2>&1 | tee /tmp/tj-run.log
+          # lint + `nest build` (tsc) already passed in build-server, which this job needs
+          SKIP_STATIC=true BASE_BRANCH="${{ github.base_ref }}" bash scripts/test-changed.sh 2>&1 | tee /tmp/tj-run.log
           exit "${PIPESTATUS[0]}"
       - name: Capture scope for the PR comment
         if: always()
