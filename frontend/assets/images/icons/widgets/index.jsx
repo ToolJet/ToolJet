@@ -84,6 +84,7 @@ import {
   EmptyIcon,
   HeadingIcon,
 } from './antDesign.jsx';
+import { AreaChartIcon, BarChartIcon, PieChartIcon, SkeletonIcon } from './shadcn.jsx';
 
 // Library components use the same icons across the palette and state inspector.
 const ANT_DESIGN_ICONS = {
@@ -116,8 +117,38 @@ const ANT_DESIGN_ICONS = {
   anttitle: HeadingIcon,
 };
 
+const SHADCN_ICONS = {
+  shadaccordion: Accordion,
+  shadalert: AlertIcon,
+  shadareachart: AreaChartIcon,
+  shadavatar: AvatarIcon,
+  shadbadge: BadgeIcon,
+  shadbarchart: BarChartIcon,
+  shadbreadcrumb: BreadcrumbIcon,
+  shadbutton: Button,
+  shadcheckbox: Checkbox,
+  shaddatepicker: DatepickerV2,
+  shadempty: EmptyIcon,
+  shadheading: HeadingIcon,
+  shadinput: Textinput,
+  shadkanban: Kanban,
+  shadpiechart: PieChartIcon,
+  shadprogress: Progressbar,
+  shadradiogroup: RadioButton,
+  shadselect: Dropdown,
+  shadseparator: HorizontalDivider,
+  shadskeleton: SkeletonIcon,
+  shadslider: Rangeslider,
+  shadstat: Statistics,
+  shadswitch: Toggleswitch,
+  shadtable: Table,
+  shadtext: Text,
+  shadtextarea: TextArea,
+  shadtogglegroup: ButtonGroup,
+};
+
 const WidgetIcon = (props) => {
-  const LibraryIcon = ANT_DESIGN_ICONS[props.name];
+  const LibraryIcon = ANT_DESIGN_ICONS[props.name] ?? SHADCN_ICONS[props.name];
   if (LibraryIcon) return <LibraryIcon {...props} />;
 
   // TO_DO -> Use widget type instead of widget name
