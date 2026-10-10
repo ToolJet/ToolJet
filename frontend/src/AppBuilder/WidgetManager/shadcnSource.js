@@ -225,21 +225,24 @@ export const shadBadgeConfig = shadConfig({
 export const shadAvatarConfig = shadConfig({
   name: 'ShadAvatar',
   displayName: 'Avatar',
-  description: 'shadcn/ui avatar or avatar stack',
+  description:
+    'shadcn/ui avatar or avatar group: names is one name, a comma-separated list, or an array of names or { name, src } (a photo per person); the first maxVisible show, the rest as a +N chip',
   defaultSize: { width: 6, height: 36 },
   properties: {
     names: code(
-      'Names (one or many)',
+      'Names (one or many; or [{ name, src }])',
       { type: 'union', schemas: [{ type: 'string' }, { type: 'array' }] },
       'Ada Lovelace'
     ),
     src: code('Image URL (single avatar)', STRING, ''),
     size: code('Size (px)', NUMBER, 32),
+    maxVisible: code('Most avatars shown (rest as +N)', NUMBER, 5),
   },
   defaults: {
     names: { value: 'Ada Lovelace' },
     src: { value: '' },
     size: { value: '{{32}}' },
+    maxVisible: { value: '{{5}}' },
   },
   styles: {
     backgroundColor: colorStyle('Initials background'),

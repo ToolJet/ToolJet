@@ -2,7 +2,8 @@
 export const shadAvatarConfig = {
   name: 'ShadAvatar',
   displayName: 'Avatar',
-  description: 'shadcn/ui avatar or avatar stack',
+  description:
+    'shadcn/ui avatar or avatar group: names is one name, a comma-separated list, or an array of names or { name, src } (a photo per person); the first maxVisible show, the rest as a +N chip',
   component: 'ShadAvatar',
   defaultSize: {
     width: 6,
@@ -21,7 +22,7 @@ export const shadAvatarConfig = {
   properties: {
     names: {
       type: 'code',
-      displayName: 'Names (one or many)',
+      displayName: 'Names (one or many; or [{ name, src }])',
       validation: {
         schema: {
           type: 'union',
@@ -55,6 +56,16 @@ export const shadAvatarConfig = {
           type: 'number',
         },
         defaultValue: 32,
+      },
+    },
+    maxVisible: {
+      type: 'code',
+      displayName: 'Most avatars shown (rest as +N)',
+      validation: {
+        schema: {
+          type: 'number',
+        },
+        defaultValue: 5,
       },
     },
     loadingState: {
@@ -238,6 +249,9 @@ export const shadAvatarConfig = {
       },
       size: {
         value: '{{32}}',
+      },
+      maxVisible: {
+        value: '{{5}}',
       },
       loadingState: {
         value: '{{false}}',

@@ -118,12 +118,8 @@ const loadingSkeleton = (look, { properties, height }) => {
     case 'pill':
       return <Skeleton className="h-5 w-16 rounded-full" />;
     case 'avatar': {
-      const size = Number(properties.size) || 32;
-      const count = Array.isArray(properties.names)
-        ? properties.names.length
-        : String(properties.names ?? '')
-            .split(',')
-            .filter((n) => n.trim()).length;
+      const size = Math.max(16, Math.min(256, Number(properties.size) || 32));
+      const count = avatarPeople(properties.names).length;
       return (
         <div className="flex -space-x-2">
           {Array.from({ length: Math.max(1, Math.min(5, count)) }, (_, i) => (
@@ -487,31 +483,56 @@ export const ShadBadge = (props) => {
   );
 };
 
+/** An avatar group's people: one name, a comma-separated list, or an array of names or { name, src }. */
+export const avatarPeople = (names, src) => {
+  const people = (
+    Array.isArray(names)
+      ? names
+      : String(names ?? '')
+          .split(',')
+          .map((n) => n.trim())
+          .filter(Boolean)
+  ).flatMap((entry) => {
+    if (entry !== null && typeof entry === 'object' && !Array.isArray(entry)) {
+      const name = entry.name ?? entry.label ?? entry.title ?? '';
+      return [{ name: String(name), src: typeof entry.src === 'string' ? entry.src : entry.image ?? '' }];
+    }
+    return entry === null || entry === undefined || entry === '' ? [] : [{ name: String(entry), src: '' }];
+  });
+  // The single-avatar image property applies when there is one person without their own photo.
+  if (people.length === 1 && !people[0].src && src) people[0].src = String(src);
+  return people;
+};
+
 export const ShadAvatar = (props) => {
   const { properties, setExposedVariables } = props;
   useExposed(setExposedVariables, properties, {});
-  const size = Number(properties.size) || 32;
-  const names = Array.isArray(properties.names)
-    ? properties.names
-    : String(properties.names ?? '')
-        .split(',')
-        .map((n) => n.trim())
-        .filter(Boolean);
+  const size = Math.max(16, Math.min(256, Number(properties.size) || 32));
+  const people = avatarPeople(properties.names, properties.src);
+  const max = Math.max(1, Math.min(50, Math.floor(Number(properties.maxVisible)) || 5));
+  const shown = people.slice(0, max);
+  const extra = people.length - shown.length;
+  const ring = 'ring-2 ring-[color:var(--lk-ring,var(--sc-background))]';
+  const fill = 'bg-[color:var(--lk-bg,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-foreground))]';
   return (
     <Shell {...props}>
       <div className="flex -space-x-2">
-        {names.map((name, i) => (
+        {shown.map((person, i) => (
           <Avatar
-            key={`${name}-${i}`}
-            className="ring-2 ring-[color:var(--lk-ring,var(--sc-background))]"
+            key={`${person.name}-${i}`}
+            className={ring}
             style={{ width: size, height: size }}
+            title={person.name}
           >
-            {names.length === 1 && properties.src ? <AvatarImage src={properties.src} alt={String(name)} /> : null}
-            <AvatarFallback className="bg-[color:var(--lk-bg,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-foreground))]">
-              {initials(name)}
-            </AvatarFallback>
+            {person.src ? <AvatarImage src={person.src} alt={person.name} /> : null}
+            <AvatarFallback className={fill}>{initials(person.name)}</AvatarFallback>
           </Avatar>
         ))}
+        {extra > 0 ? (
+          <Avatar className={ring} style={{ width: size, height: size }} title={`${extra} more`}>
+            <AvatarFallback className={cn(fill, 'text-xs font-medium')}>+{extra}</AvatarFallback>
+          </Avatar>
+        ) : null}
       </div>
     </Shell>
   );
@@ -560,7 +581,7 @@ const SKELETON = 'bg-[color:var(--lk-bg,color-mix(in_srgb,var(--sc-primary)_10%,
 export const ShadSkeleton = (props) => {
   const { properties, setExposedVariables } = props;
   useExposed(setExposedVariables, properties, {});
-  const lines = Math.max(1, Number(properties.lines) || 3);
+  const lines = Math.max(1, Math.min(50, Math.floor(Number(properties.lines)) || 3));
   return (
     <Shell {...props}>
       <div className="flex items-start gap-4">
@@ -781,11 +802,15 @@ export const ShadTextarea = (props) => {
   );
 };
 
+const EMPTY_OPTION_KEY = '\u0000empty';
+
 export const ShadSelect = (props) => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
-  // Radix Select keys its items by string; keep the original values for the exposed value.
+  // Radix Select keys its items by string; keep the original values for the exposed value. It refuses an item keyed
+  // by the empty string (that means "nothing selected"), so an option valued '' (an "All" choice) gets its own key.
   const options = toOptions(properties.options);
-  const byKey = new Map(options.map((o) => [String(o.value), o]));
+  const optionKey = (v) => (String(v) === '' ? EMPTY_OPTION_KEY : String(v));
+  const byKey = new Map(options.map((o) => [optionKey(o.value), o]));
   const initial =
     properties.defaultValue === '' || properties.defaultValue === undefined ? '' : String(properties.defaultValue);
   const [key, setKey] = useState(initial);
@@ -794,7 +819,7 @@ export const ShadSelect = (props) => {
   useExposed(setExposedVariables, properties, {
     value: selectedOption.value ?? '',
     selectedOption,
-    selectOption: async (v) => setKey(v === undefined || v === null ? '' : String(v)),
+    selectOption: async (v) => setKey(v === undefined || v === null ? '' : optionKey(v)),
     clear: async () => setKey(''),
   });
   const check = useValidation(props, selectedOption.value ?? '', () => {
@@ -831,7 +856,7 @@ export const ShadSelect = (props) => {
           {/* The list opens in the pack's portal root, outside the widget: it takes the widget's style variables itself. */}
           <SelectContent style={lookVars(props.componentType, props.styles)}>
             {options.map((o) => (
-              <SelectItem key={String(o.value)} value={String(o.value)}>
+              <SelectItem key={optionKey(o.value)} value={optionKey(o.value)}>
                 {o.label}
               </SelectItem>
             ))}

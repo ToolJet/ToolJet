@@ -90,14 +90,25 @@ export const initials = (name) =>
     .map((w) => w[0].toUpperCase())
     .join('');
 
-/** Options as { label, value }: accepts plain values (['A', 'B']) as well as objects. */
-export const toOptions = (v) =>
-  list(v).map((o) =>
-    o !== null && typeof o === 'object'
-      ? {
-          ...o,
-          label: String(o.label ?? o.value ?? ''),
-          value: o.value ?? o.label,
-        }
-      : { label: String(o), value: o }
-  );
+/** Options as { label, value }: accepts plain values (['A', 'B']) as well as objects. Entries that cannot be an option
+ *  (null, empty objects, object values) are dropped, a missing or non-text label falls back to the value, and only the
+ *  first of options sharing a value is kept, so a select can key its items by value. */
+const isText = (v) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
+export const toOptions = (v) => {
+  const seen = new Set();
+  const options = [];
+  for (const o of list(v)) {
+    let option;
+    if (isText(o)) option = { label: String(o), value: o };
+    else if (o !== null && typeof o === 'object' && !Array.isArray(o)) {
+      const value = o.value !== undefined && o.value !== null ? o.value : o.label;
+      if (!isText(value)) continue;
+      option = { ...o, label: isText(o.label) ? String(o.label) : String(value), value };
+    } else continue;
+    const key = String(option.value);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    options.push(option);
+  }
+  return options;
+};
