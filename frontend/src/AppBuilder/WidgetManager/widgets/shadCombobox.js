@@ -2,11 +2,12 @@
 export const shadComboboxConfig = {
   name: 'ShadCombobox',
   displayName: 'Combobox',
-  description: 'shadcn/ui combobox',
+  description:
+    'shadcn/ui combobox: a searchable single select (popover with a search box). options: plain values or [{ label, value, description?, icon? (Tabler name like IconUser, image URL or emoji), group?, disabled? }]; exposes value, selectedOption, searchText. Height: 64px with a label, 36px without; add 24px for help text',
   component: 'ShadCombobox',
   defaultSize: {
     width: 10,
-    height: 40,
+    height: 64,
   },
   others: {
     showOnDesktop: {
@@ -19,6 +20,145 @@ export const shadComboboxConfig = {
     },
   },
   properties: {
+    label: {
+      type: 'code',
+      displayName: 'Label',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    description: {
+      type: 'code',
+      displayName: 'Help text',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    options: {
+      type: 'code',
+      displayName: 'Options',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "['Draft', 'Live'] or [{ label, value, description?, icon?, group?, disabled? }]",
+    },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'Select',
+      },
+    },
+    searchPlaceholder: {
+      type: 'code',
+      displayName: 'Search placeholder',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'Search...',
+      },
+    },
+    emptyText: {
+      type: 'code',
+      displayName: 'No results text',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'No results found.',
+      },
+    },
+    showSearch: {
+      type: 'toggle',
+      displayName: 'Show search',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
+    serverSideSearch: {
+      type: 'toggle',
+      displayName: 'Server-side search (options already filtered by searchText)',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
+    optionsLoadingState: {
+      type: 'toggle',
+      displayName: 'Options loading state',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    defaultValue: {
+      type: 'code',
+      displayName: 'Default value',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+            {
+              type: 'boolean',
+            },
+            {
+              type: 'array',
+            },
+            {
+              type: 'object',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -90,7 +230,28 @@ export const shadComboboxConfig = {
       showLabel: false,
     },
   },
-  events: {},
+  validation: {
+    mandatory: {
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+    },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      placeholder: "{{components.text1.text === 'yes' || 'Enter yes'}}",
+    },
+  },
+  events: {
+    onSelect: {
+      displayName: 'On select',
+    },
+    onChange: {
+      displayName: 'On change',
+    },
+    onSearchTextChanged: {
+      displayName: 'On search text changed',
+    },
+  },
   styles: {
     boxShadow: {
       type: 'boxShadow',
@@ -111,13 +272,150 @@ export const shadComboboxConfig = {
       },
       accordian: 'Container',
     },
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    helpTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Help text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Field background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Field text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    placeholderColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Field border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Accent (focus ring, checks)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    errorColor: {
+      type: 'colorSwatches',
+      displayName: 'Error color (message and border)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Field radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
+    menuBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Menu background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    menuTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Menu text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    optionHoverColor: {
+      type: 'colorSwatches',
+      displayName: 'Highlighted option background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    isValid: true,
+    isMandatory: false,
+    value: '',
+    selectedOption: {},
+    searchText: '',
+    options: [],
   },
   actions: [
+    {
+      handle: 'selectOption',
+      displayName: 'Select option',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'clear',
+      displayName: 'Clear',
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
@@ -165,6 +463,43 @@ export const shadComboboxConfig = {
       },
     },
     properties: {
+      label: {
+        value: 'Country',
+      },
+      description: {
+        value: '',
+      },
+      options: {
+        value:
+          "{{[{ label: 'United States', value: 'us', group: 'Americas' }, { label: 'Canada', value: 'ca', group: 'Americas' }, { label: 'United Kingdom', value: 'uk', group: 'Europe' }, { label: 'Germany', value: 'de', group: 'Europe' }, { label: 'India', value: 'in', group: 'Asia Pacific' }, { label: 'Japan', value: 'jp', group: 'Asia Pacific' }]}}",
+      },
+      placeholder: {
+        value: 'Select a country...',
+      },
+      searchPlaceholder: {
+        value: 'Search countries...',
+      },
+      emptyText: {
+        value: 'No country found.',
+      },
+      showSearch: {
+        value: '{{true}}',
+      },
+      serverSideSearch: {
+        value: '{{false}}',
+      },
+      showClearBtn: {
+        value: '{{true}}',
+      },
+      optionsLoadingState: {
+        value: '{{false}}',
+      },
+      defaultValue: {
+        value: '',
+      },
+      dynamicHeight: {
+        value: '{{true}}',
+      },
       loadingState: {
         value: '{{false}}',
       },
@@ -178,6 +513,14 @@ export const shadComboboxConfig = {
         value: 'plainText',
       },
       tooltip: {
+        value: '',
+      },
+    },
+    validation: {
+      mandatory: {
+        value: '{{false}}',
+      },
+      customRule: {
         value: '',
       },
     },
