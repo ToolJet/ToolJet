@@ -1,5 +1,6 @@
 // shadcn/ui pack (experiment): pure logic of the pickers widgets (Combobox, Multiselect, Tags input, Color picker,
 // Rating, File upload). No React here: every function takes junk (null, wrong types, huge numbers) without throwing.
+
 import { stringify } from '../packJson';
 
 const isText = (v) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
@@ -37,6 +38,10 @@ export const findOption = (options, value) => {
 export const initialKey = (v) => (v === undefined || v === null || v === '' || !isText(v) ? null : keyOf(v));
 
 /** Options matching the search text (label, description, value or group; case-insensitive). */
+/** The most options a Combobox or Multiselect list draws at once: search still runs over every option, and a hint asks
+ *  to type when more match (cmdk drawing 10k items froze the page). */
+export const MAX_SHOWN_OPTIONS = 200;
+
 export const filterOptions = (options, search) => {
   const q = String(search ?? '')
     .trim()
@@ -113,9 +118,13 @@ export const selectedOf = (options, keys) => {
 // ---- Tags ----------------------------------------------------------------------------------------------------------
 
 /** Tags from a list of values or a comma-separated text: trimmed text, empties dropped. */
+// A tags field past this many tags is a binding mistake (10k of them froze the page); the rest are dropped.
+export const MAX_TAGS = 1000;
+
 export const toTags = (v) => {
-  const raw = Array.isArray(v) ? v : typeof v === 'string' ? v.split(',') : [];
+  const raw = Array.isArray(v) ? v : typeof v === 'string' ? v.split(',', MAX_TAGS * 2) : [];
   return raw
+    .slice(0, MAX_TAGS * 2)
     .filter(isText)
     .map((t) => String(t).trim())
     .filter(Boolean);
@@ -128,12 +137,16 @@ export const splitTyped = (text) => {
   return { parts: pieces.map((p) => p.trim()).filter(Boolean), rest };
 };
 
-/** A regular expression from the author's text, or null when it is empty or invalid. */
+/** A regular expression from the author's text, or null when it is empty, invalid or too large. V8 compiles a pattern
+ *  on its first use, so it is tried once here: a huge one ("Regular expression too large") then fails here, not in
+ *  render. */
 export const safeRegex = (pattern) => {
-  if (pattern instanceof RegExp) return new RegExp(pattern.source, pattern.flags.replace('g', ''));
-  if (!isText(pattern) || String(pattern).trim() === '') return null;
+  const source = pattern instanceof RegExp ? pattern.source : isText(pattern) ? String(pattern) : '';
+  if (source.trim() === '' || source.length > 2000) return null;
   try {
-    return new RegExp(String(pattern));
+    const re = new RegExp(source, pattern instanceof RegExp ? pattern.flags.replace('g', '') : '');
+    re.test('');
+    return re;
   } catch {
     return null;
   }
@@ -145,13 +158,16 @@ export const sameTag = (a, b, caseSensitive) =>
 /** Adds candidates to the tags: { tags, added, error }. Duplicates (ignoring case unless caseSensitive), tags that
  *  fail the pattern and tags past maxTags are refused, with the reason in `error`. */
 export const addTags = (tags, candidates, { maxTags = 0, caseSensitive = false, pattern, patternError } = {}) => {
-  const next = [...toTags(tags)];
+  const next = [...toTags(tags)].slice(0, MAX_TAGS);
   const added = [];
   let error = '';
-  const max = clampInt(maxTags, 0, 10000, 0);
+  const max = clampInt(maxTags, 0, MAX_TAGS, 0) || MAX_TAGS;
   const re = safeRegex(pattern);
+  // Seen tags by their compared form, so a long list is checked in one pass (sameTag's rule).
+  const norm = (t) => (caseSensitive ? String(t) : String(t).toLowerCase());
+  const seen = new Set(next.map(norm));
   for (const tag of toTags(candidates)) {
-    if (next.some((t) => sameTag(t, tag, caseSensitive))) {
+    if (seen.has(norm(tag))) {
       error = `"${tag}" is already added`;
       continue;
     }
@@ -159,10 +175,11 @@ export const addTags = (tags, candidates, { maxTags = 0, caseSensitive = false, 
       error = isText(patternError) && String(patternError).trim() ? String(patternError) : `"${tag}" is not valid`;
       continue;
     }
-    if (max > 0 && next.length >= max) {
+    if (next.length >= max) {
       error = `You can add up to ${max} tag${max === 1 ? '' : 's'}`;
       break;
     }
+    seen.add(norm(tag));
     next.push(tag);
     added.push(tag);
   }

@@ -171,7 +171,8 @@ const OptionsMenu = ({
     properties.serverSideSearch === true
       ? options.map((option, index) => ({ option, index }))
       : M.filterOptions(options, search);
-  const groups = M.groupOptions(entries);
+  const groups = M.groupOptions(entries.slice(0, M.MAX_SHOWN_OPTIONS));
+  const more = entries.length - M.MAX_SHOWN_OPTIONS;
   return (
     <Command shouldFilter={false} loop>
       {properties.showSearch !== false ? (
@@ -225,6 +226,11 @@ const OptionsMenu = ({
                 })}
               </CommandGroup>
             ))}
+            {more > 0 ? (
+              <div className={cn('px-2 py-1.5 text-center text-xs', MUTED)}>
+                {`${more} more. Type to narrow the list.`}
+              </div>
+            ) : null}
             {bottom}
           </>
         )}
@@ -415,16 +421,15 @@ const Chip = ({ label, onRemove, removeLabel }) => (
   </Badge>
 );
 
+const MAX_CHIPS = 50;
+
 export const ShadMultiselect = (props) => {
   const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
   const options = toOptions(properties.options);
   const limit = M.clampLimit(properties.maxSelections);
-  const initial = M.toValueList(properties.defaultValue)
-    .map(M.keyOf)
-    .filter((k, i, all) => all.indexOf(k) === i)
-    .slice(0, limit || undefined);
+  const initial = [...new Set(M.toValueList(properties.defaultValue).map(M.keyOf))].slice(0, limit || undefined);
   const initialKey = M.stableKey(initial);
   const [keys, setKeys] = useState(initial);
   useEffect(() => setKeys(initial), [initialKey]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -473,13 +478,15 @@ export const ShadMultiselect = (props) => {
   const enabled = options.filter((o) => !M.isDisabledOption(o));
   const allOn = enabled.length > 0 && enabled.every(isOn);
   const toggleAll = () => {
+    // Sets, not includes(): select all over 10k options compared every key with every other.
     const enabledKeys = enabled.map((o) => M.keyOf(o.value));
-    commit(
-      allOn ? keys.filter((k) => !enabledKeys.includes(k)) : [...keys, ...enabledKeys.filter((k) => !keys.includes(k))]
-    );
+    const enabledSet = new Set(enabledKeys);
+    const keySet = new Set(keys);
+    commit(allOn ? keys.filter((k) => !enabledSet.has(k)) : [...keys, ...enabledKeys.filter((k) => !keySet.has(k))]);
   };
   const maxChips = M.clampLimit(properties.maxVisibleChips);
-  const chips = maxChips > 0 ? selectedOptions.slice(0, maxChips) : selectedOptions;
+  // Unlimited still means a field's worth: past MAX_CHIPS the rest count in the "+N" chip (10k chips froze the page).
+  const chips = selectedOptions.slice(0, maxChips > 0 ? Math.min(maxChips, MAX_CHIPS) : MAX_CHIPS);
   const extra = selectedOptions.length - chips.length;
   const showClear = properties.showClearBtn !== false && selectedOptions.length > 0 && !disabled;
   const showSelectAll = properties.showSelectAll !== false && limit === 0 && !search && enabled.length > 1;
