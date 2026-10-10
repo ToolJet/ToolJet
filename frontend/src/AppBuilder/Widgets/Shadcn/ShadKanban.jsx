@@ -11,14 +11,14 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { Plus, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Plus, X } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { initials, list, useAutoHeight, useExposed } from '../packHooks';
 import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from './ui';
 import { Shell } from './Shadcn';
-import { addCard, boardCards, boardColumns, deleteCard, moveCard, updateCard } from './kanbanBoard';
+import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from './kanbanBoard';
 
 // shadcn/ui pack Kanban (experiment): a data-driven board. Columns are values of a status field and cards are rows
 // of data shown by the fields the author maps (title, description, badge, tags, progress, meta, avatar), so an agent
@@ -119,10 +119,34 @@ const CardBody = ({ card, fields, compact }) => {
   );
 };
 
-const KanbanCard = ({ card, columnId, renderBody, padding, look, selected, draggable, onSelect, onDelete }) => {
+const KanbanCard = ({
+  card,
+  columnId,
+  renderBody,
+  padding,
+  look,
+  collapse,
+  selected,
+  draggable,
+  onSelect,
+  onDelete,
+}) => {
   const data = { type: 'card', key: card.__key, columnId };
   const drag = useDraggable({ id: card.__key, data, disabled: !draggable });
   const drop = useDroppable({ id: `drop-${card.__key}`, data });
+  // Collapsed height: the content's natural height decides whether the card collapses at all.
+  const contentRef = useRef(null);
+  const [contentHeight, setContentHeight] = useState(0);
+  useLayoutEffect(() => {
+    const el = contentRef.current;
+    if (!isSet(collapse.height) || !el) return undefined;
+    const measure = () => setContentHeight(el.offsetHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [collapse.height]);
+  const clamp = cardClamp(collapse.height, contentHeight, collapse.expanded);
   return (
     <div
       ref={(el) => {
@@ -157,7 +181,35 @@ const KanbanCard = ({ card, columnId, renderBody, padding, look, selected, dragg
           <X className="h-3.5 w-3.5" />
         </button>
       ) : null}
-      {renderBody(card)}
+      <div
+        className="relative"
+        style={clamp.collapsible ? { maxHeight: clamp.maxHeight, overflow: 'hidden' } : undefined}
+      >
+        <div ref={contentRef}>{renderBody(card)}</div>
+        {clamp.maxHeight ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-8"
+            style={{ background: `linear-gradient(to bottom, transparent, ${look.card.background})` }}
+          />
+        ) : null}
+      </div>
+      {clamp.collapsible ? (
+        // Shown on hover (or keyboard focus) only, over the card's bottom edge, so it takes no room at rest.
+        <button
+          type="button"
+          aria-expanded={collapse.expanded}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            collapse.onToggle(card.__key);
+          }}
+          className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border bg-card px-2 py-0.5 text-[11px] text-muted-foreground opacity-0 shadow-sm transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+        >
+          {collapse.expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          {collapse.expanded ? 'Show less' : 'Show more'}
+        </button>
+      ) : null}
     </div>
   );
 };
@@ -167,6 +219,10 @@ const KanbanColumn = ({
   renderBody,
   padding,
   look,
+  width,
+  collapsedHeight,
+  expandedKeys,
+  onToggle,
   compact,
   showCount,
   selectedKey,
@@ -175,28 +231,76 @@ const KanbanColumn = ({
   onSelect,
   onDelete,
   onAdd,
+  collapsed,
+  onCollapse,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `col-${column.id}`,
     data: { type: 'column', columnId: column.id },
   });
+  // A collapsed column is a narrow strip: title read sideways and the count. It still takes dropped cards, and a
+  // click opens it again.
+  if (collapsed) {
+    return (
+      <div
+        ref={setNodeRef}
+        data-collapsed="true"
+        role="button"
+        tabIndex={0}
+        title={`Expand ${column.title}`}
+        aria-label={`Expand ${column.title}`}
+        onClick={() => onCollapse(column.id)}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onCollapse(column.id)}
+        style={{ ...look.column, width: 44, flex: '0 0 44px' }}
+        className={cn(
+          'flex cursor-pointer flex-col items-center gap-2 px-1 py-3 transition-shadow hover:ring-1 hover:ring-border',
+          isOver && 'ring-1 ring-primary'
+        )}
+      >
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        {showCount ? (
+          <Badge variant="secondary" className="px-1.5 tabular-nums">
+            {column.cards.length}
+          </Badge>
+        ) : null}
+        <span className="truncate text-sm font-semibold [writing-mode:vertical-rl]">{column.title}</span>
+      </div>
+    );
+  }
   return (
     <div
       ref={setNodeRef}
-      style={look.column}
+      data-collapsed="false"
+      // A set column width is inline; without one the columns share the board, at least 240px each.
+      style={width ? { ...look.column, width, flex: `0 0 ${width}` } : look.column}
       className={cn(
-        'flex min-w-[240px] flex-1 flex-col p-3 transition-shadow',
+        'flex flex-col p-3 transition-shadow',
+        !width && 'min-w-[240px] flex-1',
         compact ? 'gap-1.5' : 'gap-2',
         isOver && 'ring-1 ring-border'
       )}
     >
       <div className="mb-1 flex items-center justify-between gap-2 px-1">
         <span className="truncate text-sm font-semibold">{column.title}</span>
-        {showCount ? (
-          <Badge variant="secondary" className="tabular-nums">
-            {column.cards.length}
-          </Badge>
-        ) : null}
+        <div className="flex shrink-0 items-center gap-1">
+          {showCount ? (
+            <Badge variant="secondary" className="tabular-nums">
+              {column.cards.length}
+            </Badge>
+          ) : null}
+          {onCollapse ? (
+            <button
+              type="button"
+              title={`Collapse ${column.title}`}
+              aria-label={`Collapse ${column.title}`}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => onCollapse(column.id)}
+              className="rounded-md p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          ) : null}
+        </div>
       </div>
       {column.cards.length ? (
         column.cards.map((card) => (
@@ -207,6 +311,7 @@ const KanbanColumn = ({
             renderBody={renderBody}
             padding={padding}
             look={look}
+            collapse={{ height: collapsedHeight, expanded: expandedKeys.has(card.__key), onToggle }}
             selected={card.__key === selectedKey}
             draggable={draggable}
             onSelect={onSelect}
@@ -264,6 +369,27 @@ export const ShadKanban = (props) => {
   const [selected, setSelected] = useState(null);
   const [lastMove, setLastMove] = useState(null);
   const [activeKey, setActiveKey] = useState(null);
+  const [expandedKeys, setExpandedKeys] = useState(() => new Set());
+  const toggleExpanded = (key) =>
+    setExpandedKeys((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  // Folded columns: those listed in collapsedColumns at start (again whenever that list changes), then the user's.
+  const startCollapsed = JSON.stringify(list(properties.collapsedColumns).map(String));
+  const [collapsedColumns, setCollapsedColumns] = useState(() => new Set(JSON.parse(startCollapsed)));
+  useEffect(() => setCollapsedColumns(new Set(JSON.parse(startCollapsed))), [startCollapsed]);
+  const toggleColumn = (columnId) =>
+    setCollapsedColumns((current) => {
+      const next = new Set(current);
+      if (next.has(columnId)) next.delete(columnId);
+      else next.add(columnId);
+      return next;
+    });
+  const collapsedHeight = isSet(properties.collapsedHeight) ? properties.collapsedHeight : '';
+  const columnWidth = isSet(properties.columnWidth) ? px(properties.columnWidth) : undefined;
 
   // Actions run later, from event handlers and queries: they read the board and the widget's callbacks from refs.
   const live = useRef({});
@@ -304,6 +430,7 @@ export const ShadKanban = (props) => {
   useExposed(setExposedVariables, properties, {
     cards: boardCards(columns),
     selectedCard: strip(selected),
+    collapsedColumns: [...collapsedColumns],
     movedCard: lastMove?.card ?? {},
     lastMove: lastMove ?? {},
     addCard: async (card, columnId) => doAdd(card, columnId),
@@ -339,14 +466,14 @@ export const ShadKanban = (props) => {
     if (!custom || !boardRef.current) return undefined;
     // A column's content box less the card's 1px borders; every column has the same width.
     const measure = () => {
-      const column = boardRef.current?.firstElementChild;
+      const column = boardRef.current?.querySelector(':scope > [data-collapsed="false"]');
       if (column) setCardWidth(Math.max(0, column.clientWidth - 24 - 2));
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(boardRef.current);
     return () => observer.disconnect();
-  }, [custom, columns.length]);
+  }, [custom, columns.length, collapsedColumns]);
   const renderBody = custom
     ? (card) => (
         // In the editor, a press inside the card edits its components instead of starting a card drag.
@@ -411,6 +538,12 @@ export const ShadKanban = (props) => {
               renderBody={renderBody}
               padding={padding}
               look={look}
+              width={columnWidth}
+              collapsedHeight={collapsedHeight}
+              expandedKeys={expandedKeys}
+              onToggle={toggleExpanded}
+              collapsed={collapsedColumns.has(column.id)}
+              onCollapse={properties.collapsibleColumns !== false ? toggleColumn : undefined}
               compact={compact}
               showCount={properties.showCount !== false}
               selectedKey={selected?.__key}

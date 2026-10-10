@@ -645,7 +645,20 @@ export const shadKanbanConfig = shadConfig({
     metaField: code('Meta field (a date, a count)', STRING, ''),
     avatarField: code('Avatar field (a name)', STRING, ''),
     density: choice('Card density', ['comfortable', 'compact'], 'comfortable'),
+    // Optional: a card taller than this shows only its top part (px of content) with a Show more toggle.
+    collapsedHeight: code('Collapsed card height (px, empty: show all)', {
+      type: 'union',
+      schemas: [{ type: 'number' }, { type: 'string' }],
+    }),
+    // Optional: a fixed width for every column (px); empty shares the board width, at least 240px each.
+    columnWidth: code('Column width (px, empty: fill the board)', {
+      type: 'union',
+      schemas: [{ type: 'number' }, { type: 'string' }],
+    }),
     showCount: toggle('Card count on columns', true),
+    // Columns fold to a narrow strip from a button in their header; collapsedColumns lists those folded at start.
+    collapsibleColumns: toggle('Collapsible columns', true),
+    collapsedColumns: code('Columns collapsed at start (ids)', ARRAY, [], { placeholder: "['done']" }),
     allowDrag: toggle('Drag to move', true),
     allowAdd: toggle('Add card button on columns'),
     allowDelete: toggle('Delete button on cards'),
@@ -672,7 +685,11 @@ export const shadKanbanConfig = shadConfig({
     metaField: { value: '' },
     avatarField: { value: 'owner' },
     density: { value: 'comfortable' },
+    collapsedHeight: { value: '' },
+    columnWidth: { value: '' },
     showCount: { value: '{{true}}' },
+    collapsibleColumns: { value: '{{true}}' },
+    collapsedColumns: { value: '{{[]}}' },
     allowDrag: { value: '{{true}}' },
     allowAdd: { value: '{{false}}' },
     allowDelete: { value: '{{false}}' },
@@ -742,6 +759,7 @@ export const shadKanbanConfig = shadConfig({
     movedCard: {},
     lastMove: {},
     addCardColumn: '',
+    collapsedColumns: [],
     lastAddedCard: {},
     lastUpdatedCard: {},
     lastRemovedCard: {},

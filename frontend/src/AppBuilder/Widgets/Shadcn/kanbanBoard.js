@@ -100,3 +100,11 @@ export const updateCard = (columns, cardId, values, statusField, idField) => {
   const { __key, ...rest } = updated;
   return { columns: addCard(removed, rest, undefined, statusField, idField).columns, card: plain(updated) };
 };
+
+/** Whether a card's content collapses to `collapsedHeight` px (empty: never) given its full `contentHeight`, and the
+ *  max height to clamp it to. A few pixels of overflow are left alone: a toggle would only hide them. */
+export const cardClamp = (collapsedHeight, contentHeight, expanded) => {
+  const limit = Number(collapsedHeight);
+  const collapsible = collapsedHeight !== '' && limit > 0 && contentHeight > limit + 8;
+  return { collapsible, maxHeight: collapsible && !expanded ? limit : undefined };
+};

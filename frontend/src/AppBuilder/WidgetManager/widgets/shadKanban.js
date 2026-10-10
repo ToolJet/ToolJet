@@ -186,6 +186,40 @@ export const shadKanbanConfig = {
       isFxNotRequired: true,
       fullWidth: true,
     },
+    collapsedHeight: {
+      type: 'code',
+      displayName: 'Collapsed card height (px, empty: show all)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'number',
+            },
+            {
+              type: 'string',
+            },
+          ],
+        },
+      },
+    },
+    columnWidth: {
+      type: 'code',
+      displayName: 'Column width (px, empty: fill the board)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'number',
+            },
+            {
+              type: 'string',
+            },
+          ],
+        },
+      },
+    },
     showCount: {
       type: 'toggle',
       displayName: 'Card count on columns',
@@ -195,6 +229,27 @@ export const shadKanbanConfig = {
         },
         defaultValue: true,
       },
+    },
+    collapsibleColumns: {
+      type: 'toggle',
+      displayName: 'Collapsible columns',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
+    collapsedColumns: {
+      type: 'code',
+      displayName: 'Columns collapsed at start (ids)',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "['done']",
     },
     allowDrag: {
       type: 'toggle',
@@ -420,6 +475,7 @@ export const shadKanbanConfig = {
     movedCard: {},
     lastMove: {},
     addCardColumn: '',
+    collapsedColumns: [],
     lastAddedCard: {},
     lastUpdatedCard: {},
     lastRemovedCard: {},
@@ -539,8 +595,20 @@ export const shadKanbanConfig = {
       density: {
         value: 'comfortable',
       },
+      collapsedHeight: {
+        value: '',
+      },
+      columnWidth: {
+        value: '',
+      },
       showCount: {
         value: '{{true}}',
+      },
+      collapsibleColumns: {
+        value: '{{true}}',
+      },
+      collapsedColumns: {
+        value: '{{[]}}',
       },
       allowDrag: {
         value: '{{true}}',

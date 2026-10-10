@@ -1,4 +1,4 @@
-import { addCard, boardCards, boardColumns, deleteCard, moveCard, updateCard } from '../kanbanBoard';
+import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from '../kanbanBoard';
 
 const cards = [
   { id: 1, title: 'Fix login', status: 'todo' },
@@ -112,5 +112,21 @@ describe('editing cards', () => {
       [4, 'done'],
     ]);
     expect(boardCards(columns)[0].__key).toBeUndefined();
+  });
+});
+
+describe('cardClamp', () => {
+  it('does not collapse without a collapsed height, or when the content already fits', () => {
+    expect(cardClamp('', 200, false)).toEqual({ collapsible: false, maxHeight: undefined });
+    expect(cardClamp(120, 110, false)).toEqual({ collapsible: false, maxHeight: undefined });
+  });
+
+  it('clamps taller content to the collapsed height until the card is expanded', () => {
+    expect(cardClamp(80, 200, false)).toEqual({ collapsible: true, maxHeight: 80 });
+    expect(cardClamp('80', 200, true)).toEqual({ collapsible: true, maxHeight: undefined });
+  });
+
+  it('ignores a few pixels of overflow, which a toggle would only hide', () => {
+    expect(cardClamp(80, 84, false).collapsible).toBe(false);
   });
 });
