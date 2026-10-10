@@ -1,6 +1,7 @@
 // shadcn/ui pack charts (experiment): the pure logic of the Line, Radar, Radial and Sparkline charts (ShadCharts.jsx).
 // Every function takes whatever the author bound (null, strings, mixed arrays, objects with missing keys) and returns
 // clean values: numbers or null, plain rows, text labels. Nothing here throws.
+
 import { stringify } from '../packJson';
 
 export const MAX_ROWS = 2000;
@@ -114,7 +115,7 @@ export const formatter = ({ format, currency, prefix, suffix } = {}, short = fal
 // ---- Line ----------------------------------------------------------------------------------------------------------
 
 const CURVES = { monotone: 'monotone', linear: 'linear', step: 'step', natural: 'natural' };
-export const curveOf = (c) => CURVES[c] || 'monotone';
+export const curveOf = (c) => (typeof c === 'string' && Object.hasOwn(CURVES, c) ? CURVES[c] : 'monotone');
 
 // ---- Sparkline -----------------------------------------------------------------------------------------------------
 
@@ -230,7 +231,7 @@ export const resolveChartFields = (data, xField, series) => {
   const x =
     xField && has(xField)
       ? xField
-      : keys.find((key) => rows.some((row) => typeof row[key] === 'string' && !numeric(key))) ?? xField;
+      : keys.find((key) => !numeric(key) && rows.some((row) => typeof row[key] === 'string')) ?? xField;
   const named = series.filter((key) => has(key));
   const fallback = keys.filter((key) => key !== x && numeric(key) && typeof rows[0][key] !== 'boolean').slice(0, 6);
   return { x, series: named.length ? named : fallback.length ? fallback : series };

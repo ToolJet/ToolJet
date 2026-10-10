@@ -50,6 +50,8 @@ import {
   resolveChartFields,
   seriesLabel,
   highlightIndexes,
+  MAX_ROWS,
+  MAX_SERIES,
 } from './chartsModel';
 
 export { withControlState } from '../packHooks';
@@ -69,7 +71,12 @@ const fmt = (p, short) => (v) => {
 const seriesOf = (p) =>
   (Array.isArray(p.yFields) ? p.yFields : String(p.yFields ?? '').split(','))
     .map((s) => String(s).trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, MAX_SERIES);
+// A pie past this many slices is unreadable, and drawing 10k of them freezes the page; bars likewise (a bar each,
+// with a cell for its colour, per row and series).
+const MAX_SLICES = 100;
+const MAX_BARS = 500;
 const AXIS = {
   tickLine: false,
   axisLine: false,
@@ -177,7 +184,7 @@ const categoryAxisWidth = (data, key) => {
 
 export const ShadAreaChart = (props) => {
   const p = props.properties;
-  const data = list(p.data);
+  const data = list(p.data).slice(0, MAX_ROWS);
   const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
   const Chart = p.lineOnly === true ? LineChart : AreaChart;
   const compact = isCompactChart(props.height);
@@ -214,7 +221,7 @@ export const ShadAreaChart = (props) => {
                 key={s}
                 dataKey={s}
                 name={seriesLabel(s, p.seriesLabels)}
-                type={p.curve || 'monotone'}
+                type={curveOf(p.curve)}
                 stroke={color(i)}
                 strokeWidth={2}
                 dot={false}
@@ -224,7 +231,7 @@ export const ShadAreaChart = (props) => {
                 key={s}
                 dataKey={s}
                 name={seriesLabel(s, p.seriesLabels)}
-                type={p.curve || 'monotone'}
+                type={curveOf(p.curve)}
                 stroke={color(i)}
                 strokeWidth={2}
                 fill={`url(#sc-fill-${props.id}-${i})`}
@@ -240,7 +247,7 @@ export const ShadAreaChart = (props) => {
 
 export const ShadBarChart = (props) => {
   const p = props.properties;
-  const data = list(p.data);
+  const data = list(p.data).slice(0, MAX_BARS);
   const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
   const horizontal = p.horizontal === true;
   const compact = isCompactChart(props.height);
@@ -320,7 +327,9 @@ export const ShadBarChart = (props) => {
 
 export const ShadPieChart = (props) => {
   const p = props.properties;
-  const data = list(p.data).map((d, i) => ({ ...d, fill: seriesColor(p.colors, i) }));
+  const data = list(p.data)
+    .slice(0, MAX_SLICES)
+    .map((d, i) => ({ ...d, fill: seriesColor(p.colors, i) }));
   const donut = p.donut !== false;
   const format = fmt(p, false);
   return (
