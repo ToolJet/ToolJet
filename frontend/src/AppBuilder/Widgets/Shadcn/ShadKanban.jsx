@@ -523,7 +523,6 @@ export const ShadKanban = (props) => {
   // with its own row of cardData, as a list view renders its rows. The canvas is laid out at the card's width.
   const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables);
-  const initExposedValueArrayForChildren = useStore((state) => state.initExposedValueArrayForChildren);
   const custom = properties.cardLayout === 'custom';
   const editing = props.currentMode === 'edit';
   const cardHeight = Number(properties.cardHeight) || 96;
@@ -535,7 +534,8 @@ export const ShadKanban = (props) => {
     if (!custom) return;
     // Published only once there are cards, the native Listview's way: publishing an empty board (data still loading)
     // shrank every card component's per-card entries to none, and the cards built later lacked the component's own
-    // settings (show on desktop), so custom card content rendered blank.
+    // settings (show on desktop), so custom card content rendered blank. Card children keep object exposed values
+    // (not the Listview's per-row arrays): sizing them as arrays crashed the app on their next write.
     const cards = boardCards(columns);
     if (!cards.length) return;
     updateCustomResolvables(
@@ -544,7 +544,6 @@ export const ShadKanban = (props) => {
       'cardData',
       moduleId
     );
-    initExposedValueArrayForChildren?.(props.id, cards.length, moduleId, []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [custom, columns, props.id, moduleId]);
   const boardRef = useRef(null);
