@@ -2229,7 +2229,7 @@ describe('AppsController', () => {
   });
 
   describe('POST /api/v2/resources/export | Export resources', () => {
-    it('should be able to export app if user has create permission within an organization', async () => {
+    it('should require view access on the app to export it, not just app-create', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -2284,22 +2284,28 @@ describe('AppsController', () => {
 
       expect(viewerResponse.statusCode).toBe(403);
 
-      for (const userData of [adminUserData, developerUserData]) {
-        const response = await request(app.getHttpServer())
-          .post('/api/v2/resources/export')
-          .set('tj-workspace-id', userData.user.defaultOrganizationId)
-          .set('Cookie', userData['tokenCookie'])
-          .send(exportPayload);
+      const developerResponse = await request(app.getHttpServer())
+        .post('/api/v2/resources/export')
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
+        .set('Cookie', developerUserData['tokenCookie'])
+        .send(exportPayload);
 
-        expect(response.statusCode).toBe(201);
-        expect(response.body.tooljet_version).toBeDefined();
-        expect(response.body.app).toHaveLength(1);
-        expect(response.body.app[0].definition.appV2).toMatchObject({
-          id: application.id,
-          name: 'name',
-          slug: 'foo',
-        });
-      }
+      expect(developerResponse.statusCode).toBe(403);
+
+      const response = await request(app.getHttpServer())
+        .post('/api/v2/resources/export')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
+        .send(exportPayload);
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body.tooljet_version).toBeDefined();
+      expect(response.body.app).toHaveLength(1);
+      expect(response.body.app[0].definition.appV2).toMatchObject({
+        id: application.id,
+        name: 'name',
+        slug: 'foo',
+      });
 
       // Audit log assertions skipped: ResponseInterceptor not registered in test environment
     });

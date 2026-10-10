@@ -35,6 +35,16 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     const appUpdateAllowed = userAppPermissions ? isAllAppsEditable || isEditableApp : false;
 
+    const exportAppId = requestContext.body?.app?.[0]?.id;
+    const canViewExportApp =
+      !exportAppId ||
+      isAdmin ||
+      superAdmin ||
+      !!userAppPermissions?.isAllViewable ||
+      isAllAppsEditable ||
+      !!userAppPermissions?.viewableAppsId?.includes(exportAppId) ||
+      !!userAppPermissions?.editableAppsId?.includes(exportAppId);
+
     // A module import must be gated on module-create, not app-create — a builder with app-create
     // but without module-create may not import modules.
     const importDefinition = requestContext.body?.app?.[0]?.definition;
@@ -43,7 +53,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const canCreateForImport = isModuleImport ? !!userPermission?.moduleCreate : isAllAppsCreatable;
 
     if (canCreateForImport || isAdmin || superAdmin) {
-      can([FEATURE_KEY.APP_RESOURCE_IMPORT, FEATURE_KEY.APP_RESOURCE_EXPORT], App);
+      can([FEATURE_KEY.APP_RESOURCE_IMPORT], App);
+      if (canViewExportApp) {
+        can([FEATURE_KEY.APP_RESOURCE_EXPORT], App);
+      }
       if (appUpdateAllowed) {
         can([FEATURE_KEY.APP_RESOURCE_CLONE], App);
       }

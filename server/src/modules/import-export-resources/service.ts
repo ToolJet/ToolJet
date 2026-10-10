@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { AppImportExportService } from '@modules/apps/services/app-import-export.service';
@@ -35,11 +35,15 @@ export class ImportExportResourcesService {
       app?: Array<Record<string, unknown>>;
     } = {};
 
+    if (exportResourcesDto.organization_id && exportResourcesDto.organization_id !== user.organizationId) {
+      throw new ForbiddenException();
+    }
+
     if (exportResourcesDto.tooljet_database?.length) {
       const exportedDbs: ImportTooljetDatabaseDto[] = [];
       for (const tjdb of exportResourcesDto.tooljet_database) {
         const exportedDb = await this.tooljetDbImportExportService.export(
-          exportResourcesDto.organization_id,
+          user.organizationId,
           tjdb,
           exportResourcesDto.tooljet_database
         );
