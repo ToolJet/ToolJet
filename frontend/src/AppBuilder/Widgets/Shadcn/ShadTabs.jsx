@@ -238,6 +238,15 @@ export const ShadTabs = (props) => {
   };
   const [currentTab, setCurrentTab] = useState(pickDefault);
   useEffect(() => setCurrentTab(pickDefault()), [properties.defaultTab]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Scroll to top on tab switch: the new tab's canvas starts at its top, as the native Tabs does.
+  useEffect(() => {
+    if (properties.scrollToTopOnTabSwitch !== true) return undefined;
+    const frame = requestAnimationFrame(() => {
+      const canvas = document.getElementById(`canvas-${id}-${currentTab}`);
+      if (canvas) canvas.scrollTop = 0;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [currentTab, properties.scrollToTopOnTabSwitch]); // eslint-disable-line react-hooks/exhaustive-deps
   // A hidden or removed current tab falls back to the first visible one.
   useEffect(() => {
     if (shown.length && !shown.some((tab) => tab.id == currentTab)) setCurrentTab(shown[0].id);
