@@ -21,6 +21,8 @@ import { Shell } from './Shadcn';
 import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from './kanbanBoard';
 import { SHADOWS, badgeLook, isSet, kanbanLook, px } from './kanbanLook';
 
+export { withControlState } from '../packHooks';
+
 // shadcn/ui pack Kanban (experiment): a data-driven board. Columns are values of a status field and cards are rows
 // of data shown by the fields the author maps (title, description, badge, tags, progress, meta, avatar), so an agent
 // builds it from a query alone and a card shows more or less by mapping more or fewer fields. Dragging, the add and

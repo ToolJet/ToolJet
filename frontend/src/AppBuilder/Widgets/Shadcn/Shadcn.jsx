@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon, ChevronRight, Inbox, TrendingDown, TrendingUp } from 'lucide-react';
 import { initials, list, toOptions, useAutoHeight, useExposed } from '../packHooks';
@@ -44,26 +44,176 @@ import { badgeLook, isSet } from './kanbanLook';
 import { lookVars, whenSet } from './shadcnLook';
 import './shadcn.scss';
 
+export { withControlState } from '../packHooks';
+
 // shadcn/ui pack (experiment, exp/antd-pack): native ToolJet widgets rendering shadcn/ui components. Configs live in
 // WidgetManager/widgets/shadcn.js (generated from WidgetManager/shadcnSource.js).
 
-/** The widget's root: `.tj-shadcn` scopes the pack's Tailwind and maps shadcn's tokens to the app theme; the widget's
- *  set styles arrive as CSS variables its classes read (shadcnLook.js). */
-export const Shell = ({ properties, styles, componentType, dataCy, children, innerRef, className }) => (
-  <div
-    ref={innerRef}
-    data-cy={dataCy}
-    className={cn('tj-shadcn', className)}
-    style={{
-      width: '100%',
-      display: properties.visibility === false ? 'none' : 'block',
-      boxShadow: styles?.boxShadow,
-      ...lookVars(componentType, styles),
-    }}
-  >
-    {children}
-  </div>
+// ---- Loading ------------------------------------------------------------------------------------------------------
+
+// How each widget looks while loading (the loadingState property or the setLoading action). Controls stay in place,
+// non-interactive, with a spinner; text and media become skeletons in their own shape; the rest a skeleton block at the
+// widget's size. Widgets marked 'own' draw their loading state themselves (or have none to draw).
+const LOADING_LOOK = {
+  ShadButton: 'own',
+  ShadStat: 'own',
+  ShadSkeleton: 'own',
+  ShadSeparator: 'own',
+  ShadTable: 'own',
+  ShadTabs: 'own',
+  ShadListView: 'own',
+  ShadInput: 'control',
+  ShadTextarea: 'control',
+  ShadSelect: 'control',
+  ShadDatePicker: 'control',
+  ShadCheckbox: 'control',
+  ShadSwitch: 'control',
+  ShadRadioGroup: 'control',
+  ShadSlider: 'control',
+  ShadToggleGroup: 'control',
+  ShadHeading: 'heading',
+  ShadText: 'text',
+  ShadBreadcrumb: 'line',
+  ShadBadge: 'pill',
+  ShadAvatar: 'avatar',
+  ShadProgress: 'bar',
+  ShadKanban: 'columns',
+};
+
+/** A control is non-interactive while it is disabled or loading. */
+const busy = (properties) => !!properties.disabledState || !!properties.loadingState;
+
+// True for the text-box controls (input, textarea, select, date picker): Field then puts the spinner inside the box.
+const LoadingContext = createContext(false);
+
+const Spinner = ({ className }) => (
+  <span
+    role="status"
+    aria-label="Loading"
+    className={cn(
+      'inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[color:var(--sc-muted-foreground)] border-t-transparent',
+      className
+    )}
+  />
 );
+
+const loadingSkeleton = (look, { properties, height }) => {
+  const h = Number(height) || 40;
+  switch (look) {
+    case 'heading':
+      return <Skeleton className="h-8 w-1/2" />;
+    case 'text': {
+      const lines = Math.max(1, Math.min(8, Math.floor(h / 28)));
+      return (
+        <div className="flex flex-col gap-2 py-1">
+          {Array.from({ length: lines }, (_, i) => (
+            <Skeleton key={i} className={cn('h-4', i === lines - 1 && lines > 1 ? 'w-3/5' : 'w-full')} />
+          ))}
+        </div>
+      );
+    }
+    case 'line':
+      return <Skeleton className="h-4 w-48 max-w-full" />;
+    case 'pill':
+      return <Skeleton className="h-5 w-16 rounded-full" />;
+    case 'avatar': {
+      const size = Number(properties.size) || 32;
+      const count = Array.isArray(properties.names)
+        ? properties.names.length
+        : String(properties.names ?? '')
+            .split(',')
+            .filter((n) => n.trim()).length;
+      return (
+        <div className="flex -space-x-2">
+          {Array.from({ length: Math.max(1, Math.min(5, count)) }, (_, i) => (
+            <Skeleton
+              key={i}
+              className="rounded-full ring-2 ring-[color:var(--sc-background)]"
+              style={{ width: size, height: size }}
+            />
+          ))}
+        </div>
+      );
+    }
+    case 'bar':
+      return (
+        <div className="flex flex-col gap-2">
+          {properties.label || properties.showValue ? <Skeleton className="h-4 w-1/3" /> : null}
+          <Skeleton className="h-2 w-full rounded-full" />
+        </div>
+      );
+    case 'columns':
+      return (
+        <div className="grid grid-cols-3 gap-3" style={{ height: h }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex flex-col gap-2 rounded-[var(--sc-radius)] bg-[color:var(--sc-muted)] p-3">
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-16 w-full" />
+              {i !== 2 ? <Skeleton className="h-16 w-full" /> : null}
+            </div>
+          ))}
+        </div>
+      );
+    default:
+      return <Skeleton className="w-full rounded-[var(--sc-radius)]" style={{ height: h }} />;
+  }
+};
+
+/** The widget's root: `.tj-shadcn` scopes the pack's Tailwind and maps shadcn's tokens to the app theme; the widget's
+ *  set styles arrive as CSS variables its classes read (shadcnLook.js). While loading it shows the widget's loading
+ *  look (LOADING_LOOK). */
+export const Shell = (props) => {
+  const { properties, styles, componentType, dataCy, children, innerRef, className } = props;
+  const loading = !!properties.loadingState;
+  const look = LOADING_LOOK[componentType] || 'block';
+  let content = children;
+  if (loading && look === 'control') {
+    // Fields draw the spinner inside their control; inline controls (checkbox, switch, radio, toggle group) carry it
+    // right after their content; the slider, which spans the widget, at the row's end.
+    const field = ['ShadInput', 'ShadTextarea', 'ShadSelect', 'ShadDatePicker'].includes(componentType);
+    const inline = componentType !== 'ShadSlider';
+    content = (
+      <LoadingContext.Provider value={field}>
+        {field ? (
+          children
+        ) : inline ? (
+          <div
+            className={cn(
+              'inline-flex max-w-full gap-3',
+              componentType === 'ShadRadioGroup' ? 'items-start [&>[role=status]]:mt-0.5' : 'items-center'
+            )}
+          >
+            {children}
+            <Spinner />
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">{children}</div>
+            <Spinner />
+          </div>
+        )}
+      </LoadingContext.Provider>
+    );
+  } else if (loading && look !== 'own') {
+    content = loadingSkeleton(look, props);
+  }
+  return (
+    <div
+      ref={innerRef}
+      data-cy={dataCy}
+      aria-busy={loading || undefined}
+      className={cn('tj-shadcn', className)}
+      style={{
+        width: '100%',
+        display: properties.visibility === false ? 'none' : 'block',
+        boxShadow: styles?.boxShadow,
+        ...lookVars(componentType, styles),
+      }}
+    >
+      {content}
+    </div>
+  );
+};
 
 // Label and help text colours of form controls: the labelColor and helpTextColor styles, else the theme's.
 const LABEL = 'text-[color:var(--lk-label,var(--sc-foreground))]';
@@ -72,18 +222,28 @@ const HELP = 'text-[color:var(--lk-help,var(--sc-muted-foreground))]';
 const CONTROL =
   'bg-[color:var(--lk-bg,transparent)] text-[color:var(--lk-fg,var(--sc-foreground))] border-[color:var(--lk-border,var(--sc-input))] rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] placeholder:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
 
-/** shadcn's form field: label above, control, help text below. */
-const Field = ({ id, label, description, children }) => (
-  <div className="flex w-full flex-col gap-2">
-    {label ? (
-      <Label htmlFor={id} className={LABEL}>
-        {String(label)}
-      </Label>
-    ) : null}
-    {children}
-    {description ? <p className={cn('text-[0.8rem]', HELP)}>{String(description)}</p> : null}
-  </div>
-);
+/** shadcn's form field: label above, control, help text below. While loading, a spinner sits inside the control. */
+const Field = ({ id, label, description, children }) => {
+  const loading = useContext(LoadingContext);
+  return (
+    <div className="flex w-full flex-col gap-2">
+      {label ? (
+        <Label htmlFor={id} className={LABEL}>
+          {String(label)}
+        </Label>
+      ) : null}
+      {loading ? (
+        <div className="relative">
+          {children}
+          <Spinner className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+        </div>
+      ) : (
+        children
+      )}
+      {description ? <p className={cn('text-[0.8rem]', HELP)}>{String(description)}</p> : null}
+    </div>
+  );
+};
 
 const textAlign = (styles) => (['left', 'center', 'right'].includes(styles?.textAlign) ? styles.textAlign : undefined);
 
@@ -501,7 +661,7 @@ export const ShadInput = (props) => {
           className={CONTROL}
           value={value}
           placeholder={String(properties.placeholder ?? '')}
-          disabled={!!properties.disabledState}
+          disabled={busy(properties)}
           onChange={(e) => change(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && fireEvent('onEnterPressed')}
         />
@@ -525,7 +685,7 @@ export const ShadTextarea = (props) => {
           className={CONTROL}
           value={value}
           placeholder={String(properties.placeholder ?? '')}
-          disabled={!!properties.disabledState}
+          disabled={busy(properties)}
           style={{ height: Math.max(60, (Number(height) || 96) - chrome) }}
           onChange={(e) => change(e.target.value)}
         />
@@ -555,7 +715,7 @@ export const ShadSelect = (props) => {
       <Field id={`shad-${id}`} label={properties.label} description={properties.description}>
         <Select
           value={key}
-          disabled={!!properties.disabledState}
+          disabled={busy(properties)}
           onValueChange={(next) => {
             setKey(next);
             setExposedVariable('value', byKey.get(next)?.value ?? '');
@@ -621,7 +781,7 @@ export const ShadCheckbox = (props) => {
           <Checkbox
             id={id}
             checked={checked}
-            disabled={!!props.properties.disabledState}
+            disabled={busy(props.properties)}
             onCheckedChange={change}
             className="data-[state=unchecked]:border-[color:var(--lk-border,var(--sc-primary))]"
           />
@@ -644,7 +804,7 @@ export const ShadSwitch = (props) => {
           <Switch
             id={id}
             checked={checked}
-            disabled={!!props.properties.disabledState}
+            disabled={busy(props.properties)}
             onCheckedChange={change}
             className="data-[state=unchecked]:bg-[color:var(--lk-off,var(--sc-input))]"
           />
@@ -671,7 +831,7 @@ export const ShadRadioGroup = (props) => {
       <Field label={properties.label} description={properties.description}>
         <RadioGroup
           value={key}
-          disabled={!!properties.disabledState}
+          disabled={busy(properties)}
           className={properties.horizontal === true ? 'flex flex-wrap gap-4' : undefined}
           onValueChange={(next) => change(next)}
         >
@@ -712,7 +872,7 @@ export const ShadSlider = (props) => {
             max={Number(properties.max ?? 100)}
             step={Number(properties.step) || 1}
             value={live}
-            disabled={!!properties.disabledState}
+            disabled={busy(properties)}
             onValueChange={setLive}
             onValueCommit={(v) => change(isRange ? v : v[0])}
           />
@@ -759,7 +919,7 @@ export const ShadDatePicker = (props) => {
             <Button
               id={`shad-${id}`}
               variant="outline"
-              disabled={!!properties.disabledState}
+              disabled={busy(properties)}
               className={cn(
                 'w-full justify-start text-left font-normal',
                 CONTROL,
@@ -809,7 +969,7 @@ export const ShadToggleGroup = (props) => {
       <ToggleGroup
         type="single"
         value={key}
-        disabled={!!properties.disabledState}
+        disabled={busy(properties)}
         className={cn(
           'rounded-[var(--lk-radius,var(--sc-radius))] bg-[color:var(--lk-bg,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
           properties.fullWidth === true && 'flex w-full'

@@ -1,45 +1,21 @@
 // shadcn/ui pack (experiment, exp/antd-pack): native ToolJet widgets that render shadcn/ui components (Radix +
 // Tailwind, Widgets/Shadcn) in the app's own React tree. Same contract as the Ant Design pack (antDesignSource.js):
 // inspector properties, events, exposed values and actions like the built-in widgets. The literal per-widget configs
-// are generated from this file by scripts-shadcn-literals.mjs. Its config helpers are repeated from antDesignSource.js;
-// the style helpers come from the shared shadcnPackHelpers.js.
+// are generated from this file by scripts-shadcn-literals.mjs, with the config helpers shared by every shadcn source
+// module (shadcnPackHelpers.js).
 
-import { colorStyle, sizeStyle } from './shadcnPackHelpers.js';
-
-const code = (displayName, schema, defaultValue, extra = {}) => ({
-  type: 'code',
-  displayName,
-  validation: {
-    schema,
-    ...(defaultValue !== undefined ? { defaultValue } : {}),
-  },
-  ...extra,
-});
-const toggle = (displayName, defaultValue = false, extra = {}) => ({
-  type: 'toggle',
-  displayName,
-  validation: { schema: { type: 'boolean' }, defaultValue },
-  ...extra,
-});
-const choice = (displayName, values, defaultValue) => ({
-  type: 'switch',
-  displayName,
-  options: values.map((v) => ({
-    displayName: v.charAt(0).toUpperCase() + v.slice(1),
-    value: v,
-  })),
-  validation: { schema: { type: 'string' }, defaultValue },
-  isFxNotRequired: true,
-  fullWidth: true,
-});
-
-const STRING = { type: 'string' };
-const NUMBER = { type: 'number' };
-const ARRAY = { type: 'array' };
-const ANY = {
-  type: 'union',
-  schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }, { type: 'array' }, { type: 'object' }],
-};
+import {
+  ANY,
+  ARRAY,
+  NUMBER,
+  STRING,
+  choice,
+  code,
+  colorStyle,
+  shadConfig,
+  sizeStyle,
+  toggle,
+} from './shadcnPackHelpers.js';
 
 // Styles. Each falls back to the app theme when unset (Widgets/Shadcn/shadcnLook.js maps them to CSS variables);
 // colorStyle and sizeStyle come from the shared helpers.
@@ -71,88 +47,6 @@ const chartStyles = {
   axisTextColor: colorStyle('Axis label color'),
   legendTextColor: colorStyle('Legend text color'),
 };
-
-const commonProperties = (withHeight) => ({
-  ...(withHeight
-    ? {
-        dynamicHeight: toggle('Dynamic height', true, {
-          section: 'additionalActions',
-        }),
-      }
-    : {}),
-  loadingState: toggle('Loading state', false, {
-    section: 'additionalActions',
-  }),
-  visibility: toggle('Visibility', true, { section: 'additionalActions' }),
-  disabledState: toggle('Disable', false, { section: 'additionalActions' }),
-});
-const commonDefinition = (withHeight) => ({
-  ...(withHeight ? { dynamicHeight: { value: '{{true}}' } } : {}),
-  loadingState: { value: '{{false}}' },
-  visibility: { value: '{{true}}' },
-  disabledState: { value: '{{false}}' },
-});
-
-const shadConfig = ({
-  name,
-  displayName,
-  description,
-  defaultSize,
-  properties,
-  defaults,
-  events = {},
-  exposedVariables = {},
-  actions = [],
-  withHeight = false,
-  styles = {},
-  styleDefaults = {},
-}) => ({
-  name,
-  displayName,
-  description,
-  component: name,
-  defaultSize,
-  others: {
-    showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
-    showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
-  },
-  properties: { ...properties, ...commonProperties(withHeight) },
-  events,
-  styles: {
-    boxShadow: {
-      type: 'boxShadow',
-      displayName: 'Box shadow',
-      validation: {
-        schema: {
-          type: 'union',
-          schemas: [{ type: 'string' }, { type: 'number' }],
-        },
-        defaultValue: '0px 0px 0px 0px #00000040',
-      },
-      accordian: 'Container',
-    },
-    ...styles,
-  },
-  exposedVariables: {
-    isVisible: true,
-    isLoading: false,
-    isDisabled: false,
-    ...exposedVariables,
-  },
-  actions,
-  definition: {
-    others: {
-      showOnDesktop: { value: '{{true}}' },
-      showOnMobile: { value: '{{false}}' },
-    },
-    properties: { ...defaults, ...commonDefinition(withHeight) },
-    events: [],
-    styles: {
-      boxShadow: { value: '0px 0px 0px 0px #00000040' },
-      ...styleDefaults,
-    },
-  },
-});
 
 // Inputs carry shadcn's form layout: an optional label above and an optional description below the control.
 const fieldProperties = {

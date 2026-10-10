@@ -69,6 +69,19 @@ const commonDefinition = (withHeight) => ({
   disabledState: { value: '{{false}}' },
 });
 
+// The control actions every ToolJet widget has (Control component → Set visibility, Set disable, Set loading),
+// added to each pack widget unless its own actions already define them.
+const valueParam = { handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' };
+const STANDARD_ACTIONS = [
+  { handle: 'setVisibility', displayName: 'Set visibility', params: [valueParam] },
+  { handle: 'setDisable', displayName: 'Set disable', params: [valueParam] },
+  { handle: 'setLoading', displayName: 'Set loading', params: [valueParam] },
+];
+const withStandardActions = (actions) => [
+  ...actions,
+  ...STANDARD_ACTIONS.filter((standard) => !actions.some((action) => action.handle === standard.handle)),
+];
+
 export const shadConfig = ({
   name,
   displayName,
@@ -104,7 +117,7 @@ export const shadConfig = ({
     ...styles,
   },
   exposedVariables: { isVisible: true, isLoading: false, isDisabled: false, ...exposedVariables },
-  actions,
+  actions: withStandardActions(actions),
   definition: {
     others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
     properties: { ...defaults, ...commonDefinition(withHeight) },

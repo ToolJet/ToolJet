@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
@@ -28,6 +29,36 @@ export const useExposed = (setExposedVariables, properties, values) => {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataKey]);
+};
+
+/** Gives a pack widget the control state every ToolJet widget has: visibility, loading and disabled follow their
+ *  properties and can be changed by the setVisibility, setLoading and setDisable actions (Control component), the way
+ *  the native useExposeState works. The widget receives the effective values as its properties, so it reads
+ *  properties.visibility / loadingState / disabledState as before. An unset property means its default (visible,
+ *  enabled, not loading): a widget created through the MCP carries only the properties it was given. */
+export const withControlState = (Widget) => {
+  const Controlled = (props) => {
+    const { properties, setExposedVariables, setExposedVariable } = props;
+    const { isVisible, isLoading, isDisabled } = useExposeState(
+      properties.loadingState === true,
+      properties.visibility !== false,
+      properties.disabledState === true,
+      setExposedVariables,
+      setExposedVariable
+    );
+    const effective = useMemo(
+      () => ({
+        ...properties,
+        visibility: isVisible !== false,
+        loadingState: !!isLoading,
+        disabledState: !!isDisabled,
+      }),
+      [properties, isVisible, isLoading, isDisabled]
+    );
+    return React.createElement(Widget, { ...props, properties: effective });
+  };
+  Controlled.displayName = `Controlled(${Widget.displayName || Widget.name || 'Widget'})`;
+  return Controlled;
 };
 
 /** Sizes the widget to its content in view mode, unless its Dynamic height property is turned off: a pack widget
@@ -63,6 +94,10 @@ export const initials = (name) =>
 export const toOptions = (v) =>
   list(v).map((o) =>
     o !== null && typeof o === 'object'
-      ? { ...o, label: String(o.label ?? o.value ?? ''), value: o.value ?? o.label }
+      ? {
+          ...o,
+          label: String(o.label ?? o.value ?? ''),
+          value: o.value ?? o.label,
+        }
       : { label: String(o), value: o }
   );

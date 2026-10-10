@@ -640,6 +640,42 @@ export const shadKanbanConfig = {
         },
       ],
     },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
   ],
   definition: {
     others: {

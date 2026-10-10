@@ -21,6 +21,8 @@ import { list, useExposed } from '../packHooks';
 import { Shell } from './Shadcn';
 import { seriesColor } from './shadcnLook';
 
+export { withControlState } from '../packHooks';
+
 // shadcn/ui pack charts (experiment): Recharts styled the way shadcn/ui's chart component styles it (no axis lines,
 // horizontal grid only, a card tooltip, series colours from --sc-chart-1..5, which follow the app theme, or from the
 // Chart color style, or from the Series colors list). Grid, axis and legend colours come from the widget's styles

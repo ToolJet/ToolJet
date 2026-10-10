@@ -222,66 +222,45 @@ const AntGaugeChart = lazy(() =>
 const AntFunnelChart = lazy(() =>
   import('@/AppBuilder/Widgets/AntDesign/AntCharts').then((m) => ({ default: m.AntFunnelChart }))
 );
-// shadcn/ui pack (experiment): widgets in one lazy chunk, charts (Recharts) in another.
-const ShadButton = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadButton })));
-const ShadAlert = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadAlert })));
-const ShadBreadcrumb = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadBreadcrumb }))
-);
-const ShadHeading = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadHeading })));
-const ShadText = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadText })));
-const ShadTable = lazy(() => import('@/AppBuilder/Widgets/Shadcn/ShadTable').then((m) => ({ default: m.ShadTable })));
-const ShadStat = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadStat })));
-const ShadBadge = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadBadge })));
-const ShadAvatar = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadAvatar })));
-const ShadProgress = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadProgress }))
-);
-const ShadSeparator = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadSeparator }))
-);
-const ShadSkeleton = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadSkeleton }))
-);
-const ShadAccordion = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadAccordion }))
-);
-const ShadEmpty = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadEmpty })));
-const ShadInput = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadInput })));
-const ShadTextarea = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadTextarea }))
-);
-const ShadSelect = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadSelect })));
-const ShadCheckbox = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadCheckbox }))
-);
-const ShadSwitch = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadSwitch })));
-const ShadRadioGroup = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadRadioGroup }))
-);
-const ShadSlider = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadSlider })));
-const ShadDatePicker = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadDatePicker }))
-);
-const ShadToggleGroup = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadToggleGroup }))
-);
-const ShadAreaChart = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/ShadCharts').then((m) => ({ default: m.ShadAreaChart }))
-);
-const ShadBarChart = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/ShadCharts').then((m) => ({ default: m.ShadBarChart }))
-);
-const ShadPieChart = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/ShadCharts').then((m) => ({ default: m.ShadPieChart }))
-);
-const ShadKanban = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/ShadKanban').then((m) => ({ default: m.ShadKanban }))
-);
-const ShadTabs = lazy(() => import('@/AppBuilder/Widgets/Shadcn/ShadTabs').then((m) => ({ default: m.ShadTabs })));
-const ShadListView = lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/ShadListView').then((m) => ({ default: m.ShadListView }))
-);
+// shadcn/ui pack (experiment): widgets in one lazy chunk, charts (Recharts) in another. Widgets that do not keep
+// their own control state get it from withControlState (setVisibility, setLoading and setDisable actions).
+const shadcnWidgets = () => import('@/AppBuilder/Widgets/Shadcn/Shadcn');
+const shadcnCharts = () => import('@/AppBuilder/Widgets/Shadcn/ShadCharts');
+const shadcnKanban = () => import('@/AppBuilder/Widgets/Shadcn/ShadKanban');
+const shadcnTable = () => import('@/AppBuilder/Widgets/Shadcn/ShadTable');
+const shadcnTabs = () => import('@/AppBuilder/Widgets/Shadcn/ShadTabs');
+const shadcnListView = () => import('@/AppBuilder/Widgets/Shadcn/ShadListView');
+const shadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m[name] })));
+const controlledShadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m.withControlState(m[name]) })));
+const ShadButton = controlledShadWidget(shadcnWidgets, 'ShadButton');
+const ShadAlert = controlledShadWidget(shadcnWidgets, 'ShadAlert');
+const ShadBreadcrumb = controlledShadWidget(shadcnWidgets, 'ShadBreadcrumb');
+const ShadHeading = controlledShadWidget(shadcnWidgets, 'ShadHeading');
+const ShadText = controlledShadWidget(shadcnWidgets, 'ShadText');
+const ShadTable = shadWidget(shadcnTable, 'ShadTable');
+const ShadStat = controlledShadWidget(shadcnWidgets, 'ShadStat');
+const ShadBadge = controlledShadWidget(shadcnWidgets, 'ShadBadge');
+const ShadAvatar = controlledShadWidget(shadcnWidgets, 'ShadAvatar');
+const ShadProgress = controlledShadWidget(shadcnWidgets, 'ShadProgress');
+const ShadSeparator = controlledShadWidget(shadcnWidgets, 'ShadSeparator');
+const ShadSkeleton = controlledShadWidget(shadcnWidgets, 'ShadSkeleton');
+const ShadAccordion = controlledShadWidget(shadcnWidgets, 'ShadAccordion');
+const ShadEmpty = controlledShadWidget(shadcnWidgets, 'ShadEmpty');
+const ShadInput = controlledShadWidget(shadcnWidgets, 'ShadInput');
+const ShadTextarea = controlledShadWidget(shadcnWidgets, 'ShadTextarea');
+const ShadSelect = controlledShadWidget(shadcnWidgets, 'ShadSelect');
+const ShadCheckbox = controlledShadWidget(shadcnWidgets, 'ShadCheckbox');
+const ShadSwitch = controlledShadWidget(shadcnWidgets, 'ShadSwitch');
+const ShadRadioGroup = controlledShadWidget(shadcnWidgets, 'ShadRadioGroup');
+const ShadSlider = controlledShadWidget(shadcnWidgets, 'ShadSlider');
+const ShadDatePicker = controlledShadWidget(shadcnWidgets, 'ShadDatePicker');
+const ShadToggleGroup = controlledShadWidget(shadcnWidgets, 'ShadToggleGroup');
+const ShadAreaChart = controlledShadWidget(shadcnCharts, 'ShadAreaChart');
+const ShadBarChart = controlledShadWidget(shadcnCharts, 'ShadBarChart');
+const ShadPieChart = controlledShadWidget(shadcnCharts, 'ShadPieChart');
+const ShadKanban = controlledShadWidget(shadcnKanban, 'ShadKanban');
+const ShadTabs = shadWidget(shadcnTabs, 'ShadTabs');
+const ShadListView = shadWidget(shadcnListView, 'ShadListView');
 
 export function memoizeFunction(func) {
   const cache = new Map();
