@@ -46,3 +46,57 @@ export const moveCard = (columns, cardKey, toColumnId, beforeCardKey, statusFiel
   const { __key, ...plain } = moved;
   return { columns: next, move: { cardId: plain.id ?? key, card: plain, from: from.id, to: to.id, toIndex } };
 };
+
+const plain = (card) => {
+  if (!card) return null;
+  const { __key, ...rest } = card;
+  return rest;
+};
+
+/** Every card on the board, without its drag key, in board order (column by column). */
+export const boardCards = (columns) => columns.flatMap((c) => c.cards.map(plain));
+
+/** Adds a card at the end of a column: `columnId` when given (the card's status is set to it), else the card's status
+ *  column, which is created when no column has that status. A card without an id gets one no other card has. */
+export const addCard = (columns, card, columnId, statusField, idField) => {
+  const keys = new Set(columns.flatMap((c) => c.cards.map((x) => x.__key)));
+  let id = card?.[idField];
+  if (id === undefined || id === null || id === '') {
+    let n = keys.size + 1;
+    while (keys.has(`new-${n}`)) n += 1;
+    id = `new-${n}`;
+  }
+  const status = keyOf(columnId ?? card?.[statusField]);
+  const added = { ...card, [idField]: id, [statusField]: columnId ?? card?.[statusField] ?? status };
+  const next = columns.map((c) => ({ ...c, cards: [...c.cards] }));
+  let target = next.find((c) => c.id === status);
+  if (!target) {
+    target = { id: status, title: status, cards: [] };
+    next.push(target);
+  }
+  target.cards.push({ ...added, __key: keyOf(id) });
+  return { columns: next, card: added };
+};
+
+/** Removes the card with this id. Returns the new columns and the removed card (null when there is none). */
+export const deleteCard = (columns, cardId) => {
+  const key = keyOf(cardId);
+  const card = columns.flatMap((c) => c.cards).find((x) => x.__key === key);
+  if (!card) return { columns, card: null };
+  return { columns: columns.map((c) => ({ ...c, cards: c.cards.filter((x) => x.__key !== key) })), card: plain(card) };
+};
+
+/** Merges `values` into the card with this id, in place; a changed status moves it to the end of that column. */
+export const updateCard = (columns, cardId, values, statusField, idField) => {
+  const key = keyOf(cardId);
+  const card = columns.flatMap((c) => c.cards).find((x) => x.__key === key);
+  if (!card) return { columns, card: null };
+  const updated = { ...card, ...values, __key: key };
+  if (keyOf(updated[statusField]) === keyOf(card[statusField])) {
+    const next = columns.map((c) => ({ ...c, cards: c.cards.map((x) => (x.__key === key ? updated : x)) }));
+    return { columns: next, card: plain(updated) };
+  }
+  const removed = deleteCard(columns, cardId).columns;
+  const { __key, ...rest } = updated;
+  return { columns: addCard(removed, rest, undefined, statusField, idField).columns, card: plain(updated) };
+};

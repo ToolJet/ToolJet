@@ -1,4 +1,4 @@
-import { boardColumns, moveCard } from '../kanbanBoard';
+import { addCard, boardCards, boardColumns, deleteCard, moveCard, updateCard } from '../kanbanBoard';
 
 const cards = [
   { id: 1, title: 'Fix login', status: 'todo' },
@@ -64,5 +64,53 @@ describe('moveCard', () => {
 
   it('returns nothing to do for a drop where the card already is', () => {
     expect(moveCard(cols(), 4, 'done', null, 'status').move).toBeNull();
+  });
+});
+
+describe('editing cards', () => {
+  const cols = () => boardColumns(cards, ['todo', 'doing', 'done'], 'status', 'id');
+  const ids = (columns, id) => columns.find((c) => c.id === id).cards.map((x) => x.id);
+
+  it('adds a card to the end of its status column, or of the column given', () => {
+    let { columns, card } = addCard(cols(), { id: 5, title: 'New', status: 'doing' }, undefined, 'status', 'id');
+    expect(ids(columns, 'doing')).toEqual([2, 5]);
+    expect(card).toEqual({ id: 5, title: 'New', status: 'doing' });
+    ({ columns, card } = addCard(cols(), { id: 6, title: 'Other' }, 'done', 'status', 'id'));
+    expect(ids(columns, 'done')).toEqual([4, 6]);
+    expect(card.status).toBe('done');
+  });
+
+  it('gives an added card without an id a unique one', () => {
+    const { columns, card } = addCard(cols(), { title: 'No id', status: 'todo' }, undefined, 'status', 'id');
+    expect(card.id).toBeDefined();
+    expect(new Set(boardCards(columns).map((c) => String(c.id))).size).toBe(5);
+  });
+
+  it('deletes a card by id and returns it', () => {
+    const { columns, card } = deleteCard(cols(), 3);
+    expect(ids(columns, 'todo')).toEqual([1]);
+    expect(card).toEqual({ id: 3, title: 'Ship v2', status: 'todo' });
+    expect(deleteCard(cols(), 99).card).toBeNull();
+  });
+
+  it('updates a card in place, and moves it when its status changes', () => {
+    let { columns, card } = updateCard(cols(), 1, { title: 'Fix sign-in' }, 'status', 'id');
+    expect(ids(columns, 'todo')).toEqual([1, 3]);
+    expect(card.title).toBe('Fix sign-in');
+    ({ columns, card } = updateCard(cols(), 1, { status: 'done' }, 'status', 'id'));
+    expect(ids(columns, 'todo')).toEqual([3]);
+    expect(ids(columns, 'done')).toEqual([4, 1]);
+    expect(updateCard(cols(), 99, { title: 'x' }, 'status', 'id').card).toBeNull();
+  });
+
+  it('lists the board as plain cards in board order', () => {
+    const { columns } = moveCard(cols(), 2, 'todo', 3, 'status');
+    expect(boardCards(columns).map((c) => [c.id, c.status])).toEqual([
+      [1, 'todo'],
+      [2, 'todo'],
+      [3, 'todo'],
+      [4, 'done'],
+    ]);
+    expect(boardCards(columns)[0].__key).toBeUndefined();
   });
 });

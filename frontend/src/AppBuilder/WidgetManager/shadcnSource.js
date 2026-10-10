@@ -7,7 +7,10 @@
 const code = (displayName, schema, defaultValue, extra = {}) => ({
   type: 'code',
   displayName,
-  validation: { schema, ...(defaultValue !== undefined ? { defaultValue } : {}) },
+  validation: {
+    schema,
+    ...(defaultValue !== undefined ? { defaultValue } : {}),
+  },
   ...extra,
 });
 const toggle = (displayName, defaultValue = false, extra = {}) => ({
@@ -19,7 +22,10 @@ const toggle = (displayName, defaultValue = false, extra = {}) => ({
 const choice = (displayName, values, defaultValue) => ({
   type: 'switch',
   displayName,
-  options: values.map((v) => ({ displayName: v.charAt(0).toUpperCase() + v.slice(1), value: v })),
+  options: values.map((v) => ({
+    displayName: v.charAt(0).toUpperCase() + v.slice(1),
+    value: v,
+  })),
   validation: { schema: { type: 'string' }, defaultValue },
   isFxNotRequired: true,
   fullWidth: true,
@@ -34,8 +40,16 @@ const ANY = {
 };
 
 const commonProperties = (withHeight) => ({
-  ...(withHeight ? { dynamicHeight: toggle('Dynamic height', true, { section: 'additionalActions' }) } : {}),
-  loadingState: toggle('Loading state', false, { section: 'additionalActions' }),
+  ...(withHeight
+    ? {
+        dynamicHeight: toggle('Dynamic height', true, {
+          section: 'additionalActions',
+        }),
+      }
+    : {}),
+  loadingState: toggle('Loading state', false, {
+    section: 'additionalActions',
+  }),
   visibility: toggle('Visibility', true, { section: 'additionalActions' }),
   disabledState: toggle('Disable', false, { section: 'additionalActions' }),
 });
@@ -57,6 +71,8 @@ const shadConfig = ({
   exposedVariables = {},
   actions = [],
   withHeight = false,
+  styles = {},
+  styleDefaults = {},
 }) => ({
   name,
   displayName,
@@ -74,19 +90,34 @@ const shadConfig = ({
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'string' }, { type: 'number' }],
+        },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
       accordian: 'Container',
     },
+    ...styles,
   },
-  exposedVariables: { isVisible: true, isLoading: false, isDisabled: false, ...exposedVariables },
+  exposedVariables: {
+    isVisible: true,
+    isLoading: false,
+    isDisabled: false,
+    ...exposedVariables,
+  },
   actions,
   definition: {
-    others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+    others: {
+      showOnDesktop: { value: '{{true}}' },
+      showOnMobile: { value: '{{false}}' },
+    },
     properties: { ...defaults, ...commonDefinition(withHeight) },
     events: [],
-    styles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
+    styles: {
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      ...styleDefaults,
+    },
   },
 });
 
@@ -131,7 +162,11 @@ export const shadAlertConfig = shadConfig({
     description: code('Description', STRING, ''),
     variant: choice('Variant', ['default', 'destructive'], 'default'),
   },
-  defaults: { title: { value: 'Heads up' }, description: { value: '' }, variant: { value: 'default' } },
+  defaults: {
+    title: { value: 'Heads up' },
+    description: { value: '' },
+    variant: { value: 'default' },
+  },
 });
 
 export const shadBreadcrumbConfig = shadConfig({
@@ -139,7 +174,11 @@ export const shadBreadcrumbConfig = shadConfig({
   displayName: 'Breadcrumb',
   description: 'shadcn/ui breadcrumb',
   defaultSize: { width: 14, height: 24 },
-  properties: { items: code('Items', ARRAY, [], { placeholder: "['Home', 'Fleet', 'Seraphine']" }) },
+  properties: {
+    items: code('Items', ARRAY, [], {
+      placeholder: "['Home', 'Fleet', 'Seraphine']",
+    }),
+  },
   defaults: { items: { value: "{{['Home', 'Section', 'Page']}}" } },
 });
 
@@ -189,7 +228,9 @@ export const shadTableConfig = shadConfig({
     emptyText: code('Empty message', STRING, 'No results.'),
   },
   defaults: {
-    data: { value: "{{[{ id: 1, name: 'Sample', status: 'active', amount: 1200 }]}}" },
+    data: {
+      value: "{{[{ id: 1, name: 'Sample', status: 'active', amount: 1200 }]}}",
+    },
     columns: {
       value:
         "{{[{ title: 'Name', dataIndex: 'name' }, { title: 'Status', dataIndex: 'status', kind: 'badge' }, { title: 'Amount', dataIndex: 'amount', kind: 'money' }]}}",
@@ -252,7 +293,11 @@ export const shadAvatarConfig = shadConfig({
     src: code('Image URL (single avatar)', STRING, ''),
     size: code('Size (px)', NUMBER, 32),
   },
-  defaults: { names: { value: 'Ada Lovelace' }, src: { value: '' }, size: { value: '{{32}}' } },
+  defaults: {
+    names: { value: 'Ada Lovelace' },
+    src: { value: '' },
+    size: { value: '{{32}}' },
+  },
 });
 
 export const shadProgressConfig = shadConfig({
@@ -265,7 +310,11 @@ export const shadProgressConfig = shadConfig({
     label: code('Label', STRING, ''),
     showValue: toggle('Show percent'),
   },
-  defaults: { value: { value: '{{60}}' }, label: { value: '' }, showValue: { value: '{{false}}' } },
+  defaults: {
+    value: { value: '{{60}}' },
+    label: { value: '' },
+    showValue: { value: '{{false}}' },
+  },
 });
 
 export const shadSeparatorConfig = shadConfig({
@@ -273,7 +322,9 @@ export const shadSeparatorConfig = shadConfig({
   displayName: 'Separator',
   description: 'shadcn/ui separator',
   defaultSize: { width: 20, height: 24 },
-  properties: { orientation: choice('Orientation', ['horizontal', 'vertical'], 'horizontal') },
+  properties: {
+    orientation: choice('Orientation', ['horizontal', 'vertical'], 'horizontal'),
+  },
   defaults: { orientation: { value: 'horizontal' } },
 });
 
@@ -293,7 +344,9 @@ export const shadAccordionConfig = shadConfig({
   defaultSize: { width: 20, height: 160 },
   withHeight: true,
   properties: {
-    items: code('Items', ARRAY, [], { placeholder: "[{ title: 'Inclusions', content: 'Crew, fuel, linen' }]" }),
+    items: code('Items', ARRAY, [], {
+      placeholder: "[{ title: 'Inclusions', content: 'Crew, fuel, linen' }]",
+    }),
     multiple: toggle('Several open at once'),
     defaultOpen: code('Open by default (indexes)', ARRAY, []),
   },
@@ -319,7 +372,11 @@ export const shadEmptyConfig = shadConfig({
     description: code('Description', STRING, ''),
     actionLabel: code('Action label', STRING, ''),
   },
-  defaults: { title: { value: 'No results' }, description: { value: '' }, actionLabel: { value: '' } },
+  defaults: {
+    title: { value: 'No results' },
+    description: { value: '' },
+    actionLabel: { value: '' },
+  },
   events: { onAction: { displayName: 'On action' } },
 });
 
@@ -343,10 +400,17 @@ export const shadInputConfig = shadConfig({
     defaultValue: { value: '' },
     inputType: { value: 'text' },
   },
-  events: { onChange: { displayName: 'On change' }, onEnterPressed: { displayName: 'On enter pressed' } },
+  events: {
+    onChange: { displayName: 'On change' },
+    onEnterPressed: { displayName: 'On enter pressed' },
+  },
   exposedVariables: { value: '' },
   actions: [
-    { handle: 'setText', displayName: 'Set text', params: [{ handle: 'text', displayName: 'Text', defaultValue: '' }] },
+    {
+      handle: 'setText',
+      displayName: 'Set text',
+      params: [{ handle: 'text', displayName: 'Text', defaultValue: '' }],
+    },
     { handle: 'clear', displayName: 'Clear' },
   ],
 });
@@ -361,11 +425,19 @@ export const shadTextareaConfig = shadConfig({
     placeholder: code('Placeholder', STRING, ''),
     defaultValue: code('Default value', STRING, ''),
   },
-  defaults: { ...fieldDefaults, placeholder: { value: '' }, defaultValue: { value: '' } },
+  defaults: {
+    ...fieldDefaults,
+    placeholder: { value: '' },
+    defaultValue: { value: '' },
+  },
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { value: '' },
   actions: [
-    { handle: 'setText', displayName: 'Set text', params: [{ handle: 'text', displayName: 'Text', defaultValue: '' }] },
+    {
+      handle: 'setText',
+      displayName: 'Set text',
+      params: [{ handle: 'text', displayName: 'Text', defaultValue: '' }],
+    },
     { handle: 'clear', displayName: 'Clear' },
   ],
 });
@@ -384,7 +456,9 @@ export const shadSelectConfig = shadConfig({
   },
   defaults: {
     ...fieldDefaults,
-    options: { value: "{{[{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]}}" },
+    options: {
+      value: "{{[{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]}}",
+    },
     placeholder: { value: 'Select' },
     defaultValue: { value: '' },
   },
@@ -410,7 +484,11 @@ export const shadCheckboxConfig = shadConfig({
     description: code('Help text', STRING, ''),
     defaultChecked: toggle('Checked by default'),
   },
-  defaults: { label: { value: 'Checkbox' }, description: { value: '' }, defaultChecked: { value: '{{false}}' } },
+  defaults: {
+    label: { value: 'Checkbox' },
+    description: { value: '' },
+    defaultChecked: { value: '{{false}}' },
+  },
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { value: false },
 });
@@ -425,7 +503,11 @@ export const shadSwitchConfig = shadConfig({
     description: code('Help text', STRING, ''),
     defaultChecked: toggle('On by default'),
   },
-  defaults: { label: { value: 'Enabled' }, description: { value: '' }, defaultChecked: { value: '{{false}}' } },
+  defaults: {
+    label: { value: 'Enabled' },
+    description: { value: '' },
+    defaultChecked: { value: '{{false}}' },
+  },
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { value: false },
 });
@@ -517,7 +599,9 @@ export const shadToggleGroupConfig = shadConfig({
   description: 'shadcn/ui segmented toggle (filters, views), like a tabs list',
   defaultSize: { width: 14, height: 36 },
   properties: {
-    options: code('Options', ARRAY, [], { placeholder: "['All', 'Open', 'Closed'] or [{ label, value }]" }),
+    options: code('Options', ARRAY, [], {
+      placeholder: "['All', 'Open', 'Closed'] or [{ label, value }]",
+    }),
     defaultValue: code('Default value', ANY, ''),
     fullWidth: toggle('Full width'),
   },
@@ -536,7 +620,7 @@ export const shadKanbanConfig = shadConfig({
   name: 'ShadKanban',
   displayName: 'Kanban',
   description:
-    'shadcn/ui Kanban board from data: columns are values of a status field, cards show title, description, badge, avatar and meta fields; drag a card to move it, then save the move with a query on onCardMoved (components.<name>.movedCard)',
+    'shadcn/ui Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar). Drag to move, optional add and delete buttons, and addCard/updateCard/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.movedCard, lastAddedCard, lastRemovedCard, lastUpdatedCard, cards)',
   defaultSize: { width: 43, height: 420 },
   withHeight: true,
   properties: {
@@ -548,12 +632,19 @@ export const shadKanbanConfig = shadConfig({
     }),
     statusField: code('Status field', STRING, 'status'),
     idField: code('Id field', STRING, 'id'),
+    // Card content: each field is optional; a card shows only the parts that have a field and a value.
     titleField: code('Title field', STRING, 'title'),
     descriptionField: code('Description field', STRING, ''),
-    badgeField: code('Badge field', STRING, ''),
-    avatarField: code('Avatar field (a name)', STRING, ''),
+    badgeField: code('Badge field (priority, severity)', STRING, ''),
+    tagsField: code('Tags field (a list)', STRING, ''),
+    progressField: code('Progress field (0 to 100)', STRING, ''),
     metaField: code('Meta field (a date, a count)', STRING, ''),
+    avatarField: code('Avatar field (a name)', STRING, ''),
+    density: choice('Card density', ['comfortable', 'compact'], 'comfortable'),
+    showCount: toggle('Card count on columns', true),
     allowDrag: toggle('Drag to move', true),
+    allowAdd: toggle('Add card button on columns'),
+    allowDelete: toggle('Delete button on cards'),
     emptyText: code('Empty column message', STRING, 'No cards'),
   },
   defaults: {
@@ -570,13 +661,128 @@ export const shadKanbanConfig = shadConfig({
     titleField: { value: 'title' },
     descriptionField: { value: '' },
     badgeField: { value: 'priority' },
-    avatarField: { value: 'owner' },
+    tagsField: { value: '' },
+    progressField: { value: '' },
     metaField: { value: '' },
+    avatarField: { value: 'owner' },
+    density: { value: 'comfortable' },
+    showCount: { value: '{{true}}' },
     allowDrag: { value: '{{true}}' },
+    allowAdd: { value: '{{false}}' },
+    allowDelete: { value: '{{false}}' },
     emptyText: { value: 'No cards' },
   },
-  events: { onCardClicked: { displayName: 'On card clicked' }, onCardMoved: { displayName: 'On card moved' } },
-  exposedVariables: { selectedCard: {}, movedCard: {}, lastMove: {} },
+  // Each falls back to the app theme when unset.
+  styles: {
+    columnBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Column background',
+      validation: { schema: { type: 'string' } },
+    },
+    columnBorderRadius: {
+      type: 'numberInput',
+      displayName: 'Column radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'string' }, { type: 'number' }],
+        },
+      },
+    },
+    cardBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Card background',
+      validation: { schema: { type: 'string' } },
+    },
+    cardBorderColor: {
+      type: 'colorSwatches',
+      displayName: 'Card border color',
+      validation: { schema: { type: 'string' } },
+    },
+    cardBorderRadius: {
+      type: 'numberInput',
+      displayName: 'Card radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'string' }, { type: 'number' }],
+        },
+      },
+    },
+    cardShadow: {
+      type: 'select',
+      displayName: 'Card shadow',
+      options: [
+        { name: 'None', value: 'none' },
+        { name: 'Small', value: 'sm' },
+        { name: 'Medium', value: 'md' },
+        { name: 'Large', value: 'lg' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'sm' },
+    },
+  },
+  styleDefaults: { cardShadow: { value: 'sm' } },
+  events: {
+    onCardClicked: { displayName: 'On card clicked' },
+    onCardMoved: { displayName: 'On card moved' },
+    onAddCardClick: { displayName: 'On add card click' },
+    onCardAdded: { displayName: 'On card added' },
+    onCardUpdated: { displayName: 'On card updated' },
+    onCardRemoved: { displayName: 'On card removed' },
+  },
+  exposedVariables: {
+    cards: [],
+    selectedCard: {},
+    movedCard: {},
+    lastMove: {},
+    addCardColumn: '',
+    lastAddedCard: {},
+    lastUpdatedCard: {},
+    lastRemovedCard: {},
+  },
+  actions: [
+    {
+      handle: 'addCard',
+      displayName: 'Add card',
+      params: [
+        {
+          handle: 'card',
+          displayName: 'Card',
+          defaultValue: "{{{ title: 'New card' }}}",
+        },
+        {
+          handle: 'columnId',
+          displayName: 'Column id (optional)',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'updateCard',
+      displayName: 'Update card',
+      params: [
+        { handle: 'id', displayName: 'Card id', defaultValue: '' },
+        {
+          handle: 'values',
+          displayName: 'Values',
+          defaultValue: "{{{ title: 'Renamed' }}}",
+        },
+      ],
+    },
+    {
+      handle: 'moveCard',
+      displayName: 'Move card',
+      params: [
+        { handle: 'id', displayName: 'Card id', defaultValue: '' },
+        { handle: 'columnId', displayName: 'Column id', defaultValue: '' },
+      ],
+    },
+    {
+      handle: 'deleteCard',
+      displayName: 'Delete card',
+      params: [{ handle: 'id', displayName: 'Card id', defaultValue: '' }],
+    },
+  ],
 });
 
 // ---- Charts (Recharts, styled like shadcn/ui charts) ------------------------------------------------------------------
@@ -584,7 +790,9 @@ export const shadKanbanConfig = shadConfig({
 const CHART_DATA =
   "{{[{ month: 'Jun', revenue: 182000 }, { month: 'Jul', revenue: 246000 }, { month: 'Aug', revenue: 268000 }, { month: 'Sep', revenue: 197000 }, { month: 'Oct', revenue: 121000 }]}}";
 const seriesProps = {
-  data: code('Data', ARRAY, [], { placeholder: "[{ month: 'Jun', revenue: 182000, bookings: 12 }]" }),
+  data: code('Data', ARRAY, [], {
+    placeholder: "[{ month: 'Jun', revenue: 182000, bookings: 12 }]",
+  }),
   xField: code('X field', STRING, 'month'),
   yFields: code(
     'Series fields (one or many)',
@@ -632,8 +840,16 @@ export const shadBarChartConfig = shadConfig({
   displayName: 'Bar chart',
   description: 'shadcn/ui bar chart, vertical or horizontal, grouped or stacked',
   defaultSize: { width: 20, height: 280 },
-  properties: { ...seriesProps, horizontal: toggle('Horizontal bars'), stack: toggle('Stack series') },
-  defaults: { ...seriesDefaults, horizontal: { value: '{{false}}' }, stack: { value: '{{false}}' } },
+  properties: {
+    ...seriesProps,
+    horizontal: toggle('Horizontal bars'),
+    stack: toggle('Stack series'),
+  },
+  defaults: {
+    ...seriesDefaults,
+    horizontal: { value: '{{false}}' },
+    stack: { value: '{{false}}' },
+  },
   events: { onClick: { displayName: 'On click' } },
   exposedVariables: { clickedDatum: {} },
 });
@@ -644,7 +860,9 @@ export const shadPieChartConfig = shadConfig({
   description: 'shadcn/ui pie or donut chart with an optional center figure',
   defaultSize: { width: 12, height: 280 },
   properties: {
-    data: code('Data', ARRAY, [], { placeholder: "[{ type: 'Charter', value: 62 }]" }),
+    data: code('Data', ARRAY, [], {
+      placeholder: "[{ type: 'Charter', value: 62 }]",
+    }),
     categoryField: code('Category field', STRING, 'type'),
     valueField: code('Value field', STRING, 'value'),
     donut: toggle('Donut', true),

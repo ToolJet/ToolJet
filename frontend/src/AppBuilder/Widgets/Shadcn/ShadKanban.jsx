@@ -11,15 +11,18 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import { Plus, X } from 'lucide-react';
 import { initials, list, useAutoHeight, useExposed } from '../packHooks';
-import { Avatar, AvatarFallback, Badge, cn, getPortalRoot } from './ui';
+import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from './ui';
 import { Shell } from './Shadcn';
-import { boardColumns, moveCard } from './kanbanBoard';
+import { addCard, boardCards, boardColumns, deleteCard, moveCard, updateCard } from './kanbanBoard';
 
 // shadcn/ui pack Kanban (experiment): a data-driven board. Columns are values of a status field and cards are rows
-// of data shown by their title, description, badge, avatar and meta fields, so an agent builds it from a query alone.
-// Dragging a card moves it on the board at once and publishes the move (movedCard, lastMove, onCardMoved) for a query
-// to save; the board follows the data again when the data changes. Own lazy chunk (dnd-kit).
+// of data shown by the fields the author maps (title, description, badge, tags, progress, meta, avatar), so an agent
+// builds it from a query alone and a card shows more or less by mapping more or fewer fields. Dragging, the add and
+// delete buttons and the actions change the board at once and publish the change (cards, the last added, moved,
+// updated or removed card, and an event) for a query to save; the board follows the data again when the data
+// changes. Own lazy chunk (dnd-kit).
 
 const BADGE_BY_WORD = {
   critical: 'destructive',
@@ -32,23 +35,77 @@ const BADGE_BY_WORD = {
   done: 'success',
 };
 
-const CardBody = ({ card, fields }) => {
+const SHADOWS = {
+  none: 'none',
+  sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+  md: '0 4px 10px -2px rgb(0 0 0 / 0.08)',
+  lg: '0 12px 24px -6px rgb(0 0 0 / 0.16)',
+};
+
+const isSet = (value) => value !== undefined && value !== null && String(value).trim() !== '';
+const px = (value) => (/^\d+(\.\d+)?$/.test(String(value).trim()) ? `${value}px` : String(value));
+
+/** Column and card looks: the author's styles where set, else shadcn's from the app theme. Applied inline, so the
+ *  pack's Tailwind utilities (which are !important) are left off those properties; hover, selected and drop states
+ *  keep their utilities and so still win. */
+const boardLook = (styles = {}) => ({
+  column: {
+    background: isSet(styles.columnBackgroundColor)
+      ? styles.columnBackgroundColor
+      : 'color-mix(in srgb, var(--sc-muted) 60%, transparent)',
+    borderRadius: isSet(styles.columnBorderRadius) ? px(styles.columnBorderRadius) : 'calc(var(--sc-radius) + 4px)',
+  },
+  card: {
+    background: isSet(styles.cardBackgroundColor) ? styles.cardBackgroundColor : 'var(--sc-card)',
+    borderColor: isSet(styles.cardBorderColor) ? styles.cardBorderColor : 'var(--sc-border)',
+    borderRadius: isSet(styles.cardBorderRadius) ? px(styles.cardBorderRadius) : 'var(--sc-radius)',
+    boxShadow: SHADOWS[styles.cardShadow] ?? (isSet(styles.cardShadow) ? styles.cardShadow : SHADOWS.sm),
+  },
+});
+
+const asTags = (value) =>
+  (Array.isArray(value) ? value : isSet(value) ? String(value).split(',') : [])
+    .map((tag) => String(tag?.label ?? tag).trim())
+    .filter(Boolean);
+
+const CardBody = ({ card, fields, compact }) => {
   const badge = fields.badge ? card[fields.badge] : undefined;
   const avatar = fields.avatar ? card[fields.avatar] : undefined;
   const meta = fields.meta ? card[fields.meta] : undefined;
+  const tags = fields.tags ? asTags(card[fields.tags]) : [];
+  const progress = fields.progress ? Number(card[fields.progress]) : NaN;
   return (
     <>
-      <p className="text-sm font-medium leading-snug">{String(card[fields.title] ?? '')}</p>
-      {fields.description && card[fields.description] ? (
-        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{String(card[fields.description])}</p>
+      <p className={cn('pr-5 font-medium leading-snug', compact ? 'text-[13px]' : 'text-sm')}>
+        {String(card[fields.title] ?? '')}
+      </p>
+      {fields.description && isSet(card[fields.description]) ? (
+        <p className={cn('line-clamp-2 text-xs text-muted-foreground', compact ? 'mt-0.5' : 'mt-1')}>
+          {String(card[fields.description])}
+        </p>
       ) : null}
-      {badge || avatar || meta ? (
-        <div className="mt-3 flex items-center gap-2">
-          {badge ? (
+      {tags.length ? (
+        <div className={cn('flex flex-wrap gap-1', compact ? 'mt-1.5' : 'mt-2')}>
+          {tags.map((tag) => (
+            <Badge key={tag} variant="outline" className="px-1.5 py-0 text-[11px] font-normal">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      ) : null}
+      {Number.isFinite(progress) ? (
+        <div className={cn('flex items-center gap-2', compact ? 'mt-1.5' : 'mt-2.5')}>
+          <Progress value={Math.max(0, Math.min(100, progress))} className="h-1.5" />
+          <span className="text-[11px] tabular-nums text-muted-foreground">{Math.round(progress)}%</span>
+        </div>
+      ) : null}
+      {isSet(badge) || isSet(avatar) || isSet(meta) ? (
+        <div className={cn('flex items-center gap-2', compact ? 'mt-2' : 'mt-3')}>
+          {isSet(badge) ? (
             <Badge variant={BADGE_BY_WORD[String(badge).toLowerCase()] || 'outline'}>{String(badge)}</Badge>
           ) : null}
-          {meta ? <span className="text-xs text-muted-foreground">{String(meta)}</span> : null}
-          {avatar ? (
+          {isSet(meta) ? <span className="text-xs text-muted-foreground">{String(meta)}</span> : null}
+          {isSet(avatar) ? (
             <Avatar className="ml-auto h-6 w-6">
               <AvatarFallback className="text-[10px]">{initials(avatar)}</AvatarFallback>
             </Avatar>
@@ -59,7 +116,7 @@ const CardBody = ({ card, fields }) => {
   );
 };
 
-const KanbanCard = ({ card, columnId, fields, selected, draggable, onSelect }) => {
+const KanbanCard = ({ card, columnId, fields, look, compact, selected, draggable, onSelect, onDelete }) => {
   const data = { type: 'card', key: card.__key, columnId };
   const drag = useDraggable({ id: card.__key, data, disabled: !draggable });
   const drop = useDroppable({ id: `drop-${card.__key}`, data });
@@ -72,20 +129,49 @@ const KanbanCard = ({ card, columnId, fields, selected, draggable, onSelect }) =
       {...drag.attributes}
       {...drag.listeners}
       onClick={() => onSelect(card)}
+      style={look.card}
       className={cn(
-        'rounded-lg border bg-card p-3 text-card-foreground shadow-sm transition-colors hover:border-primary/40',
+        'group relative border text-card-foreground transition-colors hover:border-primary/40',
+        compact ? 'p-2.5' : 'p-3',
         draggable && 'cursor-grab active:cursor-grabbing',
         selected && 'border-primary ring-1 ring-primary',
         drop.isOver && 'border-t-2 border-t-primary',
         drag.isDragging && 'opacity-40'
       )}
     >
-      <CardBody card={card} fields={fields} />
+      {onDelete ? (
+        <button
+          type="button"
+          aria-label="Delete card"
+          title="Delete card"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(card);
+          }}
+          className="absolute right-1.5 top-1.5 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      ) : null}
+      <CardBody card={card} fields={fields} compact={compact} />
     </div>
   );
 };
 
-const KanbanColumn = ({ column, fields, selectedKey, draggable, emptyText, onSelect }) => {
+const KanbanColumn = ({
+  column,
+  fields,
+  look,
+  compact,
+  showCount,
+  selectedKey,
+  draggable,
+  emptyText,
+  onSelect,
+  onDelete,
+  onAdd,
+}) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `col-${column.id}`,
     data: { type: 'column', columnId: column.id },
@@ -93,16 +179,20 @@ const KanbanColumn = ({ column, fields, selectedKey, draggable, emptyText, onSel
   return (
     <div
       ref={setNodeRef}
+      style={look.column}
       className={cn(
-        'flex min-w-[240px] flex-1 flex-col gap-2 rounded-xl bg-muted/60 p-3 transition-colors',
-        isOver && 'bg-muted'
+        'flex min-w-[240px] flex-1 flex-col p-3 transition-shadow',
+        compact ? 'gap-1.5' : 'gap-2',
+        isOver && 'ring-1 ring-border'
       )}
     >
       <div className="mb-1 flex items-center justify-between gap-2 px-1">
         <span className="truncate text-sm font-semibold">{column.title}</span>
-        <Badge variant="secondary" className="tabular-nums">
-          {column.cards.length}
-        </Badge>
+        {showCount ? (
+          <Badge variant="secondary" className="tabular-nums">
+            {column.cards.length}
+          </Badge>
+        ) : null}
       </div>
       {column.cards.length ? (
         column.cards.map((card) => (
@@ -111,9 +201,12 @@ const KanbanColumn = ({ column, fields, selectedKey, draggable, emptyText, onSel
             card={card}
             columnId={column.id}
             fields={fields}
+            look={look}
+            compact={compact}
             selected={card.__key === selectedKey}
             draggable={draggable}
             onSelect={onSelect}
+            onDelete={onDelete}
           />
         ))
       ) : (
@@ -121,12 +214,28 @@ const KanbanColumn = ({ column, fields, selectedKey, draggable, emptyText, onSel
           {emptyText}
         </div>
       )}
+      {onAdd ? (
+        <button
+          type="button"
+          onClick={() => onAdd(column)}
+          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <Plus className="h-4 w-4" />
+          Add card
+        </button>
+      ) : null}
     </div>
   );
 };
 
+const strip = (card) => {
+  if (!card) return {};
+  const { __key, ...plain } = card;
+  return plain;
+};
+
 export const ShadKanban = (props) => {
-  const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
+  const { properties, styles, setExposedVariable, setExposedVariables, fireEvent } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
   const statusField = properties.statusField || 'status';
@@ -135,9 +244,13 @@ export const ShadKanban = (props) => {
     title: properties.titleField || 'title',
     description: properties.descriptionField || '',
     badge: properties.badgeField || '',
+    tags: properties.tagsField || '',
+    progress: properties.progressField || '',
     avatar: properties.avatarField || '',
     meta: properties.metaField || '',
   };
+  const compact = properties.density === 'compact';
+  const look = boardLook(styles);
   const fromData = useMemo(
     () => boardColumns(list(properties.data), list(properties.columns), statusField, idField),
     [properties.data, properties.columns, statusField, idField]
@@ -147,17 +260,56 @@ export const ShadKanban = (props) => {
   const [selected, setSelected] = useState(null);
   const [lastMove, setLastMove] = useState(null);
   const [activeKey, setActiveKey] = useState(null);
-  const strip = (card) => {
-    if (!card) return {};
-    const { __key, ...plain } = card;
-    return plain;
+
+  // Actions run later, from event handlers and queries: they read the board and the widget's callbacks from refs.
+  const live = useRef({});
+  live.current = { columns, setExposedVariable, fireEvent, statusField, idField };
+  /** Shows a change on the board and publishes it: the board's cards, `exposed` (e.g. lastAddedCard), then `event`. */
+  const commit = (next, exposed, event) => {
+    const { setExposedVariable: expose, fireEvent: fire } = live.current;
+    live.current.columns = next;
+    setColumns(next);
+    expose('cards', boardCards(next));
+    Object.entries(exposed).forEach(([key, value]) => expose(key, value));
+    if (event) fire(event);
   };
+  const doAdd = (card, columnId) => {
+    const { columns: cols, statusField: sf, idField: idf } = live.current;
+    const result = addCard(cols, card ?? {}, isSet(columnId) ? String(columnId) : undefined, sf, idf);
+    commit(result.columns, { lastAddedCard: result.card }, 'onCardAdded');
+  };
+  const doUpdate = (id, values) => {
+    const { columns: cols, statusField: sf, idField: idf } = live.current;
+    const result = updateCard(cols, id, values ?? {}, sf, idf);
+    if (result.card) commit(result.columns, { lastUpdatedCard: result.card }, 'onCardUpdated');
+  };
+  const doDelete = (id) => {
+    const result = deleteCard(live.current.columns, id);
+    if (!result.card) return;
+    setSelected((current) => (current && current.__key === String(id) ? null : current));
+    commit(result.columns, { lastRemovedCard: result.card }, 'onCardRemoved');
+  };
+  const doMove = (id, toColumnId, beforeKey = null) => {
+    const { columns: cols, statusField: sf } = live.current;
+    const { columns: next, move } = moveCard(cols, id, toColumnId, beforeKey, sf);
+    if (!move) return;
+    setLastMove(move);
+    commit(next, { movedCard: move.card, lastMove: move }, 'onCardMoved');
+  };
+
   useExposed(setExposedVariables, properties, {
+    cards: boardCards(columns),
     selectedCard: strip(selected),
     movedCard: lastMove?.card ?? {},
     lastMove: lastMove ?? {},
+    addCard: async (card, columnId) => doAdd(card, columnId),
+    updateCard: async (id, values) => doUpdate(id, values),
+    moveCard: async (id, columnId) => doMove(id, columnId),
+    deleteCard: async (id) => doDelete(id),
   });
-  const draggable = properties.allowDrag !== false && !properties.disabledState;
+
+  const enabled = !properties.disabledState;
+  const draggable = properties.allowDrag !== false && enabled;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor)
@@ -168,18 +320,19 @@ export const ShadKanban = (props) => {
     setExposedVariable('selectedCard', strip(card));
     fireEvent('onCardClicked');
   };
+  const onAdd =
+    properties.allowAdd === true && enabled
+      ? (column) => {
+          setExposedVariable('addCardColumn', column.id);
+          fireEvent('onAddCardClick');
+        }
+      : undefined;
+  const onDelete = properties.allowDelete === true && enabled ? (card) => doDelete(card.__key) : undefined;
   const onDragEnd = ({ active, over }) => {
     setActiveKey(null);
     const target = over?.data?.current;
     if (!target) return;
-    const before = target.type === 'card' ? target.key : null;
-    const { columns: next, move } = moveCard(columns, active.id, target.columnId, before, statusField);
-    if (!move) return;
-    setColumns(next);
-    setLastMove(move);
-    setExposedVariable('movedCard', move.card);
-    setExposedVariable('lastMove', move);
-    fireEvent('onCardMoved');
+    doMove(active.id, target.columnId, target.type === 'card' ? target.key : null);
   };
   return (
     <Shell {...props} innerRef={ref}>
@@ -196,10 +349,15 @@ export const ShadKanban = (props) => {
               key={column.id}
               column={column}
               fields={fields}
+              look={look}
+              compact={compact}
+              showCount={properties.showCount !== false}
               selectedKey={selected?.__key}
               draggable={draggable}
               emptyText={String(properties.emptyText || 'No cards')}
               onSelect={select}
+              onDelete={onDelete}
+              onAdd={onAdd}
             />
           ))}
         </div>
@@ -209,8 +367,11 @@ export const ShadKanban = (props) => {
         {createPortal(
           <DragOverlay>
             {activeCard ? (
-              <div className="h-full w-full rotate-1 rounded-lg border bg-card p-3 text-card-foreground shadow-lg">
-                <CardBody card={activeCard} fields={fields} />
+              <div
+                style={{ ...look.card, boxShadow: SHADOWS.lg }}
+                className={cn('h-full w-full rotate-1 border text-card-foreground', compact ? 'p-2.5' : 'p-3')}
+              >
+                <CardBody card={activeCard} fields={fields} compact={compact} />
               </div>
             ) : null}
           </DragOverlay>,
