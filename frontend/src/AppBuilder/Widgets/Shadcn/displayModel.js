@@ -52,12 +52,26 @@ export const iconCandidates = (name) => {
  *  the older alias names), or `fallback`. Never throws. */
 export const resolveIcon = (name, maps, fallback) => {
   const sources = (Array.isArray(maps) ? maps : [maps]).filter(isObject);
-  for (const candidate of iconCandidates(name)) {
-    if (candidate === 'Icon') continue; // lucide's base component, not an icon
+  const lookup = (candidate) => {
+    if (!candidate || candidate === 'Icon') return null; // lucide's base component, not an icon
     for (const source of sources) {
-      const found = source[candidate];
+      const found = Object.prototype.hasOwnProperty.call(source, candidate) ? source[candidate] : undefined;
       if (found && (typeof found === 'function' || typeof found === 'object')) return found;
     }
+    return null;
+  };
+  const candidates = iconCandidates(name);
+  for (const candidate of candidates) {
+    const found = lookup(candidate);
+    if (found) return found;
+  }
+  // ToolJet's own (Tabler) names, IconCircleCheck: without the prefix, then by their leading words when lucide has no
+  // twin (IconListDetails reads List), rather than the placeholder.
+  const base = (candidates[0] || '').replace(/^Icon(?=[A-Z])/, '');
+  const words = base.match(/[A-Z][a-z0-9]*/g) || [];
+  for (let n = words.length; n >= 1; n -= 1) {
+    const found = lookup(words.slice(0, n).join(''));
+    if (found) return found;
   }
   return fallback;
 };

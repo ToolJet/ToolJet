@@ -199,3 +199,20 @@ describe('pagination', () => {
     JUNK.forEach((j) => expect(Array.isArray(pageItems(j, j, j))).toBe(true));
   });
 });
+
+describe("resolveIcon with ToolJet's own icon names", () => {
+  // Opus wrote IconListDetails, IconCircleCheck (ToolJet's Tabler names) on four Stats; each drew the placeholder.
+  const maps = [{ CircleCheck: () => null, List: () => null, Microscope: () => null }];
+  const fallback = () => null;
+  it('strips the Icon prefix', () => {
+    expect(resolveIcon('IconCircleCheck', maps, fallback)).toBe(maps[0].CircleCheck);
+    expect(resolveIcon('IconMicroscope', maps, fallback)).toBe(maps[0].Microscope);
+  });
+  it('falls back to the leading words of a name lucide does not have', () => {
+    expect(resolveIcon('IconListDetails', maps, fallback)).toBe(maps[0].List);
+    expect(resolveIcon('list-details', maps, fallback)).toBe(maps[0].List);
+  });
+  it('still uses the placeholder for an unknown name', () => {
+    expect(resolveIcon('IconZzzQqq', maps, fallback)).toBe(fallback);
+  });
+});
