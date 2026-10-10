@@ -3,6 +3,7 @@ import { fireEvent, render } from '@testing-library/react';
 import {
   shadComboChartConfig,
   shadFunnelChartConfig,
+  shadHeatmapChartConfig,
   shadScatterChartConfig,
   shadLineChartConfig,
   shadRadarChartConfig,
@@ -12,6 +13,7 @@ import {
 import {
   ShadComboChart,
   ShadFunnelChart,
+  ShadHeatmapChart,
   ShadLineChart,
   ShadRadarChart,
   ShadRadialChart,
@@ -255,6 +257,40 @@ describe('ShadFunnelChart', () => {
     expect(container.textContent).toContain('Nothing yet');
     const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
     [...JUNK, ...JUNK_MORE].forEach((junk) => mount(ShadFunnelChart, shadFunnelChartConfig, junk));
+    expect(errors).not.toHaveBeenCalled();
+    errors.mockRestore();
+  });
+});
+
+describe('ShadHeatmapChart', () => {
+  it('draws a cell per row and column, the strongest in the chart colour', () => {
+    const { container } = mount(ShadHeatmapChart, shadHeatmapChartConfig);
+    const cells = container.querySelectorAll('button');
+    expect(cells).toHaveLength(7 * 6);
+    expect(container.textContent).toContain('Mon');
+    expect([...cells].some((c) => c.dataset.strength === '1.00')).toBe(true);
+    expect([...cells].some((c) => c.dataset.strength === '0.00')).toBe(true);
+  });
+
+  it('prints values when asked and sets clickedDatum to the clicked cell', () => {
+    const data = [
+      { day: 'Mon', hour: '09:00', tickets: 4 },
+      { day: 'Tue', hour: '09:00', tickets: 9 },
+    ];
+    const { container, exposed, events } = mount(ShadHeatmapChart, shadHeatmapChartConfig, { data, showValues: true });
+    expect(container.textContent).toContain('9');
+    fireEvent.click(container.querySelectorAll('button')[1]);
+    expect(exposed.clickedDatum).toEqual({ day: 'Tue', hour: '09:00', tickets: 9 });
+    expect(events).toEqual(['onClick']);
+  });
+
+  it('shows the empty message and never throws on junk', () => {
+    const { container } = mount(ShadHeatmapChart, shadHeatmapChartConfig, { data: [], emptyText: 'Nothing yet' });
+    expect(container.textContent).toContain('Nothing yet');
+    const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+    [...JUNK, ...JUNK_MORE, { xOrder: 'x', yOrder: {}, cellGap: 'big', showValues: 'yes' }].forEach((junk) =>
+      mount(ShadHeatmapChart, shadHeatmapChartConfig, junk)
+    );
     expect(errors).not.toHaveBeenCalled();
     errors.mockRestore();
   });

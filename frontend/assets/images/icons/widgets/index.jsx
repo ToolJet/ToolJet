@@ -181,6 +181,7 @@ const SHADCN_ICONS = {
   shadcombochart: Chart,
   shadscatterchart: Chart,
   shadfunnelchart: Chart,
+  shadheatmapchart: Chart,
   shadradialchart: Circularprogressbar,
   shadsparkline: Chart,
 };

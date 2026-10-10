@@ -406,3 +406,51 @@ export const shadFunnelChartConfig = shadConfig({
   events: clickEvents,
   exposedVariables: { clickedDatum: {} },
 });
+
+// ---- Heatmap -------------------------------------------------------------------------------------------------------
+
+const HEATMAP_DATA =
+  "{{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].flatMap((day, d) => ['08', '10', '12', '14', '16', '18'].map((hour, h) => ({ day, hour: hour + ':00', tickets: Math.round((d < 5 ? 10 : 4) * (1 + Math.sin((h + 1) / 2)) + d) })))}}";
+
+export const shadHeatmapChartConfig = shadConfig({
+  name: 'ShadHeatmapChart',
+  displayName: 'Heatmap',
+  description:
+    "shadcn/ui heatmap: a grid of cells shaded by value, for two categories against each other (weekday by hour, region by month). data [{ day: 'Mon', hour: '09:00', tickets: 12 }], yField 'day' (rows), xField 'hour' (columns), valueField 'tickets' (rows landing in the same cell are summed); xOrder / yOrder fix the order (else first appearance); showValues prints each value; a min-to-max legend. Height about 32 px per row plus 40; clicking a cell sets clickedDatum and fires onClick.",
+  defaultSize: { width: 24, height: 280 },
+  properties: {
+    data: code('Data', ARRAY, [], { placeholder: "[{ day: 'Mon', hour: '09:00', tickets: 12 }]" }),
+    xField: code('Column field', STRING, 'hour'),
+    yField: code('Row field', STRING, 'day'),
+    valueField: code('Value field', STRING, 'tickets'),
+    xOrder: code('Column order', ARRAY, [], { placeholder: "['08:00', '09:00']" }),
+    yOrder: code('Row order', ARRAY, [], { placeholder: "['Mon', 'Tue', 'Wed']" }),
+    showValues: toggle('Show values'),
+    cellGap: code('Cell gap (px)', OPTIONAL_NUMBER, 3),
+    yAxisFormat: choice('Value format', ['number', 'currency', 'percent', 'compact'], 'number'),
+    currency: code('Currency code', STRING, 'USD'),
+    ...common,
+    showLegend: toggle('Legend', true),
+  },
+  defaults: {
+    data: { value: HEATMAP_DATA },
+    xField: { value: 'hour' },
+    yField: { value: 'day' },
+    valueField: { value: 'tickets' },
+    xOrder: { value: '{{[]}}' },
+    yOrder: { value: '{{[]}}' },
+    showValues: { value: '{{false}}' },
+    cellGap: { value: '{{3}}' },
+    yAxisFormat: { value: 'number' },
+    currency: { value: 'USD' },
+    ...commonDefaults,
+    showLegend: { value: '{{true}}' },
+  },
+  styles: {
+    chartColor: colorStyle('Chart color (the strongest cell)'),
+    axisTextColor: colorStyle('Label color'),
+    legendTextColor: colorStyle('Legend text color'),
+  },
+  events: clickEvents,
+  exposedVariables: { clickedDatum: {} },
+});

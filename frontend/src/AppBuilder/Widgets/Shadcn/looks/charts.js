@@ -14,6 +14,11 @@ export const LOOKS = {
   ShadRadarChart: CHART,
   ShadComboChart: CHART,
   ShadScatterChart: [...CHART, ['referenceLineColor', '--lk-ref']],
+  ShadHeatmapChart: [
+    ['chartColor', '--sc-chart-1'],
+    ['axisTextColor', '--lk-axis'],
+    ['legendTextColor', '--lk-legend'],
+  ],
   ShadFunnelChart: [
     ['chartColor', '--sc-chart-1'],
     ['axisTextColor', '--lk-axis'],
@@ -40,6 +45,7 @@ export const LOADING = {
   ShadComboChart: 'block',
   ShadScatterChart: 'block',
   ShadFunnelChart: 'block',
+  ShadHeatmapChart: 'block',
   ShadRadialChart: 'block',
   ShadSparkline: 'block',
 };

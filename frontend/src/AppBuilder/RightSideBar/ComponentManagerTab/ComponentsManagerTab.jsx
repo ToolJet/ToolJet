@@ -62,6 +62,7 @@ const SHADCN_SECTIONS = [
       'ShadPieChart',
       'ShadScatterChart',
       'ShadFunnelChart',
+      'ShadHeatmapChart',
       'ShadRadarChart',
       'ShadRadialChart',
       'ShadSparkline',

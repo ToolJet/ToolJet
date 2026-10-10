@@ -6,6 +6,7 @@ import { shadDropdownMenuConfig } from './shadDropdownMenu';
 import { shadNavigationConfig } from './shadNavigation';
 import { shadComboChartConfig } from './shadComboChart';
 import { shadFunnelChartConfig } from './shadFunnelChart';
+import { shadHeatmapChartConfig } from './shadHeatmapChart';
 import { shadLineChartConfig } from './shadLineChart';
 import { shadRadarChartConfig } from './shadRadarChart';
 import { shadRadialChartConfig } from './shadRadialChart';
@@ -73,6 +74,7 @@ export const shadcnConfigs = [
   shadNavigationConfig,
   shadComboChartConfig,
   shadFunnelChartConfig,
+  shadHeatmapChartConfig,
   shadLineChartConfig,
   shadRadarChartConfig,
   shadRadialChartConfig,

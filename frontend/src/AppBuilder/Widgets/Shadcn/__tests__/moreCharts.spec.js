@@ -1,4 +1,4 @@
-import { comboSeries, funnelStages, scatterGroups } from '../chartsModel';
+import { comboSeries, funnelStages, heatmapGrid, scatterGroups } from '../chartsModel';
 
 describe('funnelStages', () => {
   const data = [
@@ -82,5 +82,47 @@ describe('comboSeries', () => {
 
   it('is empty for junk', () => {
     expect(comboSeries(null, {}, 7)).toEqual([]);
+  });
+});
+
+describe('heatmapGrid', () => {
+  const data = [
+    { day: 'Mon', hour: 9, tickets: 4 },
+    { day: 'Mon', hour: 10, tickets: 6 },
+    { day: 'Tue', hour: 9, tickets: 2 },
+    { day: 'Tue', hour: 10, tickets: '8' },
+    { day: 'Tue', hour: 10, tickets: 1 },
+  ];
+
+  it('lays rows and columns out in order of appearance and sums repeated cells', () => {
+    const grid = heatmapGrid(data, { xField: 'hour', yField: 'day', valueField: 'tickets' });
+    expect(grid.xs).toEqual(['9', '10']);
+    expect(grid.ys).toEqual(['Mon', 'Tue']);
+    expect(grid.value('Tue', '10')).toBe(9);
+    expect(grid.value('Mon', '9')).toBe(4);
+    expect([grid.min, grid.max]).toEqual([2, 9]);
+  });
+
+  it('follows an explicit order and leaves missing cells empty', () => {
+    const grid = heatmapGrid(data, {
+      xField: 'hour',
+      yField: 'day',
+      valueField: 'tickets',
+      yOrder: ['Sun', 'Mon', 'Tue'],
+    });
+    expect(grid.ys).toEqual(['Sun', 'Mon', 'Tue']);
+    expect(grid.value('Sun', '9')).toBeNull();
+  });
+
+  it('gives each value its strength between the smallest and largest', () => {
+    const grid = heatmapGrid(data, { xField: 'hour', yField: 'day', valueField: 'tickets' });
+    expect(grid.strength(2)).toBe(0);
+    expect(grid.strength(9)).toBe(1);
+    expect(grid.strength(null)).toBeNull();
+  });
+
+  it('never throws on junk', () => {
+    expect(heatmapGrid(null, {}).xs).toEqual([]);
+    expect(heatmapGrid([1, null, 'x'], { xField: 'a', yField: 'b', valueField: 'c' }).ys).toEqual([]);
   });
 });
