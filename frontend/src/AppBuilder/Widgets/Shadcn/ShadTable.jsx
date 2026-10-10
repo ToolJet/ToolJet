@@ -766,6 +766,26 @@ export const ShadTable = (props) => {
   const virtual = visibleRows.length > VIRTUALIZE_ABOVE;
   const fixedHeight = props.properties?.dynamicHeight === false || virtual;
   const scrollRef = useRef(null);
+  // A fixed-height table that has more rows below its edge fades them out, so it reads as scrollable (macOS hides
+  // scrollbars, and a row cut off at the edge looks broken).
+  const [moreBelow, setMoreBelow] = useState(false);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !fixedHeight) {
+      setMoreBelow(false);
+      return undefined;
+    }
+    const check = () => setMoreBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+    check();
+    el.addEventListener('scroll', check, { passive: true });
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    if (el.firstElementChild) observer.observe(el.firstElementChild);
+    return () => {
+      el.removeEventListener('scroll', check);
+      observer.disconnect();
+    };
+  }, [fixedHeight]);
   const virtualizer = useVirtualizer({
     count: virtual ? visibleRows.length : 0,
     getScrollElement: () => scrollRef.current,
@@ -1119,6 +1139,12 @@ export const ShadTable = (props) => {
               )}
             </tbody>
           </table>
+          {moreBelow ? (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none sticky bottom-0 -mt-8 h-8 w-full bg-gradient-to-t from-[color:var(--lk-bg,var(--sc-background))] to-transparent"
+            />
+          ) : null}
         </div>
 
         {pendingEdits > 0 && properties.showBulkUpdateActions !== false ? (
