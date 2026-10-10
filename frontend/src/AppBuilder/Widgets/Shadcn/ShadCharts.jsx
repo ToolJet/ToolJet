@@ -293,6 +293,8 @@ export const ShadBarChart = (props) => {
                 {...AXIS}
                 hide={compact}
                 width={categoryAxisWidth(data, xField)}
+                // Every bar keeps its name: Recharts thinned the labels of a 6-bar chart to every other one.
+                interval={data.length <= 40 ? 0 : 'preserveStartEnd'}
               />
             </>
           ) : (
@@ -1139,6 +1141,13 @@ export const ShadFunnelChart = (props) => {
                           width: `${Math.max(stage.value ? 1.5 : 0, stage.width * 100)}%`,
                           background: byStage ? seriesColor(p.colors, i) : seriesColor(p.colors, 0),
                           opacity: byStage ? 1 : fade(i),
+                          // Animate: each bar grows in from its anchor, a stage after the one above it.
+                          ...(animated(p)
+                            ? {
+                                animation: `tj-funnel-grow 600ms ease-out ${i * 60}ms both`,
+                                transformOrigin: centred ? 'center' : 'left',
+                              }
+                            : {}),
                         }}
                       />
                     </span>
