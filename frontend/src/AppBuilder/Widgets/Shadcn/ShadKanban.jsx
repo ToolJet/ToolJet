@@ -21,6 +21,7 @@ import { Shell } from './Shadcn';
 import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from './kanbanBoard';
 import { SHADOWS, badgeLook, isSet, kanbanLook, px } from './kanbanLook';
 import { stringify } from '../packJson';
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 export { withControlState } from '../packHooks';
 
@@ -242,6 +243,7 @@ const KanbanColumn = ({
   onAdd,
   collapsed,
   onCollapse,
+  fixed,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `col-${column.id}`,
@@ -249,6 +251,23 @@ const KanbanColumn = ({
   });
   const [shownCards, setShownCards] = useState(CARDS_PER_STEP);
   const hiddenCards = column.cards.length - shownCards;
+  // On a board with a fixed height the cards scroll inside their column, fading out at the bottom while more are
+  // below (Trello-like); a board that fits its content grows instead.
+  const listRef = useRef(null);
+  const [moreBelow, setMoreBelow] = useState(false);
+  useEffect(() => {
+    const el = listRef.current;
+    if (!fixed || !el) return undefined;
+    const check = () => setMoreBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+    check();
+    el.addEventListener('scroll', check, { passive: true });
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener('scroll', check);
+      observer.disconnect();
+    };
+  }, [fixed, column.cards.length, shownCards]);
   // A collapsed column is a narrow strip: title read sideways and the count. It still takes dropped cards, and a
   // click opens it again.
   if (collapsed) {
@@ -289,6 +308,7 @@ const KanbanColumn = ({
       style={width ? { ...look.column, width, flex: `0 0 ${width}` } : look.column}
       className={cn(
         'group/col flex flex-col p-3 transition-shadow',
+        fixed && 'min-h-0 overflow-hidden',
         !width && 'min-w-[200px] flex-1',
         compact ? 'gap-1.5' : 'gap-2',
         isOver && 'ring-1 ring-border'
@@ -316,49 +336,59 @@ const KanbanColumn = ({
           ) : null}
         </div>
       </div>
-      {column.cards.length ? (
-        column.cards
-          .slice(0, shownCards)
-          .map((card) => (
-            <KanbanCard
-              key={card.__key}
-              card={card}
-              columnId={column.id}
-              renderBody={renderBody}
-              padding={padding}
-              look={look}
-              collapse={{ height: collapsedHeight, expanded: expandedKeys.has(card.__key), onToggle }}
-              selected={card.__key === selectedKey}
-              draggable={draggable}
-              onSelect={onSelect}
-              onDelete={onDelete}
-            />
-          ))
-      ) : (
-        <div className="rounded-lg border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">
-          {emptyText}
-        </div>
-      )}
-      {hiddenCards > 0 ? (
-        <button
-          type="button"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => setShownCards((n) => n + CARDS_PER_STEP)}
-          className="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          {`Show ${Math.min(hiddenCards, CARDS_PER_STEP)} more of ${hiddenCards}`}
-        </button>
-      ) : null}
-      {onAdd ? (
-        <button
-          type="button"
-          onClick={() => onAdd(column)}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <Plus className="h-4 w-4" />
-          Add card
-        </button>
-      ) : null}
+      <div
+        ref={listRef}
+        style={fixed && moreBelow ? BOTTOM_FADE : undefined}
+        className={cn(
+          'flex flex-col',
+          compact ? 'gap-1.5' : 'gap-2',
+          fixed && '-mx-1 min-h-0 flex-1 overflow-y-auto px-1 [&>*]:shrink-0'
+        )}
+      >
+        {column.cards.length ? (
+          column.cards
+            .slice(0, shownCards)
+            .map((card) => (
+              <KanbanCard
+                key={card.__key}
+                card={card}
+                columnId={column.id}
+                renderBody={renderBody}
+                padding={padding}
+                look={look}
+                collapse={{ height: collapsedHeight, expanded: expandedKeys.has(card.__key), onToggle }}
+                selected={card.__key === selectedKey}
+                draggable={draggable}
+                onSelect={onSelect}
+                onDelete={onDelete}
+              />
+            ))
+        ) : (
+          <div className="rounded-lg border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">
+            {emptyText}
+          </div>
+        )}
+        {hiddenCards > 0 ? (
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => setShownCards((n) => n + CARDS_PER_STEP)}
+            className="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            {`Show ${Math.min(hiddenCards, CARDS_PER_STEP)} more of ${hiddenCards}`}
+          </button>
+        ) : null}
+        {onAdd ? (
+          <button
+            type="button"
+            onClick={() => onAdd(column)}
+            className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <Plus className="h-4 w-4" />
+            Add card
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 };
@@ -367,6 +397,11 @@ const strip = (card) => {
   if (!card) return {};
   const { __key, ...plain } = card;
   return plain;
+};
+
+const BOTTOM_FADE = {
+  maskImage: 'linear-gradient(to bottom, black calc(100% - 48px), transparent)',
+  WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 48px), transparent)',
 };
 
 const RIGHT_FADE = {
@@ -378,6 +413,8 @@ export const ShadKanban = (props) => {
   const { properties, styles, setExposedVariable, setExposedVariables, fireEvent } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
+  // Dynamic height off: the board keeps its drawn height and each column scrolls inside it.
+  const fixed = !fitsContentInView(props.componentType ?? 'ShadKanban', properties);
   const statusField = fieldName(properties.statusField, 'status');
   const idField = fieldName(properties.idField, 'id');
   const fields = {
@@ -577,7 +614,7 @@ export const ShadKanban = (props) => {
     doMove(active.id, target.columnId, target.type === 'card' ? target.key : null);
   };
   return (
-    <Shell {...props} innerRef={ref}>
+    <Shell {...props} innerRef={ref} className={fixed ? 'h-full' : undefined}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -588,7 +625,7 @@ export const ShadKanban = (props) => {
         <div
           ref={boardRef}
           style={{ ...look.vars, ...(moreRight ? RIGHT_FADE : {}) }}
-          className="flex gap-[var(--kb-col-gap,1rem)] overflow-x-auto pb-1"
+          className={cn('flex gap-[var(--kb-col-gap,1rem)] overflow-x-auto pb-1', fixed && 'h-full items-stretch')}
         >
           {columns.slice(0, MAX_BOARD_COLUMNS).map((column) => (
             <KanbanColumn
@@ -611,6 +648,7 @@ export const ShadKanban = (props) => {
               onSelect={select}
               onDelete={onDelete}
               onAdd={onAdd}
+              fixed={fixed}
             />
           ))}
         </div>
