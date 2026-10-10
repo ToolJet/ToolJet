@@ -271,6 +271,40 @@ describe('WorkflowExecutionsService | reached node configuration errors', () => 
     expect(processor).not.toHaveBeenCalled();
   });
 
+  it('follows the failure edge of a failed Run Workflow node that has error handling', async () => {
+    const workflowNode = node('workflow', { nodeName: 'workflows1', errorHandler: true }, 'workflow1');
+    const onFailure = node('query', { nodeName: 'onFailure' }, 'onFailure');
+    const { service, execution, savedStatus } = buildExecution(
+      workflowNode,
+      [onFailure],
+      [edge(workflowNode.id, onFailure.id, 'failure')]
+    );
+    jest.spyOn(service, 'processWorkflowNode').mockResolvedValue({ status: 'failed', data: undefined });
+    const processQuery = jest.spyOn(service, 'processQueryNode').mockResolvedValue({ status: 'ok', data: undefined });
+
+    await service.execute(execution);
+
+    expect(processQuery.mock.calls[0][0]).toBe(onFailure);
+    expect(savedStatus).toHaveBeenCalledWith(expect.objectContaining({ executionFailed: false }));
+  });
+
+  it('stops the run when a Run Workflow node without error handling fails', async () => {
+    const workflowNode = node('workflow', { nodeName: 'workflows1' }, 'workflow1');
+    const next = node('query', { nodeName: 'next' }, 'next');
+    const { service, execution, savedStatus } = buildExecution(
+      workflowNode,
+      [next],
+      [edge(workflowNode.id, next.id, 'success')]
+    );
+    jest.spyOn(service, 'processWorkflowNode').mockResolvedValue({ status: 'failed', data: undefined });
+    const processQuery = jest.spyOn(service, 'processQueryNode').mockResolvedValue({ status: 'ok', data: undefined });
+
+    await service.execute(execution);
+
+    expect(processQuery).not.toHaveBeenCalled();
+    expect(savedStatus).toHaveBeenCalledWith(expect.objectContaining({ executionFailed: true }));
+  });
+
   it('does not validate a node outside the computed execution queue', async () => {
     const start = node('input', { nodeName: 'startTrigger' }, 'start');
     const unreachable = node(
