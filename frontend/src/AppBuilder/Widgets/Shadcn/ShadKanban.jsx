@@ -271,11 +271,12 @@ const KanbanColumn = ({
     <div
       ref={setNodeRef}
       data-collapsed="false"
-      // A set column width is inline; without one the columns share the board, at least 240px each.
+      // A set column width is inline; without one the columns share the board, at least 200px each (five stages fit a
+      // typical page width).
       style={width ? { ...look.column, width, flex: `0 0 ${width}` } : look.column}
       className={cn(
         'group/col flex flex-col p-3 transition-shadow',
-        !width && 'min-w-[240px] flex-1',
+        !width && 'min-w-[200px] flex-1',
         compact ? 'gap-1.5' : 'gap-2',
         isOver && 'ring-1 ring-border'
       )}
@@ -341,6 +342,11 @@ const strip = (card) => {
   if (!card) return {};
   const { __key, ...plain } = card;
   return plain;
+};
+
+const RIGHT_FADE = {
+  maskImage: 'linear-gradient(to right, #000 calc(100% - 48px), transparent)',
+  WebkitMaskImage: 'linear-gradient(to right, #000 calc(100% - 48px), transparent)',
 };
 
 export const ShadKanban = (props) => {
@@ -461,6 +467,22 @@ export const ShadKanban = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [custom, columns, props.id, moduleId]);
   const boardRef = useRef(null);
+  // Columns that run past the board's right edge fade out there, so the board reads as scrolling sideways (macOS hides
+  // the scrollbar, and a column cut at the edge looks broken).
+  const [moreRight, setMoreRight] = useState(false);
+  useEffect(() => {
+    const el = boardRef.current;
+    if (!el) return undefined;
+    const check = () => setMoreRight(el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
+    check();
+    el.addEventListener('scroll', check, { passive: true });
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener('scroll', check);
+      observer.disconnect();
+    };
+  }, []);
   const [cardWidth, setCardWidth] = useState(0);
   useLayoutEffect(() => {
     if (!custom || !boardRef.current) return undefined;
@@ -538,7 +560,11 @@ export const ShadKanban = (props) => {
         onDragCancel={() => setActiveKey(null)}
         onDragEnd={onDragEnd}
       >
-        <div ref={boardRef} style={look.vars} className="flex gap-[var(--kb-col-gap,1rem)] overflow-x-auto pb-1">
+        <div
+          ref={boardRef}
+          style={{ ...look.vars, ...(moreRight ? RIGHT_FADE : {}) }}
+          className="flex gap-[var(--kb-col-gap,1rem)] overflow-x-auto pb-1"
+        >
           {columns.map((column) => (
             <KanbanColumn
               key={column.id}
