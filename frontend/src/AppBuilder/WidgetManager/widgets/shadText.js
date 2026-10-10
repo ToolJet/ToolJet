@@ -2,7 +2,8 @@
 export const shadTextConfig = {
   name: 'ShadText',
   displayName: 'Text',
-  description: 'shadcn/ui paragraph, lead, muted or small text',
+  description:
+    "shadcn/ui paragraph, lead, muted or small text. Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight, fontSize (px), letterSpacing (px or em) and textTransform (a small uppercase eyebrow: tone small, textTransform 'uppercase', letterSpacing '0.12em')",
   component: 'ShadText',
   defaultSize: {
     width: 16,
@@ -185,6 +186,136 @@ export const shadTextConfig = {
         defaultValue: 'left',
       },
     },
+    fontFamily: {
+      type: 'select',
+      displayName: 'Typeface',
+      options: [
+        {
+          name: 'Theme font',
+          value: 'theme',
+        },
+        {
+          name: 'Sans serif',
+          value: 'sans',
+        },
+        {
+          name: 'Serif',
+          value: 'serif',
+        },
+        {
+          name: 'Display serif',
+          value: 'display',
+        },
+        {
+          name: 'Monospace',
+          value: 'mono',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'theme',
+      },
+    },
+    fontWeight: {
+      type: 'select',
+      displayName: 'Weight',
+      options: [
+        {
+          name: 'Default',
+          value: '',
+        },
+        {
+          name: 'Regular',
+          value: '400',
+        },
+        {
+          name: 'Medium',
+          value: '500',
+        },
+        {
+          name: 'Semibold',
+          value: '600',
+        },
+        {
+          name: 'Bold',
+          value: '700',
+        },
+        {
+          name: 'Extra bold',
+          value: '800',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    letterSpacing: {
+      type: 'code',
+      displayName: 'Letter spacing (px, or em like 0.12em)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
+    textTransform: {
+      type: 'select',
+      displayName: 'Casing',
+      options: [
+        {
+          name: 'As typed',
+          value: 'none',
+        },
+        {
+          name: 'UPPERCASE',
+          value: 'uppercase',
+        },
+        {
+          name: 'lowercase',
+          value: 'lowercase',
+        },
+        {
+          name: 'Capitalize',
+          value: 'capitalize',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'none',
+      },
+    },
+    fontSize: {
+      type: 'numberInput',
+      displayName: 'Font size (px)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
@@ -271,6 +402,15 @@ export const shadTextConfig = {
       },
       textAlign: {
         value: 'left',
+      },
+      fontFamily: {
+        value: 'theme',
+      },
+      fontWeight: {
+        value: '',
+      },
+      textTransform: {
+        value: 'none',
       },
     },
   },

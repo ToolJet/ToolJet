@@ -49,6 +49,7 @@ import {
   trendOf,
   resolveChartFields,
   seriesLabel,
+  highlightIndexes,
 } from './chartsModel';
 
 export { withControlState } from '../packHooks';
@@ -244,6 +245,21 @@ export const ShadBarChart = (props) => {
   const horizontal = p.horizontal === true;
   const compact = isCompactChart(props.height);
   const color = (i) => seriesColor(p.colors, i);
+  // Highlight: the picked bars keep the series colour (or the Highlight color style), the rest draw muted (the Muted
+  // bar color style, else the series colour faded), so one month or one site stands out.
+  const picked = highlightIndexes(data, xField, series, p.highlight);
+  const highlightFill = isSet(props.styles?.highlightColor) ? 'var(--lk-highlight)' : null;
+  const mutedFill = isSet(props.styles?.mutedColor) ? 'var(--lk-muted-bar)' : null;
+  const cells = (i) =>
+    picked
+      ? data.map((_, d) =>
+          picked.has(d) ? (
+            <Cell key={d} fill={highlightFill || color(i)} />
+          ) : (
+            <Cell key={d} fill={mutedFill || color(i)} fillOpacity={mutedFill ? 1 : 0.32} />
+          )
+        )
+      : null;
   return (
     <ChartFrame props={props} empty={!data.length || !series.length}>
       {(onDatum) => (
@@ -292,7 +308,9 @@ export const ShadBarChart = (props) => {
               fill={color(i)}
               radius={p.stack === true ? 0 : horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
               stackId={p.stack === true ? 'a' : undefined}
-            />
+            >
+              {cells(i)}
+            </Bar>
           ))}
         </BarChart>
       )}

@@ -8,11 +8,13 @@ import {
   ANY,
   ARRAY,
   NUMBER,
+  NUMBER_OR_STRING,
   STRING,
   choice,
   choiceValidation,
   code,
   colorStyle,
+  select,
   shadConfig,
   sizeStyle,
   textValidation,
@@ -25,6 +27,45 @@ const alignStyle = {
   type: 'alignButtons',
   displayName: 'Text alignment (left, center, right)',
   validation: { schema: STRING, defaultValue: 'left' },
+};
+// Typeface styles of the text widgets (Widgets/Shadcn/typeLook.js). Unset keeps the theme font and the level's or
+// tone's own weight and size. A typeface is a stack that needs no download (system faces and ToolJet's bundled Inter
+// and IBM Plex Mono); any other value is used as the author's own font-family list.
+const TYPEFACES = [
+  ['theme', 'Theme font'],
+  ['sans', 'Sans serif'],
+  ['serif', 'Serif'],
+  ['display', 'Display serif'],
+  ['mono', 'Monospace'],
+];
+const CASINGS = [
+  ['none', 'As typed'],
+  ['uppercase', 'UPPERCASE'],
+  ['lowercase', 'lowercase'],
+  ['capitalize', 'Capitalize'],
+];
+const spacingStyle = (displayName) => ({ type: 'code', displayName, validation: { schema: NUMBER_OR_STRING } });
+const typeStyles = {
+  fontFamily: select('Typeface', TYPEFACES, 'theme'),
+  fontWeight: select(
+    'Weight',
+    [
+      ['', 'Default'],
+      ['400', 'Regular'],
+      ['500', 'Medium'],
+      ['600', 'Semibold'],
+      ['700', 'Bold'],
+      ['800', 'Extra bold'],
+    ],
+    ''
+  ),
+  letterSpacing: spacingStyle('Letter spacing (px, or em like 0.12em)'),
+  textTransform: select('Casing', CASINGS, 'none'),
+};
+const typeStyleDefaults = {
+  fontFamily: { value: 'theme' },
+  fontWeight: { value: '' },
+  textTransform: { value: 'none' },
 };
 // Form controls with a box (input, textarea, select, date picker).
 const fieldStyles = {
@@ -137,7 +178,8 @@ export const shadBreadcrumbConfig = shadConfig({
 export const shadHeadingConfig = shadConfig({
   name: 'ShadHeading',
   displayName: 'Heading',
-  description: 'shadcn/ui heading (h1 to h4)',
+  description:
+    "shadcn/ui heading (h1 to h4). Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight (400 to 800), fontSize (px), letterSpacing (px or em) and textTransform ('uppercase' for an eyebrow)",
   defaultSize: { width: 16, height: 36 },
   withHeight: true,
   properties: {
@@ -145,14 +187,20 @@ export const shadHeadingConfig = shadConfig({
     level: choice('Level', ['h1', 'h2', 'h3', 'h4'], 'h2'),
   },
   defaults: { text: { value: 'Heading' }, level: { value: 'h2' } },
-  styles: { textColor: colorStyle('Heading color'), textAlign: alignStyle },
-  styleDefaults: { textAlign: { value: 'left' } },
+  styles: {
+    textColor: colorStyle('Heading color'),
+    textAlign: alignStyle,
+    ...typeStyles,
+    fontSize: sizeStyle('Font size (px; default from the level)'),
+  },
+  styleDefaults: { textAlign: { value: 'left' }, ...typeStyleDefaults },
 });
 
 export const shadTextConfig = shadConfig({
   name: 'ShadText',
   displayName: 'Text',
-  description: 'shadcn/ui paragraph, lead, muted or small text',
+  description:
+    "shadcn/ui paragraph, lead, muted or small text. Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight, fontSize (px), letterSpacing (px or em) and textTransform (a small uppercase eyebrow: tone small, textTransform 'uppercase', letterSpacing '0.12em')",
   defaultSize: { width: 16, height: 24 },
   withHeight: true,
   properties: {
@@ -160,8 +208,13 @@ export const shadTextConfig = shadConfig({
     tone: choice('Style', ['paragraph', 'lead', 'muted', 'small', 'large'], 'paragraph'),
   },
   defaults: { text: { value: 'Text' }, tone: { value: 'paragraph' } },
-  styles: { textColor: colorStyle('Text color'), textAlign: alignStyle },
-  styleDefaults: { textAlign: { value: 'left' } },
+  styles: {
+    textColor: colorStyle('Text color'),
+    textAlign: alignStyle,
+    ...typeStyles,
+    fontSize: sizeStyle('Font size (px)'),
+  },
+  styleDefaults: { textAlign: { value: 'left' }, ...typeStyleDefaults },
 });
 
 // ---- Data display --------------------------------------------------------------------------------------------------
@@ -171,7 +224,8 @@ export const shadTextConfig = shadConfig({
 export const shadStatConfig = shadConfig({
   name: 'ShadStat',
   displayName: 'Stat',
-  description: 'shadcn/ui dashboard figure: label, value, change badge and footnote',
+  description:
+    "shadcn/ui dashboard figure: label, value, change badge and footnote. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
   defaultSize: { width: 10, height: 120 },
   withHeight: true,
   properties: {
@@ -200,7 +254,11 @@ export const shadStatConfig = shadConfig({
     // The change badge's colour for an up or a down trend (text on a light tint); unset keeps a neutral outline.
     positiveColor: colorStyle('Change color when trend is up'),
     negativeColor: colorStyle('Change color when trend is down'),
+    valueFontFamily: select('Value typeface', TYPEFACES, 'theme'),
+    labelTextTransform: select('Label casing', CASINGS, 'none'),
+    labelLetterSpacing: spacingStyle('Label letter spacing (px, or em like 0.12em)'),
   },
+  styleDefaults: { valueFontFamily: { value: 'theme' }, labelTextTransform: { value: 'none' } },
 });
 
 export const shadBadgeConfig = shadConfig({
@@ -945,19 +1003,31 @@ export const shadAreaChartConfig = shadConfig({
 export const shadBarChartConfig = shadConfig({
   name: 'ShadBarChart',
   displayName: 'Bar chart',
-  description: 'shadcn/ui bar chart, vertical or horizontal, grouped or stacked',
+  description:
+    "shadcn/ui bar chart, vertical or horizontal, grouped or stacked. highlight emphasises categories (an x value, a list, or 'first', 'last', 'max', 'min') and draws the other bars muted",
   defaultSize: { width: 20, height: 280 },
   properties: {
     ...seriesProps,
     horizontal: toggle('Horizontal bars'),
     stack: toggle('Stack series'),
+    // Emphasis: these categories keep the colour and the rest draw muted (this month, the best site).
+    highlight: code(
+      'Highlight (category values, or first, last, max, min)',
+      { type: 'union', schemas: [STRING, NUMBER, ARRAY] },
+      ''
+    ),
   },
   defaults: {
     ...seriesDefaults,
     horizontal: { value: '{{false}}' },
     stack: { value: '{{false}}' },
+    highlight: { value: '' },
   },
-  styles: chartStyles,
+  styles: {
+    ...chartStyles,
+    highlightColor: colorStyle('Highlighted bar color (default: the series color)'),
+    mutedColor: colorStyle('Other bars color when highlighting (default: the series color, faded)'),
+  },
   events: { onClick: { displayName: 'On click' } },
   exposedVariables: { clickedDatum: {} },
 });

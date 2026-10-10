@@ -2,7 +2,8 @@
 export const shadBarChartConfig = {
   name: 'ShadBarChart',
   displayName: 'Bar chart',
-  description: 'shadcn/ui bar chart, vertical or horizontal, grouped or stacked',
+  description:
+    "shadcn/ui bar chart, vertical or horizontal, grouped or stacked. highlight emphasises categories (an x value, a list, or 'first', 'last', 'max', 'min') and draws the other bars muted",
   component: 'ShadBarChart',
   defaultSize: {
     width: 20,
@@ -140,6 +141,27 @@ export const shadBarChartConfig = {
         defaultValue: false,
       },
     },
+    highlight: {
+      type: 'code',
+      displayName: 'Highlight (category values, or first, last, max, min)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+            {
+              type: 'array',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -272,6 +294,24 @@ export const shadBarChartConfig = {
         },
       },
     },
+    highlightColor: {
+      type: 'colorSwatches',
+      displayName: 'Highlighted bar color (default: the series color)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    mutedColor: {
+      type: 'colorSwatches',
+      displayName: 'Other bars color when highlighting (default: the series color, faded)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
@@ -360,6 +400,9 @@ export const shadBarChartConfig = {
       },
       stack: {
         value: '{{false}}',
+      },
+      highlight: {
+        value: '',
       },
       loadingState: {
         value: '{{false}}',

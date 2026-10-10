@@ -2,7 +2,8 @@
 export const shadHeadingConfig = {
   name: 'ShadHeading',
   displayName: 'Heading',
-  description: 'shadcn/ui heading (h1 to h4)',
+  description:
+    "shadcn/ui heading (h1 to h4). Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight (400 to 800), fontSize (px), letterSpacing (px or em) and textTransform ('uppercase' for an eyebrow)",
   component: 'ShadHeading',
   defaultSize: {
     width: 16,
@@ -181,6 +182,136 @@ export const shadHeadingConfig = {
         defaultValue: 'left',
       },
     },
+    fontFamily: {
+      type: 'select',
+      displayName: 'Typeface',
+      options: [
+        {
+          name: 'Theme font',
+          value: 'theme',
+        },
+        {
+          name: 'Sans serif',
+          value: 'sans',
+        },
+        {
+          name: 'Serif',
+          value: 'serif',
+        },
+        {
+          name: 'Display serif',
+          value: 'display',
+        },
+        {
+          name: 'Monospace',
+          value: 'mono',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'theme',
+      },
+    },
+    fontWeight: {
+      type: 'select',
+      displayName: 'Weight',
+      options: [
+        {
+          name: 'Default',
+          value: '',
+        },
+        {
+          name: 'Regular',
+          value: '400',
+        },
+        {
+          name: 'Medium',
+          value: '500',
+        },
+        {
+          name: 'Semibold',
+          value: '600',
+        },
+        {
+          name: 'Bold',
+          value: '700',
+        },
+        {
+          name: 'Extra bold',
+          value: '800',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    letterSpacing: {
+      type: 'code',
+      displayName: 'Letter spacing (px, or em like 0.12em)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
+    textTransform: {
+      type: 'select',
+      displayName: 'Casing',
+      options: [
+        {
+          name: 'As typed',
+          value: 'none',
+        },
+        {
+          name: 'UPPERCASE',
+          value: 'uppercase',
+        },
+        {
+          name: 'lowercase',
+          value: 'lowercase',
+        },
+        {
+          name: 'Capitalize',
+          value: 'capitalize',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'none',
+      },
+    },
+    fontSize: {
+      type: 'numberInput',
+      displayName: 'Font size (px; default from the level)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
@@ -267,6 +398,15 @@ export const shadHeadingConfig = {
       },
       textAlign: {
         value: 'left',
+      },
+      fontFamily: {
+        value: 'theme',
+      },
+      fontWeight: {
+        value: '',
+      },
+      textTransform: {
+        value: 'none',
       },
     },
   },

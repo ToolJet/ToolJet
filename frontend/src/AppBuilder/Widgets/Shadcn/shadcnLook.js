@@ -6,6 +6,7 @@
 // (kanbanLook.js). Style keys match the configs in WidgetManager/shadcnSource.js.
 import { isSet, px } from './kanbanLook';
 import { GROUP_LOOKS } from './looks';
+import { fontStack, fontWeight, textCase } from './typeLook';
 
 const ACCENT = ['--sc-primary', '--sc-ring'];
 
@@ -26,6 +27,14 @@ const CHOICE = [
   ['accentColor', ACCENT],
   ['labelColor', '--lk-label'],
   ['helpTextColor', '--lk-help'],
+];
+// Typeface styles of the text widgets (typeLook.js); shadcn.scss classes read these variables.
+const TYPE = [
+  ['fontFamily', '--lk-font', fontStack],
+  ['fontWeight', '--lk-weight', fontWeight],
+  ['letterSpacing', '--lk-tracking', px],
+  ['textTransform', '--lk-case', textCase],
+  ['fontSize', '--lk-size', px],
 ];
 const CHART = [
   ['chartColor', '--sc-chart-1'],
@@ -55,8 +64,8 @@ export const LOOKS = {
     ['currentColor', '--lk-current'],
     ['separatorColor', '--lk-sep'],
   ],
-  ShadHeading: [['textColor', '--lk-fg']],
-  ShadText: [['textColor', '--lk-fg']],
+  ShadHeading: [['textColor', '--lk-fg'], ...TYPE],
+  ShadText: [['textColor', '--lk-fg'], ...TYPE],
   ShadTable: [
     ['accentColor', ACCENT],
     ['mutedTextColor', '--lk-muted'],
@@ -77,6 +86,9 @@ export const LOOKS = {
     ['valueColor', '--lk-value'],
     ['footnoteColor', '--lk-help'],
     ['borderRadius', '--lk-radius', px],
+    ['valueFontFamily', '--lk-value-font', fontStack],
+    ['labelTextTransform', '--lk-label-case', textCase],
+    ['labelLetterSpacing', '--lk-label-tracking', px],
   ],
   ShadBadge: [
     ['backgroundColor', '--lk-bg'],
@@ -132,7 +144,7 @@ export const LOOKS = {
     ['borderRadius', '--lk-radius', px],
   ],
   ShadAreaChart: CHART,
-  ShadBarChart: CHART,
+  ShadBarChart: [...CHART, ['highlightColor', '--lk-highlight'], ['mutedColor', '--lk-muted-bar']],
   ShadPieChart: [
     ...CHART.filter(([key]) => key !== 'gridColor' && key !== 'axisTextColor'),
     ['sliceBorderColor', '--lk-slice-border'],
@@ -149,6 +161,8 @@ export const lookVars = (componentType, styles = {}) =>
     (LOOKS[componentType] || [])
       .filter(([key]) => isSet(styles?.[key]))
       .flatMap(([key, names, toCss = String]) => [].concat(names).map((name) => [name, toCss(styles[key])]))
+      // A style whose value resolves to nothing (the theme font, an unknown casing) leaves the theme's value.
+      .filter(([, value]) => value !== '')
   );
 
 /** The series colour at `index`: the author's list where it names one, else the theme palette (--sc-chart-1..5,

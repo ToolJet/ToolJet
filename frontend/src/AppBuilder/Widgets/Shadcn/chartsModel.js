@@ -247,3 +247,39 @@ export const seriesLabel = (key, labels) => {
     .toLowerCase();
   return words ? words.charAt(0).toUpperCase() + words.slice(1) : String(key ?? '');
 };
+
+const KEYWORDS = ['first', 'last', 'max', 'min'];
+
+/** The rows a bar chart emphasises (the others draw muted), from its highlight property: category values (one, a list,
+ *  or comma-separated text), or first / last / max / min (by the row's total across the series) when no category is
+ *  literally named that. null when there is nothing to emphasise, so the chart draws as usual. */
+export const highlightIndexes = (data, xField, series, highlight) => {
+  if (!Array.isArray(data) || !data.length) return null;
+  const wanted = (Array.isArray(highlight) ? highlight : isText(highlight) ? String(highlight).split(',') : [])
+    .filter(isText)
+    .map((v) => String(v).trim())
+    .filter(Boolean);
+  if (!wanted.length) return null;
+  const label = (row) => (isPlain(row) && isText(row[xField]) ? String(row[xField]).trim() : undefined);
+  const picked = new Set();
+  data.forEach((row, i) => {
+    if (wanted.includes(label(row))) picked.add(i);
+  });
+  const keyword = wanted.find((w) => KEYWORDS.includes(w.toLowerCase()) && !data.some((row) => label(row) === w));
+  if (keyword) {
+    const k = keyword.toLowerCase();
+    if (k === 'first') picked.add(0);
+    else if (k === 'last') picked.add(data.length - 1);
+    else {
+      const totals = data.map((row) =>
+        isPlain(row) ? (Array.isArray(series) ? series : []).reduce((sum, s) => sum + (num(row[s]) ?? 0), 0) : null
+      );
+      const valid = totals.filter((t) => t !== null);
+      if (valid.length) {
+        const target = k === 'max' ? Math.max(...valid) : Math.min(...valid);
+        picked.add(totals.indexOf(target));
+      }
+    }
+  }
+  return picked.size ? picked : null;
+};

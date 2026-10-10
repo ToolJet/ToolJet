@@ -91,3 +91,32 @@
   .text-center:not(.flex):not(.inline-flex):not(.grid):not(.inline-grid):not(.block):not(.inline-block):not(.inline):not(.hidden):not(.table-cell) {
   display: revert;
 }
+
+// Typeface styles (typeLook.js) on Heading, Text and Stat: each class reads the variable its style sets. These rules
+// come after the utilities at the same specificity, so a chosen weight or size wins over the tone's own.
+.tj-shadcn {
+  .lk-font {
+    font-family: var(--lk-font);
+  }
+  .lk-weight {
+    font-weight: var(--lk-weight);
+  }
+  .lk-tracking {
+    letter-spacing: var(--lk-tracking);
+  }
+  .lk-case {
+    text-transform: var(--lk-case);
+  }
+  .lk-size {
+    font-size: var(--lk-size);
+  }
+  .lk-value-font {
+    font-family: var(--lk-value-font);
+  }
+  .lk-label-case {
+    text-transform: var(--lk-label-case);
+  }
+  .lk-label-tracking {
+    letter-spacing: var(--lk-label-tracking);
+  }
+}

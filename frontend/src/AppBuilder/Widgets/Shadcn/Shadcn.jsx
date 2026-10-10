@@ -42,6 +42,7 @@ import {
 } from './ui';
 import { badgeLook, isSet } from './kanbanLook';
 import { lookVars, whenSet } from './shadcnLook';
+import { fontStack, textCase, typeClasses } from './typeLook';
 import { GROUP_LOADING } from './looks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import './shadcn.scss';
@@ -370,7 +371,7 @@ export const ShadHeading = (props) => {
   return (
     <Shell {...props} innerRef={ref}>
       <Tag
-        className={cn(HEADING[level], 'text-[color:var(--lk-fg,var(--sc-foreground))]')}
+        className={cn(HEADING[level], 'text-[color:var(--lk-fg,var(--sc-foreground))]', typeClasses(props.styles))}
         style={{ textAlign: textAlign(props.styles) }}
       >
         {String(properties.text ?? '')}
@@ -398,7 +399,8 @@ export const ShadText = (props) => {
         className={cn(
           TONE[properties.tone] || TONE.paragraph,
           'whitespace-pre-line',
-          whenSet(props.styles, 'textColor', 'text-[color:var(--lk-fg)]')
+          whenSet(props.styles, 'textColor', 'text-[color:var(--lk-fg)]'),
+          typeClasses(props.styles)
         )}
         style={{ textAlign: textAlign(props.styles) }}
       >
@@ -424,7 +426,13 @@ export const ShadStat = (props) => {
   const body = (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-start justify-between gap-2">
-        <span className="text-sm text-[color:var(--lk-label,var(--sc-muted-foreground))]">
+        <span
+          className={cn(
+            'text-sm text-[color:var(--lk-label,var(--sc-muted-foreground))]',
+            textCase(props.styles?.labelTextTransform) && 'lk-label-case',
+            isSet(props.styles?.labelLetterSpacing) && 'lk-label-tracking'
+          )}
+        >
           {String(properties.label ?? '')}
         </span>
         {properties.change ? (
@@ -441,7 +449,12 @@ export const ShadStat = (props) => {
           </Badge>
         ) : null}
       </div>
-      <span className="text-2xl font-semibold tabular-nums tracking-tight text-[color:var(--lk-value,var(--sc-foreground))]">
+      <span
+        className={cn(
+          'text-2xl font-semibold tabular-nums tracking-tight text-[color:var(--lk-value,var(--sc-foreground))]',
+          fontStack(props.styles?.valueFontFamily) && 'lk-value-font'
+        )}
+      >
         {properties.loadingState ? <Skeleton className="h-8 w-24" /> : String(properties.value ?? '')}
       </span>
       {properties.footnote ? (

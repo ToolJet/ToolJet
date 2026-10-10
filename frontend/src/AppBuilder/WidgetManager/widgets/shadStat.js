@@ -2,7 +2,8 @@
 export const shadStatConfig = {
   name: 'ShadStat',
   displayName: 'Stat',
-  description: 'shadcn/ui dashboard figure: label, value, change badge and footnote',
+  description:
+    "shadcn/ui dashboard figure: label, value, change badge and footnote. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
   component: 'ShadStat',
   defaultSize: {
     width: 10,
@@ -286,6 +287,83 @@ export const shadStatConfig = {
         },
       },
     },
+    valueFontFamily: {
+      type: 'select',
+      displayName: 'Value typeface',
+      options: [
+        {
+          name: 'Theme font',
+          value: 'theme',
+        },
+        {
+          name: 'Sans serif',
+          value: 'sans',
+        },
+        {
+          name: 'Serif',
+          value: 'serif',
+        },
+        {
+          name: 'Display serif',
+          value: 'display',
+        },
+        {
+          name: 'Monospace',
+          value: 'mono',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'theme',
+      },
+    },
+    labelTextTransform: {
+      type: 'select',
+      displayName: 'Label casing',
+      options: [
+        {
+          name: 'As typed',
+          value: 'none',
+        },
+        {
+          name: 'UPPERCASE',
+          value: 'uppercase',
+        },
+        {
+          name: 'lowercase',
+          value: 'lowercase',
+        },
+        {
+          name: 'Capitalize',
+          value: 'capitalize',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'none',
+      },
+    },
+    labelLetterSpacing: {
+      type: 'code',
+      displayName: 'Label letter spacing (px, or em like 0.12em)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
@@ -381,6 +459,12 @@ export const shadStatConfig = {
     styles: {
       boxShadow: {
         value: '0px 0px 0px 0px #00000040',
+      },
+      valueFontFamily: {
+        value: 'theme',
+      },
+      labelTextTransform: {
+        value: 'none',
       },
     },
   },
