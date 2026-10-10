@@ -17,6 +17,7 @@ import {
   LISTVIEW_CANVAS_PADDING,
   HOVER_CLICK_OUTLINE_BORDER,
   isTabsType,
+  isModalType,
 } from './appCanvasConstants';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
@@ -382,7 +383,7 @@ const collectChildComponents = (allComponents, parentId, visited) => {
       allComponents[parentId]?.component?.component === 'Container' ||
       allComponents[parentId]?.component?.component === 'Accordion' ||
       allComponents[parentId]?.component?.component === 'Form' ||
-      allComponents[parentId]?.component?.component === 'ModalV2';
+      isModalType(allComponents[parentId]?.component?.component);
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);
@@ -452,7 +453,7 @@ export const getParentComponentIdByType = ({ child, parentComponent, parentId, s
     (parentComponent === 'Form' ||
       parentComponent === 'Container' ||
       parentComponent === 'Accordion' ||
-      parentComponent === 'ModalV2')
+      isModalType(parentComponent))
   ) {
     return `${parentId}-${slotName}`;
   }
@@ -462,7 +463,7 @@ export const getParentComponentIdByType = ({ child, parentComponent, parentId, s
 export const getParentWidgetFromId = (parentType, parentId) => {
   const isAddingToSlot = parentId?.includes('-header') || parentId?.includes('-footer');
 
-  if (parentType === 'ModalV2' && isAddingToSlot) {
+  if (isModalType(parentType) && isAddingToSlot) {
     return 'ModalSlot';
   } else if (parentType === 'Kanban' || parentType === 'ShadKanban') {
     return 'Kanban_card';
@@ -503,7 +504,7 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
       2 * BOX_PADDING +
       2 * HOVER_CLICK_OUTLINE_BORDER;
   }
-  if (componentType === 'ModalV2') {
+  if (isModalType(componentType)) {
     const isModalHeader = componentId?.includes('header');
     if (isModalHeader) {
       const isModalHeaderCloseBtnHidden = useStore.getState().getResolvedComponent(componentId.slice(0, 36))

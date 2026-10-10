@@ -17,6 +17,7 @@ export const WIDGETS_WITH_DEFAULT_CHILDREN = [
   'Kanban',
   'Container',
   'ModalV2',
+  'ShadDialog',
   'Accordion',
 ];
 
@@ -41,6 +42,10 @@ export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 54;
 // shadcn/ui pack's (experiment).
 export const TABS_TYPES = ['Tabs', 'ShadTabs'];
 export const isTabsType = (componentType) => TABS_TYPES.includes(componentType);
+// The modal containers: ModalV2 and the shadcn pack's Dialog, which is ModalV2 in the pack's look (same slots,
+// canvases, open/close and show), so every ModalV2 special case applies to both.
+export const MODAL_TYPES = ['ModalV2', 'ShadDialog'];
+export const isModalType = (componentType) => MODAL_TYPES.includes(componentType);
 
 export const SUBCONTAINER_WIDGETS = [
   'Container',
@@ -89,6 +94,7 @@ export const DROPPABLE_PARENTS = new Set([
   'Tabs',
   'Modal',
   'ModalV2',
+  'ShadDialog',
   'Listview',
   'Container',
   'Accordion',

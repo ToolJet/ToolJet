@@ -35,6 +35,8 @@ export const ModalWidget = ({ ...restProps }) => {
     isFullScreen,
     subContainerIndex,
     isDynamicHeightEnabled,
+    skin,
+    sheetSide,
   } = restProps['modalProps'];
 
   const setComponentProperty = useStore((state) => state.setComponentProperty);
@@ -97,7 +99,12 @@ export const ModalWidget = ({ ...restProps }) => {
     setTimeout(() => {
       const modalContent = document.querySelector(`.tj-modal-content-${id}`);
       if (restProps.show && modalContent) {
-        if (!isFalsyOrMultipleZeros(modalHeight)) {
+        if (sheetSide) {
+          // A side sheet spans the full height of the viewport; its body scrolls.
+          modalContent.style.setProperty('height', '100%', 'important');
+          modalContent.style.setProperty('max-height', '100%', 'important');
+          setNeedsBodyScroll(true);
+        } else if (!isFalsyOrMultipleZeros(modalHeight)) {
           if (isDynamicHeightEnabled) {
             const canvasHeaderHeight = getCanvasHeight(headerHeight);
             const canvasFooterHeight = getCanvasHeight(footerHeight);
@@ -133,6 +140,7 @@ export const ModalWidget = ({ ...restProps }) => {
     temporaryLayouts,
     _modalHeight,
     id,
+    sheetSide,
   ]);
 
   return (
@@ -141,8 +149,11 @@ export const ModalWidget = ({ ...restProps }) => {
       contentClassName={classNames(
         `modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`,
         isDynamicHeightEnabled && `dynamic-${id}`,
-        isDynamicHeightEnabled && needsBodyScroll && 'tj-modal-allow-body-scroll'
+        (isDynamicHeightEnabled || sheetSide) && needsBodyScroll && 'tj-modal-allow-body-scroll',
+        skin && 'tj-shad-tokens tj-shad-dialog-content'
       )}
+      dialogClassName={classNames(skin && 'tj-shad-dialog', sheetSide && `tj-shad-sheet tj-shad-sheet--${sheetSide}`)}
+      backdropClassName={skin ? 'tj-shad-backdrop' : undefined}
       animation={true}
       onEscapeKeyDown={(e) => {
         e.preventDefault();

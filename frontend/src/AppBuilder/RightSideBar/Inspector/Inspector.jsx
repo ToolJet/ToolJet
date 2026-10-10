@@ -116,6 +116,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Divider',
   'VerticalDivider',
   'ModalV2',
+  'ShadDialog',
   'Tabs',
   'RangeSliderV2',
   'Link',
@@ -953,6 +954,7 @@ const GetAccordion = React.memo(
         return <FilePicker {...restProps} />;
 
       case 'ModalV2':
+      case 'ShadDialog':
         return <ModalV2 {...restProps} />;
 
       case 'Modal':

@@ -19,6 +19,7 @@ const NEW_WIDGETS = [
   'TimePicker',
   'Cascader',
   'ModalV2',
+  'ShadDialog',
   'EmailInput',
   'PhoneInput',
   'CurrencyInput',

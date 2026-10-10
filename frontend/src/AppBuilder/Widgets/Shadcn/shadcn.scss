@@ -3,8 +3,10 @@
 @tailwind utilities;
 
 // shadcn's tokens, taken from the app theme so a pack widget follows whatever theme the user or the model chose.
-// Values without a theme counterpart use shadcn's neutral defaults.
-.tj-shadcn {
+// Values without a theme counterpart use shadcn's neutral defaults. tj-shad-tokens gives a surface outside the pack's
+// widgets (the Dialog's content) the same tokens without the pack's reset.
+.tj-shadcn,
+.tj-shad-tokens {
   --sc-background: var(--cc-surface1-surface, #ffffff);
   --sc-foreground: var(--cc-primary-text, #0a0a0a);
   --sc-card: var(--cc-surface1-surface, #ffffff);

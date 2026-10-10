@@ -6,6 +6,7 @@ import {
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
   TAB_CANVAS_PADDING,
   isTabsType,
+  isModalType,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
@@ -375,7 +376,7 @@ const getExtraContainerHeight = ({
     // that growing leaf widgets (e.g. TextArea labels) report past their
     // moveable-box height.
     extraHeight = TAB_CANVAS_PADDING * 2 + 16 + (hideTabs ? 0 : TABS_TAB_BAR_HEIGHT) + tabsExtraChrome;
-  } else if (componentType === 'ModalV2') {
+  } else if (isModalType(componentType)) {
     // Modal body chrome: MODAL_CANVAS_PADDING (5) top + bottom around the
     // SubContainer canvas (stylesFactory.js modalBody) + safety for the
     // `.real-canvas` `calc(100% + 1px)` extension. Plus 12px per shown
@@ -616,10 +617,9 @@ export const resolveContainerHeight = ({
 
   // ModalV2 uses a global class (modal is portal'd out), all others use a
   // scoped selector.
-  const dynamicSelector =
-    componentType === 'ModalV2'
-      ? `.dynamic-${componentId}`
-      : `${getDynamicElementSelector(componentId, context)} .dynamic-${componentId}`;
+  const dynamicSelector = isModalType(componentType)
+    ? `.dynamic-${componentId}`
+    : `${getDynamicElementSelector(componentId, context)} .dynamic-${componentId}`;
   const element = document.querySelector(dynamicSelector);
 
   let modifiedComponentId = componentId;

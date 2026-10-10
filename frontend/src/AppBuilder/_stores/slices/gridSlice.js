@@ -1,4 +1,4 @@
-import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { NO_OF_GRIDS, isModalType } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import {
   bindModuleAwareGetResolvedComponent,
@@ -321,7 +321,7 @@ export const createGridSlice = (set, get) => {
             calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
           });
 
-          if (componentType === 'ModalV2' && isContainer) {
+          if (isModalType(componentType) && isContainer) {
             mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '-body')] = {
               ...changedComponent.layouts[currentLayout],
               ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '-body')],

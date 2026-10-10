@@ -1,3 +1,4 @@
+import tinycolor from 'tinycolor2';
 import { badgeLook, kanbanLook } from '../kanbanLook';
 
 describe('kanbanLook', () => {
@@ -46,6 +47,22 @@ describe('badgeLook', () => {
       '--kb-badge-bg': 'color-mix(in srgb, #dc2626 14%, transparent)',
     });
     expect(badgeLook('LOW', { low: '#16a34a' })['--kb-badge-fg']).toBe('#16a34a');
+  });
+
+  it('reads a light colour as the chip background, with a deep text of the same hue', () => {
+    // Models often pass a tint (#DCFCE7) meaning the chip; as text it would be invisible.
+    const look = badgeLook('Won', { Won: '#DCFCE7' });
+    expect(look['--kb-badge-bg']).toBe('#DCFCE7');
+    const fg = tinycolor(look['--kb-badge-fg']);
+    expect(fg.getLuminance()).toBeLessThan(0.15);
+    expect(Math.abs(fg.toHsl().h - tinycolor('#DCFCE7').toHsl().h)).toBeLessThan(8);
+  });
+
+  it('takes an explicit { text, background } pair', () => {
+    expect(badgeLook('New', { New: { text: '#1e40af', background: '#dbeafe' } })).toEqual({
+      '--kb-badge-fg': '#1e40af',
+      '--kb-badge-bg': '#dbeafe',
+    });
   });
 
   it('leaves a value the map does not name to the built-in badge colours', () => {

@@ -14,7 +14,10 @@ import { ANT_DESIGN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/antDes
 import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 
 const SHADCN_SECTIONS = [
-  { title: 'Layout', items: ['FlexContainer', 'ShadTabs', 'ShadListView', 'ShadSeparator', 'ShadAccordion'] },
+  {
+    title: 'Layout',
+    items: ['FlexContainer', 'ShadTabs', 'ShadListView', 'ShadDialog', 'ShadSeparator', 'ShadAccordion'],
+  },
   { title: 'Typography', items: ['ShadHeading', 'ShadText'] },
   {
     title: 'Data display',

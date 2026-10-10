@@ -3,7 +3,7 @@
 // registry and the MCP catalog generator both read literal configs, one per file. Output is formatted with the repo's
 // prettier settings, and a file is written only when its content changes.
 // Run: node scripts-shadcn-literals.mjs (from frontend/).
-import { readFileSync, writeFileSync, mkdtempSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, readdirSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import prettier from 'prettier';
@@ -15,6 +15,9 @@ const tmp = mkdtempSync(join(tmpdir(), 'shadcn-'));
 writeFileSync(join(tmp, 'package.json'), '{"type":"module"}');
 const sources = readdirSync(dir).filter((f) => /^shadcnSource.*\.js$/.test(f)).sort();
 for (const f of [...sources, 'shadcnPackHelpers.js']) writeFileSync(join(tmp, f), readFileSync(join(dir, f), 'utf8'));
+// Native configs a pack widget builds on (the Dialog is ModalV2 in the pack's look).
+mkdirSync(join(tmp, 'widgets'));
+for (const f of ['modalV2.js']) writeFileSync(join(tmp, 'widgets', f), readFileSync(join(out, f), 'utf8'));
 
 const PRETTIER = { parser: 'babel', semi: true, trailingComma: 'es5', printWidth: 120, singleQuote: true, arrowParens: 'always' };
 let written = 0;

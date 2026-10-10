@@ -55,6 +55,7 @@ import {
   TOP_ALIGNMENT_HEIGHT_INCREMENT,
   NESTING_LEVEL_LIMITS,
   isTabsType,
+  isModalType,
 } from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
@@ -993,7 +994,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const isParentLegacyModal = parentComponent?.componentType === 'Modal';
 
           // Special case for Modal. This is added to prevent widget from being dragged out of the modal.
-          if (parentComponent?.componentType === 'ModalV2' || parentComponent?.componentType === 'Modal') {
+          if (isModalType(parentComponent?.componentType) || parentComponent?.componentType === 'Modal') {
             const modalContainer = e.target.closest('.tj-modal--container');
             const mainCanvas = document.getElementById('real-canvas');
             const mainRect = mainCanvas.getBoundingClientRect();

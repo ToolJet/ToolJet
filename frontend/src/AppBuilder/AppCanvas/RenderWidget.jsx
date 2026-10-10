@@ -71,7 +71,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Timeline',
 ];
 
-const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];
+const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2', 'ShadDialog'];
 
 const RenderWidget = ({
   id,
@@ -329,7 +329,8 @@ const RenderWidget = ({
   // User-defined CSS class(es), gated by the customStyling license. Trimmed + whitespace-collapsed.
   const userCssClass = hasCustomStyling ? (resolvedStyles?.cssClass ?? '').trim().replace(/\s+/g, ' ') : '';
   const isDisabledOrLoading =
-    !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading);
+    !['Modal', 'ModalV2', 'ShadDialog', 'CircularProgressBar'].includes(component.component) &&
+    (isDisabled || isLoading);
   const innerWidgetClassName = [
     'canvas-component',
     inCanvas && `_tooljet-${component?.component} _tooljet-${component?.name}`,

@@ -59,6 +59,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import toast from 'react-hot-toast';
 import './EventManager.scss';
+import { isModalType } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 export const EventManager = ({
   sourceId,
@@ -217,7 +218,7 @@ export const EventManager = ({
     if (!parentId) return false;
     const parentComponent = components[parentId];
     if (!parentComponent) return false;
-    if (parentComponent.component.component === 'Modal' || parentComponent.component.component === 'ModalV2') {
+    if (parentComponent.component.component === 'Modal' || isModalType(parentComponent.component.component)) {
       return true;
     }
     return isChildOfModal(parentId);
@@ -740,7 +741,11 @@ export const EventManager = ({
             {event.actionId === 'show-modal' && (
               <FieldRow label={t('editor.inspector.eventManager.modal', 'Modal')} dataCy="modal-label">
                 <OptionCombobox
-                  options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
+                  options={[
+                    ...getComponentOptions('Modal'),
+                    ...getComponentOptions('ModalV2'),
+                    ...getComponentOptions('ShadDialog'),
+                  ]}
                   value={event.modal?.id ?? event.modal}
                   onChange={(value) => handlerChanged(index, 'modal', value)}
                 />
@@ -750,7 +755,11 @@ export const EventManager = ({
             {event.actionId === 'close-modal' && (
               <FieldRow label={t('editor.inspector.eventManager.modal', 'Modal')} dataCy="modal-label">
                 <OptionCombobox
-                  options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
+                  options={[
+                    ...getComponentOptions('Modal'),
+                    ...getComponentOptions('ModalV2'),
+                    ...getComponentOptions('ShadDialog'),
+                  ]}
                   value={event.modal?.id ?? event.modal}
                   onChange={(value) => handlerChanged(index, 'modal', value)}
                 />

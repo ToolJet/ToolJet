@@ -147,6 +147,7 @@ const SHADCN_ICONS = {
   shadtext: Text,
   shadtextarea: TextArea,
   shadtogglegroup: ButtonGroup,
+  shaddialog: Modal,
   shadnumberinput: Numberinput,
   shadpasswordinput: Passwordinput,
   shadphoneinput: PhoneInput,

@@ -25,7 +25,8 @@ describe('lookVars', () => {
     expect(lookVars('ShadBarChart', { chartColor: '#7c3aed' })).toEqual({ '--sc-chart-1': '#7c3aed' });
   });
 
-  // Kanban, Tabs and List view map their styles in their own modules (kanbanLook, tabsModel, listModel).
+  // Kanban, Tabs and List view map their styles in their own modules (kanbanLook, tabsModel, listModel); the Dialog
+  // has ModalV2's styles.
   it('maps only styles each widget config declares, and every other pack widget has a map', () => {
     const configs = Object.fromEntries(shadcnConfigs.map((c) => [c.name, c]));
     Object.entries(LOOKS).forEach(([name, map]) => {
@@ -33,7 +34,7 @@ describe('lookVars', () => {
         expect([name, key, configs[name]?.styles?.[key]?.displayName]).toEqual([name, key, expect.any(String)])
       );
     });
-    const ownModules = ['ShadKanban', 'ShadTabs', 'ShadListView'];
+    const ownModules = ['ShadKanban', 'ShadTabs', 'ShadListView', 'ShadDialog'];
     expect(shadcnConfigs.map((c) => c.name).filter((n) => !LOOKS[n] && !ownModules.includes(n))).toEqual([]);
   });
 });

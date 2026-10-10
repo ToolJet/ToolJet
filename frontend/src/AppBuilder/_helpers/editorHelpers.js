@@ -234,6 +234,7 @@ const shadcnInputs = () => import('@/AppBuilder/Widgets/Shadcn/ShadInputs');
 const shadcnPickers = () => import('@/AppBuilder/Widgets/Shadcn/ShadPickers');
 const shadcnDisplay = () => import('@/AppBuilder/Widgets/Shadcn/ShadDisplay');
 const shadcnActions = () => import('@/AppBuilder/Widgets/Shadcn/ShadActions');
+const shadcnOverlays = () => import('@/AppBuilder/Widgets/Shadcn/ShadOverlays');
 const shadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m[name] })));
 const controlledShadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m.withControlState(m[name]) })));
 const ShadButton = controlledShadWidget(shadcnWidgets, 'ShadButton');
@@ -265,6 +266,8 @@ const ShadPieChart = controlledShadWidget(shadcnCharts, 'ShadPieChart');
 const ShadKanban = controlledShadWidget(shadcnKanban, 'ShadKanban');
 const ShadTabs = shadWidget(shadcnTabs, 'ShadTabs');
 const ShadListView = shadWidget(shadcnListView, 'ShadListView');
+// ModalV2 in the pack's look: it keeps ModalV2's own control state.
+const ShadDialog = shadWidget(shadcnOverlays, 'ShadDialog');
 const ShadNumberInput = controlledShadWidget(shadcnInputs, 'ShadNumberInput');
 const ShadPasswordInput = controlledShadWidget(shadcnInputs, 'ShadPasswordInput');
 const ShadPhoneInput = controlledShadWidget(shadcnInputs, 'ShadPhoneInput');
@@ -435,6 +438,7 @@ export const AllComponents = {
   ShadKanban,
   ShadTabs,
   ShadListView,
+  ShadDialog,
   ShadNumberInput,
   ShadPasswordInput,
   ShadPhoneInput,

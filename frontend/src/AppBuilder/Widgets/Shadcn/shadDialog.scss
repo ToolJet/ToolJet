@@ -1,0 +1,85 @@
+// shadcn/ui pack (experiment): the Dialog's look over ModalV2 (ShadOverlays.jsx). ModalV2 adds tj-shad-dialog to the
+// dialog, tj-shad-tokens to its content (the theme-mapped --sc-* tokens, without the pack's reset, so the native
+// widgets a dialog may hold keep their own look) and tj-shad-backdrop to the overlay; a side sheet adds tj-shad-sheet.
+
+.tj-shad-dialog .tj-shad-dialog-content.modal-content {
+  background: var(--sc-background);
+  color: var(--sc-foreground);
+  border: 1px solid var(--sc-border) !important;
+  border-radius: calc(var(--sc-radius) + 4px) !important;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+  overflow: hidden;
+}
+
+// The close button: shadcn's small muted X in the top right corner.
+.tj-shad-dialog .tj-modal-close-button {
+  color: var(--sc-muted-foreground);
+  opacity: 0.7;
+  border-radius: calc(var(--sc-radius) - 4px);
+  transition: opacity 0.15s ease;
+  &:hover {
+    opacity: 1;
+    background: transparent;
+  }
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.modal-backdrop.tj-shad-backdrop.show {
+  background: #000000;
+  opacity: 0.8;
+}
+
+// The trigger button (when the default button is on) takes the theme radius like the pack's buttons.
+.tj-shad-trigger.jet-btn {
+  border-radius: calc(var(--cc-radius-default, 8px) - 2px) !important;
+  font-weight: 500;
+}
+
+// Side sheet: full height against one edge, sliding in from it.
+.modal-dialog.tj-shad-sheet {
+  margin: 0 !important;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  &.modal-sm {
+    max-width: 360px;
+  }
+  &.modal-lg,
+  &:not(.modal-sm):not(.modal-xl) {
+    max-width: 480px;
+  }
+  &.modal-xl {
+    max-width: 640px;
+  }
+  .tj-shad-dialog-content.modal-content {
+    height: 100% !important;
+    border-radius: 0 !important;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+  }
+}
+.modal-dialog.tj-shad-sheet--right {
+  margin-left: auto !important;
+  .tj-shad-dialog-content.modal-content {
+    border-width: 0 0 0 1px !important;
+  }
+}
+.modal-dialog.tj-shad-sheet--left {
+  margin-right: auto !important;
+  .tj-shad-dialog-content.modal-content {
+    border-width: 0 1px 0 0 !important;
+  }
+}
+.modal.fade .modal-dialog.tj-shad-sheet--right {
+  transform: translateX(100%);
+  transition: transform 0.3s ease-out;
+}
+.modal.fade .modal-dialog.tj-shad-sheet--left {
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-out;
+}
+.modal.show .modal-dialog.tj-shad-sheet {
+  transform: none;
+}

@@ -98,6 +98,11 @@ export const ModalV2 = function Modal({
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
   const footerHeightPx = getModalFooterHeight(showFooter, footerHeight);
   const isFullScreen = properties.size === 'fullscreen';
+  // The shadcn pack's Dialog is this widget in the pack's look (Widgets/Shadcn/ShadOverlays.jsx), optionally a side
+  // sheet at full height.
+  const skin = componentType === 'ShadDialog' ? 'shadcn' : undefined;
+  const sheetSide =
+    skin && properties.variant === 'sheet' ? (properties.side === 'left' ? 'left' : 'right') : undefined;
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
@@ -268,7 +273,7 @@ export const ModalV2 = function Modal({
         <WidgetTooltip {...tooltipProps} darkMode={darkMode}>
           <button
             disabled={isDisabledTrigger}
-            className="jet-btn btn btn-primary overflow-hidden"
+            className={`jet-btn btn btn-primary overflow-hidden${skin ? ' tj-shad-trigger' : ''}`}
             style={customStyles.buttonStyles}
             onClick={(event) => {
               /**** Start - Logic to reduce the zIndex of modal control box ****/
@@ -361,6 +366,8 @@ export const ModalV2 = function Modal({
           darkMode,
           subContainerIndex: contextIndices,
           isDynamicHeightEnabled,
+          skin,
+          sheetSide,
         }}
       />
     </div>

@@ -70,6 +70,7 @@ export function renderCustomStyles(
     componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'Image' ||
     componentConfig.component == 'ModalV2' ||
+    componentConfig.component == 'ShadDialog' ||
     componentConfig.component == 'RangeSlider' ||
     componentConfig.component == 'DatetimePickerV2' ||
     componentConfig.component == 'RangeSliderV2' ||

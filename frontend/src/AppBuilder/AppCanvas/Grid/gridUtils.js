@@ -485,6 +485,7 @@ export const handleActivateTargets = (parentId) => {
     'ShadKanban',
     'ShadListView',
     'ModalV2',
+    'ShadDialog',
     'Accordion',
     'Table',
   ];
