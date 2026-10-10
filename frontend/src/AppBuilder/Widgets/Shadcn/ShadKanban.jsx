@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   DndContext,
   DragOverlay,
@@ -11,7 +12,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { initials, list, useAutoHeight, useExposed } from '../packHooks';
-import { Avatar, AvatarFallback, Badge, cn } from './ui';
+import { Avatar, AvatarFallback, Badge, cn, getPortalRoot } from './ui';
 import { Shell } from './Shadcn';
 import { boardColumns, moveCard } from './kanbanBoard';
 
@@ -202,15 +203,19 @@ export const ShadKanban = (props) => {
             />
           ))}
         </div>
-        <DragOverlay>
-          {activeCard ? (
-            <div className="tj-shadcn">
-              <div className="w-[260px] rotate-1 rounded-lg border bg-card p-3 text-card-foreground shadow-lg">
+        {/* The preview renders at the body: ToolJet places widgets with CSS transforms, and position: fixed inside a
+            transformed ancestor is offset by it, so the card trailed far from the pointer. The portal root carries
+            .tj-shadcn, so the preview keeps the pack's styles; DragOverlay sizes it to the dragged card. */}
+        {createPortal(
+          <DragOverlay>
+            {activeCard ? (
+              <div className="h-full w-full rotate-1 rounded-lg border bg-card p-3 text-card-foreground shadow-lg">
                 <CardBody card={activeCard} fields={fields} />
               </div>
-            </div>
-          ) : null}
-        </DragOverlay>
+            ) : null}
+          </DragOverlay>,
+          getPortalRoot()
+        )}
       </DndContext>
     </Shell>
   );
