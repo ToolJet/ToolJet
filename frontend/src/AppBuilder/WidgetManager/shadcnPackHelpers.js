@@ -61,12 +61,37 @@ const commonProperties = (withHeight) => ({
   loadingState: toggle('Loading state', false, { section: 'additionalActions' }),
   visibility: toggle('Visibility', true, { section: 'additionalActions' }),
   disabledState: toggle('Disable', false, { section: 'additionalActions' }),
+  // The native tooltip pair (RenderWidget shows it on hover for pack widgets).
+  tooltipFormat: {
+    type: 'switch',
+    displayName: 'Tooltip',
+    options: [
+      { displayName: 'Plain text', value: 'plainText' },
+      { displayName: 'Markdown', value: 'markdown' },
+      { displayName: 'HTML', value: 'html' },
+    ],
+    isFxNotRequired: true,
+    defaultValue: { value: 'plainText' },
+    fullWidth: true,
+    newLine: true,
+    section: 'additionalActions',
+  },
+  tooltip: {
+    type: 'code',
+    displayName: 'Tooltip',
+    validation: { schema: STRING },
+    section: 'additionalActions',
+    placeholder: 'Enter tooltip text',
+    showLabel: false,
+  },
 });
 const commonDefinition = (withHeight) => ({
   ...(withHeight ? { dynamicHeight: { value: '{{true}}' } } : {}),
   loadingState: { value: '{{false}}' },
   visibility: { value: '{{true}}' },
   disabledState: { value: '{{false}}' },
+  tooltipFormat: { value: 'plainText' },
+  tooltip: { value: '' },
 });
 
 // The control actions every ToolJet widget has (Control component → Set visibility, Set disable, Set loading),

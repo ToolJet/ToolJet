@@ -346,6 +346,43 @@ export const shadKanbanConfig = {
       },
       section: 'additionalActions',
     },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        {
+          displayName: 'Plain text',
+          value: 'plainText',
+        },
+        {
+          displayName: 'Markdown',
+          value: 'markdown',
+        },
+        {
+          displayName: 'HTML',
+          value: 'html',
+        },
+      ],
+      isFxNotRequired: true,
+      defaultValue: {
+        value: 'plainText',
+      },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   events: {
     onCardClicked: {
@@ -772,6 +809,12 @@ export const shadKanbanConfig = {
       },
       disabledState: {
         value: '{{false}}',
+      },
+      tooltipFormat: {
+        value: 'plainText',
+      },
+      tooltip: {
+        value: '',
       },
     },
     events: [],

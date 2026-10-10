@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
+import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
@@ -314,7 +315,10 @@ const RenderWidget = ({
   // Pick the tooltip source — some widgets keep tooltip under `properties`,
   // others under `general`. SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY enumerates
   // the former group.
-  const isShadowedWidget = SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component);
+  // shadcn pack widgets keep it under properties too.
+  const isShadowedWidget =
+    SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component) ||
+    SHADCN_COMPONENTS.includes(component?.component);
   const userTooltipContent = isShadowedWidget ? resolvedProperties?.tooltip : resolvedGeneralProperties?.tooltip;
   const userTooltipFormat = isShadowedWidget
     ? resolvedProperties?.tooltipFormat

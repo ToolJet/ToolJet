@@ -55,7 +55,6 @@ export const shadTabsConfig = shadConfig({
     backLabel: code('Wizard: Back label', STRING, 'Back'),
     finishLabel: code('Wizard: Finish label', STRING, 'Finish'),
     linearSteps: toggle('Wizard: steps in order only', true),
-    tooltip: code('Tooltip', STRING, '', { section: 'additionalActions', placeholder: 'Tooltip text' }),
   },
   defaults: {
     useDynamicOptions: { value: '{{false}}' },
@@ -74,7 +73,6 @@ export const shadTabsConfig = shadConfig({
     backLabel: { value: 'Back' },
     finishLabel: { value: 'Finish' },
     linearSteps: { value: '{{true}}' },
-    tooltip: { value: '' },
   },
   styles: {
     accentColor: colorStyle('Accent (active step, focus ring)'),
@@ -172,7 +170,6 @@ export const shadListViewConfig = shadConfig({
     serverSidePagination: toggle('Server-side pagination (data is one page)'),
     totalRecords: code('Total items (server-side)', NUMBER, 0),
     emptyText: code('Empty message', STRING, 'No items'),
-    tooltip: code('Tooltip', STRING, '', { section: 'additionalActions', placeholder: 'Tooltip text' }),
   },
   defaults: {
     data: {
@@ -191,7 +188,6 @@ export const shadListViewConfig = shadConfig({
     serverSidePagination: { value: '{{false}}' },
     totalRecords: { value: '{{0}}' },
     emptyText: { value: 'No items' },
-    tooltip: { value: '' },
   },
   styles: {
     accentColor: colorStyle('Accent (selected outline, pagination)'),

@@ -72,7 +72,6 @@ export const shadTableConfig = shadConfig({
     badgeColors: code('Badge colours by value', OBJECT, {}, { placeholder: "{ Paid: '#16a34a', Overdue: '#dc2626' }" }),
     emptyText: code('Empty message', STRING, 'No results.'),
     emptyDescription: code('Empty description', STRING, ''),
-    tooltip: code('Tooltip', STRING, '', { section: 'additionalActions', placeholder: 'Tooltip text' }),
   },
   defaults: {
     data: {
@@ -116,7 +115,6 @@ export const shadTableConfig = shadConfig({
     badgeColors: { value: '{{{}}}' },
     emptyText: { value: 'No results.' },
     emptyDescription: { value: '' },
-    tooltip: { value: '' },
   },
   styles: {
     accentColor: colorStyle('Accent (checkboxes, focus, active page)'),

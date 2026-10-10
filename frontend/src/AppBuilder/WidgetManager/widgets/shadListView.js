@@ -163,18 +163,6 @@ export const shadListViewConfig = {
         defaultValue: 'No items',
       },
     },
-    tooltip: {
-      type: 'code',
-      displayName: 'Tooltip',
-      validation: {
-        schema: {
-          type: 'string',
-        },
-        defaultValue: '',
-      },
-      section: 'additionalActions',
-      placeholder: 'Tooltip text',
-    },
     dynamicHeight: {
       type: 'toggle',
       displayName: 'Dynamic height',
@@ -218,6 +206,43 @@ export const shadListViewConfig = {
         defaultValue: false,
       },
       section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        {
+          displayName: 'Plain text',
+          value: 'plainText',
+        },
+        {
+          displayName: 'Markdown',
+          value: 'markdown',
+        },
+        {
+          displayName: 'HTML',
+          value: 'html',
+        },
+      ],
+      isFxNotRequired: true,
+      defaultValue: {
+        value: 'plainText',
+      },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: {
@@ -514,9 +539,6 @@ export const shadListViewConfig = {
       emptyText: {
         value: 'No items',
       },
-      tooltip: {
-        value: '',
-      },
       dynamicHeight: {
         value: '{{true}}',
       },
@@ -528,6 +550,12 @@ export const shadListViewConfig = {
       },
       disabledState: {
         value: '{{false}}',
+      },
+      tooltipFormat: {
+        value: 'plainText',
+      },
+      tooltip: {
+        value: '',
       },
     },
     events: [],
