@@ -363,7 +363,9 @@ export const ShadTable = (props) => {
 };
 
 export const ShadStat = (props) => {
-  const { properties, setExposedVariables, height } = props;
+  const { properties, setExposedVariables } = props;
+  const ref = useRef(null);
+  useAutoHeight(props, ref);
   useExposed(setExposedVariables, properties, {});
   const trend = properties.trend || 'neutral';
   const TrendIcon = trend === 'down' ? TrendingDown : TrendingUp;
@@ -387,14 +389,8 @@ export const ShadStat = (props) => {
     </div>
   );
   return (
-    <Shell {...props}>
-      {properties.card === false ? (
-        body
-      ) : (
-        <Card className="px-6 py-5" style={{ minHeight: height }}>
-          {body}
-        </Card>
-      )}
+    <Shell {...props} innerRef={ref}>
+      {properties.card === false ? body : <Card className="px-6 py-5">{body}</Card>}
     </Shell>
   );
 };

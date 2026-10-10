@@ -187,8 +187,10 @@ export const resolveFlexContainerHeight = ({
 
   // Add FlexContainer chrome after content height. The canonical layout remains
   // a floor so enabling dynamic height never silently shrinks the component
-  // below the size the app author drew in the editor.
+  // below the size the app author drew in the editor; a card surface (component
+  // packs) fits its content instead, so a card never leaves an empty band.
   const heightWithChrome =
     contentHeight + padding * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2 + flexCardHeaderPx(properties);
+  if (flexCardHeaderPx(properties) || ['antCard', 'shadcnCard'].includes(properties.cardStyle)) return heightWithChrome;
   return Math.max(heightWithChrome, canonicalLayout?.height ?? 0);
 };

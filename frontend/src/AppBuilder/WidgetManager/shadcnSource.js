@@ -34,13 +34,13 @@ const ANY = {
 };
 
 const commonProperties = (withHeight) => ({
-  ...(withHeight ? { dynamicHeight: toggle('Dynamic height', false, { section: 'additionalActions' }) } : {}),
+  ...(withHeight ? { dynamicHeight: toggle('Dynamic height', true, { section: 'additionalActions' }) } : {}),
   loadingState: toggle('Loading state', false, { section: 'additionalActions' }),
   visibility: toggle('Visibility', true, { section: 'additionalActions' }),
   disabledState: toggle('Disable', false, { section: 'additionalActions' }),
 });
 const commonDefinition = (withHeight) => ({
-  ...(withHeight ? { dynamicHeight: { value: '{{false}}' } } : {}),
+  ...(withHeight ? { dynamicHeight: { value: '{{true}}' } } : {}),
   loadingState: { value: '{{false}}' },
   visibility: { value: '{{true}}' },
   disabledState: { value: '{{false}}' },
@@ -207,6 +207,7 @@ export const shadStatConfig = shadConfig({
   displayName: 'Stat',
   description: 'shadcn/ui dashboard figure: label, value, change badge and footnote',
   defaultSize: { width: 10, height: 120 },
+  withHeight: true,
   properties: {
     label: code('Label', STRING, 'Total revenue'),
     value: code('Value', { type: 'union', schemas: [{ type: 'number' }, { type: 'string' }] }, '$1,250.00'),

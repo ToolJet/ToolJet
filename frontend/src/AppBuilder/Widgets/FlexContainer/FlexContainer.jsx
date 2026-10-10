@@ -5,6 +5,7 @@ import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useShouldStackFlexRealCanvas } from './useFlexStackBelow';
 import { flexCardHeaderPx } from './flexContainer.utils';
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -61,7 +62,11 @@ export const FlexContainer = ({
   const effectiveDirection = shouldStack ? 'column' : direction;
 
   const isRow = effectiveDirection === 'row';
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  // A card (component packs) always fits its content in the viewer: it never scrolls inside or leaves a band. A row
+  // is never a scroll area either: it grows to its tallest child (a fixed-height column may still scroll).
+  const isCardSurface = ['antCard', 'shadcnCard'].includes(cardStyle);
+  const isDynamicHeightEnabled =
+    fitsContentInView('FlexContainer', { ...properties, direction: effectiveDirection }) && currentMode === 'view';
 
   const childIds = useStore((state) => state.containerChildrenMapping?.[id] ?? [], shallow);
 
@@ -108,7 +113,7 @@ export const FlexContainer = ({
 
   const outerStyles = {
     height: isDynamicHeightEnabled ? 'auto' : '100%',
-    ...(isDynamicHeightEnabled ? { minHeight: `${height}px` } : {}),
+    ...(isDynamicHeightEnabled && !isCardSurface ? { minHeight: `${height}px` } : {}),
     display: isVisible ? 'flex' : 'none',
     flexDirection: isCard ? 'column' : effectiveDirection,
     backgroundColor: isCard ? 'var(--cc-surface1-surface)' : backgroundColor,

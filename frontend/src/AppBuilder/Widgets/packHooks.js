@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // Shared by the component packs (experiment): the ToolJet side of a pack widget, independent of the UI library, so a
 // pack's chunk does not pull in another pack's library.
@@ -29,12 +30,13 @@ export const useExposed = (setExposedVariables, properties, values) => {
   }, [dataKey]);
 };
 
-/** Grows the widget to its content in view mode when its Dynamic height property is on. */
+/** Sizes the widget to its content in view mode, unless its Dynamic height property is turned off: a pack widget
+ *  given a guessed height (an agent's, or a default) neither clips its content nor leaves a gap under it. */
 export const useAutoHeight = (
   { id, height, width, properties, currentMode, currentLayout, subContainerIndex, componentType },
   ref
 ) => {
-  const enabled = !!properties.dynamicHeight && currentMode === 'view';
+  const enabled = fitsContentInView(componentType, properties) && currentMode === 'view';
   const value = useHeightObserver(ref, enabled);
   useDynamicHeight({
     isDynamicHeightEnabled: enabled,

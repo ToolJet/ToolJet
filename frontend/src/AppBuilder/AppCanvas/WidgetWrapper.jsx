@@ -1,3 +1,4 @@
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import React, { memo, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
@@ -110,8 +111,9 @@ const WidgetWrapper = memo(
       shallow
     );
     const isFlexSubcontainer = isFlexLayout && SUBCONTAINER_WIDGETS.includes(componentType);
+    // Component packs and FlexContainer cards and rows fit their content without the property (dynamicHeightPolicy).
     const isDynamicHeightEnabled = useStore(
-      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.dynamicHeight,
+      (state) => fitsContentInView(componentType, state.getResolvedComponent(id, resolveIndex, moduleId)?.properties),
       shallow
     );
     const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';

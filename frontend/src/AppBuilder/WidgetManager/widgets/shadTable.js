@@ -77,7 +77,7 @@ export const shadTableConfig = {
         schema: {
           type: 'boolean',
         },
-        defaultValue: false,
+        defaultValue: true,
       },
       section: 'additionalActions',
     },
@@ -176,7 +176,7 @@ export const shadTableConfig = {
         value: 'No results.',
       },
       dynamicHeight: {
-        value: '{{false}}',
+        value: '{{true}}',
       },
       loadingState: {
         value: '{{false}}',

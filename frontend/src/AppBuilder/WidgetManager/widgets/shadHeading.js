@@ -66,7 +66,7 @@ export const shadHeadingConfig = {
         schema: {
           type: 'boolean',
         },
-        defaultValue: false,
+        defaultValue: true,
       },
       section: 'additionalActions',
     },
@@ -149,7 +149,7 @@ export const shadHeadingConfig = {
         value: 'h2',
       },
       dynamicHeight: {
-        value: '{{false}}',
+        value: '{{true}}',
       },
       loadingState: {
         value: '{{false}}',

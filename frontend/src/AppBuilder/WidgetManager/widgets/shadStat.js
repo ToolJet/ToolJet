@@ -103,6 +103,17 @@ export const shadStatConfig = {
         defaultValue: true,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -191,6 +202,9 @@ export const shadStatConfig = {
         value: '',
       },
       card: {
+        value: '{{true}}',
+      },
+      dynamicHeight: {
         value: '{{true}}',
       },
       loadingState: {

@@ -29,12 +29,13 @@
   --sc-input: var(--cc-default-border, #e5e5e5);
   --sc-ring: var(--cc-primary-brand, #a3a3a3);
   --sc-radius: 0.625rem;
-  // Chart series: the theme's primary leads, then shadcn's default chart palette.
-  --sc-chart-1: var(--cc-primary-brand, #e76e50);
-  --sc-chart-2: #2a9d90;
-  --sc-chart-3: #e8c468;
-  --sc-chart-4: #274754;
-  --sc-chart-5: #f4a462;
+  // Chart series: the theme's primary and its shades, so a chart never brings in a second accent the app does not
+  // have (a teal and a yellow beside an amber theme read as off-brand). Lighter tints, then a deeper shade, then grey.
+  --sc-chart-1: var(--cc-primary-brand, #2563eb);
+  --sc-chart-2: color-mix(in srgb, var(--sc-chart-1) 62%, var(--sc-background));
+  --sc-chart-3: color-mix(in srgb, var(--sc-chart-1) 34%, var(--sc-background));
+  --sc-chart-4: color-mix(in srgb, var(--sc-chart-1) 70%, #000000);
+  --sc-chart-5: var(--cc-placeholder-text, #94a3b8);
 
   color: var(--sc-foreground);
   font-family: inherit;

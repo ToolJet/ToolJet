@@ -57,7 +57,7 @@ export const shadAccordionConfig = {
         schema: {
           type: 'boolean',
         },
-        defaultValue: false,
+        defaultValue: true,
       },
       section: 'additionalActions',
     },
@@ -149,7 +149,7 @@ export const shadAccordionConfig = {
         value: '{{[]}}',
       },
       dynamicHeight: {
-        value: '{{false}}',
+        value: '{{true}}',
       },
       loadingState: {
         value: '{{false}}',

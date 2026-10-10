@@ -70,6 +70,15 @@ describe('FlexContainer dynamic height', () => {
     expect(titled - plain).toBe(56);
   });
 
+  it('fits a card to its content, below its authored height too', () => {
+    const height = resolve({
+      properties: { direction: 'column', padding: 24, cardStyle: 'shadcnCard', cardTitle: 'Fleet' },
+      children: cards(1, { height: 120 }),
+      height: 600,
+    });
+    expect(height).toBe(48 + 24 * 2 + 120 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2);
+  });
+
   it('keeps the authored height as the floor', () => {
     const height = resolve({
       properties: { direction: 'column', padding: 0 },

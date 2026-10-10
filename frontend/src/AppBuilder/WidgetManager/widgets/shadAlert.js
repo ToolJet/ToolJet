@@ -68,7 +68,7 @@ export const shadAlertConfig = {
         schema: {
           type: 'boolean',
         },
-        defaultValue: false,
+        defaultValue: true,
       },
       section: 'additionalActions',
     },
@@ -154,7 +154,7 @@ export const shadAlertConfig = {
         value: 'default',
       },
       dynamicHeight: {
-        value: '{{false}}',
+        value: '{{true}}',
       },
       loadingState: {
         value: '{{false}}',

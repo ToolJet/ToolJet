@@ -13,6 +13,7 @@ import {
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
+import { heightHeldInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Grid slice — owns the mutable reflow state for dynamic-height layout.
@@ -446,7 +447,8 @@ export const createGridSlice = (set, get) => {
           const nextBubbleResolved = nextBubbleTargetId
             ? boundGetResolvedComponent(nextBubbleTargetId, nextBubbleContext)
             : null;
-          const nextBubbleHasDynamicHeight = nextBubbleResolved?.properties?.dynamicHeight !== false;
+          const nextBubbleType = nextBubbleTargetId ? getComponentTypeFromId(nextBubbleTargetId, moduleId) : undefined;
+          const nextBubbleHasDynamicHeight = !heightHeldInView(nextBubbleType, nextBubbleResolved?.properties);
 
           if (
             nextBubbleHasDynamicHeight &&

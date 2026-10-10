@@ -9,6 +9,7 @@ import {
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
+import { heightHeldInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
 const TABS_TAB_BAR_HEIGHT = 50;
@@ -521,7 +522,7 @@ export const resolveContainerHeight = ({
   // and the collapsed path (header height only) needs to run for siblings to
   // pull up.
   const gatedComponent = getResolvedComponent(componentId, context);
-  if (gatedComponent?.properties?.dynamicHeight === false && componentType !== 'Accordion') {
+  if (heightHeldInView(componentType, gatedComponent?.properties) && componentType !== 'Accordion') {
     return containerHeight;
   }
 

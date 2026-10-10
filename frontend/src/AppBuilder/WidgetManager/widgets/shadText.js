@@ -70,7 +70,7 @@ export const shadTextConfig = {
         schema: {
           type: 'boolean',
         },
-        defaultValue: false,
+        defaultValue: true,
       },
       section: 'additionalActions',
     },
@@ -153,7 +153,7 @@ export const shadTextConfig = {
         value: 'paragraph',
       },
       dynamicHeight: {
-        value: '{{false}}',
+        value: '{{true}}',
       },
       loadingState: {
         value: '{{false}}',
