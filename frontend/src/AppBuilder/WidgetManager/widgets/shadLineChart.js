@@ -261,6 +261,17 @@ export const shadLineChartConfig = {
         defaultValue: false,
       },
     },
+    seriesLabels: {
+      type: 'code',
+      displayName: 'Series labels ({ field: label })',
+      validation: {
+        schema: {
+          type: 'object',
+        },
+        defaultValue: {},
+      },
+      placeholder: "{ food_cost_pct: 'Food cost', target_pct: 'Target' }",
+    },
     colors: {
       type: 'code',
       displayName: 'Series colors (in order)',
@@ -519,6 +530,9 @@ export const shadLineChartConfig = {
       },
       showLegend: {
         value: '{{true}}',
+      },
+      seriesLabels: {
+        value: '{{{} }}',
       },
       colors: {
         value: '{{[]}}',

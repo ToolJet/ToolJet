@@ -234,3 +234,16 @@ export const resolveChartFields = (data, xField, series) => {
   const fallback = keys.filter((key) => key !== x && numeric(key) && typeof rows[0][key] !== 'boolean').slice(0, 6);
   return { x, series: named.length ? named : fallback.length ? fallback : series };
 };
+
+/** A series' name in the legend and tooltip: the author's label for it (seriesLabels), else its field name made
+ *  readable ("food_cost_pct" reads "Food cost pct", "lastWeek" reads "Last week"; a build's legend showed raw keys). */
+export const seriesLabel = (key, labels) => {
+  const own = labels && typeof labels === 'object' && !Array.isArray(labels) ? labels[key] : undefined;
+  if (own !== undefined && own !== null && String(own).trim() !== '') return String(own);
+  const words = String(key ?? '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .trim()
+    .toLowerCase();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : String(key ?? '');
+};

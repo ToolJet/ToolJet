@@ -48,6 +48,7 @@ import {
   sparkPoints,
   trendOf,
   resolveChartFields,
+  seriesLabel,
 } from './chartsModel';
 
 export { withControlState } from '../packHooks';
@@ -207,11 +208,20 @@ export const ShadAreaChart = (props) => {
           {p.showLegend === true && !compact ? <Legend content={<LegendContent />} /> : null}
           {series.map((s, i) =>
             p.lineOnly === true ? (
-              <Line key={s} dataKey={s} type={p.curve || 'monotone'} stroke={color(i)} strokeWidth={2} dot={false} />
+              <Line
+                key={s}
+                dataKey={s}
+                name={seriesLabel(s, p.seriesLabels)}
+                type={p.curve || 'monotone'}
+                stroke={color(i)}
+                strokeWidth={2}
+                dot={false}
+              />
             ) : (
               <Area
                 key={s}
                 dataKey={s}
+                name={seriesLabel(s, p.seriesLabels)}
                 type={p.curve || 'monotone'}
                 stroke={color(i)}
                 strokeWidth={2}
@@ -277,6 +287,7 @@ export const ShadBarChart = (props) => {
             <Bar
               key={s}
               dataKey={s}
+              name={seriesLabel(s, p.seriesLabels)}
               fill={color(i)}
               radius={p.stack === true ? 0 : horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
               stackId={p.stack === true ? 'a' : undefined}
@@ -475,7 +486,7 @@ export const ShadLineChart = (props) => {
             <Line
               key={s}
               dataKey={s}
-              name={s}
+              name={seriesLabel(s, p.seriesLabels)}
               type={curve}
               stroke={color(i)}
               strokeWidth={strokeWidth}
@@ -530,7 +541,7 @@ export const ShadRadarChart = (props) => {
             <Radar
               key={s}
               dataKey={s}
-              name={s}
+              name={seriesLabel(s, p.seriesLabels)}
               stroke={color(i)}
               strokeWidth={2}
               fill={color(i)}

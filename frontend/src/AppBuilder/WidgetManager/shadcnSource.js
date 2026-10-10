@@ -899,6 +899,12 @@ const seriesProps = {
   valuePrefix: code('Value prefix', STRING, ''),
   valueSuffix: code('Value suffix', STRING, ''),
   showLegend: toggle('Legend'),
+  seriesLabels: code(
+    'Series labels ({ field: label })',
+    { type: 'object' },
+    {},
+    { placeholder: "{ food_cost_pct: 'Food cost', target_pct: 'Target' }" }
+  ),
   emptyText: code('Empty message', STRING, 'No data'),
   colors: SERIES_COLORS,
 };
@@ -909,6 +915,7 @@ const seriesDefaults = {
   valuePrefix: { value: '' },
   valueSuffix: { value: '' },
   showLegend: { value: '{{false}}' },
+  seriesLabels: { value: '{{{} }}' },
   emptyText: { value: 'No data' },
   colors: { value: '{{[]}}' },
 };

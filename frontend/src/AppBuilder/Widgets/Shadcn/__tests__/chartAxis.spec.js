@@ -60,3 +60,13 @@ describe('isCompactChart', () => {
     expect(isCompactChart(undefined)).toBe(false);
   });
 });
+
+describe('seriesLabel', () => {
+  const { seriesLabel } = require('../chartsModel');
+  it("uses the author's label, else a readable field name", () => {
+    expect(seriesLabel('food_cost_pct', { food_cost_pct: 'Food cost' })).toBe('Food cost');
+    expect(seriesLabel('food_cost_pct', {})).toBe('Food cost pct');
+    expect(seriesLabel('lastWeek')).toBe('Last week');
+    expect(seriesLabel('revenue', 'junk')).toBe('Revenue');
+  });
+});

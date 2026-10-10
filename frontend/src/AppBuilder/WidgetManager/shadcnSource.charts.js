@@ -54,6 +54,12 @@ export const shadLineChartConfig = shadConfig({
     ...common,
     showGrid: toggle('Grid', true),
     showLegend: toggle('Legend'),
+    seriesLabels: code(
+      'Series labels ({ field: label })',
+      { type: 'object' },
+      {},
+      { placeholder: "{ food_cost_pct: 'Food cost', target_pct: 'Target' }" }
+    ),
     colors: SERIES_COLORS,
   },
   defaults: {
@@ -71,6 +77,7 @@ export const shadLineChartConfig = shadConfig({
     ...commonDefaults,
     showGrid: { value: '{{true}}' },
     showLegend: { value: '{{true}}' },
+    seriesLabels: { value: '{{{} }}' },
     colors: { value: '{{[]}}' },
   },
   styles: { ...chartStyles, referenceLineColor: colorStyle('Target line color') },
@@ -100,6 +107,12 @@ export const shadRadarChartConfig = shadConfig({
     showDots: toggle('Dots'),
     ...common,
     showLegend: toggle('Legend', true),
+    seriesLabels: code(
+      'Series labels ({ field: label })',
+      { type: 'object' },
+      {},
+      { placeholder: "{ food_cost_pct: 'Food cost', target_pct: 'Target' }" }
+    ),
     colors: SERIES_COLORS,
   },
   defaults: {
@@ -113,6 +126,7 @@ export const shadRadarChartConfig = shadConfig({
     showDots: { value: '{{false}}' },
     ...commonDefaults,
     showLegend: { value: '{{true}}' },
+    seriesLabels: { value: '{{{} }}' },
     colors: { value: '{{[]}}' },
   },
   styles: chartStyles,

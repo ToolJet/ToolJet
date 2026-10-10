@@ -188,6 +188,17 @@ export const shadRadarChartConfig = {
         defaultValue: true,
       },
     },
+    seriesLabels: {
+      type: 'code',
+      displayName: 'Series labels ({ field: label })',
+      validation: {
+        schema: {
+          type: 'object',
+        },
+        defaultValue: {},
+      },
+      placeholder: "{ food_cost_pct: 'Food cost', target_pct: 'Target' }",
+    },
     colors: {
       type: 'code',
       displayName: 'Series colors (in order)',
@@ -425,6 +436,9 @@ export const shadRadarChartConfig = {
       },
       showLegend: {
         value: '{{true}}',
+      },
+      seriesLabels: {
+        value: '{{{} }}',
       },
       colors: {
         value: '{{[]}}',

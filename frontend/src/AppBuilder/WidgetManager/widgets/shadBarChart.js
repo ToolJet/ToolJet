@@ -88,6 +88,17 @@ export const shadBarChartConfig = {
         defaultValue: false,
       },
     },
+    seriesLabels: {
+      type: 'code',
+      displayName: 'Series labels ({ field: label })',
+      validation: {
+        schema: {
+          type: 'object',
+        },
+        defaultValue: {},
+      },
+      placeholder: "{ food_cost_pct: 'Food cost', target_pct: 'Target' }",
+    },
     emptyText: {
       type: 'code',
       displayName: 'Empty message',
@@ -334,6 +345,9 @@ export const shadBarChartConfig = {
       },
       showLegend: {
         value: '{{false}}',
+      },
+      seriesLabels: {
+        value: '{{{} }}',
       },
       emptyText: {
         value: 'No data',
