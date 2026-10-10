@@ -219,7 +219,7 @@ export const shadTableConfig = {
         schema: {
           type: 'boolean',
         },
-        defaultValue: false,
+        defaultValue: true,
       },
     },
     defaultSelectedRow: {
@@ -956,7 +956,7 @@ export const shadTableConfig = {
         value: '{{true}}',
       },
       disableRowDeselection: {
-        value: '{{false}}',
+        value: '{{true}}',
       },
       defaultSelectedRow: {
         value: '{{{}}}',

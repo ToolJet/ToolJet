@@ -55,7 +55,9 @@ export const shadTableConfig = shadConfig({
     allowSelection: toggle('Row selection', true),
     showBulkSelector: toggle('Bulk selection (checkboxes)'),
     highlightSelectedRow: toggle('Highlight selected row', true),
-    disableRowDeselection: toggle('Keep a row selected (no deselect)'),
+    // On by default: a click on a row opens what the row opens (a sheet bound to selectedRow); deselecting on the
+    // second click left that sheet empty.
+    disableRowDeselection: toggle('Keep a row selected (no deselect)', true),
     defaultSelectedRow: code('Default selected row ({ key: value })', OBJECT, {}),
     // Toolbar and footer
     hideColumnSelectorButton: toggle('Hide column chooser'),
@@ -100,7 +102,7 @@ export const shadTableConfig = shadConfig({
     allowSelection: { value: '{{true}}' },
     showBulkSelector: { value: '{{false}}' },
     highlightSelectedRow: { value: '{{true}}' },
-    disableRowDeselection: { value: '{{false}}' },
+    disableRowDeselection: { value: '{{true}}' },
     defaultSelectedRow: { value: '{{{}}}' },
     hideColumnSelectorButton: { value: '{{false}}' },
     showDownloadButton: { value: '{{false}}' },

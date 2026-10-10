@@ -566,13 +566,16 @@ export const ShadTable = (props) => {
     if (isDisabled) return;
     if (allowSelection && !bulk) {
       const already = selected.has(entry.key);
-      if (already && properties.disableRowDeselection === true) {
+      // A click keeps the row selected unless deselection is turned on (an unset property reads as its default, on).
+      if (already && properties.disableRowDeselection !== false) {
         fireEvent('onRowClicked');
         return;
       }
       const keys = already ? new Set() : new Set([entry.key]);
       select(keys, already ? null : entry.key);
-      fireEvent('onRowClicked');
+      // A deselecting click is a selection change, not a row click: onRowClicked would open a sheet bound to
+      // selectedRow with nothing in it.
+      if (!already) fireEvent('onRowClicked');
       fireEvent('onSelectionChanged');
       return;
     }
