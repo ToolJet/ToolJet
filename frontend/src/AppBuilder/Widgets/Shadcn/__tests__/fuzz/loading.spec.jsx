@@ -31,8 +31,11 @@ describe('loading looks', () => {
     }
   });
 
+  // A Kanban that already has cards keeps them on screen under a spinner while it reloads; its loading look is for
+  // the first load, before any cards.
+  const FIRST_LOAD = { ShadKanban: { data: [] } };
   it.each([...SKELETON_CAPABLE])('%s draws a skeleton when its Loading look is Skeleton', async (name) => {
-    const seen = await loading(name, { loadingIndicator: 'skeleton' });
+    const seen = await loading(name, { loadingIndicator: 'skeleton', ...FIRST_LOAD[name] });
     expect(seen.skeletons).toBeGreaterThan(0);
     expect(seen.problems).toEqual([]);
   });

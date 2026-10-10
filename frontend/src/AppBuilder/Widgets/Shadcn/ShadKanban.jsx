@@ -6,6 +6,7 @@ import {
   KeyboardSensor,
   PointerSensor,
   closestCorners,
+  pointerWithin,
   useDraggable,
   useDroppable,
   useSensor,
@@ -17,7 +18,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { initials, list, useAutoHeight, useExposed } from '../packHooks';
 import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from './ui';
-import { Shell } from './Shadcn';
+import { Shell, Spinner } from './Shadcn';
 import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from './kanbanBoard';
 import { SHADOWS, badgeLook, isSet, kanbanLook, px } from './kanbanLook';
 import { stringify } from '../packJson';
@@ -283,11 +284,13 @@ const KanbanColumn = ({
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onCollapse(column.id)}
         style={{ ...look.column, width: 44, flex: '0 0 44px' }}
         className={cn(
-          'group/col flex cursor-pointer flex-col items-center gap-2 px-1 py-3 transition-shadow hover:ring-1 hover:ring-border',
+          'group/col relative flex cursor-pointer flex-col items-center gap-2 px-1 py-3 transition-shadow hover:ring-1 hover:ring-border',
           isOver && 'ring-1 ring-primary'
         )}
       >
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/col:opacity-100" />
+        {/* The count sits on the open columns' header line and the title reads down from it, so a row of open and
+            folded columns lines up at the top; the expand chevron shows at the foot on hover, taking no room. */}
+        <ChevronRight className="absolute bottom-3 left-1/2 h-4 w-4 -translate-x-1/2 text-muted-foreground opacity-0 transition-opacity group-hover/col:opacity-100" />
         {showCount ? (
           <Badge variant="secondary" className={cn('px-1.5 tabular-nums', COUNT_BADGE)}>
             {column.cards.length}
@@ -407,6 +410,15 @@ const BOTTOM_FADE = {
 const RIGHT_FADE = {
   maskImage: 'linear-gradient(to right, #000 calc(100% - 48px), transparent)',
   WebkitMaskImage: 'linear-gradient(to right, #000 calc(100% - 48px), transparent)',
+};
+
+/** Where a drop lands: what is under the pointer, a card first, then a column (a folded column is a 44px strip that
+ *  closestCorners passed over for a card nearby, so drops on it were lost); off the board, the nearest corners. */
+export const kanbanCollision = (args) => {
+  const within = pointerWithin(args);
+  const cards = within.filter((c) => c.data?.droppableContainer?.data?.current?.type === 'card');
+  if (cards.length) return cards;
+  return within.length ? within : closestCorners(args);
 };
 
 export const ShadKanban = (props) => {
@@ -588,7 +600,7 @@ export const ShadKanban = (props) => {
 
   const enabled = !properties.disabledState;
   // Custom cards don't drag in the editor, where a press edits the card's components.
-  const draggable = properties.allowDrag !== false && enabled && !(custom && editing);
+  const draggable = properties.allowDrag !== false && enabled && !properties.loadingState && !(custom && editing);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor)
@@ -613,11 +625,24 @@ export const ShadKanban = (props) => {
     if (!target) return;
     doMove(active.id, target.columnId, target.type === 'card' ? target.key : null);
   };
+  // Reloading a board that has cards (a query refetching after a move) keeps the board on screen under a spinner,
+  // instead of swapping it for a loading look: the swap unmounted the drag context, so a drag made while the data
+  // came back was lost, and the board flashed on every move. The board takes no input until the data is back.
+  const reloading = !!properties.loadingState && columns.some((c) => c.cards.length);
+  const shellProps = reloading ? { ...props, properties: { ...properties, loadingState: false } } : props;
   return (
-    <Shell {...props} innerRef={ref} className={fixed ? 'h-full' : undefined}>
+    <Shell {...shellProps} innerRef={ref} className={cn(fixed && 'h-full', reloading && 'relative')}>
+      {reloading ? (
+        <div
+          aria-busy="true"
+          className="absolute inset-0 z-10 flex items-center justify-center rounded-[var(--sc-radius)] bg-[color:color-mix(in_srgb,var(--sc-background)_45%,transparent)]"
+        >
+          <Spinner className="h-6 w-6" />
+        </div>
+      ) : null}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={kanbanCollision}
         onDragStart={({ active }) => setActiveKey(active.id)}
         onDragCancel={() => setActiveKey(null)}
         onDragEnd={onDragEnd}
@@ -625,7 +650,11 @@ export const ShadKanban = (props) => {
         <div
           ref={boardRef}
           style={{ ...look.vars, ...(moreRight ? RIGHT_FADE : {}) }}
-          className={cn('flex gap-[var(--kb-col-gap,1rem)] overflow-x-auto pb-1', fixed && 'h-full items-stretch')}
+          className={cn(
+            'flex gap-[var(--kb-col-gap,1rem)] overflow-x-auto pb-1',
+            fixed && 'h-full items-stretch',
+            reloading && 'pointer-events-none'
+          )}
         >
           {columns.slice(0, MAX_BOARD_COLUMNS).map((column) => (
             <KanbanColumn

@@ -2,6 +2,16 @@
 // its own. Cards are rows of data; a column is a value of the status field.
 
 const keyOf = (value) => String(value ?? '');
+const isPlain = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+/** A drag key no other card has: the card's id when free, else the id with a suffix. Duplicate or empty ids (two
+ *  rows with id '' or the same id) gave two cards one key: dnd-kit dragged both and React reused one's element for
+ *  the other, and a move removed every copy. */
+const uniqueKey = (keys, base) => {
+  let key = base;
+  for (let n = 2; keys.has(key); n += 1) key = `${base}~${n}`;
+  keys.add(key);
+  return key;
+};
 
 /** Columns in the order given ({ id, title } objects or plain values), each with its cards; a status value no column
  *  lists gets a column at the end, so no card disappears. With no columns given, they come from the data. */
@@ -17,9 +27,16 @@ export const boardColumns = (cards, columns, statusField, idField) => {
     if (!byId.has(status)) byId.set(status, { id: status, title: status, cards: [] });
     byId.get(status).cards.push(card);
   }
-  // Keep a stable id on every card for drag and drop.
+  // Keep a stable id on every card for drag and drop, unique across the board. Rows that are not objects become
+  // empty cards rather than spreading a string's characters into fields.
+  const keys = new Set();
   for (const column of byId.values()) {
-    column.cards = column.cards.map((card, i) => ({ ...card, __key: keyOf(card?.[idField] ?? `${column.id}-${i}`) }));
+    column.cards = column.cards.map((card, i) => {
+      const row = isPlain(card) ? card : {};
+      const id = row[idField];
+      const base = id === undefined || id === null || id === '' ? `${column.id}-${i}` : keyOf(id);
+      return { ...row, __key: uniqueKey(keys, base) };
+    });
   }
   return [...byId.values()];
 };
@@ -58,9 +75,10 @@ export const boardCards = (columns) => columns.flatMap((c) => c.cards.map(plain)
 
 /** Adds a card at the end of a column: `columnId` when given (the card's status is set to it), else the card's status
  *  column, which is created when no column has that status. A card without an id gets one no other card has. */
-export const addCard = (columns, card, columnId, statusField, idField) => {
+export const addCard = (columns, rawCard, columnId, statusField, idField) => {
+  const card = isPlain(rawCard) ? rawCard : {};
   const keys = new Set(columns.flatMap((c) => c.cards.map((x) => x.__key)));
-  let id = card?.[idField];
+  let id = card[idField];
   if (id === undefined || id === null || id === '') {
     let n = keys.size + 1;
     while (keys.has(`new-${n}`)) n += 1;
@@ -74,7 +92,7 @@ export const addCard = (columns, card, columnId, statusField, idField) => {
     target = { id: status, title: status, cards: [] };
     next.push(target);
   }
-  target.cards.push({ ...added, __key: keyOf(id) });
+  target.cards.push({ ...added, __key: uniqueKey(keys, keyOf(id)) });
   return { columns: next, card: added };
 };
 
@@ -91,7 +109,7 @@ export const updateCard = (columns, cardId, values, statusField, idField) => {
   const key = keyOf(cardId);
   const card = columns.flatMap((c) => c.cards).find((x) => x.__key === key);
   if (!card) return { columns, card: null };
-  const updated = { ...card, ...values, __key: key };
+  const updated = { ...card, ...(isPlain(values) ? values : {}), __key: key };
   if (keyOf(updated[statusField]) === keyOf(card[statusField])) {
     const next = columns.map((c) => ({ ...c, cards: c.cards.map((x) => (x.__key === key ? updated : x)) }));
     return { columns: next, card: plain(updated) };
