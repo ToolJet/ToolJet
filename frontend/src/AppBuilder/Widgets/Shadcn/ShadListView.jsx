@@ -56,6 +56,8 @@ const Row = ({ id, index, parentPath, height, width, onPick, selected, look, mod
   );
 };
 
+const ROWS_PER_STEP = 100;
+
 export const ShadListView = (props) => {
   const { id, properties, styles, setExposedVariable, setExposedVariables, fireEvent, darkMode, dataCy } = props;
   // A pack widget created through the MCP carries only the properties it was given (the server has no defaults to
@@ -80,10 +82,11 @@ export const ShadListView = (props) => {
   const look = listLook(styles);
 
   const mode = properties.mode === 'grid' ? 'grid' : 'list';
-  const columns = mode === 'grid' ? Math.max(1, Math.floor(Number(properties.columns)) || 1) : 1;
-  const rowHeight = Math.max(24, Number(properties.rowHeight) || 72);
-  const gap = Math.max(0, Number(properties.gap) || 0);
-  const idField = properties.idField || 'id';
+  const columns = mode === 'grid' ? Math.min(24, Math.max(1, Math.floor(Number(properties.columns)) || 1)) : 1;
+  const rowHeight = Math.min(4000, Math.max(24, Number(properties.rowHeight) || 72));
+  const gap = Math.min(200, Math.max(0, Number(properties.gap) || 0));
+  // Text only: a list bound here would be turned into a huge key for every item.
+  const idField = typeof properties.idField === 'string' && properties.idField.trim() ? properties.idField : 'id';
   const server = !!properties.serverSidePagination;
 
   const [page, setPage] = useState(1);
@@ -94,7 +97,12 @@ export const ShadListView = (props) => {
     totalRecords: properties.totalRecords,
     page,
   });
-  const items = paged.items;
+  // Every row is a canvas of components: past ROWS_PER_STEP rows on a page (no paging, or a huge page size), the rest
+  // wait behind "Show more" (10k rows froze the page).
+  const [shownRows, setShownRows] = useState(ROWS_PER_STEP);
+  useEffect(() => setShownRows(ROWS_PER_STEP), [paged.page]);
+  const items = paged.items.slice(0, shownRows);
+  const hiddenRows = paged.items.length - items.length;
   // Client-side data shorter than the current page: follow the clamp.
   useEffect(() => {
     if (paged.page !== page) setPage(paged.page);
@@ -256,6 +264,15 @@ export const ShadListView = (props) => {
           ))}
         </div>
       )}
+      {hiddenRows > 0 && !isLoading ? (
+        <button
+          type="button"
+          onClick={() => setShownRows((n) => n + ROWS_PER_STEP)}
+          className="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          {`Show ${Math.min(hiddenRows, ROWS_PER_STEP)} more of ${hiddenRows}`}
+        </button>
+      ) : null}
       {showPager ? (
         <nav aria-label="Pagination" className="flex items-center justify-between gap-2 pt-1">
           <span className="text-xs tabular-nums text-muted-foreground">

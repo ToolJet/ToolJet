@@ -213,6 +213,16 @@ const COLUMN_TITLE = 'text-[color:var(--kb-col-title,var(--sc-foreground))]';
 const COUNT_BADGE =
   'bg-[color:var(--kb-count-bg,var(--sc-secondary))] text-[color:var(--kb-count-fg,var(--sc-secondary-foreground))]';
 
+// A field name is text (or a number): anything else bound there (a list of rows) was turned into a 150 KB key for
+// every card, which froze the board.
+const fieldName = (value, fallback) =>
+  typeof value === 'string' && value.trim() ? value : typeof value === 'number' ? String(value) : fallback;
+
+// A board draws this many cards a column at first, then this many more per "Show more" click (10k cards froze the
+// page); and at most MAX_BOARD_COLUMNS columns (a 10k-item list bound as the columns).
+const CARDS_PER_STEP = 100;
+const MAX_BOARD_COLUMNS = 50;
+
 const KanbanColumn = ({
   column,
   renderBody,
@@ -237,6 +247,8 @@ const KanbanColumn = ({
     id: `col-${column.id}`,
     data: { type: 'column', columnId: column.id },
   });
+  const [shownCards, setShownCards] = useState(CARDS_PER_STEP);
+  const hiddenCards = column.cards.length - shownCards;
   // A collapsed column is a narrow strip: title read sideways and the count. It still takes dropped cards, and a
   // click opens it again.
   if (collapsed) {
@@ -305,26 +317,38 @@ const KanbanColumn = ({
         </div>
       </div>
       {column.cards.length ? (
-        column.cards.map((card) => (
-          <KanbanCard
-            key={card.__key}
-            card={card}
-            columnId={column.id}
-            renderBody={renderBody}
-            padding={padding}
-            look={look}
-            collapse={{ height: collapsedHeight, expanded: expandedKeys.has(card.__key), onToggle }}
-            selected={card.__key === selectedKey}
-            draggable={draggable}
-            onSelect={onSelect}
-            onDelete={onDelete}
-          />
-        ))
+        column.cards
+          .slice(0, shownCards)
+          .map((card) => (
+            <KanbanCard
+              key={card.__key}
+              card={card}
+              columnId={column.id}
+              renderBody={renderBody}
+              padding={padding}
+              look={look}
+              collapse={{ height: collapsedHeight, expanded: expandedKeys.has(card.__key), onToggle }}
+              selected={card.__key === selectedKey}
+              draggable={draggable}
+              onSelect={onSelect}
+              onDelete={onDelete}
+            />
+          ))
       ) : (
         <div className="rounded-lg border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">
           {emptyText}
         </div>
       )}
+      {hiddenCards > 0 ? (
+        <button
+          type="button"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => setShownCards((n) => n + CARDS_PER_STEP)}
+          className="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          {`Show ${Math.min(hiddenCards, CARDS_PER_STEP)} more of ${hiddenCards}`}
+        </button>
+      ) : null}
       {onAdd ? (
         <button
           type="button"
@@ -354,16 +378,16 @@ export const ShadKanban = (props) => {
   const { properties, styles, setExposedVariable, setExposedVariables, fireEvent } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
-  const statusField = properties.statusField || 'status';
-  const idField = properties.idField || 'id';
+  const statusField = fieldName(properties.statusField, 'status');
+  const idField = fieldName(properties.idField, 'id');
   const fields = {
-    title: properties.titleField || 'title',
-    description: properties.descriptionField || '',
-    badge: properties.badgeField || '',
-    tags: properties.tagsField || '',
-    progress: properties.progressField || '',
-    avatar: properties.avatarField || '',
-    meta: properties.metaField || '',
+    title: fieldName(properties.titleField, 'title'),
+    description: fieldName(properties.descriptionField, ''),
+    badge: fieldName(properties.badgeField, ''),
+    tags: fieldName(properties.tagsField, ''),
+    progress: fieldName(properties.progressField, ''),
+    avatar: fieldName(properties.avatarField, ''),
+    meta: fieldName(properties.metaField, ''),
   };
   const compact = properties.density === 'compact';
   const look = kanbanLook(styles);
@@ -566,7 +590,7 @@ export const ShadKanban = (props) => {
           style={{ ...look.vars, ...(moreRight ? RIGHT_FADE : {}) }}
           className="flex gap-[var(--kb-col-gap,1rem)] overflow-x-auto pb-1"
         >
-          {columns.map((column) => (
+          {columns.slice(0, MAX_BOARD_COLUMNS).map((column) => (
             <KanbanColumn
               key={column.id}
               column={column}
