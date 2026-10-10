@@ -225,7 +225,7 @@ export const shadStatConfig = shadConfig({
   name: 'ShadStat',
   displayName: 'Stat',
   description:
-    "shadcn/ui dashboard figure: label, value, change badge and footnote. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
+    "shadcn/ui dashboard figure, from a single number to a full KPI card: label, value, change badge (change, trend) with a context line (changeLabel, e.g. 'vs last month'), footnote; optional icon (any lucide name, iconPosition right, left or top, iconStyle square, circle or none), trendData for a small trend line under the figure (numbers or [{ x, y }]), progress (0 to 100) with progressLabel for a target bar, and size sm, default or lg. Each part shows only when set. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
   defaultSize: { width: 10, height: 120 },
   withHeight: true,
   properties: {
@@ -233,7 +233,20 @@ export const shadStatConfig = shadConfig({
     value: code('Value', { type: 'union', schemas: [{ type: 'number' }, { type: 'string' }] }, '$1,250.00'),
     change: code('Change (e.g. +12.5%)', STRING, ''),
     trend: choice('Trend', ['up', 'down', 'neutral'], 'up'),
+    changeLabel: code('Change context (e.g. vs last month)', STRING, ''),
     footnote: code('Footnote', STRING, ''),
+    icon: code('Icon (lucide name, e.g. wallet)', STRING, ''),
+    iconPosition: choice('Icon position', ['right', 'left', 'top'], 'right'),
+    iconStyle: choice('Icon style', ['square', 'circle', 'none'], 'square'),
+    trendData: code(
+      'Trend data (numbers or [{ x, y }])',
+      { type: 'union', schemas: [{ type: 'array' }, { type: 'string' }] },
+      ''
+    ),
+    sparklineType: choice('Trend line', ['area', 'line'], 'area'),
+    progress: code('Progress (0 to 100)', { type: 'union', schemas: [{ type: 'number' }, { type: 'string' }] }, ''),
+    progressLabel: code('Progress label', STRING, ''),
+    size: choice('Size', ['sm', 'default', 'lg'], 'default'),
     card: toggle('Show as card', true),
   },
   defaults: {
@@ -241,7 +254,16 @@ export const shadStatConfig = shadConfig({
     value: { value: '$1,250.00' },
     change: { value: '' },
     trend: { value: 'up' },
+    changeLabel: { value: '' },
     footnote: { value: '' },
+    icon: { value: '' },
+    iconPosition: { value: 'right' },
+    iconStyle: { value: 'square' },
+    trendData: { value: '' },
+    sparklineType: { value: 'area' },
+    progress: { value: '' },
+    progressLabel: { value: '' },
+    size: { value: 'default' },
     card: { value: '{{true}}' },
   },
   styles: {
@@ -254,6 +276,10 @@ export const shadStatConfig = shadConfig({
     // The change badge's colour for an up or a down trend (text on a light tint); unset keeps a neutral outline.
     positiveColor: colorStyle('Change color when trend is up'),
     negativeColor: colorStyle('Change color when trend is down'),
+    iconColor: colorStyle('Icon color'),
+    chipColor: colorStyle('Icon tile color'),
+    sparklineColor: colorStyle('Trend line color'),
+    progressColor: colorStyle('Progress color'),
     valueFontFamily: select('Value typeface', TYPEFACES, 'theme'),
     labelTextTransform: select('Label casing', CASINGS, 'none'),
     labelLetterSpacing: spacingStyle('Label letter spacing (px, or em like 0.12em)'),

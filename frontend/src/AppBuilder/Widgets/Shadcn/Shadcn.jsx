@@ -50,6 +50,7 @@ import { GROUP_LOADING } from './looks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { stringify } from '../packJson';
+import { progressPercent, sparkPaths, statSize } from './statModel';
 import { LoadingBox, Spinner, wantsSkeleton } from './loadingLook';
 import './shadcn.scss';
 
@@ -424,6 +425,67 @@ export const ShadText = (props) => {
 
 // The Table lives in ShadTable.jsx.
 
+// The Stat's icon is drawn by the Display module, which holds the lucide icon map; it loads only for a Stat with one.
+const StatIconGlyph = React.lazy(() => import('./ShadDisplay').then((m) => ({ default: m.IconGlyph })));
+
+const StatIcon = ({ name, shape, size }) => {
+  const box = shape === 'none' ? size : size * 2;
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'inline-flex shrink-0 items-center justify-center text-[color:var(--lk-icon,var(--sc-primary))]',
+        shape !== 'none' &&
+          'bg-[color:var(--lk-chip,color-mix(in_srgb,var(--lk-icon,var(--sc-primary))_12%,transparent))]',
+        shape === 'circle' ? 'rounded-full' : 'rounded-[calc(var(--sc-radius)-2px)]'
+      )}
+      style={{ width: box, height: box }}
+    >
+      <React.Suspense fallback={null}>
+        <StatIconGlyph name={name} size={size} />
+      </React.Suspense>
+    </span>
+  );
+};
+
+// A small trend line under the figure, drawn in a fixed viewBox and stretched to the card's width.
+const SPARK_W = 120;
+const SPARK_H = 36;
+const StatSparkline = ({ data, type, id }) => {
+  const paths = sparkPaths(data, SPARK_W, SPARK_H);
+  if (!paths) return null;
+  const gradient = `stat-spark-${String(id ?? 'x').replace(/[^\w-]/g, '')}`;
+  return (
+    <svg
+      viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
+      preserveAspectRatio="none"
+      className="mt-1 h-9 w-full text-[color:var(--lk-spark,var(--sc-chart-1))]"
+      aria-hidden="true"
+    >
+      {type === 'line' ? null : (
+        <>
+          <defs>
+            <linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="currentColor" stopOpacity={0.28} />
+              <stop offset="100%" stopColor="currentColor" stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          <path d={paths.area} fill={`url(#${gradient})`} stroke="none" />
+        </>
+      )}
+      <path
+        d={paths.line}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        vectorEffect="non-scaling-stroke"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+};
+
 export const ShadStat = (props) => {
   const { properties, setExposedVariables } = props;
   const ref = useRef(null);
@@ -437,8 +499,38 @@ export const ShadStat = (props) => {
   // footnote that wrapped past the box cut the card's bottom edge off. It keeps two lines, the rest in its title. An
   // auto-height box keeps fitting the content (the card is not stretched there, or the height could only grow).
   const fixed = !(fitsContentInView(props.componentType, properties) && props.currentMode === 'view');
-  const body = (
-    <div className={cn('flex flex-col gap-1.5', fixed && 'min-h-0 overflow-hidden')}>
+  // Optional parts: an icon (a tinted tile at the right of the label, at the left of the whole figure, or on top), a
+  // context line beside the change ("vs last month"), a trend line and a progress bar. Each shows only when set.
+  const icon = typeof properties.icon === 'string' && properties.icon.trim() ? properties.icon.trim() : '';
+  const iconPosition = ['left', 'top'].includes(properties.iconPosition) ? properties.iconPosition : 'right';
+  const iconShape = ['circle', 'none'].includes(properties.iconStyle) ? properties.iconStyle : 'square';
+  const size = ['sm', 'lg'].includes(properties.size) ? properties.size : 'default';
+  const iconSize = size === 'lg' ? 20 : size === 'sm' ? 14 : 16;
+  const iconNode = icon ? <StatIcon name={icon} shape={iconShape} size={iconSize} /> : null;
+  const progress = progressPercent(properties.progress);
+  const changeBadge = properties.change ? (
+    <Badge
+      variant="outline"
+      style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) : undefined}
+      className={cn(
+        'shrink-0 gap-1',
+        isSet(trendColor) && 'border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]'
+      )}
+    >
+      {trend !== 'neutral' ? <TrendIcon className="h-3 w-3" /> : null}
+      {String(properties.change)}
+    </Badge>
+  ) : null;
+  // The badge sits in the label row unless the icon takes that corner; then it follows the figure.
+  const badgeInHeader = !(icon && iconPosition === 'right');
+  const changeLabel = properties.changeLabel ? (
+    <span className="text-xs text-[color:var(--lk-help,var(--sc-muted-foreground))]">
+      {String(properties.changeLabel)}
+    </span>
+  ) : null;
+  const content = (
+    <div className={cn('flex min-w-0 flex-1 flex-col gap-1.5', fixed && 'min-h-0 overflow-hidden')}>
+      {icon && iconPosition === 'top' ? <div className="mb-1">{iconNode}</div> : null}
       <div className="flex items-start justify-between gap-2">
         <span
           className={cn(
@@ -449,38 +541,32 @@ export const ShadStat = (props) => {
         >
           {String(properties.label ?? '')}
         </span>
-        {properties.change ? (
-          <Badge
-            variant="outline"
-            style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) : undefined}
-            className={cn(
-              'gap-1',
-              isSet(trendColor) && 'border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]'
-            )}
-          >
-            {trend !== 'neutral' ? <TrendIcon className="h-3 w-3" /> : null}
-            {String(properties.change)}
-          </Badge>
-        ) : null}
+        {badgeInHeader ? changeBadge : null}
+        {icon && iconPosition === 'right' ? iconNode : null}
       </div>
-      <span
-        className={cn(
-          'text-2xl font-semibold tabular-nums tracking-tight text-[color:var(--lk-value,var(--sc-foreground))]',
-          fontStack(props.styles?.valueFontFamily) && 'lk-value-font'
-        )}
-      >
-        {properties.loadingState ? (
-          wantsSkeleton(properties) ? (
-            <Skeleton className="h-8 w-24" />
+      <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+        <span
+          className={cn(
+            statSize(size),
+            'font-semibold tabular-nums tracking-tight text-[color:var(--lk-value,var(--sc-foreground))]',
+            fontStack(props.styles?.valueFontFamily) && 'lk-value-font'
+          )}
+        >
+          {properties.loadingState ? (
+            wantsSkeleton(properties) ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <span className="flex h-8 items-center">
+                <Spinner />
+              </span>
+            )
           ) : (
-            <span className="flex h-8 items-center">
-              <Spinner />
-            </span>
-          )
-        ) : (
-          String(properties.value ?? '')
-        )}
-      </span>
+            String(properties.value ?? '')
+          )}
+        </span>
+        {badgeInHeader ? null : changeBadge}
+        {changeLabel}
+      </div>
       {properties.footnote ? (
         <span
           className={cn('text-sm text-[color:var(--lk-help,var(--sc-muted-foreground))]', fixed && 'line-clamp-2')}
@@ -489,8 +575,35 @@ export const ShadStat = (props) => {
           {String(properties.footnote)}
         </span>
       ) : null}
+      {progress !== null ? (
+        <div className="mt-1 flex flex-col gap-1">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-[color:var(--sc-muted)]">
+            <div
+              className="h-full rounded-full bg-[color:var(--lk-progress,var(--sc-primary))] transition-[width]"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          {properties.progressLabel ? (
+            <span className="text-xs text-[color:var(--lk-help,var(--sc-muted-foreground))]">
+              {String(properties.progressLabel)}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      {properties.trendData ? (
+        <StatSparkline data={properties.trendData} type={properties.sparklineType} id={props.id} />
+      ) : null}
     </div>
   );
+  const body =
+    icon && iconPosition === 'left' ? (
+      <div className="flex items-start gap-3">
+        {iconNode}
+        {content}
+      </div>
+    ) : (
+      content
+    );
   return (
     <Shell {...props} innerRef={ref}>
       {properties.card === false ? (

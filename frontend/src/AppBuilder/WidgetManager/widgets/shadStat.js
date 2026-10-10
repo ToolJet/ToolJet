@@ -3,7 +3,7 @@ export const shadStatConfig = {
   name: 'ShadStat',
   displayName: 'Stat',
   description:
-    "shadcn/ui dashboard figure: label, value, change badge and footnote. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
+    "shadcn/ui dashboard figure, from a single number to a full KPI card: label, value, change badge (change, trend) with a context line (changeLabel, e.g. 'vs last month'), footnote; optional icon (any lucide name, iconPosition right, left or top, iconStyle square, circle or none), trendData for a small trend line under the figure (numbers or [{ x, y }]), progress (0 to 100) with progressLabel for a target bar, and size sm, default or lg. Each part shows only when set. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
   component: 'ShadStat',
   defaultSize: {
     width: 10,
@@ -84,6 +84,16 @@ export const shadStatConfig = {
       isFxNotRequired: true,
       fullWidth: true,
     },
+    changeLabel: {
+      type: 'code',
+      displayName: 'Change context (e.g. vs last month)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
     footnote: {
       type: 'code',
       displayName: 'Footnote',
@@ -93,6 +103,162 @@ export const shadStatConfig = {
         },
         defaultValue: '',
       },
+    },
+    icon: {
+      type: 'code',
+      displayName: 'Icon (lucide name, e.g. wallet)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    iconPosition: {
+      type: 'switch',
+      displayName: 'Icon position',
+      options: [
+        {
+          displayName: 'Right',
+          value: 'right',
+        },
+        {
+          displayName: 'Left',
+          value: 'left',
+        },
+        {
+          displayName: 'Top',
+          value: 'top',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'right',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    iconStyle: {
+      type: 'switch',
+      displayName: 'Icon style',
+      options: [
+        {
+          displayName: 'Square',
+          value: 'square',
+        },
+        {
+          displayName: 'Circle',
+          value: 'circle',
+        },
+        {
+          displayName: 'None',
+          value: 'none',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'square',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    trendData: {
+      type: 'code',
+      displayName: 'Trend data (numbers or [{ x, y }])',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'array',
+            },
+            {
+              type: 'string',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+    },
+    sparklineType: {
+      type: 'switch',
+      displayName: 'Trend line',
+      options: [
+        {
+          displayName: 'Area',
+          value: 'area',
+        },
+        {
+          displayName: 'Line',
+          value: 'line',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'area',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    progress: {
+      type: 'code',
+      displayName: 'Progress (0 to 100)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'number',
+            },
+            {
+              type: 'string',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+    },
+    progressLabel: {
+      type: 'code',
+      displayName: 'Progress label',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    size: {
+      type: 'switch',
+      displayName: 'Size',
+      options: [
+        {
+          displayName: 'Sm',
+          value: 'sm',
+        },
+        {
+          displayName: 'Default',
+          value: 'default',
+        },
+        {
+          displayName: 'Lg',
+          value: 'lg',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
     },
     card: {
       type: 'toggle',
@@ -310,6 +476,42 @@ export const shadStatConfig = {
         },
       },
     },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    chipColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon tile color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    sparklineColor: {
+      type: 'colorSwatches',
+      displayName: 'Trend line color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    progressColor: {
+      type: 'colorSwatches',
+      displayName: 'Progress color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
     valueFontFamily: {
       type: 'select',
       displayName: 'Value typeface',
@@ -453,8 +655,35 @@ export const shadStatConfig = {
       trend: {
         value: 'up',
       },
+      changeLabel: {
+        value: '',
+      },
       footnote: {
         value: '',
+      },
+      icon: {
+        value: '',
+      },
+      iconPosition: {
+        value: 'right',
+      },
+      iconStyle: {
+        value: 'square',
+      },
+      trendData: {
+        value: '',
+      },
+      sparklineType: {
+        value: 'area',
+      },
+      progress: {
+        value: '',
+      },
+      progressLabel: {
+        value: '',
+      },
+      size: {
+        value: 'default',
       },
       card: {
         value: '{{true}}',

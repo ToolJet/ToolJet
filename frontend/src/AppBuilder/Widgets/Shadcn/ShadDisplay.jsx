@@ -52,6 +52,13 @@ const ICON_MAPS = [Lucide.icons, Lucide];
 const NEUTRAL_ICON = CircleDashed || Circle;
 const iconFor = (name, fallback = NEUTRAL_ICON) => resolveIcon(name, ICON_MAPS, fallback);
 
+/** One lucide icon by name, for other pack widgets that load it on demand (the Stat's icon): this module holds the
+ *  icon map, so a widget without an icon never loads it. */
+export const IconGlyph = ({ name, size = 20, strokeWidth = 2 }) => {
+  const Icon = iconFor(name);
+  return <Icon size={size} strokeWidth={strokeWidth} aria-hidden="true" />;
+};
+
 /** A map entry for a property value, never an inherited key (a "constructor" from junk data). */
 const own = (map, key) =>
   typeof key === 'string' && Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
