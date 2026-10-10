@@ -421,6 +421,8 @@ const RIGHT_FADE = {
   WebkitMaskImage: 'linear-gradient(to right, #000 calc(100% - 40px), transparent)',
 };
 
+const MAX_FILTERS = 50;
+
 export const ShadTable = (props) => {
   const { id, height, properties, styles, setExposedVariable, setExposedVariables, fireEvent, componentName, dataCy } =
     props;
@@ -636,9 +638,10 @@ export const ShadTable = (props) => {
       value: f.value ?? '',
     }));
   const applyFilterList = (list, { fire = true } = {}) => {
-    const clean = (Array.isArray(list) ? list : []).filter(
-      (f) => f && typeof f === 'object' && isSet(f.column) && isSet(f.condition)
-    );
+    // Every filter is checked on every row: past MAX_FILTERS, a bound list is a mistake, not a filter set.
+    const clean = (Array.isArray(list) ? list : [])
+      .filter((f) => f && typeof f === 'object' && isSet(f.column) && isSet(f.condition))
+      .slice(0, MAX_FILTERS);
     // Accept header names as well as keys, as the native setFilters does.
     const normalized = clean.map((f) => ({
       ...f,
@@ -716,7 +719,24 @@ export const ShadTable = (props) => {
   }, [data, processed, paged.page, paged.items.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const byKeyValue = (key, value) => live.current.entries.filter((entry) => readCell(entry.row, key) == value); // eslint-disable-line eqeqeq
+    // A column key is text or a number; anything else (an action called with a list as the key) matches nothing.
+    const isKey = (key) => (typeof key === 'string' && key !== '') || typeof key === 'number';
+    const byKeyValue = (key, value) =>
+      isKey(key) ? live.current.entries.filter((entry) => readCell(entry.row, key) == value) : []; // eslint-disable-line eqeqeq
+    // The rows whose cell equals any of `values`, in one pass over the rows: matching each value against every row took
+    // minutes for 10k values on 10k rows. Cells and values compare as text, as == does for text and numbers.
+    const byKeyValues = (key, values) => {
+      if (!isKey(key)) return [];
+      const wanted = new Set(
+        (Array.isArray(values) ? values : [values])
+          .filter((v) => v !== null && v !== undefined && typeof v !== 'object')
+          .map(String)
+      );
+      return live.current.entries.filter((entry) => {
+        const cell = readCell(entry.row, key);
+        return cell !== null && cell !== undefined && typeof cell !== 'object' && wanted.has(String(cell));
+      });
+    };
     setExposedVariables({
       pageIndex: 1,
       searchText: '',
@@ -733,15 +753,13 @@ export const ShadTable = (props) => {
       },
       deselectRow: async () => select(new Set(), null),
       selectRows: async (key, values) => {
-        const wanted = Array.isArray(values) ? values : [values];
         const keys = new Set(live.current.selected);
-        wanted.forEach((v) => byKeyValue(key, v).forEach((entry) => keys.add(entry.key)));
+        byKeyValues(key, values).forEach((entry) => keys.add(entry.key));
         select(keys, live.current.focusKey);
       },
       deselectRows: async (key, values) => {
-        const wanted = Array.isArray(values) ? values : [values];
         const keys = new Set(live.current.selected);
-        wanted.forEach((v) => byKeyValue(key, v).forEach((entry) => keys.delete(entry.key)));
+        byKeyValues(key, values).forEach((entry) => keys.delete(entry.key));
         select(keys, live.current.focusKey);
       },
       selectAllRows: async () =>
