@@ -391,7 +391,7 @@ export const shadDialogConfig = {
         schema: {
           type: 'string',
         },
-        defaultValue: false,
+        defaultValue: 'var(--cc-primary-brand)',
       },
       accordian: 'trigger button',
     },
@@ -425,7 +425,7 @@ export const shadDialogConfig = {
         schema: {
           type: 'string',
         },
-        defaultValue: false,
+        defaultValue: 'var(--cc-primary-brand)',
       },
       conditionallyRender: {
         key: 'triggerButtonHoverBackgroundMode',
@@ -440,7 +440,7 @@ export const shadDialogConfig = {
         schema: {
           type: 'string',
         },
-        defaultValue: false,
+        defaultValue: 'var(--cc-surface1-surface)',
       },
       accordian: 'trigger button',
     },

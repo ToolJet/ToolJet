@@ -30,6 +30,9 @@ import { waitFor, fireEvent as rtlFireEvent, act, screen } from '@testing-librar
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import { getModalBodyHeight } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 import { onShowSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
+import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { componentDefinition, seedApp, binding as rawBinding } from '@/test/app-builder';
 import {
   createWidgetHarness,
@@ -594,6 +597,115 @@ describe('ModalV2: styles', () => {
     });
     await waitFor(() => expect(triggerButton().style.getPropertyValue('--tblr-btn-color-darker')).not.toBe(''));
     expect(triggerButton().style.getPropertyValue('--tblr-btn-color-darker')).not.toBe('#ff0000');
+  });
+});
+
+describe('ModalV2: non-text trigger colours and label', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  // The store's resolver turns a non-string colour into '', but paths that apply the schema's
+  // `validation.defaultValue` (Form child validation, the shadcn Dialog's direct props) used to hand ModalV2 `false`,
+  // and getModifiedColor then crashed calling `.startsWith` on it. These render ModalV2 itself with the raw values.
+  function renderModalDirect({ properties = {}, styles = {} } = {}) {
+    const definition = componentDefinition(ID, NAME, 'ModalV2', DEFAULT_PROPERTIES);
+    seedApp({ [ID]: definition }, { moduleId: MODULE_ID });
+    store().setEditorLoading(false, MODULE_ID);
+    store().setCurrentMode('edit', MODULE_ID);
+    const plain = (values) => Object.fromEntries(Object.entries(values).map(([key, { value }]) => [key, value]));
+    return widget.session.render(
+      <PageWrapper>
+        <ModuleProvider moduleId={MODULE_ID}>
+          <ModalV2
+            id={ID}
+            component={definition.component}
+            properties={{ ...plain(DEFAULT_PROPERTIES), visibility: true, useDefaultButton: true, ...properties }}
+            styles={{ ...plain(DEFAULT_STYLES), ...styles }}
+            setExposedVariable={() => {}}
+            setExposedVariables={() => {}}
+            fireEvent={() => {}}
+            dataCy={NAME}
+            height={40}
+            currentMode="edit"
+            componentType="ModalV2"
+          />
+        </ModuleProvider>
+      </PageWrapper>
+    );
+  }
+
+  test('a `false` trigger colour renders the button instead of crashing', async () => {
+    renderModalDirect({
+      styles: {
+        triggerButtonBackgroundColor: false,
+        triggerButtonHoverBackgroundColor: false,
+        triggerButtonTextColor: false,
+      },
+    });
+
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+    expect(triggerButton()).toHaveTextContent('Launch Modal');
+    expect(triggerButton().style.getPropertyValue('--tblr-btn-color-darker')).not.toBe('');
+  });
+
+  test('a numeric trigger colour renders the button instead of crashing', async () => {
+    renderModalDirect({
+      styles: {
+        triggerButtonBackgroundColor: 12,
+        triggerButtonTextColor: 12,
+      },
+    });
+
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+    expect(triggerButton()).toHaveTextContent('Launch Modal');
+    expect(triggerButton().style.getPropertyValue('--tblr-btn-color-darker')).not.toBe('');
+  });
+
+  test('a numeric manual hover colour falls back to the definition colour', async () => {
+    renderModalDirect({
+      styles: { triggerButtonHoverBackgroundMode: 'manual', triggerButtonHoverBackgroundColor: 12 },
+    });
+
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+    expect(triggerButton().style.getPropertyValue('--tblr-btn-color-darker')).toBe('var(--cc-primary-brand)');
+  });
+
+  test('a numeric trigger label renders as text', async () => {
+    renderModalDirect({ properties: { triggerButtonLabel: 42 } });
+
+    await waitFor(() => expect(triggerButton()).toHaveTextContent('42'));
+  });
+
+  test('an object trigger label renders the fallback label instead of throwing', async () => {
+    renderModalDirect({ properties: { triggerButtonLabel: { text: 'Open' } } });
+
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+    expect(triggerButton()).toHaveTextContent('Show Modal');
+  });
+
+  test('a numeric colour binding through the store still renders the trigger button', async () => {
+    renderModal({
+      styles: {
+        triggerButtonBackgroundColor: { value: '{{12}}' },
+        triggerButtonTextColor: { value: '{{12}}' },
+      },
+    });
+
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+    expect(triggerButton()).toHaveTextContent('Launch Modal');
+  });
+});
+
+describe('getModifiedColor', () => {
+  test('returns a colour for non-string input instead of throwing', () => {
+    for (const input of [false, 12, null, undefined, { r: 1 }, ['#fff']]) {
+      expect(() => getModifiedColor(input, 'hover')).not.toThrow();
+      expect(typeof getModifiedColor(input, 'hover')).toBe('string');
+    }
+  });
+
+  test('still darkens a real colour', () => {
+    expect(getModifiedColor('#ffffff', 'hover')).not.toBe('#ffffff');
   });
 });
 

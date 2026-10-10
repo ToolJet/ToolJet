@@ -3,6 +3,7 @@ import tinycolor from 'tinycolor2';
 
 function extractCssVarName(cssVarExpression) {
   // Ex: var(--cc-primary-brand) -> --primary-brand
+  if (typeof cssVarExpression !== 'string') return null;
   const match = cssVarExpression.match(/var\(\s*(--[^,\s)]+)\s*(?:,[^)]+)?\)/);
   return match ? match[1] : null;
 }
@@ -16,9 +17,11 @@ export const getCssVarValue = (element, cssVarExpression) => {
   return cssVariableValue ?? null;
 };
 
+const isCssVarExpression = (color) => typeof color === 'string' && color.startsWith('var(');
+
 export const getColorModeFromLuminance = (color, element = document.documentElement) => {
   // If color is a CSS variable, get its value
-  const colorValue = color?.startsWith('var(') ? getCssVarValue(element, color) : color;
+  const colorValue = isCssVarExpression(color) ? getCssVarValue(element, color) : color;
   // Use tinycolor to get the luminance
   const colorObj = tinycolor(colorValue);
   const luminance = colorObj.getLuminance();
@@ -42,7 +45,9 @@ export function getModifiedColor(color, stateOrModificationAmount, options = { e
       ? stateOrModificationAmount
       : defaultModificationAmountMappingByState[stateOrModificationAmount] ?? 0;
 
-  const colorValue = color?.startsWith('var(') ? getCssVarValue(options?.element, color) : color;
+  // A colour style bound to a non-string (a number, `false`, an object) must not crash the widget; tinycolor reads
+  // anything it cannot parse as black.
+  const colorValue = isCssVarExpression(color) ? getCssVarValue(options?.element, color) : color;
 
   return tinycolor(colorValue).darken(modificationAmount).toString();
 }
