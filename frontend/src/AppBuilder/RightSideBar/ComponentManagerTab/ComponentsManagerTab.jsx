@@ -13,60 +13,6 @@ import sectionConfig from './sectionConfig';
 import { ANT_DESIGN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/antDesign';
 import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 
-// Ant Design pack (experiment): its own tab, grouped like the native components.
-const ANT_DESIGN_SECTIONS = [
-  { title: 'Layout', items: ['FlexContainer', 'AntCard', 'AntDivider', 'AntCollapse'] },
-  { title: 'Typography', items: ['AntTitle', 'AntText'] },
-  {
-    title: 'Data display',
-    items: [
-      'AntTable',
-      'AntList',
-      'AntDescriptions',
-      'AntStatistic',
-      'AntTag',
-      'AntBadge',
-      'AntAvatar',
-      'AntProgress',
-      'AntTimeline',
-      'AntTree',
-      'AntCalendar',
-      'AntImage',
-      'AntQRCode',
-      'AntEmpty',
-      'AntSkeleton',
-    ],
-  },
-  { title: 'Charts', items: ['AntLineChart', 'AntColumnChart', 'AntPieChart', 'AntGaugeChart', 'AntFunnelChart'] },
-  {
-    title: 'Inputs',
-    items: [
-      'AntInput',
-      'AntTextArea',
-      'AntInputNumber',
-      'AntSelect',
-      'AntAutoComplete',
-      'AntCascader',
-      'AntTreeSelect',
-      'AntDatePicker',
-      'AntRangePicker',
-      'AntTimePicker',
-      'AntCheckbox',
-      'AntRadio',
-      'AntSwitch',
-      'AntSegmented',
-      'AntSlider',
-      'AntRate',
-      'AntColorPicker',
-      'AntUpload',
-    ],
-  },
-  {
-    title: 'Actions and feedback',
-    items: ['AntButton', 'AntAlert', 'AntResult', 'AntSteps', 'AntPagination', 'AntBreadcrumb'],
-  },
-];
-
 const SHADCN_SECTIONS = [
   { title: 'Layout', items: ['FlexContainer', 'ShadSeparator', 'ShadAccordion'] },
   { title: 'Typography', items: ['ShadHeading', 'ShadText'] },
@@ -101,14 +47,15 @@ const SHADCN_SECTIONS = [
   { title: 'Actions and feedback', items: ['ShadButton', 'ShadAlert', 'ShadBreadcrumb'] },
 ];
 
-// Component libraries (experiment): the panel lists one library at a time, picked in a dropdown above the search box.
+// Component libraries (experiment): the panel lists one library at a time, picked in a toggle above the search box.
 // A pack lists its own widgets plus FlexContainer, which composes them.
 const COMPONENT_LIBRARIES = [
   { value: 'tooljet', label: 'ToolJet' },
-  { value: 'antd', label: 'Ant Design', sections: ANT_DESIGN_SECTIONS, components: ANT_DESIGN_COMPONENTS },
   { value: 'shadcn', label: 'shadcn/ui', sections: SHADCN_SECTIONS, components: SHADCN_COMPONENTS },
 ];
-const PACK_COMPONENTS = new Set(COMPONENT_LIBRARIES.flatMap((library) => library.components ?? []));
+// Pack widgets never appear in the ToolJet list. The Ant Design pack is parked: still registered, so apps that use it
+// render, but listed in no library.
+const PACK_COMPONENTS = new Set([...SHADCN_COMPONENTS, ...ANT_DESIGN_COMPONENTS]);
 const libraryComponentNames = (library) =>
   library.components ? new Set(['FlexContainer', ...library.components]) : null;
 import { Button } from '@/components/ui/Button/Button';
@@ -119,6 +66,8 @@ import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import Beta from '@/_ui/Beta';
+import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
+import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import './styles.scss';
 
 // Simple error boundary component for module errors
@@ -363,23 +312,25 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       >
         Library
       </label>
-      <select
+      <ToggleGroup
         id="component-library-select"
         data-cy="component-library-select"
-        className="form-select form-select-sm tj-text-xsm"
+        className="w-full"
         style={{ flex: 1 }}
-        value={libraryKey}
-        onChange={(event) => {
-          setLibraryKey(event.target.value);
+        defaultValue={libraryKey}
+        onValueChange={(value) => {
+          // A click on the active item deselects it in a toggle group; keep a library picked.
+          if (!value) return;
+          setLibraryKey(value);
           setSearchQuery('');
         }}
       >
         {COMPONENT_LIBRARIES.map((entry) => (
-          <option key={entry.value} value={entry.value}>
+          <ToggleGroupItem key={entry.value} value={entry.value} style={{ width: '100%' }}>
             {entry.label}
-          </option>
+          </ToggleGroupItem>
         ))}
-      </select>
+      </ToggleGroup>
     </div>
   );
 
