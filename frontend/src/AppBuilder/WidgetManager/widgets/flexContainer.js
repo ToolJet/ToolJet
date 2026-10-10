@@ -12,6 +12,29 @@ export const flexContainerConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    // Component packs (experiment): draw this container as an Ant Design or shadcn/ui card with a header above the flex body.
+    cardStyle: {
+      type: 'switch',
+      displayName: 'Surface',
+      isFxNotRequired: true,
+      fullWidth: true,
+      options: [
+        { displayName: 'Plain', value: 'none' },
+        { displayName: 'Ant card', value: 'antCard' },
+        { displayName: 'shadcn card', value: 'shadcnCard' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'none' },
+    },
+    cardTitle: {
+      type: 'code',
+      displayName: 'Card title',
+      validation: { schema: { type: 'string' }, defaultValue: '' },
+    },
+    cardExtra: {
+      type: 'code',
+      displayName: 'Card extra (Ant: top right; shadcn: description)',
+      validation: { schema: { type: 'string' }, defaultValue: '' },
+    },
     direction: {
       type: 'switch',
       displayName: 'Direction',
@@ -206,6 +229,9 @@ export const flexContainerConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      cardStyle: { value: 'none' },
+      cardTitle: { value: '' },
+      cardExtra: { value: '' },
       direction: { value: 'row' },
       flexWrap: { value: '{{true}}' },
       gap: { value: '12' },

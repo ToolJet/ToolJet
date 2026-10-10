@@ -74,8 +74,52 @@ import JSONEditor from './jsoneditor.jsx';
 import Navigation from './navigation.jsx';
 import FileButton from './fileButton.jsx';
 import FlexContainer from './flexcontainer.jsx';
+import {
+  AlertIcon,
+  AvatarIcon,
+  BadgeIcon,
+  BreadcrumbIcon,
+  CardIcon,
+  DescriptionsIcon,
+  EmptyIcon,
+  HeadingIcon,
+} from './antDesign.jsx';
+
+// Library components use the same icons across the palette and state inspector.
+const ANT_DESIGN_ICONS = {
+  antalert: AlertIcon,
+  antavatar: AvatarIcon,
+  antbadge: BadgeIcon,
+  antbreadcrumb: BreadcrumbIcon,
+  antbutton: Button,
+  antcard: CardIcon,
+  antcheckbox: Checkbox,
+  antdatepicker: DatepickerV2,
+  antdescriptions: DescriptionsIcon,
+  antdivider: HorizontalDivider,
+  antempty: EmptyIcon,
+  antinput: Textinput,
+  antinputnumber: Numberinput,
+  antlist: Listview,
+  antprogress: Progressbar,
+  antrangepicker: Daterangepicker,
+  antsegmented: ButtonGroup,
+  antselect: Dropdown,
+  antstatistic: Statistics,
+  antsteps: Steps,
+  antswitch: Toggleswitch,
+  anttable: Table,
+  anttag: Tags,
+  anttext: Text,
+  anttextarea: TextArea,
+  anttimeline: Timeline,
+  anttitle: HeadingIcon,
+};
 
 const WidgetIcon = (props) => {
+  const LibraryIcon = ANT_DESIGN_ICONS[props.name];
+  if (LibraryIcon) return <LibraryIcon {...props} />;
+
   // TO_DO -> Use widget type instead of widget name
   switch (props.name) {
     case 'boundedbox':

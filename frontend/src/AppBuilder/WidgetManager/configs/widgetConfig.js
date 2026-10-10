@@ -83,6 +83,8 @@ import {
   buttonGroupV2Config,
   flexContainerConfig,
 } from '../widgets';
+import { antDesignConfigs } from '../widgets/antDesign';
+import { shadcnConfigs } from '../widgets/shadcn';
 
 export const widgets = [
   // Buttons
@@ -195,4 +197,8 @@ export const widgets = [
   //Module
   moduleContainerConfig,
   moduleViewerConfig,
+
+  // Ant Design pack (experiment): listed in the components panel's own Ant Design tab
+  ...antDesignConfigs,
+  ...shadcnConfigs,
 ];

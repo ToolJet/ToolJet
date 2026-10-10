@@ -95,6 +95,186 @@ const Cascader = lazy(() => import('@/AppBuilder/Widgets/Cascader/Cascader'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
 const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
 const LibraryComponent = lazy(() => import('@/AppBuilder/Widgets/LibraryComponent'));
+// Ant Design pack (experiment): one lazy chunk shared by all eight widgets.
+const AntButton = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntButton }))
+);
+const AntInput = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntInput })));
+const AntSelect = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntSelect }))
+);
+const AntDatePicker = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntDatePicker }))
+);
+const AntTable = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntTable })));
+const AntCard = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntCard })));
+const AntTag = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntTag })));
+const AntStatistic = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntStatistic }))
+);
+const AntTitle = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntTitle })));
+const AntText = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntText })));
+const AntDescriptions = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntDescriptions }))
+);
+const AntList = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntList })));
+const AntBadge = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntBadge })));
+const AntAvatar = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntAvatar }))
+);
+const AntProgress = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntProgress }))
+);
+const AntTimeline = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntTimeline }))
+);
+const AntEmpty = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntEmpty })));
+const AntTextArea = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntTextArea }))
+);
+const AntInputNumber = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntInputNumber }))
+);
+const AntRangePicker = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntRangePicker }))
+);
+const AntCheckbox = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntCheckbox }))
+);
+const AntSwitch = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntSwitch }))
+);
+const AntSegmented = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntSegmented }))
+);
+const AntAlert = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntAlert })));
+const AntSteps = lazy(() => import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntSteps })));
+const AntBreadcrumb = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntBreadcrumb }))
+);
+const AntDivider = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesign').then((m) => ({ default: m.AntDivider }))
+);
+// Second batch and charts: their own lazy chunks, so the chart library only loads for apps with a chart.
+const AntRadio = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntRadio }))
+);
+const AntSlider = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntSlider }))
+);
+const AntRate = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntRate }))
+);
+const AntTimePicker = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntTimePicker }))
+);
+const AntAutoComplete = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntAutoComplete }))
+);
+const AntCascader = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntCascader }))
+);
+const AntTreeSelect = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntTreeSelect }))
+);
+const AntColorPicker = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntColorPicker }))
+);
+const AntUpload = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntUpload }))
+);
+const AntTree = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntTree }))
+);
+const AntCollapse = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntCollapse }))
+);
+const AntImage = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntImage }))
+);
+const AntCalendar = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntCalendar }))
+);
+const AntQRCode = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntQRCode }))
+);
+const AntSkeleton = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntSkeleton }))
+);
+const AntResult = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntResult }))
+);
+const AntPagination = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntDesignMore').then((m) => ({ default: m.AntPagination }))
+);
+const AntLineChart = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntCharts').then((m) => ({ default: m.AntLineChart }))
+);
+const AntColumnChart = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntCharts').then((m) => ({ default: m.AntColumnChart }))
+);
+const AntPieChart = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntCharts').then((m) => ({ default: m.AntPieChart }))
+);
+const AntGaugeChart = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntCharts').then((m) => ({ default: m.AntGaugeChart }))
+);
+const AntFunnelChart = lazy(() =>
+  import('@/AppBuilder/Widgets/AntDesign/AntCharts').then((m) => ({ default: m.AntFunnelChart }))
+);
+// shadcn/ui pack (experiment): widgets in one lazy chunk, charts (Recharts) in another.
+const ShadButton = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadButton })));
+const ShadAlert = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadAlert })));
+const ShadBreadcrumb = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadBreadcrumb }))
+);
+const ShadHeading = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadHeading })));
+const ShadText = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadText })));
+const ShadTable = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadTable })));
+const ShadStat = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadStat })));
+const ShadBadge = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadBadge })));
+const ShadAvatar = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadAvatar })));
+const ShadProgress = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadProgress }))
+);
+const ShadSeparator = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadSeparator }))
+);
+const ShadSkeleton = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadSkeleton }))
+);
+const ShadAccordion = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadAccordion }))
+);
+const ShadEmpty = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadEmpty })));
+const ShadInput = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadInput })));
+const ShadTextarea = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadTextarea }))
+);
+const ShadSelect = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadSelect })));
+const ShadCheckbox = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadCheckbox }))
+);
+const ShadSwitch = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadSwitch })));
+const ShadRadioGroup = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadRadioGroup }))
+);
+const ShadSlider = lazy(() => import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadSlider })));
+const ShadDatePicker = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadDatePicker }))
+);
+const ShadToggleGroup = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/Shadcn').then((m) => ({ default: m.ShadToggleGroup }))
+);
+const ShadAreaChart = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/ShadCharts').then((m) => ({ default: m.ShadAreaChart }))
+);
+const ShadBarChart = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/ShadCharts').then((m) => ({ default: m.ShadBarChart }))
+);
+const ShadPieChart = lazy(() =>
+  import('@/AppBuilder/Widgets/Shadcn/ShadCharts').then((m) => ({ default: m.ShadPieChart }))
+);
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -155,6 +335,81 @@ export const AllComponents = {
   Tags,
   Spinner,
   LibraryComponent,
+  AntButton,
+  AntInput,
+  AntSelect,
+  AntDatePicker,
+  AntTable,
+  AntCard,
+  AntTag,
+  AntStatistic,
+  AntTitle,
+  AntText,
+  AntDescriptions,
+  AntList,
+  AntBadge,
+  AntAvatar,
+  AntProgress,
+  AntTimeline,
+  AntEmpty,
+  AntTextArea,
+  AntInputNumber,
+  AntRangePicker,
+  AntCheckbox,
+  AntSwitch,
+  AntSegmented,
+  AntAlert,
+  AntSteps,
+  AntBreadcrumb,
+  AntDivider,
+  AntRadio,
+  AntSlider,
+  AntRate,
+  AntTimePicker,
+  AntAutoComplete,
+  AntCascader,
+  AntTreeSelect,
+  AntColorPicker,
+  AntUpload,
+  AntTree,
+  AntCollapse,
+  AntImage,
+  AntCalendar,
+  AntQRCode,
+  AntSkeleton,
+  AntResult,
+  AntPagination,
+  AntLineChart,
+  AntColumnChart,
+  AntPieChart,
+  AntGaugeChart,
+  AntFunnelChart,
+  ShadButton,
+  ShadAlert,
+  ShadBreadcrumb,
+  ShadHeading,
+  ShadText,
+  ShadTable,
+  ShadStat,
+  ShadBadge,
+  ShadAvatar,
+  ShadProgress,
+  ShadSeparator,
+  ShadSkeleton,
+  ShadAccordion,
+  ShadEmpty,
+  ShadInput,
+  ShadTextarea,
+  ShadSelect,
+  ShadCheckbox,
+  ShadSwitch,
+  ShadRadioGroup,
+  ShadSlider,
+  ShadDatePicker,
+  ShadToggleGroup,
+  ShadAreaChart,
+  ShadBarChart,
+  ShadPieChart,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,
@@ -233,14 +488,16 @@ function convertToBracketNotation(base, accessors) {
 }
 
 function verifyDotAndBracketNotations(jsString) {
-  if (!(
-    jsString.includes('components.') ||
-    jsString.includes('globals.') ||
-    jsString.includes('queries.') ||
-    jsString.includes('page.') ||
-    jsString.includes('variables.') ||
-    jsString.includes('constants.')
-  )) {
+  if (
+    !(
+      jsString.includes('components.') ||
+      jsString.includes('globals.') ||
+      jsString.includes('queries.') ||
+      jsString.includes('page.') ||
+      jsString.includes('variables.') ||
+      jsString.includes('constants.')
+    )
+  ) {
     return false;
   }
 

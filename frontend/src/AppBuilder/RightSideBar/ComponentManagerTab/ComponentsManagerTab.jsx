@@ -10,6 +10,98 @@ import { CustomComponentsTab } from './CustomComponentsTab';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
+import { ANT_DESIGN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/antDesign';
+import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
+
+// Ant Design pack (experiment): its own tab, grouped like the native components.
+const ANT_DESIGN_SECTIONS = [
+  { title: 'Layout', items: ['FlexContainer', 'AntCard', 'AntDivider', 'AntCollapse'] },
+  { title: 'Typography', items: ['AntTitle', 'AntText'] },
+  {
+    title: 'Data display',
+    items: [
+      'AntTable',
+      'AntList',
+      'AntDescriptions',
+      'AntStatistic',
+      'AntTag',
+      'AntBadge',
+      'AntAvatar',
+      'AntProgress',
+      'AntTimeline',
+      'AntTree',
+      'AntCalendar',
+      'AntImage',
+      'AntQRCode',
+      'AntEmpty',
+      'AntSkeleton',
+    ],
+  },
+  { title: 'Charts', items: ['AntLineChart', 'AntColumnChart', 'AntPieChart', 'AntGaugeChart', 'AntFunnelChart'] },
+  {
+    title: 'Inputs',
+    items: [
+      'AntInput',
+      'AntTextArea',
+      'AntInputNumber',
+      'AntSelect',
+      'AntAutoComplete',
+      'AntCascader',
+      'AntTreeSelect',
+      'AntDatePicker',
+      'AntRangePicker',
+      'AntTimePicker',
+      'AntCheckbox',
+      'AntRadio',
+      'AntSwitch',
+      'AntSegmented',
+      'AntSlider',
+      'AntRate',
+      'AntColorPicker',
+      'AntUpload',
+    ],
+  },
+  {
+    title: 'Actions and feedback',
+    items: ['AntButton', 'AntAlert', 'AntResult', 'AntSteps', 'AntPagination', 'AntBreadcrumb'],
+  },
+];
+
+const SHADCN_SECTIONS = [
+  { title: 'Layout', items: ['FlexContainer', 'ShadSeparator', 'ShadAccordion'] },
+  { title: 'Typography', items: ['ShadHeading', 'ShadText'] },
+  {
+    title: 'Data display',
+    items: ['ShadTable', 'ShadStat', 'ShadBadge', 'ShadAvatar', 'ShadProgress', 'ShadEmpty', 'ShadSkeleton'],
+  },
+  { title: 'Charts', items: ['ShadAreaChart', 'ShadBarChart', 'ShadPieChart'] },
+  {
+    title: 'Inputs',
+    items: [
+      'ShadInput',
+      'ShadTextarea',
+      'ShadSelect',
+      'ShadDatePicker',
+      'ShadCheckbox',
+      'ShadSwitch',
+      'ShadRadioGroup',
+      'ShadSlider',
+      'ShadToggleGroup',
+    ],
+  },
+  { title: 'Actions and feedback', items: ['ShadButton', 'ShadAlert', 'ShadBreadcrumb'] },
+];
+
+// Component libraries (experiment): the panel lists one library at a time, picked in a dropdown above the search box.
+// A pack lists its own widgets plus FlexContainer, which composes them.
+const COMPONENT_LIBRARIES = [
+  { value: 'tooljet', label: 'ToolJet' },
+  { value: 'antd', label: 'Ant Design', sections: ANT_DESIGN_SECTIONS, components: ANT_DESIGN_COMPONENTS },
+  { value: 'shadcn', label: 'shadcn/ui', sections: SHADCN_SECTIONS, components: SHADCN_COMPONENTS },
+];
+const PACK_COMPONENTS = new Set(COMPONENT_LIBRARIES.flatMap((library) => library.components ?? []));
+const libraryComponentNames = (library) =>
+  library.components ? new Set(['FlexContainer', ...library.components]) : null;
 import { Button } from '@/components/ui/Button/Button';
 import { ModuleManager } from '@/modules/Modules/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
@@ -66,19 +158,31 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
+  const [libraryKey, setLibraryKey] = useState('tooljet');
+  const library = COMPONENT_LIBRARIES.find((entry) => entry.value === libraryKey) ?? COMPONENT_LIBRARIES[0];
+
+  // The widgets of the selected library: a pack's own widgets (and FlexContainer), or every native widget.
+  const inLibrary = useCallback(
+    (name) => {
+      const names = libraryComponentNames(library);
+      return names ? names.has(name) : !PACK_COMPONENTS.has(name);
+    },
+    [library]
+  );
+
   const componentList = useMemo(() => {
     return componentTypes
       .map((component) => component.component)
-      .filter((component) => !IGNORED_ITEMS.includes(component));
-  }, [componentTypes]);
+      .filter((component) => !IGNORED_ITEMS.includes(component) && inLibrary(component));
+  }, [componentTypes, inLibrary]);
 
   const searchList = useMemo(() => {
     return componentTypes
-      .filter((component) => !IGNORED_ITEMS.includes(component.component))
+      .filter((component) => !IGNORED_ITEMS.includes(component.component) && inLibrary(component.component))
       .map((component) => {
         return { component: component.component, displayName: component.displayName };
       });
-  }, [componentTypes]);
+  }, [componentTypes, inLibrary]);
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
   const [searchQuery, setSearchQuery] = useState('');
@@ -197,6 +301,23 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       return <>{renderList(filteredComponents)}</>;
     }
 
+    if (library.sections) {
+      return (
+        <div className="mt-3">
+          <Accordion
+            isTitleCase={false}
+            items={library.sections
+              .map((section) => ({
+                title: section.title,
+                isOpen: true,
+                children: renderList(section.items.filter((name) => componentList.includes(name))),
+              }))
+              .filter((section) => section.children)}
+          />
+        </div>
+      );
+    }
+
     const sections = Object.entries(sectionConfig).map(([key, config]) => ({
       title: config.title,
       items: filteredComponents.filter((component) => config.valueSet.has(component)),
@@ -223,6 +344,35 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   // Remove handleChangeTab and related logic
 
   // Remove renderSection, replace with Tabs/Tab logic below
+
+  const libraryPicker = () => (
+    <div className="mt-3 d-flex align-items-center" style={{ gap: 8, width: 266, marginLeft: 16 }}>
+      <label
+        htmlFor="component-library-select"
+        className="tj-text-xsm mb-0"
+        style={{ color: 'var(--text-placeholder)' }}
+      >
+        Library
+      </label>
+      <select
+        id="component-library-select"
+        data-cy="component-library-select"
+        className="form-select form-select-sm tj-text-xsm"
+        style={{ flex: 1 }}
+        value={libraryKey}
+        onChange={(event) => {
+          setLibraryKey(event.target.value);
+          setSearchQuery('');
+        }}
+      >
+        {COMPONENT_LIBRARIES.map((entry) => (
+          <option key={entry.value} value={entry.value}>
+            {entry.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 
   const searchBox = () => {
     return (
@@ -268,7 +418,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               />
             </div>
           </div>
-          {searchBox()}
+          {libraryPicker()}
+          <React.Fragment key={libraryKey}>{searchBox()}</React.Fragment>
           <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
         </>
       ) : (
@@ -303,7 +454,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               })()}
               darkMode={darkMode}
             >
-              {searchBox()}
+              {libraryPicker()}
+              <React.Fragment key={libraryKey}>{searchBox()}</React.Fragment>
               <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
             </Tab>
             {hasModuleAccess && (

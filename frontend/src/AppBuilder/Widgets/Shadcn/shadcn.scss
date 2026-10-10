@@ -1,0 +1,76 @@
+// shadcn/ui pack (experiment): its own Tailwind build, scoped to `.tj-shadcn` (see shadcn.tailwind.config.js).
+@config "./shadcn.tailwind.config.js";
+@tailwind utilities;
+
+// shadcn's tokens, taken from the app theme so a pack widget follows whatever theme the user or the model chose.
+// Values without a theme counterpart use shadcn's neutral defaults.
+.tj-shadcn {
+  --sc-background: var(--cc-surface1-surface, #ffffff);
+  --sc-foreground: var(--cc-primary-text, #0a0a0a);
+  --sc-card: var(--cc-surface1-surface, #ffffff);
+  --sc-card-foreground: var(--cc-primary-text, #0a0a0a);
+  --sc-popover: var(--cc-surface1-surface, #ffffff);
+  --sc-popover-foreground: var(--cc-primary-text, #0a0a0a);
+  --sc-primary: var(--cc-primary-brand, #171717);
+  --sc-primary-foreground: #ffffff;
+  --sc-secondary: var(--cc-surface2-surface, #f5f5f5);
+  --sc-secondary-foreground: var(--cc-primary-text, #171717);
+  --sc-muted: var(--cc-surface2-surface, #f5f5f5);
+  --sc-muted-foreground: var(--cc-placeholder-text, #737373);
+  --sc-accent: var(--cc-surface2-surface, #f5f5f5);
+  --sc-accent-foreground: var(--cc-primary-text, #171717);
+  --sc-destructive: var(--cc-error-systemStatus, #dc2626);
+  --sc-destructive-foreground: #ffffff;
+  --sc-success: var(--cc-success-systemStatus, #16a34a);
+  --sc-success-foreground: #ffffff;
+  --sc-warning: #d97706;
+  --sc-warning-foreground: #ffffff;
+  --sc-border: var(--cc-weak-border, #e5e5e5);
+  --sc-input: var(--cc-default-border, #e5e5e5);
+  --sc-ring: var(--cc-primary-brand, #a3a3a3);
+  --sc-radius: 0.625rem;
+  // Chart series: the theme's primary leads, then shadcn's default chart palette.
+  --sc-chart-1: var(--cc-primary-brand, #e76e50);
+  --sc-chart-2: #2a9d90;
+  --sc-chart-3: #e8c468;
+  --sc-chart-4: #274754;
+  --sc-chart-5: #f4a462;
+
+  color: var(--sc-foreground);
+  font-family: inherit;
+}
+
+// Tailwind's preflight is off in ToolJet; shadcn relies on its box model and border reset, so restore just those
+// inside the pack.
+.tj-shadcn,
+.tj-shadcn *,
+.tj-shadcn ::before,
+.tj-shadcn ::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--sc-border);
+}
+.tj-shadcn button,
+.tj-shadcn input,
+.tj-shadcn textarea,
+.tj-shadcn select {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+.tj-shadcn button {
+  background-color: transparent;
+  cursor: pointer;
+}
+.tj-shadcn p,
+.tj-shadcn h1,
+.tj-shadcn h2,
+.tj-shadcn h3,
+.tj-shadcn h4,
+.tj-shadcn table {
+  margin: 0;
+}
+.tj-shadcn table {
+  border-collapse: collapse;
+}

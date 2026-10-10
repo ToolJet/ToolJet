@@ -1,0 +1,216 @@
+// GENERATED from WidgetManager/antDesignSource.js by scripts-antd-literals.mjs. Do not edit by hand.
+export const antSelectConfig = {
+  name: 'AntSelect',
+  displayName: 'Select',
+  description: 'Ant Design select',
+  component: 'AntSelect',
+  defaultSize: {
+    width: 10,
+    height: 40,
+  },
+  others: {
+    showOnDesktop: {
+      type: 'toggle',
+      displayName: 'Show on desktop',
+    },
+    showOnMobile: {
+      type: 'toggle',
+      displayName: 'Show on mobile',
+    },
+  },
+  properties: {
+    options: {
+      type: 'code',
+      displayName: 'Options',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "[{ label: 'One', value: 1 }]",
+    },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'Select',
+      },
+    },
+    defaultValue: {
+      type: 'code',
+      displayName: 'Default value',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+            {
+              type: 'boolean',
+            },
+            {
+              type: 'array',
+            },
+            {
+              type: 'object',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+    },
+    allowClear: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    showSearch: {
+      type: 'toggle',
+      displayName: 'Searchable',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+  },
+  events: {
+    onChange: {
+      displayName: 'On change',
+    },
+  },
+  styles: {
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
+    },
+  },
+  exposedVariables: {
+    isVisible: true,
+    isLoading: false,
+    isDisabled: false,
+    value: '',
+    selectedOption: {},
+  },
+  actions: [
+    {
+      handle: 'selectOption',
+      displayName: 'Select option',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'clear',
+      displayName: 'Clear',
+    },
+  ],
+  definition: {
+    others: {
+      showOnDesktop: {
+        value: '{{true}}',
+      },
+      showOnMobile: {
+        value: '{{false}}',
+      },
+    },
+    properties: {
+      options: {
+        value: "{{[{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]}}",
+      },
+      placeholder: {
+        value: 'Select',
+      },
+      defaultValue: {
+        value: '',
+      },
+      allowClear: {
+        value: '{{false}}',
+      },
+      showSearch: {
+        value: '{{false}}',
+      },
+      loadingState: {
+        value: '{{false}}',
+      },
+      visibility: {
+        value: '{{true}}',
+      },
+      disabledState: {
+        value: '{{false}}',
+      },
+    },
+    events: [],
+    styles: {
+      boxShadow: {
+        value: '0px 0px 0px 0px #00000040',
+      },
+    },
+  },
+};
