@@ -98,6 +98,17 @@ export const shadBarChartConfig = {
         defaultValue: 'No data',
       },
     },
+    colors: {
+      type: 'code',
+      displayName: 'Series colors (in order)',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "['#0f766e', '#f59e0b']",
+    },
     horizontal: {
       type: 'toggle',
       displayName: 'Horizontal bars',
@@ -177,6 +188,42 @@ export const shadBarChartConfig = {
       },
       accordian: 'Container',
     },
+    chartColor: {
+      type: 'colorSwatches',
+      displayName: 'Chart color (series palette from it)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    gridColor: {
+      type: 'colorSwatches',
+      displayName: 'Grid line color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    axisTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Axis label color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    legendTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Legend text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
@@ -216,6 +263,9 @@ export const shadBarChartConfig = {
       },
       emptyText: {
         value: 'No data',
+      },
+      colors: {
+        value: '{{[]}}',
       },
       horizontal: {
         value: '{{false}}',

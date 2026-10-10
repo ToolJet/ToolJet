@@ -85,6 +85,33 @@ export const shadBreadcrumbConfig = {
       },
       accordian: 'Container',
     },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Breadcrumb link color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    currentColor: {
+      type: 'colorSwatches',
+      displayName: 'Current page color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    separatorColor: {
+      type: 'colorSwatches',
+      displayName: 'Separator color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

@@ -147,6 +147,86 @@ export const shadSelectConfig = {
       },
       accordian: 'Container',
     },
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    helpTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Help text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Field background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Field text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    placeholderColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Field border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Accent (focus ring, selection)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Field radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

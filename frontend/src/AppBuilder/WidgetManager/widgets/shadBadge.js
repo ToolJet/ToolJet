@@ -122,6 +122,50 @@ export const shadBadgeConfig = {
       },
       accordian: 'Container',
     },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Badge background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Badge text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Badge border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Badge radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

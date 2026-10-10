@@ -94,6 +94,15 @@ export const shadSkeletonConfig = {
       },
       accordian: 'Container',
     },
+    placeholderColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

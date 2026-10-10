@@ -120,6 +120,42 @@ export const shadAccordionConfig = {
       },
       accordian: 'Container',
     },
+    titleColor: {
+      type: 'colorSwatches',
+      displayName: 'Item title color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Item content color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    dividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: 'Chevron color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

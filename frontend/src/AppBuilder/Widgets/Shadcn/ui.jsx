@@ -106,11 +106,12 @@ export const Label = React.forwardRef(({ className, ...props }, ref) => (
 ));
 Label.displayName = 'Label';
 
+// Checkbox and radio items are buttons: p-0 keeps ToolJet's global button padding from squeezing their indicator.
 export const Checkbox = React.forwardRef(({ className, ...props }, ref) => (
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      'peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
+      'peer h-4 w-4 shrink-0 rounded-sm border border-primary p-0 shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
       className
     )}
     {...props}
@@ -145,7 +146,7 @@ export const RadioGroupItem = React.forwardRef(({ className, ...props }, ref) =>
   <RadioGroupPrimitive.Item
     ref={ref}
     className={cn(
-      'aspect-square h-4 w-4 rounded-full border border-primary text-primary shadow focus:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+      'aspect-square h-4 w-4 rounded-full border border-primary p-0 text-primary shadow focus:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
       className
     )}
     {...props}
@@ -157,13 +158,14 @@ export const RadioGroupItem = React.forwardRef(({ className, ...props }, ref) =>
 ));
 RadioGroupItem.displayName = 'RadioGroupItem';
 
+// Slider and progress tracks read the pack's trackColor style (--lk-track), else a tint of primary as upstream.
 export const Slider = React.forwardRef(({ className, ...props }, ref) => (
   <SliderPrimitive.Root
     ref={ref}
     className={cn('relative flex w-full touch-none select-none items-center', className)}
     {...props}
   >
-    <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-primary/20">
+    <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_20%,transparent))]">
       <SliderPrimitive.Range className="absolute h-full bg-primary" />
     </SliderPrimitive.Track>
     {(props.value ?? props.defaultValue ?? [0]).map((_, i) => (
@@ -367,7 +369,10 @@ AvatarFallback.displayName = 'AvatarFallback';
 export const Progress = React.forwardRef(({ className, value, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
-    className={cn('relative h-2 w-full overflow-hidden rounded-full bg-primary/20', className)}
+    className={cn(
+      'relative h-2 w-full overflow-hidden rounded-full bg-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_20%,transparent))]',
+      className
+    )}
     {...props}
   >
     <ProgressPrimitive.Indicator

@@ -104,6 +104,59 @@ export const shadProgressConfig = {
       },
       accordian: 'Container',
     },
+    barColor: {
+      type: 'colorSwatches',
+      displayName: 'Bar color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    trackColor: {
+      type: 'colorSwatches',
+      displayName: 'Track color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    valueColor: {
+      type: 'colorSwatches',
+      displayName: 'Percent text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    barHeight: {
+      type: 'numberInput',
+      displayName: 'Bar height',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

@@ -1,8 +1,10 @@
 // shadcn/ui pack (experiment, exp/antd-pack): native ToolJet widgets that render shadcn/ui components (Radix +
 // Tailwind, Widgets/Shadcn) in the app's own React tree. Same contract as the Ant Design pack (antDesignSource.js):
 // inspector properties, events, exposed values and actions like the built-in widgets. The literal per-widget configs
-// are generated from this file by scripts-shadcn-literals.mjs. The helpers are repeated from antDesignSource.js
-// because the generator imports this file on its own.
+// are generated from this file by scripts-shadcn-literals.mjs. Its config helpers are repeated from antDesignSource.js;
+// the style helpers come from the shared shadcnPackHelpers.js.
+
+import { colorStyle, sizeStyle } from './shadcnPackHelpers.js';
 
 const code = (displayName, schema, defaultValue, extra = {}) => ({
   type: 'code',
@@ -37,6 +39,37 @@ const ARRAY = { type: 'array' };
 const ANY = {
   type: 'union',
   schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }, { type: 'array' }, { type: 'object' }],
+};
+
+// Styles. Each falls back to the app theme when unset (Widgets/Shadcn/shadcnLook.js maps them to CSS variables);
+// colorStyle and sizeStyle come from the shared helpers.
+const alignStyle = {
+  type: 'alignButtons',
+  displayName: 'Text alignment (left, center, right)',
+  validation: { schema: STRING, defaultValue: 'left' },
+};
+// Form controls with a box (input, textarea, select, date picker).
+const fieldStyles = {
+  labelColor: colorStyle('Label color'),
+  helpTextColor: colorStyle('Help text color'),
+  backgroundColor: colorStyle('Field background'),
+  textColor: colorStyle('Field text color'),
+  placeholderColor: colorStyle('Placeholder color'),
+  borderColor: colorStyle('Field border color'),
+  accentColor: colorStyle('Accent (focus ring, selection)'),
+  borderRadius: sizeStyle('Field radius'),
+};
+// Controls beside a label (checkbox, switch, radio group, slider).
+const choiceStyles = (accent) => ({
+  accentColor: colorStyle(accent),
+  labelColor: colorStyle('Label color'),
+  helpTextColor: colorStyle('Help text color'),
+});
+const chartStyles = {
+  chartColor: colorStyle('Chart color (series palette from it)'),
+  gridColor: colorStyle('Grid line color'),
+  axisTextColor: colorStyle('Axis label color'),
+  legendTextColor: colorStyle('Legend text color'),
 };
 
 const commonProperties = (withHeight) => ({
@@ -148,6 +181,14 @@ export const shadButtonConfig = shadConfig({
     size: { value: 'default' },
     fullWidth: { value: '{{false}}' },
   },
+  // Replace the variant's own colours where set.
+  styles: {
+    backgroundColor: colorStyle('Button background'),
+    hoverBackgroundColor: colorStyle('Button hover background'),
+    textColor: colorStyle('Button text color'),
+    borderColor: colorStyle('Button border color'),
+    borderRadius: sizeStyle('Button radius'),
+  },
   events: { onClick: { displayName: 'On click' } },
 });
 
@@ -167,6 +208,13 @@ export const shadAlertConfig = shadConfig({
     description: { value: '' },
     variant: { value: 'default' },
   },
+  styles: {
+    backgroundColor: colorStyle('Alert background'),
+    borderColor: colorStyle('Alert border color'),
+    titleColor: colorStyle('Alert title color'),
+    textColor: colorStyle('Alert description color'),
+    borderRadius: sizeStyle('Alert radius'),
+  },
 });
 
 export const shadBreadcrumbConfig = shadConfig({
@@ -180,6 +228,11 @@ export const shadBreadcrumbConfig = shadConfig({
     }),
   },
   defaults: { items: { value: "{{['Home', 'Section', 'Page']}}" } },
+  styles: {
+    textColor: colorStyle('Breadcrumb link color'),
+    currentColor: colorStyle('Current page color'),
+    separatorColor: colorStyle('Separator color'),
+  },
 });
 
 // ---- Typography ----------------------------------------------------------------------------------------------------
@@ -195,6 +248,8 @@ export const shadHeadingConfig = shadConfig({
     level: choice('Level', ['h1', 'h2', 'h3', 'h4'], 'h2'),
   },
   defaults: { text: { value: 'Heading' }, level: { value: 'h2' } },
+  styles: { textColor: colorStyle('Heading color'), textAlign: alignStyle },
+  styleDefaults: { textAlign: { value: 'left' } },
 });
 
 export const shadTextConfig = shadConfig({
@@ -208,6 +263,8 @@ export const shadTextConfig = shadConfig({
     tone: choice('Style', ['paragraph', 'lead', 'muted', 'small', 'large'], 'paragraph'),
   },
   defaults: { text: { value: 'Text' }, tone: { value: 'paragraph' } },
+  styles: { textColor: colorStyle('Text color'), textAlign: alignStyle },
+  styleDefaults: { textAlign: { value: 'left' } },
 });
 
 // ---- Data display --------------------------------------------------------------------------------------------------
@@ -226,6 +283,13 @@ export const shadTableConfig = shadConfig({
     pageSize: code('Rows per page (0 = all)', NUMBER, 10),
     currency: code('Currency (money columns)', STRING, 'USD'),
     emptyText: code('Empty message', STRING, 'No results.'),
+    // Value -> colour for badge columns, e.g. { Paid: '#16a34a' }; values it does not name keep the built-in colours.
+    badgeColors: code(
+      'Badge colours by value',
+      { type: 'object' },
+      {},
+      { placeholder: "{ Paid: '#16a34a', Overdue: '#dc2626' }" }
+    ),
   },
   defaults: {
     data: {
@@ -238,6 +302,17 @@ export const shadTableConfig = shadConfig({
     pageSize: { value: '{{10}}' },
     currency: { value: 'USD' },
     emptyText: { value: 'No results.' },
+    badgeColors: { value: '{{{}}}' },
+  },
+  styles: {
+    backgroundColor: colorStyle('Table background'),
+    headerBackgroundColor: colorStyle('Header row background'),
+    headerTextColor: colorStyle('Header text color'),
+    textColor: colorStyle('Cell text color'),
+    borderColor: colorStyle('Table border and row divider color'),
+    rowHoverColor: colorStyle('Row hover background'),
+    selectedRowColor: colorStyle('Selected row background'),
+    borderRadius: sizeStyle('Table radius'),
   },
   events: { onRowClicked: { displayName: 'On row clicked' } },
   exposedVariables: { selectedRow: {}, selectedRowIndex: null },
@@ -265,6 +340,17 @@ export const shadStatConfig = shadConfig({
     footnote: { value: '' },
     card: { value: '{{true}}' },
   },
+  styles: {
+    backgroundColor: colorStyle('Card background'),
+    borderColor: colorStyle('Card border color'),
+    borderRadius: sizeStyle('Card radius'),
+    labelColor: colorStyle('Label color'),
+    valueColor: colorStyle('Value color'),
+    footnoteColor: colorStyle('Footnote color'),
+    // The change badge's colour for an up or a down trend (text on a light tint); unset keeps a neutral outline.
+    positiveColor: colorStyle('Change color when trend is up'),
+    negativeColor: colorStyle('Change color when trend is down'),
+  },
 });
 
 export const shadBadgeConfig = shadConfig({
@@ -277,6 +363,13 @@ export const shadBadgeConfig = shadConfig({
     variant: choice('Variant', ['default', 'secondary', 'outline', 'success', 'warning', 'destructive'], 'default'),
   },
   defaults: { text: { value: 'Badge' }, variant: { value: 'default' } },
+  // Replace the variant's own colours where set.
+  styles: {
+    backgroundColor: colorStyle('Badge background'),
+    textColor: colorStyle('Badge text color'),
+    borderColor: colorStyle('Badge border color'),
+    borderRadius: sizeStyle('Badge radius'),
+  },
 });
 
 export const shadAvatarConfig = shadConfig({
@@ -298,6 +391,11 @@ export const shadAvatarConfig = shadConfig({
     src: { value: '' },
     size: { value: '{{32}}' },
   },
+  styles: {
+    backgroundColor: colorStyle('Initials background'),
+    textColor: colorStyle('Initials color'),
+    ringColor: colorStyle('Ring color (between stacked avatars)'),
+  },
 });
 
 export const shadProgressConfig = shadConfig({
@@ -315,6 +413,13 @@ export const shadProgressConfig = shadConfig({
     label: { value: '' },
     showValue: { value: '{{false}}' },
   },
+  styles: {
+    barColor: colorStyle('Bar color'),
+    trackColor: colorStyle('Track color'),
+    labelColor: colorStyle('Label color'),
+    valueColor: colorStyle('Percent text color'),
+    barHeight: sizeStyle('Bar height'),
+  },
 });
 
 export const shadSeparatorConfig = shadConfig({
@@ -326,6 +431,7 @@ export const shadSeparatorConfig = shadConfig({
     orientation: choice('Orientation', ['horizontal', 'vertical'], 'horizontal'),
   },
   defaults: { orientation: { value: 'horizontal' } },
+  styles: { lineColor: colorStyle('Line color'), thickness: sizeStyle('Line thickness') },
 });
 
 export const shadSkeletonConfig = shadConfig({
@@ -335,6 +441,7 @@ export const shadSkeletonConfig = shadConfig({
   defaultSize: { width: 16, height: 80 },
   properties: { lines: code('Lines', NUMBER, 3), avatar: toggle('Avatar') },
   defaults: { lines: { value: '{{3}}' }, avatar: { value: '{{false}}' } },
+  styles: { placeholderColor: colorStyle('Placeholder color') },
 });
 
 export const shadAccordionConfig = shadConfig({
@@ -358,6 +465,12 @@ export const shadAccordionConfig = shadConfig({
     multiple: { value: '{{false}}' },
     defaultOpen: { value: '{{[]}}' },
   },
+  styles: {
+    titleColor: colorStyle('Item title color'),
+    textColor: colorStyle('Item content color'),
+    dividerColor: colorStyle('Divider color'),
+    iconColor: colorStyle('Chevron color'),
+  },
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { openIndexes: [] },
 });
@@ -376,6 +489,15 @@ export const shadEmptyConfig = shadConfig({
     title: { value: 'No results' },
     description: { value: '' },
     actionLabel: { value: '' },
+  },
+  styles: {
+    backgroundColor: colorStyle('Background'),
+    borderColor: colorStyle('Dashed border color'),
+    borderRadius: sizeStyle('Radius'),
+    iconBackgroundColor: colorStyle('Icon background'),
+    iconColor: colorStyle('Icon color'),
+    titleColor: colorStyle('Title color'),
+    textColor: colorStyle('Description color'),
   },
   events: { onAction: { displayName: 'On action' } },
 });
@@ -400,6 +522,7 @@ export const shadInputConfig = shadConfig({
     defaultValue: { value: '' },
     inputType: { value: 'text' },
   },
+  styles: fieldStyles,
   events: {
     onChange: { displayName: 'On change' },
     onEnterPressed: { displayName: 'On enter pressed' },
@@ -430,6 +553,7 @@ export const shadTextareaConfig = shadConfig({
     placeholder: { value: '' },
     defaultValue: { value: '' },
   },
+  styles: fieldStyles,
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { value: '' },
   actions: [
@@ -462,6 +586,7 @@ export const shadSelectConfig = shadConfig({
     placeholder: { value: 'Select' },
     defaultValue: { value: '' },
   },
+  styles: fieldStyles,
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { value: '', selectedOption: {} },
   actions: [
@@ -489,6 +614,10 @@ export const shadCheckboxConfig = shadConfig({
     description: { value: '' },
     defaultChecked: { value: '{{false}}' },
   },
+  styles: {
+    ...choiceStyles('Checked color'),
+    borderColor: colorStyle('Unchecked box border color'),
+  },
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { value: false },
 });
@@ -508,6 +637,7 @@ export const shadSwitchConfig = shadConfig({
     description: { value: '' },
     defaultChecked: { value: '{{false}}' },
   },
+  styles: { ...choiceStyles('Switch on color'), offColor: colorStyle('Switch off color') },
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { value: false },
 });
@@ -529,6 +659,7 @@ export const shadRadioGroupConfig = shadConfig({
     defaultValue: { value: 'Standard' },
     horizontal: { value: '{{false}}' },
   },
+  styles: { ...choiceStyles('Selected color'), optionTextColor: colorStyle('Option text color') },
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { value: '' },
   actions: [
@@ -564,6 +695,7 @@ export const shadSliderConfig = shadConfig({
     step: { value: '{{1}}' },
     defaultValue: { value: '{{50}}' },
   },
+  styles: { ...choiceStyles('Range and handle color'), trackColor: colorStyle('Track color') },
   events: { onChange: { displayName: 'On change (on release)' } },
   exposedVariables: { value: 50 },
 });
@@ -588,6 +720,7 @@ export const shadDatePickerConfig = shadConfig({
     defaultValue: { value: '' },
     format: { value: 'DD MMM YYYY' },
   },
+  styles: fieldStyles,
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { value: '', startDate: '', endDate: '' },
   actions: [{ handle: 'clear', displayName: 'Clear' }],
@@ -609,6 +742,13 @@ export const shadToggleGroupConfig = shadConfig({
     options: { value: "{{['All', 'Open', 'Closed']}}" },
     defaultValue: { value: 'All' },
     fullWidth: { value: '{{false}}' },
+  },
+  styles: {
+    backgroundColor: colorStyle('Group background'),
+    textColor: colorStyle('Option text color'),
+    selectedBackgroundColor: colorStyle('Selected option background'),
+    selectedTextColor: colorStyle('Selected option text color'),
+    borderRadius: sizeStyle('Group radius'),
   },
   events: { onChange: { displayName: 'On change' } },
   exposedVariables: { value: '' },
@@ -866,6 +1006,8 @@ export const shadKanbanConfig = shadConfig({
 
 const CHART_DATA =
   "{{[{ month: 'Jun', revenue: 182000 }, { month: 'Jul', revenue: 246000 }, { month: 'Aug', revenue: 268000 }, { month: 'Sep', revenue: 197000 }, { month: 'Oct', revenue: 121000 }]}}";
+// Explicit series (or slice) colours in order; unset ones take the palette from the Chart color style or the theme.
+const SERIES_COLORS = code('Series colors (in order)', ARRAY, [], { placeholder: "['#0f766e', '#f59e0b']" });
 const seriesProps = {
   data: code('Data', ARRAY, [], {
     placeholder: "[{ month: 'Jun', revenue: 182000, bookings: 12 }]",
@@ -880,6 +1022,7 @@ const seriesProps = {
   valueSuffix: code('Value suffix', STRING, ''),
   showLegend: toggle('Legend'),
   emptyText: code('Empty message', STRING, 'No data'),
+  colors: SERIES_COLORS,
 };
 const seriesDefaults = {
   data: { value: CHART_DATA },
@@ -889,6 +1032,7 @@ const seriesDefaults = {
   valueSuffix: { value: '' },
   showLegend: { value: '{{false}}' },
   emptyText: { value: 'No data' },
+  colors: { value: '{{[]}}' },
 };
 
 export const shadAreaChartConfig = shadConfig({
@@ -908,6 +1052,7 @@ export const shadAreaChartConfig = shadConfig({
     stack: { value: '{{false}}' },
     curve: { value: 'natural' },
   },
+  styles: chartStyles,
   events: { onClick: { displayName: 'On click' } },
   exposedVariables: { clickedDatum: {} },
 });
@@ -927,6 +1072,7 @@ export const shadBarChartConfig = shadConfig({
     horizontal: { value: '{{false}}' },
     stack: { value: '{{false}}' },
   },
+  styles: chartStyles,
   events: { onClick: { displayName: 'On click' } },
   exposedVariables: { clickedDatum: {} },
 });
@@ -947,6 +1093,7 @@ export const shadPieChartConfig = shadConfig({
     centerLabel: code('Center caption', STRING, ''),
     showLegend: toggle('Legend', true),
     emptyText: code('Empty message', STRING, 'No data'),
+    colors: SERIES_COLORS,
   },
   defaults: {
     data: {
@@ -959,6 +1106,14 @@ export const shadPieChartConfig = shadConfig({
     centerLabel: { value: '' },
     showLegend: { value: '{{true}}' },
     emptyText: { value: 'No data' },
+    colors: { value: '{{[]}}' },
+  },
+  styles: {
+    chartColor: chartStyles.chartColor,
+    legendTextColor: chartStyles.legendTextColor,
+    sliceBorderColor: colorStyle('Slice border color'),
+    centerValueColor: colorStyle('Center figure color'),
+    centerLabelColor: colorStyle('Center caption color'),
   },
   events: { onClick: { displayName: 'On click' } },
   exposedVariables: { clickedDatum: {} },

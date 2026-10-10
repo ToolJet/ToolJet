@@ -162,6 +162,59 @@ export const shadButtonConfig = {
       },
       accordian: 'Container',
     },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Button background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    hoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Button hover background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Button text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Button border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Button radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

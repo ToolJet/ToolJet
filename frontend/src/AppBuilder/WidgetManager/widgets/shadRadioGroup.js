@@ -146,6 +146,42 @@ export const shadRadioGroupConfig = {
       },
       accordian: 'Container',
     },
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Selected color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    helpTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Help text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    optionTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Option text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

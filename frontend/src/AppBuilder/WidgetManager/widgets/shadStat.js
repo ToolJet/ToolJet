@@ -169,6 +169,86 @@ export const shadStatConfig = {
       },
       accordian: 'Container',
     },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Card background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Card border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Card radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    valueColor: {
+      type: 'colorSwatches',
+      displayName: 'Value color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    footnoteColor: {
+      type: 'colorSwatches',
+      displayName: 'Footnote color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    positiveColor: {
+      type: 'colorSwatches',
+      displayName: 'Change color when trend is up',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    negativeColor: {
+      type: 'colorSwatches',
+      displayName: 'Change color when trend is down',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

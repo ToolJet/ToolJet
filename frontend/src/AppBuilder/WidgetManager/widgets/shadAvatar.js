@@ -112,6 +112,33 @@ export const shadAvatarConfig = {
       },
       accordian: 'Container',
     },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Initials background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Initials color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    ringColor: {
+      type: 'colorSwatches',
+      displayName: 'Ring color (between stacked avatars)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

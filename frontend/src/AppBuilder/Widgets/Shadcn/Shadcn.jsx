@@ -53,43 +53,76 @@ import {
   ToggleGroupItem,
   cn,
 } from './ui';
+import { badgeLook, isSet } from './kanbanLook';
+import { lookVars, whenSet } from './shadcnLook';
 import './shadcn.scss';
 
 // shadcn/ui pack (experiment, exp/antd-pack): native ToolJet widgets rendering shadcn/ui components. Configs live in
 // WidgetManager/widgets/shadcn.js (generated from WidgetManager/shadcnSource.js).
 
-/** The widget's root: `.tj-shadcn` scopes the pack's Tailwind and maps shadcn's tokens to the app theme. */
-export const Shell = ({ properties, styles, dataCy, children, innerRef, className }) => (
+/** The widget's root: `.tj-shadcn` scopes the pack's Tailwind and maps shadcn's tokens to the app theme; the widget's
+ *  set styles arrive as CSS variables its classes read (shadcnLook.js). */
+export const Shell = ({ properties, styles, componentType, dataCy, children, innerRef, className }) => (
   <div
     ref={innerRef}
     data-cy={dataCy}
     className={cn('tj-shadcn', className)}
-    style={{ width: '100%', display: properties.visibility === false ? 'none' : 'block', boxShadow: styles?.boxShadow }}
+    style={{
+      width: '100%',
+      display: properties.visibility === false ? 'none' : 'block',
+      boxShadow: styles?.boxShadow,
+      ...lookVars(componentType, styles),
+    }}
   >
     {children}
   </div>
 );
 
+// Label and help text colours of form controls: the labelColor and helpTextColor styles, else the theme's.
+const LABEL = 'text-[color:var(--lk-label,var(--sc-foreground))]';
+const HELP = 'text-[color:var(--lk-help,var(--sc-muted-foreground))]';
+// A form control's box: the background, text, placeholder, border and radius styles, else shadcn's.
+const CONTROL =
+  'bg-[color:var(--lk-bg,transparent)] text-[color:var(--lk-fg,var(--sc-foreground))] border-[color:var(--lk-border,var(--sc-input))] rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] placeholder:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
+
 /** shadcn's form field: label above, control, help text below. */
 const Field = ({ id, label, description, children }) => (
   <div className="flex w-full flex-col gap-2">
-    {label ? <Label htmlFor={id}>{String(label)}</Label> : null}
+    {label ? (
+      <Label htmlFor={id} className={LABEL}>
+        {String(label)}
+      </Label>
+    ) : null}
     {children}
-    {description ? <p className="text-[0.8rem] text-muted-foreground">{String(description)}</p> : null}
+    {description ? <p className={cn('text-[0.8rem]', HELP)}>{String(description)}</p> : null}
   </div>
 );
+
+const textAlign = (styles) => (['left', 'center', 'right'].includes(styles?.textAlign) ? styles.textAlign : undefined);
 
 // ---- Actions and feedback ------------------------------------------------------------------------------------------
 
 export const ShadButton = (props) => {
-  const { properties, setExposedVariables, fireEvent } = props;
+  const { properties, styles, setExposedVariables, fireEvent } = props;
   useExposed(setExposedVariables, properties, {});
+  // Each variant has its own colours, so a style replaces them only when set. A set background darkens a little on
+  // hover unless the hover background is set too.
+  const hover = isSet(styles?.hoverBackgroundColor)
+    ? 'hover:bg-[color:var(--lk-hover)]'
+    : whenSet(styles, 'backgroundColor', 'hover:bg-[color:color-mix(in_srgb,var(--lk-bg)_88%,#000)]');
   return (
     <Shell {...props}>
       <Button
         variant={properties.variant || 'default'}
         size={properties.size || 'default'}
-        className={properties.fullWidth === true ? 'w-full' : undefined}
+        className={cn(
+          properties.fullWidth === true && 'w-full',
+          whenSet(styles, 'backgroundColor', 'bg-[color:var(--lk-bg)]'),
+          hover,
+          whenSet(styles, 'textColor', 'text-[color:var(--lk-fg)] hover:text-[color:var(--lk-fg)]'),
+          whenSet(styles, 'borderColor', 'border border-[color:var(--lk-border)]'),
+          whenSet(styles, 'borderRadius', 'rounded-[var(--lk-radius)]')
+        )}
         disabled={!!properties.disabledState || !!properties.loadingState}
         onClick={() => fireEvent('onClick')}
       >
@@ -103,15 +136,28 @@ export const ShadButton = (props) => {
 };
 
 export const ShadAlert = (props) => {
-  const { properties, setExposedVariables } = props;
+  const { properties, styles, setExposedVariables } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
   useExposed(setExposedVariables, properties, {});
   return (
     <Shell {...props} innerRef={ref}>
-      <Alert variant={properties.variant === 'destructive' ? 'destructive' : 'default'}>
-        <AlertTitle>{String(properties.title ?? '')}</AlertTitle>
-        {properties.description ? <AlertDescription>{String(properties.description)}</AlertDescription> : null}
+      <Alert
+        variant={properties.variant === 'destructive' ? 'destructive' : 'default'}
+        className={cn(
+          whenSet(styles, 'backgroundColor', 'bg-[color:var(--lk-bg)]'),
+          whenSet(styles, 'borderColor', 'border-[color:var(--lk-border)]'),
+          whenSet(styles, 'borderRadius', 'rounded-[var(--lk-radius)]')
+        )}
+      >
+        <AlertTitle className={whenSet(styles, 'titleColor', 'text-[color:var(--lk-title)]')}>
+          {String(properties.title ?? '')}
+        </AlertTitle>
+        {properties.description ? (
+          <AlertDescription className={whenSet(styles, 'textColor', 'text-[color:var(--lk-fg)] opacity-100')}>
+            {String(properties.description)}
+          </AlertDescription>
+        ) : null}
       </Alert>
     </Shell>
   );
@@ -124,13 +170,21 @@ export const ShadBreadcrumb = (props) => {
   return (
     <Shell {...props}>
       <nav aria-label="breadcrumb">
-        <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground">
+        <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
           {items.map((item, i) => (
             <li key={i} className="inline-flex items-center gap-1.5">
-              <span className={i === items.length - 1 ? 'font-normal text-foreground' : 'transition-colors'}>
+              <span
+                className={
+                  i === items.length - 1
+                    ? 'font-normal text-[color:var(--lk-current,var(--sc-foreground))]'
+                    : 'transition-colors'
+                }
+              >
                 {String(item)}
               </span>
-              {i < items.length - 1 ? <ChevronRight className="h-3.5 w-3.5" /> : null}
+              {i < items.length - 1 ? (
+                <ChevronRight className="h-3.5 w-3.5 text-[color:var(--lk-sep,currentColor)]" />
+              ) : null}
             </li>
           ))}
         </ol>
@@ -157,7 +211,12 @@ export const ShadHeading = (props) => {
   const Tag = level;
   return (
     <Shell {...props} innerRef={ref}>
-      <Tag className={HEADING[level]}>{String(properties.text ?? '')}</Tag>
+      <Tag
+        className={cn(HEADING[level], 'text-[color:var(--lk-fg,var(--sc-foreground))]')}
+        style={{ textAlign: textAlign(props.styles) }}
+      >
+        {String(properties.text ?? '')}
+      </Tag>
     </Shell>
   );
 };
@@ -177,7 +236,14 @@ export const ShadText = (props) => {
   useExposed(setExposedVariables, properties, {});
   return (
     <Shell {...props} innerRef={ref}>
-      <p className={cn(TONE[properties.tone] || TONE.paragraph, 'whitespace-pre-line')}>
+      <p
+        className={cn(
+          TONE[properties.tone] || TONE.paragraph,
+          'whitespace-pre-line',
+          whenSet(props.styles, 'textColor', 'text-[color:var(--lk-fg)]')
+        )}
+        style={{ textAlign: textAlign(props.styles) }}
+      >
         {String(properties.text ?? '')}
       </p>
     </Shell>
@@ -202,6 +268,12 @@ const BADGE_BY_STATUS = {
   failed: 'destructive',
   overdue: 'destructive',
 };
+
+// Table row dividers, hover and selected colours: the borderColor, rowHoverColor and selectedRowColor styles, else
+// shadcn's.
+const ROW_BORDER = 'border-[color:var(--lk-border,var(--sc-border))]';
+const ROW_STATES =
+  'hover:bg-[color:var(--lk-hover,color-mix(in_srgb,var(--sc-muted)_50%,transparent))] data-[state=selected]:bg-[color:var(--lk-selected,var(--sc-muted))]';
 
 const cellValue = (kind, value, currency) => {
   if (value === null || value === undefined || value === '') return '';
@@ -253,14 +325,25 @@ export const ShadTable = (props) => {
             const value = getValue();
             if (c.kind === 'badge') {
               if (value === null || value === undefined || value === '') return null;
-              return <Badge variant={BADGE_BY_STATUS[String(value).toLowerCase()] || 'outline'}>{String(value)}</Badge>;
+              const own = badgeLook(value, properties.badgeColors);
+              return own ? (
+                <Badge
+                  variant="outline"
+                  style={own}
+                  className="border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]"
+                >
+                  {String(value)}
+                </Badge>
+              ) : (
+                <Badge variant={BADGE_BY_STATUS[String(value).toLowerCase()] || 'outline'}>{String(value)}</Badge>
+              );
             }
             return cellValue(c.kind, value, properties.currency);
           },
           meta: { right, width: c.width },
         };
       }),
-    [properties.columns, properties.currency]
+    [properties.columns, properties.currency, properties.badgeColors]
   );
   const pageSize = Number(properties.pageSize) || 0;
   const table = useReactTable({
@@ -278,15 +361,18 @@ export const ShadTable = (props) => {
   return (
     <Shell {...props} innerRef={ref}>
       <div className="flex flex-col gap-3">
-        <div className="rounded-md border">
+        <div className="overflow-hidden rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] border border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--lk-bg,transparent)]">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-[color:var(--lk-head-bg,transparent)]">
               {table.getHeaderGroups().map((group) => (
-                <TableRow key={group.id} className="hover:bg-transparent">
+                <TableRow key={group.id} className={cn(ROW_BORDER, 'hover:bg-transparent')}>
                   {group.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className={cn(header.column.columnDef.meta?.right && 'text-right')}
+                      className={cn(
+                        'text-[color:var(--lk-head-fg,var(--sc-muted-foreground))]',
+                        header.column.columnDef.meta?.right && 'text-right'
+                      )}
                       style={
                         header.column.columnDef.meta?.width ? { width: header.column.columnDef.meta.width } : undefined
                       }
@@ -297,10 +383,10 @@ export const ShadTable = (props) => {
                 </TableRow>
               ))}
             </TableHeader>
-            <TableBody>
+            <TableBody className="text-[color:var(--lk-fg,var(--sc-foreground))]">
               {properties.loadingState ? (
                 [0, 1, 2].map((i) => (
-                  <TableRow key={i}>
+                  <TableRow key={i} className={ROW_BORDER}>
                     <TableCell colSpan={columns.length || 1}>
                       <Skeleton className="h-5 w-full" />
                     </TableCell>
@@ -311,7 +397,7 @@ export const ShadTable = (props) => {
                   <TableRow
                     key={row.id}
                     data-state={selected.row === row.original ? 'selected' : undefined}
-                    className="cursor-pointer"
+                    className={cn(ROW_BORDER, ROW_STATES, 'cursor-pointer')}
                     onClick={() => {
                       setSelected({ row: row.original, index: row.index });
                       setExposedVariable('selectedRow', row.original);
@@ -330,7 +416,7 @@ export const ShadTable = (props) => {
                   </TableRow>
                 ))
               ) : (
-                <TableRow className="hover:bg-transparent">
+                <TableRow className={cn(ROW_BORDER, 'hover:bg-transparent')}>
                   <TableCell colSpan={columns.length || 1} className="h-24 text-center text-muted-foreground">
                     {String(properties.emptyText || 'No results.')}
                   </TableCell>
@@ -369,28 +455,47 @@ export const ShadStat = (props) => {
   useExposed(setExposedVariables, properties, {});
   const trend = properties.trend || 'neutral';
   const TrendIcon = trend === 'down' ? TrendingDown : TrendingUp;
+  // The change badge takes the positive or negative colour for its trend (text, on a light tint) when set.
+  const trendColor = { up: props.styles?.positiveColor, down: props.styles?.negativeColor }[trend];
   const body = (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-start justify-between gap-2">
-        <span className="text-sm text-muted-foreground">{String(properties.label ?? '')}</span>
+        <span className="text-sm text-[color:var(--lk-label,var(--sc-muted-foreground))]">
+          {String(properties.label ?? '')}
+        </span>
         {properties.change ? (
-          <Badge variant="outline" className="gap-1">
+          <Badge
+            variant="outline"
+            style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) : undefined}
+            className={cn(
+              'gap-1',
+              isSet(trendColor) && 'border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]'
+            )}
+          >
             {trend !== 'neutral' ? <TrendIcon className="h-3 w-3" /> : null}
             {String(properties.change)}
           </Badge>
         ) : null}
       </div>
-      <span className="text-2xl font-semibold tabular-nums tracking-tight">
+      <span className="text-2xl font-semibold tabular-nums tracking-tight text-[color:var(--lk-value,var(--sc-foreground))]">
         {properties.loadingState ? <Skeleton className="h-8 w-24" /> : String(properties.value ?? '')}
       </span>
       {properties.footnote ? (
-        <span className="text-sm text-muted-foreground">{String(properties.footnote)}</span>
+        <span className="text-sm text-[color:var(--lk-help,var(--sc-muted-foreground))]">
+          {String(properties.footnote)}
+        </span>
       ) : null}
     </div>
   );
   return (
     <Shell {...props} innerRef={ref}>
-      {properties.card === false ? body : <Card className="px-6 py-5">{body}</Card>}
+      {properties.card === false ? (
+        body
+      ) : (
+        <Card className="rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--lk-bg,var(--sc-card))] px-6 py-5">
+          {body}
+        </Card>
+      )}
     </Shell>
   );
 };
@@ -400,7 +505,17 @@ export const ShadBadge = (props) => {
   useExposed(setExposedVariables, properties, {});
   return (
     <Shell {...props}>
-      <Badge variant={properties.variant || 'default'}>{String(properties.text ?? '')}</Badge>
+      <Badge
+        variant={properties.variant || 'default'}
+        className={cn(
+          whenSet(props.styles, 'backgroundColor', 'bg-[color:var(--lk-bg)]'),
+          whenSet(props.styles, 'textColor', 'text-[color:var(--lk-fg)]'),
+          whenSet(props.styles, 'borderColor', 'border-[color:var(--lk-border)]'),
+          whenSet(props.styles, 'borderRadius', 'rounded-[var(--lk-radius)]')
+        )}
+      >
+        {String(properties.text ?? '')}
+      </Badge>
     </Shell>
   );
 };
@@ -419,9 +534,15 @@ export const ShadAvatar = (props) => {
     <Shell {...props}>
       <div className="flex -space-x-2">
         {names.map((name, i) => (
-          <Avatar key={`${name}-${i}`} className="ring-2 ring-background" style={{ width: size, height: size }}>
+          <Avatar
+            key={`${name}-${i}`}
+            className="ring-2 ring-[color:var(--lk-ring,var(--sc-background))]"
+            style={{ width: size, height: size }}
+          >
             {names.length === 1 && properties.src ? <AvatarImage src={properties.src} alt={String(name)} /> : null}
-            <AvatarFallback>{initials(name)}</AvatarFallback>
+            <AvatarFallback className="bg-[color:var(--lk-bg,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-foreground))]">
+              {initials(name)}
+            </AvatarFallback>
           </Avatar>
         ))}
       </div>
@@ -438,13 +559,11 @@ export const ShadProgress = (props) => {
       <div className="flex flex-col gap-2">
         {properties.label || properties.showValue ? (
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">{String(properties.label ?? '')}</span>
-            {properties.showValue ? (
-              <span className="tabular-nums text-muted-foreground">{Math.round(value)}%</span>
-            ) : null}
+            <span className={cn('font-medium', LABEL)}>{String(properties.label ?? '')}</span>
+            {properties.showValue ? <span className={cn('tabular-nums', HELP)}>{Math.round(value)}%</span> : null}
           </div>
         ) : null}
-        <Progress value={value} />
+        <Progress value={value} className="h-[var(--lk-height,0.5rem)]" />
       </div>
     </Shell>
   );
@@ -457,11 +576,19 @@ export const ShadSeparator = (props) => {
   return (
     <Shell {...props}>
       <div className="flex items-center justify-center" style={{ height }}>
-        <Separator orientation={vertical ? 'vertical' : 'horizontal'} />
+        <Separator
+          orientation={vertical ? 'vertical' : 'horizontal'}
+          className={cn(
+            'bg-[color:var(--lk-line,var(--sc-border))]',
+            vertical ? 'w-[var(--lk-thick,1px)]' : 'h-[var(--lk-thick,1px)]'
+          )}
+        />
       </div>
     </Shell>
   );
 };
+
+const SKELETON = 'bg-[color:var(--lk-bg,color-mix(in_srgb,var(--sc-primary)_10%,transparent))]';
 
 export const ShadSkeleton = (props) => {
   const { properties, setExposedVariables } = props;
@@ -470,10 +597,10 @@ export const ShadSkeleton = (props) => {
   return (
     <Shell {...props}>
       <div className="flex items-start gap-4">
-        {properties.avatar ? <Skeleton className="h-12 w-12 shrink-0 rounded-full" /> : null}
+        {properties.avatar ? <Skeleton className={cn('h-12 w-12 shrink-0 rounded-full', SKELETON)} /> : null}
         <div className="flex flex-1 flex-col gap-2">
           {Array.from({ length: lines }, (_, i) => (
-            <Skeleton key={i} className={cn('h-4', i === lines - 1 && lines > 1 ? 'w-3/5' : 'w-full')} />
+            <Skeleton key={i} className={cn('h-4', SKELETON, i === lines - 1 && lines > 1 ? 'w-3/5' : 'w-full')} />
           ))}
         </div>
       </div>
@@ -504,9 +631,11 @@ export const ShadAccordion = (props) => {
     <Shell {...props} innerRef={ref}>
       <Accordion {...rootProps} className="w-full">
         {items.map((item, i) => (
-          <AccordionItem key={i} value={String(i)}>
-            <AccordionTrigger>{String(item?.title ?? item?.label ?? '')}</AccordionTrigger>
-            <AccordionContent className="whitespace-pre-line text-muted-foreground">
+          <AccordionItem key={i} value={String(i)} className="border-[color:var(--lk-border,var(--sc-border))]">
+            <AccordionTrigger className="text-[color:var(--lk-title,var(--sc-foreground))] [&>svg]:text-[color:var(--lk-icon,var(--sc-muted-foreground))]">
+              {String(item?.title ?? item?.label ?? '')}
+            </AccordionTrigger>
+            <AccordionContent className="whitespace-pre-line text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
               {String(item?.content ?? item?.children ?? '')}
             </AccordionContent>
           </AccordionItem>
@@ -522,15 +651,19 @@ export const ShadEmpty = (props) => {
   return (
     <Shell {...props}>
       <div
-        className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center"
+        className="flex flex-col items-center justify-center gap-2 rounded-[var(--lk-radius,var(--sc-radius))] border border-dashed border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--lk-bg,transparent)] p-6 text-center"
         style={{ minHeight: height }}
       >
-        <div className="mb-1 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-          <Inbox className="h-5 w-5 text-muted-foreground" />
+        <div className="mb-1 flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--lk-icon-bg,var(--sc-muted))]">
+          <Inbox className="h-5 w-5 text-[color:var(--lk-icon,var(--sc-muted-foreground))]" />
         </div>
-        <p className="text-sm font-medium">{String(properties.title ?? '')}</p>
+        <p className="text-sm font-medium text-[color:var(--lk-title,var(--sc-foreground))]">
+          {String(properties.title ?? '')}
+        </p>
         {properties.description ? (
-          <p className="max-w-xs text-sm text-muted-foreground">{String(properties.description)}</p>
+          <p className="max-w-xs text-sm text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
+            {String(properties.description)}
+          </p>
         ) : null}
         {properties.actionLabel ? (
           <Button size="sm" variant="outline" className="mt-2" onClick={() => fireEvent('onAction')}>
@@ -572,6 +705,7 @@ export const ShadInput = (props) => {
         <Input
           id={`shad-${id}`}
           type={properties.inputType || 'text'}
+          className={CONTROL}
           value={value}
           placeholder={String(properties.placeholder ?? '')}
           disabled={!!properties.disabledState}
@@ -595,6 +729,7 @@ export const ShadTextarea = (props) => {
       <Field id={`shad-${id}`} label={properties.label} description={properties.description}>
         <Textarea
           id={`shad-${id}`}
+          className={CONTROL}
           value={value}
           placeholder={String(properties.placeholder ?? '')}
           disabled={!!properties.disabledState}
@@ -635,10 +770,14 @@ export const ShadSelect = (props) => {
             fireEvent('onChange');
           }}
         >
-          <SelectTrigger id={`shad-${id}`}>
+          <SelectTrigger
+            id={`shad-${id}`}
+            className={cn(CONTROL, 'data-[placeholder]:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]')}
+          >
             <SelectValue placeholder={String(properties.placeholder ?? '')} />
           </SelectTrigger>
-          <SelectContent>
+          {/* The list opens in the pack's portal root, outside the widget: it takes the widget's style variables itself. */}
+          <SelectContent style={lookVars(props.componentType, props.styles)}>
             {options.map((o) => (
               <SelectItem key={String(o.value)} value={String(o.value)}>
                 {o.label}
@@ -668,8 +807,10 @@ const CheckedRow = ({ id, control, label, description }) => (
   <div className="flex items-start gap-3">
     {control}
     <div className="grid gap-1.5 leading-none">
-      <Label htmlFor={id}>{String(label ?? '')}</Label>
-      {description ? <p className="text-sm text-muted-foreground">{String(description)}</p> : null}
+      <Label htmlFor={id} className={LABEL}>
+        {String(label ?? '')}
+      </Label>
+      {description ? <p className={cn('text-sm', HELP)}>{String(description)}</p> : null}
     </div>
   </div>
 );
@@ -684,7 +825,13 @@ export const ShadCheckbox = (props) => {
         label={props.properties.label}
         description={props.properties.description}
         control={
-          <Checkbox id={id} checked={checked} disabled={!!props.properties.disabledState} onCheckedChange={change} />
+          <Checkbox
+            id={id}
+            checked={checked}
+            disabled={!!props.properties.disabledState}
+            onCheckedChange={change}
+            className="data-[state=unchecked]:border-[color:var(--lk-border,var(--sc-primary))]"
+          />
         }
       />
     </Shell>
@@ -701,7 +848,13 @@ export const ShadSwitch = (props) => {
         label={props.properties.label}
         description={props.properties.description}
         control={
-          <Switch id={id} checked={checked} disabled={!!props.properties.disabledState} onCheckedChange={change} />
+          <Switch
+            id={id}
+            checked={checked}
+            disabled={!!props.properties.disabledState}
+            onCheckedChange={change}
+            className="data-[state=unchecked]:bg-[color:var(--lk-off,var(--sc-input))]"
+          />
         }
       />
     </Shell>
@@ -734,7 +887,7 @@ export const ShadRadioGroup = (props) => {
             return (
               <div key={String(o.value)} className="flex items-center gap-2">
                 <RadioGroupItem value={String(o.value)} id={itemId} />
-                <Label htmlFor={itemId} className="font-normal">
+                <Label htmlFor={itemId} className="font-normal text-[color:var(--lk-fg,var(--sc-foreground))]">
                   {o.label}
                 </Label>
               </div>
@@ -814,13 +967,17 @@ export const ShadDatePicker = (props) => {
               id={`shad-${id}`}
               variant="outline"
               disabled={!!properties.disabledState}
-              className={cn('w-full justify-start text-left font-normal', !text && 'text-muted-foreground')}
+              className={cn(
+                'w-full justify-start text-left font-normal',
+                CONTROL,
+                !text && 'text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
+              )}
             >
               <CalendarIcon className="h-4 w-4" />
               {text || String(properties.placeholder ?? '')}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0" align="start" style={lookVars(props.componentType, props.styles)}>
             <Calendar
               mode={range ? 'range' : 'single'}
               numberOfMonths={range ? 2 : 1}
@@ -860,11 +1017,18 @@ export const ShadToggleGroup = (props) => {
         type="single"
         value={key}
         disabled={!!properties.disabledState}
-        className={properties.fullWidth === true ? 'flex w-full' : undefined}
+        className={cn(
+          'rounded-[var(--lk-radius,var(--sc-radius))] bg-[color:var(--lk-bg,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
+          properties.fullWidth === true && 'flex w-full'
+        )}
         onValueChange={(next) => next && change(next)}
       >
         {options.map((o) => (
-          <ToggleGroupItem key={String(o.value)} value={String(o.value)}>
+          <ToggleGroupItem
+            key={String(o.value)}
+            value={String(o.value)}
+            className="rounded-[calc(var(--lk-radius,var(--sc-radius))*0.8)] data-[state=on]:bg-[color:var(--lk-on-bg,var(--sc-background))] data-[state=on]:text-[color:var(--lk-on-fg,var(--sc-foreground))]"
+          >
             {o.label}
           </ToggleGroupItem>
         ))}

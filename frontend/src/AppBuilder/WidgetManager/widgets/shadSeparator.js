@@ -96,6 +96,32 @@ export const shadSeparatorConfig = {
       },
       accordian: 'Container',
     },
+    lineColor: {
+      type: 'colorSwatches',
+      displayName: 'Line color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    thickness: {
+      type: 'numberInput',
+      displayName: 'Line thickness',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

@@ -70,6 +70,17 @@ export const shadTableConfig = {
         defaultValue: 'No results.',
       },
     },
+    badgeColors: {
+      type: 'code',
+      displayName: 'Badge colours by value',
+      validation: {
+        schema: {
+          type: 'object',
+        },
+        defaultValue: {},
+      },
+      placeholder: "{ Paid: '#16a34a', Overdue: '#dc2626' }",
+    },
     dynamicHeight: {
       type: 'toggle',
       displayName: 'Dynamic height',
@@ -140,6 +151,86 @@ export const shadTableConfig = {
       },
       accordian: 'Container',
     },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Table background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    headerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Header row background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    headerTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Header text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Cell text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Table border and row divider color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    rowHoverColor: {
+      type: 'colorSwatches',
+      displayName: 'Row hover background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    selectedRowColor: {
+      type: 'colorSwatches',
+      displayName: 'Selected row background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Table radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
@@ -174,6 +265,9 @@ export const shadTableConfig = {
       },
       emptyText: {
         value: 'No results.',
+      },
+      badgeColors: {
+        value: '{{{}}}',
       },
       dynamicHeight: {
         value: '{{true}}',

@@ -129,6 +129,25 @@ export const shadTextConfig = {
       },
       accordian: 'Container',
     },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textAlign: {
+      type: 'alignButtons',
+      displayName: 'Text alignment (left, center, right)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'left',
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
@@ -169,6 +188,9 @@ export const shadTextConfig = {
     styles: {
       boxShadow: {
         value: '0px 0px 0px 0px #00000040',
+      },
+      textAlign: {
+        value: 'left',
       },
     },
   },

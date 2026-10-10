@@ -100,6 +100,17 @@ export const shadPieChartConfig = {
         defaultValue: 'No data',
       },
     },
+    colors: {
+      type: 'code',
+      displayName: 'Series colors (in order)',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "['#0f766e', '#f59e0b']",
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -159,6 +170,51 @@ export const shadPieChartConfig = {
       },
       accordian: 'Container',
     },
+    chartColor: {
+      type: 'colorSwatches',
+      displayName: 'Chart color (series palette from it)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    legendTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Legend text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    sliceBorderColor: {
+      type: 'colorSwatches',
+      displayName: 'Slice border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    centerValueColor: {
+      type: 'colorSwatches',
+      displayName: 'Center figure color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    centerLabelColor: {
+      type: 'colorSwatches',
+      displayName: 'Center caption color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,
@@ -200,6 +256,9 @@ export const shadPieChartConfig = {
       },
       emptyText: {
         value: 'No data',
+      },
+      colors: {
+        value: '{{[]}}',
       },
       loadingState: {
         value: '{{false}}',

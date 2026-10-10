@@ -126,6 +126,59 @@ export const shadToggleGroupConfig = {
       },
       accordian: 'Container',
     },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Group background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Option text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    selectedBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Selected option background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    selectedTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Selected option text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Group radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

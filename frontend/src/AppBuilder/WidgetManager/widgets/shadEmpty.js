@@ -108,6 +108,77 @@ export const shadEmptyConfig = {
       },
       accordian: 'Container',
     },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Dashed border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+        },
+      },
+    },
+    iconBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon background',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    titleColor: {
+      type: 'colorSwatches',
+      displayName: 'Title color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Description color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

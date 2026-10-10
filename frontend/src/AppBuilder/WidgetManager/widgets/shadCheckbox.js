@@ -108,6 +108,42 @@ export const shadCheckboxConfig = {
       },
       accordian: 'Container',
     },
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Checked color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    helpTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Help text color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Unchecked box border color',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
   },
   exposedVariables: {
     isVisible: true,

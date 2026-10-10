@@ -19,12 +19,13 @@ import {
 } from 'recharts';
 import { list, useExposed } from '../packHooks';
 import { Shell } from './Shadcn';
+import { seriesColor } from './shadcnLook';
 
 // shadcn/ui pack charts (experiment): Recharts styled the way shadcn/ui's chart component styles it (no axis lines,
-// horizontal grid only, a card tooltip, series colours from --sc-chart-1..5, which follow the app theme). Own lazy
-// chunk, so Recharts loads only for apps with a chart.
+// horizontal grid only, a card tooltip, series colours from --sc-chart-1..5, which follow the app theme, or from the
+// Chart color style, or from the Series colors list). Grid, axis and legend colours come from the widget's styles
+// as variables (shadcnLook.js), else the theme's. Own lazy chunk, so Recharts loads only for apps with a chart.
 
-const color = (i) => `var(--sc-chart-${(i % 5) + 1})`;
 const compact = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
 const full = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
 const fmt = (p, short) => (v) => {
@@ -40,8 +41,9 @@ const AXIS = {
   tickLine: false,
   axisLine: false,
   tickMargin: 8,
-  tick: { fill: 'var(--sc-muted-foreground)', fontSize: 12 },
+  tick: { fill: 'var(--lk-axis, var(--sc-muted-foreground))', fontSize: 12 },
 };
+const GRID = 'var(--lk-grid, var(--sc-border))';
 
 const ChartTooltip = ({ active, payload, label, format }) => {
   if (!active || !payload?.length) return null;
@@ -69,7 +71,7 @@ const LegendContent = ({ payload }) => (
     {(payload || []).map((item) => (
       <div key={item.value} className="flex items-center gap-1.5">
         <span className="h-2 w-2 shrink-0 rounded-[2px]" style={{ background: item.color }} />
-        <span className="text-muted-foreground">{String(item.value)}</span>
+        <span className="text-[color:var(--lk-legend,var(--sc-muted-foreground))]">{String(item.value)}</span>
       </div>
     ))}
   </div>
@@ -107,6 +109,7 @@ export const ShadAreaChart = (props) => {
   const data = list(p.data);
   const series = seriesOf(p);
   const Chart = p.lineOnly === true ? LineChart : AreaChart;
+  const color = (i) => seriesColor(p.colors, i);
   return (
     <ChartFrame props={props} empty={!data.length || !series.length}>
       {(onDatum) => (
@@ -123,7 +126,7 @@ export const ShadAreaChart = (props) => {
               </linearGradient>
             ))}
           </defs>
-          <CartesianGrid vertical={false} stroke="var(--sc-border)" />
+          <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey={p.xField} {...AXIS} minTickGap={24} />
           <YAxis {...AXIS} width={48} tickFormatter={fmt(p, true)} />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={fmt(p, false)} />} />
@@ -154,6 +157,7 @@ export const ShadBarChart = (props) => {
   const data = list(p.data);
   const series = seriesOf(p);
   const horizontal = p.horizontal === true;
+  const color = (i) => seriesColor(p.colors, i);
   return (
     <ChartFrame props={props} empty={!data.length || !series.length}>
       {(onDatum) => (
@@ -163,7 +167,7 @@ export const ShadBarChart = (props) => {
           margin={{ left: 4, right: 12, top: 8 }}
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
-          <CartesianGrid vertical={horizontal} horizontal={!horizontal} stroke="var(--sc-border)" />
+          <CartesianGrid vertical={horizontal} horizontal={!horizontal} stroke={GRID} />
           {horizontal ? (
             <>
               <XAxis type="number" {...AXIS} tickFormatter={fmt(p, true)} />
@@ -194,7 +198,7 @@ export const ShadBarChart = (props) => {
 
 export const ShadPieChart = (props) => {
   const p = props.properties;
-  const data = list(p.data).map((d, i) => ({ ...d, fill: color(i) }));
+  const data = list(p.data).map((d, i) => ({ ...d, fill: seriesColor(p.colors, i) }));
   const donut = p.donut !== false;
   const format = fmt(p, false);
   return (
@@ -210,7 +214,7 @@ export const ShadPieChart = (props) => {
             innerRadius={donut ? '58%' : 0}
             outerRadius="85%"
             strokeWidth={donut ? 4 : 1}
-            stroke="var(--sc-background)"
+            stroke="var(--lk-slice-border, var(--sc-background))"
             onClick={(slice) => onDatum(slice?.payload)}
           >
             {data.map((d, i) => (
@@ -224,7 +228,7 @@ export const ShadPieChart = (props) => {
                       <tspan
                         x={viewBox.cx}
                         y={viewBox.cy}
-                        style={{ fill: 'var(--sc-foreground)', fontSize: 24, fontWeight: 700 }}
+                        style={{ fill: 'var(--lk-center-value, var(--sc-foreground))', fontSize: 24, fontWeight: 700 }}
                       >
                         {String(p.centerValue ?? '')}
                       </tspan>
@@ -232,7 +236,7 @@ export const ShadPieChart = (props) => {
                         <tspan
                           x={viewBox.cx}
                           y={viewBox.cy + 22}
-                          style={{ fill: 'var(--sc-muted-foreground)', fontSize: 12 }}
+                          style={{ fill: 'var(--lk-center-label, var(--sc-muted-foreground))', fontSize: 12 }}
                         >
                           {String(p.centerLabel)}
                         </tspan>
