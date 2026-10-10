@@ -47,6 +47,7 @@ import {
   seriesRows,
   sparkPoints,
   trendOf,
+  resolveChartFields,
 } from './chartsModel';
 
 export { withControlState } from '../packHooks';
@@ -170,7 +171,7 @@ const categoryAxisWidth = (data, key) => {
 export const ShadAreaChart = (props) => {
   const p = props.properties;
   const data = list(p.data);
-  const series = seriesOf(p);
+  const { x: xField, series } = resolveChartFields(data, xField, seriesOf(p));
   const Chart = p.lineOnly === true ? LineChart : AreaChart;
   const color = (i) => seriesColor(p.colors, i);
   return (
@@ -190,7 +191,7 @@ export const ShadAreaChart = (props) => {
             ))}
           </defs>
           <CartesianGrid vertical={false} stroke={GRID} />
-          <XAxis dataKey={p.xField} {...AXIS} minTickGap={24} tickFormatter={dateTicks(data, p.xField)} />
+          <XAxis dataKey={xField} {...AXIS} minTickGap={24} tickFormatter={dateTicks(data, xField)} />
           <YAxis
             {...AXIS}
             width={valueAxisWidth(data, series, fmt(p, true), p.stack === true && p.lineOnly !== true)}
@@ -222,7 +223,7 @@ export const ShadAreaChart = (props) => {
 export const ShadBarChart = (props) => {
   const p = props.properties;
   const data = list(p.data);
-  const series = seriesOf(p);
+  const { x: xField, series } = resolveChartFields(data, xField, seriesOf(p));
   const horizontal = p.horizontal === true;
   const color = (i) => seriesColor(p.colors, i);
   return (
@@ -238,11 +239,11 @@ export const ShadBarChart = (props) => {
           {horizontal ? (
             <>
               <XAxis type="number" {...AXIS} tickFormatter={fmt(p, true)} />
-              <YAxis type="category" dataKey={p.xField} {...AXIS} width={categoryAxisWidth(data, p.xField)} />
+              <YAxis type="category" dataKey={xField} {...AXIS} width={categoryAxisWidth(data, xField)} />
             </>
           ) : (
             <>
-              <XAxis dataKey={p.xField} {...AXIS} minTickGap={16} tickFormatter={dateTicks(data, p.xField)} />
+              <XAxis dataKey={xField} {...AXIS} minTickGap={16} tickFormatter={dateTicks(data, xField)} />
               <YAxis
                 {...AXIS}
                 width={valueAxisWidth(data, series, fmt(p, true), p.stack === true)}
@@ -400,8 +401,11 @@ const valueFormat = (p) => ({
 
 export const ShadLineChart = (props) => {
   const p = props.properties;
-  const series = fieldList(p.yFields);
-  const xField = isSet(p.xField) ? String(p.xField) : undefined;
+  const { x: xField, series } = resolveChartFields(
+    list(p.data),
+    isSet(p.xField) ? String(p.xField) : undefined,
+    fieldList(p.yFields)
+  );
   const rows = seriesRows(p.data, xField, series);
   const dashed = fieldList(p.dashedFields);
   const tick = formatter(valueFormat(p), true);
@@ -468,8 +472,11 @@ export const ShadLineChart = (props) => {
 
 export const ShadRadarChart = (props) => {
   const p = props.properties;
-  const series = fieldList(p.yFields);
-  const category = isSet(p.categoryField) ? String(p.categoryField) : undefined;
+  const { x: category, series } = resolveChartFields(
+    list(p.data),
+    isSet(p.categoryField) ? String(p.categoryField) : undefined,
+    fieldList(p.yFields)
+  );
   const rows = seriesRows(p.data, category, series);
   // A missing score sits at the centre rather than breaking the polygon.
   const plotted = rows.map((r) => ({ ...r, ...Object.fromEntries(series.map((s) => [s, r[s] ?? 0])) }));

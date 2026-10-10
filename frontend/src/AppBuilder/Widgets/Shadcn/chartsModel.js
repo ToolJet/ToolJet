@@ -215,3 +215,22 @@ export const arcBox = (startAngle, endAngle, width, height, pad = 0.92) => {
     textAbove: minY > -0.35,
   };
 };
+
+/** The x field and series a chart plots. A field the data does not have falls back to the data's own: the first text
+ *  field for x, the numeric fields for the series (a Luna build kept the catalog's default "revenue" against data with
+ *  "amount", and drew an empty chart). Fields the data has are kept as they are. */
+export const resolveChartFields = (data, xField, series) => {
+  const rows = (Array.isArray(data) ? data : []).filter((row) => row && typeof row === 'object' && !Array.isArray(row));
+  if (!rows.length) return { x: xField, series };
+  const keys = [...new Set(rows.slice(0, 50).flatMap((row) => Object.keys(row)))];
+  const has = (key) => rows.some((row) => row[key] !== undefined && row[key] !== null);
+  const numeric = (key) =>
+    rows.some((row) => row[key] !== null && row[key] !== '' && Number.isFinite(Number(row[key])));
+  const x =
+    xField && has(xField)
+      ? xField
+      : keys.find((key) => rows.some((row) => typeof row[key] === 'string' && !numeric(key))) ?? xField;
+  const named = series.filter((key) => has(key));
+  const fallback = keys.filter((key) => key !== x && numeric(key) && typeof rows[0][key] !== 'boolean').slice(0, 6);
+  return { x, series: named.length ? named : fallback.length ? fallback : series };
+};

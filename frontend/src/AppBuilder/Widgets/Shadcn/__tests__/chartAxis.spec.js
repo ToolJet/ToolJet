@@ -30,3 +30,24 @@ describe('dateTicks', () => {
     expect(dateTicks([], 'd')).toBeUndefined();
   });
 });
+
+describe('resolveChartFields', () => {
+  const { resolveChartFields } = require('../chartsModel');
+  const rows = [
+    { category: 'Food', amount: 86.4, count: 3 },
+    { category: 'Rent', amount: '1200', count: 1 },
+  ];
+  it('keeps fields that exist in the data', () => {
+    expect(resolveChartFields(rows, 'category', ['amount'])).toEqual({ x: 'category', series: ['amount'] });
+  });
+  it("falls back to the data's numeric fields when no named series exists (a build kept the default 'revenue')", () => {
+    expect(resolveChartFields(rows, 'category', ['revenue'])).toEqual({ x: 'category', series: ['amount', 'count'] });
+  });
+  it('falls back to the first text field when the x field is missing', () => {
+    expect(resolveChartFields(rows, 'month', ['amount'])).toEqual({ x: 'category', series: ['amount'] });
+  });
+  it('copes with empty and junk data', () => {
+    expect(resolveChartFields([], 'month', ['revenue'])).toEqual({ x: 'month', series: ['revenue'] });
+    expect(resolveChartFields([null, 'x'], 'month', ['revenue'])).toEqual({ x: 'month', series: ['revenue'] });
+  });
+});
