@@ -1238,10 +1238,12 @@ export const ShadHeatmapChart = (props) => {
                         title={`${y} · ${x}: ${value === null ? 'no data' : format(value)}`}
                         data-strength={strength === null ? '' : strength.toFixed(2)}
                         onClick={() => onCell(y, x, value)}
-                        className="flex min-h-0 min-w-0 items-center justify-center rounded-[4px] text-[11px] tabular-nums outline-none transition-[filter] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-[color:var(--sc-ring)]"
+                        // The shade goes through a utility class: the pack's button reset (made !important) beat an
+                        // inline background, and every cell drew transparent.
+                        className="flex min-h-0 min-w-0 items-center justify-center rounded-[4px] bg-[color:var(--heat)] text-[11px] tabular-nums text-[color:var(--heat-fg)] outline-none transition-[filter] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-[color:var(--sc-ring)]"
                         style={{
-                          background: shade(strength),
-                          color:
+                          '--heat': shade(strength),
+                          '--heat-fg':
                             strength !== null && strength > 0.55
                               ? 'var(--sc-primary-foreground)'
                               : 'var(--sc-foreground)',
