@@ -156,7 +156,9 @@ export const FlexContainer = ({
     <div
       style={{
         height: CARD_HEADER_PX,
-        padding: '24px 24px 0',
+        // The title lines up with the card's content: its side padding is the body's (a 24px title inset over a 12px
+        // body put the title and the table below it on different edges).
+        padding: `20px ${Math.max(8, Number(padding ?? 12) || 12)}px 0`,
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',

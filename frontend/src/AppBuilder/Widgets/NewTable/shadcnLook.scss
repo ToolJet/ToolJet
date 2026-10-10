@@ -122,3 +122,20 @@ $radius: var(--cc-radius-default, 6px);
     }
   }
 }
+
+// Inside a card (a surfaced FlexContainer) the table sits flush: the card is the frame.
+.jet-table.tj-table-look-shadcn.tj-table-look-flat {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+
+  .table-card-header {
+    padding: 4px 0 12px !important;
+    min-height: 0;
+  }
+  thead th:first-child,
+  tbody td:first-child {
+    padding-left: 4px !important;
+  }
+}

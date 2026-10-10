@@ -49,6 +49,17 @@ const Table = memo(
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
     const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
     const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
+    // In the shadcn look, a table inside a card (a surfaced FlexContainer) drops its own frame and sits flush in the
+    // card: a framed table inside a framed card read as a double border.
+    const insideSurface = useStore((state) => {
+      if (styles?.tableLook !== 'shadcn') return false;
+      const parentId = state.getComponentDefinition?.(id, moduleId)?.component?.parent;
+      const parent = parentId ? state.getResolvedComponent?.(parentId) : null;
+      if (!parent) return false;
+      const card = parent.properties?.cardStyle;
+      const background = String(parent.styles?.backgroundColor ?? '').trim();
+      return card === 'shadcnCard' || card === 'antCard' || (background !== '' && background !== 'transparent');
+    }, shallow);
     const tableBodyRef = useRef(null);
 
     // get table properties
@@ -344,7 +355,7 @@ const Table = memo(
         data-cy={`draggable-widget-${componentName}`}
         data-disabled={exposedVariablesTemporaryState.isDisabled}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}${
-          styles?.tableLook === 'shadcn' ? ' tj-table-look-shadcn' : ''
+          styles?.tableLook === 'shadcn' ? ` tj-table-look-shadcn${insideSurface ? ' tj-table-look-flat' : ''}` : ''
         }`}
         style={{
           height: isDynamicHeightEnabled ? (subContainerIndex != null ? 'auto' : '100%') : `${height}px`,
