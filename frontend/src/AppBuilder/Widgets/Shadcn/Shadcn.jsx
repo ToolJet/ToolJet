@@ -41,6 +41,8 @@ import {
   cn,
 } from './ui';
 import { badgeLook, isSet } from './kanbanLook';
+import { toDate, ymd } from './actionsModel';
+import { sliderBounds, sliderValues } from './sliderModel';
 import { lookVars, whenSet } from './shadcnLook';
 import { fontStack, textCase, typeClasses } from './typeLook';
 import { useSizedBox } from './boxFit';
@@ -330,10 +332,17 @@ export const ShadAlert = (props) => {
   );
 };
 
+const MAX_CRUMBS = 8;
+const ELLIPSIS = Symbol('ellipsis');
+
 export const ShadBreadcrumb = (props) => {
   const { properties, setExposedVariables } = props;
   useExposed(setExposedVariables, properties, {});
-  const items = list(properties.items).map((it) => (typeof it === 'string' ? it : it?.title ?? ''));
+  const all = list(properties.items);
+  // A long trail keeps its first item and its last ones, with an ellipsis between (shadcn's collapsed breadcrumb), so
+  // a list bound by mistake (10k items) draws a handful.
+  const trail = all.length > MAX_CRUMBS ? [all[0], ELLIPSIS, ...all.slice(-(MAX_CRUMBS - 2))] : all;
+  const items = trail.map((it) => (it === ELLIPSIS || typeof it === 'string' ? it : it?.title ?? ''));
   return (
     <Shell {...props}>
       <nav aria-label="breadcrumb">
@@ -347,7 +356,7 @@ export const ShadBreadcrumb = (props) => {
                     : 'transition-colors'
                 }
               >
-                {String(item)}
+                {item === ELLIPSIS ? '…' : String(item)}
               </span>
               {i < items.length - 1 ? (
                 <ChevronRight className="h-3.5 w-3.5 text-[color:var(--lk-sep,currentColor)]" />
@@ -618,6 +627,8 @@ export const ShadSkeleton = (props) => {
   );
 };
 
+const MAX_ACCORDION_ITEMS = 200;
+
 export const ShadAccordion = (props) => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   const ref = useRef(null);
@@ -633,7 +644,8 @@ export const ShadAccordion = (props) => {
     setExposedVariable('openIndexes', next.map(Number));
     fireEvent('onChange');
   };
-  const items = list(properties.items);
+  // An accordion of thousands of sections is a binding mistake, and drawing them all freezes the page.
+  const items = list(properties.items).slice(0, MAX_ACCORDION_ITEMS);
   const rootProps = multiple
     ? { type: 'multiple', value: open, onValueChange: change }
     : { type: 'single', collapsible: true, value: open[0] ?? '', onValueChange: change };
@@ -829,6 +841,17 @@ export const ShadTextarea = (props) => {
 
 const EMPTY_OPTION_KEY = '\u0000empty';
 
+const MAX_SELECT_OPTIONS = 500;
+// Radios and toggle buttons are laid out on the widget: past this many, a bound list is a mistake that froze the page.
+const MAX_CHOICES = 100;
+
+/** The options a widget draws: the first `max`, plus the selected one wherever it is (actions still reach them all). */
+const shownOptions = (options, selected, max) => {
+  const shown = options.slice(0, max);
+  if (selected && !shown.includes(selected)) shown.push(selected);
+  return shown;
+};
+
 export const ShadSelect = (props) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef(null);
@@ -844,6 +867,9 @@ export const ShadSelect = (props) => {
   const [key, setKey] = useState(initial);
   useEffect(() => setKey(initial), [initial]);
   const selectedOption = byKey.get(key) || {};
+  // Radix mounts every item even while closed, so a 10k-option binding froze the page: the list shows the first
+  // MAX_SELECT_OPTIONS (and the selected one, wherever it is); actions still reach every option.
+  const shown = shownOptions(options, byKey.get(key), MAX_SELECT_OPTIONS);
   useExposed(setExposedVariables, properties, {
     value: selectedOption.value ?? '',
     selectedOption,
@@ -883,11 +909,16 @@ export const ShadSelect = (props) => {
           </SelectTrigger>
           {/* The list opens in the pack's portal root, outside the widget: it takes the widget's style variables itself. */}
           <SelectContent style={lookVars(props.componentType, props.styles)}>
-            {options.map((o) => (
+            {shown.map((o) => (
               <SelectItem key={optionKey(o.value)} value={optionKey(o.value)}>
                 {o.label}
               </SelectItem>
             ))}
+            {options.length > shown.length ? (
+              <div className={cn('px-2 py-1.5 text-xs', HELP)}>
+                {`Showing ${MAX_SELECT_OPTIONS} of ${options.length} options. A Combobox searches them all.`}
+              </div>
+            ) : null}
           </SelectContent>
         </Select>
       </Field>
@@ -1020,7 +1051,7 @@ export const ShadRadioGroup = (props) => {
             check.touch();
           }}
         >
-          {options.map((o) => {
+          {shownOptions(options, byKey.get(key), MAX_CHOICES).map((o) => {
             const itemId = `shad-${id}-${String(o.value)}`;
             return (
               <div key={String(o.value)} className="flex items-center gap-2">
@@ -1048,10 +1079,11 @@ export const ShadSlider = (props) => {
   const { properties } = props;
   const raw = properties.defaultValue;
   const isRange = Array.isArray(raw);
-  const initial = isRange ? raw.map(Number) : [Number(raw) || 0];
+  const bounds = sliderBounds(properties);
+  const initial = sliderValues(raw, bounds);
   const [value, change] = useValue(props, isRange ? initial : initial[0]);
   const [live, setLive] = useState(initial);
-  useEffect(() => setLive(Array.isArray(value) ? value : [Number(value) || 0]), [stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setLive(sliderValues(value, bounds)), [stringify(value), bounds.min, bounds.max]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Shell {...props} innerRef={fit}>
       <Field
@@ -1060,9 +1092,9 @@ export const ShadSlider = (props) => {
       >
         <div className="flex h-5 items-center">
           <Slider
-            min={Number(properties.min) || 0}
-            max={Number(properties.max ?? 100)}
-            step={Number(properties.step) || 1}
+            min={bounds.min}
+            max={bounds.max}
+            step={bounds.step}
             value={live}
             disabled={busy(properties)}
             onValueChange={setLive}
@@ -1074,24 +1106,16 @@ export const ShadSlider = (props) => {
   );
 };
 
-const ymd = (d) => (d ? dayjs(d).format('YYYY-MM-DD') : '');
-
 export const ShadDatePicker = (props) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
   const range = properties.mode === 'range';
-  const format = properties.format || 'DD MMM YYYY';
+  // Only text formats and valid dates: dayjs throws on a non-text format, and the calendar on an invalid date.
+  const format = typeof properties.format === 'string' && properties.format.trim() ? properties.format : 'DD MMM YYYY';
   const raw = properties.defaultValue;
-  const initial = range
-    ? {
-        from: list(raw)[0] ? dayjs(list(raw)[0]).toDate() : undefined,
-        to: list(raw)[1] ? dayjs(list(raw)[1]).toDate() : undefined,
-      }
-    : raw
-    ? dayjs(raw).toDate()
-    : undefined;
+  const initial = range ? { from: toDate(list(raw)[0]), to: toDate(list(raw)[1]) } : toDate(raw);
   const [selected, setSelected] = useState(initial);
   useEffect(() => setSelected(initial), [stringify(raw ?? null), range]); // eslint-disable-line react-hooks/exhaustive-deps
   const [open, setOpen] = useState(false);
@@ -1197,7 +1221,7 @@ export const ShadToggleGroup = (props) => {
         )}
         onValueChange={(next) => next && change(next)}
       >
-        {options.map((o) => (
+        {shownOptions(options, byKey.get(key), MAX_CHOICES).map((o) => (
           <ToggleGroupItem
             key={String(o.value)}
             value={String(o.value)}
