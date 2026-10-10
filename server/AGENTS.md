@@ -91,7 +91,7 @@ Server widget config (`src/modules/apps/services/widget-config/`) and frontend c
 ### Linting & hooks
 
 - Always lint before committing: `cd server && npm run lint`. CI runs the same per folder (`lint-for-server`/`-frontend`/`-plugins` jobs in `.github/workflows/ci.yml`) and a lint failure blocks the PR — catching it locally is strictly cheaper.
-- Git hooks live in the repo (husky, root `package.json`; activated by root `npm install`). Pre-commit lint-staged covers frontend files only — backend lint is NOT run by the hook, run it yourself. Some branch lines also ship a pre-push hook running affected server tests.
+- Git hooks live in the repo (husky, root `package.json`; activated by root `npm install`). Pre-commit lint-staged covers frontend files only — backend lint is NOT run by the hook, run it yourself. The pre-push hook runs server lint and typecheck in parallel, no tests; unit and e2e run in CI. `npm run ci:changed` (root) runs the affected tests locally.
 - Hook not installed (fresh clone, `.git/hooks` missing husky)? Run root `npm install` to set it up, or flag it to the user.
 - **Never commit or push with `--no-verify` unless the user explicitly asks.** Hooks failing means fix the failure, not bypass it — a bypass only defers the same failure to CI.
 
