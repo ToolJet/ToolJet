@@ -82,9 +82,8 @@ export const resolveFlexContainerHeight = ({
     : Number.POSITIVE_INFINITY;
 
   // Build a compact list of only the children that should occupy flex flow.
-  // Visibility is resolved the same way as the rest of dynamic-height reflow:
-  // hidden children still reserve space unless they opted into
-  // `collapseWhenHidden`. For each in-flow child, read the effective layout so
+  // Visibility is resolved the same way as the rest of dynamic-height reflow,
+  // but a hidden child is always out of flow (see below). For each in-flow child, read the effective layout so
   // previously measured dynamic-height temps are included. The
   // calculateMoveableBoxHeightWithId floor preserves the existing label-height
   // bump behavior used elsewhere in this file for top-aligned input widgets.
@@ -100,9 +99,9 @@ export const resolveFlexContainerHeight = ({
       getExposedPropertyForAdditionalActions,
     });
     const childResolved = getResolvedComponent(childId, contextIndices);
-    const childCollapseWhenHidden = childResolved?.properties?.collapseWhenHidden ?? false;
-    const childInFlow = childVisibility || !childCollapseWhenHidden;
-    if (!childInFlow) return accumulator;
+    // A hidden child renders at 0 in flex flow (WidgetWrapper collapses hidden widgets), so it takes no space here
+    // either, collapseWhenHidden or not: reserving its slot drew a blank band the size of a hidden empty state.
+    if (!childVisibility) return accumulator;
 
     const effectiveLayout = getEffectiveLayout(
       childId,

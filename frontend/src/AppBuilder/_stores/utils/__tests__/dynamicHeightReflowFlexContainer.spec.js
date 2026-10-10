@@ -2,7 +2,7 @@ import { resolveFlexContainerHeight } from '../dynamicHeightReflowFlexContainer'
 import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 // A FlexContainer 'flex' with children, rendered `wrapperWidth` wide. Layouts are canonical; no temp heights.
-const resolve = ({ properties, children, height = 40, wrapperWidth = 1264, temps = {}, bump }) => {
+const resolve = ({ properties, children, height = 40, wrapperWidth = 1264, temps = {}, bump, hidden = [] }) => {
   const layouts = { flex: { height }, ...Object.fromEntries(children.map((c) => [c.id, c.layout])) };
   const components = {
     flex: { component: { definition: { properties: { childOrder: { value: children.map((c) => c.id) } } } } },
@@ -25,7 +25,7 @@ const resolve = ({ properties, children, height = 40, wrapperWidth = 1264, temps
     getCanonicalLayout: (id) => layouts[id],
     getDynamicElementSelector: () => '#flex-wrapper',
     getEffectiveLayout: (id) => (temps[id] ? { ...layouts[id], ...temps[id] } : layouts[id]),
-    resolveWidgetVisibility: () => true,
+    resolveWidgetVisibility: ({ componentId }) => !hidden.includes(componentId),
   });
 };
 
@@ -126,6 +126,21 @@ describe('FlexContainer dynamic height', () => {
       height: 430,
     });
     expect(height).toBe(264 + chrome(0));
+  });
+
+  it('leaves a hidden child out, as the page draws it (an empty state under a table)', () => {
+    // An IT desk card held a table and a hidden 180px empty state: the card drew 180px of blank space under the table
+    // (2026-10-10). A hidden widget renders at 0 in a flex container whether or not it set collapseWhenHidden.
+    const height = resolve({
+      properties: { direction: 'column', padding: 0, gap: 8 },
+      children: [
+        { id: 't', layout: { height: 390 } },
+        { id: 'empty', type: 'ShadEmpty', layout: { height: 180 } },
+      ],
+      hidden: ['empty'],
+      height: 100,
+    });
+    expect(height).toBe(390 + chrome(0));
   });
 
   it('keeps the authored height as the floor', () => {

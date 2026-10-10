@@ -292,7 +292,15 @@ const RenderWidget = ({
     setExposedVariable('id', id);
   }, []);
 
-  const collapseWhenHidden = resolvedProperties?.collapseWhenHidden ?? false;
+  // A hidden child of a FlexContainer always renders at 0 (flex flow has no slot to keep), so its visibility changes
+  // reflow like collapseWhenHidden ones: a card's height computed before its hidden empty state resolved kept the
+  // empty state's 180px as a blank band.
+  const inFlexFlow = useStore(
+    (state) =>
+      !!parentId &&
+      state.getComponentDefinition(parentId.slice(0, 36), moduleId)?.component?.component === 'FlexContainer'
+  );
+  const collapseWhenHidden = (resolvedProperties?.collapseWhenHidden ?? false) || inFlexFlow;
   const resolvedWidgetVisibility = useStore((state) => {
     const resolved = state.getResolvedComponent(id, resolveIndex, moduleId);
     const exposed = getExposedPropertyForAdditionalActions(id, resolveIndex, 'isVisible', moduleId);
