@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from './ui
 import { Shell } from './Shadcn';
 import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from './kanbanBoard';
 import { SHADOWS, badgeLook, isSet, kanbanLook, px } from './kanbanLook';
+import { stringify } from '../packJson';
 
 export { withControlState } from '../packHooks';
 
@@ -384,7 +385,7 @@ export const ShadKanban = (props) => {
       return next;
     });
   // Folded columns: those listed in collapsedColumns at start (again whenever that list changes), then the user's.
-  const startCollapsed = JSON.stringify(list(properties.collapsedColumns).map(String));
+  const startCollapsed = stringify(list(properties.collapsedColumns).map(String));
   const [collapsedColumns, setCollapsedColumns] = useState(() => new Set(JSON.parse(startCollapsed)));
   useEffect(() => setCollapsedColumns(new Set(JSON.parse(startCollapsed))), [startCollapsed]);
   const toggleColumn = (columnId) =>

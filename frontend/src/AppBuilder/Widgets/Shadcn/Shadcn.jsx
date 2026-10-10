@@ -46,6 +46,7 @@ import { fontStack, textCase, typeClasses } from './typeLook';
 import { useSizedBox } from './boxFit';
 import { GROUP_LOADING } from './looks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { stringify } from '../packJson';
 import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
@@ -624,7 +625,7 @@ export const ShadAccordion = (props) => {
   const multiple = properties.multiple === true;
   const initial = list(properties.defaultOpen).map(String);
   const [open, setOpen] = useState(initial);
-  useEffect(() => setOpen(initial), [JSON.stringify(initial)]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setOpen(initial), [stringify(initial)]); // eslint-disable-line react-hooks/exhaustive-deps
   useExposed(setExposedVariables, properties, { openIndexes: open.map(Number) });
   const change = (value) => {
     const next = (Array.isArray(value) ? value : value ? [value] : []).map(String);
@@ -691,7 +692,7 @@ export const ShadEmpty = (props) => {
 export const useValue = (props, initial, actions = () => ({}), toExposed = (v) => v) => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   const [value, setValue] = useState(initial);
-  const key = JSON.stringify(initial ?? null);
+  const key = stringify(initial ?? null);
   useEffect(() => setValue(initial), [key]); // eslint-disable-line react-hooks/exhaustive-deps
   useExposed(setExposedVariables, properties, { value: toExposed(value) ?? '', ...actions(setValue) });
   const change = (v, event = 'onChange') => {
@@ -1050,7 +1051,7 @@ export const ShadSlider = (props) => {
   const initial = isRange ? raw.map(Number) : [Number(raw) || 0];
   const [value, change] = useValue(props, isRange ? initial : initial[0]);
   const [live, setLive] = useState(initial);
-  useEffect(() => setLive(Array.isArray(value) ? value : [Number(value) || 0]), [JSON.stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setLive(Array.isArray(value) ? value : [Number(value) || 0]), [stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Shell {...props} innerRef={fit}>
       <Field
@@ -1092,7 +1093,7 @@ export const ShadDatePicker = (props) => {
     ? dayjs(raw).toDate()
     : undefined;
   const [selected, setSelected] = useState(initial);
-  useEffect(() => setSelected(initial), [JSON.stringify(raw ?? null), range]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setSelected(initial), [stringify(raw ?? null), range]); // eslint-disable-line react-hooks/exhaustive-deps
   const [open, setOpen] = useState(false);
   const values = range
     ? { value: [ymd(selected?.from), ymd(selected?.to)], startDate: ymd(selected?.from), endDate: ymd(selected?.to) }

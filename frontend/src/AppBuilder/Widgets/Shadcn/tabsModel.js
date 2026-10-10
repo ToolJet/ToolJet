@@ -1,6 +1,8 @@
 // shadcn/ui pack Tabs (experiment): the tab list and the look, kept apart from the component so they are tested on
 // their own.
 
+import { stringify } from '../packJson';
+
 const isSet = (value) => value !== undefined && value !== null && String(value).trim() !== '';
 const px = (value) => (/^\d+(\.\d+)?$/.test(String(value).trim()) ? `${value}px` : String(value));
 // The inspector stores a static tab's fields as { value }; dynamic tabs carry plain values.
@@ -12,7 +14,7 @@ const truthy = (field) => {
 const titleOf = (title) => {
   const value = unwrap(title);
   if (value === undefined || value === null) return '';
-  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+  return typeof value === 'object' ? stringify(value) : String(value);
 };
 
 /** The tabs from the static list (tabItems) or the dynamic option (tabs), normalised; junk entries are dropped. */

@@ -24,6 +24,7 @@ import {
   timelineItems,
   toTags,
 } from './displayModel';
+import { stringify } from '../packJson';
 import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
@@ -405,7 +406,7 @@ export const ShadTags = (props) => {
   const rowRef = useRef(null);
   const measureRef = useRef(null);
   useAutoHeight(props, ref);
-  const tags = useMemo(() => toTags(p.tags), [JSON.stringify(p.tags ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const tags = useMemo(() => toTags(p.tags), [stringify(p.tags ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
   const [last, setLast] = useState('');
   useExposed(setExposedVariables, p, { lastClickedTag: last, tags });
   const hasClick = useHasEvent(id, 'onTagClick');
@@ -754,7 +755,7 @@ export const ShadKeyValue = (props) => {
   const ref = useRef(null);
   useAutoHeight(props, ref);
   useExposed(setExposedVariables, p, {});
-  const rows = useMemo(() => keyValueItems(p.data), [JSON.stringify(p.data ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const rows = useMemo(() => keyValueItems(p.data), [stringify(p.data ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
   const columns = Math.floor(clamp(p.columns, 1, 4, 1));
   const inline = p.layout !== 'stacked';
   const dividers = p.dividers !== false;
@@ -823,7 +824,7 @@ export const ShadTimeline = (props) => {
   useAutoHeight(props, ref);
   const items = useMemo(
     () => timelineItems(p.items, p.newestFirst === true),
-    [JSON.stringify(p.items ?? null), p.newestFirst] // eslint-disable-line react-hooks/exhaustive-deps
+    [stringify(p.items ?? null), p.newestFirst] // eslint-disable-line react-hooks/exhaustive-deps
   );
   const [last, setLast] = useState({});
   useExposed(setExposedVariables, p, { lastClickedItem: last });
@@ -988,7 +989,7 @@ export const ShadSteps = (props) => {
   const ref = useRef(null);
   useAutoHeight(props, ref);
   const source = p.steps ?? p.schema;
-  const base = useMemo(() => normalizeSteps(source), [JSON.stringify(source ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const base = useMemo(() => normalizeSteps(source), [stringify(source ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
   const [overrides, setOverrides] = useState({});
   useEffect(() => setOverrides({}), [base]);
   const all = base.map((s) => ({ ...s, ...(overrides[String(s.id)] || {}) }));

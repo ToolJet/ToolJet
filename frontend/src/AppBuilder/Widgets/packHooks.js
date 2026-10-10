@@ -3,6 +3,9 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { stringify } from './packJson';
+
+export { stringify };
 
 // Shared by the component packs (experiment): the ToolJet side of a pack widget, independent of the UI library, so a
 // pack's chunk does not pull in another pack's library.
@@ -12,7 +15,7 @@ export const list = (v) => (Array.isArray(v) ? v : []);
 /** Publishes the standard exposed state plus the widget's own values and actions, keeping them in sync. Compares by
  *  content: values rebuilt on every render (a selected option object) would loop if re-published on identity. */
 export const useExposed = (setExposedVariables, properties, values) => {
-  const dataKey = JSON.stringify([
+  const dataKey = stringify([
     properties.visibility,
     properties.loadingState,
     properties.disabledState,

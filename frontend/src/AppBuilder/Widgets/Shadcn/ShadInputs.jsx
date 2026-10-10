@@ -36,6 +36,7 @@ import {
 } from './ui';
 import { lookVars } from './shadcnLook';
 import * as M from './inputsModel';
+import { stringify } from '../packJson';
 import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
@@ -521,7 +522,7 @@ export const ShadPhoneInput = (props) => {
   const fit = useRef(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
-  const listKey = JSON.stringify(Array.isArray(properties.onlyCountries) ? properties.onlyCountries : null);
+  const listKey = stringify(Array.isArray(properties.onlyCountries) ? properties.onlyCountries : null);
   const start = useMemo(
     () => M.phoneStart(properties.defaultValue, properties.defaultCountry, properties.onlyCountries),
     [text(properties.defaultValue), text(properties.defaultCountry), listKey] // eslint-disable-line react-hooks/exhaustive-deps
@@ -1062,7 +1063,7 @@ export const ShadDateTimePicker = (props) => {
   const use24 = M.is24h(properties.timeFormat);
   const displayFormat = `${dateFormat} ${use24 ? 'HH:mm' : 'h:mm A'}`;
   const step = M.minuteStep(properties.minuteStep, 5);
-  const rulesKey = JSON.stringify([
+  const rulesKey = stringify([
     properties.minDate ?? null,
     properties.maxDate ?? null,
     properties.disabledDates ?? null,

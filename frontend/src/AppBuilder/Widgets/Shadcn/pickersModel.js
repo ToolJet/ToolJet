@@ -1,5 +1,6 @@
 // shadcn/ui pack (experiment): pure logic of the pickers widgets (Combobox, Multiselect, Tags input, Color picker,
 // Rating, File upload). No React here: every function takes junk (null, wrong types, huge numbers) without throwing.
+import { stringify } from '../packJson';
 
 const isText = (v) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
 const asList = (v) => (Array.isArray(v) ? v : []);
@@ -11,7 +12,7 @@ const clampInt = (v, min, max, fallback) => {
 /** A content key for effect dependencies that never throws (circular data gives a fresh key). */
 export const stableKey = (v) => {
   try {
-    return JSON.stringify(v ?? null);
+    return stringify(v ?? null);
   } catch {
     return String(Math.random());
   }

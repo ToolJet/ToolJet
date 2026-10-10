@@ -1,6 +1,7 @@
 // shadcn/ui pack charts (experiment): the pure logic of the Line, Radar, Radial and Sparkline charts (ShadCharts.jsx).
 // Every function takes whatever the author bound (null, strings, mixed arrays, objects with missing keys) and returns
 // clean values: numbers or null, plain rows, text labels. Nothing here throws.
+import { stringify } from '../packJson';
 
 export const MAX_ROWS = 2000;
 export const MAX_SERIES = 12;
@@ -34,7 +35,7 @@ export const axisLabel = (v) => {
   if (typeof v === 'number') return Number.isFinite(v) ? v : String(v);
   if (isText(v)) return typeof v === 'boolean' ? String(v) : v;
   try {
-    return JSON.stringify(v) ?? '';
+    return stringify(v) ?? '';
   } catch {
     return String(v);
   }

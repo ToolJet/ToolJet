@@ -53,6 +53,7 @@ import {
   sortRows,
   toCsv,
 } from './tableModel';
+import { stringify } from '../packJson';
 
 // shadcn/ui pack Table (experiment). Native Table conventions (property, event, exposed and action names; server-side
 // pagination, search, sort and filters), the shadcn data-table look, and none of the native table's known failure
@@ -263,7 +264,7 @@ const renderCell = ({ value, row, column, properties, resolve, onAction, rowInde
     case 'json':
       return isSet(shown) ? (
         <code className="block max-w-[320px] truncate rounded bg-muted px-1.5 py-0.5 text-xs">
-          {typeof shown === 'object' ? JSON.stringify(shown) : String(shown)}
+          {typeof shown === 'object' ? stringify(shown) : String(shown)}
         </code>
       ) : null;
     default:
@@ -702,7 +703,7 @@ export const ShadTable = (props) => {
   const runDownload = (type) => {
     const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
     const base = `${componentName || 'table'}_${stamp}`;
-    if (type === 'json') download(`${base}.json`, JSON.stringify(exportRows(), null, 2), 'application/json');
+    if (type === 'json') download(`${base}.json`, stringify(exportRows(), 2), 'application/json');
     else download(`${base}.csv`, toCsv(exportRows(), live.current.columns), 'text/csv;charset=utf-8');
   };
 

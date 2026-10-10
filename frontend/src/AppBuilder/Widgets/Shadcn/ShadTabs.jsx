@@ -10,6 +10,7 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { Button, Skeleton, cn } from './ui';
 import { tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
+import { stringify } from '../packJson';
 import './shadcn.scss';
 
 // shadcn/ui pack Tabs (experiment). Same contract as the native Tabs (tabItems or dynamic tabs, defaultTab,
@@ -225,7 +226,7 @@ export const ShadTabs = (props) => {
     () => tabsFromProperties(properties),
     [properties.useDynamicOptions, properties.tabs, properties.tabItems]
   ); // eslint-disable-line react-hooks/exhaustive-deps
-  const fromPropsKey = JSON.stringify(fromProps);
+  const fromPropsKey = stringify(fromProps);
   const [tabs, setTabs] = useState(fromProps);
   useEffect(() => setTabs(fromProps), [fromPropsKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const shown = visibleTabs(tabs);

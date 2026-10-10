@@ -31,6 +31,7 @@ import {
   visiblePeriod,
   ymd,
 } from './actionsModel';
+import { stringify } from '../packJson';
 import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
@@ -280,9 +281,9 @@ export const ShadButtonGroup = (props) => {
   useAutoHeight(props, ref);
   const mode = GROUP_MODES.includes(properties.mode) ? properties.mode : 'single';
   const buttons = groupButtons(properties.buttons);
-  const keys = JSON.stringify(buttons.map((b) => String(b.value)));
+  const keys = stringify(buttons.map((b) => String(b.value)));
   const initial = initialSelection(properties.defaultValue, mode, buttons);
-  const initialKey = JSON.stringify(initial);
+  const initialKey = stringify(initial);
   const [selected, setSelected] = useState(initial);
   useEffect(() => setSelected(initial), [initialKey, mode, keys]); // eslint-disable-line react-hooks/exhaustive-deps
   const [lastClicked, setLastClicked] = useState(null);
@@ -313,7 +314,7 @@ export const ShadButtonGroup = (props) => {
     setLastClicked(info);
     setExposedVariable('lastClicked', info);
     const next = toggleSelection(selected, String(button.value), mode, properties.allowDeselect === true);
-    const changed = JSON.stringify(next) !== JSON.stringify(selected);
+    const changed = stringify(next) !== stringify(selected);
     if (changed) apply(next);
     check.touch();
     fireEvent('onClick');
@@ -765,7 +766,7 @@ export const ShadCalendar = (props) => {
   useAutoHeight(props, ref);
   const mode = CALENDAR_MODES.includes(properties.mode) ? properties.mode : 'single';
   const months = clampInt(properties.numberOfMonths, 1, 3, 1);
-  const rawKey = JSON.stringify([unwrap(properties.defaultValue) ?? null, mode]);
+  const rawKey = stringify([unwrap(properties.defaultValue) ?? null, mode]);
   const initial = calendarSelection(properties.defaultValue, mode);
   const [selected, setSelected] = useState(initial);
   useEffect(() => setSelected(initial), [rawKey]); // eslint-disable-line react-hooks/exhaustive-deps

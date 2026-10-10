@@ -3,6 +3,7 @@
 // crash and correctness bugs are not repeated: search text is never a regex, numbers filter as numbers, export applies
 // filters, sort and edits.
 import dayjs from 'dayjs';
+import { stringify } from '../packJson';
 
 const isSet = (value) => value !== undefined && value !== null && String(value).trim() !== '';
 const isEmptyValue = (value) =>
@@ -123,7 +124,7 @@ export const normalizeColumns = (columns, data) => {
 // Intl.NumberFormat is costly to build; a table formats every cell on each search, so formatters are reused.
 const FORMATTERS = new Map();
 const numberFormatter = (locale, options) => {
-  const key = `${locale}|${JSON.stringify(options)}`;
+  const key = `${locale}|${stringify(options)}`;
   if (!FORMATTERS.has(key)) {
     if (FORMATTERS.size > 200) FORMATTERS.clear();
     FORMATTERS.set(key, new Intl.NumberFormat(locale, options));
@@ -163,7 +164,7 @@ export const formatCell = (value, column = {}) => {
     if (type === 'boolean') return value === true || value === 'true' ? 'Yes' : 'No';
     if (type === 'tags')
       return (Array.isArray(value) ? value : String(value).split(',')).map((t) => String(t).trim()).join(', ');
-    if (typeof value === 'object') return JSON.stringify(value);
+    if (typeof value === 'object') return stringify(value);
     return wrap(String(value));
   } catch {
     return '';
@@ -212,8 +213,8 @@ export const compareCells = (a, b, type) => {
     if (Number.isFinite(x) && Number.isFinite(y)) return x - y;
   }
   if (type === 'boolean') return Number(a === true || a === 'true') - Number(b === true || b === 'true');
-  return String(typeof a === 'object' ? JSON.stringify(a) : a).localeCompare(
-    String(typeof b === 'object' ? JSON.stringify(b) : b),
+  return String(typeof a === 'object' ? stringify(a) : a).localeCompare(
+    String(typeof b === 'object' ? stringify(b) : b),
     undefined,
     { numeric: true, sensitivity: 'base' }
   );
@@ -259,9 +260,7 @@ const safeRegex = (pattern) => {
 };
 
 const passes = (value, condition, wanted, column) => {
-  const text = (
-    isEmptyValue(value) ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value)
-  ).toLowerCase();
+  const text = (isEmptyValue(value) ? '' : typeof value === 'object' ? stringify(value) : String(value)).toLowerCase();
   const target = String(wanted ?? '').toLowerCase();
   switch (condition) {
     case 'contains':
@@ -343,7 +342,7 @@ export const rowKey = (row, idField, index) =>
 
 const csvCell = (value) => {
   if (isEmptyValue(value)) return '';
-  let text = typeof value === 'object' ? JSON.stringify(value) : String(value);
+  let text = typeof value === 'object' ? stringify(value) : String(value);
   // A cell that starts like a formula is run by spreadsheets: prefix it so it is read as text.
   if (/^[=+\-@\t\r]/.test(text) && !(typeof value === 'number')) text = `'${text}`;
   return /[",\n\r]/.test(text) || text.startsWith("'") ? `"${text.replace(/"/g, '""')}"` : text;

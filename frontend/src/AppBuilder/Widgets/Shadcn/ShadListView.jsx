@@ -11,6 +11,7 @@ import { useAutoHeight } from '../packHooks';
 import { Skeleton, cn } from './ui';
 import { Pager } from './Pager';
 import { itemKey, listLook, pageOf } from './listModel';
+import { stringify } from '../packJson';
 import './shadcn.scss';
 
 // shadcn/ui pack List view (experiment). Row-scoped like the native Listview: one canvas (the components parented to
@@ -101,7 +102,7 @@ export const ShadListView = (props) => {
 
   // Each row reads its item as {{listItem}}; written before the rows render, as the native Listview does, and only
   // when the page's items, the row template or the nesting changes.
-  const itemsKey = JSON.stringify(items);
+  const itemsKey = stringify(items);
   const published = useRef({ itemsKey: null, childCount: -1, parent: '' });
   const parentKey = parentIndices.join(',');
   if (
