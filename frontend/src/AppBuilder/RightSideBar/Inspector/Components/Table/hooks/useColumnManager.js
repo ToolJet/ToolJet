@@ -43,6 +43,14 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       };
     }
 
+    // Multiselect columns default to coloured tags
+    if (property === 'columnType' && value === 'newMultiSelect') {
+      modifiedColumn = {
+        ...modifiedColumn,
+        autoAssignColors: true,
+      };
+    }
+
     // Handle datepicker initialization
     if (property === 'columnType' && value === 'datepicker') {
       modifiedColumn = {
