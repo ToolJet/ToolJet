@@ -1,5 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { openerOf, trapTab, watchOpeners } from './dialogFocus';
 import { shadDialogConfig } from '@/AppBuilder/WidgetManager/widgets/shadDialog';
 import './shadcn.scss';
 import './shadDialog.scss';
@@ -47,7 +50,29 @@ export const sanitizeDialog = (values, section) => {
   return out;
 };
 
+/** While the dialog is open in an app (not the editor), Tab stays inside it (dialogFocus.js), and on close focus goes
+ *  back to what opened it (a row's button, a trigger), as a dialog should for keyboard and screen reader users. */
+const useDialogFocus = (id, currentMode) => {
+  const { moduleId } = useModuleContext();
+  const show = useStore(
+    (state) => state.resolvedStore?.modules?.[moduleId]?.exposedValues?.components?.[id]?.show === true
+  );
+  useEffect(() => watchOpeners(), []);
+  useEffect(() => {
+    if (!show || currentMode === 'edit' || typeof document === 'undefined') return undefined;
+    const opener = openerOf();
+    const root = () => document.querySelector(`.modal-dialog[component-id="${id}"]`)?.closest('.modal');
+    const onKey = (e) => trapTab(e, root());
+    document.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('keydown', onKey, true);
+      if (opener?.isConnected && typeof opener.focus === 'function') opener.focus({ preventScroll: true });
+    };
+  }, [show, currentMode, id]);
+};
+
 export const ShadDialog = (props) => {
+  useDialogFocus(props.id, props.currentMode);
   const properties = useMemo(() => sanitizeDialog(props.properties, 'properties'), [props.properties]);
   const styles = useMemo(() => sanitizeDialog(props.styles, 'styles'), [props.styles]);
   return <ModalV2 {...props} properties={properties} styles={styles} />;
