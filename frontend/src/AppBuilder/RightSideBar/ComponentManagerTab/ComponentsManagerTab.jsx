@@ -25,6 +25,7 @@ const presetDefinition = (name) => {
 };
 
 const SHADCN_SECTIONS = [
+  { title: 'Page sections', items: ['ShadHero', 'ShadCardGrid'] },
   {
     title: 'Layout',
     items: ['FlexContainer', 'ShadTabs', 'ShadListView', 'ShadDialog', 'ShadSeparator', 'ShadAccordion'],

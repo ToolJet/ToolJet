@@ -14,6 +14,7 @@ import * as ListView from '../../ShadListView';
 import * as Inputs from '../../ShadInputs';
 import * as Pickers from '../../ShadPickers';
 import * as Display from '../../ShadDisplay';
+import * as Sections from '../../ShadSections';
 import * as Actions from '../../ShadActions';
 import * as Overlays from '../../ShadOverlays';
 
@@ -52,7 +53,7 @@ if (typeof window !== 'undefined') {
     Element.prototype.releasePointerCapture || function releasePointerCapture() {};
 }
 
-const MODULES = [Core, Charts, Kanban, Table, Tabs, ListView, Inputs, Pickers, Display, Actions, Overlays];
+const MODULES = [Core, Charts, Kanban, Table, Tabs, ListView, Inputs, Pickers, Display, Actions, Overlays, Sections];
 // Widgets that keep their own control state; the rest get withControlState, as in editorHelpers.js.
 const UNCONTROLLED = new Set(['ShadTable', 'ShadTabs', 'ShadListView', 'ShadDialog']);
 

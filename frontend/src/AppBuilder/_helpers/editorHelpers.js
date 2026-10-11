@@ -233,6 +233,7 @@ const shadcnListView = () => import('@/AppBuilder/Widgets/Shadcn/ShadListView');
 const shadcnInputs = () => import('@/AppBuilder/Widgets/Shadcn/ShadInputs');
 const shadcnPickers = () => import('@/AppBuilder/Widgets/Shadcn/ShadPickers');
 const shadcnDisplay = () => import('@/AppBuilder/Widgets/Shadcn/ShadDisplay');
+const shadcnSections = () => import('@/AppBuilder/Widgets/Shadcn/ShadSections');
 const shadcnActions = () => import('@/AppBuilder/Widgets/Shadcn/ShadActions');
 const shadcnOverlays = () => import('@/AppBuilder/Widgets/Shadcn/ShadOverlays');
 const shadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m[name] })));
@@ -289,6 +290,8 @@ const ShadCircularProgress = controlledShadWidget(shadcnDisplay, 'ShadCircularPr
 const ShadSpinner = controlledShadWidget(shadcnDisplay, 'ShadSpinner');
 const ShadKeyValue = controlledShadWidget(shadcnDisplay, 'ShadKeyValue');
 const ShadTimeline = controlledShadWidget(shadcnDisplay, 'ShadTimeline');
+const ShadHero = controlledShadWidget(shadcnSections, 'ShadHero');
+const ShadCardGrid = controlledShadWidget(shadcnSections, 'ShadCardGrid');
 const ShadSteps = controlledShadWidget(shadcnDisplay, 'ShadSteps');
 const ShadPagination = controlledShadWidget(shadcnDisplay, 'ShadPagination');
 const ShadDropdownMenu = controlledShadWidget(shadcnActions, 'ShadDropdownMenu');
@@ -464,6 +467,8 @@ export const AllComponents = {
   ShadSpinner,
   ShadKeyValue,
   ShadTimeline,
+  ShadHero,
+  ShadCardGrid,
   ShadSteps,
   ShadPagination,
   ShadDropdownMenu,

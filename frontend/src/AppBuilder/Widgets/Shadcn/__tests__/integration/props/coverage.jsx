@@ -355,6 +355,16 @@ export const PROBES = [
     steps: [['type', 'Ada'], 'wait'],
   },
   { widget: 'ShadListView', key: 'columns', value: '{{2}}', context: { properties: { mode: 'grid' } } },
+  // The harness is 480px wide: two cards fit at the default 240px minimum, so one column or a wider minimum shows.
+  { widget: 'ShadHero', key: 'icon', value: 'sparkles' },
+  {
+    widget: 'ShadHero',
+    key: 'imageUrl',
+    value: 'https://example.com/hero.jpg',
+    context: { properties: { background: 'image' } },
+  },
+  { widget: 'ShadCardGrid', key: 'columns', value: '{{1}}' },
+  { widget: 'ShadCardGrid', key: 'minCardWidth', value: '{{400}}' },
   {
     widget: 'ShadListView',
     key: 'rowsPerPage',
@@ -634,6 +644,8 @@ export const ELSEWHERE = (name) => [
   ...(ANIMATED.includes(name) ? ['animate'] : []),
   ...(name === 'ShadButton' ? ['fullWidth'] : []),
   ...(name === 'ShadAvatar' ? ['src'] : []),
+  // Which field identifies a card (selectedItemId, the selection across data changes): sectionsModel.spec.
+  ...(name === 'ShadCardGrid' ? ['idField'] : []),
   // Tabs scrolling the new tab to its top: containers.spec, with real tab canvases.
   ...(name === 'ShadTabs' ? ['scrollToTopOnTabSwitch'] : []),
 ];

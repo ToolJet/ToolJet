@@ -134,6 +134,8 @@ const SHADCN_ICONS = {
   shadkanban: Kanban,
   shadtabs: Tabs,
   shadlistview: Listview,
+  shadcardgrid: Listview,
+  shadhero: Image,
   shadpiechart: PieChartIcon,
   shadprogress: Progressbar,
   shadradiogroup: RadioButton,
