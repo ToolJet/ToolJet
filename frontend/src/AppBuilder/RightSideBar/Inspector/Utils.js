@@ -14,6 +14,30 @@ function resolveLiveValue(propertyDefinition) {
   return { value: useStore.getState().getResolvedValue(propertyDefinition.value) };
 }
 
+// DaterangePicker legacy components are migrated with
+// `properties.legacyInvalidDates = {{true}}` so their historical "Invalid
+// date" exposures keep working. The opt-in moment is the user explicitly
+// editing the widget's date data in the inspector — the properties whose
+// downstream exposure the flag freezes: Default start date, Default end date,
+// or Format. The flag is then cleared (set to {{false}}) and the component
+// keeps the corrected exposure from then on. The flag is only ever cleared
+// here, never set back — an already-cleared flag is not rewritten, fx-mode
+// toggles are not value edits, and style changes (e.g. label alignment) are
+// unrelated to the exposed values. New components never carry the flag and
+// are left untouched.
+const DATERANGE_DATE_DATA_PROPERTIES = ['defaultStartDate', 'defaultEndDate', 'format'];
+
+export function shouldClearLegacyInvalidDates({ componentType, paramName, paramType, attr, definition }) {
+  return (
+    componentType === 'DaterangePicker' &&
+    paramType === 'properties' &&
+    attr === 'value' &&
+    DATERANGE_DATE_DATA_PROPERTIES.includes(paramName) &&
+    Boolean(definition?.properties?.legacyInvalidDates) &&
+    definition.properties.legacyInvalidDates.value !== '{{false}}'
+  );
+}
+
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
   definition = definition || {};

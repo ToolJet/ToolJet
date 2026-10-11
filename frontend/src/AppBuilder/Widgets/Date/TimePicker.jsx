@@ -2,7 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDatetimeInput, useTimeInput } from './hooks';
 import cx from 'classnames';
 import moment from 'moment';
-import { getFormattedSelectTimestamp, getUnixTime, is24HourFormat, isDateValid } from './utils';
+import {
+  getFormattedSelectTimestamp,
+  getUnixTime,
+  is24HourFormat,
+  isDateValid,
+  getTimeSelectionBase,
+  isUsableTimeFormat,
+} from './utils';
 import { BaseDateComponent } from './BaseDateComponent';
 import './styles.scss';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
@@ -23,8 +30,12 @@ export const TimePicker = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, timeFormat, placeholder: placeholderProp, showClearBtn } = properties;
+  const { label, defaultValue, timeFormat: timeFormatProp, placeholder: placeholderProp, showClearBtn } = properties;
   const placeholder = placeholderProp ?? 'Select time';
+  // Tokenless format (e.g. {{42}}) → config error + shipped default fallback.
+  const hasUsableFormat = isUsableTimeFormat(timeFormatProp);
+  const timeFormat = hasUsableFormat ? timeFormatProp : 'HH:mm';
+  const formatConfigError = Boolean(timeFormatProp) && !hasUsableFormat;
   const inputProps = {
     properties,
     setExposedVariable,
@@ -49,6 +60,8 @@ export const TimePicker = ({
 
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
+  // Unparseable typed text — kept on screen with an error instead of reverting.
+  const [textParseError, setTextParseError] = useState(false);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
@@ -80,7 +93,9 @@ export const TimePicker = ({
   };
 
   const onTimeChange = (time, type) => {
-    const updatedSelectedTimestamp = selectedTimestamp ? moment(selectedTimestamp) : moment();
+    // Empty widget: base time edits on today's midnight so unpicked units stay
+    // 00 — see getTimeSelectionBase.
+    const updatedSelectedTimestamp = getTimeSelectionBase(selectedTimestamp);
     updatedSelectedTimestamp.set(type, time);
     const updatedTimestamp = updatedSelectedTimestamp.valueOf();
     setSelectedTimestamp(updatedTimestamp);
@@ -101,9 +116,9 @@ export const TimePicker = ({
   }, [defaultValue, timeFormat]);
 
   useEffect(() => {
-    if (isInitialRender.current || textInputFocus) return;
+    if (isInitialRender.current || textInputFocus || textParseError) return;
     setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, timeFormat) : '');
-  }, [selectedTimestamp, timeFormat, textInputFocus]);
+  }, [selectedTimestamp, timeFormat, textInputFocus, textParseError]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -135,8 +150,16 @@ export const TimePicker = ({
   }, [selectedTimestamp, timeFormat]);
 
   useEffect(() => {
+    if (formatConfigError) {
+      setValidationStatus({ isValid: false, validationError: 'Invalid time format', isConfigError: true });
+      return;
+    }
+    if (textParseError) {
+      setValidationStatus({ isValid: false, validationError: 'Invalid time' });
+      return;
+    }
     setValidationStatus(isDateValid(selectedTimestamp, { minTime, maxTime, customRule, isMandatory, timeFormat }));
-  }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp, timeFormat]);
+  }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp, timeFormat, formatConfigError, textParseError]);
 
   useFormClear(() => setInputValue(null, null, true));
 
@@ -170,6 +193,7 @@ export const TimePicker = ({
     onTimeChange,
     minTime,
     maxTime,
+    timeFormat,
   };
 
   const customDateInputProps = {
@@ -179,7 +203,10 @@ export const TimePicker = ({
     setDisplayTimestamp,
     setTextInputFocus,
     setShowValidationError,
-    showValidationError,
+    onTextParse: (parsed) => setTextParseError(parsed.hasError),
+    // Config contradictions (min>max time) display immediately; input errors
+    // keep the blur/submit gate.
+    showValidationError: showValidationError || !!validationStatus.isConfigError,
     isValid,
     validationError,
     showClearBtn,

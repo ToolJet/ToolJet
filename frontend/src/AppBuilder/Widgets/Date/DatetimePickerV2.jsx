@@ -1,52 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 import moment from 'moment-timezone';
-// import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatetimePickerV2';
 
-export const TIMEZONE_OPTIONS = [
-  { name: 'UTC', value: 'Etc/UTC' },
-  { name: '-12:00', value: 'Etc/GMT+12' },
-  { name: '-11:00', value: 'Etc/GMT+11' },
-  { name: '-10:00', value: 'Pacific/Honolulu' },
-  { name: '-09:30', value: 'Pacific/Marquesas' },
-  { name: '-09:00', value: 'America/Anchorage' },
-  { name: '-08:00', value: 'America/Santa_Isabel' },
-  { name: '-07:00', value: 'America/Chihuahua' },
-  { name: '-06:00', value: 'America/Guatemala' },
-  { name: '-05:00', value: 'America/Bogota' },
-  { name: '-04:00', value: 'America/Halifax' },
-  { name: '-03:30', value: 'America/St_Johns' },
-  { name: '-03:00', value: 'America/Sao_Paulo' },
-  { name: '-02:00', value: 'Etc/GMT+2' },
-  { name: '-01:00', value: 'Atlantic/Cape_Verde' },
-  { name: '+00:00', value: 'UTC' },
-  { name: '+01:00', value: 'Europe/Berlin' },
-  { name: '+02:00', value: 'Africa/Gaborone' },
-  { name: '+03:00', value: 'Asia/Baghdad' },
-  { name: '+03:30', value: 'Asia/Tehran' },
-  { name: '+04:00', value: 'Asia/Muscat' },
-  { name: '+04:30', value: 'Asia/Kabul' },
-  { name: '+05:00', value: 'Asia/Tashkent' },
-  { name: '+05:30', value: 'Asia/Colombo' },
-  { name: '+05:45', value: 'Asia/Kathmandu' },
-  { name: '+06:00', value: 'Asia/Almaty' },
-  { name: '+06:30', value: 'Asia/Yangon' },
-  { name: '+07:00', value: 'Asia/Bangkok' },
-  { name: '+08:00', value: 'Asia/Makassar' },
-  { name: '+09:00', value: 'Asia/Seoul' },
-  { name: '+09:30', value: 'Australia/Darwin' },
-  { name: '+10:00', value: 'Pacific/Chuuk' },
-  { name: '+11:00', value: 'Pacific/Pohnpei' },
-  { name: '+12:00', value: 'Etc/GMT-12' },
-  { name: '+13:00', value: 'Pacific/Auckland' },
-];
-
-export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
-  acc[curr.name] = curr.value;
-  return acc;
-}, {});
-
+// Canonical list lives in ./utils; re-exported here because this module is its
+// historical import path (the inspector keeps its own copy).
+export { TIMEZONE_OPTIONS } from './utils';
 import {
+  TIMEZONE_OPTIONS,
+  resolveTimezone,
   convertToIsoWithTimezoneOffset,
   getFormattedSelectTimestamp,
   getSelectedTimestampFromUnixTimestampV2,
@@ -55,7 +16,15 @@ import {
   getUnixTimeFromParsedDate,
   is24HourFormat,
   isDateValid,
+  getTimeSelectionBase,
+  isUsableDateFormat,
+  isUsableTimeFormat,
 } from './utils';
+
+export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
+  acc[curr.name] = curr.value;
+  return acc;
+}, {});
 
 import { BaseDateComponent } from './BaseDateComponent';
 import { useDateInput, useTimeInput, useDatetimeInput } from './hooks';
@@ -81,13 +50,22 @@ export const DatetimePickerV2 = ({
   const {
     label,
     defaultValue,
-    dateFormat,
-    timeFormat,
+    dateFormat: dateFormatProp,
+    timeFormat: timeFormatProp,
     placeholder: placeholderProp,
     isTimezoneEnabled,
     showClearBtn,
   } = properties;
   const placeholder = placeholderProp ?? 'Select date and time';
+  // Tokenless formats (e.g. {{42}}) → config error + shipped default fallback.
+  const hasUsableDateFormat = isUsableDateFormat(dateFormatProp);
+  const hasUsableTimeFormat = isUsableTimeFormat(timeFormatProp);
+  const dateFormat = hasUsableDateFormat ? dateFormatProp : 'DD/MM/YYYY';
+  const timeFormat = hasUsableTimeFormat ? timeFormatProp : 'HH:mm';
+  const dateFormatConfigError = Boolean(dateFormatProp) && !hasUsableDateFormat;
+  const timeFormatConfigError = Boolean(timeFormatProp) && !hasUsableTimeFormat;
+  const formatConfigError = dateFormatConfigError || timeFormatConfigError;
+  const formatConfigErrorMessage = dateFormatConfigError ? 'Invalid date format' : 'Invalid time format';
   const inputProps = {
     properties,
     setExposedVariable,
@@ -141,6 +119,8 @@ export const DatetimePickerV2 = ({
 
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
+  // Unparseable typed text — kept on screen with an error instead of reverting.
+  const [textParseError, setTextParseError] = useState(false);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
@@ -180,10 +160,9 @@ export const DatetimePickerV2 = ({
   };
 
   const onTimeChange = (time, type) => {
-    let updatedSelectedTimestamp = moment(selectedTimestamp);
-    if (!updatedSelectedTimestamp.isValid()) {
-      updatedSelectedTimestamp = moment();
-    }
+    // Empty widget: base time edits on today's midnight so unpicked units stay
+    // 00 — see getTimeSelectionBase.
+    const updatedSelectedTimestamp = getTimeSelectionBase(selectedTimestamp);
     updatedSelectedTimestamp.set(type, time);
     const updatedUnixTimestamp = getUnixTimestampFromSelectedTimestamp(
       updatedSelectedTimestamp.valueOf(),
@@ -249,9 +228,9 @@ export const DatetimePickerV2 = ({
   }, [defaultValue, displayFormat, properties.storeTimezone]);
 
   useEffect(() => {
-    if (isInitialRender.current || textInputFocus) return;
+    if (isInitialRender.current || textInputFocus || textParseError) return;
     setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : '');
-  }, [selectedTimestamp, displayFormat, textInputFocus]);
+  }, [selectedTimestamp, displayFormat, textInputFocus, textParseError]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -360,8 +339,11 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     setExposedVariables({
+      // Both CSAs accept the inspector offset label ('+05:30') or an
+      // option-list IANA id ('Etc/UTC') — see resolveTimezone. Unknown input
+      // is a no-op.
       setDisplayTimezone: (timezone) => {
-        const value = TIMEZONE_OPTIONS_MAP[timezone];
+        const value = resolveTimezone(timezone);
         if (value) {
           const val = isTimezoneEnabled ? value : moment.tz.guess();
           setDisplayTimezone(val);
@@ -369,17 +351,32 @@ export const DatetimePickerV2 = ({
         }
       },
       setStoreTimezone: (timezone) => {
-        const value = TIMEZONE_OPTIONS_MAP[timezone];
+        const value = resolveTimezone(timezone);
         if (value) {
           const val = isTimezoneEnabled ? value : moment.tz.guess();
           setStoreTimezone(val);
           setExposedVariable('storeTimezone', val);
+          // Parity with editing the Store timezone property (user-approved
+          // 2026-10-05): re-interpret the default value in the new zone so the
+          // instant, exposed value and displayed time all move — previously
+          // only the exposed variable changed and users saw "nothing happen".
+          setInputValue(defaultValue, displayFormat, val, true);
         }
       },
     });
-  }, [isTimezoneEnabled]);
+    // setInputValue reads displayTimezone and (via setExposedDateVariables)
+    // storeTimezone and the formats — re-register so the closures stay fresh.
+  }, [isTimezoneEnabled, defaultValue, displayFormat, displayTimezone, storeTimezone]);
 
   useEffect(() => {
+    if (formatConfigError) {
+      setValidationStatus({ isValid: false, validationError: formatConfigErrorMessage, isConfigError: true });
+      return;
+    }
+    if (textParseError) {
+      setValidationStatus({ isValid: false, validationError: 'Invalid date' });
+      return;
+    }
     setValidationStatus(
       isDateValid(selectedTimestamp, {
         minDate,
@@ -404,6 +401,9 @@ export const DatetimePickerV2 = ({
     excludedDates,
     timeFormat,
     dateFormat,
+    formatConfigError,
+    formatConfigErrorMessage,
+    textParseError,
   ]);
 
   useFormClear(() => setInputValue(null, null, null, true));
@@ -461,6 +461,7 @@ export const DatetimePickerV2 = ({
     onTimeChange,
     minTime,
     maxTime,
+    timeFormat,
   };
 
   const customDateInputProps = {
@@ -470,7 +471,10 @@ export const DatetimePickerV2 = ({
     setDisplayTimestamp,
     setTextInputFocus,
     setShowValidationError,
-    showValidationError,
+    onTextParse: (parsed) => setTextParseError(parsed.hasError),
+    // Config contradictions (min>max date or time) display immediately; input
+    // errors keep the blur/submit gate.
+    showValidationError: showValidationError || !!validationStatus.isConfigError,
     isValid,
     validationError,
     showClearBtn,
