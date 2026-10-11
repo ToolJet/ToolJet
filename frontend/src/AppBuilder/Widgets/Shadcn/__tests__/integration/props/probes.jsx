@@ -105,6 +105,80 @@ export const STEPS = {
     });
     await settle(400);
   },
+  /** A double click on the nth match of a selector (its click first, as a browser sends). */
+  dblclick: async (id, selector, n = 0) => {
+    const el = [...boxOf(id).querySelectorAll(selector), ...document.querySelectorAll(`body > * ${selector}`)][n];
+    if (!el) throw new Error(`probe: nothing matches ${selector}`);
+    await act(async () => {
+      fireEvent.click(el);
+      fireEvent.click(el);
+      fireEvent.doubleClick(el);
+    });
+    await settle();
+  },
+  /** The pointer entering the nth match of a selector. */
+  mouseEnter: async (id, selector, n = 0) => {
+    const el = [...boxOf(id).querySelectorAll(selector), ...document.querySelectorAll(`body > * ${selector}`)][n];
+    if (!el) throw new Error(`probe: nothing matches ${selector}`);
+    await act(async () => {
+      fireEvent.mouseOver(el);
+      fireEvent.mouseEnter(el);
+      fireEvent.pointerEnter(el);
+    });
+    await settle();
+  },
+  /** Focuses the first match of a selector inside the widget. */
+  focusOn: async (id, selector) => {
+    const el = boxOf(id).querySelector(selector);
+    if (!el) throw new Error(`probe: nothing matches ${selector}`);
+    await act(async () => el.focus());
+    await settle();
+  },
+  /** Clicks the innermost element (in the widget or a popup) whose own text is exactly `text`, or its button. */
+  clickText: async (id, text) => {
+    const all = [...boxOf(id).querySelectorAll('*'), ...document.querySelectorAll('body > * *')];
+    const hit = all.find(
+      (el) => el.textContent.trim() === text && ![...el.children].some((c) => c.textContent.trim() === text)
+    );
+    const el = hit?.closest('button, a, [role=button], [role=menuitem], [role=option], [role=tab]') || hit;
+    if (!el) throw new Error(`probe: no element reads ${text}`);
+    await act(async () => {
+      fireEvent.pointerDown(el, { button: 0, pointerType: 'mouse', ctrlKey: false });
+      fireEvent.pointerUp(el, { button: 0, pointerType: 'mouse' });
+      fireEvent.click(el);
+    });
+    await settle();
+  },
+  /** A key pressed on the nth match of a selector (focused first), e.g. Enter on a select list's option. */
+  keyOn: async (id, selector, n = 0, key = 'Enter') => {
+    const el = [...boxOf(id).querySelectorAll(selector), ...document.querySelectorAll(`body > * ${selector}`)][n];
+    if (!el) throw new Error(`probe: nothing matches ${selector}`);
+    await act(async () => {
+      el.focus?.();
+      fireEvent.keyDown(el, { key });
+    });
+    await settle();
+  },
+  /** Focus leaving the page's focused element. */
+  blur: async () => {
+    await act(async () => {
+      document.activeElement?.blur?.();
+    });
+    await settle();
+  },
+  /** A click inside a Recharts chart at a point (jsdom's mouse events carry no page coordinates, which it reads). */
+  chartClick: async (id, x = 250, y = 120) => {
+    const wrapper = boxOf(id).querySelector('.recharts-wrapper');
+    if (!wrapper) throw new Error('probe: no chart');
+    await act(async () => {
+      for (const type of ['mousemove', 'click']) {
+        const e = new MouseEvent(type, { bubbles: true, clientX: x, clientY: y });
+        Object.defineProperties(e, { pageX: { value: x }, pageY: { value: y } });
+        fireEvent(wrapper, e);
+      }
+    });
+    await settle();
+  },
   type: async (id, text, selector = 'input:not([type=checkbox]):not([type=radio]):not([type=hidden]), textarea') => {
     const input = boxOf(id).querySelector(selector) || document.querySelector(`body ${selector}`);
     await act(async () => fireEvent.change(input, { target: { value: text } }));
@@ -128,7 +202,7 @@ const WIDGET_STEPS = {
   set: async (m, key, value) => m.change(key, value),
 };
 
-const run = async (m, steps = []) => {
+export const run = async (m, steps = []) => {
   for (const step of steps) {
     const [name, ...args] = Array.isArray(step) ? step : [step];
     if (WIDGET_STEPS[name]) await WIDGET_STEPS[name](m, ...args);

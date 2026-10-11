@@ -144,6 +144,14 @@ export const PROBES = [
     value: fx(['Poor', 'Fair', 'Good', 'Great', 'Superb']),
     steps: ['hover'],
   },
+  // Off, a typed tag that is not a suggestion is refused (with a message) instead of added.
+  {
+    widget: 'ShadTagsInput',
+    key: 'allowCustomTags',
+    value: '{{false}}',
+    steps: ['focus', ['type', 'custom,']],
+    expect: texts(/Pick a tag from the suggestions/),
+  },
   {
     widget: 'ShadTagsInput',
     key: 'suggestions',

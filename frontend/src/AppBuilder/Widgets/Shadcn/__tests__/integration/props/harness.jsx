@@ -48,6 +48,9 @@ if (typeof window !== 'undefined') {
     window.PointerEvent = PointerEvent;
   }
   Element.prototype.scrollIntoView = Element.prototype.scrollIntoView || function scrollIntoView() {};
+  // A table download makes a blob URL.
+  if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test';
+  if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {};
   Element.prototype.hasPointerCapture = Element.prototype.hasPointerCapture || (() => false);
   Element.prototype.setPointerCapture = Element.prototype.setPointerCapture || function setPointerCapture() {};
   Element.prototype.releasePointerCapture =
@@ -335,7 +338,10 @@ const settle = async (ms = 120) =>
 
 /** Mounts one widget through the real store with its definition, overridden by `properties`/`styles` ({key: value
  *  as stored}); returns a handle to read it, change a property live, and unmount. */
-export const mountWidget = async (name, { properties = {}, styles = {}, mode = 'view', offsetHeight } = {}) => {
+export const mountWidget = async (
+  name,
+  { properties = {}, styles = {}, mode = 'view', offsetHeight, events = [] } = {}
+) => {
   const id = 'w1';
   const harness = createWidgetHarness({
     componentType: name,
@@ -355,6 +361,7 @@ export const mountWidget = async (name, { properties = {}, styles = {}, mode = '
       properties: { ...def.properties, ...wrap(properties) },
       styles: { ...def.styles, ...wrap(styles) },
       currentMode: mode,
+      events,
     });
   });
   await settle();
@@ -362,6 +369,8 @@ export const mountWidget = async (name, { properties = {}, styles = {}, mode = '
     id,
     snapshot: () => snapshot(id),
     crashed,
+    variables: () => harness.variables() || {},
+    exposed: () => store().getExposedValueOfComponent(id, 'canvas') || {},
     async change(key, value, paramType = 'properties') {
       await act(async () => {
         harness.setComponentProperty(id, key, value, paramType, 'value');
