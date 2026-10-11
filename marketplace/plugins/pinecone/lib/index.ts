@@ -59,14 +59,8 @@ export default class PineconeService implements QueryService {
     const pinecone = await this.getConnection(sourceOptions);
 
     try {
-      const indexes = await pinecone.listIndexes();
-
-      if (indexes.indexes.length > 0) {
-        return { status: 'ok' };
-      } else {
-        console.error('No indexes found');
-        throw new QueryError('No indexes found', 'The index list is empty', {});
-      }
+      await pinecone.listIndexes();
+      return { status: 'ok' };
     } catch (error) {
       console.error('Connection could not be established:', error.message);
       throw new QueryError('Connection could not be established', error?.message, {});
