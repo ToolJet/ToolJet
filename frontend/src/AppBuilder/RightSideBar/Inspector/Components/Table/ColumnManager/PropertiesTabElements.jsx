@@ -420,6 +420,22 @@ export const PropertiesTabElements = ({
           />
         </div>
       )}
+      {column.columnType === 'string' && (
+        <div className="field mb-2 px-3">
+          <ProgramaticallyHandleProperties
+            label="Show avatar"
+            currentState={currentState}
+            index={index}
+            darkMode={darkMode}
+            callbackFunction={onColumnItemChange}
+            property="displayAvatar"
+            props={column}
+            component={component}
+            paramMeta={{ type: 'toggle', displayName: 'Show avatar' }}
+            paramType="properties"
+          />
+        </div>
+      )}
       {column.columnType === 'number' && (
         <div className="field mb-2 px-3">
           <ProgramaticallyHandleProperties

@@ -10,6 +10,8 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { chipTone } from '../../../_utils/chipTone';
+import { avatarHue } from '../../../_utils/avatarHue';
+import { initials } from '@/AppBuilder/Widgets/packHooks';
 
 /**
  * StringColumnAdapter - Table adapter for StringRenderer
@@ -38,6 +40,7 @@ export const StringColumn = ({
   const cellTextColor = useTextColor(id, textColor);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const showAsChip = getResolvedValue(column?.displayAsChip) === true;
+  const showAvatar = getResolvedValue(column?.displayAvatar) === true;
 
   const { isValid, validationError } = useStringValidation(column, cellValue);
   useValidationStyle(id, row, validationError);
@@ -63,6 +66,26 @@ export const StringColumn = ({
         )}`}
       >
         <span className={`tj-chip tj-chip-${chipTone(text)}`} title={text}>
+          <HighLightSearch text={text} searchTerm={searchText} />
+        </span>
+      </div>
+    );
+  }
+
+  // "Show avatar": a person's initials in a circle tinted from their name, before the name.
+  if (showAvatar && !isEditable && cellValue !== null && cellValue !== undefined && cellValue !== '') {
+    const text = String(cellValue);
+    return (
+      <div
+        className={`d-flex align-items-center h-100 w-100 overflow-hidden justify-content-${determineJustifyContentValue(
+          horizontalAlignment
+        )}`}
+        style={{ gap: 8, color: cellTextColor || undefined }}
+      >
+        <span className="tj-cell-avatar" style={{ '--tj-cell-avatar-hue': avatarHue(text) }} aria-hidden="true">
+          {initials(text)}
+        </span>
+        <span className="text-truncate" title={text}>
           <HighLightSearch text={text} searchTerm={searchText} />
         </span>
       </div>
