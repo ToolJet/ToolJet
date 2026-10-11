@@ -1,6 +1,6 @@
 // shadcn/ui pack: the pure logic of the Stat (Shadcn.jsx ShadStat): its inline trend line, its progress bar and its
 // sizes. Every function takes whatever the author bound and never throws.
-import { num, sparkPoints } from './chartsModel';
+import { FORMATS, formatter, num, sparkPoints } from './chartsModel';
 
 /** Value text classes by size: a small figure for dense rows of KPIs, the default, and a large hero number. */
 export const STAT_SIZES = {
@@ -42,4 +42,18 @@ export const sparkPaths = (data, width, height) => {
   const line = xy.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
   const area = `${line} L${xy[xy.length - 1].x.toFixed(2)},${h} L${xy[0].x.toFixed(2)},${h} Z`;
   return { line, area, last: xy[xy.length - 1], pad };
+};
+
+/** The figure a Stat shows. A bare number groups its digits ('auto'); valueFormat 'number', 'currency' (in currency,
+ *  default USD), 'percent' (42.5 shows 42.5%) or 'compact' formats numbers and numeric text. Other text (an already
+ *  formatted "$1,250.00", "12 open") shows as written: a bound revenue figure read "947.37" with no sign before. */
+export const statValue = (value, { valueFormat = 'auto', currency } = {}) => {
+  if (value === null || value === undefined) return '';
+  const numeric =
+    typeof value === 'number'
+      ? Number.isFinite(value)
+      : typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim());
+  if (!numeric) return String(value);
+  if (!FORMATS.includes(valueFormat)) return typeof value === 'number' ? formatter({ format: 'number' })(value) : value;
+  return formatter({ format: valueFormat, currency })(Number(value));
 };

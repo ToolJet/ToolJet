@@ -88,6 +88,20 @@ export const PROBES = [
     context: { properties: { progress: '{{68}}' } },
     expect: texts(/68% of target/),
   },
+  {
+    widget: 'ShadStat',
+    key: 'valueFormat',
+    value: 'currency',
+    context: { properties: { value: '{{947.37}}' } },
+    expect: texts(/\$947\.37/),
+  },
+  {
+    widget: 'ShadStat',
+    key: 'currency',
+    value: 'EUR',
+    context: { properties: { value: '{{947.37}}', valueFormat: 'currency' } },
+    expect: texts(/€947\.37/),
+  },
   // Inputs and pickers
   {
     widget: 'ShadColorPicker',

@@ -3,7 +3,7 @@ export const shadStatConfig = {
   name: 'ShadStat',
   displayName: 'Stat',
   description:
-    "shadcn/ui dashboard figure, from a single number to a full KPI card: label, value, change badge (change, trend) with a context line (changeLabel, e.g. 'vs last month'), footnote; optional icon (any lucide name, iconPosition right, left or top, iconStyle square, circle or none), trendData for a small trend line under the figure (numbers or [{ x, y }]), progress (0 to 100) with progressLabel for a target bar, and size sm, default or lg. Each part shows only when set. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
+    "shadcn/ui dashboard figure, from a single number to a full KPI card: label, value (a number groups its digits; valueFormat currency in currency, percent or compact formats it), change badge (change, trend) with a context line (changeLabel, e.g. 'vs last month'), footnote; optional icon (any lucide name, iconPosition right, left or top, iconStyle square, circle or none), trendData for a small trend line under the figure (numbers or [{ x, y }]), progress (0 to 100) with progressLabel for a target bar, and size sm, default or lg. Each part shows only when set. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
   component: 'ShadStat',
   defaultSize: {
     width: 10,
@@ -46,6 +46,50 @@ export const shadStatConfig = {
           ],
         },
         defaultValue: '$1,250.00',
+      },
+    },
+    valueFormat: {
+      type: 'switch',
+      displayName: 'Value format',
+      options: [
+        {
+          displayName: 'Auto',
+          value: 'auto',
+        },
+        {
+          displayName: 'Number',
+          value: 'number',
+        },
+        {
+          displayName: 'Currency',
+          value: 'currency',
+        },
+        {
+          displayName: 'Percent',
+          value: 'percent',
+        },
+        {
+          displayName: 'Compact',
+          value: 'compact',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'auto',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    currency: {
+      type: 'code',
+      displayName: 'Currency (ISO code, e.g. USD)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'USD',
       },
     },
     change: {
@@ -648,6 +692,12 @@ export const shadStatConfig = {
       },
       value: {
         value: '$1,250.00',
+      },
+      valueFormat: {
+        value: 'auto',
+      },
+      currency: {
+        value: 'USD',
       },
       change: {
         value: '',

@@ -51,7 +51,7 @@ import { GROUP_LOADING } from './looks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { stringify } from '../packJson';
-import { progressPercent, sparkPaths, statSize } from './statModel';
+import { progressPercent, sparkPaths, statSize, statValue } from './statModel';
 import { LoadingBox, Spinner, wantsSkeleton } from './loadingLook';
 import './shadcn.scss';
 
@@ -562,7 +562,7 @@ export const ShadStat = (props) => {
               </span>
             )
           ) : (
-            String(properties.value ?? '')
+            statValue(properties.value, { valueFormat: properties.valueFormat, currency: properties.currency })
           )}
         </span>
         {badgeInHeader ? null : changeBadge}
