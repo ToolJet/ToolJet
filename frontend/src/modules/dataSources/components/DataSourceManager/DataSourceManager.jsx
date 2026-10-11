@@ -1104,6 +1104,7 @@ class DataSourceManagerComponent extends React.Component {
       'salesforce',
       'googlecalendar',
       'snowflake',
+      'gitlab',
       'microsoft_graph',
       'xero',
       'hubspot',

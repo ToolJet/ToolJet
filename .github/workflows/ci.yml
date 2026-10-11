@@ -197,6 +197,7 @@ jobs:
       # @tooljet-marketplace/common's dist, so build common first
       - run: set -o pipefail; npm run --prefix marketplace build --workspace=@tooljet-marketplace/common 2>&1 | tee -a /tmp/buildlog/marketplace.log
       - run: set -o pipefail; npm run --prefix marketplace build 2>&1 | tee -a /tmp/buildlog/marketplace.log
+      - run: node --test marketplace/plugins/gitlab/__tests__/*.test.cjs
       - name: Upload lint/build log for the PR comment
         if: failure()
         uses: actions/upload-artifact@v7

@@ -1,0 +1,142 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "GitLab",
+  "description": "Connect to GitLab.com or a self-managed GitLab instance",
+  "type": "api",
+  "source": {
+    "name": "GitLab",
+    "kind": "gitlab",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "base_url": {
+        "type": "string"
+      },
+      "auth_type": {
+        "type": "string"
+      },
+      "personal_token": {
+        "type": "string",
+        "encrypted": true
+      },
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "access_token": {
+        "type": "string",
+        "encrypted": true
+      },
+      "refresh_token": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "base_url": {
+      "value": "https://gitlab.com"
+    },
+    "auth_type": {
+      "value": "personal_access_token"
+    },
+    "personal_token": {
+      "value": ""
+    },
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "scopes": {
+      "value": "api"
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "Choose how to authenticate with GitLab",
+      "list": [
+        {
+          "value": "personal_access_token",
+          "name": "Personal / Project access token"
+        },
+        {
+          "value": "oauth2",
+          "name": "OAuth 2.0"
+        }
+      ],
+      "commonFields": {
+        "base_url": {
+          "label": "Base URL",
+          "key": "base_url",
+          "type": "text",
+          "description": "GitLab instance URL, including any installation subpath. Do not include /api/v4."
+        }
+      }
+    },
+    "personal_access_token": {
+      "personal_token": {
+        "label": "Access token",
+        "key": "personal_token",
+        "type": "password",
+        "description": "Personal or project access token with api scope"
+      }
+    },
+    "oauth2": {
+      "oauth": {
+        "key": "oauth",
+        "type": "react-component-oauth",
+        "description": "Authorize with GitLab",
+        "oauth_configs": {
+          "allowed_field_groups": {
+            "authorization_code": [
+              "client_id",
+              "client_secret"
+            ]
+          },
+          "oauthTypes": {
+            "required": true,
+            "default_value": "custom_app",
+            "editions": {
+              "ce": [
+                "custom_app"
+              ],
+              "ee": [
+                "custom_app"
+              ],
+              "cloud": [
+                "custom_app"
+              ]
+            }
+          },
+          "allowed_auth_types": [
+            "oauth2"
+          ],
+          "allowed_grant_types": [
+            "authorization_code"
+          ],
+          "allowed_scope_field": false
+        }
+      }
+    }
+  },
+  "required": [
+    "base_url"
+  ]
+}

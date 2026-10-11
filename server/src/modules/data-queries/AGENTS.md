@@ -27,6 +27,8 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 
 ## Execution flow (runQuery)
 
+GitLab marketplace queries participate in the OAuth refresh/reauthorization path; token-auth API errors remain ordinary query failures.
+
 1. `AppEnvironmentUtilService.getOptions(dataSourceId, orgId, envId, branchId)` — picks the
    Environment-specific `data_source_options` row; `branchId` comes from `dataQuery.appVersion`
    (lazy-loaded), making credential resolution git-branch-aware.

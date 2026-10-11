@@ -3,6 +3,7 @@ import { allOperations } from '@tooljet/plugins/client';
 import { capitalize, cloneDeep } from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import useStore from '@/AppBuilder/_stores/store';
+import { normalizeQueryDefaults } from '@/AppBuilder/QueryManager/utils';
 
 export const getDefaultOptions = (source) => {
   const isSchemaUnavailable = Object.keys(schemaUnavailableOptions).includes(source.kind);
@@ -17,8 +18,11 @@ export const getDefaultOptions = (source) => {
       }),
     };
   } else {
-    const selectedSourceDefault =
-      source?.plugin?.operationsFile?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
+    const operationsSchema =
+      source?.plugin?.operations_file?.data ??
+      source?.plugin?.operationsFile?.data ??
+      allOperations[capitalize(source.kind)];
+    const selectedSourceDefault = operationsSchema?.defaults && normalizeQueryDefaults(operationsSchema);
     if (selectedSourceDefault) {
       options = {
         ...{ ...selectedSourceDefault },

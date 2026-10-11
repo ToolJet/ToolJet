@@ -1,0 +1,519 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "GitLab",
+  "description": "GitLab REST API operations",
+  "type": "api",
+  "defaults": {
+    "operation": {
+      "value": "list_projects"
+    }
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Choose a GitLab operation",
+      "list": [
+        {
+          "value": "list_projects",
+          "name": "List projects"
+        },
+        {
+          "value": "get_project",
+          "name": "Get project"
+        },
+        {
+          "value": "list_issues",
+          "name": "List issues"
+        },
+        {
+          "value": "create_issue",
+          "name": "Create issue"
+        },
+        {
+          "value": "update_issue",
+          "name": "Update issue"
+        },
+        {
+          "value": "list_merge_requests",
+          "name": "List merge requests"
+        },
+        {
+          "value": "create_merge_request",
+          "name": "Create merge request"
+        },
+        {
+          "value": "merge_merge_request",
+          "name": "Merge a merge request"
+        },
+        {
+          "value": "list_branches",
+          "name": "List branches"
+        },
+        {
+          "value": "get_file",
+          "name": "Get file from repository"
+        },
+        {
+          "value": "list_pipelines",
+          "name": "List pipelines"
+        },
+        {
+          "value": "trigger_pipeline",
+          "name": "Trigger pipeline"
+        },
+        {
+          "value": "list_users",
+          "name": "List users"
+        }
+      ]
+    },
+    "list_projects": {
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "get_project": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "list_issues": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "create_issue": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "title": {
+        "label": "Title",
+        "key": "title",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Title",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "description": {
+        "label": "Description",
+        "key": "description",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Description",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      },
+      "body": {
+        "label": "Body (JSON)",
+        "key": "body",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Additional GitLab request attributes as a JSON object",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "update_issue": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "issue_iid": {
+        "label": "Issue IID",
+        "key": "issue_iid",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Project-local issue number, not the global issue ID",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "title": {
+        "label": "Title",
+        "key": "title",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Title",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "description": {
+        "label": "Description",
+        "key": "description",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Description",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      },
+      "body": {
+        "label": "Body (JSON)",
+        "key": "body",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Additional GitLab request attributes as a JSON object",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "list_merge_requests": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "create_merge_request": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "source_branch": {
+        "label": "Source branch",
+        "key": "source_branch",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Source branch",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "target_branch": {
+        "label": "Target branch",
+        "key": "target_branch",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Target branch",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "title": {
+        "label": "Title",
+        "key": "title",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Title",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "description": {
+        "label": "Description",
+        "key": "description",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Description",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      },
+      "body": {
+        "label": "Body (JSON)",
+        "key": "body",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Additional GitLab request attributes as a JSON object",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "merge_merge_request": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "merge_request_iid": {
+        "label": "Merge request IID",
+        "key": "merge_request_iid",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Project-local merge request number",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      },
+      "body": {
+        "label": "Body (JSON)",
+        "key": "body",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Additional GitLab request attributes as a JSON object",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "list_branches": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "get_file": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "file_path": {
+        "label": "File path",
+        "key": "file_path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Unencoded path, e.g. src/index.ts",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "ref": {
+        "label": "Branch or tag",
+        "key": "ref",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Branch or tag",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "list_pipelines": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "trigger_pipeline": {
+      "project_id": {
+        "label": "Project ID or path",
+        "key": "project_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Numeric ID or unencoded path, e.g. group/project",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "ref": {
+        "label": "Branch or tag",
+        "key": "ref",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Branch or tag",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      },
+      "body": {
+        "label": "Body (JSON)",
+        "key": "body",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Additional GitLab request attributes as a JSON object",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    },
+    "list_users": {
+      "parameters": {
+        "label": "Parameters (JSON)",
+        "key": "parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional GitLab query parameters, e.g. {\"page\":1,\"per_page\":20,\"search\":\"tooljet\"}",
+        "height": "100px",
+        "className": "codehinter-plugins",
+        "placeholder": "{}"
+      }
+    }
+  }
+}

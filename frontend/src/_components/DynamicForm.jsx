@@ -1,4 +1,5 @@
 import React from 'react';
+import { normalizeQueryDefaults, getQueryInputValue } from '@/AppBuilder/QueryManager/utils';
 import cx from 'classnames';
 import Input from '@/_ui/Input';
 import Textarea from '@/_ui/Textarea';
@@ -70,19 +71,20 @@ const DynamicForm = ({
 
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
+    const defaults = queryName ? normalizeQueryDefaults(schema) : schema?.defaults;
     if (!isEditMode || isEmpty(options)) {
-      typeof setDefaultOptions === 'function' && setDefaultOptions(schema?.defaults);
-      optionsChanged(schema?.defaults ?? {});
+      typeof setDefaultOptions === 'function' && setDefaultOptions(defaults);
+      optionsChanged(defaults ?? {});
     } else {
       // Ensure existing datasources get newly added default properties.
-      let hasMissingDefaults = false;
-      const mergedOptions = { ...options };
+      const mergedOptions = queryName ? normalizeQueryDefaults(schema, options) : { ...options };
+      let hasMissingDefaults = Object.keys(mergedOptions).some((key) => mergedOptions[key] !== options[key]);
 
-      if (schema?.defaults) {
-        Object.keys(schema.defaults).forEach((key) => {
+      if (defaults) {
+        Object.keys(defaults).forEach((key) => {
           // If the key doesn't exist in the old options, fill it with the schema's default
           if (mergedOptions[key] === undefined) {
-            mergedOptions[key] = schema.defaults[key];
+            mergedOptions[key] = defaults[key];
             hasMissingDefaults = true;
           }
         });
@@ -574,11 +576,7 @@ const DynamicForm = ({
         }
         return {
           type: editorType,
-          initialValue: options[key]
-            ? typeof options[key] === 'string'
-              ? options[key]
-              : JSON.stringify(options[key])
-            : initialValue,
+          initialValue: getQueryInputValue(options[key], initialValue),
           lang: mode,
           lineNumbers,
           className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',

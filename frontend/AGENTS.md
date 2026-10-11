@@ -13,6 +13,16 @@ when the public behavior, runtime, or infrastructure applies.
 
 ## Component patterns
 
+- DynamicForm code inputs must receive an explicit empty string when cleared. Passing `undefined` leaves the code editor's previous text visible.
+
+- Query operation defaults come from the marketplace `operations_file` relation (or legacy `operationsFile`). Query forms unwrap dropdown `{ value }` defaults and saved selections; data source credential forms retain their wrappers.
+
+- Query Manager named input controls and query invocation only consume array-valued `options.parameters`. Marketplace plugins can use the same option for JSON text or objects; leave those values intact for the plugin editor and backend validation.
+
+- In development, Marketplace card icons load from `/marketplace-assets/`, served by webpack from `marketplace/plugins/`. Restart the frontend after changing webpack's static asset configuration.
+
+- Marketplace connectors using `react-component-oauth` alongside token authentication must appear in DataSourceManager's OAuth footer list so OAuth uses its own connect/save buttons and token mode retains test/save controls (e.g. `gitlab`).
+
 - Check `frontend/src/_ui/` (55+ components) before creating a new UI component
 - Functional components with hooks only — no class components
 - File structure: `ComponentName/index.js` + optional `ComponentName.jsx` + `style.scss`

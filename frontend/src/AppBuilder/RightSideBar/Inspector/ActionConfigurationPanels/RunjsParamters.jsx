@@ -10,7 +10,7 @@ function RunjsParameters({ event, darkMode, index, handlerChanged }) {
     return queries.find((dataquery) => dataquery.id === event.queryId);
   });
 
-  if (!event.queryId || isEmpty(dataQuery?.options?.parameters)) {
+  if (!event.queryId || !Array.isArray(dataQuery?.options?.parameters) || isEmpty(dataQuery.options.parameters)) {
     return '';
   }
 

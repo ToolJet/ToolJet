@@ -63,6 +63,8 @@ Schema changes and data transformations are separated: `server/migrations/` cont
 
 ## End-to-end flows
 
+GitLab marketplace integration uses `marketplace/plugins/gitlab/lib/index.ts::Gitlab` to call the configured instance's `/api/v4` endpoints. OAuth authorization and token exchange use that instance's `/oauth/authorize` and `/oauth/token`; the existing data-source callback and query refresh paths store and rotate credentials. Personal/project tokens use the `PRIVATE-TOKEN` header.
+
 ### 1. Authentication and workspace authorization
 
 ```mermaid

@@ -16,6 +16,14 @@
     "timestamp": "Thu, 02 Mar 2023 11:52:32 GMT"
   },
   {
+    "name": "GitLab",
+    "description": "Connect to GitLab projects, issues, merge requests, repositories, pipelines, and users",
+    "version": "1.0.0",
+    "id": "gitlab",
+    "author": "Tooljet",
+    "timestamp": "Mon, 05 Oct 2026 00:00:00 GMT"
+  },
+  {
     "name": "OpenAI",
     "description": "Plugin for OpenAI APIs",
     "version": "1.0.0",

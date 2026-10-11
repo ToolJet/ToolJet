@@ -21,3 +21,40 @@ export const resolveQueryEditor = ({ selectedDataSource, selectedQuery }) => {
     componentName: kind?.charAt(0).toUpperCase() + kind?.slice(1),
   };
 };
+
+export const resolveNamedQueryParameters = (parameters, resolveValue) =>
+  (Array.isArray(parameters) ? parameters : []).reduce(
+    (values, parameter) => ({ ...values, [parameter.name]: resolveValue(parameter.defaultValue, undefined) }),
+    {}
+  );
+
+export const normalizeQueryDefaults = (schema, options = schema?.defaults || {}) => {
+  const normalized = { ...options };
+  Object.entries(schema?.properties || {}).forEach(([key, field]) => {
+    const value = normalized[key];
+    if (
+      ['dropdown', 'dropdown-component-flip'].includes(field?.type) &&
+      value &&
+      typeof value === 'object' &&
+      'value' in value
+    ) {
+      normalized[key] = value.value;
+    }
+  });
+  return normalized;
+};
+
+export const changeQueryOperation = (schema, options, operation) => {
+  if ((options.operation?.value ?? options.operation) === operation) return options;
+  const updated = { ...options, operation };
+  for (const { value } of schema?.properties?.operation?.list || []) {
+    for (const key of Object.keys(schema.properties[value] || {})) {
+      // The query editor merges updates, so explicit empty values also clear hidden fields.
+      if (key in updated) updated[key] = '';
+    }
+  }
+  return updated;
+};
+
+export const getQueryInputValue = (value, initialValue) =>
+  value === undefined || value === null ? initialValue : typeof value === 'string' ? value : JSON.stringify(value);
