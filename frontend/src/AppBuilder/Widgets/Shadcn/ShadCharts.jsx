@@ -847,8 +847,13 @@ export const ShadSparkline = (props) => {
 /** Width of a value axis for the given values under the given tick formatter. */
 const axisWidthFor = (values, tick) => {
   if (!values.length) return 40;
-  const longest = Math.max(...[Math.max(...values), Math.min(...values)].map((v) => String(tick(v)).length));
-  return Math.min(96, Math.max(32, longest * 7 + 10));
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  // The in-between ticks carry decimals the ends do not (0.8% between 0% and 1%), so they are measured too.
+  const top = niceCeil(max);
+  const samples = [max, min, top, top * 0.25, top * 0.5, top * 0.75, top * 0.3, top * 0.8];
+  const longest = Math.max(...samples.map((v) => String(tick(v)).length));
+  return Math.min(96, Math.max(32, longest * 7 + 12));
 };
 
 export const ShadComboChart = (props) => {
