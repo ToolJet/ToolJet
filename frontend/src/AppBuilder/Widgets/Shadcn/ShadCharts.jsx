@@ -265,8 +265,21 @@ export const ShadBarChart = (props) => {
   const picked = highlightIndexes(data, xField, series, p.highlight);
   const highlightFill = isSet(props.styles?.highlightColor) ? 'var(--lk-highlight)' : null;
   const mutedFill = isSet(props.styles?.mutedColor) ? 'var(--lk-muted-bar)' : null;
+  // A colour per category (categoryColors { Won: green, Lost: red }); categories it does not name keep the series'.
+  const own =
+    p.categoryColors && typeof p.categoryColors === 'object' && !Array.isArray(p.categoryColors)
+      ? p.categoryColors
+      : {};
+  const categoryColor = (row) => {
+    const key = row && typeof row === 'object' ? row[xField] : undefined;
+    const v = typeof key === 'string' || typeof key === 'number' ? own[key] : undefined;
+    return typeof v === 'string' && v.trim() ? v : null;
+  };
+  const colored = data.some((row) => categoryColor(row));
   const cells = (i) =>
-    picked
+    !picked && colored
+      ? data.map((row, d) => <Cell key={d} fill={categoryColor(row) || color(i)} />)
+      : picked
       ? data.map((_, d) =>
           picked.has(d) ? (
             <Cell key={d} fill={highlightFill || color(i)} />

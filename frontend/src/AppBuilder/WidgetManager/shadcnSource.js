@@ -1030,7 +1030,7 @@ export const shadBarChartConfig = shadConfig({
   name: 'ShadBarChart',
   displayName: 'Bar chart',
   description:
-    "shadcn/ui bar chart, vertical or horizontal, grouped or stacked. highlight emphasises categories (an x value, a list, or 'first', 'last', 'max', 'min') and draws the other bars muted",
+    "shadcn/ui bar chart, vertical or horizontal, grouped or stacked. highlight emphasises categories (an x value, a list, or 'first', 'last', 'max', 'min') and draws the other bars muted; categoryColors { Won: '#16a34a', Lost: '#dc2626' } colours each category's bars",
   defaultSize: { width: 20, height: 280 },
   properties: {
     ...seriesProps,
@@ -1042,12 +1042,22 @@ export const shadBarChartConfig = shadConfig({
       { type: 'union', schemas: [STRING, NUMBER, ARRAY] },
       ''
     ),
+    // A colour per category (Won green, Lost red), when the categories themselves carry meaning.
+    categoryColors: code(
+      'Category colors ({ category: color })',
+      { type: 'object' },
+      {},
+      {
+        placeholder: "{ Won: '#16a34a', Lost: '#dc2626' }",
+      }
+    ),
   },
   defaults: {
     ...seriesDefaults,
     horizontal: { value: '{{false}}' },
     stack: { value: '{{false}}' },
     highlight: { value: '' },
+    categoryColors: { value: '{{{} }}' },
   },
   styles: {
     ...chartStyles,

@@ -134,6 +134,21 @@ describe('bar chart highlight', () => {
     expect(faded(container)).toBe(2);
   });
 
+  it('colours each category its own colour when categoryColors names it', async () => {
+    const { container } = mount(ShadBarChart, shadBarChartConfig, {
+      data: [
+        { result: 'Won', deals: 3 },
+        { result: 'Lost', deals: 2 },
+      ],
+      xField: 'result',
+      yFields: 'deals',
+      categoryColors: { Won: '#16a34a', Lost: '#dc2626' },
+    });
+    await settle();
+    const fills = [...container.querySelectorAll('.recharts-rectangle')].map((r) => r.getAttribute('fill'));
+    expect(fills).toEqual(['#16a34a', '#dc2626']);
+  });
+
   it('never throws on a junk highlight', () => {
     [{}, NaN, [null], 'max', 'nothing'].forEach((highlight) =>
       expect(() =>
