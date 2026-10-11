@@ -356,6 +356,18 @@ export const shadStepsConfig = {
       ],
     },
     {
+      handle: 'setDisabled',
+      displayName: 'Set disabled',
+      params: [
+        {
+          handle: 'disable',
+          displayName: 'Disabled',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [

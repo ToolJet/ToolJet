@@ -321,6 +321,9 @@ export const shadSparklineConfig = {
     onClick: {
       displayName: 'On click',
     },
+    onDoubleClick: {
+      displayName: 'On double click',
+    },
   },
   styles: {
     boxShadow: {

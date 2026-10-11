@@ -19,6 +19,13 @@ import {
   sizeStyle,
   textValidation,
   toggle,
+  action,
+  CHART_ACTIONS,
+  CHART_EVENTS,
+  CHART_EXPOSED,
+  FOCUS_ACTIONS,
+  FOCUS_EVENTS,
+  LEGACY_ACTIONS,
 } from './shadcnPackHelpers.js';
 
 // Styles. Each falls back to the app theme when unset (Widgets/Shadcn/shadcnLook.js maps them to CSS variables);
@@ -127,7 +134,14 @@ export const shadButtonConfig = shadConfig({
     borderColor: colorStyle('Button border color'),
     borderRadius: sizeStyle('Button radius'),
   },
-  events: { onClick: { displayName: 'On click' } },
+  events: { onClick: { displayName: 'On click' }, onHover: { displayName: 'On hover' } },
+  exposedVariables: { buttonText: 'Button' },
+  actions: [
+    action('click', 'Click'),
+    action('setText', 'Set text', [['text', 'Text', 'New text']]),
+    ...LEGACY_ACTIONS,
+    action('loading', 'Loading', [['loading', 'Value', '{{false}}', 'toggle']]),
+  ],
 });
 
 export const shadAlertConfig = shadConfig({
@@ -171,6 +185,8 @@ export const shadBreadcrumbConfig = shadConfig({
     currentColor: colorStyle('Current page color'),
     separatorColor: colorStyle('Separator color'),
   },
+  events: { onItemClick: { displayName: 'On item click' } },
+  exposedVariables: { lastClickedItem: {} },
 });
 
 // ---- Typography ----------------------------------------------------------------------------------------------------
@@ -194,6 +210,9 @@ export const shadHeadingConfig = shadConfig({
     fontSize: sizeStyle('Font size (px; default from the level)'),
   },
   styleDefaults: { textAlign: { value: 'left' }, ...typeStyleDefaults },
+  events: { onClick: { displayName: 'On click' }, onHover: { displayName: 'On hover' } },
+  exposedVariables: { text: 'Heading' },
+  actions: [action('setText', 'Set text', [['text', 'Text', 'New text']]), action('clear', 'Clear')],
 });
 
 export const shadTextConfig = shadConfig({
@@ -215,6 +234,9 @@ export const shadTextConfig = shadConfig({
     fontSize: sizeStyle('Font size (px)'),
   },
   styleDefaults: { textAlign: { value: 'left' }, ...typeStyleDefaults },
+  events: { onClick: { displayName: 'On click' }, onHover: { displayName: 'On hover' } },
+  exposedVariables: { text: 'Text' },
+  actions: [action('setText', 'Set text', [['text', 'Text', 'New text']]), action('clear', 'Clear')],
 });
 
 // ---- Data display --------------------------------------------------------------------------------------------------
@@ -289,6 +311,16 @@ export const shadStatConfig = shadConfig({
     labelLetterSpacing: spacingStyle('Label letter spacing (px, or em like 0.12em)'),
   },
   styleDefaults: { valueFontFamily: { value: 'theme' }, labelTextTransform: { value: 'none' } },
+  exposedVariables: {
+    primaryLabel: 'Total revenue',
+    primaryValue: '$1,250.00',
+    secondaryLabel: '',
+    secondaryValue: '',
+  },
+  actions: [
+    action('setPrimaryValue', 'Set primary value', [['text', 'Value', '']]),
+    action('setSecondaryValue', 'Set secondary value', [['text', 'Change', '']]),
+  ],
 });
 
 export const shadBadgeConfig = shadConfig({
@@ -361,6 +393,8 @@ export const shadProgressConfig = shadConfig({
     valueColor: colorStyle('Percent text color'),
     barHeight: sizeStyle('Bar height'),
   },
+  exposedVariables: { value: 60 },
+  actions: [action('setValue', 'Set value', [['value', 'Percent', '{{50}}']])],
 });
 
 export const shadSeparatorConfig = shadConfig({
@@ -412,8 +446,16 @@ export const shadAccordionConfig = shadConfig({
     dividerColor: colorStyle('Divider color'),
     iconColor: colorStyle('Chevron color'),
   },
-  events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { openIndexes: [] },
+  events: {
+    onChange: { displayName: 'On change' },
+    onExpand: { displayName: 'On expand' },
+    onCollapse: { displayName: 'On collapse' },
+  },
+  exposedVariables: { openIndexes: [], isExpanded: false },
+  actions: [
+    action('expand', 'Expand', [['index', 'Section index (empty for all)', '']]),
+    action('collapse', 'Collapse', [['index', 'Section index (empty for all)', '']]),
+  ],
 });
 
 export const shadEmptyConfig = shadConfig({
@@ -471,7 +513,7 @@ export const shadInputConfig = shadConfig({
     onChange: { displayName: 'On change' },
     onEnterPressed: { displayName: 'On enter pressed' },
   },
-  exposedVariables: { isValid: true, isMandatory: false, value: '' },
+  exposedVariables: { isValid: true, isMandatory: false, value: '', label: '' },
   actions: [
     {
       handle: 'setText',
@@ -481,6 +523,7 @@ export const shadInputConfig = shadConfig({
     { handle: 'clear', displayName: 'Clear' },
     { handle: 'setFocus', displayName: 'Set focus' },
     { handle: 'setBlur', displayName: 'Set blur' },
+    ...LEGACY_ACTIONS,
   ],
 });
 
@@ -505,8 +548,9 @@ export const shadTextareaConfig = shadConfig({
     onFocus: { displayName: 'On focus' },
     onBlur: { displayName: 'On blur' },
     onChange: { displayName: 'On change' },
+    onEnterPressed: { displayName: 'On enter pressed (without Shift)' },
   },
-  exposedVariables: { isValid: true, isMandatory: false, value: '' },
+  exposedVariables: { isValid: true, isMandatory: false, value: '', label: '' },
   actions: [
     {
       handle: 'setText',
@@ -516,6 +560,7 @@ export const shadTextareaConfig = shadConfig({
     { handle: 'clear', displayName: 'Clear' },
     { handle: 'setFocus', displayName: 'Set focus' },
     { handle: 'setBlur', displayName: 'Set blur' },
+    ...LEGACY_ACTIONS,
   ],
 });
 
@@ -541,8 +586,8 @@ export const shadSelectConfig = shadConfig({
   },
   styles: fieldStyles,
   validation: choiceValidation,
-  events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { isValid: true, isMandatory: false, value: '', selectedOption: {} },
+  events: { onChange: { displayName: 'On change' }, onSelect: { displayName: 'On select' }, ...FOCUS_EVENTS },
+  exposedVariables: { isValid: true, isMandatory: false, value: '', selectedOption: {}, options: [], label: '' },
   actions: [
     {
       handle: 'selectOption',
@@ -550,6 +595,7 @@ export const shadSelectConfig = shadConfig({
       params: [{ handle: 'value', displayName: 'Value', defaultValue: '' }],
     },
     { handle: 'clear', displayName: 'Clear' },
+    ...FOCUS_ACTIONS,
   ],
 });
 
@@ -579,7 +625,12 @@ export const shadCheckboxConfig = shadConfig({
     onCheck: { displayName: 'On check' },
     onUnCheck: { displayName: 'On uncheck' },
   },
-  exposedVariables: { isValid: true, isMandatory: false, value: false },
+  exposedVariables: { isValid: true, isMandatory: false, value: false, label: 'Checkbox' },
+  actions: [
+    action('toggle', 'Toggle'),
+    action('setValue', 'Set value', [['value', 'Checked', '{{true}}', 'toggle']]),
+    action('setChecked', 'Set checked', [['status', 'Checked', '{{true}}', 'toggle']]),
+  ],
 });
 
 export const shadSwitchConfig = shadConfig({
@@ -599,7 +650,8 @@ export const shadSwitchConfig = shadConfig({
   },
   styles: { ...choiceStyles('Switch on color'), offColor: colorStyle('Switch off color') },
   events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { value: false },
+  exposedVariables: { value: false, label: 'Enabled' },
+  actions: [action('toggle', 'Toggle'), action('setValue', 'Set value', [['value', 'On', '{{true}}', 'toggle']])],
 });
 
 export const shadRadioGroupConfig = shadConfig({
@@ -625,14 +677,15 @@ export const shadRadioGroupConfig = shadConfig({
     errorColor: colorStyle('Error color'),
   },
   validation: choiceValidation,
-  events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { isValid: true, isMandatory: false, value: '' },
+  events: { onChange: { displayName: 'On change' }, onSelectionChange: { displayName: 'On selection change' } },
+  exposedVariables: { isValid: true, isMandatory: false, value: '', label: '', selectedOption: {}, options: [] },
   actions: [
     {
       handle: 'selectOption',
       displayName: 'Select option',
       params: [{ handle: 'value', displayName: 'Value', defaultValue: '' }],
     },
+    action('deselectOption', 'Deselect option'),
   ],
 });
 
@@ -662,7 +715,15 @@ export const shadSliderConfig = shadConfig({
   },
   styles: { ...choiceStyles('Range and handle color'), trackColor: colorStyle('Track color') },
   events: { onChange: { displayName: 'On change (on release)' } },
-  exposedVariables: { value: 50 },
+  exposedVariables: { value: 50, label: '' },
+  actions: [
+    action('setValue', 'Set value', [['num1', 'Value', '{{50}}']]),
+    action('setRangeValue', 'Set range value', [
+      ['num1', 'Start', '{{20}}'],
+      ['num2', 'End', '{{80}}'],
+    ]),
+    action('reset', 'Reset'),
+  ],
 });
 
 export const shadDatePickerConfig = shadConfig({
@@ -677,6 +738,9 @@ export const shadDatePickerConfig = shadConfig({
     placeholder: code('Placeholder', STRING, 'Pick a date'),
     defaultValue: code('Default (YYYY-MM-DD, or [start, end] for a range)', ANY, ''),
     format: code('Display format', STRING, 'DD MMM YYYY'),
+    minDate: code('Earliest date (YYYY-MM-DD)', STRING, ''),
+    maxDate: code('Latest date (YYYY-MM-DD)', STRING, ''),
+    disabledDates: code('Disabled dates', ARRAY, [], { placeholder: "['2026-12-25', '2027-01-01']" }),
   },
   defaults: {
     ...fieldDefaults,
@@ -684,12 +748,66 @@ export const shadDatePickerConfig = shadConfig({
     placeholder: { value: 'Pick a date' },
     defaultValue: { value: '' },
     format: { value: 'DD MMM YYYY' },
+    minDate: { value: '' },
+    maxDate: { value: '' },
+    disabledDates: { value: '{{[]}}' },
   },
   styles: fieldStyles,
   validation: choiceValidation,
-  events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { isValid: true, isMandatory: false, value: '', startDate: '', endDate: '' },
-  actions: [{ handle: 'clear', displayName: 'Clear' }],
+  events: { onChange: { displayName: 'On change' }, onSelect: { displayName: 'On select' }, ...FOCUS_EVENTS },
+  exposedVariables: {
+    isValid: true,
+    isMandatory: false,
+    value: '',
+    startDate: '',
+    endDate: '',
+    selectedDate: '',
+    unixTimestamp: null,
+    displayValue: '',
+    startDateInUnix: null,
+    endDateInUnix: null,
+    selectedDateRange: '',
+    dateFormat: 'DD MMM YYYY',
+    minDate: '',
+    maxDate: '',
+    label: '',
+  },
+  // The native Date picker's and Date range picker's actions; the single-date ones do nothing in range mode and the
+  // range ones nothing in single mode. A format argument says how the date text is written ('DD/MM/YYYY').
+  actions: [
+    action('clear', 'Clear'),
+    action('setValue', 'Set value', [
+      ['value', 'Date', ''],
+      ['format', 'Format', 'YYYY-MM-DD'],
+    ]),
+    action('setDate', 'Set date', [
+      ['date', 'Date', ''],
+      ['format', 'Format', 'YYYY-MM-DD'],
+    ]),
+    action('clearValue', 'Clear value'),
+    action('setValueInTimestamp', 'Set value from timestamp', [['value', 'Unix timestamp (ms)', '']]),
+    action('setStartDate', 'Set start date', [
+      ['value', 'Date', ''],
+      ['format', 'Format', 'YYYY-MM-DD'],
+    ]),
+    action('setEndDate', 'Set end date', [
+      ['value', 'Date', ''],
+      ['format', 'Format', 'YYYY-MM-DD'],
+    ]),
+    action('setDateRange', 'Set date range', [
+      ['startDate', 'Start date', ''],
+      ['endDate', 'End date', ''],
+      ['format', 'Format', 'YYYY-MM-DD'],
+    ]),
+    action('clearStartDate', 'Clear start date'),
+    action('clearEndDate', 'Clear end date'),
+    action('clearDateRange', 'Clear date range'),
+    action('setMinDate', 'Set min date', [['value', 'Date', '']]),
+    action('setMaxDate', 'Set max date', [['value', 'Date', '']]),
+    action('setDisabledDates', 'Set disabled dates', [['value', 'Dates', '{{[]}}']]),
+    action('clearDisabledDates', 'Clear disabled dates'),
+    ...FOCUS_ACTIONS,
+  ],
 });
 
 export const shadToggleGroupConfig = shadConfig({
@@ -717,7 +835,8 @@ export const shadToggleGroupConfig = shadConfig({
     borderRadius: sizeStyle('Group radius'),
   },
   events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { value: '' },
+  exposedVariables: { value: '', selected: '' },
+  actions: [action('setSelected', 'Set selected', [['selected', 'Value', '']]), action('clear', 'Clear')],
 });
 
 // ---- Kanban ------------------------------------------------------------------------------------------------------
@@ -911,12 +1030,18 @@ export const shadKanbanConfig = shadConfig({
     onCardAdded: { displayName: 'On card added' },
     onCardUpdated: { displayName: 'On card updated' },
     onCardRemoved: { displayName: 'On card removed' },
+    // The native Kanban's names: onCardSelected with a card click, onUpdate after any change to the cards.
+    onCardSelected: { displayName: 'On card selected' },
+    onUpdate: { displayName: 'On update (any card change)' },
   },
   exposedVariables: {
     cards: [],
+    updatedCardData: [],
     selectedCard: {},
+    lastSelectedCard: {},
     movedCard: {},
     lastMove: {},
+    lastCardMovement: {},
     addCardColumn: '',
     collapsedColumns: [],
     lastAddedCard: {},
@@ -965,6 +1090,10 @@ export const shadKanbanConfig = shadConfig({
       displayName: 'Delete card',
       params: [{ handle: 'id', displayName: 'Card id', defaultValue: '' }],
     },
+    action('updateCardData', 'Update card data', [
+      ['id', 'Card id', ''],
+      ['value', 'Values', "{{{ title: 'Renamed' }}}"],
+    ]),
   ],
 });
 
@@ -1026,8 +1155,9 @@ export const shadAreaChartConfig = shadConfig({
     curve: { value: 'monotone' },
   },
   styles: chartStyles,
-  events: { onClick: { displayName: 'On click' } },
-  exposedVariables: { clickedDatum: {} },
+  events: CHART_EVENTS,
+  exposedVariables: CHART_EXPOSED,
+  actions: CHART_ACTIONS,
 });
 
 export const shadBarChartConfig = shadConfig({
@@ -1068,8 +1198,9 @@ export const shadBarChartConfig = shadConfig({
     highlightColor: colorStyle('Highlighted bar color (default: the series color)'),
     mutedColor: colorStyle('Other bars color when highlighting (default: the series color, faded)'),
   },
-  events: { onClick: { displayName: 'On click' } },
-  exposedVariables: { clickedDatum: {} },
+  events: CHART_EVENTS,
+  exposedVariables: CHART_EXPOSED,
+  actions: CHART_ACTIONS,
 });
 
 export const shadPieChartConfig = shadConfig({
@@ -1110,8 +1241,9 @@ export const shadPieChartConfig = shadConfig({
     centerValueColor: colorStyle('Center figure color'),
     centerLabelColor: colorStyle('Center caption color'),
   },
-  events: { onClick: { displayName: 'On click' } },
-  exposedVariables: { clickedDatum: {} },
+  events: CHART_EVENTS,
+  exposedVariables: CHART_EXPOSED,
+  actions: CHART_ACTIONS,
 });
 
 export const shadcnConfigs = [

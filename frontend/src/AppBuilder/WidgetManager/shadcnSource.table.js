@@ -159,6 +159,10 @@ export const shadTableConfig = shadConfig({
     onBulkUpdate: { displayName: 'Save changes' },
     onCancelChanges: { displayName: 'Cancel changes' },
     onRefresh: { displayName: 'Refresh' },
+    // The native Table's onRowHovered (hoveredRow), onHeaderClick (selectedColumnHeader) and onTableDataDownload.
+    onRowHovered: { displayName: 'Row hovered' },
+    onHeaderClick: { displayName: 'Header clicked' },
+    onTableDataDownload: { displayName: 'Table data downloaded' },
   },
   exposedVariables: {
     selectedRow: {},
@@ -176,6 +180,9 @@ export const shadTableConfig = shadConfig({
     currentPageData: [],
     filteredData: [],
     lastActionClicked: {},
+    hoveredRow: {},
+    hoveredRowId: null,
+    selectedColumnHeader: {},
   },
   actions: [
     { handle: 'setPage', displayName: 'Set page', params: [param('page', 'Page (1-based)', '{{1}}')] },

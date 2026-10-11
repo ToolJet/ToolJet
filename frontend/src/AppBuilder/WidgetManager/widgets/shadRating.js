@@ -368,6 +368,7 @@ export const shadRatingConfig = {
     isValid: true,
     isMandatory: false,
     value: 0,
+    label: '',
   },
   actions: [
     {
@@ -384,6 +385,10 @@ export const shadRatingConfig = {
     {
       handle: 'clear',
       displayName: 'Clear',
+    },
+    {
+      handle: 'resetValue',
+      displayName: 'Reset value',
     },
     {
       handle: 'setVisibility',

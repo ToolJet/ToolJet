@@ -229,6 +229,9 @@ export const shadIconConfig = {
     onClick: {
       displayName: 'On click',
     },
+    onHover: {
+      displayName: 'On hover',
+    },
   },
   styles: {
     boxShadow: {
@@ -302,6 +305,10 @@ export const shadIconConfig = {
     isDisabled: false,
   },
   actions: [
+    {
+      handle: 'click',
+      displayName: 'Click',
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

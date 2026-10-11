@@ -222,8 +222,24 @@ export const shadToggleGroupConfig = {
     isLoading: false,
     isDisabled: false,
     value: '',
+    selected: '',
   },
   actions: [
+    {
+      handle: 'setSelected',
+      displayName: 'Set selected',
+      params: [
+        {
+          handle: 'selected',
+          displayName: 'Value',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'clear',
+      displayName: 'Clear',
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

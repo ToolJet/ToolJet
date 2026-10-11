@@ -295,8 +295,20 @@ export const shadCircularProgressConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    value: 0,
   },
   actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Percent',
+          defaultValue: '{{50}}',
+        },
+      ],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

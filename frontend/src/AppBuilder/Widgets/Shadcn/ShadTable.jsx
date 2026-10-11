@@ -624,6 +624,20 @@ export const ShadTable = (props) => {
     setExposedVariable('sortApplied', sortApplied(next));
     if (fire) fireEvent('onSort');
   };
+  // The native Table's onHeaderClick, with the column in selectedColumnHeader, on any header press (sortable or not).
+  const pressHeader = (column) => {
+    if (isDisabled) return;
+    setExposedVariable('selectedColumnHeader', { name: column.name, key: column.key });
+    fireEvent('onHeaderClick');
+  };
+  // The native Table's onRowHovered, with the row in hoveredRow and its index in hoveredRowId, once per row entered.
+  const hoveredRef = useRef(null);
+  const hoverRow = (entry) => {
+    if (hoveredRef.current === entry.key) return;
+    hoveredRef.current = entry.key;
+    setExposedVariables({ hoveredRow: withEdits(entry), hoveredRowId: entry.index });
+    fireEvent('onRowHovered');
+  };
   const clickHeader = (column) => {
     if (properties.enabledSort === false || !column.sortable || isDisabled) return;
     const current = sort?.key === column.key ? sort.direction : null;
@@ -958,7 +972,11 @@ export const ShadTable = (props) => {
                         key={type}
                         type="button"
                         className="w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
-                        onClick={() => runDownload(type)}
+                        onClick={() => {
+                          runDownload(type);
+                          // The native Table's event for a download from its toolbar.
+                          fireEvent('onTableDataDownload');
+                        }}
                       >
                         {label}
                       </button>
@@ -1020,6 +1038,7 @@ export const ShadTable = (props) => {
                     <th
                       key={column.id}
                       scope="col"
+                      onClick={() => pressHeader(column)}
                       aria-sort={active === 'asc' ? 'ascending' : active === 'desc' ? 'descending' : undefined}
                       className={cn(
                         // Header labels wrap between words when the table is narrower than its headers (a narrow card
@@ -1086,6 +1105,10 @@ export const ShadTable = (props) => {
                         key={entry.key}
                         data-state={showSelected ? 'selected' : undefined}
                         onClick={() => clickRow(entry)}
+                        onMouseEnter={() => hoverRow(entry)}
+                        onMouseLeave={() => {
+                          hoveredRef.current = null;
+                        }}
                         className={cn(
                           'border-b transition-colors last:border-b-0',
                           ROW_BORDER,

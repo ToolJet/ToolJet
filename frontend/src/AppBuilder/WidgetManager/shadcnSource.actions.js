@@ -196,10 +196,29 @@ export const shadNavigationConfig = shadConfig({
     separatorColor: colorStyle('Separator color'),
     itemRadius: sizeStyle('Item radius'),
   },
-  events: { onSelect: { displayName: 'On select' } },
-  exposedVariables: { value: '', activeItem: null, isCollapsed: false },
+  // onClick, selectedItem, previousSelectedItem, selectItem, setItemVisibility and setItemDisable are the native
+  // Navigation's names.
+  events: { onSelect: { displayName: 'On select' }, onClick: { displayName: 'On click' } },
+  exposedVariables: { value: '', activeItem: null, selectedItem: null, previousSelectedItem: null, isCollapsed: false },
   actions: [
     { handle: 'setActive', displayName: 'Set active item', params: [param('value', 'Value')] },
+    { handle: 'selectItem', displayName: 'Select item', params: [param('id', 'Item value')] },
+    {
+      handle: 'setItemVisibility',
+      displayName: 'Set item visibility',
+      params: [
+        param('id', 'Item value'),
+        { handle: 'value', displayName: 'Visible', defaultValue: '{{true}}', type: 'toggle' },
+      ],
+    },
+    {
+      handle: 'setItemDisable',
+      displayName: 'Set item disable',
+      params: [
+        param('id', 'Item value'),
+        { handle: 'value', displayName: 'Disabled', defaultValue: '{{true}}', type: 'toggle' },
+      ],
+    },
     {
       handle: 'setCollapsed',
       displayName: 'Set collapsed',

@@ -285,7 +285,11 @@ export const shadKeyValueConfig = {
       showLabel: false,
     },
   },
-  events: {},
+  events: {
+    onFieldClick: {
+      displayName: 'On field click',
+    },
+  },
   styles: {
     boxShadow: {
       type: 'boxShadow',
@@ -347,6 +351,8 @@ export const shadKeyValueConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    data: [],
+    lastClickedField: {},
   },
   actions: [
     {

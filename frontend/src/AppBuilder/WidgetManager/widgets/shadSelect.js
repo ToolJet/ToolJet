@@ -174,6 +174,15 @@ export const shadSelectConfig = {
     onChange: {
       displayName: 'On change',
     },
+    onSelect: {
+      displayName: 'On select',
+    },
+    onFocus: {
+      displayName: 'On focus',
+    },
+    onBlur: {
+      displayName: 'On blur',
+    },
   },
   styles: {
     boxShadow: {
@@ -293,6 +302,8 @@ export const shadSelectConfig = {
     isMandatory: false,
     value: '',
     selectedOption: {},
+    options: [],
+    label: '',
   },
   actions: [
     {
@@ -309,6 +320,14 @@ export const shadSelectConfig = {
     {
       handle: 'clear',
       displayName: 'Clear',
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
     },
     {
       handle: 'setVisibility',

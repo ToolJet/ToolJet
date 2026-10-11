@@ -237,3 +237,32 @@ export const shadConfig = ({
     styles: { boxShadow: { value: '0px 0px 0px 0px #00000040' }, ...styleDefaults },
   },
 });
+
+// ---- Native event and action parity (Widgets/Shadcn/EVENT_PARITY.md) ----------------------------------------------
+
+/** An action: `params` as [handle, displayName, defaultValue, type] lists. */
+export const action = (handle, displayName, params = []) => ({
+  handle,
+  displayName,
+  ...(params.length
+    ? {
+        params: params.map(([h, d, defaultValue = '', type]) => ({
+          handle: h,
+          displayName: d,
+          defaultValue,
+          ...(type ? { type } : {}),
+        })),
+      }
+    : {}),
+});
+/** The older control actions the native Button, Text input and Text area still answer to. */
+export const LEGACY_ACTIONS = [
+  action('disable', 'Disable', [['disable', 'Value', '{{false}}', 'toggle']]),
+  action('visibility', 'Visibility', [['visible', 'Value', '{{true}}', 'toggle']]),
+];
+export const FOCUS_ACTIONS = [action('setFocus', 'Set focus'), action('setBlur', 'Set blur')];
+export const FOCUS_EVENTS = { onFocus: { displayName: 'On focus' }, onBlur: { displayName: 'On blur' } };
+/** The native Chart's click events, its clearClickedPoint action and its clickedDataPoint. */
+export const CHART_EVENTS = { onClick: { displayName: 'On click' }, onDoubleClick: { displayName: 'On double click' } };
+export const CHART_ACTIONS = [action('clearClickedPoint', 'Clear clicked point')];
+export const CHART_EXPOSED = { clickedDatum: {}, clickedDataPoint: {} };

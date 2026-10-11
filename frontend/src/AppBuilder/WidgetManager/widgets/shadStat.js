@@ -638,8 +638,34 @@ export const shadStatConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    primaryLabel: 'Total revenue',
+    primaryValue: '$1,250.00',
+    secondaryLabel: '',
+    secondaryValue: '',
   },
   actions: [
+    {
+      handle: 'setPrimaryValue',
+      displayName: 'Set primary value',
+      params: [
+        {
+          handle: 'text',
+          displayName: 'Value',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setSecondaryValue',
+      displayName: 'Set secondary value',
+      params: [
+        {
+          handle: 'text',
+          displayName: 'Change',
+          defaultValue: '',
+        },
+      ],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

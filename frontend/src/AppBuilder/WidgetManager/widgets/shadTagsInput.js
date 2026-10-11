@@ -253,6 +253,15 @@ export const shadTagsInputConfig = {
     onTagRemoved: {
       displayName: 'On tag removed',
     },
+    onTagDeleted: {
+      displayName: 'On tag deleted',
+    },
+    onFocus: {
+      displayName: 'On focus',
+    },
+    onBlur: {
+      displayName: 'On blur',
+    },
   },
   styles: {
     boxShadow: {
@@ -417,8 +426,12 @@ export const shadTagsInputConfig = {
     isMandatory: false,
     tags: [],
     value: [],
+    values: [],
+    selectedTags: [],
+    newTagsAdded: [],
     lastAddedTag: '',
     lastRemovedTag: '',
+    label: '',
   },
   actions: [
     {
@@ -433,8 +446,38 @@ export const shadTagsInputConfig = {
       ],
     },
     {
+      handle: 'selectTags',
+      displayName: 'Select tags (add)',
+      params: [
+        {
+          handle: 'tags',
+          displayName: 'Tags',
+          defaultValue: '{{[]}}',
+        },
+      ],
+    },
+    {
+      handle: 'deselectTags',
+      displayName: 'Deselect tags (remove)',
+      params: [
+        {
+          handle: 'tags',
+          displayName: 'Tags',
+          defaultValue: '{{[]}}',
+        },
+      ],
+    },
+    {
       handle: 'clear',
       displayName: 'Clear',
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
     },
     {
       handle: 'setVisibility',

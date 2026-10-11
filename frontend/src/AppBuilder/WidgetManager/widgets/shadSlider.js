@@ -226,8 +226,40 @@ export const shadSliderConfig = {
     isLoading: false,
     isDisabled: false,
     value: 50,
+    label: '',
   },
   actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'num1',
+          displayName: 'Value',
+          defaultValue: '{{50}}',
+        },
+      ],
+    },
+    {
+      handle: 'setRangeValue',
+      displayName: 'Set range value',
+      params: [
+        {
+          handle: 'num1',
+          displayName: 'Start',
+          defaultValue: '{{20}}',
+        },
+        {
+          handle: 'num2',
+          displayName: 'End',
+          defaultValue: '{{80}}',
+        },
+      ],
+    },
+    {
+      handle: 'reset',
+      displayName: 'Reset',
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

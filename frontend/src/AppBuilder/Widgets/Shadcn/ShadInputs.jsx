@@ -36,6 +36,7 @@ import {
 } from './ui';
 import { lookVars } from './shadcnLook';
 import * as M from './inputsModel';
+import { useFocusEvents, useOverrides } from './parity';
 import { stringify } from '../packJson';
 import './shadcn.scss';
 
@@ -91,6 +92,16 @@ BareInput.displayName = 'BareInput';
 
 const text = (v) => (v === undefined || v === null || typeof v === 'object' ? '' : String(v));
 
+/** A time (minutes since midnight) from an action's argument, read with the format given when there is one ('HH:mm',
+ *  'hh:mm A'), else any time text; null when it is not a time. */
+const parseTimeArg = (v, format) => {
+  if (typeof v === 'string' && typeof format === 'string' && format.trim()) {
+    const d = dayjs(v.trim(), M.toDayjsFormat(format), true);
+    if (d.isValid()) return d.hour() * 60 + d.minute();
+  }
+  return M.parseTime(v);
+};
+
 /** A number text box's value and the text shown while it is edited (formatted again on blur). `parse` turns typed
  *  text into a number; `round` keeps it to the decimal places. */
 const useNumberBox = (props, { initial, round, parse }) => {
@@ -132,6 +143,8 @@ export const ShadNumberInput = (props) => {
   useExposed(setExposedVariables, properties, {
     value,
     setValue: async (v) => box.set(latest.current.round(M.parseNumber(v))),
+    // The native Number input's name for it.
+    setText: async (v) => box.set(latest.current.round(M.parseNumber(v))),
     clear: async () => box.set(null),
   });
   const commit = (next) => box.commit(next, () => ({}));
@@ -298,7 +311,11 @@ export const ShadCurrencyInput = (props) => {
     value,
     formattedValue: formatted(value),
     currency,
-    setValue: async (v) => box.set(latest.current.round(M.parseNumber(v, latest.current.locale))),
+    // setValue(value, currency): the native Currency input takes the currency with the value.
+    setValue: async (v, code) => {
+      if (code !== undefined && code !== null && code !== '') setCurrency(M.toCurrency(code, currencyRef.current));
+      box.set(latest.current.round(M.parseNumber(v, latest.current.locale)));
+    },
     setCurrency: async (code) => setCurrency(M.toCurrency(code, currencyRef.current)),
     clear: async () => box.set(null),
   });
@@ -547,13 +564,20 @@ export const ShadPhoneInput = (props) => {
   };
   useExposed(setExposedVariables, properties, {
     ...info,
-    setValue: async (v) => {
-      const prev = stateRef.current;
+    // setValue(value, country), as the native Phone input takes it.
+    setValue: async (v, c) => {
+      const given = c === undefined || c === null || c === '' ? null : M.countryFromInput(c, countries);
+      const prev = given ? { ...stateRef.current, country: given } : stateRef.current;
       const value = M.toPhoneValue(v, prev.country);
       const detected = M.phoneCountry(value, countries);
       update({ value, country: detected || prev.country }, false);
     },
     setCountry: async (c) => {
+      const country = M.countryFromInput(c, countries);
+      if (country) update(toCountry(country), false);
+    },
+    // The native Phone input's name for it.
+    setCountryCode: async (c) => {
       const country = M.countryFromInput(c, countries);
       if (country) update(toCountry(country), false);
     },
@@ -698,11 +722,16 @@ export const ShadOtpInput = (props) => {
   const isComplete = code.length === length;
   const inputRef = useRef(null);
   const [focused, setFocused] = useState(false);
+  const lengthRef = useLatest({ length, characters });
   useExposed(setExposedVariables, properties, {
     value: code,
     isComplete,
+    label: text(properties.label),
     clear: async () => setValue(''),
     setFocus: async () => inputRef.current?.focus(),
+    setBlur: async () => inputRef.current?.blur(),
+    // Fills the boxes as a paste does (the characters that do not fit the kind or the length are dropped).
+    setText: async (v) => setValue(M.otpSanitize(v, lengthRef.current.length, lengthRef.current.characters)),
   });
   const change = (raw) => {
     const next = M.otpSanitize(raw, length, characters);
@@ -812,6 +841,7 @@ export const ShadOtpInput = (props) => {
             onBlur={() => {
               setFocused(false);
               check.touch();
+              fireEvent('onBlur');
             }}
             onSelect={(e) => {
               // The caret stays at the end (select-all is kept, so a paste replaces the code).
@@ -933,7 +963,9 @@ export const ShadTimePicker = (props) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
+  const { setExposedVariables, fireEvent, id, componentType, styles } = props;
+  // setMinTime and setMaxTime change those properties until they change themselves.
+  const [properties, override] = useOverrides(props.properties);
   const use24 = M.is24h(properties.timeFormat);
   const step = M.minuteStep(properties.minuteStep, 15);
   const bounds = M.timeBounds(properties.minTime, properties.maxTime);
@@ -941,14 +973,28 @@ export const ShadTimePicker = (props) => {
   const [minutes, setMinutes] = useState(initial);
   useEffect(() => setMinutes(initial), [initial]);
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef(null);
+  const focus = useFocusEvents(fireEvent);
   const exposed = (m) => ({ value: M.toHHmm(m), formattedValue: M.formatTime(m, use24) });
+  const setTime = (t, format) => {
+    const m = parseTimeArg(t, format);
+    if (m !== null || M.isBlank(t)) setMinutes(m);
+  };
   useExposed(setExposedVariables, properties, {
     ...exposed(minutes),
-    setTime: async (t) => {
-      const m = M.parseTime(t);
-      if (m !== null || M.isBlank(t)) setMinutes(m);
-    },
+    label: text(properties.label),
+    timeFormat: use24 ? '24h' : '12h',
+    minTime: M.toHHmm(bounds.lo),
+    maxTime: M.toHHmm(bounds.hi),
+    setTime: async (t, format) => setTime(t, format),
+    // The native Time picker's names: setValue(value, format), clearValue(), setMinTime(), setMaxTime().
+    setValue: async (t, format) => setTime(t, format),
     clear: async () => setMinutes(null),
+    clearValue: async () => setMinutes(null),
+    setMinTime: async (t) => override('minTime', text(t)),
+    setMaxTime: async (t) => override('maxTime', text(t)),
+    setFocus: async () => triggerRef.current?.focus(),
+    setBlur: async () => triggerRef.current?.blur(),
   });
   const pick = (m, close = false) => {
     if (close) setOpen(false);
@@ -956,6 +1002,7 @@ export const ShadTimePicker = (props) => {
     setMinutes(m);
     setExposedVariables(exposed(m));
     fireEvent('onChange');
+    fireEvent('onSelect');
   };
   const check = useValidation(
     withRule(props, (v) => {
@@ -983,15 +1030,18 @@ export const ShadTimePicker = (props) => {
           open={open}
           onOpenChange={(next) => {
             setOpen(next);
+            focus.opened(next);
             if (!next) check.touch();
           }}
         >
           <PopoverTrigger asChild>
             <Button
+              ref={triggerRef}
               id={`shad-${id}`}
               variant="outline"
               disabled={disabled}
               aria-invalid={!!check.error || undefined}
+              {...focus.handlers}
               className={cn(
                 TRIGGER,
                 CONTROL,
@@ -1057,7 +1107,9 @@ export const ShadDateTimePicker = (props) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
+  const { setExposedVariables, fireEvent, id, componentType, styles } = props;
+  // setMinDate, setMaxDate and setDisabledDates change those properties until they change themselves.
+  const [properties, override] = useOverrides(props.properties);
   const dateFormat =
     typeof properties.dateFormat === 'string' && properties.dateFormat.trim() ? properties.dateFormat : 'DD MMM YYYY';
   const use24 = M.is24h(properties.timeFormat);
@@ -1082,21 +1134,56 @@ export const ShadDateTimePicker = (props) => {
   const [ts, setTs] = useState(initial);
   useEffect(() => setTs(initial), [initial]);
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef(null);
+  const focus = useFocusEvents(fireEvent);
   const date = ts === null ? null : dayjs(ts);
   const exposed = M.dateTimeExposed(date, displayFormat);
+  const tsRef = useLatest(ts);
+  const formatRef = useLatest(displayFormat);
+  const setDate = (v, format) => {
+    const d = M.parseDateTime(
+      v,
+      M.isBlank(format) || typeof format !== 'string' ? formatRef.current : M.toDayjsFormat(format)
+    );
+    if (d || M.isBlank(v)) setTs(d ? d.valueOf() : null);
+  };
+  const blankArg = (v) => v === undefined || v === null || v === '';
   useExposed(setExposedVariables, properties, {
     ...exposed,
-    setDate: async (v) => {
-      const d = M.parseDateTime(v, displayFormat);
-      if (d || M.isBlank(v)) setTs(d ? d.valueOf() : null);
+    label: text(properties.label),
+    dateFormat,
+    timeFormat: use24 ? '24h' : '12h',
+    minDate: rules.min ? rules.min.format('YYYY-MM-DD') : '',
+    maxDate: rules.max ? rules.max.format('YYYY-MM-DD') : '',
+    setDate: async (v, format) => setDate(v, format),
+    // The native Date and time picker's names.
+    setValue: async (v, format) => setDate(v, format),
+    setValueInTimestamp: async (v) => {
+      const n = Number(v);
+      if (!blankArg(v) && typeof v !== 'boolean' && Number.isFinite(n) && dayjs(n).isValid()) setTs(n);
+    },
+    // setTime keeps the day (today when none is picked) and sets the time of day.
+    setTime: async (v, format) => {
+      const m = parseTimeArg(v, format);
+      if (m === null) return;
+      const day = tsRef.current === null ? dayjs().startOf('day') : dayjs(tsRef.current);
+      setTs(M.atTime(day, m).valueOf());
     },
     clear: async () => setTs(null),
+    clearValue: async () => setTs(null),
+    setMinDate: async (v) => override('minDate', text(v)),
+    setMaxDate: async (v) => override('maxDate', text(v)),
+    setDisabledDates: async (v) => override('disabledDates', Array.isArray(v) ? v : blankArg(v) ? [] : [v]),
+    clearDisabledDates: async () => override('disabledDates', []),
+    setFocus: async () => triggerRef.current?.focus(),
+    setBlur: async () => triggerRef.current?.blur(),
   });
   const commit = (next) => {
     if (next === ts) return;
     setTs(next);
     setExposedVariables(M.dateTimeExposed(next === null ? null : dayjs(next), displayFormat));
     fireEvent('onChange');
+    fireEvent('onSelect');
   };
   const check = useValidation(
     withRule(props, () => M.dateProblem(date, rules)),
@@ -1145,15 +1232,18 @@ export const ShadDateTimePicker = (props) => {
           open={open}
           onOpenChange={(next) => {
             setOpen(next);
+            focus.opened(next);
             if (!next) check.touch();
           }}
         >
           <PopoverTrigger asChild>
             <Button
+              ref={triggerRef}
               id={`shad-${id}`}
               variant="outline"
               disabled={disabled}
               aria-invalid={!!check.error || undefined}
+              {...focus.handlers}
               className={cn(
                 TRIGGER,
                 CONTROL,

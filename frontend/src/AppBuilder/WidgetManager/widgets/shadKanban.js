@@ -426,6 +426,12 @@ export const shadKanbanConfig = {
     onCardRemoved: {
       displayName: 'On card removed',
     },
+    onCardSelected: {
+      displayName: 'On card selected',
+    },
+    onUpdate: {
+      displayName: 'On update (any card change)',
+    },
   },
   styles: {
     boxShadow: {
@@ -631,9 +637,12 @@ export const shadKanbanConfig = {
     isLoading: false,
     isDisabled: false,
     cards: [],
+    updatedCardData: [],
     selectedCard: {},
+    lastSelectedCard: {},
     movedCard: {},
     lastMove: {},
+    lastCardMovement: {},
     addCardColumn: '',
     collapsedColumns: [],
     lastAddedCard: {},
@@ -697,6 +706,22 @@ export const shadKanbanConfig = {
           handle: 'id',
           displayName: 'Card id',
           defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'updateCardData',
+      displayName: 'Update card data',
+      params: [
+        {
+          handle: 'id',
+          displayName: 'Card id',
+          defaultValue: '',
+        },
+        {
+          handle: 'value',
+          displayName: 'Values',
+          defaultValue: "{{{ title: 'Renamed' }}}",
         },
       ],
     },

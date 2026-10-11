@@ -228,6 +228,15 @@ export const shadDateTimePickerConfig = {
     onChange: {
       displayName: 'On change',
     },
+    onSelect: {
+      displayName: 'On select',
+    },
+    onFocus: {
+      displayName: 'On focus',
+    },
+    onBlur: {
+      displayName: 'On blur',
+    },
   },
   styles: {
     boxShadow: {
@@ -395,6 +404,11 @@ export const shadDateTimePickerConfig = {
     selectedTime: '',
     unixTimestamp: null,
     displayValue: '',
+    label: 'Date and time',
+    dateFormat: 'DD MMM YYYY',
+    timeFormat: '12h',
+    minDate: '',
+    maxDate: '',
   },
   actions: [
     {
@@ -406,11 +420,108 @@ export const shadDateTimePickerConfig = {
           displayName: 'Date and time (YYYY-MM-DD HH:mm)',
           defaultValue: '',
         },
+        {
+          handle: 'format',
+          displayName: 'Format (optional)',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Date and time',
+          defaultValue: '',
+        },
+        {
+          handle: 'format',
+          displayName: 'Format (optional)',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setValueInTimestamp',
+      displayName: 'Set value from timestamp',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Unix timestamp (ms)',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setTime',
+      displayName: 'Set time',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Time',
+          defaultValue: '',
+        },
+        {
+          handle: 'format',
+          displayName: 'Format (optional)',
+          defaultValue: '',
+        },
       ],
     },
     {
       handle: 'clear',
       displayName: 'Clear',
+    },
+    {
+      handle: 'clearValue',
+      displayName: 'Clear value',
+    },
+    {
+      handle: 'setMinDate',
+      displayName: 'Set min date',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Date',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setMaxDate',
+      displayName: 'Set max date',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Date',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setDisabledDates',
+      displayName: 'Set disabled dates',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Dates',
+          defaultValue: '{{[]}}',
+        },
+      ],
+    },
+    {
+      handle: 'clearDisabledDates',
+      displayName: 'Clear disabled dates',
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
     },
     {
       handle: 'setVisibility',

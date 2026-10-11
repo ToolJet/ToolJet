@@ -304,6 +304,9 @@ export const shadFunnelChartConfig = {
     onClick: {
       displayName: 'On click',
     },
+    onDoubleClick: {
+      displayName: 'On double click',
+    },
   },
   styles: {
     boxShadow: {
@@ -349,8 +352,13 @@ export const shadFunnelChartConfig = {
     isLoading: false,
     isDisabled: false,
     clickedDatum: {},
+    clickedDataPoint: {},
   },
   actions: [
+    {
+      handle: 'clearClickedPoint',
+      displayName: 'Clear clicked point',
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

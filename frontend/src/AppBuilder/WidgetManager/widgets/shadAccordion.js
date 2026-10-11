@@ -159,6 +159,12 @@ export const shadAccordionConfig = {
     onChange: {
       displayName: 'On change',
     },
+    onExpand: {
+      displayName: 'On expand',
+    },
+    onCollapse: {
+      displayName: 'On collapse',
+    },
   },
   styles: {
     boxShadow: {
@@ -222,8 +228,31 @@ export const shadAccordionConfig = {
     isLoading: false,
     isDisabled: false,
     openIndexes: [],
+    isExpanded: false,
   },
   actions: [
+    {
+      handle: 'expand',
+      displayName: 'Expand',
+      params: [
+        {
+          handle: 'index',
+          displayName: 'Section index (empty for all)',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'collapse',
+      displayName: 'Collapse',
+      params: [
+        {
+          handle: 'index',
+          displayName: 'Section index (empty for all)',
+          defaultValue: '',
+        },
+      ],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

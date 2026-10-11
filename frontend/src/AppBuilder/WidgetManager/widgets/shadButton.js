@@ -178,6 +178,9 @@ export const shadButtonConfig = {
     onClick: {
       displayName: 'On click',
     },
+    onHover: {
+      displayName: 'On hover',
+    },
   },
   styles: {
     boxShadow: {
@@ -257,8 +260,60 @@ export const shadButtonConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    buttonText: 'Button',
   },
   actions: [
+    {
+      handle: 'click',
+      displayName: 'Click',
+    },
+    {
+      handle: 'setText',
+      displayName: 'Set text',
+      params: [
+        {
+          handle: 'text',
+          displayName: 'Text',
+          defaultValue: 'New text',
+        },
+      ],
+    },
+    {
+      handle: 'disable',
+      displayName: 'Disable',
+      params: [
+        {
+          handle: 'disable',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'visibility',
+      displayName: 'Visibility',
+      params: [
+        {
+          handle: 'visible',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'loading',
+      displayName: 'Loading',
+      params: [
+        {
+          handle: 'loading',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
+          type: 'toggle',
+        },
+      ],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

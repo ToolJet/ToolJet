@@ -173,6 +173,9 @@ export const shadRadioGroupConfig = {
     onChange: {
       displayName: 'On change',
     },
+    onSelectionChange: {
+      displayName: 'On selection change',
+    },
   },
   styles: {
     boxShadow: {
@@ -247,6 +250,9 @@ export const shadRadioGroupConfig = {
     isValid: true,
     isMandatory: false,
     value: '',
+    label: '',
+    selectedOption: {},
+    options: [],
   },
   actions: [
     {
@@ -259,6 +265,10 @@ export const shadRadioGroupConfig = {
           defaultValue: '',
         },
       ],
+    },
+    {
+      handle: 'deselectOption',
+      displayName: 'Deselect option',
     },
     {
       handle: 'setVisibility',

@@ -461,9 +461,36 @@ const NavFace = ({ item, active, collapsed, chevron }) => (
   </>
 );
 
+const isText = (v) => typeof v === 'string' || typeof v === 'number';
+
+/** Items with the setItemVisibility / setItemDisable changes applied: `changes` maps an item's value to
+ *  { visible, disabled }. Plain text items become { label, value } so they can take a change. */
+const patchNavItems = (items, changes) => {
+  if (!Object.keys(changes).length || !Array.isArray(items)) return items;
+  const patch = (raw, depth) => {
+    const obj = isText(raw) ? { label: String(raw), value: raw } : raw;
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return raw;
+    const key = String(obj.value ?? obj.id ?? '');
+    const change = changes[key];
+    const children =
+      depth < 4 && Array.isArray(obj.children) ? obj.children.map((c) => patch(c, depth + 1)) : obj.children;
+    return change || children !== obj.children ? { ...obj, ...(change || {}), children } : raw;
+  };
+  return items.slice(0, 1000).map((raw) => patch(raw, 0));
+};
+
 export const ShadNavigation = (props) => {
   const { properties, styles, setExposedVariables, fireEvent, height, componentType } = props;
-  const items = navItems(properties.items);
+  // setItemVisibility and setItemDisable (the native Navigation's actions) change one item until the Items change.
+  const [itemChanges, setItemChanges] = useState({});
+  const itemsKey = stringify(properties.items ?? null);
+  useEffect(() => setItemChanges({}), [itemsKey]);
+  const items = navItems(patchNavItems(properties.items, itemChanges));
+  const changeItem = (id, patch) => {
+    if (id === undefined || id === null || typeof id === 'object') return;
+    setItemChanges((c) => ({ ...c, [String(unwrap(id))]: { ...(c[String(unwrap(id))] || {}), ...patch } }));
+  };
+  const previousRef = useRef(null);
   const rawDefault = unwrap(properties.defaultValue);
   const initial = rawDefault === undefined || rawDefault === null ? '' : String(rawDefault);
   const [active, setActive] = useState(initial);
@@ -476,11 +503,24 @@ export const ShadNavigation = (props) => {
   useEffect(() => {
     if (parentKey) setExpanded((open) => ({ ...open, [parentKey]: true }));
   }, [parentKey]);
+  const activate = (v) => {
+    const next = v === undefined || v === null || typeof v === 'object' ? '' : String(unwrap(v));
+    setActive((cur) => {
+      if (cur !== next) previousRef.current = activeItemExposed(findNav(items, cur));
+      return next;
+    });
+  };
   useExposed(setExposedVariables, properties, {
     value: found ? found.item.value : '',
     activeItem: activeItemExposed(found),
+    // The native Navigation's names: selectedItem and previousSelectedItem.
+    selectedItem: activeItemExposed(found),
+    previousSelectedItem: previousRef.current,
     isCollapsed: collapsed,
-    setActive: async (v) => setActive(v === undefined || v === null ? '' : String(unwrap(v))),
+    setActive: async (v) => activate(v),
+    selectItem: async (v) => activate(v),
+    setItemVisibility: async (id, v) => changeItem(id, { visible: !(v === false || v === 'false') }),
+    setItemDisable: async (id, v) => changeItem(id, { disabled: !(v === false || v === 'false') }),
     setCollapsed: async (v) => setCollapsed(!(v === false || v === 'false')),
   });
   const disabled = busy(properties);
@@ -494,9 +534,19 @@ export const ShadNavigation = (props) => {
 
   const pick = (item, parent = null) => {
     if (item.disabled || disabled) return;
+    const previous = activeItemExposed(found);
+    if (found?.item.key !== item.key) previousRef.current = previous;
     setActive(item.key);
-    setExposedVariables({ value: item.value, activeItem: activeItemExposed({ item, parent }) });
+    const picked = activeItemExposed({ item, parent });
+    setExposedVariables({
+      value: item.value,
+      activeItem: picked,
+      selectedItem: picked,
+      previousSelectedItem: previousRef.current,
+    });
     fireEvent('onSelect');
+    // The native Navigation's event name.
+    fireEvent('onClick');
   };
   const itemClass = (isActive, extra) =>
     cn(

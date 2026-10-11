@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as Lucide from 'lucide-react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import useStore from '@/AppBuilder/_stores/store';
+import { useHasEvent, useOverrides, truthy, textArg } from './parity';
 import { LoadingBox, Shell, Spinner, busy, wantsSkeleton } from './Shadcn';
 import { initials, useAutoHeight, useExposed } from '../packHooks';
 import { Button, Skeleton, cn, getPortalRoot } from './ui';
@@ -65,18 +65,6 @@ const own = (map, key) =>
 const JUSTIFY = { left: 'justify-start', center: 'justify-center', right: 'justify-end' };
 const justify = (styles, fallback = 'left') => own(JUSTIFY, styles?.alignment) || JUSTIFY[fallback];
 
-/** Whether the app wires `eventId` on this widget (a pointer cursor then shows it is clickable). */
-const useHasEvent = (id, eventId) =>
-  useStore((state) => {
-    const modules = state?.eventsSlice?.module;
-    if (!modules || !id) return false;
-    return Object.values(modules).some((m) =>
-      (Array.isArray(m?.events) ? m.events : []).some(
-        (e) => e?.sourceId === id && e?.event?.eventId === eventId && !e?.event?.disabled
-      )
-    );
-  });
-
 /** Enter or Space activates a div acting as a button. */
 const onKeyActivate = (handler) => (e) => {
   if (e.key === 'Enter' || e.key === ' ') {
@@ -118,7 +106,9 @@ const ImageFallback = ({ kind, text }) => {
 };
 
 export const ShadImage = (props) => {
-  const { properties: p, setExposedVariables, fireEvent, height, id } = props;
+  const { setExposedVariables, fireEvent, height, id } = props;
+  // setImageURL and clearImage change the source until the Source property itself changes.
+  const [p, override] = useOverrides(props.properties);
   const ref = useRef(null);
   const imgRef = useRef(null);
   // With a ratio the image sizes itself from the width and the widget fits it; "auto" fills the drawn height instead.
@@ -134,7 +124,13 @@ export const ShadImage = (props) => {
     const img = imgRef.current;
     if (img && img.complete && img.naturalWidth > 0) setStatus('loaded');
   }, [src]);
-  useExposed(setExposedVariables, p, { hasError: status === 'error' });
+  useExposed(setExposedVariables, p, {
+    hasError: status === 'error',
+    imageURL: src,
+    alternativeText: alt,
+    setImageURL: async (url) => override('source', textArg(url)),
+    clearImage: async () => override('source', ''),
+  });
   const hasClick = useHasEvent(id, 'onClick');
   const zoom = p.zoomOnClick === true && status === 'loaded';
   const clickable = !busy(p) && (hasClick || zoom);
@@ -231,7 +227,9 @@ const TONE_COLOR = {
 
 export const ShadIcon = (props) => {
   const { properties: p, setExposedVariables, fireEvent, height, id } = props;
-  useExposed(setExposedVariables, p, {});
+  const latest = useRef(p);
+  latest.current = p;
+  useExposed(setExposedVariables, p, { click: async () => !busy(latest.current) && fireEvent('onClick') });
   const hasClick = useHasEvent(id, 'onClick');
   const Icon = iconFor(p.icon);
   const size = clamp(p.size, 8, 512, 20);
@@ -267,6 +265,7 @@ export const ShadIcon = (props) => {
             aria-label={typeof p.icon === 'string' && p.icon ? p.icon : 'icon'}
             tabIndex={clickable ? 0 : undefined}
             onClick={click}
+            onMouseEnter={() => fireEvent('onHover')}
             onKeyDown={clickable ? onKeyActivate(click) : undefined}
             className={cn(
               'inline-flex shrink-0 items-center justify-center text-[color:var(--lk-icon,var(--ic-tone))]',
@@ -292,9 +291,25 @@ const UNDERLINE = { always: 'underline', hover: 'on-hover', none: 'no-underline'
 const WEIGHT = { normal: 'font-normal', medium: 'font-medium', semibold: 'font-semibold', bold: 'font-bold' };
 
 export const ShadLink = (props) => {
-  const { properties: p, setExposedVariables, fireEvent, height } = props;
-  useExposed(setExposedVariables, p, {});
+  const { setExposedVariables, fireEvent, height } = props;
+  // setLinkTarget and setLinkText hold until the Link target and Text properties themselves change.
+  const [p, override] = useOverrides(props.properties);
   const href = String(p.linkTarget ?? p.href ?? '').trim();
+  const anchorRef = useRef(null);
+  const latest = useRef(p);
+  latest.current = p;
+  useExposed(setExposedVariables, p, {
+    linkTarget: href,
+    linkText: String(p.linkText ?? p.text ?? ''),
+    setLinkTarget: async (v) => override('linkTarget', textArg(v)),
+    setLinkText: async (v) => override('linkText', textArg(v)),
+    // click() follows the link as a click does (onClick fires, the target opens).
+    click: async () => {
+      if (busy(latest.current)) return;
+      if (anchorRef.current) anchorRef.current.click();
+      else fireEvent('onClick');
+    },
+  });
   const sameTab = p.targetType === 'same' || p.target === '_self' || p.target === 'same';
   const underline = own(UNDERLINE, p.underline) || (typeof p.underline === 'string' && p.underline) || 'on-hover';
   const disabled = busy(p);
@@ -322,6 +337,7 @@ export const ShadLink = (props) => {
       >
         {href ? (
           <a
+            ref={anchorRef}
             href={href}
             target={sameTab ? '_self' : '_blank'}
             rel={sameTab ? undefined : 'noopener noreferrer'}
@@ -531,11 +547,16 @@ export const ShadTags = (props) => {
 // ---- Circular progress -----------------------------------------------------------------------------------------------
 
 export const ShadCircularProgress = (props) => {
-  const { properties: p, setExposedVariables } = props;
+  const { setExposedVariables } = props;
+  // The native Circular progress bar's setValue: holds until the Value property itself changes.
+  const [p, override] = useOverrides(props.properties);
   const ref = useRef(null);
   useAutoHeight(props, ref);
-  useExposed(setExposedVariables, p, {});
   const g = ringGeometry(p.value, p.size, p.thickness);
+  useExposed(setExposedVariables, p, {
+    value: g.percent,
+    setValue: async (v) => override('value', Number(v) || 0),
+  });
   const mode = ['value', 'custom', 'none'].includes(p.centerText) ? p.centerText : 'value';
   const centre = mode === 'value' ? `${Math.round(g.percent)}%` : mode === 'custom' ? String(p.text ?? '') : '';
   const label = isSet(p.label) ? String(p.label) : '';
@@ -775,11 +796,18 @@ const KeyValueValue = ({ row, text, emptyText, badgeColors }) => {
 };
 
 export const ShadKeyValue = (props) => {
-  const { properties: p, setExposedVariables } = props;
+  const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
-  useExposed(setExposedVariables, p, {});
   const rows = useMemo(() => keyValueItems(p.data), [stringify(p.data ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
+  // The native Key value pair's data and onFieldClick (with lastClickedField: the row's label and value).
+  useExposed(setExposedVariables, p, { data: rows.map(({ label, value }) => ({ label, value })) });
+  const clickable = useHasEvent(id, 'onFieldClick') && !busy(p);
+  const clickField = (row) => {
+    if (busy(p)) return;
+    setExposedVariable('lastClickedField', { label: row.label, value: row.value ?? null });
+    fireEvent('onFieldClick');
+  };
   const columns = Math.floor(clamp(p.columns, 1, 4, 1));
   const inline = p.layout !== 'stacked';
   const dividers = p.dividers !== false;
@@ -811,8 +839,13 @@ export const ShadKeyValue = (props) => {
           return (
             <div
               key={row.key}
+              onClick={() => clickField(row)}
+              role={clickable ? 'button' : undefined}
+              tabIndex={clickable ? 0 : undefined}
+              onKeyDown={clickable ? onKeyActivate(() => clickField(row)) : undefined}
               className={cn(
                 'group flex min-w-0 text-sm',
+                clickable && 'cursor-pointer hover:bg-[color:var(--sc-muted)]',
                 inline ? 'flex-row items-start gap-4 py-2.5' : 'flex-col gap-1 py-3',
                 dividers && index < lastRowStart && 'border-b border-[color:var(--lk-border,var(--sc-border))]'
               )}
@@ -1064,6 +1097,8 @@ export const ShadSteps = (props) => {
     },
     setStepVisible: async (id, visibility) => override(id, { visible: visibility !== false && visibility !== 'false' }),
     setStepDisable: async (id, disabled) => override(id, { disabled: disabled !== false && disabled !== 'false' }),
+    // The native Steps' name for disabling the whole widget.
+    setDisabled: async (v) => props.control?.setDisable(truthy(v)),
   });
   const selectable = p.stepsSelectable !== false;
   const select = (step) => {

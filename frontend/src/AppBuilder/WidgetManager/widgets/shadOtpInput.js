@@ -241,6 +241,9 @@ export const shadOtpInputConfig = {
     onFocus: {
       displayName: 'On focus',
     },
+    onBlur: {
+      displayName: 'On blur',
+    },
   },
   styles: {
     boxShadow: {
@@ -386,6 +389,7 @@ export const shadOtpInputConfig = {
     isMandatory: false,
     value: '',
     isComplete: false,
+    label: 'Verification code',
   },
   actions: [
     {
@@ -395,6 +399,21 @@ export const shadOtpInputConfig = {
     {
       handle: 'setFocus',
       displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
+    },
+    {
+      handle: 'setText',
+      displayName: 'Set text',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Code',
+          defaultValue: '',
+        },
+      ],
     },
     {
       handle: 'setVisibility',

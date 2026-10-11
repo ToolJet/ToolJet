@@ -126,19 +126,34 @@ const LegendContent = ({ payload }) => (
   </div>
 );
 
+/** The clicked datum and the native Chart's events and actions: a click on a datum exposes it (clickedDatum, and
+ *  clickedDataPoint, the native name) and fires onClick; a double click fires onDoubleClick (the datum is the one its
+ *  first click picked); clearClickedPoint() empties it. */
+const useClickedDatum = (props) => {
+  const [clicked, setClicked] = useState({});
+  const pick = (datum) => {
+    setClicked(datum);
+    props.setExposedVariables?.({ clickedDatum: datum, clickedDataPoint: datum });
+    props.fireEvent?.('onClick');
+  };
+  return {
+    pick,
+    exposed: { clickedDatum: clicked, clickedDataPoint: clicked, clearClickedPoint: async () => setClicked({}) },
+    onDoubleClick: () => props.fireEvent?.('onDoubleClick'),
+  };
+};
+
 const ChartFrame = ({ props, empty, children }) => {
   const { properties, setExposedVariables, height } = props;
-  const [clicked, setClicked] = useState({});
-  useExposed(setExposedVariables, properties, { clickedDatum: clicked });
+  const click = useClickedDatum(props);
+  useExposed(setExposedVariables, properties, click.exposed);
   const onDatum = (datum) => {
     if (!datum) return;
-    setClicked(datum);
-    props.setExposedVariable('clickedDatum', datum);
-    props.fireEvent('onClick');
+    click.pick(datum);
   };
   return (
     <Shell {...props}>
-      <div style={{ height }} className="w-full text-xs">
+      <div style={{ height }} className="w-full text-xs" onDoubleClick={click.onDoubleClick}>
         {empty ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             {String(properties.emptyText || 'No data')}
@@ -455,13 +470,11 @@ const EmptyChart = ({ text, small }) => (
  *  datum sets clickedDatum and fires onClick; otherwise a click anywhere fires onClick. */
 const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true, children }) => {
   const { properties, setExposedVariables, height } = props;
-  const [clicked, setClicked] = useState({});
-  useExposed(setExposedVariables, properties, clickable ? { clickedDatum: clicked, ...exposed } : exposed);
+  const click = useClickedDatum(props);
+  useExposed(setExposedVariables, properties, clickable ? { ...click.exposed, ...exposed } : exposed);
   const onDatum = (datum) => {
     if (!datum || typeof datum !== 'object') return;
-    setClicked(datum);
-    props.setExposedVariable?.('clickedDatum', datum);
-    props.fireEvent?.('onClick');
+    click.pick(datum);
   };
   const emptyView = <EmptyChart text={String(properties.emptyText || 'No data')} small={small} />;
   return (
@@ -470,6 +483,7 @@ const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true, childr
         style={{ height }}
         className="w-full text-xs"
         onClick={clickable ? undefined : () => props.fireEvent?.('onClick')}
+        onDoubleClick={click.onDoubleClick}
       >
         {empty ? (
           emptyView
@@ -1131,8 +1145,8 @@ export const ShadScatterChart = (props) => {
 export const ShadFunnelChart = (props) => {
   const p = props.properties;
   const { setExposedVariables, height } = props;
-  const [clicked, setClicked] = useState({});
-  useExposed(setExposedVariables, p, { clickedDatum: clicked });
+  const click = useClickedDatum(props);
+  useExposed(setExposedVariables, p, click.exposed);
   const stages = funnelStages(p.data, p.stageField, p.valueField).slice(0, 24);
   const format = formatter(valueFormat(p), p.yAxisFormat === 'compact');
   const base = p.conversionBase === 'first' ? 'ofFirst' : 'ofPrevious';
@@ -1140,11 +1154,7 @@ export const ShadFunnelChart = (props) => {
   const showConversion = p.showConversion !== false;
   const byStage = p.colorByStage === true;
   const fade = (i) => (stages.length > 1 ? 1 - (i / (stages.length - 1)) * 0.45 : 1);
-  const onStage = (stage) => {
-    setClicked(stage.row);
-    props.setExposedVariable?.('clickedDatum', stage.row);
-    props.fireEvent?.('onClick');
-  };
+  const onStage = (stage) => click.pick(stage.row);
   const labelWidth = Math.min(180, Math.max(56, Math.max(0, ...stages.map((s) => String(s.label).length)) * 7 + 12));
   const valueWidth =
     Math.max(40, Math.max(0, ...stages.map((s) => String(format(s.value)).length)) * 7.5 + 4) +
@@ -1153,7 +1163,7 @@ export const ShadFunnelChart = (props) => {
   const emptyView = <EmptyChart text={String(p.emptyText || 'No data')} />;
   return (
     <Shell {...props}>
-      <div style={{ height }} className="w-full overflow-hidden text-xs">
+      <div style={{ height }} className="w-full overflow-hidden text-xs" onDoubleClick={click.onDoubleClick}>
         {empty ? (
           emptyView
         ) : (
@@ -1230,8 +1240,8 @@ export const ShadFunnelChart = (props) => {
 export const ShadHeatmapChart = (props) => {
   const p = props.properties;
   const { setExposedVariables, height } = props;
-  const [clicked, setClicked] = useState({});
-  useExposed(setExposedVariables, p, { clickedDatum: clicked });
+  const click = useClickedDatum(props);
+  useExposed(setExposedVariables, p, click.exposed);
   const grid = heatmapGrid(p.data, {
     xField: p.xField,
     yField: p.yField,
@@ -1253,14 +1263,16 @@ export const ShadHeatmapChart = (props) => {
       : `color-mix(in srgb, var(--sc-chart-1) ${Math.round(12 + strength * 88)}%, var(--sc-muted))`;
   const onCell = (y, x, value) => {
     const datum = { [p.yField || 'y']: y, [p.xField || 'x']: x, [p.valueField || 'value']: value };
-    setClicked(datum);
-    props.setExposedVariable?.('clickedDatum', datum);
-    props.fireEvent?.('onClick');
+    click.pick(datum);
   };
   const columns = `${rowLabelWidth}px repeat(${grid.xs.length}, minmax(0, 1fr))`;
   return (
     <Shell {...props}>
-      <div style={{ height }} className="flex w-full flex-col overflow-hidden text-xs">
+      <div
+        style={{ height }}
+        className="flex w-full flex-col overflow-hidden text-xs"
+        onDoubleClick={click.onDoubleClick}
+      >
         {empty ? (
           emptyView
         ) : (

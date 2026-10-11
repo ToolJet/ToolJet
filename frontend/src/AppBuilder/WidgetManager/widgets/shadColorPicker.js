@@ -209,6 +209,12 @@ export const shadColorPickerConfig = {
     onChange: {
       displayName: 'On change',
     },
+    onFocus: {
+      displayName: 'On focus',
+    },
+    onBlur: {
+      displayName: 'On blur',
+    },
   },
   styles: {
     boxShadow: {
@@ -327,6 +333,13 @@ export const shadColorPickerConfig = {
     value: '',
     rgb: '',
     rgba: '',
+    selectedColorHex: '',
+    selectedColorRGB: '',
+    selectedColorRGBA: '',
+    colorFormat: 'hex',
+    allowOpacity: false,
+    isValid: true,
+    label: '',
   },
   actions: [
     {
@@ -339,6 +352,14 @@ export const shadColorPickerConfig = {
           defaultValue: '#6366f1',
         },
       ],
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
     },
     {
       handle: 'setVisibility',

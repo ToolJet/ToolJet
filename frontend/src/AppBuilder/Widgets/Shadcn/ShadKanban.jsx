@@ -480,9 +480,14 @@ export const ShadKanban = (props) => {
     const { setExposedVariable: expose, fireEvent: fire } = live.current;
     live.current.columns = next;
     setColumns(next);
-    expose('cards', boardCards(next));
+    const cards = boardCards(next);
+    expose('cards', cards);
+    // updatedCardData is the native Kanban's name for the board's cards.
+    expose('updatedCardData', cards);
     Object.entries(exposed).forEach(([key, value]) => expose(key, value));
     if (event) fire(event);
+    // The native Kanban's onUpdate follows every change to the cards.
+    if (event) fire('onUpdate');
   };
   const doAdd = (card, columnId) => {
     const { columns: cols, statusField: sf, idField: idf } = live.current;
@@ -505,17 +510,22 @@ export const ShadKanban = (props) => {
     const { columns: next, move } = moveCard(cols, id, toColumnId, beforeKey, sf);
     if (!move) return;
     setLastMove(move);
-    commit(next, { movedCard: move.card, lastMove: move }, 'onCardMoved');
+    commit(next, { movedCard: move.card, lastMove: move, lastCardMovement: move }, 'onCardMoved');
   };
 
   useExposed(setExposedVariables, properties, {
     cards: boardCards(columns),
+    updatedCardData: boardCards(columns),
     selectedCard: strip(selected),
+    lastSelectedCard: strip(selected),
     collapsedColumns: [...collapsedColumns],
     movedCard: lastMove?.card ?? {},
     lastMove: lastMove ?? {},
+    lastCardMovement: lastMove ?? {},
     addCard: async (card, columnId) => doAdd(card, columnId),
     updateCard: async (id, values) => doUpdate(id, values),
+    // The native Kanban's name for updateCard.
+    updateCardData: async (id, values) => doUpdate(id, values),
     moveCard: async (id, columnId) => doMove(id, columnId),
     deleteCard: async (id) => doDelete(id),
   });
@@ -616,7 +626,10 @@ export const ShadKanban = (props) => {
   const select = (card) => {
     setSelected(card);
     setExposedVariable('selectedCard', strip(card));
+    setExposedVariable('lastSelectedCard', strip(card));
     fireEvent('onCardClicked');
+    // The native Kanban's event name.
+    fireEvent('onCardSelected');
   };
   const onAdd =
     properties.allowAdd === true && enabled

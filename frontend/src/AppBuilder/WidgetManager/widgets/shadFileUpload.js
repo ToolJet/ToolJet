@@ -301,6 +301,9 @@ export const shadFileUploadConfig = {
     onFileDeselected: {
       displayName: 'On file deselected',
     },
+    onFileLoaded: {
+      displayName: 'On file loaded',
+    },
   },
   styles: {
     boxShadow: {
@@ -455,13 +458,35 @@ export const shadFileUploadConfig = {
     isValid: true,
     isMandatory: false,
     files: [],
+    file: [],
     fileSize: 0,
     isParsing: false,
+    label: '',
   },
   actions: [
     {
       handle: 'clearFiles',
       displayName: 'Clear files',
+    },
+    {
+      handle: 'clear',
+      displayName: 'Clear',
+    },
+    {
+      handle: 'setFileName',
+      displayName: 'Set file name',
+      params: [
+        {
+          handle: 'indexOrUpdates',
+          displayName: 'File index (or [{ index, newFileName }])',
+          defaultValue: '{{0}}',
+        },
+        {
+          handle: 'newNameIfSingle',
+          displayName: 'New name',
+          defaultValue: '',
+        },
+      ],
     },
     {
       handle: 'setVisibility',

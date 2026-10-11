@@ -271,6 +271,9 @@ export const shadNavigationConfig = {
     onSelect: {
       displayName: 'On select',
     },
+    onClick: {
+      displayName: 'On click',
+    },
   },
   styles: {
     boxShadow: {
@@ -415,6 +418,8 @@ export const shadNavigationConfig = {
     isDisabled: false,
     value: '',
     activeItem: null,
+    selectedItem: null,
+    previousSelectedItem: null,
     isCollapsed: false,
   },
   actions: [
@@ -426,6 +431,51 @@ export const shadNavigationConfig = {
           handle: 'value',
           displayName: 'Value',
           defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'selectItem',
+      displayName: 'Select item',
+      params: [
+        {
+          handle: 'id',
+          displayName: 'Item value',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setItemVisibility',
+      displayName: 'Set item visibility',
+      params: [
+        {
+          handle: 'id',
+          displayName: 'Item value',
+          defaultValue: '',
+        },
+        {
+          handle: 'value',
+          displayName: 'Visible',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setItemDisable',
+      displayName: 'Set item disable',
+      params: [
+        {
+          handle: 'id',
+          displayName: 'Item value',
+          defaultValue: '',
+        },
+        {
+          handle: 'value',
+          displayName: 'Disabled',
+          defaultValue: '{{true}}',
+          type: 'toggle',
         },
       ],
     },

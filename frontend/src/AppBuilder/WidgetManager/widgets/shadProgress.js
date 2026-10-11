@@ -222,8 +222,20 @@ export const shadProgressConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    value: 60,
   },
   actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Percent',
+          defaultValue: '{{50}}',
+        },
+      ],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

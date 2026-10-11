@@ -280,6 +280,12 @@ export const shadMultiselectConfig = {
     onSearchTextChanged: {
       displayName: 'On search text changed',
     },
+    onFocus: {
+      displayName: 'On focus',
+    },
+    onBlur: {
+      displayName: 'On blur',
+    },
   },
   styles: {
     boxShadow: {
@@ -446,6 +452,7 @@ export const shadMultiselectConfig = {
     selectedOptions: [],
     searchText: '',
     options: [],
+    label: '',
   },
   actions: [
     {
@@ -473,6 +480,14 @@ export const shadMultiselectConfig = {
     {
       handle: 'clear',
       displayName: 'Clear',
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
     },
     {
       handle: 'setVisibility',

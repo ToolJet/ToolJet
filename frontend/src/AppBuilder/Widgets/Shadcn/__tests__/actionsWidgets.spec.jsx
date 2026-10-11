@@ -178,13 +178,14 @@ describe('ShadNavigation', () => {
     fireEvent.click(screen.getByRole('button', { name: /Orders/ }));
     expect(exposed.value).toBe('orders');
     expect(exposed.activeItem).toEqual({ label: 'Orders', value: 'orders', parentLabel: null, parentValue: null });
-    expect(events).toEqual(['onSelect']);
+    // onClick is the native Navigation's name for the same press.
+    expect(events).toEqual(['onSelect', 'onClick']);
     fireEvent.click(screen.getByRole('button', { name: /Reports/ }));
     fireEvent.click(screen.getByRole('button', { name: /Sales/ }));
     expect(exposed.activeItem).toMatchObject({ value: 'sales', parentValue: 'reports' });
     await act(() => exposed.setActive('settings'));
     expect(exposed.value).toBe('settings');
-    expect(events).toEqual(['onSelect', 'onSelect']);
+    expect(events).toEqual(['onSelect', 'onClick', 'onSelect', 'onClick']);
     expect(screen.getByText('Workspace')).toBeTruthy();
   });
 

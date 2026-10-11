@@ -220,6 +220,15 @@ export const shadTimePickerConfig = {
     onChange: {
       displayName: 'On change',
     },
+    onSelect: {
+      displayName: 'On select',
+    },
+    onFocus: {
+      displayName: 'On focus',
+    },
+    onBlur: {
+      displayName: 'On blur',
+    },
   },
   styles: {
     boxShadow: {
@@ -384,6 +393,10 @@ export const shadTimePickerConfig = {
     isMandatory: false,
     value: '',
     formattedValue: '',
+    label: 'Time',
+    timeFormat: '12h',
+    minTime: '00:00',
+    maxTime: '23:59',
   },
   actions: [
     {
@@ -398,8 +411,58 @@ export const shadTimePickerConfig = {
       ],
     },
     {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Time',
+          defaultValue: '',
+        },
+        {
+          handle: 'format',
+          displayName: 'Format',
+          defaultValue: 'HH:mm',
+        },
+      ],
+    },
+    {
       handle: 'clear',
       displayName: 'Clear',
+    },
+    {
+      handle: 'clearValue',
+      displayName: 'Clear value',
+    },
+    {
+      handle: 'setMinTime',
+      displayName: 'Set min time',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Time (HH:mm)',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setMaxTime',
+      displayName: 'Set max time',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Time (HH:mm)',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
     },
     {
       handle: 'setVisibility',

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon, ChevronRight, Inbox, TrendingDown, TrendingUp } from 'lucide-react';
 import { initials, list, toOptions, useAutoHeight, useExposed } from '../packHooks';
@@ -42,7 +42,7 @@ import {
 } from './ui';
 import { badgeLook, isSet } from './kanbanLook';
 import { toDate, ymd } from './actionsModel';
-import { toDayjsFormat } from './inputsModel';
+import { dateProblem, dateRules, parseDateTime, toDayjsFormat } from './inputsModel';
 import { sliderBounds, sliderValues } from './sliderModel';
 import { lookVars, whenSet } from './shadcnLook';
 import { fontStack, textCase, typeClasses } from './typeLook';
@@ -52,6 +52,7 @@ import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widget
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { stringify } from '../packJson';
 import { progressPercent, sparkPaths, statSize, statValue } from './statModel';
+import { textArg, truthy, useFocusEvents, useHasEvent, useOverrides } from './parity';
 import { LoadingBox, Spinner, wantsSkeleton } from './loadingLook';
 import './shadcn.scss';
 
@@ -261,8 +262,18 @@ export const textAlign = (styles) =>
 // ---- Actions and feedback ------------------------------------------------------------------------------------------
 
 export const ShadButton = (props) => {
-  const { properties, styles, setExposedVariables, fireEvent } = props;
-  useExposed(setExposedVariables, properties, {});
+  const { styles, setExposedVariables, fireEvent } = props;
+  // setText changes the label until the Label property itself changes, like the native Button's.
+  const [properties, override] = useOverrides(props.properties);
+  const latest = useRef(properties);
+  latest.current = properties;
+  useExposed(setExposedVariables, properties, {
+    buttonText: String(properties.text ?? ''),
+    setText: async (text) => override('text', textArg(text)),
+    click: async () => {
+      if (!busy(latest.current)) fireEvent('onClick');
+    },
+  });
   // Like ToolJet's Button, it fills its box's height, and its width when the box was sized for it (grid, or a
   // fixed-width flex child); as a flex fill child it keeps its own width. Full width always fills. A fixed 36px
   // button in a 36px box overflowed the box's padding and lost its bottom edge.
@@ -289,6 +300,7 @@ export const ShadButton = (props) => {
         )}
         disabled={!!properties.disabledState || !!properties.loadingState}
         onClick={() => fireEvent('onClick')}
+        onMouseEnter={() => fireEvent('onHover')}
       >
         {properties.loadingState ? (
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -331,13 +343,26 @@ const MAX_CRUMBS = 8;
 const ELLIPSIS = Symbol('ellipsis');
 
 export const ShadBreadcrumb = (props) => {
-  const { properties, setExposedVariables } = props;
+  const { properties, setExposedVariables, setExposedVariable, fireEvent, id } = props;
   useExposed(setExposedVariables, properties, {});
   const all = list(properties.items);
+  // onItemClick (with lastClickedItem: the item, its title and index) for navigating back up the trail.
+  const clickable = useHasEvent(id, 'onItemClick') && !busy(properties);
+  const clickItem = (item, index) => {
+    if (busy(properties) || item === ELLIPSIS) return;
+    const entry = item && typeof item === 'object' ? item : { title: String(item ?? '') };
+    setExposedVariable('lastClickedItem', { ...entry, title: String(entry.title ?? ''), index });
+    fireEvent('onItemClick');
+  };
   // A long trail keeps its first item and its last ones, with an ellipsis between (shadcn's collapsed breadcrumb), so
   // a list bound by mistake (10k items) draws a handful.
   const trail = all.length > MAX_CRUMBS ? [all[0], ELLIPSIS, ...all.slice(-(MAX_CRUMBS - 2))] : all;
   const items = trail.map((it) => (it === ELLIPSIS || typeof it === 'string' ? it : it?.title ?? ''));
+  // The index in the whole trail of each drawn item (the ellipsis hides some).
+  const indexes =
+    all.length > MAX_CRUMBS
+      ? [0, -1, ...Array.from({ length: MAX_CRUMBS - 2 }, (_, k) => all.length - (MAX_CRUMBS - 2) + k)]
+      : all.map((_, k) => k);
   return (
     <Shell {...props}>
       <nav aria-label="breadcrumb">
@@ -345,11 +370,16 @@ export const ShadBreadcrumb = (props) => {
           {items.map((item, i) => (
             <li key={i} className="inline-flex items-center gap-1.5">
               <span
-                className={
+                onClick={() => clickItem(trail[i], indexes[i])}
+                role={clickable && item !== ELLIPSIS ? 'button' : undefined}
+                tabIndex={clickable && item !== ELLIPSIS ? 0 : undefined}
+                onKeyDown={(e) => clickable && e.key === 'Enter' && clickItem(trail[i], indexes[i])}
+                className={cn(
                   i === items.length - 1
                     ? 'font-normal text-[color:var(--lk-current,var(--sc-foreground))]'
-                    : 'transition-colors'
-                }
+                    : 'transition-colors',
+                  clickable && item !== ELLIPSIS && 'cursor-pointer hover:text-[color:var(--sc-foreground)]'
+                )}
               >
                 {item === ELLIPSIS ? '…' : String(item)}
               </span>
@@ -373,17 +403,46 @@ const HEADING = {
   h4: 'scroll-m-20 text-xl font-semibold tracking-tight',
 };
 
+/** The native Text's events and actions, shared by Heading and Text: onClick and onHover, setText and clear (which
+ *  hold until the Text property itself changes), and the shown text exposed as `text`. */
+const useTextActions = (props) => {
+  const { setExposedVariables, fireEvent, id } = props;
+  const [properties, override] = useOverrides(props.properties);
+  useExposed(setExposedVariables, properties, {
+    text: String(properties.text ?? ''),
+    setText: async (text) => override('text', textArg(text)),
+    clear: async () => override('text', ''),
+  });
+  const clickable = useHasEvent(id, 'onClick') && !busy(properties);
+  return {
+    properties,
+    handlers: {
+      onClick: () => !busy(properties) && fireEvent('onClick'),
+      onMouseEnter: () => fireEvent('onHover'),
+      ...(clickable
+        ? { role: 'button', tabIndex: 0, onKeyDown: (e) => e.key === 'Enter' && fireEvent('onClick') }
+        : {}),
+    },
+    clickable,
+  };
+};
+
 export const ShadHeading = (props) => {
-  const { properties, setExposedVariables } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
-  useExposed(setExposedVariables, properties, {});
+  const { properties, handlers, clickable } = useTextActions(props);
   const level = HEADING[properties.level] ? properties.level : 'h2';
   const Tag = level;
   return (
     <Shell {...props} innerRef={ref}>
       <Tag
-        className={cn(HEADING[level], 'text-[color:var(--lk-fg,var(--sc-foreground))]', typeClasses(props.styles))}
+        {...handlers}
+        className={cn(
+          HEADING[level],
+          'text-[color:var(--lk-fg,var(--sc-foreground))]',
+          typeClasses(props.styles),
+          clickable && 'cursor-pointer'
+        )}
         style={{ textAlign: textAlign(props.styles) }}
       >
         {String(properties.text ?? '')}
@@ -401,18 +460,19 @@ const TONE = {
 };
 
 export const ShadText = (props) => {
-  const { properties, setExposedVariables } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
-  useExposed(setExposedVariables, properties, {});
+  const { properties, handlers, clickable } = useTextActions(props);
   return (
     <Shell {...props} innerRef={ref}>
       <p
+        {...handlers}
         className={cn(
           TONE[properties.tone] || TONE.paragraph,
           'whitespace-pre-line',
           whenSet(props.styles, 'textColor', 'text-[color:var(--lk-fg)]'),
-          typeClasses(props.styles)
+          typeClasses(props.styles),
+          clickable && 'cursor-pointer'
         )}
         style={{ textAlign: textAlign(props.styles) }}
       >
@@ -488,10 +548,19 @@ const StatSparkline = ({ data, type, id }) => {
 };
 
 export const ShadStat = (props) => {
-  const { properties, setExposedVariables } = props;
+  const { setExposedVariables } = props;
+  // The native Statistics' setters: the figure (primary) and the change (secondary), until those properties change.
+  const [properties, override] = useOverrides(props.properties);
   const ref = useRef(null);
   useAutoHeight(props, ref);
-  useExposed(setExposedVariables, properties, {});
+  useExposed(setExposedVariables, properties, {
+    primaryLabel: textArg(properties.label),
+    primaryValue: typeof properties.value === 'number' ? properties.value : textArg(properties.value),
+    secondaryLabel: textArg(properties.changeLabel),
+    secondaryValue: textArg(properties.change),
+    setPrimaryValue: async (v) => override('value', typeof v === 'number' ? v : textArg(v)),
+    setSecondaryValue: async (v) => override('change', textArg(v)),
+  });
   const trend = properties.trend || 'neutral';
   const TrendIcon = trend === 'down' ? TrendingDown : TrendingUp;
   // The change badge takes the positive or negative colour for its trend (text, on a light tint) when set.
@@ -709,9 +778,13 @@ export const ShadAvatar = (props) => {
 };
 
 export const ShadProgress = (props) => {
-  const { properties, setExposedVariables } = props;
-  useExposed(setExposedVariables, properties, {});
+  const { setExposedVariables } = props;
+  const [properties, override] = useOverrides(props.properties);
   const value = Math.max(0, Math.min(100, Number(properties.value) || 0));
+  useExposed(setExposedVariables, properties, {
+    value,
+    setValue: async (v) => override('value', Number(v) || 0),
+  });
   return (
     <Shell {...props}>
       <div className="flex flex-col gap-2">
@@ -769,22 +842,59 @@ export const ShadSkeleton = (props) => {
 const MAX_ACCORDION_ITEMS = 200;
 
 export const ShadAccordion = (props) => {
-  const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
+  const { properties, setExposedVariables, fireEvent } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
   const multiple = properties.multiple === true;
   const initial = list(properties.defaultOpen).map(String);
   const [open, setOpen] = useState(initial);
   useEffect(() => setOpen(initial), [stringify(initial)]); // eslint-disable-line react-hooks/exhaustive-deps
-  useExposed(setExposedVariables, properties, { openIndexes: open.map(Number) });
-  const change = (value) => {
-    const next = (Array.isArray(value) ? value : value ? [value] : []).map(String);
-    setOpen(next);
-    setExposedVariable('openIndexes', next.map(Number));
-    fireEvent('onChange');
-  };
   // An accordion of thousands of sections is a binding mistake, and drawing them all freezes the page.
   const items = list(properties.items).slice(0, MAX_ACCORDION_ITEMS);
+  const openRef = useRef(open);
+  openRef.current = open;
+  const shape = useRef({ multiple, count: items.length });
+  shape.current = { multiple, count: items.length };
+  // The native Accordion's events: onExpand when a section opens, onCollapse when one closes (with onChange after).
+  const apply = (next, fire = true) => {
+    const prev = openRef.current;
+    openRef.current = next;
+    setOpen(next);
+    setExposedVariables({ openIndexes: next.map(Number), isExpanded: next.length > 0 });
+    if (!fire) return;
+    if (next.some((i) => !prev.includes(i))) fireEvent('onExpand');
+    if (prev.some((i) => !next.includes(i))) fireEvent('onCollapse');
+    fireEvent('onChange');
+  };
+  const change = (value) => apply((Array.isArray(value) ? value : value ? [value] : []).map(String));
+  // expand(index) and collapse(index) open or close one section (all of them without an index), like the native
+  // Accordion's expand() and collapse(); a single-open accordion keeps one section open.
+  const indexArg = (i) => {
+    const n = Number(i);
+    return Number.isInteger(n) && n >= 0 && n < shape.current.count ? String(n) : null;
+  };
+  const noIndex = (i) => i === undefined || i === null || i === '';
+  useExposed(setExposedVariables, properties, {
+    openIndexes: open.map(Number),
+    isExpanded: open.length > 0,
+    expand: async (index) => {
+      const one = indexArg(index);
+      if (!noIndex(index) && one === null) return;
+      const all = Array.from({ length: shape.current.count }, (_, k) => String(k));
+      const next = shape.current.multiple
+        ? one === null
+          ? all
+          : [...new Set([...openRef.current, one])]
+        : [one ?? all[0]].filter(Boolean);
+      if (stringify(next) !== stringify(openRef.current)) apply(next);
+    },
+    collapse: async (index) => {
+      const one = indexArg(index);
+      if (!noIndex(index) && one === null) return;
+      const next = one === null ? [] : openRef.current.filter((k) => k !== one);
+      if (stringify(next) !== stringify(openRef.current)) apply(next);
+    },
+  });
   const rootProps = multiple
     ? { type: 'multiple', value: open, onValueChange: change }
     : { type: 'single', collapsible: true, value: open[0] ?? '', onValueChange: change };
@@ -885,8 +995,10 @@ export const useValidation = (props, value, clear) => {
 /** Text box events and actions shared by Input and Textarea: focus and blur (events and actions), and blur marks
  *  the field touched for validation. */
 export const useTextBox = (props, touch) => {
-  const { fireEvent, setExposedVariables } = props;
+  const { fireEvent, setExposedVariables, properties } = props;
   const ref = useRef(null);
+  // The native inputs expose their label.
+  useExposed(setExposedVariables, properties, { label: String(properties.label ?? '') });
   useEffect(() => {
     setExposedVariables({
       setFocus: async () => ref.current?.focus(),
@@ -943,7 +1055,7 @@ export const ShadInput = (props) => {
 };
 
 export const ShadTextarea = (props) => {
-  const { properties, id, height } = props;
+  const { properties, id, height, fireEvent } = props;
   const [value, change] = useValue(props, String(properties.defaultValue ?? ''), (set) => ({
     setText: async (t) => set(String(t ?? '')),
     clear: async () => set(''),
@@ -972,6 +1084,7 @@ export const ShadTextarea = (props) => {
           disabled={busy(properties)}
           style={{ height: Math.max(60, (Number(height) || 96) - chrome) }}
           onChange={(e) => change(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && fireEvent('onEnterPressed')}
         />
       </Field>
     </Shell>
@@ -1009,11 +1122,17 @@ export const ShadSelect = (props) => {
   // Radix mounts every item even while closed, so a 10k-option binding froze the page: the list shows the first
   // MAX_SELECT_OPTIONS (and the selected one, wherever it is); actions still reach every option.
   const shown = shownOptions(options, byKey.get(key), MAX_SELECT_OPTIONS);
+  const triggerRef = useRef(null);
+  const focus = useFocusEvents(fireEvent);
   useExposed(setExposedVariables, properties, {
     value: selectedOption.value ?? '',
     selectedOption,
-    selectOption: async (v) => setKey(v === undefined || v === null ? '' : optionKey(v)),
+    options,
+    label: String(properties.label ?? ''),
+    selectOption: async (v) => setKey(v === undefined || v === null || typeof v === 'object' ? '' : optionKey(v)),
     clear: async () => setKey(''),
+    setFocus: async () => triggerRef.current?.focus(),
+    setBlur: async () => triggerRef.current?.blur(),
   });
   const check = useValidation(props, selectedOption.value ?? '', () => {
     setKey('');
@@ -1032,16 +1151,22 @@ export const ShadSelect = (props) => {
         <Select
           value={key}
           disabled={busy(properties)}
-          onOpenChange={(open) => !open && check.touch()}
+          onOpenChange={(open) => {
+            focus.opened(open);
+            if (!open) check.touch();
+          }}
           onValueChange={(next) => {
             setKey(next);
             setExposedVariable('value', byKey.get(next)?.value ?? '');
             setExposedVariable('selectedOption', byKey.get(next) || {});
             fireEvent('onChange');
+            fireEvent('onSelect');
           }}
         >
           <SelectTrigger
+            ref={triggerRef}
             id={`shad-${id}`}
+            {...focus.handlers}
             className={cn(CONTROL, 'data-[placeholder]:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]')}
           >
             <SelectValue placeholder={String(properties.placeholder ?? '')} />
@@ -1069,13 +1194,29 @@ export const useChecked = (props) => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   const [checked, setChecked] = useState(!!properties.defaultChecked);
   useEffect(() => setChecked(!!properties.defaultChecked), [properties.defaultChecked]);
-  useExposed(setExposedVariables, properties, { value: checked });
+  const checkedRef = useRef(checked);
+  checkedRef.current = checked;
   const change = (v) => {
+    checkedRef.current = v === true;
     setChecked(v === true);
     setExposedVariable('value', v === true);
     fireEvent('onChange');
     if (props.componentType === 'ShadCheckbox') fireEvent(v === true ? 'onCheck' : 'onUnCheck');
   };
+  // The native Checkbox and Toggle switch actions: toggle(), setValue(value) and the Checkbox's setChecked(status)
+  // change it as a click does, with its events (the native setValue fires onCheck or onUnCheck but not onChange, and
+  // toggle the reverse; here each fires what a click fires). Setting the value it already has fires nothing.
+  const set = (v) => {
+    const next = truthy(v);
+    if (next !== checkedRef.current) change(next);
+  };
+  useExposed(setExposedVariables, properties, {
+    value: checked,
+    label: String(properties.label ?? ''),
+    toggle: async () => change(!checkedRef.current),
+    setValue: async (v) => set(v),
+    ...(props.componentType === 'ShadCheckbox' ? { setChecked: async (v) => set(v) } : {}),
+  });
   return [checked, change];
 };
 
@@ -1169,9 +1310,18 @@ export const ShadRadioGroup = (props) => {
   const [key, change] = useValue(
     props,
     initial,
-    (set) => ({ selectOption: async (v) => set(v === undefined || v === null ? '' : String(v)) }),
+    (set) => ({
+      selectOption: async (v) => set(v === undefined || v === null || typeof v === 'object' ? '' : String(v)),
+      // The native Radio button's deselectOption() clears the choice.
+      deselectOption: async () => set(''),
+    }),
     (k) => byKey.get(k)?.value ?? ''
   );
+  useExposed(props.setExposedVariables, properties, {
+    label: String(properties.label ?? ''),
+    selectedOption: byKey.get(key) || {},
+    options,
+  });
   const check = useValidation(props, byKey.get(key)?.value ?? '', () => change(''));
   return (
     <Shell {...props} innerRef={fit}>
@@ -1187,6 +1337,8 @@ export const ShadRadioGroup = (props) => {
           className={properties.horizontal === true ? 'flex flex-wrap gap-4' : undefined}
           onValueChange={(next) => {
             change(next);
+            // The native Radio button's event name.
+            props.fireEvent('onSelectionChange');
             check.touch();
           }}
         >
@@ -1220,7 +1372,31 @@ export const ShadSlider = (props) => {
   const isRange = Array.isArray(raw);
   const bounds = sliderBounds(properties);
   const initial = sliderValues(raw, bounds);
-  const [value, change] = useValue(props, isRange ? initial : initial[0]);
+  // The native Range slider's actions: setValue(n) for one value (a range's start), setRangeValue(start, end) for a
+  // range, reset() back to the default. Values are kept inside min and max; a non-number changes nothing.
+  const numeric = (n) =>
+    (typeof n === 'number' || (typeof n === 'string' && n.trim() !== '')) && Number.isFinite(Number(n));
+  const latest = useRef(null);
+  const [value, change] = useValue(props, isRange ? initial : initial[0], (set) => ({
+    setValue: async (n) => {
+      const { bounds: b, isRange: range, value: current } = latest.current;
+      if (!numeric(n)) return;
+      const [v] = sliderValues(Number(n), b);
+      set(range ? sliderValues([v, Math.max(v, list(current)[1] ?? v)], b) : v);
+    },
+    setRangeValue: async (a, z) => {
+      const { bounds: b, isRange: range } = latest.current;
+      if (!numeric(a) || !numeric(z)) return;
+      const pair = sliderValues([Number(a), Number(z)], b);
+      set(range ? pair : pair[0]);
+    },
+    reset: async () => {
+      const { initial: start, isRange: range } = latest.current;
+      set(range ? start : start[0]);
+    },
+  }));
+  latest.current = { bounds, isRange, initial, value };
+  useExposed(props.setExposedVariables, properties, { label: String(properties.label ?? '') });
   const [live, setLive] = useState(initial);
   useEffect(() => setLive(sliderValues(value, bounds)), [stringify(value), bounds.min, bounds.max]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
@@ -1249,40 +1425,153 @@ export const ShadDatePicker = (props) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
+  const { setExposedVariables, fireEvent, id } = props;
+  // setMinDate, setMaxDate and setDisabledDates change those properties until they change themselves.
+  const [properties, override] = useOverrides(props.properties);
   const range = properties.mode === 'range';
   // Only text formats and valid dates: dayjs throws on a non-text format, and the calendar on an invalid date.
   const format =
     typeof properties.format === 'string' && properties.format.trim()
       ? toDayjsFormat(properties.format)
       : 'DD MMM YYYY';
+  const rulesKey = stringify([
+    properties.minDate ?? null,
+    properties.maxDate ?? null,
+    properties.disabledDates ?? null,
+  ]);
+  const rules = useMemo(
+    () =>
+      dateRules({
+        minDate: properties.minDate,
+        maxDate: properties.maxDate,
+        disabledDates: properties.disabledDates,
+        format,
+      }),
+    [rulesKey, format] // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const raw = properties.defaultValue;
   const initial = range ? { from: toDate(list(raw)[0]), to: toDate(list(raw)[1]) } : toDate(raw);
   const [selected, setSelected] = useState(initial);
   useEffect(() => setSelected(initial), [stringify(raw ?? null), range]); // eslint-disable-line react-hooks/exhaustive-deps
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
   const [open, setOpen] = useState(false);
-  const values = range
-    ? { value: [ymd(selected?.from), ymd(selected?.to)], startDate: ymd(selected?.from), endDate: ymd(selected?.to) }
-    : { value: ymd(selected), startDate: '', endDate: '' };
-  useExposed(setExposedVariables, properties, { ...values, clear: async () => setSelected(range ? {} : undefined) });
-  // A range counts as filled once both ends are picked.
-  const check = useValidation(
-    props,
-    range ? (values.startDate && values.endDate ? values.value : '') : values.value,
-    () => {
-      setSelected(range ? {} : undefined);
-      setExposedVariables(
-        range ? { value: ['', ''], startDate: '', endDate: '' } : { value: '', startDate: '', endDate: '' }
-      );
+  const triggerRef = useRef(null);
+  const focus = useFocusEvents(fireEvent);
+  const shown = (d) => (d ? dayjs(d).format(format) : '');
+  const unix = (d) => (d ? dayjs(d).valueOf() : null);
+  // What the widget exposes for a selection: the pack's names (value, startDate, endDate) and the native date
+  // pickers' (selectedDate, unixTimestamp, displayValue; a range's startDateInUnix, endDateInUnix, selectedDateRange).
+  const exposedOf = (sel) =>
+    range
+      ? {
+          value: [ymd(sel?.from), ymd(sel?.to)],
+          startDate: ymd(sel?.from),
+          endDate: ymd(sel?.to),
+          startDateInUnix: unix(sel?.from),
+          endDateInUnix: unix(sel?.to),
+          selectedDateRange: sel?.from ? `${shown(sel.from)}${sel.to ? ` – ${shown(sel.to)}` : ''}` : '',
+        }
+      : {
+          value: ymd(sel),
+          startDate: '',
+          endDate: '',
+          selectedDate: ymd(sel),
+          unixTimestamp: unix(sel),
+          displayValue: shown(sel),
+        };
+  const commit = (next, fire = false) => {
+    selectedRef.current = next;
+    setSelected(next);
+    setExposedVariables(exposedOf(next));
+    if (fire) {
+      fireEvent('onChange');
+      fireEvent('onSelect');
     }
+  };
+  // A date from an action's argument, read with the format given (the native setters take one), else the display
+  // format, else ISO; undefined when it is not a date.
+  const latest = useRef(null);
+  latest.current = { range, format };
+  const parse = (v, fmt) => {
+    const formats = typeof fmt === 'string' && fmt.trim() ? toDayjsFormat(fmt) : latest.current.format;
+    const d = parseDateTime(v, formats);
+    return d ? d.startOf('day').toDate() : undefined;
+  };
+  const blank = (v) => v === undefined || v === null || v === '';
+  const setSingle = (v, fmt) => {
+    if (latest.current.range) return;
+    const d = parse(v, fmt);
+    if (d || blank(v)) commit(d);
+  };
+  const setEnd = (end, v, fmt) => {
+    if (!latest.current.range) return;
+    const d = parse(v, fmt);
+    if (d || blank(v)) commit({ ...(selectedRef.current || {}), [end]: d });
+  };
+  useExposed(setExposedVariables, properties, {
+    ...exposedOf(selected),
+    label: String(properties.label ?? ''),
+    dateFormat: format,
+    minDate: rules.min ? rules.min.format('YYYY-MM-DD') : '',
+    maxDate: rules.max ? rules.max.format('YYYY-MM-DD') : '',
+    clear: async () => commit(latest.current.range ? {} : undefined),
+    clearValue: async () => commit(latest.current.range ? {} : undefined),
+    setValue: async (v, fmt) => setSingle(v, fmt),
+    setDate: async (v, fmt) => setSingle(v, fmt),
+    setValueInTimestamp: async (ts) => {
+      const n = Number(ts);
+      if (!latest.current.range && ts !== '' && ts !== null && Number.isFinite(n)) commit(toDate(new Date(n)));
+    },
+    setStartDate: async (v, fmt) => setEnd('from', v, fmt),
+    setEndDate: async (v, fmt) => setEnd('to', v, fmt),
+    setDateRange: async (a, b, fmt) => {
+      if (!latest.current.range) return;
+      const from = parse(a, fmt);
+      const to = parse(b, fmt);
+      if ((from || blank(a)) && (to || blank(b)))
+        commit(from && to && to < from ? { from: to, to: from } : { from, to });
+    },
+    clearStartDate: async () => latest.current.range && commit({ ...(selectedRef.current || {}), from: undefined }),
+    clearEndDate: async () => latest.current.range && commit({ ...(selectedRef.current || {}), to: undefined }),
+    clearDateRange: async () => latest.current.range && commit({}),
+    setMinDate: async (v) => override('minDate', textArg(v)),
+    setMaxDate: async (v) => override('maxDate', textArg(v)),
+    setDisabledDates: async (v) => override('disabledDates', Array.isArray(v) ? v : blank(v) ? [] : [v]),
+    clearDisabledDates: async () => override('disabledDates', []),
+    setFocus: async () => triggerRef.current?.focus(),
+    setBlur: async () => triggerRef.current?.blur(),
+  });
+  // A picked day outside minDate/maxDate or on a disabled date fails validation; a range counts as filled once both
+  // ends are picked.
+  const values = exposedOf(selected);
+  const problem = range
+    ? dateProblem(selected?.from ? dayjs(selected.from) : null, rules) ||
+      dateProblem(selected?.to ? dayjs(selected.to) : null, rules)
+    : dateProblem(selected ? dayjs(selected) : null, rules);
+  const check = useValidation(
+    {
+      ...props,
+      validate: (v) =>
+        problem
+          ? { isValid: false, validationError: problem }
+          : typeof props.validate === 'function'
+          ? props.validate(v)
+          : { isValid: true },
+    },
+    range ? (values.startDate && values.endDate ? values.value : '') : values.value,
+    () => commit(range ? {} : undefined)
   );
+  const disabledMatchers = [
+    ...(rules.min ? [{ before: rules.min.toDate() }] : []),
+    ...(rules.max ? [{ after: rules.max.toDate() }] : []),
+    ...rules.disabled.map((d) => dayjs(d).toDate()),
+  ];
   const text = range
     ? selected?.from
-      ? `${dayjs(selected.from).format(format)}${selected.to ? ` – ${dayjs(selected.to).format(format)}` : ''}`
+      ? `${shown(selected.from)}${selected.to ? ` – ${shown(selected.to)}` : ''}`
       : ''
-    : selected
-    ? dayjs(selected).format(format)
-    : '';
+    : shown(selected);
   return (
     <Shell {...props} innerRef={fit}>
       <Field
@@ -1296,14 +1585,17 @@ export const ShadDatePicker = (props) => {
           open={open}
           onOpenChange={(next) => {
             setOpen(next);
+            focus.opened(next);
             if (!next) check.touch();
           }}
         >
           <PopoverTrigger asChild>
             <Button
+              ref={triggerRef}
               id={`shad-${id}`}
               variant="outline"
               disabled={busy(properties)}
+              {...focus.handlers}
               className={cn(
                 'w-full justify-start text-left font-normal',
                 CONTROL,
@@ -1319,19 +1611,13 @@ export const ShadDatePicker = (props) => {
               mode={range ? 'range' : 'single'}
               numberOfMonths={range ? 2 : 1}
               selected={selected}
-              defaultMonth={range ? selected?.from : selected}
+              defaultMonth={(range ? selected?.from : selected) ?? (rules.min ? rules.min.toDate() : undefined)}
+              startMonth={rules.min ? rules.min.toDate() : undefined}
+              endMonth={rules.max ? rules.max.toDate() : undefined}
+              disabled={disabledMatchers}
               onSelect={(next) => {
-                setSelected(next);
-                if (range) {
-                  setExposedVariable('value', [ymd(next?.from), ymd(next?.to)]);
-                  setExposedVariable('startDate', ymd(next?.from));
-                  setExposedVariable('endDate', ymd(next?.to));
-                  if (next?.from && next?.to) setOpen(false);
-                } else {
-                  setExposedVariable('value', ymd(next));
-                  setOpen(false);
-                }
-                fireEvent('onChange');
+                commit(next, true);
+                if (!range || (next?.from && next?.to)) setOpen(false);
               }}
             />
           </PopoverContent>
@@ -1350,7 +1636,23 @@ export const ShadToggleGroup = (props) => {
   const byKey = new Map(options.map((o) => [String(o.value), o]));
   const initial =
     properties.defaultValue === '' || properties.defaultValue === undefined ? '' : String(properties.defaultValue);
-  const [key, change] = useValue(props, initial, undefined, (k) => byKey.get(k)?.value ?? '');
+  // The native Button group's actions: setSelected(value) picks an option (a value no option has changes nothing),
+  // clear() leaves none picked. `selected` is the native name of the picked value.
+  const keysRef = useRef(byKey);
+  keysRef.current = byKey;
+  const [key, change] = useValue(
+    props,
+    initial,
+    (set) => ({
+      setSelected: async (v) => {
+        const k = v === undefined || v === null || typeof v === 'object' ? null : String(v);
+        if (k !== null && keysRef.current.has(k)) set(k);
+      },
+      clear: async () => set(''),
+    }),
+    (k) => byKey.get(k)?.value ?? ''
+  );
+  useExposed(props.setExposedVariables, properties, { selected: byKey.get(key)?.value ?? '' });
   return (
     <Shell {...props} innerRef={fit}>
       <ToggleGroup

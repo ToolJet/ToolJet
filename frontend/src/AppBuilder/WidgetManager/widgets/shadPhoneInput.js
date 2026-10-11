@@ -387,6 +387,7 @@ export const shadPhoneInputConfig = {
     countryCode: '+1',
     formattedValue: '',
     isValidNumber: false,
+    label: '',
   },
   actions: [
     {
@@ -398,6 +399,11 @@ export const shadPhoneInputConfig = {
           displayName: 'Number (E.164 or national)',
           defaultValue: '',
         },
+        {
+          handle: 'country',
+          displayName: 'Country (optional ISO code)',
+          defaultValue: '',
+        },
       ],
     },
     {
@@ -406,6 +412,17 @@ export const shadPhoneInputConfig = {
       params: [
         {
           handle: 'country',
+          displayName: 'Country (ISO code or +calling code)',
+          defaultValue: 'US',
+        },
+      ],
+    },
+    {
+      handle: 'setCountryCode',
+      displayName: 'Set country code',
+      params: [
+        {
+          handle: 'countryCode',
           displayName: 'Country (ISO code or +calling code)',
           defaultValue: 'US',
         },

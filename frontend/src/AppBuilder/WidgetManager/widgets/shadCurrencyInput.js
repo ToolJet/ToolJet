@@ -432,6 +432,7 @@ export const shadCurrencyInputConfig = {
     value: 1250,
     formattedValue: '$1,250.00',
     currency: 'USD',
+    label: '',
   },
   actions: [
     {
@@ -441,6 +442,11 @@ export const shadCurrencyInputConfig = {
         {
           handle: 'value',
           displayName: 'Value',
+          defaultValue: '',
+        },
+        {
+          handle: 'currency',
+          displayName: 'Currency (optional ISO code)',
           defaultValue: '',
         },
       ],

@@ -169,7 +169,14 @@ export const shadTextConfig = {
       showLabel: false,
     },
   },
-  events: {},
+  events: {
+    onClick: {
+      displayName: 'On click',
+    },
+    onHover: {
+      displayName: 'On hover',
+    },
+  },
   styles: {
     boxShadow: {
       type: 'boxShadow',
@@ -344,8 +351,24 @@ export const shadTextConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    text: 'Text',
   },
   actions: [
+    {
+      handle: 'setText',
+      displayName: 'Set text',
+      params: [
+        {
+          handle: 'text',
+          displayName: 'Text',
+          defaultValue: 'New text',
+        },
+      ],
+    },
+    {
+      handle: 'clear',
+      displayName: 'Clear',
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

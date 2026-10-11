@@ -124,7 +124,11 @@ export const shadBreadcrumbConfig = {
       showLabel: false,
     },
   },
-  events: {},
+  events: {
+    onItemClick: {
+      displayName: 'On item click',
+    },
+  },
   styles: {
     boxShadow: {
       type: 'boxShadow',
@@ -177,6 +181,7 @@ export const shadBreadcrumbConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    lastClickedItem: {},
   },
   actions: [
     {

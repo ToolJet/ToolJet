@@ -166,6 +166,9 @@ export const shadTextareaConfig = {
     onChange: {
       displayName: 'On change',
     },
+    onEnterPressed: {
+      displayName: 'On enter pressed (without Shift)',
+    },
   },
   styles: {
     boxShadow: {
@@ -284,6 +287,7 @@ export const shadTextareaConfig = {
     isValid: true,
     isMandatory: false,
     value: '',
+    label: '',
   },
   actions: [
     {
@@ -308,6 +312,30 @@ export const shadTextareaConfig = {
     {
       handle: 'setBlur',
       displayName: 'Set blur',
+    },
+    {
+      handle: 'disable',
+      displayName: 'Disable',
+      params: [
+        {
+          handle: 'disable',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'visibility',
+      displayName: 'Visibility',
+      params: [
+        {
+          handle: 'visible',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
     },
     {
       handle: 'setVisibility',

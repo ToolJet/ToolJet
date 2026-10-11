@@ -354,6 +354,7 @@ export const shadPasswordInputConfig = {
     isMandatory: false,
     value: '',
     strength: '',
+    label: '',
   },
   actions: [
     {

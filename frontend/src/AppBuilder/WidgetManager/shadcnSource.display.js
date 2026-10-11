@@ -14,6 +14,7 @@ import {
   shadConfig,
   sizeStyle,
   toggle,
+  action,
 } from './shadcnPackHelpers.js';
 
 const ARRAY_OR_STRING = { type: 'union', schemas: [ARRAY, STRING] };
@@ -91,7 +92,8 @@ export const shadImageConfig = shadConfig({
     captionColor: colorStyle('Caption color'),
   },
   events: { onClick: { displayName: 'On click' } },
-  exposedVariables: { hasError: false },
+  exposedVariables: { hasError: false, imageURL: '', alternativeText: '' },
+  actions: [action('setImageURL', 'Set image URL', [['url', 'URL', '']]), action('clearImage', 'Clear image')],
 });
 
 // ---- Icon ------------------------------------------------------------------------------------------------------------
@@ -129,7 +131,8 @@ export const shadIconConfig = shadConfig({
     alignment: alignment('Alignment'),
   },
   styleDefaults: { alignment: { value: 'left' } },
-  events: { onClick: { displayName: 'On click' } },
+  events: { onClick: { displayName: 'On click' }, onHover: { displayName: 'On hover' } },
+  actions: [action('click', 'Click')],
 });
 
 // ---- Link ------------------------------------------------------------------------------------------------------------
@@ -169,6 +172,12 @@ export const shadLinkConfig = shadConfig({
   },
   styleDefaults: { alignment: { value: 'left' } },
   events: { onClick: { displayName: 'On click' }, onHover: { displayName: 'On hover' } },
+  exposedVariables: { linkTarget: '', linkText: '' },
+  actions: [
+    action('click', 'Click'),
+    action('setLinkTarget', 'Set link target', [['linkTarget', 'URL', '']]),
+    action('setLinkText', 'Set link text', [['linkText', 'Text', '']]),
+  ],
 });
 
 // ---- Tags ------------------------------------------------------------------------------------------------------------
@@ -241,6 +250,8 @@ export const shadCircularProgressConfig = shadConfig({
     alignment: alignment('Alignment'),
   },
   styleDefaults: { alignment: { value: 'center' } },
+  exposedVariables: { value: 0 },
+  actions: [action('setValue', 'Set value', [['value', 'Percent', '{{50}}']])],
 });
 
 // ---- Spinner ---------------------------------------------------------------------------------------------------------
@@ -323,6 +334,8 @@ export const shadKeyValueConfig = shadConfig({
     dividerColor: colorStyle('Divider color'),
     linkColor: colorStyle('Link color'),
   },
+  events: { onFieldClick: { displayName: 'On field click' } },
+  exposedVariables: { data: [], lastClickedField: {} },
 });
 
 // ---- Timeline --------------------------------------------------------------------------------------------------------
@@ -419,6 +432,8 @@ export const shadStepsConfig = shadConfig({
       displayName: 'Set step disable',
       params: [param('id', 'Step id'), param('disabled', 'Disabled', '{{true}}', { type: 'toggle' })],
     },
+    // The native Steps' name for disabling the whole widget.
+    action('setDisabled', 'Set disabled', [['disable', 'Disabled', '{{true}}', 'toggle']]),
   ],
 });
 

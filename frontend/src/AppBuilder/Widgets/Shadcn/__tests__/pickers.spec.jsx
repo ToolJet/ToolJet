@@ -233,7 +233,8 @@ describe('ShadTagsInput', () => {
     fireEvent.keyDown(input(), { key: 'Backspace' });
     expect(exposed.tags).toEqual(['react', 'typescript', 'vue', 'go']);
     expect(exposed.lastRemovedTag).toBe('rust');
-    expect(events.slice(-2)).toEqual(['onTagRemoved', 'onChange']);
+    // onTagDeleted is the native Tags input's name for the removal.
+    expect(events.slice(-3)).toEqual(['onTagRemoved', 'onTagDeleted', 'onChange']);
     fireEvent.click(screen.getByLabelText('Remove react'));
     expect(exposed.tags[0]).toBe('typescript');
   });
@@ -347,11 +348,11 @@ describe('ShadFileUpload', () => {
     expect(String(exposedFile.base64Data)).toBe(btoa('hello world'));
     expect(String(exposedFile.dataURL)).toMatch(/^data:text\/plain;base64,/);
     expect(exposed.fileSize).toBe(11);
-    expect(events).toEqual(['onFileSelected']);
+    expect(events).toEqual(['onFileSelected', 'onFileLoaded']);
     expect(screen.getByText('notes.txt')).toBeTruthy();
     fireEvent.click(screen.getByLabelText('Remove notes.txt'));
     expect(exposed.files).toEqual([]);
-    expect(events).toEqual(['onFileSelected', 'onFileDeselected']);
+    expect(events).toEqual(['onFileSelected', 'onFileLoaded', 'onFileDeselected']);
   });
 
   it('shows an error line for refused files and parses CSV when asked', async () => {

@@ -403,11 +403,23 @@ export const shadNumberInputConfig = {
     isValid: true,
     isMandatory: false,
     value: 1,
+    label: '',
   },
   actions: [
     {
       handle: 'setValue',
       displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setText',
+      displayName: 'Set text',
       params: [
         {
           handle: 'value',

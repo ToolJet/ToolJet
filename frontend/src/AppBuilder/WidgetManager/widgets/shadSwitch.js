@@ -187,8 +187,25 @@ export const shadSwitchConfig = {
     isLoading: false,
     isDisabled: false,
     value: false,
+    label: 'Enabled',
   },
   actions: [
+    {
+      handle: 'toggle',
+      displayName: 'Toggle',
+    },
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'On',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

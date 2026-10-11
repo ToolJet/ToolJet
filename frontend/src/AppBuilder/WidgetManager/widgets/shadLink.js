@@ -293,8 +293,36 @@ export const shadLinkConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
+    linkTarget: '',
+    linkText: '',
   },
   actions: [
+    {
+      handle: 'click',
+      displayName: 'Click',
+    },
+    {
+      handle: 'setLinkTarget',
+      displayName: 'Set link target',
+      params: [
+        {
+          handle: 'linkTarget',
+          displayName: 'URL',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setLinkText',
+      displayName: 'Set link text',
+      params: [
+        {
+          handle: 'linkText',
+          displayName: 'Text',
+          defaultValue: '',
+        },
+      ],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

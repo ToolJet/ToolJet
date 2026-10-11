@@ -363,8 +363,25 @@ export const shadImageConfig = {
     isLoading: false,
     isDisabled: false,
     hasError: false,
+    imageURL: '',
+    alternativeText: '',
   },
   actions: [
+    {
+      handle: 'setImageURL',
+      displayName: 'Set image URL',
+      params: [
+        {
+          handle: 'url',
+          displayName: 'URL',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'clearImage',
+      displayName: 'Clear image',
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

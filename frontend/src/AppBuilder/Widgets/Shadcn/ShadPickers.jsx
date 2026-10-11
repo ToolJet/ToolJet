@@ -27,6 +27,7 @@ import { list, toOptions, useAutoHeight, useExposed } from '../packHooks';
 import { Badge, Button, Input, Popover, PopoverContent, PopoverTrigger, cn, getPortalRoot } from './ui';
 import { lookVars } from './shadcnLook';
 import * as M from './pickersModel';
+import { useFocusEvents } from './parity';
 import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
@@ -265,6 +266,8 @@ export const ShadCombobox = (props) => {
   const [key, setKey] = useState(initial);
   useEffect(() => setKey(initial), [initial]);
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef(null);
+  const focus = useFocusEvents(fireEvent);
   const [search, onSearch] = useSearch(props);
   const selected = key === null ? undefined : options.find((o) => M.keyOf(o.value) === key);
   const value = selected ? selected.value : '';
@@ -273,8 +276,11 @@ export const ShadCombobox = (props) => {
     selectedOption: selected || {},
     searchText: search,
     options,
+    label: String(properties.label ?? ''),
     selectOption: async (v) => setKey(v === undefined || v === null ? null : M.keyOf(v)),
     clear: async () => setKey(null),
+    setFocus: async () => triggerRef.current?.focus(),
+    setBlur: async () => triggerRef.current?.blur(),
   });
   const check = useValidation(props, M.validationInput(!!selected, value), () => {
     setKey(null);
@@ -285,6 +291,7 @@ export const ShadCombobox = (props) => {
   const openChange = (next) => {
     if (next && disabled) return;
     setOpen(next);
+    focus.opened(next);
     if (!next) {
       check.touch();
       if (search) onSearch('');
@@ -317,6 +324,7 @@ export const ShadCombobox = (props) => {
           <div className="relative">
             <PopoverTrigger asChild>
               <Button
+                ref={triggerRef}
                 id={`shad-${id}`}
                 type="button"
                 variant="outline"
@@ -324,6 +332,7 @@ export const ShadCombobox = (props) => {
                 aria-expanded={open}
                 aria-invalid={!!check.error || undefined}
                 disabled={disabled}
+                {...focus.handlers}
                 className={cn('w-full justify-between gap-2 px-3 font-normal', CONTROL)}
               >
                 <span className={cn('flex min-w-0 items-center gap-2', !selected && PLACEHOLDER)}>
@@ -443,9 +452,12 @@ export const ShadMultiselect = (props) => {
     selectedOptions,
     searchText: search,
     options,
+    label: String(properties.label ?? ''),
     selectOptions: async (v) => setKeys((k) => M.addKeys(k, v, latest.current.options, latest.current.limit)),
     deselectOptions: async (v) => setKeys((k) => M.removeKeys(k, v)),
     clear: async () => setKeys([]),
+    setFocus: async () => menu.anchorRef.current?.focus(),
+    setBlur: async () => menu.anchorRef.current?.blur(),
   });
   const publish = (next) => {
     const picked = M.selectedOf(options, next);
@@ -457,10 +469,15 @@ export const ShadMultiselect = (props) => {
   });
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
+  const focus = useFocusEvents(fireEvent);
   const menu = useAnchoredMenu(disabled, () => {
     check.touch();
     if (search) onSearch('');
   });
+  const menuChange = (next) => {
+    menu.change(next);
+    if (!(next && disabled)) focus.opened(next);
+  };
   const commit = (next) => {
     setKeys(next);
     publish(next);
@@ -499,10 +516,12 @@ export const ShadMultiselect = (props) => {
         error={check.error}
         required={check.required}
       >
-        <PopoverPrimitive.Root open={menu.open} onOpenChange={menu.change}>
+        <PopoverPrimitive.Root open={menu.open} onOpenChange={menuChange}>
           <PopoverPrimitive.Anchor asChild>
             <div
               {...menu.anchorProps}
+              {...focus.handlers}
+              onClick={() => menuChange(!menu.open)}
               id={`shad-${id}`}
               role="combobox"
               aria-invalid={!!check.error || undefined}
@@ -510,7 +529,7 @@ export const ShadMultiselect = (props) => {
                 if (disabled) return;
                 if (['Enter', ' ', 'ArrowDown'].includes(e.key)) {
                   e.preventDefault();
-                  menu.change(true);
+                  menuChange(true);
                 } else if (e.key === 'Backspace' && selectedOptions.length) {
                   toggle(selectedOptions[selectedOptions.length - 1]);
                 }
@@ -636,18 +655,35 @@ export const ShadTagsInput = (props) => {
   const [active, setActive] = useState(-1);
   const rulesRef = useRef(rules);
   rulesRef.current = rules;
+  const suggestions = toOptions(properties.suggestions).map((o) => ({ label: o.label, tag: String(o.value) }));
+  // The native Tags input's names: values and selectedTags (the tags), newTagsAdded (those not among the suggestions).
+  const known = new Set(suggestions.map((sg) => (rules.caseSensitive ? sg.tag : sg.tag.toLowerCase())));
+  const tagNames = (next) => ({
+    tags: next,
+    value: next,
+    values: next,
+    selectedTags: next,
+    newTagsAdded: next.filter((t) => !known.has(rules.caseSensitive ? t : String(t).toLowerCase())),
+  });
   useExposed(setExposedVariables, properties, {
-    tags,
-    value: tags,
+    ...tagNames(tags),
+    label: String(properties.label ?? ''),
     setTags: async (t) => setTags(M.addTags([], M.toTags(t), rulesRef.current).tags),
+    // selectTags adds tags (within the rules), deselectTags removes them.
+    selectTags: async (t) => setTags((cur) => M.addTags(cur, M.toTags(t), rulesRef.current).tags),
+    deselectTags: async (t) => {
+      const gone = M.toTags(t);
+      setTags((cur) => cur.filter((tag) => !gone.some((g) => M.sameTag(g, tag, rulesRef.current.caseSensitive))));
+    },
     clear: async () => setTags([]),
+    setFocus: async () => inputRef.current?.focus(),
+    setBlur: async () => inputRef.current?.blur(),
   });
   const check = useValidation(props, M.validationInput(tags.length > 0, tags), () => {
     setTags([]);
-    setExposedVariables({ tags: [], value: [] });
+    setExposedVariables(tagNames([]));
   });
   const disabled = busy(properties);
-  const suggestions = toOptions(properties.suggestions).map((o) => ({ label: o.label, tag: String(o.value) }));
   const query = text.trim().toLowerCase();
   const visible = suggestions
     .filter(
@@ -661,11 +697,12 @@ export const ShadTagsInput = (props) => {
   const commit = (next, event, tag) => {
     setTags(next);
     setExposedVariables({
-      tags: next,
-      value: next,
+      ...tagNames(next),
       ...(event === 'onTagAdded' ? { lastAddedTag: tag } : { lastRemovedTag: tag }),
     });
     fireEvent(event);
+    // The native Tags input's name for a removal.
+    if (event === 'onTagRemoved') fireEvent('onTagDeleted');
     fireEvent('onChange');
   };
   /** Adds typed or picked tags; true when at least one was added. */
@@ -767,12 +804,14 @@ export const ShadTagsInput = (props) => {
                 onFocus={() => {
                   setFocused(true);
                   setDismissed(false);
+                  setTimeout(() => fireEvent('onFocus'), 0);
                 }}
                 onBlur={() => {
                   setFocused(false);
                   setActive(-1);
                   check.touch();
                   if (properties.addOnBlur === true && text.trim() && add([text])) setText('');
+                  fireEvent('onBlur');
                 }}
                 className={cn(
                   'h-7 min-w-[6rem] flex-1 border-0 bg-transparent px-1 py-0 text-sm text-[color:var(--lk-fg,var(--sc-foreground))] shadow-none outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed',
@@ -896,9 +935,23 @@ export const ShadColorPicker = (props) => {
   const [draft, setDraft] = useState(initial);
   const alphaRef = useRef(alpha);
   alphaRef.current = alpha;
+  const triggerRef = useRef(null);
+  const focus = useFocusEvents(fireEvent);
+  // The native Color picker's names beside the pack's: selectedColorHex, selectedColorRGB, selectedColorRGBA.
+  const nativeForms = (hex) => {
+    const forms = M.colorForms(hex);
+    return { selectedColorHex: hex, selectedColorRGB: forms.rgb, selectedColorRGBA: forms.rgba };
+  };
   useExposed(setExposedVariables, properties, {
     value,
     ...M.colorForms(value),
+    ...nativeForms(value),
+    colorFormat: 'hex',
+    allowOpacity: alpha,
+    isValid: true,
+    label: String(properties.label ?? ''),
+    setFocus: async () => triggerRef.current?.focus(),
+    setBlur: async () => triggerRef.current?.blur(),
     setColor: async (c) => {
       if (c === '' || c === null || c === undefined) return setValue('');
       const hex = M.normalizeHex(c, alphaRef.current);
@@ -915,7 +968,7 @@ export const ShadColorPicker = (props) => {
   const commit = (hex) => {
     if (!hex || hex === value) return;
     setValue(hex);
-    setExposedVariables({ value: hex, ...M.colorForms(hex) });
+    setExposedVariables({ value: hex, ...M.colorForms(hex), ...nativeForms(hex) });
     fireEvent('onChange');
   };
   const pickHex = (hex) => {
@@ -937,6 +990,7 @@ export const ShadColorPicker = (props) => {
       setDraft(value);
     }
     setOpen(next);
+    focus.opened(next);
   };
   const commitLive = () => commit(hexOf(hsvaRef.current));
   const area = useDrag(({ x, y }) => setHsva({ ...hsvaRef.current, s: x, v: 1 - y }), commitLive);
@@ -977,10 +1031,12 @@ export const ShadColorPicker = (props) => {
         <Popover open={open} onOpenChange={openChange}>
           <PopoverTrigger asChild>
             <Button
+              ref={triggerRef}
               id={`shad-${id}`}
               type="button"
               variant="outline"
               disabled={disabled}
+              {...focus.handlers}
               aria-label={swatchOnly ? `Color ${value || 'not set'}` : undefined}
               className={cn(
                 'font-normal',
@@ -1144,11 +1200,14 @@ export const ShadRating = (props) => {
   const max = M.clampMax(properties.max);
   const half = properties.allowHalf === true;
   const limits = useRef({ max, half });
-  limits.current = { max, half };
+  limits.current = { max, half, initial: M.normalizeRating(properties.defaultValue, max, half) };
   const [stored, change] = useValue(props, M.normalizeRating(properties.defaultValue, max, half), (set) => ({
     setValue: async (v) => set(M.normalizeRating(v, limits.current.max, limits.current.half)),
     clear: async () => set(0),
+    // The native Star rating's resetValue(): back to the default.
+    resetValue: async () => set(limits.current.initial),
   }));
+  useExposed(props.setExposedVariables, properties, { label: String(properties.label ?? '') });
   const value = Math.min(Number(stored) || 0, max);
   const check = useValidation(props, M.validationInput(value > 0, value), () => change(0));
   const [hover, setHover] = useState(null);
@@ -1349,10 +1408,28 @@ export const ShadFileUpload = (props) => {
   const publish = (next) => {
     filesRef.current = next;
     setFiles(next);
-    setExposedVariables({
-      files: next.map(exposedFile),
-      fileSize: next.reduce((sum, f) => sum + (f.size || 0), 0),
+    const exposed = next.map(exposedFile);
+    // `file` is the native File picker's name for the list.
+    setExposedVariables({ files: exposed, file: exposed, fileSize: next.reduce((sum, f) => sum + (f.size || 0), 0) });
+  };
+  // The native File picker's setFileName(index, name) or setFileName([{ index, newFileName }]): renames files and
+  // keeps each one's extension.
+  const rename = (indexOrUpdates, single) => {
+    const updates = Array.isArray(indexOrUpdates)
+      ? indexOrUpdates.slice(0, 1000).filter((u) => u && typeof u === 'object')
+      : [{ index: indexOrUpdates, newFileName: single }];
+    const names = new Map();
+    for (const u of updates) {
+      const name = typeof u.newFileName === 'string' ? u.newFileName.trim() : '';
+      if (Number.isInteger(u.index) && name) names.set(u.index, name);
+    }
+    if (!names.size) return;
+    const next = filesRef.current.map((f, i) => {
+      if (!names.has(i)) return f;
+      const dot = f.name.lastIndexOf('.');
+      return { ...f, name: dot > 0 ? `${names.get(i)}${f.name.slice(dot)}` : names.get(i) };
     });
+    publish(next);
   };
   const clearFiles = (withEvent = true) => {
     const old = filesRef.current;
@@ -1363,14 +1440,18 @@ export const ShadFileUpload = (props) => {
   };
   const clearRef = useRef(clearFiles);
   clearRef.current = clearFiles;
+  const renameRef = useRef(rename);
+  renameRef.current = rename;
   useExposed(setExposedVariables, properties, {
     isParsing: parsing,
+    label: String(properties.label ?? ''),
     clearFiles: async () => clearRef.current(),
     clear: async () => clearRef.current(),
+    setFileName: async (indexOrUpdates, name) => renameRef.current(indexOrUpdates, name),
   });
   useEffect(() => {
     mounted.current = true;
-    setExposedVariables({ files: [], fileSize: 0 });
+    setExposedVariables({ files: [], file: [], fileSize: 0 });
     return () => {
       mounted.current = false;
       filesRef.current.forEach((f) => releaseFileHandle(f.handle));
@@ -1413,6 +1494,8 @@ export const ShadFileUpload = (props) => {
     if (!multiple) filesRef.current.forEach((f) => releaseFileHandle(f.handle));
     publish(multiple ? [...filesRef.current, ...read].slice(0, maxFiles) : read.slice(0, 1));
     fireEvent('onFileSelected');
+    // The native File picker's event once the files are read (and parsed, with Parse content on).
+    fireEvent('onFileLoaded');
   };
   const remove = (index) => {
     const file = filesRef.current[index];

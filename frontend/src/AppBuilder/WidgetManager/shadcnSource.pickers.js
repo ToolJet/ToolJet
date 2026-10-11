@@ -13,6 +13,9 @@ import {
   shadConfig,
   sizeStyle,
   toggle,
+  action,
+  FOCUS_ACTIONS,
+  FOCUS_EVENTS,
 } from './shadcnPackHelpers.js';
 
 // Form controls carry shadcn's form layout: an optional label above and help text (or the validation error) below.
@@ -49,6 +52,7 @@ const SEARCH_EVENTS = {
   onSelect: { displayName: 'On select' },
   onChange: { displayName: 'On change' },
   onSearchTextChanged: { displayName: 'On search text changed' },
+  ...FOCUS_EVENTS,
 };
 const optionsProperties = {
   options: code('Options', ARRAY, [], { placeholder: OPTIONS_HINT }),
@@ -98,7 +102,15 @@ export const shadComboboxConfig = shadConfig({
   styles: { ...fieldStyles, ...menuStyles },
   validation: choiceValidation,
   events: SEARCH_EVENTS,
-  exposedVariables: { isValid: true, isMandatory: false, value: '', selectedOption: {}, searchText: '', options: [] },
+  exposedVariables: {
+    isValid: true,
+    isMandatory: false,
+    value: '',
+    selectedOption: {},
+    searchText: '',
+    options: [],
+    label: '',
+  },
   actions: [
     {
       handle: 'selectOption',
@@ -106,6 +118,7 @@ export const shadComboboxConfig = shadConfig({
       params: [{ handle: 'value', displayName: 'Value', defaultValue: '' }],
     },
     { handle: 'clear', displayName: 'Clear' },
+    ...FOCUS_ACTIONS,
   ],
 });
 
@@ -150,6 +163,7 @@ export const shadMultiselectConfig = shadConfig({
     selectedOptions: [],
     searchText: '',
     options: [],
+    label: '',
   },
   actions: [
     {
@@ -163,6 +177,7 @@ export const shadMultiselectConfig = shadConfig({
       params: [{ handle: 'values', displayName: 'Values', defaultValue: '{{[]}}' }],
     },
     { handle: 'clear', displayName: 'Clear' },
+    ...FOCUS_ACTIONS,
   ],
 });
 
@@ -209,14 +224,21 @@ export const shadTagsInputConfig = shadConfig({
     onChange: { displayName: 'On change' },
     onTagAdded: { displayName: 'On tag added' },
     onTagRemoved: { displayName: 'On tag removed' },
+    // The native Tags input's name for a removal.
+    onTagDeleted: { displayName: 'On tag deleted' },
+    ...FOCUS_EVENTS,
   },
   exposedVariables: {
     isValid: true,
     isMandatory: false,
     tags: [],
     value: [],
+    values: [],
+    selectedTags: [],
+    newTagsAdded: [],
     lastAddedTag: '',
     lastRemovedTag: '',
+    label: '',
   },
   actions: [
     {
@@ -224,7 +246,10 @@ export const shadTagsInputConfig = shadConfig({
       displayName: 'Set tags',
       params: [{ handle: 'tags', displayName: 'Tags', defaultValue: '{{[]}}' }],
     },
+    action('selectTags', 'Select tags (add)', [['tags', 'Tags', '{{[]}}']]),
+    action('deselectTags', 'Deselect tags (remove)', [['tags', 'Tags', '{{[]}}']]),
     { handle: 'clear', displayName: 'Clear' },
+    ...FOCUS_ACTIONS,
   ],
 });
 
@@ -273,14 +298,26 @@ export const shadColorPickerConfig = shadConfig({
     borderRadius: fieldStyles.borderRadius,
     menuBackgroundColor: colorStyle('Popover background'),
   },
-  events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { value: '', rgb: '', rgba: '' },
+  events: { onChange: { displayName: 'On change' }, ...FOCUS_EVENTS },
+  exposedVariables: {
+    value: '',
+    rgb: '',
+    rgba: '',
+    selectedColorHex: '',
+    selectedColorRGB: '',
+    selectedColorRGBA: '',
+    colorFormat: 'hex',
+    allowOpacity: false,
+    isValid: true,
+    label: '',
+  },
   actions: [
     {
       handle: 'setColor',
       displayName: 'Set color',
       params: [{ handle: 'color', displayName: 'Color', defaultValue: '#6366f1' }],
     },
+    ...FOCUS_ACTIONS,
   ],
 });
 
@@ -332,7 +369,7 @@ export const shadRatingConfig = shadConfig({
   },
   validation: choiceValidation,
   events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { isValid: true, isMandatory: false, value: 0 },
+  exposedVariables: { isValid: true, isMandatory: false, value: 0, label: '' },
   actions: [
     {
       handle: 'setValue',
@@ -340,6 +377,7 @@ export const shadRatingConfig = shadConfig({
       params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{3}}' }],
     },
     { handle: 'clear', displayName: 'Clear' },
+    action('resetValue', 'Reset value'),
   ],
 });
 
@@ -413,7 +451,23 @@ export const shadFileUploadConfig = shadConfig({
   events: {
     onFileSelected: { displayName: 'On file selected' },
     onFileDeselected: { displayName: 'On file deselected' },
+    onFileLoaded: { displayName: 'On file loaded' },
   },
-  exposedVariables: { isValid: true, isMandatory: false, files: [], fileSize: 0, isParsing: false },
-  actions: [{ handle: 'clearFiles', displayName: 'Clear files' }],
+  exposedVariables: {
+    isValid: true,
+    isMandatory: false,
+    files: [],
+    file: [],
+    fileSize: 0,
+    isParsing: false,
+    label: '',
+  },
+  actions: [
+    { handle: 'clearFiles', displayName: 'Clear files' },
+    action('clear', 'Clear'),
+    action('setFileName', 'Set file name', [
+      ['indexOrUpdates', 'File index (or [{ index, newFileName }])', '{{0}}'],
+      ['newNameIfSingle', 'New name', ''],
+    ]),
+  ],
 });

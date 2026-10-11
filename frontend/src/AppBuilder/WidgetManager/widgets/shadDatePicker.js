@@ -109,6 +109,37 @@ export const shadDatePickerConfig = {
         defaultValue: 'DD MMM YYYY',
       },
     },
+    minDate: {
+      type: 'code',
+      displayName: 'Earliest date (YYYY-MM-DD)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    maxDate: {
+      type: 'code',
+      displayName: 'Latest date (YYYY-MM-DD)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    disabledDates: {
+      type: 'code',
+      displayName: 'Disabled dates',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "['2026-12-25', '2027-01-01']",
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -194,6 +225,15 @@ export const shadDatePickerConfig = {
   events: {
     onChange: {
       displayName: 'On change',
+    },
+    onSelect: {
+      displayName: 'On select',
+    },
+    onFocus: {
+      displayName: 'On focus',
+    },
+    onBlur: {
+      displayName: 'On blur',
     },
   },
   styles: {
@@ -315,11 +355,178 @@ export const shadDatePickerConfig = {
     value: '',
     startDate: '',
     endDate: '',
+    selectedDate: '',
+    unixTimestamp: null,
+    displayValue: '',
+    startDateInUnix: null,
+    endDateInUnix: null,
+    selectedDateRange: '',
+    dateFormat: 'DD MMM YYYY',
+    minDate: '',
+    maxDate: '',
+    label: '',
   },
   actions: [
     {
       handle: 'clear',
       displayName: 'Clear',
+    },
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Date',
+          defaultValue: '',
+        },
+        {
+          handle: 'format',
+          displayName: 'Format',
+          defaultValue: 'YYYY-MM-DD',
+        },
+      ],
+    },
+    {
+      handle: 'setDate',
+      displayName: 'Set date',
+      params: [
+        {
+          handle: 'date',
+          displayName: 'Date',
+          defaultValue: '',
+        },
+        {
+          handle: 'format',
+          displayName: 'Format',
+          defaultValue: 'YYYY-MM-DD',
+        },
+      ],
+    },
+    {
+      handle: 'clearValue',
+      displayName: 'Clear value',
+    },
+    {
+      handle: 'setValueInTimestamp',
+      displayName: 'Set value from timestamp',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Unix timestamp (ms)',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setStartDate',
+      displayName: 'Set start date',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Date',
+          defaultValue: '',
+        },
+        {
+          handle: 'format',
+          displayName: 'Format',
+          defaultValue: 'YYYY-MM-DD',
+        },
+      ],
+    },
+    {
+      handle: 'setEndDate',
+      displayName: 'Set end date',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Date',
+          defaultValue: '',
+        },
+        {
+          handle: 'format',
+          displayName: 'Format',
+          defaultValue: 'YYYY-MM-DD',
+        },
+      ],
+    },
+    {
+      handle: 'setDateRange',
+      displayName: 'Set date range',
+      params: [
+        {
+          handle: 'startDate',
+          displayName: 'Start date',
+          defaultValue: '',
+        },
+        {
+          handle: 'endDate',
+          displayName: 'End date',
+          defaultValue: '',
+        },
+        {
+          handle: 'format',
+          displayName: 'Format',
+          defaultValue: 'YYYY-MM-DD',
+        },
+      ],
+    },
+    {
+      handle: 'clearStartDate',
+      displayName: 'Clear start date',
+    },
+    {
+      handle: 'clearEndDate',
+      displayName: 'Clear end date',
+    },
+    {
+      handle: 'clearDateRange',
+      displayName: 'Clear date range',
+    },
+    {
+      handle: 'setMinDate',
+      displayName: 'Set min date',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Date',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setMaxDate',
+      displayName: 'Set max date',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Date',
+          defaultValue: '',
+        },
+      ],
+    },
+    {
+      handle: 'setDisabledDates',
+      displayName: 'Set disabled dates',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Dates',
+          defaultValue: '{{[]}}',
+        },
+      ],
+    },
+    {
+      handle: 'clearDisabledDates',
+      displayName: 'Clear disabled dates',
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
     },
     {
       handle: 'setVisibility',
@@ -385,6 +592,15 @@ export const shadDatePickerConfig = {
       },
       format: {
         value: 'DD MMM YYYY',
+      },
+      minDate: {
+        value: '',
+      },
+      maxDate: {
+        value: '',
+      },
+      disabledDates: {
+        value: '{{[]}}',
       },
       loadingState: {
         value: '{{false}}',

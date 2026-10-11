@@ -1,7 +1,19 @@
 // shadcn/ui pack (experiment): the Line, Radar, Radial and Sparkline charts (Widgets/Shadcn/ShadCharts.jsx, logic in
 // chartsModel.js). Same family as the Area, Bar and Pie charts in shadcnSource.js: data rows, a category field, one or
 // many series fields, value prefix and suffix, legend, empty message, series colours, and the chart styles.
-import { ARRAY, NUMBER_OR_STRING, STRING, choice, code, colorStyle, shadConfig, toggle } from './shadcnPackHelpers.js';
+import {
+  ARRAY,
+  CHART_ACTIONS,
+  CHART_EVENTS,
+  CHART_EXPOSED,
+  NUMBER_OR_STRING,
+  STRING,
+  choice,
+  code,
+  colorStyle,
+  shadConfig,
+  toggle,
+} from './shadcnPackHelpers.js';
 
 // Mirrors chartStyles in shadcnSource.js (kept in step by hand: each source module stays standalone).
 const chartStyles = {
@@ -13,8 +25,6 @@ const chartStyles = {
 const SERIES_COLORS = code('Series colors (in order)', ARRAY, [], { placeholder: "['#0f766e', '#f59e0b']" });
 const SERIES_FIELDS = { type: 'union', schemas: [{ type: 'string' }, { type: 'array' }] };
 const OPTIONAL_NUMBER = NUMBER_OR_STRING;
-const clickEvents = { onClick: { displayName: 'On click' } };
-
 const common = {
   valuePrefix: code('Value prefix', STRING, ''),
   valueSuffix: code('Value suffix', STRING, ''),
@@ -81,8 +91,9 @@ export const shadLineChartConfig = shadConfig({
     colors: { value: '{{[]}}' },
   },
   styles: { ...chartStyles, referenceLineColor: colorStyle('Target line color') },
-  events: clickEvents,
-  exposedVariables: { clickedDatum: {} },
+  events: CHART_EVENTS,
+  exposedVariables: CHART_EXPOSED,
+  actions: CHART_ACTIONS,
 });
 
 // ---- Radar ---------------------------------------------------------------------------------------------------------
@@ -130,8 +141,9 @@ export const shadRadarChartConfig = shadConfig({
     colors: { value: '{{[]}}' },
   },
   styles: chartStyles,
-  events: clickEvents,
-  exposedVariables: { clickedDatum: {} },
+  events: CHART_EVENTS,
+  exposedVariables: CHART_EXPOSED,
+  actions: CHART_ACTIONS,
 });
 
 // ---- Radial --------------------------------------------------------------------------------------------------------
@@ -192,8 +204,9 @@ export const shadRadialChartConfig = shadConfig({
     centerValueColor: colorStyle('Center figure color'),
     centerLabelColor: colorStyle('Center caption color'),
   },
-  events: clickEvents,
-  exposedVariables: { clickedDatum: {} },
+  events: CHART_EVENTS,
+  exposedVariables: CHART_EXPOSED,
+  actions: CHART_ACTIONS,
 });
 
 // ---- Sparkline -----------------------------------------------------------------------------------------------------
@@ -241,7 +254,7 @@ export const shadSparklineConfig = shadConfig({
     negativeColor: colorStyle('Color when trend is down'),
     bandColor: colorStyle('Band color'),
   },
-  events: clickEvents,
+  events: CHART_EVENTS,
   exposedVariables: { trend: 'flat', lastValue: null },
 });
 
@@ -300,8 +313,9 @@ export const shadComboChartConfig = shadConfig({
     colors: { value: '{{[]}}' },
   },
   styles: chartStyles,
-  events: clickEvents,
-  exposedVariables: { clickedDatum: {} },
+  events: CHART_EVENTS,
+  exposedVariables: CHART_EXPOSED,
+  actions: CHART_ACTIONS,
 });
 
 // ---- Scatter -------------------------------------------------------------------------------------------------------
@@ -358,8 +372,9 @@ export const shadScatterChartConfig = shadConfig({
     colors: { value: '{{[]}}' },
   },
   styles: { ...chartStyles, referenceLineColor: colorStyle('Reference line color') },
-  events: clickEvents,
-  exposedVariables: { clickedDatum: {} },
+  events: CHART_EVENTS,
+  exposedVariables: CHART_EXPOSED,
+  actions: CHART_ACTIONS,
 });
 
 // ---- Funnel --------------------------------------------------------------------------------------------------------
@@ -403,8 +418,9 @@ export const shadFunnelChartConfig = shadConfig({
     chartColor: colorStyle('Chart color (series palette from it)'),
     axisTextColor: colorStyle('Stage label color'),
   },
-  events: clickEvents,
-  exposedVariables: { clickedDatum: {} },
+  events: CHART_EVENTS,
+  exposedVariables: CHART_EXPOSED,
+  actions: CHART_ACTIONS,
 });
 
 // ---- Heatmap -------------------------------------------------------------------------------------------------------
@@ -455,6 +471,7 @@ export const shadHeatmapChartConfig = shadConfig({
     axisTextColor: colorStyle('Label color'),
     legendTextColor: colorStyle('Legend text color'),
   },
-  events: clickEvents,
-  exposedVariables: { clickedDatum: {} },
+  events: CHART_EVENTS,
+  exposedVariables: CHART_EXPOSED,
+  actions: CHART_ACTIONS,
 });

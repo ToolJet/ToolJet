@@ -544,6 +544,15 @@ export const shadTableConfig = {
     onRefresh: {
       displayName: 'Refresh',
     },
+    onRowHovered: {
+      displayName: 'Row hovered',
+    },
+    onHeaderClick: {
+      displayName: 'Header clicked',
+    },
+    onTableDataDownload: {
+      displayName: 'Table data downloaded',
+    },
   },
   styles: {
     boxShadow: {
@@ -739,6 +748,9 @@ export const shadTableConfig = {
     currentPageData: [],
     filteredData: [],
     lastActionClicked: {},
+    hoveredRow: {},
+    hoveredRowId: null,
+    selectedColumnHeader: {},
   },
   actions: [
     {

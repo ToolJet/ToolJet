@@ -13,6 +13,9 @@ import {
   sizeStyle,
   textValidation,
   toggle,
+  action,
+  FOCUS_ACTIONS,
+  FOCUS_EVENTS,
 } from './shadcnPackHelpers.js';
 
 const NUMBER_OR_TEXT = { type: 'union', schemas: [NUMBER, STRING] };
@@ -106,8 +109,8 @@ export const shadNumberInputConfig = shadConfig({
   },
   validation: numberValidation,
   events: textBoxEvents,
-  exposedVariables: { isValid: true, isMandatory: false, value: 1 },
-  actions: [valueAction('setValue', 'Set value'), CLEAR, ...focusActions],
+  exposedVariables: { isValid: true, isMandatory: false, value: 1, label: '' },
+  actions: [valueAction('setValue', 'Set value'), valueAction('setText', 'Set text'), CLEAR, ...focusActions],
 });
 
 // ---- Password ------------------------------------------------------------------------------------------------------
@@ -141,7 +144,7 @@ export const shadPasswordInputConfig = shadConfig({
   },
   validation: textValidation,
   events: textBoxEvents,
-  exposedVariables: { isValid: true, isMandatory: false, value: '', strength: '' },
+  exposedVariables: { isValid: true, isMandatory: false, value: '', strength: '', label: '' },
   actions: [valueAction('setText', 'Set text', 'Text'), CLEAR, ...focusActions],
 });
 
@@ -188,14 +191,19 @@ export const shadPhoneInputConfig = shadConfig({
     countryCode: '+1',
     formattedValue: '',
     isValidNumber: false,
+    label: '',
   },
   actions: [
-    valueAction('setValue', 'Set value', 'Number (E.164 or national)'),
+    action('setValue', 'Set value', [
+      ['value', 'Number (E.164 or national)', ''],
+      ['country', 'Country (optional ISO code)', ''],
+    ]),
     {
       handle: 'setCountry',
       displayName: 'Set country',
       params: [{ handle: 'country', displayName: 'Country (ISO code or +calling code)', defaultValue: 'US' }],
     },
+    action('setCountryCode', 'Set country code', [['countryCode', 'Country (ISO code or +calling code)', 'US']]),
     CLEAR,
     ...focusActions,
   ],
@@ -243,9 +251,19 @@ export const shadCurrencyInputConfig = shadConfig({
   },
   validation: numberValidation,
   events: textBoxEvents,
-  exposedVariables: { isValid: true, isMandatory: false, value: 1250, formattedValue: '$1,250.00', currency: 'USD' },
+  exposedVariables: {
+    isValid: true,
+    isMandatory: false,
+    value: 1250,
+    formattedValue: '$1,250.00',
+    currency: 'USD',
+    label: '',
+  },
   actions: [
-    valueAction('setValue', 'Set value'),
+    action('setValue', 'Set value', [
+      ['value', 'Value', ''],
+      ['currency', 'Currency (optional ISO code)', ''],
+    ]),
     {
       handle: 'setCurrency',
       displayName: 'Set currency',
@@ -296,9 +314,10 @@ export const shadOtpInputConfig = shadConfig({
     onChange: { displayName: 'On change' },
     onComplete: { displayName: 'On complete' },
     onFocus: { displayName: 'On focus' },
+    onBlur: { displayName: 'On blur' },
   },
-  exposedVariables: { isValid: true, isMandatory: false, value: '', isComplete: false },
-  actions: [CLEAR, { handle: 'setFocus', displayName: 'Set focus' }],
+  exposedVariables: { isValid: true, isMandatory: false, value: '', isComplete: false, label: 'Verification code' },
+  actions: [CLEAR, ...FOCUS_ACTIONS, valueAction('setText', 'Set text', 'Code')],
 });
 
 // ---- Time ----------------------------------------------------------------------------------------------------------
@@ -330,9 +349,30 @@ export const shadTimePickerConfig = shadConfig({
   },
   styles: { ...fieldStyles, iconColor: colorStyle('Clock icon color'), ...popoverStyles },
   validation: choiceValidation,
-  events: { onChange: { displayName: 'On change' } },
-  exposedVariables: { isValid: true, isMandatory: false, value: '', formattedValue: '' },
-  actions: [valueAction('setTime', 'Set time', 'Time (HH:mm)'), CLEAR],
+  events: { onChange: { displayName: 'On change' }, onSelect: { displayName: 'On select' }, ...FOCUS_EVENTS },
+  exposedVariables: {
+    isValid: true,
+    isMandatory: false,
+    value: '',
+    formattedValue: '',
+    label: 'Time',
+    timeFormat: '12h',
+    minTime: '00:00',
+    maxTime: '23:59',
+  },
+  // The native Time picker's setValue(value, format), clearValue, setMinTime and setMaxTime besides the pack's own.
+  actions: [
+    valueAction('setTime', 'Set time', 'Time (HH:mm)'),
+    action('setValue', 'Set value', [
+      ['value', 'Time', ''],
+      ['format', 'Format', 'HH:mm'],
+    ]),
+    CLEAR,
+    action('clearValue', 'Clear value'),
+    action('setMinTime', 'Set min time', [['value', 'Time (HH:mm)', '']]),
+    action('setMaxTime', 'Set max time', [['value', 'Time (HH:mm)', '']]),
+    ...FOCUS_ACTIONS,
+  ],
 });
 
 // ---- Date and time -------------------------------------------------------------------------------------------------
@@ -366,7 +406,7 @@ export const shadDateTimePickerConfig = shadConfig({
   },
   styles: { ...fieldStyles, iconColor: colorStyle('Calendar icon color'), ...popoverStyles },
   validation: choiceValidation,
-  events: { onChange: { displayName: 'On change' } },
+  events: { onChange: { displayName: 'On change' }, onSelect: { displayName: 'On select' }, ...FOCUS_EVENTS },
   exposedVariables: {
     isValid: true,
     isMandatory: false,
@@ -375,6 +415,33 @@ export const shadDateTimePickerConfig = shadConfig({
     selectedTime: '',
     unixTimestamp: null,
     displayValue: '',
+    label: 'Date and time',
+    dateFormat: 'DD MMM YYYY',
+    timeFormat: '12h',
+    minDate: '',
+    maxDate: '',
   },
-  actions: [valueAction('setDate', 'Set date and time', 'Date and time (YYYY-MM-DD HH:mm)'), CLEAR],
+  // The native Date and time picker's actions besides the pack's own (no time zone ones: the pack works in local time).
+  actions: [
+    action('setDate', 'Set date and time', [
+      ['value', 'Date and time (YYYY-MM-DD HH:mm)', ''],
+      ['format', 'Format (optional)', ''],
+    ]),
+    action('setValue', 'Set value', [
+      ['value', 'Date and time', ''],
+      ['format', 'Format (optional)', ''],
+    ]),
+    action('setValueInTimestamp', 'Set value from timestamp', [['value', 'Unix timestamp (ms)', '']]),
+    action('setTime', 'Set time', [
+      ['value', 'Time', ''],
+      ['format', 'Format (optional)', ''],
+    ]),
+    CLEAR,
+    action('clearValue', 'Clear value'),
+    action('setMinDate', 'Set min date', [['value', 'Date', '']]),
+    action('setMaxDate', 'Set max date', [['value', 'Date', '']]),
+    action('setDisabledDates', 'Set disabled dates', [['value', 'Dates', '{{[]}}']]),
+    action('clearDisabledDates', 'Clear disabled dates'),
+    ...FOCUS_ACTIONS,
+  ],
 });
