@@ -115,6 +115,18 @@ $radius: var(--cc-radius-default, 6px);
     box-shadow: $shadow-sm;
   }
 
+  // An outline row action is drawn as shadcn's ghost button: a bordered button repeated down every row was the
+  // noisiest thing on the page ("Mark complete" x 12). Its label keeps its colour; hovering gives it a soft fill.
+  tbody td button.tj-row-action-outline {
+    border-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 8px !important;
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--cc-surface3-surface) 80%, transparent) !important;
+    }
+  }
+
   // Selection checkboxes: shadcn's square checkbox in the brand colour.
   input[type='checkbox'] {
     appearance: none;
