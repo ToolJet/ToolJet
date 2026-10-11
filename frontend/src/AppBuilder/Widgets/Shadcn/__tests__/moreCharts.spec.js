@@ -1,4 +1,4 @@
-import { comboSeries, funnelStages, heatmapGrid, scatterGroups } from '../chartsModel';
+import { comboSeries, funnelStages, heatmapGrid, percentScale, scatterGroups } from '../chartsModel';
 
 describe('funnelStages', () => {
   const data = [
@@ -124,5 +124,19 @@ describe('heatmapGrid', () => {
   it('never throws on junk', () => {
     expect(heatmapGrid(null, {}).xs).toEqual([]);
     expect(heatmapGrid([1, null, 'x'], { xField: 'a', yField: 'b', valueField: 'c' }).ys).toEqual([]);
+  });
+});
+
+describe('percentScale', () => {
+  it('reads rates written as fractions (0.39) as percents', () => {
+    expect(percentScale('percent', [0.39, 0.41, 0.385])).toBe(100);
+    expect(percentScale('percent', [-0.05, 0.12])).toBe(100);
+  });
+  it('leaves percents, other formats and empty series as they are', () => {
+    expect(percentScale('percent', [39.6, 41])).toBe(1);
+    expect(percentScale('percent', [0.4, 12])).toBe(1);
+    expect(percentScale('currency', [0.39])).toBe(1);
+    expect(percentScale('percent', [])).toBe(1);
+    expect(percentScale('percent', [0, 0])).toBe(1);
   });
 });

@@ -57,6 +57,7 @@ import {
   comboSeries,
   funnelStages,
   heatmapGrid,
+  percentScale,
   scatterGroups,
   MAX_ROWS,
   MAX_SERIES,
@@ -474,6 +475,14 @@ const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true, childr
 
 const AXIS_FILL = AXIS.tick.fill;
 const animated = (p) => p.animate !== false;
+/** A formatter that multiplies by scale first (a percent axis over fractions, percentScale). */
+const scaled = (format, scale) =>
+  scale === 1
+    ? format
+    : (v) => {
+        const n = num(v);
+        return format(n === null ? v : n * scale);
+      };
 const valueFormat = (p) => ({
   format: p.yAxisFormat,
   currency: p.currency,
@@ -491,8 +500,12 @@ export const ShadLineChart = (props) => {
   const rows = seriesRows(p.data, xField, series);
   const dashed = fieldList(p.dashedFields);
   const compact = isCompactChart(props.height);
-  const tick = formatter(valueFormat(p), true);
-  const full = formatter(valueFormat(p), false);
+  const lineScale = percentScale(
+    p.yAxisFormat,
+    rows.flatMap((r) => series.map((s) => r[s]))
+  );
+  const tick = scaled(formatter(valueFormat(p), true), lineScale);
+  const full = scaled(formatter(valueFormat(p), false), lineScale);
   const target = num(p.referenceValue);
   const targetLabel = isSet(p.referenceLabel) ? String(p.referenceLabel) : '';
   const strokeWidth = clamp(p.strokeWidth, 0.5, 12, 2);
@@ -867,14 +880,17 @@ export const ShadComboChart = (props) => {
     series.map((s) => s.field)
   ).slice(0, MAX_BARS);
   const compact = isCompactChart(props.height);
-  const left = formatter(valueFormat(p), true);
-  const right = formatter({ format: p.rightAxisFormat, currency: p.currency }, true);
-  const leftFull = formatter(valueFormat(p), false);
-  const rightFull = formatter({ format: p.rightAxisFormat, currency: p.currency }, false);
-  const rightKeys = new Set(series.filter((s) => s.axis === 'right').map((s) => s.field));
-  const hasRight = rightKeys.size > 0;
   const valuesOn = (axis) =>
     rows.flatMap((r) => series.filter((s) => s.axis === axis).map((s) => r[s.field])).filter((v) => v !== null);
+  // A rate sent as a fraction (a 39% margin as 0.39) reads as a percent, not 0.4%.
+  const leftScale = percentScale(p.yAxisFormat, valuesOn('left'));
+  const rightScale = percentScale(p.rightAxisFormat, valuesOn('right'));
+  const left = scaled(formatter(valueFormat(p), true), leftScale);
+  const right = scaled(formatter({ format: p.rightAxisFormat, currency: p.currency }, true), rightScale);
+  const leftFull = scaled(formatter(valueFormat(p), false), leftScale);
+  const rightFull = scaled(formatter({ format: p.rightAxisFormat, currency: p.currency }, false), rightScale);
+  const rightKeys = new Set(series.filter((s) => s.axis === 'right').map((s) => s.field));
+  const hasRight = rightKeys.size > 0;
   const stackedBars = p.stackBars === true;
   const leftValues = stackedBars
     ? [

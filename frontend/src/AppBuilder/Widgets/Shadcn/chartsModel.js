@@ -416,3 +416,12 @@ export const heatmapGrid = (data, { xField: xf, yField: yf, valueField: vf, xOrd
     },
   };
 };
+
+/** How much a percent axis multiplies its values: 100 when every value is a fraction (a 39% margin sent as 0.39, which
+ *  read 0.4% on two dashboards), else 1. Other formats and all-zero series are left as they are. */
+export const percentScale = (format, values) => {
+  if (format !== 'percent') return 1;
+  const nums = (Array.isArray(values) ? values : []).map(num).filter((v) => v !== null);
+  if (!nums.length || nums.every((v) => v === 0)) return 1;
+  return nums.every((v) => Math.abs(v) <= 1) ? 100 : 1;
+};
