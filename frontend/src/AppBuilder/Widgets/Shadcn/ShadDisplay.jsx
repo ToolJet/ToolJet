@@ -782,7 +782,7 @@ const KeyValueValue = ({ row, text, emptyText, badgeColors }) => {
         href={href}
         target={external ? '_blank' : undefined}
         rel={external ? 'noopener noreferrer' : undefined}
-        className="break-all font-medium text-[color:var(--lk-link,var(--sc-primary-ink))] no-underline underline-offset-4 hover:underline"
+        className="break-all rounded-sm font-medium text-[color:var(--lk-link,var(--sc-primary-ink))] no-underline underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {shown}
       </a>

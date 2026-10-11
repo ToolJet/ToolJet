@@ -256,6 +256,15 @@ export const Field = ({ id, label, description, error, required, children }) => 
   );
 };
 
+/** A field's accessible name when it has no visible label (which names it through <label for>): the placeholder,
+ *  else the component's name, else `fallback`. Undefined when the label names it. */
+export const fieldName = (props, fallback = 'Text field') => {
+  const { properties = {}, componentName } = props;
+  if (typeof properties.label === 'string' && properties.label.trim()) return undefined;
+  const placeholder = typeof properties.placeholder === 'string' ? properties.placeholder.trim() : '';
+  return placeholder || (typeof componentName === 'string' && componentName) || fallback;
+};
+
 export const textAlign = (styles) =>
   ['left', 'center', 'right'].includes(styles?.textAlign) ? styles.textAlign : undefined;
 
@@ -1042,6 +1051,7 @@ export const ShadInput = (props) => {
           className={CONTROL}
           value={value}
           aria-invalid={!!check.error || undefined}
+          aria-label={fieldName(props)}
           onFocus={box.onFocus}
           onBlur={box.onBlur}
           placeholder={String(properties.placeholder ?? '')}
@@ -1078,6 +1088,7 @@ export const ShadTextarea = (props) => {
           className={CONTROL}
           value={value}
           aria-invalid={!!check.error || undefined}
+          aria-label={fieldName(props)}
           onFocus={box.onFocus}
           onBlur={box.onBlur}
           placeholder={String(properties.placeholder ?? '')}
@@ -1412,6 +1423,7 @@ export const ShadSlider = (props) => {
             step={bounds.step}
             value={live}
             disabled={busy(properties)}
+            thumbLabel={fieldName(props, 'Slider') ?? String(properties.label)}
             onValueChange={setLive}
             onValueCommit={(v) => change(isRange ? v : v[0])}
           />

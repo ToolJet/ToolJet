@@ -159,7 +159,7 @@ export const RadioGroupItem = React.forwardRef(({ className, ...props }, ref) =>
 RadioGroupItem.displayName = 'RadioGroupItem';
 
 // Slider and progress tracks read the pack's trackColor style (--lk-track), else a tint of primary as upstream.
-export const Slider = React.forwardRef(({ className, ...props }, ref) => (
+export const Slider = React.forwardRef(({ className, thumbLabel, ...props }, ref) => (
   <SliderPrimitive.Root
     ref={ref}
     className={cn('relative flex w-full touch-none select-none items-center', className)}
@@ -171,6 +171,7 @@ export const Slider = React.forwardRef(({ className, ...props }, ref) => (
     {(props.value ?? props.defaultValue ?? [0]).map((_, i) => (
       <SliderPrimitive.Thumb
         key={i}
+        aria-label={thumbLabel}
         className="block h-4 w-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
       />
     ))}
@@ -440,7 +441,7 @@ export const AccordionTrigger = React.forwardRef(({ className, children, ...prop
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        'flex flex-1 items-center justify-between py-4 text-left text-sm font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180',
+        'flex flex-1 items-center justify-between rounded-sm py-4 text-left text-sm font-medium transition-all hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&[data-state=open]>svg]:rotate-180',
         className
       )}
       {...props}

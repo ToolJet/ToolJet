@@ -20,6 +20,7 @@ import { initials, list, useAutoHeight, useExposed } from '../packHooks';
 import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from './ui';
 import { Shell, Spinner } from './Shadcn';
 import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from './kanbanBoard';
+import { KANBAN_INSTRUCTIONS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
 import { SHADOWS, badgeLook, isSet, kanbanLook, px } from './kanbanLook';
 import { stringify } from '../packJson';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
@@ -284,7 +285,7 @@ const KanbanColumn = ({
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onCollapse(column.id)}
         style={{ ...look.column, width: 44, flex: '0 0 44px' }}
         className={cn(
-          'group/col relative flex cursor-pointer flex-col items-center gap-2 px-1 py-3 transition-shadow hover:ring-1 hover:ring-border',
+          'group/col relative flex cursor-pointer flex-col items-center gap-2 px-1 py-3 transition-shadow hover:ring-1 hover:ring-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           isOver && 'ring-1 ring-primary'
         )}
       >
@@ -333,7 +334,7 @@ const KanbanColumn = ({
               aria-label={`Collapse ${column.title}`}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => onCollapse(column.id)}
-              className="rounded-md p-0.5 text-muted-foreground opacity-0 transition hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/col:opacity-100"
+              className="rounded-md p-0.5 text-muted-foreground opacity-0 transition hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/col:opacity-100"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -620,8 +621,26 @@ export const ShadKanban = (props) => {
   const draggable = properties.allowDrag !== false && enabled && !properties.loadingState && !(custom && editing);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor, { coordinateGetter: kanbanCoordinates })
   );
+  // What a screen reader hears while a card moves: its title and the column's, not dnd-kit's ids.
+  const titleOfCard = (key) => {
+    const card = live.current.columns.flatMap((c) => c.cards).find((c) => c.__key === String(key));
+    const t = card?.[fields.title];
+    return typeof t === 'string' || typeof t === 'number' ? String(t) : 'card';
+  };
+  const titleOfColumn = (overId) => {
+    const id = String(overId);
+    const cols = live.current.columns;
+    const column = id.startsWith('col-')
+      ? cols.find((c) => `col-${c.id}` === id)
+      : cols.find((c) => c.cards.some((card) => `drop-${card.__key}` === id));
+    return column ? String(column.title ?? column.id) : 'a column';
+  };
+  const accessibility = {
+    announcements: kanbanAnnouncements(titleOfCard, titleOfColumn),
+    screenReaderInstructions: { draggable: KANBAN_INSTRUCTIONS },
+  };
   const activeCard = activeKey ? columns.flatMap((c) => c.cards).find((c) => c.__key === activeKey) : null;
   const select = (card) => {
     setSelected(card);
@@ -663,6 +682,7 @@ export const ShadKanban = (props) => {
       <DndContext
         sensors={sensors}
         collisionDetection={kanbanCollision}
+        accessibility={accessibility}
         onDragStart={({ active }) => setActiveKey(active.id)}
         onDragCancel={() => setActiveKey(null)}
         onDragEnd={onDragEnd}

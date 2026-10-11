@@ -160,3 +160,12 @@
     transform: scaleX(1);
   }
 }
+
+// A chart that takes keyboard focus (Recharts' accessibility layer) shows it: ToolJet's global styles remove the
+// outline of focused elements, so tabbing onto a chart or a pie slice showed nothing.
+.tj-shadcn .recharts-wrapper :focus-visible,
+.tj-shadcn .recharts-surface:focus-visible {
+  outline: 2px solid var(--sc-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

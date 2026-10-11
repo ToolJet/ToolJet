@@ -1178,7 +1178,7 @@ export const ShadCarousel = (props) => {
                 disabled={disabled}
                 onClick={() => go(i)}
                 className={cn(
-                  'h-1.5 rounded-full border-0 p-0 transition-all',
+                  'h-1.5 rounded-full border-0 p-0 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                   i === index
                     ? 'w-4 bg-[color:var(--lk-dot-active,var(--sc-primary))]'
                     : 'w-1.5 bg-[color:var(--lk-dot,color-mix(in_srgb,var(--sc-foreground)_20%,transparent))] hover:bg-[color:var(--lk-dot-active,color-mix(in_srgb,var(--sc-foreground)_40%,transparent))]'

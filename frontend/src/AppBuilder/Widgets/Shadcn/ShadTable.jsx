@@ -1056,7 +1056,7 @@ export const ShadTable = (props) => {
                           type="button"
                           onClick={() => clickHeader(column)}
                           className={cn(
-                            'inline-flex items-center gap-1 rounded text-left hover:text-[color:var(--lk-fg,var(--sc-foreground))]',
+                            'inline-flex items-center gap-1 rounded text-left hover:text-[color:var(--lk-fg,var(--sc-foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             column.align === 'right' && 'flex-row-reverse'
                           )}
                         >
