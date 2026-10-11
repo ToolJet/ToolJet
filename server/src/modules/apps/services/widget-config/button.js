@@ -4,7 +4,7 @@ export const buttonConfig = {
   description: 'Trigger actions: queries, alerts, set variables etc.',
   component: 'Button',
   defaultSize: {
-    width: 4,
+    width: 1,
     height: 40,
   },
   others: {

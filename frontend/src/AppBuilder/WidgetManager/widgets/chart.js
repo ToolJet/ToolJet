@@ -4,7 +4,7 @@ export const chartConfig = {
   description: 'Visualize data',
   component: 'Chart',
   defaultSize: {
-    width: 20,
+    width: 6,
     height: 400,
   },
   others: {

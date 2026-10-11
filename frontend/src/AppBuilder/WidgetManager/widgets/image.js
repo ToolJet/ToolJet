@@ -3,7 +3,7 @@ export const imageConfig = {
   displayName: 'Image',
   description: 'Show image files',
   defaultSize: {
-    width: 10,
+    width: 3,
     height: 240,
   },
   component: 'Image',
