@@ -42,7 +42,7 @@ export const useExposeState = ({
       setDisableModal: async (value) => setDisabledModal(value),
       setVisibility: async (value) => setVisibility(value),
       setLoading: async (value) => setLoading(value),
-      open: async () => onShowModal(),
+      open: async (callback) => onShowModal(callback),
       close: async () => onHideModal(),
     });
   }, []);
