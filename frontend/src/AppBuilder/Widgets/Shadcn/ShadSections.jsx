@@ -18,6 +18,8 @@ export { withControlState } from '../packHooks';
 // stays editable in the inspector. Colours come from the theme (shadcn tokens) and the accent style.
 
 const ACCENT = 'var(--lk-accent,var(--sc-primary))';
+// The accent as text (the eyebrow, an icon on its tint): the theme primary kept readable on the background.
+const ACCENT_INK = 'var(--lk-accent,var(--sc-primary-ink))';
 const TITLE_FONT = 'var(--lk-title-font,inherit)';
 
 const useHasEvent = (id, eventId) =>
@@ -159,7 +161,7 @@ export const ShadHero = (props) => {
                 background: onDark
                   ? 'rgba(255,255,255,0.14)'
                   : `color-mix(in srgb, ${ACCENT} 14%, var(--sc-background))`,
-                color: onDark ? '#ffffff' : ACCENT,
+                color: onDark ? '#ffffff' : ACCENT_INK,
               }}
               aria-hidden="true"
             >
@@ -170,7 +172,7 @@ export const ShadHero = (props) => {
             {text(p.eyebrow) ? (
               <span
                 className="text-xs font-semibold uppercase tracking-[0.14em]"
-                style={{ color: onDark ? 'rgba(255,255,255,0.85)' : ACCENT }}
+                style={{ color: onDark ? 'rgba(255,255,255,0.85)' : ACCENT_INK }}
               >
                 {text(p.eyebrow)}
               </span>

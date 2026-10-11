@@ -48,6 +48,26 @@
   scrollbar-color: var(--sc-border) transparent;
 }
 
+// The primary as text (links, an eyebrow, an active tab): its lightness clamped so it reads on the background, light
+// or dark. A typical brand blue is left as it is; a bright green or gold brand gave links at 1.6:1 on white. Browsers
+// without relative colour syntax use the primary as it is.
+.tj-shadcn,
+.tj-shad-tokens {
+  --sc-primary-ink: var(--sc-primary);
+}
+@supports (color: oklch(from red l c h)) {
+  .tj-shadcn,
+  .tj-shad-tokens {
+    --sc-primary-ink: #{'oklch(from var(--sc-primary) min(l, 0.55) c h)'};
+  }
+  .dark-theme .tj-shadcn,
+  .theme-dark .tj-shadcn,
+  .dark-theme .tj-shad-tokens,
+  .theme-dark .tj-shad-tokens {
+    --sc-primary-ink: #{'oklch(from var(--sc-primary) max(l, 0.66) c h)'};
+  }
+}
+
 // Dark themes: the tints mix toward white instead of the dark background, and the deeper shade lifts. Mixed toward
 // the background they sank into it (a pie's second and third slices, a radar's second series and a scatter's third
 // read as the page colour on ToolJet Modern dark).

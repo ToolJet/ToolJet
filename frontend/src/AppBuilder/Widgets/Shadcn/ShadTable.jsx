@@ -170,7 +170,7 @@ const renderCell = ({ value, row, column, properties, resolve, onAction, rowInde
     }
     case 'boolean':
       return shown === true || shown === 'true' ? (
-        <Check className="h-4 w-4 text-[color:var(--sc-primary)]" aria-label="Yes" />
+        <Check className="h-4 w-4 text-[color:var(--sc-primary-ink)]" aria-label="Yes" />
       ) : (
         <span className={MUTED} aria-label="No">
           —
@@ -185,7 +185,7 @@ const renderCell = ({ value, row, column, properties, resolve, onAction, rowInde
           target={column.openInNewTab ? '_blank' : '_self'}
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="font-medium text-[color:var(--sc-primary)] underline-offset-4 hover:underline"
+          className="font-medium text-[color:var(--sc-primary-ink)] underline-offset-4 hover:underline"
         >
           {String(isSet(text) ? text : shown)}
         </a>

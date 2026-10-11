@@ -54,3 +54,21 @@ describe('whenSet', () => {
     expect(whenSet(undefined, 'textColor', 'a')).toBeUndefined();
   });
 });
+
+// Text in the theme's primary goes through --sc-primary-ink (shadcn.scss), its lightness clamped so it reads on the
+// background: a bright green or gold brand primary gave links, eyebrows and file-upload links at 1.6:1 on white.
+describe('primary-coloured text', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const dir = path.join(__dirname, '..');
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.jsx'));
+  it.each(files)('%s draws no text in the raw primary', (file) => {
+    const source = fs.readFileSync(path.join(dir, file), 'utf8');
+    const raw = source.match(/text-\[color:var\((?:--lk-[a-z-]+,)?var\(--sc-primary\)\)?\]/g) || [];
+    expect(raw).toEqual([]);
+  });
+  it('maps the text-primary utility to the ink', () => {
+    const config = require('../shadcn.tailwind.config.js');
+    expect(config.theme.extend.textColor.primary.DEFAULT({})).toBe('var(--sc-primary-ink)');
+  });
+});

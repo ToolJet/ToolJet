@@ -43,6 +43,11 @@ module.exports = {
           5: token('chart-5'),
         },
       },
+      // Text in the primary colour uses its ink: the primary darkened (or, in a dark theme, lightened) just enough to
+      // read on the background, so a light brand primary (a bright green, a gold) still gives readable links.
+      textColor: {
+        primary: { DEFAULT: token('primary-ink'), foreground: token('primary-foreground') },
+      },
       borderRadius: {
         lg: 'var(--sc-radius)',
         md: 'calc(var(--sc-radius) - 2px)',

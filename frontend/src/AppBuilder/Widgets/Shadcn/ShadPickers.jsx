@@ -1188,7 +1188,7 @@ const RATING_ICONS = { star: Star, heart: Heart, circle: Circle };
 const FILLED = {
   star: 'fill-[color:var(--lk-on,var(--sc-warning))] text-[color:var(--lk-on,var(--sc-warning))]',
   heart: 'fill-[color:var(--lk-on,var(--sc-destructive))] text-[color:var(--lk-on,var(--sc-destructive))]',
-  circle: 'fill-[color:var(--lk-on,var(--sc-primary))] text-[color:var(--lk-on,var(--sc-primary))]',
+  circle: 'fill-[color:var(--lk-on,var(--sc-primary))] text-[color:var(--lk-on,var(--sc-primary-ink))]',
 };
 const EMPTY =
   'fill-[color:var(--lk-off,color-mix(in_srgb,var(--sc-muted-foreground)_22%,transparent))] text-[color:var(--lk-off,color-mix(in_srgb,var(--sc-muted-foreground)_22%,transparent))]';
@@ -1564,7 +1564,7 @@ export const ShadFileUpload = (props) => {
             {full ? null : (
               <p className={cn('m-0 text-sm', MUTED)}>
                 or{' '}
-                <span className="font-medium text-[color:var(--sc-primary)] underline-offset-4 hover:underline">
+                <span className="font-medium text-[color:var(--sc-primary-ink)] underline-offset-4 hover:underline">
                   click to browse
                 </span>
               </p>

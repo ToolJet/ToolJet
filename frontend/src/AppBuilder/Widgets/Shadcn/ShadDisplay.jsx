@@ -314,7 +314,7 @@ export const ShadLink = (props) => {
   const underline = own(UNDERLINE, p.underline) || (typeof p.underline === 'string' && p.underline) || 'on-hover';
   const disabled = busy(p);
   const className = cn(
-    'inline-flex max-w-full items-center gap-1 rounded-sm text-[color:var(--lk-fg,var(--sc-primary))] underline-offset-4 transition-colors hover:text-[color:var(--lk-hover,var(--lk-fg,var(--sc-primary)))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    'inline-flex max-w-full items-center gap-1 rounded-sm text-[color:var(--lk-fg,var(--sc-primary-ink))] underline-offset-4 transition-colors hover:text-[color:var(--lk-hover,var(--lk-fg,var(--sc-primary)))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
     underline === 'underline' && 'underline',
     underline === 'on-hover' && 'no-underline hover:underline',
     underline === 'no-underline' && 'no-underline hover:no-underline',
@@ -782,7 +782,7 @@ const KeyValueValue = ({ row, text, emptyText, badgeColors }) => {
         href={href}
         target={external ? '_blank' : undefined}
         rel={external ? 'noopener noreferrer' : undefined}
-        className="break-all font-medium text-[color:var(--lk-link,var(--sc-primary))] no-underline underline-offset-4 hover:underline"
+        className="break-all font-medium text-[color:var(--lk-link,var(--sc-primary-ink))] no-underline underline-offset-4 hover:underline"
       >
         {shown}
       </a>

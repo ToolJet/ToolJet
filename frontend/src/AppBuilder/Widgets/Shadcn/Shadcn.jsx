@@ -495,7 +495,7 @@ const StatIcon = ({ name, shape, size }) => {
     <span
       aria-hidden="true"
       className={cn(
-        'inline-flex shrink-0 items-center justify-center text-[color:var(--lk-icon,var(--sc-primary))]',
+        'inline-flex shrink-0 items-center justify-center text-[color:var(--lk-icon,var(--sc-primary-ink))]',
         shape !== 'none' &&
           'bg-[color:var(--lk-chip,color-mix(in_srgb,var(--lk-icon,var(--sc-primary))_12%,transparent))]',
         shape === 'circle' ? 'rounded-full' : 'rounded-[calc(var(--sc-radius)-2px)]'
