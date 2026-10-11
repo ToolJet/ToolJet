@@ -9,7 +9,8 @@
   "lint-staged": {
     "./frontend/src/**/*.{js,jsx}": [
       "eslint --fix"
-    ]
+    ],
+    "./frontend/**/*.{js,jsx,ts,tsx}": "node scripts/check-banned-terms.js"
   },
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
