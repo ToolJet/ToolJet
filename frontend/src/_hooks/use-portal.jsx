@@ -6,6 +6,7 @@ const usePortal = ({ children, ...restProps }) => {
     isOpen,
     callback,
     componentName,
+    portalTitle,
     key = '',
     customComponent = () => null,
     forceUpdate,
@@ -40,6 +41,7 @@ const usePortal = ({ children, ...restProps }) => {
           isOpen={isOpen}
           trigger={callback}
           componentName={componentName}
+          portalTitle={portalTitle}
           dragResizePortal={dragResizePortal}
           callgpt={callgpt}
           isCopilotEnabled={isCopilotEnabled}
