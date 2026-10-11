@@ -268,6 +268,17 @@ export const ShadTabs = (props) => {
     const target = visibleTabs(all).find((tab) => tab.id == tabId);
     if (!target || target.id == now) return;
     setCurrentTab(target.id);
+    // Published before the event, so its handler reads the tab it switched to (the effect below runs only after the
+    // next render, and onTabSwitch handlers saw the old tab).
+    const visible = visibleTabs(all);
+    const index = Math.max(0, visible.indexOf(target));
+    live.current.setExposedVariables({
+      currentTab: target.id,
+      currentTabTitle: target.title ?? '',
+      currentStepIndex: index,
+      isFirstStep: index === 0,
+      isLastStep: index === visible.length - 1,
+    });
     if (fire) fireNow('onTabSwitch');
     // The editor selection may hold a component of the tab that just went away.
     deselect([]);
