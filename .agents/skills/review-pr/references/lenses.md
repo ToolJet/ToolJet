@@ -39,7 +39,7 @@ Authority: `server/docs/testing.md`. Sections that matter most in review:
   service test proves nothing about the query.
 - "Edition and plan": CE tests verify gating, EE tests verify behavior.
 
-Frontend: `frontend/AGENTS.md` "Testing context" for what is and is not covered by Cypress.
+Frontend: `frontend/AGENTS.md` → Testing, and the guide it names (`src/test/README.md`), for Jest conventions and what belongs in Cypress.
 
 Specs are a place for concretion, not abstraction. A reader must understand the contract without
 opening a helper. Suggest rewording where the spec hides the detail that makes it pass.
@@ -121,6 +121,13 @@ anonymous inline object, `decamelizeKeys` on output, untyped `@Query()` or `@Bod
 DTO, missing `ClassSerializerInterceptor`, missing `toMatchObject` shape test, dropped field with
 no consumer grep across `frontend/src` and `frontend/ee`. Anything under `external-apis/` is the
 public contract and a removed field needs a deprecation path.
+
+## Merge impact and evidence
+
+- **The reversible verdict must be honest.** A PR that drops or rewrites data, changes a public API or contract, or triggers a release or other external side effect is not reversible, whatever its description says. A "🟢 reversible" on such a change, or a folded block on an irreversible one, is a finding.
+- **Check the stated Reach against the diff:** editions, tenants, modules, contract consumers, and existing saved apps.
+- **An irreversible PR with no Rollback plan or no Evidence section** (before → after proof that it works) is a finding.
+- **A runtime change whose only evidence is "it should work"** is unverified. Ask for the test run or the screenshot.
 
 ## Security
 

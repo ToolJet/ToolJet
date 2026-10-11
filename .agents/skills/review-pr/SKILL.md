@@ -43,11 +43,11 @@ start of every review.
 Size is the sum of additions and deletions across the root PR and both submodule PRs. Thresholds
 are rough; pick the tier that matches the reading effort, not the number.
 
-| Tier | Size | Process |
-|---|---|---|
-| Small | under ~1k lines | Single pass in the main thread. No sections, no subagents. One report file. |
-| Medium | ~1k to ~8k | Two to five conceptual sections. Subagents optional, one per section when they are used. One report file with a section per concept. |
-| Large | above ~8k | One subagent per section. Index file with blocker table, one file per section, handoff doc for everything below the bar. If posting is later requested, Blocker and High only. |
+| Tier   | Size            | Process                                                                                                                                                                        |
+| ------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Small  | under ~1k lines | Single pass in the main thread. No sections, no subagents. One report file.                                                                                                    |
+| Medium | ~1k to ~8k      | Two to five conceptual sections. Subagents optional, one per section when they are used. One report file with a section per concept.                                           |
+| Large  | above ~8k       | One subagent per section. Index file with blocker table, one file per section, handoff doc for everything below the bar. If posting is later requested, Blocker and High only. |
 
 A small PR touching a migration or an auth path gets the large-tier lenses at small-tier mechanics.
 
@@ -87,16 +87,16 @@ Cite the repo's own authority in the finding instead of restating the rule. Deta
 with what to look for and how to phrase it: `references/lenses.md`. Read it before the first
 section.
 
-| Lens | Authority |
-|---|---|
-| Correctness | Section's own contract, tests, `.agents/context/architecture-map.md` for cross-boundary flows. Every tenant, environment, edition. |
-| Tests | `server/docs/testing.md`: mutation heuristic, `toMatchObject` shape assertions, behavior matrix, boundary rule. `frontend/AGENTS.md` Testing context. |
-| Typing | `server/AGENTS.md` Design principles. No `any`; precise types or `unknown` casts. |
-| Comments | Exhaustive sweep, one verdict per block the diff adds: DELETE (default), KEEP as one line only when the WHY is not deducible from code, symbol, or test name, AGENTS.md only for a general module rule. Deletion beats relocation. |
-| Design | `server/AGENTS.md` Design principles: pure calculations out of I/O, stratified design, deep modules. Practical refactors only. |
-| Conventions | Closest `AGENTS.md` plus the living-docs rule in root `AGENTS.md`: a changed invariant with no `AGENTS.md` update is a finding. Glossary terms from `UBIQUITOUS_LANGUAGE.md`. |
-| API contract | `.agents/skills/api-design/SKILL.md`. Only when `server/src/modules/**/controller*.ts`, `dto/`, or `external-apis/` are touched. |
-| Security | `server/AGENTS.md` Security, `frontend/AGENTS.md` Security, root `AGENTS.md` Public/private boundary. |
+| Lens         | Authority                                                                                                                                                                                                                          |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Correctness  | Section's own contract, tests, `.agents/context/architecture-map.md` for cross-boundary flows. Every tenant, environment, edition.                                                                                                 |
+| Tests        | `server/docs/testing.md`: mutation heuristic, `toMatchObject` shape assertions, behavior matrix, boundary rule. `frontend/AGENTS.md` → Testing (names `src/test/README.md`; App Builder layer).                                    |
+| Typing       | `server/AGENTS.md` Design principles. No `any`; precise types or `unknown` casts.                                                                                                                                                  |
+| Comments     | Exhaustive sweep, one verdict per block the diff adds: DELETE (default), KEEP as one line only when the WHY is not deducible from code, symbol, or test name, AGENTS.md only for a general module rule. Deletion beats relocation. |
+| Design       | `server/AGENTS.md` Design principles: pure calculations out of I/O, stratified design, deep modules. Practical refactors only.                                                                                                     |
+| Conventions  | Closest `AGENTS.md` plus the living-docs rule in root `AGENTS.md`: a changed invariant with no `AGENTS.md` update is a finding. Glossary terms from `UBIQUITOUS_LANGUAGE.md`.                                                      |
+| API contract | `.agents/skills/api-design/SKILL.md`. Only when `server/src/modules/**/controller*.ts`, `dto/`, or `external-apis/` are touched.                                                                                                   |
+| Security     | `server/AGENTS.md` Security, `frontend/AGENTS.md` Security, root `AGENTS.md` Public/private boundary.                                                                                                                              |
 
 ## Submodules
 
