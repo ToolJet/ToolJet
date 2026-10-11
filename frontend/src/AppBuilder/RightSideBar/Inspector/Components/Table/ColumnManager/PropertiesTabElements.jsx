@@ -382,6 +382,44 @@ export const PropertiesTabElements = ({
           />
         </div>
       )}
+      {column.columnType === 'number' &&
+        [
+          ['prefix', 'Prefix', '$'],
+          ['suffix', 'Suffix', '%'],
+        ].map(([property, label, placeholder]) => (
+          <div className="field mb-2 px-3" key={property}>
+            <label className="form-label">{label}</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column?.[property]}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={placeholder}
+              onChange={(value) => onColumnItemChange(index, property, value)}
+              componentName={getPopoverFieldSource(column.columnType, property)}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker(property, showing);
+              }}
+            />
+          </div>
+        ))}
+      {column.columnType === 'string' && (
+        <div className="field mb-2 px-3">
+          <ProgramaticallyHandleProperties
+            label="Show as status chip"
+            currentState={currentState}
+            index={index}
+            darkMode={darkMode}
+            callbackFunction={onColumnItemChange}
+            property="displayAsChip"
+            props={column}
+            component={component}
+            paramMeta={{ type: 'toggle', displayName: 'Show as status chip' }}
+            paramType="properties"
+          />
+        </div>
+      )}
       {column.columnType === 'number' && (
         <div className="field mb-2 px-3">
           <ProgramaticallyHandleProperties

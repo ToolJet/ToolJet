@@ -7,6 +7,9 @@ import { getMaxHeight } from '../../../_utils/helper';
 import useTextColor from '../_hooks/useTextColor';
 import useValidationStyle from '../_hooks/useValidationStyle';
 import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
+import { determineJustifyContentValue } from '@/_helpers/utils';
+import { chipTone } from '../../../_utils/chipTone';
 
 /**
  * StringColumnAdapter - Table adapter for StringRenderer
@@ -33,6 +36,8 @@ export const StringColumn = ({
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
   const [isEditing, setIsEditing] = useState(false);
   const cellTextColor = useTextColor(id, textColor);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const showAsChip = getResolvedValue(column?.displayAsChip) === true;
 
   const { isValid, validationError } = useStringValidation(column, cellValue);
   useValidationStyle(id, row, validationError);
@@ -46,6 +51,23 @@ export const StringColumn = ({
       setIsEditing(false);
     }
   }, [isEditable, isEditing]);
+
+  // "Show as status chip": a state ("Paid", "Overdue", "In progress") drawn as a tinted chip whose tone is read from
+  // its words. An editable column keeps the text field.
+  if (showAsChip && !isEditable && cellValue !== null && cellValue !== undefined && cellValue !== '') {
+    const text = String(cellValue);
+    return (
+      <div
+        className={`d-flex align-items-center h-100 w-100 overflow-hidden justify-content-${determineJustifyContentValue(
+          horizontalAlignment
+        )}`}
+      >
+        <span className={`tj-chip tj-chip-${chipTone(text)}`} title={text}>
+          <HighLightSearch text={text} searchTerm={searchText} />
+        </span>
+      </div>
+    );
+  }
 
   return (
     <StringRenderer

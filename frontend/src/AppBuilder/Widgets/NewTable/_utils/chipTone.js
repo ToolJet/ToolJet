@@ -1,0 +1,31 @@
+// The tone of a status chip (a string column's "Show as status chip"), read from the value's words: a state such as
+// "Paid", "Overdue" or "In progress", or a priority such as "High". Tones are the .tj-chip variants in shadcnLook.scss,
+// which take their colours from the app theme. Danger is checked first, so "Out of stock" is never read as "In stock".
+const TONES = [
+  [
+    'danger',
+    /\b(overdue|out of stock|failed|failure|error|cancell?ed|rejected|declined|blocked|expired|lost|critical|urgent|high|severe|breach(ed)?|late|delayed|churned|suspended|terminated|refunded|disputed|offline|down)\b/,
+  ],
+  [
+    'warning',
+    /\b(pending|unpaid|due|reorder|low stock|waiting|awaiting|review|in review|on hold|hold|draft|medium|at risk|risk|partial|partially paid|tentative|requested|needs attention|warning|maintenance|occupied|busy|trial)\b/,
+  ],
+  [
+    'success',
+    /\b(paid|active|done|complete|completed|resolved|approved|confirmed|in stock|won|healthy|available|delivered|shipped|success|successful|passed|live|online|published|ready|accepted|vacant|clean|fulfilled|on track|closed won|signed|settled|given)\b/,
+  ],
+  [
+    'info',
+    /\b(new|open|in progress|scheduled|booked|sent|assigned|processing|planned|upcoming|started|qualified|contacted|proposal|negotiation|checked in|in transit)\b/,
+  ],
+];
+
+export const chipTone = (value) => {
+  if (typeof value !== 'string') return 'neutral';
+  const text = value.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!text) return 'neutral';
+  // "Not started" is not "started"; "Not paid" or "Not delivered" still needs attention.
+  if (/^not\b/.test(text)) return TONES[2][1].test(text.slice(3)) ? 'warning' : 'neutral';
+  for (const [tone, words] of TONES) if (words.test(text)) return tone;
+  return 'neutral';
+};

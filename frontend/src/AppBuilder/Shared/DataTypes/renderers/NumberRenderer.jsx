@@ -54,6 +54,19 @@ export const groupDigits = (value, decimalPlaces = null) => {
 };
 
 /**
+ * A displayed number with its prefix and suffix ("$" and "19.50" read "$19.50", "40" and "%" read "40%"). A minus sign
+ * goes before the prefix ("-$4.25"). Empty values and missing affixes leave the value as it is.
+ */
+export const affixNumber = (text, prefix, suffix) => {
+  if (text === null || text === undefined || text === '') return text;
+  const before = typeof prefix === 'string' ? prefix : '';
+  const after = typeof suffix === 'string' ? suffix : '';
+  if (!before && !after) return text;
+  const s = String(text);
+  return s.startsWith('-') ? `-${before}${s.slice(1)}${after}` : `${before}${s}${after}`;
+};
+
+/**
  * NumberRenderer - Pure number value renderer with editing support
  *
  * Renders numeric values with increment/decrement controls, validation, and search highlighting.
@@ -82,6 +95,8 @@ export const NumberRenderer = ({
   darkMode = false,
   decimalPlaces = null,
   thousandSeparator = false,
+  prefix = '',
+  suffix = '',
   isValid = true,
   validationError,
   searchText,
@@ -235,7 +250,7 @@ export const NumberRenderer = ({
         onMouseLeave={() => setHovered(false)}
         ref={ref}
       >
-        {renderText(thousandSeparator ? groupDigits(cellValue, decimalPlaces) : cellValue)}
+        {renderText(affixNumber(thousandSeparator ? groupDigits(cellValue, decimalPlaces) : cellValue, prefix, suffix))}
       </div>
     </OverlayTrigger>
   );

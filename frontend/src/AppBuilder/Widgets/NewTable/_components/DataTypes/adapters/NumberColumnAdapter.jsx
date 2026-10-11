@@ -60,6 +60,8 @@ export const NumberColumn = ({
       darkMode={darkMode}
       decimalPlaces={allowedDecimalPlaces}
       thousandSeparator={getResolvedValue(column?.thousandSeparator) === true}
+      prefix={getResolvedValue(column?.prefix) ?? ''}
+      suffix={getResolvedValue(column?.suffix) ?? ''}
       isValid={isValid}
       validationError={validationError}
       searchText={searchText}
