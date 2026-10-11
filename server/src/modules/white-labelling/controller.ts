@@ -1,4 +1,4 @@
-import { Controller, Body, Put, Get, Param } from '@nestjs/common';
+import { Controller, Body, Put, Get, Param, UseGuards } from '@nestjs/common';
 import { UpdateWhiteLabellingDto } from './dto';
 import { IWhiteLabellingController } from './Interfaces/IController';
 import { NotFoundException } from '@nestjs/common';
@@ -9,12 +9,15 @@ import { FEATURE_KEY } from './constant';
 import { WhiteLabellingService } from './service';
 import { User as UserEntity } from '@entities/user.entity';
 import { User } from '@modules/app/decorators/user.decorator';
+import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
+import { FeatureAbilityGuard } from './ability/guard';
 
 @Controller('white-labelling')
 @InitModule(MODULES.WHITE_LABELLING)
 export class WhiteLabellingController implements IWhiteLabellingController {
   constructor(protected readonly whiteLabellingService: WhiteLabellingService) {}
 
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
   @InitFeature(FEATURE_KEY.GET)
   async getInstanceWhiteLabelling() {
@@ -31,6 +34,7 @@ export class WhiteLabellingController implements IWhiteLabellingController {
     throw new NotFoundException();
   }
 
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get('/:organizationId')
   @InitFeature(FEATURE_KEY.GET_ORGANIZATION_WHITE_LABELS)
   async getWorkspaceWhiteLabelling(req: any) {

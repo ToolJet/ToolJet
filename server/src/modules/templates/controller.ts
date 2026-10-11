@@ -54,13 +54,14 @@ export class TemplateAppsController {
 
   @InitFeature(FEATURE_KEY.FETCH_TEMPLATES_LIST)
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async index() {
     return { template_app_manifests: TemplateAppManifests };
   }
 
+  @InitFeature(FEATURE_KEY.FETCH_TEMPLATES_LIST)
   @Get(':identifier/plugins')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async findDepedentPluginsFromTemplateDefinition(@Param('identifier') identifier) {
     const { pluginsToBeInstalled, pluginsListIdToDetailsMap } =
       await this.templatesService.findDepedentPluginsFromTemplateDefinition(identifier);
