@@ -63,6 +63,16 @@ for (const [operation, method, path, inputs, body] of cases) {
   });
 }
 
+test('a new query runs with the operation defaults copied by the query editor', async () => {
+  assert.deepEqual(await plugin.run(source, { ...operations.defaults }), { status: 'ok', data: { id: 42 } });
+  assert.equal(requests[0].url.pathname, '/gitlab/api/v4/projects');
+});
+
+test('existing queries with wrapped operation defaults still run', async () => {
+  await plugin.run(source, { operation: { value: 'list_projects' } });
+  assert.equal(requests[0].url.pathname, '/gitlab/api/v4/projects');
+});
+
 test('all minimum operations are selectable and all credentials are encrypted', () => {
   assert.deepEqual(operations.properties.operation.list.map(({ value }) => value).sort(), cases.map(([name]) => name).sort());
   for (const key of ['personal_token', 'client_secret', 'access_token', 'refresh_token']) {

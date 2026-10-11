@@ -4,9 +4,7 @@
   "description": "GitLab REST API operations",
   "type": "api",
   "defaults": {
-    "operation": {
-      "value": "list_projects"
-    }
+    "operation": "list_projects"
   },
   "properties": {
     "operation": {

@@ -162,7 +162,13 @@ export default class Gitlab implements QueryService {
     _updatedAt?: string,
     context?: Context
   ): Promise<QueryResult> {
-    const operation = operations[String(queryOptions.operation)];
+    // Older queries copied a form-style wrapper from the operation defaults.
+    const selectedOperation = queryOptions.operation;
+    const operationName =
+      selectedOperation && typeof selectedOperation === 'object' && 'value' in selectedOperation
+        ? selectedOperation.value
+        : selectedOperation;
+    const operation = operations[String(operationName)];
     if (!operation?.path) throw new QueryError('Invalid operation', 'Select a supported GitLab operation', {});
     if (sourceOptions.auth_type === 'oauth2' && !this.token(sourceOptions, context).access_token) {
       if (context?.app?.isPublic && !context?.user?.id) {

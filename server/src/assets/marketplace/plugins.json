@@ -17,7 +17,7 @@
   },
   {
     "name": "GitLab",
-    "description": "Connect to GitLab projects, issues, merge requests, repositories, pipelines, and users",
+    "description": "Plugin for GitLab APIs",
     "version": "1.0.0",
     "id": "gitlab",
     "author": "Tooljet",
