@@ -4,11 +4,11 @@ const plugin = require('tailwindcss/plugin');
 module.exports = {
   darkMode: ['class', '[class~="dark-theme"]'],
   content: [
-    './pages/**/*.{js,jsx}',
-    './components/**/*.{js,jsx}',
-    './app/**/*.{js,jsx}',
-    './src/**/*.{js,jsx}',
-    './ee/**/*.{js,jsx}',
+    './pages/**/*.{js,jsx,ts,tsx}',
+    './components/**/*.{js,jsx,ts,tsx}',
+    './app/**/*.{js,jsx,ts,tsx}',
+    './src/**/*.{js,jsx,ts,tsx}',
+    './ee/**/*.{js,jsx,ts,tsx}',
   ],
   prefix: 'tw-',
   corePlugins: {

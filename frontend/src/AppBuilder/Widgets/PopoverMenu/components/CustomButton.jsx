@@ -71,8 +71,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : buttonType === 'primary'
-      ? backgroundColor
-      : 'transparent';
+        ? backgroundColor
+        : 'transparent';
 
   const computedHoverBgColor =
     buttonType === 'primary'
