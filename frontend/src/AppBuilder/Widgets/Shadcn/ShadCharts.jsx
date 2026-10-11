@@ -1075,14 +1075,14 @@ export const ShadScatterChart = (props) => {
           value: String(text),
           position: axis === 'x' ? 'insideBottom' : 'insideLeft',
           angle: axis === 'x' ? 0 : -90,
-          offset: axis === 'x' ? -2 : 10,
+          offset: axis === 'x' ? 0 : 10,
           style: { fill: AXIS_FILL, fontSize: 12, textAnchor: 'middle' },
         }
       : undefined;
   return (
     <SafeFrame props={props} empty={!groups.length}>
       {(onDatum) => (
-        <ScatterChart margin={{ left: 4, right: 16, top: 12, bottom: isSet(p.xLabel) && !compact ? 12 : 0 }}>
+        <ScatterChart margin={{ left: 4, right: 16, top: 12, bottom: 0 }}>
           {p.showGrid !== false && !compact ? <CartesianGrid stroke={GRID} /> : null}
           <XAxis
             type="number"
@@ -1092,6 +1092,9 @@ export const ShadScatterChart = (props) => {
             hide={compact}
             domain={['auto', 'auto']}
             tickFormatter={fxTick}
+            // A titled axis is taller, so the title sits under the tick labels (inside the 30px axis it crossed the
+            // middle tick).
+            height={isSet(p.xLabel) && !compact ? 46 : 30}
             label={axisTitle(p.xLabel, 'x')}
           />
           <YAxis

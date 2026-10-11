@@ -219,6 +219,16 @@ describe('ShadCalendar', () => {
     expect(events).toEqual(['onSelect']);
   });
 
+  // The widget's own day button replaced the pack's chevrons with react-day-picker's, filled black: the month arrows
+  // vanished on a dark theme.
+  it('draws the pack chevrons in the month arrows, beside its own day buttons', () => {
+    mount(ShadCalendar, 'ShadCalendar', props);
+    const arrows = [...document.querySelectorAll('nav button svg')];
+    expect(arrows).toHaveLength(2);
+    expect(arrows.every((svg) => svg.classList.contains('lucide'))).toBe(true);
+    expect(document.querySelector('.rdp-chevron')).toBeNull();
+  });
+
   it('changes month, and takes selectDate, setMonth and clear', async () => {
     const { exposed, events } = mount(ShadCalendar, 'ShadCalendar', { ...props, mode: 'range', defaultValue: [] });
     fireEvent.click(screen.getByRole('button', { name: /next month/i }));

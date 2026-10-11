@@ -272,7 +272,7 @@ export const PopoverContent = React.forwardRef(({ className, align = 'center', s
 ));
 PopoverContent.displayName = 'PopoverContent';
 
-export const Calendar = ({ className, classNames, showOutsideDays = true, ...props }) => (
+export const Calendar = ({ className, classNames, components, showOutsideDays = true, ...props }) => (
   <DayPicker
     showOutsideDays={showOutsideDays}
     className={cn('p-3', className)}
@@ -307,11 +307,14 @@ export const Calendar = ({ className, classNames, showOutsideDays = true, ...pro
       hidden: 'invisible',
       ...classNames,
     }}
+    {...props}
+    // Merged, not replaced: a widget passing its own components (the Calendar's day markers) lost these, and
+    // react-day-picker's own chevron is filled black, invisible on a dark theme.
     components={{
       Chevron: ({ orientation }) =>
         orientation === 'left' ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />,
+      ...components,
     }}
-    {...props}
   />
 );
 

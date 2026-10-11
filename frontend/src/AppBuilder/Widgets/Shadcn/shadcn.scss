@@ -48,6 +48,16 @@
   scrollbar-color: var(--sc-border) transparent;
 }
 
+// Dark themes: the tints mix toward white instead of the dark background, and the deeper shade lifts. Mixed toward
+// the background they sank into it (a pie's second and third slices, a radar's second series and a scatter's third
+// read as the page colour on ToolJet Modern dark).
+.dark-theme .tj-shadcn,
+.theme-dark .tj-shadcn {
+  --sc-chart-2: color-mix(in srgb, var(--sc-chart-1) 62%, #ffffff);
+  --sc-chart-3: color-mix(in srgb, var(--sc-chart-1) 36%, #ffffff);
+  --sc-chart-4: color-mix(in srgb, var(--sc-chart-1) 82%, var(--sc-background));
+}
+
 // Tailwind's preflight is off in ToolJet; shadcn relies on its box model and border reset, so restore just those
 // inside the pack.
 .tj-shadcn,
