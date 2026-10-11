@@ -455,6 +455,23 @@ export const createEventsSlice = (set, get) => ({
           'onFieldValueChanged',
           'onCancelKeyValuePairChanges',
           'onRefresh',
+          // The shadcn/ui pack's own events (Widgets/Shadcn/EVENT_PARITY.md): a name missing here never runs its
+          // handlers, with no error.
+          'onAction',
+          'onActionButtonClicked',
+          'onActionClick',
+          'onCardClick',
+          'onCardClicked',
+          'onComplete',
+          'onFinish',
+          'onItemClick',
+          'onMonthChange',
+          'onSecondaryActionClick',
+          'onSelectionChanged',
+          'onSlideChange',
+          'onSlideClick',
+          'onTagClick',
+          'onTagRemoved',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);
