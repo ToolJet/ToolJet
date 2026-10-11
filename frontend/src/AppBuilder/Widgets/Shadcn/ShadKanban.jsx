@@ -306,9 +306,10 @@ const KanbanColumn = ({
     <div
       ref={setNodeRef}
       data-collapsed="false"
-      // A set column width is inline; without one the columns share the board, at least 200px each (five stages fit a
-      // typical page width).
-      style={width ? { ...look.column, width, flex: `0 0 ${width}` } : look.column}
+      // A set column width is the preferred width: columns shrink to fit the board (down to 200px, or the set width if
+      // narrower) before it scrolls; five 245px stages clipped their last column. Without one the columns share the
+      // board, at least 200px each.
+      style={width ? { ...look.column, width, flex: `0 1 ${width}`, minWidth: `min(${width}, 200px)` } : look.column}
       className={cn(
         'group/col flex flex-col p-3 transition-shadow',
         fixed && 'min-h-0 overflow-hidden',
