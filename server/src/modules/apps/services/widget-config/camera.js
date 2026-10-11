@@ -65,6 +65,9 @@ export const cameraConfig = {
         onRecordingStart: { displayName: 'On recording start' },
         onRecordingSave: { displayName: 'On recording save' },
         onImageSave: { displayName: 'On image save' },
+        onCapture: { displayName: 'On capture' },
+        onCameraSwitch: { displayName: 'On camera switch' },
+        onCameraSelect: { displayName: 'On camera select' },
     },
     styles: {
         textColor: {
@@ -115,6 +118,9 @@ export const cameraConfig = {
         isDisabled: false,
         imageDataURL: null,
         videoDataURL: null,
+        isRecording: false,
+        activeCamera: null,
+        availableCameras: [],
     },
     actions: [
         {
@@ -134,6 +140,27 @@ export const cameraConfig = {
         {
             handle: 'resetImage',
             displayName: 'Reset image',
+        },
+        {
+            handle: 'startRecording',
+            displayName: 'Start recording',
+        },
+        {
+            handle: 'stopRecording',
+            displayName: 'Stop recording',
+        },
+        {
+            handle: 'capture',
+            displayName: 'Capture image',
+        },
+        {
+            handle: 'switchCamera',
+            displayName: 'Switch camera',
+        },
+        {
+            handle: 'selectCamera',
+            displayName: 'Select camera',
+            params: [{ handle: 'deviceId', displayName: 'Device ID', defaultValue: '', type: 'code' }],
         },
     ],
     definition: {
