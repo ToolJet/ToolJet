@@ -44,6 +44,15 @@ describe('icons', () => {
     expect(resolveIcon('bar-chart-3', map, 'none')).toBe(bar);
     expect(resolveIcon('TRENDING-UP', map, 'none')).toBe(up);
   });
+  // A bound paragraph as the icon name took seconds (the leading-words fallback was quadratic): the Stat and the Hero
+  // froze on a 120k-character icon.
+  it('gives up at once on a name far longer than any icon', () => {
+    const started = Date.now();
+    expect(resolveIcon('lorem ipsum '.repeat(10000), map, 'none')).toBe('none');
+    expect(resolveIcon('Trending Up '.repeat(5000), map, 'none')).toBe('none');
+    expect(Date.now() - started).toBeLessThan(50);
+    expect(resolveIcon('trending up but with more words after it', map, 'none')).toBe(up);
+  });
   it('falls back for unknown names, junk and the base component', () => {
     expect(resolveIcon('no-such-icon', map, 'none')).toBe('none');
     expect(resolveIcon('icon', map, 'none')).toBe('none');

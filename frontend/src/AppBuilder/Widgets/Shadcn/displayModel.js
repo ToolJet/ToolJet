@@ -50,7 +50,13 @@ export const iconCandidates = (name) => {
 
 /** The icon component for `name` from a lucide `icons` map (and optionally the module's own exports, which carry
  *  the older alias names), or `fallback`. Never throws. */
+// No icon name is this long: a longer one is junk (a bound paragraph) and its word fallback below was quadratic in it
+// (a 120k-character string froze the Stat and the Hero for seconds).
+const MAX_ICON_NAME = 80;
+const MAX_ICON_WORDS = 6;
+
 export const resolveIcon = (name, maps, fallback) => {
+  if (typeof name === 'string' && name.length > MAX_ICON_NAME) return fallback;
   const sources = (Array.isArray(maps) ? maps : [maps]).filter(isObject);
   const lookup = (candidate) => {
     if (!candidate || candidate === 'Icon') return null; // lucide's base component, not an icon
@@ -68,7 +74,7 @@ export const resolveIcon = (name, maps, fallback) => {
   // ToolJet's own (Tabler) names, IconCircleCheck: without the prefix, then by their leading words when lucide has no
   // twin (IconListDetails reads List), rather than the placeholder.
   const base = (candidates[0] || '').replace(/^Icon(?=[A-Z])/, '');
-  const words = base.match(/[A-Z][a-z0-9]*/g) || [];
+  const words = (base.match(/[A-Z][a-z0-9]*/g) || []).slice(0, MAX_ICON_WORDS);
   for (let n = words.length; n >= 1; n -= 1) {
     const found = lookup(words.slice(0, n).join(''));
     if (found) return found;
