@@ -1,6 +1,7 @@
 import React from 'react';
 import Select from '@/_ui/Select';
 import { Box } from './Box';
+import { getAnnotationLabelStyle } from './annotationLabel';
 
 export const RenderHighlight = ({
   annotation,
@@ -11,6 +12,7 @@ export const RenderHighlight = ({
   setAnnotations,
   fireEvent,
   getExposedAnnotations,
+  containerSize,
 }) => {
   let { geometry } = annotation;
   if (geometry.type === 'POINT') {
@@ -34,11 +36,7 @@ export const RenderHighlight = ({
       <div
         style={{
           position: 'absolute',
-          left: `${geometry.x}%`,
-          top: `${geometry.y + geometry.height}%`,
-          right: `${geometry.x + geometry.width}%`,
-          width: `${geometry.width}%`,
-          minWidth: '125px',
+          ...getAnnotationLabelStyle(geometry, containerSize),
           zIndex: 999,
         }}
         key={`content-${annotation.data.id}`}
