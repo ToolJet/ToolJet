@@ -100,6 +100,14 @@ $radius: var(--cc-radius-default, 6px);
     color: var(--cc-primary-text);
   }
 
+  // A long unbroken token (an email, a URL) stays on one line with an ellipsis; the cell's title shows it whole.
+  tbody td .tj-cell-token {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
   // A date cell's picker wraps its text in an inline-block, whose baseline gap lifted dates 3px above the row's text.
   tbody td .react-datepicker__input-container {
     display: block;
@@ -263,4 +271,10 @@ $radius: var(--cc-radius-default, 6px);
   letter-spacing: 0.02em;
   background: color-mix(in srgb, var(--tj-cell-avatar) 16%, transparent);
   color: color-mix(in srgb, var(--tj-cell-avatar) 75%, var(--cc-primary-text));
+}
+
+// Outside the shadcn look a long token wraps as any cell text does.
+.jet-table:not(.tj-table-look-shadcn) .tj-cell-token {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }

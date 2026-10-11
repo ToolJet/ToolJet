@@ -99,6 +99,23 @@ export const StringColumn = ({
     );
   }
 
+  // One long unbroken token (an email, a URL, an id): the shadcn look keeps it on one line with an ellipsis and the
+  // full value on hover, instead of breaking it mid-word ("olivia.chen@northstaranalytics.ex / ample").
+  if (!isEditable && typeof cellValue === 'string' && cellValue.length > 18 && !/\s/.test(cellValue)) {
+    return (
+      <div
+        className={`d-flex align-items-center h-100 w-100 overflow-hidden justify-content-${determineJustifyContentValue(
+          horizontalAlignment
+        )}`}
+        style={{ color: cellTextColor || undefined }}
+      >
+        <span className="tj-cell-token" title={cellValue}>
+          <HighLightSearch text={cellValue} searchTerm={searchText} />
+        </span>
+      </div>
+    );
+  }
+
   return (
     <StringRenderer
       value={cellValue}
