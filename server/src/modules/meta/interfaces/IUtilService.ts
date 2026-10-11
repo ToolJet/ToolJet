@@ -9,5 +9,6 @@ export interface IMetaUtilService {
   fetchMetadata(): Promise<any>;
   finishInstallation(params: FinishInstallationParams): Promise<any>;
   sendTelemetryData(metadata: Metadata): Promise<any>;
+  sendLicensingData(metadata: Metadata): Promise<any>;
   fetchDatasourcesByKindCount(manager: EntityManager): Promise<Record<string, number>>;
 }
