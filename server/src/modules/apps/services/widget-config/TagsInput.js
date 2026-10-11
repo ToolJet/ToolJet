@@ -228,6 +228,7 @@ export const tagsInputConfig = {
   events: {
     onTagAdded: { displayName: 'On tag added' },
     onTagDeleted: { displayName: 'On tag deleted' },
+    onSearch: { displayName: 'On search' },
     onFocus: { displayName: 'On focus' },
     onBlur: { displayName: 'On blur' },
   },
@@ -405,6 +406,7 @@ export const tagsInputConfig = {
     tags: [],
     newTagsAdded: [],
     selectedTags: [],
+    searchText: '',
   },
 
   definition: {
