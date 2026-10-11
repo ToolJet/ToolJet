@@ -80,6 +80,11 @@ $radius: var(--cc-radius-default, 6px);
       background: color-mix(in srgb, var(--cc-surface3-surface) 55%, transparent) !important;
     }
   }
+  // The selected row (highlightSelectedRow): a soft tint of the brand colour, as shadcn's data table marks it.
+  tbody tr.table-row.selected,
+  tbody tr.table-row.selected:hover {
+    background: color-mix(in srgb, var(--cc-primary-brand) 9%, transparent) !important;
+  }
   tbody td {
     padding: 8px 12px !important;
     font-size: 14px !important;
