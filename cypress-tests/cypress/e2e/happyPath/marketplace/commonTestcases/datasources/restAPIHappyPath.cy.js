@@ -313,6 +313,30 @@ describe("Data source Rest API", () => {
       "have.text",
       restAPIText.retryNetworkErrorsToggleLabel
     );
+    cy.get('[data-cy="main-wrapper"]').then(($wrapper) => {
+      const themeClasses = ["theme-dark", "dark-theme", "theme-dark-auto"];
+      const originalThemeClasses = themeClasses.filter((className) =>
+        $wrapper.hasClass(className)
+      );
+      const label = $wrapper.find(restAPISelector.retryNetworkToggleText)[0];
+      const assertThemeColor = () => {
+        const colorProbe = label.ownerDocument.createElement("span");
+        colorProbe.style.color = "var(--text-default)";
+        $wrapper[0].appendChild(colorProbe);
+        const expectedColor = label.ownerDocument.defaultView.getComputedStyle(colorProbe).color;
+        colorProbe.remove();
+        expect(label.ownerDocument.defaultView.getComputedStyle(label).color).to.equal(
+          expectedColor
+        );
+      };
+
+      $wrapper.removeClass(themeClasses.join(" "));
+      assertThemeColor();
+      $wrapper.addClass("theme-dark dark-theme");
+      assertThemeColor();
+      $wrapper.removeClass(themeClasses.join(" "));
+      $wrapper.addClass(originalThemeClasses.join(" "));
+    });
     cy.get(restAPISelector.retryNetworkToggleSubtext).should(
       "have.text",
       restAPIText.retryToggleHelperText
