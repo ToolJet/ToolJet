@@ -26,7 +26,12 @@ const resolve = ({
     temporaryLayouts: {},
     contextIndices: [],
     getResolvedComponent: (id) =>
-      id === 'flex' ? { properties, styles } : { properties: children.find((c) => c.id === id)?.properties ?? {} },
+      id === 'flex'
+        ? { properties, styles }
+        : {
+            properties: children.find((c) => c.id === id)?.properties ?? {},
+            styles: children.find((c) => c.id === id)?.styles ?? {},
+          },
     getContainerChildrenMapping: () => children.map((c) => c.id),
     getExposedPropertyForAdditionalActions: () => undefined,
     calculateMoveableBoxHeightWithId: bump,
@@ -121,6 +126,27 @@ describe('FlexContainer dynamic height', () => {
       height: 440,
     });
     expect(native).toBe(340 + chrome(0));
+  });
+
+  it("lets a shadcn-look Table's fitted height below its drawn height count (a churn card kept 140px under its table)", () => {
+    const bump = (id) => (id === 't' ? 690 : 40);
+    const height = resolve({
+      properties: { direction: 'column', padding: 0, cardStyle: 'shadcnCard' },
+      children: [{ id: 't', type: 'Table', layout: { height: 690 }, styles: { tableLook: 'shadcn' } }],
+      temps: { t: { height: 550 } },
+      bump,
+      height: 800,
+    });
+    expect(height).toBe(550 + chrome(0));
+    // The ToolJet look keeps its drawn height as the floor.
+    const native = resolve({
+      properties: { direction: 'column', padding: 0, cardStyle: 'shadcnCard' },
+      children: [{ id: 't', type: 'Table', layout: { height: 690 } }],
+      temps: { t: { height: 550 } },
+      bump,
+      height: 800,
+    });
+    expect(native).toBe(690 + chrome(0));
   });
 
   it('lets a card child of a row count at its fitted height', () => {

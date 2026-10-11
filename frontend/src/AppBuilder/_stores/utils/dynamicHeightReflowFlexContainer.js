@@ -119,6 +119,9 @@ export const resolveFlexContainerHeight = ({
     const childType = childDefinition?.component?.component ?? '';
     const fitsContent =
       /^(Shad|Ant)[A-Z]/.test(childType) ||
+      // A shadcn-look Table is as tall as its rows (Table.jsx drops its floor), so its drawn height is no floor either:
+      // a churn card kept 140px under its table.
+      (childType === 'Table' && childResolved?.styles?.tableLook === 'shadcn') ||
       (childType === 'FlexContainer' &&
         (['antCard', 'shadcnCard'].includes(childResolved?.properties?.cardStyle) ||
           childResolved?.properties?.direction === 'row'));
