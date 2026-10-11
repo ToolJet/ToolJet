@@ -13,6 +13,8 @@ import { Pager } from './Pager';
 import { itemKey, listLook, pageOf } from './listModel';
 import { stringify } from '../packJson';
 import { LoadingBox, wantsSkeleton } from './loadingLook';
+import { useCanvasFit } from './canvasFit';
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import './shadcn.scss';
 
 // shadcn/ui pack List view (experiment). Row-scoped like the native Listview: one canvas (the components parented to
@@ -21,7 +23,22 @@ import './shadcn.scss';
 // (rowHeight); the list itself fits its content in view. Selection keeps the native names (selectedRecord is the row's
 // component values, selectedRecordId/selectedRowId its index) and adds selectedItem, the clicked data item.
 
-const Row = ({ id, index, parentPath, height, width, onPick, selected, look, mode, showBorder, darkMode }) => {
+const Row = ({
+  id,
+  index,
+  parentPath,
+  height: rowHeight,
+  fit,
+  width,
+  onPick,
+  selected,
+  look,
+  mode,
+  showBorder,
+  darkMode,
+}) => {
+  // With dynamic height on (in an app), a row grows with its components, as the native Listview's rows do.
+  const [rowRef, height] = useCanvasFit(fit, rowHeight, '[role=listitem]');
   const contextValue = useMemo(
     () => ({ contextPath: [...parentPath, { containerId: id, index }] }),
     [parentPath, id, index]
@@ -29,6 +46,7 @@ const Row = ({ id, index, parentPath, height, width, onPick, selected, look, mod
   return (
     <SubcontainerContext.Provider value={contextValue}>
       <div
+        ref={rowRef}
         role="listitem"
         onClickCapture={() => onPick(index)}
         className={cn(
@@ -256,6 +274,7 @@ export const ShadListView = (props) => {
               index={index}
               parentPath={contextPath}
               height={rowHeight}
+              fit={fitsContentInView(props.componentType ?? 'ShadListView', properties) && props.currentMode === 'view'}
               width={itemWidth}
               onPick={(i) => !isDisabled && pick(i)}
               selected={properties.highlightSelectedRow !== false && index === selectedIndex}

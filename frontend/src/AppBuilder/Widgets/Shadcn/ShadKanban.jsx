@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from './ui
 import { Shell, Spinner } from './Shadcn';
 import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from './kanbanBoard';
 import { KANBAN_INSTRUCTIONS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
+import { useCanvasFit } from './canvasFit';
 import { SHADOWS, badgeLook, isSet, kanbanLook, px } from './kanbanLook';
 import { stringify } from '../packJson';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
@@ -416,6 +417,33 @@ const RIGHT_FADE = {
 
 /** Where a drop lands: what is under the pointer, a card first, then a column (a folded column is a 44px strip that
  *  closestCorners passed over for a card nearby, so drops on it were lost); off the board, the nearest corners. */
+/** A custom card's canvas: the components on the board's card, laid out with this card's data. With dynamic height
+ *  on (in an app) the card grows with them, so a long text or an opened accordion is not cut off at cardHeight. */
+const CustomCardBody = ({ id, index, width, height: cardHeight, fit, editing, darkMode }) => {
+  const [ref, height] = useCanvasFit(fit, cardHeight, '[data-card-canvas]');
+  return (
+    // In the editor, a press inside the card edits its components instead of starting a card drag.
+    <div
+      ref={ref}
+      data-card-canvas=""
+      style={{ height }}
+      onPointerDown={editing ? (e) => e.stopPropagation() : undefined}
+    >
+      {width > 0 ? (
+        <SubContainer
+          id={id}
+          index={index}
+          canvasWidth={width}
+          canvasHeight={height}
+          componentType="ShadKanban"
+          styles={{ backgroundColor: 'transparent' }}
+          darkMode={darkMode}
+        />
+      ) : null}
+    </div>
+  );
+};
+
 export const kanbanCollision = (args) => {
   const within = pointerWithin(args);
   const cards = within.filter((c) => c.data?.droppableContainer?.data?.current?.type === 'card');
@@ -588,22 +616,18 @@ export const ShadKanban = (props) => {
     observer.observe(boardRef.current);
     return () => observer.disconnect();
   }, [custom, columns.length, collapsedColumns]);
+  const fitCards = custom && !editing && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
   const renderBody = custom
     ? (card) => (
-        // In the editor, a press inside the card edits its components instead of starting a card drag.
-        <div style={{ height: cardHeight }} onPointerDown={editing ? (e) => e.stopPropagation() : undefined}>
-          {cardWidth > 0 ? (
-            <SubContainer
-              id={props.id}
-              index={order.get(card.__key) ?? 0}
-              canvasWidth={cardWidth}
-              canvasHeight={cardHeight}
-              componentType="ShadKanban"
-              styles={{ backgroundColor: 'transparent' }}
-              darkMode={props.darkMode}
-            />
-          ) : null}
-        </div>
+        <CustomCardBody
+          id={props.id}
+          index={order.get(card.__key) ?? 0}
+          width={cardWidth}
+          height={cardHeight}
+          fit={fitCards}
+          editing={editing}
+          darkMode={props.darkMode}
+        />
       )
     : (card) => (
         <CardBody
