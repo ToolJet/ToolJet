@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, validateUrlForSSRF } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import got, { Headers } from 'got';
 const JSON5 = require('json5');
@@ -21,6 +21,9 @@ export default class Baserow implements QueryService {
     const apiToken = sourceOptions.api_token;
     const host = sourceOptions.baserow_host;
     const baseURL = host === 'baserow_cloud' ? 'https://api.baserow.io' : sourceOptions.base_url;
+
+    // SSRF Protection: Validate the data source URL before making any request.
+    await validateUrlForSSRF(baseURL);
 
     try {
       switch (operation) {

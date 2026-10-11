@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, ConnectionTestResult, validateUrlForSSRF } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import got from 'got';
 const JSON5 = require('json5');
@@ -15,6 +15,13 @@ export default class Couchdb implements QueryService {
       const key = Buffer.from(combined).toString('base64');
       return { Authorization: `Basic ${key}` };
     };
+
+    // SSRF Protection: the data source's host/port covers every operation except
+    // get_view, which fetches a fully separate caller-supplied view_url instead.
+    await validateUrlForSSRF(`${protocol}://${host}:${port}`);
+    if (operation === 'get_view') {
+      await validateUrlForSSRF(view_url);
+    }
 
     try {
       switch (operation) {
@@ -119,6 +126,7 @@ export default class Couchdb implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { username, password, port, host, database, protocol } = sourceOptions;
+    await validateUrlForSSRF(`${protocol}://${host}:${port}`);
     const combined = `${username}:${password}`;
     const key = Buffer.from(combined).toString('base64');
     const client = await got(`${protocol}://${host}:${port}/_all_dbs`, {
