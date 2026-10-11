@@ -125,7 +125,7 @@ const Header = ({
   const handleFileValidation = () => {
     const fileValidationErrors = [];
 
-    const maxFileSizeInMB = config.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB || 5;
+    const maxFileSizeInMB = config.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB || 500;
     if (bulkUploadFile && bulkUploadFile.size / 1024 > maxFileSizeInMB * 1024) {
       fileValidationErrors.push(`File size cannot exceed ${maxFileSizeInMB}mb`);
     }
