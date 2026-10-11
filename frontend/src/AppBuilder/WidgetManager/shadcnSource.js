@@ -220,7 +220,7 @@ export const shadTextConfig = shadConfig({
   displayName: 'Text',
   description:
     "shadcn/ui paragraph, lead, muted or small text. Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight, fontSize (px), letterSpacing (px or em) and textTransform (a small uppercase eyebrow: tone small, textTransform 'uppercase', letterSpacing '0.12em')",
-  defaultSize: { width: 16, height: 24 },
+  defaultSize: { width: 16, height: 32 },
   withHeight: true,
   properties: {
     text: code('Text', STRING, 'Text'),

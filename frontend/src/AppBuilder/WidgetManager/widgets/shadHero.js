@@ -7,7 +7,7 @@ export const shadHeroConfig = {
   component: 'ShadHero',
   defaultSize: {
     width: 43,
-    height: 160,
+    height: 200,
   },
   others: {
     showOnDesktop: {

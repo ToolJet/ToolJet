@@ -318,7 +318,7 @@ export const shadCarouselConfig = shadConfig({
   displayName: 'Carousel',
   description:
     "shadcn/ui carousel of slides [{ image, title?, description?, link? }] (or image URLs) with arrows and dots, loop, autoplay (interval ms, pauses on hover), slidesPerView 1 to 4, aspectRatio ('16/9', '4/3', '1/1', '21/9' or 'fill' to fill the widget's height), imageFit cover or contain, captions as an overlay or below. Exposed currentIndex, currentSlide and clickedSlide (with its index); events onSlideChange, onSlideClick (a slide's link also opens in a new tab); actions next, previous, goTo(index). Height follows the width and ratio (+28px for dots, +52px for captions below)",
-  defaultSize: { width: 20, height: 320 },
+  defaultSize: { width: 20, height: 410 },
   withHeight: true,
   properties: {
     slides: code('Slides', ARRAY, [], {

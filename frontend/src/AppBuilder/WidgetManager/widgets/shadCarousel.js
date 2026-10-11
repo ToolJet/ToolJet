@@ -7,7 +7,7 @@ export const shadCarouselConfig = {
   component: 'ShadCarousel',
   defaultSize: {
     width: 20,
-    height: 320,
+    height: 410,
   },
   others: {
     showOnDesktop: {

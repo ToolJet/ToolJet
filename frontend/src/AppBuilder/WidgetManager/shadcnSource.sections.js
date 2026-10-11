@@ -30,7 +30,7 @@ export const shadHeroConfig = shadConfig({
   displayName: 'Hero',
   description:
     "shadcn/ui page hero at the top of a page: eyebrow (small caps line above), title, subtitle, meta facts (['Sun, 11 Oct', '14 bookings'] or [{ label, value }]) and up to two actions (actionLabel, secondaryActionLabel; onActionClick, onSecondaryActionClick). background 'plain' (no panel), 'tint' (a soft panel in the accent), 'gradient' (accent wash), 'image' (imageUrl behind a dark overlay, white text) or 'dark' (deep accent panel, white text); icon (lucide name) in a rounded tile beside the title; align left or center; size compact, default or large. Styles accentColor (else the theme's primary), titleFontFamily ('serif', 'display', ...). Height: grows with its content (about 150px default, 120px compact, 220px large; add 40px for actions)",
-  defaultSize: { width: 43, height: 160 },
+  defaultSize: { width: 43, height: 200 },
   withHeight: true,
   properties: {
     eyebrow: code('Eyebrow', STRING, 'Operations'),
