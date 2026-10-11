@@ -245,6 +245,11 @@ export class DataQueriesService implements IDataQueriesService {
       dataSource: true,
     });
 
+    // Override data source when dynamic fx resolution provides a different source
+    if (dataSource && dataSource.id !== dataQuery.dataSource?.id) {
+      dataQuery.dataSource = dataSource;
+    }
+
     // Persisting options on run is an EDITOR authoring convenience.
     // This endpoint is also hit by app preview, and there the user is consuming, not editing,
     // so the loaded options must NOT be written back.
@@ -263,11 +268,19 @@ export class DataQueriesService implements IDataQueriesService {
     response: Response,
     app?: App
   ) {
-    const { resolvedOptions } = updateDataQueryDto;
+    const { resolvedOptions, data_source_id: overrideDataSourceId } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
       dataSource: true,
     });
+
+    // Override data source when dynamic fx resolution provides a different source
+    if (overrideDataSourceId && overrideDataSourceId !== dataQuery.dataSource?.id) {
+      const overrideDataSource = await this.dataSourceRepository.findById(overrideDataSourceId, user.organizationId);
+      if (overrideDataSource) {
+        dataQuery.dataSource = overrideDataSource;
+      }
+    }
 
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
   }
