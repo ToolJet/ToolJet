@@ -19,10 +19,15 @@ export default async function generateFile(filename, data, fileType) {
     window.URL.revokeObjectURL(elem.href);
   }
 }
+
 async function generatePDF(filename, data) {
   // eslint-disable-next-line import/no-unresolved
-  const jsPDFNamespace = await import('jspdf');
+  const [jsPDFNamespace, jsPDFAutoTableNamespace] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
   const jsPDF = jsPDFNamespace.jsPDF || jsPDFNamespace.default;
+  const autoTable = jsPDFAutoTableNamespace.autoTable || jsPDFAutoTableNamespace.default;
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 10;
@@ -39,27 +44,42 @@ async function generatePDF(filename, data) {
       });
       y += 10;
     } else if (Array.isArray(value)) {
-      const columnNames = Object.keys(value[0]);
+      if (value.length === 0) {
+        return;
+      }
+      const columnNames = Object.keys(value[0] || {});
 
       // Print table headers
-      doc.autoTable({
+      const tableOptions = {
         startY: y,
         head: [columnNames],
         body: value.map((item) => Object.values(item)),
-      });
+      };
 
-      y = doc.lastAutoTable.finalY + 10;
+      if (typeof doc.autoTable === 'function') {
+        doc.autoTable(tableOptions);
+      } else if (typeof autoTable === 'function') {
+        autoTable(doc, tableOptions);
+      }
+
+      y = (doc.lastAutoTable?.finalY ?? y) + 10;
     } else if (valueType === 'object' && value !== null) {
       const columnNames = Object.keys(value);
 
       // Print table headers
-      doc.autoTable({
+      const tableOptions = {
         startY: y,
         head: [columnNames],
         body: [Object.values(value)],
-      });
+      };
 
-      y = doc.lastAutoTable.finalY + 10;
+      if (typeof doc.autoTable === 'function') {
+        doc.autoTable(tableOptions);
+      } else if (typeof autoTable === 'function') {
+        autoTable(doc, tableOptions);
+      }
+
+      y = (doc.lastAutoTable?.finalY ?? y) + 10;
     } else {
       throw new Error('Invalid data type. Expected string, object, or array.');
     }
