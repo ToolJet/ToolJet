@@ -266,6 +266,15 @@ input:disabled+.slider {
   margin: 0 auto;
   background: var(--page-weak);
 
+  .form-switch > .form-check-input:not(:checked):not(:disabled):not(:hover):not(:focus):not(:active) {
+    background-color: var(--controls-base-active);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23656d77'/%3e%3c/svg%3e");
+  }
+
+  .sso-option .switch:not(:hover) input:not(:checked):not(:disabled):not(:focus):not(:active) + .slider {
+    background-color: var(--controls-base-active);
+  }
+
   .card {
     width: 880px;
 
@@ -321,6 +330,11 @@ input:disabled+.slider {
       }
     }
   }
+}
+
+.theme-dark .workspace-settings-page .form-switch > .form-check-input:not(:checked):not(:disabled):not(:hover):not(:focus):not(:active),
+.dark-theme .workspace-settings-page .form-switch > .form-check-input:not(:checked):not(:disabled):not(:hover):not(:focus):not(:active) {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e");
 }
 
 
