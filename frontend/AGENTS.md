@@ -19,8 +19,6 @@ when the public behavior, runtime, or infrastructure applies.
 
 - Query Manager named input controls and query invocation only consume array-valued `options.parameters`. Marketplace plugins can use the same option for JSON text or objects; leave those values intact for the plugin editor and backend validation.
 
-- In development, Marketplace card icons load from `/marketplace-assets/`, served by webpack from `marketplace/plugins/`. Restart the frontend after changing webpack's static asset configuration.
-
 - Marketplace connectors using `react-component-oauth` alongside token authentication must appear in DataSourceManager's OAuth footer list so OAuth uses its own connect/save buttons and token mode retains test/save controls (e.g. `gitlab`).
 
 - Check `frontend/src/_ui/` (55+ components) before creating a new UI component

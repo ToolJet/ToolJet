@@ -13,6 +13,8 @@ OAuth authorization-code exchange, and refresh. `lib/manifest.json` defines cred
   Personal/project token errors remain `QueryError`.
 - Project/file paths are encoded once; issue and merge request identifiers are project-local IIDs.
 - List operations return a single page. Parameters and write bodies accept JSON objects.
+- Changing a GitLab query operation clears operation inputs, including shared and hidden fields, while preserving query-level settings (`QueryManagerBody.optionchanged`).
+- Query defaults use plain values because the query editor copies them directly. `run()` also accepts the legacy `{ value: operation }` wrapper so existing queries continue to work.
 - Native OAuth registration lives in `data-sources/util.service.ts::authorizeOauth2`,
   `data-queries/util.service.ts::runQuery`, and the DataSourceManager OAuth footer list.
 - No new runtime dependency: HTTP uses Node's fetch. Build with the repository's required Node version.
