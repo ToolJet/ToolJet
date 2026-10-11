@@ -11,7 +11,8 @@
         }
 
         .cm-gutters {
-            width: 42px !important;
+            width: auto !important;
+            min-width: 42px !important;
             background-color: var(--interactive-default) !important;
             color: var(--text-disabled) !important;
             border-right: 1px solid var(--borders-disabled-on-white) !important;
