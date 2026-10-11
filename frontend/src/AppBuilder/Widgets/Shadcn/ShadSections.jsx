@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as Lucide from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { LoadingBox, Shell, busy, wantsSkeleton } from './Shadcn';
@@ -296,6 +296,8 @@ const CARD_STYLE = {
   flat: 'border-0',
 };
 
+const CARDS_PER_STEP = 48;
+
 export const ShadCardGrid = (props) => {
   const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
   const ref = useRef(null);
@@ -332,6 +334,10 @@ export const ShadCardGrid = (props) => {
       p.idField,
     ]
   );
+  // A grid draws its first CARDS_PER_STEP cards and a button for the next ones: a 10,000-row binding drew every card
+  // (over 100,000 elements) and froze the page. A new data binding starts again from the first step.
+  const [shownCount, setShownCount] = useState(CARDS_PER_STEP);
+  useEffect(() => setShownCount(CARDS_PER_STEP), [cards]);
   const [selected, setSelected] = useState(null);
   useExposed(setExposedVariables, p, {
     selectedItem: selected?.row ?? {},
@@ -375,7 +381,7 @@ export const ShadCardGrid = (props) => {
   } else {
     body = (
       <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
-        {cards.map((card) => {
+        {cards.slice(0, shownCount).map((card) => {
           const isSelected = p.highlightSelected !== false && selected?.key === card.key;
           return (
             <div
@@ -430,6 +436,17 @@ export const ShadCardGrid = (props) => {
             </div>
           );
         })}
+        {cards.length > shownCount ? (
+          <div className="col-span-full flex justify-center pt-1">
+            <button
+              type="button"
+              onClick={() => setShownCount((n) => n + CARDS_PER_STEP)}
+              className="rounded-md border border-[color:var(--lk-border,var(--sc-border))] px-3 py-1.5 text-sm text-[color:var(--sc-muted-foreground)] transition-colors hover:bg-[color:var(--sc-muted)] hover:text-[color:var(--sc-foreground)]"
+            >
+              {`Show ${Math.min(CARDS_PER_STEP, cards.length - shownCount)} more of ${cards.length - shownCount}`}
+            </button>
+          </div>
+        ) : null}
       </div>
     );
   }
