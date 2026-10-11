@@ -456,7 +456,7 @@ export const createEventsSlice = (set, get) => ({
           'onCancelKeyValuePairChanges',
           'onRefresh',
           // The shadcn/ui pack's own events (Widgets/Shadcn/EVENT_PARITY.md): a name missing here never runs its
-          // handlers, with no error.
+          // handlers, with no error (everyWidgetEventDispatches.spec.js fails for any widget event left out).
           'onAction',
           'onActionButtonClicked',
           'onActionClick',
@@ -472,6 +472,11 @@ export const createEventsSlice = (set, get) => ({
           'onSlideClick',
           'onTagClick',
           'onTagRemoved',
+          // The Ant Design pack's.
+          'onActionClicked',
+          'onButtonClick',
+          'onEntryClicked',
+          'onItemClicked',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);
