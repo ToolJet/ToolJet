@@ -37,8 +37,9 @@ const OPAQUE_VALUE_KEYS: readonly string[] = ['pages', 'events', 'dataQueries', 
 
 export function convertAllKeysToSnakeCase(o: JsonValue): JsonValue {
   if (Array.isArray(o)) {
-    return o.map((value: JsonValue): JsonValue =>
-      typeof value === 'object' && value !== null ? convertAllKeysToSnakeCase(value) : value
+    return o.map(
+      (value: JsonValue): JsonValue =>
+        typeof value === 'object' && value !== null ? convertAllKeysToSnakeCase(value) : value
     );
   } else if (typeof o === 'object' && o !== null) {
     const source = o as JsonObject;
@@ -100,7 +101,7 @@ type QueryLike = { options?: Record<string, unknown> };
  *
  * NO-OP FOR CORRECTLY-STORED DATA (post backend-serialization unification)
  *  - The editor writes these keys camelCase, they are stored verbatim, and all the backend endpoints now return the `options` blob verbatim
- *  - so the whitelisted keys arrive camelCase everywhere and the guard below (`options[snakeKey] !== undefined`) never fires. 
+ *  - so the whitelisted keys arrive camelCase everywhere and the guard below (`options[snakeKey] !== undefined`) never fires.
  *
  * WHY IT'S KEPT (a cheap, idempotent safety net)
  *  - It still HEALS rows that already have these keys stored snake_case
