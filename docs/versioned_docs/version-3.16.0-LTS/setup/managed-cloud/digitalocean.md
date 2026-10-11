@@ -6,6 +6,10 @@ slug: /setup/digitalocean/
 
 Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
 
+:::info
+**Looking for automated SSL/HTTPS setup?** ToolJet now includes built-in SSL certificate management with Let's Encrypt. Learn more in the [Built-in SSL documentation](/docs/setup/builtin-ssl/overview).
+:::
+
 :::warning
 To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::

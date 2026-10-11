@@ -1,0 +1,53 @@
+name: Deploy Storybook to Netlify
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - lts-3.16
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy"
+        required: true
+        default: "lts-3.16"
+
+jobs:
+  deploy-storybook:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.branch || 'lts-3.16' }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.15.1"
+          cache: "npm"
+          cache-dependency-path: frontend/package.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Build Storybook
+        working-directory: frontend
+        run: npx storybook build
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3
+        with:
+          publish-dir: frontend/storybook-static
+          production-branch: lts-3.16
+          production-deploy: ${{ github.event_name == 'pull_request' || inputs.branch == 'lts-3.16' }}
+          deploy-message: |
+            Storybook deploy from ${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref_name }} @ ${{ github.sha }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          enable-commit-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_STORYBOOK_SITE_ID }}
