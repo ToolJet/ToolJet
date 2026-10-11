@@ -142,7 +142,9 @@ export const FlexContainer = ({
   const flexCanvasStyles = {
     display: 'flex',
     flexDirection: effectiveDirection,
-    flexWrap: shouldStack ? 'nowrap' : flexWrap ? 'wrap' : 'nowrap',
+    // Only a row wraps: a wrapping column starts a second column beside the first once its content outgrows its
+    // height (dynamic-height tables did), and a rooms page drew all its cards off the right edge.
+    flexWrap: shouldStack || !isRow ? 'nowrap' : flexWrap ? 'wrap' : 'nowrap',
     gap: `${gap ?? 8}px`,
     padding: `${padding ?? 12}px`,
     justifyContent: justifyContent ?? 'flex-start',
