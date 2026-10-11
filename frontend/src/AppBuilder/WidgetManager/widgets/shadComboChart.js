@@ -357,6 +357,17 @@ export const shadComboChartConfig = {
       },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -599,6 +610,9 @@ export const shadComboChartConfig = {
       },
       visibility: {
         value: '{{true}}',
+      },
+      collapseWhenHidden: {
+        value: '{{false}}',
       },
       disabledState: {
         value: '{{false}}',

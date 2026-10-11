@@ -649,6 +649,8 @@ const ANIMATED = [
 export const ELSEWHERE = (name) => [
   'loadingIndicator',
   'dynamicHeight',
+  // collapseWhenHidden.spec.jsx
+  'collapseWhenHidden',
   ...(ANIMATED.includes(name) ? ['animate'] : []),
   ...(name === 'ShadButton' ? ['fullWidth'] : []),
   ...(name === 'ShadAvatar' ? ['src'] : []),

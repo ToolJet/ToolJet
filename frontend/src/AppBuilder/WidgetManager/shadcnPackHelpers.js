@@ -117,6 +117,9 @@ const commonProperties = (withHeight, name) => ({
   loadingState: toggle('Loading state', false, { section: 'additionalActions' }),
   ...(SKELETON_CAPABLE.has(name) ? { loadingIndicator } : {}),
   visibility: toggle('Visibility', true, { section: 'additionalActions' }),
+  // The native widgets' option: hidden, the widget gives its space to the ones below it (RenderWidget reflows). A
+  // FlexContainer child always does.
+  collapseWhenHidden: toggle('Collapse when hidden', false, { section: 'additionalActions' }),
   disabledState: toggle('Disable', false, { section: 'additionalActions' }),
   // The native tooltip pair (RenderWidget shows it on hover for pack widgets).
   tooltipFormat: {
@@ -147,6 +150,7 @@ const commonDefinition = (withHeight, name) => ({
   loadingState: { value: '{{false}}' },
   ...(SKELETON_CAPABLE.has(name) ? { loadingIndicator: { value: 'spinner' } } : {}),
   visibility: { value: '{{true}}' },
+  collapseWhenHidden: { value: '{{false}}' },
   disabledState: { value: '{{false}}' },
   tooltipFormat: { value: 'plainText' },
   tooltip: { value: '' },

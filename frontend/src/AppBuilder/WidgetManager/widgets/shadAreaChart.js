@@ -215,6 +215,17 @@ export const shadAreaChartConfig = {
       },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -433,6 +444,9 @@ export const shadAreaChartConfig = {
       },
       visibility: {
         value: '{{true}}',
+      },
+      collapseWhenHidden: {
+        value: '{{false}}',
       },
       disabledState: {
         value: '{{false}}',
