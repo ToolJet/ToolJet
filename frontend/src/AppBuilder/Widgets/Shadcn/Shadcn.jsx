@@ -525,7 +525,11 @@ export const ShadStat = (props) => {
   // The badge sits in the label row unless the icon takes that corner; then it follows the figure.
   const badgeInHeader = !(icon && iconPosition === 'right');
   const changeLabel = properties.changeLabel ? (
-    <span className="text-xs text-[color:var(--lk-help,var(--sc-muted-foreground))]">
+    // In a fixed box the context line keeps to one line: wrapping to two, it pushed the title out of a KPI tile.
+    <span
+      className={cn('text-xs text-[color:var(--lk-help,var(--sc-muted-foreground))]', fixed && 'line-clamp-1')}
+      title={fixed ? String(properties.changeLabel) : undefined}
+    >
       {String(properties.changeLabel)}
     </span>
   ) : null;

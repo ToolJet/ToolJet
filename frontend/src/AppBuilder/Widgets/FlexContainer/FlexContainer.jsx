@@ -178,12 +178,24 @@ export const FlexContainer = ({
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
+          flexShrink: 0,
         }}
       >
         {String(cardTitle ?? '')}
       </span>
       {cardExtra ? (
-        <span style={{ fontSize: 14, lineHeight: '20px', color: 'var(--cc-placeholder-text)' }}>
+        // One line, as the header's height assumes: wrapping to two, a description pushed the title out of a KPI card.
+        <span
+          title={String(cardExtra)}
+          style={{
+            fontSize: 14,
+            lineHeight: '20px',
+            color: 'var(--cc-placeholder-text)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {String(cardExtra)}
         </span>
       ) : null}
