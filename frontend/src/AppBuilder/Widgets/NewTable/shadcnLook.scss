@@ -72,6 +72,15 @@ $radius: var(--cc-radius-default, 6px);
     }
   }
 
+  // Columns fill the table's width, as shadcn's data table does: each keeps its set width as a minimum and the
+  // columns share what is left, instead of an empty band at the right (room names wrapped in 130px beside 700px of
+  // nothing). Frozen columns and the selection checkbox keep their width, so sticky offsets hold; header and body
+  // cells use the same rule, so they stay aligned.
+  thead th:not(.pinned-column):not(.selector-header),
+  tbody td:not(.pinned-column):not(.selector-column) {
+    flex-grow: 1 !important;
+  }
+
   // Rows: hairline dividers and a soft hover.
   tbody tr.table-row {
     border-bottom: 1px solid var(--cc-weak-border) !important;

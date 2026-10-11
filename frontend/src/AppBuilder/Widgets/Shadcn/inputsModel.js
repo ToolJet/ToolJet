@@ -440,11 +440,37 @@ export const dateTimeExposed = (d, displayFormat) =>
       }
     : { value: '', selectedDate: '', selectedTime: '', unixTimestamp: null, displayValue: '' };
 
+/**
+ * A display format in dayjs tokens. Builds often write date-fns (Unicode) formats: "MMM d, yyyy" in dayjs read
+ * "Oct 6, yyyy" (d is the weekday there, and yyyy no token). A format with y or E is read as date-fns: yyyy and yy are
+ * the year, d and dd the day of the month, do its ordinal, EEE and EEEE the weekday. A lone d is always the day of the
+ * month. [Escaped] text is kept.
+ */
+export const toDayjsFormat = (format) => {
+  if (typeof format !== 'string' || !format) return format;
+  const parts = format.split(/(\[[^\]]*\])/);
+  const plain = parts.filter((part) => !part.startsWith('['));
+  const dateFns = plain.some((part) => /y|E/.test(part));
+  return parts
+    .map((part) => {
+      if (part.startsWith('[')) return part;
+      if (!dateFns) return part.replace(/d+/g, (run) => (run.length === 1 ? 'D' : run));
+      return part
+        .replace(/y+/g, (run) => (run.length === 2 ? 'YY' : 'YYYY'))
+        .replace(/E{4,}/g, 'dddd')
+        .replace(/E{1,3}/g, 'ddd')
+        .replace(/(^|[^d])do/g, '$1Do')
+        .replace(/(^|[^d])dd(?!d)/g, '$1DD')
+        .replace(/(^|[^dD])d(?!d)/g, '$1D');
+    })
+    .join('');
+};
+
 /** A date in an author's format, falling back to 'DD MMM YYYY h:mm A' when the format is not text. */
 export const safeFormat = (d, format) => {
   if (!d || !d.isValid()) return '';
   try {
-    return d.format(isBlank(format) || typeof format !== 'string' ? 'DD MMM YYYY h:mm A' : format);
+    return d.format(isBlank(format) || typeof format !== 'string' ? 'DD MMM YYYY h:mm A' : toDayjsFormat(format));
   } catch {
     return d.format('DD MMM YYYY h:mm A');
   }

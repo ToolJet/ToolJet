@@ -42,6 +42,7 @@ import {
 } from './ui';
 import { badgeLook, isSet } from './kanbanLook';
 import { toDate, ymd } from './actionsModel';
+import { toDayjsFormat } from './inputsModel';
 import { sliderBounds, sliderValues } from './sliderModel';
 import { lookVars, whenSet } from './shadcnLook';
 import { fontStack, textCase, typeClasses } from './typeLook';
@@ -1247,7 +1248,10 @@ export const ShadDatePicker = (props) => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
   const range = properties.mode === 'range';
   // Only text formats and valid dates: dayjs throws on a non-text format, and the calendar on an invalid date.
-  const format = typeof properties.format === 'string' && properties.format.trim() ? properties.format : 'DD MMM YYYY';
+  const format =
+    typeof properties.format === 'string' && properties.format.trim()
+      ? toDayjsFormat(properties.format)
+      : 'DD MMM YYYY';
   const raw = properties.defaultValue;
   const initial = range ? { from: toDate(list(raw)[0]), to: toDate(list(raw)[1]) } : toDate(raw);
   const [selected, setSelected] = useState(initial);
