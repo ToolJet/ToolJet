@@ -336,8 +336,11 @@ const RenderWidget = ({
 
   // User-defined CSS class(es), gated by the customStyling license. Trimmed + whitespace-collapsed.
   const userCssClass = hasCustomStyling ? (resolvedStyles?.cssClass ?? '').trim().replace(/\s+/g, ' ') : '';
+  // A shadcn pack widget draws its own disabled and loading states (half opacity, a skeleton); the wrapper's
+  // .disabled halved it again, and a disabled toolbar button read at a quarter opacity, near invisible.
   const isDisabledOrLoading =
     !['Modal', 'ModalV2', 'ShadDialog', 'CircularProgressBar'].includes(component.component) &&
+    !SHADCN_COMPONENTS.includes(component.component) &&
     (isDisabled || isLoading);
   const innerWidgetClassName = [
     'canvas-component',
