@@ -184,3 +184,39 @@ $radius: var(--cc-radius-default, 6px);
     }
   }
 }
+
+// Status chips for html columns and Html blocks: <span class="tj-chip tj-chip-success">Paid</span>. Tinted from the
+// app theme's status colours, so one snippet reads right in light and dark mode (the fixed light tints a build wrote
+// glowed on dark tables). Variants: success, warning, danger, info (the brand colour) and neutral.
+.tj-chip {
+  --chip: var(--cc-placeholder-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  background: color-mix(in srgb, var(--chip) 14%, transparent);
+  color: color-mix(in srgb, var(--chip) 78%, var(--cc-primary-text));
+}
+.tj-chip-success {
+  --chip: var(--cc-success-systemStatus, #16a34a);
+}
+.tj-chip-warning {
+  --chip: var(--cc-warning-systemStatus, #d97706);
+}
+.tj-chip-danger {
+  --chip: var(--cc-error-systemStatus, #dc2626);
+}
+.tj-chip-info {
+  --chip: var(--cc-primary-brand, #2563eb);
+}
+.tj-chip-neutral {
+  --chip: var(--cc-placeholder-text, #64748b);
+}
