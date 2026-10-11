@@ -86,4 +86,23 @@
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
   }
+
+  .theme-dark &,
+  .dark-theme &,
+  &.theme-dark,
+  &.dark-theme {
+    scrollbar-color: var(--interactive-selected) transparent;
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--interactive-selected);
+
+      &:hover {
+        background-color: var(--interactive-hover);
+      }
+    }
+  }
 }
