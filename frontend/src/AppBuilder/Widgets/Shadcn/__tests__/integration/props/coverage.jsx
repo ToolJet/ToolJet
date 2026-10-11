@@ -246,6 +246,20 @@ export const PROBES = [
   { widget: 'ShadScatterChart', key: 'currency', value: 'EUR', context: { properties: { yAxisFormat: 'currency' } } },
   { widget: 'ShadFunnelChart', key: 'currency', value: 'EUR', context: { properties: { yAxisFormat: 'currency' } } },
   { widget: 'ShadComboChart', key: 'currency', value: 'EUR', context: { properties: { yAxisFormat: 'currency' } } },
+  {
+    widget: 'ShadHeatmapChart',
+    key: 'currency',
+    value: 'EUR',
+    context: { properties: { yAxisFormat: 'currency', showValues: '{{true}}' } },
+  },
+  { widget: 'ShadHeatmapChart', key: 'xOrder', value: fx(['18:00', '16:00', '14:00', '12:00', '10:00', '08:00']) },
+  { widget: 'ShadHeatmapChart', key: 'yOrder', value: fx(['Sun', 'Sat', 'Fri', 'Thu', 'Wed', 'Tue', 'Mon']) },
+  {
+    widget: 'ShadBarChart',
+    key: 'categoryColors',
+    value: fx({ Jun: '#16a34a', Aug: '#dc2626' }),
+    context: { properties: { data: TWO_SERIES, xField: 'month', yFields: fx(['a']) } },
+  },
   { widget: 'ShadSparkline', key: 'bandMin', value: '{{10}}', context: { properties: { showBand: '{{true}}' } } },
   { widget: 'ShadSparkline', key: 'bandMax', value: '{{20}}', context: { properties: { showBand: '{{true}}' } } },
   // Data widgets

@@ -429,7 +429,9 @@ export const shadHeatmapChartConfig = shadConfig({
     cellGap: code('Cell gap (px)', OPTIONAL_NUMBER, 3),
     yAxisFormat: choice('Value format', ['number', 'currency', 'percent', 'compact'], 'number'),
     currency: code('Currency code', STRING, 'USD'),
-    ...common,
+    valuePrefix: code('Value prefix', STRING, ''),
+    valueSuffix: code('Value suffix', STRING, ''),
+    emptyText: code('Empty message', STRING, 'No data'),
     showLegend: toggle('Legend', true),
   },
   defaults: {
@@ -443,7 +445,9 @@ export const shadHeatmapChartConfig = shadConfig({
     cellGap: { value: '{{3}}' },
     yAxisFormat: { value: 'number' },
     currency: { value: 'USD' },
-    ...commonDefaults,
+    valuePrefix: { value: '' },
+    valueSuffix: { value: '' },
+    emptyText: { value: 'No data' },
     showLegend: { value: '{{true}}' },
   },
   styles: {

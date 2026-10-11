@@ -181,16 +181,6 @@ export const shadHeatmapChartConfig = {
         defaultValue: 'No data',
       },
     },
-    animate: {
-      type: 'toggle',
-      displayName: 'Animate',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: true,
-      },
-    },
     showLegend: {
       type: 'toggle',
       displayName: 'Legend',
@@ -441,9 +431,6 @@ export const shadHeatmapChartConfig = {
       },
       emptyText: {
         value: 'No data',
-      },
-      animate: {
-        value: '{{true}}',
       },
       showLegend: {
         value: '{{true}}',
