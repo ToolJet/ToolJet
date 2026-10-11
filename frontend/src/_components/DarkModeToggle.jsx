@@ -20,7 +20,7 @@ export const DarkModeToggle = function DarkModeToggle({
   toggleSize = 'default',
   btnClassName = '',
 }) {
-  const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
+  const updateExposedTheme = useStore((state) => state.updateExposedTheme, shallow);
   const setGlobalSettings = useStore((state) => state.setGlobalSettings, shallow);
   const globalSettings = useStore((state) => state.globalSettings, shallow);
   const [appLevelDarkMode, setAppLevelDarkMode] = useState(false);
@@ -30,14 +30,14 @@ export const DarkModeToggle = function DarkModeToggle({
   const toggleDarkMode = () => {
     if (toggleForCanvas) {
       const exposedTheme = !appLevelDarkMode ? 'dark' : 'light';
-      setResolvedGlobals('theme', { name: exposedTheme });
+      updateExposedTheme(exposedTheme);
       setAppLevelDarkMode(!appLevelDarkMode);
       switchDarkMode(!darkMode);
     } else {
       posthogHelper.captureEvent('darkMode', { mode: !darkMode ? 'dark' : 'white' });
       switchDarkMode(!darkMode);
       if (appMode === 'auto') {
-        setResolvedGlobals('theme', { name: !darkMode ? 'dark' : 'light' });
+        updateExposedTheme(!darkMode ? 'dark' : 'light');
       }
     }
   };
