@@ -363,7 +363,9 @@ const Table = memo(
         }`}
         style={{
           height: isDynamicHeightEnabled ? (subContainerIndex != null ? 'auto' : '100%') : `${height}px`,
-          ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
+          // The shadcn look is as tall as its rows, like shadcn's data table: no floor at the drawn height, which left a
+          // band under the last row of a short page.
+          ...(isDynamicHeightEnabled && styles?.tableLook !== 'shadcn' && { minHeight: `${height}px` }),
           display: exposedVariablesTemporaryState.isVisible ? '' : 'none',
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,
