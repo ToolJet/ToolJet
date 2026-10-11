@@ -29,6 +29,14 @@ describe('dateTicks', () => {
     expect(dateTicks([{ d: 'Jan' }], 'd')).toBeUndefined();
     expect(dateTicks([], 'd')).toBeUndefined();
   });
+  it('formats an axis of year-months as the month, with the year when the axis spans more than one', () => {
+    const { dateTicks } = require('../ShadCharts');
+    const one = [{ m: '2026-03' }, { m: '2026-04' }];
+    expect(dateTicks(one, 'm')('2026-03')).toBe('Mar');
+    const two = [{ m: '2025-12' }, { m: '2026-01' }];
+    expect(dateTicks(two, 'm')('2025-12')).toBe("Dec '25");
+    expect(dateTicks(two, 'm')('2026-01')).toBe("Jan '26");
+  });
 });
 
 describe('resolveChartFields', () => {

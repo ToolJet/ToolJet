@@ -7,3 +7,7 @@ export const avatarHue = (name) => {
   for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 0x01000193);
   return ((hash >>> 0) % 7) * 51 + 12;
 };
+
+// A placeholder for no person ("Unassigned", "TBD", "—"): drawn as plain text, never as an avatar.
+export const isNobody = (value) =>
+  /^\s*(unassigned|not assigned|none|nobody|n\/a|tbd|tba|[-–—]+)\s*$/i.test(String(value ?? ''));

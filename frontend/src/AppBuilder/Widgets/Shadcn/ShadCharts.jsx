@@ -173,10 +173,22 @@ export const valueAxisWidth = (data, series, format, stacked = false) => {
 };
 /** An x axis of ISO dates ("2026-09-10") reads as "10 Sep", the pack's date style; other values are shown as they are. */
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:[T ][\d:.]+(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+const YEAR_MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 export const dateTicks = (data, key) => {
   const sample = list(data)
     .map((row) => row?.[key])
     .find((v) => v !== null && v !== undefined && v !== '');
+  if (typeof sample === 'string' && YEAR_MONTH.test(sample)) {
+    // Year-months ("2026-03", a monthly rollup's key) read "Mar", or "Mar '26" when the axis spans two years.
+    const years = new Set(
+      list(data)
+        .map((row) => row?.[key])
+        .filter((v) => typeof v === 'string' && YEAR_MONTH.test(v))
+        .map((v) => v.slice(0, 4))
+    );
+    const shape = years.size > 1 ? "MMM 'YY" : 'MMM';
+    return (v) => (typeof v === 'string' && YEAR_MONTH.test(v) ? dayjs(`${v}-01`).format(shape) : v);
+  }
   if (typeof sample !== 'string' || !ISO_DATE.test(sample)) return undefined;
   return (v) => (typeof v === 'string' && ISO_DATE.test(v) ? dayjs(v).format('D MMM') : v);
 };

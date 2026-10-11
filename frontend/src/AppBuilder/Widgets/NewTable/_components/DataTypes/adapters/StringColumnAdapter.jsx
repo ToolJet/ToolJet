@@ -10,7 +10,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { chipTone } from '../../../_utils/chipTone';
-import { avatarHue } from '../../../_utils/avatarHue';
+import { avatarHue, isNobody } from '../../../_utils/avatarHue';
 import { initials } from '@/AppBuilder/Widgets/packHooks';
 
 /**
@@ -73,7 +73,14 @@ export const StringColumn = ({
   }
 
   // "Show avatar": a person's initials in a circle tinted from their name, before the name.
-  if (showAvatar && !isEditable && cellValue !== null && cellValue !== undefined && cellValue !== '') {
+  if (
+    showAvatar &&
+    !isEditable &&
+    cellValue !== null &&
+    cellValue !== undefined &&
+    cellValue !== '' &&
+    !isNobody(cellValue)
+  ) {
     const text = String(cellValue);
     return (
       <div

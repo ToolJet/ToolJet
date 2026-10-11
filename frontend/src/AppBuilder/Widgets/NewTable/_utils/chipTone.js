@@ -16,7 +16,7 @@ const TONES = [
   ],
   [
     'info',
-    /\b(new|open|in progress|scheduled|booked|sent|assigned|processing|planned|upcoming|started|qualified|contacted|proposal|negotiation|checked in|in transit)\b/,
+    /\b(new|open|in progress|scheduled|booked|sent|assigned|processing|planned|upcoming|started|qualified|contacted|proposal|negotiation|checked in|in transit|on the way|en route|dispatched|on site)\b/,
   ],
 ];
 

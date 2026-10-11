@@ -1,4 +1,4 @@
-import { avatarHue } from '../avatarHue';
+import { avatarHue, isNobody } from '../avatarHue';
 
 describe('avatarHue', () => {
   it('gives one name the same hue every time, and names different hues', () => {
@@ -13,5 +13,14 @@ describe('avatarHue', () => {
       expect(h).toBeGreaterThanOrEqual(0);
       expect(h).toBeLessThan(360);
     }
+  });
+});
+
+describe('isNobody', () => {
+  it('knows placeholders for no person', () => {
+    ['Unassigned', 'none', 'N/A', 'TBD', '—', '-', 'Not assigned', 'nobody'].forEach((v) =>
+      expect(isNobody(v)).toBe(true)
+    );
+    ['Maya Chen', 'Dr. Noah Kim', 'Nina'].forEach((v) => expect(isNobody(v)).toBe(false));
   });
 });

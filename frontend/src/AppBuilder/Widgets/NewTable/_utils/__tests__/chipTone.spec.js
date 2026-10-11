@@ -13,6 +13,8 @@ describe('chipTone', () => {
     expect(chipTone('Low stock')).toBe('warning');
     expect(chipTone('In progress')).toBe('info');
     expect(chipTone('Open')).toBe('info');
+    expect(chipTone('on the way')).toBe('info');
+    expect(chipTone('En route')).toBe('info');
     expect(chipTone('Archived')).toBe('neutral');
   });
 
