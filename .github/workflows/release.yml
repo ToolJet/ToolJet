@@ -1,0 +1,473 @@
+name: Release
+
+# START:  Actions tab -> Release -> Run workflow, pick main or lts-3.16
+#         (optionally type a tag; empty = bump the version automatically).
+# FINISH: runs by itself when a lead merges the version bump PR this workflow opened.
+#         If that ever does not start, Run workflow again with "finish_release" ticked.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional - tag to release, e.g. v3.22.0-beta (must be higher than the current version). Leave empty to bump the version automatically."
+        required: false
+        default: ""
+        type: string
+      finish_release:
+        description: "Only if a version bump PR was merged but the release was not published: tick this to finish that release now."
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [main, lts-3.16]
+    paths: ['.version']
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # ---------------------------------------------------------------- START ---
+  # 1. Only the leads for the chosen branch may start a release
+  authorize:
+    if: github.event_name == 'workflow_dispatch' && !inputs.finish_release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch and lead list
+        env:
+          RELEASE_LEADS: ${{ secrets.RELEASE_LEADS }}
+        run: |
+          case "$GITHUB_REF_NAME" in
+            main|lts-3.16) ;;
+            *) echo "::error::Run this from main or lts-3.16 (got $GITHUB_REF_NAME)"; exit 1 ;;
+          esac
+          if ! echo "$RELEASE_LEADS" | jq -e 'type == "object"' >/dev/null 2>&1; then
+            echo "::error::Secret RELEASE_LEADS is missing or is not valid JSON"; exit 1
+          fi
+          # RELEASE_LEADS = {"main":{"github-user":"SLACKID"},"lts-3.16":{"github-user":"SLACKID"}}
+          match=$(echo "$RELEASE_LEADS" | jq -r --arg b "$GITHUB_REF_NAME" --arg a "$GITHUB_ACTOR" \
+            '(.[$b] // {}) | keys[] | select(ascii_downcase == ($a | ascii_downcase))')
+          if [ -z "$match" ]; then
+            echo "::error::$GITHUB_ACTOR is not a release lead for $GITHUB_REF_NAME"; exit 1
+          fi
+          echo "$GITHUB_ACTOR is authorised to release from $GITHUB_REF_NAME"
+
+  # 2. Open the version bump PR, create the draft, ping the leads on Slack
+  prepare-release:
+    needs: authorize
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Work out the version and tag
+        id: next-version
+        env:
+          MANUAL_TAG: ${{ inputs.tag }}
+        run: |
+          CURRENT=$(head -n1 .version | tr -d '[:space:]')
+
+          if [ -n "$MANUAL_TAG" ]; then
+            # Lead typed a tag: accept it with or without the leading "v"
+            NEXT=$(echo "$MANUAL_TAG" | tr -d '[:space:]')
+            NEXT="${NEXT#v}"
+            SOURCE="entered manually"
+          else
+            if [[ ! "$CURRENT" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-.+)?$ ]]; then
+              echo "::error::.version contains '$CURRENT' - expected X.Y.Z or X.Y.Z-suffix"
+              exit 1
+            fi
+            # Bump the patch number, keep the suffix (-beta, -lts, ...)
+            NEXT="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((10#${BASH_REMATCH[3]} + 1))${BASH_REMATCH[4]}"
+            SOURCE="bumped automatically from $CURRENT"
+          fi
+          TAG="v$NEXT"
+
+          # Strict format per branch (no loose "contains lts" matching)
+          if [ "$GITHUB_REF_NAME" = "lts-3.16" ]; then
+            re='^v[0-9]+\.[0-9]+\.[0-9]+-lts([.-][0-9]+)?$'; want="vX.Y.Z-lts"
+          else
+            re='^v[0-9]+\.[0-9]+\.[0-9]+-beta([.-][0-9]+)?$'; want="vX.Y.Z-beta"
+          fi
+          if [[ ! "$TAG" =~ $re ]]; then
+            echo "::error::'${MANUAL_TAG:-$TAG}' is not allowed on $GITHUB_REF_NAME - use the form $want (a trailing -1 or .1 is fine)"
+            exit 1
+          fi
+
+          # A typed tag must be higher than the current version; lower ones are rejected
+          if [ -n "$MANUAL_TAG" ] && [[ "$CURRENT" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+            c1=$((10#${BASH_REMATCH[1]})); c2=$((10#${BASH_REMATCH[2]})); c3=$((10#${BASH_REMATCH[3]}))
+            [[ "$NEXT" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]
+            n1=$((10#${BASH_REMATCH[1]})); n2=$((10#${BASH_REMATCH[2]})); n3=$((10#${BASH_REMATCH[3]}))
+            if (( n1 < c1 || (n1 == c1 && n2 < c2) || (n1 == c1 && n2 == c2 && n3 <= c3) )); then
+              echo "::error::$TAG is not higher than the current version $CURRENT. Use a higher version, or leave the box empty to bump automatically."
+              exit 1
+            fi
+          fi
+
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null || \
+             gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::$TAG already exists (tag or release, possibly an unpublished draft). Publish or delete it first."
+            exit 1
+          fi
+
+          echo "Releasing $TAG ($SOURCE)"
+          echo "version=$NEXT" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      # The release also merges the ee-server and ee-frontend release PRs, as the old
+      # release-automation did: open PR, same base branch, head branch "release/...".
+      # Runs after the tag check above, so nothing is merged for a tag that already exists.
+      - name: Merge the ee-server and ee-frontend release PRs
+        id: ee-prs
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+        run: |
+          summary=""
+          for repo in ee-server ee-frontend; do
+            prs=$(gh pr list -R "ToolJet/$repo" --base "$GITHUB_REF_NAME" --state open --limit 100 \
+                    --json number,headRefName \
+                    --jq '.[] | select(.headRefName | startswith("release/")) | "\(.number) \(.headRefName)"')
+            count=$(printf '%s' "$prs" | grep -c . || true)
+            if [ "$count" -eq 0 ]; then
+              echo "$repo: no open release PR into $GITHUB_REF_NAME - nothing to merge"
+              summary+="$repo none found; "
+            elif [ "$count" -gt 1 ]; then
+              echo "::error::$repo has $count open release/* PRs into $GITHUB_REF_NAME. Close the extra ones and run again:"
+              printf '%s\n' "$prs"
+              exit 1
+            else
+              number="${prs%% *}"
+              echo "$repo: merging PR #$number (${prs#* })"
+              gh pr merge -R "ToolJet/$repo" "$number" --merge --admin
+              summary+="$repo #$number merged; "
+            fi
+          done
+          echo "summary=${summary%; }" >> "$GITHUB_OUTPUT"
+
+      # Latest ee commits, read after the merges above so the release pins them
+      - name: Find the latest ee-server and ee-frontend commits
+        id: ee
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+        run: |
+          if [ "$GITHUB_REF_NAME" = "lts-3.16" ]; then EE_BRANCH="lts-3.16"; else EE_BRANCH="main"; fi
+          for repo in ee-server ee-frontend; do
+            sha=$(gh api "repos/ToolJet/$repo/branches/$EE_BRANCH" --jq .commit.sha) || {
+              echo "::error::Cannot read $repo branch $EE_BRANCH - check that TOKEN_PR can access it"
+              exit 1
+            }
+            echo "$repo ($EE_BRANCH) -> $sha"
+            echo "${repo//-/_}_sha=$sha" >> "$GITHUB_OUTPUT"
+          done
+
+      # Opened for a lead to review and merge. The workflow never merges it.
+      - name: Create version bump PR
+        id: bump-pr
+        run: |
+          TAG="${{ steps.next-version.outputs.tag }}"
+          VERSION="${{ steps.next-version.outputs.version }}"
+          SERVER_SHA="${{ steps.ee.outputs.ee_server_sha }}"
+          FRONTEND_SHA="${{ steps.ee.outputs.ee_frontend_sha }}"
+          BRANCH="version-bump-$TAG-$(date +%s)"
+
+          git checkout -b "$BRANCH"
+          echo "$VERSION" > .version
+          echo "$VERSION" > server/.version
+          echo "$VERSION" > frontend/.version
+          git add .version server/.version frontend/.version
+          # Point the submodules at those commits without cloning the private repos
+          git update-index --add --cacheinfo "160000,$SERVER_SHA,server/ee"
+          git update-index --add --cacheinfo "160000,$FRONTEND_SHA,frontend/ee"
+          git commit -m "Version bump to $TAG" \
+                     -m "- .version files (root, server, frontend) -> $VERSION" \
+                     -m "- server/ee (ee-server) -> $SERVER_SHA" \
+                     -m "- frontend/ee (ee-frontend) -> $FRONTEND_SHA"
+          git push origin "$BRANCH"
+
+          BODY=$(printf '%s\n' \
+            "Release **$TAG** from \`$GITHUB_REF_NAME\`." \
+            "" \
+            "- \`.version\`, \`server/.version\`, \`frontend/.version\` -> \`$VERSION\`" \
+            "- \`server/ee\` (ee-server) -> \`$SERVER_SHA\`" \
+            "- \`frontend/ee\` (ee-frontend) -> \`$FRONTEND_SHA\`" \
+            "" \
+            "ee release PRs: ${{ steps.ee-prs.outputs.summary }}" \
+            "" \
+            "**Merging this PR approves the release.** The draft is then published, ee-server and ee-frontend are tagged \`$TAG\`, and the release is announced on Slack. Only a release lead should merge it." \
+            "" \
+            "_Created by the Release workflow, run by @$GITHUB_ACTOR._")
+          url=$(gh pr create --base "$GITHUB_REF_NAME" --head "$BRANCH" \
+                  --title "Version bump to $TAG" --body "$BODY")
+          echo "url=$url" >> $GITHUB_OUTPUT
+
+      # Draft only: nothing is tagged or public until a lead merges the bump PR.
+      # Main notes first, then ee-server and ee-frontend as their own sections.
+      - name: Create draft release
+        id: draft-release
+        env:
+          EE_TOKEN: ${{ secrets.TOKEN_PR }}
+        run: |
+          TAG="${{ steps.next-version.outputs.tag }}"
+          SERVER_SHA="${{ steps.ee.outputs.ee_server_sha }}"
+          FRONTEND_SHA="${{ steps.ee.outputs.ee_frontend_sha }}"
+
+          # Previous tag on the same release line, so LTS notes never
+          # compare against a beta tag (and the other way round)
+          case "$TAG" in *lts*) pattern="*lts*" ;; *) pattern="*beta*" ;; esac
+          PREV=$(git tag --merged "$GITHUB_SHA" --list "$pattern" --sort=-creatordate | head -n1)
+          echo "Previous tag: ${PREV:-none}"
+
+          notes_args=(-f tag_name="$TAG" -f target_commitish="$GITHUB_REF_NAME")
+          [ -n "$PREV" ] && notes_args+=(-f previous_tag_name="$PREV")
+          main_notes=$(gh api -X POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" "${notes_args[@]}" --jq .body)
+          changelog=$(printf '%s\n' "$main_notes" | grep '^\*\*Full Changelog' || true)
+          main_notes=$(printf '%s\n' "$main_notes" | grep -v '^\*\*Full Changelog' || true)
+
+          # One section per ee repo: PRs merged there since the previous release
+          ee_section() {
+            local repo="$1" sha="$2" body="" changes=""
+            echo "## $repo"
+            if [ -n "$PREV" ]; then
+              body=$(GH_TOKEN="$EE_TOKEN" gh api -X POST "repos/ToolJet/$repo/releases/generate-notes" \
+                       -f tag_name="$TAG" -f previous_tag_name="$PREV" -f target_commitish="$sha" \
+                       --jq .body 2>/dev/null || true)
+              changes=$(printf '%s\n' "$body" | awk '/^## What/{f=1;next} /^## |^\*\*Full Changelog/{f=0} f && NF')
+            fi
+            if [ -n "$changes" ]; then
+              printf '%s\n' "$changes"
+            else
+              echo "* No changes found since ${PREV:-the last release}"
+            fi
+            if [ -n "$PREV" ]; then
+              echo
+              echo "Compare: https://github.com/ToolJet/$repo/compare/$PREV...$sha"
+            fi
+            return 0
+          }
+
+          {
+            printf '%s\n' "$main_notes"
+            echo
+            ee_section ee-server "$SERVER_SHA"
+            echo
+            ee_section ee-frontend "$FRONTEND_SHA"
+            echo
+            printf '%s\n' "$changelog"
+          } > release-notes.md
+
+          # A draft cannot be marked "latest"; the publish step does that for LTS
+          args=(--draft --target "$GITHUB_REF_NAME" --title "$TAG" --notes-file release-notes.md)
+          [[ "$TAG" != *"lts"* ]] && args+=(--prerelease)
+
+          url=$(gh release create "$TAG" "${args[@]}")
+          echo "url=$url" >> $GITHUB_OUTPUT
+
+      - name: Ask the leads to check and approve on Slack
+        run: |
+          {
+            echo "### Release ${{ steps.next-version.outputs.tag }} is waiting for a lead"
+            echo "ee release PRs: ${{ steps.ee-prs.outputs.summary }}"
+            echo "1. Check the draft and notes: ${{ steps.draft-release.outputs.url }}"
+            echo "2. Merge the version bump PR to approve: ${{ steps.bump-pr.outputs.url }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL not configured - skipping Slack message"; exit 0
+          fi
+
+          # Ping only the lead who pressed Run
+          mention=$(echo "$RELEASE_LEADS" | jq -r --arg b "$GITHUB_REF_NAME" --arg a "$GITHUB_ACTOR" \
+            '(.[$b] // {}) | to_entries[] | select(.key | ascii_downcase == ($a | ascii_downcase)) | "<@" + .value + ">"' | head -n1)
+          [ -n "$mention" ] || mention="$GITHUB_ACTOR"
+
+          TEXT=$(printf '%s\n' \
+            "${mention} :memo: Release *${{ steps.next-version.outputs.tag }}* (\`$GITHUB_REF_NAME\`) is ready for your approval." \
+            "ee release PRs: ${{ steps.ee-prs.outputs.summary }}" \
+            "" \
+            "1. Check the draft and release notes: ${{ steps.draft-release.outputs.url }}" \
+            "2. Merge the version bump PR to approve. The release is then published automatically: ${{ steps.bump-pr.outputs.url }}")
+          PAYLOAD=$(jq -n --arg t "$TEXT" '{text:$t}')
+          curl -fsS -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.RELEASE_SLACK_WEBHOOK_URL }}
+          RELEASE_LEADS: ${{ secrets.RELEASE_LEADS }}
+
+  # --------------------------------------------------------------- FINISH ---
+  # 3. Did this push come from the version bump PR that the workflow opened?
+  detect-bump:
+    if: github.event_name == 'push' || inputs.finish_release
+    runs-on: ubuntu-latest
+    outputs:
+      is_bump: ${{ steps.find.outputs.is_bump }}
+      sha: ${{ steps.find.outputs.sha }}
+      pr: ${{ steps.find.outputs.pr }}
+      merged_by: ${{ steps.find.outputs.merged_by }}
+    steps:
+      - name: Find the merged PR
+        id: find
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            SHA="$GITHUB_SHA"
+          else
+            # Finishing by hand: the last commit on this branch that changed .version
+            SHA=$(gh api "repos/$GITHUB_REPOSITORY/commits?sha=$GITHUB_REF_NAME&path=.version&per_page=1" --jq '.[0].sha')
+            echo "Last .version change on $GITHUB_REF_NAME: $SHA"
+          fi
+          # A commit can belong to several PRs (e.g. an open PR from this branch to another one).
+          # Look through all of them for the merged version bump PR into this branch.
+          bump=""; prs=""
+          for attempt in 1 2 3; do
+            prs=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/pulls" \
+              --jq '.[] | "#\(.number) \(.user.login) \(.head.ref) -> \(.base.ref) merged=\(.merged_at != null) \(.merge_commit_sha)"' 2>/dev/null || true)
+            bump=$(printf '%s\n' "$prs" | awk -v b="$GITHUB_REF_NAME" \
+              '$2=="github-actions[bot]" && $3 ~ /^version-bump-v/ && $5==b && $6=="merged=true" {print $3, $7, substr($1,2); exit}')
+            [ -n "$bump" ] && break
+            sleep 5
+          done
+          if [ -n "$bump" ]; then
+            read -r bump_branch merge_sha pr_number <<< "$bump"
+            # Who merged this exact PR - not who started this run
+            merged_by=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$pr_number" --jq '.merged_by.login // empty')
+            echo "Version bump PR #$pr_number merged ($bump_branch) as $merge_sha by ${merged_by:-unknown}"
+            echo "is_bump=true" >> $GITHUB_OUTPUT
+            echo "sha=$merge_sha" >> $GITHUB_OUTPUT
+            echo "pr=$pr_number" >> $GITHUB_OUTPUT
+            echo "merged_by=$merged_by" >> $GITHUB_OUTPUT
+          else
+            echo "Not a release version bump - nothing to do. PRs found for this commit:"
+            printf '%s\n' "${prs:-  (none)}"
+            echo "is_bump=false" >> $GITHUB_OUTPUT
+          fi
+
+  # 4. A lead merged the bump PR -> tag all repos, publish, announce, done
+  publish-release:
+    needs: detect-bump
+    if: needs.detect-bump.outputs.is_bump == 'true'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      # The rule: the person who MERGED the bump PR must be a release lead.
+      # Re-running or using finish_release does not change who that is.
+      - name: Check a release lead merged the bump PR
+        env:
+          RELEASE_LEADS: ${{ secrets.RELEASE_LEADS }}
+          PR: ${{ needs.detect-bump.outputs.pr }}
+          MERGED_BY: ${{ needs.detect-bump.outputs.merged_by }}
+        run: |
+          if [ -z "$MERGED_BY" ]; then
+            echo "::error::Could not find who merged version bump PR #$PR. Nothing was published."
+            exit 1
+          fi
+          match=$(echo "$RELEASE_LEADS" | jq -r --arg b "$GITHUB_REF_NAME" --arg a "$MERGED_BY" \
+            '(.[$b] // {}) | keys[] | select(ascii_downcase == ($a | ascii_downcase))')
+          if [ -z "$match" ]; then
+            echo "::error::Version bump PR #$PR was merged by $MERGED_BY, who is not a release lead for $GITHUB_REF_NAME. Nothing was published."
+            exit 1
+          fi
+          echo "PR #$PR merged by release lead $MERGED_BY - approved"
+
+      - name: Checkout merged version bump
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.detect-bump.outputs.sha }}
+
+      - name: Read release details
+        id: release
+        run: |
+          VERSION=$(head -n1 .version | tr -d '[:space:]')
+          for f in server/.version frontend/.version; do
+            if [ "$(head -n1 "$f" | tr -d '[:space:]')" != "$VERSION" ]; then
+              echo "::error::$f does not match .version ($VERSION)"; exit 1
+            fi
+          done
+          TAG="v$VERSION"
+
+          is_draft=$(gh release view "$TAG" --json isDraft --jq .isDraft 2>/dev/null || echo "missing")
+          if [ "$is_draft" != "true" ]; then
+            echo "::error::No unpublished draft found for $TAG (state: $is_draft)"; exit 1
+          fi
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "server_sha=$(git ls-tree HEAD server/ee | awk '{print $3}')" >> $GITHUB_OUTPUT
+          echo "frontend_sha=$(git ls-tree HEAD frontend/ee | awk '{print $3}')" >> $GITHUB_OUTPUT
+
+      # The ee repos are tagged at the exact commits the merged PR pins
+      - name: Tag ee-server and ee-frontend
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+          TAG: ${{ steps.release.outputs.tag }}
+          SERVER_SHA: ${{ steps.release.outputs.server_sha }}
+          FRONTEND_SHA: ${{ steps.release.outputs.frontend_sha }}
+        run: |
+          tag_repo() {
+            local repo="$1" sha="$2" ref type obj
+            [ -n "$sha" ] || { echo "::error::No commit recorded for $repo"; exit 1; }
+            if ref=$(gh api "repos/ToolJet/$repo/git/ref/tags/$TAG" --jq '"\(.object.type) \(.object.sha)"' 2>/dev/null); then
+              # The tag already exists: accept it only if it points at the commit this release pins
+              read -r type obj <<< "$ref"
+              if [ "$type" = "tag" ]; then
+                # Annotated tag (e.g. made by tag-and-push.sh): look through to its commit
+                obj=$(gh api "repos/ToolJet/$repo/git/tags/$obj" --jq .object.sha)
+              fi
+              if [ "$obj" = "$sha" ]; then
+                echo "$repo already has $TAG at the right commit ($sha)"; return 0
+              fi
+              echo "::error::$repo already has $TAG, but it points at $obj, not $sha (the commit this release pins). Nothing was published. Check which one is right, delete the wrong tag, then re-run."
+              exit 1
+            fi
+            gh api -X POST "repos/ToolJet/$repo/git/refs" -f ref="refs/tags/$TAG" -f sha="$sha" >/dev/null
+            echo "Tagged $repo at $sha"
+          }
+          tag_repo ee-server   "$SERVER_SHA"
+          tag_repo ee-frontend "$FRONTEND_SHA"
+
+      # Publishing also creates the tag on this repo, on the merged version bump commit
+      - name: Publish release
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+          SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          if [[ "$TAG" == *"lts"* ]]; then
+            gh release edit "$TAG" --target "$SHA" --draft=false --latest
+          else
+            gh release edit "$TAG" --target "$SHA" --draft=false --prerelease
+          fi
+
+      # Posts the final draft (including any edits a lead made) to Slack
+      - name: Announce on Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.RELEASE_SLACK_WEBHOOK_URL }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL not configured - skipping Slack message"; exit 0
+          fi
+          URL="https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"
+          if [[ "$TAG" == *"lts"* ]]; then KIND="LTS"; else KIND="Beta"; fi
+
+          BODY=$(gh release view "$TAG" --json body --jq .body | tr -d '\r')
+          # GitHub markdown -> Slack formatting
+          SLACK_BODY=$(printf '%s\n' "$BODY" | sed -E \
+            -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' \
+            -e 's/^#{1,3} (.*)$/*\1*/' \
+            -e 's/^[*-] (.*) by @([A-Za-z0-9_.-]+) in https:\/\/github\.com\/([^ ]+)\/pull\/([0-9]+)[[:space:]]*$/• \1 by <https:\/\/github.com\/\2|@\2> in <https:\/\/github.com\/\3\/pull\/\4|#\4>/' \
+            -e 's/^[*-] /• /' \
+            -e 's/^\*\*Full Changelog\*\*: (https:\/\/github\.com\/[^ ]+\/compare\/([^ ]+))/Full Changelog: <\1|\2>/' \
+            -e 's/^Compare: (https:\/\/github\.com\/[^ ]+\/compare\/([^ ]+))/Compare: <\1|\2>/')
+
+          TEXT=$(printf '%s\n\n%s\n' "*<$URL|Released $KIND $TAG>*" "$SLACK_BODY")
+          PAYLOAD=$(jq -n --arg t "$TEXT" '{text:$t}')
+          curl -fsS -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
