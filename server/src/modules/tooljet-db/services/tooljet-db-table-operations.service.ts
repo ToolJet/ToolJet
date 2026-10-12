@@ -113,6 +113,30 @@ SelectQueryBuilder.prototype.fullOuterJoin = function (entityOrProperty, alias, 
 
 type ConnectionManagerKey = 'appManager' | 'tjdbManager';
 
+// Sums COUNT(*) over the given tables, skipping any that don't physically exist: a relation row
+// can outlive its table (e.g. a failed baseline), and one missing table would fail the whole query.
+async function countRelationRows(
+  query: (sql: string, params?: unknown[]) => Promise<any>,
+  tablesBySchema: Map<string, string[]>
+): Promise<number> {
+  if (!tablesBySchema.size) return 0;
+  const existing: { schemaname: string; tablename: string }[] = await query(
+    `SELECT schemaname, tablename FROM pg_tables WHERE schemaname = ANY($1)`,
+    [[...tablesBySchema.keys()]]
+  );
+  const existingTables = new Set(existing.map((t) => `${t.schemaname}.${t.tablename}`));
+  const countQueries = [...tablesBySchema].flatMap(([schema, tables]) =>
+    tables
+      .filter((table) => existingTables.has(`${schema}.${table}`))
+      .map((table) => `SELECT COUNT(*)::int AS count FROM "${schema}"."${table}"`)
+  );
+  if (!countQueries.length) return 0;
+  const result = await query(
+    `SELECT COALESCE(SUM(count), 0)::int AS total FROM (${countQueries.join(' UNION ALL ')}) counts`
+  );
+  return result[0]?.total ?? 0;
+}
+
 @Injectable()
 export class TooljetDbTableOperationsService {
   constructor(
@@ -1418,23 +1442,46 @@ export class TooljetDbTableOperationsService {
     };
   }
 
-  async getRowsCount(organizationId: string): Promise<number> {
+  // Rows across every environment's relation of every live table: each relation is its own
+  // physical table, named by relation id (never the logical table id), in its workspace's tenant
+  // schema. `ownSchemaQuery` counts the caller's own schema - pass a transaction's runner so its
+  // uncommitted inserts are included. Other workspaces (self-hosted counts instance-wide) always go
+  // through the admin connection: a tenant role can't read another workspace's schema.
+  async getRowsCount(
+    organizationId: string,
+    ownSchemaQuery: (sql: string, params?: unknown[]) => Promise<any> = (sql, params) =>
+      this.tooljetDbManager.query(sql, params)
+  ): Promise<number> {
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
-    const tables =
-      edition === TOOLJET_EDITIONS.Cloud
-        ? await this.manager.find(InternalTable, { where: { organizationId }, select: ['id'] })
-        : await this.manager.find(InternalTable, { select: ['id'] });
+    const relationsQuery = this.manager
+      .createQueryBuilder(InternalTableRelation, 'relation')
+      // Soft-deleted tables aren't counted; an entity-class join doesn't add that filter by itself.
+      .innerJoin(
+        InternalTable,
+        'internal_table',
+        'internal_table.id = relation.internalTableId AND internal_table.deletedAt IS NULL'
+      )
+      .select(['relation.id AS "relationId"', 'internal_table.organizationId AS "organizationId"']);
+    if (edition === TOOLJET_EDITIONS.Cloud) {
+      relationsQuery.where('internal_table.organizationId = :organizationId', { organizationId });
+    }
+    const relations: { relationId: string; organizationId: string }[] = await relationsQuery.getRawMany();
 
-    if (!tables.length) return 0;
+    const ownSchema = findTenantSchema(organizationId);
+    const tablesBySchema = new Map<string, string[]>();
+    for (const { relationId, organizationId: relationOrgId } of relations) {
+      const schema = findTenantSchema(relationOrgId);
+      tablesBySchema.set(schema, [...(tablesBySchema.get(schema) ?? []), relationId]);
+    }
+    const ownTables = tablesBySchema.get(ownSchema) ?? [];
+    tablesBySchema.delete(ownSchema);
+    const adminQuery = (sql: string, params?: unknown[]) => this.tooljetDbManager.query(sql, params);
 
-    const tenantSchema = findTenantSchema(organizationId);
-    const unionQuery = tables
-      .map((table) => `SELECT COUNT(*)::int AS count FROM "${tenantSchema}"."${table.id}"`)
-      .join(' UNION ALL ');
-    const result = await this.tooljetDbManager.query(
-      `SELECT COALESCE(SUM(count), 0)::int AS total FROM (${unionQuery}) counts`
-    );
-    return result[0]?.total ?? 0;
+    const [ownCount, otherCount] = await Promise.all([
+      countRelationRows(ownSchemaQuery, new Map(ownTables.length ? [[ownSchema, ownTables]] : [])),
+      countRelationRows(adminQuery, tablesBySchema),
+    ]);
+    return ownCount + otherCount;
   }
 
   // Infinity when unlimited; otherwise how many more rows this org can add across all TJDB tables.

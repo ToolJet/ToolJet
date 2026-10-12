@@ -809,17 +809,9 @@ export class TooljetDbDataOperationsService implements QueryService {
       try {
         const results = await queryRunner.query(validSql);
 
-        const tables: { tablename: string }[] = await queryRunner.query(
-          `SELECT tablename FROM pg_tables WHERE schemaname = $1`,
-          [tenantSchema]
+        const totalRowsAfterInsert = await this.tableOperationsService.getRowsCount(organizationId, (sql, params) =>
+          queryRunner.query(sql, params)
         );
-        const unionQuery = tables
-          .map((table) => `SELECT COUNT(*)::int AS count FROM "${tenantSchema}"."${table.tablename}"`)
-          .join(' UNION ALL ');
-        const countResult = unionQuery
-          ? await queryRunner.query(`SELECT COALESCE(SUM(count), 0)::int AS total FROM (${unionQuery}) counts`)
-          : [{ total: 0 }];
-        const totalRowsAfterInsert = countResult[0]?.total ?? 0;
 
         if (await this.tableOperationsService.isRowCountOverLimit(organizationId, totalRowsAfterInsert)) {
           await queryRunner.rollbackTransaction();

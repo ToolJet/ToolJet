@@ -36,7 +36,8 @@ export class TooljetDbUtilService {
     internalTableId: string,
     fileBuffer: Buffer,
     organizationId: string,
-    remainingRowCapacity: number = Infinity
+    remainingRowCapacity: number = Infinity,
+    environmentId?: string
   ): Promise<{ processedRows: number }> {
     const rowsToUpsert = [];
     const passThrough = new PassThrough();
@@ -51,7 +52,7 @@ export class TooljetDbUtilService {
         {
           id: internalTableId,
         },
-        undefined
+        environmentId
       );
 
     const tablesInvolvedList = [
@@ -64,10 +65,14 @@ export class TooljetDbUtilService {
       organizationId
     );
 
-    // External API v2 has no environment selector on this route yet — undefined resolves to the
-    // workspace's development environment (relationResolverService's documented default), same as
-    // the view_table call above. Revisit once/if this surface grows environment awareness.
-    const { relation } = await this.tableOperationsService.resolveTableById(organizationId, internalTableId, undefined);
+    // The physical name the INSERT below writes to. An undefined environmentId (External API v2,
+    // template import) resolves to the workspace's development environment. The FK-referenced
+    // tables aren't resolved eagerly - bulkUpsertRows resolves those lazily, on its error path.
+    const { relation } = await this.tableOperationsService.resolveTableById(
+      organizationId,
+      internalTableId,
+      environmentId
+    );
 
     const csvStream = csv.parseString(fileBuffer.toString(), {
       headers: true,
@@ -134,7 +139,8 @@ export class TooljetDbUtilService {
         relation.id,
         internalTableDatabaseColumn,
         organizationId,
-        internalTables
+        internalTables,
+        environmentId
       );
     });
 
@@ -147,7 +153,8 @@ export class TooljetDbUtilService {
     relationId: string,
     internalTableDatabaseColumn: TooljetDatabaseColumn[],
     organizationId: string,
-    internalTables: InternalTable[]
+    internalTables: InternalTable[],
+    environmentId?: string
   ) {
     if (isEmpty(rowsToUpsert)) return;
 
@@ -205,11 +212,31 @@ export class TooljetDbUtilService {
     try {
       await tooljetDbManager.query(queryText, allPlaceholders);
     } catch (error) {
+      // Raw Postgres error text names the physical relation, not the logical table, so translate
+      // internalTables to relation ids here, on the error path, before handing it to
+      // TooljetDatabaseError. Best-effort per table: a translation failure (e.g. no relation for a
+      // referenced table in this environment) falls back to the logical entry rather than replace
+      // the real Postgres error being reported.
+      const relationTaggedTables = await Promise.all(
+        internalTables.map(async (table) => {
+          try {
+            const { relation } = await this.tableOperationsService.resolveTableById(
+              organizationId,
+              table.id,
+              environmentId
+            );
+            return { id: relation.id, tableName: table.tableName };
+          } catch {
+            return { id: table.id, tableName: table.tableName };
+          }
+        })
+      );
+
       throw new TooljetDatabaseError(
         error.message,
         {
           origin: 'bulk_upload',
-          internalTables: internalTables,
+          internalTables: relationTaggedTables,
         },
         error
       );

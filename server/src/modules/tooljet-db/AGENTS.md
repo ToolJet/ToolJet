@@ -146,6 +146,14 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `SET LOCAL lock_timeout = '3s'` after `search_path` — the tjdb pool sets `statement_timeout` (60s)
   but no `lock_timeout`, so a migration blocked behind an app query would otherwise burn the whole
   statement budget queued. Ceiling: a rewrite exceeding `statement_timeout` can't change a column type at all.
+- Row limit (`getRowsCount`): counts rows in every environment's relation of every non-soft-deleted
+  table — per workspace on Cloud, instance-wide otherwise — and skips relations whose physical table
+  is missing. Every write path (create_row, CSV upload, bulk upsert, sql_execution INSERT) gates on
+  that one total. sql_execution passes its transaction's runner so uncommitted inserts count; only
+  the caller's own schema goes through it, since a tenant role can't read other workspaces' schemas.
+- CSV upload has one implementation, `TooljetDbUtilService.bulkUploadCsv`; `TooljetDbBulkUploadService`
+  delegates to it with the environment and remaining row capacity. Don't fork it again — the two
+  copies drifted once (missing CSV fixes on one side).
 
 ## Related modules
 

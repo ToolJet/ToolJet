@@ -1,22 +1,12 @@
-import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { InternalTableRelation } from 'src/entities/internal_table_relation.entity';
-import * as csv from 'fast-csv';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
+import { TooljetDbUtilService } from './tooljet-db-util.service';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { isEmpty } from 'lodash';
-import { pipeline } from 'stream/promises';
-import { PassThrough } from 'stream';
-import { v4 as uuid } from 'uuid';
 import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
-import {
-  TJDB,
-  TooljetDatabaseColumn,
-  TooljetDatabaseDataTypes,
-  TooljetDatabaseError,
-  TooljetDatabaseForeignKey,
-} from '../types';
 
 @Injectable()
 export class TooljetDbBulkUploadService {
@@ -26,7 +16,8 @@ export class TooljetDbBulkUploadService {
     protected readonly manager: EntityManager,
     @InjectEntityManager('tooljetDb')
     protected readonly tooljetDbManager: EntityManager,
-    protected readonly tableOperationsService: TooljetDbTableOperationsService
+    protected readonly tableOperationsService: TooljetDbTableOperationsService,
+    protected readonly bulkUploadUtilService: TooljetDbUtilService
   ) {
     this.MAX_ROW_COUNT =
       process.env?.TOOLJET_DB_BULK_UPLOAD_MAX_ROWS && !isNaN(Number(process.env.TOOLJET_DB_BULK_UPLOAD_MAX_ROWS))
@@ -59,304 +50,13 @@ export class TooljetDbBulkUploadService {
     environmentId?: string,
     remainingRowCapacity: number = Infinity
   ): Promise<{ processedRows: number }> {
-    const rowsToUpsert = [];
-    const passThrough = new PassThrough();
-
-    const {
-      columns: internalTableDatabaseColumn,
-      foreign_keys: foreignKeys,
-    }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(
-        organizationId,
-        'view_table',
-        {
-          id: internalTableId,
-        },
-        environmentId
-      );
-
-    const tablesInvolvedList = [
+    return await this.bulkUploadUtilService.bulkUploadCsv(
       internalTableId,
-      ...(foreignKeys.length ? foreignKeys.map((foreignKey) => foreignKey.referenced_table_id) : []),
-    ];
-
-    const internalTables = await this.tableOperationsService.findOrFailInternalTableFromTableId(
-      tablesInvolvedList,
-      organizationId
-    );
-
-    // Resolved once here: this is the physical name the INSERT below writes to. The FK-referenced
-    // tables in internalTables aren't resolved eagerly - they're only needed if a raw Postgres
-    // error has to be translated back to a display name, so bulkUpsertRows resolves those lazily,
-    // on its error path.
-    const { relation: targetRelation } = await this.tableOperationsService.resolveTableById(
+      fileBuffer,
       organizationId,
-      internalTableId,
-      environmentId,
-      this.manager
+      remainingRowCapacity,
+      environmentId
     );
-
-    const csvStream = csv.parseString(fileBuffer.toString(), {
-      headers: true,
-      strictColumnHandling: true,
-      discardUnmappedColumns: true,
-    });
-    const primaryKeyColumnSchema = internalTableDatabaseColumn.filter(
-      (colDetails) => colDetails.keytype === 'PRIMARY KEY'
-    );
-    const primaryKeyValuesToUpsert = new Set();
-    let rowsProcessed = 0;
-
-    csvStream
-      .on('headers', (headers) => this.validateHeadersAsColumnSubset(internalTableDatabaseColumn, headers, csvStream))
-      .transform((row) =>
-        this.validateAndParseColumnDataType(
-          internalTableDatabaseColumn,
-          primaryKeyColumnSchema,
-          row,
-          rowsProcessed,
-          csvStream,
-          remainingRowCapacity
-        )
-      )
-      .on('data', (row) => {
-        rowsProcessed++;
-
-        const primaryKeyValuesIdentifier = Object.entries(row)
-          .map(([columnName, value]) => {
-            const primaryKey = this.findPrimaryKey(columnName, primaryKeyColumnSchema);
-
-            if (isEmpty(primaryKey)) return null;
-            if (isEmpty(value) && !isEmpty(primaryKey.column_default)) return uuid();
-            return value;
-          })
-          .filter((value) => value !== null)
-          .join('-');
-
-        if (primaryKeyValuesToUpsert.has(primaryKeyValuesIdentifier)) {
-          throw new BadRequestException(`Duplicate primary key found on row[${rowsProcessed + 1}]`);
-        }
-
-        primaryKeyValuesToUpsert.add(primaryKeyValuesIdentifier);
-        rowsToUpsert.push(row);
-      })
-      .on('error', (error) => {
-        csvStream.destroy();
-        // Preserve a typed HttpException (e.g. the 451 row-limit signal); only wrap
-        // untyped stream/parse errors as a generic 400.
-        passThrough.emit('error', error instanceof HttpException ? error : new BadRequestException(error));
-      })
-      .on('end', () => {
-        passThrough.emit('end');
-      });
-
-    await pipeline(passThrough, csvStream);
-
-    await this.tooljetDbManager.transaction(async (tooljetDbManager) => {
-      await this.bulkUpsertRows(
-        tooljetDbManager,
-        rowsToUpsert,
-        targetRelation.id,
-        internalTableDatabaseColumn,
-        organizationId,
-        internalTables,
-        environmentId
-      );
-    });
-
-    return { processedRows: rowsProcessed };
-  }
-
-  async bulkUpsertRows(
-    tooljetDbManager: EntityManager,
-    rowsToUpsert: unknown[],
-    relationId: string,
-    internalTableDatabaseColumn: TooljetDatabaseColumn[],
-    organizationId: string,
-    internalTables: InternalTable[],
-    environmentId?: string
-  ) {
-    if (isEmpty(rowsToUpsert)) return;
-
-    const primaryKeyColumns = internalTableDatabaseColumn
-      .filter((colDetails) => colDetails.keytype === 'PRIMARY KEY')
-      .map((colDetails) => colDetails.column_name);
-
-    const serialTypeColumns = internalTableDatabaseColumn
-      .filter((colDetails) => colDetails.data_type === 'integer' && /^nextval\(/.test(colDetails.column_default))
-      .map((colDetails) => colDetails.column_name);
-
-    const allValueSets = [];
-    let allPlaceholders = [];
-    let parameterIndex = 1;
-
-    for (const row of rowsToUpsert) {
-      const valueSet = [];
-      const currentPlaceholders = [];
-
-      for (const col of Object.keys(row)) {
-        if (serialTypeColumns.includes(col) || (row[col] === null && primaryKeyColumns.includes(col))) {
-          valueSet.push('DEFAULT');
-        } else {
-          valueSet.push(`$${parameterIndex++}`);
-          currentPlaceholders.push(row[col]);
-        }
-      }
-
-      allValueSets.push(`(${valueSet.join(', ')})`);
-      allPlaceholders = allPlaceholders.concat(currentPlaceholders);
-    }
-
-    const allColumns = Object.keys(rowsToUpsert[0]);
-
-    const onConflictUpdate = allColumns
-      .filter((col) => !primaryKeyColumns.includes(col))
-      .map((col) => `"${col}" = EXCLUDED."${col}"`)
-      .join(', ');
-
-    const primaryKeyColumnsQuoted = primaryKeyColumns.map((column) => `"${column}"`);
-    const columnsQuoted = allColumns.map((column) => `"${column}"`);
-    const tenantSchema = findTenantSchema(organizationId);
-    const queryText =
-      `INSERT INTO "${tenantSchema}"."${relationId}" (${columnsQuoted.join(', ')}) ` +
-      `VALUES ${allValueSets.join(', ')} ` +
-      `ON CONFLICT (${primaryKeyColumnsQuoted.join(', ')}) ` +
-      `DO UPDATE SET ${onConflictUpdate};`;
-
-    try {
-      await tooljetDbManager.query(queryText, allPlaceholders);
-    } catch (error) {
-      // Raw Postgres error text names the physical relation, not the logical table - internalTables
-      // is still keyed by logical id at this point (resolving it up front for every upload would
-      // pay for FK-referenced tables' relation ids on every success too), so translate it here,
-      // on the error path, before handing it to TooljetDatabaseError. Best-effort per table: this is
-      // already inside the error-reporting path, so a translation failure (e.g. no relation for a
-      // referenced table in this environment) must fall back to the logical entry rather than
-      // replace the real Postgres error we're trying to report.
-      const relationTaggedTables = await Promise.all(
-        internalTables.map(async (table) => {
-          try {
-            const { relation } = await this.tableOperationsService.resolveTableById(
-              organizationId,
-              table.id,
-              environmentId,
-              this.manager
-            );
-            return { id: relation.id, tableName: table.tableName };
-          } catch {
-            return { id: table.id, tableName: table.tableName };
-          }
-        })
-      );
-
-      throw new TooljetDatabaseError(
-        error.message,
-        {
-          origin: 'bulk_upload',
-          internalTables: relationTaggedTables,
-        },
-        error
-      );
-    }
-  }
-
-  async validateHeadersAsColumnSubset(
-    internalTableDatabaseColumn: TooljetDatabaseColumn[],
-    headers: string[],
-    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>
-  ) {
-    const internalTableColumns = new Set<string>(internalTableDatabaseColumn.map((c) => c.column_name));
-    const columnsInCsv = new Set<string>(headers);
-    const isSubset = (subset: Set<string>, superset: Set<string>) => [...subset].every((item) => superset.has(item));
-
-    if (!isSubset(columnsInCsv, internalTableColumns)) {
-      const columnsNotIntable = [...columnsInCsv].filter((element) => !internalTableColumns.has(element));
-
-      csvStream.emit('error', `Columns ${columnsNotIntable.join(',')} not found in table`);
-    }
-  }
-
-  findPrimaryKey(columnName: string, primaryKeyColumns: TooljetDatabaseColumn[]) {
-    return primaryKeyColumns.find(
-      (colDetails) => colDetails.column_name === columnName && colDetails.keytype === 'PRIMARY KEY'
-    );
-  }
-
-  validateAndParseColumnDataType(
-    internalTableDatabaseColumn: TooljetDatabaseColumn[],
-    primaryKeyColumnSchema: TooljetDatabaseColumn[],
-    row: unknown,
-    rowsProcessed: number,
-    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>,
-    remainingRowCapacity: number = Infinity
-  ) {
-    if (rowsProcessed >= this.MAX_ROW_COUNT)
-      csvStream.emit('error', `Row count cannot be greater than ${this.MAX_ROW_COUNT}`);
-
-    if (rowsProcessed >= remainingRowCapacity)
-      // 451 (not a generic 400): the workspace hit its licensed row cap. The rest of the
-      // row-limit feature signals this with 451 so the client can prompt an upgrade; the
-      // stream error handler passes HttpExceptions through untouched to preserve it.
-      csvStream.emit(
-        'error',
-        new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451)
-      );
-
-    try {
-      const columnsInCsv = Object.keys(row);
-      const transformedRow = columnsInCsv.reduce((result, columnInCsv) => {
-        const columnDetails = internalTableDatabaseColumn.find((colDetails) => colDetails.column_name === columnInCsv);
-        const primaryKey = this.findPrimaryKey(columnInCsv, primaryKeyColumnSchema);
-
-        if (!isEmpty(primaryKey) && isEmpty(primaryKey.column_default) && isEmpty(row[columnInCsv]))
-          throw `Primary key required for column ${columnDetails.column_name}`;
-
-        result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
-        return result;
-      }, {});
-
-      return transformedRow;
-    } catch (error) {
-      csvStream.emit('error', `Error at row[${rowsProcessed + 1}]: ${error}`);
-    }
-  }
-
-  convertToDataType(columnValue: string, supportedDataType: TooljetDatabaseDataTypes) {
-    if (!columnValue && supportedDataType !== TJDB.boolean) return null;
-
-    switch (supportedDataType) {
-      case TJDB.boolean:
-        if (typeof columnValue === 'boolean') return columnValue;
-        return this.convertBoolean(columnValue);
-      case TJDB.integer:
-      case TJDB.double_precision:
-      case TJDB.bigint:
-        return this.convertNumber(columnValue, supportedDataType);
-      case TJDB.jsonb:
-        // Hand jsonb to the driver as JSON text: node-postgres serialises a JS array as a Postgres
-        // array literal ({...}), which a jsonb column rejects. Parsing still validates the cell.
-        if (typeof columnValue !== 'string') return JSON.stringify(columnValue);
-        // A `null` cell stays a database NULL rather than the JSON value null
-        if (JSON.parse(columnValue) === null) return null;
-        return columnValue;
-      default:
-        return columnValue;
-    }
-  }
-
-  convertBoolean(str: string) {
-    const parsedString = str.toLowerCase().trim();
-    if (parsedString === 'true' || parsedString === 'false') return str;
-
-    throw `${str} is not a valid boolean string`;
-  }
-
-  convertNumber(str: string, dataType: 'integer' | 'bigint' | 'double precision') {
-    if (dataType === 'integer' && !isNaN(parseInt(str, 10))) return str;
-    if (dataType === 'double precision' && !isNaN(parseFloat(str))) return str;
-    if (dataType === 'bigint' && typeof BigInt(str) === 'bigint') return str;
-
-    throw `${str} is not a valid ${dataType}`;
   }
 
   async bulkUpdateRowsWithPrimaryKey(
