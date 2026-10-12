@@ -211,6 +211,7 @@ export const recordItems = (data, fields = {}) => {
         status: isText(f.statusField) ? shown(row[f.statusField]) : '',
         value: isText(f.valueField) ? formatValue(row[f.valueField], format, f.currency) : '',
         row,
+        index,
       },
     ];
   });

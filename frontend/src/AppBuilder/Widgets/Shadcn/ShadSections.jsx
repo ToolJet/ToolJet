@@ -517,7 +517,7 @@ const RecordAvatar = ({ src, name, size, shape }) => {
 };
 
 export const ShadRecordList = (props) => {
-  const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
+  const { properties: p, setExposedVariables, fireEvent, id } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
   const rows = useMemo(
@@ -551,10 +551,17 @@ export const ShadRecordList = (props) => {
   useEffect(() => setShownCount(ROWS_PER_STEP), [rows]);
   const [selected, setSelected] = useState(null);
   const idKey = text(p.idField) || 'id';
-  useExposed(setExposedVariables, p, {
-    selectedItem: selected?.row ?? {},
-    selectedItemId: selected ? selected.row?.[idKey] ?? null : null,
+  // The pack's names and the native List view's: selectedRecord and selectedRow are the row's data, selectedRecordId and
+  // selectedRowId its position in data.
+  const selection = (row) => ({
+    selectedItem: row?.row ?? {},
+    selectedItemId: row ? row.row?.[idKey] ?? null : null,
+    selectedRecord: row?.row ?? {},
+    selectedRecordId: row ? row.index : null,
+    selectedRow: row?.row ?? {},
+    selectedRowId: row ? row.index : null,
   });
+  useExposed(setExposedVariables, p, selection(selected));
   const hasClick = useHasEvent(id, 'onRowClicked');
   const density = DENSITY[p.density] || DENSITY.default;
   const showAvatar = p.showAvatar !== false;
@@ -566,9 +573,9 @@ export const ShadRecordList = (props) => {
   const click = (row) => {
     if (busy(p)) return;
     setSelected(row);
-    setExposedVariable('selectedItem', row.row);
-    setExposedVariable('selectedItemId', row.row?.[idKey] ?? null);
+    setExposedVariables(selection(row));
     fireEvent('onRowClicked');
+    fireEvent('onRecordClicked');
   };
 
   // Borders are classes: the pack's preflight sets every border width to 0 with !important, so an inline border

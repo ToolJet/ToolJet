@@ -141,7 +141,7 @@ export const shadRecordListConfig = shadConfig({
   name: 'ShadRecordList',
   displayName: 'Record list',
   description:
-    "shadcn/ui list of records as two-line rows, for a recent-orders, people, tickets or activity panel beside a chart or a table: an avatar (avatarField: an image URL, else the initials of that field's text, else of the title), the title (titleField), a meta line under it (metaFields, a comma list of field specs joined with ' · ': 'city', 'total|currency', 'due|date:Due {}' (value in a label), 'seats:Seats' (label first); formats number, currency, percent, compact, date, datetime), a status chip on the right (statusField, toned by its words: Paid green, Pending amber, Overdue red, Open blue) and a trailing value (valueField in valueFormat: currency in currency, date, number, ...). density compact, default or comfortable; showDividers; listStyle 'card' (bordered panel) or 'plain'; avatarShape circle or rounded. A click selects the row (selectedItem, selectedItemId; onRowClicked). Draws 100 rows and a Show more button. Height: grows with its rows (about 60px a row at default density)",
+    "shadcn/ui list of records as two-line rows, for a recent-orders, people, tickets or activity panel beside a chart or a table: an avatar (avatarField: an image URL, else the initials of that field's text, else of the title), the title (titleField), a meta line under it (metaFields, a comma list of field specs joined with ' · ': 'city', 'total|currency', 'due|date:Due {}' (value in a label), 'seats:Seats' (label first); formats number, currency, percent, compact, date, datetime), a status chip on the right (statusField, toned by its words: Paid green, Pending amber, Overdue red, Open blue) and a trailing value (valueField in valueFormat: currency in currency, date, number, ...). density compact, default or comfortable; showDividers; listStyle 'card' (bordered panel) or 'plain'; avatarShape circle or rounded. A click selects the row (selectedItem, selectedItemId; onRowClicked; the native List view's onRecordClicked, selectedRecord and selectedRecordId, the row's position in data). Draws 100 rows and a Show more button. Height: grows with its rows (about 60px a row at default density)",
   defaultSize: { width: 20, height: 340 },
   withHeight: true,
   properties: {
@@ -199,8 +199,20 @@ export const shadRecordListConfig = shadConfig({
     titleFontFamily: select('Title typeface', TYPEFACES, 'theme'),
   },
   styleDefaults: { titleFontFamily: { value: 'theme' } },
-  events: { onRowClicked: { displayName: 'On row clicked' } },
-  exposedVariables: { selectedItem: {}, selectedItemId: null },
+  // The native List view's names as well: onRecordClicked, selectedRecord and selectedRow (the clicked row's data),
+  // selectedRecordId and selectedRowId (its position in data).
+  events: {
+    onRowClicked: { displayName: 'On row clicked' },
+    onRecordClicked: { displayName: 'Record clicked' },
+  },
+  exposedVariables: {
+    selectedItem: {},
+    selectedItemId: null,
+    selectedRecord: {},
+    selectedRecordId: null,
+    selectedRow: {},
+    selectedRowId: null,
+  },
 });
 
 // ---- Summary strip ---------------------------------------------------------------------------------------------------
