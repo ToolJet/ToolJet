@@ -21,6 +21,12 @@ import {
   withRuns,
 } from './chatModel';
 import { formatTimestamp, validateMessageHistory, validateSingleMessageObject } from '../Chat/utils/helpers';
+
+// The sample history's timestamps are the literal text 'new Date().toISOString()'. The native Chat formats the current
+// time for them on every render, so a message's time changed as the clock passed a minute; here they read as the
+// moment the pack loaded and stay put.
+const NOW_LITERAL = 'new Date().toISOString()';
+const LOADED_AT = new Date().toISOString();
 import { avatarHue } from '../NewTable/_utils/avatarHue';
 import { stringify } from '../packJson';
 import './shadcn.scss';
@@ -139,7 +145,7 @@ const MessageRow = React.memo(({ row, showAvatars, showTimestamps }) => {
             <span className="font-medium text-[color:var(--lk-name,var(--sc-foreground))]">{row.who.name}</span>
             {showTimestamps ? (
               <span className="tabular-nums text-[color:var(--lk-muted,var(--sc-muted-foreground))]">
-                {formatTimestamp(row.timestamp)}
+                {formatTimestamp(row.timestamp === NOW_LITERAL ? LOADED_AT : row.timestamp)}
               </span>
             ) : null}
           </div>
