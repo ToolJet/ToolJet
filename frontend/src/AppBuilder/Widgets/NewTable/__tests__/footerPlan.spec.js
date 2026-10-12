@@ -23,3 +23,13 @@ describe('footerPlan', () => {
     expect(footerPlan({ ...base, look: undefined })).toBe('full');
   });
 });
+
+describe('table store styles', () => {
+  it('keeps the table look, so the footer knows a shadcn-look table', () => {
+    const useTableStore = require('../_stores/tableStore').default;
+    const store = useTableStore.getState();
+    store.initializeComponent('t1');
+    store.setTableStyles('t1', { tableLook: 'shadcn' }, false);
+    expect(useTableStore.getState().getTableStyles('t1').tableLook).toBe('shadcn');
+  });
+});

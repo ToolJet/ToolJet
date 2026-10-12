@@ -141,6 +141,8 @@ export const createInitSlice = (set, get) => ({
         state.components[id].styles.columnBackgroundColor = columnBackgroundColor;
         state.components[id].styles.containerPadding = padding;
         state.components[id].styles.selectedRowColor = selectedRowColor;
+        // The footer drops its pager on a one-page shadcn-look table (footerPlan), so it needs the look.
+        state.components[id].styles.tableLook = styles.tableLook;
       },
       false,
       { type: 'setStyles', payload: { id, styles } }
