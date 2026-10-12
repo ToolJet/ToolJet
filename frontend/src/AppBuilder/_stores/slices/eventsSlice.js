@@ -470,6 +470,7 @@ export const createEventsSlice = (set, get) => ({
           'onSelectionChanged',
           'onSlideChange',
           'onSlideClick',
+          'onStepChange',
           'onTagClick',
           'onTagRemoved',
           // The Ant Design pack's.
