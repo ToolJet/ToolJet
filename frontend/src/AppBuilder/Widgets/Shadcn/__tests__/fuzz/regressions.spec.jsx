@@ -283,6 +283,24 @@ describe('Table', () => {
 });
 
 describe('Kanban', () => {
+  it('draws a collapsed column as a lane with its title across, not a sliver of vertical text (read as broken)', async () => {
+    const { problems, unmount } = await mount('ShadKanban', {
+      data: [{ id: 1, title: 'One', status: 'won' }],
+      columns: [
+        { id: 'new', title: 'New' },
+        { id: 'won', title: 'Won' },
+      ],
+      collapsedColumns: ['won'],
+    });
+    const lane = document.querySelector('[data-collapsed="true"]');
+    expect(lane.innerHTML).not.toContain('vertical-rl');
+    expect(lane.textContent).toContain('Won');
+    expect(lane.textContent).toContain('Show cards');
+    expect(parseInt(lane.style.width, 10)).toBeGreaterThanOrEqual(140);
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
   it('shows stored ISO dates on a card as short dates', async () => {
     const year = new Date().getFullYear();
     const { problems, unmount } = await mount('ShadKanban', {

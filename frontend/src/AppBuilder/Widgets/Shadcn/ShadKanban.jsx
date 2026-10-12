@@ -346,22 +346,25 @@ const KanbanColumn = ({
         aria-label={`Expand ${column.title}`}
         onClick={() => onCollapse(column.id)}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onCollapse(column.id)}
-        style={{ ...look.column, width: 44, flex: '0 0 44px' }}
+        style={{ ...look.column, width: 152, flex: '0 0 152px' }}
         className={cn(
-          'group/col relative flex cursor-pointer flex-col items-center gap-2 px-1 py-3 transition-shadow hover:ring-1 hover:ring-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          'group/col relative flex cursor-pointer flex-col gap-2 p-3 transition-shadow hover:ring-1 hover:ring-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           isOver && 'ring-1 ring-primary'
         )}
       >
-        {/* The count sits on the open columns' header line and the title reads down from it, so a row of open and
-            folded columns lines up at the top; the expand chevron shows at the foot on hover, taking no room. */}
-        <ChevronRight className="absolute bottom-3 left-1/2 h-4 w-4 -translate-x-1/2 text-muted-foreground opacity-0 transition-opacity group-hover/col:opacity-100" />
-        {showCount ? (
-          <Badge variant="secondary" className={cn('px-1.5 tabular-nums', COUNT_BADGE)}>
-            {column.cards.length}
-          </Badge>
-        ) : null}
-        <span className={cn('truncate text-sm font-semibold [writing-mode:vertical-rl]', COLUMN_TITLE)}>
-          {column.title}
+        {/* A folded lane keeps its title across, with the count on the open columns' header line: a 44px sliver of
+            vertical text read as a broken column in reviews. */}
+        <div className="flex items-center justify-between gap-2">
+          <span className={cn('truncate text-sm font-semibold', COLUMN_TITLE)}>{column.title}</span>
+          {showCount ? (
+            <Badge variant="secondary" className={cn('shrink-0 px-1.5 tabular-nums', COUNT_BADGE)}>
+              {column.cards.length}
+            </Badge>
+          ) : null}
+        </div>
+        <span className={cn('flex items-center gap-1 text-xs group-hover/col:text-foreground', SECONDARY_TEXT)}>
+          <ChevronRight className="h-3.5 w-3.5" />
+          Show cards
         </span>
       </div>
     );
