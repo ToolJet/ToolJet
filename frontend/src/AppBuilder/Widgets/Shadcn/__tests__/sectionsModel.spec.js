@@ -235,3 +235,19 @@ describe('formatValue with numbers that are not finite', () => {
     expect(f.delta).toBeNull();
   });
 });
+
+describe('summaryFigures with valueFormat auto', () => {
+  it('shows money labels as currency and counts as numbers (a rooms strip showed $8 rooms)', () => {
+    const figs = summaryFigures(
+      [
+        { label: 'Meeting rooms', value: 8 },
+        { label: 'Bookings today', value: 12 },
+        { label: 'Revenue this month', value: 48210.5 },
+        { label: 'Average order', value: 37.5 },
+        { label: 'Refund rate', value: 2.5, format: 'percent' },
+      ],
+      { valueFormat: 'auto', currency: 'USD' }
+    );
+    expect(figs.map((f) => f.value)).toEqual(['8', '12', '$48,210.50', '$37.50', '2.5%']);
+  });
+});

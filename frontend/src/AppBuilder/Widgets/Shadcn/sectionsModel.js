@@ -254,6 +254,16 @@ const deltaOf = (delta, format, currency) => {
   return { text, direction };
 };
 
+// valueFormat 'auto' reads a figure's label: money words show currency, anything else a grouped number (a rooms strip
+// whose format was 'currency' showed "$8" meeting rooms).
+const MONEY_LABEL =
+  /\b(revenue|spend|spent|cost|costs|amount|sales|budget|price|paid|income|profit|invoices?|balance|fees?|payouts?|takings|earnings|mrr|arr|ltv|aov|left to spend|refunds? (?:issued|total|value)|average (?:order|ticket|invoice|basket|sale|spend)|avg\.? (?:order|ticket|invoice|basket|sale|spend))\b/i;
+const NOT_MONEY_LABEL = /\b(rate|count|number of|percent|share|ratio)\b|%/i;
+const autoFigureFormat = (label, value) =>
+  isText(label) && MONEY_LABEL.test(label) && !NOT_MONEY_LABEL.test(label) && Number.isFinite(Number(value))
+    ? 'currency'
+    : 'auto';
+
 /** The figures of a summary strip, at most MAX_FIGURES: { label, value, delta: { text, tone }, caption } from
  *  [{ label, value, format, delta, deltaFormat, tone, lowerIsBetter, caption }]. value formats in the item's format,
  *  else the strip's valueFormat. A delta's tone is the item's tone ('positive', 'negative', 'neutral'), else its
@@ -268,7 +278,11 @@ export const summaryFigures = (items, { valueFormat = 'auto', currency, deltaFor
         const value = shown(item);
         return value ? [{ key: String(index), label: '', value, delta: null, caption: '' }] : [];
       }
-      const format = VALUE_FORMATS.includes(item.format) ? item.format : valueFormat;
+      const format = VALUE_FORMATS.includes(item.format)
+        ? item.format
+        : valueFormat === 'auto'
+        ? autoFigureFormat(item.label, item.value)
+        : valueFormat;
       const itemCurrency = isText(item.currency) ? item.currency : currency;
       const delta = deltaOf(item.delta, isText(item.deltaFormat) ? item.deltaFormat : deltaFormat, itemCurrency);
       let tone = TONES[isText(item.tone) ? item.tone.trim().toLowerCase() : ''];

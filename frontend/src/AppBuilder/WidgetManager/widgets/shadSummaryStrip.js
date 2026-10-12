@@ -3,7 +3,7 @@ export const shadSummaryStripConfig = {
   name: 'ShadSummaryStrip',
   displayName: 'Summary strip',
   description:
-    "shadcn/ui strip of 3 to 6 headline figures in one row with hairline separators (no card per figure), to sit above or beside a table or a chart: items [{ label, value, format, delta, deltaFormat, tone, lowerIsBetter, caption }] (at most 6 shown). value formats in the item's format, else valueFormat (auto, number, currency in currency, percent, compact, date). delta: a number is signed and shown in deltaFormat (percent: 12.5 shows +12.5%; number; currency), text shows as written ('+3 this week'); its colour is the item's tone (positive, negative, neutral), else its sign (up green, down red; lowerIsBetter flips it for churn, refunds, wait times). caption is a small line under the figure ('vs last month'). appearance 'panel' (one bordered panel) or 'plain'; size sm, default or lg; align left or center. Narrow widths wrap figures into rows. Height: about 90px (sm 70px, lg 110px) a row, plus 18px with captions",
+    "shadcn/ui strip of 3 to 6 headline figures in one row with hairline separators (no card per figure), to sit above or beside a table or a chart: items [{ label, value, format, delta, deltaFormat, tone, lowerIsBetter, caption }] (at most 6 shown). value formats in the item's format, else valueFormat (auto: currency for money labels such as Revenue or Average order, a grouped number otherwise; number, currency in currency, percent, compact, date). delta: a number is signed and shown in deltaFormat (percent: 12.5 shows +12.5%; number; currency), text shows as written ('+3 this week'); its colour is the item's tone (positive, negative, neutral), else its sign (up green, down red; lowerIsBetter flips it for churn, refunds, wait times). caption is a small line under the figure ('vs last month'). appearance 'panel' (one bordered panel) or 'plain'; size sm, default or lg; align left or center. Narrow widths wrap figures into rows. Height: about 90px (sm 70px, lg 110px) a row, plus 18px with captions",
   component: 'ShadSummaryStrip',
   defaultSize: {
     width: 43,
@@ -472,7 +472,7 @@ export const shadSummaryStripConfig = {
           "{{[{ label: 'Revenue', value: 48210, delta: 12.4, caption: 'vs last month' }, { label: 'Orders', value: 1284, format: 'number', delta: 5.1, caption: 'vs last month' }, { label: 'Average order', value: 37.55, delta: -2.3, caption: 'vs last month' }, { label: 'Refund rate', value: 2.1, format: 'percent', delta: -0.4, deltaFormat: 'number', lowerIsBetter: true, caption: 'points' }]}}",
       },
       valueFormat: {
-        value: 'currency',
+        value: 'auto',
       },
       currency: {
         value: 'USD',
