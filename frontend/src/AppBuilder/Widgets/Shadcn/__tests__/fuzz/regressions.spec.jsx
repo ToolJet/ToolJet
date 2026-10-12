@@ -460,6 +460,25 @@ describe('Hero', () => {
   });
 });
 
+describe('Stat change', () => {
+  // A long change beside the label ("+12.4% after a long weekend of record sales") was cut off hard at the card's
+  // edge: the badge kept its full width (shrink-0) and had no ellipsis. It shrinks to at most 60% of the label row and
+  // ends in an ellipsis, with its whole text as a tooltip. jsdom has no layout: this pins the structure.
+  it('never clips a long change: the badge shrinks with an ellipsis and a tooltip', async () => {
+    const change = '+12.4% after a long weekend of record sales across every store';
+    const { problems, unmount } = await mount('ShadStat', { label: 'Revenue', value: 48210, change, trend: 'up' });
+    const text = [...document.querySelectorAll('span')].find((el) => el.textContent === change);
+    expect(text).toBeTruthy();
+    expect(text.className).toMatch(/\btruncate\b/);
+    const badge = text.parentElement;
+    expect(badge.getAttribute('title')).toBe(change);
+    expect(badge.className).toMatch(/\bmin-w-0\b/);
+    expect(badge.className).not.toMatch(/\bshrink-0\b/);
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+});
+
 describe('Card grid', () => {
   it('draws no initials panel when no image field is mapped, and keeps the badge in the card body', async () => {
     const { problems, unmount } = await mount('ShadCardGrid', {
