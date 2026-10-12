@@ -331,6 +331,13 @@ const TagsInput = ({
 
     setInputValue(value);
     setFocusedOptionIndex(-1);
+
+    // searchText only updates for a new, non-empty search - clearing the
+    // input keeps the last searched text exposed until a new search starts
+    if (value) {
+      setExposedVariable('searchText', value);
+    }
+    fireEvent('onSearch');
   };
 
   // Handle keyboard events
@@ -558,6 +565,7 @@ const TagsInput = ({
       selectedTags: Array.isArray(defaultItems) ? defaultItems.map(({ label, value }) => ({ label, value })) : [],
       tags: Array.isArray(selectOptions) ? selectOptions.map(({ label, value }) => ({ label, value })) : [],
       newTagsAdded: [],
+      searchText: '',
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
