@@ -75,12 +75,23 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   place `uuidv4()` happens outside raw SQL); `apply` only writes DDL/`configurations` for the one
   relation it's handed. Exception: `editColumn`'s `writeThroughColumnConfigurations` (settings-only,
   fans out to every relation sharing that column uuid) lives in the handler, between `normalize` and `apply`.
-- `drop_table` soft-deletes `internal_tables` (physical `DROP TABLE` still runs); the resolver's raw
-  joins add `deleted_at IS NULL` by hand since raw SQL skips TypeORM's automatic filter. The
-  `(organization_id, table_name)` unique index is partial, so a dropped name is immediately reusable.
+- `drop_table` soft-deletes `internal_tables` and drops the physical table of **every** environment's
+  relation, not just development's — once the registry row is soft-deleted nothing can reach a
+  survivor again. Its foreign-key blocker checks inbound keys into all of those relations
+  (`findRelationIds` → `findForeignKeyDependents`); the migration is still recorded against development.
+  The resolver's raw joins add `deleted_at IS NULL` by hand since raw SQL skips TypeORM's automatic
+  filter. The `(organization_id, table_name)` unique index is partial, so a dropped name is
+  immediately reusable.
+- Licence lapse fails closed on every resolver path: `resolve()` 403s when a table resolves to
+  development while a higher-priority relation exists and the workspace is unlicensed, and
+  `getRelation()` goes through `resolve()` so the single-table paths (`sql_execution`, bulk ops,
+  `view_table`) refuse the same way instead of serving development.
+- HTTP `/proxy/*` serves only admins/builders (dashboard, App Builder editor). App queries reach
+  PostgREST in-process (`.perform()`), never through this route, so anyone else needs a data query of
+  their own workspace to pass `FEATURE_KEY.PROXY_POSTGREST`.
 - `internal_table_migrations.resulting_schema` and `internal_table_migration_applications.applied_at`
   are both NULL until `.confirm()` fills them together; `.discard()` deletes both rows.
-  `.adjudicatePending()` is the crash-recovery sweep (ignores anything younger than 3s, so an
+  `.adjudicatePending()` is the crash-recovery sweep (ignores anything younger than 1 minute, so an
   in-flight sibling request's own pending row isn't discarded as crashed).
 - FK identity is structural, never the constraint name (Postgres names constraints per-relation).
   `create/update/deleteForeignKey` convert to an `FkSpec` in `normalize`, re-resolve it to whatever

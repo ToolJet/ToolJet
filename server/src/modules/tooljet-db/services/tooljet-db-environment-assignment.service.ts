@@ -310,14 +310,16 @@ export class TooljetDbEnvironmentAssignmentService {
     });
     if (!internalTable) throw new NotFoundException('Table not found');
 
-    const [{ count, dependents }, relationId] = await Promise.all([
+    const [{ count, dependents }, relationIds] = await Promise.all([
       this.internalTableRepository.findDependents(internalTableId, organizationId),
-      this.internalTableRepository.findDevelopmentRelationId(organizationId, internalTableId),
+      this.internalTableRepository.findRelationIds(organizationId, internalTableId),
     ]);
 
-    const foreignKeyTables = relationId
-      ? await this.internalTableRepository.findForeignKeyDependents(organizationId, relationId, this.tooljetDbManager)
-      : [];
+    const foreignKeyTables = await this.internalTableRepository.findForeignKeyDependents(
+      organizationId,
+      relationIds,
+      this.tooljetDbManager
+    );
 
     return { count, dependents, foreignKeyTables };
   }

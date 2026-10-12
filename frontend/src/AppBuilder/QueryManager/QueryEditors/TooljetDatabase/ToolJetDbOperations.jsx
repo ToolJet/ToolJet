@@ -21,6 +21,7 @@ import { isSqlModeDisabled } from '@/TooljetDatabase/constants';
 
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import useStore from '@/AppBuilder/_stores/store';
 
 const ToolJetDbOperations = ({
   optionchanged,
@@ -29,6 +30,7 @@ const ToolJetDbOperations = ({
   isHorizontalLayout,
   optionsChanged,
   renderCopilot,
+  environmentId,
 }) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
@@ -295,7 +297,7 @@ const ToolJetDbOperations = ({
     const tableDetails = findTableDetails(tableId);
     if (tableDetails?.table_name && !tableInfo[tableDetails?.table_name]) {
       const { table_name } = tableDetails;
-      const { data } = await tooljetDatabaseService.viewTable(organizationId, table_name);
+      const { data } = await tooljetDatabaseService.viewTable(organizationId, table_name, environmentId);
 
       setTableInfo((info) => ({
         ...info,
@@ -706,4 +708,11 @@ const ToolJetDbOperations = ({
   );
 };
 
-export default ToolJetDbOperations;
+// Keyed on the App Builder's environment: every table and column cache above describes one
+// environment's schema, so a switch remounts the editor instead of invalidating each cache by hand.
+const ToolJetDbOperationsForEnvironment = (props) => {
+  const environmentId = useStore((state) => state.selectedEnvironment?.id);
+  return <ToolJetDbOperations key={environmentId} {...props} environmentId={environmentId} />;
+};
+
+export default ToolJetDbOperationsForEnvironment;

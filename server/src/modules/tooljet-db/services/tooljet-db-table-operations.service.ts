@@ -750,31 +750,38 @@ export class TooljetDbTableOperationsService {
 
   protected async applyDropTable(
     payload: { organizationId: string; internalTable: InternalTable },
-    relation: InternalTableRelation,
+    relations: InternalTableRelation[],
     connectionManagers: Record<string, EntityManager>
   ) {
     const { appManager, tjdbManager } = connectionManagers;
     const tenantSchema = findTenantSchema(payload.organizationId);
 
     await appManager.softDelete(InternalTable, { id: payload.internalTable.id });
-    await tjdbManager.queryRunner.dropTable(new Table({ schema: tenantSchema, name: relation.id }));
+    for (const relation of relations) {
+      // ifExist: a relation row can outlive its physical table (e.g. a failed baseline).
+      await tjdbManager.queryRunner.dropTable(new Table({ schema: tenantSchema, name: relation.id }), true);
 
-    // The relation row survives drop_table (it's the migration chain's anchor), but its physical
-    // columns don't - clear configurations so it stops describing a table that no longer exists.
-    relation.configurations = { columns: { column_names: {}, configurations: {} } };
-    await appManager.save(relation);
+      // The relation row survives drop_table (it's the migration chain's anchor), but its physical
+      // columns don't - clear configurations so it stops describing a table that no longer exists.
+      relation.configurations = { columns: { column_names: {}, configurations: {} } };
+      await appManager.save(relation);
+    }
   }
 
   protected async dropTable(organizationId: string, params) {
     const { table_name: tableName } = params;
     const { internalTable, relation } = await this.normalizeDropTable(organizationId, tableName);
 
-    // Same check the /dependents route reports as a soft warning. `relation` here is already the
-    // development relation (resolveTable resolved it with environmentId: undefined), so no second
-    // resolve is needed for the foreign-key lookup.
+    // A promoted table owns one physical table per environment; the drop removes all of them, so a
+    // foreign key into any of them blocks it. Same check the /dependents route reports as a soft
+    // warning. The migration itself is still recorded against `relation` (development).
+    const relationIds = await this.internalTableRepository.findRelationIds(organizationId, internalTable.id);
+    const otherRelations = await this.manager.findBy(InternalTableRelation, {
+      id: In(relationIds.filter((id) => id !== relation.id)),
+    });
     const [{ count: appQueryCount }, foreignKeyTables] = await Promise.all([
       this.internalTableRepository.findDependents(internalTable.id, organizationId),
-      this.internalTableRepository.findForeignKeyDependents(organizationId, relation.id, this.tooljetDbManager),
+      this.internalTableRepository.findForeignKeyDependents(organizationId, relationIds, this.tooljetDbManager),
     ]);
 
     if (appQueryCount) {
@@ -809,7 +816,7 @@ export class TooljetDbTableOperationsService {
     await tjdbQueryRunner.startTransaction();
 
     try {
-      await this.applyDropTable({ organizationId, internalTable }, relation, {
+      await this.applyDropTable({ organizationId, internalTable }, [relation, ...otherRelations], {
         appManager: queryRunner.manager,
         tjdbManager: tjdbQueryRunner.manager,
       });
@@ -3252,7 +3259,7 @@ export class TooljetDbTableOperationsService {
             organizationId,
             internalTable: targetRelation.internalTable ?? (await this.targetInternalTable(targetRelation, appManager)),
           },
-          targetRelation,
+          [targetRelation],
           connectionManagers
         );
         return;

@@ -61,8 +61,8 @@ function createTable(
   });
 }
 
-function viewTable(organizationId, tableName) {
-  const environmentId = currentEnvironmentId();
+function viewTable(organizationId, tableName, environmentIdOverride) {
+  const environmentId = environmentIdOverride ?? currentEnvironmentId();
   const query = environmentId ? `?environment_id=${environmentId}` : '';
   return tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/table/${tableName}${query}`);
 }

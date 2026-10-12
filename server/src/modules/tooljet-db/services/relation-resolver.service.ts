@@ -127,18 +127,12 @@ export class TooljetDbRelationResolverService {
     manager?: EntityManager
   ): Promise<InternalTableRelation> {
     const entityManager = manager || this.manager;
-    const environmentId = await this.resolveEnvironment(organizationId, requestedEnvironmentId, entityManager);
-    const branchId = await this.resolveBranch(organizationId, entityManager);
-
-    const relation = await entityManager
-      .createQueryBuilder(InternalTableRelation, 'relation')
-      .innerJoin('internal_tables', 'it', 'it.id = relation.internal_table_id')
-      .where('relation.internal_table_id = :internalTableId', { internalTableId })
-      .andWhere('relation.environment_id = :environmentId', { environmentId })
-      .andWhere('relation.branch_id = :branchId', { branchId })
-      .andWhere('it.organization_id = :organizationId', { organizationId })
-      .andWhere('it.deleted_at IS NULL')
-      .getOne();
+    // Through resolve() so the single-table path gets the same licence-lapse 403 - never a silent
+    // fall-through to development for a table that also lives in a higher environment.
+    const relationId = (
+      await this.resolve(organizationId, [internalTableId], requestedEnvironmentId, entityManager)
+    ).get(internalTableId);
+    const relation = relationId && (await entityManager.findOne(InternalTableRelation, { where: { id: relationId } }));
 
     if (!relation) throw new NotFoundException('Table not found in this environment');
     return relation;
