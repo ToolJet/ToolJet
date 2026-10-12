@@ -43,7 +43,7 @@ export const versionHomePageExists: Rule<VersionSettingsWrite> = {
         },
       ];
     }
-    // `hidden` is fx-able jsonb, so only a literal true is judged — dynamic expressions pass.
+    // `hidden` is fx-able jsonb, so only a literal true is judged - dynamic expressions pass.
     if (isLiterallyTrue(page.hidden)) {
       return [
         {

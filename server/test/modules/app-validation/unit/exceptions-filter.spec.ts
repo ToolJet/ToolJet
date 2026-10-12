@@ -28,7 +28,7 @@ describe('AllExceptionsFilter with app validation errors', () => {
       severity: 'critical',
       confidence: 'certain',
       path: 'button1.type',
-      message: 'button1 → type: "Buttonn" is not a registered widget',
+      message: 'button1, type: "Buttonn" is not a registered widget',
     };
     const warning: Issue = { ...problem, code: 'COMPONENT_UNKNOWN_SETTING', severity: 'medium' };
 
@@ -39,7 +39,7 @@ describe('AllExceptionsFilter with app validation errors', () => {
       expect.objectContaining({
         statusCode: 400,
         code: 'APP_VALIDATION_FAILED',
-        message: '1 validation problem in components: button1 → type: "Buttonn" is not a registered widget',
+        message: '1 validation problem in components: button1, type: "Buttonn" is not a registered widget',
         issues: [problem],
         warnings: [warning],
       })

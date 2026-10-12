@@ -11,7 +11,7 @@ const issue = (overrides: Partial<Issue> = {}): Issue => ({
   severity: 'critical',
   confidence: 'certain',
   path: 'button1.properties.text',
-  message: 'button1 → Text: wrong',
+  message: 'button1, Text: wrong',
   ...overrides,
 });
 

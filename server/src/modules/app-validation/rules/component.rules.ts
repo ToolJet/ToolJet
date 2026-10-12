@@ -11,9 +11,9 @@ import {
 import { ComponentWrite, Issue, Rule, RuleContext, Severity, WriteSource } from '../types';
 import { findBrokenBraces, hasBraces, plainValueFit } from '../values';
 
-// Matches the editor's rename validation (Inspector.jsx → validateQueryName): code references
+// Matches the editor's rename validation (Inspector.jsx -> validateQueryName): code references
 // components as `components.<name>`, so names stay identifier-like. Imports are the main way
-// spaced names get in today — the editor itself never allows them.
+// spaced names get in today - the editor itself never allows them.
 export const COMPONENT_NAME_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 // Sources that reproduce stored data: dangling references there are defects to report,
@@ -62,7 +62,7 @@ export const componentKnownType: Rule<ComponentWrite> = {
         severity: 'critical',
         confidence: 'certain',
         path: `${name}.type`,
-        message: `${name} → type: "${write.data.type}" is not a registered widget`,
+        message: `${name}, type: "${write.data.type}" is not a registered widget`,
         entity: { type: 'component', id: write.id, name: write.data.name },
         fix: 'Use one of the widget types from the component catalog, e.g. "Button" or "Table".',
       },
@@ -84,9 +84,9 @@ export const componentNameFormat: Rule<ComponentWrite> = {
         severity: 'high',
         confidence: 'certain',
         path: `${name || write.id}.name`,
-        message: `${name || write.id} → name: only letters, numbers, underscore and hyphen are allowed, got "${name}"`,
+        message: `${name || write.id}, name: only letters, numbers, underscore and hyphen are allowed, got "${name}"`,
         entity: { type: 'component', id: write.id, name: typeof name === 'string' ? name : undefined },
-        fix: 'Rename the component, e.g. "button1" — code refers to it as components.<name>.',
+        fix: 'Rename the component, e.g. "button1"; code refers to it as components.<name>.',
       },
     ];
   },
@@ -109,7 +109,7 @@ export const componentNameUnique: Rule<ComponentWrite> = {
         severity: 'high',
         confidence: 'certain',
         path: `${labelOf(write)}.name`,
-        message: `${labelOf(write)} → name: another component on this page is already called "${write.data.name}"`,
+        message: `${labelOf(write)}, name: another component on this page is already called "${write.data.name}"`,
         entity: { type: 'component', id: write.id, name: write.data.name },
       },
     ];
@@ -136,7 +136,7 @@ export const componentSettingsWellFormed: Rule<ComponentWrite> = {
             severity: 'high',
             confidence: 'certain',
             path,
-            message: `${labelOf(write)} → ${section}: a setting is literally named "undefined", a generator wrote a missing key`,
+            message: `${labelOf(write)}, ${section}: a setting is literally named "undefined", a generator wrote a missing key`,
             entity: { type: 'component', id: write.id, name: write.data.name },
             fix: 'Remove the "undefined" entry and write the intended setting name.',
           });
@@ -149,7 +149,7 @@ export const componentSettingsWellFormed: Rule<ComponentWrite> = {
             severity: 'high',
             confidence: 'certain',
             path: `${path}.value`,
-            message: `${labelOf(write)} → ${settingLabel(write.data.type ?? '', section, key)}: the value is wrapped twice ({ value: { value: … } })`,
+            message: `${labelOf(write)}, ${settingLabel(write.data.type ?? '', section, key)}: the value is wrapped twice ({ value: { value: ... } })`,
             entity: { type: 'component', id: write.id, name: write.data.name },
             fix: 'Send { value: <the value> } once.',
           });
@@ -185,15 +185,15 @@ export const componentValueTypes: Rule<ComponentWrite> = {
               code: 'COMPONENT_BROKEN_CODE',
               // The editor saves while the user types, and bulk paths reproduce apps that
               // already live with the broken expression (one ships in ToolJet's own
-              // templates) — only agents and the API get blocked.
+              // templates) - only agents and the API get blocked.
               severity: ctx.source === 'ui' || BULK_SOURCES.has(ctx.source) ? 'medium' : 'high',
               confidence: 'certain',
               path,
-              message: `${labelOf(write)} → ${settingLabel(type, section, key)}: the {{ }} code is not valid JavaScript${
+              message: `${labelOf(write)}, ${settingLabel(type, section, key)}: the {{ }} code is not valid JavaScript${
                 broken.unclosed ? ' ({{ is never closed)' : ''
               }`,
               entity: { type: 'component', id: write.id, name: write.data.name },
-              fix: 'Fix the expression inside {{ }} — the app compiles it as `return <code>`.',
+              fix: 'Fix the expression inside {{ }}; the app compiles it as `return <code>`.',
             });
           }
           continue; // dynamic values are never type-checked
@@ -207,7 +207,7 @@ export const componentValueTypes: Rule<ComponentWrite> = {
               severity: 'high',
               confidence: 'certain',
               path,
-              message: `${labelOf(write)} → ${settingLabel(type, section, key)}: must be one of ${allowed
+              message: `${labelOf(write)}, ${settingLabel(type, section, key)}: must be one of ${allowed
                 .map((option) => JSON.stringify(option))
                 .join(', ')}, got ${JSON.stringify(value)}`,
               entity: { type: 'component', id: write.id, name: write.data.name },
@@ -225,7 +225,7 @@ export const componentValueTypes: Rule<ComponentWrite> = {
             severity: fit === 'structure-mismatch' ? 'high' : 'medium',
             confidence: fit === 'structure-mismatch' ? 'certain' : 'heuristic',
             path,
-            message: `${labelOf(write)} → ${settingLabel(type, section, key)}: does not fit the expected ${
+            message: `${labelOf(write)}, ${settingLabel(type, section, key)}: does not fit the expected ${
               valueSchemaOf(type, section, key)?.type
             }, got ${JSON.stringify(value)}`,
             entity: { type: 'component', id: write.id, name: write.data.name },
@@ -239,7 +239,7 @@ export const componentValueTypes: Rule<ComponentWrite> = {
 
 // Settings every component stores without the widget declaring them.
 // NOTE: an "unknown settings" warning rule was tried and dropped: ToolJet's own templates
-// carry 200+ legacy keys from renames (`visible`→`visibility`, `clientSidePagination`, ...)
+// carry 200+ legacy keys from renames (`visible`->`visibility`, `clientSidePagination`, ...)
 // that the app still reads, so the signal was pure noise.
 
 // The save code only checks that a parent id exists somewhere in the database, so a typo'd
@@ -260,7 +260,7 @@ export const componentParentValid: Rule<ComponentWrite> = {
           severity: referenceSeverity(ctx.source),
           confidence: 'certain',
           path: `${labelOf(write)}.parent`,
-          message: `${labelOf(write)} → parent: no component with id ${write.data.parent} exists in this app version, the component would never render`,
+          message: `${labelOf(write)}, parent: no component with id ${write.data.parent} exists in this app version, the component would never render`,
           entity: { type: 'component', id: write.id, name: write.data.name },
           fix: 'Use the id of a container on the same page, or null for the page canvas.',
         },
@@ -274,7 +274,7 @@ export const componentParentValid: Rule<ComponentWrite> = {
           severity: referenceSeverity(ctx.source),
           confidence: 'certain',
           path: `${labelOf(write)}.parent`,
-          message: `${labelOf(write)} → parent: ${parent.name || parent.id} lives on another page, the component would never render`,
+          message: `${labelOf(write)}, parent: ${parent.name || parent.id} lives on another page, the component would never render`,
           entity: { type: 'component', id: write.id, name: write.data.name },
         },
       ];
@@ -319,7 +319,7 @@ export const componentNoModuleInModule: Rule<ComponentWrite> = {
         severity: 'high',
         confidence: 'certain',
         path: `${labelOf(write)}.type`,
-        message: `${labelOf(write)} → type: a module cannot contain another module`,
+        message: `${labelOf(write)}, type: a module cannot contain another module`,
         entity: { type: 'component', id: write.id, name: write.data?.name },
       },
     ];

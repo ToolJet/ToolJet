@@ -7,7 +7,7 @@ export const PAGE_HANDLE_PATTERN = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
 
 // ToolJet's own templates ship pages whose handle is the raw name ("Product Inventory"
 // in the inventory-management and supply-chain templates), and the viewer still routes
-// them via percent-encoding — so reproducing stored data only warns, while interactive
+// them via percent-encoding - so reproducing stored data only warns, while interactive
 // writes that create such a handle block.
 const BULK_SOURCES: ReadonlySet<WriteSource> = new Set(['import', 'git', 'copy', 'restore']);
 
@@ -42,8 +42,8 @@ export const pageHandleFormat: Rule<PageWrite> = {
         path: `${labelOf(write)}.handle`,
         message:
           handle === undefined || handle === ''
-            ? `${labelOf(write)} → handle: no handle set, the page has no URL`
-            : `${labelOf(write)} → handle: "${handle}" is not kebab-case (letters and digits separated by single hyphens)`,
+            ? `${labelOf(write)}, handle: no handle set, the page has no URL`
+            : `${labelOf(write)}, handle: "${handle}" is not kebab-case (letters and digits separated by single hyphens)`,
         entity: { type: 'page', id: write.id, name: write.data?.name },
         fix: 'Use a kebab-case handle, e.g. "order-details".',
       },
@@ -67,14 +67,14 @@ export const pageHandleUnique: Rule<PageWrite> = {
         severity: 'high',
         confidence: 'certain',
         path: `${labelOf(write)}.handle`,
-        message: `${labelOf(write)} → handle: "${write.data.handle}" is already the URL of page ${clash.name ?? clash.id} in this app version`,
+        message: `${labelOf(write)}, handle: "${write.data.handle}" is already the URL of page ${clash.name ?? clash.id} in this app version`,
         entity: { type: 'page', id: write.id, name: write.data?.name },
       },
     ];
   },
 };
 
-// Pages are referenced by id, so a duplicate name breaks nothing at runtime — it only
+// Pages are referenced by id, so a duplicate name breaks nothing at runtime - it only
 // makes the page list ambiguous for builders. Warns, never blocks.
 export const pageNameUnique: Rule<PageWrite> = {
   id: 'page-name-unique',
@@ -90,7 +90,7 @@ export const pageNameUnique: Rule<PageWrite> = {
         severity: 'medium',
         confidence: 'certain',
         path: `${labelOf(write)}.name`,
-        message: `${labelOf(write)} → name: another page in this app version is already named "${write.data.name}"`,
+        message: `${labelOf(write)}, name: another page in this app version is already named "${write.data.name}"`,
         entity: { type: 'page', id: write.id, name: write.data.name },
       },
     ];
@@ -112,7 +112,7 @@ export const pageInVersion: Rule<PageWrite> = {
         severity: 'high',
         confidence: 'certain',
         path: `${labelOf(write)}.id`,
-        message: `${labelOf(write)} → id: no page with id ${write.id} exists in this app version`,
+        message: `${labelOf(write)}, id: no page with id ${write.id} exists in this app version`,
         entity: { type: 'page', id: write.id },
       },
     ];
@@ -208,7 +208,7 @@ export const pageModuleSinglePage: Rule<PageWrite> = {
 };
 
 // Hiding or disabling the home page strands the app's entry point. `hidden` is an fx-able
-// jsonb value, so only a literal true is judged — dynamic expressions pass.
+// jsonb value, so only a literal true is judged - dynamic expressions pass.
 export const pageHomeStaysVisible: Rule<PageWrite> = {
   id: 'page-home-stays-visible',
   description: 'The home page is not hidden or disabled',
@@ -224,7 +224,7 @@ export const pageHomeStaysVisible: Rule<PageWrite> = {
           severity: 'high',
           confidence: 'certain',
           path: `${labelOf(write)}.hidden`,
-          message: `${labelOf(write)} → hidden: this is the home page, hiding it strands the app's entry point`,
+          message: `${labelOf(write)}, hidden: this is the home page, hiding it strands the app's entry point`,
           entity: { type: 'page', id: write.id, name: write.data.name },
           fix: 'Mark another page as home first.',
         },
@@ -237,7 +237,7 @@ export const pageHomeStaysVisible: Rule<PageWrite> = {
           severity: 'high',
           confidence: 'certain',
           path: `${labelOf(write)}.disabled`,
-          message: `${labelOf(write)} → disabled: this is the home page, disabling it strands the app's entry point`,
+          message: `${labelOf(write)}, disabled: this is the home page, disabling it strands the app's entry point`,
           entity: { type: 'page', id: write.id, name: write.data.name },
           fix: 'Mark another page as home first.',
         },

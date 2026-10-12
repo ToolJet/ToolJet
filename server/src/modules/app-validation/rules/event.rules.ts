@@ -40,8 +40,8 @@ export const eventActionKnown: Rule<EventWrite> = {
         confidence: 'certain',
         path: `${labelOf(write)}.event.actionId`,
         message: actionId
-          ? `${labelOf(write)} → action: "${actionId}" is not an action, the event would do nothing`
-          : `${labelOf(write)} → action: no actionId set, the event would do nothing`,
+          ? `${labelOf(write)}, action: "${actionId}" is not an action, the event would do nothing`
+          : `${labelOf(write)}, action: no actionId set, the event would do nothing`,
         entity: { type: 'event', id: write.id },
         fix: 'Use one of the editor actions, e.g. "run-query" or "show-alert".',
       },
@@ -61,7 +61,7 @@ export const eventTargetTypeValid: Rule<EventWrite> = {
         severity: 'high',
         confidence: 'certain',
         path: `${labelOf(write)}.target`,
-        message: `${labelOf(write)} → target: "${write.data.target}" is not a source kind, expected one of ${EVENT_TARGETS.join(', ')}`,
+        message: `${labelOf(write)}, target: "${write.data.target}" is not a source kind, expected one of ${EVENT_TARGETS.join(', ')}`,
         entity: { type: 'event', id: write.id },
       },
     ];
@@ -93,7 +93,7 @@ export const eventSourceExists: Rule<EventWrite> = {
         severity: referenceSeverity(ctx.source),
         confidence: 'certain',
         path: `${labelOf(write)}.sourceId`,
-        message: `${labelOf(write)} → attached to: no ${kind} with id ${sourceId} exists in this app version`,
+        message: `${labelOf(write)}, attached to: no ${kind} with id ${sourceId} exists in this app version`,
         entity: { type: 'event', id: write.id },
         fix: `Attach the event to a ${kind} of the version being edited.`,
       },
@@ -119,7 +119,7 @@ export const eventActionTargetExists: Rule<EventWrite> = {
           severity: 'info',
           confidence: 'certain',
           path,
-          message: `${labelOf(write)} → ${ref.field}: no ${ref.entity} selected, the action does nothing until one is picked`,
+          message: `${labelOf(write)}, ${ref.field}: no ${ref.entity} selected, the action does nothing until one is picked`,
           entity: { type: 'event', id: write.id },
         },
       ];
@@ -141,7 +141,7 @@ export const eventActionTargetExists: Rule<EventWrite> = {
         severity: referenceSeverity(ctx.source),
         confidence: 'certain',
         path,
-        message: `${labelOf(write)} → ${ref.field}: no ${ref.entity} with id ${ref.value} exists in this app version`,
+        message: `${labelOf(write)}, ${ref.field}: no ${ref.entity} with id ${ref.value} exists in this app version`,
         entity: { type: 'event', id: write.id },
         fix: `Point the action at a ${ref.entity} of the version being edited.`,
       },
@@ -162,7 +162,7 @@ export const eventNoSwitchPageInModule: Rule<EventWrite> = {
         severity: 'high',
         confidence: 'certain',
         path: `${labelOf(write)}.event.actionId`,
-        message: `${labelOf(write)} → action: a module cannot switch pages, pages belong to the app that uses it`,
+        message: `${labelOf(write)}, action: a module cannot switch pages, pages belong to the app that uses it`,
         entity: { type: 'event', id: write.id },
       },
     ];
@@ -175,7 +175,7 @@ const DYNAMIC_EVENT_SOURCES = new Set(['ModuleViewer', 'ModuleContainer', 'Custo
 
 // What a page fires depends on its type (AddNewPagePopup.jsx / SettingsModal.jsx):
 // 'default' pages fire onPageLoad, 'custom' pages render a clickable element and fire
-// onClick, and url/app/group pages never fire events — but attaching one to them is the
+// onClick, and url/app/group pages never fire events - but attaching one to them is the
 // editor's own doing, so no type entry means the rule stays silent.
 const PAGE_EVENT_IDS_BY_TYPE: Record<string, readonly string[]> = {
   default: ['onPageLoad'],
@@ -231,7 +231,7 @@ export const eventFiredBySource: Rule<EventWrite> = {
         severity: 'medium',
         confidence: 'heuristic',
         path: `${labelOf(write)}.event.eventId`,
-        message: `${labelOf(write)} → event: ${source.label} does not fire "${eventId}", so the handler would never run`,
+        message: `${labelOf(write)}, event: ${source.label} does not fire "${eventId}", so the handler would never run`,
         entity: { type: 'event', id: write.id },
         fix: `Use one of: ${source.declared.join(', ')}.`,
       },
@@ -259,7 +259,7 @@ export const eventOrderUnambiguous: Rule<EventWrite> = {
         severity: 'medium',
         confidence: 'heuristic',
         path: `${labelOf(write)}.index`,
-        message: `${labelOf(write)} → order: another ${eventId} handler on this source already has position ${write.data.index}`,
+        message: `${labelOf(write)}, order: another ${eventId} handler on this source already has position ${write.data.index}`,
         entity: { type: 'event', id: write.id },
       },
     ];

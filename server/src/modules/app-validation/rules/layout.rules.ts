@@ -37,7 +37,7 @@ export const layoutTypeKnown: Rule<LayoutWrite> = {
         severity: 'critical',
         confidence: 'certain',
         path: `${labelOf(write)}.layouts.${write.data.type}`,
-        message: `${labelOf(write)} → layout type: "${write.data.type}" is not a layout, expected desktop or mobile`,
+        message: `${labelOf(write)}, layout type: "${write.data.type}" is not a layout, expected desktop or mobile`,
         entity: { type: 'layout', id: write.id },
         fix: 'Use "desktop" or "mobile" as the layout key.',
       },
@@ -69,7 +69,7 @@ export const layoutNumbersValid: Rule<LayoutWrite> = {
           severity: 'high',
           confidence: 'certain',
           path,
-          message: `${labelOf(write)} → ${type} layout ${field}: must be a finite number, got ${JSON.stringify(raw)}`,
+          message: `${labelOf(write)}, ${type} layout ${field}: must be a finite number, got ${JSON.stringify(raw)}`,
           entity: { type: 'layout', id: write.id },
           fix: 'Send a plain finite number, e.g. 10.',
         });
@@ -82,7 +82,7 @@ export const layoutNumbersValid: Rule<LayoutWrite> = {
           severity: 'medium',
           confidence: 'heuristic',
           path,
-          message: `${labelOf(write)} → ${type} layout ${field}: ${value} is negative, which usually hides the component`,
+          message: `${labelOf(write)}, ${type} layout ${field}: ${value} is negative, which usually hides the component`,
           entity: { type: 'layout', id: write.id },
         });
       } else if ((POSITION_FIELDS as readonly string[]).includes(field) && value < -1) {
@@ -93,7 +93,7 @@ export const layoutNumbersValid: Rule<LayoutWrite> = {
           severity: 'medium',
           confidence: 'heuristic',
           path,
-          message: `${labelOf(write)} → ${type} layout ${field}: ${value} places the component off-canvas`,
+          message: `${labelOf(write)}, ${type} layout ${field}: ${value} places the component off-canvas`,
           entity: { type: 'layout', id: write.id },
         });
       }
@@ -119,7 +119,7 @@ export const layoutComponentInVersion: Rule<LayoutWrite> = {
         severity: 'high',
         confidence: 'certain',
         path: `${componentId}.layouts`,
-        message: `${componentId} → layout: no component with this id exists in this app version`,
+        message: `${componentId}, layout: no component with this id exists in this app version`,
         entity: { type: 'layout', id: componentId },
         fix: 'Use the id of a component that belongs to the version being edited.',
       },

@@ -1,5 +1,5 @@
 // The editor's action list. Kept in sync by hand with
-// frontend/src/AppBuilder/RightSideBar/Inspector/ActionTypes.js — when an action is added there,
+// frontend/src/AppBuilder/RightSideBar/Inspector/ActionTypes.js - when an action is added there,
 // add it here too (and to the remapping blocks listed in
 // .github/instructions/event-action-remapping.instructions.md).
 export const EVENT_ACTION_IDS = [
