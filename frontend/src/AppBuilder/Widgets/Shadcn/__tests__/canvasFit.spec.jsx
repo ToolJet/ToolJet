@@ -15,8 +15,8 @@ beforeAll(() => {
 afterAll(() => jest.restoreAllMocks());
 const tick = () => act(() => new Promise((r) => setTimeout(r, 5)));
 
-const Row = ({ fit, base = 60 }) => {
-  const [ref, height] = useCanvasFit(fit, base, '[data-row]');
+const Row = ({ fit, base = 60, shrink = false }) => {
+  const [ref, height] = useCanvasFit(fit, base, '[data-row]', { shrink });
   return (
     <div ref={ref} data-row="" data-rect="row" data-h={height}>
       <div className="ele-a" data-rect="a" />
@@ -46,4 +46,37 @@ it('never goes below its base height, and keeps it with fitting off', async () =
   rerender(<Row fit={false} />);
   await tick();
   expect(heightOf(container)).toBe(60);
+});
+
+it('with shrink, keeps its base when nothing in it is hidden (cardHeight still sets a static card)', async () => {
+  rects.set('row', { top: 100, bottom: 372, height: 272 });
+  rects.set('a', { top: 104, bottom: 199, height: 95 });
+  const { container } = render(<Row fit shrink base={272} />);
+  await tick();
+  expect(heightOf(container)).toBe(272);
+});
+
+it('leaves out a component whose content is hidden, though its slot keeps a size (one card expanded, the rest not)', async () => {
+  // collapseWhenHidden is decided once per component, so expanding one deal card gave every card's hidden details their
+  // 134px slots back: the other cards grew to 269px with nothing drawn in the space.
+  rects.set('row', { top: 100, bottom: 372, height: 272 });
+  rects.set('a', { top: 104, bottom: 199, height: 95 });
+  rects.set('hiddenSlot', { top: 220, bottom: 360, height: 140 });
+  rects.set('hiddenContent', { top: 220, bottom: 220, height: 0 });
+  const Card = () => {
+    const [ref, height] = useCanvasFit(true, 272, '[data-row]', { shrink: true });
+    return (
+      <div ref={ref} data-row="" data-rect="row" data-h={height}>
+        <div className="ele-a" data-rect="a" />
+        <div className="ele-hidden" data-rect="hiddenSlot">
+          <div className="canvas-component">
+            <div data-rect="hiddenContent" />
+          </div>
+        </div>
+      </div>
+    );
+  };
+  const { container } = render(<Card />);
+  await tick();
+  expect(heightOf(container)).toBe(107);
 });

@@ -7,8 +7,11 @@ import { useLayoutEffect, useRef, useState } from 'react';
 const BOTTOM_PADDING = 8;
 
 /** The canvas element's ref and its height: `base`, or (when `enabled`) as tall as the bottom of its own components
- *  (`ownerSelector` keeps a nested list's rows to themselves), never below `base`. */
-export const useCanvasFit = (enabled, base, ownerSelector) => {
+ *  (`ownerSelector` keeps a nested list's rows to themselves), never below `base` unless `shrink` (a Kanban card fits
+ *  its content both ways when part of it is hidden: drawn at 272px for expandable details, a collapsed deal card stayed
+ *  272px and mostly empty). */
+const MIN_SHRUNK = 40;
+export const useCanvasFit = (enabled, base, ownerSelector, { shrink = false } = {}) => {
   const ref = useRef(null);
   const [height, setHeight] = useState(base);
   useLayoutEffect(() => {
@@ -23,12 +26,23 @@ export const useCanvasFit = (enabled, base, ownerSelector) => {
       frame = requestAnimationFrame(() => {
         const top = el.getBoundingClientRect().top;
         let bottom = 0;
+        let anyHidden = false;
         el.querySelectorAll('[class*="ele-"]').forEach((w) => {
           if (ownerSelector && w.parentElement?.closest(ownerSelector) !== el) return;
+          // A component whose content is not drawn (hidden in this row or card) keeps a slot the size of its layout:
+          // collapseWhenHidden is decided once per component, not per row, so it does not count here.
+          const content = w.querySelector('.canvas-component')?.firstElementChild;
+          if (content && content.getBoundingClientRect().height === 0) {
+            anyHidden = true;
+            return;
+          }
           const r = w.getBoundingClientRect();
           if (r.height > 0) bottom = Math.max(bottom, r.bottom - top);
         });
-        const next = Math.max(base, Math.ceil(bottom + BOTTOM_PADDING));
+        const fitted = Math.ceil(bottom + BOTTOM_PADDING);
+        // Below the set height only when something in it is hidden (an expandable card's details): a card without
+        // hidden parts keeps the height its author set (cardHeight).
+        const next = shrink && anyHidden ? Math.max(MIN_SHRUNK, fitted) : Math.max(base, fitted);
         setHeight((current) => (Math.abs(current - next) < 1 ? current : next));
       });
     };
@@ -40,6 +54,6 @@ export const useCanvasFit = (enabled, base, ownerSelector) => {
       cancelAnimationFrame(frame);
       observer.disconnect();
     };
-  }, [enabled, base, ownerSelector]);
+  }, [enabled, base, ownerSelector, shrink]);
   return [ref, enabled ? height : base];
 };

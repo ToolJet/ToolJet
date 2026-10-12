@@ -420,7 +420,7 @@ const RIGHT_FADE = {
 /** A custom card's canvas: the components on the board's card, laid out with this card's data. With dynamic height
  *  on (in an app) the card grows with them, so a long text or an opened accordion is not cut off at cardHeight. */
 const CustomCardBody = ({ id, index, width, height: cardHeight, fit, editing, darkMode }) => {
-  const [ref, height] = useCanvasFit(fit, cardHeight, '[data-card-canvas]');
+  const [ref, height] = useCanvasFit(fit, cardHeight, '[data-card-canvas]', { shrink: true });
   return (
     // In the editor, a press inside the card edits its components instead of starting a card drag.
     <div
