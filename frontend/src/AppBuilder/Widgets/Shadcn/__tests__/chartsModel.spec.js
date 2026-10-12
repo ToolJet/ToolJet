@@ -1,4 +1,5 @@
 import {
+  wholeNumbers,
   arcAngles,
   arcBox,
   axisLabel,
@@ -163,5 +164,36 @@ describe('radial', () => {
     expect(gauge.cy).toBe(155);
     expect(gauge.textAbove).toBe(true);
     expect(arcBox(90, -270, 'x', null).outerRadius).toBe(0);
+  });
+});
+
+describe('wholeNumbers', () => {
+  // Counts (doses, jobs, seats) drew ticks of 0.5 or 0.8, 1.5, 2.3: an axis over whole numbers ticks in whole numbers.
+  it('is true when every plotted value is a whole number', () => {
+    expect(
+      wholeNumbers(
+        [
+          { a: 1, b: 3 },
+          { a: 0, b: 2 },
+        ],
+        ['a', 'b']
+      )
+    ).toBe(true);
+  });
+
+  it('is false when any value has a fraction, and ignores missing values', () => {
+    expect(wholeNumbers([{ a: 1 }, { a: 2.5 }], ['a'])).toBe(false);
+    expect(wholeNumbers([{ a: 1 }, { a: null }, { a: 3 }], ['a'])).toBe(true);
+  });
+
+  it('is false with nothing to plot, so an empty axis keeps the default ticks', () => {
+    expect(wholeNumbers([], ['a'])).toBe(false);
+    expect(wholeNumbers([{ a: null }], ['a'])).toBe(false);
+    expect(wholeNumbers([{ a: 1 }], [])).toBe(false);
+  });
+
+  it('reads numbers given as text, and junk as not whole', () => {
+    expect(wholeNumbers([{ a: '4' }, { a: '7' }], ['a'])).toBe(true);
+    expect(wholeNumbers([{ a: 'n/a' }], ['a'])).toBe(false);
   });
 });

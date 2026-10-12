@@ -283,6 +283,21 @@ describe('Table', () => {
 });
 
 describe('Kanban', () => {
+  it('shows stored ISO dates on a card as short dates', async () => {
+    const year = new Date().getFullYear();
+    const { problems, unmount } = await mount('ShadKanban', {
+      data: [{ id: 1, title: 'Northstar', status: 'todo', next: `${year}-10-14T00:00:00`, note: `${year}-03-02` }],
+      columns: ['todo'],
+      metaField: 'next',
+      descriptionField: 'note',
+    });
+    expect(document.body.textContent).toContain('Oct 14');
+    expect(document.body.textContent).toContain('Mar 2');
+    expect(document.body.textContent).not.toContain(`${year}-10-14T`);
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
   it('keeps the meta line on one line with an ellipsis (dates wrapped across lines in narrow columns)', async () => {
     const { problems, unmount } = await mount('ShadKanban', {
       data: [{ id: 1, title: 'Northstar', status: 'todo', badge: 'Website', when: 'Follow-up Oct 14, 2026' }],

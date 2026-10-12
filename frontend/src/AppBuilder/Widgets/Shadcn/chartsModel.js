@@ -70,6 +70,21 @@ export const seriesRows = (data, categoryField, series) =>
 
 export const hasValues = (rows, series) => rows.some((row) => series.some((s) => row[s] !== null));
 
+/** Whether every plotted value of these series is a whole number (and there is at least one): such an axis ticks in
+ *  whole numbers, so counts never read as 0.5 or 2.3. */
+export const wholeNumbers = (rows, series) => {
+  let seen = false;
+  for (const row of rows) {
+    for (const s of series) {
+      const v = num(row?.[s]);
+      if (v === null) continue;
+      if (!Number.isInteger(v)) return false;
+      seen = true;
+    }
+  }
+  return seen;
+};
+
 // ---- Number formats ------------------------------------------------------------------------------------------------
 
 export const FORMATS = ['number', 'currency', 'percent', 'compact'];

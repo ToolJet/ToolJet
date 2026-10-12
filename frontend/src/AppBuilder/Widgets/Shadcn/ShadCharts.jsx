@@ -61,6 +61,7 @@ import {
   scatterGroups,
   MAX_ROWS,
   MAX_SERIES,
+  wholeNumbers,
 } from './chartsModel';
 
 export { withControlState } from '../packHooks';
@@ -248,6 +249,7 @@ export const ShadAreaChart = (props) => {
             hide={compact}
             width={valueAxisWidth(data, series, fmt(p, true), p.stack === true && p.lineOnly !== true)}
             tickFormatter={fmt(p, true)}
+            allowDecimals={!wholeNumbers(data, series)}
           />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={fmt(p, false)} />} />
           {p.showLegend === true && !compact ? <Legend content={<LegendContent />} /> : null}
@@ -328,7 +330,13 @@ export const ShadBarChart = (props) => {
           {compact ? null : <CartesianGrid vertical={horizontal} horizontal={!horizontal} stroke={GRID} />}
           {horizontal ? (
             <>
-              <XAxis type="number" {...AXIS} hide={compact} tickFormatter={fmt(p, true)} />
+              <XAxis
+                type="number"
+                {...AXIS}
+                hide={compact}
+                tickFormatter={fmt(p, true)}
+                allowDecimals={!wholeNumbers(data, series)}
+              />
               <YAxis
                 type="category"
                 dataKey={xField}
@@ -353,6 +361,7 @@ export const ShadBarChart = (props) => {
                 hide={compact}
                 width={valueAxisWidth(data, series, fmt(p, true), p.stack === true)}
                 tickFormatter={fmt(p, true)}
+                allowDecimals={!wholeNumbers(data, series)}
               />
             </>
           )}
@@ -556,7 +565,13 @@ export const ShadLineChart = (props) => {
         >
           {p.showGrid !== false && !compact ? <CartesianGrid vertical={false} stroke={GRID} /> : null}
           <XAxis dataKey={xField} {...AXIS} hide={compact} minTickGap={24} tickFormatter={dateTicks(rows, xField)} />
-          <YAxis {...AXIS} hide={compact} width={yWidth} tickFormatter={tick} />
+          <YAxis
+            {...AXIS}
+            hide={compact}
+            width={yWidth}
+            tickFormatter={tick}
+            allowDecimals={!wholeNumbers(rows, series)}
+          />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={full} />} />
           {p.showLegend === true && !compact ? <Legend content={<LegendContent />} /> : null}
           {target !== null ? (
@@ -916,6 +931,7 @@ export const ShadComboChart = (props) => {
   const leftFull = scaled(formatter(valueFormat(p), false), leftScale);
   const rightFull = scaled(formatter({ format: p.rightAxisFormat, currency: p.currency }, false), rightScale);
   const rightKeys = new Set(series.filter((s) => s.axis === 'right').map((s) => s.field));
+  const leftFields = series.filter((s) => s.axis !== 'right').map((s) => s.field);
   const hasRight = rightKeys.size > 0;
   const stackedBars = p.stackBars === true;
   const leftValues = stackedBars
@@ -949,7 +965,14 @@ export const ShadComboChart = (props) => {
         >
           {p.showGrid !== false && !compact ? <CartesianGrid vertical={false} stroke={GRID} /> : null}
           <XAxis dataKey={xField} {...AXIS} hide={compact} minTickGap={16} tickFormatter={dateTicks(rows, xField)} />
-          <YAxis yAxisId="left" {...AXIS} hide={compact} width={axisWidthFor(leftValues, left)} tickFormatter={left} />
+          <YAxis
+            yAxisId="left"
+            {...AXIS}
+            hide={compact}
+            width={axisWidthFor(leftValues, left)}
+            tickFormatter={left}
+            allowDecimals={!wholeNumbers(rows, leftFields)}
+          />
           {hasRight ? (
             <YAxis
               yAxisId="right"
@@ -958,6 +981,7 @@ export const ShadComboChart = (props) => {
               hide={compact}
               width={axisWidthFor(valuesOn('right'), right)}
               tickFormatter={right}
+              allowDecimals={!wholeNumbers(rows, [...rightKeys])}
             />
           ) : null}
           <Tooltip cursor={{ fill: 'var(--sc-muted)', fillOpacity: 0.6 }} content={<ComboTip format={tipFormat} />} />

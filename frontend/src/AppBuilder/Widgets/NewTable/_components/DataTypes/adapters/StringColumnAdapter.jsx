@@ -9,7 +9,7 @@ import useValidationStyle from '../_hooks/useValidationStyle';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
-import { chipTone } from '../../../_utils/chipTone';
+import { chipLabel, chipTone } from '../../../_utils/chipTone';
 import { avatarHue, isNobody } from '../../../_utils/avatarHue';
 import { initials } from '@/AppBuilder/Widgets/packHooks';
 
@@ -66,7 +66,7 @@ export const StringColumn = ({
         )}`}
       >
         <span className={`tj-chip tj-chip-${chipTone(text)}`} title={text}>
-          <HighLightSearch text={text} searchTerm={searchText} />
+          <HighLightSearch text={chipLabel(text)} searchTerm={searchText} />
         </span>
       </div>
     );
