@@ -3,7 +3,7 @@ export const shadCardGridConfig = {
   name: 'ShadCardGrid',
   displayName: 'Card grid',
   description:
-    "shadcn/ui grid of cards from data, for things with a face (recipes, products, listings, people, rooms): each card shows an image (imageField; without one, a tinted panel with the title's initials), title, subtitle, a badge (badgeField, toned by its words: Available green, Low stock amber, Sold out red), a description (two lines) and a meta line (metaFields, a comma list; 'prep:{} min' puts the value in a label, 'serves:Serves' puts the label first). columns (a number, or 'auto' to fit cards of minCardWidth), imageAspect ('16/9', '4/3', '1/1'), cardStyle 'elevated', 'outline' or 'flat'. A click selects the card (selectedItem, selectedItemId; onCardClick). Height: grows with its rows (about 300px per row with an image, 150px without)",
+    "shadcn/ui grid of cards from data, for things with a face (recipes, products, listings, people, rooms): each card shows an image when imageField is mapped (a row without a picture gets a tinted panel with the title's initials; no imageField, no picture area), title, subtitle, a badge (badgeField, toned by its words: Available green, Low stock amber, Sold out red), a description (two lines) and a meta line (metaFields, a comma list; 'prep:{} min' puts the value in a label, 'serves:Serves' puts the label first). columns (a number, or 'auto' to fit cards of minCardWidth), imageAspect ('16/9', '4/3', '1/1'), cardStyle 'elevated', 'outline' or 'flat'. A click selects the card (selectedItem, selectedItemId; onCardClick). Height: grows with its rows (about 300px per row with an image, 150px without)",
   component: 'ShadCardGrid',
   defaultSize: {
     width: 43,

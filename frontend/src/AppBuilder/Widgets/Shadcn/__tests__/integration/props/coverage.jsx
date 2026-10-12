@@ -306,6 +306,9 @@ export const PROBES = [
     expect: texts(/Nothing here/),
   },
   { widget: 'ShadKanban', key: 'badgeColors', value: fx({ High: '#e11d48' }) },
+  // The card grid draws a picture area only when an image field is mapped.
+  { widget: 'ShadCardGrid', key: 'imageAspect', value: '1/1', context: { properties: { imageField: 'photo' } } },
+  { widget: 'ShadCardGrid', key: 'showImage', value: '{{false}}', context: { properties: { imageField: 'photo' } } },
   {
     widget: 'ShadKanban',
     key: 'detailsField',

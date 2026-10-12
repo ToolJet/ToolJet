@@ -346,7 +346,9 @@ export const ShadCardGrid = (props) => {
   const hasClick = useHasEvent(id, 'onCardClick');
   const columns = gridColumns(p.columns, width || Number(props.width) || 960, p.minCardWidth);
   const aspect = ['16/9', '4/3', '1/1'].includes(p.imageAspect) ? p.imageAspect.replace('/', ' / ') : '4 / 3';
-  const showImage = p.showImage !== false;
+  // The picture area only when an image field is mapped: without one every card got a large initials panel, which
+  // took most of the card on menus, tickets and figures that have no picture.
+  const showImage = p.showImage !== false && typeof p.imageField === 'string' && p.imageField.trim() !== '';
   const style = ['elevated', 'outline', 'flat'].includes(p.cardStyle) ? p.cardStyle : 'elevated';
 
   const click = (card) => {

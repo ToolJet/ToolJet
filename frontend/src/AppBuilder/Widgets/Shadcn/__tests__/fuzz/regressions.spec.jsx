@@ -345,6 +345,31 @@ describe('Kanban', () => {
   });
 });
 
+describe('Card grid', () => {
+  it('draws no initials panel when no image field is mapped, and keeps the badge in the card body', async () => {
+    const { problems, unmount } = await mount('ShadCardGrid', {
+      data: [{ id: 1, name: 'Charred Salmon', state: 'Ready' }],
+      titleField: 'name',
+      badgeField: 'state',
+    });
+    expect(document.querySelector('[data-fallback="initials"]')).toBeNull();
+    expect(document.body.textContent).toContain('Ready');
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
+  it('falls back to initials for a card whose mapped image is missing', async () => {
+    const { problems, unmount } = await mount('ShadCardGrid', {
+      data: [{ id: 1, name: 'Charred Salmon', photo: '' }],
+      titleField: 'name',
+      imageField: 'photo',
+    });
+    expect(document.querySelector('[data-fallback="initials"]')).not.toBeNull();
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+});
+
 describe('List view', () => {
   it('draws 100 rows of 10k without paging, then 100 more per "Show more"', async () => {
     const { problems, unmount } = await mount('ShadListView', {
