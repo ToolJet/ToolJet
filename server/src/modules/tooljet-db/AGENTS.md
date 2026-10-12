@@ -130,6 +130,9 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `table/:tableId/migrations` (`getTableMigrations`, licence-filtered like `view_tables`). Known
   accepted gap: a relation created while licensed still shows in `baseline-report` after the licence
   lapses — route is admin-gated and repair-oriented.
+- `repairBaseline` synthesizes from the highest-priority relation but records and confirms the
+  baseline on every sibling relation that has a physical table (twins are structural clones). A
+  twin left with no applications reads as "nothing applied" to promote.
 - `view_tables`'s per-environment shape adds `has_relation` (no equivalent in the other two routes,
   which imply "no relation" by omission). "Applied on environment X" is always
   `computeMissingMigrations(internalTableId, sourceRelation, targetRelation: null, manager)` — never
@@ -171,4 +174,6 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 - `app-environments` — owns environment/branch resolution; the relation resolver defers to it rather
   than re-implementing priority-1 pinning or licence checks.
 - `git-sync` — `co_relation_id` is git-sync's identity, not this module's; do not repurpose it as an
-  environment or relation discriminator.
+  environment or relation discriminator. It is unique per workspace among live tables only
+  (partial index `organization_id_co_relation_id_unique`): a dropped (soft-deleted) table keeps it,
+  and re-importing or pulling that table reuses it.

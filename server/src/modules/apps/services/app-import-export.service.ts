@@ -4327,6 +4327,24 @@ export class AppImportExportService {
       }));
     }
 
+    // Aggregate Section - each aggregate names its table, and group_by is keyed by table id
+    if (joinOptions?.aggregates) {
+      joinOptions.aggregates = Object.fromEntries(
+        Object.entries(joinOptions.aggregates).map(([key, aggregate]: [string, { table_id?: string }]) => [
+          key,
+          { ...aggregate, table_id: tooljetDatabaseMapping[aggregate.table_id]?.id ?? aggregate.table_id },
+        ])
+      );
+    }
+    if (joinOptions?.group_by) {
+      joinOptions.group_by = Object.fromEntries(
+        Object.entries(joinOptions.group_by).map(([tableId, columns]) => [
+          tooljetDatabaseMapping[tableId]?.id ?? tableId,
+          columns,
+        ])
+      );
+    }
+
     return {
       ...queryOptions,
       table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id,
