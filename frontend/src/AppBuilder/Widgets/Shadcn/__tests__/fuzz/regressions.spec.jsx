@@ -410,6 +410,30 @@ describe('Card grid', () => {
     expect(problems()).toEqual([]);
   });
 
+  // A long badge beside the title ("-$19,305.50 vs last week" on a 185px card) was cut off hard: the chip was a flex
+  // box, which clips its text but never draws an ellipsis, and the title row could not wrap. The row wraps (a badge
+  // wider than the room beside the title goes under it) and the chip ellipsizes with its full text as a tooltip.
+  // jsdom has no layout, so this pins the structure that makes it work; the browser check is in the pass 5 notes.
+  it('never clips a long badge: the title row wraps and the chip ellipsizes with a tooltip', async () => {
+    const badge = '-$19,305.50 vs last week';
+    const { problems, unmount } = await mount('ShadCardGrid', {
+      data: [{ id: 1, label: 'Revenue', comparison: badge }],
+      titleField: 'label',
+      badgeField: 'comparison',
+    });
+    const chip = [...document.querySelectorAll('[data-tone]')].find((el) => el.textContent === badge);
+    expect(chip).toBeTruthy();
+    expect(chip.getAttribute('title')).toBe(badge);
+    // An ellipsis needs a block box: a flex container clips its text without one.
+    expect(chip.className).not.toMatch(/\binline-flex\b/);
+    expect(chip.className).toMatch(/\btruncate\b/);
+    const row = chip.closest('.flex-wrap');
+    expect(row).toBeTruthy();
+    expect(row.textContent).toContain('Revenue');
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
   it('falls back to initials for a card whose mapped image is missing', async () => {
     const { problems, unmount } = await mount('ShadCardGrid', {
       data: [{ id: 1, name: 'Charred Salmon', photo: '' }],
