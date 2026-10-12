@@ -7,6 +7,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
 import { tooljetDatabaseService } from '@/_services';
 import { ArrowLeft, Download, CodeXml, Plus } from 'lucide-react';
+import generateFile from '@/_lib/generate-file';
 import SqlEditor from '../../_components/SqlEditor';
 import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
 import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
@@ -106,6 +107,7 @@ const MigrationHistoryDrawer = ({
           promoteTarget={promoteTarget}
           organizationId={organizationId}
           tableId={selectedTable?.id}
+          tableName={selectedTable?.table_name}
           onBack={() => setPromoteTarget(null)}
           onClose={handleClose}
           refetchMigrations={refetchMigrations}
@@ -254,6 +256,7 @@ const PromotePreviewView = ({
   promoteTarget,
   organizationId,
   tableId,
+  tableName,
   onBack,
   onClose,
   refetchMigrations,
@@ -262,6 +265,7 @@ const PromotePreviewView = ({
   const { sourceEnvironment, environment } = promoteTarget;
   const [pendingMigrations, setPendingMigrations] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
   const { switchEnvironment } = useTjdbActions();
 
   useEffect(() => {
@@ -290,6 +294,16 @@ const PromotePreviewView = ({
       switchEnvironment(environment);
       onBack();
     });
+  };
+
+  // The backup is the target environment's rows as CSV - the data the pending migrations are about to change.
+  const downloadBackup = () => {
+    setIsBackingUp(true);
+    tooljetDatabaseService
+      .exportTableCsv(tableId, environment.id)
+      .then((blob) => generateFile(`${tableName}-${environment.name}-backup.csv`, blob, 'csv'))
+      .catch((err) => toast.error(err?.message ?? 'Could not download backup', { position: 'top-center' }))
+      .finally(() => setIsBackingUp(false));
   };
 
   const latest = pendingMigrations?.[pendingMigrations.length - 1];
@@ -333,12 +347,7 @@ const PromotePreviewView = ({
         )}
       </div>
       <div className="migration-history-drawer__footer migration-history-drawer__footer--promote">
-        <ButtonSolid
-          variant="secondary"
-          // ponytail: real table-data backup/export doesn't exist yet — this button matches the
-          // approved design but is intentionally inert until that feature is built.
-          onClick={() => toast('Backing up table data isn’t available yet', { position: 'top-center' })}
-        >
+        <ButtonSolid variant="secondary" onClick={downloadBackup} disabled={isBackingUp} isLoading={isBackingUp}>
           <Download size={16} /> Download backup
         </ButtonSolid>
         <div className="migration-history-drawer__footer-actions">

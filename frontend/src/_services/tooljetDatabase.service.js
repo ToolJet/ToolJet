@@ -23,8 +23,8 @@ function proxyUrl(tableId, query = '', environmentIdOverride) {
   return `/tooljet-db/proxy/${tableId}?${[query, envQuery].filter(Boolean).join('&')}`;
 }
 
-function findOne(tableId, query = '') {
-  return tooljetAdapter.get(proxyUrl(tableId, query));
+function findOne(tableId, query = '', environmentIdOverride) {
+  return tooljetAdapter.get(proxyUrl(tableId, query, environmentIdOverride));
 }
 
 function findAll(organizationId) {

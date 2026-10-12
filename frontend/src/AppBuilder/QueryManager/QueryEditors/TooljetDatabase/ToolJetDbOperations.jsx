@@ -362,6 +362,7 @@ const ToolJetDbOperations = ({
   const value = useMemo(
     () => ({
       organizationId,
+      environmentId,
       tables,
       setTables,
       columns,
@@ -400,6 +401,7 @@ const ToolJetDbOperations = ({
     }),
     [
       organizationId,
+      environmentId,
       tables,
       columns,
       listRowsOptions,

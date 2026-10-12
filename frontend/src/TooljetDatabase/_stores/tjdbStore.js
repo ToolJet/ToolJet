@@ -21,6 +21,25 @@ const initialState = {
   migrationsVersion: 0,
 };
 
+// Per tab, so a reload or a trip out of the dashboard returns to the same environment. Only the
+// in-memory selection is reset on unmount (resetStore), never this key - App Builder reads the
+// store, not storage. Storage can be blocked (private mode), so failures fall back to development.
+const SELECTED_ENVIRONMENT_KEY = 'tjdb-selected-environment-id';
+const readSelectedEnvironmentId = () => {
+  try {
+    return window.sessionStorage.getItem(SELECTED_ENVIRONMENT_KEY);
+  } catch {
+    return null;
+  }
+};
+const writeSelectedEnvironmentId = (environmentId) => {
+  try {
+    window.sessionStorage.setItem(SELECTED_ENVIRONMENT_KEY, environmentId);
+  } catch {
+    // Not persisted; the selection still works for this page load.
+  }
+};
+
 // Mirrors the useState setter contract these actions replace: a value or an updater function.
 const applyUpdate = (previous, next) => (typeof next === 'function' ? next(previous) : next);
 
@@ -31,13 +50,15 @@ export const useTjdbStore = create(
       actions: {
         // Org-scoped (no app_id) - CE gets back a single-entry list (its one licensed environment),
         // EE/licensed orgs get dev/staging/production ordered by priority. Default selection is
-        // always the lowest-priority entry (development).
+        // the tab's last selection when it is still in the list (a licence downgrade drops it), else
+        // the lowest-priority entry (development).
         loadEnvironments: async () => {
           const { environments: fetchedEnvironments = [] } = await appEnvironmentService.getAllEnvironments();
           const sorted = [...fetchedEnvironments].sort((a, b) => a.priority - b.priority);
+          const restoredId = readSelectedEnvironmentId();
           set((state) => {
             state.environments = sorted;
-            state.selectedEnvironment = sorted[0] ?? null;
+            state.selectedEnvironment = sorted.find((env) => env.id === restoredId) ?? sorted[0] ?? null;
           });
           return sorted;
         },
@@ -112,6 +133,7 @@ export const useTjdbStore = create(
         // only pagination, gated on the filtered columns existing in the target env's freshly
         // fetched metadata. Do not build the envId x tableId cache until someone asks for it.
         switchEnvironment: async (environment) => {
+          writeSelectedEnvironmentId(environment.id);
           set((state) => {
             state.selectedEnvironment = environment;
             state.queryFilters = {};

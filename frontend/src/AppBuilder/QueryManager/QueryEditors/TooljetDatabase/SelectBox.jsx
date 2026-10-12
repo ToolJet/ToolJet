@@ -1,4 +1,5 @@
-import React, { isValidElement, useCallback, useState, useRef, useEffect } from 'react';
+import React, { isValidElement, useCallback, useContext, useState, useRef, useEffect } from 'react';
+import { TooljetDatabaseContext } from '@/TooljetDatabase/context';
 import Select, { components } from 'react-select';
 import { isEmpty, debounce, throttle } from 'lodash';
 import { authenticationService, tooljetDatabaseService } from '@/_services';
@@ -185,6 +186,9 @@ function DataSourceSelect({
   const [totalSearchRecords, setTotalSearchRecords] = useState(0);
   const [isInitialForeignKeySearchDataLoaded, setIsInitialForeignKeySearchDataLoaded] = useState(false);
   const scrollContainerRef = useRef(null);
+  // Set only by the App Builder query editor; the dashboard leaves it undefined and the request
+  // falls back to the dashboard's selected environment.
+  const { environmentId: editorEnvironmentId } = useContext(TooljetDatabaseContext);
 
   const handleChangeDataSource = (source) => {
     if (source.value !== columnDefaultValue) {
@@ -243,7 +247,7 @@ function DataSourceSelect({
     query = query + `&${filterQuery.url.toString()}&${orderQuery.url.toString()}`;
 
     tooljetDatabaseService
-      .findOne(referencedColumns?.referenced_table_id, query)
+      .findOne(referencedColumns?.referenced_table_id, query, editorEnvironmentId)
       .then(({ headers, data = [], error }) => {
         if (error) {
           setIsLoadingFKDetails(false);
