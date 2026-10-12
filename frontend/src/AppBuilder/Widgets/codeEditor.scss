@@ -16,6 +16,8 @@
     background-color: var(--cc-surface1-surface) !important;
 
     .cm-gutters {
+        width: auto !important;
+        min-width: 42px !important;
         background-color: var(--cc-surface3-surface) !important;
     }
 
