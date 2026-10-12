@@ -793,12 +793,14 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
-  # 3c-bis. Migration entity check — new or edited migrations must not import TypeORM
-  # entities: entities change over time, an old migration must keep working unchanged.
-  # Use queryRunner.query() with SQL instead. Existing migrations aren't checked until edited.
+  # 3c-bis. Migration import check — new or edited migrations must be self-contained:
+  # typeorm and Node built-ins only, no entities/helpers/modules. Those follow today's code,
+  # so importing them lets a later change silently alter an old migration. Use
+  # queryRunner.query() with SQL; a needed import stays if its line has
+  # '// migration-import-allowed: <reason>'. Existing migrations aren't checked until edited.
   # ---------------------------------------------------------------------------
-  migration-entity-check:
-    name: 'Migration entity check'
+  migration-import-check:
+    name: 'Migration import check'
     runs-on: ubuntu-latest
     needs: detect-changes
     if: github.event_name == 'pull_request' && needs.detect-changes.outputs.migrations == 'true'
@@ -806,17 +808,14 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 2   # HEAD^1 = PR base
-      - name: Fail if a new or edited migration imports an entity
+      - name: Test the import checker
+        run: node --test scripts/check-migration-imports.test.mjs
+      - name: Fail if a new or edited migration imports project code
         shell: bash
         run: |
           mapfile -t files < <(git diff --name-only --diff-filter=AMR HEAD^1 HEAD -- server/migrations server/data-migrations)
           [ ${#files[@]} -eq 0 ] && exit 0
-          # covers '@entities/…', 'src/entities/…', '../src/entities/…' and any '….entity' module
-          if hits=$(grep -nE "from ['\"][^'\"]*(@entities/|/entities/|\.entity)['\"]" "${files[@]}"); then
-            echo "$hits"
-            echo "::error::Migrations must not import TypeORM entities; use queryRunner.query() with SQL."
-            exit 1
-          fi
+          node scripts/check-migration-imports.mjs "${files[@]}"
 
   # ---------------------------------------------------------------------------
   # 3c. Migration timing — times pending migrations
@@ -825,11 +824,11 @@ jobs:
     name: 'Migration timing'
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    needs: [detect-changes, build-plugins, migration-entity-check]
+    needs: [detect-changes, build-plugins, migration-import-check]
     if: >-
       !cancelled()
       && github.event_name == 'pull_request'
-      && needs.migration-entity-check.result == 'success'
+      && needs.migration-import-check.result == 'success'
       && needs.detect-changes.outputs.snapshot == 'true'
       && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.migrations == 'true'
@@ -1029,7 +1028,7 @@ jobs:
       - cypress-platform
       - cypress-marketplace
       - vulnerability-gate
-      - migration-entity-check
+      - migration-import-check
       - migration-timing
     steps:
       # Comment pipeline — one path for both lanes: download jest JSONs,
@@ -1129,7 +1128,7 @@ jobs:
             "build-plugins:${{ needs.build-plugins.result }}"
             "build-marketplace:${{ needs.build-marketplace.result }}"
             "test-frontend:${{ needs.test-frontend.result }}"
-            "migration-entity-check:${{ needs.migration-entity-check.result }}"
+            "migration-import-check:${{ needs.migration-import-check.result }}"
           )
           if [[ "$MODE" == "changed" ]]; then
             results=("${builds[@]}" "test-changed:${{ needs.test-changed.result }}")
