@@ -10,6 +10,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { tooljetDatabaseService } from '@/_services';
 import { envHasRelation, headMigrationLabel, TABLE_ABSENT_TOOLTIP } from '../constants';
 import generateFile from '@/_lib/generate-file';
+import { useTjdbStore } from '../_stores/tjdbStore';
 import '../MigrationConfirmModal/styles.scss';
 
 /**
@@ -38,7 +39,13 @@ export default function ExportCsvModal({
     setMigrationsData(null);
     setRowCounts({});
     setExporting(false);
-    setSelectedEnvironmentId(environments.find((env) => envHasRelation(relationsByEnvironment, env.id))?.id ?? null);
+    // Start on the environment being viewed; fall back to the first one that has the table.
+    const viewedEnvironmentId = useTjdbStore.getState().selectedEnvironment?.id;
+    setSelectedEnvironmentId(
+      envHasRelation(relationsByEnvironment, viewedEnvironmentId)
+        ? viewedEnvironmentId
+        : (environments.find((env) => envHasRelation(relationsByEnvironment, env.id))?.id ?? null)
+    );
 
     tooljetDatabaseService.getTableMigrations(organizationId, tableId).then(({ data, error }) => {
       if (error) return;

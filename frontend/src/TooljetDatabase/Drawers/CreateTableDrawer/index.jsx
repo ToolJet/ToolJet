@@ -5,11 +5,14 @@ import CreateTableForm from '../../Forms/TableForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { ToolTip } from '@/_components/ToolTip';
+import { SCHEMA_ENV_TOOLTIP } from '../../constants';
 import { BreadCrumbContext } from '@/App/App';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tablesLimit, setTablesLimit }) {
-  const { organizationId, setSelectedTable, setTables, tables, canEditSchema } = useContext(TooljetDatabaseContext);
+  const { organizationId, setSelectedTable, setTables, tables, canEditTjdb, canEditSchema } =
+    useContext(TooljetDatabaseContext);
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   setBannerVisible(tablesLimit?.current >= tablesLimit?.total - 1 || false);
@@ -30,24 +33,30 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tab
   return (
     <div>
       <div style={{ marginBottom: '16px' }}>
-        <ButtonSolid
-          type="button"
-          variant="primary"
-          disabled={!canEditSchema || tablesLimit?.current >= tablesLimit?.total}
-          onClick={() => {
-            posthogHelper.captureEvent('click_add_tooljet_table_button', {
-              workspace_id:
-                authenticationService?.currentUserValue?.organization_id ||
-                authenticationService?.currentSessionValue?.current_organization_id,
-              datasource: 'tooljet_db',
-            });
-            setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen);
-          }}
-          className="create-new-table-btn"
-          data-cy="add-table-button"
-        >
-          Create new table
-        </ButtonSolid>
+        {/* Environment tooltip only: a missing TJDB permission is a different reason. The wrapper div
+            receives the hover - a disabled button swallows mouse events. */}
+        <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="right" show={canEditTjdb && !canEditSchema}>
+          <div>
+            <ButtonSolid
+              type="button"
+              variant="primary"
+              disabled={!canEditSchema || tablesLimit?.current >= tablesLimit?.total}
+              onClick={() => {
+                posthogHelper.captureEvent('click_add_tooljet_table_button', {
+                  workspace_id:
+                    authenticationService?.currentUserValue?.organization_id ||
+                    authenticationService?.currentSessionValue?.current_organization_id,
+                  datasource: 'tooljet_db',
+                });
+                setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen);
+              }}
+              className="create-new-table-btn"
+              data-cy="add-table-button"
+            >
+              Create new table
+            </ButtonSolid>
+          </div>
+        </ToolTip>
       </div>
       <Drawer
         isOpen={isCreateTableDrawerOpen}

@@ -6,7 +6,7 @@ type ColumnDef = {
   column_name: string;
   data_type: string;
   column_default?: string | number | boolean | null;
-  constraints_type?: { is_not_null?: boolean; is_unique?: boolean };
+  constraints_type?: { is_not_null?: boolean; is_unique?: boolean; is_primary_key?: boolean };
 };
 
 type ForeignKeyDef = {
@@ -107,10 +107,9 @@ export class TooljetDbMigrationSqlCompilerService {
           ),
         ].join('\n');
       case 'delete_foreign_key':
-        // ponytail: delete_foreign_key's payload only carries the constraint id, not its name or
-        // columns, so a real `DROP CONSTRAINT <name>` can't be emitted. Upgrade if that action ever
-        // starts recording the removed definition.
-        return `-- Foreign key constraint removed (id: ${payload.request.foreign_key_id})`;
+        // `foreign_key_id` is the constraint's name on the relation it was authored against. Quoted:
+        // those names are derived from the relation uuid, hyphens included.
+        return `ALTER TABLE ${payload.request.table_name} DROP CONSTRAINT "${payload.request.foreign_key_id}";`;
       default:
         return null;
     }
@@ -121,8 +120,11 @@ export class TooljetDbMigrationSqlCompilerService {
     columns: ColumnDef[];
     foreign_keys?: ForeignKeyDef[];
   }): string {
-    const columnLines = request.columns.map((c) => `  ${columnDefinitionSql(c)}`).join(',\n');
-    const lines = [`CREATE TABLE ${request.table_name} (\n${columnLines}\n);`];
+    const columnLines = request.columns.map((c) => `  ${columnDefinitionSql(c)}`);
+    const primaryKeyColumns = request.columns.filter((c) => c.constraints_type?.is_primary_key);
+    if (primaryKeyColumns.length)
+      columnLines.push(`  PRIMARY KEY (${primaryKeyColumns.map((c) => c.column_name).join(', ')})`);
+    const lines = [`CREATE TABLE ${request.table_name} (\n${columnLines.join(',\n')}\n);`];
     (request.foreign_keys || []).forEach((fk) => lines.push(foreignKeyAlterSql(request.table_name, fk)));
     return lines.join('\n');
   }
@@ -144,13 +146,18 @@ export class TooljetDbMigrationSqlCompilerService {
       lines.push(`ALTER TABLE ${table_name} RENAME COLUMN ${column.column_name} TO ${column.new_column_name};`);
     const targetName = column.new_column_name || column.column_name;
     if (column.data_type) lines.push(`ALTER TABLE ${table_name} ALTER COLUMN ${targetName} TYPE ${column.data_type};`);
+    // The request is the column's full target definition (applied via changeColumn), so an absent
+    // default / NOT NULL means "remove it", not "leave it alone".
     if (hasDefault(column.column_default)) {
       lines.push(
         `ALTER TABLE ${table_name} ALTER COLUMN ${targetName} SET DEFAULT ${formatDefaultValue(column.column_default, column.data_type)};`
       );
+    } else {
+      lines.push(`ALTER TABLE ${table_name} ALTER COLUMN ${targetName} DROP DEFAULT;`);
     }
-    if (column.constraints_type?.is_not_null)
-      lines.push(`ALTER TABLE ${table_name} ALTER COLUMN ${targetName} SET NOT NULL;`);
+    lines.push(
+      `ALTER TABLE ${table_name} ALTER COLUMN ${targetName} ${column.constraints_type?.is_not_null ? 'SET' : 'DROP'} NOT NULL;`
+    );
     return lines.join('\n');
   }
 

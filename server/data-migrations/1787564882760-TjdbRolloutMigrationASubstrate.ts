@@ -83,9 +83,7 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
       WHERE pick.internal_table_id = it.id
     `);
 
-    await queryRunner.query(
-      `ALTER TABLE internal_tables DROP CONSTRAINT IF EXISTS organization_id_co_relation_id_unique`
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS organization_id_co_relation_id_unique`);
     await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id DROP NOT NULL`);
   }
 
@@ -128,9 +126,12 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     }
 
     await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id SET NOT NULL`);
+    // Live tables only, like organization_id_table_name_unique: drop_table soft-deletes the row and it
+    // keeps its co_relation_id, which a later import or git pull of the same table reuses.
     await queryRunner.query(`
-      ALTER TABLE internal_tables
-      ADD CONSTRAINT organization_id_co_relation_id_unique UNIQUE (organization_id, co_relation_id)
+      CREATE UNIQUE INDEX organization_id_co_relation_id_unique
+      ON internal_tables (organization_id, co_relation_id)
+      WHERE deleted_at IS NULL
     `);
   }
 

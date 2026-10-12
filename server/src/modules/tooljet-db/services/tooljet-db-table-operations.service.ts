@@ -20,7 +20,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { InternalTableRelation } from 'src/entities/internal_table_relation.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { TooljetDbRelationResolverService } from './relation-resolver.service';
+import { TooljetDbRelationResolverService, tableNotInEnvironmentMessage } from './relation-resolver.service';
 import { formatJoinsJSONBPath, formatJSONB, getTooljetEdition } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -750,38 +750,45 @@ export class TooljetDbTableOperationsService {
 
   protected async applyDropTable(
     payload: { organizationId: string; internalTable: InternalTable },
-    relation: InternalTableRelation,
+    relations: InternalTableRelation[],
     connectionManagers: Record<string, EntityManager>
   ) {
     const { appManager, tjdbManager } = connectionManagers;
     const tenantSchema = findTenantSchema(payload.organizationId);
 
     await appManager.softDelete(InternalTable, { id: payload.internalTable.id });
-    await tjdbManager.queryRunner.dropTable(new Table({ schema: tenantSchema, name: relation.id }));
+    for (const relation of relations) {
+      // ifExist: a relation row can outlive its physical table (e.g. a failed baseline).
+      await tjdbManager.queryRunner.dropTable(new Table({ schema: tenantSchema, name: relation.id }), true);
 
-    // The relation row survives drop_table (it's the migration chain's anchor), but its physical
-    // columns don't - clear configurations so it stops describing a table that no longer exists.
-    relation.configurations = { columns: { column_names: {}, configurations: {} } };
-    await appManager.save(relation);
+      // The relation row survives drop_table (it's the migration chain's anchor), but its physical
+      // columns don't - clear configurations so it stops describing a table that no longer exists.
+      relation.configurations = { columns: { column_names: {}, configurations: {} } };
+      await appManager.save(relation);
+    }
   }
 
   protected async dropTable(organizationId: string, params) {
     const { table_name: tableName } = params;
     const { internalTable, relation } = await this.normalizeDropTable(organizationId, tableName);
 
-    // Same check the /dependents route reports as a soft warning. `relation` here is already the
-    // development relation (resolveTable resolved it with environmentId: undefined), so no second
-    // resolve is needed for the foreign-key lookup.
-    const [{ count: appQueryCount }, foreignKeyTables] = await Promise.all([
+    // A promoted table owns one physical table per environment; the drop removes all of them, so a
+    // foreign key into any of them blocks it. Same check the /dependents route reports as a soft
+    // warning. The migration itself is still recorded against `relation` (development).
+    const relationIds = await this.internalTableRepository.findRelationIds(organizationId, internalTable.id);
+    const otherRelations = await this.manager.findBy(InternalTableRelation, {
+      id: In(relationIds.filter((id) => id !== relation.id)),
+    });
+    const [{ count: dependentCount }, foreignKeyTables] = await Promise.all([
       this.internalTableRepository.findDependents(internalTable.id, organizationId),
-      this.internalTableRepository.findForeignKeyDependents(organizationId, relation.id, this.tooljetDbManager),
+      this.internalTableRepository.findForeignKeyDependents(organizationId, relationIds, this.tooljetDbManager),
     ]);
 
-    if (appQueryCount) {
+    if (dependentCount) {
       throw new BadRequestException(
-        `Table can't be deleted, it is referenced by ${appQueryCount} app quer${
-          appQueryCount === 1 ? 'y' : 'ies'
-        }. Remove those references first.`
+        `Table can't be deleted, ${dependentCount} resource${dependentCount === 1 ? '' : 's'} ${
+          dependentCount === 1 ? 'depends' : 'depend'
+        } on this table. Remove those references first.`
       );
     }
     if (foreignKeyTables.length) {
@@ -809,7 +816,7 @@ export class TooljetDbTableOperationsService {
     await tjdbQueryRunner.startTransaction();
 
     try {
-      await this.applyDropTable({ organizationId, internalTable }, relation, {
+      await this.applyDropTable({ organizationId, internalTable }, [relation, ...otherRelations], {
         appManager: queryRunner.manager,
         tjdbManager: tjdbQueryRunner.manager,
       });
@@ -1602,9 +1609,7 @@ export class TooljetDbTableOperationsService {
       const namesWithoutRelation = logicalIdsWithoutRelation.map((tableId) => internalTableIdToNameMap[tableId]);
       // An (env, branch) with no relation is a 404, not a 400 - the table exists, it just isn't
       // promoted here.
-      throw new NotFoundException(
-        `Table(s) "${namesWithoutRelation.join('", "')}" have no relation in this environment`
-      );
+      throw new NotFoundException(tableNotInEnvironmentMessage(namesWithoutRelation));
     }
 
     const { pgPassword, pgUser } = tjdbTenantConfigs;
@@ -2216,7 +2221,7 @@ export class TooljetDbTableOperationsService {
         // relation here means it has no relation in this (environment, branch) - fail closed rather
         // than let a logical id leak through as a physical name.
         // An (env, branch) with no relation is a 404, not a 400 - same rule as the join path.
-        if (!relationId) throw new NotFoundException(`Table "${tableName}" has no relation in this environment`);
+        if (!relationId) throw new NotFoundException(tableNotInEnvironmentMessage([tableName]));
         referenced_tables_info[tableName] = relationId;
       }
     }
@@ -3252,7 +3257,7 @@ export class TooljetDbTableOperationsService {
             organizationId,
             internalTable: targetRelation.internalTable ?? (await this.targetInternalTable(targetRelation, appManager)),
           },
-          targetRelation,
+          [targetRelation],
           connectionManagers
         );
         return;

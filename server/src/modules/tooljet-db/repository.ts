@@ -121,29 +121,28 @@ export class InternalTableRepository extends Repository<InternalTable> {
   }
 
   /**
-   * The relation `perform()`'s DDL ops always resolve against (environment: undefined ->
-   * development, per `TooljetDbRelationResolverService.getRelation`'s license-independent default).
+   * Every environment's relation of a table on the default branch - one physical table each. A
+   * table promoted past development has several, and a foreign key into any of them blocks its drop.
    * Duplicated here rather than depending on the resolver service so this repository - and every
-   * caller of `getDependents` - stays free of a constructor dependency on it; the predicate (priority
-   * 1 environment, default branch) is the same one `resolveEnvironmentId`/`resolveBranch` apply.
-   * Returns null if the table has no relation yet.
+   * caller of `getDependents` - stays free of a constructor dependency on it; the branch predicate
+   * is the same one `resolveBranch` applies. Empty if the table has no relation yet.
    */
-  async findDevelopmentRelationId(organizationId: string, internalTableId: string): Promise<string | null> {
-    const rows = await this.dataSource.query(
+  async findRelationIds(organizationId: string, internalTableId: string, manager?: EntityManager): Promise<string[]> {
+    const rows: { id: string }[] = await (manager ?? this.dataSource.manager).query(
       `SELECT rel.id
        FROM internal_table_relations rel
        INNER JOIN app_environments env ON env.id = rel.environment_id
        INNER JOIN organization_git_sync_branches wb ON wb.id = rel.branch_id AND wb.is_default = true
        WHERE rel.internal_table_id = $1 AND env.organization_id = $2 AND wb.organization_id = $2
-       ORDER BY env.priority ASC LIMIT 1`,
+       ORDER BY env.priority ASC`,
       [internalTableId, organizationId]
     );
-    return rows[0]?.id ?? null;
+    return rows.map((row) => row.id);
   }
 
   /**
-   * TJDB tables holding a live Postgres foreign key into `relationId` (this table's physical,
-   * current-environment relation) - the case this repository's own `findDependents` cannot see,
+   * TJDB tables holding a live Postgres foreign key into any of `relationIds` (this table's
+   * physical relations, one per environment) - the case this repository's own `findDependents` cannot see,
    * since it lives in `pg_constraint`, not `data_queries`. A physical table is named by relation
    * uuid, never the logical table name, so
    * each `pg_constraint` hit is mapped back through `internal_table_relations` -> `internal_tables`
@@ -157,9 +156,10 @@ export class InternalTableRepository extends Repository<InternalTable> {
    */
   async findForeignKeyDependents(
     organizationId: string,
-    relationId: string,
+    relationIds: string[],
     tooljetDbManager: EntityManager
   ): Promise<ForeignKeyDependent[]> {
+    if (!relationIds.length) return [];
     const schema = findTenantSchema(organizationId);
     const referencing: { relname: string }[] = await tooljetDbManager.query(
       `SELECT DISTINCT t.relname
@@ -167,8 +167,8 @@ export class InternalTableRepository extends Repository<InternalTable> {
        INNER JOIN pg_class rt ON rt.oid = c.confrelid
        INNER JOIN pg_namespace n ON n.oid = rt.relnamespace
        INNER JOIN pg_class t ON t.oid = c.conrelid
-       WHERE c.contype = 'f' AND n.nspname = $1 AND rt.relname = $2 AND c.conrelid <> c.confrelid`,
-      [schema, relationId]
+       WHERE c.contype = 'f' AND n.nspname = $1 AND rt.relname = ANY($2) AND c.conrelid <> c.confrelid`,
+      [schema, relationIds]
     );
     if (!referencing.length) return [];
 

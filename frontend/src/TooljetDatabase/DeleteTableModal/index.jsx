@@ -70,7 +70,7 @@ export default function DeleteTableModal({
           </>
         ) : (
           <div>
-            The table <b>{tableName}</b> and it&apos;s associated data will be permanently deleted{' '}
+            The table <b>{tableName}</b> and its associated data will be permanently deleted{' '}
             <b>across all environments</b>. Are you sure you want to continue?
           </div>
         )}

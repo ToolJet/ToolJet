@@ -225,7 +225,7 @@ export class TooljetDbMigrationRecorderService {
    * derive a description from, so the fallback is a fixed string rather than a per-action one.
    */
   async recordRawSql(
-    payload: { sql: string; refs: Record<string, string>; name?: string },
+    payload: { sql: string; refs: Record<string, string>; name?: string; description?: string },
     internalTable: InternalTable,
     relation: InternalTableRelation,
     resultingSchema: TableSchemaSnapshot,
@@ -248,6 +248,7 @@ export class TooljetDbMigrationRecorderService {
         kind: 'raw_sql',
         payload,
         name: (userGivenName || 'Raw SQL migration').slice(0, 120),
+        description: payload.description?.trim() || null,
         resultingSchema,
         revertsMigrationId,
         tooljetVersion: globalThis.TOOLJET_VERSION || null,

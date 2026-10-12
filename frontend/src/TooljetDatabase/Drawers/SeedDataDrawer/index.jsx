@@ -6,16 +6,12 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { useTjdbStore } from '../../_stores/tjdbStore';
-import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
-import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import SqlEditor from '../../_components/SqlEditor';
 import './styles.scss';
 
 const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } =
-    useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, handleRefetchQuery } = useContext(TooljetDatabaseContext);
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
-  const pageSize = useTjdbStore((state) => state.pageSize);
   const [sql, setSql] = useState('');
   const [isRunningSql, setIsRunningSql] = useState(false);
 
@@ -24,26 +20,11 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
     setSql('');
   };
 
+  // Same refresh every other TJDB mutation does: keeps the active filters, sort and page, and
+  // applies an empty result too (the grid must not keep showing rows the SQL just deleted).
   const refetchRows = () => {
-    const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
-    const sortQuery = new PostgrestQueryBuilder();
-    primaryKeyColumns.map((primaryKeyColumnName) => {
-      sortQuery.order(primaryKeyColumnName, 'desc');
-    });
-
-    tooljetDatabaseService
-      .findOne(selectedTable.id, `${sortQuery.url.toString()}&limit=${pageSize}`)
-      .then(({ headers, data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-          return;
-        }
-        if (Array.isArray(data) && data?.length > 0) {
-          const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-          setTotalRecords(totalContentRangeRecords);
-          setSelectedTableData(data);
-        }
-      });
+    const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore.getState();
+    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
   };
 
   const handleRunSql = async () => {
@@ -66,8 +47,8 @@ const SeedDataDrawer = ({ isSeedDataDrawerOpen, setIsSeedDataDrawerOpen }) => {
         // (present for the parser's own failures) carries the actual detail - both together are what's
         // actionable, not either alone.
         const message =
-          error?.message ??
-          [result?.error_message, result?.data?.message].filter(Boolean).join(': ') ??
+          error?.message ||
+          [result?.error_message, result?.data?.message].filter(Boolean).join(': ') ||
           'Failed to run SQL';
         toast.error(message, { position: 'top-center' });
         return;

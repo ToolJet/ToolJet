@@ -155,6 +155,17 @@ export class TooljetDbEnvironmentAssignmentService {
         throw new BadRequestException(baselineError);
       }
 
+      // Synthesized from dataRelation, but every sibling with a physical table is a structural clone of
+      // it (migration B's twin), so the baseline describes them too. Left out, a twin's history is
+      // empty and a promote from it has nothing to replay into a new environment.
+      const relationsWithTable: InternalTableRelation[] = [];
+      for (const relation of relations) {
+        const [{ exists }] = await tjdbQueryRunner.query(`SELECT to_regclass($1) IS NOT NULL AS exists`, [
+          `"${schema}"."${relation.id}"`,
+        ]);
+        if (exists) relationsWithTable.push(relation);
+      }
+
       try {
         await this.manager.transaction(async (transactionManager) => {
           for (const migration of migrations) {
@@ -169,8 +180,10 @@ export class TooljetDbEnvironmentAssignmentService {
                 tooljetVersion: globalThis.TOOLJET_VERSION || null,
               })
             );
-            await this.migrationRecorderService.recordApplications([saved.id], dataRelation, transactionManager);
-            await this.migrationRecorderService.confirmApplications([saved.id], dataRelation, transactionManager);
+            for (const relation of relationsWithTable) {
+              await this.migrationRecorderService.recordApplications([saved.id], relation, transactionManager);
+              await this.migrationRecorderService.confirmApplications([saved.id], relation, transactionManager);
+            }
           }
           // Every relation on this branch, not just the one just repaired — a baseline_error on the
           // migration-B twin (copied verbatim from the relation this just re-baselined) describes the
@@ -310,14 +323,16 @@ export class TooljetDbEnvironmentAssignmentService {
     });
     if (!internalTable) throw new NotFoundException('Table not found');
 
-    const [{ count, dependents }, relationId] = await Promise.all([
+    const [{ count, dependents }, relationIds] = await Promise.all([
       this.internalTableRepository.findDependents(internalTableId, organizationId),
-      this.internalTableRepository.findDevelopmentRelationId(organizationId, internalTableId),
+      this.internalTableRepository.findRelationIds(organizationId, internalTableId),
     ]);
 
-    const foreignKeyTables = relationId
-      ? await this.internalTableRepository.findForeignKeyDependents(organizationId, relationId, this.tooljetDbManager)
-      : [];
+    const foreignKeyTables = await this.internalTableRepository.findForeignKeyDependents(
+      organizationId,
+      relationIds,
+      this.tooljetDbManager
+    );
 
     return { count, dependents, foreignKeyTables };
   }

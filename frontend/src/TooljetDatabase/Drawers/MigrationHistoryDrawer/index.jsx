@@ -7,6 +7,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
 import { tooljetDatabaseService } from '@/_services';
 import { ArrowLeft, Download, CodeXml, Plus } from 'lucide-react';
+import generateFile from '@/_lib/generate-file';
 import SqlEditor from '../../_components/SqlEditor';
 import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
 import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
@@ -30,12 +31,11 @@ function formatTimestamp(date) {
 // fixed chain-head or a hardcoded env name) - a previous version diffed every tab against
 // chainLength (== development's own count), which read as permanently 0 on the Development
 // tab and mislabeled the Staging tab's real "behind development" gap as "ahead of production".
-function statusLine(activeEnv, appliedCount, nextEnv, nextAppliedCount) {
+function statusLine(activeEnv, nextEnv, missingInNextCount) {
   if (!nextEnv) {
     return 'Production is not up to date with latest changes. Apply migration from development to staging, and then to production to see them reflected here.';
   }
-  const aheadCount = Math.max(0, appliedCount - nextAppliedCount);
-  return `${capitalize(activeEnv.name)} is ${aheadCount} migration${aheadCount === 1 ? '' : 's'} ahead of ${
+  return `${capitalize(activeEnv.name)} is ${missingInNextCount} migration${missingInNextCount === 1 ? '' : 's'} ahead of ${
     nextEnv.name
   }`;
 }
@@ -87,7 +87,10 @@ const MigrationHistoryDrawer = ({
 
   const nextEnv = allEnvironments[activeTab + 1];
   const nextEnvState = nextEnv ? envStateByPriorityIndex[activeTab + 1] : null;
-  const nextEnvBehind = nextEnv && (nextEnvState?.applied_migration_ids?.length ?? 0) < appliedCount;
+  // Sets, not counts: the next environment can hold as many migrations as this one and still lack some of them.
+  const nextAppliedIds = new Set(nextEnvState?.applied_migration_ids ?? []);
+  const missingInNextCount = appliedIds.filter((id) => !nextAppliedIds.has(id)).length;
+  const nextEnvBehind = nextEnv && missingInNextCount > 0;
   // Promote replays migrations through the sibling relation in the target environment;
   // without a multi-environment license the backend rejects it (403), so pre-gate here
   // instead of surfacing an error toast after the click.
@@ -106,6 +109,7 @@ const MigrationHistoryDrawer = ({
           promoteTarget={promoteTarget}
           organizationId={organizationId}
           tableId={selectedTable?.id}
+          tableName={selectedTable?.table_name}
           onBack={() => setPromoteTarget(null)}
           onClose={handleClose}
           refetchMigrations={refetchMigrations}
@@ -155,14 +159,7 @@ const MigrationHistoryDrawer = ({
 
         <div className="migration-history-drawer__status">
           <span className="migration-history-drawer__status-label">STATUS</span>
-          <p>
-            {statusLine(
-              allEnvironments[activeTab],
-              appliedCount,
-              nextEnv,
-              nextEnvState?.applied_migration_ids?.length ?? 0
-            )}
-          </p>
+          <p>{statusLine(allEnvironments[activeTab], nextEnv, missingInNextCount)}</p>
         </div>
 
         <div className="migration-history-drawer__list">
@@ -254,6 +251,7 @@ const PromotePreviewView = ({
   promoteTarget,
   organizationId,
   tableId,
+  tableName,
   onBack,
   onClose,
   refetchMigrations,
@@ -262,6 +260,7 @@ const PromotePreviewView = ({
   const { sourceEnvironment, environment } = promoteTarget;
   const [pendingMigrations, setPendingMigrations] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
   const { switchEnvironment } = useTjdbActions();
 
   useEffect(() => {
@@ -290,6 +289,16 @@ const PromotePreviewView = ({
       switchEnvironment(environment);
       onBack();
     });
+  };
+
+  // The backup is the target environment's rows as CSV - the data the pending migrations are about to change.
+  const downloadBackup = () => {
+    setIsBackingUp(true);
+    tooljetDatabaseService
+      .exportTableCsv(tableId, environment.id)
+      .then((blob) => generateFile(`${tableName}-${environment.name}-backup.csv`, blob, 'csv'))
+      .catch((err) => toast.error(err?.message ?? 'Could not download backup', { position: 'top-center' }))
+      .finally(() => setIsBackingUp(false));
   };
 
   const latest = pendingMigrations?.[pendingMigrations.length - 1];
@@ -333,12 +342,7 @@ const PromotePreviewView = ({
         )}
       </div>
       <div className="migration-history-drawer__footer migration-history-drawer__footer--promote">
-        <ButtonSolid
-          variant="secondary"
-          // ponytail: real table-data backup/export doesn't exist yet — this button matches the
-          // approved design but is intentionally inert until that feature is built.
-          onClick={() => toast('Backing up table data isn’t available yet', { position: 'top-center' })}
-        >
+        <ButtonSolid variant="secondary" onClick={downloadBackup} disabled={isBackingUp} isLoading={isBackingUp}>
           <Download size={16} /> Download backup
         </ButtonSolid>
         <div className="migration-history-drawer__footer-actions">

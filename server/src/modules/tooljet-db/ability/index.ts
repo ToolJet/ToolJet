@@ -81,8 +81,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    if (isUserLoggedin && (isAdmin || isBuilder || !orgMismatch)) {
-      //For logged in users only with valid organization and data query, allow proxy postgrest feature
+    if (isUserLoggedin && (isAdmin || isBuilder || (!isEmpty(dataQuery) && !orgMismatch))) {
+      // Admins/builders (dashboard, App Builder editor); anyone else only through a data query of
+      // their own workspace - without one, an end user would get raw access to every table.
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 

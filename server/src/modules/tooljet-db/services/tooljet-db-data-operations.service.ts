@@ -701,9 +701,13 @@ export class TooljetDbDataOperationsService implements QueryService {
     return { status: 'ok', data: result };
   }
 
-  async sqlExecution(queryOptions, context, restrictToTableName?: string): Promise<QueryResult> {
+  protected assertSqlModeEnabled() {
     if (isSQLModeDisabled())
       throw new QueryError('SQL execution is disabled', 'Contact Admin to enable SQL execution', {});
+  }
+
+  async sqlExecution(queryOptions, context, restrictToTableName?: string): Promise<QueryResult> {
+    this.assertSqlModeEnabled();
 
     const { organization_id: organizationId, environment_id: environmentId } = context.app;
     const { sql_execution: sqlExecution = {} } = queryOptions;
@@ -861,6 +865,8 @@ export class TooljetDbDataOperationsService implements QueryService {
     environmentId: string,
     sql: string
   ): Promise<QueryResult> {
+    // Before the {{self}} checks: when SQL mode is off, the caller must hear that, not a hint about placeholders.
+    this.assertSqlModeEnabled();
     if (containsTablePlaceholder(sql)) {
       throw new BadRequestException('Seed-data SQL may only reference "{{self}}", not "{{table.<name>}}"');
     }
