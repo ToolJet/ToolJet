@@ -99,6 +99,39 @@ describe('Kanban with custom card content', () => {
   const props = { cardLayout: 'custom', columns: fx(['todo', 'done']), cardHeight: '{{60}}' };
   const kids = () => ({ cardText: childOf('w1', 'cardText', '{{cardData.title}}') });
 
+  it('a child whose visibility comes from cardData shows on the cards that ask for it alone', async () => {
+    // Every card shares one exposed isVisible per child, written by whichever card published last: the wrapper hid
+    // the child on every card (or showed it on every card), whatever each card's own data said.
+    const only = (id, text, visibility) => {
+      const child = childOf('w1', id, text);
+      child.component.definition.properties.visibility = { value: visibility };
+      return child;
+    };
+    const data = [
+      { id: 1, title: 'Open deal', status: 'todo', open: true },
+      { id: 2, title: 'Shut deal', status: 'todo', open: false },
+      { id: 3, title: 'Second open deal', status: 'todo', open: true },
+    ];
+    const k = await mount(
+      'ShadKanban',
+      { ...props, data: fx(data) },
+      { ...kids(), cardMore: only('cardMore', 'Deal notes', '{{cardData.open}}') }
+    );
+    healthy();
+    const shown = [...document.querySelectorAll('[data-card-canvas]')].map((card) => {
+      const wrapper = card.querySelector('[id="cardMore"]') || card.querySelector('.ele-cardMore');
+      if (!wrapper) return 'missing';
+      const hidden = (el) => {
+        for (let n = el; n && n !== card; n = n.parentElement) if (n.style?.display === 'none') return true;
+        return false;
+      };
+      const label = [...wrapper.querySelectorAll('*')].find((n) => n.textContent === 'Deal notes' && !n.children.length);
+      return !!label && !hidden(label);
+    });
+    expect(shown).toEqual([true, false, true]);
+    await k.unmount();
+  });
+
   it('renders each card from data present at mount', async () => {
     const k = await mount('ShadKanban', { ...props, data: fx(ROWS) }, kids());
     healthy();
