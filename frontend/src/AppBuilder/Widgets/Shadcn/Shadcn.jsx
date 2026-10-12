@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon, ChevronRight, Inbox, TrendingDown, TrendingUp } from 'lucide-react';
 import { initials, list, toOptions, useAutoHeight, useExposed } from '../packHooks';
@@ -55,6 +55,7 @@ import { progressPercent, sparkPaths, statSize, statValue } from './statModel';
 import { textArg, truthy, useFocusEvents, useHasEvent, useOverrides } from './parity';
 import { LoadingBox, Spinner, wantsSkeleton } from './loadingLook';
 import './shadcn.scss';
+import { joinStatRow } from './statRow';
 
 export { withControlState } from '../packHooks';
 
@@ -578,6 +579,36 @@ export const ShadStat = (props) => {
   // footnote that wrapped past the box cut the card's bottom edge off. It keeps two lines, the rest in its title. An
   // auto-height box keeps fitting the content (the card is not stretched there, or the height could only grow).
   const fixed = !(fitsContentInView(props.componentType, properties) && props.currentMode === 'view');
+  // Stats side by side in a row share one height: each reports its content's natural height (the content plus the
+  // card's padding and border, never the stretched card) and takes the row's tallest as its minimum (statRow.js).
+  const evenRow = !fixed && properties.card !== false;
+  const cardRef = useRef(null);
+  const bodyRef = useRef(null);
+  const [rowMin, setRowMin] = useState(0);
+  useLayoutEffect(() => {
+    const card = cardRef.current;
+    const content = bodyRef.current;
+    const container = ref.current?.closest('.flex-child-wrapper')?.parentElement;
+    if (!evenRow || !card || !content || !container) return undefined;
+    if (!getComputedStyle(container).flexDirection.startsWith('row')) return undefined;
+    const member = joinStatRow(container, setRowMin);
+    const measure = () => {
+      const cs = getComputedStyle(card);
+      const chrome = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'].reduce(
+        (sum, key) => sum + (parseFloat(cs[key]) || 0),
+        0
+      );
+      member.report(content.offsetHeight + chrome);
+    };
+    measure();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(content);
+    return () => {
+      observer?.disconnect();
+      member.leave();
+      setRowMin(0);
+    };
+  }, [evenRow]);
   // Optional parts: an icon (a tinted tile at the right of the label, at the left of the whole figure, or on top), a
   // context line beside the change ("vs last month"), a trend line and a progress bar. Each shows only when set.
   const icon = typeof properties.icon === 'string' && properties.icon.trim() ? properties.icon.trim() : '';
@@ -693,13 +724,20 @@ export const ShadStat = (props) => {
         body
       ) : (
         <Card
+          ref={cardRef}
           className={cn(
             'rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--lk-bg,var(--sc-card))] px-6 py-5',
             fixed && 'flex flex-col overflow-hidden'
           )}
-          style={fixed && Number(props.height) > 0 ? { height: Number(props.height) } : undefined}
+          style={
+            fixed && Number(props.height) > 0
+              ? { height: Number(props.height) }
+              : evenRow && rowMin > 0
+              ? { minHeight: rowMin }
+              : undefined
+          }
         >
-          {body}
+          {evenRow ? <div ref={bodyRef}>{body}</div> : body}
         </Card>
       )}
     </Shell>
