@@ -1,4 +1,5 @@
 import React from 'react';
+import { isoDateLabel } from './isoDateLabel';
 import { columnOptionList } from './columnOptions';
 import _ from 'lodash';
 import moment from 'moment';
@@ -208,7 +209,12 @@ export default function generateColumnsData({
                   handleCellValueChange={handleCellValueChange}
                   textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   horizontalAlignment={column?.horizontalAlignment}
-                  cellValue={cellValue}
+                  cellValue={
+                    // A read-only ISO date in the shadcn look reads as a date (isoDateLabel); sorting keeps the raw value.
+                    (!isEditable && useTableStore.getState().getTableStyles(id)?.tableLook === 'shadcn'
+                      ? isoDateLabel(cellValue)
+                      : null) ?? cellValue
+                  }
                   column={column}
                   containerWidth={columnSize}
                   cell={cell}

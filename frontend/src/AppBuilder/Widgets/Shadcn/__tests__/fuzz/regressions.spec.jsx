@@ -397,6 +397,22 @@ describe('Button focus ring', () => {
   });
 });
 
+describe('Hero', () => {
+  it('draws its main action on a dark panel in a fixed dark ink (theme foreground is white in a dark app: a blank box)', async () => {
+    const { problems, unmount } = await mount('ShadHero', {
+      title: 'Riviera',
+      actionLabel: 'New booking',
+      background: 'dark',
+    });
+    const btn = [...document.querySelectorAll('button')].find((b) => b.textContent === 'New booking');
+    expect(btn.className).toContain('bg-white');
+    expect(btn.className).not.toContain('var(--sc-foreground)');
+    expect(btn.className).toContain('text-[#0f172a]');
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+});
+
 describe('Card grid', () => {
   it('draws no initials panel when no image field is mapped, and keeps the badge in the card body', async () => {
     const { problems, unmount } = await mount('ShadCardGrid', {

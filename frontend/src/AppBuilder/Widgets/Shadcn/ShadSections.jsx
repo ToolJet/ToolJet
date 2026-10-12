@@ -125,7 +125,8 @@ export const ShadHero = (props) => {
             onClick={() => fireEvent('onActionClick')}
             className={cn(
               onDark
-                ? 'bg-white text-[color:var(--sc-foreground)] hover:bg-white/90'
+                ? // A fixed dark ink: the theme foreground is near-white in a dark app, which drew a blank white button.
+                  'bg-white text-[#0f172a] hover:bg-white/90'
                 : 'bg-[color:var(--lk-accent,var(--sc-primary))] text-[color:var(--sc-primary-foreground)] hover:opacity-90'
             )}
           >
