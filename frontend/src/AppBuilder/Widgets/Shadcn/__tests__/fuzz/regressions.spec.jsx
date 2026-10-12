@@ -283,6 +283,20 @@ describe('Table', () => {
 });
 
 describe('Kanban', () => {
+  it('keeps the meta line on one line with an ellipsis (dates wrapped across lines in narrow columns)', async () => {
+    const { problems, unmount } = await mount('ShadKanban', {
+      data: [{ id: 1, title: 'Northstar', status: 'todo', badge: 'Website', when: 'Follow-up Oct 14, 2026' }],
+      columns: ['todo'],
+      badgeField: 'badge',
+      metaField: 'when',
+    });
+    const meta = [...document.querySelectorAll('span')].find((s) => s.textContent === 'Follow-up Oct 14, 2026');
+    expect(meta.className).toContain('truncate');
+    expect(meta.getAttribute('title')).toBe('Follow-up Oct 14, 2026');
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
   it('lets six or more columns narrow to 160px so a seven-stage board fits instead of clipping its last stage', async () => {
     const stages = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
     const { problems, unmount } = await mount('ShadKanban', {

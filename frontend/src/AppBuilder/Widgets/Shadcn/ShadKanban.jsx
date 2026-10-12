@@ -110,15 +110,22 @@ const CardBody = ({ card, fields, compact, badgeColors, progressStyle, expanded 
               <Badge
                 variant="outline"
                 style={badgeLook(badge, badgeColors)}
-                className="border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]"
+                className="shrink-0 border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]"
               >
                 {String(badge)}
               </Badge>
             ) : (
-              <Badge variant={BADGE_BY_WORD[String(badge).toLowerCase()] || 'outline'}>{String(badge)}</Badge>
+              <Badge variant={BADGE_BY_WORD[String(badge).toLowerCase()] || 'outline'} className="shrink-0">
+                {String(badge)}
+              </Badge>
             )
           ) : null}
-          {isSet(meta) ? <span className={cn('text-xs', SECONDARY_TEXT)}>{String(meta)}</span> : null}
+          {isSet(meta) ? (
+            // One line: in a narrow column a date wrapped across lines; the whole text is in the tooltip.
+            <span title={String(meta)} className={cn('min-w-0 truncate whitespace-nowrap text-xs', SECONDARY_TEXT)}>
+              {String(meta)}
+            </span>
+          ) : null}
           {isSet(avatar) ? (
             <Avatar className="ml-auto h-6 w-6">
               <AvatarFallback className="text-[10px]">{initials(avatar)}</AvatarFallback>
