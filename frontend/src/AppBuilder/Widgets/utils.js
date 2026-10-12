@@ -40,7 +40,7 @@ export function getModifiedColor(color, stateOrModificationAmount, options = { e
   const modificationAmount =
     typeof stateOrModificationAmount === 'number'
       ? stateOrModificationAmount
-      : defaultModificationAmountMappingByState[stateOrModificationAmount] ?? 0;
+      : (defaultModificationAmountMappingByState[stateOrModificationAmount] ?? 0);
 
   const colorValue = color?.startsWith('var(') ? getCssVarValue(options?.element, color) : color;
 
@@ -65,7 +65,7 @@ export const getFormattedSteps = (steps) => {
     if (steps.trim() === '') return [];
     try {
       const parsed = JSON.parse(steps);
-      return Array.isArray(parsed) ? steps : [];
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }
