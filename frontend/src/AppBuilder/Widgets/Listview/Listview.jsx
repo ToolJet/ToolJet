@@ -214,7 +214,8 @@ export const Listview = function Listview({
           <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
             {filteredData.map((_listItem, index) => (
               <ListviewSubcontainer
-                key={index}
+                // Keyed by record: a page-local key makes React reuse row 0's children on every page.
+                key={startIndexOfRowInThePage + index}
                 id={id}
                 index={index}
                 mode={mode}

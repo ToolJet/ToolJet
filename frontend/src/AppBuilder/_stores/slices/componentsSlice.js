@@ -2701,23 +2701,19 @@ export const createComponentsSlice = (set, get) => ({
     const { containerChildrenMapping } = get();
     return containerChildrenMapping[id] || [];
   },
-  // Row expansion must reach a child behind a plain wrapper (Container, Form) too, but stop at a
-  // nested row-scoped widget, which expands its own rows against its own records.
+  // Reaches a child behind a wrapper, but stops at a nested list, which expands its own rows.
   getRowScopedDescendants: (parentId, moduleId = 'canvas') => {
     const { getContainerChildrenMapping, getComponentDefinition } = get();
-    const slotsOf = (id) => [id, `${id}-header`, `${id}-footer`, `${id}-modal`];
     const collected = [];
     const seen = new Set();
     const walk = (id) => {
-      slotsOf(id).forEach((slotId) =>
-        getContainerChildrenMapping(slotId, moduleId).forEach((childId) => {
-          if (seen.has(childId)) return;
-          seen.add(childId);
-          collected.push(childId);
-          const type = getComponentDefinition(childId, moduleId)?.component?.component;
-          if (!ROW_SCOPED_WIDGET_TYPES.includes(type)) walk(childId);
-        })
-      );
+      getContainerChildrenMapping(id, moduleId).forEach((childId) => {
+        if (seen.has(childId)) return;
+        seen.add(childId);
+        collected.push(childId);
+        const type = getComponentDefinition(childId, moduleId)?.component?.component;
+        if (!ROW_SCOPED_WIDGET_TYPES.includes(type)) walk(childId);
+      });
     };
     walk(parentId);
     return collected;

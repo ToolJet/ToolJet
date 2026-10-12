@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
 import Loader from '@/ToolJetUI/Loader/Loader';
@@ -194,10 +194,16 @@ export const Button = function Button(props) {
     }
   }, [hovered]);
 
+  const buttonRef = useRef(null);
+
   const handleClick = () => {
     if (!disable && !loading) {
-      const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } });
-      document.dispatchEvent(event1);
+      // Dispatched on the button so it reaches only the Form around it; on `document` every row's Form hears it.
+      const event1 = new CustomEvent('submitForm', {
+        bubbles: true,
+        detail: { buttonComponentId: id, buttonModuleId: moduleId },
+      });
+      (buttonRef.current ?? document).dispatchEvent(event1);
       fireEvent('onClick');
     }
   };
@@ -211,6 +217,7 @@ export const Button = function Button(props) {
       disabled={disable || loading}
     >
       <button
+        ref={buttonRef}
         className={cx('overflow-hidden jet-btn')}
         style={computedStyles}
         onClick={handleClick}

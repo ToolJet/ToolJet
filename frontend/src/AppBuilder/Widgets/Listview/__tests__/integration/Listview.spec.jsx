@@ -244,6 +244,243 @@ const containerWidget = createWidgetHarness({
   widgetWidth: 600,
 });
 
+const TEN_RECORDS = `{{[{ name: 'r0' }, { name: 'r1' }, { name: 'r2' }, { name: 'r3' }, { name: 'r4' }, { name: 'r5' }, { name: 'r6' }, { name: 'r7' }, { name: 'r8' }, { name: 'r9' }]}}`;
+
+function checkboxChild() {
+  const definition = componentDefinition('chk1', 'checkbox1', 'Checkbox', {
+    label: binding('{{listItem.name}}'),
+    defaultValue: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    disabledState: binding('{{false}}'),
+    loadingState: binding('{{false}}'),
+  });
+  definition.component.parent = ID;
+  definition.component.definition.styles = {};
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+const paginatedWidget = createWidgetHarness({
+  componentType: 'Listview',
+  handle: NAME,
+  id: ID,
+  defaultProperties: {
+    dataSourceSelector: binding('rawJson'),
+    data: binding(TEN_RECORDS),
+    mode: binding('list'),
+    columns: binding('{{1}}'),
+    rowHeight: binding('100'),
+    loadingState: binding('{{false}}'),
+    dynamicHeight: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    collapseWhenHidden: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    showBorder: binding('{{true}}'),
+    rowsPerPage: binding('{{5}}'),
+    enablePagination: binding('{{true}}'),
+  },
+  defaultStyles: {
+    backgroundColor: binding('var(--cc-surface1-surface)'),
+    borderColor: binding('var(--cc-weak-border)'),
+  },
+  defaultExtraComponents: { chk1: checkboxChild() },
+  capabilities: { dnd: true },
+  widgetHeight: 600,
+  widgetWidth: 600,
+});
+
+describe('Listview: a page change does not carry child state across records', () => {
+  beforeEach(paginatedWidget.setup);
+  afterEach(paginatedWidget.teardown);
+
+  const boxes = () => [...document.querySelectorAll('input[type="checkbox"]')];
+
+  test('[Listview-BUG-004] a checkbox ticked on page one leaves page two untouched', async () => {
+    // Break this catches: rows keyed by position in the page, so page two reuses page one's
+    // component instances and inherits whatever state they were left holding.
+    paginatedWidget.render({ currentMode: 'view' });
+    await waitFor(() => expect(boxes()).toHaveLength(5));
+
+    await paginatedWidget.session.user.click(boxes()[0].parentElement);
+    await waitFor(() => expect(boxes()[0]).toBeChecked());
+
+    await paginatedWidget.session.user.click(document.querySelector('[data-cy="next-page-link"]'));
+
+    await waitFor(() => expect(rowTexts()[0]).toContain('r5'));
+    expect(boxes()[0]).not.toBeChecked();
+  });
+});
+
+function formChild() {
+  const definition = componentDefinition('form1', 'form1', 'Form', {
+    visibility: binding('{{true}}'),
+    loadingState: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    advanced: binding('{{false}}'),
+    showHeader: binding('{{true}}'),
+    showFooter: binding('{{true}}'),
+  });
+  definition.component.parent = ID;
+  definition.component.definition.styles = {};
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+function formHeaderText() {
+  const definition = componentDefinition('ftxt', 'formtitle', 'Text', { text: binding('Form title') });
+  definition.component.parent = 'form1-header';
+  definition.component.definition.styles = {};
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+const formWidget = createWidgetHarness({
+  componentType: 'Listview',
+  handle: NAME,
+  id: ID,
+  defaultProperties: {
+    dataSourceSelector: binding('rawJson'),
+    data: binding(`{{[{ id: 1, name: 'r1' }, { id: 2, name: 'r2' }]}}`),
+    mode: binding('list'),
+    columns: binding('{{1}}'),
+    rowHeight: binding('300'),
+    loadingState: binding('{{false}}'),
+    dynamicHeight: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    collapseWhenHidden: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    showBorder: binding('{{true}}'),
+    rowsPerPage: binding('{{10}}'),
+    enablePagination: binding('{{false}}'),
+  },
+  defaultStyles: {
+    backgroundColor: binding('var(--cc-surface1-surface)'),
+    borderColor: binding('var(--cc-weak-border)'),
+  },
+  defaultExtraComponents: { form1: formChild(), ftxt: formHeaderText() },
+  capabilities: { dnd: true },
+  widgetHeight: 700,
+  widgetWidth: 600,
+});
+
+function submitButtonChild() {
+  const definition = componentDefinition('btn1', 'button1', 'Button', { text: binding('Submit') });
+  definition.component.parent = 'form1-footer';
+  definition.component.definition.styles = {};
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+const submitWidget = createWidgetHarness({
+  componentType: 'Listview',
+  handle: NAME,
+  id: ID,
+  defaultProperties: {
+    dataSourceSelector: binding('rawJson'),
+    data: binding(`{{[{ id: 1 }, { id: 2 }, { id: 3 }]}}`),
+    mode: binding('list'),
+    columns: binding('{{1}}'),
+    rowHeight: binding('300'),
+    loadingState: binding('{{false}}'),
+    dynamicHeight: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    collapseWhenHidden: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    showBorder: binding('{{true}}'),
+    rowsPerPage: binding('{{10}}'),
+    enablePagination: binding('{{false}}'),
+  },
+  defaultStyles: {
+    backgroundColor: binding('var(--cc-surface1-surface)'),
+    borderColor: binding('var(--cc-weak-border)'),
+  },
+  defaultExtraComponents: {
+    form1: (() => {
+      const d = formChild();
+      d.component.definition.properties.buttonToSubmit = binding('btn1');
+      return d;
+    })(),
+    btn1: submitButtonChild(),
+  },
+  capabilities: { dnd: true },
+  widgetHeight: 900,
+  widgetWidth: 600,
+});
+
+describe('Listview: a Form submits only in its own row', () => {
+  beforeEach(submitWidget.setup);
+  afterEach(submitWidget.teardown);
+
+  test('[Listview-BUG-006] clicking Submit in one row does not submit the other rows', async () => {
+    // Break this catches: announcing the submit on `document`, where every row's Form hears it and
+    // matches on a component id all three rows share.
+    submitWidget.render({
+      currentMode: 'view',
+      events: [
+        {
+          id: 'evt-submit',
+          index: 0,
+          sourceId: 'form1',
+          name: 'evt-submit',
+          target: 'component',
+          event: {
+            eventId: 'onSubmit',
+            actionId: 'set-custom-variable',
+            key: 'submits',
+            value: `{{(variables.submits ?? 0) + 1}}`,
+          },
+        },
+      ],
+    });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    const submitButtons = [...document.querySelectorAll('.widget-button button')];
+    await submitWidget.session.user.click(submitButtons[1]);
+
+    await waitFor(() => expect(store().getVariable('submits', MODULE_ID)).toBe(1));
+  });
+});
+
+describe('Listview: a Form inside a row keeps its header and footer', () => {
+  beforeEach(formWidget.setup);
+  afterEach(formWidget.teardown);
+
+  test('[Listview-BUG-005] a Form slot child inside a row still renders', async () => {
+    // Break this catches: expanding a Form's header/footer slot children per row, which leaves the
+    // title and the submit button blank in every row.
+    formWidget.render({ currentMode: 'view' });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    expect(document.body.textContent).toContain('Form title');
+  });
+});
+
+describe('Listview: the scroll container keeps its styling hook', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-STYLE-003] the scrolling element carries the class the stylesheet targets', async () => {
+    // Break this catches: renaming or dropping `listview-scroll-container`, which silently detaches
+    // the hover-reveal scroll bar rules. It cannot prove the scroll bar hides — jest stubs out SCSS
+    // entirely — so the hiding itself is Listview-BRW-005, measured in a browser.
+    await mount();
+
+    expect(container()).toHaveClass('listview-scroll-container');
+  });
+});
+
 describe('Listview: a bad record does not destroy the good ones', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
