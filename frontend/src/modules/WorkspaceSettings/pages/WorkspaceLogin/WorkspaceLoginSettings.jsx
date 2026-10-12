@@ -565,7 +565,7 @@ class OrganizationLogin extends React.Component {
                           {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
                         </label>
                         <div
-                          className="d-flex justify-content-between form-control align-items-center"
+                          className="d-flex justify-content-between form-control align-items-center workspace-login-url-wrapper"
                           style={{ backgroundColor: '#F1F3F5', color: '#889096', overflowX: 'auto' }}
                         >
                           <p
