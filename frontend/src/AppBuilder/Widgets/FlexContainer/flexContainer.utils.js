@@ -135,6 +135,9 @@ export const computeFlexChildFlexStyle = ({
   fillWidth,
   grow = 1,
   minWidthPx = 0,
+  // A row that does not wrap: a minimum width there can only push the row past its edge (minWidthPx is the width
+  // below which a child moves to the next line, so it means nothing on one line).
+  wraps = true,
   effectiveWidthPx,
   effectiveHeightPx,
   availableWidth,
@@ -151,7 +154,7 @@ export const computeFlexChildFlexStyle = ({
   }
   if (isFlexRow) {
     return fillWidth
-      ? { flex: `${grow} 1 0px`, minWidth: `${minWidthPx}px`, height: `${effectiveHeightPx}px` }
+      ? { flex: `${grow} 1 0px`, minWidth: `${wraps ? minWidthPx : 0}px`, height: `${effectiveHeightPx}px` }
       : { flex: `0 0 ${effectiveWidthPx}px`, minWidth: 0, maxWidth: '100%', height: `${effectiveHeightPx}px` };
   }
   return { flex: `0 0 ${effectiveHeightPx}px`, width: fillWidth ? '100%' : `${effectiveWidthPx}px`, minHeight: 0 };

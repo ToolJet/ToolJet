@@ -55,6 +55,7 @@ const WidgetWrapper = memo(
     containerWidth,
     flexDirection = 'column',
     flexAlignItems,
+    flexWraps,
     flexShouldStack = false,
   }) => {
     const { contextPath } = useSubcontainerContext();
@@ -169,6 +170,7 @@ const WidgetWrapper = memo(
       // Only a FlexContainer child stretches: containers take their height from their children's layout, never from
       // a DOM measurement, so a stretched card cannot feed its stretched size back into the reflow. Leaves keep theirs.
       stretch: flexAlignItems === 'stretch' && componentType === 'FlexContainer',
+      wraps: flexWraps !== false,
     });
 
     if (!canShowInCurrentLayout || !layoutData) {

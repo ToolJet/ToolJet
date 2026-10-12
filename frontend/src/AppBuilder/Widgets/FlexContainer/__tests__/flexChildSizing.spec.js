@@ -48,6 +48,15 @@ describe('flex child style in a row', () => {
     });
   });
 
+  it('ignores the minimum width in a row that does not wrap, where it could only push the row past its edge', () => {
+    // Two 220px-minimum fields in a 404px drawer row that does not wrap overflowed by 48px and cut the right column off.
+    expect(computeFlexChildFlexStyle({ ...row, fillWidth: true, grow: 1, minWidthPx: 220, wraps: false })).toEqual({
+      flex: '1 1 0px',
+      minWidth: '0px',
+      height: '160px',
+    });
+  });
+
   it('keeps fixed children at their width but never wider than the row', () => {
     expect(computeFlexChildFlexStyle({ ...row, fillWidth: false, grow: 1, minWidthPx: 0 })).toEqual({
       flex: '0 0 400px',

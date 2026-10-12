@@ -18,6 +18,7 @@ export const useFlexWidgetLayout = ({
   dynamicHeight = false,
   temporaryHeight,
   stretch = false,
+  wraps = true,
 }) => {
   const wrapperRef = useRef(null);
   const [configWidgetTop, setConfigWidgetTop] = useState(0);
@@ -117,6 +118,7 @@ export const useFlexWidgetLayout = ({
       fillWidth,
       grow,
       minWidthPx,
+      wraps,
       effectiveWidthPx,
       effectiveHeightPx,
       availableWidth,
