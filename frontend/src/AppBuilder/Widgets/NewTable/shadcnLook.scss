@@ -278,3 +278,11 @@ $radius: var(--cc-radius-default, 6px);
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+// Rows of one line (contentWrap off, the shadcn look's default from the MCP): a long subject ends in an ellipsis instead of
+// being cut mid-word at the cell edge. With wrapping on, white-space is normal and nothing here applies.
+.tj-table-look-shadcn td .td-container > .d-flex > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
