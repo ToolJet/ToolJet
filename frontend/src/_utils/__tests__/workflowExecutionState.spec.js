@@ -4,6 +4,7 @@ import {
   getExecutionStatusText,
   isExecutionFinished,
   isExecutionInProgress,
+  canTerminateExecution,
   STALE_EXECUTION_THRESHOLD_MS,
 } from '@/_utils/workflowExecutionState';
 
@@ -90,5 +91,20 @@ describe('getExecutionDisplayConfig — icon mapping', () => {
     expect(iconFor({ executed: false, status: 'success', startedAt: minutesAgo(60) })).toBe('unknown');
     // pending/running carry no icon — RunItems.jsx shows a spinner instead (showSpinner: true).
     expect(iconFor({ executed: false, status: 'success', jobState: 'active' })).toBeNull();
+  });
+});
+
+describe('canTerminateExecution', () => {
+  it('allows stopping pending, running and waiting runs', () => {
+    expect(canTerminateExecution({ executed: false, jobState: 'waiting' })).toBe(true);
+    expect(canTerminateExecution({ executed: false, jobState: 'active' })).toBe(true);
+    expect(canTerminateExecution({ executed: false, status: 'waiting' })).toBe(true);
+    expect(canTerminateExecution({ executed: false, status: 'waiting_for_delay' })).toBe(true);
+  });
+
+  it('does not allow stopping finished or terminating runs', () => {
+    expect(canTerminateExecution({ executed: true, status: 'success' })).toBe(false);
+    expect(canTerminateExecution({ executed: true, status: 'terminated' })).toBe(false);
+    expect(canTerminateExecution({ executed: false, jobState: 'active', terminationRequested: true })).toBe(false);
   });
 });

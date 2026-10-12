@@ -178,8 +178,8 @@ export function getExecutionDisplayConfig(execution) {
  */
 export function canTerminateExecution(execution) {
   const state = getExecutionDisplayState(execution);
-  // Can only terminate if pending or running (not if already terminating or finished)
-  return ['pending', 'running'].includes(state);
+  // Not while terminating or finished; waiting runs are stoppable too.
+  return ['pending', 'running', 'waiting'].includes(state);
 }
 
 /**
