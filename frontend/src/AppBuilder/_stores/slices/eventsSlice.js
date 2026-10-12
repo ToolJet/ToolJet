@@ -98,6 +98,8 @@ export const createEventsSlice = (set, get) => ({
       // stale value. Resolve every pending write that isn't part of an explicit mount-time
       // bracket (ListView/Form/page-switch) — never touches bracket-protected writes.
       get().flushImplicitBatchEntries();
+      // Row writes are queued in a microtask, so a handler would otherwise read the previous value.
+      get().flushPendingPerRowWrites?.();
       const events = get().eventsSlice.module[moduleId].events;
       const componentEvents = events.filter((event) => event.sourceId === id);
       const mode = getCurrentMode(moduleId);
@@ -105,7 +107,7 @@ export const createEventsSlice = (set, get) => ({
       handleEvent(
         eventName,
         componentEvents,
-        { ...options, customVariables: { ...customResolvables }, sourceSubContainerIndex },
+        { ...options, customVariables: { ...customResolvables, ...options?.customVariables }, sourceSubContainerIndex },
         moduleId,
         mode
       );

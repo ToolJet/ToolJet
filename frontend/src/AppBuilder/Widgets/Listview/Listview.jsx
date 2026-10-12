@@ -121,30 +121,6 @@ export const Listview = function Listview({
 
   // children/data are now derived directly in the store by deriveListviewExposedData.
   // onRecordOrRowClicked reads from the store imperatively at click time.
-  const onRecordOrRowClicked = useCallback(
-    (index) => {
-      setSelectedRowIndex(index);
-      const state = useStore.getState();
-      let lvExposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
-      // For nested ListView, navigate to current row's exposed values
-      if (Array.isArray(lvExposed) && parentIndices.length > 0) {
-        for (const idx of parentIndices) {
-          lvExposed = lvExposed?.[idx];
-          if (!lvExposed) break;
-        }
-      }
-      const selectedRow = lvExposed?.children?.[index];
-      setExposedVariables({
-        selectedRecordId: index,
-        selectedRecord: selectedRow,
-        selectedRowId: index,
-        selectedRow: selectedRow,
-      });
-      fireEvent('onRecordClicked');
-      fireEvent('onRowClicked');
-    },
-    [id, moduleId, parentIndices, setExposedVariables, fireEvent]
-  );
 
   useEffect(() => {
     if (columns < 1) {
@@ -192,6 +168,33 @@ export const Listview = function Listview({
       initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
     }
   }
+
+  const onRecordOrRowClicked = useCallback(
+    (index) => {
+      setSelectedRowIndex(index);
+      const state = useStore.getState();
+      let lvExposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
+      // For nested ListView, navigate to current row's exposed values
+      if (Array.isArray(lvExposed) && parentIndices.length > 0) {
+        for (const idx of parentIndices) {
+          lvExposed = lvExposed?.[idx];
+          if (!lvExposed) break;
+        }
+      }
+      const selectedRow = lvExposed?.children?.[index];
+      setExposedVariables({
+        selectedRecordId: index,
+        selectedRecord: selectedRow,
+        selectedRowId: index,
+        selectedRow: selectedRow,
+      });
+      // Every row event carries its record, so a handler on the list itself can read {{listItem}}.
+      const fireRowEvent = (name) => fireEvent(name, { customVariables: { listItem: filteredData[index] } });
+      fireRowEvent('onRecordClicked');
+      fireRowEvent('onRowClicked');
+    },
+    [id, moduleId, parentIndices, setExposedVariables, fireEvent, filteredData]
+  );
 
   const renderedRowCount = filteredData.length;
 

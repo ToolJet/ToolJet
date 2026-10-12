@@ -419,6 +419,114 @@ const submitWidget = createWidgetHarness({
   widgetWidth: 600,
 });
 
+function textInputChild() {
+  const definition = componentDefinition('tin1', 'textinput1', 'TextInput', {
+    label: binding('Label'),
+    placeholder: binding('Enter your input'),
+    visibility: binding('{{true}}'),
+    disabledState: binding('{{false}}'),
+    loadingState: binding('{{false}}'),
+  });
+  definition.component.parent = ID;
+  definition.component.definition.styles = {};
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+const inputWidget = createWidgetHarness({
+  componentType: 'Listview',
+  handle: NAME,
+  id: ID,
+  defaultProperties: {
+    dataSourceSelector: binding('rawJson'),
+    data: binding(`{{[{ id: 1 }, { id: 2 }]}}`),
+    mode: binding('list'),
+    columns: binding('{{1}}'),
+    rowHeight: binding('150'),
+    loadingState: binding('{{false}}'),
+    dynamicHeight: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    collapseWhenHidden: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    showBorder: binding('{{true}}'),
+    rowsPerPage: binding('{{10}}'),
+    enablePagination: binding('{{false}}'),
+  },
+  defaultStyles: {
+    backgroundColor: binding('var(--cc-surface1-surface)'),
+    borderColor: binding('var(--cc-weak-border)'),
+  },
+  defaultExtraComponents: { tin1: textInputChild() },
+  capabilities: { dnd: true },
+  widgetHeight: 500,
+  widgetWidth: 600,
+});
+
+describe('Listview: a row event knows which record fired it', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const recordEvent = (eventId) => ({
+    id: `evt-${eventId}`,
+    index: 0,
+    sourceId: ID,
+    name: `evt-${eventId}`,
+    target: 'component',
+    event: { eventId, actionId: 'set-custom-variable', key: 'picked', value: '{{listItem.text}}' },
+  });
+
+  test.each([['onRecordClicked'], ['onRowClicked']])(
+    '[Listview-EVT-004] %s resolves listItem to the clicked record',
+    async (eventId) => {
+      // Break this catches: firing a row event without the record, so a handler on the list itself
+      // has no way to read the row that triggered it and `{{listItem}}` resolves to nothing.
+      await mount({ events: [recordEvent(eventId)] });
+      await waitFor(() => expect(rows()).toHaveLength(3));
+
+      await user().click(rows()[1]);
+
+      await waitFor(() => expect(store().getVariable('picked', MODULE_ID)).toBe('Beta'));
+    }
+  );
+});
+
+describe('Listview: an On change handler reads the value that just changed', () => {
+  beforeEach(inputWidget.setup);
+  afterEach(inputWidget.teardown);
+
+  test('[Listview-BUG-008] a handler reading listview data sees the keystroke that fired it', async () => {
+    // Break this catches: the list's `data` aggregate lagging the child write by one keystroke, so a
+    // handler reading it acts on the value from before the change that triggered it.
+    inputWidget.render({
+      currentMode: 'view',
+      events: [
+        {
+          id: 'evt-change',
+          index: 0,
+          sourceId: 'tin1',
+          name: 'evt-change',
+          target: 'component',
+          event: {
+            eventId: 'onChange',
+            actionId: 'set-custom-variable',
+            key: 'seen',
+            value: `{{components.${NAME}.data[0].textinput1.value}}`,
+          },
+        },
+      ],
+    });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    const input = document.querySelectorAll('input[type="text"]')[0];
+    await inputWidget.session.user.type(input, 'ab');
+
+    await waitFor(() => expect(store().getVariable('seen', MODULE_ID)).toBe('ab'));
+  });
+});
+
 describe('Listview: a Form submits only in its own row', () => {
   beforeEach(submitWidget.setup);
   afterEach(submitWidget.teardown);

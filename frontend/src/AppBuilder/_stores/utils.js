@@ -16,7 +16,9 @@ export function debounce(func) {
   return (...args) => {
     const event = args[0] || {};
     const moduleId = args[3] || 'canvas';
-    const eventId = moduleId + '-' + (event?.id || uuidv4());
+    // Row included: inside a List View every row shares one event id, so one row would cancel another.
+    const rowIndex = args[4] ?? '';
+    const eventId = moduleId + '-' + (event?.id || uuidv4()) + '-' + rowIndex;
 
     const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {
