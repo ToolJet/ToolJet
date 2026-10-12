@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
@@ -10,7 +10,17 @@ import { FOLDER_RESOURCE_TYPE_BY_APP_TYPE } from '@modules/folder-apps/ability';
 import { getPermissionResourceForAppType } from '@modules/folder-apps/util.service';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { appActions, folderActions, resolveFolderAccess } from './actions';
-import { BuiltQuery, DashboardScope, EntryRow, rootCountsQuery, rootPageQuery } from './queries';
+import {
+  BuiltQuery,
+  DashboardScope,
+  EntryRow,
+  folderHeaderQuery,
+  folderPageQuery,
+  rootCountsQuery,
+  rootPageQuery,
+  searchCountsQuery,
+  searchPageQuery,
+} from './queries';
 import { DashboardEntryDto, ListAppsV2QueryDto, ListAppsV2ResponseDto, RefDto } from './dto/list.dto';
 
 type Counts = { pinned: number; folders: number; apps: number };
@@ -54,7 +64,6 @@ export class DashboardService {
       type,
       branchId: resolvedBranchId,
       visibleAppIds,
-      // End users see only released items, every type (2026-10-07).
       releasedOnly: permissions.isEndUser,
       activityColumn: permissions.isEndUser ? 'last_viewed_at' : 'last_edited_at',
       folderAccess: resolveFolderAccess(permissions, type, user.id),
@@ -70,6 +79,8 @@ export class DashboardService {
   async list(user: User, query: ListAppsV2QueryDto): Promise<ListAppsV2ResponseDto> {
     const { scope, permissions } = await this.resolveScope(user, query.type, query.branch_id);
     const ctx = { scope, permissions };
+    if (query.search) return this.search(ctx, query);
+    if (query.folder_id) return this.folder(ctx, query);
     return this.root(ctx, query);
   }
 
@@ -77,6 +88,35 @@ export class DashboardService {
     const [[counts], rows] = await Promise.all([
       this.run<Counts>(rootCountsQuery(ctx.scope)),
       this.run<EntryRow>(rootPageQuery(ctx.scope, query.page_size, this.offset(query))),
+    ]);
+    return this.response(query, {
+      items: await this.toEntries(rows, ctx),
+      total: counts.pinned + counts.folders + counts.apps,
+      counts,
+      folder: null,
+    });
+  }
+
+  private async folder(ctx: EntryContext, query: ListAppsV2QueryDto): Promise<ListAppsV2ResponseDto> {
+    const [[header], rows] = await Promise.all([
+      this.run<{ id: string; name: string; total: number; pinned: number }>(
+        folderHeaderQuery(ctx.scope, query.folder_id)
+      ),
+      this.run<EntryRow>(folderPageQuery(ctx.scope, query.folder_id, query.page_size, this.offset(query))),
+    ]);
+    if (!header) throw new NotFoundException('Folder not found');
+    return this.response(query, {
+      items: await this.toEntries(rows, ctx),
+      total: header.total,
+      counts: { pinned: header.pinned, folders: 0, apps: header.total - header.pinned },
+      folder: { id: header.id, name: header.name },
+    });
+  }
+
+  private async search(ctx: EntryContext, query: ListAppsV2QueryDto): Promise<ListAppsV2ResponseDto> {
+    const [[counts], rows] = await Promise.all([
+      this.run<Counts>(searchCountsQuery(ctx.scope, query.search)),
+      this.run<EntryRow>(searchPageQuery(ctx.scope, query.search, query.page_size, this.offset(query))),
     ]);
     return this.response(query, {
       items: await this.toEntries(rows, ctx),

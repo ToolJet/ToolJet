@@ -20,9 +20,7 @@ const NOT_AN_EDIT = /\/(run|preview)\/:environmentId$|\/gitpush\/:appId\/:versio
 // App settings edits with no :versionId (rename, icon, public). DELETE /apps/:id is not an edit.
 const APP_EDIT_ROUTE = /\/apps\/:id(\/icons|\/public)?$/;
 
-// Builder edit routes carry :versionId and resolve request.tj_app in their guards, and the DB
-// bump triggers move app_versions.updated_at on every child write, so "successful mutating
-// request on a version" is where Modified by stays in step with Last modified.
+// Fires on every successful mutating request on a version, so Modified by stays in step with Last modified.
 export function classifyActivity(req: ActivityRequest): ActivitySignal | null {
   const userId = req.user?.id;
   const app = req.tj_app;
