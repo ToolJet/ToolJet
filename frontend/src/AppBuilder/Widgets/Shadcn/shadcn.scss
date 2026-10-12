@@ -71,6 +71,16 @@
 // Dark themes: the tints mix toward white instead of the dark background, and the deeper shade lifts. Mixed toward
 // the background they sank into it (a pie's second and third slices, a radar's second series and a scatter's third
 // read as the page colour on ToolJet Modern dark).
+// Hairlines take the theme's default border in dark themes: its weak border is the card surface there (ToolJet Modern
+// dark: both #1F2937), so every divider and separator drawn on a card (a record list's rows, a summary strip's
+// figures, a Kanban card's details) vanished. Light themes keep the weak border, which differs from white.
+.dark-theme .tj-shadcn,
+.theme-dark .tj-shadcn,
+.dark-theme .tj-shad-tokens,
+.theme-dark .tj-shad-tokens {
+  --sc-border: var(--cc-default-border, #374151);
+}
+
 .dark-theme .tj-shadcn,
 .theme-dark .tj-shadcn {
   --sc-chart-2: color-mix(in srgb, var(--sc-chart-1) 62%, #ffffff);
