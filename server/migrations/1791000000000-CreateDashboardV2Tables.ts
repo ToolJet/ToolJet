@@ -57,10 +57,6 @@ export class CreateDashboardV2Tables1791000000000 implements MigrationInterface 
       'user_app_activity',
       new TableIndex({ name: 'idx_user_app_activity_app_branch_edited', columnNames: ['app_id', 'branch_id', 'last_edited_at'] })
     );
-    await queryRunner.createIndex(
-      'pinned_items',
-      new TableIndex({ name: 'idx_pinned_items_user_branch', columnNames: ['user_id', 'branch_id'] })
-    );
     await queryRunner.createIndex('apps', new TableIndex({ name: 'idx_apps_organization_id_type', columnNames: ['organization_id', 'type'] }));
     await queryRunner.createIndex('folders', new TableIndex({ name: 'idx_folders_organization_id_type', columnNames: ['organization_id', 'type'] }));
     // No folder_apps index: its branch_id comes from a data migration, which runs after all schema migrations.
