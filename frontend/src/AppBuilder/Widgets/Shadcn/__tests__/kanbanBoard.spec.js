@@ -3,6 +3,7 @@ import {
   boardCards,
   boardColumns,
   cardClamp,
+  cardDateLabel,
   cardDetails,
   deleteCard,
   moveCard,
@@ -162,6 +163,11 @@ describe('cardDetails', () => {
     expect(cardDetails(big)).toHaveLength(12);
   });
 
+  it('shows a stored date among the details as a short date', () => {
+    const year = new Date().getFullYear();
+    expect(cardDetails({ 'Last contact': `${year}-10-10` })).toEqual([{ label: 'Last contact', value: 'Oct 10' }]);
+  });
+
   it('turns nested values into text instead of crashing', () => {
     expect(cardDetails({ Items: ['a', 'b'], Meta: { x: 1 } })).toEqual([
       { label: 'Items', value: 'a, b' },
@@ -176,5 +182,26 @@ describe('cardDetails with a value that contains itself', () => {
     loop.push(loop);
     expect(() => cardDetails({ Loop: loop })).not.toThrow();
     expect(cardDetails({ Loop: loop })[0].label).toBe('Loop');
+  });
+});
+
+describe('cardDateLabel', () => {
+  // Kanban cards showed raw stored dates ("2026-10-14T00:00:00.000Z" wrapped over three lines): a value that is a whole
+  // ISO date or timestamp reads as a short date, with the year only when it is not this year.
+  const now = new Date(2026, 9, 12);
+  it('shows a date this year as month and day', () => {
+    expect(cardDateLabel('2026-10-14', now)).toBe('Oct 14');
+    expect(cardDateLabel('2026-10-14T15:30:00.000Z', now)).toMatch(/^Oct 1[45]$/);
+  });
+
+  it('adds the year for another year', () => {
+    expect(cardDateLabel('2025-03-02', now)).toBe('Mar 2, 2025');
+  });
+
+  it('leaves everything else alone', () => {
+    expect(cardDateLabel('Follow-up Oct 14', now)).toBeNull();
+    expect(cardDateLabel('2026-13-40', now)).toBeNull();
+    expect(cardDateLabel(42, now)).toBeNull();
+    expect(cardDateLabel(null, now)).toBeNull();
   });
 });

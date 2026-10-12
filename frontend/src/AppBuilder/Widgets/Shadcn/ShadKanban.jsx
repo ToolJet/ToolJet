@@ -24,6 +24,7 @@ import {
   boardCards,
   boardColumns,
   cardClamp,
+  cardDateLabel,
   cardDetails,
   deleteCard,
   moveCard,
@@ -66,6 +67,9 @@ const asTags = (value) =>
 // A detail longer than this takes the card's full width; shorter ones (an amount, a date) sit two to a row.
 const SHORT_DETAIL = 22;
 
+// A card's text: a stored ISO date or timestamp as a short date, anything else as written.
+const shown = (value) => cardDateLabel(value) ?? String(value);
+
 const CardBody = ({ card, fields, compact, badgeColors, progressStyle, expanded }) => {
   const badge = fields.badge ? card[fields.badge] : undefined;
   const avatar = fields.avatar ? card[fields.avatar] : undefined;
@@ -85,7 +89,7 @@ const CardBody = ({ card, fields, compact, badgeColors, progressStyle, expanded 
       </p>
       {fields.description && isSet(card[fields.description]) ? (
         <p className={cn('line-clamp-2 text-xs', SECONDARY_TEXT, compact ? 'mt-0.5' : 'mt-1')}>
-          {String(card[fields.description])}
+          {shown(card[fields.description])}
         </p>
       ) : null}
       {tags.length ? (
@@ -123,7 +127,7 @@ const CardBody = ({ card, fields, compact, badgeColors, progressStyle, expanded 
           {isSet(meta) ? (
             // One line: in a narrow column a date wrapped across lines; the whole text is in the tooltip.
             <span title={String(meta)} className={cn('min-w-0 truncate whitespace-nowrap text-xs', SECONDARY_TEXT)}>
-              {String(meta)}
+              {shown(meta)}
             </span>
           ) : null}
           {isSet(avatar) ? (

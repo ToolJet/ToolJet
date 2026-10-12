@@ -151,5 +151,30 @@ export const cardDetails = (value) => {
     : typeof value === 'object'
     ? Object.entries(value).map(([label, v]) => ({ label, value: detailText(v) }))
     : [{ label: '', value: detailText(value) }];
-  return rows.filter((row) => row.value.trim() !== '').slice(0, MAX_DETAIL_ROWS);
+  return rows
+    .map((row) => ({ ...row, value: cardDateLabel(row.value) ?? row.value }))
+    .filter((row) => row.value.trim() !== '')
+    .slice(0, MAX_DETAIL_ROWS);
+};
+
+// A card value that is a whole ISO date or timestamp reads as a short date ("Oct 14", or "Mar 2, 2025" in another
+// year): cards showed raw stored values ("2026-10-14T00:00:00.000Z") wrapped over three lines. A timestamp shows its
+// local day only; a card has no room for the time. Anything else returns null and is shown as written.
+const ISO_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
+const ISO_STAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?$/;
+export const cardDateLabel = (value, now = new Date()) => {
+  if (typeof value !== 'string') return null;
+  const v = value.trim();
+  let date = null;
+  const day = ISO_DAY.exec(v);
+  if (day) {
+    date = new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3]));
+    if (date.getMonth() !== Number(day[2]) - 1) return null;
+  } else if (ISO_STAMP.test(v)) {
+    date = new Date(v);
+  }
+  if (!date || Number.isNaN(date.getTime())) return null;
+  const options = { month: 'short', day: 'numeric' };
+  if (date.getFullYear() !== now.getFullYear()) options.year = 'numeric';
+  return new Intl.DateTimeFormat('en-US', options).format(date);
 };
