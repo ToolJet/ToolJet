@@ -64,7 +64,6 @@ export class DashboardService {
       type,
       branchId: resolvedBranchId,
       visibleAppIds,
-      // End users see only released items, every type (2026-10-07).
       releasedOnly: permissions.isEndUser,
       activityColumn: permissions.isEndUser ? 'last_viewed_at' : 'last_edited_at',
       folderAccess: resolveFolderAccess(permissions, type, user.id),

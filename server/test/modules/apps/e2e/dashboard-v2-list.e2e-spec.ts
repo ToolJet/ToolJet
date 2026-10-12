@@ -478,6 +478,31 @@ describe('DashboardAppsController', () => {
 
         expect(res.body).toMatchObject({ total: 0, counts: { pinned: 0, folders: 0, apps: 0 }, items: [] });
       });
+
+      it('should group matched apps by folder, most recently active folder first, unfoldered apps last', async () => {
+        const admin = await createAdmin(nestApp, 'dash-search-groups@tooljet.io');
+        const branch = await resolveOrSeedDefaultBranch(admin.workspace.id);
+        const older = await createFolder(nestApp, { name: 'Older', organizationId: admin.workspace.id });
+        const newer = await createFolder(nestApp, { name: 'Newer', organizationId: admin.workspace.id });
+        const { app: inOlder } = await seedDashboardApp(nestApp, {
+          user: admin.user,
+          name: 'Report older',
+          folder: older,
+        });
+        const { app: inNewer } = await seedDashboardApp(nestApp, {
+          user: admin.user,
+          name: 'Report newer',
+          folder: newer,
+        });
+        const { app: stray } = await seedDashboardApp(nestApp, { user: admin.user, name: 'Report stray' });
+        await seedActivity(admin.user.id, stray.id, branch.id, { lastEditedAt: new Date('2026-09-01') });
+        await seedActivity(admin.user.id, inNewer.id, branch.id, { lastEditedAt: new Date('2026-06-01') });
+        await seedActivity(admin.user.id, inOlder.id, branch.id, { lastEditedAt: new Date('2026-01-01') });
+
+        const res = await list(nestApp, admin.cookie, admin.workspace.id, { type: 'front-end', search: 'report' });
+
+        expect(res.body.items.map((i: { id: string }) => i.id)).toEqual([inNewer.id, inOlder.id, stray.id]);
+      });
     });
   });
 });

@@ -49,7 +49,6 @@ export const FOLDER_COLUMNS = `'folder' AS kind, vf.id, vf.name, NULL::varchar A
 
 // Every mode: pins first by position, then the mode's order. Needs `pin_position` (NULL = unpinned).
 export const PIN_ORDER = '(pin_position IS NULL), pin_position';
-// Phase 2 sort swaps this key; dropping `kind_order` from ROOT_ORDER gives mixed folder/app sort.
 export const ENTRY_ORDER = 'activity_at DESC NULLS LAST, LOWER(name), id';
 const ROOT_ORDER = `${PIN_ORDER}, kind_order, ${ENTRY_ORDER}`;
 
