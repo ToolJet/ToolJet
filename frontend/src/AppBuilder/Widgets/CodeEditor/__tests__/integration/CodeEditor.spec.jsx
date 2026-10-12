@@ -153,6 +153,18 @@ describe('CodeEditor widget', () => {
   });
 
   describe('typed input', () => {
+    test('[CodeEditor-TYPE-003] a long line stays on one line rather than being reflowed', async () => {
+      // Break this catches: re-adding the lineWrapping extension reflows a long line across several
+      // visual rows, so the gutter numbers stop matching the document's line structure. The editor is
+      // meant to behave like VSCode — one logical line is one row, and the viewport scrolls sideways
+      // to reach the rest. The scrolling itself is CSS and belongs to QA (BRW-005); what is assertable
+      // here is that nothing forces a wrap.
+      const container = await mounted(codeEditor.render().container);
+      await codeEditor.act('setValue', 'const note = "' + 'x'.repeat(400) + '";');
+
+      expect(container.querySelector('.cm-content')).not.toHaveClass('cm-lineWrapping');
+    });
+
     test('[CodeEditor-INPUT-001] typed code reaches the document and settles into the exposed value', async () => {
       // Break this catches: a break anywhere in onChange -> updateValue -> codeChanged -> setExposedVariable
       // silently strands every {{components.x.value}} binding, and NO setValue test would notice because

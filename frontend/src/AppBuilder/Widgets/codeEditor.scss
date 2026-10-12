@@ -14,6 +14,18 @@
 
    .code-editor-widget {
     background-color: var(--cc-surface1-surface) !important;
+
+    .cm-gutters {
+        background-color: var(--cc-surface3-surface) !important;
+    }
+
+    .cm-scroller {
+        overflow-x: auto !important;
+    }
+
+    .cm-content {
+        max-width: none !important;
+    }
    }
    
 }
