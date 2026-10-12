@@ -30,7 +30,6 @@ import { waitFor, fireEvent as rtlFireEvent, act, screen } from '@testing-librar
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import { getModalBodyHeight } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 import { onShowSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
-import { useGridStore } from '@/_stores/gridStore';
 import { componentDefinition, seedApp, binding as rawBinding } from '@/test/app-builder';
 import {
   createWidgetHarness,
@@ -928,18 +927,13 @@ describe('ModalV2: canvas scroll lock', () => {
 
 // The editor's open-modal record (`useGridStore.openModalWidgetId`) is what
 // AppCanvas/Grid/Grid.jsx reads to hide every non-child widget's resize
-// controls while a modal is open. It lives in the standalone grid store, which
-// the composed-store harness (`session.store.read`) does not reach, so it is
-// read through the grid store's exported API (see D-04).
-const openModalWidgetId = () => useGridStore.getState().openModalWidgetId;
+// controls while a modal is open. It lives in the standalone grid store, read
+// through the harness's `store.read(selector, { store: 'grid' })`.
+const openModalWidgetId = () => widget.session.store.read((state) => state.openModalWidgetId, { store: 'grid' });
 
 describe('ModalV2: editor open-modal record', () => {
   beforeEach(widget.setup);
-  afterEach(async () => {
-    await widget.teardown();
-    // Isolation only: the grid store is a module singleton shared across tests.
-    useGridStore.getState().actions.setOpenModalWidgetId(null);
-  });
+  afterEach(widget.teardown);
 
   test('[ModalV2-GRID-001] unmounting the modal while it is still open clears the editor open-modal record', async () => {
     // Break this catches: the modal unmounting while open (a page switch fired
