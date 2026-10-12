@@ -79,3 +79,30 @@ describe('seriesLabel', () => {
     expect(seriesLabel('revenue', 'junk')).toBe('Revenue');
   });
 });
+
+describe('category tick labels', () => {
+  // Expense build (2026-10-12): an 8-bar chart showed every other category ("Marketing, Travel, Office Supplies,
+  // Meals") because Recharts thinned labels that did not fit. Every bar keeps its name, wrapped or shortened.
+  const { wrapLabel, keepsEveryCategory } = require('../ShadCharts');
+  it('keeps short names on one line', () => {
+    expect(wrapLabel('Travel', 12)).toEqual(['Travel']);
+  });
+  it('wraps a long name onto two lines at word breaks', () => {
+    expect(wrapLabel('Office Supplies', 10)).toEqual(['Office', 'Supplies']);
+  });
+  it('shortens what still does not fit with an ellipsis', () => {
+    expect(wrapLabel('Professional development courses', 10)).toEqual(['Professio…', 'developme…']);
+    expect(wrapLabel('Meals and team events', 10)).toEqual(['Meals and', 'team even…']);
+    expect(wrapLabel('Supercalifragilistic', 8)).toEqual(['Superca…']);
+  });
+  it('copes with blanks and numbers', () => {
+    expect(wrapLabel('', 8)).toEqual(['']);
+    expect(wrapLabel(2026, 8)).toEqual(['2026']);
+  });
+  it('keeps every name for categories, not for date axes or very long series', () => {
+    const cats = Array.from({ length: 8 }, (_, i) => ({ c: `Category ${i}` }));
+    expect(keepsEveryCategory(cats, 'c')).toBe(true);
+    expect(keepsEveryCategory([{ d: '2026-09-10' }, { d: '2026-09-11' }], 'd')).toBe(false);
+    expect(keepsEveryCategory(Array.from({ length: 40 }, (_, i) => ({ c: `C${i}` })), 'c')).toBe(false);
+  });
+});

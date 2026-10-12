@@ -209,6 +209,45 @@ export const dateTicks = (data, key) => {
   return (v) => (typeof v === 'string' && ISO_DATE.test(v) ? dayjs(v).format('D MMM') : v);
 };
 
+/** A category name as at most `lines` lines of `max` characters, broken at spaces; what still does not fit ends in an
+ *  ellipsis. Recharts dropped every other name of an 8-bar chart rather than wrap them (expense build, 2026-10-12). */
+export const wrapLabel = (value, max, lines = 2) => {
+  const cut = (text) => (text.length > max ? `${text.slice(0, Math.max(1, max - 1))}…` : text);
+  const out = [];
+  for (const word of String(value ?? '').split(/\s+/).filter(Boolean)) {
+    const last = out[out.length - 1];
+    if (last !== undefined && `${last} ${word}`.length <= max) out[out.length - 1] = `${last} ${word}`;
+    else out.push(word);
+  }
+  if (!out.length) return [''];
+  if (out.length <= lines) return out.map(cut);
+  // The last line carries the rest of the name, so it ends in an ellipsis where the name was cut.
+  return [...out.slice(0, lines - 1), out.slice(lines - 1).join(' ')].map(cut);
+};
+/** A bar chart over categories (not dates) of up to 24 bars names every bar. */
+export const keepsEveryCategory = (data, key) => !dateTicks(data, key) && list(data).length <= 24;
+/** An x-axis tick that wraps its name to the width of one band (the axis width over the ticks shown). */
+const CategoryTick = ({ x, y, payload, width, visibleTicksCount }) => {
+  const band = (Number(width) || 0) / Math.max(1, Number(visibleTicksCount) || 1);
+  const lines = wrapLabel(payload?.value, Math.max(4, Math.floor((band - 6) / 6.6)));
+  return (
+    <text x={x} y={y + 4} textAnchor="middle" fill={AXIS.tick.fill} fontSize={12}>
+      {lines.map((line, i) => (
+        <tspan key={i} x={x} dy={i === 0 ? '0.71em' : '1.2em'}>
+          {line}
+        </tspan>
+      ))}
+      <title>{String(payload?.value ?? '')}</title>
+    </text>
+  );
+};
+/** Room under the bars for two lines when some name will not fit one line of its band (assuming a 560px plot). */
+const categoryAxisHeight = (data, key) => {
+  const rows = list(data);
+  const longest = Math.max(0, ...rows.map((row) => String(row?.[key] ?? '').length));
+  return longest * 6.6 > 560 / Math.max(1, rows.length) - 6 ? 44 : 30;
+};
+
 /** A chart drawn under 100px tall (a trend in a KPI tile) has no room for axes, grid or legend: it draws the shape
  *  alone, like a sparkline, instead of squeezing tick labels into it. Taller ones keep their labels (a 135px bar chart
  *  without its category names meant nothing). */
@@ -349,13 +388,24 @@ export const ShadBarChart = (props) => {
             </>
           ) : (
             <>
-              <XAxis
-                dataKey={xField}
-                {...AXIS}
-                hide={compact}
-                minTickGap={16}
-                tickFormatter={dateTicks(data, xField)}
-              />
+              {keepsEveryCategory(data, xField) ? (
+                <XAxis
+                  dataKey={xField}
+                  {...AXIS}
+                  hide={compact}
+                  interval={0}
+                  height={categoryAxisHeight(data, xField)}
+                  tick={<CategoryTick />}
+                />
+              ) : (
+                <XAxis
+                  dataKey={xField}
+                  {...AXIS}
+                  hide={compact}
+                  minTickGap={16}
+                  tickFormatter={dateTicks(data, xField)}
+                />
+              )}
               <YAxis
                 {...AXIS}
                 hide={compact}
