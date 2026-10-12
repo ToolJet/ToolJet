@@ -31,6 +31,7 @@ const SHADCN_SECTIONS = [
     items: ['FlexContainer', 'ShadTabs', 'ShadListView', 'ShadDialog', 'ShadSeparator', 'ShadAccordion'],
   },
   { title: 'Typography', items: ['ShadHeading', 'ShadText'] },
+  { title: 'Conversation', items: ['ShadChat', 'ShadQuestionnaire'] },
   {
     title: 'Data display',
     items: [

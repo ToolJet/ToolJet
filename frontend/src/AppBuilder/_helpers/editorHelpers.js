@@ -236,6 +236,8 @@ const shadcnDisplay = () => import('@/AppBuilder/Widgets/Shadcn/ShadDisplay');
 const shadcnSections = () => import('@/AppBuilder/Widgets/Shadcn/ShadSections');
 const shadcnActions = () => import('@/AppBuilder/Widgets/Shadcn/ShadActions');
 const shadcnOverlays = () => import('@/AppBuilder/Widgets/Shadcn/ShadOverlays');
+const shadcnChat = () => import('@/AppBuilder/Widgets/Shadcn/ShadChat');
+const shadcnQuestionnaire = () => import('@/AppBuilder/Widgets/Shadcn/ShadQuestionnaire');
 const shadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m[name] })));
 const controlledShadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m.withControlState(m[name]) })));
 const ShadButton = controlledShadWidget(shadcnWidgets, 'ShadButton');
@@ -294,6 +296,8 @@ const ShadHero = controlledShadWidget(shadcnSections, 'ShadHero');
 const ShadCardGrid = controlledShadWidget(shadcnSections, 'ShadCardGrid');
 const ShadRecordList = controlledShadWidget(shadcnSections, 'ShadRecordList');
 const ShadSummaryStrip = controlledShadWidget(shadcnSections, 'ShadSummaryStrip');
+const ShadChat = controlledShadWidget(shadcnChat, 'ShadChat');
+const ShadQuestionnaire = controlledShadWidget(shadcnQuestionnaire, 'ShadQuestionnaire');
 const ShadSteps = controlledShadWidget(shadcnDisplay, 'ShadSteps');
 const ShadPagination = controlledShadWidget(shadcnDisplay, 'ShadPagination');
 const ShadDropdownMenu = controlledShadWidget(shadcnActions, 'ShadDropdownMenu');
@@ -473,6 +477,8 @@ export const AllComponents = {
   ShadCardGrid,
   ShadRecordList,
   ShadSummaryStrip,
+  ShadChat,
+  ShadQuestionnaire,
   ShadSteps,
   ShadPagination,
   ShadDropdownMenu,

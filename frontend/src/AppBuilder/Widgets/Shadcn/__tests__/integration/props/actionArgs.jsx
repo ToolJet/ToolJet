@@ -162,6 +162,26 @@ export const ACTION_ARGS = {
   ShadText: { setText: { args: ['A new paragraph'] }, clear: { args: [] } },
   ShadIcon: { click: { args: [], fires: 'onClick' } },
   ShadImage: { setImageURL: { args: ['https://example.com/other.png'] }, clearImage: { args: [] } },
+  ShadChat: {
+    appendHistory: { args: [{ message: 'A new reply', type: 'response' }] },
+    sendMessage: { args: [{ message: 'A new question', type: 'message' }] },
+    clearHistory: { args: [], before: [['action', 'appendHistory', { message: 'More', type: 'response' }]] },
+    setHistory: { args: [[{ message: 'Only this', type: 'response', messageId: 'only' }]] },
+    downloadChat: { args: [], download: true },
+    setError: { args: ['The model timed out.'] },
+    setHistoryLoading: { args: [true] },
+    setResponseLoading: { args: [true] },
+    setInputDisable: { args: [true] },
+    setResponderAvatar: { args: ['https://example.com/bot.png'] },
+    setUserAvatar: {
+      args: ['https://example.com/me.png'],
+      before: [['action', 'sendMessage', { message: 'Hi', type: 'message' }]],
+    },
+  },
+  ShadQuestionnaire: {
+    goTo: { args: [2] },
+    reset: { args: [], before: [['action', 'goTo', 2]] },
+  },
   ShadKanban: {
     addCard: { args: [{ title: 'Fresh card' }] },
     updateCard: { args: [1, { title: 'Renamed' }] },
