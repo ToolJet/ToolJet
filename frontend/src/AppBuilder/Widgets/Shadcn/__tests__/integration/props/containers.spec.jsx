@@ -52,8 +52,10 @@ const mount = async (type, properties, extraComponents) => {
     capabilities: { dnd: true },
     widgetHeight: 500,
     widgetWidth: 900,
+    // Child widgets are lazy too; setup() loads them before the first render.
+    preload: Object.values(extraComponents || {}).map((child) => child.component.component),
   });
-  harness.setup();
+  await harness.setup();
   const def = CONFIGS[type].definition;
   const wrap = (entries) => Object.fromEntries(Object.entries(entries).map(([k, v]) => [k, { value: v }]));
   let view;
