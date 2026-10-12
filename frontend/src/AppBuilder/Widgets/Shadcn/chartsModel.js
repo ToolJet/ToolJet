@@ -105,10 +105,15 @@ export const formatter = ({ format, currency, prefix, suffix } = {}, short = fal
   }
   const before = isText(prefix) ? String(prefix) : '';
   const after = (kind === 'percent' ? '%' : '') + (isText(suffix) ? String(suffix) : '');
+  // Money with cents shows both digits ("$3,043.50", never "$3,043.5"); whole amounts and compact ticks stay as they are.
+  const cents =
+    kind === 'currency' && !compact
+      ? intl({ style: 'currency', currency: code.toUpperCase(), minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : null;
   return (v) => {
     const n = num(v);
     if (n === null) return v === null || v === undefined ? '' : String(axisLabel(v));
-    return `${before}${f.format(n)}${after}`;
+    return `${before}${(cents && !Number.isInteger(n) ? cents : f).format(n)}${after}`;
   };
 };
 

@@ -1,4 +1,4 @@
-import { progressPercent, sparkPaths, STAT_SIZES, statSize } from '../statModel';
+import { progressPercent, sparkPaths, STAT_SIZES, statSize, statValue } from '../statModel';
 
 describe('sparkPaths', () => {
   it('draws a line and a closed area across the box', () => {
@@ -57,5 +57,12 @@ describe('statSize', () => {
     expect(statSize('lg')).toBe(STAT_SIZES.lg);
     expect(statSize('nope')).toBe(STAT_SIZES.default);
     expect(statSize(undefined)).toBe(STAT_SIZES.default);
+  });
+});
+
+describe('statValue money', () => {
+  it('shows cents on a non-integer amount (an inventory value read "$3,043.5")', () => {
+    expect(statValue(3043.5, { valueFormat: 'currency', currency: 'USD' })).toBe('$3,043.50');
+    expect(statValue(3043, { valueFormat: 'currency', currency: 'USD' })).toBe('$3,043');
   });
 });
