@@ -31,6 +31,24 @@ const metaPart = (row, spec) => {
 
 const firstTextField = (row) => Object.keys(row).find((k) => isText(row[k]));
 
+/** Keys from ids, one of their own for every item: a repeated id (or a row without one, keyed by its position, where
+ *  another row's id is that number) gets a suffix, so React keeps the rows apart and a click selects one row, not
+ *  every row that shares the key. Rows with an id claim it first; the first of a repeated id keeps it. */
+const uniqueKeys = (items, fromId) => {
+  const seen = new Set();
+  const keys = items.map(() => null);
+  const claim = (i) => {
+    const base = items[i].key;
+    let key = base;
+    for (let n = 0; seen.has(key); n++) key = `${base}~${i}${n ? `~${n}` : ''}`;
+    seen.add(key);
+    keys[i] = key;
+  };
+  items.forEach((_, i) => fromId[i] && claim(i));
+  items.forEach((_, i) => !fromId[i] && claim(i));
+  return items.map((item, i) => (keys[i] === item.key ? item : { ...item, key: keys[i] }));
+};
+
 /** Cards from rows: title, subtitle, image, description, badge and a meta line, each read from the named field
  *  (metaFields is a comma list joined with ' · '). The title falls back to the first text field. Rows that are not
  *  objects are skipped. */
@@ -43,13 +61,14 @@ export const cardItems = (data, fields = {}) => {
         .map((s) => s.trim())
         .filter(Boolean)
     : [];
-  return data.flatMap((row, index) => {
+  const items = data.flatMap((row, index) => {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
     const titleKey = isText(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
     const id = isText(f.idField) ? row[f.idField] : row.id;
     return [
       {
         key: shown(id) || String(index),
+        keyFromId: !!shown(id),
         title: titleKey ? shown(row[titleKey]) : '',
         subtitle: isText(f.subtitleField) ? shown(row[f.subtitleField]) : '',
         image: isText(f.imageField) ? shown(row[f.imageField]) : '',
@@ -63,6 +82,10 @@ export const cardItems = (data, fields = {}) => {
       },
     ];
   });
+  return uniqueKeys(
+    items.map(({ keyFromId, ...item }) => item),
+    items.map((item) => item.keyFromId)
+  );
 };
 
 /** Columns for a grid this wide: the set count, but never more than fit at the minimum card width; 'auto' (or 0)
@@ -108,7 +131,9 @@ const dateText = (d, withTime) => {
  *  digits of a bare number. Anything that is not of the format's kind (an already formatted "$1,250.00", "12 open")
  *  shows as written; objects show nothing. */
 export const formatValue = (value, format = 'auto', currency) => {
+  // A number that is not finite (Infinity, NaN, a division by zero in a binding) is not a value to show.
   if (value === null || value === undefined || typeof value === 'object') return '';
+  if (typeof value === 'number' && !Number.isFinite(value)) return '';
   if (format === 'date' || format === 'datetime') {
     const d = toDay(value);
     return d ? dateText(d, format === 'datetime') : String(value);
@@ -164,7 +189,7 @@ export const recordItems = (data, fields = {}) => {
         .filter(Boolean)
     : [];
   const format = VALUE_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
-  return data.flatMap((row, index) => {
+  const items = data.flatMap((row, index) => {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
     const titleKey = isText(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
     const title = titleKey ? shown(row[titleKey]) : '';
@@ -175,6 +200,7 @@ export const recordItems = (data, fields = {}) => {
     return [
       {
         key: shown(id) || String(index),
+        keyFromId: !!shown(id),
         title,
         image,
         avatarName,
@@ -188,6 +214,10 @@ export const recordItems = (data, fields = {}) => {
       },
     ];
   });
+  return uniqueKeys(
+    items.map(({ keyFromId, ...item }) => item),
+    items.map((item) => item.keyFromId)
+  );
 };
 
 // ---- Summary strip ---------------------------------------------------------------------------------------------------

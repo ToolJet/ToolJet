@@ -198,3 +198,40 @@ describe('stripColumns', () => {
     expect(stripColumns(3, 0, 140)).toBe(1);
   });
 });
+
+describe('repeated ids', () => {
+  // Two rows with one id (or a row without an id at the position another row's id names) gave two rows the same
+  // React key: React warned, and a click on one record selected both (selection compares keys).
+  const rows = [
+    { id: 1, customer: 'First', title: 'First' },
+    { id: 1, customer: 'Same id', title: 'Same id' },
+    { customer: 'No id', title: 'No id' },
+    { id: 2, customer: 'Two', title: 'Two' },
+  ];
+  it('gives every record a key of its own, keeping the first row of an id on the id', () => {
+    const keys = recordItems(rows, { titleField: 'customer' }).map((r) => r.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys[0]).toBe('1');
+    expect(keys[3]).toBe('2');
+  });
+  it('gives every card a key of its own', () => {
+    const keys = cardItems(rows, { titleField: 'title' }).map((c) => c.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys[0]).toBe('1');
+  });
+});
+
+describe('formatValue with numbers that are not finite', () => {
+  it('shows nothing for Infinity and NaN in any format', () => {
+    for (const format of ['auto', 'number', 'currency', 'percent', 'compact', 'date']) {
+      expect(formatValue(Infinity, format)).toBe('');
+      expect(formatValue(-Infinity, format)).toBe('');
+      expect(formatValue(NaN, format)).toBe('');
+    }
+  });
+  it('keeps a summary figure without a value readable', () => {
+    const [f] = summaryFigures([{ label: 'Infinite', value: Infinity, delta: NaN }]);
+    expect(f.value).toBe('');
+    expect(f.delta).toBeNull();
+  });
+});
