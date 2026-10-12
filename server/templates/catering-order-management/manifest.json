@@ -1,0 +1,21 @@
+{
+  "name": "Catering order management",
+  "description": "Manage catering orders from menu planning and approval to kitchen production and delivery.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "catering-order-management",
+  "category": "hospitality-and-events"
+}

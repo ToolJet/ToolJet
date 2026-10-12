@@ -1,0 +1,19 @@
+{
+  "name": "Employee onboarding",
+  "description": "Prepare every new starter's first day. Track who is joining, onboarding checklists and open tasks.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "employee-onboarding",
+  "category": "people-and-hr"
+}
