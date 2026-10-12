@@ -41,6 +41,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { InternalTable } from '@entities/internal_table.entity';
 import { readWorkflowQueryRefs } from '@helpers/workflow_query_options.helper';
 import { isUUID } from 'class-validator';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
@@ -1463,15 +1464,20 @@ export class AppsUtilService implements IAppsUtilService {
     return await this.appRepository.findAllOrganizationApps(organizationId, defaultBranchId);
   }
 
-  async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
+  // versionId narrows to one version's data queries (e.g. promote must only ever consider the
+  // version being promoted, never a sibling/abandoned draft's stale references) — optional because
+  // every other caller here (git-sync export, External API export) legitimately wants every version
+  // the app has ever had.
+  async findTooljetDbTables(appId: string, versionId?: string): Promise<{ table_id: string }[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const tooljetDbDataQueries = await manager
+      const query = manager
         .createQueryBuilder(DataQuery, 'data_queries')
         .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
         .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_queries.app_version_id')
         .where('app_versions.app_id = :appId', { appId })
-        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
-        .getMany();
+        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' });
+      if (versionId) query.andWhere('app_versions.id = :versionId', { versionId });
+      const tooljetDbDataQueries = await query.getMany();
 
       const uniqTableIds = new Set();
       tooljetDbDataQueries.forEach((dq) => {
@@ -1498,9 +1504,20 @@ export class AppsUtilService implements IAppsUtilService {
         if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
       });
 
-      return [...uniqTableIds].map((table_id) => {
-        return { table_id };
-      });
+      // A join_table ref's `.name` field is misleadingly named — it holds a table id like
+      // everything else here — but keep this guard: a malformed non-uuid value would otherwise
+      // throw a Postgres cast error on the IN clause below.
+      const ids = [...uniqTableIds].filter((id): id is string => isUUID(id));
+      if (!ids.length) return [];
+
+      const live = await manager
+        .createQueryBuilder(InternalTable, 'it')
+        .select('it.id', 'id')
+        .where('it.id IN (:...ids)', { ids })
+        .andWhere('it.deleted_at IS NULL')
+        .getRawMany();
+
+      return live.map(({ id }) => ({ table_id: id }));
     });
   }
 

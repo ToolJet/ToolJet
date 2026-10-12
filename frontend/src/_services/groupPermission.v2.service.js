@@ -27,7 +27,6 @@ export const groupPermissionV2Service = {
   getAddableAdmins,
   assignGroupAdmin,
   revokeGroupAdmin,
-  getUserAdminGroups,
 };
 
 function create(name) {
@@ -350,17 +349,6 @@ function revokeGroupAdmin(groupPermissionId, adminId) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/admins/${adminId}`, requestOptions).then(
-    handleResponse
-  );
-}
-
-function getUserAdminGroups(userId) {
-  const requestOptions = {
-    method: 'GET',
-    headers: authHeader(),
-    credentials: 'include',
-  };
-  return fetch(`${config.apiUrl}/v2/group-permissions/users/${userId}/admin-groups`, requestOptions).then(
     handleResponse
   );
 }

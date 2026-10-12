@@ -1,5 +1,8 @@
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { InternalTable } from '@entities/internal_table.entity';
+import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+import { computeMissingMigrations } from '@modules/tooljet-db/services/tooljet-db-promote.service';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
@@ -29,6 +32,11 @@ import {
   assertGitSyncEditAllowedForOrg,
   assertVersionEditable,
 } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+import { AppsUtilService } from '@modules/apps/util.service';
+import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
+
+/** A table that resolves in the target environment but hasn't caught up on all its migrations yet. */
+export type TableBehindWarning = { tableId: string; tableName: string; missingCount: number };
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -39,7 +47,9 @@ export class VersionUtilService implements IVersionUtilService {
     protected readonly createVersionService: VersionsCreateService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
-    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    protected readonly appsUtilService: AppsUtilService,
+    protected readonly relationResolverService: TooljetDbRelationResolverService
   ) {}
   protected mergeDeep(target, source, seen = new WeakMap()) {
     if (!this.isObject(target)) {
@@ -878,6 +888,114 @@ export class VersionUtilService implements IVersionUtilService {
       this.logger.error('Failed to check module environment availability', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions for promote');
     }
+  }
+
+  /**
+   * Second dependency type promote must validate, same shape as checkModulesPromotableToEnvironment:
+   * a query against a ToolJet DB table that hasn't reached the target environment yet would 404 at
+   * runtime, so promote blocks instead. Offender lookup is one query (relationResolverService.resolve
+   * batches on IN), not one per table. A soft-deleted table is invisible to findTooljetDbTables
+   * already, so it never blocks. `versionId` scopes findTooljetDbTables to the version being
+   * promoted, same as checkModulesPromotableToEnvironment scopes on it — an abandoned draft's stale
+   * table reference must never block a different version's promote.
+   *
+   * Once every table clears the hard block, a second, additive pass warns (never blocks) on tables
+   * that resolve in the target but are missing migrations there - "resolves" only means a relation
+   * row exists, not that it is caught up. A table with no relation in the source environment yet
+   * (e.g. created directly in a higher environment) has nothing to compare against and is silently
+   * skipped.
+   */
+  async checkTablesPromotableToEnvironment(
+    appId: string,
+    versionId: string,
+    targetEnvironmentId: string,
+    targetEnvironmentName: string,
+    sourceEnvironmentId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<{ warnings: TableBehindWarning[] }> {
+    try {
+      const tables = await this.appsUtilService.findTooljetDbTables(appId, versionId);
+      if (!tables.length) return { warnings: [] };
+
+      const tableIds = tables.map((t) => t.table_id);
+      const resolved = await this.relationResolverService.resolve(
+        organizationId,
+        tableIds,
+        targetEnvironmentId,
+        manager
+      );
+      const offenderIds = tableIds.filter((id) => !resolved.has(id));
+      if (offenderIds.length) {
+        const offenders = await manager.find(InternalTable, { where: { id: In(offenderIds) } });
+        const names = offenders.map((t) => t.tableName);
+        const tableList = names.join(', ');
+        const message =
+          names.length === 1
+            ? `Promote blocked - table "${names[0]}" not available in ${targetEnvironmentName}. Promote the table first.`
+            : `Promote blocked - ${names.length} tables not available in ${targetEnvironmentName}: ${tableList}. Promote the tables first.`;
+        throw new BadRequestException({
+          message: { error: message, details: tableList },
+        });
+      }
+
+      const warnings = await this.findTablesBehindTarget(organizationId, sourceEnvironmentId, resolved, manager);
+      return { warnings };
+    } catch (error) {
+      // ForbiddenException: relationResolverService.resolve() throws it (unlicensed org resolving
+      // to a non-default environment) — a real 403, not a validation failure, so it must pass
+      // through same as BadRequestException rather than get flattened into a misleading 400.
+      if (error instanceof BadRequestException || error instanceof ForbiddenException) throw error;
+      this.logger.error('Failed to check table environment availability', error?.stack || error);
+      throw new BadRequestException('Failed to validate tooljet database tables for promote');
+    }
+  }
+
+  private async findTablesBehindTarget(
+    organizationId: string,
+    sourceEnvironmentId: string,
+    targetResolved: Map<string, string>,
+    manager: EntityManager
+  ): Promise<TableBehindWarning[]> {
+    const tableIds = [...targetResolved.keys()];
+    const sourceResolved = await this.relationResolverService.resolve(
+      organizationId,
+      tableIds,
+      sourceEnvironmentId,
+      manager
+    );
+
+    const pairs = tableIds.flatMap((tableId) => {
+      const sourceRelationId = sourceResolved.get(tableId);
+      return sourceRelationId ? [{ tableId, sourceRelationId, targetRelationId: targetResolved.get(tableId) }] : [];
+    });
+    if (!pairs.length) return [];
+
+    const relationIds = pairs.flatMap((pair) => [pair.sourceRelationId, pair.targetRelationId]);
+    const relations = await manager.find(InternalTableRelation, { where: { id: In(relationIds) } });
+    const relationById = new Map(relations.map((r) => [r.id, r]));
+
+    const internalTables = await manager.find(InternalTable, {
+      where: { id: In(pairs.map((pair) => pair.tableId)) },
+    });
+    const tableNameById = new Map(internalTables.map((t) => [t.id, t.tableName]));
+
+    const warnings: TableBehindWarning[] = [];
+    for (const { tableId, sourceRelationId, targetRelationId } of pairs) {
+      const sourceRelation = relationById.get(sourceRelationId);
+      const targetRelation = relationById.get(targetRelationId);
+      if (!sourceRelation || !targetRelation) continue;
+
+      const missing = await computeMissingMigrations(tableId, sourceRelation, targetRelation, manager);
+      if (missing.length) {
+        warnings.push({
+          tableId,
+          tableName: tableNameById.get(tableId) ?? tableId,
+          missingCount: missing.length,
+        });
+      }
+    }
+    return warnings;
   }
 
   // Twin of checkModulesPromotableToEnvironment for embedded workflows.
