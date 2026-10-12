@@ -2,7 +2,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 300px;
+  width: 100%;
+  min-width: 300px;
   font-size: 12px;
 
   .code-search-header {
@@ -14,6 +15,19 @@
     display: flex;
     align-items: center;
     gap: 2px;
+  }
+
+  // Shrinks so the three match toggles and two view buttons share the input's line.
+  .code-search-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .code-search-divider {
+    width: 1px;
+    height: 16px;
+    margin: 0 2px;
+    background: var(--border-weak);
   }
 
   .code-search-toggle {
@@ -78,15 +92,7 @@
     color: inherit;
   }
 
-  .code-search-summary-row {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    min-height: 24px;
-  }
-
   .code-search-summary {
-    flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -250,4 +256,10 @@
   100% {
     box-shadow: 0 0 0 2px transparent;
   }
+}
+
+// Every match of the active search term inside code editors (codeSearchHighlight).
+.tj-code-search-match {
+  border-radius: 2px;
+  background: var(--background-warning-weak, #ffe9a8);
 }

@@ -4,8 +4,10 @@ import { shallow } from 'zustand/shallow';
 import { ChevronsDownUp, ChevronsUpDown, FileText } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
+import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import InputComponent from '@/components/ui/Input/Index';
+import { ToolTip } from '@/_components/ToolTip';
 import { buildSearchRecords } from './buildSearchRecords';
 import { searchRecords, MIN_TERM_LENGTH, RESULT_TYPES } from './searchRecords';
 import { navigateToResult } from './navigateToResult';
@@ -20,6 +22,21 @@ const MATCH_TOGGLES = [
   { key: 'wholeWord', label: 'ab', title: 'Match whole word', className: 'tw-underline' },
   { key: 'regex', label: '.*', title: 'Use regular expression' },
 ];
+
+// Icon-only controls get a real tooltip (the native `title` is slow and easy to miss).
+const IconButton = ({ title, pressed, className, onClick, children }) => (
+  <ToolTip message={title} placement="bottom">
+    <button
+      type="button"
+      aria-label={title}
+      aria-pressed={pressed}
+      className={cx('code-search-toggle', className, { active: pressed })}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  </ToolTip>
+);
 const TYPE_LABELS = {
   all: 'All',
   component: 'Components',
@@ -36,12 +53,13 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
     (state) => [state.codeSearch.term, state.codeSearch.options, state.setCodeSearchTerm, state.setCodeSearchOptions],
     shallow
   );
-  const [pages, queries, events, globalSettings, currentPageId, replaceIdsWithName] = useStore(
+  const [pages, queries, events, globalSettings, pageSettings, currentPageId, replaceIdsWithName] = useStore(
     (state) => [
       state.modules[moduleId]?.pages || EMPTY,
       state.dataQuery.queries.modules[moduleId] || EMPTY,
       state.eventsSlice.module[moduleId]?.events || EMPTY,
       state.globalSettings,
+      state.pageSettings,
       state.modules[moduleId]?.currentPageId,
       state.replaceIdsWithName,
     ],
@@ -73,10 +91,12 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
         queries,
         events,
         globalSettings,
+        pageSettings,
         translate: (text) => replaceIdsWithName(text, moduleId),
         widgetDefs: componentTypeDefinitionMap,
+        pageSettingsDef: pageConfig,
       }),
-    [pages, queries, events, globalSettings, replaceIdsWithName, moduleId]
+    [pages, queries, events, globalSettings, pageSettings, replaceIdsWithName, moduleId]
   );
 
   const { caseSensitive, wholeWord, regex, type, currentPageOnly } = options;
@@ -227,17 +247,9 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
   };
 
   const toolbarButton = ({ key, title, pressed, onClick, icon: Icon }) => (
-    <button
-      type="button"
-      key={key}
-      title={title}
-      aria-label={title}
-      aria-pressed={pressed}
-      className={cx('code-search-toggle', { active: pressed })}
-      onClick={onClick}
-    >
+    <IconButton key={key} title={title} pressed={pressed} onClick={onClick}>
       <Icon width="14" height="14" />
-    </button>
+    </IconButton>
   );
 
   return (
@@ -248,7 +260,7 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
           <ButtonComponent iconOnly leadingIcon="x" onClick={onClose} variant="ghost" size="medium" isLucid />
         </div>
         <div className="code-search-input-row">
-          <div className="tw-flex-1">
+          <div className="code-search-input">
             <InputComponent
               leadingIcon="search01"
               onChange={(e) => setTerm(e.target.value)}
@@ -260,18 +272,31 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
             />
           </div>
           {MATCH_TOGGLES.map(({ key, label, title, className }) => (
-            <button
-              type="button"
+            <IconButton
               key={key}
               title={title}
-              aria-label={title}
-              aria-pressed={options[key]}
-              className={cx('code-search-toggle code-search-toggle--text', className, { active: options[key] })}
+              pressed={options[key]}
+              className={cx('code-search-toggle--text', className)}
               onClick={() => setOptions({ [key]: !options[key] })}
             >
               {label}
-            </button>
+            </IconButton>
           ))}
+          <span className="code-search-divider" aria-hidden="true" />
+          {toolbarButton({
+            key: 'page',
+            title: currentPageOnly ? 'Searching this page only. Click to search all pages' : 'Search this page only',
+            pressed: currentPageOnly,
+            onClick: () => setOptions({ currentPageOnly: !currentPageOnly }),
+            icon: FileText,
+          })}
+          {toolbarButton({
+            key: 'collapse',
+            title: allCollapsed ? 'Expand all' : 'Collapse all',
+            pressed: false,
+            onClick: toggleAll,
+            icon: allCollapsed ? ChevronsUpDown : ChevronsDownUp,
+          })}
         </div>
         {hasSearch && result.typeCounts.all > 0 && (
           <div className="code-search-chips" role="radiogroup" aria-label="Filter by type">
@@ -291,32 +316,16 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
               ))}
           </div>
         )}
-        <div className="code-search-summary-row">
-          <span className="code-search-summary">
-            {hasSearch && result.total > 0
-              ? result.truncated
-                ? `Showing ${plural(result.rows.length, 'field')} of ${result.fieldCount.toLocaleString()}`
-                : `${plural(result.total, 'result')} in ${plural(result.fieldCount, 'field')} · ${plural(
-                    entityCount,
-                    'item'
-                  )}`
-              : ''}
-          </span>
-          {toolbarButton({
-            key: 'page',
-            title: 'Current page only',
-            pressed: currentPageOnly,
-            onClick: () => setOptions({ currentPageOnly: !currentPageOnly }),
-            icon: FileText,
-          })}
-          {toolbarButton({
-            key: 'collapse',
-            title: allCollapsed ? 'Expand all' : 'Collapse all',
-            pressed: false,
-            onClick: toggleAll,
-            icon: allCollapsed ? ChevronsUpDown : ChevronsDownUp,
-          })}
-        </div>
+        {hasSearch && result.total > 0 && (
+          <div className="code-search-summary">
+            {result.truncated
+              ? `Showing ${plural(result.rows.length, 'field')} of ${result.fieldCount.toLocaleString()}`
+              : `${plural(result.total, 'result')} in ${plural(result.fieldCount, 'field')} · ${plural(
+                  entityCount,
+                  'item'
+                )}`}
+          </div>
+        )}
       </div>
       <div className="code-search-results">{renderBody()}</div>
     </div>
