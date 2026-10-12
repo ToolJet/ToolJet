@@ -23,6 +23,7 @@
 
     .cm-scroller {
         overflow-x: auto !important;
+        overscroll-behavior-x: none;
     }
 
     .cm-content {
