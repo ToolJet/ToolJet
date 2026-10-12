@@ -1,9 +1,11 @@
 import {
   QueryError,
+  OAuthUnauthorizedClientError,
   QueryResult,
   QueryService,
   User,
   App,
+  getRefreshedToken,
   validateAndSetRequestOptionsBasedOnAuthType,
 } from '@tooljet-marketplace/common';
 import { SourceOptions, ConvertedFormat, AuthSourceDetails } from './types';
@@ -88,6 +90,14 @@ export default class Hubspot implements QueryService {
         statusMessage: error.response.statusMessage,
         body: JSON.parse(error.response.body),
       };
+      // A 401 from HubSpot is an expired/invalid OAuth token (their
+      // EXPIRED_AUTHENTICATION category) as often as a bad one. Surface it as
+      // OAuthUnauthorizedClientError so the server's refresh flow can use the
+      // stored refresh token and retry, instead of dead-ending as a plain
+      // query error.
+      if (error.response.statusCode === 401) {
+        throw new OAuthUnauthorizedClientError(errorMessage, 'HubSpot OAuth token expired or invalid', errorResponse);
+      }
       throw new QueryError('Query could not be completed', errorMessage, errorResponse || {});
     }
     return {
@@ -95,6 +105,23 @@ export default class Hubspot implements QueryService {
       data: result,
     };
   }
+  // Called by the server when a query fails with OAuthUnauthorizedClientError:
+  // exchanges the stored refresh token for a fresh access token. HubSpot's
+  // token endpoint is form-encoded, and the tooljet-app OAuth flavour keeps
+  // its credentials in env vars -- both are filled in here so the shared
+  // helper works for every auth shape this datasource offers.
+  async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
+    const defaults: Record<string, unknown> = {
+      access_token_url: 'https://api.hubapi.com/oauth/v1/token',
+      access_token_custom_headers: [['Content-Type', 'application/x-www-form-urlencoded']],
+    };
+    if (sourceOptions['oauth_type'] === 'tooljet_app') {
+      defaults['client_id'] = process.env.HUBSPOT_CLIENT_ID;
+      defaults['client_secret'] = process.env.HUBSPOT_CLIENT_SECRET;
+    }
+    return getRefreshedToken({ ...defaults, ...sourceOptions }, error, userId, isAppPublic);
+  }
+
   authHeader(token: string): Headers {
     return {
       Authorization: `Bearer ${token}`,
