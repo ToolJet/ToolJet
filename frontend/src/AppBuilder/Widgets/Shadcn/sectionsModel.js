@@ -20,12 +20,16 @@ export const heroMeta = (meta) => {
   });
 };
 
+// A label that only repeats its field key as written ('status:status') is not a label: "status To do" read like debug
+// output. A label in its own case ('serves:Serves') is meant and stays.
+const sameName = (label, field) => String(label).trim() === String(field).trim();
+
 /** One meta field: 'prep' shows the value, 'prep:{} min' places it in the label, 'serves:Serves' puts the label first. */
 const metaPart = (row, spec) => {
   const [field, label] = spec.split(/:(.*)/s).map((s) => (s ?? '').trim());
   const value = shown(row[field]);
   if (!field || !value) return '';
-  if (!label) return value;
+  if (!label || sameName(label, field)) return value;
   return label.includes('{}') ? label.replace('{}', value) : `${label} ${value}`;
 };
 
@@ -169,7 +173,7 @@ const recordMetaPart = (row, spec, currency) => {
   if (!field || !(field in row)) return '';
   const value = formatValue(row[field], VALUE_FORMATS.includes(format) ? format : 'auto', currency);
   if (!value) return '';
-  if (!label) return value;
+  if (!label || sameName(label, field)) return value;
   return label.includes('{}') ? label.replace('{}', value) : `${label} ${value}`;
 };
 

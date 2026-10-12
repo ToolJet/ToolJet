@@ -251,3 +251,13 @@ describe('summaryFigures with valueFormat auto', () => {
     expect(figs.map((f) => f.value)).toEqual(['8', '12', '$48,210.50', '$37.50', '2.5%']);
   });
 });
+
+describe('meta labels that repeat the field name', () => {
+  it('show the value alone ("status:status" read "status To do", like debug output)', () => {
+    const cards = cardItems([{ id: 1, title: 'Ship it', status: 'To do', category: 'Product' }], {
+      titleField: 'title',
+      metaFields: 'status:status,category:Category',
+    });
+    expect(cards[0].meta).toBe('To do · Category Product');
+  });
+});
