@@ -2,8 +2,10 @@
 // columns, the record list's rows and the summary strip's figures. Every function takes whatever the author bound and
 // never throws.
 import { FORMATS, formatter, num } from './chartsModel';
+import { chipTone } from '../NewTable/_utils/chipTone';
 
 const isText = (v) => typeof v === 'string' && v.trim() !== '';
+const isImageUrl = (v) => isText(v) && /^(https?:\/\/|data:image\/|\/|\.\/)/i.test(v.trim());
 const shown = (v) => (v === null || v === undefined ? '' : typeof v === 'object' ? '' : String(v));
 
 /** The hero's facts beside the title: ['Sun, 11 Oct', '14 bookings'], [{ label, value }] or one string with ' · '
@@ -18,6 +20,19 @@ export const heroMeta = (meta) => {
     const value = shown(entry).trim();
     return value ? [{ value }] : [];
   });
+};
+
+/** The hero's aside, on the right of its text: a headline figure ({ kind: 'figure', value, label }) from a number or
+ *  text, or up to four facts ({ kind: 'facts', facts: [{ label, value }], label }) from a list (['Open 14'] or
+ *  [{ label, value }]). label is the figure's caption, or the facts' heading. null when there is nothing to show. */
+export const heroAside = (value, label) => {
+  const heading = shown(label).trim();
+  if (Array.isArray(value)) {
+    const facts = heroMeta(value).slice(0, 4);
+    return facts.length ? { kind: 'facts', facts, label: heading } : null;
+  }
+  const figure = typeof value === 'number' ? formatValue(value, 'auto') : shown(value).trim();
+  return figure ? { kind: 'figure', value: figure, label: heading } : null;
 };
 
 // A label that only repeats its field key as written ('status:status') is not a label: "status To do" read like debug
@@ -53,9 +68,41 @@ const uniqueKeys = (items, fromId) => {
   return items.map((item, i) => (keys[i] === item.key ? item : { ...item, key: keys[i] }));
 };
 
-/** Cards from rows: title, subtitle, image, description, badge and a meta line, each read from the named field
- *  (metaFields is a comma list joined with ' · '). The title falls back to the first text field. Rows that are not
- *  objects are skipped. */
+/** Field names from a comma list ('cuisine, diet') or a list of names; anything else is none. */
+export const fieldList = (spec) =>
+  (Array.isArray(spec) ? spec : isText(spec) ? spec.split(',') : [])
+    .filter((s) => typeof s === 'string')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+/** A percentage from a number (42.5) or text ('42.5', '42.5%'); null when it is not one. Not clamped: a bar clamps
+ *  its width, a label shows what was given (120%). */
+export const percentOf = (v) => {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  if (typeof v !== 'string') return null;
+  const m = v.trim().match(/^(-?\d+(?:\.\d+)?)\s*%?$/);
+  return m ? Number(m[1]) : null;
+};
+
+/** A bar's width for a percentage: 0 to 100. */
+export const barWidth = (pct) => (Number.isFinite(pct) ? Math.max(0, Math.min(100, pct)) : 0);
+
+/** A percentage as a label: whole numbers as written, others to one decimal (12.5%, 33.3%). */
+export const percentLabel = (pct) =>
+  Number.isFinite(pct) ? `${Math.abs(pct - Math.round(pct)) < 0.05 ? Math.round(pct) : pct.toFixed(1)}%` : '';
+
+/** An avatar from a field's value: an image when it holds a URL, else the initials of its text (else of `fallback`). */
+const avatarOf = (value, fallback) => {
+  const image = isImageUrl(value) ? value.trim() : '';
+  return {
+    image,
+    name: !image && shown(value).trim() ? shown(value).trim() : fallback,
+  };
+};
+
+/** Cards from rows: title, subtitle, image, description, badges, an eyebrow, an avatar, a progress and a meta line,
+ *  each read from the named field (metaFields is a comma list joined with ' · '; badgeField and badgeFields give the
+ *  badges, at most 4). The title falls back to the first text field. Rows that are not objects are skipped. */
 export const cardItems = (data, fields = {}) => {
   if (!Array.isArray(data)) return [];
   const f = fields || {};
@@ -65,19 +112,30 @@ export const cardItems = (data, fields = {}) => {
         .map((s) => s.trim())
         .filter(Boolean)
     : [];
+  const badgeKeys = [...new Set([...(isText(f.badgeField) ? [f.badgeField.trim()] : []), ...fieldList(f.badgeFields)])];
   const items = data.flatMap((row, index) => {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
     const titleKey = isText(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
     const id = isText(f.idField) ? row[f.idField] : row.id;
+    const title = titleKey ? shown(row[titleKey]) : '';
+    const badges = badgeKeys
+      .map((k) => shown(row[k]).trim())
+      .filter(Boolean)
+      .slice(0, 4);
+    const hasAvatar = isText(f.avatarField) && f.avatarField in row;
     return [
       {
         key: shown(id) || String(index),
         keyFromId: !!shown(id),
-        title: titleKey ? shown(row[titleKey]) : '',
+        title,
         subtitle: isText(f.subtitleField) ? shown(row[f.subtitleField]) : '',
         image: isText(f.imageField) ? shown(row[f.imageField]) : '',
         description: isText(f.descriptionField) ? shown(row[f.descriptionField]) : '',
-        badge: isText(f.badgeField) ? shown(row[f.badgeField]) : '',
+        badge: badges[0] || '',
+        badges,
+        eyebrow: isText(f.eyebrowField) ? shown(row[f.eyebrowField]).trim() : '',
+        avatar: hasAvatar ? avatarOf(row[f.avatarField], title) : null,
+        progress: isText(f.progressField) ? percentOf(row[f.progressField]) : null,
         meta: metaSpecs
           .map((spec) => metaPart(row, spec))
           .filter(Boolean)
@@ -153,9 +211,11 @@ export const formatValue = (value, format = 'auto', currency) => {
   if (format === 'currency' && !Number.isInteger(n)) {
     const code = isText(currency) && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
     try {
-      return new Intl.NumberFormat(undefined, { style: 'currency', currency: code, minimumFractionDigits: 2 }).format(
-        n
-      );
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: code,
+        minimumFractionDigits: 2,
+      }).format(n);
     } catch {
       return formatter({ format, currency })(n);
     }
@@ -176,8 +236,6 @@ const recordMetaPart = (row, spec, currency) => {
   if (!label || sameName(label, field)) return value;
   return label.includes('{}') ? label.replace('{}', value) : `${label} ${value}`;
 };
-
-const isImageUrl = (v) => isText(v) && /^(https?:\/\/|data:image\/|\/|\.\/)/i.test(v.trim());
 
 /** Rows of a record list: a title, an avatar (an image when avatarField holds a URL, else the initials of avatarField's
  *  text or of the title), a meta line (metaFields, a comma list of field specs joined with ' · '), a status and a
@@ -214,6 +272,7 @@ export const recordItems = (data, fields = {}) => {
           .join(' · '),
         status: isText(f.statusField) ? shown(row[f.statusField]) : '',
         value: isText(f.valueField) ? formatValue(row[f.valueField], format, f.currency) : '',
+        progress: isText(f.progressField) ? percentOf(row[f.progressField]) : null,
         row,
         index,
       },
@@ -312,4 +371,88 @@ export const stripColumns = (count, width, minWidth = 140) => {
   const n = Math.max(1, Math.floor(Number(count)) || 1);
   const fit = Math.max(1, Math.floor((Number(width) || 0) / minWidth));
   return Math.min(n, fit);
+};
+
+// ---- Progress list ---------------------------------------------------------------------------------------------------
+
+export const PROGRESS_TONES = ['success', 'warning', 'danger', 'info', 'neutral'];
+const TONE_NAMES = {
+  positive: 'success',
+  good: 'success',
+  negative: 'danger',
+  bad: 'danger',
+  error: 'danger',
+};
+// Words a goal or a budget is described with that a status chip does not know.
+const PROGRESS_WORDS = [
+  ['danger', /\b(over|over budget|over limit|overspent|exceeded|behind|off track)\b/],
+  ['success', /\b(ahead|achieved|met|hit|reached|under budget)\b/],
+];
+
+/** A row's tone from its status: a tone name ('success', 'warning', 'danger', 'info', 'neutral'), else the status's
+ *  words ('On track' success, 'At risk' warning, 'Over budget' or 'Behind' danger). '' when it has none. */
+export const progressTone = (status) => {
+  if (typeof status !== 'string' || !status.trim()) return '';
+  const text = status.trim().toLowerCase();
+  if (PROGRESS_TONES.includes(text)) return text;
+  if (TONE_NAMES[text]) return TONE_NAMES[text];
+  const word = PROGRESS_WORDS.find(([, re]) => re.test(text.replace(/[_-]+/g, ' ')));
+  if (word && !/^not\b/.test(text)) return word[0];
+  const tone = chipTone(status);
+  return tone === 'neutral' ? '' : tone;
+};
+
+/** The tone a percentage gives under autoTone: 'goal' turns green at 100%; 'limit' (a budget, a quota) amber from
+ *  80% and red over 100%. '' otherwise. */
+export const autoProgressTone = (pct, mode) => {
+  if (!Number.isFinite(pct)) return '';
+  if (mode === 'goal') return pct >= 100 ? 'success' : '';
+  if (mode === 'limit') return pct > 100 ? 'danger' : pct >= 80 ? 'warning' : '';
+  return '';
+};
+
+const PROGRESS_FORMATS = ['auto', ...FORMATS];
+
+/** Rows of a progress list: { key, label, value, target, pct, caption, status, tone, row, index }. pct is percentField
+ *  when it holds a number, else value / target; a row with a value and no target reads its value as the percentage.
+ *  value and target show in valueFormat. The status gives the tone (a status that only names a tone shows no chip),
+ *  else autoTone does. Rows that are not objects are skipped. */
+export const progressItems = (data, fields = {}) => {
+  if (!Array.isArray(data)) return [];
+  const f = fields || {};
+  const format = PROGRESS_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
+  const numberOf = (v) => (typeof v === 'number' ? (Number.isFinite(v) ? v : null) : percentOf(v));
+  const items = data.flatMap((row, index) => {
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
+    const labelKey = isText(f.labelField) && f.labelField in row ? f.labelField : firstTextField(row);
+    const id = isText(f.idField) ? row[f.idField] : row.id;
+    const rawValue = isText(f.valueField) ? row[f.valueField] : undefined;
+    const rawTarget = isText(f.targetField) ? row[f.targetField] : undefined;
+    const value = numberOf(rawValue);
+    const target = numberOf(rawTarget);
+    let pct = isText(f.percentField) ? numberOf(row[f.percentField]) : null;
+    if (pct === null && value !== null) pct = target !== null ? (target > 0 ? (value / target) * 100 : null) : value;
+    const status = isText(f.statusField) ? shown(row[f.statusField]).trim() : '';
+    const tone = progressTone(status) || autoProgressTone(pct, f.autoTone);
+    return [
+      {
+        key: shown(id) || String(index),
+        keyFromId: !!shown(id),
+        label: labelKey ? shown(row[labelKey]) : '',
+        value: value !== null ? formatValue(value, format, f.currency) : '',
+        target: target !== null ? formatValue(target, format, f.currency) : '',
+        pct,
+        caption: isText(f.captionField) ? shown(row[f.captionField]).trim() : '',
+        // A status that only names a tone colours the bar without a chip.
+        status: status && !PROGRESS_TONES.includes(status.toLowerCase()) ? status : '',
+        tone,
+        row,
+        index,
+      },
+    ];
+  });
+  return uniqueKeys(
+    items.map(({ keyFromId, ...item }) => item),
+    items.map((item) => item.keyFromId)
+  );
 };

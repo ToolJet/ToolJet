@@ -76,9 +76,18 @@ $radius: var(--cc-radius-default, 6px);
   // columns share what is left, instead of an empty band at the right (room names wrapped in 130px beside 700px of
   // nothing). Frozen columns and the selection checkbox keep their width, so sticky offsets hold; header and body
   // cells use the same rule, so they stay aligned.
-  thead th:not(.pinned-column):not(.selector-header),
-  tbody td:not(.pinned-column):not(.selector-column) {
+  thead th:not(.pinned-column):not(.selector-header):not(.compact-actions),
+  tbody td:not(.pinned-column):not(.selector-column):not(.compact-actions) {
     flex-grow: 1 !important;
+  }
+  // Row actions drawn as icons or a "..." menu keep their column narrow, its buttons against the table's right edge,
+  // as shadcn's data table draws its row actions.
+  thead th.compact-actions,
+  tbody td.compact-actions {
+    flex-grow: 0 !important;
+    .tj-row-actions {
+      justify-content: flex-end;
+    }
   }
 
   // Rows: hairline dividers and a soft hover.
@@ -135,23 +144,95 @@ $radius: var(--cc-radius-default, 6px);
     }
   }
 
-  // Selection checkboxes: shadcn's square checkbox in the brand colour.
+  // Row actions as icons (a button column's buttonDisplay 'icons' or 'menu'): shadcn's ghost icon button, 32px, the
+  // label as its tooltip; a destructive action (Delete, Reject) turns red on hover.
+  tbody td .tj-row-actions {
+    gap: 4px;
+  }
+  tbody td button.tj-row-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    min-width: 32px;
+    height: 32px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--cc-placeholder-text, #737373);
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+    &.tj-row-action-icon--text {
+      width: auto;
+      padding: 0 8px !important;
+      font-size: 13px;
+      color: var(--cc-primary-text);
+    }
+    &:hover:not(:disabled),
+    &[data-state='open'] {
+      background: color-mix(in srgb, var(--cc-surface3-surface) 85%, transparent) !important;
+      color: var(--cc-primary-text);
+    }
+    &.tj-row-action-destructive:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--cc-error-systemStatus, #dc2626) 10%, transparent) !important;
+      color: var(--cc-error-systemStatus, #dc2626);
+    }
+    &:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--cc-primary-brand) 55%, transparent);
+      outline-offset: 1px;
+    }
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  // Selection checkboxes: shadcn's square checkbox, an input-grey edge filled with the brand colour when checked. The
+  // colours are !important: the ToolJet look's cell rule (.card.jet-table.table-component .table-cell ...) is more
+  // specific, so rows drew a grey box on a grey fill while the header drew a blue edge.
   input[type='checkbox'] {
     appearance: none;
     width: 16px;
     height: 16px;
     margin: 0;
-    border: 1px solid var(--cc-primary-brand);
-    border-radius: 4px;
-    background: var(--cc-surface1-surface) center / 12px no-repeat;
+    border: 1px solid var(--cc-default-border, #d4d4d8) !important;
+    border-radius: 4px !important;
+    background: var(--cc-surface1-surface) center / 12px no-repeat !important;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
     cursor: pointer;
+    &:hover {
+      border-color: color-mix(in srgb, var(--cc-primary-brand) 55%, var(--cc-default-border, #d4d4d8)) !important;
+    }
+    &:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--cc-primary-brand) 45%, transparent);
+      outline-offset: 2px;
+    }
     &:checked {
-      background-color: var(--cc-primary-brand);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+      border-color: var(--cc-primary-brand) !important;
+      background-color: var(--cc-primary-brand) !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") !important;
     }
     &:indeterminate {
-      background-color: var(--cc-primary-brand);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E");
+      border-color: var(--cc-primary-brand) !important;
+      background-color: var(--cc-primary-brand) !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E") !important;
+    }
+  }
+  // The look draws its own check mark (the background image above): the ToolJet look's overlay icon would sit in the
+  // flow under the header's box and lift it 7px off the header's centre line.
+  .table-selector-checkbox > svg {
+    display: none;
+  }
+  // The header's select-all box on the header's centre line, level with the column titles and the row boxes.
+  thead th.selector-header {
+    align-items: center;
+    .thead-editable-icon-header-text-wrapper,
+    .header-text,
+    .table-selector-checkbox {
+      height: 100%;
+      align-items: center;
+      justify-content: center;
     }
   }
 
@@ -285,4 +366,76 @@ $radius: var(--cc-radius-default, 6px);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+// The row actions menu (buttonDisplay 'menu'): shadcn's dropdown menu. It renders in a portal at the body, so it is
+// styled here at the top level; colours come from the app theme on the document root.
+.tj-row-action-menu {
+  z-index: 1100;
+  min-width: 10rem;
+  padding: 4px;
+  border: 1px solid var(--cc-weak-border, #e5e5e5);
+  border-radius: calc(var(--cc-radius-default, 6px) + 2px);
+  background: var(--cc-surface1-surface, #ffffff);
+  color: var(--cc-primary-text, #0a0a0a);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  font-size: 14px;
+  animation: tj-row-action-menu-in 120ms ease-out;
+}
+.tj-row-action-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--cc-radius-default, 6px);
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+  &[data-highlighted] {
+    background: var(--cc-surface3-surface, #f5f5f5);
+  }
+  &[data-disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  &.tj-row-action-destructive {
+    color: var(--cc-error-systemStatus, #dc2626);
+    &[data-highlighted] {
+      background: color-mix(in srgb, var(--cc-error-systemStatus, #dc2626) 10%, transparent);
+    }
+  }
+}
+.tj-row-action-item-icon {
+  display: inline-flex;
+  width: 16px;
+  justify-content: center;
+  color: var(--cc-placeholder-text, #737373);
+  .tj-row-action-destructive & {
+    color: inherit;
+  }
+}
+.tj-row-action-separator {
+  height: 1px;
+  margin: 4px -4px;
+  background: var(--cc-weak-border, #e5e5e5);
+}
+.tj-row-action-spin {
+  animation: tj-row-action-spin 0.8s linear infinite;
+}
+@keyframes tj-row-action-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes tj-row-action-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tj-row-action-menu,
+  .tj-row-action-spin {
+    animation: none;
+  }
 }
