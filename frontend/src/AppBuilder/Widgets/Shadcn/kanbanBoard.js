@@ -126,3 +126,27 @@ export const cardClamp = (collapsedHeight, contentHeight, expanded) => {
   const collapsible = collapsedHeight !== '' && limit > 0 && contentHeight > limit + 8;
   return { collapsible, maxHeight: collapsible && !expanded ? limit : undefined };
 };
+
+// A card's details (the details field, shown on the clicked card): an object of label to value, a list of
+// { label, value } rows, or plain text as one unlabelled row. Empty values are left out; at most 12 rows.
+const MAX_DETAIL_ROWS = 12;
+const detailText = (value) => {
+  if (Array.isArray(value)) return value.map(detailText).join(', ');
+  if (value && typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return '';
+    }
+  }
+  return value === undefined || value === null ? '' : String(value);
+};
+export const cardDetails = (value) => {
+  if (value === undefined || value === null) return [];
+  const rows = Array.isArray(value)
+    ? value.map((row) => ({ label: detailText(row?.label), value: detailText(row?.value) }))
+    : typeof value === 'object'
+    ? Object.entries(value).map(([label, v]) => ({ label, value: detailText(v) }))
+    : [{ label: '', value: detailText(value) }];
+  return rows.filter((row) => row.value.trim() !== '').slice(0, MAX_DETAIL_ROWS);
+};

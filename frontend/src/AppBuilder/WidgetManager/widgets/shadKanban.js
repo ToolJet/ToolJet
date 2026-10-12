@@ -164,6 +164,16 @@ export const shadKanbanConfig = {
         defaultValue: '',
       },
     },
+    detailsField: {
+      type: 'code',
+      displayName: 'Details field (shown on the clicked card)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
     density: {
       type: 'switch',
       displayName: 'Card density',
@@ -823,6 +833,9 @@ export const shadKanbanConfig = {
       },
       avatarField: {
         value: 'owner',
+      },
+      detailsField: {
+        value: '',
       },
       density: {
         value: 'comfortable',

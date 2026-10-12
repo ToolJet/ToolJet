@@ -308,6 +308,16 @@ export const PROBES = [
   { widget: 'ShadKanban', key: 'badgeColors', value: fx({ High: '#e11d48' }) },
   {
     widget: 'ShadKanban',
+    key: 'detailsField',
+    value: 'details',
+    context: {
+      properties: { data: fx([{ id: 1, title: 'A', status: 'todo', details: { 'Deal size': '$24,000' } }]) },
+    },
+    steps: [['click', '[aria-roledescription]', 0]],
+    expect: texts(/Deal size/),
+  },
+  {
+    widget: 'ShadKanban',
     key: 'loadingIndicator',
     value: 'skeleton',
     context: { properties: { loadingState: '{{true}}', data: '{{[]}}' } },

@@ -19,7 +19,16 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { initials, list, useAutoHeight, useExposed } from '../packHooks';
 import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from './ui';
 import { Shell, Spinner } from './Shadcn';
-import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from './kanbanBoard';
+import {
+  addCard,
+  boardCards,
+  boardColumns,
+  cardClamp,
+  cardDetails,
+  deleteCard,
+  moveCard,
+  updateCard,
+} from './kanbanBoard';
 import { KANBAN_INSTRUCTIONS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
 import { useCanvasFit } from './canvasFit';
 import { SHADOWS, badgeLook, isSet, kanbanLook, px } from './kanbanLook';
@@ -54,12 +63,16 @@ const asTags = (value) =>
     .map((tag) => String(tag?.label ?? tag).trim())
     .filter(Boolean);
 
-const CardBody = ({ card, fields, compact, badgeColors, progressStyle }) => {
+// A detail longer than this takes the card's full width; shorter ones (an amount, a date) sit two to a row.
+const SHORT_DETAIL = 22;
+
+const CardBody = ({ card, fields, compact, badgeColors, progressStyle, expanded }) => {
   const badge = fields.badge ? card[fields.badge] : undefined;
   const avatar = fields.avatar ? card[fields.avatar] : undefined;
   const meta = fields.meta ? card[fields.meta] : undefined;
   const tags = fields.tags ? asTags(card[fields.tags]) : [];
   const progress = fields.progress ? Number(card[fields.progress]) : NaN;
+  const details = expanded && fields.details ? cardDetails(card[fields.details]) : [];
   return (
     <>
       <p
@@ -112,6 +125,34 @@ const CardBody = ({ card, fields, compact, badgeColors, progressStyle }) => {
             </Avatar>
           ) : null}
         </div>
+      ) : null}
+      {details.length ? (
+        // The clicked card's details, under a hairline: short values two to a row, long ones (a note) full width.
+        // mb-0 and font-normal: the app's global dl and dt styles (a bottom margin, bold terms) leak in otherwise.
+        <dl
+          className={cn(
+            'mb-0 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-[color:var(--sc-border)]',
+            compact ? 'mt-2 pt-2' : 'mt-3 pt-2.5'
+          )}
+        >
+          {details.map((row, i) => (
+            <div key={`${row.label}-${i}`} className={cn('min-w-0', row.value.length > SHORT_DETAIL && 'col-span-2')}>
+              {row.label ? (
+                <dt className={cn('text-[11px] font-normal leading-4', SECONDARY_TEXT)}>{row.label}</dt>
+              ) : null}
+              <dd
+                className={cn(
+                  'm-0 break-words text-[color:var(--kb-card-title,var(--sc-card-foreground))]',
+                  row.value.length > SHORT_DETAIL
+                    ? 'whitespace-pre-line text-xs leading-relaxed'
+                    : 'text-[13px] font-medium tabular-nums'
+                )}
+              >
+                {row.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
       ) : null}
     </>
   );
@@ -467,6 +508,7 @@ export const ShadKanban = (props) => {
     progress: fieldName(properties.progressField, ''),
     avatar: fieldName(properties.avatarField, ''),
     meta: fieldName(properties.metaField, ''),
+    details: fieldName(properties.detailsField, ''),
   };
   const compact = properties.density === 'compact';
   const look = kanbanLook(styles);
@@ -477,6 +519,8 @@ export const ShadKanban = (props) => {
   const [columns, setColumns] = useState(fromData);
   useEffect(() => setColumns(fromData), [fromData]);
   const [selected, setSelected] = useState(null);
+  // The card whose details show (a details field is mapped): a click opens a card's details, a second click closes them.
+  const [openKey, setOpenKey] = useState(null);
   const [lastMove, setLastMove] = useState(null);
   const [activeKey, setActiveKey] = useState(null);
   const [expandedKeys, setExpandedKeys] = useState(() => new Set());
@@ -636,6 +680,7 @@ export const ShadKanban = (props) => {
           compact={compact}
           badgeColors={properties.badgeColors}
           progressStyle={look.progress}
+          expanded={!custom && card.__key === openKey}
         />
       );
   const padding = custom ? 'p-0' : compact ? 'p-2.5' : 'p-3';
@@ -667,6 +712,7 @@ export const ShadKanban = (props) => {
   };
   const activeCard = activeKey ? columns.flatMap((c) => c.cards).find((c) => c.__key === activeKey) : null;
   const select = (card) => {
+    if (fields.details) setOpenKey((current) => (current === card.__key ? null : card.__key));
     setSelected(card);
     setExposedVariable('selectedCard', strip(card));
     setExposedVariable('lastSelectedCard', strip(card));

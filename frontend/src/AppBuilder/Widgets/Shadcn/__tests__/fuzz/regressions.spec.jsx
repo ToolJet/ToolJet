@@ -283,6 +283,35 @@ describe('Table', () => {
 });
 
 describe('Kanban', () => {
+  it("shows a card's details when it is clicked, and hides them on a second click", async () => {
+    const { problems, unmount } = await mount('ShadKanban', {
+      data: [
+        {
+          id: 1,
+          title: 'Northstar',
+          status: 'todo',
+          details: { 'Deal size': '$24,000', 'Last note': 'Wants one report' },
+        },
+        { id: 2, title: 'Cedar', status: 'todo', details: { 'Deal size': '$9,500' } },
+      ],
+      columns: ['todo'],
+      detailsField: 'details',
+    });
+    expect(document.body.textContent).not.toContain('$24,000');
+    await act(async () => fireEvent.click(screen.getByText('Northstar')));
+    expect(document.body.textContent).toContain('Deal size');
+    expect(document.body.textContent).toContain('$24,000');
+    expect(document.body.textContent).toContain('Wants one report');
+    expect(document.body.textContent).not.toContain('$9,500');
+    await act(async () => fireEvent.click(screen.getByText('Cedar')));
+    expect(document.body.textContent).not.toContain('$24,000');
+    expect(document.body.textContent).toContain('$9,500');
+    await act(async () => fireEvent.click(screen.getByText('Cedar')));
+    expect(document.body.textContent).not.toContain('$9,500');
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
   it('draws 100 cards a column, then 100 more per "Show more"', async () => {
     const data = NUMS_10K.map((i) => ({
       id: i,

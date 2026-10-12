@@ -1,4 +1,13 @@
-import { addCard, boardCards, boardColumns, cardClamp, deleteCard, moveCard, updateCard } from '../kanbanBoard';
+import {
+  addCard,
+  boardCards,
+  boardColumns,
+  cardClamp,
+  cardDetails,
+  deleteCard,
+  moveCard,
+  updateCard,
+} from '../kanbanBoard';
 
 const cards = [
   { id: 1, title: 'Fix login', status: 'todo' },
@@ -128,5 +137,35 @@ describe('cardClamp', () => {
 
   it('ignores a few pixels of overflow, which a toggle would only hide', () => {
     expect(cardClamp(80, 84, false).collapsible).toBe(false);
+  });
+});
+
+describe('cardDetails', () => {
+  it('lists an object as label and value rows, in key order, skipping empty values', () => {
+    expect(cardDetails({ 'Deal size': '$24,000', Owner: '', 'Last note': 'Asked about reporting' })).toEqual([
+      { label: 'Deal size', value: '$24,000' },
+      { label: 'Last note', value: 'Asked about reporting' },
+    ]);
+  });
+
+  it('takes a list of { label, value } rows, or plain text as one unlabelled row', () => {
+    expect(cardDetails([{ label: 'Budget', value: 5000 }, { label: 'Empty' }])).toEqual([
+      { label: 'Budget', value: '5000' },
+    ]);
+    expect(cardDetails('Called on Monday')).toEqual([{ label: '', value: 'Called on Monday' }]);
+  });
+
+  it('shows nothing for missing details and caps a huge object at 12 rows', () => {
+    expect(cardDetails(undefined)).toEqual([]);
+    expect(cardDetails(null)).toEqual([]);
+    const big = Object.fromEntries(Array.from({ length: 50 }, (_, i) => [`k${i}`, i]));
+    expect(cardDetails(big)).toHaveLength(12);
+  });
+
+  it('turns nested values into text instead of crashing', () => {
+    expect(cardDetails({ Items: ['a', 'b'], Meta: { x: 1 } })).toEqual([
+      { label: 'Items', value: 'a, b' },
+      { label: 'Meta', value: '{"x":1}' },
+    ]);
   });
 });

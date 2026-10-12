@@ -869,6 +869,9 @@ export const shadKanbanConfig = shadConfig({
     progressField: code('Progress field (0 to 100)', STRING, ''),
     metaField: code('Meta field (a date, a count)', STRING, ''),
     avatarField: code('Avatar field (a name)', STRING, ''),
+    // Shown on the clicked card under a hairline: an object of label to value ({ 'Deal size': '$24,000' }), a list
+    // of { label, value } rows, or text. A second click hides them.
+    detailsField: code('Details field (shown on the clicked card)', STRING, ''),
     density: choice('Card density', ['comfortable', 'compact'], 'comfortable'),
     // Optional: a card taller than this shows only its top part (px of content) with a Show more toggle.
     collapsedHeight: code('Collapsed card height (px, empty: show all)', {
@@ -916,6 +919,7 @@ export const shadKanbanConfig = shadConfig({
     progressField: { value: '' },
     metaField: { value: '' },
     avatarField: { value: 'owner' },
+    detailsField: { value: '' },
     density: { value: 'comfortable' },
     collapsedHeight: { value: '' },
     columnWidth: { value: '' },
