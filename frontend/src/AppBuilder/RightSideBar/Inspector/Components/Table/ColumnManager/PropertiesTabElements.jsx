@@ -25,6 +25,7 @@ import { ButtonPropertiesTab } from './ButtonPropertiesTab';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { ArrowLeft, Minus, ArrowRight } from 'lucide-react';
+import { buttonDisplayOf } from '@/AppBuilder/Widgets/NewTable/_utils/rowActionIcon';
 
 const CustomOption = (props) => {
   const ColumnIcon = getColumnIcon(props.data.value);
@@ -65,6 +66,21 @@ const CustomValueContainer = ({ data, ...props }) => {
     </div>
   );
 };
+
+// How a button column draws its buttons in the ToolJet UI 2.0 look: labelled buttons, icon buttons (the label as a
+// tooltip), or one "..." menu. The ToolJet look always draws labelled buttons.
+const ButtonDisplayControl = ({ value, onChange }) => (
+  <div className="d-flex pin-column-control" data-cy="button-column-display">
+    <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+      Show as
+    </label>
+    <ToggleGroup defaultValue={buttonDisplayOf(value)} onValueChange={onChange} style={{ width: '58%' }}>
+      <ToggleGroupItem value="buttons">Buttons</ToggleGroupItem>
+      <ToggleGroupItem value="icons">Icons</ToggleGroupItem>
+      <ToggleGroupItem value="menu">Menu</ToggleGroupItem>
+    </ToggleGroup>
+  </div>
+);
 
 const PinColumnControl = ({ value, onChange }) => {
   return (
@@ -261,6 +277,12 @@ export const PropertiesTabElements = ({
                 paramMeta={{ type: 'toggle', displayName: 'Visibility' }}
                 paramType="properties"
               />
+              {component?.component?.definition?.styles?.tableLook?.value === 'shadcn' ? (
+                <ButtonDisplayControl
+                  value={column.buttonDisplay}
+                  onChange={(value) => value && onColumnItemChange(index, 'buttonDisplay', value)}
+                />
+              ) : null}
             </div>
           </div>
           <ButtonListManager
