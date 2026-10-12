@@ -3,7 +3,7 @@ export const shadSliderConfig = {
   name: 'ShadSlider',
   displayName: 'Slider',
   description:
-    'shadcn/ui slider, single value or range. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
+    'Slider, single value or range. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
   component: 'ShadSlider',
   defaultSize: {
     width: 14,

@@ -2,7 +2,7 @@
 export const shadAreaChartConfig = {
   name: 'ShadAreaChart',
   displayName: 'Area chart',
-  description: 'shadcn/ui area or line chart (trends over time)',
+  description: 'Area or line chart (trends over time)',
   component: 'ShadAreaChart',
   defaultSize: {
     width: 20,

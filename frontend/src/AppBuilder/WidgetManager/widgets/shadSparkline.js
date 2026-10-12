@@ -3,7 +3,7 @@ export const shadSparklineConfig = {
   name: 'ShadSparkline',
   displayName: 'Sparkline',
   description:
-    "Tiny shadcn/ui line or area trend for KPI cards, no axes or grid: data [12, 18, 15, 22] or [{ x: 'Mon', y: 12 }]; type line/area, curve, end dot, colorByTrend (last vs first value, positiveColor/negativeColor styles; lowerIsBetter flips it), optional min/max band. Height 24-64 px (40 typical), placed under a Stat; exposes trend ('up' | 'down' | 'flat') and lastValue.",
+    "Tiny line or area trend for KPI cards, no axes or grid: data [12, 18, 15, 22] or [{ x: 'Mon', y: 12 }]; type line/area, curve, end dot, colorByTrend (last vs first value, positiveColor/negativeColor styles; lowerIsBetter flips it), optional min/max band. Height 24-64 px (40 typical), placed under a Stat; exposes trend ('up' | 'down' | 'flat') and lastValue.",
   component: 'ShadSparkline',
   defaultSize: {
     width: 8,

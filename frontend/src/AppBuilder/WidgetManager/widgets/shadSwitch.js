@@ -2,7 +2,7 @@
 export const shadSwitchConfig = {
   name: 'ShadSwitch',
   displayName: 'Switch',
-  description: 'shadcn/ui switch with label',
+  description: 'Switch with label',
   component: 'ShadSwitch',
   defaultSize: {
     width: 8,

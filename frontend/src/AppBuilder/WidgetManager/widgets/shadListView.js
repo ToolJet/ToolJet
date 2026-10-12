@@ -3,7 +3,7 @@ export const shadListViewConfig = {
   name: 'ShadListView',
   displayName: 'List view',
   description:
-    'shadcn/ui list or grid: one canvas repeated per item of data; parent components to it and bind them to {{listItem.<field>}}. A click selects the item (selectedItem, onRowClicked); optional pagination (client or server side), dividers, hover and selected highlight. Items have a fixed height (rowHeight)',
+    'List or grid: one canvas repeated per item of data; parent components to it and bind them to {{listItem.<field>}}. A click selects the item (selectedItem, onRowClicked); optional pagination (client or server side), dividers, hover and selected highlight. Items have a fixed height (rowHeight)',
   component: 'ShadListView',
   defaultSize: {
     width: 30,

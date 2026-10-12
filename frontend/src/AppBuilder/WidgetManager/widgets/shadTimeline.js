@@ -3,7 +3,7 @@ export const shadTimelineConfig = {
   name: 'ShadTimeline',
   displayName: 'Timeline',
   description:
-    "shadcn/ui vertical timeline / activity feed: items [{ title, description, time, status or color, icon? }] (status words such as done, active, pending, failed take theme colours; statusColors maps your own); marker ('dot' or 'icon' with lucide names); density ('comfortable', 'compact'); newestFirst; timePosition ('right', 'top'); dateFormat for ISO times. Clicking an item sets lastClickedItem and fires onItemClick. Height: about 66px per item with a description (44px without), 50px compact",
+    "Vertical timeline / activity feed: items [{ title, description, time, status or color, icon? }] (status words such as done, active, pending, failed take theme colours; statusColors maps your own); marker ('dot' or 'icon' with lucide names); density ('comfortable', 'compact'); newestFirst; timePosition ('right', 'top'); dateFormat for ISO times. Clicking an item sets lastClickedItem and fires onItemClick. Height: about 66px per item with a description (44px without), 50px compact",
   component: 'ShadTimeline',
   defaultSize: {
     width: 14,

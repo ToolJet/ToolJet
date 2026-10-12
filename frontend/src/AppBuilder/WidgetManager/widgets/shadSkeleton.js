@@ -2,7 +2,7 @@
 export const shadSkeletonConfig = {
   name: 'ShadSkeleton',
   displayName: 'Skeleton',
-  description: 'shadcn/ui loading placeholder',
+  description: 'Loading placeholder',
   component: 'ShadSkeleton',
   defaultSize: {
     width: 16,

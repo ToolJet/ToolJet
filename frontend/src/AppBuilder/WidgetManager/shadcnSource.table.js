@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): the data table. Property, event, exposed-value and action names follow the native
+// ToolJet UI 2.0 (experiment): the data table. Property, event, exposed-value and action names follow the native
 // Table, so a ToolJet user's knowledge carries over (server-side pagination, search, sort and filters work the same way);
 // the earlier pack keys (columns with dataIndex/title/kind, pageSize) still work.
 import {
@@ -28,8 +28,8 @@ export const shadTableConfig = shadConfig({
   name: 'ShadTable',
   displayName: 'Table',
   description:
-    'Superseded for new builds: use Table with styles.tableLook "shadcn" (ToolJet\'s own Table drawn in the shadcn/ui look, with every Table feature and convention). Kept so existing apps keep working. ' +
-    'shadcn/ui data table: typed columns (text, number, currency, date, badge, tags, boolean, link, image, avatar, progress, buttons), search, sort, filters, pagination (client or server side), single or bulk selection, inline editing with save/discard, CSV export, column chooser. Native Table conventions',
+    'Superseded for new builds: use Table with styles.tableLook "shadcn" (ToolJet\'s own Table drawn in the look, with every Table feature and convention). Kept so existing apps keep working. ' +
+    'Data table: typed columns (text, number, currency, date, badge, tags, boolean, link, image, avatar, progress, buttons), search, sort, filters, pagination (client or server side), single or bulk selection, inline editing with save/discard, CSV export, column chooser. Native Table conventions',
   defaultSize: { width: 30, height: 440 },
   withHeight: true,
   properties: {

@@ -3,7 +3,7 @@ export const shadRadialChartConfig = {
   name: 'ShadRadialChart',
   displayName: 'Radial chart',
   description:
-    "shadcn/ui radial bar chart. Mode 'progress': one value against maxValue as a ring with a large centre figure (centerValue, blank = the value) and centerLabel. Mode 'categories': concentric bars from data [{ channel: 'Direct', visitors: 275 }] with categoryField and valueField, a row's fill or color wins. startAngle/endAngle in degrees (90/-270 full ring, 180/0 semicircle gauge); thickness in px. Ring 160-240 px square, gauge about twice as wide as tall.",
+    "Radial bar chart. Mode 'progress': one value against maxValue as a ring with a large centre figure (centerValue, blank = the value) and centerLabel. Mode 'categories': concentric bars from data [{ channel: 'Direct', visitors: 275 }] with categoryField and valueField, a row's fill or color wins. startAngle/endAngle in degrees (90/-270 full ring, 180/0 semicircle gauge); thickness in px. Ring 160-240 px square, gauge about twice as wide as tall.",
   component: 'ShadRadialChart',
   defaultSize: {
     width: 10,

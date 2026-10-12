@@ -3,7 +3,7 @@ export const shadNavigationConfig = {
   name: 'ShadNavigation',
   displayName: 'Navigation',
   description:
-    "shadcn/ui app navigation: a vertical sidebar list or a horizontal top bar from items [{ label, value, icon?: 'IconHome', badge?, disabled?, group? (sidebar heading), children?: [{ label, value }] }] (children open as a dropdown in the top bar, a nested list in the sidebar). variant pills, underline or ghost; defaultValue is the active item; onSelect fires on click with exposed value and activeItem { label, value, parentLabel, parentValue } (wire page switches here); setActive(value). Item height 36px; a top bar is 40px tall, a sidebar fills the widget's height",
+    "App navigation: a vertical sidebar list or a horizontal top bar from items [{ label, value, icon?: 'IconHome', badge?, disabled?, group? (sidebar heading), children?: [{ label, value }] }] (children open as a dropdown in the top bar, a nested list in the sidebar). variant pills, underline or ghost; defaultValue is the active item; onSelect fires on click with exposed value and activeItem { label, value, parentLabel, parentValue } (wire page switches here); setActive(value). Item height 36px; a top bar is 40px tall, a sidebar fills the widget's height",
   component: 'ShadNavigation',
   defaultSize: {
     width: 9,

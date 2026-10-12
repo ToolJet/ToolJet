@@ -3,7 +3,7 @@ export const shadAvatarConfig = {
   name: 'ShadAvatar',
   displayName: 'Avatar',
   description:
-    'shadcn/ui avatar or avatar group: names is one name, a comma-separated list, or an array of names or { name, src } (a photo per person); the first maxVisible show, the rest as a +N chip',
+    'Avatar or avatar group: names is one name, a comma-separated list, or an array of names or { name, src } (a photo per person); the first maxVisible show, the rest as a +N chip',
   component: 'ShadAvatar',
   defaultSize: {
     width: 6,

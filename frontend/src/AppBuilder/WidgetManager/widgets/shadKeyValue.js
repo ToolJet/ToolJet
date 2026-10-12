@@ -3,7 +3,7 @@ export const shadKeyValueConfig = {
   name: 'ShadKeyValue',
   displayName: 'Key-value list',
   description:
-    "shadcn/ui description list for a record's details: data is an object ({ Status: 'Active', Owner: 'Ada' }) or an array of { label, value, type?, format? } with type text, number, currency, date, badge, link or boolean (format: a date format or { currency, decimalPlaces, prefix, suffix }); columns 1 to 4; layout 'inline' (label beside the value, labelWidth) or 'stacked'; dividers; emptyText for blanks; currency, dateFormat and badgeColors defaults; allowCopy. Height: about 41px per row inline, 69px stacked (per column when columns > 1)",
+    "Description list for a record's details: data is an object ({ Status: 'Active', Owner: 'Ada' }) or an array of { label, value, type?, format? } with type text, number, currency, date, badge, link or boolean (format: a date format or { currency, decimalPlaces, prefix, suffix }); columns 1 to 4; layout 'inline' (label beside the value, labelWidth) or 'stacked'; dividers; emptyText for blanks; currency, dateFormat and badgeColors defaults; allowCopy. Height: about 41px per row inline, 69px stacked (per column when columns > 1)",
   component: 'ShadKeyValue',
   defaultSize: {
     width: 14,

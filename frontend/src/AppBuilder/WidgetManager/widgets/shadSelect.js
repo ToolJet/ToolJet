@@ -2,8 +2,7 @@
 export const shadSelectConfig = {
   name: 'ShadSelect',
   displayName: 'Select',
-  description:
-    'shadcn/ui select. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
+  description: 'Select. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
   component: 'ShadSelect',
   defaultSize: {
     width: 10,

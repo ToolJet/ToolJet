@@ -2,7 +2,7 @@
 export const shadRadioGroupConfig = {
   name: 'ShadRadioGroup',
   displayName: 'Radio group',
-  description: 'shadcn/ui radio group. A label adds 22px above and help text 24px below',
+  description: 'Radio group. A label adds 22px above and help text 24px below',
   component: 'ShadRadioGroup',
   defaultSize: {
     width: 10,

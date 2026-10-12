@@ -3,7 +3,7 @@ export const shadDialogConfig = {
   name: 'ShadDialog',
   displayName: 'Dialog',
   description:
-    'shadcn/ui dialog or side sheet (ToolJet Modal in the pack look): header, body and footer canvases (put a ShadHeading and a muted ShadText in the header, the form in the body, ShadButtons in the footer); open and close it with the show-modal / close-modal event actions or its open and close actions; exposed show. Kind "sheet" slides in from the side at full height',
+    'Dialog or side sheet (ToolJet Modal in the pack look): header, body and footer canvases (put a ShadHeading and a muted ShadText in the header, the form in the body, ShadButtons in the footer); open and close it with the show-modal / close-modal event actions or its open and close actions; exposed show. Kind "sheet" slides in from the side at full height',
   component: 'ShadDialog',
   defaultSize: {
     width: 10,

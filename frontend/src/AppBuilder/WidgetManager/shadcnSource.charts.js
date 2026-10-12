@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): the Line, Radar, Radial and Sparkline charts (Widgets/Shadcn/ShadCharts.jsx, logic in
+// ToolJet UI 2.0 (experiment): the Line, Radar, Radial and Sparkline charts (Widgets/Shadcn/ShadCharts.jsx, logic in
 // chartsModel.js). Same family as the Area, Bar and Pie charts in shadcnSource.js: data rows, a category field, one or
 // many series fields, value prefix and suffix, legend, empty message, series colours, and the chart styles.
 import {
@@ -47,7 +47,7 @@ export const shadLineChartConfig = shadConfig({
   name: 'ShadLineChart',
   displayName: 'Line chart',
   description:
-    "shadcn/ui line chart for trends: data [{ month: 'Jan', revenue: 18600, expenses: 8000 }], xField 'month', yFields 'revenue,expenses' (one line each); curve monotone/linear/step, dots, strokeWidth, dashedFields, an optional target line (referenceValue, referenceLabel) and yAxisFormat number/currency/percent/compact. Height 200-320 px; clicking a point sets clickedDatum and fires onClick.",
+    "Line chart for trends: data [{ month: 'Jan', revenue: 18600, expenses: 8000 }], xField 'month', yFields 'revenue,expenses' (one line each); curve monotone/linear/step, dots, strokeWidth, dashedFields, an optional target line (referenceValue, referenceLabel) and yAxisFormat number/currency/percent/compact. Height 200-320 px; clicking a point sets clickedDatum and fires onClick.",
   defaultSize: { width: 20, height: 280 },
   properties: {
     data: code('Data', ARRAY, [], { placeholder: "[{ month: 'Jan', revenue: 18600, expenses: 8000 }]" }),
@@ -105,7 +105,7 @@ export const shadRadarChartConfig = shadConfig({
   name: 'ShadRadarChart',
   displayName: 'Radar chart',
   description:
-    "shadcn/ui radar (spider) chart comparing scores across categories: data [{ skill: 'Speed', alex: 86, jordan: 65 }], categoryField 'skill' (one spoke per row), yFields 'alex,jordan' (one filled polygon each); fillOpacity, gridShape polygon/circle, dots, legend, maxValue (blank = auto). Best square, 240-320 px; clicking sets clickedDatum and fires onClick.",
+    "Radar (spider) chart comparing scores across categories: data [{ skill: 'Speed', alex: 86, jordan: 65 }], categoryField 'skill' (one spoke per row), yFields 'alex,jordan' (one filled polygon each); fillOpacity, gridShape polygon/circle, dots, legend, maxValue (blank = auto). Best square, 240-320 px; clicking sets clickedDatum and fires onClick.",
   defaultSize: { width: 12, height: 300 },
   properties: {
     data: code('Data', ARRAY, [], { placeholder: "[{ skill: 'Speed', alex: 86, jordan: 65 }]" }),
@@ -155,7 +155,7 @@ export const shadRadialChartConfig = shadConfig({
   name: 'ShadRadialChart',
   displayName: 'Radial chart',
   description:
-    "shadcn/ui radial bar chart. Mode 'progress': one value against maxValue as a ring with a large centre figure (centerValue, blank = the value) and centerLabel. Mode 'categories': concentric bars from data [{ channel: 'Direct', visitors: 275 }] with categoryField and valueField, a row's fill or color wins. startAngle/endAngle in degrees (90/-270 full ring, 180/0 semicircle gauge); thickness in px. Ring 160-240 px square, gauge about twice as wide as tall.",
+    "Radial bar chart. Mode 'progress': one value against maxValue as a ring with a large centre figure (centerValue, blank = the value) and centerLabel. Mode 'categories': concentric bars from data [{ channel: 'Direct', visitors: 275 }] with categoryField and valueField, a row's fill or color wins. startAngle/endAngle in degrees (90/-270 full ring, 180/0 semicircle gauge); thickness in px. Ring 160-240 px square, gauge about twice as wide as tall.",
   defaultSize: { width: 10, height: 220 },
   properties: {
     mode: choice('Mode', ['progress', 'categories'], 'progress', {
@@ -215,7 +215,7 @@ export const shadSparklineConfig = shadConfig({
   name: 'ShadSparkline',
   displayName: 'Sparkline',
   description:
-    "Tiny shadcn/ui line or area trend for KPI cards, no axes or grid: data [12, 18, 15, 22] or [{ x: 'Mon', y: 12 }]; type line/area, curve, end dot, colorByTrend (last vs first value, positiveColor/negativeColor styles; lowerIsBetter flips it), optional min/max band. Height 24-64 px (40 typical), placed under a Stat; exposes trend ('up' | 'down' | 'flat') and lastValue.",
+    "Tiny line or area trend for KPI cards, no axes or grid: data [12, 18, 15, 22] or [{ x: 'Mon', y: 12 }]; type line/area, curve, end dot, colorByTrend (last vs first value, positiveColor/negativeColor styles; lowerIsBetter flips it), optional min/max band. Height 24-64 px (40 typical), placed under a Stat; exposes trend ('up' | 'down' | 'flat') and lastValue.",
   defaultSize: { width: 8, height: 40 },
   properties: {
     data: code('Data', ARRAY, [], { placeholder: "[12, 18, 15, 22] or [{ x: 'Mon', y: 12 }]" }),
@@ -267,7 +267,7 @@ export const shadComboChartConfig = shadConfig({
   name: 'ShadComboChart',
   displayName: 'Combo chart',
   description:
-    "shadcn/ui bar and line chart on one axis pair: data [{ month: 'Jan', revenue: 42000, margin: 31 }], xField 'month', barFields 'revenue' (bars), lineFields 'margin' (lines), rightAxisFields 'margin' (those series on a second, right axis with its own rightAxisFormat, e.g. percent); stackBars, curve, dots, yAxisFormat number/currency/percent/compact. Height 240-340 px; clicking sets clickedDatum and fires onClick.",
+    "Bar and line chart on one axis pair: data [{ month: 'Jan', revenue: 42000, margin: 31 }], xField 'month', barFields 'revenue' (bars), lineFields 'margin' (lines), rightAxisFields 'margin' (those series on a second, right axis with its own rightAxisFormat, e.g. percent); stackBars, curve, dots, yAxisFormat number/currency/percent/compact. Height 240-340 px; clicking sets clickedDatum and fires onClick.",
   defaultSize: { width: 20, height: 300 },
   properties: {
     data: code('Data', ARRAY, [], { placeholder: "[{ month: 'Jan', revenue: 42000, margin: 31 }]" }),
@@ -327,7 +327,7 @@ export const shadScatterChartConfig = shadConfig({
   name: 'ShadScatterChart',
   displayName: 'Scatter chart',
   description:
-    "shadcn/ui scatter or bubble chart relating two measures: data [{ account: 'Globex', spend: 30, revenue: 95, seats: 120, segment: 'Enterprise' }], xField 'spend', yField 'revenue', optional sizeField (bubbles), groupField (one colour and legend entry per value), nameField (tooltip title), xLabel/yLabel axis titles, referenceX/referenceY dashed quadrant lines, x and y formats. Height 260-360 px; clicking a point sets clickedDatum to its row and fires onClick.",
+    "Scatter or bubble chart relating two measures: data [{ account: 'Globex', spend: 30, revenue: 95, seats: 120, segment: 'Enterprise' }], xField 'spend', yField 'revenue', optional sizeField (bubbles), groupField (one colour and legend entry per value), nameField (tooltip title), xLabel/yLabel axis titles, referenceX/referenceY dashed quadrant lines, x and y formats. Height 260-360 px; clicking a point sets clickedDatum to its row and fires onClick.",
   defaultSize: { width: 16, height: 320 },
   properties: {
     data: code('Data', ARRAY, [], { placeholder: "[{ account: 'Globex', spend: 30, revenue: 95 }]" }),
@@ -386,7 +386,7 @@ export const shadFunnelChartConfig = shadConfig({
   name: 'ShadFunnelChart',
   displayName: 'Funnel chart',
   description:
-    "shadcn/ui funnel of stages in order: data [{ stage: 'Visited', count: 12480 }, { stage: 'Paid', count: 412 }], stageField 'stage', valueField 'count'; one bar per stage sized to the widest, its value, and its conversion % from the stage before (conversionBase 'previous') or from the first ('first'); align center/left, colorByStage (palette per stage, else one colour fading down), yAxisFormat for values. About 44 px per stage; clicking a stage sets clickedDatum to its row and fires onClick.",
+    "Funnel of stages in order: data [{ stage: 'Visited', count: 12480 }, { stage: 'Paid', count: 412 }], stageField 'stage', valueField 'count'; one bar per stage sized to the widest, its value, and its conversion % from the stage before (conversionBase 'previous') or from the first ('first'); align center/left, colorByStage (palette per stage, else one colour fading down), yAxisFormat for values. About 44 px per stage; clicking a stage sets clickedDatum to its row and fires onClick.",
   defaultSize: { width: 16, height: 240 },
   properties: {
     data: code('Data', ARRAY, [], { placeholder: "[{ stage: 'Visited', count: 12480 }]" }),
@@ -432,7 +432,7 @@ export const shadHeatmapChartConfig = shadConfig({
   name: 'ShadHeatmapChart',
   displayName: 'Heatmap',
   description:
-    "shadcn/ui heatmap: a grid of cells shaded by value, for two categories against each other (weekday by hour, region by month). data [{ day: 'Mon', hour: '09:00', tickets: 12 }], yField 'day' (rows), xField 'hour' (columns), valueField 'tickets' (rows landing in the same cell are summed); xOrder / yOrder fix the order (else first appearance); showValues prints each value; a min-to-max legend. Height about 32 px per row plus 40; clicking a cell sets clickedDatum and fires onClick.",
+    "Heatmap: a grid of cells shaded by value, for two categories against each other (weekday by hour, region by month). data [{ day: 'Mon', hour: '09:00', tickets: 12 }], yField 'day' (rows), xField 'hour' (columns), valueField 'tickets' (rows landing in the same cell are summed); xOrder / yOrder fix the order (else first appearance); showValues prints each value; a min-to-max legend. Height about 32 px per row plus 40; clicking a cell sets clickedDatum and fires onClick.",
   defaultSize: { width: 24, height: 280 },
   properties: {
     data: code('Data', ARRAY, [], { placeholder: "[{ day: 'Mon', hour: '09:00', tickets: 12 }]" }),

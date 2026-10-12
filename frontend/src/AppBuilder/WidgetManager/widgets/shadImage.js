@@ -3,7 +3,7 @@ export const shadImageConfig = {
   name: 'ShadImage',
   displayName: 'Image',
   description:
-    "shadcn/ui image: source (URL), alternativeText, imageFit (cover, contain, fill), aspectRatio ('auto' fills the drawn height; '16/9', '4/3', '1/1' size it from the width), caption below, fallback when the URL is empty or fails ('placeholder', 'icon', or 'initials' of fallbackText), showBorder, zoomOnClick lightbox; a skeleton shows while it loads; onClick. Height: as drawn with aspect auto (a caption takes 28px of it)",
+    "Image: source (URL), alternativeText, imageFit (cover, contain, fill), aspectRatio ('auto' fills the drawn height; '16/9', '4/3', '1/1' size it from the width), caption below, fallback when the URL is empty or fails ('placeholder', 'icon', or 'initials' of fallbackText), showBorder, zoomOnClick lightbox; a skeleton shows while it loads; onClick. Height: as drawn with aspect auto (a caption takes 28px of it)",
   component: 'ShadImage',
   defaultSize: {
     width: 10,

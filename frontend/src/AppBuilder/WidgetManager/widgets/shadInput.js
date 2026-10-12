@@ -3,7 +3,7 @@ export const shadInputConfig = {
   name: 'ShadInput',
   displayName: 'Input',
   description:
-    'shadcn/ui text input with label. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
+    'Text input with label. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
   component: 'ShadInput',
   defaultSize: {
     width: 10,

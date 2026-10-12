@@ -2,7 +2,7 @@
 export const shadAlertConfig = {
   name: 'ShadAlert',
   displayName: 'Alert',
-  description: 'shadcn/ui alert',
+  description: 'Alert',
   component: 'ShadAlert',
   defaultSize: {
     width: 20,

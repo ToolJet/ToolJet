@@ -3,7 +3,7 @@ export const shadOtpInputConfig = {
   name: 'ShadOtpInput',
   displayName: 'OTP input',
   description:
-    "shadcn/ui one-time code input: length (4 to 8) character boxes, numeric or alphanumeric (upper-cased), typing moves to the next box, Backspace goes back, pasting a whole code fills it ('123-456' works). Optional separator in the middle and masked dots. Exposes value and isComplete; onComplete fires when the last box is filled (verify there). Boxes are 36px (slotSize style); height 64px with a label, 36px without",
+    "One-time code input: length (4 to 8) character boxes, numeric or alphanumeric (upper-cased), typing moves to the next box, Backspace goes back, pasting a whole code fills it ('123-456' works). Optional separator in the middle and masked dots. Exposes value and isComplete; onComplete fires when the last box is filled (verify there). Boxes are 36px (slotSize style); height 64px with a label, 36px without",
   component: 'ShadOtpInput',
   defaultSize: {
     width: 10,

@@ -3,7 +3,7 @@ export const shadStatConfig = {
   name: 'ShadStat',
   displayName: 'Stat',
   description:
-    "shadcn/ui dashboard figure, from a single number to a full KPI card: label, value (a number groups its digits; valueFormat currency in currency, percent or compact formats it), change badge (change, trend) with a context line (changeLabel, e.g. 'vs last month'), footnote; optional icon (any lucide name, iconPosition right, left or top, iconStyle square, circle or none), trendData for a small trend line under the figure (numbers or [{ x, y }]), progress (0 to 100) with progressLabel for a target bar, and size sm, default or lg. Each part shows only when set. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
+    "Dashboard figure, from a single number to a full KPI card: label, value (a number groups its digits; valueFormat currency in currency, percent or compact formats it), change badge (change, trend) with a context line (changeLabel, e.g. 'vs last month'), footnote; optional icon (any lucide name, iconPosition right, left or top, iconStyle square, circle or none), trendData for a small trend line under the figure (numbers or [{ x, y }]), progress (0 to 100) with progressLabel for a target bar, and size sm, default or lg. Each part shows only when set. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
   component: 'ShadStat',
   defaultSize: {
     width: 10,

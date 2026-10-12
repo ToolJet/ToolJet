@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment, exp/antd-pack): native ToolJet widgets that render shadcn/ui components (Radix +
+// ToolJet UI 2.0 (experiment, exp/antd-pack): native ToolJet widgets that render components (Radix +
 // Tailwind, Widgets/Shadcn) in the app's own React tree. Same contract as the Ant Design pack (antDesignSource.js):
 // inspector properties, events, exposed values and actions like the built-in widgets. The literal per-widget configs
 // are generated from this file by scripts-shadcn-literals.mjs, with the config helpers shared by every shadcn source
@@ -112,7 +112,7 @@ const OPTIONS_HINT = "['Standard', 'Premium'] or [{ label, value }]";
 export const shadButtonConfig = shadConfig({
   name: 'ShadButton',
   displayName: 'Button',
-  description: 'shadcn/ui button',
+  description: 'Button',
   defaultSize: { width: 6, height: 36 },
   properties: {
     text: code('Label', STRING, 'Button'),
@@ -147,7 +147,7 @@ export const shadButtonConfig = shadConfig({
 export const shadAlertConfig = shadConfig({
   name: 'ShadAlert',
   displayName: 'Alert',
-  description: 'shadcn/ui alert',
+  description: 'Alert',
   defaultSize: { width: 20, height: 72 },
   withHeight: true,
   properties: {
@@ -172,7 +172,7 @@ export const shadAlertConfig = shadConfig({
 export const shadBreadcrumbConfig = shadConfig({
   name: 'ShadBreadcrumb',
   displayName: 'Breadcrumb',
-  description: 'shadcn/ui breadcrumb',
+  description: 'Breadcrumb',
   defaultSize: { width: 14, height: 24 },
   properties: {
     items: code('Items', ARRAY, [], {
@@ -195,7 +195,7 @@ export const shadHeadingConfig = shadConfig({
   name: 'ShadHeading',
   displayName: 'Heading',
   description:
-    "shadcn/ui heading (h1 to h4). Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight (400 to 800), fontSize (px), letterSpacing (px or em) and textTransform ('uppercase' for an eyebrow)",
+    "Heading (h1 to h4). Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight (400 to 800), fontSize (px), letterSpacing (px or em) and textTransform ('uppercase' for an eyebrow)",
   defaultSize: { width: 16, height: 36 },
   withHeight: true,
   properties: {
@@ -219,7 +219,7 @@ export const shadTextConfig = shadConfig({
   name: 'ShadText',
   displayName: 'Text',
   description:
-    "shadcn/ui paragraph, lead, muted or small text. Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight, fontSize (px), letterSpacing (px or em) and textTransform (a small uppercase eyebrow: tone small, textTransform 'uppercase', letterSpacing '0.12em')",
+    "Paragraph, lead, muted or small text. Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight, fontSize (px), letterSpacing (px or em) and textTransform (a small uppercase eyebrow: tone small, textTransform 'uppercase', letterSpacing '0.12em')",
   defaultSize: { width: 16, height: 32 },
   withHeight: true,
   properties: {
@@ -247,7 +247,7 @@ export const shadStatConfig = shadConfig({
   name: 'ShadStat',
   displayName: 'Stat',
   description:
-    "shadcn/ui dashboard figure, from a single number to a full KPI card: label, value (a number groups its digits; valueFormat currency in currency, percent or compact formats it), change badge (change, trend) with a context line (changeLabel, e.g. 'vs last month'), footnote; optional icon (any lucide name, iconPosition right, left or top, iconStyle square, circle or none), trendData for a small trend line under the figure (numbers or [{ x, y }]), progress (0 to 100) with progressLabel for a target bar, and size sm, default or lg. Each part shows only when set. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
+    "Dashboard figure, from a single number to a full KPI card: label, value (a number groups its digits; valueFormat currency in currency, percent or compact formats it), change badge (change, trend) with a context line (changeLabel, e.g. 'vs last month'), footnote; optional icon (any lucide name, iconPosition right, left or top, iconStyle square, circle or none), trendData for a small trend line under the figure (numbers or [{ x, y }]), progress (0 to 100) with progressLabel for a target bar, and size sm, default or lg. Each part shows only when set. Styles valueFontFamily ('serif', 'display', 'mono', ...), labelTextTransform ('uppercase') and labelLetterSpacing ('0.1em') set the figure's typeface and a small-caps label",
   defaultSize: { width: 10, height: 120 },
   withHeight: true,
   properties: {
@@ -326,7 +326,7 @@ export const shadStatConfig = shadConfig({
 export const shadBadgeConfig = shadConfig({
   name: 'ShadBadge',
   displayName: 'Badge',
-  description: 'shadcn/ui badge',
+  description: 'Badge',
   defaultSize: { width: 4, height: 24 },
   properties: {
     text: code('Text', STRING, 'Badge'),
@@ -346,7 +346,7 @@ export const shadAvatarConfig = shadConfig({
   name: 'ShadAvatar',
   displayName: 'Avatar',
   description:
-    'shadcn/ui avatar or avatar group: names is one name, a comma-separated list, or an array of names or { name, src } (a photo per person); the first maxVisible show, the rest as a +N chip',
+    'Avatar or avatar group: names is one name, a comma-separated list, or an array of names or { name, src } (a photo per person); the first maxVisible show, the rest as a +N chip',
   defaultSize: { width: 6, height: 36 },
   properties: {
     names: code(
@@ -374,7 +374,7 @@ export const shadAvatarConfig = shadConfig({
 export const shadProgressConfig = shadConfig({
   name: 'ShadProgress',
   displayName: 'Progress',
-  description: 'shadcn/ui progress bar with optional label',
+  description: 'Progress bar with optional label',
   defaultSize: { width: 12, height: 36 },
   properties: {
     value: code('Percent', NUMBER, 60),
@@ -400,7 +400,7 @@ export const shadProgressConfig = shadConfig({
 export const shadSeparatorConfig = shadConfig({
   name: 'ShadSeparator',
   displayName: 'Separator',
-  description: 'shadcn/ui separator',
+  description: 'Separator',
   defaultSize: { width: 20, height: 24 },
   properties: {
     orientation: choice('Orientation', ['horizontal', 'vertical'], 'horizontal'),
@@ -412,7 +412,7 @@ export const shadSeparatorConfig = shadConfig({
 export const shadSkeletonConfig = shadConfig({
   name: 'ShadSkeleton',
   displayName: 'Skeleton',
-  description: 'shadcn/ui loading placeholder',
+  description: 'Loading placeholder',
   defaultSize: { width: 16, height: 80 },
   properties: { lines: code('Lines', NUMBER, 3), avatar: toggle('Avatar') },
   defaults: { lines: { value: '{{3}}' }, avatar: { value: '{{false}}' } },
@@ -422,7 +422,7 @@ export const shadSkeletonConfig = shadConfig({
 export const shadAccordionConfig = shadConfig({
   name: 'ShadAccordion',
   displayName: 'Accordion',
-  description: 'shadcn/ui accordion (FAQ, grouped detail)',
+  description: 'Accordion (FAQ, grouped detail)',
   defaultSize: { width: 20, height: 160 },
   withHeight: true,
   properties: {
@@ -461,7 +461,7 @@ export const shadAccordionConfig = shadConfig({
 export const shadEmptyConfig = shadConfig({
   name: 'ShadEmpty',
   displayName: 'Empty',
-  description: 'shadcn/ui empty state with title, description and an optional action',
+  description: 'Empty state with title, description and an optional action',
   defaultSize: { width: 14, height: 200 },
   properties: {
     title: code('Title', STRING, 'No results'),
@@ -491,7 +491,7 @@ export const shadInputConfig = shadConfig({
   name: 'ShadInput',
   displayName: 'Input',
   description:
-    'shadcn/ui text input with label. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
+    'Text input with label. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
   defaultSize: { width: 10, height: 64 },
   properties: {
     ...fieldProperties,
@@ -530,7 +530,7 @@ export const shadInputConfig = shadConfig({
 export const shadTextareaConfig = shadConfig({
   name: 'ShadTextarea',
   displayName: 'Textarea',
-  description: 'shadcn/ui multi-line input with label. A label adds 22px above and help text 24px below',
+  description: 'Multi-line input with label. A label adds 22px above and help text 24px below',
   defaultSize: { width: 14, height: 120 },
   properties: {
     ...fieldProperties,
@@ -568,7 +568,7 @@ export const shadSelectConfig = shadConfig({
   name: 'ShadSelect',
   displayName: 'Select',
   description:
-    'shadcn/ui select. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
+    'Select. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
   defaultSize: { width: 10, height: 64 },
   properties: {
     ...fieldProperties,
@@ -602,7 +602,7 @@ export const shadSelectConfig = shadConfig({
 export const shadCheckboxConfig = shadConfig({
   name: 'ShadCheckbox',
   displayName: 'Checkbox',
-  description: 'shadcn/ui checkbox with label',
+  description: 'Checkbox with label',
   defaultSize: { width: 8, height: 24 },
   properties: {
     label: code('Label', STRING, 'Checkbox'),
@@ -636,7 +636,7 @@ export const shadCheckboxConfig = shadConfig({
 export const shadSwitchConfig = shadConfig({
   name: 'ShadSwitch',
   displayName: 'Switch',
-  description: 'shadcn/ui switch with label',
+  description: 'Switch with label',
   defaultSize: { width: 8, height: 24 },
   properties: {
     label: code('Label', STRING, 'Enabled'),
@@ -657,7 +657,7 @@ export const shadSwitchConfig = shadConfig({
 export const shadRadioGroupConfig = shadConfig({
   name: 'ShadRadioGroup',
   displayName: 'Radio group',
-  description: 'shadcn/ui radio group. A label adds 22px above and help text 24px below',
+  description: 'Radio group. A label adds 22px above and help text 24px below',
   defaultSize: { width: 10, height: 112 },
   properties: {
     ...fieldProperties,
@@ -693,7 +693,7 @@ export const shadSliderConfig = shadConfig({
   name: 'ShadSlider',
   displayName: 'Slider',
   description:
-    'shadcn/ui slider, single value or range. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
+    'Slider, single value or range. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
   defaultSize: { width: 14, height: 64 },
   properties: {
     ...fieldProperties,
@@ -730,7 +730,7 @@ export const shadDatePickerConfig = shadConfig({
   name: 'ShadDatePicker',
   displayName: 'Date picker',
   description:
-    'shadcn/ui date picker (popover calendar), single date or range. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
+    'Date picker (popover calendar), single date or range. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
   defaultSize: { width: 10, height: 64 },
   properties: {
     ...fieldProperties,
@@ -813,7 +813,7 @@ export const shadDatePickerConfig = shadConfig({
 export const shadToggleGroupConfig = shadConfig({
   name: 'ShadToggleGroup',
   displayName: 'Toggle group',
-  description: 'shadcn/ui segmented toggle (filters, views), like a tabs list',
+  description: 'Segmented toggle (filters, views), like a tabs list',
   defaultSize: { width: 14, height: 36 },
   properties: {
     options: code('Options', ARRAY, [], {
@@ -845,7 +845,7 @@ export const shadKanbanConfig = shadConfig({
   name: 'ShadKanban',
   displayName: 'Kanban',
   description:
-    'shadcn/ui Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar), or, with Card content Custom, child components laid out on the card and bound to {{cardData.<field>}}. Drag to move, optional add and delete buttons, and addCard/updateCard/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.movedCard, lastAddedCard, lastRemovedCard, lastUpdatedCard, cards)',
+    'Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar), or, with Card content Custom, child components laid out on the card and bound to {{cardData.<field>}}. Drag to move, optional add and delete buttons, and addCard/updateCard/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.movedCard, lastAddedCard, lastRemovedCard, lastUpdatedCard, cards)',
   defaultSize: { width: 43, height: 420 },
   withHeight: true,
   properties: {
@@ -1101,7 +1101,7 @@ export const shadKanbanConfig = shadConfig({
   ],
 });
 
-// ---- Charts (Recharts, styled like shadcn/ui charts) ------------------------------------------------------------------
+// ---- Charts (Recharts, styled like charts) ------------------------------------------------------------------
 
 const CHART_DATA =
   "{{[{ month: 'Jun', revenue: 182000 }, { month: 'Jul', revenue: 246000 }, { month: 'Aug', revenue: 268000 }, { month: 'Sep', revenue: 197000 }, { month: 'Oct', revenue: 121000 }]}}";
@@ -1144,7 +1144,7 @@ const seriesDefaults = {
 export const shadAreaChartConfig = shadConfig({
   name: 'ShadAreaChart',
   displayName: 'Area chart',
-  description: 'shadcn/ui area or line chart (trends over time)',
+  description: 'Area or line chart (trends over time)',
   defaultSize: { width: 20, height: 280 },
   properties: {
     ...seriesProps,
@@ -1168,7 +1168,7 @@ export const shadBarChartConfig = shadConfig({
   name: 'ShadBarChart',
   displayName: 'Bar chart',
   description:
-    "shadcn/ui bar chart, vertical or horizontal, grouped or stacked. highlight emphasises categories (an x value, a list, or 'first', 'last', 'max', 'min') and draws the other bars muted; categoryColors { Won: '#16a34a', Lost: '#dc2626' } colours each category's bars",
+    "Bar chart, vertical or horizontal, grouped or stacked. highlight emphasises categories (an x value, a list, or 'first', 'last', 'max', 'min') and draws the other bars muted; categoryColors { Won: '#16a34a', Lost: '#dc2626' } colours each category's bars",
   defaultSize: { width: 20, height: 280 },
   properties: {
     ...seriesProps,
@@ -1210,7 +1210,7 @@ export const shadBarChartConfig = shadConfig({
 export const shadPieChartConfig = shadConfig({
   name: 'ShadPieChart',
   displayName: 'Pie chart',
-  description: 'shadcn/ui pie or donut chart with an optional center figure',
+  description: 'Pie or donut chart with an optional center figure',
   defaultSize: { width: 12, height: 280 },
   properties: {
     data: code('Data', ARRAY, [], {

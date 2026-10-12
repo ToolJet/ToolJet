@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): display widgets (Widgets/Shadcn/ShadDisplay.jsx): image, icon, link, tags, circular
+// ToolJet UI 2.0 (experiment): display widgets (Widgets/Shadcn/ShadDisplay.jsx): image, icon, link, tags, circular
 // progress, spinner, key-value list, timeline, steps and pagination. Steps, Pagination and Link keep the native
 // widgets' property, event, action and exposed-value names, so a ToolJet user's (and a model's) knowledge carries over.
 import {
@@ -38,7 +38,7 @@ export const shadImageConfig = shadConfig({
   name: 'ShadImage',
   displayName: 'Image',
   description:
-    "shadcn/ui image: source (URL), alternativeText, imageFit (cover, contain, fill), aspectRatio ('auto' fills the drawn height; '16/9', '4/3', '1/1' size it from the width), caption below, fallback when the URL is empty or fails ('placeholder', 'icon', or 'initials' of fallbackText), showBorder, zoomOnClick lightbox; a skeleton shows while it loads; onClick. Height: as drawn with aspect auto (a caption takes 28px of it)",
+    "Image: source (URL), alternativeText, imageFit (cover, contain, fill), aspectRatio ('auto' fills the drawn height; '16/9', '4/3', '1/1' size it from the width), caption below, fallback when the URL is empty or fails ('placeholder', 'icon', or 'initials' of fallbackText), showBorder, zoomOnClick lightbox; a skeleton shows while it loads; onClick. Height: as drawn with aspect auto (a caption takes 28px of it)",
   defaultSize: { width: 10, height: 200 },
   withHeight: true,
   properties: {
@@ -102,7 +102,7 @@ export const shadIconConfig = shadConfig({
   name: 'ShadIcon',
   displayName: 'Icon',
   description:
-    "shadcn/ui icon: icon is any lucide name ('trending-up' or 'TrendingUp'; unknown names show a neutral dashed circle), size (px), strokeWidth, tone (default, muted, primary, success, warning, destructive) or the iconColor style, chip ('none', 'circle', 'square') for the tinted icon chip of KPI cards (chipColor style, else a tint of the icon colour; chipSize, else size x 2); onClick. Height: 40px with a chip at size 20, else the icon size",
+    "Icon: icon is any lucide name ('trending-up' or 'TrendingUp'; unknown names show a neutral dashed circle), size (px), strokeWidth, tone (default, muted, primary, success, warning, destructive) or the iconColor style, chip ('none', 'circle', 'square') for the tinted icon chip of KPI cards (chipColor style, else a tint of the icon colour; chipSize, else size x 2); onClick. Height: 40px with a chip at size 20, else the icon size",
   defaultSize: { width: 3, height: 40 },
   properties: {
     icon: code('Icon name (lucide)', STRING, 'trending-up', { placeholder: "'trending-up', 'users', 'shopping-cart'" }),
@@ -141,7 +141,7 @@ export const shadLinkConfig = shadConfig({
   name: 'ShadLink',
   displayName: 'Link',
   description:
-    "shadcn/ui text link (native Link names): linkText, linkTarget (URL; empty makes it act as a button), targetType ('new' or 'same' tab), underline ('underline', 'on-hover', 'no-underline'), showIcon (external-link icon), fontSize (px), fontWeight (normal, medium, semibold, bold); textColor and hoverColor styles (default: the primary). onClick fires as well as navigating; onHover. Height: 24px at 14px",
+    "Text link (native Link names): linkText, linkTarget (URL; empty makes it act as a button), targetType ('new' or 'same' tab), underline ('underline', 'on-hover', 'no-underline'), showIcon (external-link icon), fontSize (px), fontWeight (normal, medium, semibold, bold); textColor and hoverColor styles (default: the primary). onClick fires as well as navigating; onHover. Height: 24px at 14px",
   defaultSize: { width: 6, height: 24 },
   properties: {
     linkText: code('Link text', STRING, 'View details'),
@@ -186,7 +186,7 @@ export const shadTagsConfig = shadConfig({
   name: 'ShadTags',
   displayName: 'Tags',
   description:
-    "shadcn/ui read-only tag chips: tags is an array or a comma-separated string; tagColors maps a value to a colour ({ Paid: '#16a34a' }: tinted chip, light background and strong text of that hue); variant ('soft', 'outline', 'solid'), size ('sm', 'default', 'lg'), overflow ('wrap', or 'single' for one line with +N), pill. Clicking a tag sets lastClickedTag and fires onTagClick. Height: 24px per line",
+    "Read-only tag chips: tags is an array or a comma-separated string; tagColors maps a value to a colour ({ Paid: '#16a34a' }: tinted chip, light background and strong text of that hue); variant ('soft', 'outline', 'solid'), size ('sm', 'default', 'lg'), overflow ('wrap', or 'single' for one line with +N), pill. Clicking a tag sets lastClickedTag and fires onTagClick. Height: 24px per line",
   defaultSize: { width: 12, height: 24 },
   withHeight: true,
   properties: {
@@ -221,7 +221,7 @@ export const shadCircularProgressConfig = shadConfig({
   name: 'ShadCircularProgress',
   displayName: 'Circular progress',
   description:
-    "shadcn/ui circular progress ring: value 0 to 100 (clamped), size and thickness (px), lineCap ('round', 'flat'), centerText ('value' shows 63%, 'custom' shows text, 'none') with an optional label under it; barColor (default: the primary), trackColor, textColor, labelColor styles. Height: the size (96px by default)",
+    "Circular progress ring: value 0 to 100 (clamped), size and thickness (px), lineCap ('round', 'flat'), centerText ('value' shows 63%, 'custom' shows text, 'none') with an optional label under it; barColor (default: the primary), trackColor, textColor, labelColor styles. Height: the size (96px by default)",
   defaultSize: { width: 5, height: 104 },
   withHeight: true,
   properties: {
@@ -260,7 +260,7 @@ export const shadSpinnerConfig = shadConfig({
   name: 'ShadSpinner',
   displayName: 'Spinner',
   description:
-    "shadcn/ui loading spinner: variant ('ring', 'dots'), size ('sm' 16px, 'default' 24px, 'lg' 32px, or px), optional label with labelPosition ('right' beside, 'bottom' below); spinnerColor style (default: the primary). Height: 24px with the label beside (32px for lg), 52px with it below",
+    "Loading spinner: variant ('ring', 'dots'), size ('sm' 16px, 'default' 24px, 'lg' 32px, or px), optional label with labelPosition ('right' beside, 'bottom' below); spinnerColor style (default: the primary). Height: 24px with the label beside (32px for lg), 52px with it below",
   defaultSize: { width: 6, height: 32 },
   properties: {
     variant: choice('Variant', ['ring', 'dots'], 'ring'),
@@ -289,7 +289,7 @@ export const shadKeyValueConfig = shadConfig({
   name: 'ShadKeyValue',
   displayName: 'Key-value list',
   description:
-    "shadcn/ui description list for a record's details: data is an object ({ Status: 'Active', Owner: 'Ada' }) or an array of { label, value, type?, format? } with type text, number, currency, date, badge, link or boolean (format: a date format or { currency, decimalPlaces, prefix, suffix }); columns 1 to 4; layout 'inline' (label beside the value, labelWidth) or 'stacked'; dividers; emptyText for blanks; currency, dateFormat and badgeColors defaults; allowCopy. Height: about 41px per row inline, 69px stacked (per column when columns > 1)",
+    "Description list for a record's details: data is an object ({ Status: 'Active', Owner: 'Ada' }) or an array of { label, value, type?, format? } with type text, number, currency, date, badge, link or boolean (format: a date format or { currency, decimalPlaces, prefix, suffix }); columns 1 to 4; layout 'inline' (label beside the value, labelWidth) or 'stacked'; dividers; emptyText for blanks; currency, dateFormat and badgeColors defaults; allowCopy. Height: about 41px per row inline, 69px stacked (per column when columns > 1)",
   defaultSize: { width: 14, height: 248 },
   withHeight: true,
   properties: {
@@ -344,7 +344,7 @@ export const shadTimelineConfig = shadConfig({
   name: 'ShadTimeline',
   displayName: 'Timeline',
   description:
-    "shadcn/ui vertical timeline / activity feed: items [{ title, description, time, status or color, icon? }] (status words such as done, active, pending, failed take theme colours; statusColors maps your own); marker ('dot' or 'icon' with lucide names); density ('comfortable', 'compact'); newestFirst; timePosition ('right', 'top'); dateFormat for ISO times. Clicking an item sets lastClickedItem and fires onItemClick. Height: about 66px per item with a description (44px without), 50px compact",
+    "Vertical timeline / activity feed: items [{ title, description, time, status or color, icon? }] (status words such as done, active, pending, failed take theme colours; statusColors maps your own); marker ('dot' or 'icon' with lucide names); density ('comfortable', 'compact'); newestFirst; timePosition ('right', 'top'); dateFormat for ISO times. Clicking an item sets lastClickedItem and fires onItemClick. Height: about 66px per item with a description (44px without), 50px compact",
   defaultSize: { width: 14, height: 224 },
   withHeight: true,
   properties: {
@@ -387,7 +387,7 @@ export const shadStepsConfig = shadConfig({
   name: 'ShadSteps',
   displayName: 'Steps',
   description:
-    "shadcn/ui stepper (native Steps names): steps [{ id, name, description?, visible?, disabled?, tooltip? }]; currentStep is the current step's id; numbered circles (variant 'dots' for small dots), check marks on completed steps, connecting lines; orientation 'horizontal' or 'vertical'. stepsSelectable lets users click a step (onSelect; exposed currentStepId, currentStepIndex). Actions setStep(id), nextStep, previousStep, resetSteps, setStepVisible(id, visible), setStepDisable(id, disabled). Height: 60px horizontal (78px with descriptions); vertical about 66px per step",
+    "Stepper (native Steps names): steps [{ id, name, description?, visible?, disabled?, tooltip? }]; currentStep is the current step's id; numbered circles (variant 'dots' for small dots), check marks on completed steps, connecting lines; orientation 'horizontal' or 'vertical'. stepsSelectable lets users click a step (onSelect; exposed currentStepId, currentStepIndex). Actions setStep(id), nextStep, previousStep, resetSteps, setStepVisible(id, visible), setStepDisable(id, disabled). Height: 60px horizontal (78px with descriptions); vertical about 66px per step",
   defaultSize: { width: 24, height: 80 },
   withHeight: true,
   properties: {
@@ -443,7 +443,7 @@ export const shadPaginationConfig = shadConfig({
   name: 'ShadPagination',
   displayName: 'Pagination',
   description:
-    "shadcn/ui pagination (native Pagination names): numberOfPages, or totalRecords with pageSize; defaultPageIndex (1-based); Previous / page numbers with ellipsis / Next (showLabels), optional first and last buttons (showFirstLast), siblingCount, size 'sm' or 'default'. onPageChange; action setPage(page); exposed currentPageIndex (1-based) and totalPages. Bind a query offset to (currentPageIndex - 1) * pageSize. Height: 36px (32px small)",
+    "Pagination (native Pagination names): numberOfPages, or totalRecords with pageSize; defaultPageIndex (1-based); Previous / page numbers with ellipsis / Next (showLabels), optional first and last buttons (showFirstLast), siblingCount, size 'sm' or 'default'. onPageChange; action setPage(page); exposed currentPageIndex (1-based) and totalPages. Bind a query offset to (currentPageIndex - 1) * pageSize. Height: 36px (32px small)",
   defaultSize: { width: 16, height: 36 },
   properties: {
     numberOfPages: code('Number of pages', NUMBER, 10),

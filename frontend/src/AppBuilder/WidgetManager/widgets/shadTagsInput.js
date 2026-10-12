@@ -3,7 +3,7 @@ export const shadTagsInputConfig = {
   name: 'ShadTagsInput',
   displayName: 'Tags input',
   description:
-    'shadcn/ui tags input: free-form tags typed in the field (Enter or comma adds, Backspace removes the last, x removes one), with optional suggestions, maxTags, duplicate check and a per-tag pattern. Exposes tags (array of text) and value (the same). Height: 64px with a label, 36px without (one row; grows with dynamic height)',
+    'Tags input: free-form tags typed in the field (Enter or comma adds, Backspace removes the last, x removes one), with optional suggestions, maxTags, duplicate check and a per-tag pattern. Exposes tags (array of text) and value (the same). Height: 64px with a label, 36px without (one row; grows with dynamic height)',
   component: 'ShadTagsInput',
   defaultSize: {
     width: 10,

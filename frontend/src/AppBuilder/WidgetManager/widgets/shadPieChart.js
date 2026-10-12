@@ -2,7 +2,7 @@
 export const shadPieChartConfig = {
   name: 'ShadPieChart',
   displayName: 'Pie chart',
-  description: 'shadcn/ui pie or donut chart with an optional center figure',
+  description: 'Pie or donut chart with an optional center figure',
   component: 'ShadPieChart',
   defaultSize: {
     width: 12,

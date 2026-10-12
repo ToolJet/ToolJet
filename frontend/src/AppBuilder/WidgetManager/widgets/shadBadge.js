@@ -2,7 +2,7 @@
 export const shadBadgeConfig = {
   name: 'ShadBadge',
   displayName: 'Badge',
-  description: 'shadcn/ui badge',
+  description: 'Badge',
   component: 'ShadBadge',
   defaultSize: {
     width: 4,

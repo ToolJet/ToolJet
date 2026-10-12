@@ -3,7 +3,7 @@ export const shadDatePickerConfig = {
   name: 'ShadDatePicker',
   displayName: 'Date picker',
   description:
-    'shadcn/ui date picker (popover calendar), single date or range. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
+    'Date picker (popover calendar), single date or range. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
   component: 'ShadDatePicker',
   defaultSize: {
     width: 10,

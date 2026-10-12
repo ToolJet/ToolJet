@@ -3,7 +3,7 @@ export const shadColorPickerConfig = {
   name: 'ShadColorPicker',
   displayName: 'Color picker',
   description:
-    'shadcn/ui color picker: a swatch-and-hex field opening a popover with a saturation/hue picker, a hex input and preset swatches (array of hex). Exposes value (#rrggbb, or #rrggbbaa with allowAlpha), rgb and rgba. Height: 64px with a label, 36px without',
+    'Color picker: a swatch-and-hex field opening a popover with a saturation/hue picker, a hex input and preset swatches (array of hex). Exposes value (#rrggbb, or #rrggbbaa with allowAlpha), rgb and rgba. Height: 64px with a label, 36px without',
   component: 'ShadColorPicker',
   defaultSize: {
     width: 8,

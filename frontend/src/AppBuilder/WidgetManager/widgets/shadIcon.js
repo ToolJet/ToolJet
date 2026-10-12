@@ -3,7 +3,7 @@ export const shadIconConfig = {
   name: 'ShadIcon',
   displayName: 'Icon',
   description:
-    "shadcn/ui icon: icon is any lucide name ('trending-up' or 'TrendingUp'; unknown names show a neutral dashed circle), size (px), strokeWidth, tone (default, muted, primary, success, warning, destructive) or the iconColor style, chip ('none', 'circle', 'square') for the tinted icon chip of KPI cards (chipColor style, else a tint of the icon colour; chipSize, else size x 2); onClick. Height: 40px with a chip at size 20, else the icon size",
+    "Icon: icon is any lucide name ('trending-up' or 'TrendingUp'; unknown names show a neutral dashed circle), size (px), strokeWidth, tone (default, muted, primary, success, warning, destructive) or the iconColor style, chip ('none', 'circle', 'square') for the tinted icon chip of KPI cards (chipColor style, else a tint of the icon colour; chipSize, else size x 2); onClick. Height: 40px with a chip at size 20, else the icon size",
   component: 'ShadIcon',
   defaultSize: {
     width: 3,

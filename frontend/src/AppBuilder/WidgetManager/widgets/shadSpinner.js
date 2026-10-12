@@ -3,7 +3,7 @@ export const shadSpinnerConfig = {
   name: 'ShadSpinner',
   displayName: 'Spinner',
   description:
-    "shadcn/ui loading spinner: variant ('ring', 'dots'), size ('sm' 16px, 'default' 24px, 'lg' 32px, or px), optional label with labelPosition ('right' beside, 'bottom' below); spinnerColor style (default: the primary). Height: 24px with the label beside (32px for lg), 52px with it below",
+    "Loading spinner: variant ('ring', 'dots'), size ('sm' 16px, 'default' 24px, 'lg' 32px, or px), optional label with labelPosition ('right' beside, 'bottom' below); spinnerColor style (default: the primary). Height: 24px with the label beside (32px for lg), 52px with it below",
   component: 'ShadSpinner',
   defaultSize: {
     width: 6,

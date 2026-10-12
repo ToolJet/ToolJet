@@ -21,7 +21,7 @@ export const flexContainerConfig = {
       options: [
         { displayName: 'Plain', value: 'none' },
         { displayName: 'Ant card', value: 'antCard' },
-        { displayName: 'shadcn card', value: 'shadcnCard' },
+        { displayName: 'ToolJet UI 2.0 card', value: 'shadcnCard' },
       ],
       validation: { schema: { type: 'string' }, defaultValue: 'none' },
     },
@@ -32,7 +32,7 @@ export const flexContainerConfig = {
     },
     cardExtra: {
       type: 'code',
-      displayName: 'Card extra (Ant: top right; shadcn: description)',
+      displayName: 'Card extra (Ant: top right; UI 2.0: description)',
       validation: { schema: { type: 'string' }, defaultValue: '' },
     },
     direction: {

@@ -3,7 +3,7 @@ export const shadMultiselectConfig = {
   name: 'ShadMultiselect',
   displayName: 'Multiselect',
   description:
-    'shadcn/ui multi-select combobox: picked options show as removable chips in the field (+N past maxVisibleChips), with search and select all. options like the Combobox; defaultValue is an array of values; exposes values (array) and selectedOptions. Height: 64px with a label, 36px without (one row of chips; grows with dynamic height)',
+    'Multi-select combobox: picked options show as removable chips in the field (+N past maxVisibleChips), with search and select all. options like the Combobox; defaultValue is an array of values; exposes values (array) and selectedOptions. Height: 64px with a label, 36px without (one row of chips; grows with dynamic height)',
   component: 'ShadMultiselect',
   defaultSize: {
     width: 10,

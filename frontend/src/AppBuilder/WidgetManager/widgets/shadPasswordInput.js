@@ -3,7 +3,7 @@ export const shadPasswordInputConfig = {
   name: 'ShadPasswordInput',
   displayName: 'Password input',
   description:
-    "shadcn/ui password input with a show/hide eye button (showToggle) and an optional strength meter (showStrength: a three-part weak/fair/strong bar under the box, exposed as strength = '' | 'weak' | 'fair' | 'strong'). Validate with the text rules (mandatory, regex, min length). Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message; the strength meter adds 16px",
+    "Password input with a show/hide eye button (showToggle) and an optional strength meter (showStrength: a three-part weak/fair/strong bar under the box, exposed as strength = '' | 'weak' | 'fair' | 'strong'). Validate with the text rules (mandatory, regex, min length). Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message; the strength meter adds 16px",
   component: 'ShadPasswordInput',
   defaultSize: {
     width: 10,

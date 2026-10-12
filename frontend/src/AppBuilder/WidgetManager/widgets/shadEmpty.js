@@ -2,7 +2,7 @@
 export const shadEmptyConfig = {
   name: 'ShadEmpty',
   displayName: 'Empty',
-  description: 'shadcn/ui empty state with title, description and an optional action',
+  description: 'Empty state with title, description and an optional action',
   component: 'ShadEmpty',
   defaultSize: {
     width: 14,

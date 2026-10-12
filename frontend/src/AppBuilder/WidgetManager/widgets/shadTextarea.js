@@ -2,7 +2,7 @@
 export const shadTextareaConfig = {
   name: 'ShadTextarea',
   displayName: 'Textarea',
-  description: 'shadcn/ui multi-line input with label. A label adds 22px above and help text 24px below',
+  description: 'Multi-line input with label. A label adds 22px above and help text 24px below',
   component: 'ShadTextarea',
   defaultSize: {
     width: 14,

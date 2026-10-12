@@ -2,7 +2,7 @@
 export const shadProgressConfig = {
   name: 'ShadProgress',
   displayName: 'Progress',
-  description: 'shadcn/ui progress bar with optional label',
+  description: 'Progress bar with optional label',
   component: 'ShadProgress',
   defaultSize: {
     width: 12,

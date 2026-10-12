@@ -3,7 +3,7 @@ export const shadHeadingConfig = {
   name: 'ShadHeading',
   displayName: 'Heading',
   description:
-    "shadcn/ui heading (h1 to h4). Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight (400 to 800), fontSize (px), letterSpacing (px or em) and textTransform ('uppercase' for an eyebrow)",
+    "Heading (h1 to h4). Typeface styles: fontFamily ('theme', 'sans', 'serif', 'display' or 'mono'), fontWeight (400 to 800), fontSize (px), letterSpacing (px or em) and textTransform ('uppercase' for an eyebrow)",
   component: 'ShadHeading',
   defaultSize: {
     width: 16,

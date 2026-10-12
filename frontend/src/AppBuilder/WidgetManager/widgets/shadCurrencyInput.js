@@ -3,7 +3,7 @@ export const shadCurrencyInputConfig = {
   name: 'ShadCurrencyInput',
   displayName: 'Currency input',
   description:
-    "shadcn/ui currency amount input: the currency sign inside the box, the amount formatted for the locale with Intl (1,250.00 in en-US, 1.250,00 in de-DE). Exposes value (a number, null when empty), formattedValue ('$1,250.00') and currency ('USD'). currency is an ISO code; currencyOptions (['USD', 'EUR', 'GBP']) adds a currency picker at the start of the box; decimalPlaces empty uses the currency's own (JPY 0). Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message",
+    "Currency amount input: the currency sign inside the box, the amount formatted for the locale with Intl (1,250.00 in en-US, 1.250,00 in de-DE). Exposes value (a number, null when empty), formattedValue ('$1,250.00') and currency ('USD'). currency is an ISO code; currencyOptions (['USD', 'EUR', 'GBP']) adds a currency picker at the start of the box; decimalPlaces empty uses the currency's own (JPY 0). Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message",
   component: 'ShadCurrencyInput',
   defaultSize: {
     width: 10,

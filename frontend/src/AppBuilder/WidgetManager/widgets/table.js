@@ -377,8 +377,8 @@ export const tableConfig = {
       type: 'select',
       displayName: 'Look',
       options: [
-        { name: 'ToolJet', value: 'default' },
-        { name: 'shadcn/ui', value: 'shadcn' },
+        { name: 'ToolJet UI 1.0', value: 'default' },
+        { name: 'ToolJet UI 2.0', value: 'shadcn' },
       ],
       validation: {
         schema: { type: 'string' },

@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): the Dialog. It is ToolJet's ModalV2 (same slots, canvases, open/close actions, show,
+// ToolJet UI 2.0 (experiment): the Dialog. It is ToolJet's ModalV2 (same slots, canvases, open/close actions, show,
 // events and inspector) drawn in the pack's look, with a side-sheet kind; ModalV2's special cases cover it through
 // isModalType (AppCanvas/appCanvasConstants.js). Its default header and footer children are pack widgets.
 import { modalV2Config } from './widgets/modalV2.js';
@@ -11,7 +11,7 @@ export const shadDialogConfig = {
   name: 'ShadDialog',
   displayName: 'Dialog',
   description:
-    'shadcn/ui dialog or side sheet (ToolJet Modal in the pack look): header, body and footer canvases (put a ShadHeading and a muted ShadText in the header, the form in the body, ShadButtons in the footer); open and close it with the show-modal / close-modal event actions or its open and close actions; exposed show. Kind "sheet" slides in from the side at full height',
+    'Dialog or side sheet (ToolJet Modal in the pack look): header, body and footer canvases (put a ShadHeading and a muted ShadText in the header, the form in the body, ShadButtons in the footer); open and close it with the show-modal / close-modal event actions or its open and close actions; exposed show. Kind "sheet" slides in from the side at full height',
   component: 'ShadDialog',
   properties: {
     ...base.properties,

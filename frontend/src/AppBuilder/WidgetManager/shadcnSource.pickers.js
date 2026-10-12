@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): pickers widgets (Combobox, Multiselect, Tags input, Color picker, Rating, File upload).
+// ToolJet UI 2.0 (experiment): pickers widgets (Combobox, Multiselect, Tags input, Color picker, Rating, File upload).
 // Components in Widgets/Shadcn/ShadPickers.jsx, style variables in Widgets/Shadcn/looks/pickers.js.
 import {
   ANY,
@@ -80,7 +80,7 @@ export const shadComboboxConfig = shadConfig({
   name: 'ShadCombobox',
   displayName: 'Combobox',
   description:
-    'shadcn/ui combobox: a searchable single select (popover with a search box). options: plain values or [{ label, ' +
+    'Combobox: a searchable single select (popover with a search box). options: plain values or [{ label, ' +
     'value, description?, icon? (Tabler name like IconUser, image URL or emoji), group?, disabled? }]; exposes value, ' +
     'selectedOption, searchText. Height: 64px with a label, 36px without; add 24px for help text',
   defaultSize: { width: 10, height: 64 },
@@ -128,7 +128,7 @@ export const shadMultiselectConfig = shadConfig({
   name: 'ShadMultiselect',
   displayName: 'Multiselect',
   description:
-    'shadcn/ui multi-select combobox: picked options show as removable chips in the field (+N past maxVisibleChips), ' +
+    'Multi-select combobox: picked options show as removable chips in the field (+N past maxVisibleChips), ' +
     'with search and select all. options like the Combobox; defaultValue is an array of values; exposes values ' +
     '(array) and selectedOptions. Height: 64px with a label, 36px without (one row of chips; grows with dynamic height)',
   defaultSize: { width: 10, height: 64 },
@@ -187,7 +187,7 @@ export const shadTagsInputConfig = shadConfig({
   name: 'ShadTagsInput',
   displayName: 'Tags input',
   description:
-    'shadcn/ui tags input: free-form tags typed in the field (Enter or comma adds, Backspace removes the last, x ' +
+    'Tags input: free-form tags typed in the field (Enter or comma adds, Backspace removes the last, x ' +
     'removes one), with optional suggestions, maxTags, duplicate check and a per-tag pattern. Exposes tags (array ' +
     'of text) and value (the same). Height: 64px with a label, 36px without (one row; grows with dynamic height)',
   defaultSize: { width: 10, height: 64 },
@@ -259,7 +259,7 @@ export const shadColorPickerConfig = shadConfig({
   name: 'ShadColorPicker',
   displayName: 'Color picker',
   description:
-    'shadcn/ui color picker: a swatch-and-hex field opening a popover with a saturation/hue picker, a hex input and ' +
+    'Color picker: a swatch-and-hex field opening a popover with a saturation/hue picker, a hex input and ' +
     'preset swatches (array of hex). Exposes value (#rrggbb, or #rrggbbaa with allowAlpha), rgb and rgba. Height: ' +
     '64px with a label, 36px without',
   defaultSize: { width: 8, height: 64 },
@@ -327,7 +327,7 @@ export const shadRatingConfig = shadConfig({
   name: 'ShadRating',
   displayName: 'Rating',
   description:
-    'shadcn/ui rating: a row of 1 to 10 icons (star, heart or circle) with optional half steps and read-only mode; ' +
+    'Rating: a row of 1 to 10 icons (star, heart or circle) with optional half steps and read-only mode; ' +
     'keyboard accessible. Exposes value (number, 0 for none). Height: 24px for the default size (32px for lg), ' +
     'plus 22px with a label',
   defaultSize: { width: 6, height: 24 },
@@ -387,7 +387,7 @@ export const shadFileUploadConfig = shadConfig({
   name: 'ShadFileUpload',
   displayName: 'File upload',
   description:
-    'shadcn/ui file upload: a dashed dropzone (drag and drop or click to browse) with a file list. accept is a MIME ' +
+    'File upload: a dashed dropzone (drag and drop or click to browse) with a file list. accept is a MIME ' +
     "or extension list like 'image/*,.pdf'; maxSize and minSize in bytes. Exposes files [{ name, type, size, " +
     'content (text), base64Data, dataURL, parsedData }] like the native File picker. Height: about 160px for the ' +
     'dropzone, 180px with a label; the list adds about 66px per file (dynamic height)',

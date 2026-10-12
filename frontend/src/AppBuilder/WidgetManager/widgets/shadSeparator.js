@@ -2,7 +2,7 @@
 export const shadSeparatorConfig = {
   name: 'ShadSeparator',
   displayName: 'Separator',
-  description: 'shadcn/ui separator',
+  description: 'Separator',
   component: 'ShadSeparator',
   defaultSize: {
     width: 20,

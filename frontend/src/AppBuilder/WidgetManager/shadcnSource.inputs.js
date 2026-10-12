@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): inputs widgets: number, password, phone, currency, OTP, time and date-time. Components
+// ToolJet UI 2.0 (experiment): inputs widgets: number, password, phone, currency, OTP, time and date-time. Components
 // in Widgets/Shadcn/ShadInputs.jsx, logic in Widgets/Shadcn/inputsModel.js, style variables in Widgets/Shadcn/looks/inputs.js.
 import {
   ARRAY,
@@ -72,7 +72,7 @@ const CLEAR = { handle: 'clear', displayName: 'Clear' };
 export const shadNumberInputConfig = shadConfig({
   name: 'ShadNumberInput',
   displayName: 'Number input',
-  description: `shadcn/ui number input: value is a number (null when empty), rounded to decimalPlaces; step buttons (stepper: split -/+ at both ends, stacked arrows at the right, or none) and ArrowUp/ArrowDown move by step and stop at the Min/Max value validation; optional prefix/suffix text inside the box (e.g. '$', 'kg') and thousands separators. ${SIZING}`,
+  description: `Number input: value is a number (null when empty), rounded to decimalPlaces; step buttons (stepper: split -/+ at both ends, stacked arrows at the right, or none) and ArrowUp/ArrowDown move by step and stop at the Min/Max value validation; optional prefix/suffix text inside the box (e.g. '$', 'kg') and thousands separators. ${SIZING}`,
   defaultSize: { width: 10, height: 64 },
   properties: {
     ...fieldProperties('Quantity'),
@@ -118,7 +118,7 @@ export const shadNumberInputConfig = shadConfig({
 export const shadPasswordInputConfig = shadConfig({
   name: 'ShadPasswordInput',
   displayName: 'Password input',
-  description: `shadcn/ui password input with a show/hide eye button (showToggle) and an optional strength meter (showStrength: a three-part weak/fair/strong bar under the box, exposed as strength = '' | 'weak' | 'fair' | 'strong'). Validate with the text rules (mandatory, regex, min length). ${SIZING}; the strength meter adds 16px`,
+  description: `Password input with a show/hide eye button (showToggle) and an optional strength meter (showStrength: a three-part weak/fair/strong bar under the box, exposed as strength = '' | 'weak' | 'fair' | 'strong'). Validate with the text rules (mandatory, regex, min length). ${SIZING}; the strength meter adds 16px`,
   defaultSize: { width: 10, height: 64 },
   properties: {
     ...fieldProperties('Password'),
@@ -153,7 +153,7 @@ export const shadPasswordInputConfig = shadConfig({
 export const shadPhoneInputConfig = shadConfig({
   name: 'ShadPhoneInput',
   displayName: 'Phone input',
-  description: `shadcn/ui phone number input: a country picker (flag and calling code; searchable list) attached to the number box, which formats as you type. Exposes value (E.164, e.g. '+14155550123', '' when empty), country ('US'), countryCode ('+1'), formattedValue ('+1 415 555 0123') and isValidNumber; isValid is false for an invalid number. defaultCountry is an ISO code; onlyCountries limits the list (['US', 'CA']). ${SIZING}`,
+  description: `Phone number input: a country picker (flag and calling code; searchable list) attached to the number box, which formats as you type. Exposes value (E.164, e.g. '+14155550123', '' when empty), country ('US'), countryCode ('+1'), formattedValue ('+1 415 555 0123') and isValidNumber; isValid is false for an invalid number. defaultCountry is an ISO code; onlyCountries limits the list (['US', 'CA']). ${SIZING}`,
   defaultSize: { width: 10, height: 64 },
   properties: {
     ...fieldProperties('Phone number'),
@@ -214,7 +214,7 @@ export const shadPhoneInputConfig = shadConfig({
 export const shadCurrencyInputConfig = shadConfig({
   name: 'ShadCurrencyInput',
   displayName: 'Currency input',
-  description: `shadcn/ui currency amount input: the currency sign inside the box, the amount formatted for the locale with Intl (1,250.00 in en-US, 1.250,00 in de-DE). Exposes value (a number, null when empty), formattedValue ('$1,250.00') and currency ('USD'). currency is an ISO code; currencyOptions (['USD', 'EUR', 'GBP']) adds a currency picker at the start of the box; decimalPlaces empty uses the currency's own (JPY 0). ${SIZING}`,
+  description: `Currency amount input: the currency sign inside the box, the amount formatted for the locale with Intl (1,250.00 in en-US, 1.250,00 in de-DE). Exposes value (a number, null when empty), formattedValue ('$1,250.00') and currency ('USD'). currency is an ISO code; currencyOptions (['USD', 'EUR', 'GBP']) adds a currency picker at the start of the box; decimalPlaces empty uses the currency's own (JPY 0). ${SIZING}`,
   defaultSize: { width: 10, height: 64 },
   properties: {
     ...fieldProperties('Amount'),
@@ -279,7 +279,7 @@ export const shadCurrencyInputConfig = shadConfig({
 export const shadOtpInputConfig = shadConfig({
   name: 'ShadOtpInput',
   displayName: 'OTP input',
-  description: `shadcn/ui one-time code input: length (4 to 8) character boxes, numeric or alphanumeric (upper-cased), typing moves to the next box, Backspace goes back, pasting a whole code fills it ('123-456' works). Optional separator in the middle and masked dots. Exposes value and isComplete; onComplete fires when the last box is filled (verify there). Boxes are 36px (slotSize style); height 64px with a label, 36px without`,
+  description: `One-time code input: length (4 to 8) character boxes, numeric or alphanumeric (upper-cased), typing moves to the next box, Backspace goes back, pasting a whole code fills it ('123-456' works). Optional separator in the middle and masked dots. Exposes value and isComplete; onComplete fires when the last box is filled (verify there). Boxes are 36px (slotSize style); height 64px with a label, 36px without`,
   defaultSize: { width: 10, height: 64 },
   properties: {
     ...fieldProperties('Verification code'),
@@ -325,7 +325,7 @@ export const shadOtpInputConfig = shadConfig({
 export const shadTimePickerConfig = shadConfig({
   name: 'ShadTimePicker',
   displayName: 'Time picker',
-  description: `shadcn/ui time picker: a field opening hour, minute (every minuteStep) and AM/PM columns, or (pickerStyle list) one list of times. Exposes value as 'HH:mm' in 24-hour time ('' when empty) and formattedValue as shown ('2:30 PM' or '14:30'); defaultValue, minTime and maxTime take '14:30' or '2:30 PM'. ${SIZING}`,
+  description: `Time picker: a field opening hour, minute (every minuteStep) and AM/PM columns, or (pickerStyle list) one list of times. Exposes value as 'HH:mm' in 24-hour time ('' when empty) and formattedValue as shown ('2:30 PM' or '14:30'); defaultValue, minTime and maxTime take '14:30' or '2:30 PM'. ${SIZING}`,
   defaultSize: { width: 10, height: 64 },
   properties: {
     ...fieldProperties('Time'),
@@ -380,7 +380,7 @@ export const shadTimePickerConfig = shadConfig({
 export const shadDateTimePickerConfig = shadConfig({
   name: 'ShadDateTimePicker',
   displayName: 'Date and time picker',
-  description: `shadcn/ui date and time picker: a field opening a calendar with a time row (hour, minute every minuteStep, AM/PM). Exposes value as 'YYYY-MM-DDTHH:mm' (local time, '' when empty), selectedDate 'YYYY-MM-DD', selectedTime 'HH:mm', unixTimestamp (ms) and displayValue (dateFormat plus the time). defaultValue takes ISO text, 'YYYY-MM-DD HH:mm' or a unix timestamp; minDate/maxDate ('YYYY-MM-DD') and disabledDates (array) block days. ${SIZING}`,
+  description: `Date and time picker: a field opening a calendar with a time row (hour, minute every minuteStep, AM/PM). Exposes value as 'YYYY-MM-DDTHH:mm' (local time, '' when empty), selectedDate 'YYYY-MM-DD', selectedTime 'HH:mm', unixTimestamp (ms) and displayValue (dateFormat plus the time). defaultValue takes ISO text, 'YYYY-MM-DD HH:mm' or a unix timestamp; minDate/maxDate ('YYYY-MM-DD') and disabledDates (array) block days. ${SIZING}`,
   defaultSize: { width: 12, height: 64 },
   properties: {
     ...fieldProperties('Date and time'),

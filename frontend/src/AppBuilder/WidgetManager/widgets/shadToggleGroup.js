@@ -2,7 +2,7 @@
 export const shadToggleGroupConfig = {
   name: 'ShadToggleGroup',
   displayName: 'Toggle group',
-  description: 'shadcn/ui segmented toggle (filters, views), like a tabs list',
+  description: 'Segmented toggle (filters, views), like a tabs list',
   component: 'ShadToggleGroup',
   defaultSize: {
     width: 14,

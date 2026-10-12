@@ -2,7 +2,7 @@
 export const shadBreadcrumbConfig = {
   name: 'ShadBreadcrumb',
   displayName: 'Breadcrumb',
-  description: 'shadcn/ui breadcrumb',
+  description: 'Breadcrumb',
   component: 'ShadBreadcrumb',
   defaultSize: {
     width: 14,

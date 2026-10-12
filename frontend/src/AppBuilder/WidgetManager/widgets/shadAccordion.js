@@ -2,7 +2,7 @@
 export const shadAccordionConfig = {
   name: 'ShadAccordion',
   displayName: 'Accordion',
-  description: 'shadcn/ui accordion (FAQ, grouped detail)',
+  description: 'Accordion (FAQ, grouped detail)',
   component: 'ShadAccordion',
   defaultSize: {
     width: 20,

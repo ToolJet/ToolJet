@@ -3,7 +3,7 @@ export const shadButtonGroupConfig = {
   name: 'ShadButtonGroup',
   displayName: 'Button group',
   description:
-    "shadcn/ui button group (attached buttons) from buttons [{ label, value, icon?: 'IconBolt', disabled?, variant? }] (label '' with an icon = icon-only). mode: 'actions' (each click fires onClick, exposed lastClicked), 'single' or 'multiple' (a segmented selection: exposed value, values, selected; onChange). Height 36px (sm 32px, lg 40px); add 22px for a label",
+    "Button group (attached buttons) from buttons [{ label, value, icon?: 'IconBolt', disabled?, variant? }] (label '' with an icon = icon-only). mode: 'actions' (each click fires onClick, exposed lastClicked), 'single' or 'multiple' (a segmented selection: exposed value, values, selected; onChange). Height 36px (sm 32px, lg 40px); add 22px for a label",
   component: 'ShadButtonGroup',
   defaultSize: {
     width: 10,

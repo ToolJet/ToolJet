@@ -2,7 +2,7 @@
 export const shadCheckboxConfig = {
   name: 'ShadCheckbox',
   displayName: 'Checkbox',
-  description: 'shadcn/ui checkbox with label',
+  description: 'Checkbox with label',
   component: 'ShadCheckbox',
   defaultSize: {
     width: 8,

@@ -3,7 +3,7 @@ export const shadCircularProgressConfig = {
   name: 'ShadCircularProgress',
   displayName: 'Circular progress',
   description:
-    "shadcn/ui circular progress ring: value 0 to 100 (clamped), size and thickness (px), lineCap ('round', 'flat'), centerText ('value' shows 63%, 'custom' shows text, 'none') with an optional label under it; barColor (default: the primary), trackColor, textColor, labelColor styles. Height: the size (96px by default)",
+    "Circular progress ring: value 0 to 100 (clamped), size and thickness (px), lineCap ('round', 'flat'), centerText ('value' shows 63%, 'custom' shows text, 'none') with an optional label under it; barColor (default: the primary), trackColor, textColor, labelColor styles. Height: the size (96px by default)",
   component: 'ShadCircularProgress',
   defaultSize: {
     width: 5,

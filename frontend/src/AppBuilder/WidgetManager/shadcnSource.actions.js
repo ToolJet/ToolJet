@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): actions widgets (dropdown menu, button group, navigation, calendar, carousel). The
+// ToolJet UI 2.0 (experiment): actions widgets (dropdown menu, button group, navigation, calendar, carousel). The
 // components live in Widgets/Shadcn/ShadActions.jsx, their style variables in Widgets/Shadcn/looks/actions.js.
 import {
   ANY,
@@ -24,7 +24,7 @@ export const shadDropdownMenuConfig = shadConfig({
   name: 'ShadDropdownMenu',
   displayName: 'Dropdown menu',
   description:
-    "shadcn/ui dropdown menu: a trigger button (label + variant, or an icon-only '...' trigger) opening a menu of items [{ label, value, icon?: 'IconPencil', description?, shortcut?: '⌘E', disabled?, visible?, destructive?, separator? (line above), group? (heading) }]. On select fires onSelect with lastClickedOption { label, value, description }. Height 36px (sm 32px, lg 40px)",
+    "Dropdown menu: a trigger button (label + variant, or an icon-only '...' trigger) opening a menu of items [{ label, value, icon?: 'IconPencil', description?, shortcut?: '⌘E', disabled?, visible?, destructive?, separator? (line above), group? (heading) }]. On select fires onSelect with lastClickedOption { label, value, description }. Height 36px (sm 32px, lg 40px)",
   defaultSize: { width: 6, height: 36 },
   properties: {
     label: code('Label', STRING, 'Actions'),
@@ -95,7 +95,7 @@ export const shadButtonGroupConfig = shadConfig({
   name: 'ShadButtonGroup',
   displayName: 'Button group',
   description:
-    "shadcn/ui button group (attached buttons) from buttons [{ label, value, icon?: 'IconBolt', disabled?, variant? }] (label '' with an icon = icon-only). mode: 'actions' (each click fires onClick, exposed lastClicked), 'single' or 'multiple' (a segmented selection: exposed value, values, selected; onChange). Height 36px (sm 32px, lg 40px); add 22px for a label",
+    "Button group (attached buttons) from buttons [{ label, value, icon?: 'IconBolt', disabled?, variant? }] (label '' with an icon = icon-only). mode: 'actions' (each click fires onClick, exposed lastClicked), 'single' or 'multiple' (a segmented selection: exposed value, values, selected; onChange). Height 36px (sm 32px, lg 40px); add 22px for a label",
   defaultSize: { width: 10, height: 36 },
   withHeight: true,
   properties: {
@@ -156,7 +156,7 @@ export const shadNavigationConfig = shadConfig({
   name: 'ShadNavigation',
   displayName: 'Navigation',
   description:
-    "shadcn/ui app navigation: a vertical sidebar list or a horizontal top bar from items [{ label, value, icon?: 'IconHome', badge?, disabled?, group? (sidebar heading), children?: [{ label, value }] }] (children open as a dropdown in the top bar, a nested list in the sidebar). variant pills, underline or ghost; defaultValue is the active item; onSelect fires on click with exposed value and activeItem { label, value, parentLabel, parentValue } (wire page switches here); setActive(value). Item height 36px; a top bar is 40px tall, a sidebar fills the widget's height",
+    "App navigation: a vertical sidebar list or a horizontal top bar from items [{ label, value, icon?: 'IconHome', badge?, disabled?, group? (sidebar heading), children?: [{ label, value }] }] (children open as a dropdown in the top bar, a nested list in the sidebar). variant pills, underline or ghost; defaultValue is the active item; onSelect fires on click with exposed value and activeItem { label, value, parentLabel, parentValue } (wire page switches here); setActive(value). Item height 36px; a top bar is 40px tall, a sidebar fills the widget's height",
   defaultSize: { width: 9, height: 320 },
   properties: {
     items: code('Items', ARRAY, [], {
@@ -233,7 +233,7 @@ export const shadCalendarConfig = shadConfig({
   name: 'ShadCalendar',
   displayName: 'Calendar',
   description:
-    "shadcn/ui inline month calendar. mode single, multiple or range; defaultValue 'YYYY-MM-DD' (a list for multiple, [start, end] for range); markers [{ date, label?, color? }] draw dots under days (label on hover); minDate, maxDate, disabledDates, disabledDays ([0, 6] = weekends). Exposed value, selectedDate, selectedDates, startDate, endDate, visibleMonth ('YYYY-MM'), visibleStart, visibleEnd; events onSelect, onMonthChange. One month is about 300px tall and 250px wide (fullWidth stretches the days)",
+    "Inline month calendar. mode single, multiple or range; defaultValue 'YYYY-MM-DD' (a list for multiple, [start, end] for range); markers [{ date, label?, color? }] draw dots under days (label on hover); minDate, maxDate, disabledDates, disabledDays ([0, 6] = weekends). Exposed value, selectedDate, selectedDates, startDate, endDate, visibleMonth ('YYYY-MM'), visibleStart, visibleEnd; events onSelect, onMonthChange. One month is about 300px tall and 250px wide (fullWidth stretches the days)",
   defaultSize: { width: 10, height: 300 },
   withHeight: true,
   properties: {
@@ -317,7 +317,7 @@ export const shadCarouselConfig = shadConfig({
   name: 'ShadCarousel',
   displayName: 'Carousel',
   description:
-    "shadcn/ui carousel of slides [{ image, title?, description?, link? }] (or image URLs) with arrows and dots, loop, autoplay (interval ms, pauses on hover), slidesPerView 1 to 4, aspectRatio ('16/9', '4/3', '1/1', '21/9' or 'fill' to fill the widget's height), imageFit cover or contain, captions as an overlay or below. Exposed currentIndex, currentSlide and clickedSlide (with its index); events onSlideChange, onSlideClick (a slide's link also opens in a new tab); actions next, previous, goTo(index). Height follows the width and ratio (+28px for dots, +52px for captions below)",
+    "Carousel of slides [{ image, title?, description?, link? }] (or image URLs) with arrows and dots, loop, autoplay (interval ms, pauses on hover), slidesPerView 1 to 4, aspectRatio ('16/9', '4/3', '1/1', '21/9' or 'fill' to fill the widget's height), imageFit cover or contain, captions as an overlay or below. Exposed currentIndex, currentSlide and clickedSlide (with its index); events onSlideChange, onSlideClick (a slide's link also opens in a new tab); actions next, previous, goTo(index). Height follows the width and ratio (+28px for dots, +52px for captions below)",
   defaultSize: { width: 20, height: 410 },
   withHeight: true,
   properties: {

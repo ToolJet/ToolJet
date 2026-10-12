@@ -3,7 +3,7 @@ export const shadBarChartConfig = {
   name: 'ShadBarChart',
   displayName: 'Bar chart',
   description:
-    "shadcn/ui bar chart, vertical or horizontal, grouped or stacked. highlight emphasises categories (an x value, a list, or 'first', 'last', 'max', 'min') and draws the other bars muted; categoryColors { Won: '#16a34a', Lost: '#dc2626' } colours each category's bars",
+    "Bar chart, vertical or horizontal, grouped or stacked. highlight emphasises categories (an x value, a list, or 'first', 'last', 'max', 'min') and draws the other bars muted; categoryColors { Won: '#16a34a', Lost: '#dc2626' } colours each category's bars",
   component: 'ShadBarChart',
   defaultSize: {
     width: 20,

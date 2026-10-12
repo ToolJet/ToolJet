@@ -3,7 +3,7 @@ export const shadPaginationConfig = {
   name: 'ShadPagination',
   displayName: 'Pagination',
   description:
-    "shadcn/ui pagination (native Pagination names): numberOfPages, or totalRecords with pageSize; defaultPageIndex (1-based); Previous / page numbers with ellipsis / Next (showLabels), optional first and last buttons (showFirstLast), siblingCount, size 'sm' or 'default'. onPageChange; action setPage(page); exposed currentPageIndex (1-based) and totalPages. Bind a query offset to (currentPageIndex - 1) * pageSize. Height: 36px (32px small)",
+    "Pagination (native Pagination names): numberOfPages, or totalRecords with pageSize; defaultPageIndex (1-based); Previous / page numbers with ellipsis / Next (showLabels), optional first and last buttons (showFirstLast), siblingCount, size 'sm' or 'default'. onPageChange; action setPage(page); exposed currentPageIndex (1-based) and totalPages. Bind a query offset to (currentPageIndex - 1) * pageSize. Height: 36px (32px small)",
   component: 'ShadPagination',
   defaultSize: {
     width: 16,

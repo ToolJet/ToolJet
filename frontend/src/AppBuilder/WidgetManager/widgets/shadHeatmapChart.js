@@ -3,7 +3,7 @@ export const shadHeatmapChartConfig = {
   name: 'ShadHeatmapChart',
   displayName: 'Heatmap',
   description:
-    "shadcn/ui heatmap: a grid of cells shaded by value, for two categories against each other (weekday by hour, region by month). data [{ day: 'Mon', hour: '09:00', tickets: 12 }], yField 'day' (rows), xField 'hour' (columns), valueField 'tickets' (rows landing in the same cell are summed); xOrder / yOrder fix the order (else first appearance); showValues prints each value; a min-to-max legend. Height about 32 px per row plus 40; clicking a cell sets clickedDatum and fires onClick.",
+    "Heatmap: a grid of cells shaded by value, for two categories against each other (weekday by hour, region by month). data [{ day: 'Mon', hour: '09:00', tickets: 12 }], yField 'day' (rows), xField 'hour' (columns), valueField 'tickets' (rows landing in the same cell are summed); xOrder / yOrder fix the order (else first appearance); showValues prints each value; a min-to-max legend. Height about 32 px per row plus 40; clicking a cell sets clickedDatum and fires onClick.",
   component: 'ShadHeatmapChart',
   defaultSize: {
     width: 24,

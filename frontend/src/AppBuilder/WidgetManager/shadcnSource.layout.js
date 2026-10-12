@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): layout containers. Tabs keeps the native Tabs' data contract (tabItems, defaultTab,
+// ToolJet UI 2.0 (experiment): layout containers. Tabs keeps the native Tabs' data contract (tabItems, defaultTab,
 // currentTab, setTab and the per-tab canvases `<id>-<tabId>`), so the editor, copy and paste, dynamic height and the
 // MCP's tab slots treat it as Tabs; only its look and its wizard mode are its own. List view is row-scoped like the
 // native Listview: one canvas repeated per item, read with {{listItem.<field>}}.
@@ -31,7 +31,7 @@ export const shadTabsConfig = shadConfig({
   name: 'ShadTabs',
   displayName: 'Tabs',
   description:
-    'shadcn/ui tabs: a container with one canvas per tab (parent the tab content with slot_name tab-<id>). Variants: pills (shadcn default), underline, or steps (a wizard with Back/Next/Finish buttons)',
+    'Tabs: a container with one canvas per tab (parent the tab content with slot_name tab-<id>). Variants: pills (shadcn default), underline, or steps (a wizard with Back/Next/Finish buttons)',
   defaultSize: { width: 30, height: 360 },
   withHeight: true,
   properties: {
@@ -153,7 +153,7 @@ export const shadListViewConfig = shadConfig({
   name: 'ShadListView',
   displayName: 'List view',
   description:
-    'shadcn/ui list or grid: one canvas repeated per item of data; parent components to it and bind them to {{listItem.<field>}}. A click selects the item (selectedItem, onRowClicked); optional pagination (client or server side), dividers, hover and selected highlight. Items have a fixed height (rowHeight)',
+    'List or grid: one canvas repeated per item of data; parent components to it and bind them to {{listItem.<field>}}. A click selects the item (selectedItem, onRowClicked); optional pagination (client or server side), dividers, hover and selected highlight. Items have a fixed height (rowHeight)',
   defaultSize: { width: 30, height: 400 },
   withHeight: true,
   properties: {

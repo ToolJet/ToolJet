@@ -3,7 +3,7 @@ export const shadStepsConfig = {
   name: 'ShadSteps',
   displayName: 'Steps',
   description:
-    "shadcn/ui stepper (native Steps names): steps [{ id, name, description?, visible?, disabled?, tooltip? }]; currentStep is the current step's id; numbered circles (variant 'dots' for small dots), check marks on completed steps, connecting lines; orientation 'horizontal' or 'vertical'. stepsSelectable lets users click a step (onSelect; exposed currentStepId, currentStepIndex). Actions setStep(id), nextStep, previousStep, resetSteps, setStepVisible(id, visible), setStepDisable(id, disabled). Height: 60px horizontal (78px with descriptions); vertical about 66px per step",
+    "Stepper (native Steps names): steps [{ id, name, description?, visible?, disabled?, tooltip? }]; currentStep is the current step's id; numbered circles (variant 'dots' for small dots), check marks on completed steps, connecting lines; orientation 'horizontal' or 'vertical'. stepsSelectable lets users click a step (onSelect; exposed currentStepId, currentStepIndex). Actions setStep(id), nextStep, previousStep, resetSteps, setStepVisible(id, visible), setStepDisable(id, disabled). Height: 60px horizontal (78px with descriptions); vertical about 66px per step",
   component: 'ShadSteps',
   defaultSize: {
     width: 24,

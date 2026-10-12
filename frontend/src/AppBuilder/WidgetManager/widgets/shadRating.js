@@ -3,7 +3,7 @@ export const shadRatingConfig = {
   name: 'ShadRating',
   displayName: 'Rating',
   description:
-    'shadcn/ui rating: a row of 1 to 10 icons (star, heart or circle) with optional half steps and read-only mode; keyboard accessible. Exposes value (number, 0 for none). Height: 24px for the default size (32px for lg), plus 22px with a label',
+    'Rating: a row of 1 to 10 icons (star, heart or circle) with optional half steps and read-only mode; keyboard accessible. Exposes value (number, 0 for none). Height: 24px for the default size (32px for lg), plus 22px with a label',
   component: 'ShadRating',
   defaultSize: {
     width: 6,

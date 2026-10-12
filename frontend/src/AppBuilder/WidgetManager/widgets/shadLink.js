@@ -3,7 +3,7 @@ export const shadLinkConfig = {
   name: 'ShadLink',
   displayName: 'Link',
   description:
-    "shadcn/ui text link (native Link names): linkText, linkTarget (URL; empty makes it act as a button), targetType ('new' or 'same' tab), underline ('underline', 'on-hover', 'no-underline'), showIcon (external-link icon), fontSize (px), fontWeight (normal, medium, semibold, bold); textColor and hoverColor styles (default: the primary). onClick fires as well as navigating; onHover. Height: 24px at 14px",
+    "Text link (native Link names): linkText, linkTarget (URL; empty makes it act as a button), targetType ('new' or 'same' tab), underline ('underline', 'on-hover', 'no-underline'), showIcon (external-link icon), fontSize (px), fontWeight (normal, medium, semibold, bold); textColor and hoverColor styles (default: the primary). onClick fires as well as navigating; onHover. Height: 24px at 14px",
   component: 'ShadLink',
   defaultSize: {
     width: 6,

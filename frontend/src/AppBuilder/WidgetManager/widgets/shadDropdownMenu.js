@@ -3,7 +3,7 @@ export const shadDropdownMenuConfig = {
   name: 'ShadDropdownMenu',
   displayName: 'Dropdown menu',
   description:
-    "shadcn/ui dropdown menu: a trigger button (label + variant, or an icon-only '...' trigger) opening a menu of items [{ label, value, icon?: 'IconPencil', description?, shortcut?: '⌘E', disabled?, visible?, destructive?, separator? (line above), group? (heading) }]. On select fires onSelect with lastClickedOption { label, value, description }. Height 36px (sm 32px, lg 40px)",
+    "Dropdown menu: a trigger button (label + variant, or an icon-only '...' trigger) opening a menu of items [{ label, value, icon?: 'IconPencil', description?, shortcut?: '⌘E', disabled?, visible?, destructive?, separator? (line above), group? (heading) }]. On select fires onSelect with lastClickedOption { label, value, description }. Height 36px (sm 32px, lg 40px)",
   component: 'ShadDropdownMenu',
   defaultSize: {
     width: 6,

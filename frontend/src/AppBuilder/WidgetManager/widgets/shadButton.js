@@ -2,7 +2,7 @@
 export const shadButtonConfig = {
   name: 'ShadButton',
   displayName: 'Button',
-  description: 'shadcn/ui button',
+  description: 'Button',
   component: 'ShadButton',
   defaultSize: {
     width: 6,

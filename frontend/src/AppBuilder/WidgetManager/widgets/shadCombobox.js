@@ -3,7 +3,7 @@ export const shadComboboxConfig = {
   name: 'ShadCombobox',
   displayName: 'Combobox',
   description:
-    'shadcn/ui combobox: a searchable single select (popover with a search box). options: plain values or [{ label, value, description?, icon? (Tabler name like IconUser, image URL or emoji), group?, disabled? }]; exposes value, selectedOption, searchText. Height: 64px with a label, 36px without; add 24px for help text',
+    'Combobox: a searchable single select (popover with a search box). options: plain values or [{ label, value, description?, icon? (Tabler name like IconUser, image URL or emoji), group?, disabled? }]; exposes value, selectedOption, searchText. Height: 64px with a label, 36px without; add 24px for help text',
   component: 'ShadCombobox',
   defaultSize: {
     width: 10,

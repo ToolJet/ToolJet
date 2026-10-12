@@ -3,7 +3,7 @@ export const shadPhoneInputConfig = {
   name: 'ShadPhoneInput',
   displayName: 'Phone input',
   description:
-    "shadcn/ui phone number input: a country picker (flag and calling code; searchable list) attached to the number box, which formats as you type. Exposes value (E.164, e.g. '+14155550123', '' when empty), country ('US'), countryCode ('+1'), formattedValue ('+1 415 555 0123') and isValidNumber; isValid is false for an invalid number. defaultCountry is an ISO code; onlyCountries limits the list (['US', 'CA']). Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message",
+    "Phone number input: a country picker (flag and calling code; searchable list) attached to the number box, which formats as you type. Exposes value (E.164, e.g. '+14155550123', '' when empty), country ('US'), countryCode ('+1'), formattedValue ('+1 415 555 0123') and isValidNumber; isValid is false for an invalid number. defaultCountry is an ISO code; onlyCountries limits the list (['US', 'CA']). Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message",
   component: 'ShadPhoneInput',
   defaultSize: {
     width: 10,

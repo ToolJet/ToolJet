@@ -115,10 +115,11 @@ const SHADCN_SECTIONS = [
 // Component libraries (experiment): the panel lists one library at a time, picked in a toggle above the search box.
 // A pack lists its own widgets plus FlexContainer, which composes them.
 const COMPONENT_LIBRARIES = [
-  { value: 'tooljet', label: 'ToolJet' },
+  { value: 'tooljet', label: 'ToolJet UI 1.0' },
   {
     value: 'shadcn',
-    label: 'shadcn/ui',
+    label: 'ToolJet UI 2.0',
+    badge: 'Beta',
     sections: SHADCN_SECTIONS,
     components: [...SHADCN_COMPONENTS.filter((name) => name !== 'ShadTable'), SHADCN_TABLE],
   },
@@ -406,6 +407,22 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
         {COMPONENT_LIBRARIES.map((entry) => (
           <ToggleGroupItem key={entry.value} value={entry.value} style={{ width: '100%' }}>
             {entry.label}
+            {entry.badge ? (
+              <span
+                style={{
+                  marginLeft: 6,
+                  padding: '0 6px',
+                  borderRadius: 999,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  lineHeight: '16px',
+                  background: 'var(--slate4, #eef0f3)',
+                  color: 'var(--slate11, #555)',
+                }}
+              >
+                {entry.badge}
+              </span>
+            ) : null}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>

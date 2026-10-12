@@ -3,7 +3,7 @@ export const shadTabsConfig = {
   name: 'ShadTabs',
   displayName: 'Tabs',
   description:
-    'shadcn/ui tabs: a container with one canvas per tab (parent the tab content with slot_name tab-<id>). Variants: pills (shadcn default), underline, or steps (a wizard with Back/Next/Finish buttons)',
+    'Tabs: a container with one canvas per tab (parent the tab content with slot_name tab-<id>). Variants: pills (shadcn default), underline, or steps (a wizard with Back/Next/Finish buttons)',
   component: 'ShadTabs',
   defaultSize: {
     width: 30,
