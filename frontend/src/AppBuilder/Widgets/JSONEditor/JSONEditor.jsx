@@ -179,7 +179,6 @@ export const JSONEditor = function JSONEditor(props) {
 
     return [
       json(),
-      EditorView.lineWrapping,
       linter(jsonParseLinter(), {
         markerFilter: () => {
           return [];
