@@ -638,13 +638,16 @@ export const ShadStat = (props) => {
     <Badge
       variant="outline"
       style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) : undefined}
+      // A long change shrinks to at most 60% of the label row and ends in an ellipsis, its whole text the tooltip: it
+      // kept its full width and was cut off at the card's edge.
+      title={String(properties.change)}
       className={cn(
-        'shrink-0 gap-1',
+        'min-w-0 max-w-[60%] gap-1',
         isSet(trendColor) && 'border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]'
       )}
     >
-      {trend !== 'neutral' ? <TrendIcon className="h-3 w-3" /> : null}
-      {String(properties.change)}
+      {trend !== 'neutral' ? <TrendIcon className="h-3 w-3 shrink-0" /> : null}
+      <span className="min-w-0 truncate">{String(properties.change)}</span>
     </Badge>
   ) : null;
   // The badge sits in the label row unless the icon takes that corner; then it follows the figure.
@@ -661,10 +664,10 @@ export const ShadStat = (props) => {
   const content = (
     <div className={cn('flex min-w-0 flex-1 flex-col gap-1.5', fixed && 'min-h-0 overflow-hidden')}>
       {icon && iconPosition === 'top' ? <div className="mb-1">{iconNode}</div> : null}
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex min-w-0 items-start justify-between gap-2">
         <span
           className={cn(
-            'text-sm text-[color:var(--lk-label,var(--sc-muted-foreground))]',
+            'min-w-0 text-sm text-[color:var(--lk-label,var(--sc-muted-foreground))]',
             textCase(props.styles?.labelTextTransform) && 'lk-label-case',
             isSet(props.styles?.labelLetterSpacing) && 'lk-label-tracking'
           )}
