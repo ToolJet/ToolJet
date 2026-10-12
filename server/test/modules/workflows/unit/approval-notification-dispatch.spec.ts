@@ -92,6 +92,53 @@ describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
     expect(JSON.parse(options.body)).toEqual({ email: 'manager@corp.test' });
   });
 
+  it('exposes the approval request to the template as `approval` alongside the run state', async () => {
+    const fetchMock = jest.fn().mockResolvedValue({ ok: true, status: 200 });
+    (global as any).fetch = fetchMock;
+    const svc = makeService();
+    const definition = {
+      nodeName: 'approval1',
+      notification: { url: 'https://hook.test/x', bodyTemplate: '{"token":"{{ approval.token }}"}' },
+    };
+    await svc.dispatchApprovalNotification(
+      definition,
+      { id: 'req-1', token: 'tok-1', expiresAt: null },
+      { startTrigger: { params: { orderId: 7 } } },
+      'org-1',
+      'development'
+    );
+    const [, state] = svc.resolveWorkflowParameters.mock.calls[0];
+    expect(state).toMatchObject({
+      startTrigger: { params: { orderId: 7 } },
+      approval: {
+        requestId: 'req-1',
+        token: 'tok-1',
+        nodeName: 'approval1',
+        expiresAt: null,
+        resolveUrl: expect.stringMatching(/\/api\/workflow-approvals\/tok-1$/),
+      },
+    });
+  });
+
+  it('leaves approval.resolveUrl out of the template when the resolve URL is turned off', async () => {
+    (global as any).fetch = jest.fn().mockResolvedValue({ ok: true, status: 200 });
+    const svc = makeService();
+    const definition = {
+      nodeName: 'approval1',
+      notification: { url: 'https://hook.test/x', bodyTemplate: '{}', includeResolveUrl: false },
+    };
+    await svc.dispatchApprovalNotification(
+      definition,
+      { id: 'req-1', token: 'tok-1', expiresAt: null },
+      {},
+      'org-1',
+      'development'
+    );
+    const [, state] = svc.resolveWorkflowParameters.mock.calls[0];
+    expect(state.approval).toMatchObject({ token: 'tok-1' });
+    expect(state.approval).not.toHaveProperty('resolveUrl');
+  });
+
   it('falls back to the default payload when no body template is set', async () => {
     const fetchMock = jest.fn().mockResolvedValue({ ok: true, status: 200 });
     (global as any).fetch = fetchMock;
