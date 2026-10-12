@@ -1,34 +1,23 @@
-import React, {
-  useCallback,
-  useMemo,
-  useState,
-  useEffect,
-  useRef,
-} from "react";
-import { isEmpty, debounce } from "lodash";
-import { useTranslation } from "react-i18next";
-import { LEGACY_ITEMS, IGNORED_ITEMS } from "./constants";
-import {
-  componentTypes,
-  componentTypeDefinitionMap,
-} from "@/AppBuilder/WidgetManager";
-import Fuse from "fuse.js";
-import { SearchBox } from "@/_components";
-import { DragLayer } from "./DragLayer";
-import { CustomComponentsTab } from "./CustomComponentsTab";
-import useStore from "@/AppBuilder/_stores/store";
-import Accordion from "@/_ui/Accordion";
-import sectionConfig from "./sectionConfig";
-import { ANT_DESIGN_COMPONENTS } from "@/AppBuilder/WidgetManager/widgets/antDesign";
-import { SHADCN_COMPONENTS } from "@/AppBuilder/WidgetManager/widgets/shadcn";
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
+import { isEmpty, debounce } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { LEGACY_ITEMS, IGNORED_ITEMS } from './constants';
+import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
+import Fuse from 'fuse.js';
+import { SearchBox } from '@/_components';
+import { DragLayer } from './DragLayer';
+import { CustomComponentsTab } from './CustomComponentsTab';
+import useStore from '@/AppBuilder/_stores/store';
+import Accordion from '@/_ui/Accordion';
+import sectionConfig from './sectionConfig';
+import { ANT_DESIGN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/antDesign';
+import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 
 // Presets (component packs): a palette entry that adds a native widget with some styles set. The shadcn/ui Table is
 // ToolJet's own Table in its shadcn look, so it keeps every Table feature and convention (the older ShadTable widget
 // stays registered for apps that use it, but leaves the palette).
-const SHADCN_TABLE = "Table:shadcn";
-const PRESETS = {
-  [SHADCN_TABLE]: { base: "Table", stylePreset: { tableLook: "shadcn" } },
-};
+const SHADCN_TABLE = 'Table:shadcn';
+const PRESETS = { [SHADCN_TABLE]: { base: 'Table', stylePreset: { tableLook: 'shadcn' } } };
 const presetDefinition = (name) => {
   const preset = PRESETS[name];
   const base = preset && componentTypeDefinitionMap[preset.base];
@@ -36,100 +25,90 @@ const presetDefinition = (name) => {
 };
 
 const SHADCN_SECTIONS = [
+  { title: 'Page sections', items: ['ShadHero', 'ShadSummaryStrip', 'ShadCardGrid', 'ShadRecordList'] },
   {
-    title: "Page sections",
-    items: ["ShadHero", "ShadSummaryStrip", "ShadCardGrid", "ShadRecordList"],
+    title: 'Layout',
+    items: ['FlexContainer', 'ShadTabs', 'ShadListView', 'ShadDialog', 'ShadSeparator', 'ShadAccordion'],
   },
+  { title: 'Typography', items: ['ShadHeading', 'ShadText'] },
+  { title: 'Conversation', items: ['ShadChat', 'ShadQuestionnaire'] },
   {
-    title: "Layout",
-    items: [
-      "FlexContainer",
-      "ShadTabs",
-      "ShadListView",
-      "ShadDialog",
-      "ShadSeparator",
-      "ShadAccordion",
-    ],
-  },
-  { title: "Typography", items: ["ShadHeading", "ShadText"] },
-  { title: "Conversation", items: ["ShadChat", "ShadQuestionnaire"] },
-  {
-    title: "Data display",
+    title: 'Data display',
     items: [
       SHADCN_TABLE,
-      "ShadKanban",
-      "ShadStat",
-      "ShadBadge",
-      "ShadAvatar",
-      "ShadProgress",
-      "ShadEmpty",
-      "ShadSkeleton",
-      "ShadKeyValue",
-      "ShadTimeline",
-      "ShadTags",
-      "ShadCircularProgress",
-      "ShadSpinner",
-      "ShadImage",
-      "ShadIcon",
-      "ShadCarousel",
-      "ShadCalendar",
+      'ShadKanban',
+      'ShadStat',
+      'ShadBadge',
+      'ShadAvatar',
+      'ShadProgress',
+      'ShadEmpty',
+      'ShadSkeleton',
+      'ShadKeyValue',
+      'ShadTimeline',
+      'ShadTags',
+      'ShadCircularProgress',
+      'ShadSpinner',
+      'ShadImage',
+      'ShadIcon',
+      'ShadCarousel',
+      'ShadCalendar',
     ],
   },
   {
-    title: "Charts",
+    title: 'Charts',
     items: [
-      "ShadAreaChart",
-      "ShadBarChart",
-      "ShadLineChart",
-      "ShadComboChart",
-      "ShadPieChart",
-      "ShadScatterChart",
-      "ShadFunnelChart",
-      "ShadHeatmapChart",
-      "ShadRadarChart",
-      "ShadRadialChart",
-      "ShadSparkline",
+      'ShadAreaChart',
+      'ShadBarChart',
+      'ShadLineChart',
+      'ShadComboChart',
+      'ShadPieChart',
+      'ShadScatterChart',
+      'ShadFunnelChart',
+      'ShadHeatmapChart',
+      'ShadRadarChart',
+      'ShadRadialChart',
+      'ShadSparkline',
     ],
   },
   {
-    title: "Inputs",
+    title: 'Inputs',
     items: [
-      "ShadInput",
-      "ShadTextarea",
-      "ShadSelect",
-      "ShadDatePicker",
-      "ShadCheckbox",
-      "ShadSwitch",
-      "ShadRadioGroup",
-      "ShadSlider",
-      "ShadToggleGroup",
-      "ShadNumberInput",
-      "ShadPasswordInput",
-      "ShadPhoneInput",
-      "ShadCurrencyInput",
-      "ShadOtpInput",
-      "ShadTimePicker",
-      "ShadDateTimePicker",
-      "ShadCombobox",
-      "ShadMultiselect",
-      "ShadTagsInput",
-      "ShadColorPicker",
-      "ShadRating",
-      "ShadFileUpload",
+      'ShadInput',
+      'ShadTextarea',
+      'ShadSelect',
+      'ShadDatePicker',
+      'ShadCheckbox',
+      'ShadSwitch',
+      'ShadRadioGroup',
+      'ShadSlider',
+      'ShadToggleGroup',
+      'ShadNumberInput',
+      'ShadPasswordInput',
+      'ShadPhoneInput',
+      'ShadCurrencyInput',
+      'ShadOtpInput',
+      'ShadTimePicker',
+      'ShadDateTimePicker',
+      'ShadCombobox',
+      'ShadMultiselect',
+      'ShadTagsInput',
+      'ShadColorPicker',
+      'ShadRating',
+      'ShadFileUpload',
     ],
   },
   {
-    title: "Actions and navigation",
+    title: 'Actions and navigation',
     items: [
-      "ShadButton",
-      "ShadButtonGroup",
-      "ShadDropdownMenu",
-      "ShadLink",
-      "ShadNavigation",
-      "ShadSteps",
-      "ShadPagination",
-      "ShadBreadcrumb",
-      "ShadAlert",
+      'ShadButton',
+      'ShadButtonGroup',
+      'ShadDropdownMenu',
+      'ShadLink',
+      'ShadNavigation',
+      'ShadSteps',
+      'ShadPagination',
+      'ShadBreadcrumb',
+      'ShadAlert',
     ],
   },
 ];
@@ -137,37 +116,31 @@ const SHADCN_SECTIONS = [
 // Component libraries (experiment): the panel lists one library at a time, picked in a toggle above the search box.
 // A pack lists its own widgets plus FlexContainer, which composes them.
 const COMPONENT_LIBRARIES = [
-  { value: "tooljet", label: "ToolJet UI 1.0" },
+  { value: 'tooljet', label: 'ToolJet UI 1.0' },
   {
-    value: "shadcn",
-    label: "ToolJet UI 2.0",
-    badge: "Beta",
+    value: 'shadcn',
+    label: 'ToolJet UI 2.0',
+    badge: 'Beta',
     sections: SHADCN_SECTIONS,
-    components: [
-      ...SHADCN_COMPONENTS.filter((name) => name !== "ShadTable"),
-      SHADCN_TABLE,
-    ],
+    components: [...SHADCN_COMPONENTS.filter((name) => name !== 'ShadTable'), SHADCN_TABLE],
   },
 ];
 // Pack widgets never appear in the ToolJet list. The Ant Design pack is parked: still registered, so apps that use it
 // render, but listed in no library.
-const PACK_COMPONENTS = new Set([
-  ...SHADCN_COMPONENTS,
-  ...ANT_DESIGN_COMPONENTS,
-]);
+const PACK_COMPONENTS = new Set([...SHADCN_COMPONENTS, ...ANT_DESIGN_COMPONENTS]);
 const libraryComponentNames = (library) =>
-  library.components ? new Set(["FlexContainer", ...library.components]) : null;
-import { Button } from "@/components/ui/Button/Button";
-import { ModuleManager } from "@/modules/Modules/components";
-import { fetchEdition } from "@/modules/common/helpers/utils";
-import { useLicenseStore } from "@/_stores/licenseStore";
-import { shallow } from "zustand/shallow";
-import Tabs from "@/ToolJetUI/Tabs/Tabs";
-import Tab from "@/ToolJetUI/Tabs/Tab";
-import Beta from "@/_ui/Beta";
-import ToggleGroup from "@/ToolJetUI/SwitchGroup/ToggleGroup";
-import ToggleGroupItem from "@/ToolJetUI/SwitchGroup/ToggleGroupItem";
-import "./styles.scss";
+  library.components ? new Set(['FlexContainer', ...library.components]) : null;
+import { Button } from '@/components/ui/Button/Button';
+import { ModuleManager } from '@/modules/Modules/components';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { shallow } from 'zustand/shallow';
+import Tabs from '@/ToolJetUI/Tabs/Tabs';
+import Tab from '@/ToolJetUI/Tabs/Tab';
+import Beta from '@/_ui/Beta';
+import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
+import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
+import './styles.scss';
 
 // Simple error boundary component for module errors
 class ModuleErrorBoundary extends React.Component {
@@ -181,7 +154,7 @@ class ModuleErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("Module error:", error, errorInfo);
+    console.error('Module error:', error, errorInfo);
     this.props.onError();
   }
 
@@ -200,9 +173,7 @@ class ModuleErrorBoundary extends React.Component {
 
 export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
-  const isAutoMobileLayout = useStore(
-    (state) => state.currentLayout === "mobile" && state.getIsAutoMobileLayout()
-  );
+  const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
   const edition = fetchEdition();
 
@@ -217,10 +188,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
-  const [libraryKey, setLibraryKey] = useState("tooljet");
-  const library =
-    COMPONENT_LIBRARIES.find((entry) => entry.value === libraryKey) ??
-    COMPONENT_LIBRARIES[0];
+  const [libraryKey, setLibraryKey] = useState('tooljet');
+  const library = COMPONENT_LIBRARIES.find((entry) => entry.value === libraryKey) ?? COMPONENT_LIBRARIES[0];
 
   // The widgets of the selected library: a pack's own widgets (and FlexContainer), or every native widget.
   const inLibrary = useCallback(
@@ -235,10 +204,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     return [
       ...componentTypes
         .map((component) => component.component)
-        .filter(
-          (component) =>
-            !IGNORED_ITEMS.includes(component) && inLibrary(component)
-        ),
+        .filter((component) => !IGNORED_ITEMS.includes(component) && inLibrary(component)),
       ...Object.keys(PRESETS).filter(inLibrary),
     ];
   }, [componentTypes, inLibrary]);
@@ -246,30 +212,20 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const searchList = useMemo(() => {
     return [
       ...componentTypes
-        .filter(
-          (component) =>
-            !IGNORED_ITEMS.includes(component.component) &&
-            inLibrary(component.component)
-        )
+        .filter((component) => !IGNORED_ITEMS.includes(component.component) && inLibrary(component.component))
         .map((component) => {
-          return {
-            component: component.component,
-            displayName: component.displayName,
-          };
+          return { component: component.component, displayName: component.displayName };
         }),
       ...Object.keys(PRESETS)
         .filter(inLibrary)
-        .map((name) => ({
-          component: name,
-          displayName: presetDefinition(name)?.displayName ?? name,
-        })),
+        .map((name) => ({ component: name, displayName: presetDefinition(name)?.displayName ?? name })),
     ];
   }, [componentTypes, inLibrary]);
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [moduleError, setModuleError] = useState(false);
-  const [activeTab, setActiveTab] = useState("components");
+  const [activeTab, setActiveTab] = useState('components');
 
   // Force re-render when hasModuleAccess changes
   useEffect(() => {
@@ -277,8 +233,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   }, [hasModuleAccess]);
 
   useEffect(() => {
-    setSearchQuery("");
-    filterComponents("");
+    setSearchQuery('');
+    filterComponents('');
   }, [activeTab]);
 
   useEffect(() => {
@@ -286,12 +242,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   }, [componentList, searchQuery]);
 
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
-  const activeRightSideBarTab = useStore(
-    (state) => state.activeRightSideBarTab
-  );
-  const setActiveRightSideBarTab = useStore(
-    (state) => state.setActiveRightSideBarTab
-  );
+  const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
 
   const filterComponentsRef = useRef(null);
@@ -312,9 +264,9 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   const filterComponents = useCallback(
     (value) => {
-      if (value !== "") {
+      if (value !== '') {
         const fuse = new Fuse(searchList, {
-          keys: ["displayName"],
+          keys: ['displayName'],
           shouldSort: true,
           threshold: 0.4,
         });
@@ -323,17 +275,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
         // Preserve previous behavior: swap ToggleSwitchLegacy and ToggleSwitch indices
         // on a COPY (the original code mutated the memoized componentList in place).
         const list = [...componentList];
-        const legacyIndex = list.findIndex(
-          (component) => component === "ToggleSwitchLegacy"
-        );
-        const toggleIndex = list.findIndex(
-          (component) => component === "ToggleSwitch"
-        );
+        const legacyIndex = list.findIndex((component) => component === 'ToggleSwitchLegacy');
+        const toggleIndex = list.findIndex((component) => component === 'ToggleSwitch');
         if (legacyIndex !== -1 && toggleIndex !== -1) {
-          [list[legacyIndex], list[toggleIndex]] = [
-            list[toggleIndex],
-            list[legacyIndex],
-          ];
+          [list[legacyIndex], list[toggleIndex]] = [list[toggleIndex], list[legacyIndex]];
         }
         setFilteredComponents(results.map((result) => result.item.component));
       } else {
@@ -349,16 +294,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   function renderComponentCard(component, index) {
     return (
-      <div
-        key={component}
-        className="text-center align-items-center clearfix draggable-box-wrapper"
-      >
-        <DragLayer
-          index={index}
-          component={
-            presetDefinition(component) ?? componentTypeDefinitionMap[component]
-          }
-        />
+      <div key={component} className="text-center align-items-center clearfix draggable-box-wrapper">
+        <DragLayer index={index} component={presetDefinition(component) ?? componentTypeDefinitionMap[component]} />
       </div>
     );
   }
@@ -378,27 +315,21 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     if (filteredComponents.length === 0) {
       return (
         <div className="empty">
-          <p className="empty-title">
-            {t("widgetManager.noResults", "No results found")}
-          </p>
-          <p
-            className={`empty-subtitle ${
-              darkMode ? "text-white-50" : "text-secondary"
-            }`}
-          >
+          <p className="empty-title">{t('widgetManager.noResults', 'No results found')}</p>
+          <p className={`empty-subtitle ${darkMode ? 'text-white-50' : 'text-secondary'}`}>
             {t(
-              "widgetManager.tryAdjustingFilterMessage",
+              'widgetManager.tryAdjustingFilterMessage',
               "Try adjusting your search or filter to find what you're looking for."
             )}
           </p>
           <button
             className=" btn-sm tj-tertiary-btn mt-3"
             onClick={() => {
-              setSearchQuery("");
-              filterComponents("");
+              setSearchQuery('');
+              filterComponents('');
             }}
           >
-            {t("widgetManager.clearQuery", "clear query")}
+            {t('widgetManager.clearQuery', 'clear query')}
           </button>
         </div>
       );
@@ -417,9 +348,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               .map((section) => ({
                 title: section.title,
                 isOpen: true,
-                children: renderList(
-                  section.items.filter((name) => componentList.includes(name))
-                ),
+                children: renderList(section.items.filter((name) => componentList.includes(name))),
               }))
               .filter((section) => section.children)}
           />
@@ -429,9 +358,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
     const sections = Object.entries(sectionConfig).map(([key, config]) => ({
       title: config.title,
-      items: filteredComponents.filter((component) =>
-        config.valueSet.has(component)
-      ),
+      items: filteredComponents.filter((component) => config.valueSet.has(component)),
     }));
 
     const items = [];
@@ -457,10 +384,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   // Remove renderSection, replace with Tabs/Tab logic below
 
   const libraryPicker = () => (
-    <div
-      className="mt-3 d-flex align-items-center"
-      style={{ width: 266, marginLeft: 16 }}
-    >
+    <div className="mt-3 d-flex align-items-center" style={{ width: 266, marginLeft: 16 }}>
       <ToggleGroup
         id="component-library-select"
         data-cy="component-library-select"
@@ -472,7 +396,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           // A click on the active item deselects it in a toggle group; keep a library picked.
           if (!value) return;
           setLibraryKey(value);
-          setSearchQuery("");
+          setSearchQuery('');
         }}
       >
         {COMPONENT_LIBRARIES.map((entry) => (
@@ -480,17 +404,15 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             key={entry.value}
             value={entry.value}
             style={{
-              width: "100%",
-              whiteSpace: "nowrap",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
+              width: '100%',
+              whiteSpace: 'nowrap',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             {entry.label}
-            {entry.badge ? (
-              <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-1" />
-            ) : null}
+            {entry.badge ? <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-1" /> : null}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
@@ -499,23 +421,21 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   const searchBox = () => {
     return (
-      <div
-        className={`input-icon tj-app-input ${isModuleEditor ? "" : "mt-3"}`}
-      >
+      <div className={`input-icon tj-app-input ${isModuleEditor ? '' : 'mt-3'}`}>
         <SearchBox
           dataCy={`widget-search-box`}
-          initialValue={""}
+          initialValue={''}
           callBack={(e) => handleSearchQueryChange(e.target.value)}
           onClearCallback={() => {
-            setSearchQuery("");
-            filterComponents("");
+            setSearchQuery('');
+            filterComponents('');
           }}
           placeholder={
-            activeTab === "components"
-              ? t("globals.searchComponents", "Search widgets")
-              : activeTab === "custom"
-              ? t("globals.searchCustomComponents", "Search components")
-              : t("globals.searchModules", "Search modules")
+            activeTab === 'components'
+              ? t('globals.searchComponents', 'Search widgets')
+              : activeTab === 'custom'
+              ? t('globals.searchCustomComponents', 'Search components')
+              : t('globals.searchModules', 'Search modules')
           }
           customClass={`tj-widgets-search-input tj-text-xsm`}
           showClearButton={false}
@@ -526,8 +446,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   };
 
   return (
-    <div className={`components-container ${shouldFreeze ? "disabled" : ""}`}>
-      {isModuleEditor || edition === "ce" ? (
+    <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
+      {isModuleEditor || edition === 'ce' ? (
         <>
           <div className="panel-header">
             <span className="panel-header-title">Components</span>
@@ -545,9 +465,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           </div>
           {libraryPicker()}
           <React.Fragment key={libraryKey}>{searchBox()}</React.Fragment>
-          <div className="widgets-list col-sm-12 col-lg-12 row">
-            {segregateSections()}
-          </div>
+          <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
         </>
       ) : (
         <>
@@ -576,23 +494,17 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             <Tab
               eventKey="components"
               title={(() => {
-                const str = t("globals.components", "Components");
+                const str = t('globals.components', 'Components');
                 return str.charAt(0).toUpperCase() + str.slice(1);
               })()}
               darkMode={darkMode}
             >
               {libraryPicker()}
               <React.Fragment key={libraryKey}>{searchBox()}</React.Fragment>
-              <div className="widgets-list col-sm-12 col-lg-12 row">
-                {segregateSections()}
-              </div>
+              <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
             </Tab>
             {hasModuleAccess && (
-              <Tab
-                eventKey="modules"
-                title={t("globals.modules", "Modules")}
-                darkMode={darkMode}
-              >
+              <Tab eventKey="modules" title={t('globals.modules', 'Modules')} darkMode={darkMode}>
                 <ModuleErrorBoundary onError={() => setModuleError(true)}>
                   {searchBox()}
                   <ModuleManager searchQuery={searchQuery} />
@@ -604,7 +516,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
                 eventKey="custom"
                 title={
                   <>
-                    {t("globals.custom", "Custom")}
+                    {t('globals.custom', 'Custom')}
                     <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-0.5" />
                   </>
                 }
