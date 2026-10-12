@@ -34,7 +34,7 @@ export interface ActionApp {
 }
 export interface ActionFolder {
   id: string;
-  ownerId: string;
+  ownerId: string | null;
   appCount: number;
 }
 export interface GitState {

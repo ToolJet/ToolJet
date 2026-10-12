@@ -28,6 +28,7 @@ Workspace is the user-facing term for the `Organization` entity (legacy name).
 | `services/widget-config/` | Per-widget default config (`index.js` aggregates); served to the builder |
 | `subscribers/apps.subscriber.ts` | Workflow slug placeholder on insert; bumps `apps.updated_at` when a version row updates (inserts deliberately don't bump) |
 | `ability/` + `guards/` | CASL `FeatureAbilityFactory` (`app.ability.ts`, `workflow.ability.ts`); `ValidAppGuard`, `ValidSlugGuard`, app-auth/public/private guards |
+| `dashboard/` | Dashboard v2 (`GET /api/v2/apps`, `/api/v2/pins`): one permission resolve → pure SQL builders (`queries.ts`) + pure row actions (`actions.ts`). Imported statically by `module.ts` (CE-only, no EE override); `DashboardService` is provided via a factory so its deps are the edition-resolved classes |
 
 ## Edition split
 
@@ -45,6 +46,8 @@ Workspace is the user-facing term for the `Organization` entity (legacy name).
 - Wrap multi-step writes in `dbTransactionWrap`; branch-aware reads take an optional `branchId` throughout (repository + services).
 - Non-admin/non-builder users are denied MODULE-type resources in `ability/app.ability.ts`.
 - **Dashboard attribution** — `dashboard/activity.interceptor.ts` (global `APP_INTERCEPTOR`) upserts `user_app_activity.last_edited_at` after any successful non-GET request with `:versionId` and `request.tj_app` (except query run/preview and git push), and after `PUT /apps/:id[/icons|/public]`, and `last_viewed_at` after `GET apps/slugs/:slug` of a released app. Modified by is derived (latest `last_edited_at` per app + branch), so the edit throttle skips only when the user is still the latest editor. A subscriber can't do this: child-table DB triggers bump `app_versions.updated_at` outside TypeORM.
+- **Dashboard v2 visibility = v1 root rule.** `findVisibleAppIds` wraps `viewableAppsQueryUsingPermissions`; root, folder, search and pins all filter through it.
+- **Dashboard v2 pins are inline.** Every mode orders `PIN_ORDER` first (pins by position), then plain offset paging; pins past `page_size` spill to page 2. `counts.folders` / `counts.apps` are unpinned only; root `total = counts.pinned + counts.folders + counts.apps`.
 
 ## Related modules
 
