@@ -151,6 +151,7 @@ export const ShadHero = (props) => {
 
   // The aside: a headline figure with its caption above, or a short list of facts, right of the text behind a
   // hairline (under it when centred, or when the hero is narrow: shadcn.scss).
+  const grid = !!aside && !center;
   const asideBlock = aside ? (
     <div
       className={cn(
@@ -207,14 +208,18 @@ export const ShadHero = (props) => {
       <div className="sc-hero-box">
         <section
           className={cn(
-            'sc-hero flex w-full',
+            'sc-hero w-full',
             panel,
-            center ? 'flex-col items-center text-center' : 'items-center gap-6'
+            // With an aside, a grid: text and actions on the left, the aside right of both; in a narrow hero, text,
+            // aside, actions (shadcn.scss).
+            grid ? 'sc-hero-grid' : cn('flex', center ? 'flex-col items-center text-center' : 'items-center gap-6')
           )}
           style={style}
           data-background={background}
         >
-          <div className={cn('flex min-w-0 flex-1', center ? 'flex-col items-center' : 'items-start gap-4')}>
+          <div
+            className={cn('sc-hero-text flex min-w-0 flex-1', center ? 'flex-col items-center' : 'items-start gap-4')}
+          >
             {Icon ? (
               <span
                 className={cn('flex shrink-0 items-center justify-center rounded-xl', center ? 'mb-3' : 'mt-1')}
@@ -276,11 +281,10 @@ export const ShadHero = (props) => {
                   ))}
                 </ul>
               ) : null}
-              {aside && actions && !center ? <div className="mt-3">{actions}</div> : null}
             </div>
           </div>
           {asideBlock}
-          {actions && !(aside && !center) ? <div className={cn(center && 'mt-5')}>{actions}</div> : null}
+          {actions ? <div className={cn(grid ? 'sc-hero-actions' : center && 'mt-5')}>{actions}</div> : null}
         </section>
       </div>
     );

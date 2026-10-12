@@ -342,16 +342,42 @@
 .tj-shadcn .sc-hero-box {
   container-type: inline-size;
 }
+.tj-shadcn .sc-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'text aside'
+    'actions aside';
+  column-gap: 1.5rem;
+  align-items: center;
+}
+.tj-shadcn .sc-hero-grid > .sc-hero-text {
+  grid-area: text;
+}
+.tj-shadcn .sc-hero-grid > .sc-hero-aside {
+  grid-area: aside;
+}
+.tj-shadcn .sc-hero-grid > .sc-hero-actions {
+  grid-area: actions;
+  margin-top: 0.75rem;
+}
 @container (max-width: 560px) {
-  .tj-shadcn .sc-hero:has(.sc-hero-aside) {
-    flex-direction: column;
-    align-items: stretch;
+  .tj-shadcn .sc-hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'text'
+      'aside'
+      'actions';
   }
-  .tj-shadcn .sc-hero-aside {
+  .tj-shadcn .sc-hero-grid > .sc-hero-aside {
+    margin-top: 1rem;
     border-left-width: 0;
     padding-left: 0;
     align-items: flex-start;
     text-align: left;
+  }
+  .tj-shadcn .sc-hero-grid > .sc-hero-actions {
+    margin-top: 1rem;
   }
 }
 
