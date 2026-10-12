@@ -169,3 +169,12 @@ describe('cardDetails', () => {
     ]);
   });
 });
+
+describe('cardDetails with a value that contains itself', () => {
+  it('stops at a few levels instead of overflowing the stack', () => {
+    const loop = ['a'];
+    loop.push(loop);
+    expect(() => cardDetails({ Loop: loop })).not.toThrow();
+    expect(cardDetails({ Loop: loop })[0].label).toBe('Loop');
+  });
+});

@@ -130,8 +130,11 @@ export const cardClamp = (collapsedHeight, contentHeight, expanded) => {
 // A card's details (the details field, shown on the clicked card): an object of label to value, a list of
 // { label, value } rows, or plain text as one unlabelled row. Empty values are left out; at most 12 rows.
 const MAX_DETAIL_ROWS = 12;
-const detailText = (value) => {
-  if (Array.isArray(value)) return value.map(detailText).join(', ');
+// A few levels deep at most: a value that contains itself (an array pushed into itself in a binding) overflowed the stack.
+const MAX_DETAIL_DEPTH = 4;
+const detailText = (value, depth = 0) => {
+  if (depth > MAX_DETAIL_DEPTH) return '';
+  if (Array.isArray(value)) return value.map((v) => detailText(v, depth + 1)).join(', ');
   if (value && typeof value === 'object') {
     try {
       return JSON.stringify(value);
