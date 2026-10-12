@@ -465,6 +465,159 @@ const inputWidget = createWidgetHarness({
   widgetWidth: 600,
 });
 
+describe('Listview: a row event sees the child value as it is after the click', () => {
+  beforeEach(paginatedWidget.setup);
+  afterEach(paginatedWidget.teardown);
+
+  test('[Listview-BUG-010] clicking a checkbox label fires Record clicked once', async () => {
+    // Break this catches: the browser forwarding a label click to the hidden input, so the row
+    // receives two DOM clicks and the handler runs twice — once before the toggle, once after.
+    paginatedWidget.render({
+      currentMode: 'view',
+      events: [
+        {
+          id: 'evt-count',
+          index: 0,
+          sourceId: ID,
+          name: 'evt-count',
+          target: 'component',
+          event: {
+            eventId: 'onRecordClicked',
+            actionId: 'set-custom-variable',
+            key: 'clicks',
+            value: `{{(variables.clicks ?? 0) + 1}}`,
+          },
+        },
+      ],
+    });
+    await waitFor(() => expect(document.querySelectorAll('input[type="checkbox"]')).toHaveLength(5));
+
+    await paginatedWidget.session.user.click(document.querySelectorAll('label')[0]);
+
+    await waitFor(() => expect(store().getVariable('clicks', MODULE_ID)).toBe(1));
+  });
+
+  test('[Listview-BUG-009] Record clicked reads the checkbox value the click produced', async () => {
+    // Break this catches: reading selectedRecord out of the store before the clicked child's own
+    // write has landed, so the handler sees the value from before the click — or nothing at all.
+    paginatedWidget.render({
+      currentMode: 'view',
+      events: [
+        {
+          id: 'evt-rec',
+          index: 0,
+          sourceId: ID,
+          name: 'evt-rec',
+          target: 'component',
+          event: {
+            eventId: 'onRecordClicked',
+            actionId: 'set-custom-variable',
+            key: 'ticked',
+            value: `{{components.${NAME}.selectedRecord.checkbox1.value}}`,
+          },
+        },
+      ],
+    });
+    await waitFor(() => expect(document.querySelectorAll('input[type="checkbox"]')).toHaveLength(5));
+
+    const box = document.querySelectorAll('input[type="checkbox"]')[0];
+    await paginatedWidget.session.user.click(box.parentElement);
+
+    await waitFor(() => expect(store().getVariable('ticked', MODULE_ID)).toBe(true));
+  });
+});
+
+describe('Listview: the published data follows the row children', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const dataRows = () => exposed('data') ?? {};
+
+  test('[Listview-BUG-011] removing a row child drops it from the published data', async () => {
+    // Break this catches: the list's data being patched by children as they write, with nothing
+    // rebuilding it when a child leaves — so a removed child is reported forever.
+    await mount();
+    await waitFor(() => expect(dataRows()[0]?.text1?.text).toBe('Alpha'));
+    expect(Object.keys(dataRows())).toHaveLength(3);
+
+    await widget.session.store.act(() => {
+      store().deleteComponents(['txt1'], MODULE_ID, { saveAfterAction: false });
+    });
+
+    await waitFor(() => expect(dataRows()[0]?.text1).toBeUndefined());
+    expect(dataRows()[1]?.text1).toBeUndefined();
+    expect(dataRows()[2]?.text1).toBeUndefined();
+  });
+
+  test('[Listview-BUG-011] dragging a child out of the row drops it from the published data', async () => {
+    // Break this catches: covering deletion only. A drag re-parents the component, which keeps it
+    // alive — a different path from deleting it, and the one a builder actually takes.
+    await mount();
+    await waitFor(() => expect(dataRows()[0]?.text1?.text).toBe('Alpha'));
+
+    await widget.session.store.act(() => {
+      store().setComponentLayout({ txt1: { width: 10, height: 30, top: 0, left: 0 } }, null, MODULE_ID, {
+        updateParent: true,
+        saveAfterAction: false,
+      });
+    });
+
+    await waitFor(() => expect(dataRows()[0]?.text1).toBeUndefined());
+    expect(JSON.stringify(exposed('data'))).not.toContain('Alpha');
+  });
+
+  test('[Listview-BUG-012] re-parenting through setParentComponent drops the child from the data', async () => {
+    // Break this catches: setParentComponent reading a page index the store keeps per module, so
+    // the action throws before it moves anything — undoing a drag, or receiving one over
+    // multiplayer, takes the whole canvas down.
+    await mount();
+    await waitFor(() => expect(dataRows()[0]?.text1?.text).toBe('Alpha'));
+
+    await widget.session.store.act(() => {
+      store().setParentComponent('txt1', null, MODULE_ID, { saveAfterAction: false });
+    });
+
+    await waitFor(() => expect(dataRows()[0]?.text1).toBeUndefined());
+    expect(store().getComponentDefinition('txt1', MODULE_ID).component.parent).toBeNull();
+  });
+
+  test('[Listview-BUG-011] a child added back is published again, with current values', async () => {
+    // Break this catches: a fix that only handles removal. Reappearing in the data is not enough —
+    // the values must be derived now, not restored from whatever was left behind.
+    await mount();
+    await waitFor(() => expect(dataRows()[0]?.text1?.text).toBe('Alpha'));
+
+    await widget.session.store.act(() => {
+      store().deleteComponents(['txt1'], MODULE_ID, { saveAfterAction: false });
+    });
+    await waitFor(() => expect(dataRows()[0]?.text1).toBeUndefined());
+
+    await widget.session.store.act(() => {
+      store().addComponentToCurrentPage([TEXT_CHILD()], MODULE_ID, { saveAfterAction: false });
+    });
+
+    await waitFor(() => expect(dataRows()[0]?.text1?.text).toBe('Alpha'));
+    expect(dataRows()[1]?.text1?.text).toBe('Beta');
+    expect(dataRows()[2]?.text1?.text).toBe('Gamma');
+  });
+
+  test('[Listview-BUG-011] the published data is rebuilt, not patched, so it cannot go stale', async () => {
+    // Break this catches: a fix that only deletes the removed key. The row must be derived from the
+    // children that exist now, so values can never survive their component.
+    await mount();
+    await waitFor(() => expect(dataRows()[0]?.text1?.text).toBe('Alpha'));
+
+    await widget.session.store.act(() => {
+      store().deleteComponents(['txt1'], MODULE_ID, { saveAfterAction: false });
+    });
+    await waitFor(() => expect(dataRows()[0]?.text1).toBeUndefined());
+
+    expect(JSON.stringify(exposed('data'))).not.toContain('Alpha');
+    expect(JSON.stringify(exposed('children'))).not.toContain('Alpha');
+    expect(JSON.stringify(exposed('selectedRecord') ?? {})).not.toContain('Alpha');
+  });
+});
+
 describe('Listview: a row event knows which record fired it', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);

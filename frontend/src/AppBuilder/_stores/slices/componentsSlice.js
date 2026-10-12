@@ -2337,7 +2337,6 @@ export const createComponentsSlice = (set, get) => ({
     { skipUndoRedo = false, saveAfterAction = true } = {}
   ) => {
     const {
-      currentPageIndex,
       saveComponentChanges,
       checkValueAndResolve,
       getComponentDefinition,
@@ -2345,7 +2344,10 @@ export const createComponentsSlice = (set, get) => ({
       setResolvedComponent,
       withUndoRedo,
       getBaseParentId,
+      getCurrentPageIndex,
     } = get();
+    // The page index is per module, so reading it off the store root yielded undefined.
+    const currentPageIndex = getCurrentPageIndex(moduleId);
 
     // Reject self-parenting or descendant-as-new-parent. Covers multiplayer
     // remote parent events and undo/redo replays that bypass the drag UX's

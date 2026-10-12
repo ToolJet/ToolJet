@@ -151,8 +151,7 @@ describe('Checkbox', () => {
       await waitFor(() => expect(widget.variables().unchecked).toBe('YES'));
     });
 
-    // needs to be looked at again
-    test.skip('[Checkbox-EVT-003] one user click on the label fires each event once', async () => {
+    test('[Checkbox-EVT-003] one user click on the label fires each event once', async () => {
       const fired = [];
       const realFire = store().eventsSlice.fireEvent;
       useStore.setState((state) => {

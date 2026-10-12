@@ -68,7 +68,8 @@ export const ListviewSubcontainer = ({
         }}
         key={index}
         data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
-        onClickCapture={(_event) => {
+        // Bubble, not capture: capture ran before the child's own handler, so Record clicked read a stale value.
+        onClick={(_event) => {
           onRecordOrRowClicked(index);
         }}
       >

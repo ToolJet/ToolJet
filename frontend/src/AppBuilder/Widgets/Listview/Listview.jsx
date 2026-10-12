@@ -35,6 +35,7 @@ export const Listview = function Listview({
   const parentIndices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
   const childComponentCount = useStore((state) => (state.containerChildrenMapping?.[id] || []).length);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
+  const deriveListviewExposedData = useStore((state) => state.deriveListviewExposedData, shallow);
   const initExposedValueArrayForChildren = useStore((state) => state.initExposedValueArrayForChildren, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const isWidgetInContainerDragging = useStore(
@@ -151,9 +152,15 @@ export const Listview = function Listview({
     childComponentCount !== prevChildComponentCount.current ||
     parentIndicesChanged
   ) {
+    const childrenChanged = childComponentCount !== prevChildComponentCount.current;
     prevFilteredDataRef.current = filteredData;
     prevParentIndicesRef.current = parentIndices;
     prevChildComponentCount.current = childComponentCount;
+
+    // A child leaving writes nothing, so only an explicit re-derive drops it from the published rows.
+    if (childrenChanged) {
+      filteredData.forEach((_row, rowIndex) => deriveListviewExposedData(id, rowIndex, parentIndices, moduleId));
+    }
 
     // Adding listItem as key value pair to the customResolvables
     const listItems = filteredData.map((listItem) => {
@@ -172,6 +179,8 @@ export const Listview = function Listview({
   const onRecordOrRowClicked = useCallback(
     (index) => {
       setSelectedRowIndex(index);
+      // The clicked child's own write is still queued; read after it lands or selectedRecord is stale.
+      useStore.getState().flushPendingPerRowWrites?.();
       const state = useStore.getState();
       let lvExposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
       // For nested ListView, navigate to current row's exposed values

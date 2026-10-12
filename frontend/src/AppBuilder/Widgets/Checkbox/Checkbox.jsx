@@ -64,17 +64,6 @@ export const Checkbox = ({
     componentType,
   });
 
-  const toggleValue = (e) => {
-    const isChecked = e.target.checked;
-    setInputValue(isChecked);
-    if (isChecked) {
-      fireEvent('onCheck');
-    } else {
-      fireEvent('onUnCheck');
-    }
-    setUserInteracted(true);
-  };
-
   useEffect(() => {
     if (isInitialRender.current) return;
     setDefaultValue(defaultValueFromProperties);
@@ -244,7 +233,7 @@ export const Checkbox = ({
                 style={{ display: 'none' }}
                 className="form-check-input"
                 type="checkbox"
-                onClick={toggleValue}
+                // No onClick: label activation reaches the wrapper too, so both firing doubled each event (D-01).
                 defaultChecked={defaultValue}
                 checked={checked}
                 id={inputId}
@@ -288,7 +277,14 @@ export const Checkbox = ({
               whiteSpace="normal"
               width={width - 20}
             >
-              <label htmlFor={inputId}>
+              {/* preventDefault: else the browser forwards a second click to the input, counted again by the row. */}
+              <label
+                htmlFor={inputId}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!disable && !loading) handleToggleChange();
+                }}
+              >
                 {label}
                 {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
               </label>
