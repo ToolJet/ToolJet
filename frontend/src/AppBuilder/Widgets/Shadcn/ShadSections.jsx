@@ -6,7 +6,7 @@ import { initials, useAutoHeight, useExposed } from '../packHooks';
 import { Button, Skeleton, cn } from './ui';
 import { resolveIcon } from './displayModel';
 import { cardItems, gridColumns, heroMeta, recordItems, stripColumns, summaryFigures } from './sectionsModel';
-import { chipTone } from '../NewTable/_utils/chipTone';
+import { chipLabel, chipTone } from '../NewTable/_utils/chipTone';
 import { avatarHue } from '../NewTable/_utils/avatarHue';
 import { stringify } from '../packJson';
 import './shadcn.scss';
@@ -256,7 +256,7 @@ const Chip = ({ value, onImage }) => {
       }
       data-tone={chipTone(value)}
     >
-      {value}
+      {chipLabel(value)}
     </span>
   );
 };

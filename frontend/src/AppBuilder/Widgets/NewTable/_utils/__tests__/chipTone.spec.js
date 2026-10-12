@@ -1,4 +1,4 @@
-import { chipTone } from '../chipTone';
+import { chipLabel, chipTone } from '../chipTone';
 
 describe('chipTone', () => {
   it('reads common states', () => {
@@ -38,5 +38,31 @@ describe('chipTone', () => {
     expect(chipTone(undefined)).toBe('neutral');
     expect(chipTone(42)).toBe('neutral');
     expect(chipTone({})).toBe('neutral');
+  });
+});
+
+describe('chipLabel', () => {
+  // Blind reviews marked down chips that showed raw stored values ("completed", "in_progress"): a value written all
+  // in lowercase reads as a label in sentence case. Anything with a capital letter is shown exactly as written.
+  it('puts a lowercase stored value in sentence case', () => {
+    expect(chipLabel('completed')).toBe('Completed');
+    expect(chipLabel('in_progress')).toBe('In progress');
+    expect(chipLabel('due-soon')).toBe('Due soon');
+    expect(chipLabel('on   hold')).toBe('On hold');
+  });
+
+  it('keeps any value that already has a capital letter, a digit-led code or no letters', () => {
+    expect(chipLabel('Paid')).toBe('Paid');
+    expect(chipLabel('SEV1')).toBe('SEV1');
+    expect(chipLabel('In Progress')).toBe('In Progress');
+    expect(chipLabel('2fa required')).toBe('2fa required');
+    expect(chipLabel('---')).toBe('---');
+    expect(chipLabel('')).toBe('');
+  });
+
+  it('turns anything that is not text into text', () => {
+    expect(chipLabel(42)).toBe('42');
+    expect(chipLabel(null)).toBe('');
+    expect(chipLabel(undefined)).toBe('');
   });
 });

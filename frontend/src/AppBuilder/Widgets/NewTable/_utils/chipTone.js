@@ -29,3 +29,14 @@ export const chipTone = (value) => {
   for (const [tone, words] of TONES) if (words.test(text)) return tone;
   return 'neutral';
 };
+
+// The text of a status chip: a value stored all in lowercase ("completed", "in_progress") reads as a label in sentence
+// case ("Completed", "In progress"); a value with any capital letter, or one that starts with a digit, is shown exactly as
+// written.
+export const chipLabel = (value) => {
+  if (value === null || value === undefined) return '';
+  const text = String(value);
+  if (!/^[a-z][a-z0-9 _-]*$/.test(text)) return text;
+  const words = text.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+};
