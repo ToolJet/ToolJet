@@ -218,7 +218,7 @@ export const shadListViewConfig = shadConfig({
     onPageChanged: { displayName: 'Page changed' },
   },
   exposedVariables: {
-    data: {},
+    data: [],
     children: {},
     selectedItem: {},
     selectedItemId: null,

@@ -434,6 +434,17 @@ describe('Record list and summary strip', () => {
 });
 
 describe('List view', () => {
+  it('exposes data as its records, so (components.list.data || []).length counts them (it read "undefined")', async () => {
+    const { stats, problems, unmount } = await mount('ShadListView', { data: [{ id: 1 }, { id: 2 }, { id: 3 }] });
+    expect(Array.isArray(stats.exposed.data)).toBe(true);
+    expect(stats.exposed.data).toHaveLength(3);
+    unmount();
+    const empty = await mount('ShadListView', { data: [] });
+    expect(empty.stats.exposed.data).toEqual([]);
+    empty.unmount();
+    expect(problems()).toEqual([]);
+  });
+
   it('draws 100 rows of 10k without paging, then 100 more per "Show more"', async () => {
     const { problems, unmount } = await mount('ShadListView', {
       data: ROWS_10K,

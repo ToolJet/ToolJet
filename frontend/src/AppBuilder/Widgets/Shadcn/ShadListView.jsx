@@ -121,6 +121,12 @@ export const ShadListView = (props) => {
   const [shownRows, setShownRows] = useState(ROWS_PER_STEP);
   useEffect(() => setShownRows(ROWS_PER_STEP), [paged.page]);
   const items = paged.items.slice(0, shownRows);
+  // data is the list's records, as the catalog says: its initial {} made (components.list.data || []).length read
+  // "undefined" in a page's "N service jobs" line.
+  useEffect(() => {
+    setExposedVariable('data', Array.isArray(properties.data) ? properties.data : []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.data]);
   const hiddenRows = paged.items.length - items.length;
   // Client-side data shorter than the current page: follow the clamp.
   useEffect(() => {

@@ -449,7 +449,7 @@ export const shadListViewConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
-    data: {},
+    data: [],
     children: {},
     selectedItem: {},
     selectedItemId: null,
