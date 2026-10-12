@@ -252,7 +252,8 @@ describe('Link widget', () => {
     await widget.act('setDisable', true);
     expect(widget.exposed().isDisabled).toBe(true);
     expect(root(container)).toHaveStyle({ opacity: '0.5', pointerEvents: 'none' });
-    expect(anchor(container)).toHaveAttribute('disabled');
+    expect(anchor(container)).toHaveAttribute('aria-disabled', 'true');
+    expect(anchor(container)).toHaveAttribute('tabindex', '-1');
 
     await widget.act('setLoading', true);
     expect(widget.exposed().isLoading).toBe(true);
@@ -529,8 +530,36 @@ describe('Link widget', () => {
     expect(anchor(container).hasAttribute('rel')).toBe(false);
     expect(anchor(container).hasAttribute('role')).toBe(false);
 
+    // Disabled is exposed as aria-disabled + tabindex=-1 (D-19); `disabled` is a no-op on <a>.
     await widget.act('setDisable', true);
-    expect(anchor(container)).toHaveAttribute('disabled');
+    expect(anchor(container)).toHaveAttribute('aria-disabled', 'true');
+    expect(anchor(container)).toHaveAttribute('tabindex', '-1');
+    expect(anchor(container)).not.toHaveAttribute('disabled');
+
+    await widget.act('setDisable', false);
+    expect(anchor(container)).toHaveAttribute('aria-disabled', 'false');
+    expect(anchor(container)).not.toHaveAttribute('tabindex');
+  });
+
+  test('[Link-A11Y-002] A disabled Link leaves the tab order and Enter does not activate it', async () => {
+    // Break this catches: keeping the anchor focusable while disabled, or letting a keyboard
+    // activation reach onClick, so a screen reader or keyboard user can still "click" it.
+    const { container } = widget.render({ events: countClicks() });
+    await waitFor(() => expect(anchor(container)).toBeTruthy());
+
+    await widget.session.user.tab();
+    expect(document.activeElement).toBe(anchor(container));
+    await widget.session.user.keyboard('{Enter}');
+    await waitFor(() => expect(widget.variables().clicked).toBe(1));
+
+    await widget.act('setDisable', true);
+    anchor(container).blur();
+    await widget.session.user.tab();
+    expect(document.activeElement).not.toBe(anchor(container));
+
+    anchor(container).focus();
+    await widget.session.user.keyboard('{Enter}');
+    expect(widget.variables().clicked).toBe(1);
   });
 
   test('[Link-ISO-001] Instances isolate text, href, and flags', async () => {

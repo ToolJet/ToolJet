@@ -176,7 +176,10 @@ export const Link = ({
           margin: verticalAlignment === 'top' ? undefined : verticalAlignment === 'center' ? 'auto 0' : 'auto 0 0',
         }}
         ref={clickRef}
-        disabled={isDisabled}
+        // `disabled` is a no-op on <a>: expose the state to assistive tech and drop it from the tab
+        // order instead (same change as #17013); the onClick guard blocks activation.
+        aria-disabled={isDisabled}
+        tabIndex={isDisabled ? -1 : undefined}
       >
         <span
           style={{
