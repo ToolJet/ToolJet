@@ -29,7 +29,7 @@ import {
   moveCard,
   updateCard,
 } from './kanbanBoard';
-import { KANBAN_INSTRUCTIONS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
+import { KANBAN_INSTRUCTIONS, KANBAN_KEYS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
 import { useCanvasFit } from './canvasFit';
 import { SHADOWS, badgeLook, isSet, kanbanLook, px } from './kanbanLook';
 import { stringify } from '../packJson';
@@ -195,6 +195,15 @@ const KanbanCard = ({
       {...drag.attributes}
       {...drag.listeners}
       onClick={() => onSelect(card)}
+      // Enter activates the card as a click does (select it, onCardClicked, its details); Space picks it up to move
+      // (KANBAN_KEYS). While a card is being moved, Enter drops it instead.
+      onKeyDown={(e) => {
+        drag.listeners?.onKeyDown?.(e);
+        if (e.key === 'Enter' && !drag.isDragging && e.target === e.currentTarget) {
+          e.preventDefault();
+          onSelect(card);
+        }
+      }}
       style={look.card}
       className={cn(
         'group/card relative overflow-hidden border text-card-foreground transition-colors hover:border-primary/40',
@@ -696,7 +705,7 @@ export const ShadKanban = (props) => {
   const draggable = properties.allowDrag !== false && enabled && !properties.loadingState && !(custom && editing);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: kanbanCoordinates })
+    useSensor(KeyboardSensor, { coordinateGetter: kanbanCoordinates, keyboardCodes: KANBAN_KEYS })
   );
   // What a screen reader hears while a card moves: its title and the column's, not dnd-kit's ids.
   const titleOfCard = (key) => {

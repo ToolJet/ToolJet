@@ -328,6 +328,30 @@ describe('Kanban', () => {
     expect(problems()).toEqual([]);
   });
 
+  // dnd-kit's keyboard sensor took Enter as well as Space to pick a card up, so the keyboard could never activate a
+  // card (select it, fire onCardClicked, open its details), and on a board without dragging it did nothing at all.
+  it.each([
+    ['a board with dragging', {}],
+    ['a board without dragging', { allowDrag: false }],
+  ])('Enter on a focused card opens its details on %s', async (_, extra) => {
+    const { problems, unmount } = await mount('ShadKanban', {
+      data: [{ id: 1, title: 'Northstar', status: 'todo', details: { 'Deal size': '$24,000' } }],
+      columns: ['todo'],
+      detailsField: 'details',
+      ...extra,
+    });
+    const card = screen.getByText('Northstar').closest('[aria-roledescription], [role=button]');
+    await act(async () => {
+      card.focus();
+      fireEvent.keyDown(card, { key: 'Enter', code: 'Enter' });
+    });
+    expect(document.body.textContent).toContain('$24,000');
+    await act(async () => fireEvent.keyDown(card, { key: 'Enter', code: 'Enter' }));
+    expect(document.body.textContent).not.toContain('$24,000');
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
   it('draws 100 cards a column, then 100 more per "Show more"', async () => {
     const data = NUMS_10K.map((i) => ({
       id: i,

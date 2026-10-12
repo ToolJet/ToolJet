@@ -45,5 +45,9 @@ export const kanbanAnnouncements = (cardTitle, columnTitle) => {
   };
 };
 
+/** The keys of a keyboard move: Space picks a card up (Enter is the card's click, as on any button), Space or Enter
+ *  drops it, Escape cancels. dnd-kit's default took Enter to pick up too, so the keyboard could never activate a card. */
+export const KANBAN_KEYS = { start: ['Space'], cancel: ['Escape'], end: ['Space', 'Enter', 'Tab'] };
+
 export const KANBAN_INSTRUCTIONS =
-  'To move a card, press Space or Enter, use the arrow keys to move it between columns, then Space or Enter to drop it. Escape cancels.';
+  'Press Enter to open a card. To move it, press Space, use the arrow keys to move it between columns, then Space or Enter to drop it. Escape cancels.';
