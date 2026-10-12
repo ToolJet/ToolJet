@@ -22,6 +22,7 @@
   },
   "scripts": {
     "ci:changed": "bash scripts/test-changed.sh",
+    "tj:check": "tsc -p tools/tj && node --experimental-strip-types --no-warnings --test tools/tj/test/*.test.ts",
     "prebuild:plugins": "npm run install:plugins",
     "install:plugins": "npm --prefix plugins install",
     "build:plugins": "npm --prefix plugins run build",

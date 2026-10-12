@@ -1,0 +1,375 @@
+name: Cypress Workflows
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  PR_NUMBER: ${{ github.event.number }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  TIMESTAMP: ${{ github.run_number }}-${{ github.run_attempt }}
+
+jobs:
+  Cypress-Workflows:
+    runs-on: ubuntu-22.04
+
+    # Workflows are EE-only, so unlike the platform suite there is no `ce` leg
+    # and no ce label here.
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-workflows-ee')
+
+    strategy:
+      fail-fast: false
+      matrix:
+        edition:
+          - ee
+
+    steps:
+      - name: Debug labels and matrix edition
+        run: |
+          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
+          echo "Matrix edition: ${{ matrix.edition }}"
+
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      # ← VPN: Connect before any step that needs private resources. The
+      # datasource-backed workflow specs (Postgres, HarperDB) reach hosts that
+      # are only routable over the VPN.
+      - name: Set VPN API URL
+        run: |
+          SERVER_HOST=$(echo "${{ secrets.VPN_SERVER }}" | cut -d: -f1)
+          echo "VPN_API_URL=https://${SERVER_HOST}:9100" >> $GITHUB_ENV
+
+      - name: Connect to VPN
+        uses: adishM98/auth-vpn@v2.3.0
+        with:
+          server: ${{ secrets.VPN_SERVER }}
+          api-key: ${{ secrets.VPN_API_KEY }}
+          api-url: ${{ env.VPN_API_URL }}
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Log selected matrix
+        run: |
+          echo "Selected edition: ${{ matrix.edition }}"
+          echo "Matrix: ${{ toJSON(matrix) }}"
+
+      # The EE image is what brings the private workflow editor code into the
+      # run; the runner checkout itself has no submodules.
+      - name: Build EE Docker image
+        if: matrix.edition == 'ee'
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
+
+      - name: Set up environment variables
+        run: |
+          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
+          echo "TOOLJET_HOST=http://localhost:3000" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
+          echo "PG_HOST=postgres" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
+          echo "TOOLJET_DB_HOST=postgres" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "PGRST_HOST=localhost:3001" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
+          echo "PGRST_SERVER_PORT=3001" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
+
+      - name: clean up old docker containers
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
+
+      - name: Pulling the docker-compose file
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+
+      - name: Update docker-compose file
+        run: |
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
+
+      - name: Install Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+
+      - name: Run docker-compose file
+        run: docker-compose up -d
+
+      - name: Checking containers
+        run: docker ps -a
+
+      - name: sleep
+        run: sleep 80
+
+      - name: docker logs
+        run: docker-compose logs tooljet
+
+      - name: Wait for the server to be ready
+        run: |
+          echo "Waiting for ToolJet to start (timeout: 900 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=900
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check 1: success message in logs
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82|Ready to use at http://localhost:80"; then
+              echo "Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+
+            # Check 2: health endpoint returns HTTP 200
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Health check passed (HTTP $HTTP_STATUS)!"
+              SUCCESS_FOUND=true
+              break
+            fi
+
+            echo "Still waiting... (${ELAPSED}s elapsed, last health check: HTTP ${HTTP_STATUS})"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "Timeout reached without finding success logs or healthy endpoint"
+            echo "Showing current logs for troubleshooting..."
+            docker-compose logs --tail=100 tooljet
+            exit 1
+          fi
+
+          echo "Server is ready!"
+
+      - name: Test database connection
+        run: |
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Seeding (Setup Super Admin)
+        run: |
+          curl --fail-with-body 'http://localhost:3000/api/onboarding/setup-super-admin' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "companyName": "ToolJet",
+              "name": "The Developer",
+              "workspaceName": "My workspace",
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }'
+
+      - name: Seeding (Authenticate)
+        run: |
+          AUTH_RESPONSE=$(curl --fail-with-body \
+            -c /tmp/tj_cookies.txt \
+            'http://localhost:3000/api/authenticate' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }')
+          echo "$AUTH_RESPONSE"
+          ORG_ID=$(echo "$AUTH_RESPONSE" | jq -r '.current_organization_id')
+          echo "TJ_ORG_ID=$ORG_ID" >> $GITHUB_ENV
+
+      - name: Seeding (Complete Onboarding)
+        run: |
+          # Sets onboarding_status = onboarding_completed so the frontend does not
+          # redirect every page visit to /setup, which would break all UI tests.
+          curl --fail-with-body \
+            -b /tmp/tj_cookies.txt \
+            -X POST \
+            'http://localhost:3000/api/onboarding/finish' \
+            -H 'Content-Type: application/json' \
+            -H "tj-workspace-id: $TJ_ORG_ID" \
+            --data-raw '{"region": "us"}'
+
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS_MARKETPLACE }}
+          dir: "./cypress-tests"
+
+      - name: Install Cypress & deps
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./cypress-tests
+          runTests: false
+
+      - name: Workflows
+        working-directory: ./cypress-tests
+        env:
+          CELL: "Workflows / ${{ matrix.edition }}"
+          BROWSER: chrome
+          CONFIG_FILE: cypress-workflows.config.js
+          CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
+        run: node cy-ci-run.js
+
+      - name: Ensure run summary exists
+        if: always()
+        working-directory: ./cypress-tests
+        run: |
+          if [ ! -f summary.json ]; then
+            printf '{"cell":"Workflows / %s","result":"failure","stats":null}\n' '${{ matrix.edition }}' > summary.json
+          fi
+          cat summary.json
+
+      - name: Upload run summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-summary-workflows-${{ matrix.edition }}
+          path: cypress-tests/summary.json
+          retention-days: 7
+
+      - name: Capture Screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-workflows-${{ matrix.edition }}
+          path: cypress-tests/cypress/screenshots
+
+      - name: Collect server logs on failure
+        if: failure()
+        run: docker-compose logs --tail=300 tooljet
+
+      # ← VPN: Disconnect — always runs even if earlier steps fail
+      - name: Disconnect VPN
+        if: always()
+        uses: adishM98/auth-vpn/disconnect@v2.3.0
+
+  notify-slack:
+    needs:
+      - Cypress-Workflows
+    # Run after the test job whenever it actually ran (not skipped — avoids
+    # posting on unrelated labels).
+    if: >-
+      always() && needs.Cypress-Workflows.result != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      # This job runs separately from the matrix, so check out just the script.
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Download run summaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cypress-summary-workflows-*
+          path: summaries
+
+      - name: Build Slack payload
+        env:
+          CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
+          # Suite name rendered in the Slack headline (e.g. "❌ Cypress Workflows Failed").
+          SUITE: Workflows
+          OVERALL: >-
+            ${{ needs.Cypress-Workflows.result == 'failure' && 'failure' || 'success' }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          # Normalise pull_request_target → pull_request so the script renders PR context.
+          EVENT: ${{ github.event_name == 'pull_request_target' && 'pull_request' || github.event_name }}
+          SHA: ${{ github.sha }}
+          SERVER_URL: ${{ github.server_url }}
+          RUN_ID: ${{ github.run_id }}
+          # PR context — populated only on pull_request events; empty on push.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          BRANCH: ${{ github.ref_name }}
+        run: node .github/scripts/build-slack-payload.js
+
+      - name: Post result to Slack
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          # Fail the step (and surface the Slack API error) instead of
+          # silently swallowing ok:false responses like not_in_channel.
+          errors: true
+          payload-file-path: payload.json
