@@ -361,6 +361,18 @@ describe('Kanban', () => {
   });
 });
 
+describe('Button focus ring', () => {
+  it('stays within the 2px the widget box leaves around a button (a 2px ring 2px out was cut off at the sides)', async () => {
+    const { problems, unmount } = await mount('ShadButton', { text: 'Novo Agendamento' });
+    const cls = document.querySelector('button').className;
+    expect(cls).toContain('focus-visible:ring-1');
+    expect(cls).toContain('focus-visible:ring-offset-1');
+    expect(cls).not.toContain('focus-visible:ring-offset-2');
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+});
+
 describe('Card grid', () => {
   it('draws no initials panel when no image field is mapped, and keeps the badge in the card body', async () => {
     const { problems, unmount } = await mount('ShadCardGrid', {
