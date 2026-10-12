@@ -15,11 +15,8 @@ export * from './helpers/seed';
 // --- API: HTTP and authentication helpers ---
 export * from './helpers/api';
 
-// --- Workflows: workflow-specific factories (apps, queries, executions, bundles) ---
+// --- Workflows: workflow data source and query factories ---
 export * from './helpers/workflows';
-
-// --- TJDB: TooljetDB test-table + tenant-schema factories ---
-export * from './helpers/tooljet-db';
 
 // --- Custom Component Libraries: entity factories, PAT minting, upload fixtures ---
 export * from './helpers/custom-component-libraries';

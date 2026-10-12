@@ -30,6 +30,22 @@ export const DATE_FORMAT_OPTIONS = [
     label: 'YYYY/MM/DD',
     value: 'YYYY/MM/DD',
   },
+  {
+    label: 'DD-MM-YYYY',
+    value: 'DD-MM-YYYY',
+  },
+  {
+    label: 'MM-DD-YYYY',
+    value: 'MM-DD-YYYY',
+  },
+  {
+    label: 'YYYY-DD-MM',
+    value: 'YYYY-DD-MM',
+  },
+  {
+    label: 'YYYY-MM-DD',
+    value: 'YYYY-MM-DD',
+  },
 ];
 
 export const TIME_FORMAT_OPTIONS = [

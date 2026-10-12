@@ -790,7 +790,8 @@ export class VersionsCreateService implements IVersionsCreateService {
         row.userId ?? null,
         accessToken,
         refreshToken,
-        manager
+        manager,
+        row.moreDetails ?? null
       );
     }
   }

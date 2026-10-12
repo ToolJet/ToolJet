@@ -6,7 +6,7 @@
 #   SHA, RUN_URL, VERDICT              — always
 #   BASE_REF, SCOPE                    — changed lane
 #   RESULT_BUILD_{SERVER,PLUGINS,FRONTEND,MARKETPLACE}
-#   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}  — full lane
+#   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}, RESULT_VULN_GATE  — full lane
 #   RESULT_CHANGED                     — changed lane
 #   RESULT_FRONTEND                    — both lanes
 #   UNIT_JSON, E2E_JSON_DIR, UNIT_STEP_URL, E2E_STEP_URL — for render-failed-tests.mjs
@@ -54,6 +54,7 @@ if [ "$MODE" = "full" ]; then
   echo "| **E2E tests** | $(row e2e "$RESULT_E2E") |"
   echo "| **Cypress — Platform** | $(cell "$RESULT_CYPRESS_PLATFORM") |"
   echo "| **Cypress — Marketplace** | $(cell "$RESULT_CYPRESS_MARKETPLACE") |"
+  echo "| **Vulnerability gate** | $(cell "${RESULT_VULN_GATE:-skipped}") |"
   # coverage.md line 1 = row cell, rest = details (scripts/render-coverage.mjs).
   # No file = gate didn't run: no server code changed, or a suite already failed.
   if [ -s "${COVERAGE_MD:-}" ]; then

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { InternalTableRelation } from 'src/entities/internal_table_relation.entity';
@@ -44,14 +44,20 @@ export class TooljetDbBulkUploadService {
       throw new NotFoundException(`Table ${tableName} not found`);
     }
 
-    return await this.bulkUploadCsv(internalTable.id, fileBuffer, organizationId, environmentId);
+    const remainingRowCapacity = await this.tableOperationsService.getRemainingRowCapacity(organizationId);
+    if (remainingRowCapacity <= 0) {
+      throw new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451);
+    }
+
+    return await this.bulkUploadCsv(internalTable.id, fileBuffer, organizationId, environmentId, remainingRowCapacity);
   }
 
   async bulkUploadCsv(
     internalTableId: string,
     fileBuffer: Buffer,
     organizationId: string,
-    environmentId?: string
+    environmentId?: string,
+    remainingRowCapacity: number = Infinity
   ): Promise<{ processedRows: number }> {
     const rowsToUpsert = [];
     const passThrough = new PassThrough();
@@ -109,7 +115,8 @@ export class TooljetDbBulkUploadService {
           primaryKeyColumnSchema,
           row,
           rowsProcessed,
-          csvStream
+          csvStream,
+          remainingRowCapacity
         )
       )
       .on('data', (row) => {
@@ -135,7 +142,9 @@ export class TooljetDbBulkUploadService {
       })
       .on('error', (error) => {
         csvStream.destroy();
-        passThrough.emit('error', new BadRequestException(error));
+        // Preserve a typed HttpException (e.g. the 451 row-limit signal); only wrap
+        // untyped stream/parse errors as a generic 400.
+        passThrough.emit('error', error instanceof HttpException ? error : new BadRequestException(error));
       })
       .on('end', () => {
         passThrough.emit('end');
@@ -278,10 +287,20 @@ export class TooljetDbBulkUploadService {
     primaryKeyColumnSchema: TooljetDatabaseColumn[],
     row: unknown,
     rowsProcessed: number,
-    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>
+    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>,
+    remainingRowCapacity: number = Infinity
   ) {
     if (rowsProcessed >= this.MAX_ROW_COUNT)
       csvStream.emit('error', `Row count cannot be greater than ${this.MAX_ROW_COUNT}`);
+
+    if (rowsProcessed >= remainingRowCapacity)
+      // 451 (not a generic 400): the workspace hit its licensed row cap. The rest of the
+      // row-limit feature signals this with 451 so the client can prompt an upgrade; the
+      // stream error handler passes HttpExceptions through untouched to preserve it.
+      csvStream.emit(
+        'error',
+        new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451)
+      );
 
     try {
       const columnsInCsv = Object.keys(row);
@@ -314,8 +333,12 @@ export class TooljetDbBulkUploadService {
       case TJDB.bigint:
         return this.convertNumber(columnValue, supportedDataType);
       case TJDB.jsonb:
-        if (typeof columnValue !== 'string') return columnValue;
-        return JSON.parse(columnValue);
+        // Hand jsonb to the driver as JSON text: node-postgres serialises a JS array as a Postgres
+        // array literal ({...}), which a jsonb column rejects. Parsing still validates the cell.
+        if (typeof columnValue !== 'string') return JSON.stringify(columnValue);
+        // A `null` cell stays a database NULL rather than the JSON value null
+        if (JSON.parse(columnValue) === null) return null;
+        return columnValue;
       default:
         return columnValue;
     }
@@ -483,6 +506,19 @@ export class TooljetDbBulkUploadService {
       return {
         status: 'failed',
         error: error.message,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    // Conservative: treats every row in the batch as a potential new row, since knowing which
+    // primary keys already exist would need an extra query. Safe default for a hard cap.
+    const remainingRowCapacity = await this.tableOperationsService.getRemainingRowCapacity(organizationId);
+    if (rowsToUpsert.length > remainingRowCapacity) {
+      return {
+        status: 'failed',
+        error: "You've reached your limit of rows in ToolJet database tables. Upgrade for more.",
         inserted: 0,
         updated: 0,
         rows: [],
