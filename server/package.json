@@ -48,7 +48,8 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "copy-schemas": "copyfiles -u 4 src/dto/validators/schemas/**/*.json dist/src/dto/validators/schemas",
     "worker:dev": "WORKER=true NODE_ENV=development nest start --watch",
-    "worker:prod": "WORKER=true NODE_ENV=production node dist/src/main"
+    "worker:prod": "WORKER=true NODE_ENV=production node dist/src/main",
+    "test:mcp-oauth": "jest --config test/mcp-oauth.jest.config.cjs --runInBand"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
@@ -81,6 +82,7 @@
     "@nestjs/throttler": "^6.2.1",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.3",
+    "@node-oauth/oauth2-server": "5.3.0",
     "@node-saml/node-saml": "^5.1.0",
     "@octokit/rest": "^22.0.0",
     "@opentelemetry/api-logs": "^0.218.0",
@@ -109,6 +111,7 @@
     "acorn-walk": "^8.3.4",
     "ai": "^4.3.19",
     "ajv": "^8.14.0",
+    "basic-auth": "2.0.1",
     "bcrypt": "^6.0.0",
     "bufferutil": "^4.1.0",
     "bullmq": "^5.58.9",

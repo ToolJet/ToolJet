@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react';
 
 // Lazy load ENTIRE APP ROUTERS (not just pages)
 // This is CRITICAL for bundle isolation - each router imports completely different code
+const McpOAuthConsent = lazy(() => import('./McpOAuth/ConsentPage'));
 const ViewerApp = lazy(() => import('./ViewerApp'));
 const MainApp = lazy(() => import('./App').then((module) => ({ default: module.App })));
 
@@ -110,6 +111,7 @@ class ChunkErrorBoundary extends Component {
  * How it works:
  * - /applications/* routes load ViewerApp.jsx (viewer bundle ONLY)
  * - /embed-apps/* routes load ViewerApp.jsx (viewer bundle ONLY)
+ * - /mcp/consent loads the isolated OAuth consent page
  * - All other routes load App.jsx (main app bundle)
  *
  * Why this matters:
@@ -119,7 +121,7 @@ class ChunkErrorBoundary extends Component {
  * - Result: Viewer bundle < 1.5MB (90% reduction from ~15MB)
  *
  * WARNING: Do NOT import feature components directly in this file!
- * Only lazy load the two top-level router components (ViewerApp and MainApp).
+ * Lazy load top-level route components to keep their bundles isolated.
  */
 export const RootRouter = () => {
   return (
@@ -127,6 +129,7 @@ export const RootRouter = () => {
       <ChunkErrorBoundary>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
+            <Route path="/mcp/consent" element={<McpOAuthConsent />} />
             {/* Viewer routes - ISOLATED BUNDLE */}
             {/* App-scoped auth routes (login/signup) are lazy-loaded inside ViewerApp */}
             <Route path="/applications/*" element={<ViewerApp />} />

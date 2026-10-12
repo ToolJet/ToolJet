@@ -1,3 +1,4 @@
+import { sanitizeOAuthUrl } from '@otel/sanitize';
 import { Injectable, LoggerService } from '@nestjs/common';
 import { RequestContext } from '@modules/request-context/service';
 import { Logger as PinoBaseLogger } from 'pino';
@@ -12,6 +13,15 @@ const SENSITIVE_KEYS = [
   'invitation_token',
   'access_token',
   'refresh_token',
+  'subject_token',
+  'actor_token',
+  'id_token',
+  'client_secret',
+  'code',
+  'code_verifier',
+  'x-tooljet-delegation',
+  'tj_oauth_viewer',
+  'x-tooljet-oauth-csrf',
   'secret',
   'api_key',
   'authorization',
@@ -46,7 +56,7 @@ export class TransactionLogger implements LoggerService {
     msg?: string;
   } {
     const transactionId = RequestContext.getTransactionId();
-    const route = RequestContext.getRoute();
+    const route = sanitizeOAuthUrl(RequestContext.getRoute()) as string;
     const startTime = RequestContext.getStartTime();
     // A logging call must never crash its caller — if redact/stringify blows up on some
     // exotic value (a throwing getter, a circular ref past the seen-set, etc.), fall back
@@ -86,7 +96,7 @@ export class TransactionLogger implements LoggerService {
     ];
   }
   private shouldIgnoreLog(): boolean {
-    const route = RequestContext.getRoute();
+    const route = sanitizeOAuthUrl(RequestContext.getRoute()) as string;
     return route ? ignoreLogPaths.includes(route) : false;
   }
 

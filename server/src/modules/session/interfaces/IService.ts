@@ -1,3 +1,4 @@
+import type { WorkspaceAuthentication } from '@modules/mcp-oauth/protocol';
 import { Response } from 'express';
 import { EntityManager } from 'typeorm';
 import { UserSessions } from 'src/entities/user_sessions.entity';
@@ -32,5 +33,6 @@ export interface JWTPayload {
   isSSOLogin: boolean;
   isPasswordLogin: boolean;
   invitedOrganizationId?: string;
+  workspaceAuthentication?: WorkspaceAuthentication;
   isPatLogin?: boolean;
 }

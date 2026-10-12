@@ -1,3 +1,4 @@
+import { isPublicOAuthProtocolPath } from '@modules/mcp-oauth/http-security';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
@@ -295,6 +296,10 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (safeMethods.has(req.method)) return next();
+    if (
+      configService.get('MCP_OAUTH_ENABLED') === 'true' &&
+      isPublicOAuthProtocolPath(req.path, configService.get('SUB_PATH'))
+    ) return next();
     if (exemptPrefixes.some((p) => req.path === p || req.path.startsWith(p))) return next();
 
     let origin = req.headers.origin as string | undefined;
@@ -359,6 +364,22 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
     };
 
     let cacheService: CorsOriginsCache | null = null;
+
+    // Browser MCP clients need public, cookie-free token/registration endpoints. Keep the
+    // workspace browser API's existing CORS policy and credential handling separate.
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      if (
+        configService.get('MCP_OAUTH_ENABLED') !== 'true' ||
+        !isPublicOAuthProtocolPath(req.path, configService.get('SUB_PATH'))
+      ) return next();
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      if (req.method === 'OPTIONS') {
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        return res.status(204).end();
+      }
+      next();
+    });
 
     // Enable CORS with a dynamic origin function
     app.enableCors({
