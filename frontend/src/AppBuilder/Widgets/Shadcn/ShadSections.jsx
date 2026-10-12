@@ -5,7 +5,7 @@ import { LoadingBox, Shell, busy, wantsSkeleton } from './Shadcn';
 import { initials, useAutoHeight, useExposed } from '../packHooks';
 import { Button, Skeleton, cn } from './ui';
 import { resolveIcon } from './displayModel';
-import { cardItems, gridColumns, heroMeta } from './sectionsModel';
+import { cardItems, gridColumns, heroMeta, recordItems, stripColumns, summaryFigures } from './sectionsModel';
 import { chipTone } from '../NewTable/_utils/chipTone';
 import { avatarHue } from '../NewTable/_utils/avatarHue';
 import { stringify } from '../packJson';
@@ -13,7 +13,7 @@ import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
 
-// shadcn/ui pack: page sections. Configs in WidgetManager/shadcnSource.sections.js, style variables and loading looks
+// shadcn/ui pack: page sections (a hero, a card grid, a record list and a summary strip). Configs in WidgetManager/shadcnSource.sections.js, style variables and loading looks
 // in looks/sections.js, data logic in sectionsModel.js. A section draws a designed layout from properties only, so it
 // stays editable in the inspector. Colours come from the theme (shadcn tokens) and the accent style.
 
@@ -74,7 +74,9 @@ const heroPanel = (background, imageUrl) => {
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }
-        : { background: `linear-gradient(135deg, color-mix(in srgb, ${ACCENT} 78%, #000), #111)` };
+        : {
+            background: `linear-gradient(135deg, color-mix(in srgb, ${ACCENT} 78%, #000), #111)`,
+          };
     default:
       return {
         background: `color-mix(in srgb, ${ACCENT} 7%, var(--sc-background))`,
@@ -172,7 +174,9 @@ export const ShadHero = (props) => {
             {text(p.eyebrow) ? (
               <span
                 className="text-xs font-semibold uppercase tracking-[0.14em]"
-                style={{ color: onDark ? 'rgba(255,255,255,0.85)' : ACCENT_INK }}
+                style={{
+                  color: onDark ? 'rgba(255,255,255,0.85)' : ACCENT_INK,
+                }}
               >
                 {text(p.eyebrow)}
               </span>
@@ -237,7 +241,10 @@ const Chip = ({ value, onImage }) => {
       className="inline-flex max-w-full items-center truncate rounded-full px-2.5 py-0.5 text-xs font-semibold"
       style={
         onImage
-          ? { background: 'rgba(255,255,255,0.92)', color: `color-mix(in srgb, ${tone} 80%, #000)` }
+          ? {
+              background: 'rgba(255,255,255,0.92)',
+              color: `color-mix(in srgb, ${tone} 80%, #000)`,
+            }
           : {
               background: `color-mix(in srgb, ${tone} 14%, transparent)`,
               color: `color-mix(in srgb, ${tone} 80%, var(--sc-foreground))`,
@@ -410,7 +417,10 @@ export const ShadCardGrid = (props) => {
                 <div className="flex min-w-0 items-start justify-between gap-2">
                   <span
                     className="line-clamp-2 min-w-0 text-base font-semibold leading-snug"
-                    style={{ color: 'var(--lk-title,var(--sc-foreground))', fontFamily: TITLE_FONT }}
+                    style={{
+                      color: 'var(--lk-title,var(--sc-foreground))',
+                      fontFamily: TITLE_FONT,
+                    }}
                   >
                     {card.title}
                   </span>
@@ -450,6 +460,388 @@ export const ShadCardGrid = (props) => {
           </div>
         ) : null}
       </div>
+    );
+  }
+  return (
+    <Shell {...props} innerRef={ref}>
+      {body}
+    </Shell>
+  );
+};
+
+// ---- Record list -----------------------------------------------------------------------------------------------------
+
+const ROWS_PER_STEP = 100;
+
+const DENSITY = {
+  compact: { pad: 'py-2', avatar: 28, title: 'text-sm', meta: 'text-xs' },
+  default: { pad: 'py-3', avatar: 36, title: 'text-sm', meta: 'text-xs' },
+  comfortable: { pad: 'py-4', avatar: 40, title: 'text-base', meta: 'text-sm' },
+};
+
+/** A row's avatar: its image, or (none, or one that fails to load) the initials on a tint of the name's hue. */
+const RecordAvatar = ({ src, name, size, shape }) => {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
+  const hue = avatarHue(name);
+  const radius = shape === 'rounded' ? 'rounded-lg' : 'rounded-full';
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt=""
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className={cn('shrink-0 object-cover', radius)}
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return (
+    <span
+      className={cn('tj-record-avatar flex shrink-0 items-center justify-center font-semibold', radius)}
+      style={{
+        width: size,
+        height: size,
+        fontSize: Math.round(size * 0.38),
+        background: `color-mix(in srgb, hsl(${hue} 70% 55%) 16%, var(--sc-background))`,
+        // Mixed toward the foreground: a deeper ink on a light theme, a lighter one on a dark theme.
+        color: `color-mix(in srgb, hsl(${hue} 65% 48%) 62%, var(--sc-foreground))`,
+      }}
+      aria-hidden="true"
+      data-fallback="initials"
+    >
+      {initials(name)}
+    </span>
+  );
+};
+
+export const ShadRecordList = (props) => {
+  const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
+  const ref = useRef(null);
+  useAutoHeight(props, ref);
+  const rows = useMemo(
+    () =>
+      recordItems(p.data, {
+        titleField: p.titleField,
+        avatarField: p.avatarField,
+        metaFields: p.metaFields,
+        statusField: p.statusField,
+        valueField: p.valueField,
+        valueFormat: p.valueFormat,
+        currency: p.currency,
+        idField: p.idField,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      stringify(p.data ?? null),
+      p.titleField,
+      p.avatarField,
+      p.metaFields,
+      p.statusField,
+      p.valueField,
+      p.valueFormat,
+      p.currency,
+      p.idField,
+    ]
+  );
+  // The first ROWS_PER_STEP rows and a button for the next ones, as the card grid does: a 10,000-row binding froze the
+  // page. A new data binding starts again from the first step.
+  const [shownCount, setShownCount] = useState(ROWS_PER_STEP);
+  useEffect(() => setShownCount(ROWS_PER_STEP), [rows]);
+  const [selected, setSelected] = useState(null);
+  const idKey = text(p.idField) || 'id';
+  useExposed(setExposedVariables, p, {
+    selectedItem: selected?.row ?? {},
+    selectedItemId: selected ? selected.row?.[idKey] ?? null : null,
+  });
+  const hasClick = useHasEvent(id, 'onRowClicked');
+  const density = DENSITY[p.density] || DENSITY.default;
+  const showAvatar = p.showAvatar !== false;
+  const dividers = p.showDividers !== false;
+  const card = p.listStyle !== 'plain';
+  const clickable = (hasClick || p.highlightSelected !== false) && !busy(p);
+  const inset = card ? 'px-4' : 'px-1';
+
+  const click = (row) => {
+    if (busy(p)) return;
+    setSelected(row);
+    setExposedVariable('selectedItem', row.row);
+    setExposedVariable('selectedItemId', row.row?.[idKey] ?? null);
+    fireEvent('onRowClicked');
+  };
+
+  // Borders are classes: the pack's preflight sets every border width to 0 with !important, so an inline border
+  // never shows. The colour stays inline.
+  const BORDER = 'var(--lk-border,var(--sc-border))';
+  const frameClass = card ? 'border' : '';
+  const frame = card
+    ? {
+        borderColor: BORDER,
+        borderRadius: 'var(--lk-radius,calc(var(--sc-radius) + 4px))',
+        background: 'var(--lk-bg,var(--sc-card))',
+      }
+    : { background: 'var(--lk-bg,transparent)' };
+  const divided = (i) => (dividers && i > 0 ? 'border-t' : '');
+
+  let body;
+  if (p.loadingState && !wantsSkeleton(p)) {
+    body = <LoadingBox height={props.height} />;
+  } else if (p.loadingState) {
+    body = (
+      <div className={cn('overflow-hidden', frameClass)} style={frame}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className={cn('flex items-center gap-3', inset, density.pad, divided(i))}
+            style={{ borderColor: BORDER }}
+          >
+            {showAvatar ? (
+              <Skeleton
+                className={cn('shrink-0', p.avatarShape === 'rounded' ? 'rounded-lg' : 'rounded-full')}
+                style={{ width: density.avatar, height: density.avatar }}
+              />
+            ) : null}
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <Skeleton className="h-4 w-2/5" />
+              <Skeleton className="h-3 w-3/5" />
+            </div>
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+        ))}
+      </div>
+    );
+  } else if (!rows.length) {
+    body = (
+      <div className={frameClass} style={frame}>
+        <p className="m-0 py-10 text-center text-sm text-muted-foreground">{text(p.emptyText) || 'Nothing here yet'}</p>
+      </div>
+    );
+  } else {
+    body = (
+      <div className={cn('overflow-hidden', frameClass)} style={frame}>
+        <ul className="m-0 list-none p-0" role="list">
+          {rows.slice(0, shownCount).map((row, i) => {
+            const isSelected = p.highlightSelected !== false && selected?.key === row.key;
+            return (
+              <li
+                key={row.key}
+                role="button"
+                tabIndex={0}
+                onClick={() => click(row)}
+                onKeyDown={onKeyActivate(() => click(row))}
+                className={cn(
+                  'flex min-w-0 items-center gap-3 outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))]',
+                  inset,
+                  density.pad,
+                  divided(i),
+                  clickable && 'cursor-pointer hover:bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
+                )}
+                style={{
+                  borderColor: BORDER,
+                  background: isSelected ? `color-mix(in srgb, ${ACCENT} 9%, transparent)` : undefined,
+                  boxShadow: isSelected ? `inset 3px 0 0 ${ACCENT}` : undefined,
+                }}
+                data-selected={isSelected || undefined}
+              >
+                {showAvatar ? (
+                  <RecordAvatar src={row.image} name={row.avatarName} size={density.avatar} shape={p.avatarShape} />
+                ) : null}
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span
+                    className={cn('truncate font-medium leading-snug', density.title)}
+                    style={{
+                      color: 'var(--lk-title,var(--sc-foreground))',
+                      fontFamily: TITLE_FONT,
+                    }}
+                  >
+                    {row.title}
+                  </span>
+                  {row.meta ? (
+                    <span
+                      className={cn('truncate tabular-nums leading-snug', density.meta)}
+                      style={{
+                        color: 'var(--lk-fg,var(--sc-muted-foreground))',
+                      }}
+                    >
+                      {row.meta}
+                    </span>
+                  ) : null}
+                </div>
+                {row.status ? (
+                  <span className="flex min-w-0 max-w-[40%] shrink-0 justify-end">
+                    <Chip value={row.status} />
+                  </span>
+                ) : null}
+                {row.value ? (
+                  <span
+                    className={cn('shrink-0 text-right font-semibold tabular-nums', density.title)}
+                    style={{
+                      color: 'var(--lk-title,var(--sc-foreground))',
+                      minWidth: '4.5rem',
+                    }}
+                  >
+                    {row.value}
+                  </span>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+        {rows.length > shownCount ? (
+          <div className="flex justify-center border-t py-2" style={{ borderColor: BORDER }}>
+            <button
+              type="button"
+              onClick={() => setShownCount((n) => n + ROWS_PER_STEP)}
+              className="rounded-md px-3 py-1.5 text-sm text-[color:var(--sc-muted-foreground)] transition-colors hover:bg-[color:var(--sc-muted)] hover:text-[color:var(--sc-foreground)]"
+            >
+              {`Show ${Math.min(ROWS_PER_STEP, rows.length - shownCount)} more of ${rows.length - shownCount}`}
+            </button>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+  return (
+    <Shell {...props} innerRef={ref}>
+      {body}
+    </Shell>
+  );
+};
+
+// ---- Summary strip ---------------------------------------------------------------------------------------------------
+
+const STRIP_SIZE = {
+  sm: { value: 'text-lg', pad: 'px-4 py-3', min: 120 },
+  default: { value: 'text-2xl', pad: 'px-5 py-4', min: 140 },
+  lg: { value: 'text-3xl', pad: 'px-6 py-5', min: 170 },
+};
+const DELTA_TONE = {
+  positive: 'var(--lk-pos,var(--sc-success))',
+  negative: 'var(--lk-neg,var(--sc-destructive))',
+  neutral: 'var(--sc-muted-foreground)',
+};
+
+export const ShadSummaryStrip = (props) => {
+  const { properties: p } = props;
+  const ref = useRef(null);
+  useAutoHeight(props, ref);
+  const [width, setWidth] = useState(Number(props.width) || 0);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    ro.observe(el);
+    setWidth(el.getBoundingClientRect().width || Number(props.width) || 0);
+    return () => ro.disconnect();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const figures = useMemo(
+    () =>
+      summaryFigures(p.items, {
+        valueFormat: p.valueFormat,
+        currency: p.currency,
+        deltaFormat: p.deltaFormat,
+      }),
+    [stringify(p.items ?? null), p.valueFormat, p.currency, p.deltaFormat] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const size = STRIP_SIZE[p.size] || STRIP_SIZE.default;
+  const panel = p.appearance !== 'plain';
+  const center = p.align === 'center';
+  const count = p.loadingState ? 4 : figures.length;
+  const columns = stripColumns(count, width || Number(props.width) || 960, size.min);
+  // Borders are classes (the pack's preflight zeroes inline border widths); the colour stays inline.
+  const hairline = 'var(--lk-border,var(--sc-border))';
+  const frame = panel
+    ? {
+        borderColor: hairline,
+        borderRadius: 'var(--lk-radius,calc(var(--sc-radius) + 4px))',
+        background: 'var(--lk-bg,var(--sc-card))',
+      }
+    : { background: 'var(--lk-bg,transparent)' };
+  // A hairline before every figure but the first of its row, and above every row but the first.
+  // Without a panel, the first figure of each row starts at the strip's edge.
+  const cellBorders = (i) =>
+    cn(i % columns && 'border-l', i >= columns && 'border-t', !panel && !(i % columns) && 'pl-0');
+  const pad = size.pad;
+
+  let body;
+  if (p.loadingState && !wantsSkeleton(p)) {
+    body = <LoadingBox height={props.height} />;
+  } else if (!figures.length && !p.loadingState) {
+    body = (
+      <div className={panel ? 'border' : ''} style={frame}>
+        <p className="m-0 py-6 text-center text-sm text-muted-foreground">No figures yet</p>
+      </div>
+    );
+  } else {
+    body = (
+      <dl
+        className={cn('m-0 grid overflow-hidden', panel && 'border')}
+        style={{
+          ...frame,
+          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+        }}
+      >
+        {p.loadingState
+          ? Array.from({ length: count }).map((_, i) => (
+              <div
+                key={i}
+                className={cn('flex flex-col gap-2', pad, center && 'items-center', cellBorders(i))}
+                style={{ borderColor: hairline }}
+              >
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-7 w-24" />
+              </div>
+            ))
+          : figures.map((f, i) => (
+              <div
+                key={f.key}
+                className={cn('flex min-w-0 flex-col gap-1', pad, center && 'items-center text-center', cellBorders(i))}
+                style={{ borderColor: hairline }}
+              >
+                {f.label ? (
+                  <dt
+                    className="truncate text-xs font-medium"
+                    style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}
+                  >
+                    {f.label}
+                  </dt>
+                ) : null}
+                <dd
+                  className={cn(
+                    'm-0 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5',
+                    center && 'justify-center'
+                  )}
+                >
+                  <span
+                    className={cn('truncate font-semibold leading-tight tracking-tight tabular-nums', size.value)}
+                    style={{
+                      color: 'var(--lk-title,var(--sc-foreground))',
+                      fontFamily: TITLE_FONT,
+                    }}
+                  >
+                    {f.value || '–'}
+                  </span>
+                  {f.delta ? (
+                    <span
+                      className="text-xs font-semibold tabular-nums"
+                      style={{
+                        color: DELTA_TONE[f.delta.tone] || DELTA_TONE.neutral,
+                      }}
+                      data-tone={f.delta.tone}
+                    >
+                      {f.delta.text}
+                    </span>
+                  ) : null}
+                </dd>
+                {f.caption ? (
+                  <dd className="m-0 truncate text-xs" style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}>
+                    {f.caption}
+                  </dd>
+                ) : null}
+              </div>
+            ))}
+      </dl>
     );
   }
   return (

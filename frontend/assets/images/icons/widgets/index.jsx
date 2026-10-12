@@ -136,6 +136,8 @@ const SHADCN_ICONS = {
   shadlistview: Listview,
   shadcardgrid: Listview,
   shadhero: Image,
+  shadrecordlist: Listview,
+  shadsummarystrip: Statistics,
   shadpiechart: PieChartIcon,
   shadprogress: Progressbar,
   shadradiogroup: RadioButton,

@@ -21,10 +21,32 @@ export const LOOKS = {
     ['borderRadius', '--lk-radius', px],
     ['titleFontFamily', '--lk-title-font', fontStack],
   ],
+  ShadRecordList: [
+    ['backgroundColor', '--lk-bg'],
+    ['borderColor', '--lk-border'],
+    ['titleColor', '--lk-title'],
+    ['textColor', '--lk-fg'],
+    ['accentColor', '--lk-accent'],
+    ['borderRadius', '--lk-radius', px],
+    ['titleFontFamily', '--lk-title-font', fontStack],
+  ],
+  ShadSummaryStrip: [
+    ['backgroundColor', '--lk-bg'],
+    ['borderColor', '--lk-border'],
+    ['labelColor', '--lk-fg'],
+    ['valueColor', '--lk-title'],
+    ['positiveColor', '--lk-pos'],
+    ['negativeColor', '--lk-neg'],
+    ['borderRadius', '--lk-radius', px],
+    ['valueFontFamily', '--lk-title-font', fontStack],
+  ],
 };
 
-// The hero draws a skeleton of its title and lines; the grid skeletons its cards (ShadSections.jsx).
+// The hero draws a skeleton of its title and lines; the grid, the list and the strip skeleton their cards, rows and
+// figures (ShadSections.jsx).
 export const LOADING = {
   ShadHero: 'own',
   ShadCardGrid: 'own',
+  ShadRecordList: 'own',
+  ShadSummaryStrip: 'own',
 };

@@ -292,6 +292,8 @@ const ShadKeyValue = controlledShadWidget(shadcnDisplay, 'ShadKeyValue');
 const ShadTimeline = controlledShadWidget(shadcnDisplay, 'ShadTimeline');
 const ShadHero = controlledShadWidget(shadcnSections, 'ShadHero');
 const ShadCardGrid = controlledShadWidget(shadcnSections, 'ShadCardGrid');
+const ShadRecordList = controlledShadWidget(shadcnSections, 'ShadRecordList');
+const ShadSummaryStrip = controlledShadWidget(shadcnSections, 'ShadSummaryStrip');
 const ShadSteps = controlledShadWidget(shadcnDisplay, 'ShadSteps');
 const ShadPagination = controlledShadWidget(shadcnDisplay, 'ShadPagination');
 const ShadDropdownMenu = controlledShadWidget(shadcnActions, 'ShadDropdownMenu');
@@ -469,6 +471,8 @@ export const AllComponents = {
   ShadTimeline,
   ShadHero,
   ShadCardGrid,
+  ShadRecordList,
+  ShadSummaryStrip,
   ShadSteps,
   ShadPagination,
   ShadDropdownMenu,

@@ -66,6 +66,8 @@ import { shadRatingConfig } from './shadRating';
 import { shadTagsInputConfig } from './shadTagsInput';
 import { shadCardGridConfig } from './shadCardGrid';
 import { shadHeroConfig } from './shadHero';
+import { shadRecordListConfig } from './shadRecordList';
+import { shadSummaryStripConfig } from './shadSummaryStrip';
 import { shadTableConfig } from './shadTable';
 
 export const shadcnConfigs = [
@@ -136,6 +138,8 @@ export const shadcnConfigs = [
   shadTagsInputConfig,
   shadCardGridConfig,
   shadHeroConfig,
+  shadRecordListConfig,
+  shadSummaryStripConfig,
   shadTableConfig,
 ];
 export const SHADCN_COMPONENTS = shadcnConfigs.map((c) => c.name);

@@ -386,6 +386,8 @@ export const PROBES = [
   },
   { widget: 'ShadCardGrid', key: 'columns', value: '{{1}}' },
   { widget: 'ShadCardGrid', key: 'minCardWidth', value: '{{400}}' },
+  // The default rows have no avatar field, so the avatar shows the title's initials; another name field changes them.
+  { widget: 'ShadRecordList', key: 'avatarField', value: 'contact' },
   {
     widget: 'ShadListView',
     key: 'rowsPerPage',
@@ -668,7 +670,7 @@ export const ELSEWHERE = (name) => [
   ...(name === 'ShadButton' ? ['fullWidth'] : []),
   ...(name === 'ShadAvatar' ? ['src'] : []),
   // Which field identifies a card (selectedItemId, the selection across data changes): sectionsModel.spec.
-  ...(name === 'ShadCardGrid' ? ['idField'] : []),
+  ...(name === 'ShadCardGrid' || name === 'ShadRecordList' ? ['idField'] : []),
   // Tabs scrolling the new tab to its top: containers.spec, with real tab canvases.
   ...(name === 'ShadTabs' ? ['scrollToTopOnTabSwitch'] : []),
 ];

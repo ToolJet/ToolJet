@@ -87,6 +87,7 @@ export const TRIGGERS = {
     onMonthChange: { steps: [['click', 'button[aria-label*="next" i]', 0]], reads: 'visibleMonth' },
   },
   ShadCardGrid: { onCardClick: { steps: [['click', '[role=button], button', 0]], reads: 'selectedItem' } },
+  ShadRecordList: { onRowClicked: { steps: [['click', 'li[role=button]', 0]], reads: 'selectedItem' } },
   ShadCarousel: {
     onSlideChange: { steps: [['click', 'button[aria-label*="next" i]', 0]], reads: 'currentIndex' },
     onSlideClick: { steps: [['click', '[aria-roledescription=slide] .cursor-pointer', 0]], reads: 'clickedSlide' },

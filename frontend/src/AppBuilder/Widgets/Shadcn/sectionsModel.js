@@ -1,5 +1,7 @@
-// shadcn/ui pack: the pure logic of the page sections (ShadSections.jsx): the hero's facts and the card grid's cards
-// and columns. Every function takes whatever the author bound and never throws.
+// shadcn/ui pack: the pure logic of the page sections (ShadSections.jsx): the hero's facts, the card grid's cards and
+// columns, the record list's rows and the summary strip's figures. Every function takes whatever the author bound and
+// never throws.
+import { FORMATS, formatter, num } from './chartsModel';
 
 const isText = (v) => typeof v === 'string' && v.trim() !== '';
 const shown = (v) => (v === null || v === undefined ? '' : typeof v === 'object' ? '' : String(v));
@@ -70,4 +72,195 @@ export const gridColumns = (columns, width, minCardWidth = 240) => {
   const fit = Math.max(1, Math.floor((Number(width) || 0) / min));
   const set = Math.floor(Number(columns));
   return Number.isFinite(set) && set > 0 ? Math.max(1, Math.min(set, fit)) : fit;
+};
+
+// ---- Value formats (record list, summary strip) ----------------------------------------------------------------------
+
+export const VALUE_FORMATS = ['auto', ...FORMATS, 'date', 'datetime'];
+
+/** A date from a Date, a timestamp or date text. A bare 'YYYY-MM-DD' is that day where the viewer is (Date reads it as
+ *  UTC midnight, which shows the day before west of Greenwich). null when it is not a date. */
+export const toDay = (v) => {
+  if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v;
+  if (typeof v === 'number') return Number.isFinite(v) ? new Date(v) : null;
+  if (!isText(v)) return null;
+  const day = v.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const d = day ? new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3])) : new Date(v.trim());
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+const dateText = (d, withTime) => {
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      day: 'numeric',
+      month: 'short',
+      ...(sameYear ? {} : { year: 'numeric' }),
+      ...(withTime ? { hour: 'numeric', minute: '2-digit' } : {}),
+    }).format(d);
+  } catch {
+    return d.toDateString();
+  }
+};
+
+/** A value in a format: 'number', 'currency' (in currency, default USD), 'percent' (42.5 shows 42.5%) and 'compact'
+ *  format numbers and numeric text; 'date' (14 Oct) and 'datetime' (14 Oct, 9:30 AM) format dates. 'auto' groups the
+ *  digits of a bare number. Anything that is not of the format's kind (an already formatted "$1,250.00", "12 open")
+ *  shows as written; objects show nothing. */
+export const formatValue = (value, format = 'auto', currency) => {
+  if (value === null || value === undefined || typeof value === 'object') return '';
+  if (format === 'date' || format === 'datetime') {
+    const d = toDay(value);
+    return d ? dateText(d, format === 'datetime') : String(value);
+  }
+  const numeric =
+    typeof value === 'number'
+      ? Number.isFinite(value)
+      : typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim());
+  if (!numeric) return String(value);
+  if (!FORMATS.includes(format)) return typeof value === 'number' ? formatter({ format: 'number' })(value) : value;
+  const n = Number(value);
+  // Money with cents shows both digits ($386.50, not $386.5); whole amounts show none.
+  if (format === 'currency' && !Number.isInteger(n)) {
+    const code = isText(currency) && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
+    try {
+      return new Intl.NumberFormat(undefined, { style: 'currency', currency: code, minimumFractionDigits: 2 }).format(
+        n
+      );
+    } catch {
+      return formatter({ format, currency })(n);
+    }
+  }
+  return formatter({ format, currency })(n);
+};
+
+// ---- Record list -----------------------------------------------------------------------------------------------------
+
+/** One record meta field: 'city' shows the value, 'total|currency' formats it ('|date', '|number', ...), 'due|date:Due {}'
+ *  places it in a label and 'seats:Seats' puts the label first. */
+const recordMetaPart = (row, spec, currency) => {
+  const [head, label] = spec.split(/:(.*)/s).map((s) => (s ?? '').trim());
+  const [field, format] = head.split('|').map((s) => s.trim());
+  if (!field || !(field in row)) return '';
+  const value = formatValue(row[field], VALUE_FORMATS.includes(format) ? format : 'auto', currency);
+  if (!value) return '';
+  if (!label) return value;
+  return label.includes('{}') ? label.replace('{}', value) : `${label} ${value}`;
+};
+
+const isImageUrl = (v) => isText(v) && /^(https?:\/\/|data:image\/|\/|\.\/)/i.test(v.trim());
+
+/** Rows of a record list: a title, an avatar (an image when avatarField holds a URL, else the initials of avatarField's
+ *  text or of the title), a meta line (metaFields, a comma list of field specs joined with ' · '), a status and a
+ *  trailing value in valueFormat. The title falls back to the first text field. Rows that are not objects are
+ *  skipped. */
+export const recordItems = (data, fields = {}) => {
+  if (!Array.isArray(data)) return [];
+  const f = fields || {};
+  const metaSpecs = isText(f.metaFields)
+    ? f.metaFields
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+  const format = VALUE_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
+  return data.flatMap((row, index) => {
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
+    const titleKey = isText(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
+    const title = titleKey ? shown(row[titleKey]) : '';
+    const id = isText(f.idField) ? row[f.idField] : row.id;
+    const avatarValue = isText(f.avatarField) ? row[f.avatarField] : undefined;
+    const image = isImageUrl(avatarValue) ? avatarValue.trim() : '';
+    const avatarName = !image && shown(avatarValue).trim() ? shown(avatarValue).trim() : title;
+    return [
+      {
+        key: shown(id) || String(index),
+        title,
+        image,
+        avatarName,
+        meta: metaSpecs
+          .map((spec) => recordMetaPart(row, spec, f.currency))
+          .filter(Boolean)
+          .join(' · '),
+        status: isText(f.statusField) ? shown(row[f.statusField]) : '',
+        value: isText(f.valueField) ? formatValue(row[f.valueField], format, f.currency) : '',
+        row,
+      },
+    ];
+  });
+};
+
+// ---- Summary strip ---------------------------------------------------------------------------------------------------
+
+export const MAX_FIGURES = 6;
+const DELTA_FORMATS = ['percent', 'number', 'currency'];
+const TONES = {
+  positive: 'positive',
+  good: 'positive',
+  success: 'positive',
+  negative: 'negative',
+  bad: 'negative',
+  danger: 'negative',
+  neutral: 'neutral',
+};
+
+/** A change: a number signed and formatted (12.5 shows +12.5% as a percent), or text as written ('+3 this week'). Its
+ *  direction is its sign (a leading +, -, or an arrow for text). */
+const deltaOf = (delta, format, currency) => {
+  if (delta === null || delta === undefined || typeof delta === 'object' || delta === '') return null;
+  const n = typeof delta === 'number' ? (Number.isFinite(delta) ? delta : null) : num(delta);
+  if (typeof delta === 'number' || (n !== null && /^[+-]?[\d.,\s]+$/.test(String(delta).trim()))) {
+    if (n === null) return null;
+    const kind = DELTA_FORMATS.includes(format) ? format : 'percent';
+    const body = formatter({ format: kind, currency })(Math.abs(n));
+    return {
+      text: `${n > 0 ? '+' : n < 0 ? '−' : ''}${body}`,
+      direction: Math.sign(n),
+    };
+  }
+  const text = String(delta).trim();
+  const direction = /^[+↑▲]/.test(text) ? 1 : /^[-−↓▼]/.test(text) ? -1 : 0;
+  return { text, direction };
+};
+
+/** The figures of a summary strip, at most MAX_FIGURES: { label, value, delta: { text, tone }, caption } from
+ *  [{ label, value, format, delta, deltaFormat, tone, lowerIsBetter, caption }]. value formats in the item's format,
+ *  else the strip's valueFormat. A delta's tone is the item's tone ('positive', 'negative', 'neutral'), else its
+ *  direction (up is positive, down negative; lowerIsBetter flips them). Plain values ('Revenue') are taken as figures
+ *  without a label. Entries that are neither are dropped. */
+export const summaryFigures = (items, { valueFormat = 'auto', currency, deltaFormat = 'percent' } = {}) => {
+  if (!Array.isArray(items)) return [];
+  return items
+    .flatMap((item, index) => {
+      if (item === null || item === undefined || Array.isArray(item)) return [];
+      if (typeof item !== 'object') {
+        const value = shown(item);
+        return value ? [{ key: String(index), label: '', value, delta: null, caption: '' }] : [];
+      }
+      const format = VALUE_FORMATS.includes(item.format) ? item.format : valueFormat;
+      const itemCurrency = isText(item.currency) ? item.currency : currency;
+      const delta = deltaOf(item.delta, isText(item.deltaFormat) ? item.deltaFormat : deltaFormat, itemCurrency);
+      let tone = TONES[isText(item.tone) ? item.tone.trim().toLowerCase() : ''];
+      if (delta && !tone) {
+        const dir = item.lowerIsBetter === true ? -delta.direction : delta.direction;
+        tone = dir > 0 ? 'positive' : dir < 0 ? 'negative' : 'neutral';
+      }
+      return [
+        {
+          key: String(index),
+          label: shown(item.label),
+          value: formatValue(item.value, format, itemCurrency),
+          delta: delta ? { ...delta, tone } : null,
+          caption: shown(item.caption),
+        },
+      ];
+    })
+    .slice(0, MAX_FIGURES);
+};
+
+/** Figures per row in a strip this wide: all of them when each gets minWidth, else as many as fit, at least one. */
+export const stripColumns = (count, width, minWidth = 140) => {
+  const n = Math.max(1, Math.floor(Number(count)) || 1);
+  const fit = Math.max(1, Math.floor((Number(width) || 0) / minWidth));
+  return Math.min(n, fit);
 };

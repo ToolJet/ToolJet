@@ -370,6 +370,41 @@ describe('Card grid', () => {
   });
 });
 
+describe('Record list and summary strip', () => {
+  // The pack's preflight sets every border width to 0 with !important: an inline border drew nothing in a browser, so
+  // the list's frame and dividers and the strip's separators were missing. They are border classes.
+  it('draw their frame, row dividers and figure separators as border classes', async () => {
+    const list = await mount('ShadRecordList', {
+      data: [
+        { id: 1, name: 'Harbor Bistro', status: 'Paid' },
+        { id: 2, name: 'Juniper Dental', status: 'Overdue' },
+      ],
+      titleField: 'name',
+      statusField: 'status',
+    });
+    const rows = document.querySelectorAll('li[role=button]');
+    expect(rows[0].className).not.toMatch(/border-t/);
+    expect(rows[1].className).toMatch(/\bborder-t\b/);
+    expect(rows[1].closest('ul').parentElement.className).toMatch(/\bborder\b/);
+    expect(document.querySelector('[style*="border-top"]')).toBeNull();
+    list.unmount();
+    expect(list.problems()).toEqual([]);
+
+    const strip = await mount('ShadSummaryStrip', {
+      items: [
+        { label: 'Revenue', value: 48210 },
+        { label: 'Orders', value: 1284 },
+      ],
+    });
+    const cells = document.querySelectorAll('dl > div');
+    expect(cells[0].className).not.toMatch(/border-l/);
+    expect(cells[1].className).toMatch(/\bborder-l\b/);
+    expect(document.querySelector('dl').className).toMatch(/\bborder\b/);
+    strip.unmount();
+    expect(strip.problems()).toEqual([]);
+  });
+});
+
 describe('List view', () => {
   it('draws 100 rows of 10k without paging, then 100 more per "Show more"', async () => {
     const { problems, unmount } = await mount('ShadListView', {
