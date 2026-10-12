@@ -84,7 +84,7 @@ const CommonOAuthFields = ({
         </div>
       )}
       {isFieldAllowed('access_token_custom_headers', grant_type, oauth_configs) && (
-        <>
+        <div className="col-md-12">
           <div className="row mt-3" data-cy="access-token-url-custom-headers-section">
             <div className="col">
               <label className="form-label pt-2" data-cy="label-access-token-url-custom-headers">
@@ -99,7 +99,7 @@ const CommonOAuthFields = ({
             workspaceConstants={workspaceConstants}
             dataCy={'access-token-url-custom-headers'}
           />
-        </>
+        </div>
       )}
       {oauthTypes?.required && oauthTypeOptions && oauthTypeOptions.length > 1 && (
         <div className="col-md-12" data-cy="oauth-type-section">
@@ -341,7 +341,7 @@ const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers,
         </div>
       )}
       {isFieldAllowed('custom_auth_params', 'authorization_code', oauth_configs) && (
-        <>
+        <div className="col-md-12">
           <div className="row mt-3" data-cy="custom-authentication-parameters-section">
             <div className="col">
               <label className="form-label pt-2" data-cy="label-custom-authentication-parameters">
@@ -356,7 +356,7 @@ const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers,
             workspaceConstants={workspaceConstants}
             dataCy={'custom-authentication-parameters'}
           />
-        </>
+        </div>
       )}
       {isFieldAllowed('custom_query_params', 'authorization_code', oauth_configs) && (
         <>
