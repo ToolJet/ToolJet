@@ -1,4 +1,5 @@
 import React from 'react';
+import { columnOptionList } from './columnOptions';
 import _ from 'lodash';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
@@ -298,14 +299,9 @@ export default function generateColumnsData({
                 const dynamicOptions = getResolvedValue(column?.dynamicOptions || [], { cellValue, rowData });
                 columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
               } else {
-                const options = column?.options ?? [];
-                columnOptions.selectOptions =
-                  options?.map((option) => ({
-                    label: option.label,
-                    value: option.value,
-                    optionColor: option.optionColor,
-                    labelColor: option.labelColor,
-                  })) ?? [];
+                columnOptions.selectOptions = columnOptionList(column?.options, (value) =>
+                  getResolvedValue(value, { cellValue, rowData })
+                );
               }
 
               return (
@@ -339,14 +335,9 @@ export default function generateColumnsData({
                 const dynamicOptions = getResolvedValue(column?.dynamicOptions || [], { cellValue, rowData });
                 columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
               } else {
-                const options = column?.options ?? [];
-                columnOptions.selectOptions =
-                  options?.map((option) => ({
-                    label: option.label,
-                    value: option.value,
-                    optionColor: option.optionColor,
-                    labelColor: option.labelColor,
-                  })) ?? [];
+                columnOptions.selectOptions = columnOptionList(column?.options, (value) =>
+                  getResolvedValue(value, { cellValue, rowData })
+                );
               }
 
               const tagsAutoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
