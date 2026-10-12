@@ -1184,21 +1184,27 @@ Cypress.Commands.overwrite("gitHubMergePR", (originalFn, prNumber = Cypress.env(
 });
 
 
-Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) => {
-  return cy.getAuthHeaders().then((headers) =>
-    cy
-      .request({
-        method: "POST",
-        url: `${Cypress.env("server_host")}/api/folder-apps`,
-        headers,
-        body: { folder_id: folderId, app_id: appId },
-      })
-      .then((res) => {
-        expect(res.status, `Add app ${appId} to folder ${folderId}`).to.be.oneOf([200, 201]);
-        Cypress.log({ message: `[gitSync] App ${appId} added to folder ${folderId}` });
-      }),
-  );
-});
+// Moved to platformApiCommands.js, next to the other app/workflow folder
+// membership wrappers — app folders are not a gitSync-only concern, and having
+// the registration here meant a second definition elsewhere would silently
+// shadow it (Cypress keeps the last registration, with no warning).
+// The signature is unchanged: apiAddAppToFolder(folderId, appId).
+//
+// Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) => {
+//   return cy.getAuthHeaders().then((headers) =>
+//     cy
+//       .request({
+//         method: "POST",
+//         url: `${Cypress.env("server_host")}/api/folder-apps`,
+//         headers,
+//         body: { folder_id: folderId, app_id: appId },
+//       })
+//       .then((res) => {
+//         expect(res.status, `Add app ${appId} to folder ${folderId}`).to.be.oneOf([200, 201]);
+//         Cypress.log({ message: `[gitSync] App ${appId} added to folder ${folderId}` });
+//       }),
+//   );
+// });
 
 Cypress.Commands.add("gitHubAssertAppInFolder", (branch, folderName, appName) => {
   return cy.gitHubListAppPaths(branch).then((paths) => {

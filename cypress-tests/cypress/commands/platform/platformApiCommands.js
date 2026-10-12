@@ -317,6 +317,7 @@ Cypress.Commands.add(
         return resources.map((id) => ({ dataSourceId: id }));
       } else if (
         resourceType === "folder" ||
+        resourceType === "workflow_folder" ||
         resourceType === "module_folder" ||
         resourceType === "data_source_folder"
       ) {
@@ -347,7 +348,11 @@ Cypress.Commands.add(
         };
       }
 
-      if (type === "folder" || type === "module_folder") {
+      if (
+        type === "folder" ||
+        type === "workflow_folder" ||
+        type === "module_folder"
+      ) {
         return {
           canEditFolder: perms.canEditFolder ?? true,
           canEditApps: perms.canEditApps ?? false,
@@ -391,14 +396,20 @@ Cypress.Commands.add(
     };
 
     const sendRequest = (url, headers, body, resourceType, name) => {
+      // failOnStatusCode:false so a rejection surfaces the server's message
+      // instead of Cypress' generic "status code was not 2xx" wall of headers.
       cy.request({
         method: "POST",
         url,
         headers,
         body,
         log: false,
+        failOnStatusCode: false,
       }).then((res) => {
-        expect(res.status).to.equal(201);
+        expect(
+          res.status,
+          `Create ${resourceType} granular permission '${name}' -> ${JSON.stringify(res.body)}`,
+        ).to.equal(201);
       });
     };
 
@@ -408,9 +419,16 @@ Cypress.Commands.add(
         const typeMap = {
           app: { type: "app", endpoint: "app" },
           module: { type: "module", endpoint: "data-source" },
-          workflow: { type: "workflow", endpoint: "data-source" },
+          // Workflow resources ride the app granular endpoint (there is no
+          // /granular-permissions/workflow route); the DTO's `type` is what the
+          // service dispatches on. Matches apiDeleteGranularPermission's map.
+          workflow: { type: "workflow", endpoint: "app" },
           datasource: { type: "data_source", endpoint: "data-source" },
           folder: { type: "folder", endpoint: "folder" },
+          workflow_folder: {
+            type: "workflow_folder",
+            endpoint: "workflow-folder",
+          },
           module_folder: { type: "module_folder", endpoint: "module-folder" },
           data_source_folder: {
             type: "data_source_folder",
@@ -1407,6 +1425,139 @@ Cypress.Commands.add("apiRemoveModuleFromFolder", (moduleId, folderId) => {
     });
   });
 });
+
+/* ------------------------------------------------------------------------- *
+ * App folders and workflow folders
+ *
+ * Both reuse the same two endpoints as module folders — /api/folders for CRUD
+ * (`type` is the discriminator: "front-end" for app folders, "workflow" for
+ * workflow folders) and /api/folder-apps for membership, which is type-agnostic
+ * and keyed on app_id alone. The wrappers below exist so a spec reads in the
+ * vocabulary of the resource it is testing rather than passing a magic `type`.
+ * ------------------------------------------------------------------------- */
+
+const createFolderOfType = (folderName, folderType) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folders`,
+        headers,
+        body: { name: folderName, type: folderType },
+      })
+      .then((response) => {
+        expect(response.status, `Create ${folderType} folder '${folderName}'`).to.equal(201);
+        return response.body;
+      }),
+  );
+
+const getFolderIdOfType = (folderName, appType) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/folder-apps?searchKey=&type=${appType}`,
+        headers,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        const folder = (response.body.folders || []).find((f) => f.name === folderName);
+        if (!folder) throw new Error(`${appType} folder with name ${folderName} not found`);
+        return folder.id;
+      }),
+  );
+
+const addAppIdToFolder = (appId, folderId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folder-apps`,
+        headers,
+        body: { app_id: appId, folder_id: folderId },
+        log: false,
+        // Surface the server's message instead of Cypress' generic non-2xx dump.
+        failOnStatusCode: false,
+      })
+      .then((response) => {
+        expect(
+          response.status,
+          `Add app ${appId} to folder ${folderId} -> ${JSON.stringify(response.body)}`,
+        ).to.equal(201);
+        return response.body;
+      }),
+  );
+
+const removeAppIdFromFolder = (appId, folderId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy.request({
+      method: "PUT",
+      url: `${Cypress.env("server_host")}/api/folder-apps/${folderId}`,
+      headers,
+      body: { app_id: appId },
+      log: false,
+    }),
+  );
+
+Cypress.Commands.add("apiCreateAppFolder", (folderName) =>
+  createFolderOfType(folderName, "front-end"),
+);
+
+Cypress.Commands.add("apiGetAppFolderId", (folderName) =>
+  getFolderIdOfType(folderName, "front-end"),
+);
+
+// Argument order is (folderId, appId) — the signature this command has always
+// had, kept so existing gitSync callers are unaffected by the move from
+// gitSyncAppCommands.js. Note it is the reverse of the sibling wrappers below.
+Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) =>
+  addAppIdToFolder(appId, folderId),
+);
+
+Cypress.Commands.add("apiRemoveAppFromFolder", (appId, folderId) =>
+  removeAppIdFromFolder(appId, folderId),
+);
+
+/** Bulk variant: the same endpoint takes app_ids[] instead of app_id, which is
+ *  what the dashboard's "Add to folder" modal posts when several apps are
+ *  selected (folderService.bulkAddToFolder). */
+Cypress.Commands.add("apiBulkAddAppsToFolder", (folderId, appIds = []) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folder-apps`,
+        headers,
+        body: { app_ids: appIds, folder_id: folderId },
+        log: false,
+        failOnStatusCode: false,
+      })
+      .then((response) => {
+        expect(
+          response.status,
+          `Bulk add ${appIds.length} apps to folder ${folderId} -> ${JSON.stringify(response.body)}`,
+        ).to.equal(201);
+        return response.body;
+      }),
+  ),
+);
+
+Cypress.Commands.add("apiCreateWorkflowFolder", (folderName) =>
+  createFolderOfType(folderName, "workflow"),
+);
+
+Cypress.Commands.add("apiGetWorkflowFolderId", (folderName) =>
+  getFolderIdOfType(folderName, "workflow"),
+);
+
+Cypress.Commands.add("apiAddWorkflowToFolder", (workflowId, folderId) =>
+  addAppIdToFolder(workflowId, folderId),
+);
+
+Cypress.Commands.add("apiRemoveWorkflowFromFolder", (workflowId, folderId) =>
+  removeAppIdFromFolder(workflowId, folderId),
+);
 
 /* ------------------------------------------------------------------------- *
  * Data source folders
