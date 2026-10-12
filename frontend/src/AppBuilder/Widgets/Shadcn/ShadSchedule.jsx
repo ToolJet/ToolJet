@@ -320,21 +320,14 @@ export const ShadSchedule = (props) => {
                             onClick={() => clickSlot(r, slot, j)}
                             aria-label={`${r.name}, ${slotValue(r, slot, p.hourFormat, range.scale).label}, free`}
                             className={cn(
-                              'h-full min-w-0 outline-none transition-colors duration-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))] disabled:cursor-default',
+                              'sc-slot h-full min-w-0 outline-none transition-colors duration-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))] disabled:cursor-default',
                               j > 0 && slot.edge && 'border-l',
-                              !disabled &&
-                                (hasSlotClick || highlight) &&
-                                'cursor-pointer hover:bg-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-primary))_7%,transparent)]'
+                              !disabled && (hasSlotClick || highlight) && 'sc-slot-live cursor-pointer'
                             )}
-                            style={{
-                              borderColor: LINE,
-                              background: isSelected
-                                ? `color-mix(in srgb, ${ACCENT} 14%, transparent)`
-                                : todayColumn
-                                ? `color-mix(in srgb, ${ACCENT} 4%, transparent)`
-                                : undefined,
-                            }}
+                            // Fills and lines are rules in shadcn.scss: the pack's reset sets every button's
+                            // background and border colour with !important, which an inline style cannot beat.
                             data-selected={isSelected || undefined}
+                            data-today={todayColumn || undefined}
                           />
                         );
                       })}
@@ -353,11 +346,12 @@ export const ShadSchedule = (props) => {
                           onClick={() => clickBooking(b)}
                           title={[b.title, second, b.status].filter(Boolean).join(' · ')}
                           aria-pressed={isSelected}
+                          data-selected={isSelected || undefined}
                           data-booking={b.key}
                           data-tone={b.tone || undefined}
                           className={cn(
-                            'absolute z-[1] flex min-w-0 flex-col justify-center overflow-hidden rounded-md border-l-[3px] px-2 text-left text-xs leading-tight outline-none transition-shadow duration-150 focus-visible:ring-2 focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))] disabled:cursor-default',
-                            !disabled && 'cursor-pointer hover:shadow-md',
+                            'sc-booking absolute z-[1] flex min-w-0 flex-col justify-center overflow-hidden rounded-md border-l-[3px] px-2 text-left text-xs leading-tight outline-none transition-shadow duration-150 focus-visible:ring-2 focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))] disabled:cursor-default',
+                            !disabled && 'cursor-pointer',
                             cancelled && 'opacity-70'
                           )}
                           style={{
@@ -365,10 +359,8 @@ export const ShadSchedule = (props) => {
                             width: `max(calc(${b.width}% - 4px), 6px)`,
                             top,
                             height: laneHeight,
-                            background: `color-mix(in srgb, ${tone} 14%, var(--sc-background))`,
-                            borderColor: tone,
-                            color: `color-mix(in srgb, ${tone} 70%, var(--sc-foreground))`,
-                            boxShadow: isSelected ? `0 0 0 2px ${ACCENT}` : undefined,
+                            // The fill, the edge and the ink derive from the tone in shadcn.scss (.sc-booking).
+                            '--bk-tone': tone,
                           }}
                         >
                           <span className={cn('truncate font-semibold', cancelled && 'line-through')}>

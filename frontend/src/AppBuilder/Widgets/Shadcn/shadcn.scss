@@ -354,3 +354,30 @@
     text-align: left;
   }
 }
+
+// The schedule's bookings and empty slots are buttons, whose background, colour and border colour the pack's reset
+// sets with !important: their fills are rules here. A booking's tone arrives as --bk-tone (ShadSchedule.jsx).
+.tj-shadcn .sc-schedule .sc-booking {
+  background-color: color-mix(in srgb, var(--bk-tone) 14%, var(--sc-background));
+  border-color: var(--bk-tone);
+  color: color-mix(in srgb, var(--bk-tone) 70%, var(--sc-foreground));
+}
+.tj-shadcn .sc-schedule .sc-booking:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--bk-tone) 20%, var(--sc-background));
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+.tj-shadcn .sc-schedule .sc-booking[data-selected] {
+  box-shadow: 0 0 0 2px var(--lk-accent, var(--sc-primary));
+}
+.tj-shadcn .sc-schedule .sc-slot {
+  border-color: var(--lk-border, var(--sc-border));
+}
+.tj-shadcn .sc-schedule .sc-slot[data-today] {
+  background-color: color-mix(in srgb, var(--lk-accent, var(--sc-primary)) 4%, transparent);
+}
+.tj-shadcn .sc-schedule .sc-slot-live:hover {
+  background-color: color-mix(in srgb, var(--lk-accent, var(--sc-primary)) 7%, transparent);
+}
+.tj-shadcn .sc-schedule .sc-slot[data-selected] {
+  background-color: color-mix(in srgb, var(--lk-accent, var(--sc-primary)) 14%, transparent);
+}

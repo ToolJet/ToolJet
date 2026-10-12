@@ -307,8 +307,10 @@ const TONE_INK = Object.fromEntries(
   Object.entries(TONE_VAR).map(([k, v]) => [k, `color-mix(in srgb, ${v} 80%, var(--sc-foreground))`])
 );
 
-const Chip = ({ value, onImage }) => {
-  const tone = TONE_VAR[chipTone(value)] || TONE_VAR.neutral;
+/** A status chip toned by its words, or by `toneName` where the widget already knows the tone (a progress row). */
+const Chip = ({ value, onImage, toneName }) => {
+  const toneKey = toneName || chipTone(value);
+  const tone = TONE_VAR[toneKey] || TONE_VAR.neutral;
   return (
     // A block box, so a chip too long for its room ends in an ellipsis (a flex box clips its text without one); the
     // full text is its tooltip.
@@ -326,7 +328,7 @@ const Chip = ({ value, onImage }) => {
               color: `color-mix(in srgb, ${tone} 80%, var(--sc-foreground))`,
             }
       }
-      data-tone={chipTone(value)}
+      data-tone={toneKey}
     >
       {chipLabel(value)}
     </span>
@@ -1048,7 +1050,7 @@ export const ShadProgressList = (props) => {
                     </span>
                     {row.status ? (
                       <span className="flex min-w-0 shrink">
-                        <Chip value={row.status} />
+                        <Chip value={row.status} toneName={row.tone} />
                       </span>
                     ) : null}
                   </span>
