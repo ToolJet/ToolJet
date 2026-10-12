@@ -62,6 +62,26 @@ describe('PinsController', () => {
         });
         expect(pins.map((pin) => pin.appId)).toEqual([released.id, released2.id]);
       });
+
+      it('should pin only folders the user can see', async () => {
+        const admin = await createAdmin(nestApp, 'dash-pin-folder@tooljet.io');
+        const endUser = await createEndUser(nestApp, 'dash-pin-folder-eu@tooljet.io', { workspace: admin.workspace });
+        const shown = await createFolder(nestApp, { name: 'Has released', organizationId: admin.workspace.id });
+        const hidden = await createFolder(nestApp, { name: 'Drafts only', organizationId: admin.workspace.id });
+        await seedDashboardApp(nestApp, { user: admin.user, name: 'Released', released: true, folder: shown });
+        await seedDashboardApp(nestApp, { user: admin.user, name: 'Draft', folder: hidden });
+
+        await http()
+          .post('/api/v2/pins')
+          .set('Cookie', endUser.cookie)
+          .set('tj-workspace-id', admin.workspace.id)
+          .send({ resource_type: 'folder', resource_ids: [hidden.id, shown.id] })
+          .expect(204);
+
+        const pins = await getEntityRepository(PinnedItem).find({ where: { userId: endUser.user.id } });
+        expect(pins).toHaveLength(1);
+        expect(pins[0]).toMatchObject({ folderId: shown.id, appId: null });
+      });
     });
 
     describe('DELETE /api/v2/pins/:resource_type/:resource_id | Unpin', () => {

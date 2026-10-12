@@ -54,7 +54,7 @@ export class DashboardService {
       organizationId: user.organizationId,
     });
     const git = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
-    const resolvedBranchId = await this.resolveBranchId(user, branchId);
+    const resolvedBranchId = branchId ?? git.options.defaultBranch.id;
     const visibleAppIds = await this.appsUtilService.findVisibleAppIds(
       user,
       type,
@@ -79,7 +79,6 @@ export class DashboardService {
     return { scope, permissions };
   }
 
-  // One permission resolve + one query for any mix of app and folder ids of a single app type.
   async visibleIds(user: User, type: APP_TYPES, branchId: string, ids: PinIds): Promise<Set<string>> {
     if (ids.app.length + ids.folder.length === 0) return new Set();
     const { scope } = await this.resolveScope(user, type, branchId);
