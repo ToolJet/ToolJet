@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
 import { CellEditMenu } from '../Menu/CellEditMenu';
 import { ToolTip } from '@/_components/ToolTip';
+import { ConfirmDialog } from '@/_components';
 import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
@@ -52,8 +53,11 @@ const Table = ({ collapseSidebar }) => {
     configurations,
     setConfigurations,
     getConfigurationProperty,
+    canEditTjdb,
     canEditSchema,
   } = useContext(TooljetDatabaseContext);
+  // Only an environment block gets the environment tooltip; a missing TJDB permission is a different reason.
+  const schemaBlockedByEnvironment = canEditTjdb && !canEditSchema;
   const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
     (state) => ({
       queryFilters: state.queryFilters,
@@ -76,6 +80,7 @@ const Table = ({ collapseSidebar }) => {
 
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
+  const [isDeleteRowsDialogOpen, setIsDeleteRowsDialogOpen] = useState(false);
   const [isSeedDataDrawerOpen, setIsSeedDataDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
@@ -703,31 +708,31 @@ const Table = ({ collapseSidebar }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleDeleteRow = async () => {
-    const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
-    if (shouldDelete) {
-      const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
-      const primaryKey = columns.find((column) => column?.constraints_type?.is_primary_key);
-      if (primaryKey) {
-        const deletionKeys = selectedRows.map((row) => {
-          return row.values[primaryKey?.accessor];
-        });
+  const handleDeleteRow = () => setIsDeleteRowsDialogOpen(true);
 
-        let query = `?${primaryKey?.accessor}=in.(${deletionKeys.toString()})`;
+  const deleteSelectedRows = async () => {
+    setIsDeleteRowsDialogOpen(false);
+    const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
+    const primaryKey = columns.find((column) => column?.constraints_type?.is_primary_key);
+    if (primaryKey) {
+      const deletionKeys = selectedRows.map((row) => {
+        return row.values[primaryKey?.accessor];
+      });
 
-        const { error } = await tooljetDatabaseService.deleteRows(selectedTable.id, query);
+      let query = `?${primaryKey?.accessor}=in.(${deletionKeys.toString()})`;
 
-        if (error) {
-          toast.error(error?.message ?? `Error deleting rows from table "${selectedTable.table_name}"`);
-          return;
-        }
+      const { error } = await tooljetDatabaseService.deleteRows(selectedTable.id, query);
 
-        toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
-        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
-        setSelectedRowIds({});
-      } else {
-        toast.error('Something went wrong - Record Id is incorrect');
+      if (error) {
+        toast.error(error?.message ?? `Error deleting rows from table "${selectedTable.table_name}"`);
+        return;
       }
+
+      toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
+      handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+      setSelectedRowIds({});
+    } else {
+      toast.error('Something went wrong - Record Id is incorrect');
     }
   };
 
@@ -1264,34 +1269,38 @@ const Table = ({ collapseSidebar }) => {
                       <div className="d-flex align-items-center justify-content-between" style={{ gap: '4px' }}>
                         {tableHeaderContent(column, index)}
 
-                        <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={!canEditSchema}>
-                          <TablePopover
-                            onEdit={() => {
-                              setSelectedColumn(column);
-                              setIsEditColumnDrawerOpen(true);
-                              closeMenu();
-                            }}
-                            onDelete={() => handleDelete(column.Header)}
-                            disabled={!canEditSchema}
-                            show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
-                            className="column-popover-parent"
-                            darkMode={darkMode}
-                            showDeleteColumnOption={!column?.constraints_type?.is_primary_key}
-                          >
-                            <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
-                              <Menu
-                                width="20"
-                                height="20"
-                                className="tjdb-menu-icon"
-                                onClick={(e) => onMenuClick(index, e)}
-                              />
-                            </div>
-                          </TablePopover>
+                        <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={schemaBlockedByEnvironment}>
+                          {/* A DOM wrapper, not TablePopover itself: the tooltip needs a ref and a
+                              function component child can't take one, so it never opened. */}
+                          <div>
+                            <TablePopover
+                              onEdit={() => {
+                                setSelectedColumn(column);
+                                setIsEditColumnDrawerOpen(true);
+                                closeMenu();
+                              }}
+                              onDelete={() => handleDelete(column.Header)}
+                              disabled={!canEditSchema}
+                              show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
+                              className="column-popover-parent"
+                              darkMode={darkMode}
+                              showDeleteColumnOption={!column?.constraints_type?.is_primary_key}
+                            >
+                              <div className="tjdb-menu-icon-parent" data-cy="column-menu-icon">
+                                <Menu
+                                  width="20"
+                                  height="20"
+                                  className="tjdb-menu-icon"
+                                  onClick={(e) => onMenuClick(index, e)}
+                                />
+                              </div>
+                            </TablePopover>
+                          </div>
                         </ToolTip>
                       </div>
                     </th>
                   ))}
-                  <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={!canEditSchema}>
+                  <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={schemaBlockedByEnvironment}>
                     <th
                       onClick={() => {
                         if (canEditSchema) {
@@ -1794,6 +1803,19 @@ const Table = ({ collapseSidebar }) => {
         />
       </Drawer>
       {migrationModal}
+      <ConfirmDialog
+        title="Delete rows"
+        show={isDeleteRowsDialogOpen}
+        message="Are you sure you want to delete the selected rows?"
+        onConfirm={deleteSelectedRows}
+        onCancel={() => setIsDeleteRowsDialogOpen(false)}
+        onCloseIconClick={() => setIsDeleteRowsDialogOpen(false)}
+        darkMode={darkMode}
+        confirmButtonType="dangerPrimary"
+        cancelButtonType="tertiary"
+        confirmButtonText="Delete"
+        cancelButtonText="Cancel"
+      />
     </div>
   );
 };

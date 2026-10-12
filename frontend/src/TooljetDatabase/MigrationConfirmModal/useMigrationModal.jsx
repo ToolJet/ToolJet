@@ -8,6 +8,7 @@ import MigrationConfirmModal from './index';
 const emptyState = {
   isOpen: false,
   title: '',
+  description: '',
   sql: '',
   // Collapsed behind an "Add migration" button until opened - or already open when `initialSql`
   // prefills it (the column type-change cast case), so there's nothing to click through.
@@ -127,7 +128,8 @@ export default function useMigrationModal() {
           tableIdForSql,
           state.sql,
           {},
-          state.title
+          state.title,
+          state.description
         );
         if (sqlError) {
           setState((prev) => ({
@@ -147,7 +149,16 @@ export default function useMigrationModal() {
     } catch (err) {
       setState((prev) => ({ ...prev, submitting: false, error: err?.message ?? 'Failed to run migration' }));
     }
-  }, [state.title, state.sql, state.sqlRequired, state.structuredApplied, organizationId, close, bumpMigrations]);
+  }, [
+    state.title,
+    state.description,
+    state.sql,
+    state.sqlRequired,
+    state.structuredApplied,
+    organizationId,
+    close,
+    bumpMigrations,
+  ]);
 
   const onOpenSql = useCallback(() => setState((prev) => ({ ...prev, sqlOpen: true })), []);
 
@@ -159,6 +170,8 @@ export default function useMigrationModal() {
       titlePlaceholder={optionsRef.current?.titlePlaceholder}
       title={state.title}
       onTitleChange={(title) => setState((prev) => ({ ...prev, title }))}
+      description={state.description}
+      onDescriptionChange={(description) => setState((prev) => ({ ...prev, description }))}
       changes={optionsRef.current?.changes || []}
       banner={optionsRef.current?.banner}
       showSqlEditor={!!optionsRef.current?.showSqlEditor}

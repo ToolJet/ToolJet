@@ -101,11 +101,12 @@ function sqlExecution(organizationId, tableId, body) {
 
 // A tracked migration step, unlike sqlExecution above (a one-off DML action against whatever
 // environment is currently open). Runs against the table's own development relation.
-function recordRawSqlMigration(organizationId, tableId, sql, refs = {}, name = '') {
+function recordRawSqlMigration(organizationId, tableId, sql, refs = {}, name = '', description = '') {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/migrations/sql`, {
     sql,
     refs,
     ...(name && { name }),
+    ...(description && { description }),
   });
 }
 

@@ -10,6 +10,13 @@ import { TooljetDbRelationConfigurations } from '../types';
 
 const DEVELOPMENT_PRIORITY = 1;
 
+/** The one wording for "owned table, but not promoted into this (environment, branch)". Names, never logical ids. */
+export function tableNotInEnvironmentMessage(tableNames: string[]): string {
+  return tableNames.length === 1
+    ? `Table "${tableNames[0]}" has no relation in this environment`
+    : `Tables "${tableNames.join('", "')}" have no relation in this environment`;
+}
+
 /**
  * Resolves (logical table id, environment, branch) -> physical relation name.
  *
@@ -134,7 +141,15 @@ export class TooljetDbRelationResolverService {
     ).get(internalTableId);
     const relation = relationId && (await entityManager.findOne(InternalTableRelation, { where: { id: relationId } }));
 
-    if (!relation) throw new NotFoundException('Table not found in this environment');
+    if (!relation) {
+      const internalTable = await entityManager.findOne(InternalTable, {
+        where: { id: internalTableId, organizationId },
+        select: ['tableName'],
+      });
+      throw new NotFoundException(
+        internalTable ? tableNotInEnvironmentMessage([internalTable.tableName]) : 'Table not found in this environment'
+      );
+    }
     return relation;
   }
 
@@ -258,8 +273,7 @@ export class TooljetDbRelationResolverService {
     const relation = await entityManager.findOne(InternalTableRelation, {
       where: { internalTableId: internalTable.id, environmentId, branchId },
     });
-    if (!relation)
-      throw new NotFoundException(`Table "${internalTable.tableName}" has no relation in this environment`);
+    if (!relation) throw new NotFoundException(tableNotInEnvironmentMessage([internalTable.tableName]));
 
     relation.internalTable = internalTable;
     return relation;

@@ -108,4 +108,45 @@ describe('TJDB environment selection', () => {
 
     await waitFor(() => expect(csvRequests).toEqual([STAGING.id]));
   });
+
+  describe('promote button', () => {
+    function renderHistory(developmentApplied, stagingApplied) {
+      serveTable();
+      render(
+        <MigrationHistoryDrawer
+          isOpen
+          onClose={() => {}}
+          migrations={['m1', 'm2', 'm3'].map((id, index) => ({
+            id,
+            migration_number: index + 1,
+            sql: '',
+            created_at: '2026-10-12T00:00:00Z',
+          }))}
+          environments={[
+            { environment_id: DEVELOPMENT.id, applied_migration_ids: developmentApplied },
+            { environment_id: STAGING.id, applied_migration_ids: stagingApplied },
+          ]}
+          allEnvironments={ENVIRONMENTS}
+          relationsByEnvironment={BOTH_HAVE_RELATION}
+          organizationId="org-1"
+          selectedTable={{ id: 'table-1', table_name: 'orders' }}
+          refetchMigrations={() => {}}
+        />
+      );
+    }
+
+    test('should offer promotion when the next environment is missing a migration, even if it has as many applied', async () => {
+      // Same count (2 and 2), different sets: staging lacks m1 and has m3 development has not applied.
+      renderHistory(['m1', 'm2'], ['m2', 'm3']);
+
+      expect(await screen.findByRole('button', { name: 'Run in staging' })).toBeInTheDocument();
+    });
+
+    test('should not offer promotion when the next environment has every migration the active one has', async () => {
+      renderHistory(['m1'], ['m1', 'm2']);
+
+      await screen.findByText('Migration history');
+      expect(screen.queryByRole('button', { name: 'Run in staging' })).not.toBeInTheDocument();
+    });
+  });
 });

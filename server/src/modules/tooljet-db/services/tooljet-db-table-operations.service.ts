@@ -20,7 +20,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { InternalTableRelation } from 'src/entities/internal_table_relation.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { TooljetDbRelationResolverService } from './relation-resolver.service';
+import { TooljetDbRelationResolverService, tableNotInEnvironmentMessage } from './relation-resolver.service';
 import { formatJoinsJSONBPath, formatJSONB, getTooljetEdition } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -779,16 +779,16 @@ export class TooljetDbTableOperationsService {
     const otherRelations = await this.manager.findBy(InternalTableRelation, {
       id: In(relationIds.filter((id) => id !== relation.id)),
     });
-    const [{ count: appQueryCount }, foreignKeyTables] = await Promise.all([
+    const [{ count: dependentCount }, foreignKeyTables] = await Promise.all([
       this.internalTableRepository.findDependents(internalTable.id, organizationId),
       this.internalTableRepository.findForeignKeyDependents(organizationId, relationIds, this.tooljetDbManager),
     ]);
 
-    if (appQueryCount) {
+    if (dependentCount) {
       throw new BadRequestException(
-        `Table can't be deleted, it is referenced by ${appQueryCount} app quer${
-          appQueryCount === 1 ? 'y' : 'ies'
-        }. Remove those references first.`
+        `Table can't be deleted, ${dependentCount} resource${dependentCount === 1 ? '' : 's'} ${
+          dependentCount === 1 ? 'depends' : 'depend'
+        } on this table. Remove those references first.`
       );
     }
     if (foreignKeyTables.length) {
@@ -1609,9 +1609,7 @@ export class TooljetDbTableOperationsService {
       const namesWithoutRelation = logicalIdsWithoutRelation.map((tableId) => internalTableIdToNameMap[tableId]);
       // An (env, branch) with no relation is a 404, not a 400 - the table exists, it just isn't
       // promoted here.
-      throw new NotFoundException(
-        `Table(s) "${namesWithoutRelation.join('", "')}" have no relation in this environment`
-      );
+      throw new NotFoundException(tableNotInEnvironmentMessage(namesWithoutRelation));
     }
 
     const { pgPassword, pgUser } = tjdbTenantConfigs;
@@ -2223,7 +2221,7 @@ export class TooljetDbTableOperationsService {
         // relation here means it has no relation in this (environment, branch) - fail closed rather
         // than let a logical id leak through as a physical name.
         // An (env, branch) with no relation is a 404, not a 400 - same rule as the join path.
-        if (!relationId) throw new NotFoundException(`Table "${tableName}" has no relation in this environment`);
+        if (!relationId) throw new NotFoundException(tableNotInEnvironmentMessage([tableName]));
         referenced_tables_info[tableName] = relationId;
       }
     }

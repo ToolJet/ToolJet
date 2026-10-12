@@ -15,6 +15,10 @@ export class RawSqlMigrationDto {
   name?: string;
 
   @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
   @IsUUID()
   reverts_migration_id?: string;
 }

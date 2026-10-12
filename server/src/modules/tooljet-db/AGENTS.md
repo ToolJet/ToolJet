@@ -82,6 +82,11 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   The resolver's raw joins add `deleted_at IS NULL` by hand since raw SQL skips TypeORM's automatic
   filter. The `(organization_id, table_name)` unique index is partial, so a dropped name is
   immediately reusable.
+- "Owned table, not in this (environment, branch)" is always worded by `tableNotInEnvironmentMessage`
+  (`relation-resolver.service.ts`) and names the table, never its logical id - `getRelation()`, the proxy,
+  join and `resolveTable` all route through it.
+- The migration compiler's SQL (`compile()`) is display-only: history drawer, promote preview, raw-SQL
+  response. Nothing executes it; replay re-runs the structured action instead.
 - Licence lapse fails closed on every resolver path: `resolve()` 403s when a table resolves to
   development while a higher-priority relation exists and the workspace is unlicensed, and
   `getRelation()` goes through `resolve()` so the single-table paths (`sql_execution`, bulk ops,

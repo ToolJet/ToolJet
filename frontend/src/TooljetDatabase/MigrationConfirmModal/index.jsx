@@ -55,6 +55,8 @@ export default function MigrationConfirmModal({
   titlePlaceholder,
   title,
   onTitleChange,
+  description,
+  onDescriptionChange,
   changes = [],
   banner,
   showSqlEditor,
@@ -106,6 +108,23 @@ export default function MigrationConfirmModal({
             data-cy="migration-confirm-title-input"
           />
         </div>
+
+        {/* Only the raw SQL step stores a description - structured changes have no field for it. */}
+        {showSqlEditor && (
+          <div className="mb-3">
+            <div className="form-label">
+              Description <span className="tw-text-muted-foreground">(Optional)</span>
+            </div>
+            <textarea
+              className="form-control"
+              placeholder="Why this SQL step is needed"
+              value={description}
+              onChange={(e) => onDescriptionChange(e.target.value)}
+              rows={2}
+              data-cy="migration-confirm-description-input"
+            />
+          </div>
+        )}
 
         {banner}
 

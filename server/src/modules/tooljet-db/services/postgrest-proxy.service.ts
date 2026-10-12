@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import got from 'got';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
-import { TooljetDbRelationResolverService } from './relation-resolver.service';
+import { TooljetDbRelationResolverService, tableNotInEnvironmentMessage } from './relation-resolver.service';
 import { isSQLModeDisabled, validateTjdbJSONBColumnInputs } from 'src/helpers/tooljet_db.helper';
 import { QueryError } from '@modules/data-sources/types';
 import { PostgrestError, TooljetDatabaseError, TooljetDbActions } from '../types';
@@ -216,15 +216,13 @@ export class PostgrestProxyService {
       // promoted into this (environment, branch). Only the second is a 404 in every position.
       const owned = await this.manager.find(InternalTable, {
         where: { organizationId, id: In(missing) },
-        select: ['id'],
+        select: ['id', 'tableName'],
       });
-      const ownedIds = new Set(owned.map((table) => table.id));
+      const ownedNamesById = new Map(owned.map((table) => [table.id, table.tableName]));
 
-      const unpromoted = missing.filter((id) => ownedIds.has(id));
+      const unpromoted = missing.filter((id) => ownedNamesById.has(id));
       if (unpromoted.length) {
-        // Wording matches the join path's "have no relation" phrasing - ids, not names, since
-        // this path resolves logical ids and has no table-name lookup at hand here.
-        throw new NotFoundException(`Table(s) "${unpromoted.join('", "')}" have no relation in this environment`);
+        throw new NotFoundException(tableNotInEnvironmentMessage(unpromoted.map((id) => ownedNamesById.get(id))));
       }
 
       // Not owned: keep the positional rule the fail-closed spec already pins.
