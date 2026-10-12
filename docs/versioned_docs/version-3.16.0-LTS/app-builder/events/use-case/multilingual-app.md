@@ -1,5 +1,5 @@
 ---
-id: build-multilingual-app
+id: multilingual-app
 title: Build a Multilingual App
 description: Learn how to build a multilingual app in ToolJet. Add a language switcher, translate labels, charts and tables, format numbers and dates for each locale, and support right-to-left languages such as Arabic.
 keywords: [ToolJet multilingual app, ToolJet localization, ToolJet i18n, internationalization, language switcher, right-to-left, RTL, Arabic, RunJS, page variable]
@@ -12,7 +12,7 @@ In this guide, we'll build a multilingual ToolJet app: one dashboard that users 
 The same approach works for any app, such as a form, an admin panel or a support queue. Later in the guide, you'll also see how to keep the translations in a ToolJet Database table or another data source instead.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/build-multilingual-app/dashboard-languages.gif" alt="A ToolJet dashboard switching between English, French, German, Spanish, Japanese and right-to-left Arabic. Titles, KPI labels, chart legends, table headers, status badges, currency and dates change while the figures stay the same." />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/app-builder/events/multilingual-app/dashboard-languages.gif" alt="A ToolJet dashboard switching between English, French, German, Spanish, Japanese and right-to-left Arabic. Titles, KPI labels, chart legends, table headers, status badges, currency and dates change while the figures stay the same." />
 </div>
 
 </div>
@@ -67,7 +67,7 @@ Add one **Button** per language. Bind its `Text` to the language name, such as `
 - **Run Query**: `computeLabels`.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/build-multilingual-app/annotated-switcher.png" alt="The Deutsch button selected in the ToolJet builder. Callout 1 marks the label binding, callout 2 the two On click events, and callout 3 the button on the canvas." />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/app-builder/events/multilingual-app/annotated-switcher.png" alt="The Deutsch button selected in the ToolJet builder. Callout 1 marks the label binding, callout 2 the two On click events, and callout 3 the button on the canvas." />
 </div>
 
 Click a button in the preview and every bound label changes. You can also open the app with `?lang=fr` in the URL to start in French.
@@ -95,10 +95,10 @@ eur.format(362999128);   // €362,999,128  ·  362.999.128 €  ·  362 999 128
 
 `ar-EG-u-nu-latn` keeps Latin digits in Arabic. Use `ar-EG` for Arabic-Indic digits.
 
-For charts and tables, build the values in a second RunJS query, `computeDash`. It returns formatted KPI values, the Plotly JSON for each chart and the table rows, so legends, month names, axis units and status labels are plain translated strings. Set each **Chart** to **Plot from JSON** and bind its JSON description to the query. The full query is at the end of this guide.
+For charts and tables, build the values in a second RunJS query, `computeDash`. It returns formatted KPI values, the Plotly JSON for each chart and the table rows, so legends, month names, axis units and status labels are plain translated strings. On each **Chart**, enable **Use Plotly JSON schema** and bind its **JSON Description** to the query. The full query is at the end of this guide.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/build-multilingual-app/five-languages.png" alt="The same dashboard in English, French, German, Spanish and Japanese, side by side." />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/app-builder/events/multilingual-app/five-languages.png" alt="The same dashboard in English, French, German, Spanish and Japanese, side by side." />
 </div>
 
 </div>
@@ -127,7 +127,7 @@ Then use `dir` in three places:
 - **Fonts:** load a font that covers the script, such as `Noto Sans Arabic`.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/build-multilingual-app/arabic-rtl.jpg" alt="The same dashboard in Arabic. Text is right-aligned, the revenue chart runs right to left with its value axis on the right, and the table columns read right to left." />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/app-builder/events/multilingual-app/arabic-rtl.jpg" alt="The same dashboard in Arabic. Text is right-aligned, the revenue chart runs right to left with its value axis on the right, and the table columns read right to left." />
 </div>
 
 Components keep their positions on the canvas, so the sidebar stays on the left while the text, charts and tables read right to left.
@@ -229,7 +229,7 @@ var T = {
 <details>
 <summary>Complete <code>computeDash</code> query</summary>
 
-Run it after `computeLabels` and after a `getSales` query (a ToolJet Database **List rows** query on a table with `month`, `country_key`, `region_key`, `revenue`, `orders` and `ontime_orders`). Bind each chart's JSON description to `{{(queries.computeDash.data || {}).revenueJson || '{}'}}` (and `regionsJson`, `opsJson`) with **Plot from JSON** on, and the Table's data to `rows`.
+Run it after `computeLabels` and after a `getSales` query (a ToolJet Database **List rows** query on a table with `month`, `country_key`, `region_key`, `revenue`, `orders` and `ontime_orders`). Bind each chart's **JSON Description** to `{{(queries.computeDash.data || {}).revenueJson || '{}'}}` (and `regionsJson`, `opsJson`) with **Use Plotly JSON schema** on, and the Table's data to `rows`.
 
 ```js
 var L = (queries.computeLabels && queries.computeLabels.data) || null;
