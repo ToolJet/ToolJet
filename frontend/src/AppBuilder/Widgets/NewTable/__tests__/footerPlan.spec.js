@@ -12,10 +12,14 @@ describe('footerPlan', () => {
     expect(footerPlan({ ...base, hasButtons: true })).toBe('noPager');
   });
 
-  it('keeps the full footer with more than one page, server-side paging or unsaved edits', () => {
+  it('keeps the full footer with more than one page or server-side paging', () => {
     expect(footerPlan({ ...base, pageCount: 3 })).toBe('full');
     expect(footerPlan({ ...base, serverSide: true })).toBe('full');
-    expect(footerPlan({ ...base, editedCount: 2 })).toBe('full');
+    expect(footerPlan({ ...base, editedCount: 2, pageCount: 3 })).toBe('full');
+  });
+
+  it('shows the save and discard bar of unsaved edits on one page without a lone pager', () => {
+    expect(footerPlan({ ...base, editedCount: 2 })).toBe('noPager');
   });
 
   it('never changes the ToolJet look', () => {
