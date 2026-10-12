@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import tinycolor from 'tinycolor2';
 import {
   setCurrentAppName,
   setCurrentAppMeta,
@@ -38,6 +37,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
+import { onBrandText } from '@/AppBuilder/_helpers/onBrandText';
 
 const useAppData = (
   appId,
@@ -806,9 +806,8 @@ const useAppData = (
       else root.style.removeProperty(`--cc-radius-${size}`);
     });
     const brand = themeObj?.brand?.colors?.primary?.[mode];
-    if (brand && tinycolor(brand).isValid()) {
-      const onBrand =
-        tinycolor.readability(brand, '#ffffff') >= tinycolor.readability(brand, '#0a0a0a') ? '#ffffff' : '#0a0a0a';
+    const onBrand = onBrandText(brand);
+    if (onBrand) {
       root.style.setProperty('--cc-on-primary-brand', onBrand);
     } else {
       root.style.removeProperty('--cc-on-primary-brand');
