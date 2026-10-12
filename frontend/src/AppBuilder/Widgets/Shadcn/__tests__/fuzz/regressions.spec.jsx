@@ -283,6 +283,22 @@ describe('Table', () => {
 });
 
 describe('Kanban', () => {
+  it('lets six or more columns narrow to 160px so a seven-stage board fits instead of clipping its last stage', async () => {
+    const stages = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+    const { problems, unmount } = await mount('ShadKanban', {
+      data: [{ id: 1, title: 'One', status: 'a' }],
+      columns: stages,
+    });
+    const cols = [...document.querySelectorAll('[data-collapsed="false"]')];
+    expect(cols).toHaveLength(7);
+    expect(cols[0].style.minWidth).toBe('160px');
+    unmount();
+    const few = await mount('ShadKanban', { data: [{ id: 1, title: 'One', status: 'a' }], columns: ['a', 'b', 'c'] });
+    expect(document.querySelector('[data-collapsed="false"]').style.minWidth).toBe('200px');
+    few.unmount();
+    expect(problems()).toEqual([]);
+  });
+
   it("shows a card's details when it is clicked, and hides them on a second click", async () => {
     const { problems, unmount } = await mount('ShadKanban', {
       data: [

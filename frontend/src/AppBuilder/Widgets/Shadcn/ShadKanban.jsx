@@ -288,6 +288,7 @@ const KanbanColumn = ({
   collapsed,
   onCollapse,
   fixed,
+  minColumn = 200,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `col-${column.id}`,
@@ -349,14 +350,19 @@ const KanbanColumn = ({
     <div
       ref={setNodeRef}
       data-collapsed="false"
-      // A set column width is the preferred width: columns shrink to fit the board (down to 200px, or the set width if
-      // narrower) before it scrolls; five 245px stages clipped their last column. Without one the columns share the
-      // board, at least 200px each.
-      style={width ? { ...look.column, width, flex: `0 1 ${width}`, minWidth: `min(${width}, 200px)` } : look.column}
+      // A set column width is the preferred width: columns shrink to fit the board (down to the minimum, or the set
+      // width if narrower) before it scrolls; five 245px stages clipped their last column. Without one the columns
+      // share the board, at least the minimum each: 200px, or 160px on a board of six or more stages (a seventh
+      // stage was cut off at the right edge of a full-width board).
+      style={
+        width
+          ? { ...look.column, width, flex: `0 1 ${width}`, minWidth: `min(${width}, ${minColumn}px)` }
+          : { ...look.column, minWidth: `${minColumn}px` }
+      }
       className={cn(
         'group/col flex flex-col p-3 transition-shadow',
         fixed && 'min-h-0 overflow-hidden',
-        !width && 'min-w-[200px] flex-1',
+        !width && 'flex-1',
         compact ? 'gap-1.5' : 'gap-2',
         isOver && 'ring-1 ring-border'
       )}
@@ -788,6 +794,7 @@ export const ShadKanban = (props) => {
               onDelete={onDelete}
               onAdd={onAdd}
               fixed={fixed}
+              minColumn={columns.length >= 6 ? 160 : 200}
             />
           ))}
         </div>
