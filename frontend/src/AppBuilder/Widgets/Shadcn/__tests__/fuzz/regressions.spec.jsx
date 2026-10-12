@@ -328,6 +328,30 @@ describe('Kanban', () => {
     expect(problems()).toEqual([]);
   });
 
+  // dnd-kit's keyboard sensor took Enter as well as Space to pick a card up, so the keyboard could never activate a
+  // card (select it, fire onCardClicked, open its details), and on a board without dragging it did nothing at all.
+  it.each([
+    ['a board with dragging', {}],
+    ['a board without dragging', { allowDrag: false }],
+  ])('Enter on a focused card opens its details on %s', async (_, extra) => {
+    const { problems, unmount } = await mount('ShadKanban', {
+      data: [{ id: 1, title: 'Northstar', status: 'todo', details: { 'Deal size': '$24,000' } }],
+      columns: ['todo'],
+      detailsField: 'details',
+      ...extra,
+    });
+    const card = screen.getByText('Northstar').closest('[aria-roledescription], [role=button]');
+    await act(async () => {
+      card.focus();
+      fireEvent.keyDown(card, { key: 'Enter', code: 'Enter' });
+    });
+    expect(document.body.textContent).toContain('$24,000');
+    await act(async () => fireEvent.keyDown(card, { key: 'Enter', code: 'Enter' }));
+    expect(document.body.textContent).not.toContain('$24,000');
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
   it('draws 100 cards a column, then 100 more per "Show more"', async () => {
     const data = NUMS_10K.map((i) => ({
       id: i,
@@ -382,6 +406,30 @@ describe('Card grid', () => {
     });
     expect(document.querySelector('[data-fallback="initials"]')).toBeNull();
     expect(document.body.textContent).toContain('Ready');
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
+  // A long badge beside the title ("-$19,305.50 vs last week" on a 185px card) was cut off hard: the chip was a flex
+  // box, which clips its text but never draws an ellipsis, and the title row could not wrap. The row wraps (a badge
+  // wider than the room beside the title goes under it) and the chip ellipsizes with its full text as a tooltip.
+  // jsdom has no layout, so this pins the structure that makes it work; the browser check is in the pass 5 notes.
+  it('never clips a long badge: the title row wraps and the chip ellipsizes with a tooltip', async () => {
+    const badge = '-$19,305.50 vs last week';
+    const { problems, unmount } = await mount('ShadCardGrid', {
+      data: [{ id: 1, label: 'Revenue', comparison: badge }],
+      titleField: 'label',
+      badgeField: 'comparison',
+    });
+    const chip = [...document.querySelectorAll('[data-tone]')].find((el) => el.textContent === badge);
+    expect(chip).toBeTruthy();
+    expect(chip.getAttribute('title')).toBe(badge);
+    // An ellipsis needs a block box: a flex container clips its text without one.
+    expect(chip.className).not.toMatch(/\binline-flex\b/);
+    expect(chip.className).toMatch(/\btruncate\b/);
+    const row = chip.closest('.flex-wrap');
+    expect(row).toBeTruthy();
+    expect(row.textContent).toContain('Revenue');
     unmount();
     expect(problems()).toEqual([]);
   });

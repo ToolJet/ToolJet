@@ -237,8 +237,11 @@ const TONE_VAR = {
 const Chip = ({ value, onImage }) => {
   const tone = TONE_VAR[chipTone(value)] || TONE_VAR.neutral;
   return (
+    // A block box, so a chip too long for its room ends in an ellipsis (a flex box clips its text without one); the
+    // full text is its tooltip.
     <span
-      className="inline-flex max-w-full items-center truncate rounded-full px-2.5 py-0.5 text-xs font-semibold"
+      className="inline-block max-w-full truncate whitespace-nowrap rounded-full px-2.5 py-0.5 align-middle text-xs font-semibold"
+      title={String(value)}
       style={
         onImage
           ? {
@@ -414,9 +417,11 @@ export const ShadCardGrid = (props) => {
             >
               {showImage ? <CardImage src={card.image} title={card.title} aspect={aspect} badge={card.badge} /> : null}
               <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-4">
-                <div className="flex min-w-0 items-start justify-between gap-2">
+                {/* The title takes 60% of the row; a badge wider than the room left wraps under it, and one wider than
+                    the card ends in an ellipsis. A long badge beside the title ("-$19,305.50 vs last week") was cut off. */}
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-x-2 gap-y-1.5">
                   <span
-                    className="line-clamp-2 min-w-0 text-base font-semibold leading-snug"
+                    className="line-clamp-2 min-w-0 flex-[1_1_60%] text-base font-semibold leading-snug"
                     style={{
                       color: 'var(--lk-title,var(--sc-foreground))',
                       fontFamily: TITLE_FONT,
@@ -424,7 +429,11 @@ export const ShadCardGrid = (props) => {
                   >
                     {card.title}
                   </span>
-                  {!showImage && card.badge ? <Chip value={card.badge} /> : null}
+                  {!showImage && card.badge ? (
+                    <span className="flex min-w-0 max-w-full">
+                      <Chip value={card.badge} />
+                    </span>
+                  ) : null}
                 </div>
                 {card.subtitle ? (
                   <span className="truncate text-sm" style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}>
@@ -517,7 +526,7 @@ const RecordAvatar = ({ src, name, size, shape }) => {
 };
 
 export const ShadRecordList = (props) => {
-  const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
+  const { properties: p, setExposedVariables, fireEvent, id } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
   const rows = useMemo(
@@ -551,10 +560,17 @@ export const ShadRecordList = (props) => {
   useEffect(() => setShownCount(ROWS_PER_STEP), [rows]);
   const [selected, setSelected] = useState(null);
   const idKey = text(p.idField) || 'id';
-  useExposed(setExposedVariables, p, {
-    selectedItem: selected?.row ?? {},
-    selectedItemId: selected ? selected.row?.[idKey] ?? null : null,
+  // The pack's names and the native List view's: selectedRecord and selectedRow are the row's data, selectedRecordId and
+  // selectedRowId its position in data.
+  const selection = (row) => ({
+    selectedItem: row?.row ?? {},
+    selectedItemId: row ? row.row?.[idKey] ?? null : null,
+    selectedRecord: row?.row ?? {},
+    selectedRecordId: row ? row.index : null,
+    selectedRow: row?.row ?? {},
+    selectedRowId: row ? row.index : null,
   });
+  useExposed(setExposedVariables, p, selection(selected));
   const hasClick = useHasEvent(id, 'onRowClicked');
   const density = DENSITY[p.density] || DENSITY.default;
   const showAvatar = p.showAvatar !== false;
@@ -566,9 +582,9 @@ export const ShadRecordList = (props) => {
   const click = (row) => {
     if (busy(p)) return;
     setSelected(row);
-    setExposedVariable('selectedItem', row.row);
-    setExposedVariable('selectedItemId', row.row?.[idKey] ?? null);
+    setExposedVariables(selection(row));
     fireEvent('onRowClicked');
+    fireEvent('onRecordClicked');
   };
 
   // Borders are classes: the pack's preflight sets every border width to 0 with !important, so an inline border

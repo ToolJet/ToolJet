@@ -72,3 +72,18 @@ describe('primary-coloured text', () => {
     expect(config.theme.extend.textColor.primary.DEFAULT({})).toBe('var(--sc-primary-ink)');
   });
 });
+
+// Hairlines (dividers, separators, a card's details rule) draw in --sc-border. The theme's weak border is the card
+// surface in dark themes (ToolJet Modern dark: both #1F2937), so in dark the pack takes the default border instead.
+describe('hairlines in dark themes', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const scss = fs.readFileSync(path.join(__dirname, '..', 'shadcn.scss'), 'utf8');
+  it('maps the border to the theme default border under the dark theme classes', () => {
+    const darkBlocks = [...scss.matchAll(/\.dark-theme \.tj-shadcn,[^{]*\{([^}]*)\}/g)].map((m) => m[1]);
+    expect(darkBlocks.some((body) => /--sc-border:\s*var\(--cc-default-border/.test(body))).toBe(true);
+  });
+  it('keeps the weak border in light themes', () => {
+    expect(scss).toMatch(/\.tj-shadcn,\s*\.tj-shad-tokens\s*\{[^}]*--sc-border:\s*var\(--cc-weak-border/);
+  });
+});

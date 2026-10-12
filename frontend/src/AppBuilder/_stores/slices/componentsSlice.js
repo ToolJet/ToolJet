@@ -3635,6 +3635,11 @@ export const createComponentsSlice = (set, get) => ({
       const parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
       const subcontainerParentComponent = parentComponent?.children?.[componentName];
       return subcontainerParentComponent?.[property];
+    } else if (parentType === 'ShadKanban') {
+      // A shadcn Kanban card's components keep one exposed value for every card (object values, not a List view's
+      // per-row arrays), so whichever card published last decided visible, disabled and loading for all of them.
+      // Each card's own resolved property (visibility from cardData) answers instead.
+      return undefined;
     } else {
       const componentExposedProperty = getExposedValueOfComponent(componentId, moduleId)?.[property];
       return componentExposedProperty;

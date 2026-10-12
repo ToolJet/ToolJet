@@ -68,6 +68,7 @@ visibility(), disable() and loading() at run time. The inspector lists them only
 | Dialog | ModalV2 | (already the native ModalV2 set) | |
 | Dropdown menu | PopoverMenu | (already the native set, plus onOpen, onClose, open, close) | |
 | Tabs, Pagination, List view, Button group | Tabs, Pagination, Listview, ButtonGroupV2 | (already the native set) | |
+| Record list | Listview | event onRecordClicked (with its own onRowClicked); exposed selectedRecord and selectedRow (the clicked row's data), selectedRecordId and selectedRowId (its position in data) | |
 
 Pack widgets with no native counterpart keep their own events. Carousel has onSlideChange and onSlideClick, Calendar
 onSelect and onMonthChange, Tags onTagClick, Timeline onItemClick, Empty onAction, Hero onActionClick and
