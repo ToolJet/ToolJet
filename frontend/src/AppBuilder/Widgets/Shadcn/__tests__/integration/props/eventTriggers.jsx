@@ -87,6 +87,7 @@ export const TRIGGERS = {
     onMonthChange: { steps: [['click', 'button[aria-label*="next" i]', 0]], reads: 'visibleMonth' },
   },
   ShadCardGrid: { onCardClick: { steps: [['click', '[role=button], button', 0]], reads: 'selectedItem' } },
+  ShadProgressList: { onItemClick: { steps: [['click', 'li', 1]], reads: 'selectedItem' } },
   ShadChat: {
     onMessageSent: {
       steps: [

@@ -296,6 +296,7 @@ const ShadHero = controlledShadWidget(shadcnSections, 'ShadHero');
 const ShadCardGrid = controlledShadWidget(shadcnSections, 'ShadCardGrid');
 const ShadRecordList = controlledShadWidget(shadcnSections, 'ShadRecordList');
 const ShadSummaryStrip = controlledShadWidget(shadcnSections, 'ShadSummaryStrip');
+const ShadProgressList = controlledShadWidget(shadcnSections, 'ShadProgressList');
 const ShadChat = controlledShadWidget(shadcnChat, 'ShadChat');
 const ShadQuestionnaire = controlledShadWidget(shadcnQuestionnaire, 'ShadQuestionnaire');
 const ShadSteps = controlledShadWidget(shadcnDisplay, 'ShadSteps');
@@ -477,6 +478,7 @@ export const AllComponents = {
   ShadCardGrid,
   ShadRecordList,
   ShadSummaryStrip,
+  ShadProgressList,
   ShadChat,
   ShadQuestionnaire,
   ShadSteps,

@@ -87,6 +87,7 @@ export const SKELETON_CAPABLE = new Set([
   'ShadNavigation',
   'ShadPieChart',
   'ShadProgress',
+  'ShadProgressList',
   'ShadRadarChart',
   'ShadRadialChart',
   'ShadRecordList',

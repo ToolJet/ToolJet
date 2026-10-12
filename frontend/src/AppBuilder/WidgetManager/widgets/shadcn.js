@@ -68,6 +68,7 @@ import { shadRatingConfig } from './shadRating';
 import { shadTagsInputConfig } from './shadTagsInput';
 import { shadCardGridConfig } from './shadCardGrid';
 import { shadHeroConfig } from './shadHero';
+import { shadProgressListConfig } from './shadProgressList';
 import { shadRecordListConfig } from './shadRecordList';
 import { shadSummaryStripConfig } from './shadSummaryStrip';
 import { shadTableConfig } from './shadTable';
@@ -142,6 +143,7 @@ export const shadcnConfigs = [
   shadTagsInputConfig,
   shadCardGridConfig,
   shadHeroConfig,
+  shadProgressListConfig,
   shadRecordListConfig,
   shadSummaryStripConfig,
   shadTableConfig,

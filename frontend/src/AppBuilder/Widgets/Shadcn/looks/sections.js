@@ -30,6 +30,16 @@ export const LOOKS = {
     ['borderRadius', '--lk-radius', px],
     ['titleFontFamily', '--lk-title-font', fontStack],
   ],
+  ShadProgressList: [
+    ['backgroundColor', '--lk-bg'],
+    ['borderColor', '--lk-border'],
+    ['titleColor', '--lk-title'],
+    ['textColor', '--lk-fg'],
+    ['accentColor', '--lk-accent'],
+    ['trackColor', '--lk-track'],
+    ['borderRadius', '--lk-radius', px],
+    ['titleFontFamily', '--lk-title-font', fontStack],
+  ],
   ShadSummaryStrip: [
     ['backgroundColor', '--lk-bg'],
     ['borderColor', '--lk-border'],
@@ -42,11 +52,12 @@ export const LOOKS = {
   ],
 };
 
-// The hero draws a skeleton of its title and lines; the grid, the list and the strip skeleton their cards, rows and
+// The hero draws a skeleton of its title and lines; the grid, the lists and the strip skeleton their cards, rows and
 // figures (ShadSections.jsx).
 export const LOADING = {
   ShadHero: 'own',
   ShadCardGrid: 'own',
   ShadRecordList: 'own',
+  ShadProgressList: 'own',
   ShadSummaryStrip: 'own',
 };
