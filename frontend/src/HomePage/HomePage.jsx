@@ -16,7 +16,7 @@ import Select from '@/_ui/Select';
 import { AppsMultiSelect } from '@/_ui/Modal/AppsMultiSelect';
 import _, { sample, isEmpty, capitalize, has } from 'lodash';
 import { Folders } from './Folders';
-import { BlankPage } from './BlankPage';
+import { AppsEmptyState, WorkflowsEmptyState } from '@/components/ui/Rocket/Empty/states';
 import { toast } from 'react-hot-toast';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 import Layout from '@/_ui/Layout';
@@ -53,6 +53,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
 import { v4 as uuidv4 } from 'uuid';
+import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
+import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
@@ -947,12 +949,7 @@ class HomePageComponent extends React.Component {
     // Unsynced apps (pre-git or not yet pushed) are always mutable, even on master
     if (app?.app_versions?.[0]?.is_synced === false) return false;
 
-    // Branching affects folder mutations for front-end apps and modules.
-    // Workflows are not branch-scoped, so folder operations there remain unrestricted.
-    const isBranchingEnabled =
-      this.props.appType === 'front-end' || this.props.appType === 'module'
-        ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
-        : false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
     return !!(isBranchingEnabled && isDefault);
   };
@@ -970,10 +967,7 @@ class HomePageComponent extends React.Component {
   isOnFeatureBranch = () => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
-    const isBranchingEnabled =
-      this.props.appType === 'front-end' || this.props.appType === 'module'
-        ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
-        : false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
     return !!(isBranchingEnabled && !isDefault);
   };
@@ -981,14 +975,12 @@ class HomePageComponent extends React.Component {
   // Git sync ON but in single-branch mode (branching disabled / unlicensed for multi-branch):
   // the delete lands on the default branch and is auto-committed + pushed to git — so it needs
   // the same "committed to git, cannot be retrieved" warning as a feature-branch delete, just
-  // without the merge step. Only front-end apps and modules are branch-scoped and auto-commit
-  // deletions to git (workflows are not). Multi-branch feature-branch deletes are handled by
+  // without the merge step. Multi-branch feature-branch deletes are handled by
   // isOnFeatureBranch(); multi-branch default-branch deletes are blocked upstream (switch-branch
   // modal), so the only case reaching here with git on is single-branch mode.
   isGitSyncSingleBranchDelete = () => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
-    if (this.props.appType !== 'front-end' && this.props.appType !== 'module') return false;
     const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
     return !isBranchingEnabled;
   };
@@ -1824,6 +1816,11 @@ class HomePageComponent extends React.Component {
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
 
+    // The apps/workflows list is empty and nothing is filtering it — a genuinely empty
+    // workspace rather than a search that found nothing.
+    const showEmptyState =
+      !isLoading && featuresLoaded && meta?.total_count === 0 && !currentFolder.id && !appSearchKey;
+
     const getDisabledState = () => {
       if (this.props.appType === 'module') {
         return !moduleEnabled || this.isGitSyncLicenseLocked();
@@ -2570,10 +2567,24 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
-              {this.props.appType !== 'workflow' && (
-                <WorkspaceLockedBanner pageContext={this.props.appType === 'module' ? 'modules' : 'apps'} />
-              )}
-              <div className="w-100 mb-5 container home-page-content-container">
+              <WorkspaceLockedBanner
+                pageContext={
+                  this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'
+                }
+              />
+              {/*
+                When empty, the container becomes a full-height flex column so the empty state —
+                which already carries `flex-1` and `justify-center` — centres in the space left
+                under the tab row, instead of sitting at the top of the scroll area. `mb-5` is
+                dropped in that case; with `h-full` it would push the column past its parent and
+                introduce a scrollbar.
+              */}
+              <div
+                className={cx('w-100 container home-page-content-container', {
+                  'mb-5': !showEmptyState,
+                  'tw-flex tw-h-full tw-flex-col': showEmptyState,
+                })}
+              >
                 {featuresLoaded && !isLoading ? (
                   <>
                     <AppTypeTab
@@ -2586,6 +2597,12 @@ class HomePageComponent extends React.Component {
                 ) : (
                   !appSearchKey && <HeaderSkeleton />
                 )}
+
+                {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
+                  <CreateAppWithPrompt createApp={this.createApp} />
+                )}
+
+                {this.props.appType === 'module' && this.canCreateApp() && <CreateModuleWithPrompt />}
 
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
@@ -2620,53 +2637,21 @@ class HomePageComponent extends React.Component {
                     </div>
                   </>
                 )}
-                {!isLoading &&
-                  featuresLoaded &&
-                  meta?.total_count === 0 &&
-                  !currentFolder.id &&
-                  !appSearchKey &&
-                  (['front-end', 'workflow'].includes(this.props.appType) ? (
-                    <BlankPage
-                      canCreateApp={this.canCreateApp}
-                      isLoading={true}
-                      createApp={this.createApp}
-                      readAndImport={this.readAndImport}
-                      onImportFromDeviceClick={() => {
-                        if (this.isWorkspaceBranchLocked()) {
-                          this.setState({ showSwitchBranchForCreate: true });
-                          return false;
-                        }
-                      }}
-                      isImportingApp={isImportingApp}
-                      fileInput={this.fileInput}
-                      openCreateAppModal={() => {
-                        if (this.isWorkspaceBranchLocked()) {
-                          this.setState({ showSwitchBranchForCreate: true });
-                        } else {
-                          this.openCreateAppModal();
-                        }
-                      }}
-                      openCreateAppFromTemplateModal={(template) => {
-                        if (this.isWorkspaceBranchLocked()) {
-                          toast.error('Master is locked. Create a branch to create an app from template.');
-                          return;
-                        }
-                        this.openCreateAppFromTemplateModal(template);
-                      }}
-                      creatingApp={creatingApp}
-                      darkMode={this.props.darkMode}
-                      showTemplateLibraryModal={this.state.showTemplateLibraryModal}
-                      viewTemplateLibraryModal={this.showTemplateLibraryModal}
-                      hideTemplateLibraryModal={this.hideTemplateLibraryModal}
-                      appType={this.props.appType}
-                      gitSyncLicenseLocked={this.isGitSyncLicenseLocked()}
-                      workflowsLimit={
-                        workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
-                          ? workflowInstanceLevelLimit
-                          : workflowWorkspaceLevelLimit
+                {showEmptyState &&
+                  (this.props.appType === 'front-end' ? (
+                    /*
+                      Replaces the old "Welcome to your new workspace" page. Illustration and copy
+                      only — no action button: every route into creating an app (blank, import,
+                      template, git) already sits in the sidebar's split button a few pixels away,
+                      so repeating one of them here would just pick a winner among equals.
+                    */
+                    <AppsEmptyState data-cy="apps-empty-state" />
+                  ) : this.props.appType === 'workflow' ? (
+                    <WorkflowsEmptyState
+                      onCreateWorkflow={
+                        this.canCreateApp() && !getDisabledState() ? this.openCreateAppModal : undefined
                       }
+                      data-cy="workflows-empty-state"
                     />
                   ) : (
                     <div className="empty-module-container">

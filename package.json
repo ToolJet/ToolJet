@@ -16,11 +16,9 @@
   },
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
-    "@types/node": "^22.20.5",
     "eslint": "^9.26.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.0",
-    "typescript": "^5.9.3"
+    "lint-staged": "^16.1.0"
   },
   "scripts": {
     "ci:changed": "bash scripts/test-changed.sh",
@@ -69,5 +67,12 @@
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
     "update-version": "node update-version.js"
+  },
+  "dependencies": {},
+  "overrides": {
+    "js-yaml": "^3.15.2",
+    "@eslint/eslintrc": {
+      "js-yaml": "^4.3.2"
+    }
   }
 }

@@ -72,6 +72,8 @@ export class AbilityService extends IAbilityService {
           workflowFolderDelete: acc.workflowFolderDelete || group.workflowFolderDelete,
           moduleFolderCreate: acc.moduleFolderCreate || group.moduleFolderCreate,
           moduleFolderDelete: acc.moduleFolderDelete || group.moduleFolderDelete,
+          dataSourceFolderCreate: acc.dataSourceFolderCreate || group.dataSourceFolderCreate,
+          dataSourceFolderDelete: acc.dataSourceFolderDelete || group.dataSourceFolderDelete,
           orgConstantCRUD: acc.orgConstantCRUD || group.orgConstantCRUD,
           tjdbCRUD: acc.tjdbCRUD || group.tjdbCRUD,
           orgVariableCRUD: acc.orgVariableCRUD,
@@ -151,6 +153,13 @@ export class AbilityService extends IAbilityService {
             userPermissions.isEndUser
           );
         }
+        if (resources.some((item) => item.resource === MODULES.DATA_SOURCE_FOLDER)) {
+          userPermissions[MODULES.DATA_SOURCE_FOLDER] = this.createUserContainerFolderPermissions(
+            allGranularPermissions,
+            ResourceType.DATA_SOURCE_FOLDER,
+            userPermissions.isEndUser
+          );
+        }
       }
 
       return userPermissions;
@@ -169,9 +178,12 @@ export class AbilityService extends IAbilityService {
       editAppsInFoldersId: [],
     };
 
-    // Module folders are never end-user-assignable — resolve to no access even if a
-    // granular permission already grants it (e.g. a user added later to that group).
-    if (isEndUser && resourceType === ResourceType.MODULE_FOLDER) {
+    // Module folders and data-source folders are never end-user-assignable — resolve to no access
+    // even if a granular permission already grants it (e.g. a user added later to that group).
+    if (
+      isEndUser &&
+      (resourceType === ResourceType.MODULE_FOLDER || resourceType === ResourceType.DATA_SOURCE_FOLDER)
+    ) {
       return userFolderPermissions;
     }
 

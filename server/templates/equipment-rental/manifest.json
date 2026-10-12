@@ -1,0 +1,21 @@
+{
+  "name": "Equipment rental",
+  "description": "Run an equipment rental counter. Track units on the shelf and on hire, reservations and every handover.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "equipment-rental",
+  "category": "rentals"
+}
