@@ -352,7 +352,7 @@ export const mountWidget = async (
     widgetHeight: CONFIGS[name].defaultSize?.height || 200,
     widgetWidth: 600,
   });
-  harness.setup();
+  await harness.setup();
   const def = definitionOf(name);
   const wrap = (entries) => Object.fromEntries(Object.entries(entries).map(([k, v]) => [k, { value: v }]));
   let view;
