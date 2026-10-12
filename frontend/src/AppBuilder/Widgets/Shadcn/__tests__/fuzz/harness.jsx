@@ -17,6 +17,8 @@ import * as Display from '../../ShadDisplay';
 import * as Sections from '../../ShadSections';
 import * as Actions from '../../ShadActions';
 import * as Overlays from '../../ShadOverlays';
+import * as Chat from '../../ShadChat';
+import * as Questionnaire from '../../ShadQuestionnaire';
 
 // jsdom has no layout: charts get a fixed box, and sub-canvases (tabs, list rows, custom cards, the dialog body) a
 // placeholder, since the canvas they hold is ToolJet's, not the pack's.
@@ -53,7 +55,22 @@ if (typeof window !== 'undefined') {
     Element.prototype.releasePointerCapture || function releasePointerCapture() {};
 }
 
-const MODULES = [Core, Charts, Kanban, Table, Tabs, ListView, Inputs, Pickers, Display, Actions, Overlays, Sections];
+const MODULES = [
+  Core,
+  Charts,
+  Kanban,
+  Table,
+  Tabs,
+  ListView,
+  Inputs,
+  Pickers,
+  Display,
+  Actions,
+  Overlays,
+  Sections,
+  Chat,
+  Questionnaire,
+];
 // Widgets that keep their own control state; the rest get withControlState, as in editorHelpers.js.
 const UNCONTROLLED = new Set(['ShadTable', 'ShadTabs', 'ShadListView', 'ShadDialog']);
 

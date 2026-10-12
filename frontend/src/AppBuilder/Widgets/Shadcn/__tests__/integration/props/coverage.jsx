@@ -386,6 +386,34 @@ export const PROBES = [
   },
   { widget: 'ShadCardGrid', key: 'columns', value: '{{1}}' },
   { widget: 'ShadCardGrid', key: 'minCardWidth', value: '{{400}}' },
+  // Chat: the sender's name and avatar show on a message that has none of its own.
+  ...['userName', 'userAvatar', 'respondentName'].map((key) => ({
+    widget: 'ShadChat',
+    key,
+    value: key.endsWith('Avatar') ? 'https://example.com/person.png' : 'Grace',
+    context: {
+      properties: {
+        initialChat: fx([
+          { message: 'Hello', type: 'message', messageId: 'a' },
+          { message: 'Hi there', type: 'response', messageId: 'b' },
+        ]),
+      },
+    },
+  })),
+  // Questionnaire: saved answers select their choice; the submit label shows on the last question, the completed
+  // title and text once it is submitted.
+  { widget: 'ShadQuestionnaire', key: 'defaultAnswers', value: fx({ role: 'Finance' }) },
+  ...[
+    ['submitLabel', 'Send it', []],
+    ['completeTitle', 'All done', [['click', 'button', 0]]],
+    ['completeText', 'Saved for later', [['click', 'button', 0]]],
+  ].map(([key, value, steps]) => ({
+    widget: 'ShadQuestionnaire',
+    key,
+    value,
+    steps,
+    context: { properties: { items: fx([{ name: 'note', prompt: 'Anything else?', type: 'text' }]) } },
+  })),
   // The default rows have no avatar field, so the avatar shows the title's initials; another name field changes them.
   { widget: 'ShadRecordList', key: 'avatarField', value: 'contact' },
   {

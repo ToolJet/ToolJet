@@ -12,6 +12,8 @@ import { shadRadarChartConfig } from './shadRadarChart';
 import { shadRadialChartConfig } from './shadRadialChart';
 import { shadScatterChartConfig } from './shadScatterChart';
 import { shadSparklineConfig } from './shadSparkline';
+import { shadChatConfig } from './shadChat';
+import { shadQuestionnaireConfig } from './shadQuestionnaire';
 import { shadCircularProgressConfig } from './shadCircularProgress';
 import { shadIconConfig } from './shadIcon';
 import { shadImageConfig } from './shadImage';
@@ -84,6 +86,8 @@ export const shadcnConfigs = [
   shadRadialChartConfig,
   shadScatterChartConfig,
   shadSparklineConfig,
+  shadChatConfig,
+  shadQuestionnaireConfig,
   shadCircularProgressConfig,
   shadIconConfig,
   shadImageConfig,

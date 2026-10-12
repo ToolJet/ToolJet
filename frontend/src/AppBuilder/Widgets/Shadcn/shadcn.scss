@@ -200,3 +200,139 @@
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+// ToolJet UI 2.0 Chat (ShadChat.jsx): markdown in replies, sized for a message bubble. ToolJet's global styles give
+// paragraphs and lists page margins, so each block is reset here.
+.tj-shadcn .sc-markdown {
+  // Rules drawn on the reply bubble: the theme's border colour is the bubble's own muted colour in most themes.
+  --sc-md-rule: color-mix(in srgb, var(--sc-foreground) 14%, transparent);
+  overflow-wrap: anywhere;
+  > :first-child {
+    margin-top: 0;
+  }
+  > :last-child {
+    margin-bottom: 0;
+  }
+  p,
+  ul,
+  ol,
+  blockquote,
+  table,
+  .sc-md-pre {
+    margin: 0 0 0.6em;
+  }
+  ul,
+  ol {
+    padding-left: 1.25em;
+  }
+  ul {
+    list-style: disc;
+  }
+  ol {
+    list-style: decimal;
+  }
+  li + li {
+    margin-top: 0.2em;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0.8em 0 0.4em;
+    font-size: 1em;
+    font-weight: 600;
+    line-height: 1.4;
+    color: inherit;
+  }
+  a {
+    color: var(--lk-accent, var(--sc-primary-ink));
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  blockquote {
+    padding-left: 0.75em;
+    border-left: 3px solid var(--sc-md-rule);
+    color: var(--sc-muted-foreground);
+  }
+  code {
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--sc-foreground) 8%, transparent);
+    font-size: 0.88em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: inherit;
+  }
+  .sc-md-pre {
+    padding: 0.7em 0.85em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--sc-foreground) 7%, var(--sc-background));
+    font-size: 0.85em;
+    line-height: 1.55;
+    code {
+      padding: 0;
+      background: transparent;
+      font-size: inherit;
+    }
+  }
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 0.92em;
+  }
+  th,
+  td {
+    padding: 0.3em 0.6em;
+    border: 1px solid var(--sc-md-rule);
+    text-align: left;
+  }
+  th {
+    font-weight: 600;
+    background: color-mix(in srgb, var(--sc-foreground) 4%, transparent);
+  }
+  img {
+    max-width: 100%;
+    border-radius: 6px;
+  }
+  hr {
+    margin: 0.8em 0;
+    border: 0;
+    border-top: 1px solid var(--sc-md-rule);
+  }
+}
+
+// The chat's typing indicator: three dots rising in turn.
+.tj-shadcn .sc-typing-dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--sc-muted-foreground);
+  animation: sc-typing 1.2s ease-in-out infinite;
+}
+// Delays as rules, not inline: the pack's rules are !important, so the animation shorthand would override them.
+.tj-shadcn .sc-typing-dot:nth-child(2) {
+  animation-delay: 160ms;
+}
+.tj-shadcn .sc-typing-dot:nth-child(3) {
+  animation-delay: 320ms;
+}
+@keyframes sc-typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tj-shadcn .sc-typing-dot {
+    animation: none;
+  }
+}

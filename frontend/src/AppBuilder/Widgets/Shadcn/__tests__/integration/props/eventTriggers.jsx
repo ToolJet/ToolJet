@@ -87,6 +87,30 @@ export const TRIGGERS = {
     onMonthChange: { steps: [['click', 'button[aria-label*="next" i]', 0]], reads: 'visibleMonth' },
   },
   ShadCardGrid: { onCardClick: { steps: [['click', '[role=button], button', 0]], reads: 'selectedItem' } },
+  ShadChat: {
+    onMessageSent: {
+      steps: [
+        ['type', 'Where is my order?', 'textarea'],
+        ['keyOn', 'textarea', 0, 'Enter'],
+      ],
+      reads: 'lastMessage',
+    },
+    onClearHistory: { steps: [['click', 'button[aria-label="Clear history"]', 0]] },
+  },
+  ShadQuestionnaire: {
+    onStepChange: {
+      steps: [
+        ['click', '[role=radio]', 1],
+        ['clickText', 'Next'],
+      ],
+      reads: 'currentIndex',
+    },
+    onSubmit: {
+      context: { items: '{{[{ name: "note", prompt: "Anything else?", type: "text" }]}}' },
+      steps: [['clickText', 'Submit']],
+      reads: 'isComplete',
+    },
+  },
   ShadRecordList: {
     onRowClicked: { steps: [['click', 'li[role=button]', 0]], reads: 'selectedItem' },
     // The native List view's names: the clicked record and its position.
