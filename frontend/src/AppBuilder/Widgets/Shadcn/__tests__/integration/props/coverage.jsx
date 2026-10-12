@@ -406,6 +406,10 @@ export const PROBES = [
     value: 'pct',
     context: { properties: { data: fx([{ id: 1, label: 'Onboarding', spent: 1, budget: 4, pct: 90 }]) } },
   },
+  // Schedule: the second line names a field the sample bookings have; another day than today; days on the days scale.
+  { widget: 'ShadSchedule', key: 'subtitleField', value: 'host' },
+  { widget: 'ShadSchedule', key: 'date', value: '2026-10-20' },
+  { widget: 'ShadSchedule', key: 'days', value: '{{3}}', context: { properties: { scale: 'days' } } },
   { widget: 'ShadProgressList', key: 'autoTone', value: 'limit', context: { properties: { statusField: '' } } },
   { widget: 'ShadCardGrid', key: 'minCardWidth', value: '{{400}}' },
   // Chat: the sender's name and avatar show on a message that has none of its own.
