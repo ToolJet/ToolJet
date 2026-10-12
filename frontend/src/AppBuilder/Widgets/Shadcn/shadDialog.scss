@@ -11,6 +11,12 @@
   overflow: hidden;
 }
 
+// The close button sits level with the title, at the top of the header: centred in a tall header (a title over a
+// description, 80px or more) it hung below the title line, beside the description.
+.tj-shad-dialog .modal-header {
+  align-items: flex-start;
+}
+
 // The close button: shadcn's small muted X in the top right corner.
 .tj-shad-dialog .tj-modal-close-button {
   color: var(--sc-muted-foreground);
