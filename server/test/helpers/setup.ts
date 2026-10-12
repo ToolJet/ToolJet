@@ -338,11 +338,7 @@ function createLicenseInstance(plan: string): LicenseBase {
       `No test terms for plan '${plan}'. Register them with registerPlanTerms() or move the spec to ee/test.`
     );
   const futureDate = new Date();
-  // A day, not 30 minutes. The instance is minted once at app boot and re-minted only when a
-  // test calls restoreLicensePlan(), so a long suite outlives it: the git-sync e2e file runs
-  // ~60 min and its tail started getting 451 from the license gate — a wall-clock artifact
-  // indistinguishable from a product bug.
-  futureDate.setDate(futureDate.getDate() + 1);
+  futureDate.setMinutes(futureDate.getMinutes() + 30);
   return new (LicenseBase as any)(CE_BASIC_PLAN_TERMS, terms, new Date(), new Date(), futureDate, plan);
 }
 

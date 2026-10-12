@@ -649,9 +649,6 @@ describe('OrganizationUsersController', () => {
       expect(developerUserData.orgUser.status).toBe('invited');
     });
 
-    // Regression for tj-ee#5469 / GHSA-6r8x-87m7-59q3 and duplicates: the audit-log
-    // misattribution half of the report. #17790's own tests below cover the plain
-    // cross-tenant unarchive case more precisely; this one is additive.
     // Regression for the audit-log misattribution flagged alongside tj-ee#5469: the entry
     // must record the workspace the action was taken in, not the caller's default workspace.
     it('should attribute the archive/unarchive audit log entry to the acted-on workspace', async () => {
