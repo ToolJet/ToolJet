@@ -16,9 +16,11 @@
   },
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
+    "@types/node": "^22.20.5",
     "eslint": "^9.26.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.0"
+    "lint-staged": "^16.1.0",
+    "typescript": "^5.9.3"
   },
   "scripts": {
     "ci:changed": "bash scripts/test-changed.sh",
