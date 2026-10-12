@@ -33,9 +33,12 @@ const findEditor = (panel, match, allowPartial) => {
 // text). Replace with searchKey + store-controlled Inspector tabs (spec §9) when precision matters.
 const STYLE_SECTIONS = ['styles', 'generalStyles'];
 
-// Component fields live under the Inspector's Properties or Styles tab; open the right one first.
+// Component fields and app-wide page settings both live under Properties / Styles tabs.
+const hasInspectorTabs = (record) => record.entityType === 'component' || record.entityId === 'pageSettings';
+
+// Open the tab the field lives under before looking for it.
 const selectInspectorTab = (panel, record) => {
-  if (record.entityType !== 'component') return;
+  if (!hasInspectorTabs(record)) return;
   const tabName = STYLE_SECTIONS.includes(record.fieldPath[0]) ? 'Styles' : 'Properties';
   const tab = [...panel.querySelectorAll('[role="tab"]')].find((el) => el.textContent.trim() === tabName);
   if (tab && !tab.classList.contains('active')) tab.click();
@@ -48,7 +51,7 @@ const expandCollapsedAccordion = (element) => {
 
 // Fields without a code editor (toggles, pickers, selects): find the row by its label text.
 const findFieldRow = (panel, record) => {
-  if (record.entityType !== 'component') return null;
+  if (!hasInspectorTabs(record)) return null;
   const label = record.fieldLabel.split(' › ')[1]?.toLowerCase();
   if (!label) return null;
   const labelElement = [...panel.querySelectorAll('.tab-pane.active label, .tab-pane.active span')].find(

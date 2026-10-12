@@ -12,7 +12,21 @@ const SECTION_LABELS = {
   others: 'Others',
 };
 // Keys that never hold user-authored text; indexing them only adds noise (ids, grid coordinates).
-const SKIP_KEYS = new Set(['layouts', 'id', 'createdAt', 'updatedAt', 'parent', 'fxActive']);
+const SKIP_KEYS = new Set(['layouts', 'id', 'createdAt', 'updatedAt', 'parent', 'fxActive', 'isDefault']);
+// Page keys indexed elsewhere (name, handle, components) or that are internal bookkeeping.
+const PAGE_SKIP_KEYS = new Set([
+  'components',
+  'name',
+  'handle',
+  'appId',
+  'pageGroupId',
+  'index',
+  'permissions',
+  'isPageGroup',
+]);
+// Global settings indexed with their own labels below (preloaded JS, libraries) or not app code at
+// all (theme: the workspace design-system palette, dozens of colors that would drown real matches).
+const GLOBAL_SETTINGS_SKIP_KEYS = new Set(['preloadedScript', 'libraries', 'theme']);
 const BARE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // `onRowClicked` → `On row clicked`, `url_params` → `Url params` (sentence case, like the Inspector).
@@ -42,7 +56,26 @@ const walkLeaves = (value, path, visit) => {
 // `properties.data.value` is stored as `{ data: { value } }`; the field is `data`.
 const stripValueKey = (path) => (path[path.length - 1] === 'value' ? path.slice(0, -1) : path);
 
+const getPath = (object, path) => path.reduce((node, key) => (node == null ? undefined : node[key]), object);
+
+// A value nobody set is noise: every Button would match "Button", every widget its default colors.
+// Skip a leaf when the saved entry is flagged `isDefault`, or when it equals the widget config's
+// default at the same path (defaults are stored either as `{ value }` or as the bare value).
+const isUnchangedDefault = (section, defaults, path, text) => {
+  if (getPath(section, [...path.slice(0, -1), 'isDefault']) === true) return true;
+  let fallback = getPath(defaults, path);
+  if (fallback === undefined && path[path.length - 1] === 'value') fallback = getPath(defaults, path.slice(0, -1));
+  if (fallback && typeof fallback === 'object' && 'value' in fallback) fallback = fallback.value;
+  return fallback != null && typeof fallback !== 'object' && String(fallback) === text;
+};
+
 const STYLE_SECTIONS = new Set(['styles', 'generalStyles']);
+
+// Short name for a nested settings path: `Page header · Height` rather than five `Page header` rows.
+const pathShortLabel = (fieldPath) =>
+  fieldPath.length > 1
+    ? `${humanize(fieldPath[0])} · ${humanize(fieldPath[fieldPath.length - 1])}`
+    : humanize(fieldPath[0]);
 
 // Full path for the tooltip, short name for the result row (`Disable`, `Style · Box shadow`).
 const componentFieldLabels = (widgetDef, section, fieldPath) => {
@@ -60,8 +93,10 @@ export const buildSearchRecords = ({
   queries = [],
   events = [],
   globalSettings = {},
+  pageSettings = null,
   translate = (text) => text,
   widgetDefs = {},
+  pageSettingsDef = {},
 }) => {
   const idNames = {};
   for (const page of pages) {
@@ -94,6 +129,13 @@ export const buildSearchRecords = ({
     owners.set(page.id, pageBase);
     push(pageBase, ['name'], 'Name', page.name);
     if (page.handle) push(pageBase, ['handle'], 'Handle', page.handle);
+    // hidden / disabled conditions, icon, URL, open-in, …
+    walkLeaves(page, [], (path, text) => {
+      if (PAGE_SKIP_KEYS.has(path[0])) return;
+      const fieldPath = stripValueKey(path);
+      if (fieldPath.length === 0) return;
+      push(pageBase, fieldPath, fieldPath.map(humanize).join(' › '), text, pathShortLabel(fieldPath));
+    });
 
     for (const [componentId, { component } = {}] of Object.entries(page.components || {})) {
       if (!component) continue;
@@ -110,9 +152,11 @@ export const buildSearchRecords = ({
       owners.set(componentId, base);
       push(base, ['name'], 'Name', component.name);
       for (const section of COMPONENT_SECTIONS) {
-        walkLeaves(component.definition?.[section], [], (path, text) => {
+        const saved = component.definition?.[section];
+        walkLeaves(saved, [], (path, text) => {
           const fieldPath = stripValueKey(path);
           if (fieldPath.length === 0) return;
+          if (isUnchangedDefault(saved, widgetDef?.definition?.[section], path, text)) return;
           const labels = componentFieldLabels(widgetDef, section, fieldPath);
           push(base, [section, ...fieldPath], labels.full, text, labels.short);
         });
@@ -158,6 +202,28 @@ export const buildSearchRecords = ({
     );
   }
 
+  // App-wide page navigation settings (header, menu, pill styles); edited in the Pages panel.
+  const pageSettingsBase = {
+    entityType: 'app',
+    entityId: 'pageSettings',
+    entityName: 'Pages and navigation',
+    entitySubtype: 'Page settings',
+    pageId: null,
+  };
+  for (const section of ['properties', 'styles']) {
+    const saved = pageSettings?.definition?.[section];
+    // pageConfig.properties holds default values; its styles hold display metadata, so styles rely
+    // on the saved `isDefault` flag instead.
+    const defaults = section === 'properties' ? pageSettingsDef.properties : undefined;
+    walkLeaves(saved, [], (path, text) => {
+      const fieldPath = stripValueKey(path);
+      if (fieldPath.length === 0) return;
+      if (isUnchangedDefault(saved, defaults, path, text)) return;
+      const labels = componentFieldLabels(pageSettingsDef, section, fieldPath);
+      push(pageSettingsBase, [section, ...fieldPath], labels.full, text, labels.short);
+    });
+  }
+
   const appBase = {
     entityType: 'app',
     entityId: 'app',
@@ -167,6 +233,12 @@ export const buildSearchRecords = ({
   };
   const preloaded = globalSettings?.preloadedScript?.javascript;
   if (preloaded) push(appBase, ['preloadedScript', 'javascript'], 'Preloaded JavaScript', preloaded);
+  walkLeaves(globalSettings, [], (path, text) => {
+    if (GLOBAL_SETTINGS_SKIP_KEYS.has(path[0])) return;
+    const fieldPath = stripValueKey(path);
+    if (fieldPath.length === 0) return;
+    push(appBase, fieldPath, fieldPath.map(humanize).join(' › '), text, pathShortLabel(fieldPath));
+  });
   (globalSettings?.libraries?.javascript || []).forEach((library, index) => {
     const value = typeof library === 'string' ? library : library?.url || library?.name;
     if (value) push(appBase, ['libraries', 'javascript', index], 'JavaScript libraries', value);

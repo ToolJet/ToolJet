@@ -115,4 +115,94 @@ describe('buildSearchRecords', () => {
     expect(find(records, (r) => r.fieldLabel === 'Preloaded JavaScript').text).toBe('window.x = 1');
     expect(find(records, (r) => r.fieldLabel === 'JavaScript libraries').text).toBe('https://cdn/lodash.js');
   });
+
+  test('indexes page conditions like hidden, but not internal page keys', () => {
+    const records = build({
+      pages: [
+        {
+          ...pages[0],
+          hidden: { value: '{{globals.currentUser.role !== "admin"}}' },
+          pageHeader: { height: 60 },
+          appId: 'app-1',
+          index: 0,
+        },
+      ],
+    });
+    const pageRecords = records.filter((r) => r.entityType === 'page');
+    expect(find(pageRecords, (r) => r.fieldPath.join('.') === 'hidden')).toMatchObject({
+      shortLabel: 'Hidden',
+      text: '{{globals.currentUser.role !== "admin"}}',
+    });
+    expect(find(pageRecords, (r) => r.fieldPath.join('.') === 'pageHeader.height').shortLabel).toBe(
+      'Page header · Height'
+    );
+    expect(pageRecords.some((r) => ['appId', 'index', 'components'].includes(r.fieldPath[0]))).toBe(false);
+  });
+
+  test('indexes app-wide page settings with their style labels', () => {
+    const records = build({
+      pageSettings: {
+        definition: {
+          properties: { disableMenu: { value: `{{queries.${QUERY_ID}.data.length === 0}}` } },
+          styles: { textColor: { value: '#222222', isDefault: false } },
+        },
+      },
+      pageSettingsDef: { styles: { textColor: { displayName: 'Default text' } } },
+    });
+    const settings = records.filter((r) => r.entityId === 'pageSettings');
+    expect(find(settings, (r) => r.fieldPath.join('.') === 'properties.disableMenu').text).toBe(
+      '{{queries.getUsers.data.length === 0}}'
+    );
+    expect(find(settings, (r) => r.fieldPath.join('.') === 'styles.textColor').shortLabel).toBe('Style · Default text');
+    expect(settings.some((r) => r.fieldPath.includes('isDefault'))).toBe(false);
+  });
+
+  test('indexes every global setting once, except the theme palette', () => {
+    const records = build({
+      globalSettings: {
+        canvasBackgroundColor: '{{variables.bg}}',
+        preloadedScript: { javascript: 'x()' },
+        theme: { definition: { brand: { colors: { primary: '#4368E3' } } } },
+      },
+    });
+    const app = records.filter((r) => r.entityId === 'app');
+    expect(find(app, (r) => r.fieldPath[0] === 'canvasBackgroundColor')).toMatchObject({
+      shortLabel: 'Canvas background color',
+      text: '{{variables.bg}}',
+    });
+    expect(app.filter((r) => r.text === 'x()')).toHaveLength(1);
+    expect(app.some((r) => r.fieldPath[0] === 'theme')).toBe(false);
+  });
+
+  test('skips values left at the widget default, keeps changed ones', () => {
+    const records = build({
+      widgetDefs: {
+        Table: {
+          displayName: 'Table',
+          properties: { data: { displayName: 'Data' } },
+          definition: { properties: { data: { value: '[]' } }, styles: { textColor: { value: '#111111' } } },
+        },
+      },
+    });
+    const table = records.filter((r) => r.entityId === TABLE_ID);
+    expect(find(table, (r) => r.fieldPath.join('.') === 'styles.textColor')).toBeUndefined();
+    expect(find(table, (r) => r.fieldPath.join('.') === 'properties.data').text).toBe('{{queries.getUsers.data}}');
+  });
+
+  test('skips page settings left at default: config defaults and isDefault styles', () => {
+    const records = build({
+      pageSettings: {
+        definition: {
+          properties: { hideHeader: { value: false }, disableMenu: { value: '{{variables.locked}}' } },
+          styles: {
+            textColor: { value: '#000000', isDefault: true },
+            iconColor: { value: '#ff0000', isDefault: false },
+          },
+        },
+      },
+      pageSettingsDef: { properties: { hideHeader: false, disableMenu: { value: '{{false}}' } }, styles: {} },
+    });
+    const keys = records.filter((r) => r.entityId === 'pageSettings').map((r) => r.fieldPath.join('.'));
+    expect(keys).toEqual(['properties.disableMenu', 'styles.iconColor']);
+  });
 });
