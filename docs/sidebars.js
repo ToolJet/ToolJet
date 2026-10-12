@@ -25,6 +25,7 @@ const sidebars = {
           'label': 'How To',
           'items': [
             'how-to/use-url-params-on-load',
+            'how-to/build-multilingual-app',
             'how-to/pass-query-params-in-custom-components',
             'how-to/use-custom-parameters',
             'how-to/pass-values-in-rest-api',
