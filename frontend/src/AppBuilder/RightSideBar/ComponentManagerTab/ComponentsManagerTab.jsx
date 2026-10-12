@@ -411,8 +411,11 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               justifyContent: 'center',
             }}
           >
-            {entry.label}
-            {entry.badge ? <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-1" /> : null}
+            {/* The toggle draws its children in a block: label and badge share one inline row. */}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}>
+              {entry.label}
+              {entry.badge ? <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none" /> : null}
+            </span>
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
