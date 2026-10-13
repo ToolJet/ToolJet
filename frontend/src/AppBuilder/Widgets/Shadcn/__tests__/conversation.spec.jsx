@@ -215,6 +215,21 @@ describe('ShadChat', () => {
       expect(viewport().scrollTop).toBe(1000 - 64);
     });
 
+    it('opens a history bound to a query at the latest message once it loads', () => {
+      // The query has not run on the first draw (an empty initialChat); its rows arrive next. That is a load, not a
+      // send: the view goes to the end and no user turn is lifted to the top.
+      // A short thread (three rows, the last user turn among them) is where it showed: the turn was lifted to the
+      // top with empty room under it.
+      const chat = mountChat({ initialChat: [] });
+      chat.rerender({ ...CHAT, initialChat: history(3) });
+      expect(viewport().scrollTop).toBe(0);
+      expect(document.querySelector('[data-chat-spacer]').style.height).toBe('0px');
+      // A refresh that adds a row (a message saved from another screen) also stays at the end.
+      chat.rerender({ ...CHAT, initialChat: history(5) });
+      expect(viewport().scrollTop).toBe(5 * ROW - VIEW);
+      expect(document.querySelector('[data-chat-spacer]').style.height).toBe('0px');
+    });
+
     it('never moves a reader who scrolled up, and offers Jump to latest', async () => {
       const chat = mountChat({ initialChat: history(10) });
       const jump = screen.getByRole('button', { name: 'Jump to latest', hidden: true });
