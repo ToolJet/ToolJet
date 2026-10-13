@@ -19,3 +19,10 @@ describe('statValue', () => {
     expect(statValue(undefined, { valueFormat: 'currency' })).toBe('');
   });
 });
+
+describe('statValue with a number that is not finite', () => {
+  // Infinity and NaN (a division by zero in a binding) printed as "Infinity" and "NaN" in the figure.
+  it.each([Infinity, -Infinity, NaN])('%s shows nothing in any format', (v) => {
+    for (const valueFormat of ['auto', 'number', 'currency', 'percent', 'compact']) expect(statValue(v, { valueFormat })).toBe('');
+  });
+});

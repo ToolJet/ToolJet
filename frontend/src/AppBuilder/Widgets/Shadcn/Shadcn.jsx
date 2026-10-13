@@ -694,7 +694,8 @@ export const ShadStat = (props) => {
               </span>
             )
           ) : (
-            statValue(properties.value, { valueFormat: properties.valueFormat, currency: properties.currency })
+            // A dash when there is no value, as the Summary strip shows: the label alone read as a broken card.
+            statValue(properties.value, { valueFormat: properties.valueFormat, currency: properties.currency }) || '–'
           )}
         </span>
         {badgeInHeader ? null : changeBadge}
