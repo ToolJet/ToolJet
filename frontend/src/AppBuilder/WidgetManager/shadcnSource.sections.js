@@ -264,7 +264,8 @@ export const shadProgressListConfig = shadConfig({
     valueFormat: select(
       'Value format',
       ['auto', 'number', 'currency', 'percent', 'compact'].map((v) => [v, v.charAt(0).toUpperCase() + v.slice(1)]),
-      'auto'
+      // Agrees with what a new widget is created with: its sample rows are budgets, spent against a limit.
+      'currency'
     ),
     currency: code('Currency (ISO code, e.g. USD)', STRING, 'USD'),
     idField: code('Id field', STRING, 'id'),
