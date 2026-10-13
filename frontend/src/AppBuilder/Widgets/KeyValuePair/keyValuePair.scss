@@ -177,6 +177,13 @@
     align-items: center;
     min-height: 38px;
   }
+
+  // With auto label width the value cell is `width: 100%` and would shrink by each label's natural width,
+  // so cells (and their edit icons) ended at different edges per row. Fill the remaining space instead.
+  .key-value-render-value {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
 }
 
 // Value styling
@@ -196,11 +203,52 @@
   box-sizing: border-box;
 
 
+  // The renderer may shrink below its content width so it can never push the edit icon out of the cell.
+  > :first-child {
+    min-width: 0;
+  }
+
   &.kv-select,
   &.kv-newMultiSelect {
     padding: 0 !important;
     .kv-edit-icon {
-      margin-right: 8px;
+      right: 8px;
+    }
+  }
+
+  // Editable cells reserve a gutter for the edit icon, which floats at the cell's right edge.
+  &.kv-editable {
+    padding-right: 30px !important;
+  }
+
+  &.kv-select.kv-editable,
+  &.kv-newMultiSelect.kv-editable {
+    padding-right: 32px !important;
+  }
+
+  // Single-line values truncate with an ellipsis; the full value is still shown by the hover overlay.
+  &.kv-string,
+  &.kv-number {
+    > :first-child {
+      flex: 1 1 auto;
+    }
+
+    .text-container:not([contenteditable='true']),
+    > div:not(.position-relative) {
+      display: block !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: normal;
+    }
+
+    // Read-only string: the text sits in a span inside a flex wrapper.
+    > div > span {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
@@ -210,9 +258,13 @@
   }
 
   .kv-edit-icon {
-    flex-shrink: 0;
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
     min-width: 16px;
     color: #ACB2B9;
+    pointer-events: none;
   }
 }
 
