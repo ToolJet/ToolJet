@@ -1,4 +1,5 @@
 import { App } from '@entities/app.entity';
+import { NEW_APP_COMPONENT_LIBRARY } from '@helpers/component_library.helper';
 import { Page } from '@entities/page.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -160,8 +161,8 @@ export class AppsUtilService implements IAppsUtilService {
         canvasBackgroundColor: 'var(--cc-appBackground-surface)',
         backgroundFxQuery: '',
         appMode: 'light',
-        // New apps are built in ToolJet UI 2.0; apps without the setting keep the library their widgets imply.
-        componentLibrary: 'ui2',
+        // New apps are built in ToolJet UI 2.0 (component_library.helper.ts).
+        componentLibrary: NEW_APP_COMPONENT_LIBRARY,
       };
       await manager.save(appVersion);
       return app;
