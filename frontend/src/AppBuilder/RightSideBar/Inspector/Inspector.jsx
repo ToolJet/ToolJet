@@ -338,7 +338,10 @@ export const Inspector = ({
     newComponent.component.definition = newDefinition;
 
     // A List view switched between List and Grid moves its untouched sample card to suit (a row squashed into a
-    // narrow grid card), with the item height that arrangement needs.
+    // narrow grid card), with the item height that arrangement needs. The height rides in the definition saved below
+    // (a save of its own, made while the layout was still the old one, could land last and undo the switch), and the
+    // children move after that save.
+    let sampleCard = null;
     if (
       component.component.component === 'ShadListView' &&
       param.name === 'mode' &&
@@ -349,15 +352,14 @@ export const Inspector = ({
       const children = Object.entries(allComponents || {})
         .filter(([, child]) => child?.component?.parent === selectedComponentId)
         .map(([id, child]) => ({ id, type: child.component.component, layout: child.layouts?.[currentLayout] }));
-      const layouts = sampleCardLayouts(children, toMode);
-      if (layouts) {
-        setComponentLayout(layouts, selectedComponentId);
-        const fromHeight = SAMPLE_ITEM_HEIGHT[toMode === 'grid' ? 'list' : 'grid'];
-        if (Number(resolveReferences(newDefinition.properties?.rowHeight?.value)) === fromHeight) {
-          const rowHeight = `{{${SAMPLE_ITEM_HEIGHT[toMode]}}}`;
-          newDefinition.properties.rowHeight = { ...newDefinition.properties.rowHeight, value: rowHeight };
-          setComponentProperty(selectedComponentId, 'rowHeight', rowHeight, 'properties', 'value');
-        }
+      sampleCard = sampleCardLayouts(children, toMode);
+      const fromHeight = SAMPLE_ITEM_HEIGHT[toMode === 'grid' ? 'list' : 'grid'];
+      if (sampleCard && Number(resolveReferences(newDefinition.properties?.rowHeight?.value)) === fromHeight) {
+        const rowHeight = `{{${SAMPLE_ITEM_HEIGHT[toMode]}}}`;
+        newDefinition.properties.rowHeight = { ...newDefinition.properties.rowHeight, value: rowHeight };
+        setComponentProperty(selectedComponentId, 'rowHeight', rowHeight, 'properties', 'value', false, 'canvas', {
+          saveAfterAction: false,
+        });
       }
     }
 
@@ -372,6 +374,7 @@ export const Inspector = ({
       isParamFromTableColumn: isParamFromTableColumn,
       ...props,
     });
+    if (sampleCard) setComponentLayout(sampleCard, selectedComponentId);
   }
 
   // use following function when more than one property needs to be updated

@@ -349,6 +349,7 @@ const KanbanColumn = ({
         style={{ ...look.column, width: 152, flex: '0 0 152px' }}
         className={cn(
           'group/col relative flex cursor-pointer flex-col gap-2 p-3 transition-shadow hover:ring-1 hover:ring-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          look.columnFramed && 'border border-[color:var(--kb-column-border)]',
           isOver && 'ring-1 ring-primary'
         )}
       >
@@ -384,6 +385,7 @@ const KanbanColumn = ({
       }
       className={cn(
         'group/col flex flex-col p-3 transition-shadow',
+        look.columnFramed && 'border border-[color:var(--kb-column-border)]',
         fixed && 'min-h-0 overflow-hidden',
         !width && 'flex-1',
         compact ? 'gap-1.5' : 'gap-2',

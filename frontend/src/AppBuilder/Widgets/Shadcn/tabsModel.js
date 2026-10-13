@@ -73,7 +73,10 @@ export const tabsLook = (styles = {}) => {
       VARIABLES.filter(([key]) => isSet(styles[key])).map(([key, name, toCss = String]) => [name, toCss(styles[key])])
     ),
     container: {
-      border: styles.showBorder === false ? 'none' : `1px solid ${border}`,
+      // The frame is the widget's root, whose border the pack's reset zeroes (!important) and its border classes do
+      // not reach (they style descendants), so it never drew: an outline inset by its width draws it instead.
+      outline: styles.showBorder === false ? 'none' : `1px solid ${border}`,
+      outlineOffset: '-1px',
       borderRadius: isSet(styles.borderRadius) ? px(styles.borderRadius) : 'calc(var(--sc-radius) + 4px)',
       background: 'var(--sc-card)',
     },
