@@ -9,7 +9,6 @@ import { CreatePinsDto, PinRefDto, ReorderPinsDto, UnpinParamsDto } from './dto/
 // Column whitelist — the only identifier interpolated into pin SQL.
 const PIN_COLUMN: Record<PinKind, 'app_id' | 'folder_id'> = { app: 'app_id', folder: 'folder_id' };
 
-// A type's pins on a branch; folder pins resolve their type through folders.type.
 const PINS_OF_TYPE = `SELECT p.id, p.app_id, p.folder_id, p.position FROM pinned_items p
   LEFT JOIN apps a ON a.id = p.app_id
   LEFT JOIN folders f ON f.id = p.folder_id
@@ -26,8 +25,7 @@ export interface CurrentPin {
 
 const pinKey = (kind: PinKind, id: string) => `${kind}:${id}`;
 
-// Reorder one type's pins by handing their existing position slots out in the new order, so
-// other types' pins (same table, same branch) keep their positions. Null = set mismatch.
+// Null = set mismatch.
 export function planReorder(
   current: CurrentPin[],
   requested: PinRefDto[]
@@ -49,7 +47,6 @@ export class PinsService {
     private readonly dashboardService: DashboardService
   ) {}
 
-  // Already-pinned and invisible ids are ignored, so a repeat call is a no-op.
   async pin(user: User, dto: CreatePinsDto): Promise<void> {
     const branchId = await this.dashboardService.resolveBranchId(user, dto.branch_id);
     const visible = await this.dashboardService.filterVisible(user, dto.resource_type, dto.resource_ids, branchId);
@@ -75,16 +72,13 @@ export class PinsService {
     );
   }
 
-  // Visibility (permission resolve + CTE query) runs before the transaction, so row locks are held
-  // only for lock + plan + update. A pin added in between isn't in `visible` and keeps its slot;
-  // one removed in between drops out of `current` and the set check answers 400.
+  // Visibility runs outside the txn to keep row locks short: pins added meanwhile keep their slot, removed ones → 400.
   async reorder(user: User, dto: ReorderPinsDto): Promise<void> {
     const branchId = await this.dashboardService.resolveBranchId(user, dto.branch_id);
     const params = [user.id, branchId, dto.type];
     const snapshot: CurrentPin[] = await this.dataSource.query(PINS_OF_TYPE, params);
     const ids = (column: 'app_id' | 'folder_id') =>
       snapshot.map((pin) => pin[column]).filter((id): id is string => !!id);
-    // Hidden pins (lost access / unreleased) aren't in the list, so the client can't send them; they keep their slots.
     const visible = await this.dashboardService.visibleIds(user, dto.type, branchId, {
       app: ids('app_id'),
       folder: ids('folder_id'),
