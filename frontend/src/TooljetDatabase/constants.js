@@ -1,5 +1,4 @@
 import React from 'react';
-import { fetchEdition } from '@/modules/common/helpers/utils';
 import config from 'config';
 import BigInt from './Icons/Biginteger.svg';
 import Float from './Icons/Float.svg';
@@ -406,7 +405,8 @@ export const isSqlModeDisabled = () => {
     return true;
   }
 
-  const edition = fetchEdition(config);
+  // Read inline: importing fetchEdition from @/modules/common/helpers/utils creates an import cycle.
+  const edition = config.TOOLJET_EDITION?.toLowerCase() || 'ce';
   if (edition === 'cloud') {
     return true;
   }
