@@ -43,7 +43,7 @@ export function getModifiedColor(color, stateOrModificationAmount, options = { e
   const modificationAmount =
     typeof stateOrModificationAmount === 'number'
       ? stateOrModificationAmount
-      : defaultModificationAmountMappingByState[stateOrModificationAmount] ?? 0;
+      : (defaultModificationAmountMappingByState[stateOrModificationAmount] ?? 0);
 
   // A colour style bound to a non-string (a number, `false`, an object) must not crash the widget; tinycolor reads
   // anything it cannot parse as black.
