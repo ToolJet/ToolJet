@@ -111,7 +111,7 @@
     "ajv": "^8.14.0",
     "bcrypt": "^6.0.0",
     "bufferutil": "^4.1.0",
-    "bullmq": "^5.58.9",
+    "bullmq": "^6.3.12",
     "byte-counter": "^0.1.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
