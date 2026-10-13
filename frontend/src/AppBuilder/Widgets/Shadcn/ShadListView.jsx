@@ -19,7 +19,8 @@ import './shadcn.scss';
 
 // shadcn/ui pack List view (experiment). Row-scoped like the native Listview: one canvas (the components parented to
 // the list) repeated per item, each row reading its item as {{listItem}}, and the rows' component values exposed as
-// data/children by the store (deriveListviewExposedData, generic over the row-scoped types). Rows have a fixed height
+// children by the store (deriveListviewExposedData, generic over the row-scoped types); data is the list's records,
+// which the store leaves alone for this widget. Rows have a fixed height
 // (rowHeight); the list itself fits its content in view. Selection keeps the native names (selectedRecord is the row's
 // component values, selectedRecordId/selectedRowId its index) and adds selectedItem, the clicked data item.
 

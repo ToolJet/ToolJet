@@ -638,13 +638,16 @@ export const ShadStat = (props) => {
     <Badge
       variant="outline"
       style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) : undefined}
+      // A long change shrinks to at most 60% of the label row and ends in an ellipsis, its whole text the tooltip: it
+      // kept its full width and was cut off at the card's edge.
+      title={String(properties.change)}
       className={cn(
-        'shrink-0 gap-1',
+        'min-w-0 max-w-[60%] gap-1',
         isSet(trendColor) && 'border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]'
       )}
     >
-      {trend !== 'neutral' ? <TrendIcon className="h-3 w-3" /> : null}
-      {String(properties.change)}
+      {trend !== 'neutral' ? <TrendIcon className="h-3 w-3 shrink-0" /> : null}
+      <span className="min-w-0 truncate">{String(properties.change)}</span>
     </Badge>
   ) : null;
   // The badge sits in the label row unless the icon takes that corner; then it follows the figure.
@@ -661,10 +664,10 @@ export const ShadStat = (props) => {
   const content = (
     <div className={cn('flex min-w-0 flex-1 flex-col gap-1.5', fixed && 'min-h-0 overflow-hidden')}>
       {icon && iconPosition === 'top' ? <div className="mb-1">{iconNode}</div> : null}
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex min-w-0 items-start justify-between gap-2">
         <span
           className={cn(
-            'text-sm text-[color:var(--lk-label,var(--sc-muted-foreground))]',
+            'min-w-0 text-sm text-[color:var(--lk-label,var(--sc-muted-foreground))]',
             textCase(props.styles?.labelTextTransform) && 'lk-label-case',
             isSet(props.styles?.labelLetterSpacing) && 'lk-label-tracking'
           )}
@@ -691,7 +694,8 @@ export const ShadStat = (props) => {
               </span>
             )
           ) : (
-            statValue(properties.value, { valueFormat: properties.valueFormat, currency: properties.currency })
+            // A dash when there is no value, as the Summary strip shows: the label alone read as a broken card.
+            statValue(properties.value, { valueFormat: properties.valueFormat, currency: properties.currency }) || '–'
           )}
         </span>
         {badgeInHeader ? null : changeBadge}
@@ -1126,9 +1130,30 @@ export const ShadTextarea = (props) => {
   }));
   const check = useValidation(props, value, () => change('', 'onChange'));
   const box = useTextBox(props, check.touch);
-  const chrome = (properties.label ? 22 : 0) + (properties.description || check.error ? 24 : 0);
+  // The label, help text and message take what they draw and the text area the rest of the box. A one-line estimate
+  // (22px label, 24px help) let a label or help text that wraps push the text area past the box's bottom edge.
+  const estimate = (properties.label ? 22 : 0) + (properties.description || check.error ? 24 : 0);
+  const [chrome, setChrome] = useState(estimate);
+  const fieldRef = useRef(null);
+  // When the label and help text leave the text area less than its 60px, the box grows to fit them (in view, with
+  // dynamic height on); the text area itself is sized from the authored height, so the box comes back down.
+  useAutoHeight(props, fieldRef);
+  useLayoutEffect(() => {
+    const field = fieldRef.current;
+    const area = field?.querySelector('textarea');
+    if (!field || !area) return undefined;
+    const measure = () => {
+      const next = Math.max(0, field.scrollHeight - area.offsetHeight);
+      setChrome((current) => (Math.abs(current - next) < 1 ? current : next));
+    };
+    measure();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    [...field.children[0]?.children ?? []].forEach((part) => part !== area && observer?.observe(part));
+    return () => observer?.disconnect();
+  }, [properties.label, properties.description, check.error]);
   return (
     <Shell {...props}>
+      <div ref={fieldRef}>
       <Field
         id={`shad-${id}`}
         label={properties.label}
@@ -1152,6 +1177,7 @@ export const ShadTextarea = (props) => {
           onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && fireEvent('onEnterPressed')}
         />
       </Field>
+      </div>
     </Shell>
   );
 };

@@ -121,7 +121,7 @@ export const ShadHero = (props) => {
 
   const actions =
     primary || secondary ? (
-      <div className={cn('flex flex-wrap gap-2', center ? 'justify-center' : 'shrink-0')}>
+      <div className={cn('flex min-w-0 max-w-full flex-wrap gap-2', center && 'justify-center')}>
         {secondary ? (
           <Button
             variant="outline"
@@ -212,13 +212,18 @@ export const ShadHero = (props) => {
             panel,
             // With an aside, a grid: text and actions on the left, the aside right of both; in a narrow hero, text,
             // aside, actions (shadcn.scss).
-            grid ? 'sc-hero-grid' : cn('flex', center ? 'flex-col items-center text-center' : 'items-center gap-6')
+            grid
+              ? 'sc-hero-grid'
+              : cn('flex', center ? 'flex-col items-center text-center' : 'flex-wrap items-center gap-x-6 gap-y-4')
           )}
           style={style}
           data-background={background}
         >
           <div
-            className={cn('sc-hero-text flex min-w-0 flex-1', center ? 'flex-col items-center' : 'items-start gap-4')}
+            className={cn(
+              'sc-hero-text flex min-w-0',
+              center ? 'flex-col items-center' : 'flex-[1_1_20rem] items-start gap-4'
+            )}
           >
             {Icon ? (
               <span
@@ -284,7 +289,9 @@ export const ShadHero = (props) => {
             </div>
           </div>
           {asideBlock}
-          {actions ? <div className={cn(grid ? 'sc-hero-actions' : center && 'mt-5')}>{actions}</div> : null}
+          {actions ? (
+            <div className={cn('min-w-0 max-w-full', grid ? 'sc-hero-actions' : center && 'mt-5')}>{actions}</div>
+          ) : null}
         </section>
       </div>
     );

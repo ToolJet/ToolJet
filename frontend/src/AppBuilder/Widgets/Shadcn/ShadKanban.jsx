@@ -773,9 +773,12 @@ export const ShadKanban = (props) => {
       {reloading ? (
         <div
           aria-busy="true"
-          className="absolute inset-0 z-10 flex items-center justify-center rounded-[var(--sc-radius)] bg-[color:color-mix(in_srgb,var(--sc-background)_45%,transparent)]"
+          // A firmer scrim, and the spinner on a chip of its own: bare over a 45% scrim it sat on a card's title.
+          className="absolute inset-0 z-10 flex items-center justify-center rounded-[var(--sc-radius)] bg-[color:color-mix(in_srgb,var(--sc-background)_65%,transparent)]"
         >
-          <Spinner className="h-6 w-6" />
+          <span className="flex items-center justify-center rounded-full border border-[color:var(--sc-border)] bg-[color:var(--sc-background)] p-2 shadow-sm">
+            <Spinner className="h-5 w-5" />
+          </span>
         </div>
       ) : null}
       <DndContext

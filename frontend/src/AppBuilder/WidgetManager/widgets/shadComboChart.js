@@ -570,7 +570,7 @@ export const shadComboChartConfig = {
         value: '{{2}}',
       },
       yAxisFormat: {
-        value: 'currency',
+        value: 'number',
       },
       rightAxisFormat: {
         value: 'percent',

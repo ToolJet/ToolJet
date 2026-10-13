@@ -48,7 +48,8 @@ export const sparkPaths = (data, width, height) => {
  *  default USD), 'percent' (42.5 shows 42.5%) or 'compact' formats numbers and numeric text. Other text (an already
  *  formatted "$1,250.00", "12 open") shows as written: a bound revenue figure read "947.37" with no sign before. */
 export const statValue = (value, { valueFormat = 'auto', currency } = {}) => {
-  if (value === null || value === undefined) return '';
+  // A number that is not finite (Infinity, NaN from a division by zero in a binding) is not a value to show.
+  if (value === null || value === undefined || (typeof value === 'number' && !Number.isFinite(value))) return '';
   const numeric =
     typeof value === 'number'
       ? Number.isFinite(value)

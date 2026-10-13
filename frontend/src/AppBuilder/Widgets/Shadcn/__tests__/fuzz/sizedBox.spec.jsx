@@ -27,6 +27,7 @@ it('ShadButton Full width spans a flex row only when on', async () => {
     expect(problemsOf(stats)).toEqual([]);
     return className;
   };
-  expect(await classesWith(false)).not.toMatch(/\bw-full\b/);
-  expect(await classesWith(true)).toMatch(/\bw-full\b/);
+  // A class of its own (max-w-full, which every button has to stay in its box, is not it).
+  expect(await classesWith(false)).not.toMatch(/(^|\s)w-full(\s|$)/);
+  expect(await classesWith(true)).toMatch(/(^|\s)w-full(\s|$)/);
 });

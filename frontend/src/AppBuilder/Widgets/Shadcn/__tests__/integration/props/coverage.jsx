@@ -384,6 +384,9 @@ export const PROBES = [
     value: 'https://example.com/hero.jpg',
     context: { properties: { background: 'image' } },
   },
+  // Line and Combo charts draw a number axis by default; the currency shows once the axis format is currency.
+  { widget: 'ShadLineChart', key: 'currency', value: 'EUR', context: { properties: { yAxisFormat: 'currency' } } },
+  { widget: 'ShadComboChart', key: 'currency', value: 'EUR', context: { properties: { yAxisFormat: 'currency' } } },
   { widget: 'ShadCardGrid', key: 'columns', value: '{{1}}' },
   // Progress bars: the sample data has no percentage field.
   ...['ShadCardGrid', 'ShadRecordList'].map((widget) => ({

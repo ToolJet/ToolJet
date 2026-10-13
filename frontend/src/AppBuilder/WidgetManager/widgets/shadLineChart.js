@@ -258,7 +258,7 @@ export const shadLineChartConfig = {
         schema: {
           type: 'boolean',
         },
-        defaultValue: false,
+        defaultValue: true,
       },
     },
     seriesLabels: {
@@ -550,7 +550,7 @@ export const shadLineChartConfig = {
         value: '',
       },
       yAxisFormat: {
-        value: 'currency',
+        value: 'number',
       },
       currency: {
         value: 'USD',

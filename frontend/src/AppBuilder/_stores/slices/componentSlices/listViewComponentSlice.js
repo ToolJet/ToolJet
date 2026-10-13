@@ -403,7 +403,10 @@ export const listViewComponentSlice = (set, get) => {
     // For outerIndices=[] (top-level): writes to exposedValues.components[listviewId].children[rowIndex]
     // For outerIndices=[i] (nested): writes to exposedValues.components[listviewId][i].children[rowIndex]
     deriveListviewExposedData: (listviewId, rowIndex, outerIndices, moduleId = 'canvas') => {
-      const { getContainerChildrenMapping, getComponentNameFromId } = get();
+      const { getContainerChildrenMapping, getComponentNameFromId, getComponentTypeFromId } = get();
+      // The shadcn List view publishes data as its records (pages count them, (components.list.data || []).length);
+      // deriving data from its rows' components replaced that with an object of row values. children is derived.
+      const keepsRecords = getComponentTypeFromId?.(listviewId, moduleId) === 'ShadListView';
       const childIds = getContainerChildrenMapping(listviewId);
       const exposedComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
 
@@ -462,9 +465,11 @@ export const listViewComponentSlice = (set, get) => {
         // keyed by row index: { 0: {...}, 1: {...} }. Without this check, the array persists
         // because ![] is false (arrays are truthy), and numeric indices get set on the array.
         if (!target.children || Array.isArray(target.children)) target.children = {};
-        if (!target.data || Array.isArray(target.data)) target.data = {};
         target.children[rowIndex] = rowData;
-        target.data[rowIndex] = clonedRowData;
+        if (!keepsRecords) {
+          if (!target.data || Array.isArray(target.data)) target.data = {};
+          target.data[rowIndex] = clonedRowData;
+        }
 
         // Keep selectedRecord/selectedRow in sync when the selected row's children
         // update AFTER the click snapshot. onRecordOrRowClicked runs on the capture
@@ -479,7 +484,7 @@ export const listViewComponentSlice = (set, get) => {
       });
 
       get().updateDependencyValues(`components.${listviewId}.children`, moduleId, []);
-      get().updateDependencyValues(`components.${listviewId}.data`, moduleId, []);
+      if (!keepsRecords) get().updateDependencyValues(`components.${listviewId}.data`, moduleId, []);
       if (selectionUpdated) {
         get().updateDependencyValues(`components.${listviewId}.selectedRecord`, moduleId, []);
         get().updateDependencyValues(`components.${listviewId}.selectedRow`, moduleId, []);
