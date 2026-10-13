@@ -72,7 +72,7 @@ function editableViaFolder(p: UserPermissions, type: APP_TYPES, folderId: string
   return !!f && !!folderId && (f.isAllEditApps || f.editAppsInFoldersId.includes(folderId));
 }
 
-function deletable(p: UserPermissions, type: APP_TYPES, userId: string, app: ActionApp): boolean {
+export function deletable(p: UserPermissions, type: APP_TYPES, userId: string, app: ActionApp): boolean {
   if (isAdmin(p)) return true;
   if (!editableByGroup(p, type, app.id)) return false;
   if (type === APP_TYPES.WORKFLOW) return !!p.workflowDelete;

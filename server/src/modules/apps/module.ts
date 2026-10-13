@@ -36,6 +36,7 @@ import { PinsController } from './dashboard/pins.controller';
 import { PinsService } from './dashboard/pins.service';
 import { DashboardBulkMoveController } from './dashboard/bulk-move.controller';
 import { BulkMoveService } from './dashboard/bulk-move.service';
+import { BulkDeleteService } from './dashboard/bulk-delete.service';
 import { DataSource } from 'typeorm';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 @Module({})
@@ -126,6 +127,12 @@ export class AppsModule extends SubModule {
           useFactory: (dataSource, dashboardService, folderAppsUtilService) =>
             new BulkMoveService(dataSource, dashboardService, folderAppsUtilService),
           inject: [DataSource, DashboardService, FolderAppsUtilService],
+        },
+        {
+          provide: BulkDeleteService,
+          useFactory: (dashboardService, appsService, appsRepository) =>
+            new BulkDeleteService(dashboardService, appsService, appsRepository),
+          inject: [DashboardService, AppsService, AppsRepository],
         },
         ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DashboardActivityInterceptor }] : []),
       ],
