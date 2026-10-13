@@ -3,7 +3,7 @@ export const shadHeroConfig = {
   name: 'ShadHero',
   displayName: 'Hero',
   description:
-    "Page hero at the top of a page: eyebrow (small caps line above), title, subtitle, meta facts (['Sun, 11 Oct', '14 bookings'] or [{ label, value }]) and up to two actions (actionLabel, secondaryActionLabel; onActionClick, onSecondaryActionClick). background 'plain' (no panel), 'tint' (a soft panel in the accent), 'gradient' (accent wash), 'image' (imageUrl behind a dark overlay, white text) or 'dark' (deep accent panel, white text); icon (lucide name) in a rounded tile beside the title; align left or center; size compact, default or large. Styles accentColor (else the theme's primary), titleFontFamily ('serif', 'display', ...). Height: grows with its content (about 150px default, 120px compact, 220px large; add 40px for actions)",
+    "Page hero at the top of a page: eyebrow (small caps line above), title, subtitle, meta facts (['Sun, 11 Oct', '14 bookings'] or [{ label, value }]), an aside on the right and up to two actions (actionLabel, secondaryActionLabel; onActionClick, onSecondaryActionClick). The aside is one headline figure (asideValue 12480 or '$12,480', asideLabel 'Revenue today' above it) or a short list of facts (asideValue [{ label: 'Open', value: 14 }, { label: 'Due today', value: 3 }], up to 4, asideLabel as their heading). Greetings and header facts belong in the hero itself: 'Good morning, Ada' as the title, one line of what needs attention as the subtitle, today's date and counts as meta chips, the one number that matters in the aside; never a separate Text or Stat floating beside or over the header. With an aside, the actions sit under the text. background 'plain' (no panel), 'tint' (a soft panel in the accent), 'gradient' (accent wash), 'image' (imageUrl behind a dark overlay, white text) or 'dark' (deep accent panel, white text); icon (lucide name) in a rounded tile beside the title; align left or center (the aside goes under the text); size compact, default or large. Styles accentColor (else the theme's primary), titleFontFamily ('serif', 'display', ...). Height: grows with its content (about 150px default, 120px compact, 220px large; add 40px for actions under the text)",
   component: 'ShadHero',
   defaultSize: {
     width: 43,
@@ -82,6 +82,38 @@ export const shadHeroConfig = {
     secondaryActionLabel: {
       type: 'code',
       displayName: 'Secondary action label (empty hides it)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    asideValue: {
+      type: 'code',
+      displayName: 'Aside: a figure, or a list of facts',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+            {
+              type: 'array',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+      placeholder: "12480, or [{ label: 'Open', value: 14 }]",
+    },
+    asideLabel: {
+      type: 'code',
+      displayName: "Aside label (the figure's caption, the facts' heading)",
       validation: {
         schema: {
           type: 'string',
@@ -490,6 +522,12 @@ export const shadHeroConfig = {
         value: 'New booking',
       },
       secondaryActionLabel: {
+        value: '',
+      },
+      asideValue: {
+        value: '',
+      },
+      asideLabel: {
         value: '',
       },
       icon: {

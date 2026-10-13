@@ -3,7 +3,7 @@ export const shadCardGridConfig = {
   name: 'ShadCardGrid',
   displayName: 'Card grid',
   description:
-    "Grid of cards from data, for things with a face (recipes, products, listings, people, rooms): each card shows an image when imageField is mapped (a row without a picture gets a tinted panel with the title's initials; no imageField, no picture area), title, subtitle, a badge (badgeField, toned by its words: Available green, Low stock amber, Sold out red), a description (two lines) and a meta line (metaFields, a comma list; 'prep:{} min' puts the value in a label, 'serves:Serves' puts the label first). columns (a number, or 'auto' to fit cards of minCardWidth), imageAspect ('16/9', '4/3', '1/1'), cardStyle 'elevated', 'outline' or 'flat'. A click selects the card (selectedItem, selectedItemId; onCardClick). Height: grows with its rows (about 300px per row with an image, 150px without)",
+    "Grid of cards from data, for things with a face (recipes, products, listings, people, rooms, projects): each card shows an image when imageField is mapped (a row without a picture gets a tinted panel with the title's initials; no imageField, no picture area), an eyebrow (eyebrowField: a small caps line above the title, such as a category or a code), an avatar beside the title (avatarField: an image URL, else the initials of that field's text; for people and owners), title, subtitle, badges (badgeField, plus badgeFields for more: 'cuisine, diet', at most 4; each toned by its words: Available green, Low stock amber, Sold out red), a description (two lines), a progress bar (progressField: a percentage 0 to 100, as 42 or '42%') and a meta line (metaFields, a comma list; 'prep:{} min' puts the value in a label, 'serves:Serves' puts the label first). layout 'stacked' (image on top) or 'row' (image left, text right: listings, people, a compact catalogue). columns (a number, or 'auto' to fit cards of minCardWidth), imageAspect ('16/9', '4/3', '1/1'; stacked only), cardStyle 'elevated', 'outline' or 'flat'. A click selects the card (selectedItem, selectedItemId; onCardClick). Height: grows with its rows (about 300px per row stacked with an image, 150px without or in rows)",
   component: 'ShadCardGrid',
   defaultSize: {
     width: 43,
@@ -71,9 +71,57 @@ export const shadCardGridConfig = {
         defaultValue: '',
       },
     },
+    badgeFields: {
+      type: 'code',
+      displayName: "More badge fields (comma list, e.g. 'diet, spice')",
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'array',
+            },
+            {
+              type: 'string',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+    },
+    eyebrowField: {
+      type: 'code',
+      displayName: 'Eyebrow field (a small line above the title)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    avatarField: {
+      type: 'code',
+      displayName: 'Avatar field (image URL or a name)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
     descriptionField: {
       type: 'code',
       displayName: 'Description field',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    progressField: {
+      type: 'code',
+      displayName: 'Progress field (a percentage, 0 to 100)',
       validation: {
         schema: {
           type: 'string',
@@ -100,6 +148,28 @@ export const shadCardGridConfig = {
         },
         defaultValue: 'id',
       },
+    },
+    layout: {
+      type: 'switch',
+      displayName: 'Layout',
+      options: [
+        {
+          displayName: 'Image on top',
+          value: 'stacked',
+        },
+        {
+          displayName: 'Image left',
+          value: 'row',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'stacked',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
     },
     columns: {
       type: 'code',
@@ -526,14 +596,29 @@ export const shadCardGridConfig = {
       badgeField: {
         value: 'cuisine',
       },
+      badgeFields: {
+        value: '',
+      },
+      eyebrowField: {
+        value: '',
+      },
+      avatarField: {
+        value: '',
+      },
       descriptionField: {
         value: 'note',
+      },
+      progressField: {
+        value: '',
       },
       metaFields: {
         value: 'prep:{} min, serves:Serves',
       },
       idField: {
         value: 'id',
+      },
+      layout: {
+        value: 'stacked',
       },
       columns: {
         value: '{{3}}',

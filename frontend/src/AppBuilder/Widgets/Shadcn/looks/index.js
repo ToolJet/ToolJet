@@ -6,8 +6,9 @@ import * as display from './display';
 import * as inputs from './inputs';
 import * as map from './map';
 import * as pickers from './pickers';
+import * as schedule from './schedule';
 import * as sections from './sections';
 
-const groups = [inputs, pickers, display, actions, charts, sections, conversation, map];
+const groups = [inputs, pickers, display, actions, charts, sections, conversation, map, schedule];
 export const GROUP_LOOKS = Object.assign({}, ...groups.map((g) => g.LOOKS));
 export const GROUP_LOADING = Object.assign({}, ...groups.map((g) => g.LOADING));

@@ -240,6 +240,7 @@ const shadcnChat = () => import('@/AppBuilder/Widgets/Shadcn/ShadChat');
 const shadcnQuestionnaire = () => import('@/AppBuilder/Widgets/Shadcn/ShadQuestionnaire');
 // Leaflet and its stylesheet load with this chunk, the first time a map is on the page.
 const shadcnMap = () => import('@/AppBuilder/Widgets/Shadcn/ShadMap');
+const shadcnSchedule = () => import('@/AppBuilder/Widgets/Shadcn/ShadSchedule');
 const shadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m[name] })));
 const controlledShadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m.withControlState(m[name]) })));
 const ShadButton = controlledShadWidget(shadcnWidgets, 'ShadButton');
@@ -298,6 +299,8 @@ const ShadHero = controlledShadWidget(shadcnSections, 'ShadHero');
 const ShadCardGrid = controlledShadWidget(shadcnSections, 'ShadCardGrid');
 const ShadRecordList = controlledShadWidget(shadcnSections, 'ShadRecordList');
 const ShadSummaryStrip = controlledShadWidget(shadcnSections, 'ShadSummaryStrip');
+const ShadProgressList = controlledShadWidget(shadcnSections, 'ShadProgressList');
+const ShadSchedule = controlledShadWidget(shadcnSchedule, 'ShadSchedule');
 const ShadChat = controlledShadWidget(shadcnChat, 'ShadChat');
 const ShadQuestionnaire = controlledShadWidget(shadcnQuestionnaire, 'ShadQuestionnaire');
 const ShadMap = controlledShadWidget(shadcnMap, 'ShadMap');
@@ -480,6 +483,8 @@ export const AllComponents = {
   ShadCardGrid,
   ShadRecordList,
   ShadSummaryStrip,
+  ShadProgressList,
+  ShadSchedule,
   ShadChat,
   ShadQuestionnaire,
   ShadMap,

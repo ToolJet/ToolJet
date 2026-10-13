@@ -385,6 +385,32 @@ export const PROBES = [
     context: { properties: { background: 'image' } },
   },
   { widget: 'ShadCardGrid', key: 'columns', value: '{{1}}' },
+  // Progress bars: the sample data has no percentage field.
+  ...['ShadCardGrid', 'ShadRecordList'].map((widget) => ({
+    widget,
+    key: 'progressField',
+    value: 'done',
+    context: { properties: { data: fx([{ id: 1, name: 'Loft', customer: 'Loft', done: 45 }]) } },
+  })),
+  // The hero's aside label captions a figure, which the default hero has none of.
+  {
+    widget: 'ShadHero',
+    key: 'asideLabel',
+    value: 'Revenue today',
+    context: { properties: { asideValue: '{{12480}}' } },
+  },
+  // Progress list: a percent field the sample has none of; tones from progress on rows without a status.
+  {
+    widget: 'ShadProgressList',
+    key: 'percentField',
+    value: 'pct',
+    context: { properties: { data: fx([{ id: 1, label: 'Onboarding', spent: 1, budget: 4, pct: 90 }]) } },
+  },
+  // Schedule: the second line names a field the sample bookings have; another day than today; days on the days scale.
+  { widget: 'ShadSchedule', key: 'subtitleField', value: 'host' },
+  { widget: 'ShadSchedule', key: 'date', value: '2026-10-20' },
+  { widget: 'ShadSchedule', key: 'days', value: '{{3}}', context: { properties: { scale: 'days' } } },
+  { widget: 'ShadProgressList', key: 'autoTone', value: 'limit', context: { properties: { statusField: '' } } },
   { widget: 'ShadCardGrid', key: 'minCardWidth', value: '{{400}}' },
   // Chat: the sender's name and avatar show on a message that has none of its own.
   ...['userName', 'userAvatar', 'respondentName'].map((key) => ({
@@ -724,7 +750,7 @@ export const ELSEWHERE = (name) => [
   ...(name === 'ShadButton' ? ['fullWidth'] : []),
   ...(name === 'ShadAvatar' ? ['src'] : []),
   // Which field identifies a card (selectedItemId, the selection across data changes): sectionsModel.spec.
-  ...(name === 'ShadCardGrid' || name === 'ShadRecordList' ? ['idField'] : []),
+  ...(['ShadCardGrid', 'ShadRecordList', 'ShadProgressList'].includes(name) ? ['idField'] : []),
   // Tabs scrolling the new tab to its top: containers.spec, with real tab canvases.
   ...(name === 'ShadTabs' ? ['scrollToTopOnTabSwitch'] : []),
 ];

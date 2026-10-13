@@ -1,8 +1,16 @@
 import {
+  autoProgressTone,
+  barWidth,
   cardItems,
+  fieldList,
   formatValue,
   gridColumns,
+  heroAside,
   heroMeta,
+  percentLabel,
+  percentOf,
+  progressItems,
+  progressTone,
   recordItems,
   stripColumns,
   summaryFigures,
@@ -259,5 +267,138 @@ describe('meta labels that repeat the field name', () => {
       metaFields: 'status:status,category:Category',
     });
     expect(cards[0].meta).toBe('To do · Category Product');
+  });
+});
+
+describe('card grid options', () => {
+  const rows = [
+    { id: 1, name: 'Loft on Main', city: 'Austin', kind: 'Apartment', diet: 'Pets ok', host: 'Ada Lovelace', done: 45 },
+    { id: 2, name: 'Garden studio', city: 'Austin', kind: '', diet: 'No pets', host: 'https://x/p.png', done: '80%' },
+  ];
+
+  it('reads several badges from badgeField and badgeFields, skipping empty ones and repeats', () => {
+    const [a, b] = cardItems(rows, { badgeField: 'kind', badgeFields: 'diet, kind, missing' });
+    expect(a.badges).toEqual(['Apartment', 'Pets ok']);
+    expect(a.badge).toBe('Apartment');
+    expect(b.badges).toEqual(['No pets']);
+    expect(cardItems(rows, { badgeFields: ['diet', 'city'] })[0].badges).toEqual(['Pets ok', 'Austin']);
+  });
+
+  it('reads an eyebrow, an avatar (image URL or initials) and a progress', () => {
+    const [a, b] = cardItems(rows, { eyebrowField: 'city', avatarField: 'host', progressField: 'done' });
+    expect(a.eyebrow).toBe('Austin');
+    expect(a.avatar).toEqual({ image: '', name: 'Ada Lovelace' });
+    expect(b.avatar).toEqual({ image: 'https://x/p.png', name: 'Garden studio' });
+    expect([a.progress, b.progress]).toEqual([45, 80]);
+    const none = cardItems(rows, {})[0];
+    expect([none.eyebrow, none.avatar, none.progress]).toEqual(['', null, null]);
+  });
+
+  it('gives a record row its progress', () => {
+    expect(recordItems(rows, { progressField: 'done' }).map((r) => r.progress)).toEqual([45, 80]);
+    expect(recordItems(rows, { progressField: 'city' })[0].progress).toBeNull();
+  });
+
+  it('reads field lists and percentages', () => {
+    expect(fieldList(' a, ,b ')).toEqual(['a', 'b']);
+    expect(fieldList(['a', 3, ' c'])).toEqual(['a', 'c']);
+    expect(fieldList({})).toEqual([]);
+    expect([percentOf(12.5), percentOf('40%'), percentOf(' 7 '), percentOf('n/a'), percentOf(NaN)]).toEqual([
+      12.5,
+      40,
+      7,
+      null,
+      null,
+    ]);
+    expect([barWidth(-5), barWidth(50), barWidth(130), barWidth(null)]).toEqual([0, 50, 100, 0]);
+    expect([percentLabel(64), percentLabel(33.333), percentLabel(120)]).toEqual(['64%', '33.3%', '120%']);
+  });
+});
+
+describe('heroAside', () => {
+  it('shows a figure from a number or text, with its label', () => {
+    expect(heroAside(12480, 'Revenue today')).toEqual({ kind: 'figure', value: '12,480', label: 'Revenue today' });
+    expect(heroAside('$12,480', '')).toEqual({ kind: 'figure', value: '$12,480', label: '' });
+  });
+  it('shows up to four facts from a list', () => {
+    const aside = heroAside([{ label: 'Open', value: 14 }, 'Due 3', { label: 'x' }, 'a', 'b', 'c'], 'Today');
+    expect(aside.kind).toBe('facts');
+    expect(aside.facts).toEqual([{ label: 'Open', value: '14' }, { value: 'Due 3' }, { value: 'a' }, { value: 'b' }]);
+    expect(aside.label).toBe('Today');
+  });
+  it('shows nothing for empty or junk values', () => {
+    for (const v of ['', '  ', null, undefined, {}, [], [null, {}]]) expect(heroAside(v, 'Label')).toBeNull();
+  });
+});
+
+describe('progressItems', () => {
+  const data = [
+    { id: 1, label: 'Marketing', spent: 18400, budget: 25000, status: 'On track', note: '12 days left' },
+    { id: 2, label: 'Travel', spent: 7600, budget: 6000, status: 'Over budget' },
+    { id: 3, label: 'Onboarding', pct: '40%', status: 'warning' },
+    { id: 4, label: 'Steps', spent: 3 },
+    'junk',
+  ];
+  const fields = {
+    labelField: 'label',
+    valueField: 'spent',
+    targetField: 'budget',
+    captionField: 'note',
+    statusField: 'status',
+    valueFormat: 'currency',
+  };
+
+  it('reads label, value of target, percentage, caption and status', () => {
+    const [a, b, c, d] = progressItems(data, fields);
+    expect(a).toMatchObject({ label: 'Marketing', value: '$18,400', target: '$25,000', caption: '12 days left' });
+    expect(a.pct).toBeCloseTo(73.6);
+    expect([a.status, a.tone]).toEqual(['On track', 'success']);
+    expect([b.status, b.tone]).toEqual(['Over budget', 'danger']);
+    expect(b.pct).toBeCloseTo(126.67, 1);
+    // A status that only names a tone colours the bar without a chip.
+    expect([c.status, c.tone, c.pct]).toEqual(['', 'warning', null]);
+    // A value with no target is the percentage.
+    expect(d.pct).toBe(3);
+    expect(progressItems(data, fields)).toHaveLength(4);
+  });
+
+  it('takes percentField over value / target', () => {
+    expect(progressItems(data, { ...fields, percentField: 'pct' })[2].pct).toBe(40);
+    expect(progressItems([{ v: 5, t: 0 }], { valueField: 'v', targetField: 't' })[0].pct).toBeNull();
+  });
+
+  it('tones rows without a status from autoTone', () => {
+    const rows = [
+      { label: 'a', v: 100 },
+      { label: 'b', v: 85 },
+      { label: 'c', v: 101 },
+      { label: 'd', v: 20 },
+    ];
+    const tones = (autoTone) => progressItems(rows, { valueField: 'v', autoTone }).map((r) => r.tone);
+    expect(tones('goal')).toEqual(['success', '', 'success', '']);
+    expect(tones('limit')).toEqual(['warning', 'warning', 'danger', '']);
+    expect(tones('none')).toEqual(['', '', '', '']);
+    expect(autoProgressTone(NaN, 'limit')).toBe('');
+  });
+
+  it('reads tones from status words', () => {
+    expect(
+      ['On track', 'At risk', 'Behind', 'ahead', 'Not met', 'success', 'Good', 'whatever', 3].map(progressTone)
+    ).toEqual(['success', 'warning', 'danger', 'success', '', 'success', 'success', '', '']);
+  });
+
+  it('keys rows by the id field, falling back to the position', () => {
+    const rows = [
+      { code: 'Q1', label: 'One' },
+      { code: 'Q2', label: 'Two' },
+    ];
+    expect(progressItems(rows, { idField: 'code' }).map((r) => r.key)).toEqual(['Q1', 'Q2']);
+    expect(progressItems(rows, { idField: 'missing' }).map((r) => r.key)).toEqual(['0', '1']);
+  });
+
+  it('never throws on junk', () => {
+    for (const v of [null, undefined, 'x', 3, {}, [null, 3, [], { a: {} }]])
+      expect(() => progressItems(v, {})).not.toThrow();
+    expect(progressItems([{ a: 1 }], null)).toHaveLength(1);
   });
 });

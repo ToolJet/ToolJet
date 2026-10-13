@@ -649,4 +649,73 @@
 }
 .tj-shadcn .sc-map-canvas[data-basemap='dark'] img.leaflet-tile {
   filter: invert(1) hue-rotate(180deg) saturate(0.35) brightness(0.88) contrast(0.86);
+// The hero's aside sits right of its text behind a hairline; in a narrow hero (a phone, a half-width column) it goes
+// under the text, starting at the left edge.
+.tj-shadcn .sc-hero-box {
+  container-type: inline-size;
+}
+.tj-shadcn .sc-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'text aside'
+    'actions aside';
+  column-gap: 1.5rem;
+  align-items: center;
+}
+.tj-shadcn .sc-hero-grid > .sc-hero-text {
+  grid-area: text;
+}
+.tj-shadcn .sc-hero-grid > .sc-hero-aside {
+  grid-area: aside;
+}
+.tj-shadcn .sc-hero-grid > .sc-hero-actions {
+  grid-area: actions;
+  margin-top: 0.75rem;
+}
+@container (max-width: 560px) {
+  .tj-shadcn .sc-hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'text'
+      'aside'
+      'actions';
+  }
+  .tj-shadcn .sc-hero-grid > .sc-hero-aside {
+    margin-top: 1rem;
+    border-left-width: 0;
+    padding-left: 0;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .tj-shadcn .sc-hero-grid > .sc-hero-actions {
+    margin-top: 1rem;
+  }
+}
+
+// The schedule's bookings and empty slots are buttons, whose background, colour and border colour the pack's reset
+// sets with !important: their fills are rules here. A booking's tone arrives as --bk-tone (ShadSchedule.jsx).
+.tj-shadcn .sc-schedule .sc-booking {
+  background-color: color-mix(in srgb, var(--bk-tone) 14%, var(--sc-background));
+  border-color: var(--bk-tone);
+  color: color-mix(in srgb, var(--bk-tone) 70%, var(--sc-foreground));
+}
+.tj-shadcn .sc-schedule .sc-booking:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--bk-tone) 20%, var(--sc-background));
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+.tj-shadcn .sc-schedule .sc-booking[data-selected] {
+  box-shadow: 0 0 0 2px var(--lk-accent, var(--sc-primary));
+}
+.tj-shadcn .sc-schedule .sc-slot {
+  border-color: var(--lk-border, var(--sc-border));
+}
+.tj-shadcn .sc-schedule .sc-slot[data-today] {
+  background-color: color-mix(in srgb, var(--lk-accent, var(--sc-primary)) 4%, transparent);
+}
+.tj-shadcn .sc-schedule .sc-slot-live:hover {
+  background-color: color-mix(in srgb, var(--lk-accent, var(--sc-primary)) 7%, transparent);
+}
+.tj-shadcn .sc-schedule .sc-slot[data-selected] {
+  background-color: color-mix(in srgb, var(--lk-accent, var(--sc-primary)) 14%, transparent);
 }

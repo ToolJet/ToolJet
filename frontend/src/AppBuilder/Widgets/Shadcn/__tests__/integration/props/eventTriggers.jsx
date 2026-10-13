@@ -94,6 +94,11 @@ export const TRIGGERS = {
     onMapClick: { steps: [['click', '.sc-map-canvas', 0]], reads: 'clickedLocation' },
     onBoundsChange: { steps: [['click', 'a.leaflet-control-zoom-in', 0]], reads: 'zoom' },
   },
+  ShadSchedule: {
+    onBookingClick: { steps: [['click', '[data-booking]', 0]], reads: 'selectedBooking' },
+    onSlotClick: { steps: [['click', '[data-resource] button[aria-label$="free"]', 0]], reads: 'selectedSlot' },
+  },
+  ShadProgressList: { onItemClick: { steps: [['click', 'li', 1]], reads: 'selectedItem' } },
   ShadChat: {
     onMessageSent: {
       steps: [

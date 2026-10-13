@@ -28,6 +28,7 @@ import {
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
 import { normalizeButtonEvent } from './normalizeButtonEvent';
+import { buttonDisplayOf } from './rowActionIcon';
 import SelectSearch from 'react-select-search';
 import { parseDate, getDateTimeFormat } from '@/AppBuilder/Shared/DataTypes/renderers/DatePickerRenderer';
 
@@ -43,8 +44,14 @@ const getMeasureContext = () => {
 };
 
 // Calculate width needed for button column based on button labels/icons
-const calculateButtonColumnWidth = (buttons, getResolvedValue) => {
+const calculateButtonColumnWidth = (buttons, getResolvedValue, display = 'buttons') => {
   if (!buttons || buttons.length === 0) return 90;
+  // The ToolJet UI 2.0 look's compact forms: one "..." button, or a 32px icon button per action (4px apart).
+  if (display === 'menu') return 64;
+  if (display === 'icons') {
+    const shown = buttons.filter((button) => getResolvedValue(button.buttonVisibility) !== false).length;
+    return Math.max(64, shown * 32 + Math.max(0, shown - 1) * 4 + 24);
+  }
 
   const context = getMeasureContext();
 
@@ -554,6 +561,7 @@ export default function generateColumnsData({
                 <ButtonColumnGroup
                   id={id}
                   buttons={buttons}
+                  display={getResolvedValue(column.buttonDisplay)}
                   cellBackgroundColor={getResolvedValue(column.cellBackgroundColor, { cellValue, rowData })}
                   cellValue={cellValue}
                   rowData={rowData}
@@ -605,7 +613,13 @@ export default function generateColumnsData({
         columnDef.enableSorting = false;
         columnDef.enableColumnFilter = false;
         const buttons = column.buttons || [];
-        columnDef.size = columnSize || calculateButtonColumnWidth(buttons, getResolvedValue);
+        const display =
+          useTableStore.getState().getTableStyles(id)?.tableLook === 'shadcn'
+            ? buttonDisplayOf(getResolvedValue(column.buttonDisplay))
+            : 'buttons';
+        columnDef.size = columnSize || calculateButtonColumnWidth(buttons, getResolvedValue, display);
+        // Icons and the "..." menu keep their column at its width, at the table's right edge (shadcnLook.scss).
+        columnDef.meta.compactActions = display !== 'buttons';
       }
 
       // Add sorting configuration for specific column types
