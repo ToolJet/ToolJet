@@ -3,13 +3,16 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { Controller, UseGuards, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { FeatureAbilityGuard } from '../ability/guard';
 import { IExternalApisWorkspaceUsersControllerV2 } from '../Interfaces/IController';
-import { UpdateWorkspaceUserV2Dto } from '../dto';
+import { UpdateWorkspaceUserV2Dto, ListWorkspaceUsersV2QueryDto } from '../dto';
 
 @Controller({ path: 'ext', version: '2' })
 @InitModule(MODULES.EXTERNAL_APIS)
 @UseGuards(FeatureAbilityGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class ExternalApisWorkspaceUsersControllerV2 implements IExternalApisWorkspaceUsersControllerV2 {
+  listWorkspaceUsers(workspaceIdentifier: string, query: ListWorkspaceUsersV2QueryDto): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
   getWorkspaceUser(workspaceIdentifier: string, userIdentifier: string): Promise<any> {
     throw new Error('Method not implemented.');
   }

@@ -141,6 +141,10 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.LIST_WORKSPACE_USERS_V2]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
     [FEATURE_KEY.GET_WORKSPACE_USER_V2]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,

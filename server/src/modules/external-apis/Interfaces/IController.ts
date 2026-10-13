@@ -7,6 +7,7 @@ import {
   AppGitPushDto,
   AppImportRequestDto,
   UpdateWorkspaceUserV2Dto,
+  ListWorkspaceUsersV2QueryDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -59,6 +60,8 @@ export interface IExternalApisAppsController {
 }
 
 export interface IExternalApisWorkspaceUsersControllerV2 {
+  listWorkspaceUsers(workspaceIdentifier: string, query: ListWorkspaceUsersV2QueryDto): Promise<any>;
+
   getWorkspaceUser(workspaceIdentifier: string, userIdentifier: string): Promise<any>;
 
   updateWorkspaceUser(workspaceIdentifier: string, userIdentifier: string, dto: UpdateWorkspaceUserV2Dto): Promise<any>;

@@ -737,6 +737,33 @@ export class UpdateWorkspaceUserV2Dto {
   userDetails?: UserDetailKeyValueDto[];
 }
 
+export class ListWorkspaceUsersV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(Status)
+  status?: Status;
+
+  @IsOptional()
+  @IsEnum(USER_ROLE)
+  role?: USER_ROLE;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
 @Exclude()
 export class WorkspaceUserV2ResponseDto {
   @Expose()
@@ -757,4 +784,15 @@ export class WorkspaceUserV2ResponseDto {
   @Expose({ name: 'userDetails' })
   @Type(() => UserDetailKeyValueDto)
   userDetails: UserDetailKeyValueDto[];
+}
+
+@Exclude()
+export class ListWorkspaceUsersV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceUserV2ResponseDto)
+  data: WorkspaceUserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
 }
