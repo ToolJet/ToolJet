@@ -54,5 +54,4 @@ export enum MODULES {
   MODULE_FOLDER = 'ModuleFolder',
   PERSONAL_ACCESS_TOKENS = 'PersonalAccessTokens',
   FRONTEND_METRICS = 'FrontendMetrics',
-  OPENAPI_SPEC = 'OpenApiSpec',
 }

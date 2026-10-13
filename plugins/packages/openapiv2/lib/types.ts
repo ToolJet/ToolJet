@@ -12,7 +12,7 @@ export type SourceOptions = {
   api_keys: any;
   auth_key: string;
   host?: string;
-  // Credentials section - datasource-level only, no per-query equivalent (see run()'s comment).
+  // Datasource-level only; no per-query equivalent.
   headers?: KeyValuePairs;
   url_parameters?: KeyValuePairs;
   body?: KeyValuePairs;

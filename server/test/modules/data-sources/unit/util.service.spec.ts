@@ -2,14 +2,18 @@ import { DataSourcesUtilService } from '../../../../src/modules/data-sources/uti
 
 function serviceWith(pluginService: object): DataSourcesUtilService {
   return new DataSourcesUtilService(
-    {} as any,
-    {} as any,
-    {} as any,
-    {} as any,
-    {} as any,
-    { getService: jest.fn().mockResolvedValue(pluginService) } as any,
-    {} as any,
-    {} as any
+    {} as any, // gitSyncConfigsUtilService
+    {} as any, // appEnvironmentUtilService
+    {} as any, // credentialService
+    {} as any, // dataSourceRepository
+    {} as any, // licenseTermsService
+    {} as any, // encryptionService
+    { getService: jest.fn().mockResolvedValue(pluginService) } as any, // pluginsServiceSelector
+    {} as any, // organizationConstantsUtilService
+    {} as any, // inMemoryCacheService
+    {} as any, // openApiSpecQueue
+    {} as any, // openApiSpecOperationsRepository
+    {} as any // openApiSpecTerminationRegistry
   );
 }
 

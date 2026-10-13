@@ -5,7 +5,6 @@ import { appendBranchParam } from '@/_helpers/active-branch';
 export const openApiSpecService = {
   upload,
   getStatus,
-  cancel,
   getMetadata,
   getOperations,
   getOperation,
@@ -29,14 +28,6 @@ function getStatus(dataSourceId, environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(
     appendBranchParam(`${baseUrl(dataSourceId)}/status?environmentId=${environmentId}`),
-    requestOptions
-  ).then(handleResponse);
-}
-
-function cancel(dataSourceId, environmentId) {
-  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
-  return fetch(
-    appendBranchParam(`${baseUrl(dataSourceId)}/cancel?environmentId=${environmentId}`),
     requestOptions
   ).then(handleResponse);
 }

@@ -171,11 +171,7 @@ const OpenApiV2Config = ({
           selectedDataSource={selectedDataSource}
         />
       </div>
-      {isFailed && (
-        <div className="p-2" style={{ color: 'red' }}>
-          Processing failed{specError ? `: ${specError}` : ''}
-        </div>
-      )}
+      {isFailed && <div className="p-2 tw-text-text-danger">Processing failed{specError ? `: ${specError}` : ''}</div>}
 
       <div className="col-md-12 mb-3 d-flex justify-content-end">
         <StatusBadge status={status} isPending={isPending} />

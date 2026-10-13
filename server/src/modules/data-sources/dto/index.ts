@@ -1,9 +1,21 @@
-import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsOptional, IsNotEmpty, IsDefined, Matches, IsIn, ValidateIf } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsUUID,
+  IsString,
+  IsOptional,
+  IsNotEmpty,
+  IsDefined,
+  IsInt,
+  Matches,
+  IsIn,
+  Max,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
-import { OpenApiSpecSourceType } from '@modules/openapi-spec/constants';
+import { OpenApiSpecSourceType, OpenApiSpecStatus } from '@modules/openapi-spec/constants';
 
 export class CreateDataSourceDto {
   @IsUUID()
@@ -136,13 +148,13 @@ export class CreateOpenApiSpecDto {
 
   // Omit to process every environment in the organization.
   @IsOptional()
-  @IsString()
+  @IsUUID()
   environmentId?: string;
 }
 
 export class OpenApiSpecOperationsQueryDto {
   @IsOptional()
-  @IsString()
+  @IsUUID()
   environmentId?: string;
 
   @IsOptional()
@@ -157,12 +169,65 @@ export class OpenApiSpecOperationsQueryDto {
   @IsString()
   search?: string;
 
-  // 1-indexed.
+  // 1-indexed. Bounded to keep OFFSET pagination cheap.
   @IsOptional()
-  @IsString()
-  page?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100000)
+  page?: number;
 
   @IsOptional()
-  @IsString()
-  perPage?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  perPage?: number;
+}
+
+export interface OpenApiSpecStatusResponse {
+  status: OpenApiSpecStatus | null;
+  error: string | null;
+}
+
+// Mirrors extractMetadata()'s output (openapi-spec.processor.ts) - info/securitySchemes are
+// already the spec's own declared JSON, not entity data, so left loosely typed on purpose.
+export interface OpenApiSpecMetadataResponse {
+  info: Record<string, any>;
+  servers: string[];
+  tags: string[];
+  services: string[];
+  securitySchemes: Record<string, any>;
+  security: Record<string, any>[];
+}
+
+// Shared by the list endpoint and the single-operation endpoint - never dataSourceId,
+// dataSourceVersionId, environmentId, createdAt or updatedAt. The query that builds this (see
+// listOpenApiSpecOperations/getOpenApiSpecOperation) narrows the selected columns accordingly;
+// this type documents that shape, it doesn't enforce it.
+export interface OpenApiSpecOperationSummaryResponse {
+  id: string;
+  operationId: string;
+  serviceId: string;
+  path: string;
+  method: string;
+  name: string;
+  deprecated: boolean;
+  tags: string[];
+  security: string[];
+  hasRequestBody: boolean;
+}
+
+export interface OpenApiSpecOperationResponse extends OpenApiSpecOperationSummaryResponse {
+  parameters: Record<string, any>[];
+  requestBodySchema: Record<string, any> | null;
+}
+
+export interface OpenApiSpecOperationsListResponse {
+  meta: {
+    totalPages: number;
+    totalCount: number;
+    currentPage: number;
+  };
+  operations: OpenApiSpecOperationSummaryResponse[];
 }

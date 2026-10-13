@@ -41,12 +41,3 @@ export const OPENAPI_SPEC_OPTION_KEYS = {
   METADATA: 'spec_metadata',
   CHECKSUM: 'spec_checksum',
 } as const;
-
-export enum FEATURE_KEY {
-  CREATE = 'CREATE',
-  GET_STATUS = 'GET_STATUS',
-  CANCEL = 'CANCEL',
-  GET_METADATA = 'GET_METADATA',
-  LIST_OPERATIONS = 'LIST_OPERATIONS',
-  GET_OPERATION = 'GET_OPERATION',
-}

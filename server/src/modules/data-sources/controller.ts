@@ -1,7 +1,7 @@
 import { InitModule } from '@modules/app/decorators/init-module';
 import { DataSourcesService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { FeatureAbilityGuard } from './ability/guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
@@ -224,10 +224,10 @@ export class DataSourcesController implements IDataSourcesController {
   }
 
   // --- OpenAPI v2 spec processing ---
-  // Reuses UPDATE for mutations and TEST_CONNECTION for reads (like :id/invoke), which already
-  // cover every permission tier, instead of adding feature keys.
+  // Dedicated feature keys, wired to the same permission as UPDATE/TEST_CONNECTION via
+  // ability/index.ts's UPDATE_EQUIVALENT/TEST_CONNECTION_EQUIVALENT arrays.
 
-  @InitFeature(FEATURE_KEY.UPDATE)
+  @InitFeature(FEATURE_KEY.OPENAPI_SPEC_CREATE)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
   @Post(':id/openapi-spec')
   async processOpenApiSpec(
@@ -245,25 +245,25 @@ export class DataSourcesController implements IDataSourcesController {
     );
   }
 
-  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @InitFeature(FEATURE_KEY.OPENAPI_SPEC_GET_STATUS)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
   @Get(':id/openapi-spec/status')
   async getOpenApiSpecStatus(
     @User() user: UserEntity,
     @Param('id') dataSourceId: string,
-    @Query('environmentId') environmentId: string,
+    @Query('environmentId', ParseUUIDPipe) environmentId: string,
     @Query('branch_id') branchId?: string
   ) {
     return this.dataSourcesService.getOpenApiSpecStatus(dataSourceId, user.organizationId, environmentId, branchId);
   }
 
-  @InitFeature(FEATURE_KEY.UPDATE)
+  @InitFeature(FEATURE_KEY.OPENAPI_SPEC_CANCEL)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
   @Delete(':id/openapi-spec/cancel')
   async cancelOpenApiSpecProcessing(
     @User() user: UserEntity,
     @Param('id') dataSourceId: string,
-    @Query('environmentId') environmentId: string,
+    @Query('environmentId', ParseUUIDPipe) environmentId: string,
     @Query('branch_id') branchId?: string
   ) {
     return this.dataSourcesService.cancelOpenApiSpecProcessing(
@@ -274,19 +274,19 @@ export class DataSourcesController implements IDataSourcesController {
     );
   }
 
-  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @InitFeature(FEATURE_KEY.OPENAPI_SPEC_GET_METADATA)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
   @Get(':id/openapi-spec/metadata')
   async getOpenApiSpecMetadata(
     @User() user: UserEntity,
     @Param('id') dataSourceId: string,
-    @Query('environmentId') environmentId: string,
+    @Query('environmentId', ParseUUIDPipe) environmentId: string,
     @Query('branch_id') branchId?: string
   ) {
     return this.dataSourcesService.getOpenApiSpecMetadata(dataSourceId, user.organizationId, environmentId, branchId);
   }
 
-  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @InitFeature(FEATURE_KEY.OPENAPI_SPEC_LIST_OPERATIONS)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
   @Get(':id/openapi-spec/operations')
   async listOpenApiSpecOperations(
@@ -304,16 +304,23 @@ export class DataSourcesController implements IDataSourcesController {
     );
   }
 
-  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @InitFeature(FEATURE_KEY.OPENAPI_SPEC_GET_OPERATION)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
   @Get(':id/openapi-spec/operations/:operationRecordId')
   async getOpenApiSpecOperation(
+    @User() user: UserEntity,
     @Param('id') dataSourceId: string,
     // Row id, not the spec's operationId (optional, non-unique).
-    @Param('operationRecordId') operationRecordId: string,
-    @Query('environmentId') environmentId: string,
+    @Param('operationRecordId', ParseUUIDPipe) operationRecordId: string,
+    @Query('environmentId', ParseUUIDPipe) environmentId: string,
     @Query('branch_id') branchId?: string
   ) {
-    return this.dataSourcesService.getOpenApiSpecOperation(dataSourceId, environmentId, operationRecordId, branchId);
+    return this.dataSourcesService.getOpenApiSpecOperation(
+      dataSourceId,
+      user.organizationId,
+      environmentId,
+      operationRecordId,
+      branchId
+    );
   }
 }

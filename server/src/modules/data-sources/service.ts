@@ -598,8 +598,20 @@ export class DataSourcesService implements IDataSourcesService {
     );
   }
 
-  async getOpenApiSpecOperation(dataSourceId: string, environmentId: string, id: string, branchId?: string) {
-    return this.dataSourcesUtilService.getOpenApiSpecOperation(dataSourceId, environmentId, id, branchId);
+  async getOpenApiSpecOperation(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    id: string,
+    branchId?: string
+  ) {
+    return this.dataSourcesUtilService.getOpenApiSpecOperation(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      id,
+      branchId
+    );
   }
 
   protected getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string) => {

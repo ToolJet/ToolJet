@@ -2,6 +2,7 @@ import { DataSource } from '@entities/data_source.entity';
 import {
   BadRequestException,
   Inject,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotAcceptableException,
@@ -21,7 +22,11 @@ import {
   GetDataSourceOauthUrlDto,
   TestDataSourceDto,
   CreateOpenApiSpecDto,
+  OpenApiSpecMetadataResponse,
+  OpenApiSpecOperationResponse,
+  OpenApiSpecOperationsListResponse,
   OpenApiSpecOperationsQueryDto,
+  OpenApiSpecStatusResponse,
 } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, EntityNotFoundError, Repository } from 'typeorm';
@@ -2150,7 +2155,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     organizationId: string,
     environmentId: string,
     branchId?: string
-  ): Promise<{ status: OpenApiSpecStatus | null; error: string | null }> {
+  ): Promise<OpenApiSpecStatusResponse> {
     const options = await this.getResolvedOpenApiSpecOptions(dataSourceId, organizationId, environmentId, branchId);
     return {
       status: options[OPENAPI_SPEC_OPTION_KEYS.STATUS]?.value || null,
@@ -2158,7 +2163,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     };
   }
 
-  async getOpenApiSpecMetadata(dataSourceId: string, organizationId: string, environmentId: string, branchId?: string) {
+  async getOpenApiSpecMetadata(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    branchId?: string
+  ): Promise<OpenApiSpecMetadataResponse | null> {
     const options = await this.getResolvedOpenApiSpecOptions(dataSourceId, organizationId, environmentId, branchId);
     return options[OPENAPI_SPEC_OPTION_KEYS.METADATA]?.value || null;
   }
@@ -2168,7 +2178,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     organizationId: string,
     environmentId: string,
     branchId?: string
-  ) {
+  ): Promise<OpenApiSpecStatusResponse> {
     const options = await this.getResolvedOpenApiSpecOptions(dataSourceId, organizationId, environmentId, branchId);
     const jobId = options[OPENAPI_SPEC_OPTION_KEYS.JOB_ID]?.value;
 
@@ -2189,7 +2199,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       branchId
     );
 
-    return { status: OpenApiSpecStatus.CANCELLED };
+    return { status: OpenApiSpecStatus.CANCELLED, error: null };
   }
 
   // Unlike cancel, waits for in-flight jobs in every environment to stop so none is still writing
@@ -2230,6 +2240,21 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
 
+  // Blocks reads while a re-upload's delete+rebuild is in flight.
+  private async assertOpenApiSpecNotProcessing(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    branchId?: string
+  ): Promise<void> {
+    const { status } = await this.getOpenApiSpecStatus(dataSourceId, organizationId, environmentId, branchId);
+    if (status === OpenApiSpecStatus.PENDING || status === OpenApiSpecStatus.PROCESSING) {
+      throw new ConflictException(
+        'This OpenAPI datasource is currently processing a spec update. Please wait until processing completes.'
+      );
+    }
+  }
+
   // Excludes the heavy jsonb columns (parameters, requestBodySchema); see getOpenApiSpecOperation.
   async listOpenApiSpecOperations(
     dataSourceId: string,
@@ -2237,9 +2262,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     environmentId: string,
     query: OpenApiSpecOperationsQueryDto,
     branchId?: string
-  ) {
-    const currentPage = parseInt(query.page) || 1;
-    const perPage = parseInt(query.perPage) || 1000;
+  ): Promise<OpenApiSpecOperationsListResponse> {
+    await this.assertOpenApiSpecNotProcessing(dataSourceId, organizationId, environmentId, branchId);
+
+    const currentPage = query.page ?? 1;
+    const perPage = query.perPage ?? 1000;
 
     const dataSourceVersionId = await this.resolveOpenApiSpecReadDsvId(dataSourceId, branchId);
 
@@ -2294,11 +2321,38 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   // Keyed by row id: operationId is optional in the spec and not guaranteed unique.
-  async getOpenApiSpecOperation(dataSourceId: string, environmentId: string, id: string, branchId?: string) {
+  async getOpenApiSpecOperation(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    id: string,
+    branchId?: string
+  ): Promise<OpenApiSpecOperationResponse> {
+    await this.assertOpenApiSpecNotProcessing(dataSourceId, organizationId, environmentId, branchId);
+
     const dataSourceVersionId = await this.resolveOpenApiSpecReadDsvId(dataSourceId, branchId);
-    const operation = await this.openApiSpecOperationsRepository.findOne({
-      where: { dataSourceVersionId, environmentId, id },
-    });
+    // Narrowed the same way listOpenApiSpecOperations is - never dataSourceId, dataSourceVersionId,
+    // environmentId, createdAt or updatedAt.
+    const operation = await this.openApiSpecOperationsRepository
+      .createQueryBuilder('operation')
+      .select([
+        'operation.id',
+        'operation.operationId',
+        'operation.serviceId',
+        'operation.path',
+        'operation.method',
+        'operation.name',
+        'operation.deprecated',
+        'operation.tags',
+        'operation.security',
+        'operation.hasRequestBody',
+        'operation.parameters',
+        'operation.requestBodySchema',
+      ])
+      .where('operation.dataSourceVersionId = :dataSourceVersionId', { dataSourceVersionId })
+      .andWhere('operation.environmentId = :environmentId', { environmentId })
+      .andWhere('operation.id = :id', { id })
+      .getOne();
     if (!operation) throw new NotFoundException(`Operation '${id}' not found`);
     return operation;
   }
@@ -2326,7 +2380,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const environments = await this.appEnvironmentUtilService.getAll(organizationId);
     if (!environments.length) throw new BadRequestException('No environments found for organization');
     if (!isMultiEnvEnabled) return [environments.map((env) => env.id)];
-    if (requestedEnvironmentId) return [[requestedEnvironmentId]];
+    if (requestedEnvironmentId) {
+      if (!environments.some((env) => env.id === requestedEnvironmentId)) {
+        throw new BadRequestException('Unknown environment');
+      }
+      return [[requestedEnvironmentId]];
+    }
     return environments.map((env) => [env.id]);
   }
 

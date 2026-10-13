@@ -181,9 +181,8 @@ export class OpenApiSpecProcessor extends WorkerHost {
       const batches = chunk(this.extractPathItems(parsedInput), DEFAULT_OPENAPI_SPEC_BATCH_SIZE);
       let operationCount = 0;
 
-      // Readers only see rows once status is READY, so no transaction needs to span the job.
-      // Scoped by dataSourceVersionId (branch-specific), not dataSourceId - other branches' rows
-      // for this same datasource must be left untouched.
+      // listOpenApiSpecOperations/getOpenApiSpecOperation block reads while status is
+      // PENDING/PROCESSING, so no transaction needs to span the delete+rebuild below.
       await dbTransactionWrap((manager: EntityManager) =>
         manager.delete(OpenApiSpecOperation, { dataSourceVersionId, environmentId: In(environmentIds) })
       );
