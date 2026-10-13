@@ -6,40 +6,80 @@ export const listviewConfig = {
     width: 15,
     height: 450,
   },
+  // Laid out in grid columns (43 across) against the 64px `rowHeight`.
   defaultChildren: [
     {
       componentName: 'Image',
       layout: {
         top: 10,
-        left: 3,
-        height: 80,
-        width: 6,
+        left: 1,
+        height: 44,
+        width: 4,
       },
       properties: ['source'],
       accessorKey: 'imageURL',
+      styles: ['imageFit', 'borderRadius'],
+      defaultValue: {
+        imageFit: 'cover',
+        borderRadius: '{{4}}',
+      },
     },
     {
       componentName: 'Text',
       layout: {
-        top: 30,
-        left: 11,
-        height: 30,
-        width: 12,
+        top: 5,
+        left: 6,
+        height: 28,
+        width: 26,
       },
       properties: ['text'],
       accessorKey: 'text',
+      // Text clips at textSize * 1.5 + 6px of padding/border, so heights below 27 cut descenders.
+      styles: ['fontWeight', 'textSize', 'textColor'],
+      defaultValue: {
+        fontWeight: 'bold',
+        textSize: '{{14}}',
+        textColor: 'var(--cc-primary-text)',
+      },
+    },
+    {
+      componentName: 'Text',
+      layout: {
+        top: 33,
+        left: 6,
+        height: 26,
+        width: 26,
+      },
+      properties: ['text'],
+      accessorKey: 'description',
+      styles: ['fontWeight', 'textSize', 'textColor'],
+      defaultValue: {
+        fontWeight: 'normal',
+        textSize: '{{12}}',
+        textColor: 'var(--cc-secondary-text)',
+      },
     },
     {
       componentName: 'Button',
       layout: {
-        top: 30,
-        left: 25,
-        height: 30,
-        width: 17,
+        top: 18,
+        left: 33,
+        height: 28,
+        width: 9,
       },
-      // incrementWidth: 2,
       properties: ['text'],
       accessorKey: 'buttonText',
+      // Button only auto-derives outline colors from the legacy hexes, not from tokens.
+      styles: ['type', 'textColor', 'borderColor', 'icon', 'iconColor', 'iconVisibility', 'textSize'],
+      defaultValue: {
+        type: 'outline',
+        textColor: 'var(--cc-primary-text)',
+        borderColor: 'var(--cc-weak-border)',
+        icon: 'IconMail',
+        iconColor: 'var(--cc-primary-text)',
+        iconVisibility: true,
+        textSize: '{{12}}',
+      },
     },
   ],
   component: 'Listview',
@@ -173,7 +213,7 @@ export const listviewConfig = {
       displayName: 'Row height',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 100,
+        defaultValue: 64,
       },
     },
     showBorder: {
@@ -231,7 +271,7 @@ export const listviewConfig = {
       displayName: 'Border radius',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 6,
+        defaultValue: 10,
       },
     },
     boxShadow: {
@@ -252,15 +292,22 @@ export const listviewConfig = {
       dataSourceSelector: { value: 'rawJson' },
       data: {
         value: `{{[
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
-      { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 2' },
-      { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
+      { imageURL: 'https://reqres.in/img/faces/7-image.jpg', text: 'Olivia Nguyen · Design', description: 'olivia.nguyen@example.com', buttonText: 'Contact' },
+      { imageURL: 'https://reqres.in/img/faces/5-image.jpg', text: 'Liam Patel · Sales', description: 'liam.patel@example.com', buttonText: 'Contact' },
+      { imageURL: 'https://reqres.in/img/faces/3-image.jpg', text: 'Sophia Reyes · Support', description: 'sophia.reyes@example.com', buttonText: 'Contact' },
+      { imageURL: 'https://reqres.in/img/faces/1-image.jpg', text: 'Jacob Hernandez · Eng', description: 'jacob.hernandez@example.com', buttonText: 'Contact' },
+      { imageURL: 'https://reqres.in/img/faces/4-image.jpg', text: 'William Sanchez · Eng', description: 'william.sanchez@example.com', buttonText: 'Contact' },
+      { imageURL: 'https://reqres.in/img/faces/6-image.jpg', text: 'Ethan Morales · Design', description: 'ethan.morales@example.com', buttonText: 'Contact' },
+      { imageURL: 'https://reqres.in/img/faces/2-image.jpg', text: 'Mia Tiana · Marketing', description: 'mia.tiana@example.com', buttonText: 'Contact' },
+      { imageURL: 'https://reqres.in/img/faces/9-image.jpg', text: 'Lucas Ramirez · Support', description: 'lucas.ramirez@example.com', buttonText: 'Contact' },
+      { imageURL: 'https://reqres.in/img/faces/8-image.jpg', text: 'Alexander Vela · Finance', description: 'alexander.vela@example.com', buttonText: 'Contact' },
+      { imageURL: 'https://reqres.in/img/faces/10-image.jpg', text: 'Michael Reyes · Operations', description: 'michael.reyes@example.com', buttonText: 'Contact' },
     ]}}`,
       },
       mode: { value: 'list' },
       columns: { value: '{{3}}' },
       rowHeight: {
-        value: '100',
+        value: '64',
       },
       loadingState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
@@ -279,7 +326,7 @@ export const listviewConfig = {
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-weak-border)' },
-      borderRadius: { value: '{{6}}' },
+      borderRadius: { value: '{{10}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
