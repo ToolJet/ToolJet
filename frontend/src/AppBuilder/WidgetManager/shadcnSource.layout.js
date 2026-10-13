@@ -154,29 +154,44 @@ export const shadListViewConfig = shadConfig({
   displayName: 'List view',
   description:
     'List or grid: one canvas repeated per item of data; parent components to it and bind them to {{listItem.<field>}}. A click selects the item (selectedItem, onRowClicked); optional pagination (client or server side), dividers, hover and selected highlight. Items have a fixed height (rowHeight)',
-  defaultSize: { width: 30, height: 400 },
-  // A new list shows its sample rows straight away, as the UI 1.0 List view does: a name over a muted second line
-  // bound to each row, and a small action. Created empty, it drew three blank rows and looked broken.
+  defaultSize: { width: 30, height: 260 },
+  // A new list shows its sample rows straight away, as the UI 1.0 List view does, and as a finished list would look:
+  // each row an outlined card with an avatar, a name over a muted email, a role badge and a small action, all bound
+  // to the row. Created empty, it drew three blank rows and looked broken.
   defaultChildren: [
     {
-      componentName: 'ShadText',
-      layout: { top: 6, left: 1, height: 28, width: 30 },
-      properties: ['text', 'tone'],
+      componentName: 'ShadAvatar',
+      layout: { top: 16, left: 1, height: 40, width: 3 },
+      properties: ['names', 'size'],
       accessorKey: 'name',
-      defaultValue: { tone: 'large' },
+      defaultValue: { size: '{{40}}' },
     },
     {
       componentName: 'ShadText',
-      layout: { top: 36, left: 1, height: 24, width: 30 },
+      layout: { top: 14, left: 5, height: 22, width: 20 },
       properties: ['text', 'tone'],
-      accessorKey: 'role',
+      accessorKey: 'name',
+      defaultValue: { tone: 'small' },
+    },
+    {
+      componentName: 'ShadText',
+      layout: { top: 36, left: 5, height: 22, width: 20 },
+      properties: ['text', 'tone'],
+      accessorKey: 'email',
       defaultValue: { tone: 'muted' },
     },
     {
-      componentName: 'ShadButton',
-      layout: { top: 18, left: 34, height: 36, width: 8 },
+      componentName: 'ShadBadge',
+      layout: { top: 24, left: 27, height: 24, width: 7 },
       properties: ['text', 'variant'],
-      defaultValue: { text: 'View', variant: 'outline' },
+      accessorKey: 'role',
+      defaultValue: { variant: 'secondary' },
+    },
+    {
+      componentName: 'ShadButton',
+      layout: { top: 18, left: 35, height: 36, width: 7 },
+      properties: ['text', 'variant', 'size'],
+      defaultValue: { text: 'View', variant: 'outline', size: 'sm' },
     },
   ],
   withHeight: true,
@@ -198,7 +213,7 @@ export const shadListViewConfig = shadConfig({
   defaults: {
     data: {
       value:
-        "{{[{ id: 1, name: 'Ada Lovelace', role: 'Engineering' }, { id: 2, name: 'Alan Turing', role: 'Research' }, { id: 3, name: 'Grace Hopper', role: 'Platform' }]}}",
+        "{{[{ id: 1, name: 'Ada Lovelace', email: 'ada@example.com', role: 'Engineering' }, { id: 2, name: 'Alan Turing', email: 'alan@example.com', role: 'Research' }, { id: 3, name: 'Grace Hopper', email: 'grace@example.com', role: 'Platform' }]}}",
     },
     mode: { value: 'list' },
     columns: { value: '{{3}}' },
@@ -222,6 +237,14 @@ export const shadListViewConfig = shadConfig({
     itemBorderColor: colorStyle('Item border color'),
     dividerColor: colorStyle('Divider color'),
     itemBorderRadius: sizeStyle('Item radius'),
+    itemVariant: select(
+      'Item look',
+      [
+        ['plain', 'Plain'],
+        ['outline', 'Outlined card'],
+      ],
+      'plain'
+    ),
     itemShadow: select(
       'Item shadow',
       [
@@ -235,7 +258,8 @@ export const shadListViewConfig = shadConfig({
     padding: sizeStyle('Padding around the list (px)'),
     emptyTextColor: colorStyle('Empty message color'),
   },
-  styleDefaults: { itemShadow: { value: 'none' } },
+  // New lists start as outlined cards; a list saved without the style keeps its plain rows.
+  styleDefaults: { itemShadow: { value: 'none' }, itemVariant: { value: 'outline' } },
   events: {
     onRowClicked: { displayName: 'Row clicked' },
     onRecordClicked: { displayName: 'Record clicked' },

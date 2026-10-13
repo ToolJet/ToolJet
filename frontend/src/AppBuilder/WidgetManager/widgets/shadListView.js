@@ -7,49 +7,78 @@ export const shadListViewConfig = {
   component: 'ShadListView',
   defaultSize: {
     width: 30,
-    height: 400,
+    height: 260,
   },
   defaultChildren: [
     {
+      componentName: 'ShadAvatar',
+      layout: {
+        top: 16,
+        left: 1,
+        height: 40,
+        width: 3,
+      },
+      properties: ['names', 'size'],
+      accessorKey: 'name',
+      defaultValue: {
+        size: '{{40}}',
+      },
+    },
+    {
       componentName: 'ShadText',
       layout: {
-        top: 6,
-        left: 1,
-        height: 28,
-        width: 30,
+        top: 14,
+        left: 5,
+        height: 22,
+        width: 20,
       },
       properties: ['text', 'tone'],
       accessorKey: 'name',
       defaultValue: {
-        tone: 'large',
+        tone: 'small',
       },
     },
     {
       componentName: 'ShadText',
       layout: {
         top: 36,
-        left: 1,
-        height: 24,
-        width: 30,
+        left: 5,
+        height: 22,
+        width: 20,
       },
       properties: ['text', 'tone'],
-      accessorKey: 'role',
+      accessorKey: 'email',
       defaultValue: {
         tone: 'muted',
+      },
+    },
+    {
+      componentName: 'ShadBadge',
+      layout: {
+        top: 24,
+        left: 27,
+        height: 24,
+        width: 7,
+      },
+      properties: ['text', 'variant'],
+      accessorKey: 'role',
+      defaultValue: {
+        variant: 'secondary',
       },
     },
     {
       componentName: 'ShadButton',
       layout: {
         top: 18,
-        left: 34,
+        left: 35,
         height: 36,
-        width: 8,
+        width: 7,
       },
-      properties: ['text', 'variant'],
+      properties: ['text', 'variant', 'size'],
       defaultValue: {
         text: 'View',
         variant: 'outline',
+        size: 'sm',
       },
     },
   ],
@@ -434,6 +463,26 @@ export const shadListViewConfig = {
         },
       },
     },
+    itemVariant: {
+      type: 'select',
+      displayName: 'Item look',
+      options: [
+        {
+          name: 'Plain',
+          value: 'plain',
+        },
+        {
+          name: 'Outlined card',
+          value: 'outline',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'plain',
+      },
+    },
     itemShadow: {
       type: 'select',
       displayName: 'Item shadow',
@@ -579,7 +628,7 @@ export const shadListViewConfig = {
     properties: {
       data: {
         value:
-          "{{[{ id: 1, name: 'Ada Lovelace', role: 'Engineering' }, { id: 2, name: 'Alan Turing', role: 'Research' }, { id: 3, name: 'Grace Hopper', role: 'Platform' }]}}",
+          "{{[{ id: 1, name: 'Ada Lovelace', email: 'ada@example.com', role: 'Engineering' }, { id: 2, name: 'Alan Turing', email: 'alan@example.com', role: 'Research' }, { id: 3, name: 'Grace Hopper', email: 'grace@example.com', role: 'Platform' }]}}",
       },
       mode: {
         value: 'list',
@@ -649,6 +698,9 @@ export const shadListViewConfig = {
       },
       itemShadow: {
         value: 'none',
+      },
+      itemVariant: {
+        value: 'outline',
       },
     },
   },

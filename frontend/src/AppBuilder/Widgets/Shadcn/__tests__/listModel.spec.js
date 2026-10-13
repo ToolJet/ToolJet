@@ -68,4 +68,16 @@ describe('listLook', () => {
     expect(look.item.boxShadow).toMatch(/rgb/);
     expect(look.padding).toBe('12px');
   });
+  it('draws outlined cards from the theme, under any set colour or radius; plain rows by default', () => {
+    expect(listLook({}).item.border).toBeUndefined();
+    expect(listLook({ itemVariant: 'outline' }).item).toMatchObject({
+      background: 'var(--sc-card)',
+      border: '1px solid var(--sc-border)',
+      borderRadius: 'var(--sc-radius)',
+    });
+    expect(listLook({ itemVariant: 'outline', itemBorderColor: '#ddd', itemBorderRadius: 4 }).item).toMatchObject({
+      border: '1px solid #ddd',
+      borderRadius: '4px',
+    });
+  });
 });
