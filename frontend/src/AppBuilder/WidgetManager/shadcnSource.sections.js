@@ -41,7 +41,7 @@ export const shadHeroConfig = shadConfig({
     secondaryActionLabel: code('Secondary action label (empty hides it)', STRING, ''),
     icon: code('Icon (lucide name, e.g. sparkles)', STRING, ''),
     background: choice('Background', ['plain', 'tint', 'gradient', 'image', 'dark'], 'tint'),
-    imageUrl: code('Background image URL (background image)', STRING, ''),
+    imageUrl: code('Background image URL (when Background is Image)', STRING, ''),
     align: choice('Align', ['left', 'center'], 'left'),
     size: choice('Size', ['compact', 'default', 'large'], 'default'),
   },
@@ -60,7 +60,7 @@ export const shadHeroConfig = shadConfig({
   },
   styles: {
     accentColor: colorStyle('Accent color'),
-    backgroundColor: colorStyle('Panel background (overrides the background style)'),
+    backgroundColor: colorStyle('Panel background color (replaces the Background choice)'),
     titleColor: colorStyle('Title color'),
     textColor: colorStyle('Subtitle and meta color'),
     borderRadius: sizeStyle('Panel radius'),
