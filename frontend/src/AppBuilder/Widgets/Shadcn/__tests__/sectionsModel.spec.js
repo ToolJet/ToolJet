@@ -402,3 +402,33 @@ describe('progressItems', () => {
     expect(progressItems([{ a: 1 }], null)).toHaveLength(1);
   });
 });
+
+describe('summaryFigures auto: a money word beside a count or a change is not money', () => {
+  // The money words matched alone: "Sales calls 42" showed $42, "Paid users 120" $120, "Revenue growth 12.4" $12.40.
+  const shown = (label, value) => summaryFigures([{ label, value }], { valueFormat: 'auto', currency: 'USD' })[0].value;
+  it.each([
+    ['Sales calls', 42, '42'],
+    ['Paid users', 120, '120'],
+    ['Invoices sent', 18, '18'],
+    ['Open invoices', 7, '7'],
+    ['Revenue growth', 12.4, '12.4'],
+    ['Profit margin', 18, '18'],
+    ['Cost per hire change', 3, '3'],
+    ['Budget days left', 9, '9'],
+    ['Paid orders', 31, '31'],
+  ])('%s %s reads %s', (label, value, expected) => {
+    expect(shown(label, value)).toBe(expected);
+  });
+  it.each([
+    ['Revenue', 48210, '$48,210'],
+    ['Total spend', 1250, '$1,250'],
+    ['Cost per hire', 4200, '$4,200'],
+    ['Invoice total', 980.5, '$980.50'],
+    ['Amount paid', 300, '$300'],
+    ['Outstanding balance', 75, '$75'],
+    ['Average order', 37.5, '$37.50'],
+    ['MRR', 9100, '$9,100'],
+  ])('%s %s reads %s', (label, value, expected) => {
+    expect(shown(label, value)).toBe(expected);
+  });
+});
