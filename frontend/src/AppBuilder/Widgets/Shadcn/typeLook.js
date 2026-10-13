@@ -57,3 +57,13 @@ const CLASSES = [
 /** The shadcn.scss classes for the typeface styles the author set (in a stable order). */
 export const typeClasses = (styles = {}) =>
   CLASSES.filter(([key, , resolve]) => resolve(styles?.[key]) !== '').map(([, name]) => name);
+
+/** How many whole lines of text fit in a box of `height` px at `lineHeight` px a line (at least one), or null when
+ *  either is unknown. A fixed-height heading clamps to this many lines: a long recipe name in a 44px sheet title
+ *  wrapped onto a second line that covered the description under it (2026-10-12). */
+export const clampLines = (height, lineHeight) => {
+  const h = Number(height);
+  const lh = Number(lineHeight);
+  if (!Number.isFinite(h) || !Number.isFinite(lh) || lh <= 0 || h <= 0) return null;
+  return Math.max(1, Math.floor((h + 2) / lh));
+};

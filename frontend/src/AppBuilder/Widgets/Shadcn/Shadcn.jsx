@@ -45,7 +45,7 @@ import { toDate, ymd } from './actionsModel';
 import { dateProblem, dateRules, parseDateTime, toDayjsFormat } from './inputsModel';
 import { sliderBounds, sliderValues } from './sliderModel';
 import { lookVars, whenSet } from './shadcnLook';
-import { fontStack, textCase, typeClasses } from './typeLook';
+import { clampLines, fontStack, textCase, typeClasses } from './typeLook';
 import { useSizedBox } from './boxFit';
 import { GROUP_LOADING } from './looks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
@@ -439,21 +439,37 @@ const useTextActions = (props) => {
 
 export const ShadHeading = (props) => {
   const ref = useRef(null);
+  const tagRef = useRef(null);
   useAutoHeight(props, ref);
   const { properties, handlers, clickable } = useTextActions(props);
   const level = HEADING[properties.level] ? properties.level : 'h2';
   const Tag = level;
+  // A heading of fixed height shows the whole lines that fit and ends in an ellipsis (the full text on hover): a long
+  // bound title wrapped past its box and covered whatever sat under it. One that grows with its content is not clamped.
+  const fixed = !fitsContentInView(props.componentType, properties);
+  const [lines, setLines] = useState(null);
+  const text = String(properties.text ?? '');
+  useLayoutEffect(() => {
+    if (!fixed || !tagRef.current) return setLines(null);
+    const lineHeight = parseFloat(window.getComputedStyle(tagRef.current).lineHeight);
+    setLines(clampLines(props.height, lineHeight));
+  }, [fixed, props.height, level, text, props.styles?.fontSize?.value]);
+  const clamped = lines
+    ? { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: lines, overflow: 'hidden' }
+    : {};
   return (
     <Shell {...props} innerRef={ref}>
       <Tag
         {...handlers}
+        ref={tagRef}
+        title={lines ? text : undefined}
         className={cn(
           HEADING[level],
           'text-[color:var(--lk-fg,var(--sc-foreground))]',
           typeClasses(props.styles),
           clickable && 'cursor-pointer'
         )}
-        style={{ textAlign: textAlign(props.styles) }}
+        style={{ textAlign: textAlign(props.styles), ...clamped }}
       >
         {String(properties.text ?? '')}
       </Tag>
