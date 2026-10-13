@@ -41,6 +41,11 @@ export class ConfigService implements IConfigService {
       'MAP_TILE_URL',
       'MAP_TILE_URL_DARK',
       'MAP_TILE_ATTRIBUTION',
+      // Its satellite tiles and its geocoder (address search, a picked spot's address), for the same installs.
+      'MAP_SATELLITE_TILE_URL',
+      'MAP_SATELLITE_ATTRIBUTION',
+      'MAP_GEOCODER_URL',
+      'MAP_REVERSE_GEOCODER_URL',
       'APM_VENDOR',
       'SENTRY_DNS',
       'SENTRY_DEBUG',

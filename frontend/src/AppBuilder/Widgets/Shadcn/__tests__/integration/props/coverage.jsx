@@ -705,6 +705,118 @@ export const PROBES = [
     context: { properties: { fitToMarkers: '{{false}}' } },
   },
   { widget: 'ShadMap', key: 'defaultZoom', value: '{{9}}', context: { properties: { fitToMarkers: '{{false}}' } } },
+  { widget: 'ShadMap', key: 'statusColors', value: fx({ Delivered: '#e11d48' }) },
+  // Routes through the markers (the shape list describes each line: its points and where it starts), and from rows.
+  ...[
+    ['routeField', 'driver'],
+    ['routeOrderField', 'customer'],
+    ['routeStart', fx({ lat: 37.79, lng: -122.4 })],
+  ].map(([key, value]) => ({ widget: 'ShadMap', key, value, context: { properties: { connectMarkers: '{{true}}' } } })),
+  {
+    widget: 'ShadMap',
+    key: 'routes',
+    value: fx([
+      {
+        name: 'Van 1',
+        path: [
+          [37.79, -122.39],
+          [37.76, -122.42],
+        ],
+      },
+    ]),
+  },
+  {
+    widget: 'ShadMap',
+    key: 'routeColors',
+    value: fx({ 'Van 1': '#e11d48' }),
+    context: {
+      properties: {
+        routes: fx([
+          {
+            name: 'Van 1',
+            path: [
+              [37.79, -122.39],
+              [37.76, -122.42],
+            ],
+          },
+        ]),
+      },
+    },
+  },
+  // Areas: an outline, or a circle from lat, lng and a radius, named and toned by the fields given.
+  {
+    widget: 'ShadMap',
+    key: 'areas',
+    value: fx([
+      {
+        name: 'North',
+        status: 'Busy',
+        outline: [
+          [37.8, -122.47],
+          [37.81, -122.4],
+          [37.78, -122.4],
+        ],
+      },
+    ]),
+  },
+  ...[
+    [
+      'areaShapeField',
+      'zone',
+      {
+        name: 'North',
+        zone: [
+          [37.8, -122.47],
+          [37.81, -122.4],
+          [37.78, -122.4],
+        ],
+      },
+    ],
+    [
+      'areaTitleField',
+      'label',
+      {
+        name: 'North',
+        label: 'Northern zone',
+        outline: [
+          [37.8, -122.47],
+          [37.81, -122.4],
+          [37.78, -122.4],
+        ],
+      },
+    ],
+    [
+      'areaStatusField',
+      'state',
+      {
+        name: 'North',
+        state: 'Overloaded',
+        outline: [
+          [37.8, -122.47],
+          [37.81, -122.4],
+          [37.78, -122.4],
+        ],
+      },
+    ],
+    ['areaRadiusField', 'r', { name: 'Depot zone', lat: 37.78, lng: -122.42, r: 800 }],
+  ].map(([key, value, row]) => ({ widget: 'ShadMap', key, value, context: { properties: { areas: fx([row]) } } })),
+  // Heat: the layer's weight and radius.
+  ...[
+    ['heatField', 'lat'],
+    ['heatRadius', '{{60}}'],
+  ].map(([key, value]) => ({ widget: 'ShadMap', key, value, context: { properties: { display: 'heat' } } })),
+  {
+    widget: 'ShadMap',
+    key: 'defaultPickedLocation',
+    value: fx({ lat: 37.79, lng: -122.41 }),
+    context: { properties: { pickLocation: '{{true}}' } },
+  },
+  {
+    widget: 'ShadMap',
+    key: 'searchPlaceholder',
+    value: 'Find a stop',
+    context: { properties: { showSearch: '{{true}}' } },
+  },
   // RenderWidget's tooltip, on hover, for every widget that has one: its text, and its format (HTML renders tags).
   // (The dialog shows it on its trigger button.)
   ...NAMES.filter((n) => CONFIGS[n].properties?.tooltip).flatMap((widget) => {
@@ -730,6 +842,8 @@ export const BROWSER = {
   ShadScatterChart: ['nameField'],
   // RenderWidget collapses the box of a hidden widget in the canvas layout, outside the widget.
   ShadDialog: ['collapseWhenHidden'],
+  // Used only by a search or an address lookup over the network (checked against Photon and Nominatim, 2026-10-13).
+  ShadMap: ['geocoderUrl', 'reverseGeocoderUrl'],
 };
 
 // Proved by a dedicated spec: the loading look (fuzz/loading.spec), dynamic height (dynamicHeight.spec), chart

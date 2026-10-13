@@ -7,6 +7,7 @@ export const LOOKS = {
     ['backgroundColor', '--lk-bg'],
     ['borderColor', '--lk-border'],
     ['accentColor', '--lk-accent'],
+    ['clusterColor', '--lk-cluster'],
     ['borderRadius', '--lk-radius', px],
   ],
 };

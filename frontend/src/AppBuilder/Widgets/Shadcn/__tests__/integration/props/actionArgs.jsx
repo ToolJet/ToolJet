@@ -168,6 +168,12 @@ export const ACTION_ARGS = {
     fitBounds: { args: [], before: [['action', 'setZoom', 3]] },
     selectMarker: { args: ['S-104'] },
     clearSelection: { args: [], before: [['action', 'selectMarker', 'S-104']] },
+    setPickedLocation: { args: [37.79, -122.41], context: { pickLocation: '{{true}}' } },
+    clearPickedLocation: {
+      args: [],
+      context: { pickLocation: '{{true}}', defaultPickedLocation: '{{({ lat: 37.79, lng: -122.41 })}}' },
+    },
+    setMapStyle: { args: ['satellite'] },
   },
   ShadChat: {
     appendHistory: { args: [{ message: 'A new reply', type: 'response' }] },

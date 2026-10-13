@@ -3,7 +3,7 @@ export const shadMapConfig = {
   name: 'ShadMap',
   displayName: 'Map',
   description:
-    "Map with markers from rows, on open map tiles (no API key): delivery stops, stores, sites, field assets, incidents. data: rows read through latField and lngField (numbers or numeric text; rows without valid coordinates, or at exactly 0, 0, are skipped and counted in a footnote), titleField, subtitleField (a second line: the address), statusField (the pin's colour, toned by its words: Delivered green, Delayed or Pending amber, Failed red, Open, Scheduled or In transit blue; or a tone name success | warning | danger | info) and idField. A click on a marker selects it (selectedMarker: its row, selectedMarkerId), opens a popup with the title, status and popupFields (a comma list of field specs as the Record list's metaFields: 'driver', 'eta:ETA {}', 'total|currency', 'due|date:Due {}'; showPopup off for none) and fires onMarkerClick; a click on the map clears it, exposes clickedLocation { lat, lng } and fires onMapClick. clusterMarkers groups nearby markers into counts (on by default; keeps thousands of rows smooth; a click on a count zooms in). fitToMarkers (on by default) opens the map on all markers and refits when data changes; off, it opens on defaultCenter ({ lat, lng }, [lat, lng] or 'lat, lng') at defaultZoom (1 to 18; 12 is a city, 15 a street). Exposes center { lat, lng }, zoom and bounds { northEast, southWest } after every move; onBoundsChange fires when the user pans or zooms. Actions: setCenter(lat, lng, zoom), setZoom(zoom), fitBounds() (back to all markers), selectMarker(id) (opens its popup and brings it into view), clearSelection(). Tiles follow the app theme (light or dark basemap); tileUrl ({z}/{x}/{y} template) and tileAttribution override them for one widget. Height: fixed (the map fills it); give it 320 to 640px, the full height of a page column beside a list",
+    "Map with markers from rows, on open map tiles (no API key): delivery stops and routes, field jobs and service zones, stores, sites, listings, incidents. data: rows read through latField and lngField (numbers or numeric text; rows without valid coordinates, or at exactly 0, 0, are skipped and counted in a footnote), titleField, subtitleField (a second line: the address), statusField and idField. Pins are coloured by status: by its words (Delivered or Done green, Delayed or Pending amber, Failed or Overdue red, Open, Scheduled or In transit blue; or a tone name success | warning | danger | info), or by statusColors ({ 'Under offer': '#d97706', Open: 'warning' }); showLegend (on) lists the colours with counts. labelField puts a short value in the pin (a stop number) or, longer, a price pill ('€450k'); iconField puts a lucide icon in the pin ('snowflake', 'droplets', 'zap'). Routes: connectMarkers draws a line through the markers in routeOrderField order, one per routeField value (a driver, a van), from routeStart (a depot { lat, lng }) when given; routes (a second dataset) draws lines from rows { name, path: [[lat, lng], ...] or a GeoJSON LineString, color or status }; routeColors names each line's colour. Areas (zones, territories, geofences): areas rows with an outline (areaShapeField: [[lat, lng], ...], a GeoJSON Polygon or its JSON text) or a circle (lat, lng and areaRadiusField in metres), titled by areaTitleField and filled by areaStatusField's tone (or the row's color). A click on a marker selects it (selectedMarker: its row, selectedMarkerId), opens a popup with the title, status and popupFields (a comma list of field specs as the Record list's metaFields: 'driver', 'eta:ETA {}', 'total|currency'; showPopup off for none) and fires onMarkerClick; a click on a line or area exposes selectedShape (its row) and selectedShapeType ('route' | 'area') and fires onShapeClick; a click on the map clears the selection, exposes clickedLocation { lat, lng } and fires onMapClick. pickLocation lets the user click (or drag a pin) to choose a spot: pickedLocation { lat, lng, address } and onLocationPick (defaultPickedLocation starts it); showSearch adds an address search box (OpenStreetMap Nominatim by default, rate-limited; geocoderUrl and reverseGeocoderUrl, with {query} or {lat} and {lng}, point it at another geocoder). display 'heat' (or 'both') draws density instead of pins, weighted by heatField. clusterMarkers groups crowded pins into counts (on by default; keeps thousands of rows smooth). fitToMarkers (on by default) opens on everything drawn and refits when data changes; off, the map opens on defaultCenter ({ lat, lng }, [lat, lng] or 'lat, lng') at defaultZoom (1 to 18; 12 is a city, 15 a street). scrollWheelZoom is off by default (the page scrolls past the map; Ctrl or Cmd with the wheel zooms); showFullscreen adds a fullscreen button; mapStyle 'satellite' shows imagery and showStyleSwitch a Map | Satellite toggle. Exposes center, zoom and bounds after every move; onBoundsChange fires when the user pans or zooms. Actions: setCenter(lat, lng, zoom), setZoom, fitBounds, selectMarker(id), clearSelection, setPickedLocation(lat, lng), clearPickedLocation, setMapStyle('streets' | 'satellite'). Height: fixed (the map fills it); give it 320 to 640px",
   component: 'ShadMap',
   defaultSize: {
     width: 20,
@@ -81,6 +81,17 @@ export const shadMapConfig = {
         defaultValue: 'status',
       },
     },
+    statusColors: {
+      type: 'code',
+      displayName: 'Status colours ({ Open: "#2563eb" } or tone names)',
+      validation: {
+        schema: {
+          type: 'object',
+        },
+        defaultValue: {},
+      },
+      placeholder: "{ 'Under offer': '#d97706', Reserved: 'neutral' }",
+    },
     idField: {
       type: 'code',
       displayName: 'Id field',
@@ -89,6 +100,26 @@ export const shadMapConfig = {
           type: 'string',
         },
         defaultValue: 'id',
+      },
+    },
+    labelField: {
+      type: 'code',
+      displayName: 'Pin label field (a stop number, a price)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    iconField: {
+      type: 'code',
+      displayName: 'Pin icon field (a lucide icon name)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
       },
     },
     popupFields: {
@@ -111,6 +142,16 @@ export const shadMapConfig = {
         defaultValue: true,
       },
     },
+    showLegend: {
+      type: 'toggle',
+      displayName: 'Show a legend of the colours',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
     clusterMarkers: {
       type: 'toggle',
       displayName: 'Group nearby markers',
@@ -121,9 +162,250 @@ export const shadMapConfig = {
         defaultValue: true,
       },
     },
+    connectMarkers: {
+      type: 'toggle',
+      displayName: 'Connect the markers as routes',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    routeField: {
+      type: 'code',
+      displayName: 'Route field (one line per value)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    routeOrderField: {
+      type: 'code',
+      displayName: 'Route order field',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    routeStart: {
+      type: 'code',
+      displayName: 'Routes start at ({ lat, lng })',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'array',
+            },
+            {
+              type: 'object',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+      placeholder: '{{ { lat: 41.8868, lng: -87.6517 } }}',
+    },
+    routes: {
+      type: 'code',
+      displayName: 'Route lines (rows with a path)',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "[{ name: 'Van 1', path: [[41.88, -87.65], [41.92, -87.64]] }]",
+    },
+    routeColors: {
+      type: 'code',
+      displayName: 'Route colours ({ "Van 1": "#4f46e5" })',
+      validation: {
+        schema: {
+          type: 'object',
+        },
+        defaultValue: {},
+      },
+    },
+    areas: {
+      type: 'code',
+      displayName: 'Areas (zones, territories, geofences)',
+      validation: {
+        schema: {
+          type: 'array',
+        },
+        defaultValue: [],
+      },
+      placeholder: "[{ name: 'North', status: 'Busy', outline: [[30.33, -97.8], [30.45, -97.8], [30.45, -97.62]] }]",
+    },
+    areaShapeField: {
+      type: 'code',
+      displayName: 'Area outline field',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'outline',
+      },
+    },
+    areaTitleField: {
+      type: 'code',
+      displayName: 'Area title field',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'name',
+      },
+    },
+    areaStatusField: {
+      type: 'code',
+      displayName: 'Area status field (fill colour)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'status',
+      },
+    },
+    areaRadiusField: {
+      type: 'code',
+      displayName: 'Area radius field (metres, with lat and lng)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'radius',
+      },
+    },
+    display: {
+      type: 'switch',
+      displayName: 'Show',
+      options: [
+        {
+          displayName: 'Pins',
+          value: 'markers',
+        },
+        {
+          displayName: 'Heat',
+          value: 'heat',
+        },
+        {
+          displayName: 'Both',
+          value: 'both',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'markers',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    heatField: {
+      type: 'code',
+      displayName: 'Heat weight field (empty: each row counts once)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    heatRadius: {
+      type: 'code',
+      displayName: 'Heat radius (px)',
+      validation: {
+        schema: {
+          type: 'number',
+        },
+        defaultValue: 28,
+      },
+    },
+    pickLocation: {
+      type: 'toggle',
+      displayName: 'Let the user pick a location',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    defaultPickedLocation: {
+      type: 'code',
+      displayName: 'Picked location to start with ({ lat, lng })',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'array',
+            },
+            {
+              type: 'object',
+            },
+          ],
+        },
+        defaultValue: '',
+      },
+    },
+    showSearch: {
+      type: 'toggle',
+      displayName: 'Show an address search box',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    searchPlaceholder: {
+      type: 'code',
+      displayName: 'Search placeholder',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'Search for an address',
+      },
+    },
+    geocoderUrl: {
+      type: 'code',
+      displayName: 'Geocoder URL ({query}; empty for OpenStreetMap Nominatim)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
+    reverseGeocoderUrl: {
+      type: 'code',
+      displayName: 'Reverse geocoder URL ({lat}, {lng})',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: '',
+      },
+    },
     fitToMarkers: {
       type: 'toggle',
-      displayName: 'Fit the view to the markers',
+      displayName: 'Fit the view to what is drawn',
       validation: {
         schema: {
           type: 'boolean',
@@ -161,6 +443,58 @@ export const shadMapConfig = {
           type: 'number',
         },
         defaultValue: 12,
+      },
+    },
+    mapStyle: {
+      type: 'switch',
+      displayName: 'Map style',
+      options: [
+        {
+          displayName: 'Streets',
+          value: 'streets',
+        },
+        {
+          displayName: 'Satellite',
+          value: 'satellite',
+        },
+      ],
+      validation: {
+        schema: {
+          type: 'string',
+        },
+        defaultValue: 'streets',
+      },
+      isFxNotRequired: true,
+      fullWidth: true,
+    },
+    showStyleSwitch: {
+      type: 'toggle',
+      displayName: 'Show a Map | Satellite switch',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
+    showFullscreen: {
+      type: 'toggle',
+      displayName: 'Show a fullscreen button',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: true,
+      },
+    },
+    scrollWheelZoom: {
+      type: 'toggle',
+      displayName: 'Zoom with the mouse wheel',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
       },
     },
     emptyText: {
@@ -283,6 +617,12 @@ export const shadMapConfig = {
     onMapClick: {
       displayName: 'On map click',
     },
+    onShapeClick: {
+      displayName: 'On route or area click',
+    },
+    onLocationPick: {
+      displayName: 'On location pick',
+    },
     onBoundsChange: {
       displayName: 'On bounds change',
     },
@@ -327,7 +667,16 @@ export const shadMapConfig = {
     },
     accentColor: {
       type: 'colorSwatches',
-      displayName: 'Accent (pins without a status, groups, the selection)',
+      displayName: 'Accent (pins without a status, the selection)',
+      validation: {
+        schema: {
+          type: 'string',
+        },
+      },
+    },
+    clusterColor: {
+      type: 'colorSwatches',
+      displayName: 'Group count color',
       validation: {
         schema: {
           type: 'string',
@@ -358,7 +707,11 @@ export const shadMapConfig = {
     isDisabled: false,
     selectedMarker: {},
     selectedMarkerId: null,
+    selectedShape: {},
+    selectedShapeType: null,
     clickedLocation: {},
+    pickedLocation: {},
+    mapStyle: 'streets',
     center: {},
     zoom: 12,
     bounds: {},
@@ -414,6 +767,37 @@ export const shadMapConfig = {
     {
       handle: 'clearSelection',
       displayName: 'Clear selection',
+    },
+    {
+      handle: 'setPickedLocation',
+      displayName: 'Set picked location',
+      params: [
+        {
+          handle: 'lat',
+          displayName: 'Latitude',
+          defaultValue: '{{37.7749}}',
+        },
+        {
+          handle: 'lng',
+          displayName: 'Longitude',
+          defaultValue: '{{-122.4194}}',
+        },
+      ],
+    },
+    {
+      handle: 'clearPickedLocation',
+      displayName: 'Clear picked location',
+    },
+    {
+      handle: 'setMapStyle',
+      displayName: 'Set map style',
+      params: [
+        {
+          handle: 'style',
+          displayName: 'Style (streets or satellite)',
+          defaultValue: 'satellite',
+        },
+      ],
     },
     {
       handle: 'setVisibility',
@@ -481,8 +865,17 @@ export const shadMapConfig = {
       statusField: {
         value: 'status',
       },
+      statusColors: {
+        value: '{{{}}}',
+      },
       idField: {
         value: 'id',
+      },
+      labelField: {
+        value: '',
+      },
+      iconField: {
+        value: '',
       },
       popupFields: {
         value: 'eta:ETA {}, driver',
@@ -490,8 +883,71 @@ export const shadMapConfig = {
       showPopup: {
         value: '{{true}}',
       },
+      showLegend: {
+        value: '{{true}}',
+      },
       clusterMarkers: {
         value: '{{true}}',
+      },
+      connectMarkers: {
+        value: '{{false}}',
+      },
+      routeField: {
+        value: '',
+      },
+      routeOrderField: {
+        value: '',
+      },
+      routeStart: {
+        value: '',
+      },
+      routes: {
+        value: '{{[]}}',
+      },
+      routeColors: {
+        value: '{{{}}}',
+      },
+      areas: {
+        value: '{{[]}}',
+      },
+      areaShapeField: {
+        value: 'outline',
+      },
+      areaTitleField: {
+        value: 'name',
+      },
+      areaStatusField: {
+        value: 'status',
+      },
+      areaRadiusField: {
+        value: 'radius',
+      },
+      display: {
+        value: 'markers',
+      },
+      heatField: {
+        value: '',
+      },
+      heatRadius: {
+        value: '{{28}}',
+      },
+      pickLocation: {
+        value: '{{false}}',
+      },
+      defaultPickedLocation: {
+        value: '',
+      },
+      showSearch: {
+        value: '{{false}}',
+      },
+      searchPlaceholder: {
+        value: 'Search for an address',
+      },
+      geocoderUrl: {
+        value: '',
+      },
+      reverseGeocoderUrl: {
+        value: '',
       },
       fitToMarkers: {
         value: '{{true}}',
@@ -501,6 +957,18 @@ export const shadMapConfig = {
       },
       defaultZoom: {
         value: '{{12}}',
+      },
+      mapStyle: {
+        value: 'streets',
+      },
+      showStyleSwitch: {
+        value: '{{false}}',
+      },
+      showFullscreen: {
+        value: '{{true}}',
+      },
+      scrollWheelZoom: {
+        value: '{{false}}',
       },
       emptyText: {
         value: 'No locations to show',
