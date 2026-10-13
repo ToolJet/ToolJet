@@ -48,6 +48,7 @@ const SHADCN_SECTIONS = [
     items: [
       SHADCN_TABLE,
       'ShadKanban',
+      'ShadMap',
       SHADCN_GOOGLE_MAP,
       'ShadStat',
       'ShadBadge',

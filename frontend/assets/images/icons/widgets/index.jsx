@@ -140,6 +140,7 @@ const SHADCN_ICONS = {
   shadsummarystrip: Statistics,
   shadchat: Chat,
   shadquestionnaire: Form,
+  shadmap: Map,
   shadpiechart: PieChartIcon,
   shadprogress: Progressbar,
   shadradiogroup: RadioButton,

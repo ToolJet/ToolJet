@@ -37,6 +37,8 @@ const esmPackages = [
   'dnd-core', // react-dnd's ESM dep
   '@react-dnd', // scoped helpers: @react-dnd/invariant, @react-dnd/shallowequal, @react-dnd/asap
   'react-dnd-html5-backend',
+  'supercluster', // the ToolJet UI 2.0 Map's marker groups (Widgets/Shadcn/ShadMap.jsx)
+  'kdbush', // supercluster's ESM dep
 ];
 
 module.exports = {

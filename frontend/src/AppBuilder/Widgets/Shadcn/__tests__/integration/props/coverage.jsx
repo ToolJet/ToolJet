@@ -650,6 +650,32 @@ export const PROBES = [
     value: '#e11d48',
     context: { styles: { iconVisibility: '{{true}}' } },
   },
+  // Map: the popup shows on a marker click; grouping shows zoomed out; the default view shows when the map does not fit
+  // the markers (at rest it fits them, and the sample's fitted zoom is the default zoom).
+  ...[
+    ['popupFields', 'address'],
+    ['showPopup', '{{false}}'],
+  ].map(([key, value]) => ({
+    widget: 'ShadMap',
+    key,
+    value,
+    context: { properties: { clusterMarkers: '{{false}}' } },
+    steps: [['click', '[data-marker]', 0]],
+  })),
+  {
+    widget: 'ShadMap',
+    key: 'clusterMarkers',
+    value: '{{false}}',
+    context: { properties: { fitToMarkers: '{{false}}', defaultZoom: '{{9}}' } },
+  },
+  { widget: 'ShadMap', key: 'fitToMarkers', value: '{{false}}', context: { properties: { defaultZoom: '{{9}}' } } },
+  {
+    widget: 'ShadMap',
+    key: 'defaultCenter',
+    value: fx({ lat: 51.5074, lng: -0.1278 }),
+    context: { properties: { fitToMarkers: '{{false}}' } },
+  },
+  { widget: 'ShadMap', key: 'defaultZoom', value: '{{9}}', context: { properties: { fitToMarkers: '{{false}}' } } },
   // RenderWidget's tooltip, on hover, for every widget that has one: its text, and its format (HTML renders tags).
   // (The dialog shows it on its trigger button.)
   ...NAMES.filter((n) => CONFIGS[n].properties?.tooltip).flatMap((widget) => {

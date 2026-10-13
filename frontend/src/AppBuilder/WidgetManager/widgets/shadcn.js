@@ -59,6 +59,7 @@ import { shadTextareaConfig } from './shadTextarea';
 import { shadToggleGroupConfig } from './shadToggleGroup';
 import { shadListViewConfig } from './shadListView';
 import { shadTabsConfig } from './shadTabs';
+import { shadMapConfig } from './shadMap';
 import { shadDialogConfig } from './shadDialog';
 import { shadColorPickerConfig } from './shadColorPicker';
 import { shadComboboxConfig } from './shadCombobox';
@@ -133,6 +134,7 @@ export const shadcnConfigs = [
   shadToggleGroupConfig,
   shadListViewConfig,
   shadTabsConfig,
+  shadMapConfig,
   shadDialogConfig,
   shadColorPickerConfig,
   shadComboboxConfig,

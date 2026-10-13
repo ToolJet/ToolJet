@@ -1,0 +1,15 @@
+// ToolJet UI 2.0 pack: style variables and loading look of the Map (see shadcnLook.js and Shell's LOADING_LOOK).
+// Style keys match WidgetManager/shadcnSource.map.js; ShadMap.jsx and the .sc-map rules in shadcn.scss read them.
+import { px } from '../kanbanLook';
+
+export const LOOKS = {
+  ShadMap: [
+    ['backgroundColor', '--lk-bg'],
+    ['borderColor', '--lk-border'],
+    ['accentColor', '--lk-accent'],
+    ['borderRadius', '--lk-radius', px],
+  ],
+};
+
+// The map stays in place under a spinner while it loads (ShadMap.jsx).
+export const LOADING = { ShadMap: 'own' };
