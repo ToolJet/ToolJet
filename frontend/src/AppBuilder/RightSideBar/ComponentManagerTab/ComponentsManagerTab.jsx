@@ -15,13 +15,24 @@ import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 
 // Presets (component packs): a palette entry that adds a native widget with some styles set. The shadcn/ui Table is
 // ToolJet's own Table in its shadcn look, so it keeps every Table feature and convention (the older ShadTable widget
-// stays registered for apps that use it, but leaves the palette).
+// stays registered for apps that use it, but leaves the palette). The Google Map is the native Map in the pack's frame
+// (it needs a Google Maps API key; the pack's own Map does not), named apart from it in the palette.
 const SHADCN_TABLE = 'Table:shadcn';
-const PRESETS = { [SHADCN_TABLE]: { base: 'Table', stylePreset: { tableLook: 'shadcn' } } };
+const SHADCN_GOOGLE_MAP = 'Map:shadcn';
+const PRESETS = {
+  [SHADCN_TABLE]: { base: 'Table', stylePreset: { tableLook: 'shadcn' } },
+  [SHADCN_GOOGLE_MAP]: { base: 'Map', stylePreset: { mapLook: 'shadcn' }, displayName: 'Google Map' },
+};
 const presetDefinition = (name) => {
   const preset = PRESETS[name];
   const base = preset && componentTypeDefinitionMap[preset.base];
-  return base ? { ...base, stylePreset: preset.stylePreset } : undefined;
+  return base
+    ? {
+        ...base,
+        stylePreset: preset.stylePreset,
+        ...(preset.displayName ? { displayName: preset.displayName, presetLabel: preset.displayName } : {}),
+      }
+    : undefined;
 };
 
 const SHADCN_SECTIONS = [
@@ -37,6 +48,7 @@ const SHADCN_SECTIONS = [
     items: [
       SHADCN_TABLE,
       'ShadKanban',
+      SHADCN_GOOGLE_MAP,
       'ShadStat',
       'ShadBadge',
       'ShadAvatar',
@@ -122,7 +134,7 @@ const COMPONENT_LIBRARIES = [
     label: 'ToolJet UI 2.0',
     badge: 'Beta',
     sections: SHADCN_SECTIONS,
-    components: [...SHADCN_COMPONENTS.filter((name) => name !== 'ShadTable'), SHADCN_TABLE],
+    components: [...SHADCN_COMPONENTS.filter((name) => name !== 'ShadTable'), SHADCN_TABLE, SHADCN_GOOGLE_MAP],
   },
 ];
 // Pack widgets never appear in the ToolJet list. The Ant Design pack is parked: still registered, so apps that use it
@@ -191,11 +203,12 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const [libraryKey, setLibraryKey] = useState('tooljet');
   const library = COMPONENT_LIBRARIES.find((entry) => entry.value === libraryKey) ?? COMPONENT_LIBRARIES[0];
 
-  // The widgets of the selected library: a pack's own widgets (and FlexContainer), or every native widget.
+  // The widgets of the selected library: a pack's own widgets (and FlexContainer), or every native widget. A preset
+  // belongs to the pack that lists it, so a search in ToolJet UI 1.0 does not offer the pack's Table or Google Map.
   const inLibrary = useCallback(
     (name) => {
       const names = libraryComponentNames(library);
-      return names ? names.has(name) : !PACK_COMPONENTS.has(name);
+      return names ? names.has(name) : !PACK_COMPONENTS.has(name) && !PRESETS[name];
     },
     [library]
   );
