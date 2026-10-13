@@ -65,6 +65,8 @@ export const normalizeItems = (items) => {
       choices: type === 'text' ? [] : choices,
       other: type === 'text' ? null : other,
       placeholder: text(raw.placeholder),
+      // A text answer is a box of several lines unless multiline is false (a name, an email, a number: one line).
+      multiline: type === 'text' ? raw.multiline !== false && raw.multiline !== 'false' : false,
     });
   }
   return out;

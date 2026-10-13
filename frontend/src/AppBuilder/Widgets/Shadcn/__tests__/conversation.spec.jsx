@@ -366,6 +366,24 @@ describe('ShadQuestionnaire', () => {
     expect(screen.getByText('Question 1 of 3')).toBeTruthy();
   });
 
+  it('draws a one-line box for a text question with multiline false', () => {
+    mountQ({ items: [{ name: 'full_name', prompt: 'Your name?', type: 'text', multiline: false, required: true }] });
+    const box = screen.getByRole('textbox');
+    expect(box.tagName).toBe('INPUT');
+    fireEvent.change(box, { target: { value: 'Ada Lovelace' } });
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect(document.querySelector('[data-complete]')).not.toBeNull();
+  });
+
+  it('borders a picked answer in the accent by class (the pack reset beats an inline border colour)', () => {
+    mountQ();
+    const finance = screen.getByRole('radio', { name: /Finance/ });
+    expect(finance.style.borderColor).toBe('');
+    expect(finance.className).toContain('border-[color:var(--lk-border,var(--sc-border))]');
+    fireEvent.click(finance);
+    expect(finance.className).toContain('border-[color:var(--lk-accent,var(--sc-primary))]');
+  });
+
   it('starts over when its items change', () => {
     const q = mountQ();
     fireEvent.click(screen.getByRole('radio', { name: /Finance/ }));
