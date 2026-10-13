@@ -563,11 +563,14 @@ export const ShadCardGrid = (props) => {
                 'group flex min-w-0 overflow-hidden text-left outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))]',
                 row ? 'flex-row' : 'flex-col',
                 CARD_STYLE[style],
+                // The pack's border reset beats an inline border colour, so Card border color and the selected card's
+                // accent edge never showed; the colour goes through a variable the border class reads.
+                'border-[color:var(--cg-border)]',
                 (hasClick || p.highlightSelected !== false) && !busy(p) && 'cursor-pointer'
               )}
               style={{
                 borderRadius: 'var(--lk-radius,calc(var(--sc-radius) + 4px))',
-                borderColor: isSelected ? ACCENT : 'var(--lk-border,var(--sc-border))',
+                '--cg-border': isSelected ? ACCENT : 'var(--lk-border,var(--sc-border))',
                 boxShadow: isSelected ? `0 0 0 2px ${ACCENT}` : undefined,
                 background: style === 'flat' ? 'var(--lk-bg,var(--sc-muted))' : 'var(--lk-bg,var(--sc-card))',
               }}
