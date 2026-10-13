@@ -465,6 +465,7 @@ export const createEventsSlice = (set, get) => ({
           'onComplete',
           'onFinish',
           'onItemClick',
+          'onMapClick',
           'onMonthChange',
           'onSecondaryActionClick',
           'onSelectionChanged',
