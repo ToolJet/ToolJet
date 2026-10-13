@@ -71,7 +71,7 @@ const heroPanel = (background, imageUrl) => {
     case 'gradient':
       return {
         background: `radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, ${ACCENT} 22%, var(--sc-background)) 0%, color-mix(in srgb, ${ACCENT} 6%, var(--sc-background)) 55%, var(--sc-background) 100%)`,
-        border: `1px solid color-mix(in srgb, ${ACCENT} 18%, var(--sc-border))`,
+        '--hero-border': `color-mix(in srgb, ${ACCENT} 18%, var(--sc-border))`,
       };
     case 'dark':
       return {
@@ -92,7 +92,7 @@ const heroPanel = (background, imageUrl) => {
     default:
       return {
         background: `color-mix(in srgb, ${ACCENT} 7%, var(--sc-background))`,
-        border: `1px solid color-mix(in srgb, ${ACCENT} 16%, var(--sc-border))`,
+        '--hero-border': `color-mix(in srgb, ${ACCENT} 16%, var(--sc-border))`,
       };
   }
 };
@@ -112,12 +112,16 @@ export const ShadHero = (props) => {
   const secondary = text(p.secondaryActionLabel);
   const fg = onDark ? '#ffffff' : 'var(--lk-title,var(--sc-foreground))';
   const muted = onDark ? 'rgba(255,255,255,0.78)' : 'var(--lk-fg,var(--sc-muted-foreground))';
-  const panel = background === 'plain' ? '' : size.pad;
   const style = {
     ...heroPanel(background, p.imageUrl),
     borderRadius: background === 'plain' ? undefined : 'var(--lk-radius,calc(var(--sc-radius) + 6px))',
   };
   if (props.styles?.backgroundColor) style.background = 'var(--lk-bg)';
+  // The tint and gradient panels' hairline: the pack's border reset beats an inline border, so it never drew.
+  const panel = cn(
+    background !== 'plain' && size.pad,
+    style['--hero-border'] && 'border border-[color:var(--hero-border)]'
+  );
 
   const actions =
     primary || secondary ? (

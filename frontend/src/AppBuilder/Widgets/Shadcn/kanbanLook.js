@@ -36,8 +36,10 @@ export const kanbanLook = (styles = {}) => ({
       ? styles.columnBackgroundColor
       : 'color-mix(in srgb, var(--sc-muted) 60%, transparent)',
     borderRadius: isSet(styles.columnBorderRadius) ? px(styles.columnBorderRadius) : 'calc(var(--sc-radius) + 4px)',
-    ...(isSet(styles.columnBorderColor) ? { border: `1px solid ${styles.columnBorderColor}` } : {}),
+    // The pack's border reset beats an inline border, so the column border drew only through the class (ShadKanban).
+    ...(isSet(styles.columnBorderColor) ? { '--kb-column-border': String(styles.columnBorderColor) } : {}),
   },
+  columnFramed: isSet(styles.columnBorderColor),
   card: {
     background: isSet(styles.cardBackgroundColor) ? styles.cardBackgroundColor : 'var(--sc-card)',
     borderColor: isSet(styles.cardBorderColor) ? styles.cardBorderColor : 'var(--sc-border)',

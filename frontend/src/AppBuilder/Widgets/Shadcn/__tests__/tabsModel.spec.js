@@ -59,7 +59,7 @@ describe('tabsLook', () => {
   it('is the theme with nothing set', () => {
     const look = tabsLook({});
     expect(look.vars).toEqual({});
-    expect(look.container.border).toBe('1px solid var(--sc-border)');
+    expect(look.container.outline).toBe('1px solid var(--sc-border)');
   });
   it('maps colours to variables and draws no border when turned off', () => {
     const look = tabsLook({
@@ -70,7 +70,7 @@ describe('tabsLook', () => {
       tabFontSize: 13,
     });
     expect(look.vars).toMatchObject({ '--sc-primary': '#0f766e', '--tb-text': '#64748b', '--tb-font': '13px' });
-    expect(look.container.border).toBe('none');
+    expect(look.container.outline).toBe('none');
     expect(look.container.borderRadius).toBe('12px');
   });
 });

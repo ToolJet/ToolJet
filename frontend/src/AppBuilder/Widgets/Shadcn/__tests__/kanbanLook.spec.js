@@ -6,7 +6,7 @@ describe('kanbanLook', () => {
     const look = kanbanLook({});
     expect(look.vars).toEqual({});
     expect(look.card.background).toBe('var(--sc-card)');
-    expect(look.column.border).toBeUndefined();
+    expect(look.columnFramed).toBe(false);
   });
 
   it('turns the accent and text colours into variables the board reads', () => {
@@ -36,7 +36,9 @@ describe('kanbanLook', () => {
   });
 
   it('draws a column border only when a column border colour is set', () => {
-    expect(kanbanLook({ columnBorderColor: '#e2e8f0' }).column.border).toBe('1px solid #e2e8f0');
+    const framed = kanbanLook({ columnBorderColor: '#e2e8f0' });
+    expect(framed.columnFramed).toBe(true);
+    expect(framed.column['--kb-column-border']).toBe('#e2e8f0');
   });
 });
 
