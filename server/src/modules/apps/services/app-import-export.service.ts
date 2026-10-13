@@ -692,7 +692,8 @@ export class AppImportExportService {
     isGitApp = false,
     tooljetVersion = '',
     cloning = false,
-    manager?: EntityManager
+    manager?: EntityManager,
+    isTemplateApp = false
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
@@ -744,7 +745,9 @@ export class AppImportExportService {
         externalResourceMappings,
         isNormalizedAppDefinitionSchema,
         currentTooljetVersion,
-        moduleResourceMappings
+        moduleResourceMappings,
+        undefined,
+        isTemplateApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
       await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
@@ -937,7 +940,8 @@ export class AppImportExportService {
     isNormalizedAppDefinitionSchema: boolean,
     tooljetVersion: string | null,
     moduleResourceMappings?: Record<string, unknown>,
-    createNewVersion?: boolean
+    createNewVersion?: boolean,
+    isTemplateApp = false
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -978,7 +982,8 @@ export class AppImportExportService {
       importingAppVersions,
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
-      createNewVersion
+      createNewVersion,
+      isTemplateApp
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -2060,6 +2065,11 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  // EE-only
+  protected async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
+    return globalSettings;
+  }
+
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
     let pageSettings = {};
     if (importedVersion.pageSettings) {
@@ -2245,7 +2255,8 @@ export class AppImportExportService {
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
     isNormalizedAppDefinitionSchema: boolean,
-    createNewVersion?: boolean
+    createNewVersion?: boolean,
+    isTemplateApp = false
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -2286,7 +2297,10 @@ export class AppImportExportService {
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
-        version.globalSettings = appVersion.globalSettings;
+        // Only templates bring their theme into the workspace; every other import keeps the settings as exported
+        version.globalSettings = isTemplateApp
+          ? await this.importTheme(manager, organization.id, appVersion.globalSettings)
+          : appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
@@ -3190,6 +3204,34 @@ export function migrateProperties(
 
     // Steps
     if (componentType === 'Steps') {
+      // These keys moved from styles to properties/styles (see StepsV2Migration data migration
+      // for the equivalent one-off DB fixup). Apps exported before that change still carry the
+      // old keys, so relocate on import too.
+      if (styles.theme !== undefined) {
+        if (properties.variant === undefined) {
+          properties.variant = styles.theme;
+        }
+        delete styles.theme;
+      }
+      if (styles.color !== undefined) {
+        if (styles.completedAccent === undefined) {
+          styles.completedAccent = styles.color;
+        }
+        delete styles.color;
+      }
+      if (styles.textColor !== undefined) {
+        if (styles.completedLabel === undefined) {
+          styles.completedLabel = styles.textColor;
+        }
+        if (styles.incompletedLabel === undefined) {
+          styles.incompletedLabel = styles.textColor;
+        }
+        if (styles.currentStepLabel === undefined) {
+          styles.currentStepLabel = styles.textColor;
+        }
+        delete styles.textColor;
+      }
+
       if (!properties.advanced) {
         properties.advanced = { value: '{{true}}' };
       }
@@ -3228,6 +3270,19 @@ export function migrateProperties(
       if (properties.numberFormat == undefined) {
         properties.numberFormat = { value: 'us' };
       }
+      if (properties.value !== undefined && (properties.value?.value === '' || properties.value?.value === null)) {
+        properties.value = { ...properties.value, value: '0' };
+      }
+    }
+
+    if (['PhoneInput', 'CurrencyInput'].includes(componentType) && properties.dateFormat !== undefined) {
+      if (properties.dateFormat?.fxActive !== undefined) {
+        properties.defaultCountry = {
+          ...properties.defaultCountry,
+          fxActive: properties.defaultCountry?.fxActive ?? properties.dateFormat.fxActive,
+        };
+      }
+      delete properties.dateFormat;
     }
 
     // TreeSelect
@@ -3376,6 +3431,20 @@ export function migrateProperties(
 
   if (componentType === 'ModuleViewer' && styles.padding === undefined) {
     styles.padding = { value: 'default' };
+  }
+
+  // Navigation: these keys moved from properties to styles (see server/data-migrations/
+  // 1783372800000-MoveNavigationLayoutStylesToStyles.ts for the equivalent one-off DB fixup).
+  // Apps exported before that change still carry them under properties, so relocate on import too.
+  if (['Navigation'].includes(componentType)) {
+    for (const key of ['orientation', 'displayStyle', 'navItemSize', 'horizontalAlignment', 'verticalAlignment']) {
+      if (properties[key] !== undefined) {
+        if (styles[key] === undefined) {
+          styles[key] = properties[key];
+        }
+        delete properties[key];
+      }
+    }
   }
 
   return { properties, styles, general, generalStyles, validation };
