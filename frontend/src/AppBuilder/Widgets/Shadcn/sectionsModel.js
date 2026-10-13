@@ -263,8 +263,17 @@ const deltaOf = (delta, format, currency) => {
 const MONEY_LABEL =
   /\b(revenue|spend|spent|cost|costs|amount|sales|budget|price|paid|income|profit|invoices?|balance|fees?|payouts?|takings|earnings|mrr|arr|ltv|aov|left to spend|refunds? (?:issued|total|value)|average (?:order|ticket|invoice|basket|sale|spend)|avg\.? (?:order|ticket|invoice|basket|sale|spend))\b/i;
 const NOT_MONEY_LABEL = /\b(rate|count|number of|percent|share|ratio)\b|%/i;
+// A money word beside a count or a change is not money ("Sales calls", "Paid users", "Invoices sent", "Revenue growth",
+// "Budget days left"), unless the label also names a sum ("Invoices total", "Orders value").
+const COUNT_OR_CHANGE_LABEL =
+  /\b(calls|users|customers|clients|accounts|people|members|seats|units|items|orders|invoices|sent|issued|emails|tickets|leads|deals|visits|sessions|days|hours|minutes|weeks|months|growth|margin|change|increase|decrease|trend|uplift)\b/i;
+const SUM_LABEL = /\b(total|totals|value|amount|sum|balance)\b/i;
 const autoFigureFormat = (label, value) =>
-  isText(label) && MONEY_LABEL.test(label) && !NOT_MONEY_LABEL.test(label) && Number.isFinite(Number(value))
+  isText(label) &&
+  MONEY_LABEL.test(label) &&
+  !NOT_MONEY_LABEL.test(label) &&
+  (!COUNT_OR_CHANGE_LABEL.test(label) || SUM_LABEL.test(label)) &&
+  Number.isFinite(Number(value))
     ? 'currency'
     : 'auto';
 
