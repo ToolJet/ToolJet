@@ -44,7 +44,7 @@ describe("Table", { testIsolation: false }, () => {
     // (modifyCanvasSize leaves it open), then resize the table so it renders at a
     // visible size. The shared `cy.resizeWidget` `[class="bottom-right"]` handle
     // matched 2 els (commands.js:375 — forbidden to edit) -> spec-local
-    // resizeTableWidget (moveable EAST handle).
+    // resizeTableWidget (east resize grip).
     cy.dragAndDropWidget("Table", 250, 100);
     cy.hideTooltip();
     cy.modifyCanvasSize(900, 800);
@@ -62,7 +62,7 @@ describe("Table", { testIsolation: false }, () => {
 
   it("Should verify the table components and labels", () => {
     const name = tableText.defaultWidgetName;
-    // Deselect the table so its moveable overlay stops covering the widget/search.
+    // Deselect the table so its selection frame stops covering the widget/search.
     cy.forceClickOnCanvas();
     // The widget mounts two `draggable-widget-table1` nodes; the inner one is
     // position:fixed and reports "covered" to Cypress. Existence proves it mounted;
@@ -99,7 +99,7 @@ describe("Table", { testIsolation: false }, () => {
     );
 
     // ---- default column headers (id/name/email present) ----
-    // The header text div is `text-truncate` + sits under the moveable overlay, so a
+    // The header text div is `text-truncate` + sits under the selection frame, so a
     // strict `be.visible` is flaky; assert the rendered header text instead (the cell
     // assertions below confirm the columns actually render).
     cy.get(tableSelector.columnHeader("id")).should("have.text", "id");

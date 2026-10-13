@@ -3,7 +3,7 @@ import { shallow } from 'zustand/shallow';
 import cx from 'classnames';
 import { TriangleAlert } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
-import { computeAutoMobileLayout } from './Grid/gridUtils';
+import { computeAutoMobileLayout } from './mobileAutoLayout';
 import { CANVAS_WIDTHS } from './appCanvasConstants';
 import ManageMobileVisibilityDialog from './PageMenu/ManageMobileVisibilityDialog';
 import './MobileAutoLayoutToolbar.scss';

@@ -4,7 +4,6 @@ import { componentTypes } from '../WidgetManager';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
-import { getMouseDistanceFromParentDiv } from './Grid/gridUtils';
 import {
   CANVAS_WIDTHS,
   NO_OF_GRIDS,
@@ -65,7 +64,6 @@ export const addNewWidgetToTheEditor = (
     useStore.getState().getCurrentPageComponents(),
     moduleInfo?.moduleName
   );
-  const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
 
   // Custom tab (LibraryComponent host widget): stamp WHICH library component this
@@ -90,23 +88,15 @@ export const addNewWidgetToTheEditor = (
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
-  const { e, frozenTargetRect } = useGridStore.getState().getGhostDragPosition();
+  const ghostDragPosition = useGridStore.getState().getGhostDragPosition() ?? {};
   const subContainerWidth = canvasBoundingRect?.width;
-
-  const { left: _left, top: _top } = getMouseDistanceFromParentDiv(
-    e,
-    parentId === 'canvas' ? 'real-canvas' : parentId,
-    parentCanvasType,
-    frozenTargetRect
-  );
-  const scrollTop = realCanvasRef?.scrollTop;
   const subContainerWidths = useGridStore.getState().subContainerWidths;
   const targetCanvasId = parentId && parentId !== 'canvas' ? parentId : 'canvas';
   const fallbackGridWidth = subContainerWidth ? subContainerWidth / NO_OF_GRIDS : subContainerWidths.canvas || 1;
   const gridWidth = subContainerWidths[targetCanvasId] || fallbackGridWidth;
-  let [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
 
-  left = Math.round(left / gridWidth);
+  // Where the canvas engine showed the drop: already on the target canvas's grid, in its units.
+  let { left = 0, top = 0 } = ghostDragPosition.landing ?? {};
 
   // Adjust widget width based on the dropping canvas width
   const mainCanvasGridWidth = subContainerWidths.canvas || gridWidth;

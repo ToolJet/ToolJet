@@ -157,8 +157,20 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
   cy.forceClickOnCanvas();
 });
 
+// The canvas engine (frontend/src/AppBuilder/AppCanvas/interaction/engine.js) follows pointer events, not mouse
+// events: one pointer (id 1), pressed with the primary button until released.
+const pointerAt = (x, y, pressed = true) => ({
+  pointerId: 1,
+  isPrimary: true,
+  pointerType: "mouse",
+  button: 0,
+  buttons: pressed ? 1 : 0,
+  force: true,
+  ...(x === undefined ? {} : { clientX: x, clientY: y, pageX: x, pageY: y, screenX: x, screenY: y }),
+});
+
 /**
- * @tjCmd   canvas · resize a placed widget by dragging its moveable handle to an absolute canvas point
+ * @tjCmd   canvas · resize a placed widget by dragging its resize grip to an absolute canvas point
  * @tjUsage cy.resizeWidget('button1', 650, 600)              // SE corner → width + height
  *          cy.resizeWidget('button1', 650, 600, false)       // skip the autosave wait
  *          cy.resizeWidget('table1', 650, 600, true, true)   // dynamic-height widget → east handle, width only
@@ -166,48 +178,27 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
 Cypress.Commands.add(
   "resizeWidget",
   (widgetName, x, y, autosaveStatusCheck = true, dynamicHeight = false) => {
-    // Selecting the widget (click, not just hover) renders the moveable overlay
-    // whose control handles drive resize. A standard widget exposes all 8
-    // handles (nw/n/ne/w/e/sw/s/se); the SE corner resizes BOTH width and
-    // height. The legacy `[class="bottom-right"]` SE handle NO LONGER EXISTS —
-    // it was replaced by react-moveable's `.moveable-control.moveable-se`.
-    // `moveable-dynamic-height` widgets (e.g. Table) auto-fit height and render
-    // only e/w, so pass dynamicHeight=true to drag the east handle (width only).
-    // Selectors + drag mechanics verified via DOM probe (119x40 → 237x120 SE).
+    // Selecting the widget renders its frame with resize grips
+    // `[data-tj-handle="<n|s|e|w|nw|ne|sw|se>"]`; the SE corner resizes width and height. For a widget whose
+    // height follows its content (e.g. Table), pass dynamicHeight=true to drag the east grip (width only).
     cy.get(commonWidgetSelector.draggableWidget(widgetName))
       .first()
       .click({ force: true });
     cy.wait(500);
 
     const direction = dynamicHeight ? "e" : "se";
-    cy.get(
-      `.moveable-control.moveable-direction.moveable-${direction}[data-direction="${direction}"]`
-    )
-      .should("have.length.gte", 1)
-      .then(($handles) => {
-        cy.wrap($handles.last()).trigger("mousedown", {
-          which: 1,
-          force: true,
-        });
-      });
-    // #real-canvas is overlaid by #main-editor-canvas, so the mousemove must be
-    // forced past the actionability "covered by another element" check. x/y are
-    // the absolute canvas coordinates the handle is dragged to (moveable follows
-    // the pointer) — same coordinate contract as cy.moveComponent. Use the
-    // unique `#real-canvas` id, not `[data-cy=real-canvas]` (reused by every
-    // SubContainer → first match can be a sidebar/preview surface).
+    cy.get(commonWidgetSelector.draggableWidget(widgetName))
+      .first()
+      .closest(".moveable-box")
+      .find(`[data-tj-handle="${direction}"]`)
+      .first()
+      .trigger("pointerdown", pointerAt());
+    // x/y are the absolute canvas coordinates the grip is dragged to — same coordinate contract as
+    // cy.moveComponent. `#real-canvas` is the unique page canvas (`[data-cy=real-canvas]` is on every canvas);
+    // it is overlaid by #main-editor-canvas, hence `force`.
     cy.get("#real-canvas")
-      .trigger("mousemove", {
-        which: 1,
-        force: true,
-        clientX: x,
-        clientY: y,
-        pageX: x,
-        pageY: y,
-        screenX: x,
-        screenY: y,
-      })
-      .trigger("mouseup", { force: true });
+      .trigger("pointermove", pointerAt(x, y))
+      .trigger("pointerup", pointerAt(x, y, false));
     if (autosaveStatusCheck) {
       cy.waitForAutoSave();
     }
@@ -229,30 +220,13 @@ Cypress.Commands.add(
  */
 Cypress.Commands.add("moveComponent", (componentName, x, y) => {
   cy.get(`[data-cy="draggable-widget-${componentName}"]`, { log: false })
-    .trigger("mouseover", {
-      force: true,
-      log: false,
-    })
-    .trigger("mousedown", {
-      which: 1,
-      force: true,
-      log: false,
-    });
+    .trigger("mouseover", { force: true, log: false })
+    .trigger("pointerdown", { ...pointerAt(), log: false });
+  // The canvas is overlaid by #main-editor-canvas, so an un-forced event fails the actionability
+  // "covered by another element" check (pointerAt forces).
   cy.get(commonSelectors.canvas, { log: false })
-    .trigger("mousemove", {
-      which: 1,
-      // #real-canvas is overlaid by #main-editor-canvas, so an un-forced
-      // mousemove fails the actionability "covered by another element" check.
-      force: true,
-      clientX: x,
-      clientY: y,
-      pageX: x,
-      pageY: y,
-      screenX: x,
-      screenY: y,
-      log: false,
-    })
-    .trigger("mouseup", { force: true, log: false });
+    .trigger("pointermove", { ...pointerAt(x, y), log: false })
+    .trigger("pointerup", { ...pointerAt(x, y, false), log: false });
 
   const log = Cypress.log({
     name: "moveComponent",

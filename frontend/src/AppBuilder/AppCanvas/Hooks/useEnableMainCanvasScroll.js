@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react';
 
+// How long the scrollbar stays visible after the last scroll event.
+export const SCROLLBAR_HIDE_DELAY_MS = 600;
+
 // It is used to show the scrollbar of the main canvas only when the user is scrolling
 // Uses direct DOM manipulation to avoid React re-renders which cause icon flickering
 export default function useEnableMainCanvasScroll({ canvasContentRef, enabled = true }) {
@@ -21,7 +24,7 @@ export default function useEnableMainCanvasScroll({ canvasContentRef, enabled = 
       scrollTimeoutRef.current = setTimeout(() => {
         // Add scrollbar-hidden class to hide scrollbar
         element.classList.add('scrollbar-hidden');
-      }, 600);
+      }, SCROLLBAR_HIDE_DELAY_MS);
     };
 
     // Initially hide the scrollbar

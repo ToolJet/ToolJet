@@ -23,7 +23,7 @@ describe('Toggle Switch — properties facet', { testIsolation: false }, () => {
     // The widget tooltip is a Radix popover, and [data-cy="widget-tooltip"] lives on
     // TooltipContent (WidgetTooltip.jsx:71) — mounted ONLY while it is open.
     // Hovering it in the EDITOR is non-deterministic: the widget stays selected and
-    // react-moveable's `.moveable-control-box` (gridUtils.js:696) overlays the trigger,
+    // its selection frame and resize grips (interaction/ComponentFrame.jsx) sit over the trigger,
     // so pointerenter often never reaches it. Five editor-mode attempts produced three
     // different outcomes (never mounts / mounts with 2 body nodes / never mounts).
     // PREVIEW has no selection, no control box and no inspector, so the hover lands
