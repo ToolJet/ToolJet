@@ -148,7 +148,7 @@ describe('Workflow Start input validation', () => {
     expect(query).not.toHaveBeenCalled();
   });
 
-  it.each(['manual', 'schedule', 'app'] as const)(
+  it.each(['manual', 'app'] as const)(
     'merges legacy defaults for %s, ignoring webhook requirements',
     async (trigger) => {
       const { service, execution, completed } = fixture(
@@ -163,9 +163,27 @@ describe('Workflow Start input validation', () => {
     }
   );
 
+  it('passes only the trigger params to a legacy schedule, without Test JSON or webhook requirements', async () => {
+    const { service, execution, completed } = fixture(
+      { defaultParams: '{"region":"US","limit":10}', webhookParams: [{ key: 'missing', dataType: 'string' }] },
+      'schedule'
+    );
+    await service.execute(execution, { params: { region: 'EU' } });
+    expect(completed.mock.calls[0][2]).toEqual({ startTrigger: { params: { region: 'EU' } } });
+  });
+
+  it('passes the raw body to an async legacy webhook without checking its parameters', async () => {
+    const { service, execution, completed } = fixture(
+      { defaultParams: '{"limit":10}', webhookParams: [{ key: 'region', dataType: 'string' }] },
+      'webhook'
+    );
+    await service.execute(execution, { params: { anything: 1 } });
+    expect(completed.mock.calls[0][2]).toEqual({ startTrigger: { params: { anything: 1 } } });
+  });
+
   it('retains legacy required webhook parameters at Start', async () => {
     const { service, execution } = fixture({ webhookParams: [{ key: 'region', dataType: 'string' }] }, 'webhook');
-    await expect(service.execute(execution, { throwOnError: true })).rejects.toMatchObject({
+    await expect(service.execute(execution, { throwOnError: true, executeUsing: 'webhook' })).rejects.toMatchObject({
       message: 'Parameter "region" is required',
       node_failed: 'startTrigger',
     });
@@ -183,13 +201,13 @@ describe('Workflow Start input validation', () => {
     expect(completed.mock.calls[0][2]).toEqual({ startTrigger: { params: expected } });
   });
 
-  it('keeps explicit empty workflowInputs distinct from legacy inputs', async () => {
+  it('treats an explicit empty workflowInputs list like a legacy workflow', async () => {
     const { service, execution, completed } = fixture({ workflowInputs: [], defaultParams: '{"limit":10}' });
     await service.execute(execution, { params: { region: 'EU' } });
-    expect(completed.mock.calls[0][2]).toEqual({ startTrigger: { params: {} } });
+    expect(completed.mock.calls[0][2]).toEqual({ startTrigger: { params: { limit: 10, region: 'EU' } } });
   });
 
-  it('uses typed defaults without parsing obsolete legacy defaults', async () => {
+  it('ignores invalid legacy Test JSON once workflow inputs are declared', async () => {
     const { service, execution, completed } = fixture({
       workflowInputs: [{ key: 'region', type: 'string', required: true, defaultValue: 'US' }],
       defaultParams: '{invalid legacy JSON',
