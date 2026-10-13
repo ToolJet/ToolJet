@@ -1,9 +1,211 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Cloudflare D1 datasource",
   "description": "A schema defining Cloudflare D1 datasource",
   "type": "database",
-  "defaults": {},
-  "properties": {}
+  "defaults": {
+    "operation": "query"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "name": "Run SQL Query",
+          "value": "query"
+        },
+        {
+          "name": "Run Raw SQL Query",
+          "value": "raw_query"
+        },
+        {
+          "name": "List Databases",
+          "value": "list_databases"
+        },
+        {
+          "name": "Get Database",
+          "value": "get_database"
+        },
+        {
+          "name": "Create Database",
+          "value": "create_database"
+        },
+        {
+          "name": "Delete Database",
+          "value": "delete_database"
+        }
+      ]
+    },
+    "query": {
+      "database_id": {
+        "label": "Database ID",
+        "key": "database_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the UUID of the Cloudflare D1 database",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      },
+      "sql": {
+        "label": "SQL Query",
+        "key": "sql",
+        "type": "codehinter",
+        "mode": "sql",
+        "description": "Enter SQL query with ? parameter placeholders",
+        "placeholder": "SELECT * FROM users WHERE status = ? LIMIT 10",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "params": {
+        "label": "Parameters",
+        "key": "params",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter parameter bindings as an array (e.g. ['active'])",
+        "placeholder": "['active']",
+        "height": "80px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "raw_query": {
+      "database_id": {
+        "label": "Database ID",
+        "key": "database_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the UUID of the Cloudflare D1 database",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      },
+      "sql": {
+        "label": "Raw SQL Query",
+        "key": "sql",
+        "type": "codehinter",
+        "mode": "sql",
+        "description": "Enter raw SQL statement(s)",
+        "placeholder": "SELECT * FROM users;",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "params": {
+        "label": "Parameters",
+        "key": "params",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter parameter bindings as an array (optional)",
+        "placeholder": "[]",
+        "height": "80px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "list_databases": {
+      "name": {
+        "label": "Database Name Filter",
+        "key": "name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Filter databases by name (optional)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "e.g. my-db"
+      },
+      "page": {
+        "label": "Page",
+        "key": "page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Page number of paginated results (optional, default: 1)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "1"
+      },
+      "per_page": {
+        "label": "Per Page",
+        "key": "per_page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Number of databases per page (optional, default: 20)",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "20"
+      }
+    },
+    "get_database": {
+      "database_id": {
+        "label": "Database ID",
+        "key": "database_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the UUID of the Cloudflare D1 database",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      }
+    },
+    "create_database": {
+      "name": {
+        "label": "Database Name",
+        "key": "name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter a name for the new D1 database",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "e.g. my_new_database"
+      },
+      "primary_location_hint": {
+        "label": "Primary Location Hint",
+        "key": "primary_location_hint",
+        "type": "dropdown",
+        "description": "Specify the geographic region for the primary database (optional)",
+        "list": [
+          {
+            "name": "Automatic (closest to user)",
+            "value": ""
+          },
+          {
+            "name": "Western North America (wnam)",
+            "value": "wnam"
+          },
+          {
+            "name": "Eastern North America (enam)",
+            "value": "enam"
+          },
+          {
+            "name": "Western Europe (weur)",
+            "value": "weur"
+          },
+          {
+            "name": "Eastern Europe (eeur)",
+            "value": "eeur"
+          },
+          {
+            "name": "Asia-Pacific (apac)",
+            "value": "apac"
+          },
+          {
+            "name": "Oceania (oc)",
+            "value": "oc"
+          }
+        ]
+      }
+    },
+    "delete_database": {
+      "database_id": {
+        "label": "Database ID",
+        "key": "database_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the UUID of the Cloudflare D1 database to delete",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      }
+    }
+  }
 }
