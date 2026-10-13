@@ -4,6 +4,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { SqlParams } from '@modules/apps/dashboard/sql-params';
 import {
   appActions,
+  canMoveApp,
   folderActions,
   folderVisibilityPredicate,
   likePattern,
@@ -223,6 +224,59 @@ describe('dashboard actions', () => {
   describe('likePattern', () => {
     it('should escape LIKE metacharacters', () => {
       expect(likePattern('50%_a\\b')).toBe('%50\\%\\_a\\\\b%');
+    });
+  });
+
+  describe('canMoveApp', () => {
+    const folder = { id: 'f1', type: APP_TYPES.FRONT_END, ownerId: 'u' };
+    const mine = { type: APP_TYPES.FRONT_END, ownerId: 'u' };
+    const theirs = { type: APP_TYPES.FRONT_END, ownerId: 'other' };
+    const folderBucket = (over: Record<string, unknown> = {}) => ({
+      editableFoldersId: [],
+      isAllEditable: false,
+      viewableFoldersId: [],
+      isAllViewable: false,
+      editAppsInFoldersId: [],
+      isAllEditApps: false,
+      ...over,
+    });
+
+    it('should block a type mismatch for everyone, admins included', () => {
+      expect(canMoveApp(perms({ isAdmin: true }), 'u', folder, { ...mine, type: APP_TYPES.MODULE })).toBe(false);
+    });
+
+    it('should allow admins any app', () => {
+      expect(canMoveApp(perms({ isAdmin: true }), 'u', folder, theirs)).toBe(true);
+    });
+
+    it('should allow any app into a folder the user can edit, through the folder bucket', () => {
+      expect(canMoveApp(perms({ [MODULES.FOLDER]: folderBucket({ isAllEditable: true }) }), 'u', folder, theirs)).toBe(
+        true
+      );
+      expect(
+        canMoveApp(perms({ [MODULES.FOLDER]: folderBucket({ editableFoldersId: ['f1'] }) }), 'u', folder, theirs)
+      ).toBe(true);
+      expect(
+        canMoveApp(perms({ [MODULES.FOLDER]: folderBucket({ editableFoldersId: ['f2'] }) }), 'u', folder, theirs)
+      ).toBe(false);
+    });
+
+    it('should fall back to folderCreate only when there is no folder bucket', () => {
+      expect(canMoveApp(perms({ folderCreate: true }), 'u', folder, theirs)).toBe(true);
+      expect(
+        canMoveApp(
+          perms({ folderCreate: true, [MODULES.FOLDER]: folderBucket() }),
+          'u',
+          { ...folder, ownerId: 'x' },
+          theirs
+        )
+      ).toBe(false);
+    });
+
+    it('should allow a folder owner only the apps they also own', () => {
+      expect(canMoveApp(perms(), 'u', folder, mine)).toBe(true);
+      expect(canMoveApp(perms(), 'u', folder, theirs)).toBe(false);
+      expect(canMoveApp(perms(), 'u', { ...folder, ownerId: 'x' }, mine)).toBe(false);
     });
   });
 });

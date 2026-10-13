@@ -143,3 +143,22 @@ export function folderVisibilityPredicate(access: FolderAccess, alias: string, p
 export function likePattern(search: string): string {
   return `%${search.replace(/[\\%_]/g, '\\$&')}%`;
 }
+
+export interface MoveFolder {
+  id: string;
+  type: APP_TYPES;
+  ownerId: string | null;
+}
+export interface MoveApp {
+  type: APP_TYPES;
+  ownerId: string;
+}
+
+// v1 parity: folder-apps/ability/index.ts defineAbilityFor + folder-apps/ability/guard.ts owner/type flags.
+export function canMoveApp(p: UserPermissions, userId: string, folder: MoveFolder, app: MoveApp): boolean {
+  if (app.type !== folder.type) return false;
+  if (isAdmin(p)) return true;
+  const f = folderPermissionsFor(p, folder.type);
+  if (f ? f.isAllEditable || f.editableFoldersId.includes(folder.id) : p.folderCreate) return true;
+  return folder.ownerId === userId && app.ownerId === userId;
+}

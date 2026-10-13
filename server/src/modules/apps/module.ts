@@ -34,6 +34,8 @@ import { DashboardAppsController } from './dashboard/dashboard.controller';
 import { DashboardService } from './dashboard/dashboard.service';
 import { PinsController } from './dashboard/pins.controller';
 import { PinsService } from './dashboard/pins.service';
+import { DashboardBulkMoveController } from './dashboard/bulk-move.controller';
+import { BulkMoveService } from './dashboard/bulk-move.service';
 import { DataSource } from 'typeorm';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 @Module({})
@@ -69,6 +71,7 @@ export class AppsModule extends SubModule {
       'subscribers/apps.subscriber',
     ]);
     const { GitSyncConfigsUtilService } = await this.getProviders(configs, 'git-sync-configs', ['util.service']);
+    const { FolderAppsUtilService } = await this.getProviders(configs, 'folder-apps', ['util.service']);
 
     return this.cacheModule(cacheKey, {
       module: AppsModule,
@@ -86,7 +89,9 @@ export class AppsModule extends SubModule {
         await UsersModule.register(configs),
         await GitSyncConfigsModule.register(configs),
       ],
-      controllers: isMainImport ? [AppsController, WorkflowController, DashboardAppsController, PinsController] : [],
+      controllers: isMainImport
+        ? [AppsController, WorkflowController, DashboardAppsController, PinsController, DashboardBulkMoveController]
+        : [],
       providers: [
         AppsService,
         WorkflowService,
@@ -116,6 +121,12 @@ export class AppsModule extends SubModule {
           inject: [DataSource, AbilityService, AppsUtilService, GitSyncConfigsUtilService],
         },
         PinsService,
+        {
+          provide: BulkMoveService,
+          useFactory: (dataSource, dashboardService, folderAppsUtilService) =>
+            new BulkMoveService(dataSource, dashboardService, folderAppsUtilService),
+          inject: [DataSource, DashboardService, FolderAppsUtilService],
+        },
         ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DashboardActivityInterceptor }] : []),
       ],
       exports: [AppsUtilService, AppImportExportService],
