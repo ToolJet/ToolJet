@@ -19,6 +19,6 @@
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
     "jira.js": "^4.0.1",
-    "react": "^17.0.2"
+    "react": "^19.3.0"
   }
 }
