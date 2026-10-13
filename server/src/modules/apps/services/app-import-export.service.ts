@@ -1,4 +1,10 @@
 import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  componentLibraryFor,
+  definitionComponentTypes,
+  isComponentLibrary,
+  versionComponentTypes,
+} from '@helpers/component_library.helper';
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -972,7 +978,9 @@ export class AppImportExportService {
       importingAppVersions,
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
-      createNewVersion
+      createNewVersion,
+      importingPages,
+      importingComponents
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -2243,7 +2251,9 @@ export class AppImportExportService {
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
     isNormalizedAppDefinitionSchema: boolean,
-    createNewVersion?: boolean
+    createNewVersion?: boolean,
+    importingPages: Array<{ id?: string; appVersionId?: string }> = [],
+    importingComponents: Array<{ pageId?: string; type?: string }> = []
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -2265,9 +2275,12 @@ export class AppImportExportService {
       }
 
       let version;
+      // An existing app's own library outlives an import into it.
+      let targetLibrary: unknown;
       // this case only happens in the AI flow when app is imported within an existing app
       if (importedApp.editingVersion && !createNewVersion) {
         version = importedApp.editingVersion;
+        targetLibrary = version.globalSettings?.componentLibrary;
       } else {
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
@@ -2306,6 +2319,19 @@ export class AppImportExportService {
           version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
         }
       }
+
+      // Saved at creation: the source's library, or the one its widgets imply when it has none.
+      version.globalSettings = {
+        ...(version.globalSettings ?? {}),
+        componentLibrary: isComponentLibrary(targetLibrary)
+          ? targetLibrary
+          : componentLibraryFor(
+              version.globalSettings,
+              isNormalizedAppDefinitionSchema
+                ? versionComponentTypes(appVersion.id, importingPages, importingComponents)
+                : definitionComponentTypes(appVersion.definition)
+            ),
+      };
 
       await manager.save(version);
 
