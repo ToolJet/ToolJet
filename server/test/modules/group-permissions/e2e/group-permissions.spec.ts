@@ -7,6 +7,8 @@ import {
   createApplication,
   createFolder,
   createGroupPermission,
+  createUserGroupPermissions,
+  getEntityRepository,
   grantModulePermission,
   login,
   findEntityOrFail,
@@ -19,6 +21,9 @@ import { GroupFolders } from 'src/entities/group_folders.entity';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 import { FoldersGroupPermissions } from 'src/entities/folders_group_permissions.entity';
 import { APP_TYPES } from '@modules/apps/constants';
+import { Organization } from 'src/entities/organization.entity';
+import { GroupPermissionsUtilService } from '@modules/group-permissions/util.service';
+import { ERROR_HANDLER } from '@modules/group-permissions/constants/error';
 
 /**
  * V2 Group Permissions API | e2e tests.
@@ -1122,5 +1127,81 @@ describe('GroupPermissionsControllerV2', () => {
       });
       expect(deletedGroupFolders).toHaveLength(0);
     });
+  });
+
+  // -------------------------------------------------------------------------
+  // PAT permissions (patCreate / patRevoke)
+  // -------------------------------------------------------------------------
+
+  describe('PAT permission flags', () => {
+    it('should seed default groups with admin both, builder create only, end-user neither', async () => {
+      const orgRepo = getEntityRepository(Organization);
+      const org = await orgRepo.save(orgRepo.create({ name: 'pat-defaults-org', slug: 'pat-defaults-org' } as any));
+
+      await nestApp.get(GroupPermissionsUtilService).createDefaultGroups(org.id);
+
+      const groups = await findEntities(GroupPermissions, {
+        where: { organizationId: org.id, type: 'default' },
+      } as any);
+      const byName = Object.fromEntries(groups.map((g) => [g.name, g]));
+      expect(byName['admin']).toMatchObject({ patCreate: true, patRevoke: true });
+      expect(byName['builder']).toMatchObject({ patCreate: true, patRevoke: false });
+      expect(byName['end-user']).toMatchObject({ patCreate: false, patRevoke: false });
+    });
+
+    it('should persist patCreate on a custom group with no end-user members and return it on read', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'pat-makers');
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: 'pat-makers',
+      } as any);
+
+      const putResponse = await request(nestApp.getHttpServer())
+        .put(`/api/v2/group-permissions/${group.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ patCreate: true });
+      expect(putResponse.statusCode).toBe(200);
+
+      const getResponse = await request(nestApp.getHttpServer())
+        .get(`/api/v2/group-permissions/${group.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie);
+      expect(getResponse.statusCode).toBe(200);
+      expect(getResponse.body.group).toMatchObject({ patCreate: true, patRevoke: false });
+    });
+
+    it.each(['patCreate', 'patRevoke'])(
+      'should reject %s=true on a group with an end-user member unless allowRoleChange is set',
+      async (flag) => {
+        const {
+          organization: { adminUser, defaultUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, `pat-${flag}`);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: `pat-${flag}`,
+        } as any);
+        await createUserGroupPermissions(nestApp, defaultUser as any, [group.name]);
+
+        const response = await request(nestApp.getHttpServer())
+          .put(`/api/v2/group-permissions/${group.id}`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({ [flag]: true });
+
+        expect(response.statusCode).toBe(405);
+        expect(response.body.message).toMatchObject({
+          error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
+          data: [defaultUser.email],
+        });
+        expect(await findEntity(GroupPermissions, { id: group.id } as any)).toMatchObject({ [flag]: false });
+      }
+    );
   });
 });
