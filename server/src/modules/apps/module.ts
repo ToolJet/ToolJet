@@ -32,6 +32,8 @@ import { DashboardActivityService } from './dashboard/activity.service';
 import { DashboardActivityInterceptor } from './dashboard/activity.interceptor';
 import { DashboardAppsController } from './dashboard/dashboard.controller';
 import { DashboardService } from './dashboard/dashboard.service';
+import { PinsController } from './dashboard/pins.controller';
+import { PinsService } from './dashboard/pins.service';
 import { DataSource } from 'typeorm';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 @Module({})
@@ -84,7 +86,7 @@ export class AppsModule extends SubModule {
         await UsersModule.register(configs),
         await GitSyncConfigsModule.register(configs),
       ],
-      controllers: isMainImport ? [AppsController, WorkflowController, DashboardAppsController] : [],
+      controllers: isMainImport ? [AppsController, WorkflowController, DashboardAppsController, PinsController] : [],
       providers: [
         AppsService,
         WorkflowService,
@@ -113,6 +115,7 @@ export class AppsModule extends SubModule {
             new DashboardService(dataSource, abilityService, appsUtilService, gitSyncConfigsUtilService),
           inject: [DataSource, AbilityService, AppsUtilService, GitSyncConfigsUtilService],
         },
+        PinsService,
         ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DashboardActivityInterceptor }] : []),
       ],
       exports: [AppsUtilService, AppImportExportService],

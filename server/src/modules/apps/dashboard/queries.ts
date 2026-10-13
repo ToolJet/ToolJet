@@ -205,3 +205,16 @@ export function searchCountsQuery(s: DashboardScope, search: string): BuiltQuery
     FROM matches`;
   return { sql, params: p.values };
 }
+
+export type PinKind = 'app' | 'folder';
+export type PinIds = Record<PinKind, string[]>;
+
+// App and folder ids never collide (uuids), so one id column serves both kinds.
+export function visibleIdsQuery(s: DashboardScope, ids: PinIds): BuiltQuery {
+  const p = new SqlParams();
+  const sql = `${dashboardCtes(s, p)}
+    SELECT id FROM visible_apps WHERE id = ANY(${p.add(ids.app)}::uuid[])
+    UNION ALL
+    SELECT id FROM visible_folders WHERE id = ANY(${p.add(ids.folder)}::uuid[])`;
+  return { sql, params: p.values };
+}

@@ -16,10 +16,13 @@ import {
   EntryRow,
   folderHeaderQuery,
   folderPageQuery,
+  PinIds,
+  PinKind,
   rootCountsQuery,
   rootPageQuery,
   searchCountsQuery,
   searchPageQuery,
+  visibleIdsQuery,
 } from './queries';
 import { DashboardEntryDto, ListAppsV2QueryDto, ListAppsV2ResponseDto, RefDto } from './dto/list.dto';
 
@@ -74,6 +77,34 @@ export class DashboardService {
       },
     };
     return { scope, permissions };
+  }
+
+  async visibleIds(user: User, type: APP_TYPES, branchId: string, ids: PinIds): Promise<Set<string>> {
+    if (ids.app.length + ids.folder.length === 0) return new Set();
+    const { scope } = await this.resolveScope(user, type, branchId);
+    return new Set((await this.run<{ id: string }>(visibleIdsQuery(scope, ids))).map((row) => row.id));
+  }
+
+  // Pin requests span app types; check each id against its own type's dashboard visibility.
+  async filterVisible(user: User, kind: PinKind, ids: string[], branchId: string): Promise<Set<string>> {
+    if (ids.length === 0) return new Set();
+    const table = kind === 'app' ? 'apps' : 'folders';
+    const typed: { id: string; type: APP_TYPES }[] = await this.dataSource.query(
+      `SELECT id, type FROM ${table} WHERE id = ANY($1::uuid[]) AND organization_id = $2`,
+      [ids, user.organizationId]
+    );
+    const visible = new Set<string>();
+    for (const type of new Set(typed.map((row) => row.type))) {
+      const typeIds = typed.filter((row) => row.type === type).map((row) => row.id);
+      const pinIds: PinIds = { app: [], folder: [] };
+      pinIds[kind] = typeIds;
+      for (const id of await this.visibleIds(user, type, branchId, pinIds)) visible.add(id);
+    }
+    return visible;
+  }
+
+  async resolveBranchId(user: User, branchId?: string): Promise<string> {
+    return branchId ?? (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch.id;
   }
 
   async list(user: User, query: ListAppsV2QueryDto): Promise<ListAppsV2ResponseDto> {
