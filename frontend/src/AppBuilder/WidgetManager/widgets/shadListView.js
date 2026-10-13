@@ -9,6 +9,50 @@ export const shadListViewConfig = {
     width: 30,
     height: 400,
   },
+  defaultChildren: [
+    {
+      componentName: 'ShadText',
+      layout: {
+        top: 6,
+        left: 1,
+        height: 28,
+        width: 30,
+      },
+      properties: ['text', 'tone'],
+      accessorKey: 'name',
+      defaultValue: {
+        tone: 'large',
+      },
+    },
+    {
+      componentName: 'ShadText',
+      layout: {
+        top: 36,
+        left: 1,
+        height: 24,
+        width: 30,
+      },
+      properties: ['text', 'tone'],
+      accessorKey: 'role',
+      defaultValue: {
+        tone: 'muted',
+      },
+    },
+    {
+      componentName: 'ShadButton',
+      layout: {
+        top: 18,
+        left: 34,
+        height: 36,
+        width: 8,
+      },
+      properties: ['text', 'variant'],
+      defaultValue: {
+        text: 'View',
+        variant: 'outline',
+      },
+    },
+  ],
   others: {
     showOnDesktop: {
       type: 'toggle',

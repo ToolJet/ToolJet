@@ -155,6 +155,30 @@ export const shadListViewConfig = shadConfig({
   description:
     'List or grid: one canvas repeated per item of data; parent components to it and bind them to {{listItem.<field>}}. A click selects the item (selectedItem, onRowClicked); optional pagination (client or server side), dividers, hover and selected highlight. Items have a fixed height (rowHeight)',
   defaultSize: { width: 30, height: 400 },
+  // A new list shows its sample rows straight away, as the UI 1.0 List view does: a name over a muted second line
+  // bound to each row, and a small action. Created empty, it drew three blank rows and looked broken.
+  defaultChildren: [
+    {
+      componentName: 'ShadText',
+      layout: { top: 6, left: 1, height: 28, width: 30 },
+      properties: ['text', 'tone'],
+      accessorKey: 'name',
+      defaultValue: { tone: 'large' },
+    },
+    {
+      componentName: 'ShadText',
+      layout: { top: 36, left: 1, height: 24, width: 30 },
+      properties: ['text', 'tone'],
+      accessorKey: 'role',
+      defaultValue: { tone: 'muted' },
+    },
+    {
+      componentName: 'ShadButton',
+      layout: { top: 18, left: 34, height: 36, width: 8 },
+      properties: ['text', 'variant'],
+      defaultValue: { text: 'View', variant: 'outline' },
+    },
+  ],
   withHeight: true,
   properties: {
     data: code('List data', ARRAY, [], { placeholder: "[{ id: 1, name: 'Ada' }]" }),
