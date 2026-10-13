@@ -420,7 +420,8 @@ export default class Bigquery implements QueryService {
 
       const [job] = await client.createQueryJob(jobOptions);
       const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
-      return { status: 'ok', data: rows };
+      const sanitizedRows = Array.isArray(rows) ? JSON.parse(JSON.stringify(rows)) : rows;
+      return { status: 'ok', data: sanitizedRows };
     } catch (error) {
       const errorMessage = error.message || 'An unknown error occurred.';
       const statusCode = error.response?.statusCode || error.code || error.data?.statusCode || error.statusCode;
