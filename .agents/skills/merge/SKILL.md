@@ -12,20 +12,26 @@ User input: $ARGUMENTS
 
 **Usage:**
 ```
-/merge                  # merge lts-3.16 into current branch
+/merge                  # merge the branch's base (open PR base, else main)
 /merge main             # merge main into current branch
 /merge feature/foo      # merge feature/foo into current branch
 ```
 
 Parse the input:
-- If empty: source branch is `lts-3.16` (see Branch policy below)
+- If empty: the source is the branch's base, inferred from context (see Branch policy below)
 - Otherwise: use the entire input as the **source branch** name.
 
 ---
 
 ## Branch policy
 
-ToolJet's default base is `lts-3.16`, not `develop`. That is the default source branch when none is given.
+With no source given, merge the branch's base:
+- the base of its open PR (`gh pr view --json baseRefName`);
+- otherwise, the remote's default branch: `main`, read from `git ls-remote --symref origin HEAD`, because a local `origin/HEAD` goes stale.
+
+If the context points at a release line (e.g. an `lts-*` backport) or is unclear, ask the user.
+
+**Gotcha:** a merge commit runs the pre-commit hook on every incoming file. An untracked file inside a submodule (e.g. a stray lock file in `server/ee`) makes lint-staged fail with "Unstaged changes could not be restored". Move such files aside, commit, then put them back.
 
 ## Shell environment notes
 

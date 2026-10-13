@@ -1,3 +1,4 @@
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import {
   Entity,
   Column,
@@ -136,6 +137,15 @@ export class User extends BaseEntity {
   @Column({ name: 'password_retry_count' })
   passwordRetryCount: number;
 
+  @Column({ name: 'mfa_enabled', default: false })
+  mfaEnabled: boolean;
+
+  @Column({ name: 'mfa_setup_completed_at', type: 'timestamptz', nullable: true })
+  mfaSetupCompletedAt: Date | null;
+
+  @Column({ name: 'ai_build_notifications_enabled', default: true })
+  aiBuildNotificationsEnabled: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
@@ -223,4 +233,8 @@ export class User extends BaseEntity {
   sessionId: string;
   roleGroup: USER_ROLE;
   tjApiSource?: string;
+  // Session provenance, mirrored from the JWT. Session kinds: personal-access-tokens/AGENTS.md.
+  isPATLogin?: boolean;
+  patScope?: PersonalAccessTokenScope;
+  patAppId?: string;
 }

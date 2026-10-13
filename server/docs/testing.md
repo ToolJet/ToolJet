@@ -93,7 +93,7 @@ Addition criteria alone produce accretion, not quality. Two removal signals:
 
 ## Coverage: qualitative, not numeric
 
-No % target. Coverage tooling (`test/jest-coverage.config.ts`) is a regression tripwire, not a scoreboard. Read it as a diff signal on **changed files**: did this PR add a branch with no test touching it? Don't chase a number — use it to spot a specific untested `if`. Exclusions in the config are intentional; uncovered lines in excluded files are not gaps.
+No global % target to chase. Coverage tooling (`test/jest-coverage.config.ts`) is a regression tripwire, not a scoreboard. The `run-ci` gate enforces only the tripwire: overall server line coverage may not drop more than 0.1pt below the base branch, changed executable lines need ≥ 80% coverage (unit + e2e + git-sync suites combined, via diff-cover), and a new file can't be 0% covered (`scripts/coverage-gate.sh`). Read it as a diff signal on **changed files**: did this PR add a branch with no test touching it? Don't chase a number — use it to spot a specific untested `if`. Exclusions in the config are intentional; uncovered lines in excluded files are not gaps.
 
 ## TDD note
 
@@ -110,7 +110,7 @@ Acceptance criteria — or, for a bugfix, the bug report — define WHAT to test
 
 - **Pure branching logic → unit, no DB**: `test/modules/folder-apps/unit/service.spec.ts` — `FolderAppsService.filterFoldersByPermissions` exercised via a subclass that exposes the protected method, collaborators null-injected.
 - **Authorization decision → guard unit, real factory, no HTTP**: `test/modules/group-permissions/unit/feature-ability.spec.ts`.
-- **Gated + workspace-scoped endpoint → e2e only**: `test/modules/folder-apps/e2e/folder-apps.spec.ts` — meaning only exists through HTTP → guard → DB → response; not duplicated at unit level.
+- **Gated + workspace-scoped endpoint → e2e only**: `ee/test/modules/folder-apps/e2e/folder-apps.spec.ts` — meaning only exists through HTTP → guard → DB → response; not duplicated at unit level.
 
 ## Decision checklist (before writing a test)
 
@@ -148,7 +148,7 @@ npm run test:e2e -- --testPathPatterns "session" -t "POST /api/session"
 npm run test:e2e -- --group=platform
 npm run test:e2e -- --group=workflows
 
-# Record HTTP fixtures (Polly.js)
+# Record HTTP fixtures (Polly.js); this spec lives in ee/test/
 npm run test:e2e:record -- --testPathPatterns "workflow-bundles"
 ```
 
@@ -165,9 +165,12 @@ test/
 │   ├── seed.ts       # Factories: createAdmin, createApplication, grantAppPermission
 │   ├── api.ts        # HTTP: login, logout, buildTestSession
 │   ├── utils.ts      # TypeORM: findEntity, saveEntity, getEntityRepository
-│   └── workflows.ts  # Domain: createCompleteWorkflow, buildWorkflowDefinition
+│   ├── workflows.ts  # Domain: createWorkflowDataSource, createWorkflowDataQuery
+│   └── custom-component-libraries.ts  # Domain: createLibrary, createPat
 ├── jest-transaction-setup.ts  # SAVEPOINTs: beforeEach/afterEach/afterAll hooks
 ├── jest-global-setup.ts       # One-time TRUNCATE before all tests
+├── jest-projects.config.ts    # One jest project per tree: test/ is CE, ee/test/ is EE
+├── jest-edition-setup.ts      # Sets TOOLJET_EDITION per project before a spec's imports
 ├── modules/
 │   └── <module>/
 │       ├── e2e/<module>.spec.ts
@@ -175,6 +178,16 @@ test/
 ├── __fixtures__/     # HAR recordings (Polly.js)
 └── __mocks__/        # Module mocks (mariadb)
 ```
+
+The submodule's `ee/test/` mirrors this layout. It adds `test.helper.ts` (the EE barrel), `helpers/setup.ts` (EE `initTestApp()` and plan terms) and `helpers/workflows.ts` (EE-only workflow helpers).
+
+### Where a spec lives
+
+A spec lives where the code it needs lives.
+
+- `test/` is the public tree. It runs as CE and must pass on a clone without the private submodules. CI checks this in the `Test Suite · server (CE, no submodules)` job. A bare `initTestApp()` here boots a CE app.
+- A spec that imports `@ee/`, `@licensing/` or `@instance-settings/`, or only passes against an `ee`/`cloud` app, goes in the submodule's `ee/test/`. That tree uses the same `modules/<module>/{e2e,unit}` layout. `server/scripts/check-ee-leak.sh` runs on pre-push and in CI, and rejects EE imports under `test/`.
+- A spec with both kinds of cases gets split. The CE cases stay in `test/`, and the rest move to a same-named file under `ee/test/`.
 
 ## Test isolation
 
@@ -207,42 +220,51 @@ Per spec file:
 
 ### E2E template
 
+The public spec, in `test/`, runs as CE:
+
 ```typescript
 /** @group platform */
 describe('SessionController', () => {
+  let app: INestApplication;
 
-  describe('EE (plan: enterprise)', () => {
-    let app: INestApplication;
-
-    beforeAll(async () => {
-      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    });
-    afterEach(() => { jest.resetAllMocks(); });
-    afterAll(async () => { await closeTestApp(app); }, 60000);
-
-    describe('POST /api/session | Create session', () => {
-      it('should return 200 with valid credentials', async () => {
-        const admin = await createAdmin(app);
-        const res = await request(app.getHttpServer())
-          .post('/api/session')
-          .send({ email: admin.user.email, password: 'password' });
-        expect(res.status).toBe(200);
-        expect(res.body).toMatchObject({
-          id: expect.any(String),
-          email: admin.user.email,
-          organization_id: expect.any(String),
-        });
-      });
-
-      it('should return 401 with invalid password', async () => { ... });
-    });
+  beforeAll(async () => {
+    ({ app } = await initTestApp());
   });
+  afterEach(() => { jest.resetAllMocks(); });
+  afterAll(async () => { await closeTestApp(app); }, 60000);
 
-  describe('CE', () => {
-    beforeAll(async () => {
-      ({ app } = await initTestApp({ edition: 'ce' }));
+  describe('POST /api/session | Create session', () => {
+    it('should return 200 with valid credentials', async () => {
+      const admin = await createAdmin(app);
+      const res = await request(app.getHttpServer())
+        .post('/api/session')
+        .send({ email: admin.user.email, password: 'password' });
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        id: expect.any(String),
+        email: admin.user.email,
+        organization_id: expect.any(String),
+      });
     });
-    // CE tests verify feature gating: 403s, enterprise-only errors
+
+    it('should return 401 with invalid password', async () => { ... });
+  });
+});
+```
+
+Cases whose outcome differs on EE go in the same-named file under `ee/test/`. That tree uses the EE helper, so `initTestApp()` there defaults to an `ee` app on the enterprise plan:
+
+```typescript
+describe('SessionController', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    ({ app } = await initTestApp());
+  });
+  afterAll(async () => { await closeTestApp(app); }, 60000);
+
+  describe('POST /api/session | Create session', () => {
+    // EE-only behaviour
   });
 });
 ```
@@ -272,31 +294,32 @@ describe('EncryptionService', () => {
 | Level | Convention | Example |
 |-------|-----------|---------|
 | Outermost | PascalCase class | `describe('SessionController')` |
-| Edition | Edition + plan | `describe('EE (plan: enterprise)')` |
+| Plan (only when behavior varies by plan) | `on the` + plan + `plan` | `describe('on the team plan')` |
 | Endpoint | HTTP method + route \| intent | `describe('POST /api/session \| Create session')` |
 | Test case | `should` + action + condition | `it('should return 401 with invalid password')` |
 
-Read top to bottom as a sentence: *SessionController → EE (plan: enterprise) → POST /api/session | Create session → should return 401 with invalid password*
+Read top to bottom as a sentence: *SessionController → on the team plan → POST /api/session | Create session → should return 401 with invalid password*
 
 ## Edition and plan
 
-Same file, separate describe blocks per edition. Each gets its own `beforeAll(initTestApp({ edition, plan }))`.
+The tree picks the edition. Behaviour every edition shares is tested once in `test/` with a bare `initTestApp()`. Behaviour that differs gets a case in each tree: the CE outcome (403, 404, 451) in `test/`, the EE/Cloud outcome in the same-named file under `ee/test/`. Plan variance that needs EE terms is one describe per plan in `ee/test/`.
 
-| Scenario | Sections to write |
-|----------|------------------|
-| Feature exists in all editions | `EE (plan: enterprise)` only — CE/Cloud inherit unless behavior differs |
-| Feature is EE-only | `EE (plan: enterprise)` + `CE` (verify 403 / enterprise-only error) |
-| Feature varies by plan | Separate sections: `EE (plan: enterprise)`, `EE (plan: team)` |
-| Feature is Cloud-only | `Cloud` + `EE` / `CE` (verify feature gating) |
+| Scenario | Where and what |
+|----------|----------------|
+| Feature exists in all editions | One spec in `test/`, bare `initTestApp()` (runs as CE) |
+| Feature is EE-only | The CE outcome in `test/` when CE has a defined response (not a stub that throws); the EE behaviour in the same-named file under `ee/test/` |
+| Feature varies by plan | `ee/test/`, one `on the <plan> plan` describe per plan |
+| Feature is Cloud-only | `ee/test/` with `initTestApp({ edition: 'cloud' })`; the CE gating in `test/` |
 
-Only add CE/Cloud/plan sections when behavior **actually differs**. Don't write empty gating tests for features available everywhere.
+Only add CE/Cloud/plan cases when behavior **actually differs**. Don't write empty gating tests for features available everywhere.
 
 ### CE tests verify feature gating
 
 ```typescript
-describe('CE', () => {
+// test/modules/<module>/e2e/<module>.spec.ts
+describe('AuditLogsController', () => {
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ce' }));
+    ({ app } = await initTestApp());
   });
 
   it('should return enterprise feature error', async () => {
@@ -311,24 +334,28 @@ describe('CE', () => {
 ### Plan variance — separate describe per plan
 
 ```typescript
-describe('EE (plan: enterprise)', () => {
+// ee/test/modules/<module>/e2e/<module>.spec.ts
+describe('on the enterprise plan', () => {
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app } = await initTestApp());
   });
   // full feature tests
 });
 
-describe('EE (plan: team)', () => {
+describe('on the team plan', () => {
   beforeAll(async () => {
-    ({ app } = await initTestApp({ edition: 'ee', plan: 'team' }));
+    ({ app } = await initTestApp({ plan: 'team' }));
   });
   // plan-specific restrictions (e.g. personal workspace disabled)
 });
 ```
 
+A plan other than `basic` must be registered by the EE helper. An unregistered plan throws, so a spec in `test/` can't ask for one.
+
 ### Cloud tests
 
 ```typescript
+// ee/test/modules/<module>/e2e/<module>.spec.ts
 describe('Cloud', () => {
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'cloud' }));
@@ -367,13 +394,17 @@ Test both success and failure paths (401, 403, 404).
 
 Each layer is one abstraction level. Import from `'test-helper'` (mapped via `moduleNameMapper`), never directly from helper files.
 
+Jest runs each tree as its own project (`test/jest-projects.config.ts`), so `'test-helper'` resolves by where the spec lives, not by the run. Specs under `test/` get `test/test.helper.ts`, and a bare `initTestApp()` boots CE. Specs under `ee/test/` get the submodule's barrel, which re-exports everything here and defaults `initTestApp()` to an `ee` app on the enterprise plan. Each project sets `TOOLJET_EDITION` before the spec's imports (`test/jest-edition-setup.ts`), because the edition otherwise falls back to `.env.test`. The base setup only knows the `basic` plan; the EE barrel registers the rest, and an unregistered plan throws. A CE run (`TOOLJET_EDITION=ce`, or no `ee/test/` on disk) has only the `test/` project.
+
 | Layer | File | Functions | Abstraction |
 |-------|------|-----------|-------------|
 | Bootstrap | `setup.ts` | `initTestApp` `closeTestApp` `getDefaultDataSource` `withRealTransactions` | App lifecycle + TX isolation |
 | Seed | `seed.ts` | `createAdmin` `createEndUser` `createApplication` `grantAppPermission` `ensureAppEnvironments` | DB factories |
-| API | `api.ts` | `login` `logout` `buildTestSession` `buildAuthHeader` | HTTP actions |
+| API | `api.ts` | `login` `logout` `buildTestSession` | HTTP actions |
 | Utilities | `utils.ts` | `findEntity` `saveEntity` `updateEntity` `deleteEntities` `getEntityRepository` | TypeORM shortcuts |
-| Domain | `workflows.ts` | `createCompleteWorkflow` `buildWorkflowDefinition` `setupOrganizationAndUser` | Workflow-specific |
+| Domain | `workflows.ts` | `createWorkflowDataSource` `createWorkflowDataQuery` | Workflow data source and query factories |
+| Domain | `custom-component-libraries.ts` | `createLibrary` `createPat` | Custom component library fixtures |
+| Domain (EE only) | `ee/test/helpers/workflows.ts` | `createCompleteWorkflow` `buildWorkflowDefinition` `setupOrganizationAndUser` | Workflow-specific |
 
 New domain helpers get a new file (e.g. `tooljet-db.ts`) added to the barrel.
 

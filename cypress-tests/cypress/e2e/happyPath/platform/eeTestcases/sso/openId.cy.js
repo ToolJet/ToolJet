@@ -3,15 +3,15 @@ import {
     commonEeSelectors,
     instanceSettingsSelector,
     ssoEeSelector,
-} from "Selectors/eeCommon";
+} from "Selectors/platform/eeCommon";
 import * as common from "Support/utils/common";
 import { defaultSSO, setSignupStatus } from "Support/utils/manageSSO";
 import {
     apiArchiveUnarchiveUser,
     cleanAllUsers,
 } from "Support/utils/manageUsers";
-import { ssoText } from "Texts/manageSSO";
-import { usersText } from "Texts/manageUsers";
+import { ssoText } from "Texts/platform/manageSSO";
+import { usersText } from "Texts/platform/manageUsers";
 
 import { fake } from "Fixtures/fake";
 import { sanitize } from "Support/utils/common";

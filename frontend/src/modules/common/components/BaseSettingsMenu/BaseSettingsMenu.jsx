@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
 import { authenticationService, appService, sessionService } from '@/_services';
+import { teardownFrontendMetrics } from '@/_services/frontend-metrics.service';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { getPrivateRoute } from '@/_helpers/routes';
@@ -37,9 +38,8 @@ function BaseSettingsMenu({
   const admin = currentUserValue?.admin;
   const superAdmin = currentUserValue?.super_admin;
   const isBuilder = !!currentUserValue?.user_permissions?.is_builder;
-  const isCloudEdition = edition === 'cloud' || checkIfToolJetCloud(tooljetVersion);
+  const isCloudEdition = edition === 'cloud' || (!!tooljetVersion && checkIfToolJetCloud(tooljetVersion));
   const marketplaceEnabled = !options.hideMarketPlaceMenuItem && !isCloudEdition && (admin || superAdmin || isBuilder);
-  const canAccessWorkspaceSettings = !!admin || (isEEorCloud && isBuilder);
   const isValidUrl = (url) => {
     try {
       new URL(url);
@@ -49,6 +49,7 @@ function BaseSettingsMenu({
     }
   };
   async function handleLogout() {
+    teardownFrontendMetrics();
     // Get latest config first to ensure we have the most up-to-date custom logout url
     await appService
       .getConfig()
@@ -72,8 +73,11 @@ function BaseSettingsMenu({
     return featureAccess.customGroups === true && featureAccess.licenseStatus?.isLicenseValid !== false;
   }, [featureAccess]);
 
+  const isGroupAdmin = !!currentUserValue?.is_group_admin && hasCustomGroupsLicense;
+  const canAccessWorkspaceSettings = !!admin || (isEEorCloud && isBuilder) || isGroupAdmin;
+
   const getWorkspaceSettingsRoute = () => {
-    if (isBuilder && currentUserValue?.is_group_admin && hasCustomGroupsLicense) {
+    if (isGroupAdmin) {
       return getPrivateRoute('workspace_settings_groups');
     }
     if (isBuilder && isEEorCloud) {

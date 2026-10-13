@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { workflowSelector } from "Selectors/workflows";
+import { workflowSelector } from "Selectors/platform/workflows";
 import { deleteFolder } from "Support/utils/common";
 import {
   addAndVerifyConstants,
@@ -27,8 +27,8 @@ export const uiVerifyAppDeleted = (appName) => {
 };
 
 export const uiVerifyAppCreatePrivilege = (hasPrivilege = true) => {
-  const assertion = hasPrivilege ? "be.enabled" : "be.disabled";
-  cy.get(commonSelectors.dashboardAppCreateButton).should(assertion);
+  const assertion = hasPrivilege ? "be.enabled" : "not.exist";
+  cy.get(commonSelectors.appCreateButton).should(assertion);
 };
 
 export const uiCreateFolder = (folderName) => {
@@ -93,7 +93,7 @@ export const uiVerifyDataSourceCreatePrivilege = (hasPrivilege = true) => {
 export const uiCreateWorkflow = (workflowName) => {
   cy.get(workflowSelector.globalWorkFlowsIcon).click();
 
-  cy.get('[data-cy="button-new-workflow-from-scratch"]').click();
+  cy.get(workflowSelector.workflowsCreateButton).click();
   cy.get(workflowSelector.workFlowNameInputField).type(workflowName);
   cy.get(workflowSelector.createWorkFlowsButton).click();
   cy.wait(3000);

@@ -22,7 +22,8 @@ if ! MERGE_BASE=$(git merge-base HEAD "origin/${BASE_BRANCH}" 2>/dev/null); then
   SERVER_FILES=""
 else
   ALL_CHANGED=$(git diff --name-only "$MERGE_BASE" HEAD)
-  SERVER_FILES=$(echo "$ALL_CHANGED" | grep "^server/" || true)
+  # docs-only edits (*.md) don't need tests — mirrors detect-changes in ci.yml
+  SERVER_FILES=$(echo "$ALL_CHANGED" | grep "^server/" | grep -v '\.md$' || true)
 fi
 
 RUN_ALL="${RUN_ALL:-false}"
@@ -44,11 +45,6 @@ while IFS= read -r file; do
     server/test/modules/*)
       mod=$(echo "$file" | sed 's|server/test/modules/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
-      ;;
-    server/test/ee/*)
-      # test/ee specs aren't matched by the per-module unit regex — run everything
-      echo "EE test change in: $file"
-      RUN_ALL=true
       ;;
     server/ee/*)
       mod=$(echo "$file" | sed 's|server/ee/\([^/]*\)/.*|\1|')

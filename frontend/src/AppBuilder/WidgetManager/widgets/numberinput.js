@@ -12,6 +12,13 @@ export const numberinputConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    legacyInputSize: {
+      type: 'toggle',
+      displayName: 'Legacy input size',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'deprecatedStyles',
+      isFxNotRequired: true,
+    },
     label: {
       type: 'code',
       displayName: 'Label',
@@ -341,6 +348,7 @@ export const numberinputConfig = {
       customRule: { value: '' },
     },
     properties: {
+      legacyInputSize: { value: '{{false}}' },
       value: { value: '0' },
       label: { value: 'Label' },
       maxValue: { value: '' },

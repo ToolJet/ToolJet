@@ -11,7 +11,7 @@ import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { getCssVarValue } from '@/AppBuilder/Widgets/utils';
 
-const CanvasSettings = ({ darkMode }) => {
+const CanvasSettings = ({ darkMode, isModuleEditor = false }) => {
   const { moduleId } = useModuleContext();
   const { globalSettings, globalSettingsChanged, resolveOthers, getCanvasBackgroundColor } = useStore(
     (state) => ({
@@ -68,52 +68,54 @@ const CanvasSettings = ({ darkMode }) => {
 
   return (
     <>
-      {/* Max canvas width row */}
-      <div className="canvas-settings-row">
-        <span className="canvas-settings-label" data-cy={`label-max-canvas-width`}>
-          {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max canvas width')}
-        </span>
-        <div className="canvas-settings-input-wrapper">
-          <div className="canvas-width-input-container">
-            <input
-              data-cy="maximum-canvas-width-input-field"
-              type="text"
-              className="canvas-width-input"
-              placeholder={'0'}
-              onChange={(e) => {
-                const width = e.target.value;
-                if (!Number.isNaN(width) && width >= 0) globalSettingsChanged({ canvasMaxWidth: width });
-              }}
-              value={canvasMaxWidth}
-            />
-            <select
-              data-cy={`dropdown-max-canvas-width-type`}
-              className="canvas-width-type-select"
-              aria-label="Select canvas width type"
-              onChange={(event) => {
-                const newCanvasMaxWidthType = event.currentTarget.value;
-                const options = {
-                  canvasMaxWidthType: newCanvasMaxWidthType,
-                };
+      {/* Max canvas width row — hidden for modules: host app controls canvas width when embedded */}
+      {!isModuleEditor && (
+        <div className="canvas-settings-row">
+          <span className="canvas-settings-label" data-cy={`label-max-canvas-width`}>
+            {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max canvas width')}
+          </span>
+          <div className="canvas-settings-input-wrapper">
+            <div className="canvas-width-input-container">
+              <input
+                data-cy="maximum-canvas-width-input-field"
+                type="text"
+                className="canvas-width-input"
+                placeholder={'0'}
+                onChange={(e) => {
+                  const width = e.target.value;
+                  if (!Number.isNaN(width) && width >= 0) globalSettingsChanged({ canvasMaxWidth: width });
+                }}
+                value={canvasMaxWidth}
+              />
+              <select
+                data-cy={`dropdown-max-canvas-width-type`}
+                className="canvas-width-type-select"
+                aria-label="Select canvas width type"
+                onChange={(event) => {
+                  const newCanvasMaxWidthType = event.currentTarget.value;
+                  const options = {
+                    canvasMaxWidthType: newCanvasMaxWidthType,
+                  };
 
-                if (newCanvasMaxWidthType === '%') {
-                  options.canvasMaxWidth = 100;
-                } else if (newCanvasMaxWidthType === 'px') {
-                  options.canvasMaxWidth = 1292;
-                }
-                globalSettingsChanged(options);
-              }}
-            >
-              <option value="%" selected={canvasMaxWidthType === '%'}>
-                %
-              </option>
-              <option value="px" selected={canvasMaxWidthType === 'px' || _.isUndefined(canvasMaxWidthType)}>
-                px
-              </option>
-            </select>
+                  if (newCanvasMaxWidthType === '%') {
+                    options.canvasMaxWidth = 100;
+                  } else if (newCanvasMaxWidthType === 'px') {
+                    options.canvasMaxWidth = 1292;
+                  }
+                  globalSettingsChanged(options);
+                }}
+              >
+                <option value="%" selected={canvasMaxWidthType === '%'}>
+                  %
+                </option>
+                <option value="px" selected={canvasMaxWidthType === 'px' || _.isUndefined(canvasMaxWidthType)}>
+                  px
+                </option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Canvas background row */}
       <div className="canvas-settings-row">

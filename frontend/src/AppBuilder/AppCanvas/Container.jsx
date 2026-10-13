@@ -57,17 +57,18 @@ const Container = React.memo(
     flexEffectiveDirection,
     flexShouldStack = false,
   }) => {
-    const { moduleId, isModuleEditor } = useModuleContext();
+    const { moduleId, isModuleEditor, isModuleMode } = useModuleContext();
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
-    const isEmbeddedModule = appType === 'module' && !isModuleEditor;
+    const isEmbeddedModule = appType === 'module' && isModuleMode;
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow
     );
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
+    const isMobileMainCanvas = currentLayout === 'mobile' && id === 'canvas';
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const isWidgetInSubContainerDragging = useStore(
       (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
@@ -276,7 +277,9 @@ const Container = React.memo(
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : getSubContainerHeightAfterPadding(componentType),
           backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
-          padding: `${HOVER_CLICK_OUTLINE_BORDER}px`, // This is required to prevent the hover click outline from being cut off
+          // Stops the hover outline being clipped. Skipped on mobile, where widget widths come from
+          // the unpadded outer width and this would push them past the content box.
+          padding: isMobileMainCanvas ? 0 : `${HOVER_CLICK_OUTLINE_BORDER}px`,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)

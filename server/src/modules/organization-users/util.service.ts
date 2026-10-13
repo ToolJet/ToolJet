@@ -42,6 +42,8 @@ import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
+import { MODULES } from '@modules/app/constants/modules';
+import * as requestIp from 'request-ip';
 @Injectable()
 export class OrganizationUsersUtilService implements IOrganizationUsersUtilService {
   constructor(
@@ -444,8 +446,31 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     await dbTransactionWrap(async (manager) => {
       for (let i = 0; i < users.length; i++) {
         await this.inviteNewUser(currentUser, users[i], manager);
+        // inviteNewUser sets one audit-log entry via RequestContext.setLocals, meant to be
+        // read once by the response interceptor at the end of the request. That model can't
+        // produce one entry per row in a loop, so emit and consume it here instead — one
+        // 'auditLogEntry' event per invited user, same shape a single invite would produce.
+        this.emitInviteAuditLogEntry();
       }
     });
+  }
+
+  private emitInviteAuditLogEntry(): void {
+    const context = RequestContext.currentContext;
+    const logsData = context?.res?.locals?.[AUDIT_LOGS_REQUEST_CONTEXT_KEY];
+    if (!logsData?.userId) return;
+
+    this.eventEmitter.emit('auditLogEntry', {
+      ...logsData,
+      ipAddress: requestIp.getClientIp(context.req),
+      userAgent: context.req?.headers['user-agent'],
+      resourceType: MODULES.ORGANIZATION_USER,
+      actionType: 'USER_INVITE',
+    });
+
+    // Clear it so the interceptor's own end-of-request check (which would otherwise
+    // still find whatever this loop last wrote here) doesn't emit a duplicate entry.
+    delete context.res.locals[AUDIT_LOGS_REQUEST_CONTEXT_KEY];
   }
 
   async inviteNewUser(

@@ -1,9 +1,9 @@
 import { Environments, WidgetPositions } from "Constants/constants/multiEnv";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/eeCommon";
-import { appVersionSelectors } from "Selectors/exportImport";
-import { appEditorSelector } from "Selectors/multiEnv";
-import { appVersionText } from "Texts/exportImport";
+import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/platform/eeCommon";
+import { appVersionSelectors } from "Selectors/platform/exportImport";
+import { appEditorSelector } from "Selectors/platform/multiEnv";
+import { appVersionText } from "Texts/platform/exportImport";
 
 export const promoteApp = () => {
   cy.get(commonEeSelectors.promoteButton).click();
@@ -55,8 +55,13 @@ export const appPromote = (fromEnv, toEnv) => {
     cy.waitForElement(commonEeSelectors.promoteVersionButton);
     cy.wait(200);
     cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).click();
+    // Wait on the promote request itself — common to BOTH app and module
+    // promotes (PUT /api/v2/apps/{id}/versions/{vid}/promote). The previous
+    // cy.waitForAppLoad() keyed off /api/data-queries, which the module editor
+    // never fires on promote, so module promote flows timed out.
+    cy.intercept("PUT", "**/versions/**/promote").as("promoteApi");
     cy.get(commonEeSelectors.promoteButton, { timeout: 10000 }).click();
-    cy.waitForAppLoad();
+    cy.wait("@promoteApi", { timeout: 15000 });
     cy.wait(2000);
   };
 

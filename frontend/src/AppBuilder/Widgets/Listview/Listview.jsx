@@ -188,9 +188,10 @@ export const Listview = function Listview({
     // Update the customResolvables with the new listItems
     if (listItems.length > 0) {
       updateCustomResolvables(id, listItems, 'listItem', moduleId, parentIndices);
-      // Initialize exposed value arrays for children so per-row writes are correctly sized
-      initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
     }
+    // Size children's per-row exposed values to the row count. Runs for an empty list too:
+    // it is what prunes the removed rows from this Listview's children/data.
+    initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
   }
 
   const renderedRowCount = filteredData.length;
@@ -200,7 +201,7 @@ export const Listview = function Listview({
   return (
     <div
       data-disabled={disabledState}
-      className={cx(`flex-column w-100 position-relative dynamic-${id}`, {
+      className={cx(`flex-column w-100 position-relative dynamic-${id} listview-scroll-container`, {
         'jet-container-loading': loadingState,
       })}
       id={id}

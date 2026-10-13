@@ -8,6 +8,7 @@ import {
 export default class LicenseBase {
   private _appsCount: number | string;
   private _tablesCount: number | string;
+  private _rowsCount: number | string;
   private _usersCount: number | string;
   private _isAuditLogs: boolean;
   private _maxDurationForAuditLogs: number | string;
@@ -50,6 +51,7 @@ export default class LicenseBase {
   private BASIC_PLAN_TERMS: Partial<Terms>;
   private _isModulesEnabled: boolean;
   private _isScimEnabled: boolean;
+  private _isMfaEnabled: boolean;
   private _isCustomDomains: boolean;
   private _isGoogle: boolean;
   private _isGithub: boolean;
@@ -105,6 +107,7 @@ export default class LicenseBase {
     this._appsCount = licenseData?.apps;
     this._usersCount = licenseData?.users?.total;
     this._tablesCount = licenseData?.database?.table;
+    this._rowsCount = licenseData?.database?.row;
     this._editorUsersCount = licenseData?.users?.editor;
     this._viewerUsersCount = licenseData?.users?.viewer;
     this._superadminUsersCount = licenseData?.users?.superadmin;
@@ -147,6 +150,10 @@ export default class LicenseBase {
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
+    // Strict opt-in, unlike getFeatureValue(): licenses issued before MFA existed have no
+    // `features.mfa` key at all, and getFeatureValue() defaults an absent key to true for
+    // non-flexible plans - which would silently turn MFA on for every pre-existing license.
+    this._isMfaEnabled = (this._features as any)?.mfa === true;
     this._isCustomDomains = this.getFeatureValue('customDomains');
     this._isEnvMapping = this.getFeatureValue('workspaceEnv');
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
@@ -317,6 +324,13 @@ export default class LicenseBase {
     return this._tablesCount || LICENSE_LIMIT.UNLIMITED;
   }
 
+  public get rows(): number | string {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.database?.row || this._rowsCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._rowsCount || LICENSE_LIMIT.UNLIMITED;
+  }
+
   public get maxDurationForAuditLogs(): number | string {
     if (this.IsBasicPlan) {
       return this.BASIC_PLAN_TERMS.auditLogs?.maximumDays || 0;
@@ -446,6 +460,17 @@ export default class LicenseBase {
     return !!this._features?.['queryFolders'];
   }
 
+  public get customComponentLibraries(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.customComponentLibraries;
+    }
+
+    if (this._app?.features?.customComponentLibraries === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.customComponentLibraries;
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -506,6 +531,13 @@ export default class LicenseBase {
       return !!this.BASIC_PLAN_TERMS.features?.scim;
     }
     return this._isScimEnabled;
+  }
+
+  public get mfa(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.mfa;
+    }
+    return this._isMfaEnabled;
   }
 
   public get customDomains(): boolean {
@@ -594,12 +626,15 @@ export default class LicenseBase {
       github: this.github,
       externalApis: this.externalApis,
       scim: this.scim,
+      mfa: this.mfa,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
       appJsLibraries: this.appJsLibraries,
       queryFolders: this.queryFolders,
       workspaceEnv: this.workspaceEnv,
+      customComponentLibraries: this.customComponentLibraries,
       aiPlan: this.aiPlan,
+      publicApp: this.publicApp,
     };
   }
 
@@ -615,6 +650,7 @@ export default class LicenseBase {
     return {
       appsCount: this.apps,
       tablesCount: this.tables,
+      rowsCount: this.rows,
       usersCount: this.users,
       auditLogsEnabled: this.auditLogs,
       maxDurationForAuditLogs: this.maxDurationForAuditLogs,
@@ -686,7 +722,7 @@ export default class LicenseBase {
   }
 
   public get appHistory(): boolean {
-    if (this.IsBasicPlan) {
+    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL || this.licenseType === LICENSE_TYPE.BUSINESS) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.history;
     }
 
@@ -716,5 +752,16 @@ export default class LicenseBase {
       return !!this.BASIC_PLAN_TERMS?.features?.gitSync && !!this.BASIC_PLAN_TERMS?.features?.gitSyncMultiBranch;
     }
     return !!this._isGitSync && !!this._isGitSyncMultiBranch;
+  }
+
+  public get publicApp(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.publicApp;
+    }
+
+    if (this._app?.features?.publicApp === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.publicApp;
   }
 }

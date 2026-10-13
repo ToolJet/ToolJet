@@ -1,7 +1,7 @@
 import { whiteLabelSelectors, commonSelectors } from "Selectors/common";
-import { commonEeSelectors } from "Selectors/eeCommon";
+import { commonEeSelectors } from "Selectors/platform/eeCommon";
 import { whitelabelText } from "Texts/common";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { openInstanceSettings } from "Support/utils/platform/eeCommon";
 import { whitelabelTestData } from "Constants/constants/whitelabel";
 

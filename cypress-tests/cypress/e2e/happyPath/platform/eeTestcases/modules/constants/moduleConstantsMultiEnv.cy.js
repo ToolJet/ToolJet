@@ -1,7 +1,7 @@
 import { Environments } from 'Constants/constants/multiEnv';
 import { commonSelectors, commonWidgetSelector } from 'Selectors/common';
-import { commonEeSelectors, multiEnvSelector } from 'Selectors/eeCommon';
-import { importSelectors } from 'Selectors/exportImport';
+import { commonEeSelectors, multiEnvSelector } from 'Selectors/platform/eeCommon';
+import { importSelectors } from 'Selectors/platform/exportImport';
 import { moduleSelectors } from 'Selectors/platform/modules';
 import { dragModuleIntoCanvas, openModulesList } from 'Support/utils/platform/modules';
 

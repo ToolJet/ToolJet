@@ -21,6 +21,28 @@ export const GIT_ENV_KEYS = {
   },
 } as const;
 
+export const SAML_ENV_KEYS = {
+  IDP_METADATA: 'SAML_IDP_METADATA',
+  NAME: 'SAML_NAME',
+  GROUP_ATTRIBUTE: 'SAML_GROUP_SYNC_GROUP_ATTRIBUTE', // optional
+  GROUP_SYNC_ENABLED: 'SAML_ENABLE_GROUP_SYNC', // optional — defaults to false when absent
+} as const;
+
+export const LDAP_ENV_KEYS = {
+  HOST_NAME: 'LDAP_HOST_NAME',
+  PORT: 'LDAP_PORT',
+  BASE_DN: 'LDAP_BASE_DN',
+  NAME: 'LDAP_NAME',
+  SSL: 'LDAP_SSL', // optional — 'true' | 'false'
+  // Only read when LDAP_SSL_CERTIFICATE is present and equal to 'Certificates' — if 'None'
+  // (or absent), these three are ignored entirely even if set in .env.
+  SSL_CERTIFICATE: 'LDAP_SSL_CERTIFICATE', // optional — 'Certificates' | 'None'
+  CLIENT_KEY: 'LDAP_CLIENT_KEY', // optional
+  CLIENT_CERTIFICATE: 'LDAP_CLIENT_CERTIFICATE', // optional
+  SERVER_CERTIFICATE: 'LDAP_SERVER_CERTIFICATE', // optional
+  ENABLE_GROUP_SYNC: 'LDAP_ENABLE_GROUP_SYNC', // optional — 'true' | 'false'
+} as const;
+
 export const REQUIRED_KEYS = {
   HTTPS: [
     GIT_ENV_KEYS.HTTPS.URL,
@@ -30,6 +52,8 @@ export const REQUIRED_KEYS = {
     GIT_ENV_KEYS.HTTPS.PRIVATE_KEY,
   ],
   GITLAB: [GIT_ENV_KEYS.GITLAB.URL, GIT_ENV_KEYS.GITLAB.BRANCH, GIT_ENV_KEYS.GITLAB.PROJECT_ID],
+  SAML: [SAML_ENV_KEYS.IDP_METADATA, SAML_ENV_KEYS.NAME],
+  LDAP: [LDAP_ENV_KEYS.HOST_NAME, LDAP_ENV_KEYS.PORT, LDAP_ENV_KEYS.BASE_DN, LDAP_ENV_KEYS.NAME],
 } as const;
 
 /**
@@ -47,3 +71,23 @@ export const GIT_ENV_PROVIDER_DESCRIPTORS: ReadonlyArray<{
   { provider: 'github_https', envKeys: Object.values(GIT_ENV_KEYS.HTTPS), requiredKeys: REQUIRED_KEYS.HTTPS },
   { provider: 'gitlab', envKeys: Object.values(GIT_ENV_KEYS.GITLAB), requiredKeys: REQUIRED_KEYS.GITLAB },
 ];
+
+export const OIDC_ENV_KEYS = {
+  CLIENT_ID: 'OIDC_CLIENT_ID',
+  CLIENT_SECRET: 'OIDC_CLIENT_SECRET', // optional — not needed when GRANT_TYPE is 'pkce'
+  WELL_KNOWN_URL: 'OIDC_WELL_KNOWN_URL',
+  NAME: 'OIDC_NAME',
+  CUSTOM_SCOPES: 'OIDC_CUSTOM_SCOPES', // optional
+  CLAIM_NAME: 'OIDC_CLAIM_NAME', // optional
+  ENABLE_GROUP_SYNC: 'OIDC_ENABLE_GROUP_SYNC', // optional
+  GROUP_MAPPING: 'OIDC_GROUP_MAPPING', // optional — JSON object string, IdP group name -> ToolJet group name
+  GRANT_TYPE: 'OIDC_GRANT_TYPE', // required — 'authorization_code' | 'pkce'
+  CODE_VERIFIER: 'OIDC_CODE_VERIFIER', // optional — only used for pkce grant type
+} as const;
+
+export const REQUIRED_OIDC_KEYS = [
+  OIDC_ENV_KEYS.CLIENT_ID,
+  OIDC_ENV_KEYS.WELL_KNOWN_URL,
+  OIDC_ENV_KEYS.NAME,
+  OIDC_ENV_KEYS.GRANT_TYPE,
+] as const;

@@ -133,7 +133,8 @@ type NewRevampedComponent =
   | 'ButtonGroupV2'
   | 'ModalV2'
   | 'PopoverMenu'
-  | 'Pagination';
+  | 'Pagination'
+  | 'Timeline';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -187,6 +188,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ModalV2',
   'PopoverMenu',
   'Pagination',
+  'Timeline',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -290,6 +292,17 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TreeSelect',
 ];
 
+const LEGACY_INPUT_SIZE_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'Cascader',
+  'TextArea',
+];
+
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
@@ -344,6 +357,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextArea',
   'TextInput',
   'TimePicker',
+  'Timeline',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
@@ -1374,7 +1388,8 @@ export class AppImportExportService {
     tooljetVersion = '',
     cloning = false,
     manager?: EntityManager,
-    branchId?: string
+    branchId?: string,
+    isTemplateApp = false
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
@@ -1438,9 +1453,11 @@ export class AppImportExportService {
         undefined,
         branchId,
         cloning,
-        isGitApp
+        isGitApp,
+        isTemplateApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+      await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
@@ -1680,6 +1697,15 @@ export class AppImportExportService {
     }
   }
 
+  // EE-only
+  protected async remapCustomComponentLibraries(
+    manager: EntityManager,
+    organizationId: string,
+    resourceMapping: AppResourceMappings
+  ): Promise<void> {
+    return;
+  }
+
   async createImportedAppForUser(
     //Overrides on EE to set userId to super admin's id
     manager: EntityManager,
@@ -1852,7 +1878,8 @@ export class AppImportExportService {
     createNewVersion?: boolean,
     branchId?: string,
     cloning = false,
-    isGitApp = false
+    isGitApp = false,
+    isTemplateApp = false
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -1965,7 +1992,8 @@ export class AppImportExportService {
       createNewVersion,
       branchId,
       isGitApp || cloning || !!branchId,
-      isGitApp
+      isGitApp,
+      isTemplateApp
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -3424,13 +3452,16 @@ export class AppImportExportService {
           }
         }
       }
-      await manager.save(
+      const newDsvo = await manager.save(
         manager.create(DataSourceVersionOptions, {
           dataSourceVersionId: branchDsv.id,
           environmentId: dOpt.environmentId,
           options: clonedOptions,
         })
       );
+      // Clone OAuth token rows too — only matters when this datasource already existed in the
+      // target org (import referencing an existing DS); a freshly-imported DS has no token yet.
+      await this.dataSourcesUtilService.duplicateTokenData(dOpt.id, newDsvo.id, manager);
     }
   }
 
@@ -3475,6 +3506,11 @@ export class AppImportExportService {
     }
 
     return appResourceMappings;
+  }
+
+  // EE-only
+  protected async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
+    return globalSettings;
   }
 
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
@@ -3665,7 +3701,8 @@ export class AppImportExportService {
     createNewVersion?: boolean,
     branchId?: string,
     useBranchVersionType = false,
-    isGitApp = false
+    isGitApp = false,
+    isTemplateApp = false
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -3863,7 +3900,10 @@ export class AppImportExportService {
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
-        version.globalSettings = appVersion.globalSettings;
+        // Only templates bring their theme into the workspace; every other import keeps the settings as exported
+        version.globalSettings = isTemplateApp
+          ? await this.importTheme(manager, organization.id, appVersion.globalSettings)
+          : appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation ?? true;
@@ -4572,6 +4612,10 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (LEGACY_INPUT_SIZE_COMPONENT_TYPES.includes(componentType) && properties.legacyInputSize === undefined) {
+    properties.legacyInputSize = { value: '{{true}}' };
+  }
 
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };

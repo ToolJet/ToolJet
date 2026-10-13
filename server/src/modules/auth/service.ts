@@ -140,7 +140,7 @@ export class AuthService implements IAuthService {
 
         const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
-        if (!formConfigs?.enabled) {
+        if (!formConfigs?.enabled && !isSuperAdmin(user)) {
           // no configurations in organization side or Form login disabled for the organization
           throw new UnauthorizedException('Password login is disabled for the organization');
         }
@@ -183,6 +183,11 @@ export class AuthService implements IAuthService {
             auth_method: 'password',
           },
         });
+
+        const mfaChallenge = await this.maybeRequireMfa(user);
+        if (mfaChallenge) {
+          return mfaChallenge;
+        }
       }
 
       return await this.sessionUtilService.generateLoginResultPayload(
@@ -195,6 +200,14 @@ export class AuthService implements IAuthService {
         manager
       );
     });
+  }
+
+  // Overridden on EE to gate login behind authenticator-app MFA. Returns null when MFA
+  // isn't required (CE/Cloud never require it), in which case login proceeds as normal.
+  // When MFA is required, returns the `{ mfa_required, mfa_token, ... }` payload to send
+  // to the client instead of issuing a session.
+  protected async maybeRequireMfa(_user: User): Promise<any | null> {
+    return null;
   }
 
   async authorizeOrganization(user: User) {
@@ -217,6 +230,7 @@ export class AuthService implements IAuthService {
             firstName: user.firstName,
             lastName: user.lastName,
             avatarId: user.avatarId,
+            aiBuildNotificationsEnabled: user.aiBuildNotificationsEnabled,
             ssoUserInfo: permissionData.ssoUserInfo,
             metadata: permissionData.metadata,
             createdAt: user.createdAt,
@@ -373,6 +387,7 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Only super admin can login through this url');
     }
 
-    return this.login(response, appAuthDto);
+    const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
+    return this.login(response, appAuthDto, defaultWorkspace?.id);
   }
 }

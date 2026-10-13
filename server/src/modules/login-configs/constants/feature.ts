@@ -1,6 +1,7 @@
 import { FEATURE_KEY } from '.';
 import { MODULES } from '@modules/app/constants/modules';
 import { FeaturesConfig } from '../types';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 export const FEATURES: FeaturesConfig = {
   [MODULES.LOGIN_CONFIGS]: {
@@ -21,5 +22,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UPDATE_INSTANCE_SSO]: {},
     [FEATURE_KEY.UPDATE_INSTANCE_GENERAL_CONFIGS]: {},
     [FEATURE_KEY.GET_INSTANCE_SSO]: {},
+    [FEATURE_KEY.SAVE_ENV_CONFIGS]: { license: LICENSE_FIELD.WORKSPACE_ENV },
+    [FEATURE_KEY.SAVE_INSTANCE_ENV_CONFIGS]: { license: LICENSE_FIELD.WORKSPACE_ENV },
   },
 };

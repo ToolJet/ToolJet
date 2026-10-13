@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
+import { dashboardSelector } from "Selectors/platform/dashboard";
 import {
   cancelModal,
   closeModal,
@@ -7,7 +7,7 @@ import {
   viewAppCardOptions,
 } from "Support/utils/common";
 import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
+import { dashboardText } from "Texts/platform/dashboard";
 
 export const modifyAndVerifyAppCardIcon = (appName) => {
   var random = function (obj) {
@@ -55,8 +55,8 @@ export const modifyAndVerifyAppCardIcon = (appName) => {
 export const verifyAppDelete = (appName) => {
   cy.get("body").should("exist").and("be.visible");
   cy.get('[data-cy="dashboard-section-header"]').should("be.visible");
-  cy.get("body").then(($title) => {
-    if (!$title.text().includes(commonText.introductionMessage)) {
+  cy.get("body").then(($body) => {
+    if ($body.find(dashboardSelector.appsEmptyState).length === 0) {
       cy.clearAndType(commonSelectors.homePageSearchBar, appName);
       cy.get(commonSelectors.appCard(appName)).should("not.exist");
       cy.get(commonSelectors.homePageSearchBar).clear();

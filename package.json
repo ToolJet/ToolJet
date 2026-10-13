@@ -16,12 +16,15 @@
   },
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
+    "@types/node": "^22.20.5",
     "eslint": "^9.26.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.0"
+    "lint-staged": "^16.1.0",
+    "typescript": "^5.9.3"
   },
   "scripts": {
     "ci:changed": "bash scripts/test-changed.sh",
+    "tj:check": "tsc -p tools/tj && node --experimental-strip-types --no-warnings --test tools/tj/test/*.test.ts",
     "prebuild:plugins": "npm run install:plugins",
     "install:plugins": "npm --prefix plugins install",
     "build:plugins": "npm --prefix plugins run build",
@@ -59,11 +62,12 @@
     "plugins:uninstall:prod": "npm --prefix server run plugins:uninstall:prod",
     "plugins:reload": "npm --prefix server run plugins:reload",
     "plugins:reload:prod": "npm --prefix server run plugins:reload:prod",
+    "reset-superadmin": "npm --prefix server run reset-superadmin --",
+    "reset-mfa": "npm --prefix server run reset-mfa --",
     "rotate:keys": "npm --prefix server run rotate:keys --",
     "rotate:keys:prod": "npm --prefix server run rotate:keys:prod --",
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
     "update-version": "node update-version.js"
-  },
-  "dependencies": {}
+  }
 }
