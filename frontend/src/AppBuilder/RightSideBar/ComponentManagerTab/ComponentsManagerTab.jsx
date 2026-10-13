@@ -12,6 +12,7 @@ import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
 import { ANT_DESIGN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/antDesign';
 import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
+import { UI1, UI2, resolveComponentLibrary } from './componentLibrary';
 
 // Presets (component packs): a palette entry that adds a native widget with some styles set. The shadcn/ui Table is
 // ToolJet's own Table in its shadcn look, so it keeps every Table feature and convention (the older ShadTable widget
@@ -126,12 +127,13 @@ const SHADCN_SECTIONS = [
   },
 ];
 
-// Component libraries (experiment): the panel lists one library at a time, picked in a toggle above the search box.
+// Component libraries: the panel lists one library at a time, picked in a toggle above the search box. The pick is the
+// app's saved library (globalSettings.componentLibrary, see componentLibrary.js), which AI builds also follow.
 // A pack lists its own widgets plus FlexContainer, which composes them.
 const COMPONENT_LIBRARIES = [
-  { value: 'tooljet', label: 'ToolJet UI 1.0' },
+  { value: UI1, label: 'ToolJet UI 1.0' },
   {
-    value: 'shadcn',
+    value: UI2,
     label: 'ToolJet UI 2.0',
     badge: 'Beta',
     sections: SHADCN_SECTIONS,
@@ -201,7 +203,23 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
-  const [libraryKey, setLibraryKey] = useState('tooljet');
+  // The app's library: saved, else inferred (an app that already holds a UI 2.0 widget opens on UI 2.0). A switch saves
+  // it, except in a frozen editor, where it only changes the list.
+  const savedLibrary = useStore((state) => state.globalSettings?.componentLibrary);
+  const pages = useStore((state) => state.modules?.canvas?.pages);
+  const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
+  const appLibrary = useMemo(
+    () => resolveComponentLibrary({ componentLibrary: savedLibrary }, pages).library,
+    [savedLibrary, pages]
+  );
+  // The pick shows at once; it gives way to the app's library once that is saved or another app or version loads.
+  const [pickedLibrary, setPickedLibrary] = useState(null);
+  useEffect(() => setPickedLibrary(null), [appLibrary]);
+  const libraryKey = pickedLibrary ?? appLibrary;
+  const pickLibrary = (value) => {
+    setPickedLibrary(value);
+    if (value !== savedLibrary && !shouldFreeze) globalSettingsChanged({ componentLibrary: value });
+  };
   const library = COMPONENT_LIBRARIES.find((entry) => entry.value === libraryKey) ?? COMPONENT_LIBRARIES[0];
 
   // The widgets of the selected library: a pack's own widgets (and FlexContainer), or every native widget. A preset
@@ -409,7 +427,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
         onValueChange={(value) => {
           // A click on the active item deselects it in a toggle group; keep a library picked.
           if (!value) return;
-          setLibraryKey(value);
+          pickLibrary(value);
           setSearchQuery('');
         }}
       >
