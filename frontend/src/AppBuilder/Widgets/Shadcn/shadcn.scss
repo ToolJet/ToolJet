@@ -649,6 +649,8 @@
 }
 .tj-shadcn .sc-map-canvas[data-basemap='dark'] img.leaflet-tile {
   filter: invert(1) hue-rotate(180deg) saturate(0.35) brightness(0.88) contrast(0.86);
+}
+
 // The hero's aside sits right of its text behind a hairline; in a narrow hero (a phone, a half-width column) it goes
 // under the text, starting at the left edge.
 .tj-shadcn .sc-hero-box {
