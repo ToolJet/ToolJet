@@ -308,6 +308,9 @@ export const ShadButton = (props) => {
           whenSet(styles, 'borderColor', 'border border-[color:var(--lk-border)]'),
           whenSet(styles, 'borderRadius', 'rounded-[var(--lk-radius)]')
         )}
+        // In a List view row its box fits its content (height auto), where h-full alone shrank the button to its
+        // label's line (20px); it keeps the height it was drawn at.
+        style={Number(props.height) > 0 ? { minHeight: Number(props.height) } : undefined}
         disabled={!!properties.disabledState || !!properties.loadingState}
         onClick={() => fireEvent('onClick')}
         onMouseEnter={() => fireEvent('onHover')}
