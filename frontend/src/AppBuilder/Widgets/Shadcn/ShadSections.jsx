@@ -108,7 +108,7 @@ export const ShadHero = (props) => {
 
   const actions =
     primary || secondary ? (
-      <div className={cn('flex flex-wrap gap-2', center ? 'justify-center' : 'shrink-0')}>
+      <div className={cn('flex min-w-0 max-w-full flex-wrap gap-2', center && 'justify-center')}>
         {secondary ? (
           <Button
             variant="outline"
@@ -150,11 +150,20 @@ export const ShadHero = (props) => {
   } else {
     body = (
       <section
-        className={cn('flex w-full', panel, center ? 'flex-col items-center text-center' : 'items-center gap-6')}
+        // The text takes the row and the actions sit at its end; when they do not fit beside it (a narrow hero, long
+        // action labels) they wrap under the text. They did not wrap or shrink: long labels squeezed the title to a
+        // word a line and ran past the box.
+        className={cn(
+          'flex w-full',
+          panel,
+          center ? 'flex-col items-center text-center' : 'flex-wrap items-center gap-x-6 gap-y-4'
+        )}
         style={style}
         data-background={background}
       >
-        <div className={cn('flex min-w-0 flex-1', center ? 'flex-col items-center' : 'items-start gap-4')}>
+        <div
+          className={cn('flex min-w-0', center ? 'flex-col items-center' : 'flex-[1_1_20rem] items-start gap-4')}
+        >
           {Icon ? (
             <span
               className={cn('flex shrink-0 items-center justify-center rounded-xl', center ? 'mb-3' : 'mt-1')}
@@ -214,7 +223,7 @@ export const ShadHero = (props) => {
             ) : null}
           </div>
         </div>
-        {actions ? <div className={cn(center && 'mt-5')}>{actions}</div> : null}
+        {actions ? <div className={cn('min-w-0 max-w-full', center && 'mt-5')}>{actions}</div> : null}
       </section>
     );
   }

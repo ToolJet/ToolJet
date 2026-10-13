@@ -460,6 +460,82 @@ describe('Hero', () => {
   });
 });
 
+describe('long text in buttons, badges, pickers, fields and sections', () => {
+  // A long-text sweep in a browser (every pack widget, its text properties set long, at a third of the page) found
+  // labels running past the widget's box: Button, Badge, Dropdown menu, Empty's action, Date and Time pickers (all one
+  // flex box with its text straight inside, which never ellipsizes), the Hero's actions (which squeezed the title to a
+  // word a line), and a Number input's prefix pushing its stepper out. jsdom has no layout: these pin the structure.
+  const LONG = 'A deliberately long piece of text that keeps going well past what this space was designed to hold';
+  const truncated = (text) => {
+    const el = [...document.querySelectorAll('span')].find((n) => n.textContent === text && !n.children.length);
+    // The text ellipsizes, and the button or badge around it is capped at its box.
+    return !!el && /\btruncate\b/.test(el.className) && !!el.parentElement.closest('.max-w-full');
+  };
+  it.each([
+    ['ShadButton', { text: LONG }],
+    ['ShadBadge', { text: LONG }],
+    ['ShadDropdownMenu', { label: LONG }],
+    ['ShadEmpty', { actionLabel: LONG }],
+  ])('%s ends a long label in an ellipsis inside its box', async (name, properties) => {
+    const { problems, unmount } = await mount(name, properties);
+    expect(truncated(LONG)).toBe(true);
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
+  it('the Hero wraps its actions under the text, and they end in an ellipsis', async () => {
+    const { problems, unmount } = await mount('ShadHero', { title: 'Good morning', actionLabel: LONG });
+    const section = document.querySelector('section[data-background]');
+    expect(section.className).toMatch(/\bflex-wrap\b/);
+    expect(truncated(LONG)).toBe(true);
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
+  it('a Number input prefix takes at most 40% of the box and ends in an ellipsis', async () => {
+    const { problems, unmount } = await mount('ShadNumberInput', { prefix: LONG });
+    const text = [...document.querySelectorAll('span')].find((n) => n.textContent === LONG && !n.children.length);
+    expect(text.className).toMatch(/\btruncate\b/);
+    expect(text.parentElement.className).toMatch(/max-w-\[40%\]/);
+    expect(text.parentElement.className).not.toMatch(/\bshrink-0\b/);
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
+  it('a Pagination that fits keeps its Previous and Next words', async () => {
+    const { problems, unmount } = await mount('ShadPagination', { numberOfPages: '{{10}}' });
+    expect(document.body.textContent).toMatch(/Previous/);
+    expect(document.body.textContent).toMatch(/Next/);
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
+  it('a Pagination too narrow for the whole pager drops the Previous and Next words before it wraps', async () => {
+    // A ten-page pager at 445px put Next on a second line, below the box. Here every list measures as wrapped.
+    const height = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight');
+    Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+      configurable: true,
+      get() {
+        return this.tagName === 'UL' ? 80 : 36;
+      },
+    });
+    const observers = global.ResizeObserver;
+    global.ResizeObserver = class {
+      observe() {}
+      disconnect() {}
+    };
+    try {
+      const { problems, unmount } = await mount('ShadPagination', { numberOfPages: '{{10}}' });
+      expect(document.body.textContent).not.toMatch(/Previous|Next/);
+      unmount();
+      expect(problems()).toEqual([]);
+    } finally {
+      Object.defineProperty(HTMLElement.prototype, 'offsetHeight', height);
+      global.ResizeObserver = observers;
+    }
+  });
+});
+
 describe('Stat change', () => {
   // A long change beside the label ("+12.4% after a long weekend of record sales") was cut off hard at the card's
   // edge: the badge kept its full width (shrink-0) and had no ellipsis. It shrinks to at most 60% of the label row and

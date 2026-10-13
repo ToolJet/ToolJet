@@ -39,7 +39,7 @@ export const getPortalRoot = () => {
 // ---- Button ------------------------------------------------------------------------------------------------------
 
 export const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -61,9 +61,35 @@ export const buttonVariants = cva(
   }
 );
 
-export const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
+/** One line of text that ends in an ellipsis when it is wider than its room; the whole text is then its tooltip (set on
+ *  hover, and only when cut). A long label in a button, a badge or a picker ran past its widget's box. */
+export const Truncate = ({ children, className }) => (
+  <span
+    className={cn('min-w-0 truncate', className)}
+    onPointerEnter={(e) => {
+      const el = e.currentTarget;
+      if (el.scrollWidth > el.clientWidth + 1) el.title = el.textContent;
+      else el.removeAttribute('title');
+    }}
+  >
+    {children}
+  </span>
+);
+
+/** Plain text children in a Truncate, so a flex box (a button, a badge) can end them in an ellipsis: a flex box clips
+ *  its own text without one. Elements (icons, spans) are left as they are. */
+const truncateText = (children) =>
+  React.Children.map(children, (child) =>
+    (typeof child === 'string' && child.trim()) || typeof child === 'number' ? <Truncate>{child}</Truncate> : child
+  );
+
+export const Button = React.forwardRef(({ className, variant, size, asChild = false, children, ...props }, ref) => {
   const Comp = asChild ? Slot : 'button';
-  return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+  return (
+    <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props}>
+      {asChild ? children : truncateText(children)}
+    </Comp>
+  );
 });
 Button.displayName = 'Button';
 
@@ -327,7 +353,7 @@ export const Card = React.forwardRef(({ className, ...props }, ref) => (
 Card.displayName = 'Card';
 
 export const badgeVariants = cva(
-  'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-colors',
+  'inline-flex min-w-0 max-w-full items-center rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-colors',
   {
     variants: {
       variant: {
@@ -342,8 +368,10 @@ export const badgeVariants = cva(
     defaultVariants: { variant: 'default' },
   }
 );
-export const Badge = ({ className, variant, ...props }) => (
-  <div className={cn(badgeVariants({ variant }), className)} {...props} />
+export const Badge = ({ className, variant, children, ...props }) => (
+  <div className={cn(badgeVariants({ variant }), className)} {...props}>
+    {truncateText(children)}
+  </div>
 );
 
 export const Avatar = React.forwardRef(({ className, ...props }, ref) => (

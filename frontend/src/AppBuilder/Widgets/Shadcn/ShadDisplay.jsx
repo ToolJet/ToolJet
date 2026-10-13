@@ -1307,7 +1307,29 @@ export const ShadPagination = (props) => {
   const disabled = busy(p);
   const small = p.size === 'sm';
   const square = small ? 'h-8 min-w-8 px-2 text-xs' : 'h-9 min-w-9 px-2.5 text-sm';
-  const labelled = p.showLabels !== false;
+  // Too narrow for the whole pager, it drops the Previous and Next words, then the pages beside the current one, before
+  // it would wrap: at 445px a ten-page pager put Next on a second line, below the widget's box. Decided before paint;
+  // a new width or page count starts again from the whole pager.
+  const navRef = useRef(null);
+  const [fit, setFit] = useState({ level: 0, width: 0 });
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    if (!nav || typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(([entry]) => {
+      const width = Math.round(entry.contentRect.width);
+      setFit((f) => (f.width === width ? f : { level: 0, width }));
+    });
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, []);
+  useLayoutEffect(() => setFit((f) => (f.level ? { ...f, level: 0 } : f)), [count]);
+  useLayoutEffect(() => {
+    const list = navRef.current?.querySelector('ul');
+    const first = list?.firstElementChild;
+    if (!list || !first || fit.level >= 2) return;
+    if (list.offsetHeight > first.offsetHeight * 1.5) setFit((f) => ({ ...f, level: f.level + 1 }));
+  });
+  const labelled = p.showLabels !== false && fit.level < 1;
   const button = (key, { label, onClick, active, isDisabled, children, wide }) => (
     <li key={key}>
       <Button
@@ -1329,10 +1351,11 @@ export const ShadPagination = (props) => {
       </Button>
     </li>
   );
-  const items = pageItems(shownPage, count, p.siblingCount ?? 1);
+  const items = pageItems(shownPage, count, fit.level >= 2 ? 0 : p.siblingCount ?? 1);
   return (
     <Shell {...props}>
       <nav
+        ref={navRef}
         role="navigation"
         aria-label="pagination"
         className={cn('flex w-full items-center gap-3', justify(props.styles))}
