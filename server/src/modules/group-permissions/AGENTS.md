@@ -11,7 +11,7 @@ and granular permissions; the `ability` module consumes them to build `UserAllPe
 - **Group** — `GroupPermissions` entity → `permission_groups` table. `type`: `default` | `custom` (`GROUP_PERMISSIONS_TYPE`).
 - **Role** — default group per workspace: `USER_ROLE.ADMIN | BUILDER | END_USER`. Every user has exactly one; role changes go through `roles` module, not group-user add/delete.
 - **Custom Group** — admin-created group; grants extra permissions on top of a user's role. License-gated at runtime (see Edition split).
-- **Group-level permission** — boolean columns on the group row (`appCreate`, `dataSourceDelete`, `orgConstantCRUD`, `tjdbCRUD`, ...).
+- **Group-level permission** — boolean columns on the group row (`appCreate`, `dataSourceDelete`, `orgConstantCRUD`, `tjdbCRUD`, `patCreate`, `patRevoke`, ...).
 - **Granular permission** — `GranularPermissions` entity scoping a group to specific resources; `ResourceType`: `app`, `data_source`, `workflow`, `folder`. Workspace-constant access is NOT a granular type — it's the group-level `orgConstantCRUD` flag.
 - **Group admin** (EE) — a workspace member of any role (Admin, Builder or End User) assigned to administer specific custom groups (`GroupAdmin` entity). End User group admins manage membership and can read (never edit) their group's granular permissions.
 
@@ -44,6 +44,7 @@ and granular permissions; the `ability` module consumes them to build `UserAllPe
 
 - Default groups are immutable identity: cannot rename, delete, or directly add/remove members (`DEFAULT_GROUP_NAME_UPDATE`, `DEFAULT_GROUP_UPDATE_NOT_ALLOWED`, `DELETING_DEFAULT_GROUP_USER`). Role changes route through `roles` module (`FEATURE_KEY.USER_ROLE_CHANGE`).
 - End User group/users can never hold builder-level permissions; adding one to a builder-level custom group throws with the conflicting user list unless `allowRoleChange` promotes them.
+- `patCreate`/`patRevoke` (PAT management; Admin both, Builder create only by default) follow the same builder-level/end-user rule as every other boolean. Like `appPromote`/`appRelease`, they are exempt from `getGroupWithBuilderLevel`'s unlicensed "force all true" override, so the displayed value equals the stored one and default Builder stays editable without a custom-groups license. The ability OR-merge exists twice: `ability/service.ts` (CE) and `ee/ability/service.ts`; add new flags to both.
 - Admin group cannot have granular permissions (`ADMIN_DEFAULT_GROUP_GRANULAR_PERMISSIONS`).
 - Cannot demote/remove the last Admin (`EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED`).
 - Group names: unique per workspace (DB constraint) and role names are reserved keywords.

@@ -1175,33 +1175,30 @@ describe('GroupPermissionsControllerV2', () => {
       expect(getResponse.body.group).toMatchObject({ patCreate: true, patRevoke: false });
     });
 
-    it.each(['patCreate', 'patRevoke'])(
-      'should reject %s=true on a group with an end-user member unless allowRoleChange is set',
-      async (flag) => {
-        const {
-          organization: { adminUser, defaultUser, organization },
-        } = await setupOrganizations();
-        const cookie = await authenticate('admin@tooljet.io');
-        await createGroupViaApi(cookie, adminUser.defaultOrganizationId, `pat-${flag}`);
-        const group = await findEntityOrFail(GroupPermissions, {
-          organizationId: organization.id,
-          name: `pat-${flag}`,
-        } as any);
-        await createUserGroupPermissions(nestApp, defaultUser as any, [group.name]);
+    it.each(['patCreate', 'patRevoke'])('should reject %s=true on a group with an end-user member', async (flag) => {
+      const {
+        organization: { adminUser, defaultUser, organization },
+      } = await setupOrganizations();
+      const cookie = await authenticate('admin@tooljet.io');
+      await createGroupViaApi(cookie, adminUser.defaultOrganizationId, `pat-${flag}`);
+      const group = await findEntityOrFail(GroupPermissions, {
+        organizationId: organization.id,
+        name: `pat-${flag}`,
+      } as any);
+      await createUserGroupPermissions(nestApp, defaultUser as any, [group.name]);
 
-        const response = await request(nestApp.getHttpServer())
-          .put(`/api/v2/group-permissions/${group.id}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', cookie)
-          .send({ [flag]: true });
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/v2/group-permissions/${group.id}`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', cookie)
+        .send({ [flag]: true });
 
-        expect(response.statusCode).toBe(405);
-        expect(response.body.message).toMatchObject({
-          error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
-          data: [defaultUser.email],
-        });
-        expect(await findEntity(GroupPermissions, { id: group.id } as any)).toMatchObject({ [flag]: false });
-      }
-    );
+      expect(response.statusCode).toBe(405);
+      expect(response.body.message).toMatchObject({
+        error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
+        data: [defaultUser.email],
+      });
+      expect(await findEntity(GroupPermissions, { id: group.id } as any)).toMatchObject({ [flag]: false });
+    });
   });
 });
