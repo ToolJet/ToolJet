@@ -64,7 +64,8 @@ describe('Stat', () => {
 
   it('moves the change badge beside the figure when the icon takes the corner', () => {
     const { getByText } = mount({ value: '42', change: '+3', icon: 'users', iconPosition: 'right' });
-    const badge = getByText('+3');
+    // The change text sits in the badge (which ends a long one in an ellipsis); the badge sits in the figure's row.
+    const badge = getByText('+3').closest('[title]');
     expect(badge.parentElement.textContent).toContain('42');
   });
 

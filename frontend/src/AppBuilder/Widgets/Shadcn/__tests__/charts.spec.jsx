@@ -122,6 +122,8 @@ describe('ShadLineChart', () => {
       dashedFields: 'expenses',
       referenceValue: 25000,
       referenceLabel: 'Target',
+      // Currency set explicitly: new line charts default to a number axis (a currency default drew counts as $3).
+      yAxisFormat: 'currency',
     });
     const lines = container.querySelectorAll('.recharts-line-curve');
     expect(lines).toHaveLength(2);
@@ -131,6 +133,11 @@ describe('ShadLineChart', () => {
     expect(container.textContent).toContain('Target');
     // Currency ticks, abbreviated.
     expect(container.textContent).toContain('$32K');
+  });
+
+  it('a new line chart draws its axis as numbers, not money', () => {
+    const { container } = mount(ShadLineChart, shadLineChartConfig);
+    expect(container.textContent).not.toContain('$');
   });
 
   it('sets clickedDatum and fires onClick for the clicked point', () => {
@@ -207,12 +214,17 @@ describe('ShadSparkline', () => {
 
 describe('ShadComboChart', () => {
   it('draws bars and a line, the line on a right percent axis', () => {
-    const { container } = mount(ShadComboChart, shadComboChartConfig);
+    const { container } = mount(ShadComboChart, shadComboChartConfig, { yAxisFormat: 'currency' });
     expect(container.querySelectorAll('.recharts-bar-rectangle')).toHaveLength(6);
     expect(container.querySelectorAll('.recharts-line-curve')).toHaveLength(1);
     expect(container.querySelectorAll('.recharts-yAxis')).toHaveLength(2);
     expect(container.textContent).toContain('%');
     expect(container.textContent).toContain('$');
+  });
+
+  it('a new combo chart draws its left axis as numbers, not money', () => {
+    const { container } = mount(ShadComboChart, shadComboChartConfig);
+    expect(container.textContent).not.toContain('$');
   });
 
   it('has one axis when nothing is on the right', () => {

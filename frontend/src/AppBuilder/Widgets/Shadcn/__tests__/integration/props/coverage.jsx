@@ -384,6 +384,9 @@ export const PROBES = [
     value: 'https://example.com/hero.jpg',
     context: { properties: { background: 'image' } },
   },
+  // Line and Combo charts draw a number axis by default; the currency shows once the axis format is currency.
+  { widget: 'ShadLineChart', key: 'currency', value: 'EUR', context: { properties: { yAxisFormat: 'currency' } } },
+  { widget: 'ShadComboChart', key: 'currency', value: 'EUR', context: { properties: { yAxisFormat: 'currency' } } },
   { widget: 'ShadCardGrid', key: 'columns', value: '{{1}}' },
   { widget: 'ShadCardGrid', key: 'minCardWidth', value: '{{400}}' },
   // Chat: the sender's name and avatar show on a message that has none of its own.
