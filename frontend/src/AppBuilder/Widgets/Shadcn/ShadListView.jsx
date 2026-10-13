@@ -54,6 +54,7 @@ const Row = ({
           'relative overflow-hidden transition-colors hover:bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
           selected &&
             'bg-[color:var(--lv-selected-bg,color-mix(in_srgb,var(--sc-primary)_8%,transparent))] ring-1 ring-inset ring-primary',
+          look.framed && 'border border-[color:var(--lv-item-border,var(--sc-border))]',
           mode === 'list' &&
             showBorder &&
             'border-b border-b-[color:var(--lv-divider,var(--sc-border))] last:border-b-0'
