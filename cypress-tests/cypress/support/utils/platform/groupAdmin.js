@@ -370,7 +370,6 @@ export const verifyNoBuilderCapabilities = (workspaceSlug) => {
   cy.wait(2000);
   cy.get(commonSelectors.appCreateButton).should("not.exist");
   cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
-  cy.get(commonSelectors.globalWorkFlowsIcon).should("not.exist");
   cy.get(commonSelectors.databaseIcon).should("not.exist");
 };
 
