@@ -1067,6 +1067,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             );
           }
 
+          // A map pans on a drag inside it (the ToolJet UI 2.0 Map, and the Google Map in its UI 2.0 look); the
+          // widget moves by its handle.
+          if (['ShadMap', 'Map'].includes(box?.component?.component)) {
+            const mapElem = e.target.querySelector('.sc-map-canvas, .tj-map-look-shadcn');
+            isDragOnInnerElement = !!mapElem?.contains(e.inputEvent.target);
+          }
+
           if (
             ['RangeSlider', 'RangeSliderV2', 'BoundedBox'].includes(box?.component?.component) ||
             isDragOnInnerElement
