@@ -1,5 +1,6 @@
 import { CreateDefaultGroupObject } from '../types';
 import { CreateResourcePermissionObject } from '../types/granular_permissions';
+import { UserPermissions } from '@modules/ability/types';
 
 export enum GROUP_PERMISSIONS_TYPE {
   DEFAULT = 'default',
@@ -11,6 +12,9 @@ export enum USER_ROLE {
   ADMIN = 'admin',
   BUILDER = 'builder',
 }
+
+export const roleGroupFor = (p: UserPermissions): USER_ROLE =>
+  p.isAdmin ? USER_ROLE.ADMIN : p.isEndUser ? USER_ROLE.END_USER : USER_ROLE.BUILDER;
 
 export const HUMANIZED_USER_LIST = ['End-user', 'Builder', 'Admin'];
 
@@ -241,5 +245,4 @@ export enum FEATURE_KEY {
   REVOKE_GROUP_ADMIN = 'revoke_group_admin',
   GET_GROUP_ADMINS = 'get_group_admins',
   GET_ADDABLE_ADMINS = 'get_addable_admins',
-  GET_USER_ADMIN_GROUPS = 'get_user_admin_groups',
 }

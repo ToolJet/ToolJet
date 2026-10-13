@@ -227,6 +227,31 @@ describe('ModalV2: open/close lifecycle', () => {
     await waitFor(() => expect(exposed()).toBe(false));
     await waitFor(() => expect(modalBody()).not.toBeInTheDocument(), { timeout: 3000 });
   });
+
+  test('[ModalV2-OPEN-005] await components.modal1.open() resolves to true once the modal has opened', async () => {
+    renderModal();
+    await waitFor(() => expect(triggerButton()).toBeInTheDocument());
+
+    const opened = await widget.act('open');
+
+    expect(opened).toBe(true);
+    expect(modalBody()).toBeInTheDocument();
+  });
+
+  test('[ModalV2-OPEN-006] open() resolves to false when the modal is closed before it finishes opening', async () => {
+    renderModal();
+    await waitFor(() => expect(exposed('open')).toBeInstanceOf(Function));
+
+    let opened;
+    await widget.session.store.act(async () => {
+      const opening = exposed('open')();
+      await exposed('close')();
+      opened = await opening;
+    });
+
+    expect(opened).toBe(false);
+    expect(exposed()).toBe(false);
+  });
 });
 
 describe('ModalV2: onOpen/onClose events', () => {
