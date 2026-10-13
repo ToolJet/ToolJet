@@ -135,9 +135,11 @@ Authority: `server/AGENTS.md` "Security" (parameterized queries only), `frontend
 "Security" (no secrets client-side, `resolveCode` evaluates what reaches it), root `AGENTS.md`
 "Public/private boundary". Also check:
 
-- Authorization: every new controller route carries the guard and CASL ability the sibling
-  routes carry (`server/AGENTS.md` "Authorization (CASL)"). A route that resolves a resource by
-  id without a workspace scope is an IDOR.
+- Authorization: every new controller route, including one a merge re-enables, carries the
+  guard and CASL ability the sibling routes carry (`server/AGENTS.md` "Authorization (CASL)").
+  A route that resolves a resource by id without a workspace scope is an IDOR. A route that
+  takes `:organizationId` must check it against the caller's workspace
+  (`OrganizationValidateGuard`) unless it is deliberately public.
 - Secrets and tokens in logs, error messages, fixtures, or the PR description.
 - Private paths or private source quoted in public files or public comments.
 
