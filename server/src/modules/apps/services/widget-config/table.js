@@ -104,6 +104,22 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
+    manageColumns: {
+      type: 'toggle',
+      displayName: 'Manage columns',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    useHideColumnSelectorButton: {
+      type: 'toggle',
+      displayName: 'Hide column selector button',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     enablePrevButton: {
       type: 'toggle',
       displayName: 'Enable previous page button',
@@ -206,7 +222,7 @@ export const tableConfig = {
     },
     showDownloadButton: {
       type: 'toggle',
-      displayName: 'Show download button',
+      displayName: 'Download data',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
@@ -222,7 +238,7 @@ export const tableConfig = {
     },
     showBulkUpdateActions: {
       type: 'toggle',
-      displayName: 'Show update buttons',
+      displayName: 'Update buttons',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
@@ -260,6 +276,15 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
+    enableRowClickOnCheckbox: {
+      type: 'toggle',
+      displayName: 'Enable row click event on checkbox',
+      tip: 'Enable row click event when row is selected using checkbox',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
     defaultSelectedRow: {
       type: 'code',
       displayName: 'Default selected row',
@@ -273,7 +298,7 @@ export const tableConfig = {
 
     showAddNewRowButton: {
       type: 'toggle',
-      displayName: 'Show add new row button',
+      displayName: 'Add new row',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
@@ -281,7 +306,31 @@ export const tableConfig = {
     },
     showRefreshButton: {
       type: 'toggle',
-      displayName: 'Show refresh button',
+      displayName: 'Refresh table',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    addNewRowColumns: {
+      type: 'code',
+      displayName: 'Configure add new row',
+      validation: {
+        schema: { type: 'array' },
+        defaultValue: [],
+      },
+    },
+    downloadFileName: {
+      type: 'code',
+      displayName: 'File name',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '',
+      },
+    },
+    downloadFilteredData: {
+      type: 'toggle',
+      displayName: 'Download only filtered data',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -833,9 +882,13 @@ export const tableConfig = {
       actions: { value: [] },
       enabledSort: { value: '{{true}}' },
       hideColumnSelectorButton: { value: '{{false}}' },
+      manageColumns: { value: '{{true}}' },
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },
       showRefreshButton: { value: '{{false}}' },
+      addNewRowColumns: { value: '{{null}}' },
+      downloadFileName: { value: '' },
+      downloadFilteredData: { value: '{{false}}' },
       allowSelection: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
 
@@ -846,6 +899,7 @@ export const tableConfig = {
       enableExpandableRows: { value: '{{false}}' },
       expansionHeight: { value: '{{229}}' },
       disableRowDeselection: { value: '{{false}}' },
+      enableRowClickOnCheckbox: { value: '{{true}}' },
     },
     events: [],
     styles: {
