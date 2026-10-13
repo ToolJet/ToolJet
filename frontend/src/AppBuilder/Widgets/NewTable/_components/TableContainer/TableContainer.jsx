@@ -110,21 +110,20 @@ export const TableContainer = ({
     moduleId,
   ]);
 
-  const { table, pagination, setPagination, columnVisibility, setColumnFilters, columnOrder, setColumnOrder } =
-    useTable({
-      data,
-      columns,
-      enableSorting,
-      enablePagination,
-      showBulkSelector,
-      serverSidePagination,
-      serverSideSort,
-      serverSideFilter,
-      rowsPerPage: effectiveRowsPerPage,
-      globalFilter,
-      setGlobalFilter,
-      expandedRows,
-    });
+  const { table, pagination, setPagination, columnVisibility, setColumnFilters } = useTable({
+    data,
+    columns,
+    enableSorting,
+    enablePagination,
+    showBulkSelector,
+    serverSidePagination,
+    serverSideSort,
+    serverSideFilter,
+    rowsPerPage: effectiveRowsPerPage,
+    globalFilter,
+    setGlobalFilter,
+    expandedRows,
+  });
 
   // Collapse all expanded rows when sort, filter, search or page changes
   useEffect(() => {
@@ -149,10 +148,6 @@ export const TableContainer = ({
       setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     }
   }, [globalFilter, serverSideSearch, setPagination]);
-
-  useEffect(() => {
-    setColumnOrder(columns.map((column) => column.id));
-  }, [columns, setColumnOrder]);
 
   const handleFilterChange = useCallback(
     (filters) => {
@@ -207,8 +202,6 @@ export const TableContainer = ({
         tableBodyRef={tableBodyRef}
         darkMode={darkMode}
         table={table}
-        columnOrder={columnOrder}
-        setColumnOrder={setColumnOrder}
         setExposedVariables={setExposedVariables}
         fireEvent={fireEvent}
         lastClickedRowRef={lastClickedRowRef}
