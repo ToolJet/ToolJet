@@ -71,7 +71,10 @@ export const WidgetBox = ({ component, darkMode }) => {
             </div>
           </center>
         </div>
-        <div className="component-title">{t(`widget.${component.name}.displayName`, component.displayName)}</div>
+        <div className="component-title">
+          {/* A palette preset's own name (ComponentsManagerTab PRESETS: Google Map), not its base widget's. */}
+          {component.presetLabel || t(`widget.${component.name}.displayName`, component.displayName)}
+        </div>
       </div>
     </div>
   );

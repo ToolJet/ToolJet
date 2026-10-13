@@ -12,16 +12,28 @@ import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
 import { ANT_DESIGN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/antDesign';
 import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
+import { UI1, UI2, resolveComponentLibrary } from './componentLibrary';
 
 // Presets (component packs): a palette entry that adds a native widget with some styles set. The shadcn/ui Table is
 // ToolJet's own Table in its shadcn look, so it keeps every Table feature and convention (the older ShadTable widget
-// stays registered for apps that use it, but leaves the palette).
+// stays registered for apps that use it, but leaves the palette). The Google Map is the native Map in the pack's frame
+// (it needs a Google Maps API key; the pack's own Map does not), named apart from it in the palette.
 const SHADCN_TABLE = 'Table:shadcn';
-const PRESETS = { [SHADCN_TABLE]: { base: 'Table', stylePreset: { tableLook: 'shadcn' } } };
+const SHADCN_GOOGLE_MAP = 'Map:shadcn';
+const PRESETS = {
+  [SHADCN_TABLE]: { base: 'Table', stylePreset: { tableLook: 'shadcn' } },
+  [SHADCN_GOOGLE_MAP]: { base: 'Map', stylePreset: { mapLook: 'shadcn' }, displayName: 'Google Map' },
+};
 const presetDefinition = (name) => {
   const preset = PRESETS[name];
   const base = preset && componentTypeDefinitionMap[preset.base];
-  return base ? { ...base, stylePreset: preset.stylePreset } : undefined;
+  return base
+    ? {
+        ...base,
+        stylePreset: preset.stylePreset,
+        ...(preset.displayName ? { displayName: preset.displayName, presetLabel: preset.displayName } : {}),
+      }
+    : undefined;
 };
 
 const SHADCN_SECTIONS = [
@@ -37,6 +49,8 @@ const SHADCN_SECTIONS = [
     items: [
       SHADCN_TABLE,
       'ShadKanban',
+      'ShadMap',
+      SHADCN_GOOGLE_MAP,
       'ShadSchedule',
       'ShadStat',
       'ShadProgressList',
@@ -115,16 +129,17 @@ const SHADCN_SECTIONS = [
   },
 ];
 
-// Component libraries (experiment): the panel lists one library at a time, picked in a toggle above the search box.
+// Component libraries: the panel lists one library at a time, picked in a toggle above the search box. The pick is the
+// app's saved library (globalSettings.componentLibrary, see componentLibrary.js), which AI builds also follow.
 // A pack lists its own widgets plus FlexContainer, which composes them.
 const COMPONENT_LIBRARIES = [
-  { value: 'tooljet', label: 'ToolJet UI 1.0' },
+  { value: UI1, label: 'ToolJet UI 1.0' },
   {
-    value: 'shadcn',
+    value: UI2,
     label: 'ToolJet UI 2.0',
     badge: 'Beta',
     sections: SHADCN_SECTIONS,
-    components: [...SHADCN_COMPONENTS.filter((name) => name !== 'ShadTable'), SHADCN_TABLE],
+    components: [...SHADCN_COMPONENTS.filter((name) => name !== 'ShadTable'), SHADCN_TABLE, SHADCN_GOOGLE_MAP],
   },
 ];
 // Pack widgets never appear in the ToolJet list. The Ant Design pack is parked: still registered, so apps that use it
@@ -190,14 +205,31 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
-  const [libraryKey, setLibraryKey] = useState('tooljet');
+  // The app's library: saved, else inferred (an app that already holds a UI 2.0 widget opens on UI 2.0). A switch saves
+  // it, except in a frozen editor, where it only changes the list.
+  const savedLibrary = useStore((state) => state.globalSettings?.componentLibrary);
+  const pages = useStore((state) => state.modules?.canvas?.pages);
+  const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
+  const appLibrary = useMemo(
+    () => resolveComponentLibrary({ componentLibrary: savedLibrary }, pages).library,
+    [savedLibrary, pages]
+  );
+  // The pick shows at once; it gives way to the app's library once that is saved or another app or version loads.
+  const [pickedLibrary, setPickedLibrary] = useState(null);
+  useEffect(() => setPickedLibrary(null), [appLibrary]);
+  const libraryKey = pickedLibrary ?? appLibrary;
+  const pickLibrary = (value) => {
+    setPickedLibrary(value);
+    if (value !== savedLibrary && !shouldFreeze) globalSettingsChanged({ componentLibrary: value });
+  };
   const library = COMPONENT_LIBRARIES.find((entry) => entry.value === libraryKey) ?? COMPONENT_LIBRARIES[0];
 
-  // The widgets of the selected library: a pack's own widgets (and FlexContainer), or every native widget.
+  // The widgets of the selected library: a pack's own widgets (and FlexContainer), or every native widget. A preset
+  // belongs to the pack that lists it, so a search in ToolJet UI 1.0 does not offer the pack's Table or Google Map.
   const inLibrary = useCallback(
     (name) => {
       const names = libraryComponentNames(library);
-      return names ? names.has(name) : !PACK_COMPONENTS.has(name);
+      return names ? names.has(name) : !PACK_COMPONENTS.has(name) && !PRESETS[name];
     },
     [library]
   );
@@ -397,7 +429,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
         onValueChange={(value) => {
           // A click on the active item deselects it in a toggle group; keep a library picked.
           if (!value) return;
-          setLibraryKey(value);
+          pickLibrary(value);
           setSearchQuery('');
         }}
       >

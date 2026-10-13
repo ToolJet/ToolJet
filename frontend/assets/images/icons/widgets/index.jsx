@@ -142,6 +142,7 @@ const SHADCN_ICONS = {
   shadschedule: Calendar,
   shadchat: Chat,
   shadquestionnaire: Form,
+  shadmap: Map,
   shadpiechart: PieChartIcon,
   shadprogress: Progressbar,
   shadradiogroup: RadioButton,

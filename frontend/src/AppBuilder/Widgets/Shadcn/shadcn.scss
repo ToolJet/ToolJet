@@ -337,6 +337,317 @@
   }
 }
 
+// ---- Map (ShadMap.jsx) ---------------------------------------------------------------------------------------------
+// Leaflet's map in the pack's frame. Its panes, controls and popups are restyled from the tokens, so they follow light,
+// dark and brand themes. Pins are toned by status (info is a fixed blue: on a map the four states must stay apart
+// whatever the brand colour; pins with no status take the accent). Leaflet positions markers with inline transforms,
+// margins and sizes, so no rule here sets those on .leaflet-marker-icon.
+.tj-shadcn .sc-map {
+  --sc-map-info: #2563eb;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--lk-border, var(--sc-border));
+  border-radius: var(--lk-radius, calc(var(--sc-radius) + 4px));
+  background: var(--lk-bg, var(--sc-muted));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+.dark-theme .tj-shadcn .sc-map,
+.theme-dark .tj-shadcn .sc-map {
+  --sc-map-info: #60a5fa;
+}
+.tj-shadcn .sc-map[data-disabled] .sc-map-canvas {
+  opacity: 0.6;
+  filter: grayscale(0.4);
+}
+.tj-shadcn .sc-map-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--lk-bg, var(--sc-muted));
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+.tj-shadcn .sc-map-canvas:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--lk-accent, var(--sc-ring));
+}
+
+// Zoom buttons: a small bordered group, like the pack's outline buttons.
+.tj-shadcn .sc-map .leaflet-control-zoom {
+  margin: 10px 10px 0 0;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  overflow: hidden;
+  background: var(--sc-card);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.08);
+}
+.tj-shadcn .sc-map .leaflet-control-zoom a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--sc-foreground);
+  background: var(--sc-card);
+  text-decoration: none;
+}
+.tj-shadcn .sc-map .leaflet-control-zoom a + a {
+  border-top: 1px solid var(--sc-border);
+}
+.tj-shadcn .sc-map .leaflet-control-zoom a:hover {
+  background: var(--sc-muted);
+}
+.tj-shadcn .sc-map .leaflet-control-zoom a.leaflet-disabled {
+  color: var(--sc-muted-foreground);
+  opacity: 0.5;
+  cursor: default;
+}
+.tj-shadcn .sc-map[data-disabled] .leaflet-control-zoom {
+  display: none;
+}
+
+// Attribution: small and quiet, on a translucent surface.
+.tj-shadcn .sc-map .leaflet-control-attribution {
+  margin: 0;
+  padding: 1px 6px;
+  font-size: 10px;
+  line-height: 16px;
+  color: var(--sc-muted-foreground);
+  background: color-mix(in srgb, var(--sc-card) 82%, transparent);
+  border-top-left-radius: 6px;
+}
+.tj-shadcn .sc-map .leaflet-control-attribution a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+
+// Pins: a teardrop in the status tone with a white heart; the selected pin is larger with a ring.
+.tj-shadcn .sc-map-pin {
+  --pin: var(--lk-accent, var(--sc-primary));
+  display: block;
+  width: 28px;
+  height: 36px;
+  color: var(--pin);
+  cursor: pointer;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.35));
+  transform-origin: 50% 100%;
+  transition: transform 120ms ease;
+}
+.tj-shadcn .sc-map-pin[data-tone='success'] {
+  --pin: var(--sc-success);
+}
+.tj-shadcn .sc-map-pin[data-tone='warning'] {
+  --pin: var(--sc-warning);
+}
+.tj-shadcn .sc-map-pin[data-tone='danger'] {
+  --pin: var(--sc-destructive);
+}
+.tj-shadcn .sc-map-pin[data-tone='info'] {
+  --pin: var(--sc-map-info);
+}
+.tj-shadcn .sc-map-pin[data-tone='neutral'] {
+  --pin: var(--sc-muted-foreground);
+}
+.tj-shadcn .sc-map-pin svg {
+  display: block;
+  overflow: visible;
+}
+.tj-shadcn .sc-map-pin-body {
+  fill: var(--pin);
+  stroke: #ffffff;
+  stroke-width: 1.5px;
+}
+.tj-shadcn .sc-map-pin-dot {
+  fill: #ffffff;
+}
+.tj-shadcn .sc-map-marker:hover .sc-map-pin,
+.tj-shadcn .sc-map-marker:focus-visible .sc-map-pin {
+  transform: scale(1.12);
+}
+.tj-shadcn .sc-map-pin[data-selected] {
+  transform: scale(1.25);
+  filter: drop-shadow(0 0 0 var(--pin)) drop-shadow(0 2px 4px rgb(0 0 0 / 0.4));
+}
+.tj-shadcn .sc-map-pin[data-selected] .sc-map-pin-body {
+  stroke-width: 2px;
+}
+.tj-shadcn .sc-map-marker {
+  outline: none;
+}
+.tj-shadcn .sc-map[data-disabled] .sc-map-pin,
+.tj-shadcn .sc-map[data-disabled] .sc-map-cluster {
+  cursor: default;
+}
+
+// Groups: a count in the foreground colour (apart from every status colour), with a soft halo.
+.tj-shadcn .sc-map-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--lk-cluster, var(--sc-foreground));
+  color: var(--sc-background);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-cluster, var(--sc-foreground)) 18%, transparent),
+    0 1px 3px rgb(0 0 0 / 0.25);
+  border: 2px solid #ffffff;
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.tj-shadcn .sc-map-marker:hover .sc-map-cluster,
+.tj-shadcn .sc-map-marker:focus-visible .sc-map-cluster {
+  transform: scale(1.08);
+}
+
+// Popup: a popover card from the tokens.
+.tj-shadcn .sc-map .sc-map-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  border: 1px solid var(--sc-border);
+  border-radius: calc(var(--sc-radius) + 2px);
+  background: var(--sc-popover);
+  color: var(--sc-popover-foreground);
+  box-shadow: 0 10px 24px -6px rgb(0 0 0 / 0.18), 0 2px 6px rgb(0 0 0 / 0.08);
+}
+.tj-shadcn .sc-map .sc-map-popup .leaflet-popup-content {
+  margin: 12px 30px 12px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.tj-shadcn .sc-map .sc-map-popup .leaflet-popup-tip {
+  background: var(--sc-popover);
+  box-shadow: none;
+  border: 1px solid var(--sc-border);
+}
+.tj-shadcn .sc-map .sc-map-popup a.leaflet-popup-close-button {
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  font-size: 18px;
+  line-height: 20px;
+  border-radius: 6px;
+  color: var(--sc-muted-foreground);
+  text-align: center;
+}
+.tj-shadcn .sc-map .sc-map-popup a.leaflet-popup-close-button:hover {
+  background: var(--sc-muted);
+  color: var(--sc-foreground);
+}
+.tj-shadcn .sc-map-popup-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+.tj-shadcn .sc-map-popup-title {
+  font-weight: 600;
+  color: var(--sc-foreground);
+}
+.tj-shadcn .sc-map-popup-sub {
+  margin-top: 2px;
+  color: var(--sc-muted-foreground);
+}
+.tj-shadcn .sc-map-popup-lines {
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--sc-border);
+  color: var(--sc-foreground);
+  font-size: 12px;
+}
+.tj-shadcn .sc-map-popup-lines li + li {
+  margin-top: 2px;
+}
+.tj-shadcn .sc-map-chip {
+  --chip: var(--sc-muted-foreground);
+  padding: 1px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  background: color-mix(in srgb, var(--chip) 14%, transparent);
+  color: color-mix(in srgb, var(--chip) 78%, var(--sc-foreground));
+}
+.tj-shadcn .sc-map-chip[data-tone='success'] {
+  --chip: var(--sc-success);
+}
+.tj-shadcn .sc-map-chip[data-tone='warning'] {
+  --chip: var(--sc-warning);
+}
+.tj-shadcn .sc-map-chip[data-tone='danger'] {
+  --chip: var(--sc-destructive);
+}
+.tj-shadcn .sc-map-chip[data-tone='info'] {
+  --chip: var(--sc-map-info);
+}
+
+// The empty state, the skipped-rows footnote and the loading veil sit over the map.
+.tj-shadcn .sc-map-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.tj-shadcn .sc-map-empty span {
+  padding: 6px 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--sc-card) 92%, transparent);
+  color: var(--sc-muted-foreground);
+  font-size: 13px;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.06);
+}
+.tj-shadcn .sc-map-note {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 2px 8px;
+  border: 1px solid var(--sc-border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--sc-card) 90%, transparent);
+  color: var(--sc-muted-foreground);
+  font-size: 11px;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tj-shadcn .sc-map-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--sc-background) 55%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tj-shadcn .sc-map-pin,
+  .tj-shadcn .sc-map-cluster {
+    transition: none;
+  }
+}
+
+// The default basemap (OpenStreetMap's tiles, mapModel.tileSource) toned to the theme: muted under light themes, so
+// the pins carry the colour, and inverted under dark ones, so the map is not a bright block on a dark page. Tiles an
+// author or the install chose carry no data-basemap and are drawn as they are. The filter goes on each tile, not on the
+// tile pane: filtering the pane as one layer drew hairline seams between tiles.
+.tj-shadcn .sc-map-canvas[data-basemap='light'] img.leaflet-tile {
+  filter: saturate(0.28) contrast(0.9) brightness(1.06);
+}
+.tj-shadcn .sc-map-canvas[data-basemap='dark'] img.leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) saturate(0.35) brightness(0.88) contrast(0.86);
+}
+
 // The hero's aside sits right of its text behind a hairline; in a narrow hero (a phone, a half-width column) it goes
 // under the text, starting at the left edge.
 .tj-shadcn .sc-hero-box {
@@ -406,4 +717,445 @@
 }
 .tj-shadcn .sc-schedule .sc-slot[data-selected] {
   background-color: color-mix(in srgb, var(--lk-accent, var(--sc-primary)) 14%, transparent);
+}
+
+// Pin contents: a short label (a stop number) or an icon in place of the dot, white on the pin's colour.
+.tj-shadcn .sc-map-pin {
+  position: relative;
+}
+.tj-shadcn .sc-map-pin-label,
+.tj-shadcn .sc-map-pin-glyph {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 28px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.tj-shadcn .sc-map-pin-glyph svg {
+  display: block;
+}
+
+// A longer label is a pill with a pointer (a price): the card surface, a dot of the status colour; selected, filled.
+.tj-shadcn .sc-map-pill {
+  --pin: var(--lk-accent, var(--sc-primary));
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px 0 8px;
+  border: 1px solid color-mix(in srgb, var(--pin) 55%, var(--sc-border));
+  border-radius: 9999px;
+  background: var(--sc-card);
+  color: var(--sc-foreground);
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.tj-shadcn .sc-map-pill::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--pin);
+}
+.tj-shadcn .sc-map-pill::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  transform: rotate(45deg);
+  background: inherit;
+  border-right: 1px solid color-mix(in srgb, var(--pin) 55%, var(--sc-border));
+  border-bottom: 1px solid color-mix(in srgb, var(--pin) 55%, var(--sc-border));
+}
+.tj-shadcn .sc-map-pill-icon {
+  display: flex;
+  color: var(--pin);
+}
+.tj-shadcn .sc-map-pill-icon svg {
+  stroke: currentColor;
+}
+.tj-shadcn .sc-map-pill[data-tone='success'] {
+  --pin: var(--sc-success);
+}
+.tj-shadcn .sc-map-pill[data-tone='warning'] {
+  --pin: var(--sc-warning);
+}
+.tj-shadcn .sc-map-pill[data-tone='danger'] {
+  --pin: var(--sc-destructive);
+}
+.tj-shadcn .sc-map-pill[data-tone='info'] {
+  --pin: var(--sc-map-info);
+}
+.tj-shadcn .sc-map-pill[data-selected] {
+  background: var(--sc-foreground);
+  color: var(--sc-background);
+  border-color: var(--sc-foreground);
+  z-index: 1;
+}
+.tj-shadcn .sc-map-marker:hover .sc-map-pill {
+  transform: translateY(-1px) scale(1.04);
+}
+
+// Where the routes start (a depot), and the picked spot.
+.tj-shadcn .sc-map-start {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--sc-foreground);
+  border: 3px solid var(--sc-card);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+}
+.tj-shadcn .sc-map-picked {
+  --pin: var(--lk-accent, var(--sc-primary));
+  display: block;
+  color: var(--pin);
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.4));
+  cursor: grab;
+}
+.tj-shadcn .sc-map-picked svg {
+  display: block;
+  overflow: visible;
+}
+.tj-shadcn .sc-map-picked .sc-map-pin-body {
+  fill: var(--pin);
+  stroke: #ffffff;
+  stroke-width: 2px;
+}
+.tj-shadcn .sc-map[data-picking] .sc-map-canvas {
+  cursor: crosshair;
+}
+
+// Routes: a line in its colour over a light casing; areas: a tinted fill with an outline. The colour arrives as the
+// --shape variable on each path (an SVG attribute cannot hold var()).
+.tj-shadcn .sc-map path.sc-map-route-casing {
+  stroke: var(--sc-card);
+  stroke-opacity: 0.9;
+  fill: none;
+}
+.tj-shadcn .sc-map path.sc-map-route {
+  stroke: var(--shape, var(--lk-accent, var(--sc-primary)));
+  stroke-opacity: 0.9;
+  fill: none;
+  cursor: pointer;
+}
+.tj-shadcn .sc-map path.sc-map-route[data-selected] {
+  stroke-width: 6px;
+  stroke-opacity: 1;
+}
+.tj-shadcn .sc-map path.sc-map-area {
+  stroke: var(--shape, var(--lk-accent, var(--sc-primary)));
+  stroke-opacity: 0.75;
+  fill: var(--shape, var(--lk-accent, var(--sc-primary)));
+  fill-opacity: 0.1;
+  cursor: pointer;
+}
+.tj-shadcn .sc-map path.sc-map-area:hover {
+  fill-opacity: 0.16;
+}
+.tj-shadcn .sc-map path.sc-map-area[data-selected] {
+  stroke-width: 2.5px;
+  stroke-opacity: 1;
+  fill-opacity: 0.2;
+}
+.tj-shadcn .sc-map .leaflet-tooltip.sc-map-area-label,
+.tj-shadcn .sc-map .leaflet-tooltip.sc-map-route-label {
+  padding: 2px 8px;
+  border: 1px solid var(--sc-border);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--sc-card) 88%, transparent);
+  color: var(--sc-foreground);
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.tj-shadcn .sc-map .leaflet-tooltip.sc-map-area-label {
+  color: var(--sc-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+.tj-shadcn .sc-map .leaflet-tooltip.sc-map-area-label::before,
+.tj-shadcn .sc-map .leaflet-tooltip.sc-map-route-label::before {
+  display: none;
+}
+
+// The bottom-left corner: the legend, then the skipped-rows footnote.
+.tj-shadcn .sc-map-corner {
+  position: absolute;
+  left: 8px;
+  // Above the attribution line, which a wide legend would otherwise run into.
+  bottom: 22px;
+  z-index: 800;
+  max-width: calc(100% - 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  pointer-events: none;
+}
+.tj-shadcn .sc-map-corner > * {
+  pointer-events: auto;
+}
+.tj-shadcn .sc-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: calc(var(--sc-radius) + 2px);
+  background: color-mix(in srgb, var(--sc-card) 92%, transparent);
+  color: var(--sc-foreground);
+  font-size: 11.5px;
+  line-height: 18px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.tj-shadcn .sc-map-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.tj-shadcn .sc-map-legend-count {
+  color: var(--sc-muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.tj-shadcn .sc-map-legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: var(--swatch, var(--lk-accent, var(--sc-primary)));
+}
+.tj-shadcn .sc-map-legend-swatch.is-line {
+  width: 14px;
+  height: 4px;
+}
+.tj-shadcn .sc-map-legend-swatch.is-area {
+  width: 12px;
+  height: 10px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--swatch, var(--lk-accent, var(--sc-primary))) 22%, transparent);
+  border: 1.5px solid var(--swatch, var(--lk-accent, var(--sc-primary)));
+}
+
+// Address search, top left.
+.tj-shadcn .sc-map-search {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 850;
+  width: min(320px, calc(100% - 70px));
+}
+.tj-shadcn .sc-map-search input {
+  width: 100%;
+  height: 34px;
+  padding: 0 30px 0 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-card);
+  color: var(--sc-foreground);
+  font-size: 13px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  outline: none;
+}
+.tj-shadcn .sc-map-search input:focus {
+  border-color: var(--lk-accent, var(--sc-ring));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-accent, var(--sc-ring)) 22%, transparent);
+}
+.tj-shadcn .sc-map-search-spin {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.tj-shadcn .sc-map-search-results {
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-popover);
+  box-shadow: 0 10px 24px -6px rgb(0 0 0 / 0.2);
+}
+.tj-shadcn .sc-map-search-results button {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: calc(var(--sc-radius) - 2px);
+  color: var(--sc-foreground);
+  font-size: 12.5px;
+  line-height: 1.35;
+  text-align: left;
+}
+.tj-shadcn .sc-map-search-results button:hover,
+.tj-shadcn .sc-map-search-results button:focus-visible {
+  background: var(--sc-muted);
+  outline: none;
+}
+.tj-shadcn .sc-map-search-note {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-popover);
+  color: var(--sc-muted-foreground);
+  font-size: 12px;
+}
+
+// Tools under the zoom buttons (fullscreen), and the Map | Satellite switch above the attribution.
+.tj-shadcn .sc-map-tools {
+  position: absolute;
+  top: 82px;
+  right: 10px;
+  z-index: 850;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  overflow: hidden;
+  background: var(--sc-card);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.08);
+}
+.tj-shadcn .sc-map-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--sc-card);
+  color: var(--sc-foreground);
+}
+.tj-shadcn .sc-map-tool:hover {
+  background: var(--sc-muted);
+}
+.tj-shadcn .sc-map[data-disabled] .sc-map-tools {
+  display: none;
+}
+.tj-shadcn .sc-map-style-switch {
+  position: absolute;
+  right: 8px;
+  bottom: 24px;
+  z-index: 850;
+  display: flex;
+  padding: 2px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-card);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.14);
+}
+.tj-shadcn .sc-map-style-switch button {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: calc(var(--sc-radius) - 2px);
+  color: var(--sc-muted-foreground);
+  font-size: 12px;
+  font-weight: 600;
+}
+.tj-shadcn .sc-map-style-switch button[data-active] {
+  background: var(--sc-foreground);
+  color: var(--sc-background);
+}
+
+// Hints over the map: how to place the picked pin, and how to zoom with the wheel off.
+.tj-shadcn .sc-map-pick-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 820;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--sc-foreground);
+  color: var(--sc-background);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.tj-shadcn .sc-map-wheel-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 880;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.38);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+// Fullscreen without the browser's (inside a frame that does not allow it): the map fills the window.
+.tj-shadcn .sc-map[data-expanded] {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  height: 100vh;
+  border-radius: 0;
+}
+.tj-shadcn .sc-map:fullscreen {
+  height: 100vh;
+  border-radius: 0;
+}
+.tj-shadcn .sc-map-heat {
+  pointer-events: none;
+}
+// The routes and areas list: visually hidden until a keyboard user tabs into it, then a small panel at the top left.
+.tj-shadcn .sc-map-shapes {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tj-shadcn .sc-map-shapes:focus-within {
+  top: 10px;
+  left: 10px;
+  z-index: 900;
+  width: auto;
+  height: auto;
+  max-height: calc(100% - 20px);
+  overflow: auto;
+  clip: auto;
+  padding: 4px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-popover);
+  box-shadow: 0 10px 24px -6px rgb(0 0 0 / 0.2);
+}
+.tj-shadcn .sc-map-shapes button {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: calc(var(--sc-radius) - 2px);
+  font-size: 12px;
+  text-align: left;
+  color: var(--sc-foreground);
+}
+.tj-shadcn .sc-map-shapes button[aria-pressed='true'],
+.tj-shadcn .sc-map-shapes button:focus-visible {
+  background: var(--sc-muted);
+  outline: none;
 }

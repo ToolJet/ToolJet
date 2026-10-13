@@ -227,6 +227,7 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
     const parentMeta = componentMeta;
     const widgetResolvables = Object.freeze({
       Listview: 'listItem',
+      ShadListView: 'listItem',
     });
     const customResolverVariable = widgetResolvables[parentMeta?.component];
     const defaultChildren = deepClone(parentMeta)['defaultChildren'];
@@ -253,9 +254,13 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
 
       if (_.isArray(properties) && properties.length > 0) {
         properties.forEach((prop) => {
-          const accessor = customResolverVariable
-            ? `{{${customResolverVariable}.${accessorKey}}}`
-            : defaultValue[prop] || '';
+          // In a list, a property bound to the row reads {{listItem.<accessorKey>}}; one with a set default value (a
+          // muted tone, a button label) keeps that value, so a child can mix a bound field with fixed settings.
+          const fixed = defaultValue && defaultValue[prop] !== undefined;
+          const accessor =
+            customResolverVariable && accessorKey && !fixed
+              ? `{{${customResolverVariable}.${accessorKey}}}`
+              : (defaultValue && defaultValue[prop]) || '';
 
           _.set(newComponentDefinition, prop, {
             value: accessor,

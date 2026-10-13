@@ -227,7 +227,7 @@ export const formatValue = (value, format = 'auto', currency) => {
 
 /** One record meta field: 'city' shows the value, 'total|currency' formats it ('|date', '|number', ...), 'due|date:Due {}'
  *  places it in a label and 'seats:Seats' puts the label first. */
-const recordMetaPart = (row, spec, currency) => {
+export const recordMetaPart = (row, spec, currency) => {
   const [head, label] = spec.split(/:(.*)/s).map((s) => (s ?? '').trim());
   const [field, format] = head.split('|').map((s) => s.trim());
   if (!field || !(field in row)) return '';

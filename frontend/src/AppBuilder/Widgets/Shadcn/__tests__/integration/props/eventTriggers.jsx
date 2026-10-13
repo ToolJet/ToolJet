@@ -87,6 +87,24 @@ export const TRIGGERS = {
     onMonthChange: { steps: [['click', 'button[aria-label*="next" i]', 0]], reads: 'visibleMonth' },
   },
   ShadCardGrid: { onCardClick: { steps: [['click', '[role=button], button', 0]], reads: 'selectedItem' } },
+  // Map: pins one by one (no groups), a click on the map itself, and the zoom-in button (a move the user makes).
+  ShadMap: {
+    context: { clusterMarkers: '{{false}}' },
+    onMarkerClick: { steps: [['click', '[data-marker]', 0]], reads: 'selectedMarker' },
+    onMapClick: { steps: [['click', '.sc-map-canvas', 0]], reads: 'clickedLocation' },
+    onBoundsChange: { steps: [['click', 'a.leaflet-control-zoom-in', 0]], reads: 'zoom' },
+    // A route from rows, chosen in the routes and areas list (the keyboard's way to the lines on the map).
+    onShapeClick: {
+      context: { routes: "{{[{ name: 'Van 1', path: [[37.79, -122.39], [37.76, -122.42]] }]}}" },
+      steps: [['click', '[data-shape]', 0]],
+      reads: 'selectedShape',
+    },
+    onLocationPick: {
+      context: { pickLocation: '{{true}}' },
+      steps: [['click', '.sc-map-canvas', 0]],
+      reads: 'pickedLocation',
+    },
+  },
   ShadSchedule: {
     onBookingClick: { steps: [['click', '[data-booking]', 0]], reads: 'selectedBooking' },
     onSlotClick: { steps: [['click', '[data-resource] button[aria-label$="free"]', 0]], reads: 'selectedSlot' },

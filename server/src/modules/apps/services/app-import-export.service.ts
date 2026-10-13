@@ -1,4 +1,10 @@
 import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  componentLibraryFor,
+  definitionComponentTypes,
+  isComponentLibrary,
+  versionComponentTypes,
+} from '@helpers/component_library.helper';
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -977,6 +983,8 @@ export class AppImportExportService {
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
       createNewVersion,
+      importingPages,
+      importingComponents,
       isTemplateApp
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
@@ -2254,6 +2262,9 @@ export class AppImportExportService {
     appResourceMappings: AppResourceMappings,
     isNormalizedAppDefinitionSchema: boolean,
     createNewVersion?: boolean,
+    importingPages: Array<{ id?: string; appVersionId?: string }> = [],
+    importingComponents: Array<{ pageId?: string; type?: string }> = [],
+    // Last, so callers that pass the page and component lists positionally keep working.
     isTemplateApp = false
   ) {
     appResourceMappings = { ...appResourceMappings };
@@ -2276,9 +2287,12 @@ export class AppImportExportService {
       }
 
       let version;
+      // An existing app's own library outlives an import into it.
+      let targetLibrary: unknown;
       // this case only happens in the AI flow when app is imported within an existing app
       if (importedApp.editingVersion && !createNewVersion) {
         version = importedApp.editingVersion;
+        targetLibrary = version.globalSettings?.componentLibrary;
       } else {
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
@@ -2320,6 +2334,19 @@ export class AppImportExportService {
           version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
         }
       }
+
+      // Saved at creation: the source's library, or the one its widgets imply when it has none.
+      version.globalSettings = {
+        ...(version.globalSettings ?? {}),
+        componentLibrary: isComponentLibrary(targetLibrary)
+          ? targetLibrary
+          : componentLibraryFor(
+              version.globalSettings,
+              isNormalizedAppDefinitionSchema
+                ? versionComponentTypes(appVersion.id, importingPages, importingComponents)
+                : definitionComponentTypes(appVersion.definition)
+            ),
+      };
 
       await manager.save(version);
 

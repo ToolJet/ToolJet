@@ -215,6 +215,21 @@ describe('ShadChat', () => {
       expect(viewport().scrollTop).toBe(1000 - 64);
     });
 
+    it('opens a history bound to a query at the latest message once it loads', () => {
+      // The query has not run on the first draw (an empty initialChat); its rows arrive next. That is a load, not a
+      // send: the view goes to the end and no user turn is lifted to the top.
+      // A short thread (three rows, the last user turn among them) is where it showed: the turn was lifted to the
+      // top with empty room under it.
+      const chat = mountChat({ initialChat: [] });
+      chat.rerender({ ...CHAT, initialChat: history(3) });
+      expect(viewport().scrollTop).toBe(0);
+      expect(document.querySelector('[data-chat-spacer]').style.height).toBe('0px');
+      // A refresh that adds a row (a message saved from another screen) also stays at the end.
+      chat.rerender({ ...CHAT, initialChat: history(5) });
+      expect(viewport().scrollTop).toBe(5 * ROW - VIEW);
+      expect(document.querySelector('[data-chat-spacer]').style.height).toBe('0px');
+    });
+
     it('never moves a reader who scrolled up, and offers Jump to latest', async () => {
       const chat = mountChat({ initialChat: history(10) });
       const jump = screen.getByRole('button', { name: 'Jump to latest', hidden: true });
@@ -349,6 +364,24 @@ describe('ShadQuestionnaire', () => {
     await q.call('reset');
     expect(q.exposed).toMatchObject({ currentIndex: 0, isComplete: false, answers: { role: 'Finance', notes: '' } });
     expect(screen.getByText('Question 1 of 3')).toBeTruthy();
+  });
+
+  it('draws a one-line box for a text question with multiline false', () => {
+    mountQ({ items: [{ name: 'full_name', prompt: 'Your name?', type: 'text', multiline: false, required: true }] });
+    const box = screen.getByRole('textbox');
+    expect(box.tagName).toBe('INPUT');
+    fireEvent.change(box, { target: { value: 'Ada Lovelace' } });
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect(document.querySelector('[data-complete]')).not.toBeNull();
+  });
+
+  it('borders a picked answer in the accent by class (the pack reset beats an inline border colour)', () => {
+    mountQ();
+    const finance = screen.getByRole('radio', { name: /Finance/ });
+    expect(finance.style.borderColor).toBe('');
+    expect(finance.className).toContain('border-[color:var(--lk-border,var(--sc-border))]');
+    fireEvent.click(finance);
+    expect(finance.className).toContain('border-[color:var(--lk-accent,var(--sc-primary))]');
   });
 
   it('starts over when its items change', () => {

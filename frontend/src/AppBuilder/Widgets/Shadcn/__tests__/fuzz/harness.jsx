@@ -19,6 +19,7 @@ import * as Actions from '../../ShadActions';
 import * as Overlays from '../../ShadOverlays';
 import * as Chat from '../../ShadChat';
 import * as Questionnaire from '../../ShadQuestionnaire';
+import * as MapWidget from '../../ShadMap';
 import * as Schedule from '../../ShadSchedule';
 
 // jsdom has no layout: charts get a fixed box, and sub-canvases (tabs, list rows, custom cards, the dialog body) a
@@ -71,6 +72,7 @@ const MODULES = [
   Sections,
   Chat,
   Questionnaire,
+  MapWidget,
   Schedule,
 ];
 // Widgets that keep their own control state; the rest get withControlState, as in editorHelpers.js.

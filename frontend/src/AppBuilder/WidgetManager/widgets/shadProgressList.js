@@ -120,7 +120,7 @@ export const shadProgressListConfig = {
         schema: {
           type: 'string',
         },
-        defaultValue: 'auto',
+        defaultValue: 'currency',
       },
     },
     currency: {

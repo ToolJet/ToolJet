@@ -27,7 +27,6 @@ export { withControlState } from '../packHooks';
 // WidgetManager/shadcnSource.conversation.js, logic in questionnaireModel.js, style variables in looks/conversation.js.
 
 const ACCENT = 'var(--lk-accent,var(--sc-primary))';
-const BORDER = 'var(--lk-border,var(--sc-border))';
 
 const AnswerCard = ({ id, role, checked, shortcut, label, description, onSelect, onKeyDown, disabled, invalid }) => (
   <button
@@ -43,10 +42,9 @@ const AnswerCard = ({ id, role, checked, shortcut, label, description, onSelect,
     className={cn(
       'group/answer flex w-full items-center gap-3 rounded-[var(--lk-radius,var(--sc-radius))] border px-3.5 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-ring))_50%,transparent)] disabled:cursor-not-allowed disabled:opacity-60',
       checked
-        ? 'bg-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-primary))_7%,transparent)]'
-        : 'bg-transparent hover:bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
+        ? 'border-[color:var(--lk-accent,var(--sc-primary))] bg-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-primary))_7%,transparent)]'
+        : 'border-[color:var(--lk-border,var(--sc-border))] bg-transparent hover:bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
     )}
-    style={{ borderColor: checked ? ACCENT : BORDER }}
   >
     {shortcut ? (
       <kbd
@@ -54,9 +52,8 @@ const AnswerCard = ({ id, role, checked, shortcut, label, description, onSelect,
           'flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border px-1.5 font-sans text-xs font-medium transition-colors',
           checked
             ? 'border-transparent bg-[color:var(--lk-accent,var(--sc-primary))] text-[color:var(--sc-primary-foreground)]'
-            : 'bg-[color:var(--sc-background)] text-[color:var(--lk-fg,var(--sc-muted-foreground))]'
+            : 'border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--sc-background)] text-[color:var(--lk-fg,var(--sc-muted-foreground))]'
         )}
-        style={checked ? undefined : { borderColor: BORDER }}
         aria-hidden="true"
       >
         {shortcut}
@@ -76,9 +73,8 @@ const AnswerCard = ({ id, role, checked, shortcut, label, description, onSelect,
         role === 'radio' ? 'rounded-full' : 'rounded-[5px]',
         checked
           ? 'border-transparent bg-[color:var(--lk-accent,var(--sc-primary))] text-[color:var(--sc-primary-foreground)]'
-          : 'bg-transparent text-transparent'
+          : 'border-[color:var(--lk-border,var(--sc-input))] bg-transparent text-transparent'
       )}
-      style={checked ? undefined : { borderColor: 'var(--lk-border,var(--sc-input))' }}
       aria-hidden="true"
     >
       <Check strokeWidth={3} />
@@ -261,10 +257,9 @@ export const ShadQuestionnaire = (props) => {
   };
 
   const card = p.surface !== 'plain';
-  const frame = cn('flex flex-col', card ? 'border p-6' : 'p-1');
+  const frame = cn('flex flex-col', card ? 'border border-[color:var(--lk-border,var(--sc-border))] p-6' : 'p-1');
   const frameStyle = card
     ? {
-        borderColor: BORDER,
         borderRadius: 'var(--lk-radius,calc(var(--sc-radius) + 4px))',
         background: 'var(--lk-bg,var(--sc-card))',
       }
@@ -350,7 +345,17 @@ export const ShadQuestionnaire = (props) => {
               </span>
             ) : null}
           </legend>
-          {item.type === 'text' ? (
+          {item.type === 'text' && !item.multiline ? (
+            <Input
+              aria-labelledby={promptId}
+              aria-invalid={error ? true : undefined}
+              value={answer.text}
+              placeholder={item.placeholder || 'Type your answer'}
+              disabled={disabled}
+              onChange={(e) => update({ ...answer, text: e.target.value })}
+              className="rounded-[var(--lk-radius,var(--sc-radius))] border-[color:var(--lk-border,var(--sc-input))]"
+            />
+          ) : item.type === 'text' ? (
             <Textarea
               aria-labelledby={promptId}
               aria-invalid={error ? true : undefined}

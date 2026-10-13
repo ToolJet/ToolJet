@@ -56,6 +56,7 @@ const VARIABLES = [
   ['itemHoverBackgroundColor', '--lv-hover-bg'],
   ['selectedItemBackgroundColor', '--lv-selected-bg'],
   ['dividerColor', '--lv-divider'],
+  ['itemBorderColor', '--lv-item-border'],
   ['emptyTextColor', '--lv-empty'],
 ];
 
@@ -64,11 +65,15 @@ export const listLook = (styles = {}) => ({
     VARIABLES.filter(([key]) => isSet(styles[key])).map(([key, name]) => [name, String(styles[key])])
   ),
   item: {
+    // Outlined card: the theme's card surface and radius; each set colour or radius below still wins.
+    ...(styles.itemVariant === 'outline' ? { background: 'var(--sc-card)', borderRadius: 'var(--sc-radius)' } : {}),
     ...(isSet(styles.itemBackgroundColor) ? { background: styles.itemBackgroundColor } : {}),
-    ...(isSet(styles.itemBorderColor) ? { border: `1px solid ${styles.itemBorderColor}` } : {}),
     ...(isSet(styles.itemBorderRadius) ? { borderRadius: px(styles.itemBorderRadius) } : {}),
     boxShadow: SHADOWS[styles.itemShadow] ?? (isSet(styles.itemShadow) ? styles.itemShadow : 'none'),
   },
+  // The pack's base styles zero every border with !important, so an inline border never drew: a framed item takes
+  // the border class instead, coloured by --lv-item-border (Item border color) or the theme border.
+  framed: styles.itemVariant === 'outline' || isSet(styles.itemBorderColor),
   background: isSet(styles.backgroundColor) ? styles.backgroundColor : 'transparent',
   padding: isSet(styles.padding) ? px(styles.padding) : '0px',
 });

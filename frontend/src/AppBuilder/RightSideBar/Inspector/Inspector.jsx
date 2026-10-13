@@ -54,6 +54,7 @@ import { Cascader } from './Components/Cascader/Cascader';
 import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
+import { SAMPLE_ITEM_HEIGHT, sampleCardLayouts } from '@/AppBuilder/Widgets/Shadcn/listSampleCard';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -162,6 +163,8 @@ export const Inspector = ({
 }) => {
   const allComponents = useStore((state) => state.getCurrentPageComponents());
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
+  const currentLayout = useStore((state) => state.currentLayout);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
@@ -333,6 +336,30 @@ export const Inspector = ({
 
     newDefinition[paramType] = allParams;
     newComponent.component.definition = newDefinition;
+
+    // A List view switched between List and Grid moves its untouched sample card to suit (a row squashed into a
+    // narrow grid card), with the item height that arrangement needs.
+    if (
+      component.component.component === 'ShadListView' &&
+      param.name === 'mode' &&
+      paramType === 'properties' &&
+      oldValue !== value
+    ) {
+      const toMode = value === 'grid' ? 'grid' : 'list';
+      const children = Object.entries(allComponents || {})
+        .filter(([, child]) => child?.component?.parent === selectedComponentId)
+        .map(([id, child]) => ({ id, type: child.component.component, layout: child.layouts?.[currentLayout] }));
+      const layouts = sampleCardLayouts(children, toMode);
+      if (layouts) {
+        setComponentLayout(layouts, selectedComponentId);
+        const fromHeight = SAMPLE_ITEM_HEIGHT[toMode === 'grid' ? 'list' : 'grid'];
+        if (Number(resolveReferences(newDefinition.properties?.rowHeight?.value)) === fromHeight) {
+          const rowHeight = `{{${SAMPLE_ITEM_HEIGHT[toMode]}}}`;
+          newDefinition.properties.rowHeight = { ...newDefinition.properties.rowHeight, value: rowHeight };
+          setComponentProperty(selectedComponentId, 'rowHeight', rowHeight, 'properties', 'value');
+        }
+      }
+    }
 
     if (oldValue !== value) {
       const skipResolve =

@@ -162,6 +162,19 @@ export const ACTION_ARGS = {
   ShadText: { setText: { args: ['A new paragraph'] }, clear: { args: [] } },
   ShadIcon: { click: { args: [], fires: 'onClick' } },
   ShadImage: { setImageURL: { args: ['https://example.com/other.png'] }, clearImage: { args: [] } },
+  ShadMap: {
+    setCenter: { args: [51.5074, -0.1278] },
+    setZoom: { args: [5] },
+    fitBounds: { args: [], before: [['action', 'setZoom', 3]] },
+    selectMarker: { args: ['S-104'] },
+    clearSelection: { args: [], before: [['action', 'selectMarker', 'S-104']] },
+    setPickedLocation: { args: [37.79, -122.41], context: { pickLocation: '{{true}}' } },
+    clearPickedLocation: {
+      args: [],
+      context: { pickLocation: '{{true}}', defaultPickedLocation: '{{({ lat: 37.79, lng: -122.41 })}}' },
+    },
+    setMapStyle: { args: ['satellite'] },
+  },
   ShadChat: {
     appendHistory: { args: [{ message: 'A new reply', type: 'response' }] },
     sendMessage: { args: [{ message: 'A new question', type: 'message' }] },

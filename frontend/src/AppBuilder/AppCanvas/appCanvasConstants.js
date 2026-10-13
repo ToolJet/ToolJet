@@ -18,6 +18,7 @@ export const WIDGETS_WITH_DEFAULT_CHILDREN = [
   'Container',
   'ModalV2',
   'ShadDialog',
+  'ShadListView',
   'Accordion',
 ];
 

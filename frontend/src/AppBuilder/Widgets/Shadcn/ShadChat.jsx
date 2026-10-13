@@ -39,8 +39,6 @@ export { withControlState } from '../packHooks';
 // only while the reader is at the end; a new user turn moves near the top with its reply growing below it; scrolled
 // up, nothing moves the reader and a Jump to latest button brings them back.
 
-const BORDER = 'var(--lk-border,var(--sc-border))';
-
 const ChatAvatar = ({ src, name, size = 32 }) => {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
@@ -269,8 +267,14 @@ export const ShadChat = (props) => {
     [setExposedVariables]
   );
 
+  // Set by a send or an appendHistory, so the next layout pass knows rows were added by a turn: a history that
+  // grew any other way (a bound initialChat that loaded after an empty first draw, a refreshed query) is a load,
+  // which opens at the end instead of lifting the last user message to the top.
+  const appended = useRef(false);
+
   const send = (messageObject, shouldFire) => {
     const message = buildMessage(messageObject, peopleRef.current, uuidv4());
+    appended.current = true;
     commit([...historyRef.current, message], { lastMessage: message });
     if (shouldFire) fireEvent('onMessageSent');
   };
@@ -305,7 +309,7 @@ export const ShadChat = (props) => {
   // The native Chat's actions. sendMessage adds a message without firing onMessageSent (the app fires its own query);
   // appendHistory records it as lastMessage or lastResponse by its type.
   const latest = useRef({});
-  latest.current = { send, clearHistory, download, commit, override };
+  latest.current = { send, clearHistory, download, commit, override, appended };
   const actions = useMemo(
     () => ({
       sendMessage: async (messageObject) => {
@@ -317,6 +321,7 @@ export const ShadChat = (props) => {
         const { isValid, error: why } = validateSingleMessageObject(messageObject);
         if (!isValid) return toast.error(why);
         const message = buildMessage(messageObject, peopleRef.current, uuidv4());
+        latest.current.appended.current = true;
         latest.current.commit(
           [...historyRef.current, message],
           message.type === 'message' ? { lastMessage: message } : { lastResponse: message }
@@ -427,7 +432,8 @@ export const ShadChat = (props) => {
   const rowKeys = rows.map((r) => r.key).join('\u0000');
   useLayoutEffect(() => {
     const keys = allRows.map((r) => r.key);
-    const target = anchorTarget(previousKeys.current, allRows);
+    const target = appended.current ? anchorTarget(previousKeys.current, allRows) : null;
+    appended.current = false;
     const replaced =
       previousKeys.current !== null &&
       !target &&
@@ -506,15 +512,14 @@ export const ShadChat = (props) => {
     <Shell {...props} properties={p} className="h-full">
       <div
         id={id}
-        className="relative flex h-full flex-col overflow-hidden border bg-[color:var(--lk-bg,var(--sc-card))] text-[color:var(--lk-fg,var(--sc-foreground))]"
+        className="relative flex h-full flex-col overflow-hidden border border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--lk-bg,var(--sc-card))] text-[color:var(--lk-fg,var(--sc-foreground))]"
         style={{
           height: props.height ? Number(props.height) : '100%',
-          borderColor: BORDER,
           borderRadius: 'var(--lk-radius,calc(var(--sc-radius) + 4px))',
         }}
       >
         {showHeader ? (
-          <div className="flex h-12 shrink-0 items-center gap-2 border-b px-4" style={{ borderColor: BORDER }}>
+          <div className="flex h-12 shrink-0 items-center gap-2 border-b border-[color:var(--lk-border,var(--sc-border))] px-4">
             <span className="min-w-0 flex-1 truncate text-sm font-semibold">{String(p.chatTitle ?? '')}</span>
             {p.enableDownloadHistoryButton ? (
               <IconButton label="Download chat history" onClick={download} disabled={busy(p)}>
@@ -588,10 +593,9 @@ export const ShadChat = (props) => {
             tabIndex={atEnd ? -1 : 0}
             data-active={!atEnd}
             className={cn(
-              'absolute bottom-3 left-1/2 inline-flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border bg-background text-foreground shadow-md transition-all duration-200 hover:bg-muted [&_svg]:size-4',
+              'absolute bottom-3 left-1/2 inline-flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border border-[color:var(--lk-border,var(--sc-border))] bg-background text-foreground shadow-md transition-all duration-200 hover:bg-muted [&_svg]:size-4',
               atEnd ? 'pointer-events-none translate-y-2 opacity-0' : 'translate-y-0 opacity-100'
             )}
-            style={{ borderColor: BORDER }}
           >
             <ArrowDown />
           </button>
@@ -600,10 +604,9 @@ export const ShadChat = (props) => {
         <div className="shrink-0 px-3 pb-3 pt-1">
           <div
             className={cn(
-              'flex items-end gap-2 rounded-xl border bg-[color:var(--lk-field-bg,var(--sc-background))] p-1.5 shadow-sm transition-shadow focus-within:ring-2 focus-within:ring-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-ring))_45%,transparent)]',
+              'flex items-end gap-2 rounded-xl border border-[color:var(--lk-field-border,var(--sc-input))] bg-[color:var(--lk-field-bg,var(--sc-background))] p-1.5 shadow-sm transition-shadow focus-within:ring-2 focus-within:ring-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-ring))_45%,transparent)]',
               locked && 'opacity-60'
             )}
-            style={{ borderColor: 'var(--lk-field-border,var(--sc-input))' }}
           >
             <textarea
               ref={inputRef}

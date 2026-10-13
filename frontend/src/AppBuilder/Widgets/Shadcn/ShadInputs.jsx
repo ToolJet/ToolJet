@@ -32,6 +32,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Truncate,
   cn,
 } from './ui';
 import { lookVars } from './shadcnLook';
@@ -72,8 +73,10 @@ const INNER =
   'h-full w-full min-w-0 flex-1 border-0 bg-transparent px-3 py-1 text-sm text-[color:var(--lk-fg,var(--sc-foreground))] shadow-none outline-none placeholder:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))] focus:outline-none focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed';
 const EDGE = 'border-[color:var(--lk-invalid,var(--lk-border,var(--sc-input)))]';
 // Text inside the box beside the value: a prefix, suffix or currency sign.
+// It takes at most 40% of the box and ends in an ellipsis: a long one kept its full width and pushed the stepper
+// button out of the box.
 const AFFIX =
-  'flex shrink-0 select-none items-center whitespace-nowrap text-sm text-[color:var(--lk-affix,var(--sc-muted-foreground))]';
+  'flex min-w-0 max-w-[40%] select-none items-center whitespace-nowrap text-sm text-[color:var(--lk-affix,var(--sc-muted-foreground))]';
 // Stepper buttons attached to the box.
 const STEP =
   'flex shrink-0 items-center justify-center p-0 bg-[color:var(--lk-step-bg,transparent)] text-[color:var(--lk-step-fg,var(--sc-muted-foreground))] transition-colors hover:bg-[color:var(--lk-step-hover,var(--sc-accent))] hover:text-[color:var(--lk-step-fg,var(--sc-accent-foreground))] disabled:pointer-events-none disabled:opacity-50';
@@ -190,7 +193,9 @@ export const ShadNumberInput = (props) => {
               <Minus className="h-4 w-4" />
             </button>
           ) : null}
-          {prefix ? <span className={cn(AFFIX, 'pl-3')}>{prefix}</span> : null}
+          {prefix ? <span className={cn(AFFIX, 'pl-3')}>
+              <Truncate>{prefix}</Truncate>
+            </span> : null}
           <input
             ref={textBox.ref}
             id={`shad-${id}`}
@@ -232,7 +237,9 @@ export const ShadNumberInput = (props) => {
               }
             }}
           />
-          {suffix ? <span className={cn(AFFIX, 'pr-3')}>{suffix}</span> : null}
+          {suffix ? <span className={cn(AFFIX, 'pr-3')}>
+              <Truncate>{suffix}</Truncate>
+            </span> : null}
           {steppers && layout === 'split' ? (
             <button
               type="button"

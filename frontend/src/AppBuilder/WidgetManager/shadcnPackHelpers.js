@@ -213,12 +213,14 @@ export const shadConfig = ({
   styles = {},
   styleDefaults = {},
   validation,
+  defaultChildren,
 }) => ({
   name,
   displayName,
   description,
   component: name,
   defaultSize,
+  ...(defaultChildren ? { defaultChildren } : {}),
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

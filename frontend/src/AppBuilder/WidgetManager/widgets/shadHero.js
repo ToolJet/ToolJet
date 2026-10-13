@@ -167,7 +167,7 @@ export const shadHeroConfig = {
     },
     imageUrl: {
       type: 'code',
-      displayName: 'Background image URL (background image)',
+      displayName: 'Background image URL (when Background is Image)',
       validation: {
         schema: {
           type: 'string',
@@ -378,7 +378,7 @@ export const shadHeroConfig = {
     },
     backgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Panel background (overrides the background style)',
+      displayName: 'Panel background color (replaces the Background choice)',
       validation: {
         schema: {
           type: 'string',
