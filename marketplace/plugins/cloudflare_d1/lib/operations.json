@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Cloudflare D1 datasource",
+  "description": "A schema defining Cloudflare D1 datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {}
+}
