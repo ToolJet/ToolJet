@@ -22,6 +22,9 @@ import { cn } from '@/lib/utils';
 import cx from 'classnames';
 import { placeCaretAtEnd } from '@/AppBuilder/Shared/DataTypes/utils';
 
+// Keeps the label tooltip inside the canvas so it can't cover the query panel; a null container would drop the overlay.
+const getCanvas = () => document.getElementById('real-canvas') ?? document.body;
+
 /**
  * KeyValueRow - Renders a single key-value pair row
  *
@@ -188,6 +191,9 @@ const KeyValueRow = ({
           direction={direction}
           defaultAlignment={alignment}
           inputId={fieldKey}
+          overflowTooltip
+          overlayContainer={getCanvas}
+          overlayClassName={`overlay-cell-table kv-label-overlay ${darkMode ? 'dark-theme' : ''}`}
           style={autoLabelWidth && maxLabelWidth > 0 ? { minWidth: `${maxLabelWidth}px` } : {}}
           classes={{
             labelContainer: cn({
