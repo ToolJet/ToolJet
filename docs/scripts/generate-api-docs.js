@@ -232,7 +232,7 @@ ${responseBlock}
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 
-const BETA_OPERATIONS = new Set(['getUserMetadata', 'updateUserMetadata', 'createGroup', 'getAllGroups', 'getGroup', 'updateGroup', 'deleteGroup']);
+const BETA_OPERATIONS = new Set(['createGroup', 'getAllGroups', 'getGroup', 'updateGroup', 'deleteGroup']);
 
 for (const { specFile, outputDir, routeMap } of SPECS) {
   console.log(`\nProcessing: ${specFile}`);
