@@ -42,7 +42,7 @@ export { withControlState } from '../packHooks';
 // Groups gather the pins within 72px of each other: wide enough that the counts do not overlap one another; price
 // pills, about as wide as that, group from further apart.
 const CLUSTER = { radius: 72, maxZoom: 16, minPoints: 3 };
-const PILL_CLUSTER_RADIUS = 110;
+const PILL_CLUSTER_RADIUS = 88;
 // A move the widget makes (opening, fitting, an action) is not the user's: onBoundsChange skips the moveend it causes.
 const OWN_MOVE_MS = 1500;
 // Area names are drawn on the map for up to this many areas; more show their name on hover.
