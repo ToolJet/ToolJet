@@ -728,3 +728,33 @@ export class ListWorkspaceAppUsersV2ResponseDto {
   @Type(() => PaginationV2ResponseDto)
   pagination: PaginationV2ResponseDto;
 }
+
+export class UpdateWorkspaceUserV2Dto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails?: UserDetailKeyValueDto[];
+}
+
+@Exclude()
+export class WorkspaceUserV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  role: string;
+
+  @Expose()
+  status: string;
+
+  @Expose({ name: 'userDetails' })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
+}
