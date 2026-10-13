@@ -42,17 +42,21 @@ export class DashboardService {
     private readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
+  permissions(user: User, type: APP_TYPES): Promise<UserPermissions> {
+    const folderResource = FOLDER_RESOURCE_TYPE_BY_APP_TYPE[type] ?? MODULES.FOLDER;
+    return this.abilityService.resourceActionsPermission(user, {
+      resources: [{ resource: getPermissionResourceForAppType(type) }, { resource: folderResource }],
+      organizationId: user.organizationId,
+    });
+  }
+
   // The single permission resolve for the request; every query below reads from the scope.
   async resolveScope(
     user: User,
     type: APP_TYPES,
     branchId?: string
   ): Promise<{ scope: DashboardScope; permissions: UserPermissions }> {
-    const folderResource = FOLDER_RESOURCE_TYPE_BY_APP_TYPE[type] ?? MODULES.FOLDER;
-    const permissions = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: getPermissionResourceForAppType(type) }, { resource: folderResource }],
-      organizationId: user.organizationId,
-    });
+    const permissions = await this.permissions(user, type);
     const git = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
     const resolvedBranchId = branchId ?? git.options.defaultBranch.id;
     const visibleAppIds = await this.appsUtilService.findVisibleAppIds(
