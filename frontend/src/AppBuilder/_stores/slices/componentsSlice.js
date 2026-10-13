@@ -2007,38 +2007,43 @@ export const createComponentsSlice = (set, get) => ({
       'setComponentLayout'
     );
 
-    Object.keys(componentLayouts).forEach((componentId) => {
+    Object.keys(componentLayouts).forEach((draggedId) => {
       const newParentComponentType = getComponentTypeFromId(newParentId, moduleId);
       const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
-      const { component } = getComponentDefinition(componentId, moduleId);
 
       if (
         ROW_SCOPED_WIDGET_TYPES.includes(newParentComponentType) ||
         ROW_SCOPED_WIDGET_TYPES.includes(oldParentComponentType)
       ) {
-        // Add the component to the resolved store
-        let resolvedComponentValues = { [componentId]: {} };
+        // A dragged wrapper carries its children, and their scope changed with it, not just its own.
+        const pageComponents = get().getCurrentPageComponents(moduleId);
+        const movedIds = [draggedId, ...getAllChildComponents(pageComponents, draggedId).map((child) => child.id)];
+        movedIds.forEach((componentId) => {
+          const { component } = getComponentDefinition(componentId, moduleId);
+          // Add the component to the resolved store
+          let resolvedComponentValues = { [componentId]: {} };
 
-        // Update resolved values and dependency graph for each object in the component
-        const objectsToUpdate = ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'];
+          // Update resolved values and dependency graph for each object in the component
+          const objectsToUpdate = ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'];
 
-        objectsToUpdate.forEach((paramType) => {
-          if (component.definition[paramType]) {
-            Object.entries(component.definition[paramType]).forEach(([property, value]) => {
-              checkValueAndResolve(
-                componentId,
-                paramType,
-                property,
-                value.value,
-                component,
-                resolvedComponentValues,
-                true,
-                moduleId
-              );
-            });
-          }
+          objectsToUpdate.forEach((paramType) => {
+            if (component.definition[paramType]) {
+              Object.entries(component.definition[paramType]).forEach(([property, value]) => {
+                checkValueAndResolve(
+                  componentId,
+                  paramType,
+                  property,
+                  value.value,
+                  component,
+                  resolvedComponentValues,
+                  true,
+                  moduleId
+                );
+              });
+            }
+          });
+          setResolvedComponent(componentId, resolvedComponentValues[componentId], moduleId);
         });
-        setResolvedComponent(componentId, resolvedComponentValues[componentId], moduleId);
 
         // // Clean up old dependency graph edges, rebuild deps, and re-resolve for the moved component
         // const rebuildComponentDeps = (cId, comp) => {

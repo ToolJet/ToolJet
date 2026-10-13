@@ -422,9 +422,23 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     finalComponents.push(newComponent);
   });
   const canAddToParent = useStore.getState().canAddToParent;
-  const fc = finalComponents.filter((component) => {
+  let fc = finalComponents.filter((component) => {
     return canAddToParent(component?.component.parent, component?.component.component);
   });
+  // A refused component takes its subtree with it, or the children land on a parent never created.
+  const getBaseParentId = useStore.getState().getBaseParentId;
+  const pastedIds = new Set(finalComponents.map((component) => component.id));
+  for (let dropped = true; dropped; ) {
+    const kept = new Set(fc.map((component) => component.id));
+    const survivors = fc.filter((component) => {
+      const parentId = component.component.parent;
+      if (!parentId) return true;
+      const baseParentId = getBaseParentId(parentId);
+      return !pastedIds.has(baseParentId) || kept.has(baseParentId);
+    });
+    dropped = survivors.length !== fc.length;
+    fc = survivors;
+  }
   const filteredFinalComponents = fc.map((component) => {
     if (formComponentIds.has(component.id)) {
       const fields = component.component.definition?.properties?.fields?.value || [];
@@ -438,7 +452,8 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
   const filteredComponentsCount = filteredFinalComponents.length;
 
   let pasteSucceeded = false;
-  if (filteredComponentsCount < 0) return;
+  // A count can never be negative; nothing survived the filter, so there is nothing to paste.
+  if (filteredComponentsCount === 0) return;
 
   if (currentPageId === pageId) {
     const components = useStore.getState().getCurrentPageComponents();

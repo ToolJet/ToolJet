@@ -415,8 +415,9 @@ export const listViewComponentSlice = (set, get) => {
     // For outerIndices=[] (top-level): writes to exposedValues.components[listviewId].children[rowIndex]
     // For outerIndices=[i] (nested): writes to exposedValues.components[listviewId][i].children[rowIndex]
     deriveListviewExposedData: (listviewId, rowIndex, outerIndices, moduleId = 'canvas') => {
-      const { getContainerChildrenMapping, getComponentNameFromId } = get();
-      const childIds = getContainerChildrenMapping(listviewId);
+      const { getRowScopedDescendants, getComponentNameFromId } = get();
+      // Reaches behind a wrapper, matching the slots the row already prepares for its descendants.
+      const childIds = getRowScopedDescendants(listviewId, moduleId);
       const exposedComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
 
       // Build row data for the given rowIndex

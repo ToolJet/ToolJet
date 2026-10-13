@@ -768,12 +768,9 @@ describe('Listview: a Container inside a nested row', () => {
     await waitFor(() =>
       expect([...document.querySelectorAll('.list-item .list-item')].map((n) => n.textContent)).toHaveLength(4)
     );
-    expect([...document.querySelectorAll('.list-item .list-item')].map((n) => n.textContent)).toEqual([
-      'a',
-      'b',
-      'c',
-      'd',
-    ]);
+    expect(
+      [...document.querySelectorAll('.list-item .list-item [component-type="Text"]')].map((n) => n.textContent)
+    ).toEqual(['a', 'b', 'c', 'd']);
   });
 });
 
@@ -1164,4 +1161,129 @@ const legacyWidget = createWidgetHarness({
   capabilities: { dnd: true },
   widgetHeight: 450,
   widgetWidth: 600,
+});
+
+/**
+ * A wrapper built on the canvas and then dragged into a row. The wrapper moves in the tree, but
+ * only the dragged component itself is re-resolved — its children keep whatever scope they had.
+ */
+describe('Listview: a populated wrapper dragged into a row', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const OUTSIDE = (type, extra = {}) => {
+    const definition = componentDefinition('wrap1', 'wrapper1', type, {
+      visibility: binding('{{true}}'),
+      loadingState: binding('{{false}}'),
+      disabledState: binding('{{false}}'),
+      ...extra,
+    });
+    definition.component.parent = null;
+    definition.component.definition.styles = {};
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+
+  const NESTED_TEXT = () => {
+    const definition = componentDefinition('nested1', 'nested1', 'Text', { text: binding('IN-{{listItem.text}}') });
+    definition.component.parent = 'wrap1';
+    definition.component.definition.styles = {};
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+
+  const nestedLabels = () =>
+    [...document.querySelectorAll('*')]
+      .filter((node) => node.childElementCount === 0 && node.textContent.startsWith('IN-'))
+      .map((node) => node.textContent);
+
+  /** The drag's own action: Grid.jsx calls setComponentLayout with updateParent when the parent changes. */
+  async function dragIntoList() {
+    await widget.session.store.act(() => {
+      store().setComponentLayout({ wrap1: { width: 20, height: 200, top: 0, left: 0 } }, ID, MODULE_ID, {
+        updateParent: true,
+        saveAfterAction: false,
+      });
+    });
+  }
+
+  test('[Listview-BUG-013] a Container dragged in keeps its child, resolved per row', async () => {
+    // Break this catches: re-resolving only the dragged component, so the child it carries keeps a
+    // flat entry while the row expects one per row, and renders nothing.
+    await mount({ extraComponents: { wrap1: OUTSIDE('Container'), nested1: NESTED_TEXT() } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    await dragIntoList();
+
+    await waitFor(() => expect(nestedLabels()).toEqual(['IN-Alpha', 'IN-Beta', 'IN-Gamma']));
+  });
+
+  test('[Listview-BUG-013] a Form dragged in keeps its child, resolved per row', async () => {
+    // Break this catches: a fix written against Container only. Form carries its children the same
+    // way, and the QA report that found this used a Form.
+    await mount({
+      extraComponents: { wrap1: OUTSIDE('Form', { advanced: binding('{{false}}') }), nested1: NESTED_TEXT() },
+    });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    await dragIntoList();
+
+    await waitFor(() => expect(nestedLabels()).toEqual(['IN-Alpha', 'IN-Beta', 'IN-Gamma']));
+  });
+});
+
+/**
+ * `children` and `data` are the documented way to reach a row's components from a query. The row's
+ * per-row slots are already prepared for everything inside it, wrappers included — publishing has
+ * to agree with that, or a component you can see on the canvas has no entry to call.
+ */
+describe('Listview: children reaches inside a row wrapper', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const WRAPPER = () => {
+    const definition = componentDefinition('cont9', 'container9', 'Container', {});
+    definition.component.parent = ID;
+    definition.component.definition.styles = {};
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+
+  const WRAPPED_BUTTON = () => {
+    const definition = componentDefinition('btn9', 'button9', 'Button', {
+      text: binding('{{listItem.text}}'),
+      visibility: binding('{{true}}'),
+      loadingState: binding('{{false}}'),
+      disabledState: binding('{{false}}'),
+    });
+    definition.component.parent = 'cont9';
+    definition.component.definition.styles = {};
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+
+  test('[Listview-BUG-015] a component behind a Container is published in children and data', async () => {
+    // Break this catches: publishing only the row's direct children, so a component inside a
+    // Container is absent from `children` and every documented action on it throws.
+    await mount({ extraComponents: { cont9: WRAPPER(), btn9: WRAPPED_BUTTON() } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    await waitFor(() => expect(exposed('children')?.[0]?.button9).toBeDefined());
+    expect(exposed('children')[0].container9).toBeDefined();
+    expect(typeof exposed('children')[0].button9.setDisable).toBe('function');
+    expect(exposed('data')[0].button9.buttonText).toBe('Alpha');
+    expect(exposed('data')[2].button9.buttonText).toBe('Gamma');
+  });
 });
