@@ -451,3 +451,8 @@
     }
     
 
+
+// The label tooltip is portaled into the canvas, where widget layers would otherwise paint over it.
+.kv-label-overlay {
+  z-index: 1100;
+}
