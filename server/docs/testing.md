@@ -214,7 +214,7 @@ Per spec file:
 - `beforeEach` data is rolled back after each test — use it for per-test mocks, config overrides, or seed that varies per test
 - `beforeEach` builds on top of `beforeAll` — never duplicate seed that already exists there
 - The no-op QueryRunner proxy intercepts `startTransaction`/`commitTransaction`/`rollbackTransaction`/`release`: service code believes it has its own transaction while every query routes through the suite TX
-- `withRealTransactions(fn)` opts out of the proxy for tests that verify real rollback behavior (e.g. bulk import error handling)
+- `withRealTransactions(fn)` opts out of the proxy for tests that verify real rollback behavior (e.g. bulk import error handling), or whose code under test opens its own DB connection that can't see uncommitted suite rows (e.g. ToolJet DB queries running as the workspace's tenant role). Rows it commits outlive the suite, so clean them up in `afterAll`
 
 ## Describe blocks
 
@@ -423,7 +423,7 @@ JSDoc immediately before the outermost `describe`. Both e2e and unit tests use `
 
 - Seed data in `beforeAll`, per-test mocks and spies in `beforeEach` — the suite TX and SAVEPOINTs handle isolation
 - `beforeEach` builds on `beforeAll`; never duplicate seed that already exists there
-- Use `withRealTransactions()` only for tests that verify real rollback behavior
+- Use `withRealTransactions()` only for tests that verify real rollback behavior, or whose code under test opens its own DB connection
 - `closeTestApp(app)` in `afterAll` with a 60s timeout
 - Never abbreviate `data_source` as `ds`
 - Use seed helpers, not inline entity construction
