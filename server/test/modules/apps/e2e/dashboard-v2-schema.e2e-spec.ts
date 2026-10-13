@@ -22,7 +22,7 @@ describe('Dashboard v2 schema', () => {
   let nestApp: INestApplication;
 
   beforeAll(async () => {
-    ({ app: nestApp } = await initTestApp({ edition: 'ee' }));
+    ({ app: nestApp } = await initTestApp());
   });
 
   afterAll(async () => {
