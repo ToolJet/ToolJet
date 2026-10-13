@@ -1070,3 +1070,69 @@ describe('KeyValuePair: widget tooltip width', () => {
     expect(tooltip.style.maxWidth).toBe('var(--radix-tooltip-trigger-width)');
   });
 });
+
+describe('KeyValuePair: label overflow tooltip', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const renderWithLongLabel = () =>
+    widget.render({
+      properties: {
+        data: binding({ name: 'Olivia Nguyen' }),
+        fields: binding([field({ key: 'name', name: 'Name madhav madhav madadsadsadsad', fieldType: 'string' })]),
+      },
+      styles: { autoLabelWidth: false, labelWidth: 48, alignment: 'side' },
+    });
+  const labelText = () => document.querySelector('.key-value-label p');
+
+  test('[KeyValuePair-BUG-LABEL-TOOLTIP-001] a truncated label shows its full text on hover', async () => {
+    // Break this catches: the truncated label has an ellipsis but no overlay, so hovering never reveals the full text.
+    const scrollSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(300);
+    const clientSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+    try {
+      renderWithLongLabel();
+      await waitFor(() => expect(labelText()).toBeInTheDocument());
+      await widget.session.user.hover(labelText());
+
+      const tooltip = await waitFor(() => {
+        const el = document.querySelector('.overlay-cell-table');
+        expect(el).toBeInTheDocument();
+        return el;
+      });
+      expect(tooltip).toHaveTextContent('Name madhav madhav madadsadsadsad');
+    } finally {
+      scrollSpy.mockRestore();
+      clientSpy.mockRestore();
+    }
+  });
+
+  test('[KeyValuePair-BUG-LABEL-TOOLTIP-003] the label tooltip content is capped to the label width', async () => {
+    const offsetSpy = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(120);
+    const scrollSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(300);
+    const clientSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+    try {
+      renderWithLongLabel();
+      await waitFor(() => expect(labelText()).toBeInTheDocument());
+      await widget.session.user.hover(labelText());
+
+      const tooltip = await waitFor(() => {
+        const el = document.querySelector('.overlay-cell-table');
+        expect(el).toBeInTheDocument();
+        return el;
+      });
+      expect(tooltip.firstElementChild.style.width).toBe('120px');
+    } finally {
+      offsetSpy.mockRestore();
+      scrollSpy.mockRestore();
+      clientSpy.mockRestore();
+    }
+  });
+
+  test('[KeyValuePair-BUG-LABEL-TOOLTIP-002] a label that fits shows no tooltip', async () => {
+    renderWithLongLabel();
+    await waitFor(() => expect(labelText()).toBeInTheDocument());
+    await widget.session.user.hover(labelText());
+
+    expect(document.querySelector('.overlay-cell-table')).not.toBeInTheDocument();
+  });
+});
