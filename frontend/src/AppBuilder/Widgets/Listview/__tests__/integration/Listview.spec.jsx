@@ -1287,3 +1287,119 @@ describe('Listview: children reaches inside a row wrapper', () => {
     expect(exposed('data')[2].button9.buttonText).toBe('Gamma');
   });
 });
+
+/**
+ * A Modal opened from a row renders outside the row in the DOM, but React still routes its events
+ * through the component tree — so the row hears every click inside the modal as its own.
+ */
+describe('Listview: a Modal opened from a row', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const MODAL_CHILD = () => {
+    const definition = componentDefinition('mod1', 'modal1', 'ModalV2', {});
+    definition.component.parent = ID;
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+
+  const trigger = () => [...document.querySelectorAll('button')].find((node) => /launch/i.test(node.textContent));
+  const modalBody = () => document.querySelector('.modal-body') ?? document.querySelector('[class*="modal"]');
+
+  test('[Listview-BUG-016] clicking inside the Modal does not fire Record clicked again', async () => {
+    // Break this catches: the row handler accepting any click React routes through it, including
+    // one from portaled content that never happened inside the row's own element.
+    await mount({ events: [counting('onRecordClicked', 'rec')], extraComponents: { mod1: MODAL_CHILD() } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    await user().click(rows()[0]);
+    await waitFor(() => expect(fired('rec')).toBe(1));
+
+    await user().click(trigger());
+    await waitFor(() => expect(document.querySelector('[role="dialog"], .modal-content')).toBeTruthy());
+    const afterOpening = fired('rec');
+
+    const inside = document.querySelector('[role="dialog"], .modal-content');
+    await user().click(inside);
+    await user().click(inside);
+
+    expect(fired('rec')).toBe(afterOpening);
+  });
+});
+
+/**
+ * An input repeated down the rows must still be addressable one row at a time: a DOM id is unique
+ * per document, and a label points at exactly one of them.
+ */
+describe('Listview: a labelled input repeated down the rows', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const LABELLED_INPUT = () => {
+    const definition = componentDefinition('inp1', 'textinput1', 'TextInput', { label: binding('Name') });
+    definition.component.parent = ID;
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+
+  const inputs = () => [...document.querySelectorAll('input[type="text"]')];
+
+  test('[Listview-BUG-017] each row gets its own input id so a label points at its own row', async () => {
+    // Break this catches: every row's input carrying the same id, so all three labels resolve to the
+    // first input and clicking row 3's label focuses row 1's.
+    await mount({ extraComponents: { inp1: LABELLED_INPUT() } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    await waitFor(() => expect(inputs()).toHaveLength(3));
+
+    const ids = inputs().map((node) => node.id);
+    expect(new Set(ids).size).toBe(3);
+
+    const labels = [...document.querySelectorAll('label')].filter((node) => node.htmlFor);
+    expect(labels).toHaveLength(3);
+    expect(labels.map((node) => node.htmlFor)).toEqual(ids);
+  });
+});
+
+/**
+ * The pager is the only way to reach later records, so it has to be reachable without a mouse and
+ * announce what it does.
+ */
+describe('Listview: the pager is operable without a mouse', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const arrows = () => ({
+    previous: document.querySelector('[data-cy="previous-page-link"]'),
+    next: document.querySelector('[data-cy="next-page-link"]'),
+  });
+
+  test('[Listview-BUG-018] the page arrows are focusable and carry a name', async () => {
+    // Break this catches: arrows rendered as an anchor with no href and an icon for content — the
+    // browser skips them on Tab and a screen reader has nothing to announce.
+    await mount({ properties: { enablePagination: binding('{{true}}'), rowsPerPage: binding('{{2}}') } });
+    await waitFor(() => expect(arrows().next).toBeTruthy());
+
+    Object.values(arrows()).forEach((arrow) => {
+      expect(arrow.tabIndex).toBeGreaterThanOrEqual(0);
+      expect(arrow.getAttribute('aria-label')).toBeTruthy();
+    });
+  });
+
+  test('[Listview-BUG-018] Enter on the next arrow turns the page', async () => {
+    // Break this catches: making the arrows focusable without making them act — a focusable element
+    // that only answers to a mouse click is worse than one that is skipped.
+    await mount({ properties: { enablePagination: binding('{{true}}'), rowsPerPage: binding('{{2}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    arrows().next.focus();
+    await user().keyboard('{Enter}');
+
+    await waitFor(() => expect(rowTexts()).toEqual(['Gamma']));
+  });
+});

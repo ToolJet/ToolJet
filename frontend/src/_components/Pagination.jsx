@@ -62,6 +62,21 @@ export const Pagination = function Pagination({
     return num > count ? count : num;
   }
 
+  // These arrows are anchors without an href, so the browser gives them neither focus nor a name.
+  const arrowProps = (label, onActivate) => ({
+    role: 'button',
+    tabIndex: 0,
+    'aria-label': label,
+    style: { cursor: 'pointer' },
+    className: 'page-link',
+    onClick: onActivate,
+    onKeyDown: (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      onActivate(event);
+    },
+  });
+
   return (
     <div
       className={`card-footer d-flex align-items-center ${darkMode ? ' bg-transparent' : ''}`}
@@ -75,7 +90,7 @@ export const Pagination = function Pagination({
       </p>
       <ul className="pagination m-0 ms-auto">
         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoFirstPage}>
+          <a {...arrowProps('First page', gotoFirstPage)} data-cy="first-page-link">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -95,7 +110,7 @@ export const Pagination = function Pagination({
           </a>
         </li>
         <li data-testid="previous-0" className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-          <a data-testid="previous" style={{ cursor: 'pointer' }} className="page-link" onClick={gotoPreviousPage}>
+          <a data-testid="previous" {...arrowProps('Previous page', gotoPreviousPage)} data-cy="previous-page-link">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -117,13 +132,7 @@ export const Pagination = function Pagination({
         {getPageLinks(currentPage)}
         {getPageLinks(currentPage + 1)}
         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-          <a
-            data-testid="next"
-            style={{ cursor: 'pointer' }}
-            className="page-link"
-            onClick={gotoNextPage}
-            data-cy="next-page-link"
-          >
+          <a data-testid="next" {...arrowProps('Next page', gotoNextPage)} data-cy="next-page-link">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -142,7 +151,7 @@ export const Pagination = function Pagination({
           </a>
         </li>
         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoLastPage} data-cy="last-page-link">
+          <a {...arrowProps('Last page', gotoLastPage)} data-cy="last-page-link">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
