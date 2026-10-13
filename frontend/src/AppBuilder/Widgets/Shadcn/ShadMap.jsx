@@ -12,6 +12,7 @@ import {
   areaShapes,
   clampZoom,
   fitView,
+  NOMINATIM,
   geocoderUrls,
   heatPoints,
   initialView,
@@ -353,6 +354,9 @@ export const ShadMap = (props) => {
     [p.tileUrl, p.tileAttribution, darkMode, style] // eslint-disable-line react-hooks/exhaustive-deps
   );
   const geocoder = geocoderUrls({ geocoderUrl: p.geocoderUrl, reverseGeocoderUrl: p.reverseGeocoderUrl, config });
+  // Nominatim's usage policy forbids searching as you type against its public service, so with the default geocoder
+  // a search runs on Enter; an install's or app's own geocoder (Photon, Pelias) searches as you type.
+  const typeAhead = geocoder.search !== NOMINATIM.search;
 
   // Everything Leaflet's handlers read, always current.
   const live = useRef({});
@@ -1024,11 +1028,18 @@ export const ShadMap = (props) => {
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
+  // The query Enter asked for, when the geocoder does not search as you type.
+  const [submitted, setSubmitted] = useState('');
   // The label of the place just chosen fills the box; it is not searched for again.
   const chosenRef = useRef('');
   useEffect(() => {
     const q = query.trim();
-    if (q.length < 3 || typeof fetch !== 'function' || query === chosenRef.current) {
+    if (
+      q.length < 3 ||
+      typeof fetch !== 'function' ||
+      query === chosenRef.current ||
+      (!typeAhead && submitted !== q)
+    ) {
       setResults([]);
       setSearching(false);
       return undefined;
@@ -1045,12 +1056,12 @@ export const ShadMap = (props) => {
         })
         .catch(() => setSearchError('Search is unavailable right now'))
         .finally(() => setSearching(false));
-    }, SEARCH_DELAY_MS);
+    }, typeAhead ? SEARCH_DELAY_MS : 0);
     return () => {
       clearTimeout(timer);
       controller?.abort();
     };
-  }, [query]);
+  }, [query, submitted, typeAhead]); // eslint-disable-line react-hooks/exhaustive-deps
   const choosePlace = (place) => {
     const map = mapRef.current;
     setResults([]);
@@ -1139,6 +1150,7 @@ export const ShadMap = (props) => {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && results[0]) choosePlace(results[0]);
+                else if (e.key === 'Enter' && !typeAhead) setSubmitted(query.trim());
                 if (e.key === 'Escape') setResults([]);
               }}
             />
@@ -1155,6 +1167,8 @@ export const ShadMap = (props) => {
               </ul>
             ) : searchError && query.trim().length >= 3 && !searching ? (
               <div className="sc-map-search-note">{searchError}</div>
+            ) : !typeAhead && query.trim().length >= 3 && submitted !== query.trim() && query !== chosenRef.current ? (
+              <div className="sc-map-search-note">Press Enter to search</div>
             ) : null}
           </div>
         ) : null}

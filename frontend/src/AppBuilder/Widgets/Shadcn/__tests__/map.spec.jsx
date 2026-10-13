@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { ShadMap } from '../ShadMap';
 import { shadMapConfig } from '../../../WidgetManager/widgets/shadMap';
 
@@ -393,4 +393,42 @@ describe('ShadMap', () => {
     const m = harness({ showSearch: true, searchPlaceholder: 'Find a stop' });
     expect(m.view.container.querySelector('.sc-map-search input').getAttribute('placeholder')).toBe('Find a stop');
   });
+
+  // Nominatim's usage policy forbids searching as you type against its public service. Real timers: the geocoder's
+  // one-request-a-second queue is shared by every map on the page, earlier tests' maps included.
+  describe('address search', () => {
+    const settle = (ms) => act(() => new Promise((r) => setTimeout(r, ms)));
+    let fetchMock;
+    // Searches only: a reverse lookup an earlier test's picked spot queued can land here too.
+    const searches = () => fetchMock.mock.calls.map(([url]) => url).filter((url) => !/reverse/.test(url));
+    beforeEach(() => {
+      fetchMock = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve([]) }));
+      global.fetch = fetchMock;
+    });
+    afterEach(() => {
+      delete global.fetch;
+    });
+
+    it('searches the default Nominatim only when Enter is pressed', async () => {
+      const m = harness({ showSearch: true });
+      const input = m.view.container.querySelector('.sc-map-search input');
+      fireEvent.change(input, { target: { value: 'Ferry Building' } });
+      await settle(900);
+      expect(searches()).toEqual([]);
+      expect(m.view.container.querySelector('.sc-map-search-note').textContent).toBe('Press Enter to search');
+      fireEvent.keyDown(input, { key: 'Enter' });
+      await waitFor(() => expect(searches()).toHaveLength(1), { timeout: 4000 });
+      expect(searches()[0]).toContain('nominatim.openstreetmap.org/search');
+      expect(searches()[0]).toContain('Ferry%20Building');
+    }, 10000);
+
+    it('searches its own geocoder as you type', async () => {
+      const m = harness({ showSearch: true, geocoderUrl: 'https://photon.komoot.io/api/?q={query}' });
+      fireEvent.change(m.view.container.querySelector('.sc-map-search input'), { target: { value: 'Embarcadero' } });
+      await waitFor(() => expect(searches()).toEqual(['https://photon.komoot.io/api/?q=Embarcadero']), {
+        timeout: 4000,
+      });
+    }, 10000);
+  });
 });
+
