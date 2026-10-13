@@ -118,7 +118,7 @@ export const shadRecordListConfig = {
         schema: {
           type: 'string',
         },
-        defaultValue: 'auto',
+        defaultValue: 'currency',
       },
     },
     currency: {

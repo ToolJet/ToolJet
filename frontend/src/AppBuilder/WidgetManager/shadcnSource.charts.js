@@ -63,7 +63,8 @@ export const shadLineChartConfig = shadConfig({
     currency: code('Currency code', STRING, 'USD'),
     ...common,
     showGrid: toggle('Grid', true),
-    showLegend: toggle('Legend'),
+    // Two series by default: the legend names them.
+    showLegend: toggle('Legend', true),
     seriesLabels: code(
       'Series labels ({ field: label })',
       { type: 'object' },
@@ -82,7 +83,8 @@ export const shadLineChartConfig = shadConfig({
     dashedFields: { value: '' },
     referenceValue: { value: '' },
     referenceLabel: { value: '' },
-    yAxisFormat: { value: 'currency' },
+    // Number, as the inspector says: a currency default drew a count of jobs as $0 $1 $2.
+    yAxisFormat: { value: 'number' },
     currency: { value: 'USD' },
     ...commonDefaults,
     showGrid: { value: '{{true}}' },
@@ -303,7 +305,7 @@ export const shadComboChartConfig = shadConfig({
     curve: { value: 'monotone' },
     showDots: { value: '{{true}}' },
     strokeWidth: { value: '{{2}}' },
-    yAxisFormat: { value: 'currency' },
+    yAxisFormat: { value: 'number' },
     rightAxisFormat: { value: 'percent' },
     currency: { value: 'USD' },
     ...commonDefaults,

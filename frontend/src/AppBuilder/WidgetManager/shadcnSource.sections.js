@@ -156,7 +156,8 @@ export const shadRecordListConfig = shadConfig({
     valueFormat: select(
       'Trailing value format',
       VALUE_FORMATS.map((v) => [v, v === 'datetime' ? 'Date and time' : v.charAt(0).toUpperCase() + v.slice(1)]),
-      'auto'
+      // The sample rows' trailing value is an amount, as a new list is created.
+      'currency'
     ),
     currency: code('Currency (ISO code, e.g. USD)', STRING, 'USD'),
     idField: code('Id field', STRING, 'id'),
