@@ -1,8 +1,14 @@
 import { HttpException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import * as requestIp from 'request-ip';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
 import { AppsService } from '@modules/apps/service';
 import { AppsRepository } from '@modules/apps/repository';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { MODULES } from '@modules/app/constants/modules';
+import { RequestContext } from '@modules/request-context/service';
+import { FEATURE_KEY } from '@modules/apps/constants';
 import { deletable } from './actions';
 import { DashboardService } from './dashboard.service';
 import { BulkDeleteAppsDto, BulkResultResponseDto, bulkResult } from './dto/bulk.dto';
@@ -12,7 +18,8 @@ export class BulkDeleteService {
   constructor(
     private readonly dashboardService: DashboardService,
     private readonly appsService: AppsService,
-    private readonly appsRepository: AppsRepository
+    private readonly appsRepository: AppsRepository,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   async delete(user: User, dto: BulkDeleteAppsDto): Promise<BulkResultResponseDto> {
@@ -44,6 +51,7 @@ export class BulkDeleteService {
     for (const app of allowed) {
       try {
         await this.appsService.delete(app, user, dto.branch_id);
+        this.emitDeleteAuditLogEntry();
         done++;
       } catch (error) {
         if (!(error instanceof HttpException)) throw error;
@@ -54,6 +62,25 @@ export class BulkDeleteService {
     }
     result.counts.done = done;
     return result;
+  }
+
+  // appsService.delete sets one audit-log local per call, meant to be read once by the response
+  // interceptor at the end of the request. That model can't produce one entry per app in a loop,
+  // so emit and consume it here instead, then clear it so the interceptor doesn't re-emit the last one.
+  private emitDeleteAuditLogEntry(): void {
+    const context = RequestContext.currentContext;
+    const logsData = context?.res?.locals?.[AUDIT_LOGS_REQUEST_CONTEXT_KEY];
+    if (!logsData?.userId) return;
+
+    this.eventEmitter.emit('auditLogEntry', {
+      ...logsData,
+      ipAddress: requestIp.getClientIp(context.req),
+      userAgent: context.req?.headers['user-agent'],
+      resourceType: MODULES.APP,
+      actionType: FEATURE_KEY.DELETE,
+    });
+
+    delete context.res.locals[AUDIT_LOGS_REQUEST_CONTEXT_KEY];
   }
 
   private async passesServiceChecks(app: App, user: User, branchId?: string): Promise<boolean> {

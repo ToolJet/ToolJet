@@ -39,6 +39,7 @@ import { BulkMoveService } from './dashboard/bulk-move.service';
 import { BulkDeleteService } from './dashboard/bulk-delete.service';
 import { DataSource } from 'typeorm';
 import { AbilityService } from '@modules/ability/interfaces/IService';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 @Module({})
 export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -130,9 +131,9 @@ export class AppsModule extends SubModule {
         },
         {
           provide: BulkDeleteService,
-          useFactory: (dashboardService, appsService, appsRepository) =>
-            new BulkDeleteService(dashboardService, appsService, appsRepository),
-          inject: [DashboardService, AppsService, AppsRepository],
+          useFactory: (dashboardService, appsService, appsRepository, eventEmitter) =>
+            new BulkDeleteService(dashboardService, appsService, appsRepository, eventEmitter),
+          inject: [DashboardService, AppsService, AppsRepository, EventEmitter2],
         },
         ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DashboardActivityInterceptor }] : []),
       ],
