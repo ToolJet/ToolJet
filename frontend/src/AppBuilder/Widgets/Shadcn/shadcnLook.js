@@ -170,10 +170,14 @@ export const lookVars = (componentType, styles = {}) =>
   );
 
 /** The series colour at `index`: the author's list where it names one, else the theme palette (--sc-chart-1..5,
- *  derived from the Chart color style when set). */
+ *  derived from the Chart color style when set). Past five, each round of the palette is a lighter shade of it: a
+ *  six-slice pie drew its first and sixth slices the same green (bakery plan, 2026-10-14). */
 export const seriesColor = (colors, index) => {
   const own = Array.isArray(colors) ? colors[index] : undefined;
-  return isSet(own) ? String(own) : `var(--sc-chart-${(index % 5) + 1})`;
+  if (isSet(own)) return String(own);
+  const base = `var(--sc-chart-${(index % 5) + 1})`;
+  const round = Math.floor(index / 5);
+  return round === 0 ? base : `color-mix(in srgb, ${base} ${Math.max(25, 100 - 40 * round)}%, var(--sc-background))`;
 };
 
 /** Classes that apply only when the author set the style: for widgets whose variants each have their own colours,
