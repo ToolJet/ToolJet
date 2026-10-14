@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Supabase datasource",
@@ -31,6 +30,10 @@
         {
           "value": "count_rows",
           "name": "Count Rows"
+        },
+        {
+          "value": "sql_query",
+          "name": "Run SQL (connection string)"
         }
       ]
     },
@@ -366,6 +369,25 @@
             "name": "In"
           }
         ]
+      }
+    },
+    "sql_query": {
+      "query": {
+        "key": "query",
+        "label": "Query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "editorType": "multiline",
+        "placeholder": "SELECT * FROM users"
+      },
+      "query_params": {
+        "key": "query_params",
+        "label": "SQL Parameters",
+        "type": "react-component-headers",
+        "description": "Parameters for the SQL query",
+        "buttonText": "Add SQL parameter",
+        "tooltip": "Use these parameters in the SQL query using name notation < :parameter_name >"
       }
     }
   }
