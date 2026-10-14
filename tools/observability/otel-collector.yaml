@@ -1,0 +1,68 @@
+# Same shape as the proposed prod pipeline: metrics from spans BEFORE sampling, then tail sampling.
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: 0.0.0.0:4317 }
+      http:
+        endpoint: 0.0.0.0:4318
+        cors: { allowed_origins: ["http://localhost:*"], allowed_headers: ["*"] }
+
+connectors:
+  spanmetrics:
+    namespace: traces.span.metrics
+    histogram:
+      unit: s
+      explicit: { buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120, 300] }
+    dimensions:
+      - name: tooljet.origin
+      - name: gen_ai.tool.name
+      - name: http.route
+    exemplars: { enabled: true }
+  servicegraph:
+    latency_histogram_buckets: [0.01, 0.05, 0.1, 0.5, 1, 5, 30, 120]
+    store: { ttl: 10s, max_items: 10000 }
+  forward: {}
+
+processors:
+  batch: { timeout: 5s }
+  # Server exports DELTA; Prometheus needs cumulative.
+  deltatocumulative: {}
+  tail_sampling:
+    decision_wait: 30s
+    policies:
+      - { name: errors, type: status_code, status_code: { status_codes: [ERROR] } }
+      - { name: ai, type: string_attribute, string_attribute: { key: tooljet.origin, values: [ai] } }
+      - { name: agent, type: string_attribute, string_attribute: { key: service.name, values: [tooljet-agent] } }
+      - { name: slow, type: latency, latency: { threshold_ms: 5000 } }
+      # Prod: lower this (e.g. 10). Local keeps everything.
+      - { name: rest, type: probabilistic, probabilistic: { sampling_percentage: 100 } }
+
+exporters:
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls: { insecure: true }
+  otlphttp/loki:
+    logs_endpoint: http://loki:3100/otlp/v1/logs
+    tls: { insecure: true }
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    resource_to_telemetry_conversion: { enabled: true }
+    enable_open_metrics: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [spanmetrics, servicegraph, forward]
+    traces/sampled:
+      receivers: [forward]
+      processors: [tail_sampling, batch]
+      exporters: [otlp/tempo]
+    metrics:
+      receivers: [otlp, spanmetrics, servicegraph]
+      processors: [deltatocumulative, batch]
+      exporters: [prometheus]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/loki]
