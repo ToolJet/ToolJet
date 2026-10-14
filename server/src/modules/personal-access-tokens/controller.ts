@@ -8,7 +8,7 @@ import { IPersonalAccessTokensController } from './interface/IController';
 @Controller('personal-access-tokens')
 export class PersonalAccessTokensController implements IPersonalAccessTokensController {
   @Post()
-  async create(@User() user, @Body() body: { name: string; organizationId: string; expiresAt: string }): Promise<any> {
+  async create(@User() user, @Body() body: { name: string; expiresAt: string }): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
