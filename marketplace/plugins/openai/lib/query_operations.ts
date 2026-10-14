@@ -157,7 +157,9 @@ export async function generateImage(
   const response = await openai.images.generate({
     model: finalModel,
     prompt: (prompt as string) || '',
-    size: getSizeEnum(finalModel, size),
+    // gpt-image-2 accepts arbitrary WIDTHxHEIGHT strings that are outside the SDK's
+    // literal size union, so narrow to the SDK param type at the call site.
+    size: getSizeEnum(finalModel, size) as OpenAI.Images.ImageGenerateParams['size'],
   });
 
   // GPT image models always return b64_json — URLs are not supported

@@ -54,7 +54,7 @@ export class WorkflowWebhooksController implements IWorkflowWebhooksController {
 
   @InitFeature(FEATURE_KEY.UPDATE_WORKFLOW_WEBHOOK_DETAILS)
   @Patch('workflows/:id')
-  async updateWorkflow(@Param('id') id, @Body() workflowValuesToUpdate): Promise<any> {
+  async updateWorkflow(@Param('id') id, @Body() workflowValuesToUpdate, _user?: any): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }

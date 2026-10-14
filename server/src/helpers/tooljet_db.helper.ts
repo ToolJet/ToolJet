@@ -1,7 +1,7 @@
 import { EncryptionService } from '@modules/encryption/service';
 import { tooljetDbOrmconfig } from 'ormconfig';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
-import { EntityManager, DataSource } from 'typeorm';
+import { EntityManager, DataSource, QueryRunner } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
@@ -172,6 +172,32 @@ export async function createAndGrantTablePrivilege(
   await tooljetDbTransactionManager.query(
     `ALTER DEFAULT PRIVILEGES FOR ROLE "${adminUser}" IN SCHEMA "${dbSchema}" GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "${dbUser}"`
   );
+}
+
+/**
+ * Transfers ownership of a just-created physical table to the workspace's own tenant role.
+ * Postgres requires table ownership (not a grantable privilege) to run ALTER TABLE DDL, so raw SQL
+ * migration steps (which run as the tenant role) need this at every place a table is physically
+ * created. Scoped to exactly this one statement — no schema-level grant, no membership change.
+ *
+ * @param tooljetDbTransactionManager
+ * @param dbSchema
+ * @param tableId
+ * @param dbUser
+ */
+export async function transferTableOwnershipToTenant(
+  tooljetDbTransactionManager: EntityManager | QueryRunner,
+  dbSchema: string,
+  tableId: string,
+  dbUser: string
+) {
+  // A workspace onboarded before per-tenant roles existed (or while SQL mode was disabled, then
+  // later enabled) has no tenant role - `isSQLModeDisabled()` alone doesn't catch that case. Skip
+  // rather than hard-fail a create_table/promote/replay that used to succeed for such a workspace.
+  const [role] = await tooljetDbTransactionManager.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [dbUser]);
+  if (!role) return;
+
+  await tooljetDbTransactionManager.query(`ALTER TABLE "${dbSchema}"."${tableId}" OWNER TO "${dbUser}"`);
 }
 
 export async function updatePasswordToOrganizationTable(
