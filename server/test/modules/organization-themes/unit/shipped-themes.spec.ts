@@ -23,6 +23,25 @@ describe('shipped themes', () => {
     expect(new Set(primaries).size).toBe(primaries.length);
   });
 
+  it('are the curated set, each primary dark enough for white button text in both modes', () => {
+    // The palette menu approved on 2026-09-12 (Ink, Slate, Navy, Indigo, Emerald, Graphite; ToolJet's own blue covers
+    // Blue), plus Rose as the one expressive choice. White text needs 4.5:1 on the primary in light and dark mode.
+    expect(shippedThemes.map((theme) => theme.name)).toEqual([
+      'ToolJet Ink', 'ToolJet Slate', 'ToolJet Navy', 'ToolJet Indigo', 'ToolJet Emerald', 'ToolJet Graphite', 'ToolJet Rose',
+    ]);
+    const luminance = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const onWhite = (hex: string) => 1.05 / (luminance(hex) + 0.05);
+    for (const theme of shippedThemes) {
+      const { light, dark } = theme.definition.brand.colors.primary;
+      expect([theme.name, onWhite(light) >= 4.5]).toEqual([theme.name, true]);
+      expect([theme.name, onWhite(dark) >= 4.5]).toEqual([theme.name, true]);
+    }
+  });
+
   it('are created for a new workspace beside the basic ToolJet theme', async () => {
     const saved: any[] = [];
     const manager: any = {
