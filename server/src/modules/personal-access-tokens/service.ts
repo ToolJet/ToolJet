@@ -15,7 +15,7 @@ export class PersonalAccessTokensService implements IPersonalAccessTokensService
     throw new Error('Method not implemented.');
   }
 
-  async listPats(userId: string): Promise<PatView[]> {
+  async listPats(userId: string, organizationId: string): Promise<PatView[]> {
     throw new Error('Method not implemented.');
   }
 
