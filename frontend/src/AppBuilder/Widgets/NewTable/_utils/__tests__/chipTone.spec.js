@@ -66,3 +66,27 @@ describe('chipLabel', () => {
     expect(chipLabel(undefined)).toBe('');
   });
 });
+
+// States from tonight's internal tools that read as plain grey chips: a missing receipt beside an attached one looked
+// the same (expense approvals, 2026-10-14), as did present and absent students, and vans in service or in repair.
+describe('chipTone, everyday operations states', () => {
+  it.each([
+    ['Missing', 'warning'],
+    ['Incomplete', 'warning'],
+    ['In repair', 'warning'],
+    ['In workshop', 'warning'],
+    ['Waiting parts', 'warning'],
+    ['Absent', 'danger'],
+    ['No-show', 'danger'],
+    ['Attached', 'success'],
+    ['Received', 'success'],
+    ['Present', 'success'],
+    ['In service', 'success'],
+    ['Returned', 'success'],
+    ['Checked out', 'info'],
+    ['On loan', 'info'],
+    ['In use', 'info'],
+  ])('%s reads as %s', (value, tone) => {
+    expect(chipTone(value)).toBe(tone);
+  });
+});
