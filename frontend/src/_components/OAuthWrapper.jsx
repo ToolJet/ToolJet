@@ -57,10 +57,11 @@ const OAuthWrapper = ({
     }
     return false;
   };
+  const isAuthorizationCodeGrant = ['authorization_code', 'authorization_code_pkce'].includes(
+    options?.grant_type?.value
+  );
   const needConnectionButton =
-    selectedDataSource.kind !== 'openapi' &&
-    options?.auth_type?.value === 'oauth2' &&
-    options?.grant_type?.value === 'authorization_code';
+    selectedDataSource.kind !== 'openapi' && options?.auth_type?.value === 'oauth2' && isAuthorizationCodeGrant;
   const dataSourceNameCapitalize = capitalize(
     selectedDataSource?.plugin?.manifestFile?.data?.source?.name || selectedDataSource?.kind
   );
@@ -130,6 +131,8 @@ const OAuthWrapper = ({
           client_auth={options?.client_auth?.value}
           company_id={options?.company_id?.value}
           site_url={options?.site_url?.value}
+          code_verifier={options?.code_verifier?.value}
+          code_challenge_method={options?.code_challenge_method?.value}
           scopes={options?.scopes?.value}
           username={options?.username?.value}
           password={options?.password?.value}
