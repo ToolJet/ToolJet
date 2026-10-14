@@ -1,4 +1,5 @@
 import {
+  bookingFace,
   MAX_LANES,
   MAX_SLOTS,
   bookingTone,
@@ -253,5 +254,20 @@ describe('placeBookings, timed bookings on the days scale', () => {
     expect(spin.lane).not.toBe(yoga.lane);
     expect(hiit.lane).toBe(0);
     expect(placed.lanes).toBe(2);
+  });
+});
+
+describe('bookingFace', () => {
+  // Bookings in 30-minute slots read "Ju... 11:..." with both lines cut (vet clinic, volunteer shifts, lab equipment,
+  // 2026-10-14). A narrow booking gives its title both lines; its place on the grid already says the time.
+  it('shows the title and a second line when the booking is wide enough', () => {
+    expect(bookingFace(160, 40, true)).toEqual({ titleLines: 1, showSecond: true });
+  });
+  it('gives a narrow booking title two lines and drops the second', () => {
+    expect(bookingFace(80, 40, true)).toEqual({ titleLines: 2, showSecond: false });
+  });
+  it('keeps one line in a lane too short for two', () => {
+    expect(bookingFace(80, 28, true)).toEqual({ titleLines: 1, showSecond: false });
+    expect(bookingFace(160, 28, true)).toEqual({ titleLines: 1, showSecond: false });
   });
 });

@@ -8,7 +8,7 @@ const TONES = [
   ],
   [
     'warning',
-    /\b(pending|unpaid|due|due soon|expiring|expiring soon|waitlist|waitlisted|contraction|downgrade|reorder|low stock|waiting|awaiting|review|on hold|hold|draft|medium|at risk|risk|partial|partially paid|tentative|requested|needs attention|needs [a-z]+|follow up|warning|maintenance|occupied|busy|trial|missing|incomplete|in repair|repair|in workshop|workshop)\b/,
+    /\b(pending|unpaid|due|due soon|expiring|expiring soon|waitlist|waitlisted|contraction|downgrade|reorder|low stock|waiting|awaiting|review|on hold|hold|draft|medium|at risk|risk|partial|partially paid|tentative|requested|needs attention|needs [a-z]+|follow up|warning|maintenance|busy|trial|missing|incomplete|in repair|repair|in workshop|workshop)\b/,
   ],
   [
     'success',
@@ -17,8 +17,8 @@ const TONES = [
   [
     'info',
     // "New" is a state, not the start of a place: New York and New Zealand chips were tinted blue (a people directory,
-    // 2026-10-14).
-    /\b(new(?! (york|zealand|delhi|jersey|mexico|hampshire|south wales|orleans|brunswick|haven|england|caledonia|guinea|westminster))|open|in progress|scheduled|booked|sent|assigned|processing|planned|upcoming|started|qualified|contacted|proposal|negotiation|checked in|in transit|on the way|en route|dispatched|on site|checked out|on loan|in use|on call|on duty|out for delivery|picked up)\b/,
+    // 2026-10-14). An occupied room or unit is in use, as a hotel or a lettings desk reads it, not a warning (2026-10-14).
+    /\b(new(?! (york|zealand|delhi|jersey|mexico|hampshire|south wales|orleans|brunswick|haven|england|caledonia|guinea|westminster))|open|in progress|scheduled|booked|sent|assigned|processing|planned|upcoming|started|qualified|contacted|proposal|negotiation|checked in|in transit|on the way|en route|dispatched|on site|checked out|on loan|in use|occupied|on call|on duty|out for delivery|picked up)\b/,
   ],
 ];
 
