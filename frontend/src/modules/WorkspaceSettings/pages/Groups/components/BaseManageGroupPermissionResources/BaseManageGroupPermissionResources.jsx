@@ -1606,7 +1606,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                                 this.setState({ updateParam: { [key]: !groupPermission[key] } });
                                               }}
                                               checked={!!groupPermission[key]}
-                                              disabled={disablePermissionUpdate}
+                                              disabled={disableNonPromoteReleasePermissions}
                                               data-cy={`pat-${label.toLowerCase()}-checkbox`}
                                             />
                                             <span
@@ -1616,7 +1616,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                               {label}
                                             </span>
                                             <span
-                                              className={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                              className={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
                                               data-cy={`pat-${label.toLowerCase()}-helper-text`}
                                             >
                                               {helper}

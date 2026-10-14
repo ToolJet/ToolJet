@@ -172,10 +172,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       if (group.name !== USER_ROLE.END_USER) {
         if (!customGroupsEnabled) {
           Object.keys(group).forEach((key) => {
-            if (
-              typeof group[key] === 'boolean' &&
-              !['appPromote', 'appRelease', 'patCreate', 'patRevoke'].includes(key)
-            ) {
+            if (typeof group[key] === 'boolean' && !['appPromote', 'appRelease'].includes(key)) {
               group[key] = true;
             }
           });
