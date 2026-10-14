@@ -3,22 +3,18 @@ import * as request from 'supertest';
 import { App } from '@entities/app.entity';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
-import { GroupPermissions } from '@entities/group_permissions.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import {
   initTestApp,
   closeTestApp,
   addAppToFolder,
   createAdmin,
-  createBuilder,
   createEndUser,
   createFolder,
   findEntities,
   findEntity,
-  findEntityOrFail,
   saveEntity,
   seedDashboardApp,
-  updateEntity,
 } from 'test-helper';
 
 /** @group platform */
@@ -64,9 +60,9 @@ describe('DashboardBulkFolderDeleteController', () => {
         applied: true,
         blocked_ids: [],
         counts: { allowed: 2, blocked: 0, done: 2 },
-        apps_to_root: [],
-        hidden_apps_to_root: 0,
       });
+      expect(res.body).not.toHaveProperty('apps_to_root');
+      expect(res.body).not.toHaveProperty('hidden_apps_to_root');
       expect(await folderExists(f1.id)).toBe(false);
       expect(await folderExists(f2.id)).toBe(false);
       expect(await appExists(a.id)).toBe(true);
@@ -86,7 +82,7 @@ describe('DashboardBulkFolderDeleteController', () => {
         type: 'front-end',
       }).expect(200);
 
-      expect(res.body).toMatchObject({ applied: true, counts: { done: 1 }, apps_to_root: [], hidden_apps_to_root: 0 });
+      expect(res.body).toMatchObject({ applied: true, counts: { done: 1 } });
       expect(await folderExists(folder.id)).toBe(false);
       expect(await appExists(a.id)).toBe(false);
       expect(await appExists(b.id)).toBe(false);
@@ -119,7 +115,7 @@ describe('DashboardBulkFolderDeleteController', () => {
       expect(await folderExists(theirs.id)).toBe(true);
     });
 
-    it('should move apps the user cannot delete to root, counting the hidden ones', async () => {
+    it('should keep apps the user cannot delete, moving them to root', async () => {
       const admin = await createAdmin(nestApp, 'bulk-fdel-hidden@tooljet.io');
       const endUser = await createEndUser(nestApp, 'bulk-fdel-hidden-eu@tooljet.io', { workspace: admin.workspace });
       const folder = await folderOf('Mine', admin.workspace.id, endUser.user.id);
@@ -127,39 +123,13 @@ describe('DashboardBulkFolderDeleteController', () => {
       const body = { folder_ids: [folder.id], mode: 'folder_and_apps', type: 'front-end' };
 
       const dry = await bulkDelete(endUser.cookie, admin.workspace.id, { ...body, dry_run: true }).expect(200);
-      expect(dry.body).toMatchObject({ blocked_ids: [], apps_to_root: [], hidden_apps_to_root: 1 });
+      expect(dry.body).toMatchObject({ blocked_ids: [], counts: { allowed: 1, blocked: 0 } });
 
       const res = await bulkDelete(endUser.cookie, admin.workspace.id, body).expect(200);
-      expect(res.body).toMatchObject({ applied: true, counts: { done: 1 }, apps_to_root: [], hidden_apps_to_root: 1 });
+      expect(res.body).toMatchObject({ applied: true, counts: { done: 1 } });
       expect(await folderExists(folder.id)).toBe(false);
       expect(await appExists(app.id)).toBe(true);
-    });
-
-    it('should list visible apps the user cannot delete by name', async () => {
-      const admin = await createAdmin(nestApp, 'bulk-fdel-visible@tooljet.io');
-      const builder = await createBuilder(nestApp, 'bulk-fdel-visible-b@tooljet.io', { workspace: admin.workspace });
-      const builderGroup = await findEntityOrFail(GroupPermissions, {
-        organizationId: admin.workspace.id,
-        name: 'builder',
-      } as any);
-      await updateEntity(GroupPermissions, builderGroup.id, { appDelete: false });
-      const folder = await folderOf('Builder folder', admin.workspace.id, builder.user.id);
-      const { app } = await seedDashboardApp(nestApp, { user: admin.user, name: 'Visible app', folder });
-
-      const res = await bulkDelete(builder.cookie, admin.workspace.id, {
-        folder_ids: [folder.id],
-        mode: 'folder_and_apps',
-        type: 'front-end',
-      }).expect(200);
-
-      expect(res.body).toMatchObject({
-        applied: true,
-        counts: { done: 1 },
-        apps_to_root: [{ id: app.id, name: 'Visible app' }],
-        hidden_apps_to_root: 0,
-      });
-      expect(await folderExists(folder.id)).toBe(false);
-      expect(await appExists(app.id)).toBe(true);
+      expect(await findEntity(FolderApp, { appId: app.id })).toBeNull();
     });
 
     it('should block folders of another type', async () => {
