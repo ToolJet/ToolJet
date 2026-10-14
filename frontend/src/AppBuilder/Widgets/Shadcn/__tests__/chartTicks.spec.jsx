@@ -94,3 +94,35 @@ describe('chart value axes over whole numbers', () => {
     expect(numericTicks(container).some((t) => t.includes('.'))).toBe(true);
   });
 });
+
+// Ten genres in a half-width chart cut one-word names to "Ficti..." and "Child..." (bookshop, 2026-10-14): a name that
+// cannot wrap into its band is drawn at an angle, in full.
+describe('category names wider than their bands', () => {
+  const GENRES = [
+    'Fiction',
+    'Crime',
+    "Children's",
+    'Romance',
+    'Fantasy',
+    'Science',
+    'Cookery',
+    'Poetry',
+    'History',
+    'Historical Fiction',
+  ].map((name, i) => ({ name, sales: 30 - i * 2 }));
+  it('are angled and whole', () => {
+    const { container } = mount(ShadBarChart, shadBarChartConfig, { data: GENRES, xField: 'name', yFields: ['sales'] });
+    const texts = [...container.querySelectorAll('.recharts-xAxis text')];
+    expect(texts.some((t) => /rotate\(-35/.test(t.getAttribute('transform') || ''))).toBe(true);
+    expect(container.textContent).toContain("Children's");
+    expect(container.textContent).not.toContain('…');
+  });
+  it('stay level when they fit', () => {
+    const { container } = mount(ShadBarChart, shadBarChartConfig, { data: COUNTS, xField: 'name', yFields: ['jobs'] });
+    expect(
+      [...container.querySelectorAll('.recharts-xAxis text')].some((t) =>
+        /rotate/.test(t.getAttribute('transform') || '')
+      )
+    ).toBe(false);
+  });
+});
