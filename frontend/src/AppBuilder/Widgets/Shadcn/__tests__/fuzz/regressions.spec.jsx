@@ -333,6 +333,14 @@ describe('Kanban', () => {
     expect(problems()).toEqual([]);
   });
 
+  it('lets columns narrow to 140px when that fits every stage on a narrow board', async () => {
+    const { columnMinimum } = await import('../../ShadKanban');
+    expect(columnMinimum(3, 620)).toBe(Math.floor((620 - 32) / 3));
+    expect(columnMinimum(3, 1200)).toBe(200);
+    expect(columnMinimum(3, 300)).toBe(140);
+    expect(columnMinimum(7, 0)).toBe(160);
+  });
+
   it('lets columns with a set width grow to fill a wider board (a 165px empty strip at the right)', async () => {
     const { problems, unmount } = await mount('ShadKanban', {
       data: [{ id: 1, title: 'One', status: 'a' }],
