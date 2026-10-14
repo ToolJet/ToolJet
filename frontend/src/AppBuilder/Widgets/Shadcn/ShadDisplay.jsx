@@ -808,8 +808,11 @@ export const ShadKeyValue = (props) => {
     setExposedVariable('lastClickedField', { label: row.label, value: row.value ?? null });
     fireEvent('onFieldClick');
   };
-  const columns = Math.floor(clamp(p.columns, 1, 4, 1));
   const inline = p.layout !== 'stacked';
+  // As many columns as fit: two inline columns in a 400px card cut every value to a few letters ("PO 88", "$8,") on a
+  // claim's facts (2026-10-14). An inline pair needs about 300px, a stacked one 160px.
+  const fits = Number(props.width) > 0 ? Math.max(1, Math.floor(Number(props.width) / (inline ? 300 : 160))) : 4;
+  const columns = Math.min(Math.floor(clamp(p.columns, 1, 4, 1)), fits);
   const dividers = p.dividers !== false;
   const emptyText = p.emptyText === undefined || p.emptyText === null ? '—' : String(p.emptyText);
   const labelWidth = cssSize(p.labelWidth, '40%');
