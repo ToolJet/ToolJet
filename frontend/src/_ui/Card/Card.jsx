@@ -1,4 +1,6 @@
 import React from 'react';
+import AnthropicIcon from '@assets/images/icons/anthropic.svg';
+import AnthropicDarkIcon from '@assets/images/icons/anthropic-dark.svg';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import AiBanner from '@/_ui/AiBanner';
@@ -18,14 +20,22 @@ const Card = ({
   darkMode,
   tags = [],
 }) => {
-
   const DisplayIcon = ({ src }) => {
     if (typeof src !== 'string') return;
+
+    if (title?.toLowerCase() === 'anthropic' || src?.toLowerCase() === 'anthropic') {
+      if (isDarkMode) {
+        return <AnthropicDarkIcon style={{ height, width }} className="card-icon" />;
+      }
+      if (usePluginIcon) {
+        return <AnthropicIcon style={{ height, width }} className="card-icon" />;
+      }
+    }
 
     if (usePluginIcon) {
       //Fetch darkMode svgs
 
-      if (darkMode) {
+      if (isDarkMode) {
         const darkSrc = `${src}Dark`;
         if (allSvgs[darkSrc]) {
           src = darkSrc;

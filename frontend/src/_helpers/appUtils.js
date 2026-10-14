@@ -6,6 +6,8 @@ import { componentTypes } from '@/AppBuilder/WidgetManager';
 import RunjsIcon from '@/AppBuilder/QueryManager/Icons/Icons/runjs.svg';
 import RunTooljetDbIcon from '@/AppBuilder/QueryManager/Icons/Icons/tooljetdb.svg';
 import RunPyIcon from '@/AppBuilder/QueryManager/Icons/Icons/runpy.svg';
+import AnthropicIcon from '@assets/images/icons/anthropic.svg';
+import AnthropicDarkIcon from '@assets/images/icons/anthropic-dark.svg';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import SolidIcon from '../_ui/Icon/SolidIcons';
@@ -34,11 +36,18 @@ export async function copyToClipboard(text) {
 }
 
 export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
-  if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
+  const isDarkMode = typeof localStorage !== 'undefined' && localStorage.getItem('darkMode') === 'true';
+
+  if (isDarkMode && key?.toLowerCase() === 'anthropic') {
+    return <AnthropicDarkIcon style={{ height, width, ...styles }} />;
+  }
+
+  if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width, ...styles }} />;
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   if (key === 'tooljetdb') return <RunTooljetDbIcon style={{ height, width }} />;
   if (key === 'runpy') return <RunPyIcon style={{ height, width }} />;
   if (key === 'workflows') return <SolidIcon name="workflows" fill="#3D63DC" />;
+  if (key?.toLowerCase() === 'anthropic') return <AnthropicIcon style={{ height, width, ...styles }} />;
 
   if (typeof localStorage !== 'undefined') {
     const darkMode = localStorage.getItem('darkMode') === 'true';
