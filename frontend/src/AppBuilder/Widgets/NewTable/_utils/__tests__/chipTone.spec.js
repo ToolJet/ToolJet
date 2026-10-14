@@ -105,4 +105,9 @@ describe('chipTone, everyday operations states', () => {
     expect(chipTone('Under review')).toBe('info');
     expect(chipTone('Review')).toBe('warning');
   });
+  it('reads Verified and Cleared as done (a claim file, 2026-10-14)', () => {
+    expect(chipTone('Verified')).toBe('success');
+    expect(chipTone('Cleared')).toBe('success');
+    expect(chipTone('Not verified')).toBe('warning');
+  });
 });
