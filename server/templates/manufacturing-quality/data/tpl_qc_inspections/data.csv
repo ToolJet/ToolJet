@@ -1,0 +1,10 @@
+id,batch_code,inspector,sample_size,defects,category,note,recorded_at
+,BT-2401,Maya Chen,24,0,None,Within the drawing tolerance.,2026-09-12T08:00:00Z
+,BT-2402,Jonah Reed,18,0,None,Fit check complete.,2026-09-12T08:15:00Z
+,BT-2403,Nora Patel,32,3,Dimension,Hole diameter exceeds tolerance.,2026-09-12T08:30:00Z
+,BT-2404,Maya Chen,45,0,None,Visual and fit checks passed.,2026-09-12T08:45:00Z
+,BT-2405,Jonah Reed,16,2,Surface,Burrs on the leading edge.,2026-09-12T09:00:00Z
+,BT-2406,Nora Patel,20,0,None,Gauge checks complete.,2026-09-12T09:15:00Z
+,BT-2407,Maya Chen,24,0,None,All sampled units conform.,2026-09-12T09:30:00Z
+,BT-2408,Jonah Reed,18,1,Fit,Interference at shaft coupling.,2026-09-12T09:45:00Z
+,BT-2410,Maya Chen,45,0,None,Sample fit and visual checks completed. No defects observed.,2026-09-12T19:51:18.701Z

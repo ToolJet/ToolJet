@@ -4,11 +4,13 @@
   "widgets": [
     {
       "componentType": "Button",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Button/TESTING.md"
     },
     {
       "componentType": "ButtonGroupV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ButtonGroupV2/TESTING.md"
     },
     {
       "componentType": "PopoverMenu",
@@ -72,19 +74,23 @@
     },
     {
       "componentType": "TextInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TextInput/TESTING.md"
     },
     {
       "componentType": "EmailInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/EmailInput/TESTING.md"
     },
     {
       "componentType": "PasswordInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PasswordInput/TESTING.md"
     },
     {
       "componentType": "TextArea",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TextArea/TESTING.md"
     },
     {
       "componentType": "RichTextEditor",
@@ -98,11 +104,13 @@
     },
     {
       "componentType": "PhoneInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PhoneInput/TESTING.md"
     },
     {
       "componentType": "CurrencyInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CurrencyInput/TESTING.md"
     },
     {
       "componentType": "RangeSliderV2",
@@ -181,19 +189,23 @@
     },
     {
       "componentType": "Link",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Link/TESTING.md"
     },
     {
       "componentType": "Steps",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Steps/TESTING.md"
     },
     {
       "componentType": "Pagination",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Pagination/TESTING.md"
     },
     {
       "componentType": "Icon",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Icon/TESTING.md"
     },
     {
       "componentType": "Image",
@@ -201,7 +213,8 @@
     },
     {
       "componentType": "SvgImage",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/SvgImage/TESTING.md"
     },
     {
       "componentType": "PDF",
@@ -229,23 +242,28 @@
     },
     {
       "componentType": "Tags",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Tags/TESTING.md"
     },
     {
       "componentType": "CircularProgressBar",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CircularProgressBar/TESTING.md"
     },
     {
       "componentType": "ProgressBar",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ProgressBar/TESTING.md"
     },
     {
       "componentType": "Divider",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Divider/TESTING.md"
     },
     {
       "componentType": "VerticalDivider",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/VerticalDivider/TESTING.md"
     },
     {
       "componentType": "Statistics",
