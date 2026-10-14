@@ -36,7 +36,9 @@ describe("License Page", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.apiDeleteAllApps();
-    cy.apiCreateApp(data.appName1);
+    for (let i = 0; i < 9; i++) {
+      cy.apiCreateApp(`${data.appName1}-${i}`);
+    }
     cy.visit("/my-workspace");
     cy.intercept("GET", "/api/v2/group-permissions/**").as(
       "getGroupPermissions"
@@ -45,7 +47,7 @@ describe("License Page", () => {
 
   after(() => {
     cy.apiDeleteAllApps();
-    cy.apiDeleteWorkflow(data.workflowName);
+    cy.apiDeleteAllWorkflows();
   });
 
   it("Should verify license page elements with the basic plan", () => {
@@ -97,6 +99,8 @@ describe("License Page", () => {
     verifyResourceLimit("workspace", planName);
 
     cy.get(dashboardSelector.homePageContent).click();
+
+    cy.get(commonSelectors.dashboardIcon).click();
 
     verifyResourceLimit("apps", planName);
 
