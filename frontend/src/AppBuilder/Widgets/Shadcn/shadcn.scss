@@ -94,12 +94,18 @@
 // brand's neighbours on the colour wheel instead (+25, -25 and +50 degrees, lighter or deeper): distinct
 // enough to tell apart, still one family with the brand, so no off-brand second accent. Series 5 stays grey. Without
 // relative-colour support the tints above apply.
+//
+// A dark primary (Navy, Ink, Slate, Graphite: lightness under 0.5) moves its neighbours to set lightnesses (0.58, 0.82,
+// 0.70, each 0.12 or more from the others and from a primary up to 0.46) instead of
+// small steps from it: 0.12 lighter and a hue turn left Navy's two lines near-identical, a deeper third series vanished,
+// and a near-grey primary has no hue to turn (help desk dashboard on ToolJet Navy, 2026-10-14). `dark` below is 1 for a
+// primary under 0.48 lightness and 0 from 0.5, so a mid-tone primary keeps the steps it had.
 @supports (color: oklch(from red l c h)) {
   .tj-shadcn,
   .tj-shad-tokens {
-    --sc-chart-2: #{'oklch(from var(--sc-chart-1) calc(l + 0.12) c calc(h + 25))'};
-    --sc-chart-3: #{'oklch(from var(--sc-chart-1) calc(l - 0.1) c calc(h - 25))'};
-    --sc-chart-4: #{'oklch(from var(--sc-chart-1) calc(l + 0.22) calc(c * 0.75) calc(h + 50))'};
+    --sc-chart-2: #{'oklch(from var(--sc-chart-1) calc(l + 0.12 + clamp(0, (0.5 - l) * 50, 1) * (0.46 - l)) c calc(h + 25))'};
+    --sc-chart-3: #{'oklch(from var(--sc-chart-1) calc(l - 0.1 + clamp(0, (0.5 - l) * 50, 1) * (0.92 - l)) c calc(h - 25))'};
+    --sc-chart-4: #{'oklch(from var(--sc-chart-1) calc(l + 0.22 + clamp(0, (0.5 - l) * 50, 1) * (0.48 - l)) calc(c * 0.75) calc(h + 50))'};
   }
   .dark-theme .tj-shadcn,
   .theme-dark .tj-shadcn {

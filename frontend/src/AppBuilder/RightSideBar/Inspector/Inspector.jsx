@@ -532,6 +532,8 @@ export const Inspector = ({
   };
 
   const renderDocumentationLink = () => {
+    // The UI 2.0 pack has no documentation pages yet, and its internal type name ("ShadLineChart") is not for users.
+    if (String(componentMeta?.component ?? '').startsWith('Shad')) return null;
     return (
       <span className="widget-documentation-link">
         <a
