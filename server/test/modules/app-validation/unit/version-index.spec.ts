@@ -88,7 +88,10 @@ describe('VersionIndex', () => {
           },
         ])
         .mockResolvedValueOnce([{ id: 'ds1', kind: 'postgresql', scope: 'global', organizationId: 'org1' }]),
-      findOne: jest.fn().mockResolvedValue({ id: 'v1', homePageId: 'p1' }),
+      findOne: jest
+        .fn()
+        .mockResolvedValueOnce({ id: 'v1', homePageId: 'p1', appId: 'a1' })
+        .mockResolvedValueOnce({ id: 'a1', organizationId: 'org1' }),
     };
 
     const loaded = await VersionIndex.load(manager, 'v1');
@@ -101,5 +104,45 @@ describe('VersionIndex', () => {
     // The event's action reference is resolved into refId while loading.
     expect(loaded.event('e1')).toMatchObject({ eventId: 'onClick', actionId: 'run-query', refId: 'q1' });
     expect(loaded.dataSource('ds1')?.kind).toBe('postgresql');
+    // Reachable sources = version-local, referenced by existing queries, or workspace-global.
+    const dataSourceFind = manager.find.mock.calls[3][1];
+    expect(dataSourceFind.where).toEqual([
+      { appVersionId: 'v1' },
+      { id: expect.anything() },
+      { organizationId: 'org1', scope: 'global' },
+    ]);
+  });
+
+  it('sees workspace-global data sources in a version with no queries yet', async () => {
+    // Regression: a fresh app has no queries, so the first query against a global data
+    // source (sample postgres, runjs, tooljetdb statics) must still resolve - previously
+    // only version-local and already-referenced sources were indexed, which rejected the
+    // first query of every new app with QUERY_DATASOURCE_NOT_FOUND under enforce mode.
+    const queryBuilder: any = {
+      innerJoin: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      getRawMany: jest.fn().mockResolvedValue([]),
+    };
+    const manager: any = {
+      createQueryBuilder: jest.fn(() => queryBuilder),
+      find: jest
+        .fn()
+        .mockResolvedValueOnce([]) // pages
+        .mockResolvedValueOnce([]) // queries
+        .mockResolvedValueOnce([]) // events
+        .mockResolvedValueOnce([{ id: 'sample-ds', kind: 'postgresql', scope: 'global', organizationId: 'org1' }]),
+      findOne: jest
+        .fn()
+        .mockResolvedValueOnce({ id: 'v1', homePageId: null, appId: 'a1' })
+        .mockResolvedValueOnce({ id: 'a1', organizationId: 'org1' }),
+    };
+
+    const loaded = await VersionIndex.load(manager, 'v1');
+
+    const dataSourceFind = manager.find.mock.calls[3][1];
+    expect(dataSourceFind.where).toEqual([{ appVersionId: 'v1' }, { organizationId: 'org1', scope: 'global' }]);
+    expect(loaded.dataSource('sample-ds')?.kind).toBe('postgresql');
   });
 });

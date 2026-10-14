@@ -43,6 +43,10 @@ Adding an event action: follow `.github/instructions/event-action-remapping.inst
   rules, and `copy`/`restore` are hard-capped to `report` in `core/mode.ts`.
 - `check()` returns blocking issues in `result.errors` even in report mode; the mode only
   controls throwing.
+- Data source reachability in `VersionIndex.load` = version-local OR referenced by an
+  existing query OR workspace-global (statics, defaults and samples are all stored
+  `scope='global'`, `app_version_id=NULL`). Dropping the global clause rejects the first
+  query of every fresh app under enforce - pinned by version-index.spec.
 
 ## Tests
 

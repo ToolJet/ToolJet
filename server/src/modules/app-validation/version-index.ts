@@ -1,10 +1,12 @@
-import { EntityManager, In } from 'typeorm';
+import { EntityManager, FindOptionsWhere, In } from 'typeorm';
+import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { Component } from '@entities/component.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { EventHandler } from '@entities/event_handler.entity';
 import { Page } from '@entities/page.entity';
+import { DataSourceScopes } from '@modules/data-sources/constants';
 import { actionEntityRef } from './catalog/actions';
 
 export interface IndexedComponent {
@@ -122,15 +124,28 @@ export class VersionIndex {
     });
     const events: IndexedEvent[] = eventRows.map((row) => toIndexedEvent(row));
 
-    // Local data sources carry the version id; global ones are reachable only through the
-    // queries that use them.
+    const version = await manager.findOne(AppVersion, {
+      where: { id: appVersionId },
+      select: ['id', 'homePageId', 'appId'],
+    });
+    const app = version?.appId
+      ? await manager.findOne(App, { where: { id: version.appId }, select: ['id', 'organizationId'] })
+      : null;
+
+    // A query may use a data source local to this version, or any global one of the owning
+    // workspace (statics like runjs/tooljetdb, defaults and samples are all stored global) -
+    // mirrors the reachability check in data-queries changeQueryDataSource. Sources referenced
+    // by existing queries stay included so legacy rows that predate this scoping still resolve.
     const referencedIds = [...new Set(queries.map((q) => q.dataSourceId).filter(Boolean))];
+    const dataSourceWhere: FindOptionsWhere<DataSource>[] = [{ appVersionId }];
+    if (referencedIds.length) dataSourceWhere.push({ id: In(referencedIds) });
+    if (app?.organizationId) {
+      dataSourceWhere.push({ organizationId: app.organizationId, scope: DataSourceScopes.GLOBAL });
+    }
     const dataSources: IndexedDataSource[] = await manager.find(DataSource, {
-      where: referencedIds.length ? [{ appVersionId }, { id: In(referencedIds) }] : { appVersionId },
+      where: dataSourceWhere,
       select: ['id', 'kind', 'scope', 'organizationId'],
     });
-
-    const version = await manager.findOne(AppVersion, { where: { id: appVersionId }, select: ['id', 'homePageId'] });
 
     return new VersionIndex({ components, pages, queries, events, dataSources, homePageId: version?.homePageId });
   }
