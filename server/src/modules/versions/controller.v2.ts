@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { VersionService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
@@ -15,6 +16,23 @@ import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { PromoteVersionDto } from './dto';
 import { IVersionControllerV2 } from './interfaces/IControllerV2';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { getConnectionInstance } from '@helpers/database.helper';
+import { getAppDataRevision } from '@modules/apps/app-data-revision';
+
+// ETag for a published version: changes with the version row (e.g. promote), the app row
+// (rename, public/maintenance), a migration, or the user (EE filters per user). Null = no caching.
+async function publishedVersionETag(app: AppEntity, versionId: string, userId: string): Promise<string | null> {
+  const manager = getConnectionInstance().manager;
+  const version = await manager.findOne(AppVersion, {
+    where: { id: versionId, appId: app.id },
+    select: ['id', 'status', 'updatedAt'],
+  });
+  if (version?.status !== AppVersionStatus.PUBLISHED) return null;
+  const revision = await getAppDataRevision(manager, app);
+  if (!revision) return null;
+  return `"v-${versionId}-${version.updatedAt.getTime()}-${revision}-${userId}"`;
+}
 
 @InitModule(MODULES.VERSION)
 @Controller({
@@ -41,7 +59,25 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions/:versionId')
-  getVersion(@User() user: UserEntity, @App() app: AppEntity, @Query('mode') mode?: string) {
+  async getVersion(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Param('versionId') versionId: string,
+    @Query('mode') mode: string,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    // Published versions are cached by the browser but revalidated on every load (no-cache), so
+    // an unchanged version costs a 304 instead of rebuilding and downloading the payload.
+    const etag = await publishedVersionETag(app, versionId, user.id);
+    if (etag) {
+      res.set({ 'Cache-Control': 'private, no-cache', ETag: etag });
+      if (req.headers['if-none-match'] === etag) {
+        res.status(304);
+        return;
+      }
+    }
+
     return this.versionService.getVersion(app, user, mode);
   }
 

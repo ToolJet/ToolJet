@@ -5,8 +5,9 @@
  * Every maintained title starts with its approved scenario ID.
  */
 import { fireEvent, waitFor } from '@testing-library/react';
-import { iconConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/icon';
-import { iconConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/icon';
+import { iconConfig as frontendConfig } from '@tooljet/widget-definitions';
+// eslint-disable-next-line import/no-relative-packages
+import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
 import { componentDefinition } from '@/test/app-builder';
 import {
   binding,
@@ -15,6 +16,8 @@ import {
   setVariableOn,
   store,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+
+const serverConfig = serverWidgets.iconConfig;
 
 const ID = 'ico1';
 const HANDLE = 'icon1';

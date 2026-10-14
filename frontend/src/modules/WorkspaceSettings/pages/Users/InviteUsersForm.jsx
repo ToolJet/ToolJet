@@ -303,8 +303,8 @@ function InviteUsersForm({
                 {isEditing
                   ? 'Edit user details'
                   : isBulkUpsertEnabled()
-                    ? 'Invite user'
-                    : t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
+                  ? 'Invite user'
+                  : t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
               </h3>
               <div
                 onClick={() => {
