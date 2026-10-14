@@ -46,6 +46,17 @@ export const WORKFLOW_EXECUTION_STATUS = {
   WAITING: 'workflow_execution_waiting',
 };
 
+/** Values of WorkflowExecution.status (the run row), not job progress events. */
+export const WORKFLOW_RUN_STATUS = {
+  SUCCESS: 'success',
+  FAILURE: 'failure',
+  TERMINATED: 'terminated',
+  WAITING: 'waiting',
+  WAITING_FOR_DELAY: 'waiting_for_delay',
+} as const;
+
+export type WorkflowRunStatus = (typeof WORKFLOW_RUN_STATUS)[keyof typeof WORKFLOW_RUN_STATUS];
+
 // Re-export types from types module for backward compatibility
 export { WORKFLOW_TRIGGER_TYPE } from '../types';
 export type { WorkflowTriggerType, ExecutionMetadata } from '../types';

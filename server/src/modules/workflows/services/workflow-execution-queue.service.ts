@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
 import { WorkflowExecution } from '@entities/workflow_execution.entity';
-import { WorkflowTriggerType } from '../types';
+import { ResumeState, WorkflowTriggerType } from '../types';
 
 export interface WorkflowResumeOptions {
   startNodeId?: string;
-  injectedState?: object;
+  injectedState?: ResumeState;
   requestId?: string;
   delayMs?: number;
 }

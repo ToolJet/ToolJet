@@ -110,6 +110,25 @@ export class WorkflowTerminationError extends Error {
   }
 }
 
+export type ApprovalTimerJobData = { requestId: string };
+
+// Injected into a resumed run's state; read only by the node they name.
+export type HumanDecision = {
+  nodeId: string;
+  outcome: string;
+  input?: Record<string, unknown>;
+  resolvedBy?: string | null;
+};
+
+export type WaitResume = {
+  nodeId: string;
+  requestedAt: string;
+  resumeAt: string;
+  requestedDurationMs: number;
+};
+
+export type ResumeState = { __humanDecision?: HumanDecision; __waitResume?: WaitResume };
+
 export class WorkflowSuspendedSignal extends Error {
   constructor(
     public readonly executionId: string,
