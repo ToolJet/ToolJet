@@ -111,6 +111,8 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   target relation only when it has no application rows and no physical table
   (`discardRelationIfNothingMaterialized`) - a relation backing a real table is never deleted, its id is the
   physical name. The frontend refetches tables and migrations on a failed promote too.
+- **No per-environment access control.** TJDB has no environment permissions yet: admins and Builders reach every
+  environment. `promote` / `promote/preview` gate on licence only - never on the app's granular `environmentAccess`.
 - HTTP `/proxy/*` serves only admins/builders (dashboard, App Builder editor). App queries reach
   PostgREST in-process (`.perform()`), never through this route, so anyone else needs a data query of
   their own workspace to pass `FEATURE_KEY.PROXY_POSTGREST`.
