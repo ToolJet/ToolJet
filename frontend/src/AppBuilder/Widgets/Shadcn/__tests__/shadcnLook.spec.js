@@ -87,3 +87,33 @@ describe('hairlines in dark themes', () => {
     expect(scss).toMatch(/\.tj-shadcn,\s*\.tj-shad-tokens\s*\{[^}]*--sc-border:\s*var\(--cc-weak-border/);
   });
 });
+
+// Chart series 2 to 4 are relative colours of the theme's primary. On a dark primary (ToolJet Navy, Ink, Slate,
+// Graphite) small lightness steps left two lines near-identical (help desk dashboard, 2026-10-14). The lightness
+// formulas are evaluated here as the browser does, for each shipped primary's oklch lightness.
+describe('chart series on dark and mid-tone primaries', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const scss = fs.readFileSync(path.join(__dirname, '..', 'shadcn.scss'), 'utf8');
+  // The light-mode rules come first in the file (the dark-mode ones follow, scoped to .dark-theme), so the first
+  // relative-colour formula for each series is the light one. SCSS #{...} holds braces, so blocks are not split on them.
+  const lightBlock = scss;
+  const lightness = (n, l) => {
+    const expr = lightBlock.match(
+      new RegExp(`--sc-chart-${n}: #\\{'oklch\\(from var\\(--sc-chart-1\\) calc\\((.*?)\\) (?:c|calc)`)
+    )[1];
+    const clamp = (low, value, high) => Math.min(Math.max(value, low), high);
+    return Function('clamp', `return ${expr.replace(/\bl\b/g, `(${l})`)}`)(clamp);
+  };
+  const series = (l) => [l, lightness(2, l), lightness(3, l), lightness(4, l)];
+  const minGap = (values) => Math.min(...values.flatMap((a, i) => values.slice(i + 1).map((b) => Math.abs(a - b))));
+
+  it('keeps every series of a dark primary at least 0.12 apart in lightness', () => {
+    for (const l of [0.21, 0.27, 0.37, 0.4]) expect(+minGap(series(l)).toFixed(3)).toBeGreaterThanOrEqual(0.12);
+  });
+
+  it("leaves a mid-tone primary's series as they were", () => {
+    const [, s2, s3, s4] = series(0.6);
+    expect([s2, s3, s4].map((v) => +v.toFixed(2))).toEqual([0.72, 0.5, 0.82]);
+  });
+});

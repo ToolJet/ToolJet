@@ -218,3 +218,40 @@ describe('helpers', () => {
     expect(slotValue({ id: 'a', name: 'Atlas' }, week.slots[1], '12h', 'days').label).toBe('Tue 13 Oct');
   });
 });
+
+// On the days scale a one-hour class was placed by its time of day across the whole day, so a week of gym classes drew
+// as 10px slivers with no label (2026-10-14). A timed booking shorter than a day fills its day; several on one day stack.
+describe('placeBookings, timed bookings on the days scale', () => {
+  const range = scheduleRange(
+    { scale: 'days', date: '2026-10-12', days: 7 },
+    new Date('2026-10-12T09:00:00').getTime()
+  );
+  const resources = [{ key: 'r1', id: 'Nora', name: 'Nora' }];
+  const fields = { resourceField: 'coach', startField: 'start', endField: 'end', titleField: 'title' };
+  const placed = placeBookings(
+    [
+      { coach: 'Nora', start: '2026-10-12T06:00:00', end: '2026-10-12T07:00:00', title: 'Spin' },
+      { coach: 'Nora', start: '2026-10-12T18:00:00', end: '2026-10-12T19:00:00', title: 'Yoga' },
+      { coach: 'Nora', start: '2026-10-13T07:00:00', end: '2026-10-13T08:00:00', title: 'HIIT' },
+    ],
+    fields,
+    range,
+    resources
+  ).r1;
+
+  it('fills the day column, keeping its own time', () => {
+    const [spin, yoga, hiit] = placed.items;
+    expect(spin.width).toBeCloseTo(100 / 7, 5);
+    expect(spin.left).toBeCloseTo(0, 5);
+    expect(hiit.left).toBeCloseTo(100 / 7, 5);
+    expect(spin.time).toMatch(/6/);
+    expect(yoga.left).toBeCloseTo(spin.left, 5);
+  });
+
+  it('stacks the bookings of one day in lanes', () => {
+    const [spin, yoga, hiit] = placed.items;
+    expect(spin.lane).not.toBe(yoga.lane);
+    expect(hiit.lane).toBe(0);
+    expect(placed.lanes).toBe(2);
+  });
+});

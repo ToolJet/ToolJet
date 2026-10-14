@@ -327,8 +327,10 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
 export function computeComponentName(componentType, currentComponents, moduleName) {
   // Fall back to the raw string for non-registry seeds (e.g. Custom-tab drops name
   // instances after the LIBRARY component: 'HelloWorld' → helloworld1)
-  const widgetConfigName =
-    componentTypes.find((component) => component?.component === componentType)?.name ?? componentType;
+  // The UI 2.0 pack's types start with "Shad", an internal name users should not see: a new line chart is linechart1.
+  const widgetConfigName = (
+    componentTypes.find((component) => component?.component === componentType)?.name ?? componentType
+  )?.replace(/^Shad(?=[A-Z])/, '');
   const rawBase = moduleName || widgetConfigName || '';
   let sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
 

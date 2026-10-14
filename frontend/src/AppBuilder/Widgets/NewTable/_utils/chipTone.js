@@ -4,19 +4,19 @@
 const TONES = [
   [
     'danger',
-    /\b(overdue|out of stock|failed|failure|error|cancell?ed|rejected|declined|blocked|expired|lost|critical|urgent|high|severe|breach(ed)?|late|delayed|churned|suspended|terminated|refunded|disputed|offline|down)\b/,
+    /\b(overdue|out of stock|failed|failure|error|cancell?ed|rejected|declined|blocked|expired|lost|critical|urgent|high|severe|breach(ed)?|late|delayed|churned|suspended|terminated|refunded|disputed|offline|down|absent|no show|out of service)\b/,
   ],
   [
     'warning',
-    /\b(pending|unpaid|due|reorder|low stock|waiting|awaiting|review|in review|on hold|hold|draft|medium|at risk|risk|partial|partially paid|tentative|requested|needs attention|warning|maintenance|occupied|busy|trial)\b/,
+    /\b(pending|unpaid|due|reorder|low stock|waiting|awaiting|review|in review|on hold|hold|draft|medium|at risk|risk|partial|partially paid|tentative|requested|needs attention|warning|maintenance|occupied|busy|trial|missing|incomplete|in repair|repair|in workshop|workshop)\b/,
   ],
   [
     'success',
-    /\b(paid|active|done|complete|completed|resolved|approved|confirmed|in stock|won|healthy|available|delivered|shipped|success|successful|passed|live|online|published|ready|accepted|vacant|clean|fulfilled|on track|closed won|signed|settled|given)\b/,
+    /\b(paid|active|done|complete|completed|resolved|approved|confirmed|in stock|won|healthy|available|delivered|shipped|success|successful|passed|live|online|published|ready|accepted|vacant|clean|fulfilled|on track|closed won|signed|settled|given|attached|received|present|in service|returned)\b/,
   ],
   [
     'info',
-    /\b(new|open|in progress|scheduled|booked|sent|assigned|processing|planned|upcoming|started|qualified|contacted|proposal|negotiation|checked in|in transit|on the way|en route|dispatched|on site)\b/,
+    /\b(new|open|in progress|scheduled|booked|sent|assigned|processing|planned|upcoming|started|qualified|contacted|proposal|negotiation|checked in|in transit|on the way|en route|dispatched|on site|checked out|on loan|in use)\b/,
   ],
 ];
 

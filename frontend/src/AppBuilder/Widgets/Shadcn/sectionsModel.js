@@ -123,19 +123,27 @@ export const cardItems = (data, fields = {}) => {
       .filter(Boolean)
       .slice(0, 4);
     const hasAvatar = isText(f.avatarField) && f.avatarField in row;
+    const progress = isText(f.progressField) ? percentOf(row[f.progressField]) : null;
+    // A description that only repeats the bar's percentage ("25%") is left out: the bar labels it already.
+    const description = isText(f.descriptionField) ? shown(row[f.descriptionField]) : '';
+    const repeatsProgress = progress !== null && description.replace(/\s+/g, '') === `${Math.round(progress)}%`;
     return [
       {
         key: shown(id) || String(index),
         keyFromId: !!shown(id),
         title,
-        subtitle: isText(f.subtitleField) ? shown(row[f.subtitleField]) : '',
+        // A subtitle that only repeats the badge (a category shown as both) is left out.
+        subtitle:
+          isText(f.subtitleField) && shown(row[f.subtitleField]).trim() !== (badges[0] || '').trim()
+            ? shown(row[f.subtitleField])
+            : '',
         image: isText(f.imageField) ? shown(row[f.imageField]) : '',
-        description: isText(f.descriptionField) ? shown(row[f.descriptionField]) : '',
+        description: repeatsProgress ? '' : description,
         badge: badges[0] || '',
         badges,
         eyebrow: isText(f.eyebrowField) ? shown(row[f.eyebrowField]).trim() : '',
         avatar: hasAvatar ? avatarOf(row[f.avatarField], title) : null,
-        progress: isText(f.progressField) ? percentOf(row[f.progressField]) : null,
+        progress,
         meta: metaSpecs
           .map((spec) => metaPart(row, spec))
           .filter(Boolean)
