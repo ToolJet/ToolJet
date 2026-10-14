@@ -1,7 +1,7 @@
 import { RequestContext } from '@modules/request-context/service';
 import { PAT_API_SOURCE } from '@modules/personal-access-tokens/constants';
 import { EXT_API_ROUTE_PATTERN, VALIDATION_MODE_BY_SOURCE } from './constants';
-import { ValidationMode, WriteSource } from './types';
+import { ValidationMode, WriteSource } from '../types';
 
 // Copy and restore reproduce already-stored data, so they never block.
 const REPORT_ONLY_SOURCES = new Set<WriteSource>(['copy', 'restore']);

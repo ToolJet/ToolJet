@@ -3,11 +3,11 @@ import { Logger } from 'nestjs-pino';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { RequestContext } from '@modules/request-context/service';
-import { VALIDATION_WARNINGS_LOCALS_KEY } from './constants';
-import { AppValidationException } from './exception';
-import { getMode, resolveSource } from './mode';
+import { VALIDATION_WARNINGS_LOCALS_KEY } from './core/constants';
+import { AppValidationException } from './core/exception';
+import { getMode, resolveSource } from './core/mode';
 import { rulesFor } from './rules';
-import { runRules } from './runner';
+import { runRules } from './core/runner';
 import { Issue, Rule, RuleContext, ValidationArea, ValidationMode, ValidationResult, WriteSource } from './types';
 import { VersionIndex } from './version-index';
 

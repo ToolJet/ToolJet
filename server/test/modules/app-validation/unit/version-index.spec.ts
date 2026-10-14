@@ -16,6 +16,19 @@ describe('VersionIndex', () => {
       { id: 'p2', name: 'Other', handle: 'other' },
     ],
     queries: [{ id: 'q1', name: 'getUsers' }],
+    events: [
+      {
+        id: 'e1',
+        sourceId: 'c1',
+        target: 'component',
+        index: 0,
+        eventId: 'onClick',
+        actionId: 'run-query',
+        refId: 'q1',
+      },
+      { id: 'e2', sourceId: 'c1', target: 'component', index: 1, eventId: 'onClick', actionId: 'show-alert' },
+    ],
+    dataSources: [{ id: 'ds1', kind: 'postgresql', scope: 'global', organizationId: 'org1' }],
     homePageId: 'p1',
   });
 
@@ -25,6 +38,13 @@ describe('VersionIndex', () => {
     expect(index.page('p2')?.handle).toBe('other');
     expect(index.queriesNamed('getUsers').map((q) => q.id)).toEqual(['q1']);
     expect(index.homePageId).toBe('p1');
+  });
+
+  it('looks up events and data sources', () => {
+    expect(index.event('e1')?.refId).toBe('q1');
+    expect(index.eventsForSource('c1').map((e) => e.id)).toEqual(['e1', 'e2']);
+    expect(index.events()).toHaveLength(2);
+    expect(index.dataSource('ds1')?.kind).toBe('postgresql');
   });
 
   it('checks names per page, and can ignore the components being renamed', () => {
@@ -39,6 +59,9 @@ describe('VersionIndex', () => {
     expect(next.component('c2')?.name).toBe('renamed');
     expect(index.component('c4')).toBeUndefined();
     expect(index.component('c2')?.name).toBe('button2');
+    // The copy keeps the rest of the lookup.
+    expect(next.event('e1')?.actionId).toBe('run-query');
+    expect(next.dataSource('ds1')?.kind).toBe('postgresql');
   });
 
   it('loads from the database with small queries through the given EntityManager', async () => {
@@ -54,7 +77,17 @@ describe('VersionIndex', () => {
       find: jest
         .fn()
         .mockResolvedValueOnce([{ id: 'p1', handle: 'home' }])
-        .mockResolvedValueOnce([{ id: 'q1', name: 'q' }]),
+        .mockResolvedValueOnce([{ id: 'q1', name: 'q', dataSourceId: 'ds1' }])
+        .mockResolvedValueOnce([
+          {
+            id: 'e1',
+            sourceId: 'c1',
+            target: 'component',
+            index: 0,
+            event: { eventId: 'onClick', actionId: 'run-query', queryId: 'q1' },
+          },
+        ])
+        .mockResolvedValueOnce([{ id: 'ds1', kind: 'postgresql', scope: 'global', organizationId: 'org1' }]),
       findOne: jest.fn().mockResolvedValue({ id: 'v1', homePageId: 'p1' }),
     };
 
@@ -65,5 +98,8 @@ describe('VersionIndex', () => {
     expect(loaded.page('p1')?.handle).toBe('home');
     expect(loaded.query('q1')?.name).toBe('q');
     expect(loaded.homePageId).toBe('p1');
+    // The event's action reference is resolved into refId while loading.
+    expect(loaded.event('e1')).toMatchObject({ eventId: 'onClick', actionId: 'run-query', refId: 'q1' });
+    expect(loaded.dataSource('ds1')?.kind).toBe('postgresql');
   });
 });

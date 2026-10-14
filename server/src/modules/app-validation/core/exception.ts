@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { APP_VALIDATION_FAILED } from './constants';
-import { Issue } from './types';
+import { Issue } from '../types';
 
 export class AppValidationException extends BadRequestException {
   // Read by AllExceptionsFilter as the response `code`.

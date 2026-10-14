@@ -1,4 +1,4 @@
-import { Issue, Rule, RuleContext, ValidationResult } from './types';
+import { Issue, Rule, RuleContext, ValidationResult } from '../types';
 
 export type RuleCrashHandler = (ruleId: string, error: Error) => void;
 

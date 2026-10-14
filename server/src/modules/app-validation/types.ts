@@ -1,4 +1,4 @@
-import { VALIDATION_MODES, WRITE_SOURCES } from './constants';
+import { VALIDATION_MODES, WRITE_SOURCES } from './core/constants';
 import type { VersionIndex } from './version-index';
 
 export type ValidationMode = (typeof VALIDATION_MODES)[number];
@@ -70,3 +70,65 @@ export interface ComponentData {
 }
 
 export type ComponentWrite = Write<ComponentData>;
+
+// One write per (component, layout type). `id` is the component id: layout rows are
+// addressed by (componentId, type) everywhere in the save code, never by their own id.
+export interface LayoutData {
+  componentId?: string;
+  type?: string;
+  top?: unknown;
+  left?: unknown;
+  width?: unknown;
+  height?: unknown;
+  widthPx?: unknown;
+  fillWidth?: unknown;
+}
+
+export type LayoutWrite = Write<LayoutData>;
+
+export interface EventData {
+  name?: string;
+  // EventHandler.target: 'component' | 'page' | 'data_query' | 'table_column' | 'table_action'
+  target?: string;
+  sourceId?: string;
+  index?: unknown;
+  // The `event` JSONB payload ({ eventId, actionId, ...per-action fields }).
+  event?: Record<string, any>;
+}
+
+export type EventWrite = Write<EventData>;
+
+export interface QueryData {
+  name?: string;
+  // Only API saves carry `kind`; exports don't store it on the query row.
+  kind?: string;
+  dataSourceId?: string;
+  options?: Record<string, any>;
+}
+
+export type QueryWrite = Write<QueryData>;
+
+export interface PageData {
+  name?: string;
+  handle?: string;
+  index?: unknown;
+  // jsonb column holding either a raw boolean or the fx shape { value, fxActive }.
+  hidden?: unknown;
+  disabled?: unknown;
+  isPageGroup?: boolean;
+  pageGroupId?: string | null;
+  // PageType: 'default' | 'group' | 'url' | 'app' | 'custom'
+  type?: string;
+  // Delete op context: a group delete that also deletes its child pages.
+  deleteAssociatedPages?: boolean;
+}
+
+export type PageWrite = Write<PageData>;
+
+export interface VersionSettingsData {
+  homePageId?: string;
+  globalSettings?: unknown;
+  pageSettings?: unknown;
+}
+
+export type VersionSettingsWrite = Write<VersionSettingsData>;

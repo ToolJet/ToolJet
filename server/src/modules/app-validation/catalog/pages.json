@@ -1,0 +1,11 @@
+{
+  "$sources": {
+    "handlePattern": "frontend/src/_helpers/utils.js validateKebabCase",
+    "eventsByType": "frontend/src/AppBuilder/RightSideBar/PageSettingsTab/PageMenu/pageEventsMeta.js (used by AddNewPagePopup.jsx and SettingsModal.jsx); url/app/group pages fire no events"
+  },
+  "handlePattern": "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$",
+  "eventsByType": {
+    "default": ["onPageLoad"],
+    "custom": ["onClick"]
+  }
+}
