@@ -197,3 +197,23 @@ describe('wholeNumbers', () => {
     expect(wholeNumbers([{ a: 'n/a' }], ['a'])).toBe(false);
   });
 });
+
+describe('statusColors', () => {
+  // A stacked chart of visits by status drew Completed orange and Missed yellow from a warm theme's series colours
+  // (field visits, 2026-10-14): series that are all states take the status tones, as their chips do.
+  const { statusColors } = require('../chartsModel');
+  it('gives states their tones, a second of one tone a lighter shade', () => {
+    const colors = statusColors(['Completed', 'In progress', 'Planned', 'Missed']);
+    expect(colors[0]).toBe('var(--sc-success)');
+    expect(colors[1]).toBe('var(--sc-chart-info)');
+    expect(colors[2]).toMatch(/^color-mix\(in srgb, var\(--sc-chart-info\) \d+%/);
+    expect(colors[3]).toBe('var(--sc-destructive)');
+  });
+  it('leaves series that are not all states, or all one tone, to the theme', () => {
+    expect(statusColors(['Annual budget', 'Spent'])).toBeNull();
+    expect(statusColors(['Completed', 'Revenue'])).toBeNull();
+    expect(statusColors(['Paid', 'Delivered'])).toBeNull();
+    expect(statusColors(['Completed'])).toBeNull();
+    expect(statusColors(null)).toBeNull();
+  });
+});
