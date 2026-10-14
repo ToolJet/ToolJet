@@ -9,7 +9,7 @@ OTel Collector, Tempo (traces), Loki (logs), Prometheus (metrics) and Grafana, f
 
 `--wire` needs an existing `.env` (`tj setup --app` creates it). Without `--wire`, `tj obs up` only starts the stack.
 
-Grafana: http://localhost:3900 (anonymous admin, local only). Dashboards, folder ToolJet: ToolJet Monitoring, ToolJet Agent.
+Grafana: http://localhost:3900 (anonymous admin, local only). Dashboards, folder ToolJet: Tooljet Monitoring, ToolJet Agent.
 OTLP: `localhost:4317` (gRPC), `localhost:4318` (HTTP). All ports bind to 127.0.0.1.
 
 Other commands: `tj obs status`, `tj obs down` (`--purge` deletes stored data).
@@ -32,8 +32,8 @@ OTel export needs `ENABLE_OTEL=true` and an EE or Cloud edition. CE ignores it.
 
 - Find the turn: `{ span.gen_ai.conversation.id = "<conversation id>" }`.
 - The agent's root span carries `tooljet.ai.stop_reason`, `tooljet.ai.failure_category` and `error.type`.
-- Server requests made for the AI carry `tooljet.origin = "ai"`: `{ span.tooljet.origin = "ai" && span.http.response.status_code >= 400 }`.
-- ToolJet Monitoring has an `origin` variable to split server panels by origin.
+- Server requests made for the AI carry `tooljet.origin = "ai"`: `{ span.tooljet.origin = "ai" && (span.http.response.status_code >= 400 || span.http.status_code >= 400) }`.
+- Tooljet Monitoring has an `origin` variable to split server panels by origin.
 
 ## What the server records
 

@@ -2849,7 +2849,7 @@
           "queryType": "traceql",
           "limit": 50,
           "tableType": "spans",
-          "query": "{ resource.service.name = \"tooljet\" && span.tooljet.origin = \"ai\" && span.http.response.status_code >= 400 } | select(span.http.route, span.http.response.status_code, span.gen_ai.conversation.id)"
+          "query": "{ resource.service.name = \"tooljet\" && span.tooljet.origin = \"ai\" && (span.http.response.status_code >= 400 || span.http.status_code >= 400) } | select(span.http.route, span.http.response.status_code, span.http.status_code, span.gen_ai.conversation.id)"
         }
       ]
     },
