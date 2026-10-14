@@ -98,6 +98,11 @@ $radius: var(--cc-radius-default, 6px);
       background: color-mix(in srgb, var(--cc-surface3-surface) 55%, transparent) !important;
     }
   }
+  // The last row drops its divider, as shadcn's data table does: above the footer's own rule it drew a second line a
+  // few pixels off, which read as a sliver of a hidden row (2026-10-14, five apps). Transparent, so heights hold.
+  tbody tr.table-row:last-of-type {
+    border-bottom-color: transparent !important;
+  }
   // The selected row (highlightSelectedRow): a soft tint of the brand colour, as shadcn's data table marks it.
   tbody tr.table-row.selected,
   tbody tr.table-row.selected:hover {

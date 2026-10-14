@@ -1,4 +1,6 @@
 import {
+  compactFigure,
+  centreValueFit,
   wholeNumbers,
   arcAngles,
   arcBox,
@@ -215,5 +217,33 @@ describe('statusColors', () => {
     expect(statusColors(['Paid', 'Delivered'])).toBeNull();
     expect(statusColors(['Completed'])).toBeNull();
     expect(statusColors(null)).toBeNull();
+  });
+});
+
+describe('compactFigure', () => {
+  // "+$190,800.00" in a stat's change badge broke as "+$190,800.0 / 0" (museum loans, 2026-10-14).
+  it('shortens a long money or number figure, keeping its sign and currency', () => {
+    expect(compactFigure('+$190,800.00')).toBe('+$190.8K');
+    expect(compactFigure('$8,196,250.00')).toBe('$8.2M');
+    expect(compactFigure('-€12,500')).toBe('-€12.5K');
+    expect(compactFigure('1,250,000')).toBe('1.25M');
+  });
+  it('leaves short figures, percentages and words alone', () => {
+    expect(compactFigure('+$1,200')).toBe('+$1,200');
+    expect(compactFigure('+12.5%')).toBe('+12.5%');
+    expect(compactFigure('3 overdue')).toBe('3 overdue');
+  });
+});
+
+describe('centreValueFit', () => {
+  // "$8,196,250.00" at 24px ran over the ring of a donut with a 70px hole (museum loans, 2026-10-14).
+  it('keeps a value that fits the hole at full size', () => {
+    expect(centreValueFit('42', 70)).toEqual({ text: '42', fontSize: 24 });
+  });
+  it('shrinks, then shortens, a value too wide for the hole', () => {
+    const fit = centreValueFit('$8,196,250.00', 70);
+    expect(fit.text).toBe('$8.2M');
+    expect(fit.text.length * fit.fontSize * 0.62).toBeLessThanOrEqual(2 * 70 - 16);
+    expect(centreValueFit('$196,250', 70).text).toBe('$196,250');
   });
 });

@@ -549,10 +549,41 @@ describe('Stat change', () => {
     expect(chip.className).not.toMatch(/\btruncate\b/);
     const badge = chip.parentElement;
     expect(badge.getAttribute('title')).toBe(change);
-    expect(badge.className).toMatch(/\bmin-w-0\b/);
-    expect(badge.className).not.toMatch(/\bshrink-0\b/);
-    const words = [...document.querySelectorAll('span')].find((el) => el.textContent === 'after a long weekend of record sales across every store');
+    // The figure keeps one line and its whole width ("+$190,800.0 / 0" broke over two lines, 2026-10-14).
+    expect(chip.className).toMatch(/\bwhitespace-nowrap\b/);
+    expect(badge.className).toMatch(/\bshrink-0\b/);
+    const words = [...document.querySelectorAll('span')].find(
+      (el) => el.textContent === 'after a long weekend of record sales across every store'
+    );
     expect(words).toBeTruthy();
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
+  it('shortens a long money change to fit the badge, its whole text the tooltip', async () => {
+    const { problems, unmount } = await mount('ShadStat', {
+      label: 'Total insured while out',
+      value: 8196250,
+      change: '+$190,800.00',
+      trend: 'up',
+    });
+    const chip = [...document.querySelectorAll('span')].find((el) => el.textContent === '+$190.8K');
+    expect(chip).toBeTruthy();
+    expect(chip.parentElement.getAttribute('title')).toBe('+$190,800.00');
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
+  it('lets a change of words wrap in the badge', async () => {
+    const { problems, unmount } = await mount('ShadStat', {
+      label: 'Revenue',
+      value: 48210,
+      change: 'Best week of the quarter',
+      trend: 'up',
+    });
+    const chip = [...document.querySelectorAll('span')].find((el) => el.textContent === 'Best week of the quarter');
+    expect(chip.className).toMatch(/\bwhitespace-normal\b/);
+    expect(chip.parentElement.className).not.toMatch(/\bshrink-0\b/);
     unmount();
     expect(problems()).toEqual([]);
   });
@@ -614,11 +645,15 @@ describe('Record list and summary strip', () => {
     const strip = await mount('ShadSummaryStrip', {
       items: [
         { label: 'Jobs this week', value: 14 },
-        { label: 'Technicians on the road today across both regions', value: 8, caption: 'two more than last week, with one on leave' },
+        {
+          label: 'Technicians on the road today across both regions',
+          value: 8,
+          caption: 'two more than last week, with one on leave',
+        },
       ],
     });
     const labels = [...document.querySelectorAll('dt')];
-    expect(labels.length).toBe(2);
+    expect(labels).toHaveLength(2);
     for (const dt of labels) {
       expect(dt.className).not.toMatch(/\btruncate\b/);
       expect(dt.className).toMatch(/\bflex-1\b/);
@@ -635,7 +670,12 @@ describe('Record list and summary strip', () => {
     const data = Array.from({ length: 40 }, (_, i) => ({ id: i, title: `Laptop ${i}`, status: 'out' }));
     const board = await mountCase({
       name: 'ShadKanban',
-      properties: { ...defaultsOf('ShadKanban'), data, columns: [{ id: 'out', title: 'Checked out' }], statusField: 'status' },
+      properties: {
+        ...defaultsOf('ShadKanban'),
+        data,
+        columns: [{ id: 'out', title: 'Checked out' }],
+        statusField: 'status',
+      },
       styles: styleDefaultsOf('ShadKanban'),
       height: 420,
     });
@@ -649,12 +689,20 @@ describe('Record list and summary strip', () => {
   // A plain list's selected row drew its 3px accent bar against the title: rows had 4px of side padding (a field
   // service app, 2026-10-13). A plain list whose rows can be selected pads them 12px, so the bar and tint have room.
   it('gives a selectable plain list room between the selection bar and the text', async () => {
-    const data = [{ id: 1, name: 'Union Square Hotel' }, { id: 2, name: 'Oakland Ice Rink' }];
+    const data = [
+      { id: 1, name: 'Union Square Hotel' },
+      { id: 2, name: 'Oakland Ice Rink' },
+    ];
     const plain = await mount('ShadRecordList', { data, titleField: 'name', listStyle: 'plain' });
     const row = document.querySelector('li[role=button]');
     expect(row.className).toMatch(/\bpx-3\b/);
     plain.unmount();
-    const fixed = await mount('ShadRecordList', { data, titleField: 'name', listStyle: 'plain', highlightSelected: false });
+    const fixed = await mount('ShadRecordList', {
+      data,
+      titleField: 'name',
+      listStyle: 'plain',
+      highlightSelected: false,
+    });
     expect(document.querySelector('li[role=button]').className).toMatch(/\bpx-1\b/);
     fixed.unmount();
   });
