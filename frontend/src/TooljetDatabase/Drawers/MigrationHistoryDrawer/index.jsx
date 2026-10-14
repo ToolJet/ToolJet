@@ -289,8 +289,6 @@ const PromotePreviewView = ({
       setIsRunning(false);
       if (error) {
         toast.error(error?.message || `Could not run migrations in ${environment.name}`, { position: 'top-center' });
-        // A failed promote can still change server state (a resumable prefix kept, or the target
-        // relation removed), so availability and applied counts must be re-read, not assumed unchanged.
         refetchMigrations();
         refetchTables?.();
         return;

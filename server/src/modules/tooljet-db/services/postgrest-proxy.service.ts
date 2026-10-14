@@ -53,7 +53,8 @@ export class PostgrestProxyService {
     req.headers['Authorization'] = authToken;
     // https://postgrest.org/en/v12/references/api/preferences.html#prefer-header
     req.headers['Prefer'] = `count=exact, return=representation`;
-    if (['GET', 'HEAD'].includes(req.method)) req.headers['Accept-Profile'] = dbSchema;
+    const isRead = ['GET', 'HEAD'].includes(req.method);
+    if (isRead) req.headers['Accept-Profile'] = dbSchema;
     if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) req.headers['Content-Profile'] = dbSchema;
     // PostgREST renders text/csv natively; everything else stays JSON. Allowlisted rather than
     // passed through, so an arbitrary client Accept can't reshape the proxy's responses.
@@ -73,7 +74,7 @@ export class PostgrestProxyService {
       replaceUrlForPostgrest(req.url),
       organizationId,
       environmentId,
-      ['GET', 'HEAD'].includes(req.method)
+      isRead
     );
     req.url = rewrittenUrl;
     req.headers['tableInfo'] = tableInfo;

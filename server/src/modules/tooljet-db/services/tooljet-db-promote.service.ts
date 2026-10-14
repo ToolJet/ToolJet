@@ -81,8 +81,7 @@ export async function computeMissingMigrations(
  * replay: foreign keys embedded in structured migrations (by display name, how replay resolves
  * them) and the `refs` map of baseline and raw SQL migrations (by co_relation_id).
  *
- * Pure - names the references without looking them up, so promote's pre-flight and the replay
- * itself read the same payload fields and cannot disagree about what a migration depends on.
+ * Pure - names the references without looking them up.
  */
 export function referencedTablesOf(migrations: InternalTableMigration[]): {
   tableNames: string[];

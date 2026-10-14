@@ -259,7 +259,7 @@ export class TooljetDbTableOperationsService {
     columns: TooljetDatabaseColumn[];
     configurations: any;
   }> {
-    const { table_name: tableName, id: id, environmentId, readOnly } = params;
+    const { table_name: tableName, id: id, environmentId } = params;
     const { appManager, tjdbManager } = connectionManagers;
 
     const internalTable = await appManager.findOne(InternalTable, {
@@ -275,8 +275,7 @@ export class TooljetDbTableOperationsService {
       organizationId,
       internalTable.id,
       environmentId,
-      appManager,
-      { readOnly }
+      appManager
     );
 
     // Crash-recovery sweep: resolves any migration left pending by a process that died between
@@ -458,8 +457,7 @@ export class TooljetDbTableOperationsService {
     // Same gate resolveEnvironmentId() uses: every org has all app_environments rows seeded
     // (seedOrgEnvironmentsAndDefaultBranch runs unconditionally), so licensing has to filter the
     // list here rather than at row-creation time - a CE org's other rows exist in the DB, they're
-    // just not this org's to see. An environment that still holds a relation after a lapse stays
-    // listed: its data is readable, only writes and promotion are refused.
+    // just not this org's to see.
     const multiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
       LICENSE_FIELD.MULTI_ENVIRONMENT,
       organizationId

@@ -65,7 +65,6 @@ const Table = ({ collapseSidebar }) => {
   } = useContext(TooljetDatabaseContext);
   // Only an environment block gets the environment tooltip; a missing TJDB permission is a different reason.
   const schemaBlockedByEnvironment = canEditTjdb && !canEditSchema;
-  // Schema changes start in Development only, so other environments get no add-column control at all.
   const isDevelopmentEnvironment = useIsDevelopmentEnvironment();
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
   const developmentEnvironment = useTjdbStore((state) => state.environments.find((env) => env.priority === 1));

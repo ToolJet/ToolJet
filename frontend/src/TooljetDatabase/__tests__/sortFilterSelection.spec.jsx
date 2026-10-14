@@ -64,6 +64,24 @@ describe('TJDB sort and filter dropdowns', () => {
     expect(screen.queryByText('Select order')).not.toBeInTheDocument();
   });
 
+  it('should keep an operator picked while the typed value is still debouncing', async () => {
+    jest.useFakeTimers();
+    try {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      render(<FilterRow />);
+
+      await user.type(screen.getByPlaceholderText('Enter value'), '42');
+      act(() => useTjdbStore.getState().actions.setQueryFilters({ 0: { operator: 'gt' } }));
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      expect(useTjdbStore.getState().queryFilters[0]).toMatchObject({ operator: 'gt', value: '42' });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('should apply the column picked in the filter form', async () => {
     const user = userEvent.setup();
     render(<FilterRow />);

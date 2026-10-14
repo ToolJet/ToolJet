@@ -391,7 +391,7 @@ export const envHasRelation = (relationsByEnvironment = [], environmentId) =>
 
 // After a multi-environment licence lapse the server still lists every environment but flags the
 // unlicensed ones `enabled: false`. `multiEnvLocked` is the live licence verdict, for a list loaded
-// before the lapse. Development is never locked - it is the one environment every plan has.
+// before the lapse.
 export const isEnvironmentLocked = (environment, multiEnvLocked = false) =>
   environment.priority !== 1 && (environment.enabled === false || multiEnvLocked);
 

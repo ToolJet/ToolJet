@@ -169,8 +169,6 @@ const EnvironmentSwitcher = () => {
               {environments.map((environment) => {
                 const isSelected = environment.id === selectedEnvironment.id;
                 const status = statusFor(environment);
-                // Not covered by the licence (a lapse), or a table open and absent here: either way,
-                // switching to this environment can't show anything.
                 const locked = !isSelected && isEnvironmentLocked(environment, isMultiEnvLicenseInvalid(featureAccess));
                 const disabled = locked || (hasTableContext && !status.hasRelation && !isSelected);
                 const row = (

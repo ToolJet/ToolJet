@@ -128,7 +128,7 @@ export class TooljetDbController {
     const result = await this.tableOperationsService.perform(
       organizationId,
       'view_table',
-      { table_name: tableName, readOnly: true },
+      { table_name: tableName },
       environmentId
     );
     const decamelizedResult = decamelizeKeys({ result });
@@ -372,8 +372,8 @@ export class TooljetDbController {
     return decamelizeKeys({ result: whitelisted });
   }
 
-  // A floor, not a "will break" count - only finds query references, and only through the app's
-  // current draft or an ever-released version. See InternalTableRepository.findDependents.
+  // A floor, not a "will break" count - only finds query references, in any non-stub version.
+  // See InternalTableRepository.findDependents.
   @InitFeature(FEATURE_KEY.TABLE_DEPENDENTS)
   @Get('/organizations/:organizationId/table/:tableId/dependents')
   @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)

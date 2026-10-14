@@ -76,10 +76,6 @@ export class InternalTableRepository extends Repository<InternalTable> {
    * the table instead of holding its id, so they are prefiltered by a case-insensitive `LIKE` on the
    * name (over-matches, then `tableNamesInSqlQuery` verifies) and matched exactly, as the query
    * runner resolves them.
-   *
-   * Every non-stub version counts: `apps.current_version_id` is the *released* version (null until
-   * first release) and `app_versions.released_at` is never written, so filtering on either hid
-   * every draft and every superseded version and let the drop through.
    */
   async findDependents(
     tableId: string,
@@ -103,7 +99,7 @@ export class InternalTableRepository extends Repository<InternalTable> {
           qb.where('dq.options::text LIKE :tableIdLike', { tableIdLike: `%${tableId}%` });
           if (tableName)
             qb.orWhere("dq.options->>'operation' = 'sql_execution' AND dq.options::text ILIKE :tableNameLike", {
-              tableNameLike: `%${tableName.replace(/[\\%_]/g, '\\$&')}%`,
+              tableNameLike: `%${tableName}%`,
             });
         })
       )

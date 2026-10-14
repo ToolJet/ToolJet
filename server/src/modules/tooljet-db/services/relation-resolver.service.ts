@@ -18,7 +18,7 @@ export function tableNotInEnvironmentMessage(tableNames: string[]): string {
 }
 
 export interface ResolveOptions {
-  /** The caller only reads, so an environment the licence no longer covers may still be named. */
+  /** Export reads (proxy GET/HEAD): an environment the licence no longer covers may still be named. */
   readOnly?: boolean;
 }
 
@@ -51,9 +51,6 @@ export class TooljetDbRelationResolverService {
    * this TJDB-shaped rule - it is shared with apps. So the sibling check lives here instead, folded
    * into the bulk relation lookup below (join in the priority, no second query) rather than costing
    * a per-request round trip of its own.
-   *
-   * The refusal applies only to that migration-B shape. A table created after the rollout and then
-   * promoted has its data in development, so an unlicensed workspace keeps reading and writing it.
    */
   async resolve(
     organizationId: string,
@@ -150,14 +147,13 @@ export class TooljetDbRelationResolverService {
     organizationId: string,
     internalTableId: string,
     requestedEnvironmentId?: string,
-    manager?: EntityManager,
-    options: ResolveOptions = {}
+    manager?: EntityManager
   ): Promise<InternalTableRelation> {
     const entityManager = manager || this.manager;
     // Through resolve() so the single-table path gets the same licence-lapse 403 - never a silent
     // fall-through to development for a table that also lives in a higher environment.
     const relationId = (
-      await this.resolve(organizationId, [internalTableId], requestedEnvironmentId, entityManager, options)
+      await this.resolve(organizationId, [internalTableId], requestedEnvironmentId, entityManager)
     ).get(internalTableId);
     const relation = relationId && (await entityManager.findOne(InternalTableRelation, { where: { id: relationId } }));
 

@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { TooljetDatabaseContext } from '@/TooljetDatabase';
 import EnvironmentSwitcher from '@/TooljetDatabase/EnvironmentSwitcher';
 import MigrationHistoryDrawer from '@/TooljetDatabase/Drawers/MigrationHistoryDrawer';
+import ExportCsvModal from '@/TooljetDatabase/ExportCsvModal';
 import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 
@@ -74,6 +75,45 @@ describe('TJDB after a multi-environment licence lapse', () => {
     expect(development).toBeEnabled();
     expect(staging.querySelector(UPGRADE_ICON)).toBeInTheDocument();
     expect(development.querySelector(UPGRADE_ICON)).not.toBeInTheDocument();
+  });
+
+  // Export is the one thing a lapse does not take away: a workspace leaving multi-environment can
+  // still dump staging or production data.
+  test('should keep a locked environment exportable in the CSV export picker', async () => {
+    const csvRequests = [];
+    serveLapsedLicence();
+    server.use(
+      http.get('*/tooljet-db/proxy/:tableId', ({ request }) => {
+        const environmentId = new URL(request.url).searchParams.get('environment_id');
+        if (request.headers.get('accept') === 'text/csv') {
+          csvRequests.push(environmentId);
+          return new HttpResponse('id\n1\n', { headers: { 'content-type': 'text/csv' } });
+        }
+        return HttpResponse.json([], { headers: { 'content-range': '0-0/3' } });
+      })
+    );
+    window.URL.createObjectURL = jest.fn(() => 'blob:csv');
+    window.URL.revokeObjectURL = jest.fn();
+    act(() => useTjdbStore.setState({ environments: LAPSED_ENVIRONMENTS, selectedEnvironment: DEVELOPMENT }));
+
+    render(
+      <ExportCsvModal
+        show
+        tableName="orders"
+        tableId="table-1"
+        organizationId="org-1"
+        environments={LAPSED_ENVIRONMENTS}
+        relationsByEnvironment={BOTH_HAVE_RELATION}
+        onCancel={() => {}}
+      />
+    );
+
+    const staging = await screen.findByRole('radio', { name: /staging/ });
+    expect(staging).toBeEnabled();
+    await userEvent.click(staging);
+    await userEvent.click(screen.getByRole('button', { name: /export as csv/i }));
+
+    await waitFor(() => expect(csvRequests).toEqual([LAPSED_STAGING.id]));
   });
 
   describe.each([

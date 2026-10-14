@@ -1,5 +1,5 @@
 import './styles.scss';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Select from '@/_ui/Select';
 import { TooljetDatabaseContext } from '../index';
 import { operators } from '../constants';
@@ -13,10 +13,13 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
   const { setPageCount } = useTjdbActions();
 
   const [filterInputValue, setFilterInputValue] = useState(value);
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
   useEffect(() => {
     const debouncedFilter = debounce(() => {
-      setFilters({ ...filters, [index]: { ...filters[index], value: filterInputValue } });
+      const latest = filtersRef.current;
+      setFilters({ ...latest, [index]: { ...latest[index], value: filterInputValue } });
     }, 500);
 
     debouncedFilter();

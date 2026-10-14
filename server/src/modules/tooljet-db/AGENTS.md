@@ -85,7 +85,9 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 - `findDependents` (the drop blocker and `/dependents` warning) scans every non-stub version of every app
   type, drafts included - `apps.current_version_id` is the *released* version and `released_at` is never
   written, so filtering on either hid drafts. Matches `options.table_id`, join tables (incl.
-  `join_table.from.name`) and SQL-mode queries by table name (`tableNamesInSqlQuery`).
+  `join_table.from.name`) and SQL-mode queries by table name (`tableNamesInSqlQuery`). Superseded versions
+  still count, so a table can stay undroppable until the old version is deleted; the dependents entry
+  names the app and its queries, not the version.
 - "Owned table, not in this (environment, branch)" is always worded by `tableNotInEnvironmentMessage`
   (`relation-resolver.service.ts`) and names the table, never its logical id - `getRelation()`, the proxy,
   join and `resolveTable` all route through it.
@@ -97,20 +99,20 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `resolve()` so the single-table paths (`sql_execution`, bulk ops, `view_table`) refuse the same
   way. A table created after the rollout and promoted keeps its data in development (promote
   replays schema only), so it keeps serving development after a lapse.
-- A lapse never blocks reading data already in staging or production, only writing and promoting.
-  `resolve()`/`getRelation()` take `{ readOnly: true }`, which lets a request name an environment the
-  licence no longer covers. Only the HTTP `/proxy/*` route (GET/HEAD) and the `view_table` endpoint pass
-  it. App queries (`perform()`), `sql_execution`, joins and bulk ops never do, so they still refuse.
-  `view_tables` and `table/:tableId/migrations` keep listing an unlicensed environment that still holds a
-  relation; empty ones drop out. The frontend sees such an environment as `enabled: false`.
+- A lapse still lets a workspace export data from staging or production (dump prod to dev before leaving
+  multi-environment); everything else in those environments is locked. `resolve()` takes `{ readOnly: true }`,
+  which lets a request name an environment the licence no longer covers. Only the HTTP `/proxy/*` route
+  (GET/HEAD: row count and CSV export) passes it. `view_table`, App queries (`perform()`), `sql_execution`,
+  joins and bulk ops never do, so they still refuse. `view_tables` and `table/:tableId/migrations` keep listing
+  an unlicensed environment that still holds a relation so the export picker can offer it; empty ones drop out.
+  The frontend flags it `enabled: false` and, like the App Builder, locks it everywhere except that picker.
 - **Promote never leaves a ghost relation.** `has_relation` (and the resolver, and the app-promote block)
   mean "a relation row exists", so a row with no table behind it reads as "available in staging".
   `promote` therefore (1) rejects with 400 `Promote "<parent>" first` before creating anything when a missing
   migration references a table with no relation in the target (`referencedTablesOf`: embedded FKs by name,
   baseline/raw-SQL `refs` by co_relation_id) - all-or-nothing on FK order; (2) if replay still fails, deletes the
-  target relation only when it has no application rows and no physical table
-  (`discardRelationIfNothingMaterialized`) - a relation backing a real table is never deleted, its id is the
-  physical name. The frontend refetches tables and migrations on a failed promote too.
+  target relation only when no physical table backs it (`discardRelationIfNothingMaterialized`) - a relation
+  backing a real table is never deleted, its id is the physical name. The frontend refetches tables and migrations on a failed promote too.
 - **No per-environment access control.** TJDB has no environment permissions yet: admins and Builders reach every
   environment. `promote` / `promote/preview` gate on licence only - never on the app's granular `environmentAccess`.
 - HTTP `/proxy/*` serves only admins/builders (dashboard, App Builder editor). App queries reach
