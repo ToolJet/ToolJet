@@ -67,7 +67,7 @@ export const shadLineChartConfig = shadConfig({
     showLegend: toggle('Legend', true),
     seriesLabels: code(
       'Series labels ({ field: label })',
-      { type: 'object' },
+      { type: 'union', schemas: [{ type: 'object' }, { type: 'array' }] },
       {},
       { placeholder: "{ food_cost_pct: 'Food cost', target_pct: 'Target' }" }
     ),
@@ -122,7 +122,7 @@ export const shadRadarChartConfig = shadConfig({
     showLegend: toggle('Legend', true),
     seriesLabels: code(
       'Series labels ({ field: label })',
-      { type: 'object' },
+      { type: 'union', schemas: [{ type: 'object' }, { type: 'array' }] },
       {},
       { placeholder: "{ food_cost_pct: 'Food cost', target_pct: 'Target' }" }
     ),
@@ -289,7 +289,7 @@ export const shadComboChartConfig = shadConfig({
     showLegend: toggle('Legend', true),
     seriesLabels: code(
       'Series labels ({ field: label })',
-      { type: 'object' },
+      { type: 'union', schemas: [{ type: 'object' }, { type: 'array' }] },
       {},
       { placeholder: "{ revenue: 'Revenue', margin: 'Margin %' }" }
     ),

@@ -65,6 +65,7 @@ import {
   wholeNumbers,
   centreValueFit,
   wholeTicks,
+  seriesLabelMap,
 } from './chartsModel';
 
 export { withControlState } from '../packHooks';
@@ -312,7 +313,9 @@ export const ShadAreaChart = (props) => {
   const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
   const Chart = p.lineOnly === true ? LineChart : AreaChart;
   const compact = isCompactChart(props.height);
-  const states = isSet(p.colors) ? null : statusColors(series.map((s) => seriesLabel(s, p.seriesLabels)));
+  const states = isSet(p.colors)
+    ? null
+    : statusColors(series.map((s) => seriesLabel(s, seriesLabelMap(p.seriesLabels, series))));
   const color = (i) => states?.[i] ?? seriesColor(p.colors, i);
   return (
     <ChartFrame props={props} empty={!data.length || !series.length}>
@@ -347,7 +350,7 @@ export const ShadAreaChart = (props) => {
               <Line
                 key={s}
                 dataKey={s}
-                name={seriesLabel(s, p.seriesLabels)}
+                name={seriesLabel(s, seriesLabelMap(p.seriesLabels, series))}
                 type={curveOf(p.curve)}
                 stroke={color(i)}
                 strokeWidth={2}
@@ -357,7 +360,7 @@ export const ShadAreaChart = (props) => {
               <Area
                 key={s}
                 dataKey={s}
-                name={seriesLabel(s, p.seriesLabels)}
+                name={seriesLabel(s, seriesLabelMap(p.seriesLabels, series))}
                 type={curveOf(p.curve)}
                 stroke={color(i)}
                 strokeWidth={2}
@@ -378,7 +381,9 @@ export const ShadBarChart = (props) => {
   const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
   const horizontal = p.horizontal === true;
   const compact = isCompactChart(props.height);
-  const states = isSet(p.colors) ? null : statusColors(series.map((s) => seriesLabel(s, p.seriesLabels)));
+  const states = isSet(p.colors)
+    ? null
+    : statusColors(series.map((s) => seriesLabel(s, seriesLabelMap(p.seriesLabels, series))));
   const color = (i) => states?.[i] ?? seriesColor(p.colors, i);
   // Highlight: the picked bars keep the series colour (or the Highlight color style), the rest draw muted (the Muted
   // bar color style, else the series colour faded), so one month or one site stands out.
@@ -482,7 +487,7 @@ export const ShadBarChart = (props) => {
             <Bar
               key={s}
               dataKey={s}
-              name={seriesLabel(s, p.seriesLabels)}
+              name={seriesLabel(s, seriesLabelMap(p.seriesLabels, series))}
               fill={color(i)}
               radius={p.stack === true ? 0 : horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
               stackId={p.stack === true ? 'a' : undefined}
@@ -711,7 +716,7 @@ export const ShadLineChart = (props) => {
             <Line
               key={s}
               dataKey={s}
-              name={seriesLabel(s, p.seriesLabels)}
+              name={seriesLabel(s, seriesLabelMap(p.seriesLabels, series))}
               type={curve}
               stroke={color(i)}
               strokeWidth={strokeWidth}
@@ -766,7 +771,7 @@ export const ShadRadarChart = (props) => {
             <Radar
               key={s}
               dataKey={s}
-              name={seriesLabel(s, p.seriesLabels)}
+              name={seriesLabel(s, seriesLabelMap(p.seriesLabels, series))}
               stroke={color(i)}
               strokeWidth={2}
               fill={color(i)}
@@ -1112,7 +1117,13 @@ export const ShadComboChart = (props) => {
                 key={s.field}
                 yAxisId={s.axis}
                 dataKey={s.field}
-                name={seriesLabel(s.field, p.seriesLabels)}
+                name={seriesLabel(
+                  s.field,
+                  seriesLabelMap(
+                    p.seriesLabels,
+                    named.map((n) => n.field)
+                  )
+                )}
                 fill={color(i)}
                 radius={stackedBars ? 0 : [4, 4, 0, 0]}
                 stackId={stackedBars ? 'bars' : undefined}
@@ -1124,7 +1135,13 @@ export const ShadComboChart = (props) => {
                 key={s.field}
                 yAxisId={s.axis}
                 dataKey={s.field}
-                name={seriesLabel(s.field, p.seriesLabels)}
+                name={seriesLabel(
+                  s.field,
+                  seriesLabelMap(
+                    p.seriesLabels,
+                    named.map((n) => n.field)
+                  )
+                )}
                 type={curve}
                 stroke={color(i)}
                 strokeWidth={clamp(p.strokeWidth, 0.5, 12, 2)}

@@ -567,8 +567,7 @@ export const shadTextareaConfig = shadConfig({
 export const shadSelectConfig = shadConfig({
   name: 'ShadSelect',
   displayName: 'Select',
-  description:
-    'Select. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
+  description: 'Select. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
   defaultSize: { width: 10, height: 64 },
   properties: {
     ...fieldProperties,
@@ -1122,7 +1121,7 @@ const seriesProps = {
   showLegend: toggle('Legend'),
   seriesLabels: code(
     'Series labels ({ field: label })',
-    { type: 'object' },
+    { type: 'union', schemas: [{ type: 'object' }, { type: 'array' }] },
     {},
     { placeholder: "{ food_cost_pct: 'Food cost', target_pct: 'Target' }" }
   ),
