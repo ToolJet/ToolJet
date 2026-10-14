@@ -1275,6 +1275,12 @@ export const ShadSummaryStrip = (props) => {
                   <dd className="m-0 break-words text-xs" style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}>
                     {f.caption}
                   </dd>
+                ) : figures.some((other) => other.caption) ? (
+                  // A line held where a neighbour has a caption, so the figure stays level with theirs: "28" and "433"
+                  // sat a line lower than "11" and "£6,467.11" (bookshop stock strip, 2026-10-14).
+                  <dd aria-hidden="true" className="invisible m-0 text-xs">
+                    &nbsp;
+                  </dd>
                 ) : null}
               </div>
             ))}
