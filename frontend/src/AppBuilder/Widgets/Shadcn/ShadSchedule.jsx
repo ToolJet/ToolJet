@@ -5,6 +5,7 @@ import { initials, useAutoHeight, useExposed } from '../packHooks';
 import { Skeleton, cn } from './ui';
 import {
   bookingFace,
+  resourceHeading,
   dayKey,
   placeBookings,
   positionOf,
@@ -278,7 +279,7 @@ export const ShadSchedule = (props) => {
                 style={{ width: rw, background: SURFACE, color: LABEL }}
               >
                 {/* A header written in lowercase ("name", a field name) reads as a label: "Name". */}
-                <span className="truncate">{text(p.resourceTitle).replace(/^[a-z]/, (ch) => ch.toUpperCase())}</span>
+                <span className="truncate">{resourceHeading(text(p.resourceTitle))}</span>
               </div>
               <div className="flex min-w-0 flex-1">
                 {range.columns.map((c, i) => (
