@@ -119,4 +119,12 @@ describe('chipTone, everyday operations states', () => {
     expect(chipTone('Expiring soon')).toBe('warning');
     expect(chipTone('Expired')).toBe('danger');
   });
+  it('reads courier, call centre, waitlist and subscription states (2026-10-14 night reviews)', () => {
+    expect(chipTone('Out for delivery')).toBe('info');
+    expect(chipTone('On call')).toBe('info');
+    expect(chipTone('Waitlist')).toBe('warning');
+    expect(chipTone('Churn')).toBe('danger');
+    expect(chipTone('Expansion')).toBe('success');
+    expect(chipTone('Contraction')).toBe('warning');
+  });
 });
