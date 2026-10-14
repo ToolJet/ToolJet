@@ -64,6 +64,7 @@ import {
   MAX_SERIES,
   wholeNumbers,
   centreValueFit,
+  wholeTicks,
 } from './chartsModel';
 
 export { withControlState } from '../packHooks';
@@ -337,6 +338,7 @@ export const ShadAreaChart = (props) => {
             width={valueAxisWidth(data, series, fmt(p, true), p.stack === true && p.lineOnly !== true)}
             tickFormatter={fmt(p, true)}
             allowDecimals={!wholeNumbers(data, series)}
+            {...wholeTicks(data, series, p.stack === true && p.lineOnly !== true)}
           />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={fmt(p, false)} />} />
           {p.showLegend === true && series.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
@@ -425,6 +427,7 @@ export const ShadBarChart = (props) => {
                 hide={compact}
                 tickFormatter={fmt(p, true)}
                 allowDecimals={!wholeNumbers(data, series)}
+                {...wholeTicks(data, series, p.stack === true)}
               />
               <YAxis
                 type="category"
@@ -469,6 +472,7 @@ export const ShadBarChart = (props) => {
                 width={valueAxisWidth(data, series, fmt(p, true), p.stack === true)}
                 tickFormatter={fmt(p, true)}
                 allowDecimals={!wholeNumbers(data, series)}
+                {...wholeTicks(data, series, p.stack === true)}
               />
             </>
           )}
@@ -686,6 +690,7 @@ export const ShadLineChart = (props) => {
             width={yWidth}
             tickFormatter={tick}
             allowDecimals={!wholeNumbers(rows, series)}
+            {...wholeTicks(target !== null && series.length ? [...rows, { [series[0]]: target }] : rows, series)}
           />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={full} />} />
           {p.showLegend === true && series.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}

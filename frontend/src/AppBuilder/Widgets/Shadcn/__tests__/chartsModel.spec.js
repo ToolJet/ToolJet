@@ -1,4 +1,5 @@
 import {
+  wholeTicks,
   compactFigure,
   centreValueFit,
   wholeNumbers,
@@ -245,5 +246,25 @@ describe('centreValueFit', () => {
     expect(fit.text).toBe('$8.2M');
     expect(fit.text.length * fit.fontSize * 0.62).toBeLessThanOrEqual(2 * 70 - 16);
     expect(centreValueFit('$196,250', 70).text).toBe('$196,250');
+  });
+});
+
+describe('wholeTicks', () => {
+  // A count axis ran to 4 for a maximum of 1 and to 8 for a maximum of 5: three quarters of a school chart was empty
+  // (2026-10-14). Small counts take whole steps that end at or just past the maximum.
+  const rows = (...ys) => ys.map((y, i) => ({ x: i, y }));
+  it('ends a small count axis just past the maximum', () => {
+    expect(wholeTicks(rows(1, 0, 1), ['y'])).toEqual({ domain: [0, 1], tickCount: 2 });
+    expect(wholeTicks(rows(5, 3, 2), ['y'])).toEqual({ domain: [0, 5], tickCount: 6 });
+    expect(wholeTicks(rows(7, 3), ['y'])).toEqual({ domain: [0, 8], tickCount: 5 });
+  });
+  it('sums stacked series', () => {
+    expect(wholeTicks([{ a: 2, b: 3 }], ['a', 'b'], true)).toEqual({ domain: [0, 5], tickCount: 6 });
+  });
+  it('leaves fractions, negatives, large counts and empty data to the chart', () => {
+    expect(wholeTicks(rows(1.5, 2), ['y'])).toEqual({});
+    expect(wholeTicks(rows(-1, 2), ['y'])).toEqual({});
+    expect(wholeTicks(rows(40, 2), ['y'])).toEqual({});
+    expect(wholeTicks([], ['y'])).toEqual({});
   });
 });
