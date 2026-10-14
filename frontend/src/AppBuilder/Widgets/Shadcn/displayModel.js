@@ -55,6 +55,44 @@ export const iconCandidates = (name) => {
 const MAX_ICON_NAME = 80;
 const MAX_ICON_WORDS = 6;
 
+// Tabler names (ToolJet's own icons, which models write on pack widgets too) whose lucide twin has another name. Keyed
+// by the name without its Icon prefix, separators or case. IconDeviceLaptop, IconTool and flask-2 drew the dashed
+// placeholder on stat cards (2026-10-14).
+const TABLER_TWINS = {
+  tool: 'Wrench',
+  tools: 'Wrench',
+  flask: 'FlaskConical',
+  flask2: 'FlaskConical',
+  devicemobile: 'Smartphone',
+  devicedesktop: 'Monitor',
+  devicefloppy: 'Save',
+  alerttriangle: 'TriangleAlert',
+  alertcircle: 'CircleAlert',
+  reportmoney: 'Receipt',
+  cash: 'Banknote',
+  currencydollar: 'DollarSign',
+  currencyeuro: 'Euro',
+  currencypound: 'PoundSterling',
+  currencyrupee: 'IndianRupee',
+  buildingstore: 'Store',
+  buildingwarehouse: 'Warehouse',
+  truckdelivery: 'Truck',
+  usersgroup: 'Users',
+  calendarevent: 'Calendar',
+  calendartime: 'CalendarClock',
+  chartbar: 'ChartColumn',
+  chartline: 'ChartLine',
+  chartpie: 'ChartPie',
+  checklist: 'ListChecks',
+  listdetails: 'List',
+  mailopened: 'MailOpen',
+  speakerphone: 'Megaphone',
+  dashboard: 'LayoutDashboard',
+  firstaidkit: 'BriefcaseMedical',
+  heartbeat: 'HeartPulse',
+  barbell: 'Dumbbell',
+};
+
 export const resolveIcon = (name, maps, fallback) => {
   if (typeof name === 'string' && name.length > MAX_ICON_NAME) return fallback;
   const sources = (Array.isArray(maps) ? maps : [maps]).filter(isObject);
@@ -74,9 +112,16 @@ export const resolveIcon = (name, maps, fallback) => {
   // ToolJet's own (Tabler) names, IconCircleCheck: without the prefix, then by their leading words when lucide has no
   // twin (IconListDetails reads List), rather than the placeholder.
   const base = (candidates[0] || '').replace(/^Icon(?=[A-Z])/, '');
+  const twin = TABLER_TWINS[base.toLowerCase()];
+  if (twin && lookup(twin)) return lookup(twin);
   const words = (base.match(/[A-Z][a-z0-9]*/g) || []).slice(0, MAX_ICON_WORDS);
   for (let n = words.length; n >= 1; n -= 1) {
     const found = lookup(words.slice(0, n).join(''));
+    if (found) return found;
+  }
+  // Then by the trailing words, where Tabler groups its names (IconDeviceLaptop reads Laptop).
+  for (let n = 1; n < words.length; n += 1) {
+    const found = lookup(words.slice(n).join(''));
     if (found) return found;
   }
   return fallback;

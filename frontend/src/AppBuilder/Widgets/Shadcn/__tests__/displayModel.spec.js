@@ -53,6 +53,19 @@ describe('icons', () => {
     expect(Date.now() - started).toBeLessThan(50);
     expect(resolveIcon('trending up but with more words after it', map, 'none')).toBe(up);
   });
+  // ToolJet's own icons are Tabler's, and models write them on pack widgets: IconDeviceLaptop, IconTool and flask-2
+  // drew the dashed placeholder on stat cards (IT assets and lab samples, 2026-10-14).
+  it('reads Tabler names lucide has under another name, or by their last word', () => {
+    const laptop = () => null;
+    const wrench = () => null;
+    const flask = () => null;
+    const tabler = { Laptop: laptop, Wrench: wrench, FlaskConical: flask };
+    expect(resolveIcon('IconDeviceLaptop', tabler, 'none')).toBe(laptop);
+    expect(resolveIcon('device-laptop', tabler, 'none')).toBe(laptop);
+    expect(resolveIcon('IconTool', tabler, 'none')).toBe(wrench);
+    expect(resolveIcon('flask-2', tabler, 'none')).toBe(flask);
+    expect(resolveIcon('IconFlask', tabler, 'none')).toBe(flask);
+  });
   it('falls back for unknown names, junk and the base component', () => {
     expect(resolveIcon('no-such-icon', map, 'none')).toBe('none');
     expect(resolveIcon('icon', map, 'none')).toBe('none');
