@@ -125,4 +125,10 @@ describe('seriesLabel, acronyms', () => {
   ])('%s reads %s', (key, label) => {
     expect(seriesLabel(key)).toBe(label);
   });
+  // 4,980 km at the top reads "5K km", but the ticks between read "1.5K km" and "4.5K km", and were cut to ".5K km"
+  // (fleet distance chart, 2026-10-14): the ticks between are measured too.
+  it('is wide enough for the ticks between the ends', () => {
+    const compactKm = (v) => (v >= 1000 ? `${Number((v / 1000).toFixed(1))}K km` : `${v} km`);
+    expect(valueAxisWidth([{ km: 4980 }, { km: 1200 }], ['km'], compactKm)).toBeGreaterThanOrEqual(7 * 7 + 12);
+  });
 });
