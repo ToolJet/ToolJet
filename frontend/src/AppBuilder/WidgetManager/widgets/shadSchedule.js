@@ -146,20 +146,36 @@ export const shadScheduleConfig = {
     },
     dayStart: {
       type: 'code',
-      displayName: 'Day starts at (hour)',
+      displayName: 'Day starts at (hour, or a time such as 09:00)',
       validation: {
         schema: {
-          type: 'number',
+          type: 'union',
+          schemas: [
+            {
+              type: 'number',
+            },
+            {
+              type: 'string',
+            },
+          ],
         },
         defaultValue: 8,
       },
     },
     dayEnd: {
       type: 'code',
-      displayName: 'Day ends at (hour)',
+      displayName: 'Day ends at (hour, or a time such as 18:00)',
       validation: {
         schema: {
-          type: 'number',
+          type: 'union',
+          schemas: [
+            {
+              type: 'number',
+            },
+            {
+              type: 'string',
+            },
+          ],
         },
         defaultValue: 18,
       },

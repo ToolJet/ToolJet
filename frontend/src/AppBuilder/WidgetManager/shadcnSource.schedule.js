@@ -16,7 +16,9 @@ export const shadScheduleConfig = shadConfig({
   defaultSize: { width: 43, height: 300 },
   withHeight: true,
   properties: {
-    resources: code('Resources', ARRAY, [], { placeholder: "[{ id: 'atlas', name: 'Atlas', caption: '8 seats' }]" }),
+    resources: code('Resources', ARRAY, [], {
+      placeholder: "[{ id: 'atlas', name: 'Atlas', caption: '8 seats' }]",
+    }),
     bookings: code('Bookings', ARRAY, [], {
       placeholder: "[{ id: 1, room: 'atlas', title: 'Design review', start: '09:00', end: '10:30' }]",
     }),
@@ -27,13 +29,19 @@ export const shadScheduleConfig = shadConfig({
     subtitleField: code('Second line field', STRING, ''),
     statusField: code('Status field (toned by its words)', STRING, 'status'),
     idField: code('Id field', STRING, 'id'),
-    scale: choice('Time across', ['hours', 'days'], 'hours', { hours: 'Hours of a day', days: 'Days' }),
+    scale: choice('Time across', ['hours', 'days'], 'hours', {
+      hours: 'Hours of a day',
+      days: 'Days',
+    }),
     date: code('Date shown (empty for today)', STRING, ''),
-    dayStart: code('Day starts at (hour)', NUMBER, 8),
-    dayEnd: code('Day ends at (hour)', NUMBER, 18),
+    dayStart: code('Day starts at (hour, or a time such as 09:00)', { type: 'union', schemas: [NUMBER, STRING] }, 8),
+    dayEnd: code('Day ends at (hour, or a time such as 18:00)', { type: 'union', schemas: [NUMBER, STRING] }, 18),
     slotMinutes: code('Slot length (minutes)', NUMBER, 30),
     days: code('Days shown', NUMBER, 7),
-    hourFormat: choice('Hour format', ['12h', '24h'], '12h', { '12h': '12 hour', '24h': '24 hour' }),
+    hourFormat: choice('Hour format', ['12h', '24h'], '12h', {
+      '12h': '12 hour',
+      '24h': '24 hour',
+    }),
     resourceTitle: code('Resource column title', STRING, ''),
     resourceWidth: code('Resource column width (px)', NUMBER, 168),
     rowHeight: code('Row height (px)', NUMBER, 56),
@@ -77,5 +85,9 @@ export const shadScheduleConfig = shadConfig({
     onBookingClick: { displayName: 'On booking click' },
     onSlotClick: { displayName: 'On empty slot click' },
   },
-  exposedVariables: { selectedBooking: {}, selectedBookingId: null, selectedSlot: {} },
+  exposedVariables: {
+    selectedBooking: {},
+    selectedBookingId: null,
+    selectedSlot: {},
+  },
 });

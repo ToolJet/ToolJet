@@ -18,6 +18,16 @@ const int = (v, fallback) => {
   return Number.isFinite(n) ? n : fallback;
 };
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+/** An hour of the day from a number (9) or a clock time ('09:00', '5:30 PM'); an end rounds up to the next hour
+ *  ('17:30' ends after 17:00-18:00). dayStart="09:00" fell back to 8 (2026-10-14). */
+const hourOf = (v, fallback, roundUp) => {
+  const clock = typeof v === 'string' ? v.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*([ap]\.?m\.?)?$/i) : null;
+  if (!clock) return int(v, fallback);
+  let h = Number(clock[1]) % (clock[3] ? 12 : 24);
+  if (clock[3] && /^p/i.test(clock[3])) h += 12;
+  if (!clock[3] && Number(clock[1]) === 24) h = 24;
+  return roundUp && Number(clock[2] || 0) > 0 ? h + 1 : h;
+};
 const midnight = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -115,8 +125,8 @@ export const scheduleRange = (
       slots: columns.map((c) => ({ start: c.start, end: c.end, edge: true })),
     };
   }
-  const from = clamp(int(dayStart, 8), 0, 23);
-  const to = clamp(int(dayEnd, 18), from + 1, 24);
+  const from = clamp(hourOf(dayStart, 8, false), 0, 23);
+  const to = clamp(hourOf(dayEnd, 18, true), from + 1, 24);
   const at = (h, m = 0) => new Date(first.getFullYear(), first.getMonth(), first.getDate(), h, m).getTime();
   const columns = Array.from({ length: to - from }, (_, i) => ({
     key: String(from + i),
