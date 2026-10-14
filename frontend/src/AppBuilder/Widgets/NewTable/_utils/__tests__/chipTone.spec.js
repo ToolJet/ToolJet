@@ -95,4 +95,9 @@ describe('chipTone, everyday operations states', () => {
     expect(chipTone('New York, NY')).toBe('neutral');
     expect(chipTone('New Zealand')).toBe('neutral');
   });
+  it('reads any Needs state as needing attention (a dental recall list, 2026-10-14)', () => {
+    expect(chipTone('Needs contact')).toBe('warning');
+    expect(chipTone('Needs review')).toBe('warning');
+    expect(chipTone('Follow up')).toBe('warning');
+  });
 });
