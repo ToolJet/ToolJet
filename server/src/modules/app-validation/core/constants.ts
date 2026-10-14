@@ -1,4 +1,4 @@
-import type { ValidationMode, WriteSource } from './types';
+import type { ValidationMode, WriteSource } from '../types';
 
 export const APP_VALIDATION_FAILED = 'APP_VALIDATION_FAILED';
 
