@@ -58,3 +58,13 @@ export const statValue = (value, { valueFormat = 'auto', currency } = {}) => {
   if (!FORMATS.includes(valueFormat)) return typeof value === 'number' ? formatter({ format: 'number' })(value) : value;
   return formatter({ format: valueFormat, currency })(Number(value));
 };
+
+/** A change written with its context ("+8 vs semana passada") as { chip: '+8', context: 'vs semana passada' }: the chip
+ *  holds the figure and the words go to the context line, which wraps. In the chip, capped at 60% of the row, the
+ *  whole phrase read "+8 vs semana pa..." (a clinic app, 2026-10-13). A bare figure or words without one stay whole. */
+const LEADING_FIGURE = /^\s*([+\-−±]?\s?[$€£¥₹]?\d[\d.,]*\s?%?[kKmMbB]?)\s+(\S.*?)\s*$/;
+export const splitChange = (change) => {
+  const text = change === null || change === undefined ? '' : String(change).trim();
+  const match = text.match(LEADING_FIGURE);
+  return match ? { chip: match[1].replace(/\s+/g, ''), context: match[2] } : { chip: text, context: '' };
+};

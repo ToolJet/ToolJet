@@ -538,18 +538,21 @@ describe('long text in buttons, badges, pickers, fields and sections', () => {
 
 describe('Stat change', () => {
   // A long change beside the label ("+12.4% after a long weekend of record sales") was cut off hard at the card's
-  // edge: the badge kept its full width (shrink-0) and had no ellipsis. It shrinks to at most 60% of the label row and
-  // ends in an ellipsis, with its whole text as a tooltip. jsdom has no layout: this pins the structure.
-  it('never clips a long change: the badge shrinks with an ellipsis and a tooltip', async () => {
+  // edge, and later ended in an ellipsis ("+8 vs semana pa...", a clinic app, 2026-10-13). Now the leading figure stays
+  // in the badge and the words join the context line, which wraps; a change without a figure wraps in the badge.
+  // jsdom has no layout: this pins the structure.
+  it('never clips a long change: the figure stays in the badge, the words wrap beside it', async () => {
     const change = '+12.4% after a long weekend of record sales across every store';
     const { problems, unmount } = await mount('ShadStat', { label: 'Revenue', value: 48210, change, trend: 'up' });
-    const text = [...document.querySelectorAll('span')].find((el) => el.textContent === change);
-    expect(text).toBeTruthy();
-    expect(text.className).toMatch(/\btruncate\b/);
-    const badge = text.parentElement;
+    const chip = [...document.querySelectorAll('span')].find((el) => el.textContent === '+12.4%');
+    expect(chip).toBeTruthy();
+    expect(chip.className).not.toMatch(/\btruncate\b/);
+    const badge = chip.parentElement;
     expect(badge.getAttribute('title')).toBe(change);
     expect(badge.className).toMatch(/\bmin-w-0\b/);
     expect(badge.className).not.toMatch(/\bshrink-0\b/);
+    const words = [...document.querySelectorAll('span')].find((el) => el.textContent === 'after a long weekend of record sales across every store');
+    expect(words).toBeTruthy();
     unmount();
     expect(problems()).toEqual([]);
   });
@@ -605,6 +608,57 @@ describe('Card grid', () => {
 });
 
 describe('Record list and summary strip', () => {
+  // The stat strip cut long labels and captions to one line ("Technicians on the...", DeepSeek's field service app,
+  // 2026-10-13). They wrap now; the label takes the cell's spare height, so figures in one row stay level.
+  it('wraps a long stat strip label and caption instead of cutting them', async () => {
+    const strip = await mount('ShadSummaryStrip', {
+      items: [
+        { label: 'Jobs this week', value: 14 },
+        { label: 'Technicians on the road today across both regions', value: 8, caption: 'two more than last week, with one on leave' },
+      ],
+    });
+    const labels = [...document.querySelectorAll('dt')];
+    expect(labels.length).toBe(2);
+    for (const dt of labels) {
+      expect(dt.className).not.toMatch(/\btruncate\b/);
+      expect(dt.className).toMatch(/\bflex-1\b/);
+    }
+    const caption = [...document.querySelectorAll('dd')].find((dd) => dd.textContent.includes('two more'));
+    expect(caption.className).not.toMatch(/\btruncate\b/);
+    strip.unmount();
+  });
+
+  // A Kanban with dynamic height (the pack default) grew to fit every card: a board of 40 loans stood 2,274px tall
+  // (a DeepSeek IT assets app, 2026-10-13). It now shrinks to its cards up to its drawn height; past that, each column
+  // scrolls inside it.
+  it('a dynamic-height Kanban grows only up to its drawn height, then its columns scroll', async () => {
+    const data = Array.from({ length: 40 }, (_, i) => ({ id: i, title: `Laptop ${i}`, status: 'out' }));
+    const board = await mountCase({
+      name: 'ShadKanban',
+      properties: { ...defaultsOf('ShadKanban'), data, columns: [{ id: 'out', title: 'Checked out' }], statusField: 'status' },
+      styles: styleDefaultsOf('ShadKanban'),
+      height: 420,
+    });
+    const list = [...document.querySelectorAll('div')].find((el) => el.className.includes('overflow-y-auto'));
+    expect(list).toBeTruthy();
+    const column = list.parentElement;
+    expect(column.style.maxHeight).toBe('420px');
+    board.unmount();
+  });
+
+  // A plain list's selected row drew its 3px accent bar against the title: rows had 4px of side padding (a field
+  // service app, 2026-10-13). A plain list whose rows can be selected pads them 12px, so the bar and tint have room.
+  it('gives a selectable plain list room between the selection bar and the text', async () => {
+    const data = [{ id: 1, name: 'Union Square Hotel' }, { id: 2, name: 'Oakland Ice Rink' }];
+    const plain = await mount('ShadRecordList', { data, titleField: 'name', listStyle: 'plain' });
+    const row = document.querySelector('li[role=button]');
+    expect(row.className).toMatch(/\bpx-3\b/);
+    plain.unmount();
+    const fixed = await mount('ShadRecordList', { data, titleField: 'name', listStyle: 'plain', highlightSelected: false });
+    expect(document.querySelector('li[role=button]').className).toMatch(/\bpx-1\b/);
+    fixed.unmount();
+  });
+
   // The pack's preflight sets every border width to 0 with !important: an inline border drew nothing in a browser, so
   // the list's frame and dividers and the strip's separators were missing. They are border classes.
   it('draw their frame, row dividers and figure separators as border classes', async () => {

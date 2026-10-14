@@ -783,7 +783,9 @@ export const ShadRecordList = (props) => {
   const dividers = p.showDividers !== false;
   const card = p.listStyle !== 'plain';
   const clickable = (hasClick || p.highlightSelected !== false) && !busy(p);
-  const inset = card ? 'px-4' : 'px-1';
+  // A selected row draws a 3px accent bar and a tint: a plain list that can show it pads its rows 12px, or the bar sat
+  // against the title (a field service app, 2026-10-13).
+  const inset = card ? 'px-4' : p.highlightSelected !== false ? 'px-3' : 'px-1';
 
   const click = (row) => {
     if (busy(p)) return;
@@ -1230,8 +1232,10 @@ export const ShadSummaryStrip = (props) => {
                 style={{ borderColor: hairline }}
               >
                 {f.label ? (
+                  // A long label wraps rather than being cut ("Technicians on the...", 2026-10-13); it takes the cell's
+                  // spare height, so the figures in a row of the grid stay level whatever their labels' lengths.
                   <dt
-                    className="truncate text-xs font-medium"
+                    className="flex-1 break-words text-xs font-medium"
                     style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}
                   >
                     {f.label}
@@ -1265,7 +1269,7 @@ export const ShadSummaryStrip = (props) => {
                   ) : null}
                 </dd>
                 {f.caption ? (
-                  <dd className="m-0 truncate text-xs" style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}>
+                  <dd className="m-0 break-words text-xs" style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}>
                     {f.caption}
                   </dd>
                 ) : null}
