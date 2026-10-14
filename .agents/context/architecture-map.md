@@ -126,6 +126,8 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 - `/health` and `/api/health` are prefix-exempt health endpoints (`AppController.healthCheck`).
 - Pino supplies structured/redacted HTTP logs and transaction IDs (`AppModuleLoader`).
 - Optional Prometheus-format metrics use `ENABLE_METRICS`; optional Sentry uses `APM_VENDOR=sentry`. Public OTLP instrumentation is configured through `ENABLE_OTEL` and `server/src/otel/tracing.ts`, while `server/src/helpers/bootstrap.helper.ts::initializeOtel` currently limits initialization to EE/Cloud editions.
+- Tracing: W3C trace context through the server (`server/src/otel/tracing.ts`), with outbound `fetch` traced through undici instrumentation. Baggage is extracted, never forwarded (`server/src/otel/baggage.ts`); `tooljet.origin` and `gen_ai.conversation.id` baggage become span attributes. Request bodies are never recorded and secret params/query values are redacted (`server/src/otel/http-span.ts`).
+- Local stack: `tools/observability/` (collector with span metrics, service graph and tail sampling; Tempo, Loki, Prometheus, Grafana). Started by `tj obs up` (`tools/tj/src/commands/obs.ts`).
 - Recent history shows active work in viewer isolation, deployment certificates, connector validation, migrations, and agent context. Architecture claims should be revalidated as `main` evolves.
 
 ## Tests and fixtures

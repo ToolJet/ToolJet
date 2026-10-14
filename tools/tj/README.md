@@ -31,6 +31,8 @@ tj status && tj logs server -f
 tj stop
 tj wt rm feat/x --yes                # stop, drop its DBs, remove the worktree (refuses on unsaved work)
 tj db migrate --test                 # migrate the test DB (NODE_ENV=test alone is a no-op)
+tj obs up --wire                     # local OTel stack; writes OTEL_* keys into .env
+tj obs down [--purge]                # stop it (and delete stored data)
 ```
 
 ## Output contract
