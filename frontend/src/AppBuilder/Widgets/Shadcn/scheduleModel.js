@@ -322,3 +322,16 @@ export const bookingFace = (widthPx, laneHeight, hasSecond) => {
   const narrow = Number.isFinite(widthPx) && widthPx > 0 && widthPx < 110;
   return { titleLines: twoLines && narrow ? 2 : 1, showSecond: Boolean(hasSecond) && twoLines && !narrow };
 };
+
+/** The resource column's heading as written, a field name read as words: resourceTitle="boat_name" headed a schedule
+ *  "Boat_name" (2026-10-14). The first letter is capitalised. */
+export const resourceHeading = (value) => {
+  const raw = value === null || value === undefined ? '' : String(value).trim();
+  const words = /^[A-Za-z][A-Za-z0-9]*([_-][A-Za-z0-9]+)+$|^[a-z]+[A-Z][A-Za-z0-9]*$/.test(raw)
+    ? raw
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/[_-]+/g, ' ')
+        .toLowerCase()
+    : raw;
+  return words.replace(/^[a-z]/, (ch) => ch.toUpperCase());
+};

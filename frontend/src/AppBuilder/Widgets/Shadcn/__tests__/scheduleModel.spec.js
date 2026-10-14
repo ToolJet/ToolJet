@@ -1,4 +1,5 @@
 import {
+  resourceHeading,
   bookingFace,
   MAX_LANES,
   MAX_SLOTS,
@@ -280,5 +281,16 @@ describe('a day written as clock times', () => {
     expect(r.columns[0].key).toBe('9');
     expect(r.columns[r.columns.length - 1].key).toBe('17');
     expect(r.columns).toHaveLength(9);
+  });
+});
+
+describe('resourceHeading', () => {
+  // resourceTitle="boat_name" headed a boat rental schedule "Boat_name" (2026-10-14).
+  it('reads a field name as words and keeps a written title', () => {
+    expect(resourceHeading('boat_name')).toBe('Boat name');
+    expect(resourceHeading('vetName')).toBe('Vet name');
+    expect(resourceHeading('room')).toBe('Room');
+    expect(resourceHeading('Court & coach')).toBe('Court & coach');
+    expect(resourceHeading('')).toBe('');
   });
 });

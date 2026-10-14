@@ -138,4 +138,7 @@ describe('chipTone, everyday operations states', () => {
     expect(chipTone('Watch · 31-60')).toBe('warning');
     expect(chipTone('In range')).toBe('success');
   });
+  it('reads Reserved as held for someone (blood bank, 2026-10-14)', () => {
+    expect(chipTone('Reserved')).toBe('info');
+  });
 });
