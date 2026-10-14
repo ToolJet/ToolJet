@@ -117,27 +117,29 @@ describe('TimePicker widget', () => {
     expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
-  test('[TimePicker-CSA-001] setValue updates the value and fires onSelect once', async () => {
-    // Break this catches: setValue not updating value / not firing onSelect
-    // (TimePicker.jsx:60-67,122-126).
+  test('[TimePicker-CSA-001] setValue updates the value without firing onSelect', async () => {
+    // Break this catches: setValue not updating value, or wrongly firing
+    // onSelect again (TimePicker.jsx:124-130 silent-CSA contract; the
+    // event->action->event loop fixed on lts-3.16 by 5498af8439).
     widget.render({ events: onSelectCounter() });
     await waitFor(() => expect(exposed().setValue).toBeInstanceOf(Function));
 
     await widget.act('setValue', '10:30', 'HH:mm');
 
     await waitFor(() => expect(exposed().value).toBe('10:30'));
-    expect(widget.variables().onSelectCount).toBe(1);
+    expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
-  test('[TimePicker-CSA-002] clearValue empties the value and fires onSelect', async () => {
-    // Break this catches: clearValue not clearing the value (TimePicker.jsx:127).
+  test('[TimePicker-CSA-002] clearValue empties the value without firing onSelect', async () => {
+    // Break this catches: clearValue not clearing the value, or wrongly firing
+    // onSelect again (TimePicker.jsx:131-133 silent-CSA contract).
     widget.render({ events: onSelectCounter() });
     await waitFor(() => expect(exposed().clearValue).toBeInstanceOf(Function));
 
     await widget.act('clearValue');
 
     await waitFor(() => expect(exposed().value).toBeNull());
-    expect(widget.variables().onSelectCount).toBe(1);
+    expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
   test('[TimePicker-CSA-003] setMinTime publishes minTime and recomputes isValid', async () => {

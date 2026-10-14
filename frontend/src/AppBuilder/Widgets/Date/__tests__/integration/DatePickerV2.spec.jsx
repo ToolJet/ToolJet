@@ -177,27 +177,29 @@ describe('DatePickerV2 widget', () => {
   const onSelectCounter = () =>
     setVariableOn(ID, 'onSelect', { key: 'onSelectCount', value: '{{(variables.onSelectCount ?? 0) + 1}}' });
 
-  test('[DatePickerV2-CSA-001] setValue updates the value and fires onSelect once', async () => {
-    // Break this catches: setValue not updating value / not firing onSelect
-    // (DatePickerV2.jsx:64-71,141).
+  test('[DatePickerV2-CSA-001] setValue updates the value without firing onSelect', async () => {
+    // Break this catches: setValue not updating value, or wrongly firing
+    // onSelect again (DatePickerV2.jsx:139-145 silent-CSA contract; the
+    // event->action->event loop fixed on lts-3.16 by 5498af8439).
     widget.render({ events: onSelectCounter() });
     await waitFor(() => expect(exposed().setValue).toBeInstanceOf(Function));
 
     await widget.act('setValue', '15/06/2023', 'DD/MM/YYYY');
 
     await waitFor(() => expect(exposed().selectedDate).toBe('15/06/2023'));
-    expect(widget.variables().onSelectCount).toBe(1);
+    expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
-  test('[DatePickerV2-CSA-002] clearValue empties the value and fires onSelect', async () => {
-    // Break this catches: clearValue not clearing the value (DatePickerV2.jsx:145).
+  test('[DatePickerV2-CSA-002] clearValue empties the value without firing onSelect', async () => {
+    // Break this catches: clearValue not clearing the value, or wrongly firing
+    // onSelect again (DatePickerV2.jsx:146-148 silent-CSA contract).
     widget.render({ events: onSelectCounter() });
     await waitFor(() => expect(exposed().clearValue).toBeInstanceOf(Function));
 
     await widget.act('clearValue');
 
     await waitFor(() => expect(exposed().selectedDate).toBeNull());
-    expect(widget.variables().onSelectCount).toBe(1);
+    expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
   test('[DatePickerV2-CSA-003] setValueInTimestamp sets the value from a unix timestamp', async () => {
@@ -214,16 +216,16 @@ describe('DatePickerV2 widget', () => {
     await waitFor(() => expect(exposed().selectedDate).toBe('01/01/2022'));
   });
 
-  test('[DatePickerV2-CSA-004] setDate updates the date part and fires onSelect once', async () => {
-    // Break this catches: setDate not updating the date / not firing onSelect
-    // (DatePickerV2.jsx:151-162).
+  test('[DatePickerV2-CSA-004] setDate updates the date part without firing onSelect', async () => {
+    // Break this catches: setDate not updating the date, or wrongly firing
+    // onSelect again (DatePickerV2.jsx:152-170 silent-CSA contract).
     widget.render({ events: onSelectCounter() });
     await waitFor(() => expect(exposed().setDate).toBeInstanceOf(Function));
 
     await widget.act('setDate', '20/07/2023', 'DD/MM/YYYY');
 
     await waitFor(() => expect(exposed().selectedDate).toBe('20/07/2023'));
-    expect(widget.variables().onSelectCount).toBe(1);
+    expect(widget.variables().onSelectCount).toBeUndefined();
   });
 
   test('[DatePickerV2-CSA-008] setMinDate publishes minDate and recomputes isValid', async () => {
