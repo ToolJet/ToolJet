@@ -37,6 +37,8 @@ import { PinsService } from './dashboard/pins.service';
 import { DashboardBulkMoveController } from './dashboard/bulk-move.controller';
 import { BulkMoveService } from './dashboard/bulk-move.service';
 import { BulkDeleteService } from './dashboard/bulk-delete.service';
+import { DashboardBulkFolderDeleteController } from './dashboard/bulk-folder-delete.controller';
+import { BulkFolderDeleteService } from './dashboard/bulk-folder-delete.service';
 import { DataSource } from 'typeorm';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -74,6 +76,7 @@ export class AppsModule extends SubModule {
     ]);
     const { GitSyncConfigsUtilService } = await this.getProviders(configs, 'git-sync-configs', ['util.service']);
     const { FolderAppsUtilService } = await this.getProviders(configs, 'folder-apps', ['util.service']);
+    const { FoldersService } = await this.getProviders(configs, 'folders', ['service']);
 
     return this.cacheModule(cacheKey, {
       module: AppsModule,
@@ -92,7 +95,14 @@ export class AppsModule extends SubModule {
         await GitSyncConfigsModule.register(configs),
       ],
       controllers: isMainImport
-        ? [AppsController, WorkflowController, DashboardAppsController, PinsController, DashboardBulkMoveController]
+        ? [
+            AppsController,
+            WorkflowController,
+            DashboardAppsController,
+            PinsController,
+            DashboardBulkMoveController,
+            DashboardBulkFolderDeleteController,
+          ]
         : [],
       providers: [
         AppsService,
@@ -134,6 +144,18 @@ export class AppsModule extends SubModule {
           useFactory: (dashboardService, appsService, appsRepository, eventEmitter) =>
             new BulkDeleteService(dashboardService, appsService, appsRepository, eventEmitter),
           inject: [DashboardService, AppsService, AppsRepository, EventEmitter2],
+        },
+        {
+          provide: BulkFolderDeleteService,
+          useFactory: (dataSource, dashboardService, foldersService, bulkDeleteService, appsRepository) =>
+            new BulkFolderDeleteService(
+              dataSource,
+              dashboardService,
+              foldersService,
+              bulkDeleteService,
+              appsRepository
+            ),
+          inject: [DataSource, DashboardService, FoldersService, BulkDeleteService, AppsRepository],
         },
         ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DashboardActivityInterceptor }] : []),
       ],
