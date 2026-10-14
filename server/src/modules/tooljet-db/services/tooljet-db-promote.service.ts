@@ -3,6 +3,7 @@ import { EntityManager } from 'typeorm';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { InternalTableMigration } from '@entities/internal_table_migration.entity';
 import { InternalTableMigrationApplication } from '@entities/internal_table_migration_application.entity';
+import type { StructuredMigrationPayload } from './tooljet-db-migration-recorder.service';
 
 export type PromoteResult = {
   promoted_to: string;
@@ -73,6 +74,34 @@ export async function computeMissingMigrations(
   }
 
   return query.getMany();
+}
+
+/**
+ * The other tables a set of migrations needs to exist in the target environment before they can
+ * replay: foreign keys embedded in structured migrations (by display name, how replay resolves
+ * them) and the `refs` map of baseline and raw SQL migrations (by co_relation_id).
+ *
+ * Pure - names the references without looking them up, so promote's pre-flight and the replay
+ * itself read the same payload fields and cannot disagree about what a migration depends on.
+ */
+export function referencedTablesOf(migrations: InternalTableMigration[]): {
+  tableNames: string[];
+  coRelationIds: string[];
+} {
+  const tableNames = new Set<string>();
+  const coRelationIds = new Set<string>();
+  for (const migration of migrations) {
+    if (migration.kind === 'structured') {
+      const { request } = migration.payload as StructuredMigrationPayload<{
+        foreign_keys?: Array<{ referenced_table_name: string }>;
+      }>;
+      for (const foreignKey of request?.foreign_keys ?? []) tableNames.add(foreignKey.referenced_table_name);
+    } else {
+      const { refs } = migration.payload as { refs?: Record<string, string> };
+      for (const coRelationId of Object.values(refs ?? {})) coRelationIds.add(coRelationId);
+    }
+  }
+  return { tableNames: [...tableNames], coRelationIds: [...coRelationIds] };
 }
 
 /**

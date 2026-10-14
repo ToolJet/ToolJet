@@ -149,4 +149,55 @@ describe('TJDB environment selection', () => {
       expect(screen.queryByRole('button', { name: 'Run in staging' })).not.toBeInTheDocument();
     });
   });
+
+  describe('failed promote', () => {
+    // A failed promote still moves server state: it can keep a resumable prefix, or leave a relation
+    // row behind. The per-environment has_relation the switcher reads lives in `tables`, so skipping
+    // the re-read on error shows stale availability until an unrelated promote refreshes it.
+    test('should re-read tables and migrations so availability is not stale', async () => {
+      serveTable();
+      server.use(
+        http.get('*/tooljet-db/organizations/:organizationId/table/:tableId/promote/preview', () =>
+          HttpResponse.json({
+            result: {
+              missing_migrations: [
+                { id: 'm1', migration_number: 1, name: 'Create table', sql: '', created_at: '2026-10-12T00:00:00Z' },
+              ],
+            },
+          })
+        ),
+        http.post('*/tooljet-db/organizations/:organizationId/table/:tableId/promote', () =>
+          HttpResponse.json({ message: 'Table "parent" has no relation in this environment' }, { status: 400 })
+        )
+      );
+      const refetchTables = jest.fn();
+      const refetchMigrations = jest.fn();
+
+      render(
+        <MigrationHistoryDrawer
+          isOpen
+          onClose={() => {}}
+          migrations={[{ id: 'm1', migration_number: 1, sql: '', created_at: '2026-10-12T00:00:00Z' }]}
+          environments={[
+            { environment_id: DEVELOPMENT.id, applied_migration_ids: ['m1'] },
+            { environment_id: STAGING.id, applied_migration_ids: [] },
+          ]}
+          allEnvironments={ENVIRONMENTS}
+          relationsByEnvironment={BOTH_HAVE_RELATION}
+          organizationId="org-1"
+          selectedTable={{ id: 'table-1', table_name: 'child' }}
+          refetchMigrations={refetchMigrations}
+          refetchTables={refetchTables}
+        />
+      );
+
+      await userEvent.click(await screen.findByRole('button', { name: 'Run in staging' }));
+      // Disabled until the preview resolves; re-query because the drawer swaps to the preview view.
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Run in staging' })).toBeEnabled());
+      await userEvent.click(screen.getByRole('button', { name: 'Run in staging' }));
+
+      await waitFor(() => expect(refetchTables).toHaveBeenCalledTimes(1));
+      expect(refetchMigrations).toHaveBeenCalledTimes(1);
+    });
+  });
 });

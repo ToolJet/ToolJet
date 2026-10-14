@@ -95,6 +95,14 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   development while a higher-priority relation exists and the workspace is unlicensed, and
   `getRelation()` goes through `resolve()` so the single-table paths (`sql_execution`, bulk ops,
   `view_table`) refuse the same way instead of serving development.
+- **Promote never leaves a ghost relation.** `has_relation` (and the resolver, and the app-promote block)
+  mean "a relation row exists", so a row with no table behind it reads as "available in staging".
+  `promote` therefore (1) rejects with 400 `Promote "<parent>" first` before creating anything when a missing
+  migration references a table with no relation in the target (`referencedTablesOf`: embedded FKs by name,
+  baseline/raw-SQL `refs` by co_relation_id) - all-or-nothing on FK order; (2) if replay still fails, deletes the
+  target relation only when it has no application rows and no physical table
+  (`discardRelationIfNothingMaterialized`) - a relation backing a real table is never deleted, its id is the
+  physical name. The frontend refetches tables and migrations on a failed promote too.
 - HTTP `/proxy/*` serves only admins/builders (dashboard, App Builder editor). App queries reach
   PostgREST in-process (`.perform()`), never through this route, so anyone else needs a data query of
   their own workspace to pass `FEATURE_KEY.PROXY_POSTGREST`.
