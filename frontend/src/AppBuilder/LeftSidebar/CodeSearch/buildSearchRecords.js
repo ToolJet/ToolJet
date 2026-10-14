@@ -86,10 +86,11 @@ const itemName = (item, index) =>
     (v) => typeof v === 'string' && v.trim()
   ) ?? `#${Number(index) + 1}`;
 
-// How a list editor finds one of its items: by id, else by the value / title / name it is keyed on.
+// How a list editor finds one of its items: by id, else by the value / title / name it is keyed on,
+// else (a Form's field) by the component it renders.
 const itemIdentity = (item) => {
   if (!item || typeof item !== 'object') return undefined;
-  const identity = [item.id, item.value, item.title, item.name].find((v) => v != null && v !== '');
+  const identity = [item.id, item.value, item.title, item.name, item.componentId].find((v) => v != null && v !== '');
   return identity === undefined ? undefined : String(identity);
 };
 
@@ -230,12 +231,35 @@ const eventReveal = (event, columnsOf) => {
     const [columnRef, buttonId] = String(ref ?? '').split('::');
     const column = columnsOf(sourceId).find((c) => c?.name === columnRef || c?.key === columnRef);
     const steps = column?.id != null ? [listItemStep(sourceId, String(column.id))] : [];
-    // ponytail: button-column buttons are not openable yet; the chain stops at their column.
-    return buttonId ? steps : [...steps, handler];
+    // A button column's button opens inside its column's popover, and lists its own handlers.
+    if (buttonId) steps.push(listItemStep(sourceId, buttonId));
+    return [...steps, handler];
   }
   if (ref) return [listItemStep(sourceId, String(ref)), handler];
   return [handler];
 };
+
+// A widget config (or the page settings config) keeps only its display labels: `displayName` and
+// `<section>.<key>.displayName` (sections include `events`). Configs also hold functions and JSX,
+// which can't be posted to the search worker.
+const plainLabels = (def) => {
+  if (!def || typeof def !== 'object') return undefined;
+  const plain = typeof def.displayName === 'string' ? { displayName: def.displayName } : {};
+  for (const [section, fields] of Object.entries(def)) {
+    if (!fields || typeof fields !== 'object' || Array.isArray(fields)) continue;
+    const labels = Object.entries(fields).filter(([, field]) => typeof field?.displayName === 'string');
+    if (labels.length)
+      plain[section] = Object.fromEntries(labels.map(([key, field]) => [key, { displayName: field.displayName }]));
+  }
+  return plain;
+};
+
+// The parts of the editor's definitions buildSearchRecords reads, as plain cloneable data.
+export const toPlainDefs = ({ widgetDefs = {}, actionDefs = [], pageSettingsDef = {} }) => ({
+  widgetDefs: Object.fromEntries(Object.entries(widgetDefs).map(([type, def]) => [type, plainLabels(def)])),
+  actionDefs: actionDefs.map(({ id, name }) => ({ id, name })),
+  pageSettingsDef: plainLabels(pageSettingsDef),
+});
 
 export const buildSearchRecords = ({
   pages = [],

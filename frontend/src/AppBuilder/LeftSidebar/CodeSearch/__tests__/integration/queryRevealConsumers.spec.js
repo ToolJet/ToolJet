@@ -1,7 +1,6 @@
 /**
- * Query manager places code search opens inside the Setup tab: a request sub-tab (REST, GraphQL)
- * and a parameter's popover. Each marks what it opened with `data-reveal-root` so the highlight
- * searches there, not in a hidden pane.
+ * Query manager places code search on the Setup tab: a request sub-tab (REST, GraphQL).
+ * A parameter is a popover, so search flashes its pill and does not open the form.
  */
 import React from 'react';
 import { render, screen, act } from '@/test/test-utils';
@@ -67,7 +66,7 @@ test('GraphQL: a restTab request activates the tab keyed by the option name', ()
   expect(state().codeSearch.revealRequest).toBeNull();
 });
 
-test('a queryParam request opens that parameter’s form', () => {
+test('a parameter pill is marked so search can flash it, and a reveal request does not open the form', () => {
   render(
     <ParameterList
       parameters={[{ name: 'userId', defaultValue: '42' }]}
@@ -77,31 +76,9 @@ test('a queryParam request opens that parameter’s form', () => {
       containerRef={{ current: { offsetWidth: 2000 } }}
     />
   );
-  expect(screen.getByText('userId')).toBeInTheDocument();
-  expect(rootOf('queryParam:userId')).toBeNull();
+  expect(document.querySelector('[data-list-item-id="userId"]')).toBeInTheDocument();
 
   reveal('queryParam', 'userId');
 
-  expect(rootOf('queryParam:userId')).toBeInTheDocument();
-  expect(rootOf('queryParam:userId').querySelector('[data-param="name"] input')).toHaveValue('userId');
-  expect(state().codeSearch.revealRequest).toBeNull();
-});
-
-test('a queryParam request opens a parameter hidden behind "+N"', () => {
-  const parameters = Array.from({ length: 6 }, (_, i) => ({ name: `param${i}`, defaultValue: String(i) }));
-  render(
-    <ParameterList
-      parameters={parameters}
-      handleAddParameter={() => {}}
-      handleParameterChange={() => {}}
-      handleParameterRemove={() => {}}
-      containerRef={{ current: { offsetWidth: 400 } }}
-    />
-  );
-  expect(screen.queryByText('param5')).toBeNull();
-
-  reveal('queryParam', 'param5');
-
-  expect(rootOf('queryParam:param5')).toBeInTheDocument();
-  expect(state().codeSearch.revealRequest).toBeNull();
+  expect(rootOf('queryParam:userId')).toBeNull();
 });

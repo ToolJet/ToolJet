@@ -7,7 +7,6 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OptionDetailsPopover from './OptionDetailsPopover';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 const OptionItem = ({
   item,
@@ -26,17 +25,6 @@ const OptionItem = ({
   const { dataCy: dataCyPrefix } = config;
   const { onDefaultChange, componentType, component } = restProps;
   const [showPopover, setShowPopover] = useState(false);
-  // Code search opens an option's popover by its value.
-  useCodeSearchReveal(
-    'listItem',
-    component?.id,
-    (optionValue) => {
-      if (optionValue !== String(item?.value)) return false;
-      setShowPopover(true);
-      return true;
-    },
-    [item?.value]
-  );
 
   return (
     <Draggable key={item?.value} draggableId={item?.value} index={index}>
@@ -45,6 +33,7 @@ const OptionItem = ({
           <div
             key={index}
             data-cy={`${dataCyPrefix}-option-${index}`}
+            data-list-item-id={String(item?.value ?? '')}
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}

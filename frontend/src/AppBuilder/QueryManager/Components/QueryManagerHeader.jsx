@@ -212,7 +212,7 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   };
 
   return (
-    <div className="query-name-breadcrum d-flex align-items-center ms-1">
+    <div data-param="name" className="query-name-breadcrum d-flex align-items-center ms-1">
       <span
         className="query-manager-header-query-name font-weight-400"
         data-cy={`query-name-label`}

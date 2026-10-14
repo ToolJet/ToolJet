@@ -17,7 +17,6 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { resolveReferences } from '@/_helpers/utils';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 // Code search names a tag by its id, else its title.
 const tagIdentity = (tag) => String([tag?.id, tag?.title].find((v) => v != null && v !== ''));
@@ -43,18 +42,6 @@ export const Tags = ({
   const currentOptions = component?.component?.definition?.properties?.options?.value || [];
   // The tag whose popover is open, by identity: indexes shift when tags are reordered.
   const [openTagId, setOpenTagId] = useState(null);
-  // Code search opens a tag's popover by its title.
-  useCodeSearchReveal(
-    'listItem',
-    component?.id,
-    (tagId) => {
-      // Dynamic options replace the list, so there is no popover to open.
-      if (isDynamicOptionsEnabled || !currentOptions.some((tag) => tagIdentity(tag) === tagId)) return false;
-      setOpenTagId(tagId);
-      return true;
-    },
-    [currentOptions, isDynamicOptionsEnabled]
-  );
 
   let additionalActions = [];
   let optionsProperties = [];
@@ -346,6 +333,7 @@ export const Tags = ({
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-list-item-id={tagIdentity(item)}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}

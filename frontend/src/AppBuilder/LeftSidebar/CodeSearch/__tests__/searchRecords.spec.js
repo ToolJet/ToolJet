@@ -104,6 +104,19 @@ describe('searchRecords', () => {
     expect(result).toMatchObject({ total: 3, fieldCount: 1 });
   });
 
+  test('each marked copy in the preview knows which occurrence it is, so a click opens that one', () => {
+    const [row] = searchRecords([component({ text: 'a.b a.b a.b' })], 'a.b', {}, ctx).rows;
+    expect(row.preview.filter((s) => s.match).map((s) => s.occurrence)).toEqual([0, 1, 2]);
+  });
+
+  test('matches found elsewhere (the regex worker) are used as given, one list per record', () => {
+    const texts = [component({ text: 'alpha' }), component({ entityId: 'c2', text: 'beta' })];
+    const result = searchRecords(texts, 'al+', { regex: true }, ctx, [[{ start: 0, end: 2, occurrence: 0 }], []]);
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0].matches).toEqual([{ start: 0, end: 2, occurrence: 0 }]);
+    expect(marked(result.rows[0])).toEqual(['al']);
+  });
+
   test('preview starts just before the first match so the match is in view', () => {
     const text = `${'x'.repeat(80)} queries.records.data`;
     const [row] = searchRecords([component({ text })], 'records', {}, ctx).rows;

@@ -178,6 +178,7 @@ const DataSectionUI = ({
         </div>
       </div>
       <FormFieldsList
+        formId={component?.id}
         fields={formFieldsWithComponentDefinition}
         onDeleteField={handleDeleteField}
         currentStatusRef={currentStatusRef}

@@ -112,7 +112,7 @@ describe('navigateToResult', () => {
     expect(state().selectedComponents).toEqual(['c3']);
   });
 
-  test('opens each step of the reveal chain in order, waiting for each to be opened', async () => {
+  test('does not open a column popover or an event handler', async () => {
     const spy = revealSpy(['listItem', 'event']);
     const column = { kind: 'listItem', ownerId: 't1', itemId: 'col-email' };
     const handler = { kind: 'event', ownerId: 't1', itemId: 'ev-1' };
@@ -129,58 +129,52 @@ describe('navigateToResult', () => {
     spy.unsubscribe();
 
     expect(state().selectedComponents).toEqual(['t1']);
-    expect(spy.steps()).toEqual([column, handler]);
+    expect(spy.steps()).toEqual([]);
     expect(state().codeSearch.revealRequest).toBeNull();
   });
 
-  test('the match is then looked for inside the innermost opened popover', async () => {
-    const spy = revealSpy(['listItem', 'event']);
-    const handlerPopover = document.createElement('div');
-    handlerPopover.dataset.revealRoot = 'event:ev-1';
-    document.body.appendChild(handlerPopover);
+  test('an event match flashes the handler card, not an opened popover', async () => {
+    const card = document.createElement('div');
+    card.dataset.eventId = 'ev-1';
+    document.body.appendChild(card);
+    jest.spyOn(Element.prototype, 'getClientRects').mockImplementation(() => [{}]);
 
-    // No editor in the popover holds the match, so after the wait it flashes the popover itself.
     await go(
       {
         entityType: 'event',
         ownerType: 'component',
         ownerId: 't1',
         entityId: 't1',
+        eventId: 'ev-1',
         pageId: 'page-a',
         fieldPath: ['event', 'message'],
         text: 'Saved',
-        reveal: [
-          { kind: 'listItem', ownerId: 't1', itemId: 'col-email' },
-          { kind: 'event', ownerId: 't1', itemId: 'ev-1' },
-        ],
+        reveal: [{ kind: 'event', ownerId: 't1', itemId: 'ev-1' }],
       },
-      { hops: 160 }
+      { hops: 80 }
     );
-    spy.unsubscribe();
 
-    expect(handlerPopover.classList.contains('tj-code-search-flash')).toBe(true);
-    handlerPopover.remove();
+    expect(card.classList.contains('tj-code-search-flash')).toBe(true);
+    jest.restoreAllMocks();
+    card.remove();
   });
 
-  test('a step nobody opens ends the chain and is withdrawn, so it cannot fire later', async () => {
+  test('a column field does not ask any popover to open', async () => {
     const spy = revealSpy([]);
 
-    await go(
-      {
-        entityType: 'component',
-        entityId: 't1',
-        pageId: 'page-a',
-        fieldPath: ['properties', 'columns', 'value', 0, 'name'],
-        reveal: [
-          { kind: 'listItem', ownerId: 't1', itemId: 'col-email' },
-          { kind: 'popoverTab', ownerId: 'col-email', itemId: 'styles' },
-        ],
-      },
-      { hops: 120 }
-    );
+    await go({
+      entityType: 'component',
+      entityId: 't1',
+      pageId: 'page-a',
+      fieldPath: ['properties', 'columns', 'value', 0, 'name'],
+      reveal: [
+        { kind: 'listItem', ownerId: 't1', itemId: 'col-email' },
+        { kind: 'popoverTab', ownerId: 'col-email', itemId: 'styles' },
+      ],
+    });
     spy.unsubscribe();
 
-    expect(spy.steps()).toEqual([{ kind: 'listItem', ownerId: 't1', itemId: 'col-email' }]);
+    expect(spy.steps()).toEqual([]);
     expect(state().codeSearch.revealRequest).toBeNull();
   });
 
@@ -190,7 +184,33 @@ describe('navigateToResult', () => {
     expect(state().queryPanel.selectedQuery?.id).toBe('q1');
   });
 
-  test("a page property opens the Pages panel and asks for that page's details popover", async () => {
+  test('a query tab is still opened so the field can be flashed', async () => {
+    const done = navigateToResult({
+      record: {
+        entityType: 'query',
+        entityId: 'q1',
+        pageId: null,
+        fieldPath: ['options', 'url'],
+        text: 'a',
+        reveal: [{ kind: 'queryTab', ownerId: 'q1', itemId: 'setup' }],
+      },
+      start: 0,
+      end: 1,
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(state().codeSearch.revealRequest).toBeNull();
+
+    await jest.advanceTimersByTimeAsync(0);
+    expect(state().codeSearch.revealRequest).toMatchObject({
+      kind: 'queryTab',
+      itemId: 'setup',
+    });
+    await jest.advanceTimersByTimeAsync(2000);
+    await done;
+  });
+
+  test('a page property opens the Pages panel and does not open the page details popover', async () => {
     const spy = revealSpy(['page']);
     const page = { kind: 'page', ownerId: null, itemId: 'page-a' };
 
@@ -199,7 +219,7 @@ describe('navigateToResult', () => {
 
     expect(state().activeRightSideBarTab).toBe(RIGHT_SIDE_BAR_TAB.PAGES);
     expect(state().isRightSidebarOpen).toBe(true);
-    expect(spy.steps()).toEqual([page]);
+    expect(spy.steps()).toEqual([]);
   });
 
   test('an app setting opens Global settings with a way back to search', async () => {
@@ -220,7 +240,7 @@ describe('navigateToResult', () => {
     reveal: [{ kind: 'preloadedScript', ownerId: null, itemId: 'javascript' }],
   };
 
-  test('preloaded scripts open the Libraries panel and its editor when libraries are licensed', async () => {
+  test('preloaded scripts open the Libraries panel and do not open the editor modal', async () => {
     licenseLibraries(true);
     const spy = revealSpy(['preloadedScript']);
 
@@ -228,7 +248,7 @@ describe('navigateToResult', () => {
     spy.unsubscribe();
 
     expect(state().selectedSidebarItem).toBe('libraries');
-    expect(spy.steps()).toEqual(preloadedScript.reveal);
+    expect(spy.steps()).toEqual([]);
   });
 
   test('without the libraries license they fall back to Global settings, never a hidden panel', async () => {

@@ -29,9 +29,24 @@ export const Chevron = ({ open }) =>
     <ChevronRight width="12" height="12" className="code-search-chevron" />
   );
 
-const Preview = ({ segments }) => (
+// Clicking a marked copy opens that copy; anywhere else on the row opens the first.
+const Preview = ({ segments, onOpenOccurrence }) => (
   <span className="code-search-row-preview">
-    {segments.map((segment, index) => (segment.match ? <mark key={index}>{segment.text}</mark> : segment.text))}
+    {segments.map((segment, index) =>
+      segment.match ? (
+        <mark
+          key={index}
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenOccurrence(segment.occurrence);
+          }}
+        >
+          {segment.text}
+        </mark>
+      ) : (
+        segment.text
+      )
+    )}
   </span>
 );
 
@@ -45,7 +60,7 @@ export const ResultRow = forwardRef(({ row, active, onOpen }, ref) => (
     title={`${row.record.entityName} › ${row.record.fieldLabel}`}
   >
     <span className="code-search-row-label">{row.record.shortLabel}</span>
-    <Preview segments={row.preview} />
+    <Preview segments={row.preview} onOpenOccurrence={(occurrence) => onOpen(row, occurrence)} />
     {row.matches.length > 1 && <CountBadge count={row.matches.length} />}
   </button>
 ));

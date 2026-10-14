@@ -29,7 +29,7 @@ const MaintenanceMode = ({ darkMode }) => {
         onCancel={() => setConfirmationShow(false)}
         darkMode={darkMode}
       />
-      <div className="tw-flex">
+      <div data-param="appInMaintenance" className="tw-flex">
         <SwitchComponent
           align="right"
           label="Maintenance mode"

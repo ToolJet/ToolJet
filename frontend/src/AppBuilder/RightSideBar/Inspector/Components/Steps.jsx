@@ -18,7 +18,6 @@ import { shallow } from 'zustand/shallow';
 import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
 import { usePrevious } from '@dnd-kit/utilities';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 // Code search names a step by its id, else its name.
 const stepIdentity = (step) => String([step?.id, step?.name].find((v) => v != null && v !== ''));
@@ -45,18 +44,6 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
   // The step whose popover is open, by identity: indexes shift when steps are reordered.
   const [openStepId, setOpenStepId] = useState(null);
-  // Code search opens a step's popover by its id.
-  useCodeSearchReveal(
-    'listItem',
-    component?.id,
-    (stepId) => {
-      // Dynamic steps replace the list, so there is no popover to open.
-      if (isDynamicOptionsEnabled || !options.some((step) => stepIdentity(step) === stepId)) return false;
-      setOpenStepId(stepId);
-      return true;
-    },
-    [options, isDynamicOptionsEnabled]
-  );
   // Bumped to remount the open popover's Id field so it re-seeds from the stored id.
   const [idFieldResetKey, setIdFieldResetKey] = useState(0);
   let properties = [];
@@ -325,6 +312,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-list-item-id={stepIdentity(item)}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}

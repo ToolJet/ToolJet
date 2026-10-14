@@ -607,7 +607,7 @@ export const Inspector = ({
     }
 
     return (
-      <div className="input-icon">
+      <div data-param="name" className="input-icon">
         <input
           onChange={(e) => setNewComponentName(e.target.value)}
           type="text"

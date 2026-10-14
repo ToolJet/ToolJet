@@ -9,14 +9,27 @@ import { ActionTypes } from '@/AppBuilder/RightSideBar/Inspector/ActionTypes';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import InputComponent from '@/components/ui/Input/Index';
 import { ToolTip } from '@/_components/ToolTip';
-import { buildSearchRecords } from './buildSearchRecords';
+import { toPlainDefs } from './buildSearchRecords';
 import { searchRecords, MIN_TERM_LENGTH, RESULT_TYPES } from './searchRecords';
+import { runSearch, disposeSearchWorker } from './searchWorker';
 import { navigateToResult } from './navigateToResult';
 import { Chevron, CountBadge, EntityIcon, ResultRow } from './ResultRow';
 import './codeSearch.scss';
 
 const SEARCH_DEBOUNCE_MS = 150;
 const EMPTY = [];
+const REGEX_TOO_SLOW = 'Regular expression takes too long to run';
+const EMPTY_RESULT = searchRecords([], '');
+
+// The editor's widget / action / page-settings definitions, reduced to the labels the index shows.
+// They never change at runtime, so they are reduced once.
+let plainDefs = null;
+const getPlainDefs = () =>
+  (plainDefs ||= toPlainDefs({
+    widgetDefs: componentTypeDefinitionMap,
+    actionDefs: ActionTypes,
+    pageSettingsDef: pageConfig,
+  }));
 
 const MATCH_TOGGLES = [
   { key: 'caseSensitive', label: 'Aa', title: 'Match case' },
@@ -24,7 +37,9 @@ const MATCH_TOGGLES = [
   { key: 'regex', label: '.*', title: 'Use regular expression' },
 ];
 
-// Icon-only controls get a real tooltip (the native `title` is slow and easy to miss).
+// Icon-only controls get a real tooltip (the native `title` is slow and easy to miss). A mouse click
+// leaves focus in the search input, as in code editors' find widgets: a focused toggle would keep its
+// focus-triggered tooltip up over the results and the Inspector while you keep searching.
 const IconButton = ({ title, pressed, className, onClick, children }) => (
   <ToolTip message={title} placement="bottom">
     <button
@@ -32,6 +47,7 @@ const IconButton = ({ title, pressed, className, onClick, children }) => (
       aria-label={title}
       aria-pressed={pressed}
       className={cx('code-search-toggle', className, { active: pressed })}
+      onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
     >
       {children}
@@ -54,7 +70,7 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
     (state) => [state.codeSearch.term, state.codeSearch.options, state.setCodeSearchTerm, state.setCodeSearchOptions],
     shallow
   );
-  const [pages, queries, events, globalSettings, pageSettings, currentPageId, replaceIdsWithName] = useStore(
+  const [pages, queries, events, globalSettings, pageSettings, currentPageId, queryIdNameMapping] = useStore(
     (state) => [
       state.modules[moduleId]?.pages || EMPTY,
       state.dataQuery.queries.modules[moduleId] || EMPTY,
@@ -62,7 +78,7 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
       state.globalSettings,
       state.pageSettings,
       state.modules[moduleId]?.currentPageId,
-      state.replaceIdsWithName,
+      state.modules[moduleId]?.queryIdNameMapping,
     ],
     shallow
   );
@@ -83,35 +99,31 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
     return () => clearTimeout(timer);
   }, [term]);
 
-  // ponytail: rebuilt on the main thread on every definition change while the panel is open;
-  // move buildSearchRecords + searchRecords into a Web Worker when large apps feel it (spec §6).
-  const records = useMemo(
-    () =>
-      buildSearchRecords({
-        pages,
-        queries,
-        events,
-        globalSettings,
-        pageSettings,
-        translate: (text) => replaceIdsWithName(text, moduleId),
-        widgetDefs: componentTypeDefinitionMap,
-        actionDefs: ActionTypes,
-        pageSettingsDef: pageConfig,
-      }),
-    [pages, queries, events, globalSettings, pageSettings, replaceIdsWithName, moduleId]
+  // Indexing and matching run in a worker (searchWorker.js); this thread only hands it the saved
+  // definition, which it re-indexes when this object changes.
+  const input = useMemo(
+    () => ({ pages, queries, events, globalSettings, pageSettings, queryIdNameMapping, defs: getPlainDefs() }),
+    [pages, queries, events, globalSettings, pageSettings, queryIdNameMapping]
   );
 
   const { caseSensitive, wholeWord, regex, type, currentPageOnly } = options;
-  const result = useMemo(
-    () =>
-      searchRecords(
-        records,
-        debouncedTerm,
-        { caseSensitive, wholeWord, regex, type, currentPageOnly },
-        { currentPageId, pages }
-      ),
-    [records, debouncedTerm, caseSensitive, wholeWord, regex, type, currentPageOnly, currentPageId, pages]
-  );
+
+  // The panel keeps showing the last result until the worker answers.
+  const [result, setResult] = useState(EMPTY_RESULT);
+  useEffect(() => {
+    if (debouncedTerm.length < MIN_TERM_LENGTH) return setResult(EMPTY_RESULT);
+    let current = true;
+    const filters = { caseSensitive, wholeWord, regex, type, currentPageOnly };
+    runSearch({ input, term: debouncedTerm, filters, currentPageId }).then((outcome) => {
+      if (!current || outcome.superseded) return;
+      setResult(outcome.timedOut ? { ...EMPTY_RESULT, error: REGEX_TOO_SLOW } : outcome.result);
+    });
+    return () => {
+      current = false;
+    };
+  }, [input, debouncedTerm, caseSensitive, wholeWord, regex, type, currentPageOnly, currentPageId]);
+
+  useEffect(() => disposeSearchWorker, []);
 
   // A new search starts fully expanded; editing the app while searching keeps what you folded.
   useEffect(() => {
@@ -146,9 +158,14 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
   // Like VS Code: collapse-all folds every entity and leaves page groups open.
   const toggleAll = () => setCollapsed(allCollapsed ? new Set() : new Set(entityKeys));
 
-  const open = (row) => {
+  // Opening the same row again steps to its next occurrence; a clicked mark opens that one.
+  const lastOpened = useRef({ row: null, occurrence: 0 });
+  const open = (row, occurrence) => {
+    const previous = lastOpened.current;
+    const next = occurrence ?? (previous.row === row ? (previous.occurrence + 1) % row.matches.length : 0);
+    lastOpened.current = { row, occurrence: next };
     setActiveIndex(visibleRows.indexOf(row));
-    navigateToResult({ record: row.record, ...row.matches[0] }, moduleId);
+    navigateToResult({ record: row.record, ...row.matches[next] }, moduleId);
   };
 
   const entityKeyOf = (row) => `entity:${row.record.ownerId || row.record.entityId}`;
@@ -162,7 +179,7 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
       setActiveIndex((index) => (index + step + visibleRows.length) % visibleRows.length);
     } else if (e.key === 'Enter' && activeRow) {
       e.preventDefault();
-      navigateToResult({ record: activeRow.record, ...activeRow.matches[0] }, moduleId);
+      open(activeRow);
     } else if (activeRow && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && e.target.tagName !== 'INPUT') {
       e.preventDefault();
       const key = entityKeyOf(activeRow);

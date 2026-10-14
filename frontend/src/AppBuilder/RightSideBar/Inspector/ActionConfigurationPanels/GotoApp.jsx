@@ -30,7 +30,7 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
 
   return (
     <div className="tw-flex tw-flex-col tw-gap-3" data-cy="go-to-app-panel">
-      <FieldRow label="App" dataCy="go-to-app-label">
+      <FieldRow param="slug" label="App" dataCy="go-to-app-label">
         <OptionCombobox
           options={appOptions}
           value={event.slug}

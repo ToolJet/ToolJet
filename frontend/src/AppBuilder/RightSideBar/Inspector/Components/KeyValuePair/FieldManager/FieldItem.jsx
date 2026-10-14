@@ -77,7 +77,7 @@ export const FieldItem = ({
             overlay={renderFieldPopover(item, index)}
             onToggle={(show) => onTogglePopover(item.id, show)}
           >
-            <div className="table-column-lists">
+            <div className="table-column-lists" data-list-item-id={String(item.id ?? '')}>
               <List.Item
                 isDraggable
                 primaryText={resolvedItemName}

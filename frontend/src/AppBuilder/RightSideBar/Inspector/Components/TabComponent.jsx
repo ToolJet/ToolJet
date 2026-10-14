@@ -18,7 +18,6 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -44,18 +43,6 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
 
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
-  // Code search opens a tab item's popover by its id.
-  useCodeSearchReveal(
-    'listItem',
-    component?.id,
-    (tabId) => {
-      const index = tabItems.findIndex((tab) => String(tab?.id) === tabId);
-      if (index < 0) return false;
-      setActiveColumnPopoverIndex(index);
-      return true;
-    },
-    [tabItems]
-  );
   const [hoveredTabItemIndex, setHoveredTabItemIndex] = useState(null);
   // Bumped per row (by `_key`) to force just that row's Id field to remount and re-seed.
   const [idFieldResetKeys, setIdFieldResetKeys] = useState({});
@@ -475,6 +462,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-list-item-id={String(item.id ?? '')}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}

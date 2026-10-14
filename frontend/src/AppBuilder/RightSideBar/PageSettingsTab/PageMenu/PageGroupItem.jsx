@@ -6,7 +6,6 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import PageOptions from './PageOptions';
 import { Overlay, Popover } from 'react-bootstrap';
 import { AddEditPagePopup } from './AddNewPagePopup';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
@@ -76,13 +75,6 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
     setNewPagePopupConfig({ type, mode: 'edit' });
   };
 
-  // Code search asks for this group's details popover, as if the row was clicked.
-  useCodeSearchReveal('page', null, (pageId) => {
-    if (!page?.id || pageId !== page.id) return false;
-    handleOpenPopup('group', page);
-    return true;
-  });
-
   const memoizedContent = useMemo(() => {
     const isEditing = editingPage?.id === page?.id;
     return (
@@ -96,6 +88,7 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
           className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${
             darkMode ? 'dark-theme theme-dark' : ''
           } ${(showPageOptions || showEditPopover) && isEditing ? 'is-selected' : ''}`}
+          data-page-id={page?.id}
           onClick={() => {
             handleOpenPopup('group', page);
           }}

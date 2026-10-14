@@ -5,7 +5,6 @@ import ParameterForm from './ParameterForm';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
 import { generateCypressDataCy } from '../../../modules/common/helpers/cypressHelpers.js';
 import useStore from '@/AppBuilder/_stores/store';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 const ParameterList = ({
   parameters = [],
@@ -45,20 +44,6 @@ const ParameterList = ({
       setShowMore(false);
     }
   };
-
-  // Code search opens a parameter hidden behind "+N" here; visible ones open their own pill.
-  useCodeSearchReveal(
-    'queryParam',
-    queryId,
-    (paramName) => {
-      const hidden = formattedParameters.find((param) => !param.isVisible && param.name === paramName);
-      if (!hidden) return false;
-      setSelectedParameter(hidden);
-      setShowMore(true);
-      return true;
-    },
-    [formattedParameters]
-  );
 
   useEffect(() => {
     if (showMore) {
@@ -145,7 +130,7 @@ const ParameterList = ({
                   .filter((param) => !param.isVisible)
                   .map((parameter) => {
                     return (
-                      <span key={parameter.name}>
+                      <span key={parameter.name} data-list-item-id={parameter.name}>
                         <PillButton
                           name={parameter.name}
                           onRemove={() => handleParameterRemove(parameter.index)}
