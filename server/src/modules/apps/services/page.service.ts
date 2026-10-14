@@ -26,6 +26,9 @@ import {
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
 import { TransactionLogger } from '@modules/logging/service';
+import { AppValidationService } from '@modules/app-validation/service';
+import { lockForValidation } from '@modules/app-validation/lock';
+import { PageWrite } from '@modules/app-validation/types';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -33,8 +36,26 @@ export class PageService implements IPageService {
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService,
-    protected readonly transactionLogger: TransactionLogger
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly appValidationService: AppValidationService
   ) {}
+
+  protected toPageWrite(op: 'create' | 'update', page: Page): PageWrite {
+    return {
+      op,
+      id: page.id,
+      data: {
+        name: page.name,
+        handle: page.handle,
+        index: page.index,
+        hidden: page.hidden,
+        disabled: page.disabled,
+        isPageGroup: page.isPageGroup,
+        pageGroupId: page.pageGroupId,
+        type: page.type,
+      },
+    };
+  }
 
   /**
    * Hook called before page creation - override in EE to capture state for history
@@ -170,6 +191,12 @@ export class PageService implements IPageService {
 
     const result = await dbTransactionWrap(async (manager) => {
       const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
+      await lockForValidation(manager, 'page_handle', appVersionId);
+      await this.appValidationService.check('pages', [this.toPageWrite('create', newPage)], {
+        appVersionId,
+        organizationId,
+        manager,
+      });
       return await manager.save(Page, newPage);
     });
 
@@ -226,6 +253,13 @@ export class PageService implements IPageService {
       newPage.hidden = pageToClone.hidden;
       newPage.pageHeader = pageToClone.pageHeader;
       newPage.pageFooter = pageToClone.pageFooter;
+
+      await lockForValidation(manager, 'page_handle', appVersionId);
+      await this.appValidationService.check('pages', [this.toPageWrite('create', newPage)], {
+        appVersionId,
+        organizationId,
+        manager,
+      });
 
       clonedPage = await manager.save(newPage);
 
@@ -483,6 +517,14 @@ export class PageService implements IPageService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageReorder(diff, appVersionId, organizationId);
 
+    const reorderWrites: PageWrite[] = Object.entries(diff?.diff ?? {}).map(([pageId, change]: [string, any]) => ({
+      op: 'update',
+      id: pageId,
+      data: { index: change?.index, pageGroupId: change?.pageGroupId },
+      touched: Object.keys(change ?? {}),
+    }));
+    await this.appValidationService.check('pages', reorderWrites, { appVersionId, organizationId });
+
     const result = await this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
 
     const operationTimestamp = Date.now();
@@ -509,6 +551,13 @@ export class PageService implements IPageService {
       if (!currentPage) {
         throw new Error('Page not found');
       }
+      const touched = Object.keys(pageUpdates.diff);
+      if (touched.includes('handle')) await lockForValidation(manager, 'page_handle', appVersionId);
+      await this.appValidationService.check(
+        'pages',
+        [{ ...this.toPageWrite('update', { ...currentPage, ...pageUpdates.diff } as Page), touched }],
+        { appVersionId, manager }
+      );
       return manager.update(Page, pageUpdates.pageId, pageUpdates.diff);
     });
 
@@ -538,6 +587,12 @@ export class PageService implements IPageService {
       if (!pageExists) {
         throw new Error('Page not found');
       }
+
+      await this.appValidationService.check('pages', [{ op: 'delete', id: pageId, data: { deleteAssociatedPages } }], {
+        appVersionId,
+        organizationId,
+        manager,
+      });
 
       if (editingVersion?.homePageId === pageId) {
         throw new Error('Cannot delete home page');
@@ -600,6 +655,12 @@ export class PageService implements IPageService {
     if (!pageExists) {
       throw new Error('Page not found');
     }
+
+    await this.appValidationService.check('pages', [{ op: 'delete', id: pageId, data: { deleteAssociatedPages } }], {
+      appVersionId: pageExists.appVersionId,
+      organizationId,
+      manager,
+    });
 
     // Handle page group deletion (EE feature - will be overridden in EE service)
     if (pageExists.isPageGroup) {

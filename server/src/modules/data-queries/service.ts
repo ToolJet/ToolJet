@@ -17,13 +17,16 @@ import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDelet
 import { App } from '@entities/app.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
+import { AppValidationService } from '@modules/app-validation/service';
+import { QueryWrite } from '@modules/app-validation/types';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
   constructor(
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
-    protected readonly dataSourceRepository: DataSourcesRepository
+    protected readonly dataSourceRepository: DataSourcesRepository,
+    protected readonly appValidationService: AppValidationService
   ) {}
 
   /**
@@ -137,6 +140,13 @@ export class DataQueriesService implements IDataQueriesService {
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       await this.assertUniqueQueryName(manager, appVersionId, name);
 
+      // After the advisory lock, so a parallel create of the same name cannot also pass.
+      await this.appValidationService.check(
+        'queries',
+        [{ op: 'create', id: 'new', data: { name, kind, dataSourceId: dataSource.id, options } } as QueryWrite],
+        { appVersionId, organizationId: user.organizationId, manager }
+      );
+
       const dataQuery = await this.dataQueryRepository.createOne(
         {
           name,
@@ -174,15 +184,30 @@ export class DataQueriesService implements IDataQueriesService {
     const context = await this.beforeQueryUpdate(user, versionId, dataQueryId, updateDataQueryDto);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      if (name !== undefined) {
-        const existing = await manager.findOne(DataQuery, {
-          where: { id: dataQueryId },
-          select: ['id', 'appVersionId', 'name'],
-        });
-        if (existing && existing.name !== name) {
-          await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
-        }
+      const existing = await manager.findOne(DataQuery, {
+        where: { id: dataQueryId },
+        select: ['id', 'appVersionId', 'name', 'dataSourceId'],
+      });
+      if (name !== undefined && existing && existing.name !== name) {
+        await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
       }
+
+      if (existing) {
+        const touched = Object.keys({ ...(name !== undefined && { name }), ...(options !== undefined && { options }) });
+        await this.appValidationService.check(
+          'queries',
+          [
+            {
+              op: 'update',
+              id: existing.id,
+              data: { name: name ?? existing.name, options, dataSourceId: existing.dataSourceId },
+              touched,
+            } as QueryWrite,
+          ],
+          { appVersionId: existing.appVersionId, organizationId: user.organizationId, manager }
+        );
+      }
+
       await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
     });
 
@@ -197,6 +222,19 @@ export class DataQueriesService implements IDataQueriesService {
     const context = await this.beforeQueryDelete(dataQueryId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const stored = await manager.findOne(DataQuery, {
+        where: { id: dataQueryId },
+        select: ['id', 'name', 'appVersionId'],
+      });
+      if (stored) {
+        // Reports handlers that still run this query; deleting is still allowed.
+        await this.appValidationService.check(
+          'queries',
+          [{ op: 'delete', id: stored.id, data: { name: stored.name } } as QueryWrite],
+          { appVersionId: stored.appVersionId, manager }
+        );
+      }
+
       await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
       await this.dataQueryRepository.deleteOne(dataQueryId);
     });
@@ -210,11 +248,35 @@ export class DataQueriesService implements IDataQueriesService {
 
   async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      for (const { id, options } of dataQueriesOptions) {
-        await this.dataQueryRepository.findOneOrFail({
-          where: { id, dataSource: { organizationId: user.organizationId } },
-          relations: ['dataSource'],
+      const stored: DataQuery[] = [];
+      for (const { id } of dataQueriesOptions) {
+        stored.push(
+          await this.dataQueryRepository.findOneOrFail({
+            where: { id, dataSource: { organizationId: user.organizationId } },
+            relations: ['dataSource'],
+          })
+        );
+      }
+
+      if (stored.length) {
+        const writes: QueryWrite[] = dataQueriesOptions.map(({ id, options }, position) => ({
+          op: 'update',
+          id,
+          data: {
+            name: stored[position].name,
+            dataSourceId: stored[position].dataSourceId,
+            options: options as Record<string, any>,
+          },
+          touched: ['options'],
+        }));
+        await this.appValidationService.check('queries', writes, {
+          appVersionId: stored[0].appVersionId,
+          organizationId: user.organizationId,
+          manager,
         });
+      }
+
+      for (const { id, options } of dataQueriesOptions) {
         await this.dataQueryRepository.updateOne(id, { options }, manager);
       }
       if (!dataQueriesOptions.length) {
@@ -363,6 +425,27 @@ export class DataQueriesService implements IDataQueriesService {
       // if (dataSource.kind !== newDataSource.kind && dataSource) {
       //   throw new BadRequestException();
       // }
+
+      const stored = await manager.findOne(DataQuery, {
+        where: { id: queryId },
+        select: ['id', 'name', 'appVersionId'],
+      });
+      if (stored) {
+        // Kind mismatch only warns here: workflows legitimately move queries across kinds.
+        await this.appValidationService.check(
+          'queries',
+          [
+            {
+              op: 'update',
+              id: stored.id,
+              data: { name: stored.name, kind: dataSource?.kind, dataSourceId: newDataSourceId },
+              touched: ['dataSourceId'],
+            } as QueryWrite,
+          ],
+          { appVersionId: stored.appVersionId, organizationId: user.organizationId, manager }
+        );
+      }
+
       return this.dataQueryRepository.updateOne(queryId, { dataSourceId: newDataSource.id }, manager);
 
       // TODO: Audit logs
