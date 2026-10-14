@@ -67,6 +67,8 @@ describe('icons', () => {
     expect(resolveIcon('IconFlask', tabler, 'none')).toBe(flask);
     const syringe = () => null;
     expect(resolveIcon('IconVaccine', { Syringe: syringe }, 'none')).toBe(syringe);
+    const pill = () => null;
+    expect(resolveIcon('pills', { Pill: pill }, 'none')).toBe(pill);
   });
   it('falls back for unknown names, junk and the base component', () => {
     expect(resolveIcon('no-such-icon', map, 'none')).toBe('none');
