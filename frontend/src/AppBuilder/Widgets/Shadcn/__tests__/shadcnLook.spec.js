@@ -43,7 +43,9 @@ describe('seriesColor', () => {
   it("uses the author's colour where the list names one, else the theme palette", () => {
     expect(seriesColor(['#0f766e'], 0)).toBe('#0f766e');
     expect(seriesColor(['#0f766e'], 1)).toBe('var(--sc-chart-2)');
-    expect(seriesColor(undefined, 6)).toBe('var(--sc-chart-2)');
+    // Past five, a lighter shade of the palette, so a sixth slice is not the first slice's colour again.
+    expect(seriesColor(undefined, 6)).toBe('color-mix(in srgb, var(--sc-chart-2) 60%, var(--sc-background))');
+    expect(seriesColor(undefined, 4)).toBe('var(--sc-chart-5)');
   });
 });
 
