@@ -271,3 +271,14 @@ describe('bookingFace', () => {
     expect(bookingFace(160, 28, true)).toEqual({ titleLines: 1, showSecond: false });
   });
 });
+
+describe('a day written as clock times', () => {
+  // dayStart="09:00" and dayEnd="18:00" failed the number-only property and fell back to 8 to 18 (five apps,
+  // 2026-10-14). A clock time is its hour; an end that is not on the hour rounds up.
+  it('reads the hours from clock times', () => {
+    const r = scheduleRange({ date: '2026-10-12', dayStart: '09:00', dayEnd: '17:30' });
+    expect(r.columns[0].key).toBe('9');
+    expect(r.columns[r.columns.length - 1].key).toBe('17');
+    expect(r.columns).toHaveLength(9);
+  });
+});
