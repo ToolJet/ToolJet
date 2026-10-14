@@ -16,10 +16,7 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
 
   useEffect(() => {
     const debouncedFilter = debounce(() => {
-      const prevFilters = { ...filters };
-      prevFilters[index].value = filterInputValue;
-
-      setFilters(prevFilters);
+      setFilters({ ...filters, [index]: { ...filters[index], value: filterInputValue } });
     }, 500);
 
     debouncedFilter();
@@ -33,17 +30,11 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
   }, [value]);
 
   const handleColumnChange = (value) => {
-    const prevFilters = { ...filters };
-    prevFilters[index].column = value;
-
-    setFilters(prevFilters);
+    setFilters({ ...filters, [index]: { ...filters[index], column: value } });
   };
 
   const handleOperatorChange = (value) => {
-    const prevFilters = { ...filters };
-    prevFilters[index].operator = value;
-
-    setFilters(prevFilters);
+    setFilters({ ...filters, [index]: { ...filters[index], operator: value } });
   };
 
   const handleDelete = () => {
