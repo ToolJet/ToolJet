@@ -30,7 +30,7 @@ describe('Personal access token creation (CE)', () => {
         .set('tj-workspace-id', admin.workspace.id)
         .send({ name: 'ce-token', expiresAt: new Date(Date.now() + 86400000).toISOString() });
 
-      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBe(501);
       expect(res.body).not.toHaveProperty('token');
       expect(await getDefaultDataSource().getRepository(UserPersonalAccessToken).count()).toBe(0);
     });
