@@ -1232,8 +1232,10 @@ export const ShadSummaryStrip = (props) => {
                 style={{ borderColor: hairline }}
               >
                 {f.label ? (
+                  // A long label wraps rather than being cut ("Technicians on the...", 2026-10-13); it takes the cell's
+                  // spare height, so the figures in a row of the grid stay level whatever their labels' lengths.
                   <dt
-                    className="truncate text-xs font-medium"
+                    className="flex-1 break-words text-xs font-medium"
                     style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}
                   >
                     {f.label}
@@ -1267,7 +1269,7 @@ export const ShadSummaryStrip = (props) => {
                   ) : null}
                 </dd>
                 {f.caption ? (
-                  <dd className="m-0 truncate text-xs" style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}>
+                  <dd className="m-0 break-words text-xs" style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}>
                     {f.caption}
                   </dd>
                 ) : null}

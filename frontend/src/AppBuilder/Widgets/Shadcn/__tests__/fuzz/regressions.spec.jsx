@@ -605,6 +605,26 @@ describe('Card grid', () => {
 });
 
 describe('Record list and summary strip', () => {
+  // The stat strip cut long labels and captions to one line ("Technicians on the...", DeepSeek's field service app,
+  // 2026-10-13). They wrap now; the label takes the cell's spare height, so figures in one row stay level.
+  it('wraps a long stat strip label and caption instead of cutting them', async () => {
+    const strip = await mount('ShadSummaryStrip', {
+      items: [
+        { label: 'Jobs this week', value: 14 },
+        { label: 'Technicians on the road today across both regions', value: 8, caption: 'two more than last week, with one on leave' },
+      ],
+    });
+    const labels = [...document.querySelectorAll('dt')];
+    expect(labels.length).toBe(2);
+    for (const dt of labels) {
+      expect(dt.className).not.toMatch(/\btruncate\b/);
+      expect(dt.className).toMatch(/\bflex-1\b/);
+    }
+    const caption = [...document.querySelectorAll('dd')].find((dd) => dd.textContent.includes('two more'));
+    expect(caption.className).not.toMatch(/\btruncate\b/);
+    strip.unmount();
+  });
+
   // A Kanban with dynamic height (the pack default) grew to fit every card: a board of 40 loans stood 2,274px tall
   // (a DeepSeek IT assets app, 2026-10-13). It now shrinks to its cards up to its drawn height; past that, each column
   // scrolls inside it.
