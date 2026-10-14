@@ -17,8 +17,8 @@ A finance team needs to build an expense reimbursement form where employees subm
 | ---------------------------------------------- | --------------------------------------------------| ---------------------------------------------------- |
 | Label | Text to display as the label for the field. | String (e.g. `Reimbursement Amount`). |
 | Placeholder | A hint displayed to guide the user on what to enter. | String (e.g. `Enter the amount in USD`). |
-| Default value | The default value that the component will hold when the app is loaded. | Number (e.g. `83.67`). |
-| Decimal places | Number of decimal places to show after the decimal point. | Integer (e.g. `2`). |
+| Default value | The default value that the component will hold when the app is loaded. It is rounded to the configured **Decimal places**. Leave it empty to show the **Placeholder**. | Number or formatted number (e.g. `83.67` or `1,234.56`). |
+| Decimal places | Number of decimal places to show after the decimal point. Set it to `0` for whole-number currencies such as JPY or KRW; the field then does not accept a decimal separator. | Integer (e.g. `2`). |
 | Number format | Sets the number formatting style for the currency value. | Select `US / UK (eg. 1,234.56)` for comma as thousand separator and dot as decimal, or `European (eg. 1.234,56)` for dot as thousand separator and comma as decimal. Use **fx** to set dynamically (`us` or `eu`). |
 | Default Currency | Sets the currency format to use by default. | Select the default currency from the dropdown or update it dynamically using **fx**. |
 | Enable currency change | Allows the user to select a different currency from a dropdown. If disabled, the user can enter only the default currency. | Enable or disable it using the toggle button or use **fx** to update it dynamically. |
@@ -43,7 +43,7 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
-| setValue      | Sets the value and optionally the country of the Currency Input field. | `components.currencyinput1.setValue(value, country)` |
+| setValue      | Sets the value and optionally the country of the Currency Input field. The value is read using the selected **Number format** and rounded to the configured **Decimal places**. | `components.currencyinput1.setValue(value, country)` |
 | clear         | Clears the input field.                           | `components.currencyinput1.clear()`                  |
 | setFocus      | Sets the focus of the cursor on the input field.  | `components.currencyinput1.setFocus()`               |
 | setBlur       | Removes focus from the input field.               | `components.currencyinput1.setBlur()`                |
@@ -51,6 +51,10 @@ The following actions of the component can be controlled using the component-spe
 | setLoading    | Sets the loading state of the component.          | `components.currencyinput1.setLoading(true)`         |
 | setDisable    | Disables the component.                           | `components.currencyinput1.setDisable(true)`         |
 | setCountryCode | Programmatically sets the country code.          | `components.currencyinput1.setCountryCode('US')`     |
+
+:::note
+`setValue` follows the selected **Number format** when it reads separators. In the `European (eg. 1.234,56)` format, `.` is the thousand separator, so `setValue('.5')` sets the value to `5`, not `0.5`.
+:::
 
 ## Exposed Variables
 
@@ -70,7 +74,7 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"200px"}}> Validation Option </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div> |
 | :------------------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
-| Make this field mandatory | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure using **fx**. |
+| Make this field mandatory | Displays a 'Field cannot be empty' message if no value is entered. The message also appears as soon as the field is emptied with the clear button or the `clear()` action. Resetting a **Form** clears the field without showing the message. | Enable/disable the toggle button or dynamically configure using **fx**. |
 | Regex | Regular Expression to validate the input. | Regular Expression Pattern (e.g., `^\d+(\.\d{1,2})?$`). |
 | Min value | Sets the minimum value allowed. | Integer (e.g., `99`). |
 | Max value | Sets the maximum value allowed. | Integer (e.g., `1000`). |
