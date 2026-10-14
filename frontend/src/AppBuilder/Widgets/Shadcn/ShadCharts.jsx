@@ -185,7 +185,11 @@ export const valueAxisWidth = (data, series, format, stacked = false) => {
   if (!values.length) return 40;
   const max = Math.max(...values);
   const min = Math.min(0, ...values);
-  const longest = Math.max(...[max, niceCeil(max), min].map((v) => String(format(v) ?? '').length));
+  // The ticks between the ends too (quarters of the nice top): "1.5K km" and "4.5K km" outran a "5K km" top and were
+  // cut to ".5K km" (fleet distance chart, 2026-10-14).
+  const top = niceCeil(max);
+  const ticks = [max, top, min, top * 0.25, top * 0.5, top * 0.75, top * 0.9, top * 0.3, top * 0.7];
+  const longest = Math.max(...ticks.map((v) => String(format(v) ?? '').length));
   return Math.min(110, Math.max(32, longest * 7 + 12));
 };
 /** An x axis of ISO dates ("2026-09-10") reads as "10 Sep", the pack's date style; other values are shown as they are. */
