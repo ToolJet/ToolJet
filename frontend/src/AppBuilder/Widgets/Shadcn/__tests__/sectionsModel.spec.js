@@ -432,3 +432,20 @@ describe('summaryFigures auto: a money word beside a count or a change is not mo
     expect(shown(label, value)).toBe(expected);
   });
 });
+
+// A card's description bound to the same percentage its progress bar labels showed "25%" twice on every card of an
+// onboarding grid (2026-10-14). The bar keeps it; the description is left out when it says only that.
+describe('cardItems, a description that repeats the progress', () => {
+  const fields = { titleField: 'name', descriptionField: 'label', progressField: 'pct' };
+
+  it('is left out when it is just the progress percentage', () => {
+    const [card] = cardItems([{ name: 'Avery', label: '25%', pct: 25 }], fields);
+    expect(card.progress).toBe(25);
+    expect(card.description).toBe('');
+  });
+
+  it('is kept when it says more', () => {
+    const [card] = cardItems([{ name: 'Avery', label: '3 of 12 tasks done', pct: 25 }], fields);
+    expect(card.description).toBe('3 of 12 tasks done');
+  });
+});
