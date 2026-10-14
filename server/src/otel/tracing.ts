@@ -13,6 +13,7 @@ import {
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
+import type { IncomingMessage } from 'http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
@@ -28,7 +29,7 @@ import { getTooljetEdition } from '../helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '../modules/app/constants';
 import { ATTR, ATTR_DEPLOYMENT_ENVIRONMENT_NAME, METRIC, deploymentEnvironmentName } from './semconv';
 import { shutdownOtelLogs } from './logs';
-import { requestSpanAttributes } from './http-span';
+import { redactUrlQuery, requestSpanAttributes } from './http-span';
 
 // Set this up to see debug logs
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
@@ -85,6 +86,18 @@ function createSDK(): NodeSDK {
         ignoreIncomingRequestHook: (request: any) => {
           const url = request.url || '';
           return url.includes('/api/health') || url === '/api/health';
+        },
+        requestHook: (span: Span, request) => {
+          // incoming only: IncomingMessage has url, ClientRequest does not
+          const raw = (request as IncomingMessage).url;
+          if (typeof raw !== 'string' || !raw.includes('?')) return;
+          const host = (request as IncomingMessage).headers?.host ?? 'localhost';
+          const redacted = redactUrlQuery(raw);
+          span.setAttributes({
+            'http.target': redacted,
+            'http.url': `http://${host}${redacted}`,
+            'url.query': redacted.slice(redacted.indexOf('?') + 1),
+          });
         },
       }),
       new ExpressInstrumentation({

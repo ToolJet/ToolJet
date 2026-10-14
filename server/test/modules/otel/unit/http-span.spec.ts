@@ -1,4 +1,4 @@
-import { REDACTED, requestSpanAttributes } from '@otel/http-span';
+import { REDACTED, redactUrlQuery, requestSpanAttributes } from '@otel/http-span';
 
 describe('requestSpanAttributes', () => {
   it('never returns the request body', () => {
@@ -26,5 +26,20 @@ describe('requestSpanAttributes', () => {
 
   it('omits empty params and query', () => {
     expect(requestSpanAttributes({ params: {}, query: {} })).toEqual({});
+  });
+});
+
+describe('redactUrlQuery', () => {
+  it('redacts secret values, keeps others', () => {
+    expect(redactUrlQuery('/invite?token=abc&org=1')).toBe(`/invite?token=${REDACTED}&org=1`);
+  });
+  it('redacts oauth code', () => {
+    expect(redactUrlQuery('/cb?code=x&state=y')).toBe(`/cb?code=${REDACTED}&state=y`);
+  });
+  it('leaves urls without query unchanged', () => {
+    expect(redactUrlQuery('/api/apps/1')).toBe('/api/apps/1');
+  });
+  it('handles full urls and fragments', () => {
+    expect(redactUrlQuery('http://h/x?token=a#f')).toBe(`http://h/x?token=${REDACTED}#f`);
   });
 });

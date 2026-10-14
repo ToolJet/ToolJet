@@ -19,3 +19,27 @@ export function requestSpanAttributes(request: { params?: Plain; query?: Plain }
   if (request.query && Object.keys(request.query).length) attrs['http.query'] = JSON.stringify(redact(request.query));
   return attrs;
 }
+
+// Redacts secret query values in a raw path or full URL; unchanged when no query.
+export function redactUrlQuery(url: string): string {
+  const q = url.indexOf('?');
+  if (q === -1) return url;
+  const hash = url.indexOf('#', q);
+  const end = hash === -1 ? url.length : hash;
+  const query = url
+    .slice(q + 1, end)
+    .split('&')
+    .map((pair) => {
+      const eq = pair.indexOf('=');
+      const key = eq === -1 ? pair : pair.slice(0, eq);
+      let decoded = key;
+      try {
+        decoded = decodeURIComponent(key);
+      } catch {
+        // keep raw key
+      }
+      return eq !== -1 && SECRET_KEY.test(decoded) ? `${key}=${REDACTED}` : pair;
+    })
+    .join('&');
+  return url.slice(0, q + 1) + query + url.slice(end);
+}
