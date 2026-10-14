@@ -259,7 +259,7 @@ export class TooljetDbTableOperationsService {
     columns: TooljetDatabaseColumn[];
     configurations: any;
   }> {
-    const { table_name: tableName, id: id, environmentId } = params;
+    const { table_name: tableName, id: id, environmentId, readOnly } = params;
     const { appManager, tjdbManager } = connectionManagers;
 
     const internalTable = await appManager.findOne(InternalTable, {
@@ -275,7 +275,8 @@ export class TooljetDbTableOperationsService {
       organizationId,
       internalTable.id,
       environmentId,
-      appManager
+      appManager,
+      { readOnly }
     );
 
     // Crash-recovery sweep: resolves any migration left pending by a process that died between
@@ -442,8 +443,9 @@ export class TooljetDbTableOperationsService {
   /**
    * Per table, which environments have a relation. Shape is edition-agnostic: CE's org has exactly
    * one app_environments row (its implicit environment) so `environments` comes back with one
-   * entry; EE/licensed orgs get one entry per licensed environment. Callers (frontend) read the
-   * same field names regardless of edition - only the entry count differs.
+   * entry; EE/licensed orgs get one entry per licensed environment, plus any unlicensed one that
+   * still holds a relation. Callers (frontend) read the same field names regardless of edition -
+   * only the entry count differs.
    */
   protected async viewTables(organizationId: string) {
     const tables = await this.manager.find(InternalTable, {
@@ -456,7 +458,8 @@ export class TooljetDbTableOperationsService {
     // Same gate resolveEnvironmentId() uses: every org has all app_environments rows seeded
     // (seedOrgEnvironmentsAndDefaultBranch runs unconditionally), so licensing has to filter the
     // list here rather than at row-creation time - a CE org's other rows exist in the DB, they're
-    // just not this org's to see.
+    // just not this org's to see. An environment that still holds a relation after a lapse stays
+    // listed: its data is readable, only writes and promotion are refused.
     const multiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(
       LICENSE_FIELD.MULTI_ENVIRONMENT,
       organizationId
@@ -465,13 +468,16 @@ export class TooljetDbTableOperationsService {
       where: { organizationId },
       order: { priority: 'ASC' },
     });
-    const environments = multiEnvironmentEnabled
-      ? allEnvironments
-      : allEnvironments.filter((environment) => environment.priority === 1);
     const branchId = await this.relationResolverService.resolveBranchIdFor(organizationId, this.manager);
     const relations = await this.manager.find(InternalTableRelation, {
       where: { internalTableId: In(tables.map((table) => table.id)), branchId },
     });
+    const environments = multiEnvironmentEnabled
+      ? allEnvironments
+      : allEnvironments.filter(
+          (environment) =>
+            environment.priority === 1 || relations.some((relation) => relation.environmentId === environment.id)
+        );
 
     const relationsByTable = new Map<string, InternalTableRelation[]>();
     for (const relation of relations) {

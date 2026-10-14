@@ -128,7 +128,7 @@ export class TooljetDbController {
     const result = await this.tableOperationsService.perform(
       organizationId,
       'view_table',
-      { table_name: tableName },
+      { table_name: tableName, readOnly: true },
       environmentId
     );
     const decamelizedResult = decamelizeKeys({ result });

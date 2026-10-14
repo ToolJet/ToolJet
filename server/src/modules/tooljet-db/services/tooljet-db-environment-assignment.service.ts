@@ -269,10 +269,14 @@ export class TooljetDbEnvironmentAssignmentService {
       organizationId
     );
     const allEnvironments = await this.manager.find(AppEnvironment, { where: { organizationId } });
+    const relations = await this.manager.find(InternalTableRelation, { where: { internalTableId } });
+    // An environment that still holds a relation after a lapse stays listed: its data is readable.
     const environments = multiEnvironmentEnabled
       ? allEnvironments
-      : allEnvironments.filter((environment) => environment.priority === 1);
-    const relations = await this.manager.find(InternalTableRelation, { where: { internalTableId } });
+      : allEnvironments.filter(
+          (environment) =>
+            environment.priority === 1 || relations.some((relation) => relation.environmentId === environment.id)
+        );
     const relationByEnvironmentId = new Map(relations.map((relation) => [relation.environmentId, relation]));
 
     const environmentStates = await Promise.all(

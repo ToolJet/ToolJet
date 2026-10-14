@@ -97,6 +97,12 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `resolve()` so the single-table paths (`sql_execution`, bulk ops, `view_table`) refuse the same
   way. A table created after the rollout and promoted keeps its data in development (promote
   replays schema only), so it keeps serving development after a lapse.
+- A lapse never blocks reading data already in staging or production, only writing and promoting.
+  `resolve()`/`getRelation()` take `{ readOnly: true }`, which lets a request name an environment the
+  licence no longer covers. Only the HTTP `/proxy/*` route (GET/HEAD) and the `view_table` endpoint pass
+  it. App queries (`perform()`), `sql_execution`, joins and bulk ops never do, so they still refuse.
+  `view_tables` and `table/:tableId/migrations` keep listing an unlicensed environment that still holds a
+  relation; empty ones drop out. The frontend sees such an environment as `enabled: false`.
 - **Promote never leaves a ghost relation.** `has_relation` (and the resolver, and the app-promote block)
   mean "a relation row exists", so a row with no table behind it reads as "available in staging".
   `promote` therefore (1) rejects with 400 `Promote "<parent>" first` before creating anything when a missing

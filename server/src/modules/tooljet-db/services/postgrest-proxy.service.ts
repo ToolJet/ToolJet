@@ -72,7 +72,8 @@ export class PostgrestProxyService {
     const { url: rewrittenUrl, tableInfo } = await this.resolveAndRewrite(
       replaceUrlForPostgrest(req.url),
       organizationId,
-      environmentId
+      environmentId,
+      ['GET', 'HEAD'].includes(req.method)
     );
     req.url = rewrittenUrl;
     req.headers['tableInfo'] = tableInfo;
@@ -203,12 +204,19 @@ export class PostgrestProxyService {
   protected async resolveAndRewrite(
     url: string,
     organizationId: string,
-    environmentId: string | undefined
+    environmentId: string | undefined,
+    readOnly = false
   ): Promise<{ url: string; tableInfo: Record<string, string> }> {
     const { path, embedded } = extractTableRefs(url);
     if (!path) throw new NotFoundException('Table not found');
 
-    const resolved = await this.relationResolverService.resolve(organizationId, [path, ...embedded], environmentId);
+    const resolved = await this.relationResolverService.resolve(
+      organizationId,
+      [path, ...embedded],
+      environmentId,
+      undefined,
+      { readOnly }
+    );
 
     const missing = [path, ...embedded].filter((id) => !resolved.has(id));
     if (missing.length) {
