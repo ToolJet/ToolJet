@@ -191,15 +191,17 @@ export const PROBES = [
   {
     widget: 'ShadAreaChart',
     key: 'seriesLabels',
-    value: fx({ revenue: 'Income' }),
-    context: { properties: { showLegend: '{{true}}' } },
+    value: fx({ a: 'Income' }),
+    // Two series: a single series draws no legend (its title names it).
+    context: { properties: { showLegend: '{{true}}', data: TWO_SERIES, xField: 'month', yFields: fx(['a', 'b']) } },
     expect: texts(/Income/),
   },
   {
     widget: 'ShadBarChart',
     key: 'seriesLabels',
-    value: fx({ revenue: 'Income' }),
-    context: { properties: { showLegend: '{{true}}' } },
+    value: fx({ a: 'Income' }),
+    // Two series: a single series draws no legend (its title names it).
+    context: { properties: { showLegend: '{{true}}', data: TWO_SERIES, xField: 'month', yFields: fx(['a', 'b']) } },
     expect: texts(/Income/),
   },
   { widget: 'ShadLineChart', key: 'seriesLabels', value: fx({ revenue: 'Income' }), expect: texts(/Income/) },
@@ -262,6 +264,13 @@ export const PROBES = [
     expect: texts(/Nothing yet/),
   },
   { widget: 'ShadRadialChart', key: 'showLegend', value: '{{false}}', context: { properties: { mode: 'categories' } } },
+  // A legend names two or more series; one series draws none.
+  ...['ShadBarChart', 'ShadAreaChart'].map((widget) => ({
+    widget,
+    key: 'showLegend',
+    value: '{{true}}',
+    context: { properties: { data: TWO_SERIES, xField: 'month', yFields: fx(['a', 'b']) } },
+  })),
   { widget: 'ShadScatterChart', key: 'referenceX', value: '{{20}}' },
   { widget: 'ShadScatterChart', key: 'referenceY', value: '{{60}}' },
   { widget: 'ShadScatterChart', key: 'fillOpacity', value: '{{0.2}}' },

@@ -63,6 +63,7 @@ import {
   MAX_ROWS,
   MAX_SERIES,
   wholeNumbers,
+  centreValueFit,
 } from './chartsModel';
 
 export { withControlState } from '../packHooks';
@@ -519,15 +520,23 @@ export const ShadPieChart = (props) => {
             ))}
             {donut && (p.centerValue || p.centerLabel) ? (
               <ChartLabel
-                content={({ viewBox }) =>
-                  viewBox?.cx !== undefined ? (
+                content={({ viewBox }) => {
+                  if (viewBox?.cx === undefined) return null;
+                  // Sized to the hole, and shortened when even 16px would not fit ("$8.2M", not "$8,196,250.00" over the ring).
+                  const fit = centreValueFit(p.centerValue ?? '', viewBox.innerRadius);
+                  return (
                     <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
                       <tspan
                         x={viewBox.cx}
                         y={viewBox.cy}
-                        style={{ fill: 'var(--lk-center-value, var(--sc-foreground))', fontSize: 24, fontWeight: 700 }}
+                        style={{
+                          fill: 'var(--lk-center-value, var(--sc-foreground))',
+                          fontSize: fit.fontSize,
+                          fontWeight: 700,
+                        }}
                       >
-                        {String(p.centerValue ?? '')}
+                        <title>{String(p.centerValue ?? '')}</title>
+                        {fit.text}
                       </tspan>
                       {p.centerLabel ? (
                         <tspan
@@ -539,8 +548,8 @@ export const ShadPieChart = (props) => {
                         </tspan>
                       ) : null}
                     </text>
-                  ) : null
-                }
+                  );
+                }}
               />
             ) : null}
           </Pie>

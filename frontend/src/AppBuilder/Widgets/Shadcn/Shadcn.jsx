@@ -52,6 +52,7 @@ import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widget
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { stringify } from '../packJson';
 import { progressPercent, sparkPaths, splitChange, statSize, statValue } from './statModel';
+import { compactFigure } from './chartsModel';
 import { textArg, truthy, useFocusEvents, useHasEvent, useOverrides } from './parity';
 import { LoadingBox, Spinner, wantsSkeleton } from './loadingLook';
 import './shadcn.scss';
@@ -639,7 +640,10 @@ export const ShadStat = (props) => {
   const progress = progressPercent(properties.progress);
   // "+8 vs semana passada" as change: the figure stays in the chip, the words join the context line (statModel).
   const change = splitChange(properties.change);
-  const context = [change.context, properties.changeLabel ? String(properties.changeLabel) : ''].filter(Boolean).join(' · ');
+  const context = [change.context, properties.changeLabel ? String(properties.changeLabel) : '']
+    .filter(Boolean)
+    .join(' · ');
+  const figureChip = /^[+\-−±]?\s?[$€£¥₹]?\d/.test(change.chip || '');
   const changeBadge = change.chip ? (
     <Badge
       variant="outline"
@@ -649,12 +653,18 @@ export const ShadStat = (props) => {
       title={String(properties.change)}
       className={cn(
         'min-w-0 max-w-[60%] gap-1',
+        figureChip && 'shrink-0',
         isSet(trendColor) && 'border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]'
       )}
     >
       {trend !== 'neutral' ? <TrendIcon className="h-3 w-3 shrink-0" /> : null}
-      {/* Words without a leading figure wrap rather than being cut. */}
-      <span className="min-w-0 whitespace-normal break-words">{change.chip}</span>
+      {/* Words without a leading figure wrap rather than being cut; a figure stays on one line, a long one shortened
+          ("+$190,800.00" broke as "+$190,800.0 / 0" and squeezed the label to two lines, 2026-10-14). */}
+      {figureChip ? (
+        <span className="whitespace-nowrap">{compactFigure(change.chip)}</span>
+      ) : (
+        <span className="min-w-0 whitespace-normal break-words">{change.chip}</span>
+      )}
     </Badge>
   ) : null;
   // The badge sits in the label row unless the icon takes that corner; then it follows the figure.
@@ -1155,35 +1165,35 @@ export const ShadTextarea = (props) => {
     };
     measure();
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
-    [...field.children[0]?.children ?? []].forEach((part) => part !== area && observer?.observe(part));
+    [...(field.children[0]?.children ?? [])].forEach((part) => part !== area && observer?.observe(part));
     return () => observer?.disconnect();
   }, [properties.label, properties.description, check.error]);
   return (
     <Shell {...props}>
       <div ref={fieldRef}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={check.error}
-        required={check.required}
-      >
-        <Textarea
-          ref={box.ref}
+        <Field
           id={`shad-${id}`}
-          className={CONTROL}
-          value={value}
-          aria-invalid={!!check.error || undefined}
-          aria-label={fieldName(props)}
-          onFocus={box.onFocus}
-          onBlur={box.onBlur}
-          placeholder={String(properties.placeholder ?? '')}
-          disabled={busy(properties)}
-          style={{ height: Math.max(60, (Number(height) || 96) - chrome) }}
-          onChange={(e) => change(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && fireEvent('onEnterPressed')}
-        />
-      </Field>
+          label={properties.label}
+          description={properties.description}
+          error={check.error}
+          required={check.required}
+        >
+          <Textarea
+            ref={box.ref}
+            id={`shad-${id}`}
+            className={CONTROL}
+            value={value}
+            aria-invalid={!!check.error || undefined}
+            aria-label={fieldName(props)}
+            onFocus={box.onFocus}
+            onBlur={box.onBlur}
+            placeholder={String(properties.placeholder ?? '')}
+            disabled={busy(properties)}
+            style={{ height: Math.max(60, (Number(height) || 96) - chrome) }}
+            onChange={(e) => change(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && fireEvent('onEnterPressed')}
+          />
+        </Field>
       </div>
     </Shell>
   );

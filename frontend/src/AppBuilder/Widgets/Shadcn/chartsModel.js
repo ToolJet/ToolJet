@@ -479,3 +479,31 @@ export const percentScale = (format, values) => {
   if (!nums.length || nums.every((v) => v === 0)) return 1;
   return nums.every((v) => Math.abs(v) <= 1) ? 100 : 1;
 };
+
+/** A long money or number figure shortened for a small space: "+$190,800.00" as "+$190.8K", keeping its sign and
+ *  currency. Under 10,000, percentages and anything with words are left as written. A stat's change badge broke
+ *  "+$190,800.0 / 0" over two lines, and a donut's "$8,196,250.00" ran over its ring (museum loans, 2026-10-14). */
+const FIGURE = /^([+\-−±]?)\s?([$€£¥₹]?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?$/;
+export const compactFigure = (text) => {
+  const s = String(text ?? '').trim();
+  const m = s.match(FIGURE);
+  if (!m) return s;
+  const n = Number(m[3].replace(/,/g, '') + (m[4] ?? ''));
+  if (!Number.isFinite(n) || n < 10000) return s;
+  const [unit, letter] = n >= 1e9 ? [1e9, 'B'] : n >= 1e6 ? [1e6, 'M'] : [1e3, 'K'];
+  const v = n / unit;
+  const shown = v.toFixed(v < 10 ? 2 : 1).replace(/\.?0+$/, '');
+  return `${m[1]}${m[2]}${shown}${letter}`;
+};
+
+/** The centre value of a donut at a size that fits its hole: 24px when it fits, smaller down to 16px, then shortened
+ *  (compactFigure) and set at the size that fits. About 0.62em a character of bold tabular figures. */
+export const centreValueFit = (text, innerRadius) => {
+  const s = String(text ?? '');
+  const room = Math.max(40, 2 * (Number(innerRadius) || 0) - 16);
+  const sizeFor = (t) => Math.floor(room / Math.max(1, t.length * 0.62));
+  if (sizeFor(s) >= 24) return { text: s, fontSize: 24 };
+  if (sizeFor(s) >= 16) return { text: s, fontSize: sizeFor(s) };
+  const short = compactFigure(s);
+  return { text: short, fontSize: Math.max(12, Math.min(24, sizeFor(short))) };
+};
