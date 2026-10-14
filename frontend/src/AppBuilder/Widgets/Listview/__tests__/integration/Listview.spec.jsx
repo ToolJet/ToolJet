@@ -1403,3 +1403,77 @@ describe('Listview: the pager is operable without a mouse', () => {
     await waitFor(() => expect(rowTexts()).toEqual(['Gamma']));
   });
 });
+
+/**
+ * A Control component action names a component, which exists once but draws once per row. The row
+ * the event came from is the only thing that says which copy it meant.
+ */
+describe('Listview: Control component from a row event', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const INPUT_CHILD = () => {
+    const definition = componentDefinition('inp2', 'textinput2', 'TextInput', { label: binding('') });
+    definition.component.parent = ID;
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+
+  const setTextOnClick = {
+    id: 'evt-control',
+    index: 0,
+    sourceId: ID,
+    name: 'evt-control',
+    target: 'component',
+    event: {
+      eventId: 'onRecordClicked',
+      actionId: 'control-component',
+      componentId: 'inp2',
+      componentSpecificActionHandle: 'setText',
+      componentSpecificActionParams: [{ handle: 'text', value: 'picked' }],
+    },
+  };
+
+  const inputValues = () => [...document.querySelectorAll('input[type="text"]')].map((node) => node.value);
+
+  const FORM_WRAPPER = () => {
+    const definition = componentDefinition('frm2', 'form2', 'Form', { advanced: binding('{{false}}') });
+    definition.component.parent = ID;
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+
+  const INPUT_IN_FORM = () => {
+    const definition = INPUT_CHILD();
+    definition.component.parent = 'frm2';
+    return definition;
+  };
+
+  test('[Listview-BUG-019] Set text reaches an input inside the row s Form', async () => {
+    // Break this catches: a fix that only handles a direct child. QA reported the Form case
+    // separately, and a Form resolves its children through its own exposed values.
+    await mount({ extraComponents: { frm2: FORM_WRAPPER(), inp2: INPUT_IN_FORM() }, events: [setTextOnClick] });
+    await waitFor(() => expect(inputValues()).toHaveLength(3));
+
+    await user().click(rows()[2]);
+
+    await waitFor(() => expect(inputValues()).toEqual(['', '', 'picked']));
+  });
+
+  test('[Listview-BUG-019] Set text lands on the row that was clicked', async () => {
+    // Break this catches: firing a row event without the row, so the action resolves the component
+    // to its first copy and every click writes into row 1.
+    await mount({ extraComponents: { inp2: INPUT_CHILD() }, events: [setTextOnClick] });
+    await waitFor(() => expect(inputValues()).toHaveLength(3));
+
+    await user().click(rows()[2]);
+
+    await waitFor(() => expect(inputValues()).toEqual(['', '', 'picked']));
+  });
+});

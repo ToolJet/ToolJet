@@ -198,7 +198,11 @@ export const Listview = function Listview({
         selectedRow: selectedRow,
       });
       // Every row event carries its record, so a handler on the list itself can read {{listItem}}.
-      const fireRowEvent = (name) => fireEvent(name, { customVariables: { listItem: filteredData[index] } });
+      const fireRowEvent = (name) =>
+        fireEvent(name, {
+          customVariables: { listItem: filteredData[index] },
+          sourceSubContainerIndex: [...parentIndices, index],
+        });
       fireRowEvent('onRecordClicked');
       fireRowEvent('onRowClicked');
     },
