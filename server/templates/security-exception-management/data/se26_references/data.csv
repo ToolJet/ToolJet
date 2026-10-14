@@ -1,0 +1,6 @@
+id,code,name,value,guidance
+,ENDPOINT,Endpoint protection,60,"Isolate the device, monitor access and record a remediation owner."
+,IDENTITY,Identity & access,30,"Require scoped access, audit logging and a documented access review."
+,NETWORK,Network segmentation,45,"Record affected network boundaries, monitoring and mitigation plan."
+,LEGACY,Legacy application,90,"Document service isolation, restricted operators and migration milestone."
+,VENDOR,Third-party connection,60,"Record minimum access, data scope and termination controls."

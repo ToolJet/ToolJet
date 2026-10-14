@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "{{PLUGIN_TITLE}} datasource",
+  "description": "A schema defining {{PLUGIN_TITLE}} datasource",
+  "type": "api",
+  "source": {
+    "name": "{{PLUGIN_NAME}}",
+    "kind": "{{PLUGIN_KIND}}",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "auth_type": {
+        "type": "string"
+      },
+      "bearer_token": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": false
+  },
+  "defaults": {
+    "auth_type": {
+      "value": "bearer_token"
+    },
+    "bearer_token": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing credentials",
+      "list": [
+        {
+          "value": "bearer_token",
+          "name": "Use Bearer Token"
+        }
+      ]
+    },
+    "bearer_token": {
+      "token": {
+        "label": "Token",
+        "key": "bearer_token",
+        "type": "password",
+        "description": "Enter your bearer token"
+      }
+    }
+  },
+  "required": [
+    "bearer_token"
+  ]
+}

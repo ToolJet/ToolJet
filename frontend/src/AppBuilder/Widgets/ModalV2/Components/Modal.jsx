@@ -23,6 +23,7 @@ export const ModalWidget = ({ ...restProps }) => {
     isLoading,
     modalBodyHeight,
     onHideModal,
+    onModalEntered,
     hideCloseButton,
     darkMode,
     modalWidth,
@@ -113,7 +114,7 @@ export const ModalWidget = ({ ...restProps }) => {
             setNeedsBodyScroll(totalHeight > maxModalHeightPx);
           } else {
             modalContent.style.setProperty('height', _modalHeight, 'important');
-            modalContent.style.setProperty('max-height', isFullScreen ? '100%' : modalHeight, 'important');
+            modalContent.style.setProperty('max-height', isFullScreen ? '100%' : _modalHeight, 'important');
             setNeedsBodyScroll(false);
           }
         } else {
@@ -145,6 +146,7 @@ export const ModalWidget = ({ ...restProps }) => {
         isDynamicHeightEnabled && needsBodyScroll && 'tj-modal-allow-body-scroll'
       )}
       animation={true}
+      onEntered={onModalEntered}
       onEscapeKeyDown={(e) => {
         e.preventDefault();
         if (hideOnEsc) {

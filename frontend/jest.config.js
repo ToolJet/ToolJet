@@ -135,6 +135,8 @@ module.exports = {
     '!src/AppBuilder/**/__tests__/**',
     '!src/AppBuilder/**/*.(test|spec).{js,jsx,ts,tsx}',
     '!src/AppBuilder/**/__mocks__/**',
+    // Type-only declarations; validate-app-builder-coverage-manifest.js rejects runtime code there.
+    '!src/AppBuilder/types/**',
     '!src/test/**',
   ],
 };
