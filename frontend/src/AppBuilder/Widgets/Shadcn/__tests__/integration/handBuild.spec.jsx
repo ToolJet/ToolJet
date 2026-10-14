@@ -108,6 +108,9 @@ describe('Avatar', () => {
     expect(initials('Ada Lovelace')).toBe('AL');
     expect(initials('benoît lefèvre')).toBe('BL');
     expect(initials('Cher')).toBe('C');
+    expect(initials('01  Nina Park')).toBe('NP');
+    expect(initials('#3 Leo')).toBe('L');
+    expect(initials('2026')).toBe('2');
     expect(initials('& -')).toBe('');
     expect(initials(null)).toBe('');
   });
