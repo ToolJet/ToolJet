@@ -257,7 +257,8 @@ export const ShadSchedule = (props) => {
                 className="sticky left-0 z-20 flex shrink-0 items-end px-3 pb-2 pt-3 text-xs font-medium"
                 style={{ width: rw, background: SURFACE, color: LABEL }}
               >
-                <span className="truncate">{text(p.resourceTitle)}</span>
+                {/* A header written in lowercase ("name", a field name) reads as a label: "Name". */}
+                <span className="truncate">{text(p.resourceTitle).replace(/^[a-z]/, (ch) => ch.toUpperCase())}</span>
               </div>
               <div className="flex min-w-0 flex-1">
                 {range.columns.map((c, i) => (

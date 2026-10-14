@@ -42,7 +42,7 @@ describe('cardItems', () => {
     expect(first).toMatchObject({
       key: '7',
       title: 'Lemon roast chicken',
-      subtitle: 'Dinner',
+      subtitle: '', // the same value as the badge, shown once (see 'a subtitle that repeats the badge')
       image: 'https://x/a.jpg',
       description: 'Crisp skin',
       badge: 'Dinner',
@@ -447,5 +447,24 @@ describe('cardItems, a description that repeats the progress', () => {
   it('is kept when it says more', () => {
     const [card] = cardItems([{ name: 'Avery', label: '3 of 12 tasks done', pct: 25 }], fields);
     expect(card.description).toBe('3 of 12 tasks done');
+  });
+});
+
+// A vendor directory showed each card's category twice, as its badge and its subtitle (2026-10-14).
+describe('cardItems, a subtitle that repeats the badge', () => {
+  const fields = { titleField: 'name', subtitleField: 'category', badgeField: 'category' };
+
+  it('is left out', () => {
+    const [card] = cardItems([{ name: 'Cedarline Freight', category: 'Logistics' }], fields);
+    expect(card.badge).toBe('Logistics');
+    expect(card.subtitle).toBe('');
+  });
+
+  it('is kept when it differs', () => {
+    const [card] = cardItems([{ name: 'Cedarline Freight', category: 'Logistics', city: 'Portland' }], {
+      ...fields,
+      subtitleField: 'city',
+    });
+    expect(card.subtitle).toBe('Portland');
   });
 });

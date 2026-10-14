@@ -132,7 +132,11 @@ export const cardItems = (data, fields = {}) => {
         key: shown(id) || String(index),
         keyFromId: !!shown(id),
         title,
-        subtitle: isText(f.subtitleField) ? shown(row[f.subtitleField]) : '',
+        // A subtitle that only repeats the badge (a category shown as both) is left out.
+        subtitle:
+          isText(f.subtitleField) && shown(row[f.subtitleField]).trim() !== (badges[0] || '').trim()
+            ? shown(row[f.subtitleField])
+            : '',
         image: isText(f.imageField) ? shown(row[f.imageField]) : '',
         description: repeatsProgress ? '' : description,
         badge: badges[0] || '',

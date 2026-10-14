@@ -227,8 +227,13 @@ export const placeBookings = (bookings, fields = {}, range, resources = []) => {
     else end = start.dateOnly || days ? start.time + DAY : start.time + HOUR;
     if (end <= start.time) end = start.time + (days ? DAY : HOUR / 2);
     if (end <= range.start || start.time >= range.end) return;
-    const from = Math.max(start.time, range.start);
-    const to = Math.min(end, range.end);
+    // On the days scale a timed booking shorter than a day fills its day: placed by its time of day, a one-hour class
+    // was a 10px sliver with no room for its title (a gym's week, 2026-10-14). Its own time stays in `time`.
+    const wholeDay = days && !start.dateOnly && end - start.time < DAY;
+    const spanStart = wholeDay ? midnight(new Date(start.time)).getTime() : start.time;
+    const spanEnd = wholeDay ? spanStart + DAY : end;
+    const from = Math.max(spanStart, range.start);
+    const to = Math.min(spanEnd, range.end);
     const status = shown(field(row, f.statusField)).trim();
     const id = isText(f.idField) ? row[f.idField] : row.id;
     const fmt = f.hourFormat === '24h' ? '24h' : '12h';
@@ -247,6 +252,8 @@ export const placeBookings = (bookings, fields = {}, range, resources = []) => {
       tone: bookingTone(status),
       start: start.time,
       end,
+      spanStart,
+      spanEnd,
       left: ((from - range.start) / (range.end - range.start)) * 100,
       width: ((to - from) / (range.end - range.start)) * 100,
       time,
@@ -257,9 +264,9 @@ export const placeBookings = (bookings, fields = {}, range, resources = []) => {
     const laneEnds = [];
     const keys = new Set();
     for (const item of entry.items) {
-      let lane = laneEnds.findIndex((t) => t <= item.start);
+      let lane = laneEnds.findIndex((t) => t <= item.spanStart);
       if (lane === -1) lane = laneEnds.length < MAX_LANES ? laneEnds.length : MAX_LANES - 1;
-      laneEnds[lane] = Math.max(laneEnds[lane] ?? 0, item.end);
+      laneEnds[lane] = Math.max(laneEnds[lane] ?? 0, item.spanEnd);
       item.lane = lane;
       let key = item.key;
       for (let n = 1; keys.has(key); n++) key = `${item.key}~${n}`;
