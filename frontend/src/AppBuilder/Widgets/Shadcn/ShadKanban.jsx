@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DndContext,
@@ -288,6 +288,16 @@ const fieldName = (value, fallback) =>
 // page); and at most MAX_BOARD_COLUMNS columns (a 10k-item list bound as the columns).
 const CARDS_PER_STEP = 100;
 const MAX_BOARD_COLUMNS = 50;
+
+/** The narrowest a column gets before the board scrolls: 200px, 160px on a board of six or more stages, and down to
+ *  140px when that lets every stage fit the board (three stages in a 620px half of a page cut the third at the edge,
+ *  2026-10-14). 16px gaps between columns. */
+export const columnMinimum = (count, boardWidth) => {
+  const base = count >= 6 ? 160 : 200;
+  if (!(boardWidth > 0) || count < 1) return base;
+  const share = Math.floor((boardWidth - 16 * (count - 1)) / count);
+  return Math.max(140, Math.min(base, share));
+};
 
 const KanbanColumn = ({
   column,
@@ -672,10 +682,21 @@ export const ShadKanban = (props) => {
   // Columns that run past the board's right edge fade out there, so the board reads as scrolling sideways (macOS hides
   // the scrollbar, and a column cut at the edge looks broken).
   const [moreRight, setMoreRight] = useState(false);
+  const [boardWidth, setBoardWidth] = useState(0);
+  // The board can first draw after a loading state, so the measuring follows the element itself: with an empty
+  // dependency list it never attached then, and neither the fade nor the column minimum followed the board.
+  const [boardEl, setBoardEl] = useState(null);
+  const boardNode = useCallback((el) => {
+    boardRef.current = el;
+    setBoardEl(el);
+  }, []);
   useEffect(() => {
-    const el = boardRef.current;
+    const el = boardEl;
     if (!el) return undefined;
-    const check = () => setMoreRight(el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
+    const check = () => {
+      setMoreRight(el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
+      setBoardWidth(el.clientWidth);
+    };
     check();
     el.addEventListener('scroll', check, { passive: true });
     const observer = new ResizeObserver(check);
@@ -684,7 +705,7 @@ export const ShadKanban = (props) => {
       el.removeEventListener('scroll', check);
       observer.disconnect();
     };
-  }, []);
+  }, [boardEl]);
   const [cardWidth, setCardWidth] = useState(0);
   useLayoutEffect(() => {
     if (!custom || !boardRef.current) return undefined;
@@ -799,7 +820,7 @@ export const ShadKanban = (props) => {
         onDragEnd={onDragEnd}
       >
         <div
-          ref={boardRef}
+          ref={boardNode}
           style={{ ...look.vars, ...(moreRight ? RIGHT_FADE : {}) }}
           className={cn(
             'flex gap-[var(--kb-col-gap,1rem)] overflow-x-auto pb-1',
@@ -830,7 +851,7 @@ export const ShadKanban = (props) => {
               onAdd={onAdd}
               fixed={fixed}
               maxHeight={!fixed && Number(props.height) > 0 ? Number(props.height) : undefined}
-              minColumn={columns.length >= 6 ? 160 : 200}
+              minColumn={columnMinimum(columns.length, boardWidth)}
             />
           ))}
         </div>
