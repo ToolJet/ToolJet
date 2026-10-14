@@ -234,7 +234,25 @@ export const wrapLabel = (value, max, lines = 2) => {
 /** A bar chart over categories (not dates) of up to 24 bars names every bar. */
 export const keepsEveryCategory = (data, key) => !dateTicks(data, key) && list(data).length <= 24;
 /** An x-axis tick that wraps its name to the width of one band (the axis width over the ticks shown). */
-const CategoryTick = ({ x, y, payload, width, visibleTicksCount }) => {
+const CategoryTick = ({ x, y, payload, width, visibleTicksCount, angled }) => {
+  if (angled) {
+    // Drawn at an angle, whole up to 22 letters: ten one-word genres in a half-width chart were cut to "Ficti..."
+    // (bookshop, 2026-10-14).
+    const text = String(payload?.value ?? '');
+    return (
+      <text
+        x={x}
+        y={y + 8}
+        textAnchor="end"
+        fill={AXIS.tick.fill}
+        fontSize={12}
+        transform={`rotate(-35, ${x}, ${y + 8})`}
+      >
+        {text.length > 22 ? `${text.slice(0, 21)}…` : text}
+        <title>{text}</title>
+      </text>
+    );
+  }
   const band = (Number(width) || 0) / Math.max(1, Number(visibleTicksCount) || 1);
   const lines = wrapLabel(payload?.value, Math.max(4, Math.floor((band - 6) / 6.6)));
   return (
@@ -248,9 +266,30 @@ const CategoryTick = ({ x, y, payload, width, visibleTicksCount }) => {
     </text>
   );
 };
-/** Room under the bars for two lines when some name will not fit one line of its band (assuming a 560px plot). */
-const categoryAxisHeight = (data, key) => {
+/** Category names drawn at an angle: when a word of some name is wider than its band, it could only be cut. The plot is
+ *  the widget less about 80px of value axis and margins. */
+export const angledCategories = (data, key, widgetWidth) => {
   const rows = list(data);
+  if (!rows.length) return false;
+  const band = ((Number(widgetWidth) || 640) - 80) / rows.length;
+  const longestWord = Math.max(
+    0,
+    ...rows.flatMap((row) =>
+      String(row?.[key] ?? '')
+        .split(/\s+/)
+        .map((w) => w.length)
+    )
+  );
+  return longestWord * 6.6 > band - 6;
+};
+/** Room under the bars for two lines when some name will not fit one line of its band (assuming a 560px plot), or for
+ *  names at an angle. */
+const categoryAxisHeight = (data, key, angled = false) => {
+  const rows = list(data);
+  if (angled) {
+    const longest = Math.min(22, Math.max(0, ...rows.map((row) => String(row?.[key] ?? '').length)));
+    return Math.min(96, Math.ceil(longest * 6.6 * 0.58 + 22));
+  }
   const longest = Math.max(0, ...rows.map((row) => String(row?.[key] ?? '').length));
   return longest * 6.6 > 560 / Math.max(1, rows.length) - 6 ? 44 : 30;
 };
@@ -406,8 +445,8 @@ export const ShadBarChart = (props) => {
                   {...AXIS}
                   hide={compact}
                   interval={0}
-                  height={categoryAxisHeight(data, xField)}
-                  tick={<CategoryTick />}
+                  height={categoryAxisHeight(data, xField, angledCategories(data, xField, props.width))}
+                  tick={<CategoryTick angled={angledCategories(data, xField, props.width)} />}
                 />
               ) : (
                 <XAxis
