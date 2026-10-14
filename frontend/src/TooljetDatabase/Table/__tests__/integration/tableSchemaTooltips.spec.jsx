@@ -1,5 +1,7 @@
-// The "schema changes only in Development" tooltip explains an environment block. A user who
-// lacks the TJDB permission is blocked for a different reason and must not be told it is the environment.
+// Schema changes start in Development only: staging and production show no add-column control at all.
+// The "schema changes only in Development" tooltip explains an environment block on the controls that
+// remain. A user who lacks the TJDB permission is blocked for a different reason and must not be told
+// it is the environment.
 import '@/test/setupMsw';
 import React from 'react';
 import { http, HttpResponse } from 'msw';
@@ -9,6 +11,7 @@ import userEvent from '@testing-library/user-event';
 import { TooljetDatabaseContext } from '@/TooljetDatabase';
 import Table from '@/TooljetDatabase/Table';
 import { SCHEMA_ENV_TOOLTIP } from '@/TooljetDatabase/constants';
+import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
 
 // jsdom has no layout, so focus-trap finds no tabbable node and throws. External adapter, not product logic.
 jest.mock(
@@ -67,13 +70,28 @@ function renderTable({ canEditTjdb, canEditSchema }) {
   );
 }
 
+const STAGING = { id: 'env-staging', name: 'staging', priority: 2 };
+
 describe('Table schema tooltips', () => {
-  test('should explain the Development-only rule on the add-column header when the environment is the blocker', async () => {
+  afterEach(() => {
+    act(() => useTjdbStore.setState({ selectedEnvironment: null }));
+  });
+
+  test('should hide the add-column header when viewing a table outside Development', async () => {
+    act(() => useTjdbStore.setState({ selectedEnvironment: STAGING }));
     const { container } = renderTable({ canEditTjdb: true, canEditSchema: false });
+    await waitFor(() => expect(container.querySelector('[data-cy="column-menu-icon"]')).toBeInTheDocument());
 
-    await userEvent.hover(await addColumnHeader(container));
+    expect(container.querySelector('th.add-icon-column')).not.toBeInTheDocument();
+    // The header's column separators were drawn by the "+" cell; this class tells the stylesheet to draw them itself.
+    expect(container.querySelector('.tj-table-no-add-column')).toBeInTheDocument();
+  });
 
-    expect(await screen.findByText(SCHEMA_ENV_TOOLTIP)).toBeInTheDocument();
+  test('should show the add-column header when viewing a table in Development', async () => {
+    const { container } = renderTable({ canEditTjdb: true, canEditSchema: true });
+
+    expect(await addColumnHeader(container)).toBeInTheDocument();
+    expect(container.querySelector('.tj-table-no-add-column')).not.toBeInTheDocument();
   });
 
   test('should not show the environment tooltip on the add-column header when the user lacks TJDB permission', async () => {

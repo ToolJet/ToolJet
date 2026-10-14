@@ -32,7 +32,7 @@ import {
   getUTCOffset,
 } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import { shallow } from 'zustand/shallow';
-import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import { useTjdbStore, useTjdbActions, useIsDevelopmentEnvironment } from '../_stores/tjdbStore';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 import { CHANGE_TYPE } from '../MigrationConfirmModal';
 import './styles.scss';
@@ -58,6 +58,8 @@ const Table = ({ collapseSidebar }) => {
   } = useContext(TooljetDatabaseContext);
   // Only an environment block gets the environment tooltip; a missing TJDB permission is a different reason.
   const schemaBlockedByEnvironment = canEditTjdb && !canEditSchema;
+  // Schema changes start in Development only, so other environments get no add-column control at all.
+  const isDevelopmentEnvironment = useIsDevelopmentEnvironment();
   const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
     (state) => ({
       queryFilters: state.queryFilters,
@@ -1161,7 +1163,8 @@ const Table = ({ collapseSidebar }) => {
           height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
         className={cx(
-          `table-responsive border-0 tj-db-table animation-fade ${rows.length === 0 ? 'tj-table-empty' : 'tj-table'}`
+          `table-responsive border-0 tj-db-table animation-fade ${rows.length === 0 ? 'tj-table-empty' : 'tj-table'}`,
+          { 'tj-table-no-add-column': !isDevelopmentEnvironment }
         )}
         ref={tooljetDbTableRef}
       >
@@ -1300,7 +1303,7 @@ const Table = ({ collapseSidebar }) => {
                       </div>
                     </th>
                   ))}
-                  <ToolTip message={SCHEMA_ENV_TOOLTIP} placement="top" show={schemaBlockedByEnvironment}>
+                  {isDevelopmentEnvironment && (
                     <th
                       onClick={() => {
                         if (canEditSchema) {
@@ -1313,7 +1316,7 @@ const Table = ({ collapseSidebar }) => {
                     >
                       <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
                     </th>
-                  </ToolTip>
+                  )}
                 </tr>
               ))}
             </thead>
