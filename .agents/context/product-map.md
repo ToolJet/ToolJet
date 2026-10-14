@@ -93,6 +93,7 @@ graph TD
 - Every backend feature route must declare module/feature metadata and an ability guard; `GuardValidator` checks this at boot (`server/src/modules/app/validators/feature-guard.validator.ts`).
 - App content belongs to a Version; non-workflow app name, slug, icon, and public state are stored on version rows (`server/src/modules/apps/AGENTS.md`).
 - End users consume a released version. A public app can bypass login, but query execution remains guarded and throttled (`QueryAuthGuard`; `AppScopedThrottlerGuard`).
+- Public apps are a plan entitlement on Cloud only (Team and Enterprise). On other Cloud plans the "Make application public" toggle is disabled and existing public apps require login. CE and self-hosted EE are never gated (`server/src/modules/licensing/configs/LicenseBase.ts::publicApp`; `server/src/modules/apps/guards/app-auth.guard.ts`).
 - Query credentials and constants are resolved for the selected Environment on the server; secrets are decrypted there rather than exposed to the browser (`server/src/modules/data-queries/util.service.ts`).
 - Component configuration must remain backward compatible with previously saved apps, and server/frontend component defaults must change together (`frontend/AGENTS.md`; `server/AGENTS.md`).
 - Feature availability may be constrained by edition, license terms, and resource-count guards (`server/src/modules/licensing/`; `AbilityGuard`).

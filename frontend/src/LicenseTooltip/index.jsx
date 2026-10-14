@@ -30,6 +30,7 @@ const LicenseTooltip = ({
     GitSync: 'gitSync',
     'Custom themes': 'customThemes',
     'Custom groups': 'customGroups',
+    'Make application public': 'publicApp',
   };
 
   const generateMessage = () => {
