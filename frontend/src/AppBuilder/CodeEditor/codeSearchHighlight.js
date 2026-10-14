@@ -12,6 +12,9 @@ const activeMatcher = (state) => {
   const { term, options } = state.codeSearch;
   const panelOpen = state.isSidebarOpen && state.selectedSidebarItem === 'search';
   if (!panelOpen || !term || term.length < MIN_TERM_LENGTH) return null;
+  // Highlighting runs on the main thread, where a backtracking regex (`(a+)+$`) would freeze the
+  // editor; regex matching only runs in the code-search worker, which can be terminated.
+  if (options.regex) return null;
   return buildMatcher(term, options).matcher || null;
 };
 

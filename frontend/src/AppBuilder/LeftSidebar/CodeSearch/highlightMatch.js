@@ -16,7 +16,10 @@ const flash = (element) => {
 
 // Pages are edited in their details popover; libraries and the preloaded script in the Libraries
 // panel; other app settings in Global settings; components and page settings in the right sidebar.
-const PANEL_SELECTORS = { query: '.query-manager', page: '#add-new-page-popup' };
+const PANEL_SELECTORS = {
+  query: '.query-manager',
+  page: '#add-new-page-popup',
+};
 const LIBRARY_FIELDS = new Set(['preloadedScript', 'libraries']);
 const panelSelectorFor = (record) => {
   const ownerType = record.ownerType || record.entityType;
@@ -25,8 +28,13 @@ const panelSelectorFor = (record) => {
   return PANEL_SELECTORS[ownerType] || '.editor-sidebar .inspector';
 };
 
-// Inactive tab panes and closed sections stay mounted; only what is on screen can be the field.
-const isVisible = (element) => element.getClientRects().length > 0;
+// Inactive tab panes and closed sections stay mounted; only what is on screen can be the field. A
+// field in a collapsed Inspector section counts when the section itself is on screen: landing on
+// it expands the section (expandCollapsedAccordion).
+const isVisible = (element) => {
+  const collapsed = element.closest('.accordion-collapse:not(.show)');
+  return (collapsed?.parentElement ?? element).getClientRects().length > 0;
+};
 
 const editorsIn = (scope) =>
   [...scope.querySelectorAll('.cm-editor')]
@@ -149,7 +157,10 @@ const occurrenceStart = (text, match) => {
 const selectOccurrence = (view, match) => {
   const from = occurrenceStart(view.state.doc.toString(), match);
   if (from < 0) return;
-  view.dispatch({ selection: EditorSelection.single(from, from + match.end - match.start), scrollIntoView: true });
+  view.dispatch({
+    selection: EditorSelection.single(from, from + match.end - match.start),
+    scrollIntoView: true,
+  });
   view.focus();
 };
 
@@ -178,7 +189,10 @@ const revealAndFlash = (element, afterScroll) => {
 const landOnFieldElement = (elements, match) => {
   const withEditor = (allowPartial) =>
     elements
-      .map((element) => ({ element, editor: findEditor(element, match, allowPartial) }))
+      .map((element) => ({
+        element,
+        editor: findEditor(element, match, allowPartial),
+      }))
       .find(({ editor }) => editor);
   const found = withEditor(false) || withEditor(true);
   if (found) return revealAndFlash(found.editor.element, () => selectOccurrence(found.editor.view, match));
@@ -192,9 +206,11 @@ const flashPopover = (match, step) => {
   const { record } = match;
   const started = performance.now();
   const tick = () => {
+    const panel = document.querySelector(panelSelectorFor(record));
+    // Column and event rows live under Properties; the Inspector may be showing Styles.
+    if (panel) selectTab(panel, record);
     const trigger = popoverTrigger(record, step);
     if (trigger && isVisible(trigger)) return revealAndFlash(trigger);
-    const panel = document.querySelector(panelSelectorFor(record));
     if (performance.now() - started > TIMEOUT_MS) return flash(panel);
     requestAnimationFrame(tick);
   };

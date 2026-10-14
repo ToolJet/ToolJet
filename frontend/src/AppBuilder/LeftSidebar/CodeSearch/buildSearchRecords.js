@@ -123,7 +123,11 @@ const componentFieldLabels = (widgetDef, section, fieldPath, saved) => {
   const name = widgetDef?.[section]?.[key]?.displayName?.trim() || humanize(key);
   const { parts, itemIds } = readableRest(saved?.[key], fieldPath.slice(1));
   const field = [STYLE_SECTIONS.has(section) ? `Style · ${name}` : name, ...parts].join(' › ');
-  return { full: [SECTION_LABELS[section], name, ...parts].join(' › '), short: field, itemIds };
+  return {
+    full: [SECTION_LABELS[section], name, ...parts].join(' › '),
+    short: field,
+    itemIds,
+  };
 };
 
 // Query options shown outside the Setup tab (QueryManagerBody renders only the active tab).
@@ -178,9 +182,17 @@ const TABLE_COLUMN_STYLE_KEYS = new Set([
 
 // Reveal steps: what navigation asks the editor to open, outermost first, so the match is on screen.
 // Each is consumed by the component that shows it (see useCodeSearchReveal).
-const listItemStep = (ownerId, itemId) => ({ kind: 'listItem', ownerId, itemId });
+const listItemStep = (ownerId, itemId) => ({
+  kind: 'listItem',
+  ownerId,
+  itemId,
+});
 const pageStep = (pageId) => ({ kind: 'page', ownerId: null, itemId: pageId });
-const queryTabStep = (queryId, tab) => ({ kind: 'queryTab', ownerId: queryId, itemId: tab });
+const queryTabStep = (queryId, tab) => ({
+  kind: 'queryTab',
+  ownerId: queryId,
+  itemId: tab,
+});
 
 // Request sub-tabs, by query kind: option key → tab key (REST shows `url_params` as `params` and
 // edits the raw body in its Body tab; GraphQL's tabs are keyed by the option name).
@@ -200,7 +212,12 @@ const REQUEST_TABS = {
 const queryOptionReveal = (query, path) => {
   const steps = [queryTabStep(query.id, queryTabFor({ entityType: 'query', fieldPath: ['options', ...path] }))];
   const paramName = path[0] === 'parameters' ? query.options.parameters?.[path[1]]?.name : undefined;
-  if (paramName) steps.push({ kind: 'queryParam', ownerId: query.id, itemId: String(paramName) });
+  if (paramName)
+    steps.push({
+      kind: 'queryParam',
+      ownerId: query.id,
+      itemId: String(paramName),
+    });
   const tab = REQUEST_TABS[query.kind]?.[path[0]];
   if (tab) steps.push({ kind: 'restTab', ownerId: query.id, itemId: tab });
   return steps;
@@ -285,13 +302,13 @@ export const buildSearchRecords = ({
   const savedColumns = new Map();
   const columnsOf = (componentId) => savedColumns.get(componentId) || [];
   const push = (base, fieldPath, fieldLabel, value, shortLabel = fieldLabel) => {
-    // Event actions store bare ids (queryId, componentId): show the name, drop unknown ids.
-    if (BARE_UUID.test(value)) {
-      const name = idNames[value];
-      if (!name) return;
-      value = name;
-    }
-    records.push({ ...base, fieldPath, fieldLabel, shortLabel, text: translate(value) });
+    records.push({
+      ...base,
+      fieldPath,
+      fieldLabel,
+      shortLabel,
+      text: translate(value),
+    });
   };
 
   for (const page of pages) {
@@ -358,7 +375,9 @@ export const buildSearchRecords = ({
     walkLeaves(query.options, [], (path, text) => {
       const reveal = queryOptionReveal(query, path);
       // Query options have no `{ value }` wrapper; list items are named like component lists.
-      const { parts } = readableRest(query.options[path[0]], path.slice(1), { valueWrapper: false });
+      const { parts } = readableRest(query.options[path[0]], path.slice(1), {
+        valueWrapper: false,
+      });
       const label = [humanize(path[0]), ...parts].join(' › ');
       push({ ...base, reveal }, ['options', ...path], label, text, label);
     });
@@ -401,6 +420,12 @@ export const buildSearchRecords = ({
     if (event.name) push(base, ['name'], `${fullPrefix} › Event name`, event.name, `${handler} › Event name`);
     walkLeaves(event.event, [], (path, text) => {
       if (EVENT_SKIP_KEYS.has(path[0])) return;
+      // Event actions store bare ids (queryId, componentId): show the name, drop ids of deleted
+      // entities. Anywhere else a UUID is text someone typed, and stays as written.
+      if (BARE_UUID.test(text)) {
+        if (!idNames[text]) return;
+        text = idNames[text];
+      }
       const field = path.map((key, i) => humanize(i === path.length - 1 ? stripIdSuffix(key) : key)).join(' › ');
       push(base, ['event', ...path], `${fullPrefix} › ${field}`, text, `${handler} › ${field}`);
     });

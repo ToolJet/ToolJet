@@ -29,20 +29,33 @@ const pages = [
           name: 'nestedText',
           component: 'Text',
           parent: TABLE_ID,
-          definition: { properties: { text: { value: '{{secrets.API_KEY}}' } } },
+          definition: {
+            properties: { text: { value: '{{secrets.API_KEY}}' } },
+          },
         },
       },
     },
   },
 ];
-const queries = [{ id: QUERY_ID, name: 'getUsers', kind: 'postgresql', options: { query: 'select * from users' } }];
+const queries = [
+  {
+    id: QUERY_ID,
+    name: 'getUsers',
+    kind: 'postgresql',
+    options: { query: 'select * from users' },
+  },
+];
 const events = [
   {
     id: 'ev1',
     name: 'event1',
     sourceId: TABLE_ID,
     target: 'component',
-    event: { eventId: 'onRowClicked', actionId: 'run-query', queryId: QUERY_ID },
+    event: {
+      eventId: 'onRowClicked',
+      actionId: 'run-query',
+      queryId: QUERY_ID,
+    },
   },
   {
     id: 'ev3',
@@ -60,13 +73,21 @@ const events = [
     target: 'component',
     event: { eventId: 'onClick', actionId: 'show-alert', message: 'Failed' },
   },
-  { id: 'ev2', sourceId: 'deleted-entity', target: 'component', event: { eventId: 'onClick' } },
+  {
+    id: 'ev2',
+    sourceId: 'deleted-entity',
+    target: 'component',
+    event: { eventId: 'onClick' },
+  },
 ];
 const widgetDefs = {
   Table: {
     displayName: 'Table',
     properties: { data: { displayName: 'Data' } },
-    events: { onRowClicked: { displayName: 'On row clicked' }, onClick: { displayName: 'On click' } },
+    events: {
+      onRowClicked: { displayName: 'On row clicked' },
+      onClick: { displayName: 'On click' },
+    },
   },
 };
 const actionDefs = [
@@ -77,7 +98,16 @@ const actionDefs = [
 const translate = (text) => text.replaceAll(`queries.${QUERY_ID}`, 'queries.getUsers');
 
 const build = (overrides = {}) =>
-  buildSearchRecords({ pages, queries, events, globalSettings: {}, translate, widgetDefs, actionDefs, ...overrides });
+  buildSearchRecords({
+    pages,
+    queries,
+    events,
+    globalSettings: {},
+    translate,
+    widgetDefs,
+    actionDefs,
+    ...overrides,
+  });
 const find = (records, predicate) => records.find(predicate);
 
 describe('buildSearchRecords', () => {
@@ -119,6 +149,28 @@ describe('buildSearchRecords', () => {
     expect(find(records, (r) => r.fieldPath.join('.') === 'event.queryId').text).toBe('getUsers');
   });
 
+  test('keeps a UUID typed into a field as literal text; only event action ids become names', () => {
+    const UNKNOWN_ID = '44444444-4444-4444-8444-444444444444';
+    const input = (id, value) => ({
+      component: {
+        name: id,
+        component: 'TextInput',
+        definition: { properties: { value: { value } } },
+      },
+    });
+    const literalPages = [
+      {
+        ...pages[0],
+        components: { a: input('a', UNKNOWN_ID), b: input('b', TABLE_ID) },
+      },
+    ];
+    const records = build({ pages: literalPages, events: [] });
+    const valueOf = (id) =>
+      find(records, (r) => r.entityId === id && r.fieldPath.join('.') === 'properties.value')?.text;
+    expect(valueOf('a')).toBe(UNKNOWN_ID);
+    expect(valueOf('b')).toBe(TABLE_ID);
+  });
+
   test('drops events whose owner no longer exists', () => {
     expect(build().some((r) => r.eventId === 'ev2')).toBe(false);
   });
@@ -153,7 +205,9 @@ describe('buildSearchRecords', () => {
       target: 'component',
       event: { eventId: 'onClick', actionId: 'show-alert', message },
     });
-    const labels = build({ events: [twin('t2', 5, 'Second'), twin('t1', 2, 'First')] })
+    const labels = build({
+      events: [twin('t2', 5, 'Second'), twin('t1', 2, 'First')],
+    })
       .filter((r) => r.fieldPath.join('.') === 'event.message')
       .map((r) => [r.text, r.shortLabel]);
     expect(labels).toEqual([
@@ -210,11 +264,15 @@ describe('buildSearchRecords', () => {
     const records = build({
       pageSettings: {
         definition: {
-          properties: { disableMenu: { value: `{{queries.${QUERY_ID}.data.length === 0}}` } },
+          properties: {
+            disableMenu: { value: `{{queries.${QUERY_ID}.data.length === 0}}` },
+          },
           styles: { textColor: { value: '#222222', isDefault: false } },
         },
       },
-      pageSettingsDef: { styles: { textColor: { displayName: 'Default text' } } },
+      pageSettingsDef: {
+        styles: { textColor: { displayName: 'Default text' } },
+      },
     });
     const settings = records.filter((r) => r.entityId === 'pageSettings');
     expect(find(settings, (r) => r.fieldPath.join('.') === 'properties.disableMenu').text).toBe(
@@ -253,7 +311,10 @@ describe('buildSearchRecords', () => {
               component: {
                 name: 'table1',
                 component: 'Table',
-                definition: { properties: { columns }, styles: { textColor: { value: '#111111' } } },
+                definition: {
+                  properties: { columns },
+                  styles: { textColor: { value: '#111111' } },
+                },
               },
             },
           },
@@ -262,7 +323,10 @@ describe('buildSearchRecords', () => {
       widgetDefs: {
         Table: {
           displayName: 'Table',
-          definition: { properties: { columns }, styles: { textColor: { value: '#111111' } } },
+          definition: {
+            properties: { columns },
+            styles: { textColor: { value: '#111111' } },
+          },
         },
       },
     });
@@ -302,7 +366,12 @@ describe('buildSearchRecords', () => {
           },
         },
       ],
-      widgetDefs: { Table: { displayName: 'Table', properties: { columns: { displayName: 'Table Columns' } } } },
+      widgetDefs: {
+        Table: {
+          displayName: 'Table',
+          properties: { columns: { displayName: 'Table Columns' } },
+        },
+      },
     });
     const field = (path) => find(records, (r) => r.fieldPath.join('.') === path);
     expect(field('properties.columns.value.0.name')).toMatchObject({
@@ -326,7 +395,17 @@ describe('buildSearchRecords', () => {
                 name: 'tabs1',
                 component: 'Tabs',
                 definition: {
-                  properties: { tabItems: { value: [{ id: 't0', title: 'Profile', visible: { value: '{{true}}' } }] } },
+                  properties: {
+                    tabItems: {
+                      value: [
+                        {
+                          id: 't0',
+                          title: 'Profile',
+                          visible: { value: '{{true}}' },
+                        },
+                      ],
+                    },
+                  },
                 },
               },
             },
@@ -360,7 +439,12 @@ describe('buildSearchRecords', () => {
 
   test('a blank display name falls back to the property key', () => {
     const records = build({
-      widgetDefs: { Table: { displayName: 'Table', properties: { data: { displayName: ' ' } } } },
+      widgetDefs: {
+        Table: {
+          displayName: 'Table',
+          properties: { data: { displayName: ' ' } },
+        },
+      },
     });
     expect(find(records, (r) => r.fieldPath.join('.') === 'properties.data').shortLabel).toBe('Data');
   });
@@ -369,14 +453,20 @@ describe('buildSearchRecords', () => {
     const records = build({
       pageSettings: {
         definition: {
-          properties: { hideHeader: { value: false }, disableMenu: { value: '{{variables.locked}}' } },
+          properties: {
+            hideHeader: { value: false },
+            disableMenu: { value: '{{variables.locked}}' },
+          },
           styles: {
             textColor: { value: '#000000', isDefault: true },
             iconColor: { value: '#ff0000', isDefault: false },
           },
         },
       },
-      pageSettingsDef: { properties: { hideHeader: false, disableMenu: { value: '{{false}}' } }, styles: {} },
+      pageSettingsDef: {
+        properties: { hideHeader: false, disableMenu: { value: '{{false}}' } },
+        styles: {},
+      },
     });
     const keys = records.filter((r) => r.entityId === 'pageSettings').map((r) => r.fieldPath.join('.'));
     expect(keys).toEqual(['properties.hideHeader', 'properties.disableMenu', 'styles.textColor', 'styles.iconColor']);
@@ -402,7 +492,12 @@ describe('reveal chains: the steps that open where a value is edited', () => {
               properties: {
                 columns: {
                   value: [
-                    { id: 'col-1', name: 'email', key: 'email', textColor: '#ff0000' },
+                    {
+                      id: 'col-1',
+                      name: 'email',
+                      key: 'email',
+                      textColor: '#ff0000',
+                    },
                     {
                       id: 'col-2',
                       name: 'actions',
@@ -425,14 +520,22 @@ describe('reveal chains: the steps that open where a value is edited', () => {
           component: {
             name: 'nav1',
             component: 'Navigation',
-            definition: { properties: { menuItems: { value: [{ id: 'nav-item-1', label: 'Home' }] } } },
+            definition: {
+              properties: {
+                menuItems: { value: [{ id: 'nav-item-1', label: 'Home' }] },
+              },
+            },
           },
         },
         [SELECT_ID]: {
           component: {
             name: 'dropdown1',
             component: 'DropdownV2',
-            definition: { properties: { options: { value: [{ label: 'One', value: 'opt-1' }] } } },
+            definition: {
+              properties: {
+                options: { value: [{ label: 'One', value: 'opt-1' }] },
+              },
+            },
           },
         },
         [FORM_ID]: {
@@ -470,14 +573,24 @@ describe('reveal chains: the steps that open where a value is edited', () => {
         parameters: [{ name: 'userId', defaultValue: '42' }],
       },
     },
-    { id: GRAPHQL_ID, name: 'getPosts', kind: 'graphql', options: { url_params: [['limit', '10']] } },
+    {
+      id: GRAPHQL_ID,
+      name: 'getPosts',
+      kind: 'graphql',
+      options: { url_params: [['limit', '10']] },
+    },
   ];
   const handler = (id, target, sourceId, extra = {}) => ({
     id,
     name: id,
     sourceId,
     target,
-    event: { eventId: 'onClick', actionId: 'show-alert', message: `msg ${id}`, ...extra },
+    event: {
+      eventId: 'onClick',
+      actionId: 'show-alert',
+      message: `msg ${id}`,
+      ...extra,
+    },
   });
   const revealEvents = [
     handler('ev-component', 'component', TABLE_ID),
@@ -488,7 +601,12 @@ describe('reveal chains: the steps that open where a value is edited', () => {
     handler('ev-nav', 'component', NAV_ID, { ref: 'nav-item-1' }),
   ];
   const records = () =>
-    buildSearchRecords({ pages: revealPages, queries: revealQueries, events: revealEvents, globalSettings: {} });
+    buildSearchRecords({
+      pages: revealPages,
+      queries: revealQueries,
+      events: revealEvents,
+      globalSettings: {},
+    });
   const revealOf = (predicate) => records().find(predicate)?.reveal;
   const eventStep = (itemId, ownerId) => ({ kind: 'event', ownerId, itemId });
 
@@ -582,9 +700,9 @@ describe('reveal chains: the steps that open where a value is edited', () => {
   });
 
   test('the preloaded script opens its editor', () => {
-    const preloaded = buildSearchRecords({ globalSettings: { preloadedScript: { javascript: 'window.x = 1' } } }).find(
-      (r) => r.fieldPath[0] === 'preloadedScript'
-    );
+    const preloaded = buildSearchRecords({
+      globalSettings: { preloadedScript: { javascript: 'window.x = 1' } },
+    }).find((r) => r.fieldPath[0] === 'preloadedScript');
     expect(preloaded.reveal).toEqual([{ kind: 'preloadedScript', ownerId: null, itemId: 'javascript' }]);
   });
 
@@ -631,7 +749,10 @@ describe('createSearcher', () => {
   const request = (term) => ({ term, filters: {}, currentPageId: PAGE_ID });
 
   test('indexes a cloned definition with labels and ids translated to names', () => {
-    const { rows } = createSearcher()({ input: structuredClone(input), ...request('getUsers') });
+    const { rows } = createSearcher()({
+      input: structuredClone(input),
+      ...request('getUsers'),
+    });
     const data = rows.find((r) => r.record.entityId === TABLE_ID && r.record.fieldPath.join('.') === 'properties.data');
     expect(data.record).toMatchObject({
       text: '{{queries.getUsers.data}}',

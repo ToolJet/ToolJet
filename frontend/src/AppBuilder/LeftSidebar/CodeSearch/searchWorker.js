@@ -3,7 +3,7 @@
 // (`(a+)+$`) would freeze it — a running RegExp can't be interrupted, only its worker terminated.
 
 import { createCodeSearchWorker } from './createCodeSearchWorker';
-import { createSearcher } from './searchRecords';
+import { createSearcher, searchRecords } from './searchRecords';
 
 export const REGEX_TIMEOUT_MS = 2000;
 
@@ -30,11 +30,20 @@ const settle = (outcome) => {
   resolve(outcome);
 };
 
+const REGEX_NEEDS_WORKER = "Regular expression search isn't available in this browser";
+
+// A user's regex can backtrack for seconds and can't be interrupted, so it never runs here.
 const searchOnMainThread = ({ input, ...request }) => {
+  if (request.filters?.regex) return { result: { ...searchRecords([], ''), error: REGEX_NEEDS_WORKER } };
   mainThreadSearch ||= createSearcher();
   const changed = input !== mainThreadInput;
   mainThreadInput = input;
-  return { result: mainThreadSearch({ ...request, input: changed ? input : undefined }) };
+  return {
+    result: mainThreadSearch({
+      ...request,
+      input: changed ? input : undefined,
+    }),
+  };
 };
 
 const giveUpOnWorker = () => {
@@ -59,7 +68,11 @@ export const runSearch = (request) =>
     const { input, ...search } = request;
     const id = ++nextId;
     try {
-      worker.postMessage({ id, ...search, ...(input !== postedInput && { input }) });
+      worker.postMessage({
+        id,
+        ...search,
+        ...(input !== postedInput && { input }),
+      });
     } catch {
       // DataCloneError: something in the definition can't be posted.
       giveUpOnWorker();
