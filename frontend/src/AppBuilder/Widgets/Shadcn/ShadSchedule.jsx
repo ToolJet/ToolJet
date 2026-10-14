@@ -3,7 +3,15 @@ import useStore from '@/AppBuilder/_stores/store';
 import { LoadingBox, Shell, busy, wantsSkeleton } from './Shadcn';
 import { initials, useAutoHeight, useExposed } from '../packHooks';
 import { Skeleton, cn } from './ui';
-import { dayKey, placeBookings, positionOf, scheduleRange, scheduleResources, slotValue } from './scheduleModel';
+import {
+  bookingFace,
+  dayKey,
+  placeBookings,
+  positionOf,
+  scheduleRange,
+  scheduleResources,
+  slotValue,
+} from './scheduleModel';
 import { avatarHue } from '../NewTable/_utils/avatarHue';
 import { stringify } from '../packJson';
 import './shadcn.scss';
@@ -348,6 +356,11 @@ export const ShadSchedule = (props) => {
                         const isSelected = highlight && selected?.kind === 'booking' && selected.key === b.key;
                         const cancelled = /\bcancel/i.test(b.status);
                         const second = [b.time, b.subtitle].filter(Boolean).join(' · ');
+                        const face = bookingFace(
+                          ((Number(props.width) || 0) - rw) * (b.width / 100) - 4,
+                          laneHeight,
+                          !!second
+                        );
                         const top = PAD + b.lane * (laneHeight + LANE_GAP);
                         return (
                           <button
@@ -374,10 +387,19 @@ export const ShadSchedule = (props) => {
                               '--bk-tone': tone,
                             }}
                           >
-                            <span className={cn('truncate font-semibold', cancelled && 'line-through')}>
+                            <span
+                              className={cn(
+                                'font-semibold',
+                                // Two lines break at spaces only: a name broken mid-word ("Juni / per") read worse than "Junip...".
+                                face.titleLines === 2 && /\s/.test(String(b.title || '').trim())
+                                  ? 'line-clamp-2'
+                                  : 'truncate',
+                                cancelled && 'line-through'
+                              )}
+                            >
                               {b.title || 'Booking'}
                             </span>
-                            {second && laneHeight >= 34 ? (
+                            {face.showSecond ? (
                               <span className="truncate tabular-nums opacity-80">{second}</span>
                             ) : null}
                           </button>

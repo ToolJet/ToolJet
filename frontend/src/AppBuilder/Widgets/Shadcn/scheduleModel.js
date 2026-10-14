@@ -303,3 +303,12 @@ export const slotValue = (resource, slot, hourFormat = '12h', scale = 'hours') =
         : `${clockText(slot.start, hourFormat)} to ${clockText(slot.end, hourFormat)}`,
   };
 };
+
+/** How a booking's face fits its box: a title line and a second line (time, subtitle) when the booking is 110px wide and
+ *  its lane 34px tall; a narrower booking gives its title both lines and drops the second, which its place on the grid
+ *  already says (bookings in 30-minute slots read "Ju... 11:...", both lines cut, 2026-10-14). The tooltip has it all. */
+export const bookingFace = (widthPx, laneHeight, hasSecond) => {
+  const twoLines = laneHeight >= 34;
+  const narrow = Number.isFinite(widthPx) && widthPx > 0 && widthPx < 110;
+  return { titleLines: twoLines && narrow ? 2 : 1, showSecond: Boolean(hasSecond) && twoLines && !narrow };
+};

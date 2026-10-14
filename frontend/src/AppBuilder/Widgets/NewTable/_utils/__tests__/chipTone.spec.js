@@ -127,4 +127,9 @@ describe('chipTone, everyday operations states', () => {
     expect(chipTone('Expansion')).toBe('success');
     expect(chipTone('Contraction')).toBe('warning');
   });
+  it('reads Occupied as a room or unit in use, not a warning (hotel and property apps, 2026-10-14)', () => {
+    expect(chipTone('Occupied')).toBe('info');
+    expect(chipTone('Vacant')).toBe('success');
+    expect(chipTone('Busy')).toBe('warning');
+  });
 });

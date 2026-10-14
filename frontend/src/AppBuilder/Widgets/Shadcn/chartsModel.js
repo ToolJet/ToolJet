@@ -507,3 +507,24 @@ export const centreValueFit = (text, innerRadius) => {
   const short = compactFigure(s);
   return { text: short, fontSize: Math.max(12, Math.min(24, sizeFor(short))) };
 };
+
+/** Whole-number ticks for a small count axis: steps of 1, 2 or 5 that end at or just past the maximum, five ticks at
+ *  most. Left to itself the chart ran a count axis to 4 for a maximum of 1 and to 8 for a maximum of 5, leaving most
+ *  of the plot empty (2026-10-14). Only whole, non-negative values up to 20; anything else is left to the chart ({}). */
+export const wholeTicks = (rows, series, stacked = false) => {
+  const list = Array.isArray(rows) ? rows : [];
+  const values = list.flatMap((row) =>
+    series
+      .map((s) => row?.[s])
+      .filter((v) => v !== null && v !== undefined && v !== '')
+      .map(Number)
+  );
+  if (!values.length || values.some((v) => !Number.isFinite(v) || v < 0 || !Number.isInteger(v))) return {};
+  const max = stacked
+    ? Math.max(...list.map((row) => series.reduce((sum, s) => sum + (Number(row?.[s]) || 0), 0)))
+    : Math.max(...values);
+  if (max <= 0 || max > 20) return {};
+  const step = [1, 2, 5].find((s) => Math.ceil(max / s) <= 5) ?? 5;
+  const top = Math.ceil(max / step) * step;
+  return { domain: [0, top], tickCount: top / step + 1 };
+};
