@@ -1,4 +1,4 @@
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
@@ -78,18 +78,6 @@ export class BulkDeleteFoldersDto extends BulkFlagsDto {
 
   @IsEnum(APP_TYPES)
   type: APP_TYPES;
-}
-
-@Exclude()
-export class AppRefDto {
-  @Expose() id: string;
-  @Expose() name: string;
-}
-
-@Exclude()
-export class BulkDeleteFoldersResponseDto extends BulkResultResponseDto {
-  @Expose({ name: 'apps_to_root' }) @Type(() => AppRefDto) appsToRoot: AppRefDto[];
-  @Expose({ name: 'hidden_apps_to_root' }) hiddenAppsToRoot: number;
 }
 
 // Shared by every bulk endpoint: one decision for dry_run / all-or-nothing / skip_blocked.

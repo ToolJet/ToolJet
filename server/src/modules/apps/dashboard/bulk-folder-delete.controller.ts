@@ -16,7 +16,7 @@ import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FeatureAbilityGuard } from '../ability/guard';
 import { FEATURE_KEY } from '../constants';
 import { BulkFolderDeleteService } from './bulk-folder-delete.service';
-import { BulkDeleteFoldersDto, BulkDeleteFoldersResponseDto } from './dto/bulk.dto';
+import { BulkDeleteFoldersDto, BulkResultResponseDto } from './dto/bulk.dto';
 
 // Coarse gate = app listing (everyone); per-folder and per-app checks run in BulkFolderDeleteService.
 @InitModule(MODULES.APP)
@@ -29,7 +29,7 @@ export class DashboardBulkFolderDeleteController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('bulk-delete')
   @HttpCode(200)
-  delete(@User() user: UserEntity, @Body() body: BulkDeleteFoldersDto): Promise<BulkDeleteFoldersResponseDto> {
+  delete(@User() user: UserEntity, @Body() body: BulkDeleteFoldersDto): Promise<BulkResultResponseDto> {
     return this.bulkFolderDeleteService.delete(user, body);
   }
 }
