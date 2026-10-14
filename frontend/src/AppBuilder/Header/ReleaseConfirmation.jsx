@@ -3,12 +3,25 @@ import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '@/_styles/versions.scss';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
 export default function ReleaseConfirmation(props) {
   const { onClose, onConfirm, show } = props;
   const { t } = useTranslation();
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
-
+  const { name, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } = useStore(
+    (state) => ({
+      name: state?.selectedVersion?.name,
+      releasedVersionId: state.releasedVersionId,
+      versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
+      developmentVersions: state.developmentVersions,
+    }),
+    shallow
+  );
+  const releasedVersionName =
+    versionsPromotedToEnvironment.find((v) => v.id === releasedVersionId)?.name ||
+    developmentVersions.find((v) => v.id === releasedVersionId)?.name;
   return (
     <Modal
       show={show}
@@ -19,7 +32,7 @@ export default function ReleaseConfirmation(props) {
       contentClassName={`release-confirm-dialogue-modal ${darkMode ? 'dark-theme' : ''}`}
     >
       <Modal.Header>
-        <Modal.Title data-cy="modal-title">Release Version</Modal.Title>
+        <Modal.Title data-cy="modal-title">Release {name}</Modal.Title>
         <svg
           onClick={onClose}
           className="cursor-pointer"
@@ -40,7 +53,11 @@ export default function ReleaseConfirmation(props) {
       </Modal.Header>
 
       <Modal.Body className="env-confirm-dialogue-body" data-cy="confirm-dialogue-box-text">
-        <div className="env-change-info">Are you sure you want to release this version?</div>
+        <div className="env-change-info">
+          {releasedVersionId === null
+            ? `Are you sure you want to release version ${name}?`
+            : `Releasing version ${name} will override ${releasedVersionName}. Are you sure you want to continue?`}
+        </div>
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">

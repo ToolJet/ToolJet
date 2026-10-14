@@ -14,7 +14,7 @@
     left: -2px;
     right: -2px;
     height: 1px;
-    background-color: var(--cc-default-border);
+    background-color: var(--cc-form-header-divider-color, var(--cc-default-border));
   }
 }
 
@@ -28,7 +28,7 @@
     left: -2px;
     right: -2px;
     height: 1px;
-    background-color: var(--cc-default-border);
+    background-color: var(--cc-form-footer-divider-color, var(--cc-default-border));
   }
 }
 
@@ -39,7 +39,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
+  opacity: 0.5;
   z-index: 1;
   margin: 0;
 
@@ -69,7 +69,7 @@
 
   .resize-handle {
     position: absolute;
-    bottom: -4px;
+    bottom: -3px;
     left: 50%;
     /* Center horizontally */
     transform: translateX(-50%);
@@ -100,6 +100,11 @@
   min-height: 100px;
   background-color: inherit;
 }
+
+/* Dynamic-height flash suppression is applied inline to the form body's OWN
+ * canvas (overflowY in Form.jsx's SubContainer styles). No CSS rule here: a
+ * `.jet-form-body[class*="dynamic-"] .real-canvas` descendant selector also hit
+ * nested widgets' canvases (e.g. an embedded module) and killed their scroll. */
 
 .jet-form-footer {
   min-height: 10px;

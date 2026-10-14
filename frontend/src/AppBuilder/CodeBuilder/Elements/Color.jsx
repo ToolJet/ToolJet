@@ -6,6 +6,8 @@ import classNames from 'classnames';
 import { computeColor } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 
+const coerceColorString = (v) => (typeof v === 'string' ? v : '');
+
 export const Color = ({
   value,
   onChange,
@@ -23,11 +25,13 @@ export const Color = ({
   componentId,
 }) => {
   const computeColorForPopoverMenu = useStore((state) => state.computeColorForPopoverMenu);
+  value = coerceColorString(value);
   if (component == 'PopoverMenu') {
     value = computeColorForPopoverMenu(value, meta, componentId);
-  } else if (component == 'Button') {
-    value = computeColor(styleDefinition, value, meta);
+  } else if (component == 'Button' || component == 'FileButton') {
+    value = computeColor(styleDefinition, value, meta, component);
   }
+  value = coerceColorString(value);
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
@@ -63,6 +67,7 @@ export const Color = ({
     return (
       <Popover
         className={classNames(
+          'color-picker-popover',
           { 'dark-theme': darkMode },
           // This is fix when color picker don't have much space to open in bottom side
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }

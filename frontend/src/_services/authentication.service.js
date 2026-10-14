@@ -7,10 +7,8 @@ import {
   handleResponseWithoutValidation,
   authHeader,
 } from '@/_helpers';
-import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
-import queryString from 'query-string';
-import { getRedirectTo, getRedirectToWithParams } from '@/_helpers/routes';
+import { getRedirectTo } from '@/_helpers/routes';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
@@ -38,6 +36,7 @@ const currentSessionSubject = new BehaviorSubject({
 
 export const authenticationService = {
   login,
+  verifyMfa,
   superAdminLogin,
   signup,
   verifyToken,
@@ -52,6 +51,8 @@ export const authenticationService = {
   },
   signInViaOAuth,
   resetPassword,
+  verifyResetToken,
+  passwordExpiredReset,
   saveLoginOrganizationId,
   getLoginOrganizationId,
   deleteLoginOrganizationId,
@@ -104,6 +105,16 @@ function login(email, password, organizationId) {
     });
 }
 
+function verifyMfa(mfaToken, otp) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({ mfa_token: mfaToken, otp }),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/authenticate/mfa/verify`, requestOptions).then(handleResponseWithoutValidation);
+}
+
 function superAdminLogin(email, password) {
   const requestOptions = {
     method: 'POST',
@@ -114,7 +125,9 @@ function superAdminLogin(email, password) {
   return fetch(`${config.apiUrl}/authenticate/super-admin`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
-      authenticationService.updateCurrentSession(user);
+      if (!user?.mfa_required) {
+        authenticationService.updateCurrentSession(user);
+      }
       return user;
     });
 }
@@ -178,11 +191,11 @@ function activateAccountWithToken(email, password, organizationToken) {
   return fetch(`${config.apiUrl}/onboarding/activate-account-with-token`, requestOptions).then(handleResponse);
 }
 
-function resendInvite(email, organizationId, redirectTo) {
+function resendInvite(email, organizationId, redirectTo, senderName) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, organizationId, redirectTo }),
+    body: JSON.stringify({ email, organizationId, redirectTo, senderName }),
   };
 
   return fetch(`${config.apiUrl}/onboarding/resend-invite`, requestOptions)
@@ -256,11 +269,11 @@ function verifyToken(token, organizationToken) {
     });
 }
 
-function forgotPassword(email) {
+function forgotPassword(email, redirectTo, orgSlug) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }), ...(orgSlug && { orgSlug }) }),
   };
 
   return fetch(`${config.apiUrl}/forgot-password`, requestOptions).then(handleResponse);
@@ -276,6 +289,25 @@ function resetPassword(params) {
   };
 
   return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
+}
+
+function verifyResetToken(token) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  return fetch(`${config.apiUrl}/reset-password/verify-token?token=${encodeURIComponent(token)}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function passwordExpiredReset(email, redirectTo, orgSlug) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }), ...(orgSlug && { orgSlug }) }),
+  };
+  return fetch(`${config.apiUrl}/password-expired-reset`, requestOptions).then(handleResponse);
 }
 
 function signInViaOAuth(configId, ssoType, ssoResponse) {

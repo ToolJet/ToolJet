@@ -15,6 +15,10 @@ const operationColorMapping = {
   post: 'green',
   delete: 'red',
   put: 'yellow',
+  patch: 'orange',
+  options: 'purple',
+  head: 'cyan',
+  trace: 'pink',
 };
 
 const extractSchemaProperties = (schema) => {
@@ -24,32 +28,33 @@ const extractSchemaProperties = (schema) => {
     return schema.properties;
   }
 
-  // Handle allOf - merge all properties
   if (schema.allOf) {
     return schema.allOf.reduce((acc, subSchema) => {
-      const props = extractSchemaProperties(subSchema);
-      return { ...acc, ...props };
+      return { ...acc, ...extractSchemaProperties(subSchema) };
     }, {});
   }
 
   if (schema.oneOf) {
     return schema.oneOf.reduce((acc, subSchema) => {
-      const props = extractSchemaProperties(subSchema);
-      return { ...acc, ...props };
+      return { ...acc, ...extractSchemaProperties(subSchema) };
     }, {});
   }
 
-  // Handle anyOf - similar to oneOf
   if (schema.anyOf) {
     return schema.anyOf.reduce((acc, subSchema) => {
-      const props = extractSchemaProperties(subSchema);
-      return { ...acc, ...props };
+      return { ...acc, ...extractSchemaProperties(subSchema) };
     }, {});
   }
 
-  if (schema.$ref) {
-    console.warn('$ref found in schema, which may need to be resolved:', schema.$ref);
-    return {};
+  // Fallback: infer properties from example
+  if (schema.example && typeof schema.example === 'object') {
+    return Object.entries(schema.example).reduce((acc, [key, value]) => {
+      acc[key] = {
+        type: Array.isArray(value) ? 'array' : typeof value,
+        example: value,
+      };
+      return acc;
+    }, {});
   }
 
   return {};
@@ -78,7 +83,7 @@ const ApiEndpointInput = (props) => {
       .then((response) => response.text())
       .then((text) => {
         const format = url.endsWith('.json') ? 'json' : 'yaml';
-        openapiService.parseOpenapiSpec(text, format).then((data) => {
+        return openapiService.parseOpenapiSpec(text, format).then((data) => {
           setSpecJson(data);
 
           if (isMultiSpec) {
@@ -96,7 +101,7 @@ const ApiEndpointInput = (props) => {
 
             // Validate if the current operation/path exists in the new spec
             if (newPath && newOperation && data?.paths?.[newPath]?.[newOperation]) {
-              newSelectedOperation = data.paths[newPath][newOperation];
+              newSelectedOperation = buildSelectedOperation(data, newPath, newOperation);
             } else {
               // Only clear if the operation/path doesn't exist in the new spec
               newOperation = null;
@@ -118,11 +123,29 @@ const ApiEndpointInput = (props) => {
 
           setLoadingSpec(false);
         });
+      })
+      .catch((err) => {
+        console.error('Failed to load OpenAPI spec:', err);
+        setLoadingSpec(false);
       });
   };
 
   const getOperationKey = (operation, path) => {
     return `${operation}_${path}`;
+  };
+
+  // Merge path-level parameters (shared across all operations on a path) with
+  // operation-level parameters, so path params like {companyid} are always visible.
+  const buildSelectedOperation = (spec, path, operation) => {
+    const operationObj = spec?.paths?.[path]?.[operation];
+    if (!operationObj) return operationObj;
+    const pathLevelParams = spec.paths[path]?.parameters || [];
+    const operationLevelParams = operationObj.parameters || [];
+    const merged = [
+      ...pathLevelParams.filter((p) => !operationLevelParams.some((op) => op.name === p.name && op.in === p.in)),
+      ...operationLevelParams,
+    ];
+    return { ...operationObj, parameters: merged };
   };
 
   const changeOperation = (value) => {
@@ -144,11 +167,27 @@ const ApiEndpointInput = (props) => {
       request: {},
     };
 
+    // Merge path-level parameters into the operation per OpenAPI 3.0 spec.
+    // The react-component-api-endpoint widget reads parameters from selectedOperation only,
+    // so path-level params (specJson.paths[path].parameters) must be merged here.
+    // Operation-level params with the same name+in override path-level ones.
+    const operationObj = specJson.paths[path][operation];
+    const pathLevelParams = specJson.paths[path].parameters;
+    let mergedOperation = operationObj;
+    if (Array.isArray(pathLevelParams) && pathLevelParams.length > 0) {
+      const opParams = operationObj.parameters || [];
+      const opParamKeys = new Set(opParams.map((p) => `${p.name}:${p.in}`));
+      const inherited = pathLevelParams.filter((p) => !opParamKeys.has(`${p.name}:${p.in}`));
+      if (inherited.length > 0) {
+        mergedOperation = { ...operationObj, parameters: [...opParams, ...inherited] };
+      }
+    }
+
     const newOptions = {
       ...options,
       path,
       operation,
-      selectedOperation: specJson.paths[path][operation],
+      selectedOperation: buildSelectedOperation(specJson, path, operation),
       params: savedParams,
       ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
     };
@@ -245,13 +284,14 @@ const ApiEndpointInput = (props) => {
       });
     }
   };
+  const VALID_HTTP_METHODS = new Set(['get', 'post', 'put', 'delete', 'patch', 'options', 'head', 'trace']);
 
   const computeOperationSelectionOptions = () => {
     const paths = specJson?.paths;
     if (isEmpty(paths)) return [];
 
     const pathGroups = Object.keys(paths).reduce((acc, path) => {
-      const operations = Object.keys(paths[path]);
+      const operations = Object.keys(paths[path]).filter((key) => VALID_HTTP_METHODS.has(key));
       const category = path.split('/')[2];
       operations.forEach((operation) => categorizeOperations(operation, path, acc, category));
       return acc;
@@ -266,14 +306,44 @@ const ApiEndpointInput = (props) => {
     }
 
     const contentTypes = Object.keys(options.selectedOperation.requestBody.content);
-    if (contentTypes.length === 0) {
-      return {};
-    }
+    if (contentTypes.length === 0) return {};
 
     const contentType = contentTypes.includes('application/json') ? 'application/json' : contentTypes[0];
+    const contentData = options.selectedOperation.requestBody.content[contentType];
+    const schema = contentData?.schema;
 
-    const schema = options.selectedOperation.requestBody.content[contentType]?.schema;
-    return extractSchemaProperties(schema);
+    // If there's no schema at all (e.g. text/plain with only examples),
+    // expose a single "body" field and try to pull a default from examples
+    if (!schema) {
+      let exampleValue = '';
+      if (contentData?.examples) {
+        const firstExampleKey = Object.keys(contentData.examples)[0];
+        exampleValue = contentData.examples[firstExampleKey]?.value ?? '';
+      } else if (contentData?.example) {
+        exampleValue = contentData.example;
+      }
+      return {
+        body: {
+          type: 'string',
+          example: exampleValue ?? '',
+          description: 'Request body',
+        },
+      };
+    }
+
+    const properties = extractSchemaProperties(schema);
+
+    if (Object.keys(properties).length === 0 && schema) {
+      return {
+        body: {
+          type: schema.type || 'string',
+          description: 'Request body',
+          example: schema.example ?? '',
+        },
+      };
+    }
+
+    return properties;
   };
 
   useEffect(() => {
@@ -337,11 +407,9 @@ const ApiEndpointInput = (props) => {
     <div>
       {/* Render spec type dropdown only for multi-spec */}
       {isMultiSpec && (
-        <div className="d-flex g-2 mb-3">
-          <div className="col-3 form-label">
-            <label className="form-label">{props.t('globals.specType', 'Entity')}</label>
-          </div>
-          <div className="col flex-grow-1">
+        <div className="dropdown-container mb-3">
+          <label className="form-label dropdown-label">{props.t('globals.specType', 'Entity')}</label>
+          <div>
             <Select
               options={specTypeOptions}
               value={{
@@ -367,11 +435,9 @@ const ApiEndpointInput = (props) => {
       )}
       {options && !loadingSpec && (
         <div>
-          <div className="d-flex g-2">
-            <div className="col-3 form-label">
-              <label className="form-label">{props.t('globals.operation', 'Operation')}</label>
-            </div>
-            <div className="col stripe-operation-options flex-grow-1" style={{ width: '90px', marginTop: 0 }}>
+          <div className="dropdown-container mb-3">
+            <label className="form-label dropdown-label">{props.t('globals.operation', 'Operation')}</label>
+            <div className="stripe-operation-options">
               <Select
                 options={computeOperationSelectionOptions()}
                 value={
@@ -575,16 +641,21 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
 
   return (
     filteredParams?.length > 0 && (
-      <div className={`${type === 'request' ? 'request-body' : type}-fields d-flex`}>
-        <h5 className="text-heading form-label">{label}</h5>
-        <div className="flex-grow-1 input-group-parent-container">
+      <div className={`${type === 'request' ? 'request-body' : type}-fields`}>
+        <h5 className="text-heading form-label mb-2">{label}</h5>
+        <div className="input-group-parent-container">
           {filteredParams.map((param) => (
             <div className="input-group-wrapper" key={type === 'request' ? param : param.name}>
               <div className="input-group">
                 {paramDetails(param)}
-                <div className="col field overflow-hidden code-hinter-borderless" style={{
-                  width: "min-content",
-                }}>{inputField(param)}</div>
+                <div
+                  className="col field overflow-hidden code-hinter-borderless"
+                  style={{
+                    width: 'min-content',
+                  }}
+                >
+                  {inputField(param)}
+                </div>
                 {((type === 'request' && options['params'][type][param]) || options['params'][type][param?.name]) &&
                   clearButton(param)}
               </div>

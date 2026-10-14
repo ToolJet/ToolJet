@@ -1,21 +1,32 @@
 import { createReadStream } from 'fs';
 import readDir from 'recursive-readdir';
 import { resolve as _resolve } from 'path';
-import aws from 'aws-sdk';
+import { S3Client, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
 import { lookup } from 'mime-types';
 import chalk from 'chalk';
+import { existsSync } from 'fs';
 
-const { config, S3 } = aws;
 const __dirname = _resolve();
+const pluginFilter = process.argv[2] || null;
 
-config.update({
+const s3 = new S3Client({
   region: process.env.AWS_REGION || 'us-west-1',
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.SECRET_ACCESS_KEY,
-  maxRetries: 3,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+  maxAttempts: 3,
+  followRegionRedirects: true,
 });
 
-const directoryPath = _resolve(__dirname, 'plugins');
+const basePluginsPath = _resolve(__dirname, 'plugins');
+const directoryPath = pluginFilter ? _resolve(basePluginsPath, pluginFilter) : basePluginsPath;
+
+if (pluginFilter && !existsSync(directoryPath)) {
+  console.error(chalk.redBright(`❌ Plugin directory not found: ${directoryPath}`));
+  process.exit(1);
+}
 
 const getDirectoryFilesRecursive = (dir, ignores = []) => {
   return new Promise((resolve, reject) => {
@@ -28,11 +39,23 @@ const generateFileKey = (fileName) => {
   return `marketplace-assets/${S3objectPath}`;
 };
 
-const s3 = new S3();
+const getPluginName = (fileName) => generateFileKey(fileName).split('/')[1];
+
+const existsInBucket = async (Key) => {
+  try {
+    await s3.send(new HeadObjectCommand({ Bucket: process.env.AWS_BUCKET, Key }));
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
 
 const uploadToS3 = async () => {
   const start = Date.now();
   const errors = [];
+  const newFiles = [];
+  const newPlugins = new Set();
+  const existingPlugins = new Set();
   let successCount = 0;
 
   console.log(chalk.cyanBright('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
@@ -40,8 +63,12 @@ const uploadToS3 = async () => {
   console.log(chalk.cyanBright('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
 
   try {
+    if (pluginFilter) {
+      console.log(`[${new Date().toLocaleTimeString()}] ℹ Filtering to plugin: ${chalk.yellow(pluginFilter)}`);
+    }
     console.log(`[${new Date().toLocaleTimeString()}] ℹ Scanning directory for files...`);
     const fileArray = await getDirectoryFilesRecursive(directoryPath, [
+      'node_modules',
       'common',
       '.DS_Store',
       '.gitignore',
@@ -56,44 +83,54 @@ const uploadToS3 = async () => {
     console.log(`[${new Date().toLocaleTimeString()}] ℹ Found ${fileArray.length} files to upload`);
     console.log(`[${new Date().toLocaleTimeString()}] ℹ Target bucket: ${process.env.AWS_BUCKET}\n`);
 
-    const uploadPromises = fileArray.map((file, index) => {
-      return new Promise((resolve) => {
-        const S3params = {
-          Bucket: process.env.AWS_BUCKET,
-          Body: createReadStream(file),
-          Key: generateFileKey(file),
-          ContentType: lookup(file) || 'application/octet-stream',
-          ContentEncoding: 'utf-8',
-          CacheControl: 'immutable,max-age=31536000,public',
-        };
+    const uploadPromises = fileArray.map(async (file, index) => {
+      const Key = generateFileKey(file);
+      const plugin = getPluginName(file);
+      const S3params = {
+        Bucket: process.env.AWS_BUCKET,
+        Body: createReadStream(file),
+        Key,
+        ContentType: lookup(file) || 'application/octet-stream',
+        ContentEncoding: 'utf-8',
+        CacheControl: 'immutable,max-age=31536000,public',
+      };
 
-        s3.upload(S3params, function (err, data) {
-          const indexStr = `[${(index + 1).toString().padStart(2, '0')}/${fileArray.length}]`;
-          if (err) {
-            console.log(chalk.redBright(`${indexStr} ❌ Failed to upload: ${file}`));
-            console.error(chalk.gray(`↳ ${err.message}`));
-            errors.push({ file, message: err.message });
-          } else {
-            console.log(chalk.greenBright(`${indexStr} ✅ Uploaded: ${file}`));
-            console.log(
-              chalk.gray(
-                JSON.stringify(
-                  {
-                    ETag: data.ETag,
-                    Location: data.Location,
-                    Key: data.Key,
-                    Bucket: data.Bucket,
-                  },
-                  null,
-                  2
-                )
-              )
-            );
-            successCount++;
-          }
-          resolve();
+      const alreadyExisted = await existsInBucket(Key);
+      const indexStr = `[${(index + 1).toString().padStart(2, '0')}/${fileArray.length}]`;
+      try {
+        const upload = new Upload({
+          client: s3,
+          params: S3params,
         });
-      });
+        const data = await upload.done();
+        if (alreadyExisted) {
+          existingPlugins.add(plugin);
+          console.log(chalk.greenBright(`${indexStr} ✅ Uploaded (already existed): ${file}`));
+        } else {
+          newFiles.push(file);
+          newPlugins.add(plugin);
+          console.log(chalk.greenBright(`${indexStr} ✅ Uploaded ${chalk.bold('(new)')}: ${file}`));
+        }
+        console.log(
+          chalk.gray(
+            JSON.stringify(
+              {
+                ETag: data.ETag,
+                Location: data.Location,
+                Key: data.Key,
+                Bucket: data.Bucket,
+              },
+              null,
+              2
+            )
+          )
+        );
+        successCount++;
+      } catch (err) {
+        console.log(chalk.redBright(`${indexStr} ❌ Failed to upload: ${file}`));
+        console.error(chalk.gray(`↳ ${err.message}`));
+        errors.push({ file, message: err.message });
+      }
     });
 
     await Promise.all(uploadPromises);
@@ -106,9 +143,34 @@ const uploadToS3 = async () => {
     } else {
       console.log(`[${new Date().toLocaleTimeString()}] 🎉 All files uploaded successfully`);
     }
-    console.log(`[${new Date().toLocaleTimeString()}] ✅ Successfully uploaded: ${successCount}/${fileArray.length} files`);
+    console.log(
+      `[${new Date().toLocaleTimeString()}] ✅ Successfully uploaded: ${successCount}/${fileArray.length} files`
+    );
     console.log(`[${new Date().toLocaleTimeString()}] ❌ Failed uploads: ${errors.length}/${fileArray.length} files`);
     console.log(`[${new Date().toLocaleTimeString()}] ℹ Total time: ${duration}s`);
+
+    const brandNewPlugins = [...newPlugins].filter((plugin) => !existingPlugins.has(plugin));
+
+    console.log(chalk.cyanBright(`\n🆕 New files pushed (${newFiles.length}):`));
+    if (newFiles.length > 0) {
+      newFiles.forEach((file) => console.log(chalk.green(`  + ${file}`)));
+    } else {
+      console.log(chalk.gray('  (none — every key already existed in the bucket)'));
+    }
+
+    console.log(chalk.cyanBright(`\n✨ New plugins pushed (${brandNewPlugins.length}):`));
+    if (brandNewPlugins.length > 0) {
+      brandNewPlugins.sort().forEach((plugin) => console.log(chalk.green(`  • ${plugin}`)));
+    } else {
+      console.log(chalk.gray('  (none — no brand-new plugin in this run)'));
+    }
+
+    console.log(chalk.cyanBright(`\n📁 Plugins already present in the bucket (${existingPlugins.size}):`));
+    if (existingPlugins.size > 0) {
+      [...existingPlugins].sort().forEach((plugin) => console.log(chalk.yellow(`  • ${plugin}`)));
+    } else {
+      console.log(chalk.gray('  (none — first deployment for every plugin)'));
+    }
 
     if (errors.length > 0) {
       console.log(chalk.cyanBright('\n━━━━━━━━━━━━━━━ ERROR DETAILS ━━━━━━━━━━━━━━━━━'));

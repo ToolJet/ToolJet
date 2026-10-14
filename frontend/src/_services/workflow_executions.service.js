@@ -4,6 +4,7 @@ import { authenticationService } from '@/_services';
 
 export const workflowExecutionsService = {
   create,
+  triggerEditor,
   getStatus,
   getWorkflowExecution,
   execute,
@@ -14,11 +15,20 @@ export const workflowExecutionsService = {
   getPaginatedNodes,
   trigger,
   streamSSE,
+  terminate,
+  getExecutionStates,
 };
 
-function previewQueryNode(queryId, appVersionId, nodeId, state = {}) {
+function previewQueryNode(queryId, appVersionId, nodeId, state = {}, environmentId) {
   const currentSession = authenticationService.currentSessionValue;
-  const body = { appVersionId, userId: currentSession.current_user?.id, queryId, nodeId, state };
+  const body = {
+    appVersionId,
+    userId: currentSession.current_user?.id,
+    queryId,
+    nodeId,
+    state,
+    appEnvId: environmentId,
+  };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions/previewQueryNode`, requestOptions).then(handleResponse);
 }
@@ -94,7 +104,7 @@ function getPaginatedNodes(executionId, page = 1, perPage = 20) {
   ).then(handleResponse);
 }
 
-function trigger(workflowAppId, params, environmentId, queryId) {
+function trigger(workflowAppId, params, environmentId, queryId, syncExecution = true, workflowVersionId = null) {
   const currentSession = authenticationService.currentSessionValue;
   const body = {
     appId: workflowAppId,
@@ -105,13 +115,58 @@ function trigger(workflowAppId, params, environmentId, queryId) {
       : params || {},
     environmentId,
     queryId,
+    syncExecution,
+    ...(workflowVersionId ? { appVersionId: workflowVersionId } : {}),
   };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions/${workflowAppId}/trigger`, requestOptions).then(handleResponse);
+}
+
+function triggerEditor(appVersionId, testJson, environmentId, extraProps = {}) {
+  const { injectedState = {}, startNodeId } = extraProps;
+  const currentSession = authenticationService.currentSessionValue;
+
+  const body = {
+    appVersionId: appVersionId,
+    userId: currentSession.current_user?.id,
+    executeUsing: 'version',
+    params: testJson || {},
+    environmentId,
+    injectedState,
+    startNodeId,
+    syncExecution: true, // Workflow builder always runs synchronously
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+  };
+
+  // Use appVersionId in URL path for trigger endpoint
+  return fetch(`${config.apiUrl}/workflow_executions/${appVersionId}/trigger`, requestOptions).then(handleResponse);
+}
+
+function terminate(executionId) {
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions/${executionId}/terminate`, requestOptions).then(handleResponse);
 }
 
 function streamSSE(workflowExecutionId) {
   return new EventSource(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream`, {
     withCredentials: true,
   });
+}
+
+function getExecutionStates(appVersionId, executionIds) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({ executionIds }),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/workflow_executions/states?appVersionId=${appVersionId}`, requestOptions).then(
+    handleResponse
+  );
 }

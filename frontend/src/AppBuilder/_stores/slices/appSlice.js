@@ -1,24 +1,28 @@
 import { appsService, appVersionService } from '@/_services';
-import { decimalToHex } from '@/Editor/editorConstants';
+import { decimalToHex, APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import toast from 'react-hot-toast';
 import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
-import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
-import _, { isEmpty } from 'lodash';
+import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
+import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
+import { v4 as uuidv4 } from 'uuid';
+import { yieldToMain } from '../batchManager';
 
 const initialState = {
   isSaving: false,
   globalSettings: {
     theme: baseTheme,
   },
+  pageLoader: false,
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,
   themeChanged: false,
   isComponentLayoutReady: false,
+  pageKey: uuidv4(),
   appPermission: {
     selectedUsers: [],
     selectedUserGroups: [],
@@ -30,33 +34,24 @@ const initialState = {
         app: {},
         isViewer: false,
         isComponentLayoutReady: false,
-        isAppModeSwitchedToVisualPostLayoutGeneration: false,
       },
     },
   },
 };
 
-function isDesignLayoutStepDone(steps, activeStepId) {
-  const designLayoutIndex = steps.findIndex((step) => step.id === 'design_layout');
-  const activeStepIndex = steps.findIndex((step) => step.id === activeStepId);
-
-  if (designLayoutIndex === -1 || activeStepIndex === -1) {
-    return false; // invalid input
+// Lets a newer switchPage cancel an older, still-running doSwitch instead of it
+// mutating state in the background after being superseded. Keyed by `get`
+// (stable per store instance) rather than closure state, so createAppSlice can
+// stay a plain object-literal factory like every other slice.
+const _switchGenerationByStore = new WeakMap();
+const getSwitchGeneration = (get) => {
+  let generations = _switchGenerationByStore.get(get);
+  if (!generations) {
+    generations = {};
+    _switchGenerationByStore.set(get, generations);
   }
-
-  return activeStepIndex >= designLayoutIndex;
-}
-
-function checkIsAppSwitchedToVisualModePostLayoutGeneration(prevAppState, dataToUpdate) {
-  if (prevAppState?.appBuilderMode === 'ai' && dataToUpdate?.appBuilderMode === 'visual') {
-    return isDesignLayoutStepDone(
-      prevAppState?.aiGenerationMetadata?.steps || [],
-      prevAppState?.aiGenerationMetadata?.active_step
-    );
-  }
-
-  return false;
-}
+  return generations;
+};
 
 export const createAppSlice = (set, get) => ({
   ...initialState,
@@ -120,7 +115,17 @@ export const createAppSlice = (set, get) => ({
     ),
 
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
-    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts, getResolvedValue } = get();
+    const {
+      currentLayout,
+      getCurrentMode,
+      setCanvasHeight,
+      temporaryLayouts,
+      getResolvedValue,
+      pageSettings,
+      getPagesSidebarVisibility,
+      license,
+      getCurrentAdditionalActionValue,
+    } = get();
     const currentMode = getCurrentMode(moduleId);
 
     // Only keep canvas components (components with no parent) & show on layout true
@@ -140,31 +145,69 @@ export const createAppSlice = (set, get) => ({
         };
       });
 
-    const maxPermanentHeight = currentMainCanvasComponents.reduce((max, component) => {
+    // Use the effective layout per component (temporary override if reflowed,
+    // else authored) so collapsed widgets shrink the canvas bottom.
+    const maxHeight = currentMainCanvasComponents.reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
-      const visibility =
-        getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
-        getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
-
-      const height = visibility ? layout.height : 10;
       if (!layout) {
         return max;
       }
-      const sum = layout.top + height;
-      return Math.max(max, sum);
+
+      const visibility = getCurrentAdditionalActionValue(component.id, null, 'isVisible', 'visibility', moduleId);
+      if (currentMode === 'view' && !visibility) {
+        return max;
+      }
+      const temporaryLayout = temporaryLayouts?.[component.id];
+      const top = temporaryLayout?.top ?? layout.top;
+      const height = visibility ? temporaryLayout?.height ?? layout.height : 10;
+      return Math.max(max, top + height);
     }, 0);
 
-    const temporaryLayoutsMaxHeight = Object.entries(temporaryLayouts)
-      .filter(([componentId, layout]) => currentMainCanvasComponents.find((component) => componentId === component.id))
-      .reduce((max, [componentId, layout]) => {
-        const sum = layout.top + layout.height;
-        return Math.max(max, sum);
-      }, 0);
+    const isLicensed =
+      !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+      _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
 
-    const maxHeight = Math.max(maxPermanentHeight, temporaryLayoutsMaxHeight);
+    const { position, hideHeader, hideLogo } = pageSettings?.definition?.properties || {};
+    const headerHidden = isLicensed ? hideHeader : false;
+    const logoHidden = isLicensed ? hideLogo : false;
+    const isPagesSidebarHidden = getPagesSidebarVisibility(moduleId);
+    const pageMenuHeight = position === 'top' && (!headerHidden || !logoHidden || !isPagesSidebarHidden) ? 60 : 0;
+
+    // Embedded module with dynamic height enabled on its ModuleViewer instance:
+    // size the inner canvas to its content (no 100vh floor / bottom padding) so
+    // the instance widget can be DOM-measured and reflow its outer siblings,
+    // the same way other leaf dynamic-height widgets are measured.
+    if (moduleId !== 'canvas' && get().checkIfComponentIsModule(moduleId, 'canvas')) {
+      const isInstanceDynamicHeight =
+        get().getResolvedComponent(moduleId, null, 'canvas')?.properties?.dynamicHeight === true;
+      if (isInstanceDynamicHeight && get().getCurrentMode('canvas') === 'view') {
+        // Size the inner canvas to its REFLOWED content. Use each root
+        // component's effective layout (temp height when present, else
+        // canonical) — never max(canonical, temp). Flooring at the authored
+        // ModuleContainer height would keep the module tall after a
+        // collapseWhenHidden child hides and the root's temp height shrinks.
+        const dynamicContentHeight = currentMainCanvasComponents.reduce((max, component) => {
+          const canonical = component?.layouts?.[currentLayout];
+          if (!canonical) {
+            return max;
+          }
+          const visibility = getCurrentAdditionalActionValue(component.id, null, 'isVisible', 'visibility', moduleId);
+          if (!visibility) {
+            return max;
+          }
+          const temp = temporaryLayouts?.[component.id];
+          const top = temp?.top ?? canonical.top;
+          const height = temp?.height ?? canonical.height;
+          return Math.max(max, top + height);
+        }, 0);
+        setCanvasHeight(`${Math.max(dynamicContentHeight, 40)}px`, moduleId);
+        return;
+      }
+    }
 
     const bottomPadding = currentMode === 'view' ? 100 : 300;
-    const frameHeight = currentMode === 'view' ? 45 : 85;
+    const frameHeight =
+      currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(canvasHeight, moduleId);
   },
@@ -224,90 +267,142 @@ export const createAppSlice = (set, get) => ({
   },
   switchPage: (pageId, handle, queryParams = [], moduleId = 'canvas', isBackOrForward = false) => {
     get().debugger.resetUnreadErrorCount();
-    // reset stores
+
     if (get().pageSwitchInProgress) {
-      toast('Please wait, page switch in progress', {
-        icon: '⚠️',
-      });
-      return;
+      // Reclaim this switch's batch slot rather than rejecting the call — discards only
+      // this moduleId's buffered writes, leaving any other module's untouched. The old
+      // doSwitch itself is stopped via the generation check below, not by this call.
+      get().cancelExposedValueBatch(moduleId);
     }
-    const {
-      setCurrentPageId,
-      setComponentNameIdMapping,
-      initDependencyGraph,
-      setQueryMapping,
-      cleanUpStore,
-      setResolvedGlobals,
-      setResolvedPageConstants,
-      setPageSwitchInProgress,
-      license,
-      modules: {
-        canvas: { pages },
-      },
-      getCurrentMode,
-    } = get();
-    const isPreview = getCurrentMode(moduleId) !== 'edit';
-    //!TODO clear all queued tasks
-    cleanUpStore(true);
-    get().clearTemporaryLayouts();
-    setCurrentPageId(pageId, moduleId);
-    setComponentNameIdMapping(moduleId);
-    setQueryMapping(moduleId);
 
-    const isLicenseValid =
-      !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-      _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+    // Lets an older, still-running doSwitch detect it's been superseded.
+    const _switchGeneration = getSwitchGeneration(get);
+    const myGeneration = (_switchGeneration[moduleId] = (_switchGeneration[moduleId] || 0) + 1);
+    const isSuperseded = () => _switchGeneration[moduleId] !== myGeneration;
 
-    const appId = get().appStore.modules[moduleId].app.appId;
-    const filteredQueryParams = queryParams.filter(([key, value]) => {
-      if (!value) return false;
-      if (key === 'env' && !isLicenseValid) return false;
-      return true;
-    });
+    // Set the flag synchronously before the first yieldToMain so rapid back-to-back
+    // switchPage calls don't slip through the guard above while doSwitch is awaiting.
+    get().setPageSwitchInProgress(true);
 
-    const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
-    const slug = get().appStore.modules[moduleId].app.slug;
-    const subpath = getSubpath();
-    let toNavigate = '';
-
-    if (!isBackOrForward) {
-      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
-        slug ?? appId
-      }/${handle}?${queryParamsString}`;
-      navigate(toNavigate, {
-        state: {
-          isSwitchingPage: true,
-          id: pageId,
-          handle: handle,
+    const doSwitch = async () => {
+      const {
+        setCurrentPageId,
+        setComponentNameIdMapping,
+        initDependencyGraph,
+        setQueryMapping,
+        cleanUpStore,
+        clearTemporaryLayouts,
+        setResolvedGlobals,
+        setResolvedPageConstants,
+        setIsComponentLayoutReady,
+        getCurrentPageId,
+        startExposedValueBatch,
+        license,
+        modules: {
+          canvas: { pages },
         },
-      });
-    }
+        getCurrentMode,
+        setPageLoader,
+        setPageSwitchInProgress,
+        bufferExposedValuePostFlush,
+      } = get();
+      const isPreview = getCurrentMode(moduleId) !== 'edit';
 
-    const newPage = pages.find((p) => p.id === pageId);
-    setResolvedPageConstants(
-      {
-        id: newPage?.id,
-        handle: newPage?.handle,
-        name: newPage?.name,
-      },
-      moduleId
-    );
-    setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(queryParamsString))));
-    initDependencyGraph('canvas');
-    setPageSwitchInProgress(true);
+      setPageLoader(true);
+      await yieldToMain(); // Paint the loader before doing heavy work
+      // Bail if superseded, before touching cleanUpStore/setCurrentPageId/navigate.
+      if (isSuperseded()) {
+        return;
+      }
+
+      // Capture the current page BEFORE updating so isSamePage is correct.
+      // Reading getCurrentPageId after setCurrentPageId would always return pageId
+      // (same-page), making the check always true.
+      const previousPageId = getCurrentPageId(moduleId);
+      const isSamePage = previousPageId === pageId;
+
+      cleanUpStore();
+      clearTemporaryLayouts();
+      setCurrentPageId(pageId, moduleId);
+      setComponentNameIdMapping(moduleId);
+      setQueryMapping(moduleId);
+
+      const isLicenseValid =
+        !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+        _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+
+      const appId = get().appStore.modules[moduleId].app.appId;
+      const filteredQueryParams = queryParams.filter(([key, value]) => {
+        if (!value) return false;
+        if (key === 'env' && !isLicenseValid) return false;
+        return true;
+      });
+
+      if (isSamePage) {
+        set((state) => {
+          state.pageKey = uuidv4();
+        });
+      }
+
+      const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
+      const slug = get().appStore.modules[moduleId].app.slug;
+      const subpath = getSubpath();
+
+      if (!isBackOrForward) {
+        const toNavigate = `${subpath ? `${subpath}` : ''}/${
+          isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`
+        }/${slug ?? appId}/${handle}?${queryParamsString}`;
+        navigate(toNavigate, {
+          state: {
+            isSwitchingPage: true,
+            id: pageId,
+            handle: handle,
+          },
+        });
+      }
+
+      const newPage = pages.find((p) => p.id === pageId);
+      setResolvedPageConstants(
+        {
+          id: newPage?.id,
+          handle: newPage?.handle,
+          name: newPage?.name,
+        },
+        moduleId
+      );
+      setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(queryParamsString))));
+      initDependencyGraph('canvas');
+      setIsComponentLayoutReady(false, moduleId);
+      await yieldToMain(); // Let React commit all state changes before showing the Container
+      // Bail if superseded, before opening a batch for a page nobody's waiting on.
+      if (isSuperseded()) {
+        return;
+      }
+
+      startExposedValueBatch();
+      setPageLoader(false);
+      // Released once this switch's batch actually flushes (isComponentLayoutReady
+      // effect in useAppData.js), not merely once doSwitch's own code finishes.
+      bufferExposedValuePostFlush(() => setPageSwitchInProgress(false), moduleId, `pageSwitchGuard|${moduleId}`);
+    };
+
+    doSwitch().catch((error) => {
+      console.error('Page switch failed:', error);
+      get().setPageLoader(false);
+      get().setPageSwitchInProgress(false);
+      get().flushExposedValueBatch();
+    });
   },
   setPageSwitchInProgress: (isInProgress) =>
     set(() => ({ pageSwitchInProgress: isInProgress }), false, 'setPageSwitchInProgress'),
+  setPageLoader: (isInProgress) => set(() => ({ pageLoader: isInProgress }), false, 'setPageLoader'),
 
-  cleanUpStore: (isPageSwitch = false, moduleId) => {
-    const { resetUndoRedoStack, initModules } = get();
+  cleanUpStore: (moduleId) => {
+    const { resetUndoRedoStack, initModules, clearSelectedComponents } = get();
     resetUndoRedoStack();
+    clearSelectedComponents();
     set((state) => {
       state.modules.canvas.componentNameIdMapping = {};
-      state.selectedComponents = [];
-      if (isPageSwitch) {
-        state.pageSwitchInProgress = false;
-      }
       state.containerChildrenMapping = {
         canvas: [],
       };
@@ -358,39 +453,15 @@ export const createAppSlice = (set, get) => ({
       state.appPermission.selectedUsers = users;
     }),
 
-  updateAppGenerationMetadata: (dataToUpdate, moduleId = 'canvas') => {
-    set((state) => {
-      if (isEmpty(dataToUpdate) || !state.appStore.modules[moduleId].app?.aiGenerationMetadata) return;
-
-      // Any value at the top level of aiGenerationMetadata can be updated using this, for nested keys either send complete data or need to add separate logic to handle it
-      Object.keys(dataToUpdate).forEach((key) => {
-        if (dataToUpdate[key] !== undefined) {
-          state.appStore.modules[moduleId].app.aiGenerationMetadata[key] = dataToUpdate[key];
-        }
-      });
-    });
-  },
-
-  updateAppData: (dataToUpdate, moduleId = 'canvas') => {
-    set((state) => {
-      if (checkIsAppSwitchedToVisualModePostLayoutGeneration(state.appStore.modules[moduleId].app, dataToUpdate)) {
-        state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration = true;
+  checkIfLicenseNotValid: () => {
+    const { featureAccess } = get().license;
+    const licenseStatus = featureAccess?.licenseStatus;
+    // When purchased, then isExpired key is also avialale else its not available
+    if (licenseStatus) {
+      if (has(licenseStatus, 'isExpired')) {
+        return licenseStatus?.isExpired;
       }
-
-      state.appStore.modules[moduleId].app = { ...state.appStore.modules[moduleId].app, ...dataToUpdate };
-    });
-  },
-
-  updateAppInfoInDB: async (payload, moduleId = 'canvas') => {
-    const { appId } = get().appStore.modules[moduleId].app;
-
-    if (!appId || isEmpty(payload)) return;
-
-    try {
-      await appsService.saveApp(appId, payload);
-      get().updateAppData(convertKeysToCamelCase(payload), moduleId);
-    } catch (error) {
-      console.log(error);
+      return !licenseStatus?.isLicenseValid;
     }
   },
 });

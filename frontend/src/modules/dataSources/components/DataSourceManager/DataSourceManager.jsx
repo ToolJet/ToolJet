@@ -16,6 +16,7 @@ import {
   SourceComponent,
   SourceComponents,
   CloudStorageSources,
+  AiSources,
 } from '../../../common/components/DataSourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
@@ -33,6 +34,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import InfoIcon from '@assets/images/info.svg';
 import './dataSourceManager.theme.scss';
 import { canUpdateDataSource } from '@/_helpers';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
@@ -41,7 +43,7 @@ import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import SampleDataSourceBody from './SampleDataSourceBody';
 
-class DataSourceManagerComponent extends React.Component {
+export class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -100,7 +102,8 @@ class DataSourceManagerComponent extends React.Component {
     pluginsService
       .findAll()
       .then(({ data = [] }) => {
-        this.setState({ plugins: data, pluginsLoaded: true });
+        const sortedPlugins = [...data].sort((a, b) => a.name.localeCompare(b.name));
+        this.setState({ plugins: sortedPlugins, pluginsLoaded: true });
       })
       .catch((error) => {
         this.setState({ pluginsLoaded: true });
@@ -131,7 +134,16 @@ class DataSourceManagerComponent extends React.Component {
     if (!dataSource) return {};
 
     if (dataSource?.pluginId) {
-      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifestFile?.data.source);
+      const manifestData = dataSource?.plugin?.manifestFile?.data;
+
+      // Handle new tj:version schema format
+      if (manifestData?.['tj:version']) {
+        const dsm = new DataSourceSchemaManager(manifestData);
+        return dsm.getSourceMetadata();
+      }
+
+      // // Old schema format
+      let dataSourceMeta = camelizeKeys(manifestData?.source);
       dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
 
       return dataSourceMeta;
@@ -175,7 +187,8 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   onExit = () => {
-    !this.state.selectedDataSource?.id && this.props.environmentChanged(returnDevelopmentEnv(this.props.environments));
+    !this.state.selectedDataSource?.id &&
+      this.props.environmentChanged?.(returnDevelopmentEnv(this.props.environments));
     this.setState({
       dataSourceMeta: {},
       selectedDataSource: null,
@@ -264,10 +277,13 @@ class DataSourceManagerComponent extends React.Component {
       'microsoft_graph',
       'hubspot',
       'gmail',
+      'googlesheetsv2',
+      'xero',
+      'confluence',
     ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
-    const pluginId = selectedDataSourcePluginId;
+    const pluginId = selectedDataSource?.pluginId ?? selectedDataSourcePluginId;
     const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
     const currentAppEnvironmentId = this.props.currentAppEnvironmentId ?? this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
@@ -335,6 +351,7 @@ class DataSourceManagerComponent extends React.Component {
           });
       } else {
         this.setState({ isSaving: true, addingDataSource: true });
+        this.props.setGlobalDataSourceStatus({ isSaving: true, isEditing: false });
         service
           .create({
             plugin_id: pluginId,
@@ -359,10 +376,11 @@ class DataSourceManagerComponent extends React.Component {
             this.props.dataSourcesChanged(false, data);
             this.props.globalDataSourcesChanged && this.props.globalDataSourcesChanged();
             this.resetDataSourceConfirmModal();
+            this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: false });
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false, addingDataSource: false });
-            this.hideModal();
+            this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: true });
             error && toast.error(error, { position: 'top-center' });
             this.resetDataSourceConfirmModal();
           });
@@ -409,6 +427,18 @@ class DataSourceManagerComponent extends React.Component {
       case 'googlesheets': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
       }
+      case 'googlesheetsv2': {
+        return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
+      case 'bigquery': {
+        return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
+      case 'databricks': {
+        return datasourceOptions?.authentication_type?.value === 'personal_access_token' ? true : false;
+      }
+      case 'quickbooks': {
+        return false;
+      }
       default:
         return true;
     }
@@ -430,16 +460,14 @@ class DataSourceManagerComponent extends React.Component {
       }
       return acc;
     }, {});
-    this.setState({ validationMessages: errorMap });
-    const filteredValidationBanner = interactedFields
-      ? Object.keys(this.state.validationMessages)
-          .filter((key) => interactedFields.has(key))
-          .reduce((result, key) => {
-            result.push(this.state.validationMessages[key]);
-            return result;
-          }, [])
-      : Object.values(this.state.validationMessages);
-    this.setState({ validationError: filteredValidationBanner });
+    this.setState({ validationMessages: errorMap }, () => {
+      const filteredValidationBanner = interactedFields
+        ? Object.keys(this.state.validationMessages)
+            .filter((key) => interactedFields.has(key))
+            .map((key) => this.state.validationMessages[key])
+        : Object.values(this.state.validationMessages);
+      this.setState({ validationError: filteredValidationBanner });
+    });
   };
 
   renderSourceComponent = (kind, isPlugin = false) => {
@@ -587,6 +615,7 @@ class DataSourceManagerComponent extends React.Component {
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
+      ais: AiSources,
       plugins: this.state.plugins,
       filteredDatasources: this.state.filteredDatasources,
     };
@@ -619,6 +648,12 @@ class DataSourceManagerComponent extends React.Component {
         key: '#cloudstorage',
         list: allDataSourcesList.cloudStorages,
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+      },
+      {
+        type: 'AI',
+        key: '#ai',
+        list: allDataSourcesList.ais,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.ais, 'AI'),
       },
       {
         type: 'Plugins',
@@ -952,17 +987,27 @@ class DataSourceManagerComponent extends React.Component {
       ? { padding: '56px 32px 64px 32px', borderBottom: '1px solid #E6E8EB' }
       : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
+    // For old-schema datasources (restapi, grpcv, etc.), DynamicForm.useLayoutEffect fills
+    // missing defaults into state.options but not into selectedDataSource.options (DB value).
+    // Normalize the baseline so those auto-filled defaults don't register as unsaved changes.
+    const dsDefaults = dataSourceMeta?.defaults ?? {};
+    const normalizedSavedOptions = Object.keys(dsDefaults).reduce(
+      (acc, key) => {
+        if (acc[key] === undefined) acc[key] = dsDefaults[key];
+        return acc;
+      },
+      { ...(selectedDataSource?.options ?? {}) }
+    );
     const isSaveDisabled = selectedDataSource
-      ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
-          selectedDataSource?.name === datasourceName) ||
-        !isEmpty(validationMessages)
+      ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
+        selectedDataSource?.name === datasourceName
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
-      ? 'https://docs.tooljet.ai/docs/data-sources/sample-data-sources'
+      ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-      ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const OAuthDs = [
       'slack',
       'zendesk',
@@ -971,14 +1016,21 @@ class DataSourceManagerComponent extends React.Component {
       'googlecalendar',
       'snowflake',
       'microsoft_graph',
+      'xero',
       'hubspot',
       'gmail',
+      'confluence',
     ];
 
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
     return (
       pluginsLoaded && (
-        <div>
+        <div className="datasource-manager-container">
+          <style>{`
+            .datasource-save-btn-white-icon:disabled svg path {
+              fill: #FDFDFE !important;
+            }
+          `}</style>
           <Modal
             show={this.props.showDataSourceManagerModal}
             size={selectedDataSource ? 'lg' : 'xl'}
@@ -1059,18 +1111,14 @@ class DataSourceManagerComponent extends React.Component {
                     </span>
                   )}
                 </div>
-                <div className="tw-pt-[15px]">
-                  {this.props.tags &&
-                    this.props.tags.map((tag) => {
-                      if (tag === 'AI') {
-                        return (
-                          <div key={tag} className="tag-container">
-                            <SolidIcon name="AI-tag" />
-                            <span>{tag}</span>
-                          </div>
-                        );
-                      }
-                    })}
+                <div className="tw-flex tw-items-center tw-pt-[15px] tw-gap-2">
+                  {selectedDataSource?.pluginId && dataSourceSchema?.version && (
+                    <ToolTip message={`Version ${dataSourceSchema?.version}`} placement="right">
+                      <span className="datasource-version-info-icon" data-cy="datasource-version-info">
+                        <InfoIcon style={{ width: '20px', height: '20px' }} />
+                      </span>
+                    </ToolTip>
+                  )}
                 </div>
               </div>
               {!isSampleDb && (
@@ -1109,8 +1157,7 @@ class DataSourceManagerComponent extends React.Component {
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
                       options?.auth_type?.value === 'oauth2' &&
-                      options?.grant_type?.value === 'authorization_code' &&
-                      options?.multiple_auth_enabled?.value !== true
+                      ['authorization_code', 'authorization_code_pkce'].includes(options?.grant_type?.value)
                     )) && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
@@ -1163,8 +1210,8 @@ class DataSourceManagerComponent extends React.Component {
                       )}
 
                       {connectionTestError && (
-                        <div className="row w-100">
-                          <div className="alert alert-danger" role="alert">
+                        <div className="w-100">
+                          <div className="alert alert-danger datasource-error-alert" role="alert">
                             <div className="text-muted" data-cy="connection-alert-text">
                               {connectionTestError.message}
                             </div>
@@ -1219,7 +1266,7 @@ class DataSourceManagerComponent extends React.Component {
                       {!isSampleDb && (
                         <div className="col-auto" data-cy="db-connection-save-button">
                           <ButtonSolid
-                            className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
+                            className={`m-2 datasource-save-btn-white-icon ${isSaving ? 'btn-loading' : ''}`}
                             isLoading={isSaving}
                             disabled={
                               isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
@@ -1242,8 +1289,7 @@ class DataSourceManagerComponent extends React.Component {
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
                       options?.auth_type?.value === 'oauth2' &&
-                      options?.grant_type?.value === 'authorization_code' &&
-                      options?.multiple_auth_enabled?.value !== true
+                      ['authorization_code', 'authorization_code_pkce'].includes(options?.grant_type?.value)
                     )) && (
                     <Modal.Footer>
                       <div className="col">
@@ -1253,8 +1299,8 @@ class DataSourceManagerComponent extends React.Component {
                           data-cy="link-read-documentation"
                           href={
                             selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-                              ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
-                              : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource.kind}`
+                              ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
+                              : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource.kind}`
                           }
                           target="_blank"
                           rel="noreferrer"
@@ -1266,7 +1312,7 @@ class DataSourceManagerComponent extends React.Component {
                         <ButtonSolid
                           leftIcon="floppydisk"
                           fill={'#FDFDFE'}
-                          className="m-2"
+                          className="m-2 datasource-save-btn-white-icon"
                           disabled={
                             isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
                           }

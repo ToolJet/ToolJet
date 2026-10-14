@@ -11,8 +11,22 @@ export const ChangeSetUI = memo(({ width, handleChangesSaved, handleChangesDisca
   return (
     <>
       <ButtonSolid
+        variant="ghostBlack"
+        className={`tj-text-sm tw-font-medium !tw-text-[var(--cc-primary-text)]`}
+        onClick={handleChangesDiscarded}
+        data-cy={`table-button-discard-changes`}
+        size="md"
+        customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
+        leftIcon={width > 650 ? '' : 'IconX'}
+        fill={'var(--cc-table-action-icon-color)'}
+        iconWidth="16"
+        isTablerIcon={true}
+      >
+        {width > 650 ? <span>Discard</span> : ''}
+      </ButtonSolid>
+      <ButtonSolid
         variant="primary"
-        className={`tj-text-xsm`}
+        className={`tj-text-sm tw-font-medium`}
         onClick={() => {
           onEvent('onBulkUpdate', tableComponentEvents).then(() => {
             handleChangesSaved();
@@ -26,24 +40,12 @@ export const ChangeSetUI = memo(({ width, handleChangesSaved, handleChangesDisca
           padding: width > 650 ? '6px 16px' : 0,
           backgroundColor: 'var(--cc-primary-brand)',
         }}
-        leftIcon={width > 650 ? '' : 'save'}
-        fill="#FDFDFE"
+        leftIcon="IconDeviceFloppy"
+        fill="var(--cc-surface1-surface)"
         iconWidth="16"
+        isTablerIcon={true}
       >
         {width > 650 ? <span>Save changes</span> : ''}
-      </ButtonSolid>
-      <ButtonSolid
-        variant="tertiary"
-        className={`tj-text-xsm`}
-        onClick={handleChangesDiscarded}
-        data-cy={`table-button-discard-changes`}
-        size="md"
-        customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
-        leftIcon={width > 650 ? '' : 'cross'}
-        fill={'var(--slate11)'}
-        iconWidth="16"
-      >
-        {width > 650 ? <span>Discard</span> : ''}
       </ButtonSolid>
     </>
   );

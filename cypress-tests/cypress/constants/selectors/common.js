@@ -18,6 +18,7 @@ export const commonSelectors = {
   workspaceConstantValueInput: '[data-cy="value-input-field"]',
   fileSelector: "[data-cy=uploaded-file-data]",
   searchField: "[data-cy='widget-search-box-search-bar']",
+  workspaceCount: '[data-cy="workspace-count"]',
   firstWidget: "[data-cy=widget-list]:eq(0)",
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
@@ -27,7 +28,7 @@ export const commonSelectors = {
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
-  pageLogo: "[data-cy=page-logo]",
+  pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy=page-logo]',
   workEmailLabel: '[data-cy="work-email-label"]',
   workEmailInputField: "[data-cy=work-email-input]",
   emailInputError: '[data-cy="email-error-message"]',
@@ -38,7 +39,6 @@ export const commonSelectors = {
   loginButton: '[data-cy="login-button"]',
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
-  dashboardAppCreateButton: '[data-cy="button-new-application-from-scratch"]',
   appCreateButton: "[data-cy=create-new-apps-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
@@ -89,12 +89,14 @@ export const commonSelectors = {
   invitedUserEmail: '[data-cy="email-input-value"]',
   invitedUseremail: '[data-cy="email-input-input-value"]',
   acceptInviteButton: '[data-cy="accept-invite-button"]',
+  homePageIcon: '[data-cy="icon-home"]',
   databaseIcon: '[data-cy="icon-database"]',
   profileSettings: '[data-cy="profile-settings"]',
   workspaceSettings: '[data-cy="workspace-settings"]',
   manageUsersOption: '[data-cy="users-list-item"]',
   manageGroupsOption: '[data-cy="groups-list-item"]',
   manageSSOOption: '[data-cy="workspace-login-list-item"]',
+  themesOption: '[data-cy="themes-list-item"]',
   workspaceVariableOption: '[data-cy="workspace-variables-list-item"]',
   clearFilterButton: '[data-cy="clear-filter-button"]',
   userStatusSelect: '[data-cy="user-status-select-continer"]',
@@ -137,7 +139,7 @@ export const commonSelectors = {
   passwordHelperText: '[data-cy="new-password-input-hint"]',
   continueButton: '[data-cy="continue-button"]',
   passwordHelperTextSignup: '[data-cy="password-input-hint"]',
-  continueButton: '[data-cy="sign-up-button"]',
+  signUpButton: '[data-cy="sign-up-button"]',
   OnbordingContinue: '[data-cy="onboarding-submit-button"]',
   userAccountNameAvatar: '[data-cy="user-account-name-avatar"]',
   workspaceNameInputLabel: '[data-cy="onboarding-workspace-name-label"]',
@@ -154,7 +156,6 @@ export const commonSelectors = {
   skipbutton: '[class="driver-close-btn"]',
   backLogo: '[data-cy="editor-page-logo"]',
   backtoapps: '[data-cy="back-to-app-option"]',
-  signUpButton: '[data-cy="sign-up-button"]',
   emailImage: '[data-cy="email-image"]',
   spamMessage: '[data-cy="info-message"]',
   resendEmailButton: '[data-cy="resend-verification-email-button"]',
@@ -176,7 +177,11 @@ export const commonSelectors = {
   resetPasswordButton: '[data-cy="reset-password-button"]',
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login"]',
-  breadcrumbTitle: '[data-cy="app-header-label"]>>',
+  // breadcrumbTitle: '[data-cy="app-header-label"]>>',
+  breadcrumbHeaderTitle: (headerTitle) => {
+    return `[data-cy="breadcrumb-header-${cyParamName(headerTitle)}"]>>`
+  },
+  breadcrumbTitle: '[data-cy="breadcrumb-header-workspace-settings"]>>',
   // breadcrumbPageTitle: '[data-cy="app-header-label"]',
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
@@ -190,6 +195,11 @@ export const commonSelectors = {
   addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
   saveButton: '[data-cy="save-button"]',
   appEditButton: '[data-cy="edit-button"]',
+  appPreviewButton: '[data-cy="preview-button"]',
+  applaunchButton: '[data-cy="launch-button"]',
+  editorAppNameInput: '[data-cy="editor-app-name-input"]',
+  enablePasswordLoginTitle: '[data-cy="enable-password-login-title"]',
+  enablePasswordLoginModal: '[data-cy="modal-message"]',
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
   },
@@ -248,9 +258,11 @@ export const commonSelectors = {
   workspaceConstantsOption: '[data-cy="workspace-constants-list-item"]',
   nameErrorText: '[data-cy="name-error-text"]',
   valueErrorText: '[data-cy="value-error-text"]',
-  releaseButton: '[data-cy="button-release"]',
+  releaseButton: '[data-cy="release-version-button"]',
   leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]',
   modalHeader: '[data-cy="modal-header"]',
+  modalCloseButton: '[data-cy="modal-close"]',
+  modalIcon: '[data-cy="modal-icon"]',
   modalDescription: '[data-cy="modal-description"]',
   backToHomeButton: '[data-cy="back-to-home-button"]',
   createAppTitle: '[data-cy="create-app-title"]',
@@ -259,6 +271,9 @@ export const commonSelectors = {
   appNameInfoLabel: '[data-cy="app-name-info-label"]',
   createAppButton: '[data-cy="create-app"]',
   renameApptitle: '[data-cy="rename-app-title"]',
+  // Opens the Rename app modal in the editor header
+  // (frontend/src/AppBuilder/Header/EditAppName.jsx:55).
+  editAppNameButton: '[data-cy="edit-app-name-button"]',
   renameAppButton: '[data-cy="rename-app"]',
   cloneAppTitle: '[data-cy="clone-app-title"]',
   cloneAppButton: '[data-cy="clone-app"]',
@@ -268,6 +283,8 @@ export const commonSelectors = {
   chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
   settingsIcon: '[data-cy="settings-icon"]',
+  previewSettings: '[data-cy="preview-settings"]',
+  previewText: '[data-cy="preview-chip"]',
   marketplaceOption: '[data-cy="marketplace-option"]',
   backToAppOption: '[data-cy="back-to-app-option"]',
   databaseOption: '[data-cy="database-option"]',
@@ -281,6 +298,8 @@ export const commonSelectors = {
   defaultModalTitle: '[data-cy="modal-title"]',
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
   confirmationButton: '[data-cy="confirmation-button"]',
+  modalConfirmButton: '[data-cy="modal-confirm-button"]',
+  rightSidebarPlusButton: '[data-cy="right-sidebar-components-button"]',
 
   textField: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
@@ -291,7 +310,8 @@ export const commonSelectors = {
   labelFieldAlert: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
-  pageLogo: '[data-cy="page-logo"]',
+  pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy="page-logo"]',
+  homePageIcon: '[data-cy="home-page-icon"]',
 };
 
 export const commonWidgetSelector = {
@@ -322,11 +342,21 @@ export const commonWidgetSelector = {
   },
 
   widgetConfigHandle: (widgetName) => {
-    return `[data-cy="${cyParamName(widgetName)}-config-handle"]`;
+    // The old `<name>-config-handle` button no longer exists. The button that
+    // opens the right Inspector (Properties/Styles/Events) is
+    // `<name>-properties-styles-button`
+    // (frontend/src/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle.jsx:285).
+    return `[data-cy="${cyParamName(widgetName)}-properties-styles-button"]`;
   },
 
   accordion: (accordionName, index = 0) => {
-    return `[data-cy="widget-accordion-${accordionName.toLowerCase()}"]:eq(${index})`;
+    // AccordionItem.js:38 builds the data-cy as
+    // `widget-accordion-${title.toLowerCase().replace(/\s+/g,'-')}` — spaces
+    // become hyphens, so multi-word titles like "Additional actions" →
+    // `widget-accordion-additional-actions` (the old space form is stale).
+    return `[data-cy="widget-accordion-${accordionName
+      .toLowerCase()
+      .replace(/\s+/g, "-")}"]:eq(${index})`;
   },
 
   nodeComponent: (componentName) => {
@@ -354,13 +384,25 @@ export const commonWidgetSelector = {
     return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`;
   },
 
-  buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
-  buttonStylesEditorSideBar: "#inspector-tab-styles",
+  // Right-Inspector close control is now `inspector-close-button`
+  // (Inspector.jsx:707) — was `inspector-close-icon`.
+  buttonCloseEditorSideBar: "[data-cy='inspector-close-button']",
+  // The right-Inspector tabs are now a custom ToolJetUI <Tabs id="inspector">
+  // (frontend/src/ToolJetUI/Tabs/Tabs.jsx) — each tab is a `button[role="tab"]`
+  // with NO id/data-cy, only a `.tab-label` span. The old `#inspector-tab-styles`
+  // (react-bootstrap id) no longer exists. There are exactly two tabs
+  // (Properties, Styles — Inspector.jsx:594-599); Styles is the 2nd nav-link,
+  // scoped to the `#inspector` Tabs wrapper.
+  buttonStylesEditorSideBar: "#inspector .nav-link:eq(1)",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
   constantInspectorIcon: '[data-cy="inspector-constants-expand-button"]',
-  inspectorIcon: '[data-cy="left-sidebar-inspect-button"]',
+  inspectorIcon: '[data-cy="left-sidebar-inspector-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
+  togglrButton: (value) => `[data-cy="togglr-button-${value}"]`,
+  // Radix, not bootstrap's `.tooltip-inner`. Renders its content twice (once
+  // VisuallyHidden), so scope every match with .first() or `have.text` sees it doubled.
+  widgetTooltip: '[data-cy="widget-tooltip"]',
   homePageLogo: '[data-cy="home-page-logo"]',
 
   noEventHandlerMessage: "[data-cy='no-items-banner']",
@@ -379,7 +421,16 @@ export const commonWidgetSelector = {
   changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
-  sidebarinspector: "[data-cy='left-sidebar-inspector']",
+   sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
+
+  appHistoryButton: "[data-cy='left-sidebar-app-history-button']",
+  appHistoryCloseButton: "[data-cy='left-sidebar-close-button']",
+  appHistoryHeaderTitle: ".app-history-header-title",
+  historyTimeline: ".history-timeline",
+  historyDateGroup: ".history-date",
+  historyEntry: ".history-entry",
+  historyEntryName: ".entry-name",
+
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",
@@ -391,10 +442,11 @@ export const commonWidgetSelector = {
   inputBoxShadow: "[data-cy= 'input-box-shadow']",
   boxShadowColorPicker: "[data-cy='box-shadow-picker']",
   textInputWidget: '[data-cy="draggable-widget-textinput1"]',
-  previewButton: `[data-cy="preview-link-button"]`,
+  editorPreviewLink: '[data-cy="editor-preview-Link"]',
+  previewButton: `[data-cy="editor-preview-button"]`,
   defaultValueInputField: '[data-cy="default-value-input-field"]',
   alertInfoText: '[data-cy="alert-info-text"]',
-  shareAppButton: '[data-cy="share-button-link"]',
+  shareAppButton: '[data-cy="editor-app-share-button"]',
   shareModalElements: {
     modalHeader: '[data-cy="modal-header"]',
     makePublicAppToggleLabel: '[data-cy="make-public-app-label"]',
@@ -403,20 +455,21 @@ export const commonWidgetSelector = {
     // ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
   },
   copyAppLinkButton: '[data-cy="copy-app-link-button"]',
-  makePublicAppToggle: '[data-cy="make-public-app-toggle"]',
+  makePublicAppToggle: '[data-cy="make-application-public-toggle"]',
   appLink: '[data-cy="app-link"]',
   appNameSlugInput: '[data-cy="app-name-slug-input"]',
   iframeLink: '[data-cy="iframe-link"]',
   modalCloseButton: '[data-cy="modal-close-button"]',
   iframeLinkLabel: '[data-cy="iframe-link-label"]',
   ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
-  appSlugLabel: '[data-cy="unique-app-slug-field-label"]',
+  appSlugLabel: '[data-cy="unique-app-slug-label"]',
   appSlugInput: '[data-cy="app-slug-input-field"]',
   appSlugInfoLabel: '[data-cy="helper-text"]',
   appLinkLabel: '[data-cy="app-link-label"]',
   appLinkField: '[data-cy="app-link-field"]',
   appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
   appLinkSucessLabel: '[data-cy="app-link-success-label"]',
+  enterpriseGradientSmIcon: '[data-cy="enterprise-gradient-sm-icon"]',
 };
 
 export const commonQuerySelectors = {
@@ -424,7 +477,7 @@ export const commonQuerySelectors = {
     return `[data-cy="list-query-${cyParamName(queryName)}"] > .text-truncate`;
   },
   queryActionButton: (action) => {
-    return `[data-cy="component-inspector-${cyParamName(action)}-button"]`;
+    return `[data-cy="query-card-${cyParamName(action)}-button"]`;
   },
   queryEditInputField: '[data-cy="query-edit-input-field"]',
 };
@@ -445,4 +498,30 @@ export const inspectorSelectors = {
   inspectorNodeValue: (nodeName) => {
     return `[data-cy="inspector-${cyParamName(nodeName)}-value"]`;
   },
+};
+
+export const whiteLabelSelectors = {
+  navWhiteLabellingListItem: '[data-cy="white-labelling-list-item"]',
+  breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
+  appLogoInput: '[data-cy="input-field-app-logo"]',
+  pageTitleInput: '[data-cy="input-field-page-title"]',
+  favIconInput: '[data-cy="input-field-fav-icon"]',
+  appLogoHelpText: '[data-cy="app-logo-help-text"]',
+  favIconHelpText: '[data-cy="fav-icon-help-text"]',
+  cancelButton: '[data-cy="cancel-button"]',
+  saveButton: '[data-cy="save-button"]',
+  tooljetHeaderImg: ".tooljet-header img",
+  faviconLink: 'link[rel="icon"]',
+  poweredByBanner: '[data-cy="powered-tj-banner"]',
+  homePageLogoImg: '[data-cy="home-page-logo"] img',
+  passwordInput: '[data-cy="password-input"]',
+  signUpButton: '[data-cy="sign-up-button"]',
+  signupInfo: '[data-cy="signup-info"]',
+  signupRedirectText: '[data-cy="signup-info"]',
+
+  smtpListItem: '[data-cy="email-protocol-(smtp)-list-item"]',
+  smtpHostInput: '[data-cy="input-field-host"]',
+  smtpPortInput: '[data-cy="input-field-port"]',
+  smtpUserInput: '[data-cy="input-field-user"]',
+  smtpPasswordInput: '[data-cy="input-field-password"]',
 };

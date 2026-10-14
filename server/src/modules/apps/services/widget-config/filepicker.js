@@ -5,7 +5,7 @@ export const filepickerConfig = {
   component: 'FilePicker',
   defaultSize: {
     width: 15,
-    height: 140,
+    height: 220,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -96,6 +96,7 @@ export const filepickerConfig = {
         },
         defaultValue: false,
       },
+      accordian: 'Data',
     },
     parseFileType: {
       type: 'select',
@@ -103,6 +104,7 @@ export const filepickerConfig = {
       options: [
         { name: 'Autodetect from extension', value: 'auto-detect' },
         { name: 'CSV', value: 'csv' },
+        { name: 'TSV', value: 'tsv' },
         { name: 'Microsoft Excel - xls', value: 'vnd.ms-excel' },
         {
           name: 'Microsoft Excel - xlsx',
@@ -115,6 +117,36 @@ export const filepickerConfig = {
         },
         defaultValue: 'auto-detect',
       },
+      conditionallyRender: {
+        key: 'parseContent',
+        value: true,
+      },
+      accordian: 'Data',
+    },
+    delimiter: {
+      type: 'code',
+      displayName: 'Delimiter',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: ',',
+      },
+      conditionallyRender: [
+        {
+          key: 'parseContent',
+          value: true,
+        },
+        {
+          key: 'parseFileType',
+          value: 'csv',
+        },
+      ],
+      accordian: 'Data',
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
     },
     loadingState: {
       type: 'toggle',
@@ -134,6 +166,12 @@ export const filepickerConfig = {
         defaultValue: true,
       },
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -143,6 +181,23 @@ export const filepickerConfig = {
         defaultValue: false,
       },
     },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -151,6 +206,7 @@ export const filepickerConfig = {
         schema: { type: 'string' },
         defaultValue: '',
       },
+      showLabel: false,
     },
   },
   events: {
@@ -211,6 +267,13 @@ export const filepickerConfig = {
         },
         defaultValue: 2,
       },
+      conditionallyRender: [
+        {
+          key: 'enableMultiple',
+          value: true,
+          parentObjectKey: 'properties',
+        },
+      ],
     },
     maxFileCount: {
       type: 'code',
@@ -222,6 +285,13 @@ export const filepickerConfig = {
         },
         defaultValue: 2,
       },
+      conditionallyRender: [
+        {
+          key: 'enableMultiple',
+          value: true,
+          parentObjectKey: 'properties',
+        },
+      ],
     },
   },
   styles: {
@@ -311,10 +381,14 @@ export const filepickerConfig = {
       enableMultiple: { value: '{{false}}', fxActive: false },
       parseContent: { value: '{{false}}' },
       parseFileType: { value: 'auto-detect' },
+      delimiter: { value: ',' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {

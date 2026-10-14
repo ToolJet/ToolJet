@@ -3,11 +3,12 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { keymap } from '@codemirror/view';
+import { keymap, tooltips, EditorView } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
 import _ from 'lodash';
+import cx from 'classnames';
 import { sass, sassCompletionSource } from '@codemirror/lang-sass';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -25,6 +26,10 @@ import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import { isInsideParent } from './utils';
 import { CodeHinterBtns } from './CodehinterOverlayTriggers';
 import useWorkflowStore from '@/_stores/workflowStore';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
+import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
+import { completionLabelTooltip } from './completionLabelTooltip';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -32,6 +37,24 @@ const langSupport = Object.freeze({
   sql: sql(),
   jsx: javascript({ jsx: true }),
   css: sass(),
+});
+
+const lineWrappingExtension = EditorView.lineWrapping;
+
+// Hoisted to module scope so their identity never changes: anything fed into the
+// CodeMirror `extensions` prop must stay referentially stable, otherwise
+// react-codemirror dispatches a reconfigure on every render, which permanently
+// grows style-mod's shared stylesheet and degrades the whole session.
+const staticCustomKeyMaps = [
+  ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
+  ...completionKeymap,
+  ...searchKeymap,
+];
+const searchExtension = search({
+  createPanel: handleSearchPanel,
+});
+const tooltipExtension = tooltips({
+  parent: document.body,
 });
 
 const MultiLineCodeEditor = (props) => {
@@ -55,12 +78,20 @@ const MultiLineCodeEditor = (props) => {
     renderCopilot,
     setCodeEditorView,
     onInputChange, // Added this prop to immediately handle value changes
+    foldGutter = true, // controls the left gray bar
+    componentId,
   } = props;
+  const { moduleId: contextModuleId } = useModuleContext();
+  const moduleId = props.moduleId || contextModuleId || 'canvas';
   const editorRef = useRef(null);
 
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const wrapperRef = useRef(null);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  // Context-aware hints for components inside ListView/Kanban and table columns
+  const getContextHints = useStore((state) => state.getContextHints, shallow);
+  const getTableColumnContextHints = useStore((state) => state.getTableColumnContextHints, shallow);
+  const tableColumnComponentId = useContext(TableColumnContext)?.tableId; // Set at ColumnPopover level
   const getServerSideGlobalResolveSuggestions = useStore(
     (state) => state.getServerSideGlobalResolveSuggestions,
     shallow
@@ -120,10 +151,10 @@ const MultiLineCodeEditor = (props) => {
     };
   }, [editorView]);
 
-  const handleChange = (val) => {
+  const handleChange = useStableCallback((val) => {
     currentValueRef.current = val;
     onInputChange && onInputChange(val);
-  };
+  });
 
   const handleOnBlur = () => {
     if (!delayOnChange) return onChange(currentValueRef.current);
@@ -138,18 +169,21 @@ const MultiLineCodeEditor = (props) => {
   const theme = darkMode ? okaidia : githubLight;
   const langExtention = langSupport[lang] ?? null;
 
-  const setupConfig = {
-    lineNumbers: lineNumbers ?? true,
-    syntaxHighlighting: true,
-    bracketMatching: true,
-    foldGutter: true,
-    highlightActiveLine: false,
-    autocompletion: hideSuggestion ?? true,
-    highlightActiveLineGutter: false,
-    defaultKeymap: false,
-    completionKeymap: true,
-    searchKeymap: false,
-  };
+  const setupConfig = useMemo(
+    () => ({
+      lineNumbers: lineNumbers ?? true,
+      syntaxHighlighting: true,
+      bracketMatching: true,
+      foldGutter: foldGutter,
+      highlightActiveLine: false,
+      autocompletion: hideSuggestion ?? true,
+      highlightActiveLineGutter: false,
+      defaultKeymap: false,
+      completionKeymap: true,
+      searchKeymap: false,
+    }),
+    [lineNumbers, foldGutter, hideSuggestion]
+  );
 
   function autoCompleteExtensionConfig(context) {
     const hasWorkflowSuggestions =
@@ -157,45 +191,84 @@ const MultiLineCodeEditor = (props) => {
     const hints = hasWorkflowSuggestions ? workflowSuggestions : getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
+    // Prepend context-aware hints (listItem, cardData, rowData, siblings) before app hints
+    const contextHints = componentId ? getContextHints(componentId, moduleId) : [];
+    const tableContextHints = tableColumnComponentId
+      ? getTableColumnContextHints(tableColumnComponentId, moduleId)
+      : [];
     const allHints = {
       ...hints,
-      appHints: [...hints.appHints, ...serverHints],
+      appHints: [...tableContextHints, ...contextHints, ...hints.appHints, ...serverHints],
     };
 
     return getSuggestionsForMultiLine(context, allHints, hints, lang, paramList);
   }
 
-  const customKeyMaps = [
-    ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
-    ...completionKeymap,
-    ...searchKeymap,
-  ];
+  const customTabKeymap = useMemo(
+    () =>
+      keymap.of([
+        {
+          key: 'Tab',
+          run: (view) => {
+            if (completionStatus(view.state)) {
+              return acceptCompletion(view);
+            }
 
-  const customTabKeymap = keymap.of([
-    {
-      key: 'Tab',
-      run: (view) => {
-        if (completionStatus(view.state)) {
-          return acceptCompletion(view);
-        }
+            const { state } = view;
+            const { selection } = state;
+            const { anchor } = selection.main;
+            const tabSize = 2;
 
-        const { state } = view;
-        const { selection } = state;
-        const { anchor } = selection.main;
-        const tabSize = 2;
+            view.dispatch({
+              changes: { from: anchor, insert: ' '.repeat(tabSize) },
+              selection: { anchor: anchor + tabSize },
+            });
+            return true;
+          },
+        },
+        ...queryPanelKeybindings,
+      ]),
+    [queryPanelKeybindings]
+  );
 
-        view.dispatch({
-          changes: { from: anchor, insert: ' '.repeat(tabSize) },
-          selection: { anchor: anchor + tabSize },
-        });
-        return true;
-      },
-    },
-    ...queryPanelKeybindings,
-  ]);
+  // Stable identity, fresh values: the override function handed to CodeMirror never
+  // changes, but it always delegates to the latest closure (with current hints,
+  // suggestions and paramList). A changing identity here would invalidate the
+  // extensions and force a full editor reconfigure on every render.
+  const overRideFunction = useStableCallback(autoCompleteExtensionConfig);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [paramList]);
+  const editorExtensions = useMemo(
+    () => [
+      langExtention,
+      lineWrappingExtension,
+      searchExtension,
+      tooltipExtension,
+      javascriptLanguage.data.of({
+        autocomplete: overRideFunction,
+      }),
+      python().language.data.of({
+        autocomplete: overRideFunction,
+      }),
+      sql().language.data.of({
+        autocomplete: overRideFunction,
+      }),
+      sass().language.data.of({
+        autocomplete: sassCompletionSource,
+      }),
+      autocompletion({
+        override: [overRideFunction],
+        activateOnTyping: true,
+        compareCompletions: (a, b) => {
+          return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
+        },
+      }),
+      completionLabelTooltip,
+      customTabKeymap,
+      keymap.of([...staticCustomKeyMaps]),
+    ],
+    [langExtention, overRideFunction, customTabKeymap]
+  );
+
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
@@ -208,6 +281,14 @@ const MultiLineCodeEditor = (props) => {
     }
     return initialValue;
   }, [initialValue, replaceIdsWithName]);
+
+  // @uiw/react-codemirror annotates external value-prop changes with ExternalChange
+  // and skips calling onChange to avoid echoing. This means currentValueRef stays stale
+  // when the value is set programmatically (e.g. AI-generated code). Sync it here so
+  // that handleOnBlur propagates the correct value when the user clicks Run.
+  useEffect(() => {
+    currentValueRef.current = initialValueWithReplacedIds ?? '';
+  }, [initialValueWithReplacedIds]);
 
   function updateCurrentLineObserver(editorView) {
     if (!editorView || !editorView?.view?.dom) return;
@@ -224,10 +305,19 @@ const MultiLineCodeEditor = (props) => {
     }
   }
 
+  // `onUpdate` is part of react-codemirror's reconfigure-effect dependencies, so it
+  // must keep a stable identity.
+  const handleEditorUpdate = useStableCallback((view) => {
+    setIsSearchPanelOpen(searchPanelOpen(view.state));
+    updateCurrentLineObserver(view);
+  });
+
   const onAiSuggestionAccept = (newValue) => {
     currentValueRef.current = newValue;
     onChange(newValue);
   };
+
+  const copilotBtnSlot = renderCopilot?.({ darkMode, language: lang, editorRef, onAiSuggestionAccept });
 
   return (
     <div
@@ -236,18 +326,7 @@ const MultiLineCodeEditor = (props) => {
       ref={wrapperRef}
     >
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
-        <CodeHinterBtns
-          view={editorView}
-          isPanelOpen={isSearchPanelOpen}
-          renderCopilot={() =>
-            renderCopilot?.({
-              darkMode,
-              language: lang,
-              editorRef,
-              onAiSuggestionAccept,
-            })
-          }
-        />
+        <CodeHinterBtns view={editorView} isPanelOpen={isSearchPanelOpen} copilotBtnSlot={copilotBtnSlot} />
 
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
@@ -255,6 +334,7 @@ const MultiLineCodeEditor = (props) => {
           tip="Pop out code editor into a new window"
           isMultiEditor={true}
           isQueryManager={isInsideQueryPane}
+          position={{ height: height }}
         />
 
         <CodeHinter.Portal
@@ -269,6 +349,8 @@ const MultiLineCodeEditor = (props) => {
           selectors={{ className: 'preview-block-portal' }}
           dragResizePortal={true}
           callgpt={null}
+          onPortalDimensionsChange={portalProps?.onPortalDimensionsChange}
+          canRefresh={portalProps?.canRefresh}
         >
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
@@ -276,45 +358,22 @@ const MultiLineCodeEditor = (props) => {
                 ref={editorRef}
                 value={initialValueWithReplacedIds}
                 placeholder={placeholder}
-                height={'100%'}
+                height={heightInPx}
                 minHeight={heightInPx}
                 {...(isInsideQueryPane ? { maxHeight: '100%' } : {})}
                 width="100%"
                 theme={theme}
-                extensions={[
-                  langExtention,
-                  search({
-                    createPanel: handleSearchPanel,
-                  }),
-                  javascriptLanguage.data.of({
-                    autocomplete: overRideFunction,
-                  }),
-                  python().language.data.of({
-                    autocomplete: overRideFunction,
-                  }),
-                  sql().language.data.of({
-                    autocomplete: overRideFunction,
-                  }),
-                  sass().language.data.of({
-                    autocomplete: sassCompletionSource,
-                  }),
-                  autocompletion({
-                    override: [overRideFunction],
-                    activateOnTyping: true,
-                    compareCompletions: (a, b) => {
-                      return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
-                    },
-                  }),
-                  customTabKeymap,
-                  keymap.of([...customKeyMaps]),
-                ]}
+                extensions={editorExtensions}
                 onChange={handleChange}
                 onBlur={handleOnBlur}
                 basicSetup={setupConfig}
                 style={{
                   overflowY: 'auto',
                 }}
-                className={`codehinter-multi-line-input ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
+                className={cx('codehinter-multi-line-input', {
+                  'code-editor-query-panel': isInsideQueryPane,
+                  'has-overlay-controls': !isSearchPanelOpen || Boolean(copilotBtnSlot),
+                })}
                 indentWithTab={false}
                 readOnly={readOnly}
                 editable={editable} //for transformations in query manager
@@ -324,10 +383,7 @@ const MultiLineCodeEditor = (props) => {
                     setCodeEditorView(view);
                   }
                 }}
-                onUpdate={(view) => {
-                  setIsSearchPanelOpen(searchPanelOpen(view.state));
-                  updateCurrentLineObserver(view);
-                }}
+                onUpdate={handleEditorUpdate}
               />
             </div>
             {showPreview && (

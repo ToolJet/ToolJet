@@ -49,6 +49,11 @@ export const pageConfig = {
       displayName: 'Pill radius',
       type: 'numberInput',
     },
+    appTitleColor: {
+      accordion: 'container',
+      displayName: 'App title',
+      type: 'colorSwatches',
+    },
     backgroundColor: {
       accordion: 'container',
       displayName: 'Background',
@@ -89,7 +94,7 @@ export const pageConfig = {
         isDefault: false,
       },
       selectedIconColor: {
-        value: 'var(--cc-primary-brand)',
+        value: 'var(--cc-default-icon)',
         isDefault: false,
       },
       pillHoverBackgroundColor: {
@@ -97,18 +102,22 @@ export const pageConfig = {
         isDefault: false,
       },
       pillSelectedBackgroundColor: {
-        value: 'var(--cc-surface3-surface)',
+        value: 'var(--cc-appBackground-surface)',
         isDefault: false,
       },
       pillRadius: {
         value: '6',
+      },
+      appTitleColor: {
+        value: 'var(--cc-primary-text)',
+        isDefault: false,
       },
       backgroundColor: {
         value: 'var(--cc-surface1-surface)',
         isDefault: false,
       },
       borderColor: {
-        value: 'var(--cc-default-border)',
+        value: 'var(--cc-weak-border)',
         isDefault: false,
       },
     },

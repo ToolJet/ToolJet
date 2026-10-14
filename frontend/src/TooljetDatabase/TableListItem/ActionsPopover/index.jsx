@@ -15,20 +15,24 @@ export const ListItemPopover = ({
   handleExportTable,
   onMenuToggle,
   onAddNewColumnBtnClick,
+  canEditTjdb,
 }) => {
   const closeMenu = () => {
     document.body.click();
   };
 
+  const ddlItemClass = `col text-truncate${!canEditTjdb ? ' tj-text-muted' : ''}`;
+  const ddlRowClass = `row${!canEditTjdb ? ' tj-disabled-row' : ' cursor-pointer'}`;
+
   const popover = (
     <Popover id="popover-contained" className={`table-list-items ${darkMode && 'dark-theme'}`}>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
-        <div className={`row cursor-pointer`}>
+        <div className={ddlRowClass} style={!canEditTjdb ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
           <div className="col-auto" data-cy="edit-option-icon">
             <EditIcon />
           </div>
           <div
-            className="col text-truncate"
+            className={ddlItemClass}
             data-cy="rename-table-option"
             onClick={(event) => {
               event.stopPropagation();
@@ -39,12 +43,12 @@ export const ListItemPopover = ({
             Edit table
           </div>
         </div>
-        <div className={`row mt-3 cursor-pointer`}>
+        <div className={`mt-3 ${ddlRowClass}`} style={!canEditTjdb ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
           <div className="col-auto" data-cy="add-new-column-icon">
             <SolidIcon name="column" width="14" />
           </div>
           <div
-            className="col text-truncate"
+            className={ddlItemClass}
             data-cy="add-new-column-option"
             onClick={(event) => {
               event.stopPropagation();
@@ -76,12 +80,12 @@ export const ListItemPopover = ({
           </div>
           <div className="col text-truncate">Duplicate</div>
         </div> */}
-        <div className="row mt-3 cursor-pointer">
+        <div className={`mt-3 ${ddlRowClass}`} style={!canEditTjdb ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
           <div className="col-auto" data-cy="delete-table-option-icon">
             <DeleteIcon />
           </div>
           <div
-            className="col text-truncate"
+            className={ddlItemClass}
             data-cy="delete-table-option"
             onClick={() => {
               closeMenu();

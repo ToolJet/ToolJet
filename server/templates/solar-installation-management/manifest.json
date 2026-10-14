@@ -1,0 +1,16 @@
+{
+  "name": "Solar installation management",
+  "description": "Take solar installations from survey to handover. Track project delivery, crews and commissioning evidence.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "solar-installation-management",
+  "category": "construction-and-installation"
+}

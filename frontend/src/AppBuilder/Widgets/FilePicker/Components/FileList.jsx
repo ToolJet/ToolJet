@@ -10,17 +10,18 @@ const FileList = ({ files, onRemoveFile, errors = {}, uploadingStatus = {} }) =>
   return (
     <div className="file-list-container">
       {files.map((file, index) => {
+        const fileStateKey = file.internalId ?? file.name;
         // Extract file extension for display if needed
         const fileExtension = file.name.split('.').pop();
         // Determine error state for this specific file
-        const fileError = errors[file.name] || null; // Example: Assuming errors object is keyed by file name
+        const fileError = errors[fileStateKey] || null; // Example: Assuming errors object is keyed by file identifier
         // Determine uploading state for this specific file
-        const isUploading = uploadingStatus[file.name] === 'uploading'; // Example: Assuming status object
-        const isUploaded = uploadingStatus[file.name] === 'uploaded'; // Example: Assuming status object
+        const isUploading = uploadingStatus[fileStateKey] === 'uploading'; // Example: Assuming status object
+        const isUploaded = uploadingStatus[fileStateKey] === 'uploaded'; // Example: Assuming status object
 
         return (
           <FileListItem
-            key={file.name + index} // Using name + index for key, consider a more stable unique ID if available
+            key={file.internalId ?? `${file.name}${index}`}
             fileName={file.name}
             // Assuming file size is available, might need adjustment based on actual file object structure
             fileSize={formatFileSize(file.size || 0)} // Use formatted size, handle missing size
@@ -46,6 +47,7 @@ FileList.propTypes = {
       name: PropTypes.string.isRequired,
       size: PropTypes.number, // Size might not always be present initially
       type: PropTypes.string,
+      internalId: PropTypes.string,
       // Include other expected file properties if needed
     })
   ).isRequired,
@@ -54,4 +56,4 @@ FileList.propTypes = {
   uploadingStatus: PropTypes.object, // Shape depends on how status is structured
 };
 
-export default FileList; 
+export default FileList;

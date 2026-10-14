@@ -59,7 +59,8 @@ export class WorkflowExecutionsService implements IWorkflowExecutionsService {
     state: Record<string, any>,
     appVersion: AppVersion,
     user: User,
-    response: Response
+    response: Response,
+    environmentId: string
   ): Promise<any> {
     throw new Error('Method not implemented.');
   }

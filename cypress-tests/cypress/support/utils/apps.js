@@ -1,4 +1,4 @@
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonWidgetSelector } from "Selectors/common";
 import { appPromote } from "Support/utils/platform/multiEnv";
 
 const slugValidations = [
@@ -76,37 +76,71 @@ export const setUpSlug = (slug) => {
   cy.get(commonWidgetSelector.modalCloseButton).click();
 };
 
-export const setupAppWithSlug = (appName, slug) => {
+export const setupAppWithSlug = (
+  appName,
+  slug,
+  appType = "private",
+  makePublic = false
+) => {
+  const defaultLayout = {
+    desktop: { top: 90, left: 9, width: 6, height: 40 },
+    mobile: { top: 90, left: 9, width: 6, height: 40 },
+  };
   cy.apiCreateApp(appName);
-  cy.apiAddComponentToApp(appName, "text1");
+  cy.apiAddComponentToApp(appName, appType, defaultLayout, "Text", appType);
 
   cy.ifEnv("Enterprise", () => {
     cy.openApp(
       "",
       Cypress.env("workspaceId"),
       Cypress.env("appId"),
-      commonWidgetSelector.draggableWidget("text1")
+      commonWidgetSelector.draggableWidget(appType)
     );
+    cy.apiPublishDraftVersion("v1");
     appPromote("development", "production");
   });
-
+  cy.wait(2000);
   cy.apiReleaseApp(appName);
   cy.apiAddAppSlug(appName, slug);
+  if (makePublic === true) {
+    cy.apiMakeAppPublic();
+  }
+  cy.log(`App ${appName} with slug ${slug} is set up successfully.`);
+  cy.log(`App ID: ${Cypress.env("appId")}`);
 };
 
-export const verifyRestrictedAccess = () => {
+export const verifyRestrictedAccess = (appName) => {
   cy.get('[data-cy="modal-header"]').should("have.text", "Restricted access");
-  cy.get('[data-cy="modal-description"]')
-    .invoke("text")
-    .then((text) => {
-      const normalizedText = text.replace(/’/g, "'");
+  cy.get('[data-cy="back-to-home-button"]').verifyVisibleElement(
+    "have.text",
+    "Back to home page"
+  );
+
+  if (!appName) {
+    cy.get('[data-cy="modal-description"]').should(($el) => {
+      const normalizedText = $el.text().replace(/’/g, "'");
       expect(normalizedText).to.equal(
         "You don't have access to this app. Kindly contact admin to know more."
       );
     });
-  cy.get('[data-cy="back-to-home-button"]').verifyVisibleElement(
-    "have.text",
-    "Back to home page"
+    return;
+  }
+
+  // Description switches once the app-details fetch resolves; .should(cb) retries until it does.
+  cy.get('[data-cy="modal-description"]').should(($el) => {
+    const normalizedText = $el.text().replace(/’/g, "'");
+    expect(normalizedText).to.equal(
+      "You don't have access to this app. Copy the app details below and share them with your admin."
+    );
+  });
+  cy.get('[data-cy="restricted-access-details"]').should(
+    "contain.text",
+    `App: ${appName}`
+  );
+  cy.get('[data-cy="copy-app-details-button"]').click();
+  cy.get('[data-cy="copy-app-details-button"]').should(
+    "contain.text",
+    "Copied!"
   );
 };
 
@@ -152,15 +186,11 @@ export const onboardUserFromAppLink = (
 };
 
 export const resolveHost = () => {
-  const baseUrl = Cypress.config("baseUrl");
+  // When running behind a proxy (nginx), use the actual server host
+  // Otherwise, use the baseUrl directly
+  if (Cypress.env('proxy') === true) {
+    return Cypress.config("server_host") || Cypress.config("baseUrl");
+  }
 
-  const urlMapping = {
-    "http://localhost:8082": "http://localhost:8082",
-    "http://localhost:3000": "http://localhost:3000",
-    "http://localhost:3000/apps": "http://localhost:3000/apps",
-    "http://localhost:4001": "http://localhost:3000",
-    "http://localhost:4001/apps": "http://localhost:3000/apps",
-  };
-
-  return urlMapping[baseUrl];
+  return Cypress.config("baseUrl");
 };

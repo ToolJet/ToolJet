@@ -3,6 +3,7 @@ import { OrganizationUser } from '@entities/organization_user.entity';
 import {
   USER_STATUS,
   USER_TYPE,
+  WORKSPACE_STATUS,
   WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
@@ -28,11 +29,19 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
     isDefaultOrganization: boolean = false
   ): Promise<OrganizationUser> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const newInvitationToken = isInvite ? uuid.v4() : null;
+      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+      const newInvitationTokenExpiry =
+        isInvite && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+          ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+          : null;
+
       return await manager.save(
         manager.create(OrganizationUser, {
           userId: user.id,
           organization,
-          invitationToken: isInvite ? uuid.v4() : null,
+          invitationToken: newInvitationToken,
+          invitationTokenExpiry: newInvitationTokenExpiry,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
           source: isDefaultOrganization ? WORKSPACE_USER_SOURCE.SIGNUP : source,
           role: 'all-users',
@@ -95,15 +104,31 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
       query.orWhere('user.userType = :userType', { userType: USER_TYPE.INSTANCE });
     }
 
-    query.andWhere(
-      new Brackets((qb) => {
-        if (options.searchText) {
-          qb.orWhere('LOWER(user.email) LIKE :email', { email: `%${options.searchText.toLowerCase()}%` })
-            .orWhere('LOWER(user.firstName) LIKE :firstName', { firstName: `%${options.searchText.toLowerCase()}%` })
-            .orWhere('LOWER(user.lastName) LIKE :lastName', { lastName: `%${options.searchText.toLowerCase()}%` });
-        }
-      })
-    );
+    if (options.searchText) {
+      query.andWhere(
+        new Brackets((qb) => {
+          const searchLower = options.searchText.trim().toLowerCase();
+          const parts = searchLower.split(/\s+/); // Handle multiple spaces
+
+          qb.where('LOWER(user.email) LIKE :email', { email: `%${searchLower}%` })
+            .orWhere('LOWER(user.firstName) LIKE :firstName', { firstName: `%${searchLower}%` })
+            .orWhere('LOWER(user.lastName) LIKE :lastName', { lastName: `%${searchLower}%` });
+
+          if (parts.length > 1) {
+            const firstWord = parts[0];
+            const lastWord = parts.slice(1).join(' ');
+
+            qb.orWhere(
+              '(LOWER(user.firstName) LIKE :splitFirstName AND LOWER(user.lastName) LIKE :splitLastName)',
+              { 
+                splitFirstName: `%${firstWord}%`, 
+                splitLastName: `%${lastWord}%` 
+              }
+            );
+          }
+        })
+      );
+    }
 
     if (options.status) {
       const statusCondition = condition === 'and' ? 'andWhere' : 'orWhere';
@@ -150,6 +175,21 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
         status: WORKSPACE_USER_STATUS.ACTIVE,
       },
     });
+  }
+
+  async countActiveOrganizationsForUser(userId: string, manager?: EntityManager): Promise<number> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return manager.count(OrganizationUser, {
+        where: {
+          userId,
+          status: WORKSPACE_USER_STATUS.ACTIVE,
+          organization: {
+            status: WORKSPACE_STATUS.ACTIVE,
+          },
+        },
+        relations: ['organization'],
+      });
+    }, manager || this.manager);
   }
 
   async getOrganizationUser(organizationId: string, manager?: EntityManager) {

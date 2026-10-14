@@ -1,0 +1,1158 @@
+openapi: 3.0.3
+info:
+  title: Paperless Document
+  version: ''
+  description: |
+  
+    The Paperless Documents API allows users to upload specific trade documents for paperless processing of international shipments. <br />The /upload endpoint of the API requires document details, including file name, file format, and document type (such as authorization form, commercial invoice, certificate of origin, export license, etc).<br />The /image endpoint helps users upload document images as support documents for shipping<br />The /delete endpoint of the API helps delete a specific document the user has uploaded.
+    # Reference
+    - <a href="https://developer.ups.com/api/reference/paperlessdocument/business-rules" target="_blank" rel="noopener">Business Rules</a>
+    - <a href="https://developer.ups.com/api/reference/paperlessdocument/errors" target="_blank" rel="noopener">Errors</a>
+    - <a href="https://developer.ups.com/api/reference/paperlessdocument/faq" target="_blank" rel="noopener">FAQ</a>
+
+    </br><p>Try out UPS APIs with example requests using Postman and learn more about the UPS Postman Collection by visiting our <a href="https://developer.ups.com/api/reference/postman/guide"
+    target="_blank" rel="noopener">Postman Guide</a>. Explore API documentation and sample applications through GitHub.</p>
+
+    <a href="https://god.gw.postman.com/run-collection/29542085-ee617b20-f052-4f25-9eca-7f7b8a1c5146?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D29542085-ee617b20-f052-4f25-9eca-7f7b8a1c5146%26entityType%3Dcollection%26workspaceId%3D7e7595f0-4829-4f9a-aee1-75c126b9d417" target="_blank" rel="noopener noreferrer">
+      <img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;"></a>
+    <a href="https://github.com/UPS-API" target="_blank" rel="noopener noreferrer">
+      <img src="https://www.ups.com/assets/resources/webcontent/images/gitHubButton.svg" alt="Open in GitHub " style="width: 128px; height: 32px;">
+    </a>
+servers:
+  - url: https://wwwcie.ups.com/api
+    description: Customer Integration Environment
+  - url: https://onlinetools.ups.com/api
+    description: Production
+paths:
+  "/paperlessdocuments/{version}/upload":
+    post:
+      summary: Upload Paperless Document
+      tags:
+        - Paperless
+      security:
+        - OAuth2: []
+      description: 'The Paperless Document API web service allows the users to upload,delete
+        and push to image repository their own customized trade documents for customs
+        clearance to Forms History. '
+      operationId: Upload
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+      - in: path
+        name: version
+        schema:
+          type: string
+          default: v2
+        description: |
+            Version of API
+
+            Valid values:
+            - v2
+        required: true
+      - in: header
+        name: ShipperNumber
+        schema:
+          type: string
+        description: Shipper Number
+        required: true
+      requestBody:
+        description: Generate sample code for popular API requests by selecting an
+          example below. To view a full sample request and response, first click "Authorize"
+          and enter your application credentials, then populate the required parameters
+          above and click "Try it out".
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PAPERLESSDOCUMENTUploadRequestWrapper"
+            examples:
+              '1':
+                summary: Upload Request with document type 013
+                value:
+                  UploadRequest:
+                    Request:
+                      TransactionReference:
+                        CustomerContext: ''
+                    UserCreatedForm:
+                      UserCreatedFormFileName: TestFile.txt
+                      UserCreatedFormFileFormat: txt
+                      UserCreatedFormDocumentType: '013'
+                      UserCreatedFormFile: Tm90aWNlDQpJbiBhbGwgY29tbXVuaWNhdGlvbnMgd2l0aCBVUFMgY29uY2VybmluZyB0aGlzIGRvY3VtZW50LCBwbGVhc2UgcmVmZXIgdG8gdGhlIGRvY3VtZW50IGRhdGUgbG9jYXRlZCBvbiB0aGUgY292ZXIuDQpDb3B5cmlnaHQNClRoZSB1c2UsIGRpc2Nsb3N1cmUsIHJlcHJvZHVjdGlvbiwgbW9kaWZpY2F0aW9uLCB0cmFuc2Zlciwgb3IgdHJhbnNtaXR0YWwgb2YgdGhpcyB3b3JrIGZvciBhbnkgcHVycG9zZSBpbiBhbnkgZm9ybSBvciBieSBhbnkgbWVhbnMgd2l0aG91dCB0aGUgd3JpdHRlbiBwZXJtaXNzaW9uIG9mIFVuaXRlZCBQYXJjZWwgU2VydmljZSBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLg0KwqkgQ29weXJpZ2h0IDIwMTYgVW5pdGVkIFBhcmNlbCBTZXJ2aWNlIG9mIEFtZXJpY2EsIEluYy4gQWxsIFJpZ2h0cyBSZXNlcnZlZC4NClRyYWRlbWFya3MNClVQUyBPbkxpbmXCriBpcyBhIHJlZ2lzdGVyZWQgdHJhZGVtYXJrIG9mIFVuaXRlZCBQYXJjZWwgU2VydmljZSBvZiBBbWVyaWNhLCBJbmMuIEFsbCBvdGhlciB0cmFkZW1hcmtzIGFyZSB0aGUgcHJvcGVydHkgb2YgdGhlaXIgcmVzcGVjdGl2ZSBvd25lcnMuDQpTb21lIG9mIHRoZSBVUFMgY29ycG9yYXRlIGFwcGxpY2F0aW9ucyB1c2UgVS5TLiBjaXR5LCBzdGF0ZSwgYW5kIHBvc3RhbCBjb2RlIGluZm9ybWF0aW9uIG9idGFpbmVkIGJ5IFVuaXRlZCBQYXJjZWwgU2VydmljZSBvZiBBbWVyaWNhLCBJbmMuIHVuZGVyIGEgbm9uLWV4Y2x1c2l2ZSBsaWNlbnNlIGZyb20gdGhlIFVuaXRlZCBTdGF0ZXMgUG9zdGFsIFNlcnZpY2UuIA0K
+              '2':
+                summary: Upload Request with document type 010
+                value:
+                  UploadRequest:
+                    Request:
+                      RequestOption:
+                      TransactionReference:
+                        CustomerContext: df25efe0-899b-4c03-9534-557ae1c90b66
+                    ShipperNumber: ''
+                    UserCreatedForm:
+                      UserCreatedFormDocumentType: '010'
+                      UserCreatedFormFile: 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
+                      UserCreatedFormFileFormat: pdf
+                      UserCreatedFormFileName: TP-0452492_PackingList.pdf
+              '3':
+                summary: Upload Request with document type 002
+                value:
+                  UploadRequest:
+                    Request:
+                      TransactionReference:
+                        CustomerContext: 06266e54656e4284805be4d45786ee96
+                    UserCreatedForm:
+                    - UserCreatedFormFileName: iShipTestFile04.txt
+                      UserCreatedFormFileFormat: txt
+                      UserCreatedFormDocumentType: '002'
+                      UserCreatedFormFile: Tm90aWNlDQpJbiBhbGwgY29tbXVuaWNhdGlvbnMgd2l0aCBVUFMgY29uY2VybmluZyB0aGlzIGRvY3VtZW50LCBwbGVhc2UgcmVmZXIgdG8gdGhlIGRvY3VtZW50IGRhdGUgbG9jYXRlZCBvbiB0aGUgY292ZXIuDQpDb3B5cmlnaHQNClRoZSB1c2UsIGRpc2Nsb3N1cmUsIHJlcHJvZHVjdGlvbiwgbW9kaWZpY2F0aW9uLCB0cmFuc2Zlciwgb3IgdHJhbnNtaXR0YWwgb2YgdGhpcyB3b3JrIGZvciBhbnkgcHVycG9zZSBpbiBhbnkgZm9ybSBvciBieSBhbnkgbWVhbnMgd2l0aG91dCB0aGUgd3JpdHRlbiBwZXJtaXNzaW9uIG9mIFVuaXRlZCBQYXJjZWwgU2VydmljZSBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLg0KwqkgQ29weXJpZ2h0IDIwMTYgVW5pdGVkIFBhcmNlbCBTZXJ2aWNlIG9mIEFtZXJpY2EsIEluYy4gQWxsIFJpZ2h0cyBSZXNlcnZlZC4NClRyYWRlbWFya3MNClVQUyBPbkxpbmXCriBpcyBhIHJlZ2lzdGVyZWQgdHJhZGVtYXJrIG9mIFVuaXRlZCBQYXJjZWwgU2VydmljZSBvZiBBbWVyaWNhLCBJbmMuIEFsbCBvdGhlciB0cmFkZW1hcmtzIGFyZSB0aGUgcHJvcGVydHkgb2YgdGhlaXIgcmVzcGVjdGl2ZSBvd25lcnMuDQpTb21lIG9mIHRoZSBVUFMgY29ycG9yYXRlIGFwcGxpY2F0aW9ucyB1c2UgVS5TLiBjaXR5LCBzdGF0ZSwgYW5kIHBvc3RhbCBjb2RlIGluZm9ybWF0aW9uIG9idGFpbmVkIGJ5IFVuaXRlZCBQYXJjZWwgU2VydmljZSBvZiBBbWVyaWNhLCBJbmMuIHVuZGVyIGEgbm9uLWV4Y2x1c2l2ZSBsaWNlbnNlIGZyb20gdGhlIFVuaXRlZCBTdGF0ZXMgUG9zdGFsIFNlcnZpY2UuIA0K
+                    ShipperNumber: ''
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PAPERLESSDOCUMENTUploadResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/paperlessdocuments/{version}/image":
+    post:
+      summary: Paperless Document Push Image
+      tags:
+        - Paperless
+      security:
+        - OAuth2: []
+      description: 'The Paperless Document API web service allows the users to upload
+        their own customized trade documents for customs clearance to Forms History. '
+      operationId: PushToImageRepository
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+      - in: path
+        name: version
+        schema:
+          type: string
+          default: v2
+        description: |
+            Version of API
+
+            Valid values:
+            - v2
+        required: true
+      - in: header
+        name: ShipperNumber
+        schema:
+          type: string
+        description: Shipper Number
+        required: true
+      requestBody:
+        description: Generate sample code for popular API requests by selecting an
+          example below. To view a full sample request and response, first click "Authorize"
+          and enter your application credentials, then populate the required parameters
+          above and click "Try it out".
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PAPERLESSDOCUMENTRequestWrapper"
+            examples:
+              json:
+                summary: A sample JSON request (Standard Example)
+                value:
+                  PushToImageRepositoryRequest:
+                    Request:
+                      TransactionReference:
+                        CustomerContext: Your Customer Context
+                    FormsHistoryDocumentID:
+                      DocumentID: 2016-01-18-11.01.07.589501
+                    ShipmentIdentifier: Your Package Shipment Identifier
+                    ShipmentDateAndTime: 2016-01-18-11.01.07
+                    ShipmentType: '1'
+                    TrackingNumber: Your Package Tracking Number
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PAPERLESSDOCUMENTResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/paperlessdocuments/{version}/DocumentId/ShipperNumber":
+    delete:
+      summary: Delete Paperless Document
+      tags:
+        - Paperless
+      security:
+        - OAuth2: []
+      description: The Paperless Document API web service allows the users to upload their own customized trade documents for customs clearance to Forms History.
+      operationId: Delete
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+      - in: path
+        name: version
+        schema:
+          type: string
+          default: v2
+        description: |
+            Version of API
+
+            Valid values:
+            - v2
+        required: true
+      - in: header
+        name: ShipperNumber
+        schema:
+          type: string
+        description: Your Shipper Number
+        required: true
+      - in: header
+        name: DocumentId
+        schema:
+          type: string
+        description: DocumentId representing uploaded document to Forms History. Only one DocumentID will be accepted for delete request.
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PAPERLESSDOCUMENTDeleteResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/paperlessdocuments/{deprecatedVersion}/upload":
+    post:
+      deprecated: true
+      summary: Upload Paperless Document
+      tags:
+        - Paperless
+      security:
+        - OAuth2: []
+      description: 'The Paperless Document API web service allows the users to upload,delete
+        and push to image repository their own customized trade documents for customs
+        clearance to Forms History. '
+      operationId: Deprecated Upload
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+      - in: path
+        name: deprecatedVersion
+        schema:
+          type: string
+          default: v1
+        description: |
+            Version of API
+
+            Valid values:
+            - v1
+        required: true
+      - in: header
+        name: ShipperNumber
+        schema:
+          type: string
+        description: Shipper Number
+        required: true
+      requestBody:
+        description: Generate sample code for popular API requests by selecting an
+          example below. To view a full sample request and response, first click "Authorize"
+          and enter your application credentials, then populate the required parameters
+          above and click "Try it out".
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PAPERLESSDOCUMENTUploadRequestWrapper"
+            examples:
+              '1':
+                summary: Upload Request with document type 013
+                value:
+                  UploadRequest:
+                    Request:
+                      TransactionReference:
+                        CustomerContext: ''
+                    UserCreatedForm:
+                      UserCreatedFormFileName: TestFile.txt
+                      UserCreatedFormFileFormat: txt
+                      UserCreatedFormDocumentType: '013'
+                      UserCreatedFormFile: Tm90aWNlDQpJbiBhbGwgY29tbXVuaWNhdGlvbnMgd2l0aCBVUFMgY29uY2VybmluZyB0aGlzIGRvY3VtZW50LCBwbGVhc2UgcmVmZXIgdG8gdGhlIGRvY3VtZW50IGRhdGUgbG9jYXRlZCBvbiB0aGUgY292ZXIuDQpDb3B5cmlnaHQNClRoZSB1c2UsIGRpc2Nsb3N1cmUsIHJlcHJvZHVjdGlvbiwgbW9kaWZpY2F0aW9uLCB0cmFuc2Zlciwgb3IgdHJhbnNtaXR0YWwgb2YgdGhpcyB3b3JrIGZvciBhbnkgcHVycG9zZSBpbiBhbnkgZm9ybSBvciBieSBhbnkgbWVhbnMgd2l0aG91dCB0aGUgd3JpdHRlbiBwZXJtaXNzaW9uIG9mIFVuaXRlZCBQYXJjZWwgU2VydmljZSBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLg0KwqkgQ29weXJpZ2h0IDIwMTYgVW5pdGVkIFBhcmNlbCBTZXJ2aWNlIG9mIEFtZXJpY2EsIEluYy4gQWxsIFJpZ2h0cyBSZXNlcnZlZC4NClRyYWRlbWFya3MNClVQUyBPbkxpbmXCriBpcyBhIHJlZ2lzdGVyZWQgdHJhZGVtYXJrIG9mIFVuaXRlZCBQYXJjZWwgU2VydmljZSBvZiBBbWVyaWNhLCBJbmMuIEFsbCBvdGhlciB0cmFkZW1hcmtzIGFyZSB0aGUgcHJvcGVydHkgb2YgdGhlaXIgcmVzcGVjdGl2ZSBvd25lcnMuDQpTb21lIG9mIHRoZSBVUFMgY29ycG9yYXRlIGFwcGxpY2F0aW9ucyB1c2UgVS5TLiBjaXR5LCBzdGF0ZSwgYW5kIHBvc3RhbCBjb2RlIGluZm9ybWF0aW9uIG9idGFpbmVkIGJ5IFVuaXRlZCBQYXJjZWwgU2VydmljZSBvZiBBbWVyaWNhLCBJbmMuIHVuZGVyIGEgbm9uLWV4Y2x1c2l2ZSBsaWNlbnNlIGZyb20gdGhlIFVuaXRlZCBTdGF0ZXMgUG9zdGFsIFNlcnZpY2UuIA0K
+              '2':
+                summary: Upload Request with document type 010
+                value:
+                  UploadRequest:
+                    Request:
+                      RequestOption:
+                      TransactionReference:
+                        CustomerContext: df25efe0-899b-4c03-9534-557ae1c90b66
+                    ShipperNumber: ''
+                    UserCreatedForm:
+                      UserCreatedFormDocumentType: '010'
+                      UserCreatedFormFile: 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
+                      UserCreatedFormFileFormat: pdf
+                      UserCreatedFormFileName: TP-0452492_PackingList.pdf
+              '3':
+                summary: Upload Request with document type 002
+                value:
+                  UploadRequest:
+                    Request:
+                      TransactionReference:
+                        CustomerContext: 06266e54656e4284805be4d45786ee96
+                    UserCreatedForm:
+                    - UserCreatedFormFileName: iShipTestFile04.txt
+                      UserCreatedFormFileFormat: txt
+                      UserCreatedFormDocumentType: '002'
+                      UserCreatedFormFile: Tm90aWNlDQpJbiBhbGwgY29tbXVuaWNhdGlvbnMgd2l0aCBVUFMgY29uY2VybmluZyB0aGlzIGRvY3VtZW50LCBwbGVhc2UgcmVmZXIgdG8gdGhlIGRvY3VtZW50IGRhdGUgbG9jYXRlZCBvbiB0aGUgY292ZXIuDQpDb3B5cmlnaHQNClRoZSB1c2UsIGRpc2Nsb3N1cmUsIHJlcHJvZHVjdGlvbiwgbW9kaWZpY2F0aW9uLCB0cmFuc2Zlciwgb3IgdHJhbnNtaXR0YWwgb2YgdGhpcyB3b3JrIGZvciBhbnkgcHVycG9zZSBpbiBhbnkgZm9ybSBvciBieSBhbnkgbWVhbnMgd2l0aG91dCB0aGUgd3JpdHRlbiBwZXJtaXNzaW9uIG9mIFVuaXRlZCBQYXJjZWwgU2VydmljZSBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLg0KwqkgQ29weXJpZ2h0IDIwMTYgVW5pdGVkIFBhcmNlbCBTZXJ2aWNlIG9mIEFtZXJpY2EsIEluYy4gQWxsIFJpZ2h0cyBSZXNlcnZlZC4NClRyYWRlbWFya3MNClVQUyBPbkxpbmXCriBpcyBhIHJlZ2lzdGVyZWQgdHJhZGVtYXJrIG9mIFVuaXRlZCBQYXJjZWwgU2VydmljZSBvZiBBbWVyaWNhLCBJbmMuIEFsbCBvdGhlciB0cmFkZW1hcmtzIGFyZSB0aGUgcHJvcGVydHkgb2YgdGhlaXIgcmVzcGVjdGl2ZSBvd25lcnMuDQpTb21lIG9mIHRoZSBVUFMgY29ycG9yYXRlIGFwcGxpY2F0aW9ucyB1c2UgVS5TLiBjaXR5LCBzdGF0ZSwgYW5kIHBvc3RhbCBjb2RlIGluZm9ybWF0aW9uIG9idGFpbmVkIGJ5IFVuaXRlZCBQYXJjZWwgU2VydmljZSBvZiBBbWVyaWNhLCBJbmMuIHVuZGVyIGEgbm9uLWV4Y2x1c2l2ZSBsaWNlbnNlIGZyb20gdGhlIFVuaXRlZCBTdGF0ZXMgUG9zdGFsIFNlcnZpY2UuIA0K
+                    ShipperNumber: ''
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PAPERLESSDOCUMENTUploadResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/paperlessdocuments/{deprecatedVersion}/image":
+    post:
+      deprecated: true
+      summary: Paperless Document Push Image
+      tags:
+        - Paperless
+      security:
+        - OAuth2: []
+      description: 'The Paperless Document API web service allows the users to upload
+        their own customized trade documents for customs clearance to Forms History. '
+      operationId: Deprecated PushToImageRepository
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+      - in: path
+        name: deprecatedVersion
+        schema:
+          type: string
+          default: v1
+        description: |
+            Version of API
+
+            Valid values:
+            - v1
+        required: true
+      - in: header
+        name: ShipperNumber
+        schema:
+          type: string
+        description: Shipper Number
+        required: true
+      requestBody:
+        description: Generate sample code for popular API requests by selecting an
+          example below. To view a full sample request and response, first click "Authorize"
+          and enter your application credentials, then populate the required parameters
+          above and click "Try it out".
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PAPERLESSDOCUMENTRequestWrapper"
+            examples:
+              json:
+                summary: A sample JSON request (Standard Example)
+                value:
+                  PushToImageRepositoryRequest:
+                    Request:
+                      TransactionReference:
+                        CustomerContext: Your Customer Context
+                    FormsHistoryDocumentID:
+                      DocumentID: 2016-01-18-11.01.07.589501
+                    ShipmentIdentifier: Your Package Shipment Identifier
+                    ShipmentDateAndTime: 2016-01-18-11.01.07
+                    ShipmentType: '1'
+                    TrackingNumber: Your Package Tracking Number
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PAPERLESSDOCUMENTResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/paperlessdocuments/{deprecatedVersion}/DocumentId/ShipperNumber":
+    delete:
+      deprecated: true
+      summary: Delete Paperless Document
+      tags:
+        - Paperless
+      security:
+        - OAuth2: []
+      description: The Paperless Document API web service allows the users to upload their own customized trade documents for customs clearance to Forms History.
+      operationId: Deprecated Delete
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+      - in: path
+        name: deprecatedVersion
+        schema:
+          type: string
+          default: v1
+        description: |
+            Version of API
+
+            Valid values:
+            - v1
+        required: true
+      - in: header
+        name: ShipperNumber
+        schema:
+          type: string
+        description: Your Shipper Number
+        required: true
+      - in: header
+        name: DocumentId
+        schema:
+          type: string
+        description: DocumentId representing uploaded document to Forms History. Only one DocumentID will be accepted for delete request.
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PAPERLESSDOCUMENTDeleteResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: |
+        Find your Client ID and Secret on your app info page.
+        1. Select \"Try It\"
+        2. In the Security section enter your Client ID and Secret.
+        3. Select \"Request Token\"
+        4. Enter any additional information in the Body and Parameters sections.
+        5. Select \"Send\" to execute your API request
+      flows:
+        clientCredentials:
+          x-tokenEndpointAuthMethod: client_secret_basic
+          tokenUrl: https://wwwcie.ups.com/security/v1/oauth/token
+          scopes: {}
+  schemas:
+    PAPERLESSDOCUMENTDeleteRequestWrapper:
+      xml:
+        name: DeleteRequest
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - DeleteRequest
+      properties:
+        DeleteRequest:
+          "$ref": "#/components/schemas/DeleteRequest"
+    PAPERLESSDOCUMENTDeleteResponseWrapper:
+      xml:
+        name: DeleteResponse
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - DeleteResponse
+      properties:
+        DeleteResponse:
+          "$ref": "#/components/schemas/DeleteResponse"
+    DeleteRequest:
+      type: object
+      required:
+      - Request
+      - DocumentID
+      - ShipperNumber
+      properties:
+        Request:
+          "$ref": "#/components/schemas/DeleteRequest_Request"
+        ShipperNumber:
+          description: The Shipper's UPS Account Number.  Your UPS Account Number
+            must have 'Upload Forms Created Offline' enabled to use this webservice.
+          maximum: 1
+          type: string
+          minLength: 6
+          maxLength: 6
+        DocumentID:
+          description: DocumentId representing uploaded document to Forms History.  Only
+            one DocumentID will be accepted for delete request.
+          maximum: 1
+          type: string
+          minLength: 26
+          maxLength: 26
+      xml:
+        name: DeleteRequest
+      maximum: 1
+      description: Paperless Document API Request container for deleting user created
+        forms.
+    DeleteRequest_Request:
+      type: object
+      properties:
+        RequestOption:
+          description: Enables the user to specify optional processing. Currently,
+            there is no optional process in Paperless Document API.
+          type: string
+          minLength: 1
+          maxLength: 1
+        SubVersion:
+          description: Not Used.
+          maximum: 1
+          type: string
+        TransactionReference:
+          "$ref": "#/components/schemas/Request_TransactionReference"
+      xml:
+        name: Request
+      maximum: 1
+      description: Contains Paperless Document API deleted request criteria components.
+    DeleteResponse:
+      type: object
+      required:
+      - Response
+      properties:
+        Response:
+          "$ref": "#/components/schemas/DeleteResponse_Response"
+      xml:
+        name: DeleteResponse
+      description: Paperless Document API response container for delete request.
+      maximum: 1
+    DeleteResponse_Response:
+      type: object
+      required:
+      - ResponseStatus
+      properties:
+        ResponseStatus:
+          "$ref": "#/components/schemas/Response_ResponseStatus"
+        Alert:
+          description: |
+            Alert Container.  There can be zero to many alert containers with code and description.
+
+            **NOTE:** For versions >= v2, this element will always be returned as an array. For requests using version = v1, this element will be returned as an array if there is more than one object and a single object if there is only 1.
+          type: array
+          items:
+            "$ref": "#/components/schemas/Response_Alert"
+        TransactionReference:
+          "$ref": "#/components/schemas/Response_TransactionReference"
+      xml:
+        name: Response
+      description: Response container.
+      maximum: 1
+    Response_ResponseStatus:
+      type: object
+      maximum: 1
+      required:
+      - Description
+      - Code
+      properties:
+        Code:
+          description: Identifies the success or failure of the transaction. Valid
+            values are 0 = Failed and 1 = Successful.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        Description:
+          description: Describes Response Status Code.  Returns text of "Success"
+            or "Failure".
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 35
+      xml:
+        name: ResponseStatus
+      description: Response status container.
+    Response_Alert:
+      type: object
+      maximum: 1
+      required:
+      - Description
+      - Code
+      properties:
+        Code:
+          description: Warning code returned by the system.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 10
+        Description:
+          description: Warning messages returned by the system.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 150
+      xml:
+        name: Alert
+      description: Alert Container. There can be zero to many alert containers with
+        code and description.
+    Response_TransactionReference:
+      type: object
+      maximum: 1
+      properties:
+        CustomerContext:
+          description: The CustomerContext Information which will be echoed during
+            response.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 512
+      xml:
+        name: TransactionReference
+      description: Transaction Reference Container.
+    PAPERLESSDOCUMENTRequestWrapper:
+      xml:
+        name: PushToImageRepositoryRequest
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PushToImageRepositoryRequest
+      properties:
+        PushToImageRepositoryRequest:
+          "$ref": "#/components/schemas/PushToImageRepositoryRequest"
+    PAPERLESSDOCUMENTResponseWrapper:
+      xml:
+        name: PushToImageRepositoryResponse
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PushToImageRepositoryResponse
+      properties:
+        PushToImageRepositoryResponse:
+          "$ref": "#/components/schemas/PushToImageRepositoryResponse"
+    PushToImageRepositoryRequest:
+      type: object
+      required:
+      - ShipmentIdentifier
+      - ShipmentType
+      - Request
+      - ShipperNumber
+      - FormsHistoryDocumentID
+      properties:
+        Request:
+          "$ref": "#/components/schemas/PushToImageRepositoryRequest_Request"
+        ShipperNumber:
+          description: The Shipper's UPS Account Number.  Your UPS Account Number
+            must have 'Upload Forms Created Offline' enabled to use this webservice.
+          maximum: 1
+          type: string
+          minLength: 6
+          maxLength: 6
+        FormsHistoryDocumentID:
+          "$ref": "#/components/schemas/PushToImageRepositoryRequest_FormsHistoryDocumentID"
+        FormsGroupID:
+          description: FormsGroupID would be required in Push Request if user needs
+            to update uploaded DocumentID(s) in Forms History.
+          maximum: 1
+          type: string
+          minLength: 26
+          maxLength: 26
+        ShipmentIdentifier:
+          description: Shipment Identifier is required for this request.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 19
+        ShipmentDateAndTime:
+          description: The date and time of the processed shipment. Required only
+            for small package shipments. The valid format is yyyy-MM-dd-HH.mm.ss
+          maximum: 1
+          type: string
+        ShipmentType:
+          description: 'Valid values are: 1 = small package, 2 = freight. '
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        PRQConfirmationNumber:
+          description: PRQ Confirmation being specified by client. Required for freight
+            shipments.
+          maximum: 1
+          type: string
+          minLength: 9
+          maxLength: 30
+        TrackingNumber:
+          description: UPS Tracking Number associated with this shipment. Required
+            only for small package shipment.
+          type: array
+          minLength: 7
+          maxLength: 20
+          items:
+            type: string
+      xml:
+        name: PushToImageRepositoryRequest
+      maximum: 1
+      description: Paperless Document API request container for push to Image Repository.
+    PushToImageRepositoryRequest_Request:
+      type: object
+      properties:
+        RequestOption:
+          description: Enables the user to specify optional processing. Currently,
+            there is no optional process in Paperless Document API.
+          type: string
+          minLength: 1
+          maxLength: 1
+        SubVersion:
+          description: Not Used.
+          maximum: 1
+          type: string
+        TransactionReference:
+          "$ref": "#/components/schemas/Request_TransactionReference"
+      xml:
+        name: Request
+      maximum: 1
+      description: Contains Paperless Document API PushToImageRepository request criteria
+        components.
+    Request_TransactionReference:
+      type: object
+      maximum: 1
+      properties:
+        CustomerContext:
+          description: The client uses CustomerContext to synchronize request/response pairs. The client establishes CustomerContext, which can contain any information you want; it is echoed back by the server.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 512
+      xml:
+        name: TransactionReference
+      description: TransactionReference identifies transactions between client and server.
+    PushToImageRepositoryRequest_FormsHistoryDocumentID:
+      type: object
+      maximum: 13
+      required:
+      - DocumentID
+      properties:
+        DocumentID:
+          description: DocumentID represents a document uploaded to Forms History.
+          type: array
+          maximum: 13
+          minLength: 26
+          maxLength: 26
+          items:
+            type: string
+      xml:
+        name: FormsHistoryDocumentID
+      description: The container for DocumentID(s).
+    PushToImageRepositoryResponse:
+      type: object
+      required:
+      - Response
+      properties:
+        Response:
+          "$ref": "#/components/schemas/PushToImageRepositoryResponse_Response"
+        FormsGroupID:
+          description: FormsGroupID is a consolidated ID representing one or multiple
+            DocumentID(s).
+          maximum: 1
+          type: string
+          minLength: 26
+          maxLength: 26
+      xml:
+        name: PushToImageRepositoryResponse
+      maximum: 1
+      description: Paperless Document API response container for Push To Image Repository
+        request.
+    PushToImageRepositoryResponse_Response:
+      type: object
+      required:
+      - ResponseStatus
+      properties:
+        ResponseStatus:
+          "$ref": "#/components/schemas/Response_ResponseStatus"
+        Alert:
+          description: |
+            Alert Container.  There can be zero to many alert containers with code and description.
+
+            **NOTE:** For versions >= v2, this element will always be returned as an array. For requests using version = v1, this element will be returned as an array if there is more than one object and a single object if there is only 1.
+          type: array
+          items:
+            "$ref": "#/components/schemas/Response_Alert"
+        TransactionReference:
+          "$ref": "#/components/schemas/Response_TransactionReference"
+      xml:
+        name: Response
+      description: Response container.
+      maximum: 1
+    PAPERLESSDOCUMENTUploadRequestWrapper:
+      xml:
+        name: UploadRequest
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - UploadRequest
+      properties:
+        UploadRequest:
+          "$ref": "#/components/schemas/UploadRequest"
+    PAPERLESSDOCUMENTUploadResponseWrapper:
+      xml:
+        name: UploadResponse
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - UploadResponse
+      properties:
+        UploadResponse:
+          "$ref": "#/components/schemas/UploadResponse"
+    UploadRequest:
+      type: object
+      required:
+      - Request
+      - UserCreatedForm
+      - ShipperNumber
+      properties:
+        Request:
+          "$ref": "#/components/schemas/UploadRequest_Request"
+        ShipperNumber:
+          description: The Shipper's UPS Account Number.  Your UPS Account Number
+            must have 'Upload Forms Created Offline' enabled to use this webservice.
+          maximum: 1
+          type: string
+          minLength: 6
+          maxLength: 6
+        UserCreatedForm:
+          type: array
+          maximum: 13
+          items:
+            "$ref": "#/components/schemas/UploadRequest_UserCreatedForm"
+      xml:
+        name: UploadRequest
+      maximum: 1
+      description: Paperless Document API Request container for uploading User Created Forms.
+    UploadRequest_Request:
+      type: object
+      properties:
+        RequestOption:
+          description: Enables the user to specify optional processing. Currently, there is no optional process in Paperless Document API.
+          type: string
+          minLength: 1
+          maxLength: 1
+        SubVersion:
+          description: Not Used.
+          maximum: 1
+          type: string
+        TransactionReference:
+          "$ref": "#/components/schemas/Request_TransactionReference"
+      xml:
+        name: Request
+      maximum: 1
+      description: Contains Paperless Document API upload request criteria components.
+    UploadRequest_UserCreatedForm:
+      type: object
+      maximum: 1
+      required:
+      - UserCreatedFormFile
+      - UserCreatedFormFileName
+      - UserCreatedFormFileFormat
+      - UserCreatedFormDocumentType
+      properties:
+        UserCreatedFormFileName:
+          description: The name of the file.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 300
+        UserCreatedFormFile:
+          description: |
+            The user created form file.  The maximum allowable size of each file is restricted to 10 MB. Should be a base64 encoded string.
+
+            Note: The maximum allowable size of each file is restriced to 1MB in CIE (Customer Integration Environment).
+          maximum: 1
+          type: string
+        UserCreatedFormFileFormat:
+          description: The UserCreatedForm file format.  The allowed file formats
+            are bmp, doc, gif, jpg, pdf, png, rtf, tif, txt and xls. The only exceptions
+            for having file format of length 4 character are docx and xlsx. All other
+            file formats needs to be of length 3.
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 4
+        UserCreatedFormDocumentType:
+          description: The type of documents in UserCreatedForm file.  The allowed
+            document types are 001 - Authorization Form, 002 - Commercial Invoice,
+            003 - Certificate of Origin, 004 - Export Accompanying Document, 005 -
+            Export License, 006 - Import Permit, 007 - One Time USMCA, 008 - Other
+            Document, 009 - Power of Attorney, 010 - Packing List, 011 - SED Document,
+            012 - Shipper's Letter of Instruction, 013 - Declaration. The total number
+            of documents allowed per file or per shipment is 13. Each document type
+            needs to be three digits.
+          maximum: 13
+          type: string
+          minLength: 3
+          maxLength: 3
+      xml:
+        name: UserCreatedForm
+      description: The container for User Created Form. The container holds the file. Total number of allowed files per shipment is 13.
+    UploadResponse:
+      type: object
+      required:
+      - Response
+      properties:
+        Response:
+          "$ref": "#/components/schemas/UploadResponse_Response"
+        FormsHistoryDocumentID:
+          "$ref": "#/components/schemas/UploadResponse_FormsHistoryDocumentID"
+      xml:
+        name: UploadResponse
+      description: Paperless Document API Response Container for upload request.
+      maximum: 1
+    UploadResponse_Response:
+      type: object
+      required:
+      - ResponseStatus
+      properties:
+        ResponseStatus:
+          "$ref": "#/components/schemas/Response_ResponseStatus"
+        Alert:
+          description: |
+            Alert Container.  There can be zero to many alert containers with code and description.
+
+            **NOTE:** For versions >= v2, this element will always be returned as an array. For requests using version = v1, this element will be returned as an array if there is more than one object and a single object if there is only 1.
+          type: array
+          items:
+            "$ref": "#/components/schemas/Response_Alert"
+        TransactionReference:
+          "$ref": "#/components/schemas/Response_TransactionReference"
+      xml:
+        name: Response
+      description: Response container.
+      maximum: 1
+    UploadResponse_FormsHistoryDocumentID:
+      type: object
+      required:
+      - DocumentID
+      properties:
+        DocumentID:
+          description: |
+              DocumentID represents a document uploaded to Forms History.
+
+              **NOTE:** For versions >= v2, this element will always be returned as an array. For requests using version = v1, this element will be returned as an array if there is more than one object and a single object if there is only 1.
+          type: array
+          items:
+            type: string
+          minLength: 26
+          maxLength: 26
+      xml:
+        name: FormsHistoryDocumentID
+      description: The container for DocumentID(s).
+      maximum: 1
+    ErrorResponse:
+      type: object
+      properties:
+        response:
+          "$ref": "#/components/schemas/CommonErrorResponse"
+    CommonErrorResponse:
+      type: object
+      description: The error response containing any errors that occurred.
+      properties:
+        errors:
+          type: array
+          description: The error array containing any errors that occurred.
+          items:
+            "$ref": "#/components/schemas/ErrorMessage"
+    ErrorMessage:
+      type: object
+      properties:
+        code:
+          type: string
+          description: The error code.
+        message:
+          type: string
+          description: The error message.
+      description: The error response containing any errors that occurred.

@@ -14,6 +14,6 @@ export interface IOAuthService {
   ): Promise<any>;
 
   handleOIDCConfigs(response: Response, configId: string): Promise<any>;
-  getSAMLAuthorizationURL(configId: string): Promise<any>;
+  getSAMLAuthorizationURL(configId: string, requestHost?: string): Promise<any>;
   saveSAMLResponse(configId: string, response: string): Promise<any>;
 }

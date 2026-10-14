@@ -14,10 +14,13 @@ const Input = ({ classes, helpText, onBlur, ...props }) => {
   const iconType = showPassword ? 'eye' : 'eyedisable';
 
   useEffect(() => {
-    if (isWorkspaceConstant) {
+    if (
+      isWorkspaceConstant ||
+      (typeof value === 'string' && value.startsWith('{{') && (type === 'password' || encrypted))
+    ) {
       setShowPassword(true);
     }
-  }, [isWorkspaceConstant]);
+  }, [isWorkspaceConstant, value]);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);

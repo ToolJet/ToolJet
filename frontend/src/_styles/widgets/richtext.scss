@@ -1,0 +1,6 @@
+// RichTextEditor placeholder styling
+// Ensures placeholder text uses consistent color across all input components
+
+.RichEditor-editor .public-DraftEditorPlaceholder-root {
+  color: var(--cc-placeholder-text);
+}

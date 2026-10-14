@@ -4,6 +4,24 @@ import { AppVersion } from '@entities/app_version.entity';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { PromoteVersionDto, VersionCreateDto } from '../dto';
 
+/**
+ * Context interfaces for history capture hooks
+ */
+export interface VersionCreateContext {
+  versionName: string;
+  versionFromId: string;
+}
+
+export interface VersionUpdateContext {
+  appVersionId: string;
+  updateDto: AppVersionUpdateDto;
+}
+
+export interface VersionSettingsUpdateContext {
+  appVersionId: string;
+  updateDto: AppVersionUpdateDto;
+}
+
 export interface IVersionService {
   getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }>;
 

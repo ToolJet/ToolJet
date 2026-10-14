@@ -1,13 +1,13 @@
 import { sanitizeInput } from '@helpers/utils.helper';
-import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum, IsIn } from 'class-validator';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { APP_TYPES } from '../constants';
-
 
 export enum AppBuilderMode {
   AI = 'ai',
   VISUAL = 'visual',
 }
+
 export class AppCreateDto {
   @IsNotEmpty()
   @IsString()
@@ -44,10 +44,7 @@ export class AppUpdateDto {
 
   @IsString()
   @IsOptional()
-  @Transform(({ value }) => {
-    const newValue = sanitizeInput(value);
-    return newValue.trim();
-  })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsNotEmpty({ message: 'App name should not be empty' })
   @MaxLength(50, { message: 'Maximum length has been reached.' })
   name: string;
@@ -111,6 +108,9 @@ export class ValidateAppAccessResponseDto {
 
   @Expose()
   versionId: string;
+
+  @Expose()
+  canEdit?: boolean;
 }
 
 export class AppListDto {
@@ -129,6 +129,19 @@ export class AppListDto {
   @IsString()
   @IsOptional()
   type: string;
+
+  @IsOptional()
+  @IsIn(['picker'])
+  context?: string;
+}
+
+@Exclude()
+export class RestrictedAccessInfoDto {
+  @Expose()
+  appName: string;
+
+  @Expose()
+  folderName: string | null;
 }
 
 export class VersionReleaseDto {

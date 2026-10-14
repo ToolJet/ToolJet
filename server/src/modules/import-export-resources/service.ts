@@ -41,7 +41,7 @@ export class ImportExportResourcesService {
           tjdb,
           exportResourcesDto.tooljet_database
         );
-        exportedDbs.push(exportedDb);
+        if (exportedDb) exportedDbs.push(exportedDb);
       }
 
       if (exportedDbs.length > 0) resourcesExport.tooljet_database = exportedDbs;
@@ -59,15 +59,19 @@ export class ImportExportResourcesService {
       if (exportedApps.length > 0) resourcesExport.app = exportedApps;
     }
 
-    const appData = await this.appsRepository.findOne({ where: { id: exportResourcesDto.app[0].id } });
-    //APP_EXPORT audit
-    const auditLogsData = {
-      userId: user.id,
-      organizationId: user.organizationId,
-      resourceId: appData.id,
-      resourceName: appData.name,
-    };
-    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+    if (exportResourcesDto.app?.length) {
+      const appData = await this.appsRepository.findOne({
+        where: { id: exportResourcesDto.app[0].id }
+      });
+      //APP_EXPORT audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: appData.id,
+        resourceName: appData.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+    }
     return resourcesExport;
   }
 
@@ -123,7 +127,8 @@ export class ImportExportResourcesService {
             isGitApp,
             importResourcesDto.tooljet_version,
             cloning,
-            manager
+            manager,
+            isTemplateApp
           );
 
           imports.app.push({ id: createdApp.newApp.id, name: createdApp.newApp.name });

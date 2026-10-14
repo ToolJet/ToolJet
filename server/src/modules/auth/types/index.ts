@@ -1,6 +1,7 @@
 import { FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
+import { ClientMetadata } from 'openid-client';
 
 export interface Features {
   [FEATURE_KEY.LOGIN]: FeatureConfig;
@@ -11,6 +12,8 @@ export interface Features {
   [FEATURE_KEY.SETUP_ADMIN]: FeatureConfig;
   [FEATURE_KEY.FORGOT_PASSWORD]: FeatureConfig;
   [FEATURE_KEY.RESET_PASSWORD]: FeatureConfig;
+  [FEATURE_KEY.VERIFY_RESET_TOKEN]: FeatureConfig;
+  [FEATURE_KEY.PASSWORD_EXPIRED_RESET]: FeatureConfig;
   [FEATURE_KEY.OAUTH_COMMON_SIGN_IN]: FeatureConfig;
   [FEATURE_KEY.OAUTH_OPENID_CONFIGS]: FeatureConfig;
   [FEATURE_KEY.OAUTH_SAML_CONFIGS]: FeatureConfig;
@@ -20,8 +23,17 @@ export interface Features {
   [FEATURE_KEY.AI_ONBOARDING_SSO]: FeatureConfig;
   [FEATURE_KEY.AI_COOKIE_SET]: FeatureConfig;
   [FEATURE_KEY.AI_COOKIE_DELETE]: FeatureConfig;
+  [FEATURE_KEY.AI_MFA_REQUEST_OTP]: FeatureConfig;
+  [FEATURE_KEY.AI_MFA_VERIFY_OTP]: FeatureConfig;
+  [FEATURE_KEY.MFA_VERIFY]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
   [MODULES.AUTH]: Features;
+}
+
+export interface OidcClientConfig extends Partial<ClientMetadata> {
+  client_id: string;
+  client_secret?: string;
+  redirect_uris: string[];
 }

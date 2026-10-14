@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
-import Accordion from '@/_ui/Accordion';
+import { useTranslation } from 'react-i18next';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { renderElement } from '../Utils';
 import { EventManager } from '../EventManager';
 import Select from '@/_ui/Select';
@@ -28,6 +30,22 @@ export const DATE_FORMAT_OPTIONS = [
     label: 'YYYY/MM/DD',
     value: 'YYYY/MM/DD',
   },
+  {
+    label: 'DD-MM-YYYY',
+    value: 'DD-MM-YYYY',
+  },
+  {
+    label: 'MM-DD-YYYY',
+    value: 'MM-DD-YYYY',
+  },
+  {
+    label: 'YYYY-DD-MM',
+    value: 'YYYY-DD-MM',
+  },
+  {
+    label: 'YYYY-MM-DD',
+    value: 'YYYY-MM-DD',
+  },
 ];
 
 export const TIME_FORMAT_OPTIONS = [
@@ -54,6 +72,7 @@ export const TIMEZONE_OPTIONS = [
   { name: '-12:00', value: 'Etc/GMT+12' },
   { name: '-11:00', value: 'Etc/GMT+11' },
   { name: '-10:00', value: 'Pacific/Honolulu' },
+  { name: '-09:30', value: 'Pacific/Marquesas' },
   { name: '-09:00', value: 'America/Anchorage' },
   { name: '-08:00', value: 'America/Santa_Isabel' },
   { name: '-07:00', value: 'America/Chihuahua' },
@@ -68,6 +87,7 @@ export const TIMEZONE_OPTIONS = [
   { name: '+01:00', value: 'Europe/Berlin' },
   { name: '+02:00', value: 'Africa/Gaborone' },
   { name: '+03:00', value: 'Asia/Baghdad' },
+  { name: '+03:30', value: 'Asia/Tehran' },
   { name: '+04:00', value: 'Asia/Muscat' },
   { name: '+04:30', value: 'Asia/Kabul' },
   { name: '+05:00', value: 'Asia/Tashkent' },
@@ -90,7 +110,8 @@ export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
   return acc;
 }, {});
 
-const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps }) => {
+const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...restProps }) => {
+  const { t } = useTranslation();
   const {
     layoutPropertyChanged,
     component,
@@ -198,7 +219,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
         }}
       >
         <div className="d-flex justify-content-between mb-1">
-          <label className="form-label"> Time Format</label>
+          <label className="form-label"> {t('widget.commonProperties.timeFormat', 'Time Format')}</label>
           <div className={cx({ 'hide-fx': !isTimeFormatFxOn })}>
             <FxButton
               active={isTimeFormatFxOn}
@@ -229,6 +250,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
             placeholder="Select.."
             useCustomStyles={true}
             styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+            customClassPrefix="inspector-select"
           />
         )}
       </div>
@@ -240,7 +262,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     const transformedProperties = [...properties.slice(0, 1), 'timeFormat', ...properties.slice(1)];
 
     items.push({
-      title: 'Data',
+      title: t('widget.common.data', 'Data'),
       isOpen: true,
       children: (
         <>
@@ -265,7 +287,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     });
   } else {
     items.push({
-      title: 'Data',
+      title: t('widget.common.data', 'Data'),
       isOpen: true,
       children: (
         <>
@@ -283,7 +305,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                   >
                     <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
                       <div className="d-flex justify-content-between mb-1">
-                        <label className="form-label"> Date Format</label>
+                        <label className="form-label"> {t('widget.commonProperties.dateFormat', 'Date Format')}</label>
                         <div
                           className={cx({
                             'hide-fx': !isDateFormatFxOn,
@@ -318,6 +340,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                           placeholder="Select.."
                           useCustomStyles={true}
                           styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+                          customClassPrefix="inspector-select"
                         />
                       )}
                     </div>
@@ -346,7 +369,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                             onClick={(e) => e.stopPropagation()}
                           >
                             <label data-cy={`label-display-time-zone`} className="form-label">
-                              Display in
+                              {t('widget.commonProperties.displayIn', 'Display in')}
                             </label>
                             <Select
                               options={TIMEZONE_OPTIONS}
@@ -368,7 +391,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                             onClick={(e) => e.stopPropagation()}
                           >
                             <label data-cy={`label-display-time-zone`} className="form-label">
-                              Store in
+                              {t('widget.commonProperties.storeIn', 'Store in')}
                             </label>
                             <Select
                               options={TIMEZONE_OPTIONS}
@@ -420,7 +443,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
   // }
 
   items.push({
-    title: 'Events',
+    title: t('widget.common.events', 'Events'),
     isOpen: true,
     children: (
       <EventManager
@@ -433,7 +456,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
   });
 
   items.push({
-    title: 'Validation',
+    title: t('widget.common.validation', 'Validation'),
     isOpen: true,
     children: (
       <>
@@ -457,7 +480,8 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
   });
 
   items.push({
-    title: `Additional Actions`,
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
+    title: t('widget.common.additionalActions', 'Additional Actions'),
     isOpen: true,
     children: additionalActions.map((property) => {
       return renderElement(
@@ -476,7 +500,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
   });
 
   items.push({
-    title: 'Devices',
+    title: t('widget.common.devices', 'Devices'),
     isOpen: true,
     children: (
       <>

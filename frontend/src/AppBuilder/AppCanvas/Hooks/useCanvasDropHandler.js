@@ -1,0 +1,104 @@
+import useStore from '@/AppBuilder/_stores/store';
+import { useGridStore } from '@/_stores/gridStore';
+import { shallow } from 'zustand/shallow';
+import { noop } from 'lodash';
+import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, addDefaultButtonIdToForm } from '../appCanvasUtils';
+import { WIDGETS_WITH_DEFAULT_CHILDREN } from '../appCanvasConstants';
+import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
+import { isPDFSupported } from '@/_helpers/appUtils';
+import toast from 'react-hot-toast';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { handleDeactivateTargets, hideGridLines } from '../Grid/gridUtils';
+
+export const useCanvasDropHandler = () => {
+  const { isModuleEditor } = useModuleContext();
+
+  const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
+  const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
+  const currentLayout = useStore((state) => state.currentLayout, shallow);
+  const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
+  const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
+
+  const handleDrop = async ({ componentType: draggedComponentType, component }, canvasId) => {
+    const realCanvasRef =
+      !canvasId || canvasId === 'canvas'
+        ? document.getElementById(`real-canvas`)
+        : document.getElementById(`canvas-${canvasId}`);
+    const isParentModuleContainer = realCanvasRef?.getAttribute('component-type') === 'ModuleContainer';
+    handleDeactivateTargets();
+    hideGridLines();
+    setShowModuleBorder(false); // Hide the module border when dropping
+
+    try {
+      if (isModuleEditor && canvasId === 'canvas') {
+        return;
+      }
+
+      if (!isModuleEditor && isParentModuleContainer) {
+        return toast.error('Modules cannot be edited inside an app');
+      }
+
+      if (draggedComponentType === 'PDF' && !isPDFSupported()) {
+        toast.error(
+          'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+        );
+        return;
+      }
+
+      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+      setRightSidebarOpen(true);
+
+      // IMPORTANT: This logic needs to be changed when we implement the module versioning
+      const moduleInfo = component?.moduleId
+        ? {
+            moduleId: component.moduleId,
+            versionId: component.versionId,
+            environmentId: component.environmentId,
+            moduleName: component.displayName,
+            moduleContainer: component.moduleContainer,
+          }
+        : undefined;
+
+      // Custom-tab drops carry which library component the LibraryComponent instance renders.
+      const libraryComponentInfo = component?.libraryComponentInfo;
+
+      let addedComponent;
+
+      if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(draggedComponentType)) {
+        let parentComponent = addNewWidgetToTheEditor(
+          draggedComponentType,
+          currentLayout,
+          realCanvasRef,
+          canvasId,
+          moduleInfo,
+          libraryComponentInfo
+        );
+        const childComponents = addChildrenWidgetsToParent(draggedComponentType, parentComponent?.id, currentLayout);
+        if (draggedComponentType === 'Form') {
+          parentComponent = addDefaultButtonIdToForm(parentComponent, childComponents);
+        }
+        addedComponent = [parentComponent, ...childComponents];
+        await addComponentToCurrentPage(addedComponent);
+      } else {
+        const newComponent = addNewWidgetToTheEditor(
+          draggedComponentType,
+          currentLayout,
+          realCanvasRef,
+          canvasId,
+          moduleInfo,
+          libraryComponentInfo
+        );
+        addedComponent = [newComponent];
+        await addComponentToCurrentPage(addedComponent);
+      }
+    } finally {
+      // Reset drag bookkeeping when dropping
+      setCurrentDragCanvasId(null);
+      setFlexContainerDropTarget(null);
+    }
+  };
+
+  return { handleDrop };
+};

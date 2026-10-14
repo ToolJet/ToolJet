@@ -1,0 +1,29 @@
+.widget-tooltip-markdown {
+  pre,
+  code {
+    color: inherit;
+    border: 1px solid rgba(127, 127, 127, 0.2);
+    border-radius: 4px;
+    background: rgba(127, 127, 127, 0.15);
+  }
+
+  code {
+    padding: 1px 4px;
+    font-size: 92%;
+  }
+
+  pre {
+    margin: 4px 0;
+    padding: 6px 8px;
+    overflow: auto;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+
+  // Code inside pre should be borderless and bg-less — the pre wraps it already.
+  pre code {
+    border: 0;
+    background: transparent;
+    padding: 0;
+  }
+}

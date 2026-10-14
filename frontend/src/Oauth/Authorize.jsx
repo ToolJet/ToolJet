@@ -17,7 +17,28 @@ export function Authorize({ navigate }) {
   const router = useRouter();
   const organizationId = authenticationService.getLoginOrganizationId();
   const organizationSlug = authenticationService.getLoginOrganizationSlug();
-  const redirectUrl = getCookie('redirectPath');
+  // Prefer cookie (same-domain flow); fall back to state param encoded by SSO buttons
+  // for custom-domain flows where the cookie is inaccessible on the base-domain callback.
+  // Google (implicit/hash flow): state arrives in the URL hash fragment.
+  // GitHub (code flow): state arrives as a query param (?state=...).
+  let redirectUrl = getCookie('redirectPath');
+  if (!redirectUrl) {
+    let stateParam = null;
+    if (window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      stateParam = hashParams.get('state');
+    } else if (router.query.state) {
+      stateParam = router.query.state;
+    }
+    if (stateParam) {
+      try {
+        const stateObj = JSON.parse(decodeURIComponent(stateParam));
+        redirectUrl = stateObj?.redirectTo || null;
+      } catch {
+        // malformed state — ignore
+      }
+    }
+  }
   const signupOrganizationSlug = authenticationService.getSignupOrganizationSlug();
   const inviteFlowIdentifier = authenticationService.getInviteFlowIndetifier();
 
@@ -189,10 +210,81 @@ export function Authorize({ navigate }) {
 
   //   return null;
   // };
+  function getAttributionFromState() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const utm = {
+        utm_source: urlParams.get('utm_source') || '',
+        utm_medium: urlParams.get('utm_medium') || '',
+        utm_campaign: urlParams.get('utm_campaign') || '',
+        utm_term: urlParams.get('utm_term') || '',
+        utm_content: urlParams.get('utm_content') || '',
+      };
 
+      const hutk =
+        document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('hubspotutk='))
+          ?.split('=')[1] || '';
+
+      const referrer = document.referrer || '';
+      const pageUri = window.location.href;
+      const pageName = document.title;
+
+      const attribution = {
+        hutk,
+        referrer,
+        pageUri,
+        pageName,
+        utm,
+      };
+      return attribution;
+    } catch (err) {
+      return {};
+    }
+  }
+
+  const hubspotFormSubmissionForSSO = (email) => {
+    if (!email) return;
+    try {
+      const attribution = getAttributionFromState();
+      if (!attribution) return;
+
+      const { SSO_HUBSPOT_PORTAL_ID: portalId, SSO_HUBSPOT_FORM_ID: formId } = window.public_config || {};
+
+      if (!portalId || !formId) return;
+
+      window.__hs_original_source_submitted = true;
+
+      const fields = [
+        { name: 'email', value: email },
+        ...Object.entries(attribution.utm || {}).map(([key, value]) => ({ name: key, value })),
+      ];
+
+      const payload = {
+        fields,
+        context: {
+          hutk: attribution.hutk,
+          pageUri: attribution.pageUri || location.href,
+          pageName: attribution.pageName || document.title,
+        },
+      };
+
+      fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {
+      /* empty */
+    }
+  };
   const signIn = (authParams, configs, utmParams) => {
     const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
       const { organization_id, current_organization_id, email } = restResponse;
+      // Submit a lightweight HubSpot form submission with hutk + page context to set Original source from web
+      hubspotFormSubmissionForSSO(email);
 
       const event = `${redirect_url ? 'signup' : 'signin'}_${
         router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
@@ -215,7 +307,7 @@ export function Authorize({ navigate }) {
         updateCurrentSession({
           isUserLoggingIn: true,
         });
-        onLoginSuccess(restResponse, navigate);
+        onLoginSuccess(restResponse, navigate, redirectUrl);
       }
       posthogHelper.initPosthog({ redirect_url, ...restResponse });
       posthogHelper.captureEvent(event, {
@@ -260,7 +352,11 @@ export function Authorize({ navigate }) {
       const isAiOnboarding =
         hashParams.get('state')?.includes('tj_api_source=ai_onboarding') ||
         router.query.state?.includes('tj_api_source=ai_onboarding');
-      const isNormalFlow = (organizationId || signupOrganizationSlug || inviteFlowIdentifier) && !isAiOnboarding;
+      // A workspace-level configId in the URL (set by the SSO button on a workspace/custom-domain
+      // login page) definitively identifies a workspace login — treat it as a normal flow even when
+      // organizationId is absent (e.g. cookie/localStorage inaccessible across custom-domain → base-domain).
+      const isNormalFlow =
+        (organizationId || signupOrganizationSlug || inviteFlowIdentifier || router.query.configId) && !isAiOnboarding;
       if (isNormalFlow) {
         /* For workspace signup and signin */
         authenticationService

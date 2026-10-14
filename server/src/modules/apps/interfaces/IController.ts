@@ -15,7 +15,8 @@ export interface IAppsController {
     versionId: string,
     envId: string,
     ability: AppAbility,
-    app: AppEntity
+    app: AppEntity,
+    user: UserEntity
   ): Promise<any>;
 
   validateReleasedAppAccess(ability: AppAbility, app: AppEntity): any;
@@ -43,4 +44,8 @@ export interface IAppsController {
   appFromSlug(user: UserEntity, app: AppEntity): Promise<any>;
 
   releaseVersion(user: UserEntity, app: AppEntity, versionReleaseDto: VersionReleaseDto): Promise<any>;
+
+  getAppAuthenticationConfig(slug: string): Promise<any>;
+
+  getRestrictedAccessInfo(slug: string, user: UserEntity): Promise<any>;
 }

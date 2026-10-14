@@ -46,7 +46,7 @@ export class UserRepository extends Repository<User> {
     let whereOptions: FindOptionsWhere<User> | FindOptionsWhere<User>[] = findOptions;
 
     if (options?.searchText) {
-      const searchLower = options.searchText.toLowerCase();
+      const searchLower = options.searchText.trim().toLowerCase();
 
       // Create an array of OR conditions
       whereOptions = [
@@ -54,8 +54,21 @@ export class UserRepository extends Repository<User> {
         { ...findOptions, firstName: ILike(`%${searchLower}%`) },
         { ...findOptions, lastName: ILike(`%${searchLower}%`) },
       ];
-    }
 
+      const parts = searchLower.split(/\s+/);
+
+      if (parts.length > 1) {
+        const firstWord = parts[0];
+        const lastWord = parts.slice(1).join(' ');
+
+        whereOptions.push({
+          ...findOptions,
+          firstName: ILike(`%${firstWord}%`),
+          lastName: ILike(`%${lastWord}%`),
+        });
+      }
+    }
+    
     const [items, total] = await this.manager.findAndCount(User, {
       select: {
         id: true,
@@ -66,6 +79,7 @@ export class UserRepository extends Repository<User> {
         status: true,
         userType: true,
         createdAt: true,
+        mfaEnabled: true,
         organizationUsers: {
           id: true,
           status: true,
@@ -233,7 +247,7 @@ export class UserRepository extends Repository<User> {
             organizationUsers: {
               organizationId: organizationId,
               status: In(statusList),
-              organization: { status: WORKSPACE_STATUS.ACTIVE },
+              organization: { status: In([WORKSPACE_STATUS.ACTIVE, WORKSPACE_STATUS.ARCHIVE]) },
             },
           },
           relations: ['organizationUsers', 'organizationUsers.organization'],
@@ -272,6 +286,10 @@ export class UserRepository extends Repository<User> {
           source: 'invite',
           role: null,
           invitationToken: null,
+          invitationTokenExpiry: null,
+          llmProvider: null,
+          llmModel: null,
+          llmModelContextWindow: null,
           createdAt: null,
           updatedAt: null,
           user,

@@ -22,7 +22,9 @@ function BaseWorkspaceDropDown({ ...props }) {
         >
           <div className="org-custom-select-header-wrap" style={{ padding: '8px 12px' }}>
             <div className="row cursor-pointer d-flex align-items-center">
-              <div className="col-9 select-header-font">Workspaces ({menuProps.options.length})</div>
+              <div className="col-9 select-header-font" data-cy="workspace-count">
+                Workspaces ({menuProps.options.length})
+              </div>
               <div className="col-3">
                 <WorkspaceActions
                   super_admin={super_admin}

@@ -16,9 +16,13 @@ import { PluginsServiceSelector } from '@modules/data-sources/services/plugin-se
 import { IDataQueriesUtilService } from './interfaces/IUtilService';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueryStatus } from './services/status.service';
+import { recordQueryMetric } from '@otel/audit-metrics';
+import { getOrganizationNameCached, getEnvironmentNameCached } from '@otel/org-name-cache';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
+import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
+import { ListTablesDto } from './dto';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -67,23 +71,31 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     response: Response,
     envId?: string,
     mode?: string,
+    app?: App,
     opts?: DataQueryExecutionOptions
   ): Promise<object> {
     let result;
     const queryStatus = new DataQueryStatus();
     const forwardRestCookies = this.configService.get<string>('FORWARD_RESTAPI_COOKIES') === 'true';
+    let abortCtrl = null;
+
+    // Hoist these variables to function scope for access in finally block
+    let dataSource: DataSource;
+    let appToUse: App;
+    let resolvedEnvironmentId: string | undefined;
 
     try {
-      const dataSource: DataSource = dataQuery?.dataSource;
-
-      const app: App = dataQuery?.app;
-      if (!(dataSource && app)) {
+      dataSource = dataQuery?.dataSource;
+      // Use passed app parameter first, fallback to dataQuery.app (which may be undefined)
+      appToUse = app || dataQuery?.app;
+      if (!(dataSource && appToUse)) {
         throw new UnauthorizedException();
       }
-      const organizationId = user ? user.organizationId : app.organizationId;
+      const organizationId = user ? user.organizationId : appToUse.organizationId;
 
       const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, envId);
       const environmentId = dataSourceOptions.environmentId;
+      resolvedEnvironmentId = environmentId;
 
       dataSource.options = dataSourceOptions.options;
 
@@ -97,11 +109,26 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         opts
       );
 
+      const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
+      if (!isTooljetManagedApp) {
+        sourceOptions['tj_redirect_host'] = await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
+      }
+
+      // Determine whether query timeout is set, to initiate abort controller
+      const queryTimeoutMs =
+        typeof parsedQueryOptions['query_timeout'] === 'string' && parsedQueryOptions['query_timeout'].trim() === ''
+          ? NaN
+          : Number(parsedQueryOptions['query_timeout']);
+      // Only if query timeout is set, abortController will be created
+      abortCtrl = new AbortControllerHandler(queryTimeoutMs);
+      abortCtrl.start();
+
       queryStatus.setOptions(parsedQueryOptions);
 
       try {
+        abortCtrl.throwIfAborted();
         // multi-auth will not work with public apps
-        if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
+        if (appToUse?.isPublic && sourceOptions['multiple_auth_enabled']) {
           throw new QueryError(
             'Authentication required for all users should be turned off since the app is public',
             '',
@@ -135,9 +162,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           }
         }
 
+        abortCtrl.throwIfAborted();
         queryStatus.setStart();
 
-        result = await service.run(
+        const promises = [];
+        const queryPromise = service.run(
           sourceOptions,
           parsedQueryOptions,
           `${dataSource.id}-${dataSourceOptions.environmentId}`,
@@ -145,13 +174,22 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           {
             user: { id: user?.id },
             app: {
-              id: app?.id,
-              isPublic: app?.isPublic,
-              ...(dataSource.kind === 'tooljetdb' && { organization_id: app.organizationId }),
+              id: appToUse?.id,
+              isPublic: appToUse?.isPublic,
+              ...(dataSource.kind === 'tooljetdb' && { organization_id: appToUse.organizationId }),
             },
           }
         );
+        promises.push(queryPromise);
+
+        if (abortCtrl.canAbort) {
+          promises.push(abortCtrl.createAbortPromise());
+        }
+        result = await Promise.race(promises);
+        abortCtrl.cleanup();
       } catch (api_error) {
+        // Clear timeout set for Queries, incase of error.
+        abortCtrl.cleanup();
         if (api_error.constructor.name === 'OAuthUnauthorizedClientError') {
           const currentUserToken = sourceOptions['refresh_token']
             ? sourceOptions
@@ -159,13 +197,18 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 sourceOptions['multiple_auth_enabled'],
                 sourceOptions['tokenData'],
                 user?.id,
-                app?.isPublic
+                appToUse?.isPublic
               );
           if (currentUserToken && currentUserToken['refresh_token']) {
             console.log('Access token expired. Attempting refresh token flow.');
             let accessTokenDetails;
             try {
-              accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
+              accessTokenDetails = await service.refreshToken(
+                sourceOptions,
+                dataSource.id,
+                user?.id,
+                appToUse?.isPublic
+              );
             } catch (error) {
               if (error.constructor.name === 'OAuthUnauthorizedClientError') {
                 // unauthorized error need to re-authenticate
@@ -173,7 +216,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 const result = await this.dataSourceUtilService.getAuthUrl({
                   provider: dataSource.kind,
                   source_options: sourceOptions,
-                  plugin_id: undefined,
+                  plugin_id: dataSource.pluginId,
+                  organization_id: organizationId,
+                  environment_id: environmentId,
                 });
                 return {
                   status: 'needs_oauth',
@@ -226,30 +271,49 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               user,
               opts
             ));
+            if (sourceOptions['oauth_type'] !== 'tooljet_app') {
+              sourceOptions['tj_redirect_host'] =
+                await this.dataSourceUtilService.resolveOAuthRedirectHost(organizationId);
+            }
             queryStatus.setOptions(parsedQueryOptions);
-            result = await service.run(
+            abortCtrl.start();
+
+            const promises = [];
+            const queryPromise = service.run(
               sourceOptions,
               parsedQueryOptions,
               `${dataSource.id}-${dataSourceOptions.environmentId}`,
               dataSourceOptions.updatedAt,
               {
                 user: { id: user?.id },
-                app: { id: app?.id, isPublic: app?.isPublic },
+                app: { id: appToUse?.id, isPublic: appToUse?.isPublic },
               }
             );
+            promises.push(queryPromise);
+
+            if (abortCtrl.canAbort) {
+              promises.push(abortCtrl.createAbortPromise());
+            }
+            result = await Promise.race(promises);
+            abortCtrl.cleanup();
           } else if (
             dataSource.kind === 'restapi' ||
             dataSource.kind === 'openapi' ||
             dataSource.kind === 'graphql' ||
             dataSource.kind === 'googlesheets' ||
             dataSource.kind === 'slack' ||
-            dataSource.kind === 'zendesk'
+            dataSource.kind === 'zendesk' ||
+            dataSource.kind === 'googlesheetsv2' ||
+            dataSource.kind === 'servicenow' ||
+            dataSource.kind === 'confluence'
           ) {
             queryStatus.setSuccess('needs_oauth');
             const result = await this.dataSourceUtilService.getAuthUrl({
               provider: dataSource.kind,
               source_options: sourceOptions,
-              plugin_id: undefined,
+              plugin_id: dataSource.pluginId,
+              organization_id: organizationId,
+              environment_id: environmentId,
             });
             return {
               status: 'needs_oauth',
@@ -268,14 +332,32 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           throw api_error;
         }
       }
+      // Final timeout check before marking query success
+      abortCtrl.throwIfAborted();
       queryStatus.setSuccess();
 
       //TODO: support workflow execute method().
       if (forwardRestCookies && dataQuery.kind === 'restapi' && result.responseHeaders) {
         this.setCookiesBackToClient(response, result.responseHeaders);
       }
+
+      result['metadata'] = {
+        ...(result['metadata'] || {}),
+        ...queryStatus.getResponseMetadata(),
+      };
+
+      if (dataSource.kind === 'restapi' || dataSource.kind === 'grpcv2') {
+        const queryDefinition =
+          dataSource.kind === 'restapi'
+            ? (result as any)['metadata']?.['request']?.['url']
+            : dataQuery.options?.['raw_message'];
+        (result as any)['metadata']['queryDefinition'] = queryDefinition;
+      }
+
       return result;
     } catch (queryError) {
+      // Null if we threw before it was built. Unguarded, that TypeError masked the real error.
+      abortCtrl?.cleanup();
       queryStatus.setFailure({
         message: queryError?.message,
         description: queryError?.description,
@@ -284,16 +366,132 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       });
       throw queryError;
     } finally {
+      abortCtrl?.cleanup();
       if (user) {
-        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        // Get metadata from queryStatus
+        const queryMetadata = queryStatus.getMetaData();
+
+        // Add app and datasource info to metadata for OTEL metrics
+        const enrichedMetadata = {
+          ...queryMetadata,
+          appId: appToUse?.id || 'unknown',
+          appName: appToUse?.name || 'unknown',
+          dataSourceType: dataSource?.kind || 'unknown',
+        };
+
+        const auditData = {
           userId: user.id,
           organizationId: user.organizationId,
           resourceId: dataQuery?.id,
           resourceName: dataQuery?.name,
-          metadata: queryStatus.getMetaData(),
+          metadata: enrichedMetadata,
+          resourceData: {
+            dataSourceId: dataSource?.id,
+            dataSourceName: dataSource?.name,
+          },
+        };
+        RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditData);
+
+        await this.emitQueryMetric(user, dataQuery, queryStatus, {
+          appId: appToUse?.id,
+          appName: appToUse?.name,
+          dataSourceType: dataSource?.kind,
+          appMode: mode,
+          environmentId: resolvedEnvironmentId,
         });
       }
     }
+  }
+
+  // Direct OTEL emission — metrics flow regardless of audit log licensing.
+  // Protected: the EE override of runQuery has its own finally block and calls this too.
+  protected async emitQueryMetric(
+    user: User,
+    dataQuery: any,
+    queryStatus: DataQueryStatus,
+    context: {
+      appId?: string;
+      appName?: string;
+      dataSourceType?: string;
+      appMode?: string;
+      environmentId?: string;
+    }
+  ): Promise<void> {
+    // Runs inside every query's finally block. Bail before the two cached name lookups so
+    // installs with OTel off pay nothing in the query path.
+    if (process.env.ENABLE_OTEL !== 'true') return;
+
+    try {
+      const { status, queryError, duration, parsedQueryOptions } = queryStatus.getMetaData();
+      const [organizationName, environment] = await Promise.all([
+        getOrganizationNameCached(user.organizationId),
+        context.environmentId ? getEnvironmentNameCached(context.environmentId) : Promise.resolve('unknown'),
+      ]);
+
+      recordQueryMetric({
+        userId: user.id,
+        organizationId: user.organizationId,
+        organizationName,
+        appId: context.appId || 'unknown',
+        appName: context.appName,
+        queryId: dataQuery?.id || 'unknown',
+        queryName: dataQuery?.name,
+        dataSourceType: context.dataSourceType || 'unknown',
+        appMode: context.appMode || 'unknown',
+        environment,
+        status,
+        duration,
+        error: (queryError as { message?: string })?.message,
+        queryText: parsedQueryOptions?.['query'] || '',
+        queryType: parsedQueryOptions?.['mode'] || 'unknown',
+        versionName: dataQuery?.appVersion?.name,
+      });
+    } catch (error) {
+      // Observability must never break query execution
+      console.error('[OTEL] Failed to emit query metric:', error);
+    }
+  }
+
+  async listTables(
+    user: User,
+    dataSource: DataSource,
+    environmentId: string,
+    listTablesOptions?: ListTablesDto
+  ): Promise<object> {
+    if (!dataSource) {
+      throw new UnauthorizedException();
+    }
+
+    const organizationId = user?.organizationId;
+    const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
+      dataSource.id,
+      organizationId,
+      environmentId
+    );
+
+    dataSource.options = dataSourceOptions.options;
+
+    const { sourceOptions, service } = await this.fetchServiceAndParsedParams(
+      dataSource,
+      {},
+      {},
+      organizationId,
+      dataSourceOptions.environmentId,
+      user
+    );
+
+    return await service.listTables(
+      sourceOptions,
+      `${dataSource.id}-${dataSourceOptions.environmentId}`,
+      dataSourceOptions.updatedAt,
+      {
+        schema: listTablesOptions?.schema,
+        datasetId: listTablesOptions?.datasetId,
+        search: listTablesOptions?.search,
+        page: listTablesOptions?.page,
+        limit: listTablesOptions?.limit,
+      }
+    );
   }
 
   async fetchServiceAndParsedParams(
@@ -320,7 +518,6 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       user,
       opts
     );
-
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
 
     return { service, sourceOptions, parsedQueryOptions };
@@ -397,7 +594,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     if (opts?.workflow?.bundleContent || opts?.workflow?.isolate || opts?.workflow?.context) {
       // Create an enhanced options object that includes bundle variables
       const enhancedOptions = { ...options };
-      
+
       // Get all template variables using the bundle-aware getQueryVariables
       const templateVariables = getQueryVariables(
         object,
@@ -410,7 +607,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       // Merge template variables back into options for resolution
       Object.assign(enhancedOptions, templateVariables);
-      
+
       // Use the standard parseQueryOptions logic but with enhanced options
       return this.parseQueryOptionsInternal(object, enhancedOptions, organization_id, environmentId, user);
     }
@@ -449,11 +646,16 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       // Case 3: String
       if (typeof obj === 'string') {
-        let resolvedValue = obj.replace(/\n/g, ' ');
+        // Preserve newlines in the query text itself.
+        // A newline-flattened form is only used for whole-string map lookups.
+        // Flattening the query text here would collapse a multi-line query into a single line,
+        // so a leading `-- comment` would then comment out the entire query.
+        let resolvedValue = obj;
+        const flattenedForLookup = obj.replace(/\n/g, ' ');
 
         // a: Handle strings with both {{ }} and %% (%% - deprecated removed) TODO: CHECK IF ITS NEEDED
         if (typeof resolvedValue === 'string' && resolvedValue.includes('{{') && resolvedValue.includes('}}')) {
-          const resolvedVar = options[resolvedValue];
+          const resolvedVar = options[flattenedForLookup];
           if (parent && key !== null) {
             parent[key] = resolvedVar;
           }
@@ -485,7 +687,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               resolvedValue.endsWith('}}') &&
               (resolvedValue.match(/{{/g) || [])?.length === 1)) // Single variables
         ) {
-          resolvedValue = options[resolvedValue];
+          resolvedValue = options[flattenedForLookup];
           if (parent && key !== null) {
             parent[key] = resolvedValue;
           }
@@ -494,13 +696,16 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         // c: Replace all occurrences of {{ }} variables
         else if (
           typeof resolvedValue === 'string' &&
-          resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0 &&
+          resolvedValue?.match(/\{\{(.*?)\}\}/gs)?.length > 0 &&
           !resolvedValue.match(/^\{\{[^}]*\}\}$/) // Only exclude if entire string is one template variable
         ) {
-          const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
+          const variables = resolvedValue.match(/\{\{(.*?)\}\}/gs);
 
           for (const variable of variables || []) {
-            let replacement = options[variable];
+            // Lookup keys are built from newline-flattened text (see `flattenedForLookup` above),
+            // so a variable matched across multiple lines must be flattened the same way to find it.
+            const lookupKey = variable.replace(/\n/g, ' ');
+            let replacement = (options as any)[lookupKey];
 
             // Check if the replacement is an object
             if (typeof replacement === 'object' && replacement !== null) {

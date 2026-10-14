@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
-import { GeneralFeatureImage } from '@/modules/common/components';
+import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { ForgotPasswordForm, ForgotPasswordInfoScreen } from './components';
 
 const ForgotPasswordPage = () => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const orgSlug = searchParams.get('oid');
   const [showInfoScreen, setShowInfoScreen] = useState(false);
   const [email, setEmail] = useState('');
 
   const handleForgotPassword = async (email) => {
     try {
-      await authenticationService.forgotPassword(email);
+      await authenticationService.forgotPassword(email, undefined, orgSlug);
       toast.success(
         t('forgotPasswordPage.checkEmailForResetLink', 'Please check your email for the password reset link'),
         {
@@ -30,13 +33,17 @@ const ForgotPasswordPage = () => {
   };
 
   if (showInfoScreen) {
-    return <OnboardingBackgroundWrapper MiddleComponent={() => <ForgotPasswordInfoScreen email={email} />} />;
+    return (
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() => <ForgotPasswordInfoScreen email={email} organizationSlug={orgSlug} />}
+      />
+    );
   }
 
   return (
     <OnboardingBackgroundWrapper
       LeftSideComponent={() => <ForgotPasswordForm onSubmit={handleForgotPassword} />}
-      RightSideComponent={GeneralFeatureImage}
+      RightSideComponent={LoginPageRightPanel}
     />
   );
 };

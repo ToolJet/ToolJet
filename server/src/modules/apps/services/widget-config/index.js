@@ -18,10 +18,12 @@ import { daterangepickerConfig } from './daterangepicker';
 import { textConfig } from './text';
 import { imageConfig } from './image';
 import { containerConfig } from './container';
+import { flexContainerConfig } from './flexContainer';
 import { dropdownConfig } from './dropdown';
 import { dropdownV2Config } from './dropdownV2';
 import { multiselectConfig } from './multiselect';
 import { multiselectV2Config } from './multiselectV2';
+import { tagsInputConfig } from './TagsInput';
 import { richtextareaConfig } from './richtextarea';
 import { mapConfig } from './map';
 import { qrscannerConfig } from './qrscanner';
@@ -38,6 +40,7 @@ import { tagsConfig } from './tags';
 import { paginationConfig } from './pagination';
 import { circularProgressbarConfig } from './circularProgressbar';
 import { spinnerConfig } from './spinner';
+import { libraryComponentConfig } from './libraryComponent';
 import { statisticsConfig } from './statistics';
 import { rangeSliderConfig } from './rangeslider';
 import { timelineConfig } from './timeline';
@@ -51,6 +54,7 @@ import { stepsConfig } from './steps';
 import { kanbanConfig } from './kanban';
 import { colorPickerConfig } from './colorPicker';
 import { treeSelectConfig } from './treeSelect';
+import { cascaderConfig } from './cascader';
 import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
@@ -66,6 +70,18 @@ import { currencyinputConfig } from './currencyinput';
 import { rangeSliderV2Config } from './rangesliderV2';
 import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
+import { keyValuePairConfig } from './keyValuePair';
+import { progressbarConfig } from './progressbar';
+import { audioRecorderConfig } from './audioRecorder';
+import { cameraConfig } from './camera';
+import { accordionConfig } from './accordion';
+import { reorderableListConfig } from './reorderableList';
+import { jsonExplorerConfig } from './jsonExplorer';
+import { jsonEditorConfig } from './jsonEditor';
+import { fileinputConfig } from './fileinput';
+import { navigationConfig } from './navigation';
+import { fileButtonConfig } from './fileButton';
+import { buttonGroupV2Config } from './buttonGroupV2';
 
 const widgets = {
   buttonConfig,
@@ -94,16 +110,19 @@ const widgets = {
   textConfig,
   imageConfig,
   containerConfig,
+  flexContainerConfig,
   dropdownConfig, //!Depreciated
   dropdownV2Config,
   multiselectConfig,
   multiselectV2Config, //!Depreciated
+  tagsInputConfig,
   richtextareaConfig,
   mapConfig,
   qrscannerConfig,
   starratingConfig,
   dividerConfig,
   filepickerConfig,
+  fileinputConfig,
   calendarConfig,
   iframeConfig,
   codeEditorConfig,
@@ -114,6 +133,7 @@ const widgets = {
   paginationConfig,
   circularProgressbarConfig,
   spinnerConfig,
+  libraryComponentConfig,
   statisticsConfig,
   rangeSliderConfig,
   rangeSliderV2Config,
@@ -122,40 +142,61 @@ const widgets = {
   htmlConfig,
   verticalDividerConfig,
   customComponentConfig,
-  buttonGroupConfig,
+  buttonGroupConfig, //!Depreciated
   pdfConfig,
   stepsConfig,
   kanbanConfig,
   kanbanBoardConfig, //!Depreciated
   colorPickerConfig,
   treeSelectConfig,
+  cascaderConfig,
   linkConfig,
   iconConfig,
   boundedBoxConfig,
   chatConfig,
   moduleContainerConfig,
   moduleViewerConfig,
-  popoverMenuConfig
+  popoverMenuConfig,
+  keyValuePairConfig,
+  progressbarConfig,
+  audioRecorderConfig,
+  cameraConfig,
+  accordionConfig,
+  reorderableListConfig,
+  jsonExplorerConfig,
+  jsonEditorConfig,
+  navigationConfig,
+  fileButtonConfig,
+  buttonGroupV2Config,
 };
 
 const universalProps = {
   properties: {},
   general: {
-    tooltip: { type: 'code', displayName: 'Tooltip', validation: { schema: { type: 'string' } } },
+    tooltip: {
+      type: "code",
+      displayName: "Tooltip",
+      validation: { schema: { type: "string" } },
+    },
   },
   others: {},
   events: {},
-  styles: {},
+  styles: {
+    cssClass: { type: "code", displayName: "CSS class", accordian: "Advanced" },
+  },
   validate: true,
   generalStyles: {
-    boxShadow: { type: 'boxShadow', displayName: 'Box Shadow' },
+    boxShadow: { type: "boxShadow", displayName: "Box Shadow" },
   },
   definition: {
+    properties: {},
     others: {},
     events: [],
-    styles: {},
+    styles: {
+      cssClass: { value: "" },
+    },
     generalStyles: {
-      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      boxShadow: { value: "0px 0px 0px 0px #00000040" },
     },
   },
 };
@@ -167,18 +208,34 @@ const combineProperties = (widget, universal, isArray = false) => {
     properties: { ...universal.properties, ...widget.properties },
     general: { ...universal.general, ...widget.general },
     others: { ...universal.others, ...widget.others },
-    events: isArray ? [...universal.events, ...widget.events] : { ...universal.events, ...widget.events },
+    events: isArray
+      ? [...universal.events, ...widget.events]
+      : { ...universal.events, ...widget.events },
     styles: { ...universal.styles, ...widget.styles },
     generalStyles: { ...universal.generalStyles, ...widget.generalStyles },
-    exposedVariables: { ...universal.exposedVariables, ...widget.exposedVariables },
+    exposedVariables: {
+      ...universal.exposedVariables,
+      ...widget.exposedVariables,
+    },
   };
 };
 
 export const componentTypes = Object.values(widgets).map((widget) => {
-  return {
+  const combined = {
     ...combineProperties(widget, universalProps),
-    definition: combineProperties(widget.definition, universalProps.definition, true),
+    definition: combineProperties(
+      widget.definition,
+      universalProps.definition,
+      true,
+    ),
   };
+  // Mirror of frontend componentTypes.js: LibraryComponent renders an iframe — a CSS
+  // class on its wrapper can never reach the content inside; no false affordance.
+  if (widget.component === 'LibraryComponent') {
+    delete combined.styles.cssClass;
+    delete combined.definition.styles.cssClass;
+  }
+  return combined;
 });
 
 export default widgets;

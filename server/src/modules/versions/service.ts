@@ -1,14 +1,15 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
+import {BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException} from '@nestjs/common';
 import { VersionRepository } from './repository';
-import { AppVersion } from '@entities/app_version.entity';
-import { PromoteVersionDto, VersionCreateDto } from './dto';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { EntityManager, MoreThan } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { VersionsCreateService } from './services/create.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
+import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
 import { PageService } from '@modules/apps/services/page.service';
 import { EventsService } from '@modules/apps/services/event.service';
 import { AppsUtilService } from '@modules/apps/util.service';
@@ -18,7 +19,12 @@ import { OrganizationThemesUtilService } from '@modules/organization-themes/util
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { IVersionService } from './interfaces/IService';
+import {
+  IVersionService,
+  VersionCreateContext,
+  VersionUpdateContext,
+  VersionSettingsUpdateContext,
+} from './interfaces/IService';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -38,7 +44,80 @@ export class VersionService implements IVersionService {
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
-  ) { }
+  ) {}
+
+  /**
+   * Hook called before version creation - override in EE to capture state for history
+   */
+  protected async beforeVersionCreate(
+    app: App,
+    user: User,
+    versionCreateDto: VersionCreateDto
+  ): Promise<VersionCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after version creation - override in EE to queue history
+   */
+  protected async afterVersionCreate(
+    context: VersionCreateContext | null,
+    createdVersion: any,
+    app: App,
+    user: User
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before version update - override in EE to capture state for history
+   */
+  protected async beforeVersionUpdate(
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto
+  ): Promise<VersionUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after version update - override in EE to queue history
+   */
+  protected async afterVersionUpdate(
+    context: VersionUpdateContext | null,
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before version settings update - override in EE to capture state for history
+   */
+  protected async beforeVersionSettingsUpdate(
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto
+  ): Promise<VersionSettingsUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after version settings update - override in EE to queue history
+   */
+  protected async afterVersionSettingsUpdate(
+    context: VersionSettingsUpdateContext | null,
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
 
@@ -49,10 +128,16 @@ export class VersionService implements IVersionService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
-    const { versionName, versionFromId } = versionCreateDto;
+    const { versionName, versionFromId, versionDescription } = versionCreateDto;
+    if (!versionName || versionName.trim().length === 0) {
+      // need to add logic to get the version name -> from the version created at from
+      throw new BadRequestException('Version name cannot be empty.');
+    }
     const { organizationId } = user;
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+    const context = await this.beforeVersionCreate(app, user, versionCreateDto);
+
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const versionFrom = await manager.findOneOrFail(AppVersion, {
         where: { id: versionFromId, appId: app.id },
         relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
@@ -69,6 +154,9 @@ export class VersionService implements IVersionService {
           currentEnvironmentId: firstPriorityEnv?.id,
           createdAt: new Date(),
           updatedAt: new Date(),
+          status: AppVersionStatus.DRAFT,
+          parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
+          description: versionDescription ? versionDescription : null,
         })
       );
 
@@ -91,10 +179,27 @@ export class VersionService implements IVersionService {
 
       return decamelizeKeys(appVersion);
     });
+
+    await this.afterVersionCreate(context, result, app, user);
+
+    return result;
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
-    return await this.versionsUtilService.deleteVersion(app, user, manager);
+    const versionToDelete = app.appVersions[0];
+    await this.versionsUtilService.deleteVersion(app, user, manager);
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: app.id,
+      resourceName: app.name,
+      metadata: {
+        data: {
+          versionId: versionToDelete.id,
+          deletedAppVersionName: versionToDelete.name,
+        },
+      },
+    });
   }
 
   async getVersion(app: App, user: User, mode?: string): Promise<any> {
@@ -124,7 +229,10 @@ export class VersionService implements IVersionService {
 
       let shouldFreezeEditor = false;
       if (appCurrentEditingVersion) {
-        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId);
+        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(
+          LICENSE_FIELD.MULTI_ENVIRONMENT,
+          app.organizationId
+        );
         if (hasMultiEnvLicense) {
           const currentEnvironment = await this.appEnvironmentUtilService.get(
             user.organizationId,
@@ -145,6 +253,14 @@ export class VersionService implements IVersionService {
 
       delete appData['editingVersion'];
 
+      /*
+        Data-query contains `options` which are a free-form, mixed-case blob (snake_case alongside camelCase keys).
+        Strip them here so the rest of the version envelope can be camelized safely below.
+        `camelizeKeys` recurses deeply and would silently break queries if they stayed on the version object.
+      */
+      const serializedDataQueries = serializeDataQueries(appCurrentEditingVersion?.dataQueries);
+      delete appCurrentEditingVersion['dataQueries'];
+
       const editingVersion = camelizeKeys(appCurrentEditingVersion);
 
       // Inject app theme
@@ -156,10 +272,26 @@ export class VersionService implements IVersionService {
       if (appGit) {
         shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
       }
+      if (appVersion?.status === AppVersionStatus.PUBLISHED) {
+        shouldFreezeEditor = true;
+      }
       editingVersion['globalSettings']['theme'] = appTheme;
+
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      if (!hasJsLibrariesAccess) {
+        delete editingVersion['globalSettings']['libraries'];
+        delete editingVersion['globalSettings']['preloadedScript'];
+      }
+
       return {
         ...appData,
         editing_version: editingVersion,
+        data_queries: serializedDataQueries,
         pages: this.appUtilService.mergeDefaultComponentData(pagesForVersion),
         events: eventsForVersion,
         should_freeze_editor: shouldFreezeEditor,
@@ -167,14 +299,17 @@ export class VersionService implements IVersionService {
     };
 
     const response = await prepareResponse(app, app.appVersions?.[0]?.id);
-    const modules = await this.appUtilService.fetchModules(app, false, undefined);
+    const modules = await this.appUtilService.fetchModules(app, false, app.appVersions?.[0]?.id);
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
 
+    // need to add freeze version logic here
     return response;
   }
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
+    const context = await this.beforeVersionUpdate(app, user, appVersionUpdateDto);
+
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
@@ -191,6 +326,10 @@ export class VersionService implements IVersionService {
       await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
+    const operationTimestamp = Date.now();
+    this.afterVersionUpdate(context, app, user, appVersionUpdateDto, user.id, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterVersionUpdate failed:', err.message));
+
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
@@ -202,9 +341,15 @@ export class VersionService implements IVersionService {
   }
 
   async updateSettings(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
+    const context = await this.beforeVersionSettingsUpdate(app, user, appVersionUpdateDto);
+
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
+
+    const settingsOperationTimestamp = Date.now();
+    this.afterVersionSettingsUpdate(context, app, user, appVersionUpdateDto, user.id, settingsOperationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterVersionSettingsUpdate failed:', err.message));
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
@@ -215,7 +360,6 @@ export class VersionService implements IVersionService {
     });
     return;
   }
-
 
   promoteVersion(app: App, user: User, promoteVersionDto: PromoteVersionDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -234,6 +378,11 @@ export class VersionService implements IVersionService {
 
         if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, user.organizationId))) {
           throw new BadRequestException('You do not have permissions to perform this action');
+        }
+        if (version?.status === AppVersionStatus.DRAFT) {
+          throw new BadRequestException(
+            'You cannot promote a draft version. \nPlease save the version before promoting.'
+          );
         }
 
         if (version.currentEnvironmentId !== currentEnvironmentId) {
@@ -279,5 +428,23 @@ export class VersionService implements IVersionService {
         return { editorEnvironment: nextEnvironment, environments };
       }
     });
+  }
+  async createDraftVersion(
+    app: App,
+    user: User,
+    draftVersionDto: DraftVersionDto,
+    manager?: EntityManager
+  ): Promise<void> {
+    const { versionFromId } = draftVersionDto;
+    const parentVersion = await this.versionRepository.findVersion(versionFromId);
+    const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
+    const childVersionAppsCount = childVersionApps.length;
+    const createVersionDto: VersionCreateDto = {
+      ...draftVersionDto,
+      versionName: `${parentVersion?.name}_${childVersionAppsCount + 1}`,
+      versionDescription: '',
+    };
+    const draftVersion = await this.createVersion(app, user, createVersionDto);
+    return draftVersion;
   }
 }

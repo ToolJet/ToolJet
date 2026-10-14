@@ -27,6 +27,12 @@ export const pdfConfig = {
       displayName: 'Show download button',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   defaultSize: {
     width: 20,
@@ -42,6 +48,22 @@ export const pdfConfig = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-weak-border)',
+      },
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: {
+        schema: { type: 'number' },
+        defaultValue: 6,
+      },
     },
   },
   exposedVariables: {},
@@ -64,10 +86,13 @@ export const pdfConfig = {
       showDownloadOption: {
         value: `{{true}}`,
       },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      borderRadius: { value: 6 },
     },
   },
 };

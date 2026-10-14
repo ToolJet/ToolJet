@@ -21,14 +21,16 @@
       "height": "150px",
       "editorType": "extendedSingleLine"
     },
-    "headers": {
-      "label": "Headers",
-      "key": "headers",
-      "type": "react-component-headers",
-      "description": "key-value pair headers for graphql api",
-      "height": "150px",
-      "editorType": "extendedSingleLine",
-      "buttonText": "Add Header"
+    "graphql_params": {
+      "label": "",
+      "key": "graphql_params",
+      "type": "react-component-key-value-tabs",
+      "description": "Configure headers, url parameters and cookies for the GraphQL request",
+      "tabs": [
+        { "label": "Headers",        "key": "headers" },
+        { "label": "Params", "key": "url_params" },
+        { "label": "Cookies",        "key": "cookies" }
+      ]
     }
   },
   "required": [

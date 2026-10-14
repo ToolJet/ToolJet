@@ -32,17 +32,14 @@ export class SessionService {
     protected readonly organizationUserRepository: OrganizationUsersRepository
   ) {}
 
-  async terminateSession(userId: string, sessionId: string, response: Response): Promise<void> {
-    response.clearCookie('tj_auth_token');
+  async terminateSession(user: User, sessionId: string, response: Response): Promise<void> {
+    response.clearCookie('tj_auth_token', this.sessionUtilService.getClearCookieOptions());
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.delete(UserSessions, { id: sessionId, userId });
-      const user = await manager.findOneOrFail(User, {
-        where: { id: userId },
-      });
+      await manager.delete(UserSessions, { id: sessionId, userId: user.id });
 
       const auditLogData = {
         userId: user.id,
-        organizationId: user.defaultOrganizationId,
+        organizationId: user.organizationId,
         resourceId: user.id,
         resourceName: user.email,
       };

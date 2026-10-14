@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { isEmpty, debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { LEGACY_ITEMS, IGNORED_ITEMS } from './constants';
@@ -6,17 +6,20 @@ import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetM
 import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
+import { CustomComponentsTab } from './CustomComponentsTab';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Button } from '@/components/ui/Button/Button';
 import { ModuleManager } from '@/modules/Modules/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
+import Beta from '@/_ui/Beta';
 import './styles.scss';
+
 // Simple error boundary component for module errors
 class ModuleErrorBoundary extends React.Component {
   constructor(props) {
@@ -47,6 +50,22 @@ class ModuleErrorBoundary extends React.Component {
 // TODO: searching
 
 export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
+  const _shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
+  const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
+  const edition = fetchEdition();
+
+  const { hasModuleAccess } = useLicenseStore(
+    (state) => ({
+      hasModuleAccess: state.hasModuleAccess,
+    }),
+    shallow
+  );
+
+  const hasCustomComponentLibrariesAccess = useStore(
+    (state) => state.license?.featureAccess?.customComponentLibraries === true
+  );
+
   const componentList = useMemo(() => {
     return componentTypes
       .map((component) => component.component)
@@ -65,17 +84,6 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [moduleError, setModuleError] = useState(false);
   const [activeTab, setActiveTab] = useState('components');
-  const _shouldFreeze = useStore((state) => state.getShouldFreeze());
-  const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
-  const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
-  const edition = fetchEdition();
-
-  const { hasModuleAccess } = useLicenseStore(
-    (state) => ({
-      hasModuleAccess: state.hasModuleAccess,
-    }),
-    shallow
-  );
 
   // Force re-render when hasModuleAccess changes
   useEffect(() => {
@@ -87,17 +95,23 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     filterComponents('');
   }, [activeTab]);
 
+  useEffect(() => {
+    if (!searchQuery) setFilteredComponents(componentList);
+  }, [componentList, searchQuery]);
+
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
 
-  const handleSearchQueryChange = useCallback(
-    debounce((value) => {
-      setSearchQuery(value);
-      // Filtering will be handled in the tab content
-      filterComponents(value);
-    }, 125),
+  const filterComponentsRef = useRef(null);
+
+  const handleSearchQueryChange = useMemo(
+    () =>
+      debounce((value) => {
+        setSearchQuery(value);
+        filterComponentsRef.current?.(value);
+      }, 125),
     []
   );
 
@@ -116,31 +130,30 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
         });
         const results = fuse.search(value);
 
-        // Find the indices of ToggleSwitchLegacy and ToggleSwitch
-        const legacyIndex = componentList.findIndex((component) => component === 'ToggleSwitchLegacy');
-        const toggleIndex = componentList.findIndex((component) => component === 'ToggleSwitch');
-
-        // Swap the indices (if both are found)
+        // Preserve previous behavior: swap ToggleSwitchLegacy and ToggleSwitch indices
+        // on a COPY (the original code mutated the memoized componentList in place).
+        const list = [...componentList];
+        const legacyIndex = list.findIndex((component) => component === 'ToggleSwitchLegacy');
+        const toggleIndex = list.findIndex((component) => component === 'ToggleSwitch');
         if (legacyIndex !== -1 && toggleIndex !== -1) {
-          [componentList[legacyIndex], componentList[toggleIndex]] = [
-            componentList[toggleIndex],
-            componentList[legacyIndex],
-          ];
+          [list[legacyIndex], list[toggleIndex]] = [list[toggleIndex], list[legacyIndex]];
         }
         setFilteredComponents(results.map((result) => result.item.component));
       } else {
         setFilteredComponents(componentList);
       }
     },
-    [componentList]
+    [componentList, searchList]
   );
+
+  filterComponentsRef.current = filterComponents;
 
   const { t } = useTranslation();
 
   function renderComponentCard(component, index) {
     return (
-      <div className="text-center align-items-center clearfix draggable-box-wrapper">
-        <DragLayer index={index} component={componentTypeDefinitionMap[component]} key={component} />
+      <div key={component} className="text-center align-items-center clearfix draggable-box-wrapper">
+        <DragLayer index={index} component={componentTypeDefinitionMap[component]} />
       </div>
     );
   }
@@ -170,8 +183,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           <button
             className=" btn-sm tj-tertiary-btn mt-3"
             onClick={() => {
-              setFilteredComponents([]);
-              handleSearchQueryChange('');
+              setSearchQuery('');
+              filterComponents('');
             }}
           >
             {t('widgetManager.clearQuery', 'clear query')}
@@ -225,6 +238,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           placeholder={
             activeTab === 'components'
               ? t('globals.searchComponents', 'Search widgets')
+              : activeTab === 'custom'
+              ? t('globals.searchCustomComponents', 'Search components')
               : t('globals.searchModules', 'Search modules')
           }
           customClass={`tj-widgets-search-input tj-text-xsm`}
@@ -235,59 +250,87 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     );
   };
 
-  const closeIcon = () => {
-    return (
-      <div
-        className="icon-btn cursor-pointer flex-shrink-0 me-3 p-1 h-4 w-4 component-manager-close-icon"
-        onClick={handleToggle}
-      >
-        <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="14" viewBox="0 0 14 14" />
-      </div>
-    );
-  };
-
   return (
     <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
       {isModuleEditor || edition === 'ce' ? (
         <>
-          <div className="d-flex align-items-center">
-            <p className="widgets-manager-header tw-w-full tw-pl-[16px]">Components</p>
+          <div className="panel-header">
+            <span className="panel-header-title">Components</span>
+            <div className="panel-header-actions">
+              <Button
+                iconOnly
+                leadingIcon="x"
+                onClick={handleToggle}
+                variant="ghost"
+                size="medium"
+                isLucid={true}
+                data-cy="components-close-button"
+              />
+            </div>
           </div>
-          {closeIcon()}
           {searchBox()}
           <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
         </>
       ) : (
-        <Tabs
-          activeKey={activeTab}
-          onSelect={(key) => {
-            setActiveTab(key);
-          }}
-          id="components-manager-tabs"
-          className="mt-2"
-          darkMode={darkMode}
-          closeIcon={closeIcon}
-        >
-          <Tab
-            eventKey="components"
-            title={(() => {
-              const str = t('globals.components', 'Components');
-              return str.charAt(0).toUpperCase() + str.slice(1);
-            })()}
+        <>
+          <div className="panel-header">
+            <span className="panel-header-title">Add new component</span>
+            <div className="panel-header-actions">
+              <Button
+                iconOnly
+                leadingIcon="x"
+                onClick={handleToggle}
+                variant="ghost"
+                size="medium"
+                isLucid={true}
+                data-cy="components-close-button"
+              />
+            </div>
+          </div>
+          <Tabs
+            activeKey={activeTab}
+            onSelect={(key) => {
+              setActiveTab(key);
+            }}
+            id="components-manager-tabs"
             darkMode={darkMode}
           >
-            {searchBox()}
-            <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
-          </Tab>
-          {hasModuleAccess && (
-            <Tab eventKey="modules" title={t('globals.modules', 'Modules')} darkMode={darkMode}>
-              <ModuleErrorBoundary onError={() => setModuleError(true)}>
-                {searchBox()}
-                <ModuleManager searchQuery={searchQuery} />
-              </ModuleErrorBoundary>
+            <Tab
+              eventKey="components"
+              title={(() => {
+                const str = t('globals.components', 'Components');
+                return str.charAt(0).toUpperCase() + str.slice(1);
+              })()}
+              darkMode={darkMode}
+            >
+              {searchBox()}
+              <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
             </Tab>
-          )}
-        </Tabs>
+            {hasModuleAccess && (
+              <Tab eventKey="modules" title={t('globals.modules', 'Modules')} darkMode={darkMode}>
+                <ModuleErrorBoundary onError={() => setModuleError(true)}>
+                  {searchBox()}
+                  <ModuleManager searchQuery={searchQuery} />
+                </ModuleErrorBoundary>
+              </Tab>
+            )}
+            {hasCustomComponentLibrariesAccess && (
+              <Tab
+                eventKey="custom"
+                title={
+                  <>
+                    {t('globals.custom', 'Custom')}
+                    <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-0.5" />
+                  </>
+                }
+                darkMode={darkMode}
+              >
+                {searchBox()}
+                <CustomComponentsTab searchQuery={searchQuery} />
+              </Tab>
+            )}
+          </Tabs>
+        </>
       )}
     </div>
   );

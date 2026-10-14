@@ -8,6 +8,8 @@ import { Tooltip } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 
+const coerceColorString = (v) => (typeof v === 'string' ? v : '');
+
 const BaseColorSwatches = ({
   value,
   onChange,
@@ -26,13 +28,19 @@ const BaseColorSwatches = ({
   onReset,
 }) => {
   const computeColorForPopoverMenu = useStore((state) => state.computeColorForPopoverMenu);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  value = coerceColorString(value);
   if (component == 'PopoverMenu') {
     value = computeColorForPopoverMenu(value, meta, componentId);
-  } else if (component == 'Button') {
-    value = computeColor(styleDefinition, value, meta);
+  } else if (component == 'Button' || component == 'FileButton') {
+    value = computeColor(styleDefinition, value, meta, component);
+  } else if (component == 'Html' && !value) {
+    // Empty string is the "unset" sentinel (backward compatibility for pre-existing widgets);
+    // show the mode-appropriate backdrop Html.jsx actually falls back to, not a blank swatch.
+    value = darkMode ? '#47505D' : '#ffffff';
   }
+  value = coerceColorString(value);
   const [showPicker, setShowPicker] = useState(false);
-  const darkMode = localStorage.getItem('darkMode') === 'true';
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
   const coverStyles = {
     position: 'fixed',
@@ -59,14 +67,19 @@ const BaseColorSwatches = ({
     let aHex = Math.round(255 * alpha).toString(16);
     return alpha === 0 ? '00' : aHex.length < 2 ? `0${aHex}` : aHex;
   };
+
   const handleColorChange = (color) => {
-    const hexCode = `${color.hex}${decimalToHex(color?.rgb?.a ?? 1.0)}`;
+    const { r, g, b, a } = color.rgb;
+    const toHex = (n) => n.toString(16).padStart(2, '0');
+    const hexCode = `#${toHex(r)}${toHex(g)}${toHex(b)}${decimalToHex(a ?? 1.0)}`;
     onChange(hexCode);
   };
+
   const eventPopover = () => {
     return (
       <Popover
         className={classNames(
+          'codebuilder-color-swatches-popover',
           { 'dark-theme': darkMode },
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
         )}
@@ -182,6 +195,7 @@ const BaseColorSwatches = ({
               fallbackPlacements={['top', 'left']}
               rootClose={true}
               overlay={eventPopover()}
+              rootCloseEvent="mousedown" // close picker when mousedown anywhere on screen
             >
               {ColorPickerInputBox()}
             </OverlayTrigger>

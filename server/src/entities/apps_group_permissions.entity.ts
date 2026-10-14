@@ -39,6 +39,18 @@ export class AppsGroupPermissions extends BaseEntity {
   @Column({ name: 'hide_from_dashboard', nullable: false, default: false })
   hideFromDashboard: boolean;
 
+  @Column({ name: 'can_access_development', nullable: false, default: true })
+  canAccessDevelopment: boolean;
+
+  @Column({ name: 'can_access_staging', nullable: false, default: true })
+  canAccessStaging: boolean;
+
+  @Column({ name: 'can_access_production', nullable: false, default: true })
+  canAccessProduction: boolean;
+
+  @Column({ name: 'can_access_released', nullable: false, default: true })
+  canAccessReleased: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { toggleSsoViaUI, updateSsoId, gitHubSignInWithAssertion } from "Support/utils/manageSSO";
+import { toggleSsoViaUI, updateSsoId, cleanupTestUser } from "Support/utils/manageSSO";
 import { fillInputField } from "Support/utils/common";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
@@ -33,12 +33,9 @@ describe('Google SSO Tests', () => {
             cy.apiUpdateAllowSignUp(false, 'organization', adminHeaders);
             cy.apiUpdateAllowSignUp(false, 'instance', adminHeaders);
             cy.apiUpdateSSOConfig(emptyGoogleConfig, 'workspace', adminHeaders);
-        });;
+            cleanupTestUser(TEST_USER_EMAIL);
+        });
     });
-
-    const cleanupTestUser = () => {
-        cy.runSqlQuery(`CALL delete_user('${TEST_USER_EMAIL}');`);
-    };
 
     it('should verify sso without configuration on instance', () => {
 
@@ -47,7 +44,7 @@ describe('Google SSO Tests', () => {
         cy.visit('/');
         cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
         cy.origin('https://accounts.google.com', () => {
-            cy.contains('That’s an error.').should('be.visible');
+            cy.contains('Authorization Error').should('be.visible');
         });
 
     });
@@ -60,7 +57,7 @@ describe('Google SSO Tests', () => {
         cy.visit(WORKSPACE_URL);
         cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
         cy.origin('https://accounts.google.com', () => {
-            cy.contains('That’s an error.').should('be.visible');
+            cy.contains('Authorization Error').should('be.visible');
         });
     });
 
@@ -88,13 +85,12 @@ describe('Google SSO Tests', () => {
 
             cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
-            cleanupTestUser();
         });
     });
 
     it('should verify signup via sso to workspace', () => {
         const orgId = Cypress.env("workspaceId");
-        updateSsoId(TEST_SSO_ID, 'google', `'${orgId}'`);
+        updateSsoId(TEST_SSO_ID, 'google', `${orgId}`);
 
         toggleSsoViaUI('Google', WORKSPACE_SETTINGS_URL);
         fillInputField(googleSsoConfig);
@@ -117,7 +113,6 @@ describe('Google SSO Tests', () => {
             cy.apiLoginByGoogle();
             cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
-            cleanupTestUser();
         });
     });
     it('should verify invite and login via sso to workspace', () => {
@@ -127,12 +122,10 @@ describe('Google SSO Tests', () => {
 
         cy.apiUserInvite(TEST_USER_NAME, TEST_USER_EMAIL);
         fetchAndVisitInviteLink(TEST_USER_EMAIL);
-        cy.pause()
 
         cy.apiLoginByGoogle()
         cy.get(commonSelectors.acceptInviteButton).click()
         cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
-        cleanupTestUser();
     });
 });

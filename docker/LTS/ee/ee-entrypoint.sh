@@ -3,6 +3,21 @@ set -e
 
 npm cache clean --force
 
+# ================== refresh AWS RDS cert bundle (best-effort, falls back to baked-in) ==================
+mkdir -p /home/appuser/certs
+if wget -O /home/appuser/certs/global-bundle.pem.tmp https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem; then
+  mv /home/appuser/certs/global-bundle.pem.tmp /home/appuser/certs/global-bundle.pem
+  echo "RDS cert bundle refreshed successfully."
+else
+  rm -f /home/appuser/certs/global-bundle.pem.tmp
+  echo "Warning: Failed to refresh RDS cert bundle (no internet access or unreachable). Using bundle baked into image at build time."
+fi
+if [ -s /home/appuser/certs/global-bundle.pem ]; then
+  export NODE_EXTRA_CA_CERTS=/home/appuser/certs/global-bundle.pem
+else
+  echo "Warning: No RDS cert bundle available (build-time bake and runtime refresh both failed). Continuing without it - only needed for AWS RDS SSL connections."
+fi
+
 # Load environment variables from .env if the file exists
 if [ -f "./.env" ]; then
   export $(grep -v '^#' ./.env | xargs -d '\n') || true
@@ -42,20 +57,12 @@ else
   echo "Using external PostgREST at $PGRST_HOST."
 fi
 
-
-# Check WORKLOW_WORKER and skip SETUP_CMD if true
-if [ "${WORKFLOW_WORKER}" == "true" ]; then
-  echo "WORKFLOW_WORKER is set to true. Running worker process."
-  npm run worker:prod
+# Determine setup command based on the presence of ./server/dist
+if [ -d "./server/dist" ]; then
+  SETUP_CMD='npm run db:setup:prod'
 else
-  # Determine setup command based on the presence of ./server/dist
-  if [ -d "./server/dist" ]; then
-    SETUP_CMD='npm run db:setup:prod'
-  else
-    SETUP_CMD='npm run db:setup'
-  fi
+  SETUP_CMD='npm run db:setup'
 fi
-
 
 # Wait for PostgreSQL connection
 if [ -z "$DATABASE_URL" ]; then

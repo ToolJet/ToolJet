@@ -144,6 +144,16 @@
             background-color: revert !important;
         }
     }
+
+    &.ai-builder .table-content-wrapper {
+        .tj-app-input {
+            flex: 1;
+        }
+
+        .input-control {
+            width: 100% !important;
+        }
+    }
 }
 
 .datasource-inner-sidebar-wrap {
@@ -199,6 +209,11 @@
         width: 976px;
         margin: 0 auto;
         padding-bottom: 48px;
+
+        .datasource-marketplace-banner-holder {
+            width: 100%;
+            margin-top: 24px;
+        }
 
         .datasource-search-holder {
             width: 100%;

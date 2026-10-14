@@ -10,6 +10,7 @@ export const useFormLogic = (component, paramUpdated) => {
   const resolveReferences = useStore((state) => state.resolveReferences, shallow);
   const getFormDataSectionData = useStore((state) => state.getFormDataSectionData, shallow);
   const saveFormDataSectionData = useStore((state) => state.saveFormDataSectionData, shallow);
+  const updateFormDataSectionDataLocally = useStore((state) => state.updateFormDataSectionDataLocally, shallow);
   const componentNameIdMapping = useStore((state) => state.modules.canvas.componentNameIdMapping, shallow);
   const queryNameIdMapping = useStore((state) => state.modules.canvas.queryNameIdMapping, shallow);
   const getChildComponents = useStore((state) => state.getChildComponents, shallow);
@@ -42,6 +43,43 @@ export const useFormLogic = (component, paramUpdated) => {
     );
   };
 
+  // Get form component diff for batching with child component operations
+  // This allows combining form component update with child component create/update/delete in a single API call
+  const getFormComponentDiff = (fields) => {
+    formState.savedSourceValue.current = formState.source.value;
+    const newJsonData = formState.JSONData;
+
+    if (newJsonData?.value === undefined) {
+      newJsonData.value = resolveReferences('canvas', formState.source.value);
+    }
+
+    const componentDefinition = getComponentDefinition(component?.id);
+    if (!componentDefinition) return null;
+
+    // Update local state (API call will be handled by the batch operation)
+    updateFormDataSectionDataLocally(
+      component?.id,
+      {
+        generateFormFrom: formState.source,
+        JSONData: newJsonData,
+      },
+      fields
+    );
+
+    // Build the diff that includes the form's updated properties
+    return {
+      component: {
+        definition: {
+          properties: {
+            generateFormFrom: formState.source,
+            JSONData: newJsonData,
+            fields: { value: fields },
+          },
+        },
+      },
+    };
+  };
+
   // Create column mapping handler
   const performColumnMapping = createColumnMappingHandler({
     component,
@@ -54,6 +92,7 @@ export const useFormLogic = (component, paramUpdated) => {
     performBatchComponentOperations,
     saveDataSection,
     setOpenModal: formState.setOpenModal,
+    getFormComponentDiff,
   });
 
   // Create JSON data blur handler

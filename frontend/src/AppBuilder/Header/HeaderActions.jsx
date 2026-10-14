@@ -4,14 +4,11 @@ import { Tooltip } from 'react-tooltip';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
-import { Button } from '@/components/ui/Button/Button';
+import { Button, Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { Monitor, Smartphone, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button';
-
-
 
 const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
   const {
@@ -27,8 +24,8 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
   } = useStore(
     (state) => ({
       currentLayout: state.currentLayout,
-      canUndo: state.canUndo && !(state.isEditorFreezed || state.isVersionReleased),
-      canRedo: state.canRedo && !(state.isEditorFreezed || state.isVersionReleased),
+      canUndo: state.canUndo && !(state.isEditorFreezed || state.isVersionReleased || state.isEditorReadOnly),
+      canRedo: state.canRedo && !(state.isEditorFreezed || state.isVersionReleased || state.isEditorReadOnly),
       toggleCurrentLayout: state.toggleCurrentLayout,
       showToggleLayoutBtn: state.showToggleLayoutBtn,
       showUndoRedoBtn: state.showUndoRedoBtn,
@@ -51,7 +48,6 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
       className={cx('tw-flex tw-gap-2 tw-items-center tw-justify-center editor-header-actions', {
         'w-100': showFullWidth,
       })}
-      data-cy="header-actions"
     >
       {showToggleLayoutBtn && (
         <ToggleLayoutButtons
@@ -63,34 +59,31 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
         />
       )}
       {showPreviewBtn && (
-
-        <ButtonComponent
-          size="default"
-          variant="outline"
-          leadingIcon="play01"
-          data-cy="preview-link-button"
-          style={{ padding: "7px 12px" }}
-
+        <Link
+          title="Preview"
+          to={appPreviewLink}
+          target="_blank"
+          rel="noreferrer"
+          className="text-decoration-none"
+          style={{ color: 'var(--text-default)' }}
+          data-cy="editor-preview-Link"
         >
-          <Link
-            title="Preview"
-            to={appPreviewLink}
-            target="_blank"
-            rel="noreferrer"
-            data-cy="preview-link-button"
-            className="text-decoration-none"
-            style={{ color: 'var(--text-default)' }}
+          <ButtonComponent
+            isLucid
+            size="default"
+            variant="outline"
+            leadingIcon="play"
+            data-cy="editor-preview-button"
+            style={{ padding: '7px 12px' }}
           >
-
             Preview
-          </Link>
-        </ButtonComponent>
+          </ButtonComponent>
+        </Link>
+      )}
 
-      )
-      }
-      < Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
+      <Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
       <Tooltip id="tooltip-for-redo" className="tooltip" data-cy="redo-tooltip" />
-    </div >
+    </div>
   );
 };
 

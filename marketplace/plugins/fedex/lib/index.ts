@@ -15,10 +15,7 @@ export default class Fedex implements QueryService {
       // Build resolved path
       let resolvedPath = path;
       for (const [key, value] of Object.entries(params.path || {})) {
-        resolvedPath = resolvedPath.replace(
-          `{${key}}`,
-          encodeURIComponent(value)
-        );
+        resolvedPath = resolvedPath.replace(`{${key}}`, encodeURIComponent(value));
       }
 
       const fullUrl = new URL(`${base_url}${resolvedPath}`);
@@ -31,28 +28,28 @@ export default class Fedex implements QueryService {
       }
 
       const method = operation.toUpperCase();
-      const hasBody = ["POST", "PUT", "PATCH"].includes(method);
+      const hasBody = ['POST', 'PUT', 'PATCH'].includes(method);
 
       const headers: Record<string, string> = {
         Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
+        Accept: 'application/json',
       };
 
       if (hasBody) {
-        headers["Content-Type"] = "application/json";
+        headers['Content-Type'] = 'application/json';
       }
 
       const response = await got(fullUrl.toString(), {
         method: method.toLowerCase() as Method,
         headers,
         json: hasBody ? params.request : undefined,
-        responseType: 'json'
+        responseType: 'json',
       });
 
       const responseData = response.body;
 
       return {
-        status: "ok",
+        status: 'ok',
         data: responseData as any,
       };
     } catch (error) {
@@ -60,28 +57,14 @@ export default class Fedex implements QueryService {
         throw error;
       }
 
-      throw this.parseHttpError(error, "Failed to fetch data");
+      throw this.parseHttpError(error, 'Failed to fetch data');
     }
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
       this.validateSourceOptions(sourceOptions);
-
-      const { accessToken } = await this.generateOAuthToken(sourceOptions);
-      const { base_url } = sourceOptions;
-
-      // Use the access token to make a test API call to verify connectivity
-      const testUrl = `${base_url}/rate/v1/rates/quotes`;
-
-      await got.post(testUrl, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/json",
-        },
-        json: {},
-        responseType: 'json',
-      });
+      await this.generateOAuthToken(sourceOptions);
 
       return {
         status: 'ok',
@@ -97,14 +80,13 @@ export default class Fedex implements QueryService {
   }
 
   private async generateOAuthToken(sourceOptions: SourceOptions) {
-
     const { client_id, client_secret, customer_type, child_key, child_secret, base_url } = sourceOptions;
     const tokenUrl = `${base_url}/oauth/token`;
 
     const formData: Record<string, string> = {
       client_id,
       client_secret,
-    }
+    };
 
     if (!customer_type || customer_type === CustomerType.STANDARD) {
       // Standard OAuth Client Credentials flow
@@ -130,15 +112,11 @@ export default class Fedex implements QueryService {
       const data = response.body as any;
 
       if (!data.access_token) {
-        throw new QueryError(
-          "Query could not be completed",
-          "Access token missing in response",
-          {
-            status: response.statusCode,
-            statusMessage: response.statusMessage,
-            errors: data,
-          }
-        );
+        throw new QueryError('Query could not be completed', 'Access token missing in response', {
+          status: response.statusCode,
+          statusMessage: response.statusMessage,
+          errors: data,
+        });
       }
 
       return {
@@ -150,7 +128,7 @@ export default class Fedex implements QueryService {
         throw error;
       }
 
-      throw this.parseHttpError(error, "Failed to obtain OAuth token from FedEx");
+      throw this.parseHttpError(error, 'Failed to obtain OAuth token from FedEx');
     }
   }
 
@@ -159,7 +137,7 @@ export default class Fedex implements QueryService {
     let errorDetails: Record<string, any> = {};
 
     if (error instanceof HTTPError && error.response) {
-      errorMessage = `HTTP ${error.response.statusCode}: ${error.response.statusMessage || "Request failed"}`;
+      errorMessage = `HTTP ${error.response.statusCode}: ${error.response.statusMessage || 'Request failed'}`;
       errorDetails = {
         status: error.response.statusCode,
         statusMessage: error.response.statusMessage,
@@ -167,9 +145,7 @@ export default class Fedex implements QueryService {
 
       try {
         const errorBody =
-          typeof error.response.body === "string"
-            ? JSON.parse(error.response.body)
-            : error.response.body;
+          typeof error.response.body === 'string' ? JSON.parse(error.response.body) : error.response.body;
 
         // Filter and map relevant error information
         if (Array.isArray(errorBody?.errors)) {
@@ -182,10 +158,12 @@ export default class Fedex implements QueryService {
             errorMessage = errorBody.errors[0].message;
           }
         } else if (errorBody?.error) {
-          errorDetails.errors = [{
-            code: errorBody.error.code,
-            message: errorBody.error.message,
-          }];
+          errorDetails.errors = [
+            {
+              code: errorBody.error.code,
+              message: errorBody.error.message,
+            },
+          ];
           if (errorBody.error.message) {
             errorMessage = errorBody.error.message;
           }
@@ -194,32 +172,27 @@ export default class Fedex implements QueryService {
         // If parsing fails, do not include the raw body
       }
     } else {
-      errorMessage = error.message || "An unexpected error occurred";
+      errorMessage = error.message || 'An unexpected error occurred';
       errorDetails = { cause: error };
     }
 
-    return new QueryError("Query could not be completed", errorMessage, errorDetails);
+    return new QueryError('Query could not be completed', errorMessage, errorDetails);
   }
 
   private validateSourceOptions(sourceOptions: SourceOptions) {
-    const { client_id, client_secret, customer_type, base_url } =
-      sourceOptions;
+    const { client_id, client_secret, customer_type, base_url } = sourceOptions;
 
     if (!client_id || !client_secret || !base_url) {
-      throw new QueryError(
-        "Query could not be completed",
-        "Missing required source options",
-        {
-          client_id: !!client_id,
-          client_secret: !!client_secret,
-          base_url: !!base_url,
-        }
-      );
+      throw new QueryError('Query could not be completed', 'Missing required source options', {
+        client_id: !!client_id,
+        client_secret: !!client_secret,
+        base_url: !!base_url,
+      });
     }
 
     if (base_url && !Object.values(BaseURL).includes(base_url)) {
       throw new QueryError(
-        "Query could not be completed",
+        'Query could not be completed',
         "Invalid base URL, expected 'https://apis.fedex.com' or 'https://apis-sandbox.fedex.com'",
         {
           base_url: base_url,
@@ -229,7 +202,7 @@ export default class Fedex implements QueryService {
 
     if (customer_type && !Object.values(CustomerType).includes(customer_type)) {
       throw new QueryError(
-        "Query could not be completed",
+        'Query could not be completed',
         "Invalid customer type, expected 'internal_customers' or 'proprietary_parent_child_customers'",
         {
           customer_type: customer_type,
@@ -242,8 +215,8 @@ export default class Fedex implements QueryService {
 
       if (!child_key || !child_secret) {
         throw new QueryError(
-          "Query could not be completed",
-          "Missing required child credentials for the selected customer type",
+          'Query could not be completed',
+          'Missing required child credentials for the selected customer type',
           {
             child_key: !!child_key,
             child_secret: !!child_secret,
@@ -257,24 +230,16 @@ export default class Fedex implements QueryService {
     const { operation, specType, path } = queryOptions;
 
     if (!operation || !specType || !path) {
-      throw new QueryError(
-        "Query could not be completed",
-        "Missing required query options",
-        {
-          operation: !!operation,
-          specType: !!specType,
-          path: !!path,
-        }
-      );
+      throw new QueryError('Query could not be completed', 'Missing required query options', {
+        operation: !!operation,
+        specType: !!specType,
+        path: !!path,
+      });
     }
 
-    if (
-      !["get", "post", "put", "patch", "delete"].includes(
-        operation.toLowerCase()
-      )
-    ) {
+    if (!['get', 'post', 'put', 'patch', 'delete'].includes(operation.toLowerCase())) {
       throw new QueryError(
-        "Query could not be completed",
+        'Query could not be completed',
         "Invalid operation, expected 'get', 'post', 'put', 'patch', or 'delete'",
         {
           operation: operation,

@@ -1,62 +1,55 @@
 import { fake } from "Fixtures/fake";
-import { workflowsText } from "Texts/workflows";
-import { workflowSelector } from "Selectors/workflows";
-
+import { workflowSelector } from "Selectors/platform/workflows";
 import {
+  buildLinearWorkflow,
   enterJsonInputInStartNode,
   verifyPreviewOutputText,
   verifyTextInResponseOutputLimited,
-  navigateBackToWorkflowsDashboard,
-} from "Support/utils/workFlows";
+} from "Support/utils/workflows/workFlows";
+import { workflowsText } from "Texts/platform/workflows";
+
 
 const data = {};
 
-describe("Workflows features", () => {
+describe("Workflows - payloads and node preview", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
-    data.wfName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.appName = `${data.wfName}-wf-app`;
-    data.childWFName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.parentWFName = `${data.wfName}-wf-app`;
-    data.dataSourceName = fake.lastName
+    data.workflowName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.childWorkflowName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
+    data.parentWorkflowName = `${data.workflowName}-parent`;
   });
 
-  it("Creating workflow with long string input and validating execution", () => {
-    cy.createWorkflowApp(data.wfName);
-    enterJsonInputInStartNode(workflowsText.longStringJsonText);
-    cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
+  it("A long string passed through start trigger params survives the run intact", () => {
+    cy.apiCreateWorkflow(data.workflowName);
+    cy.openWorkflow();
 
-    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
-      force: true,
+    buildLinearWorkflow({
+      startJson: workflowsText.longStringJsonText,
+      blockLabel: workflowsText.runjsNodeLabel,
+      nodeName: workflowsText.runjs,
+      inputField: workflowsText.runjsInputField,
+      query: workflowsText.runjsNodeCode,
+      responseReturn: workflowsText.responseNodeQuery,
     });
 
-    cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
-      .click({ force: true })
-      .realType(workflowsText.runjsNodeCode, { delay: 50 });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.runjs,
-      workflowsText.responseNodeQuery
-    );
     cy.verifyTextInResponseOutput(workflowsText.longStringJsonText);
-    cy.deleteWorkflow(data.wfName);
+
+    cy.apiDeleteWorkflow(data.workflowName);
   });
 
-  it("Creating workflow with Node Preview Validation and execution", () => {
-    cy.createWorkflowApp(data.wfName);
+  it("Previewing a node shows its output before the workflow is run", () => {
+    cy.apiCreateWorkflow(data.workflowName);
+    cy.openWorkflow();
+
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
     cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
       force: true,
     });
-
     cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
       .click({ force: true })
       .realType(workflowsText.runjsNodeCode, { delay: 50 });
@@ -71,35 +64,47 @@ describe("Workflows features", () => {
       workflowsText.responseNodeQuery
     );
     cy.verifyTextInResponseOutput(workflowsText.jsonValuePlaceholder);
-    cy.deleteWorkflow(data.wfName);
+
+    cy.apiDeleteWorkflow(data.workflowName);
   });
 
-  // Need to run after bug fixes
-  it("Creating workflow inside Workflow and validating execution", () => {
-    cy.createWorkflowApp(data.childWFName);
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
+  it("A large dataset reaches the response output without breaking the viewer", () => {
+    cy.apiCreateWorkflow(data.workflowName);
+    cy.openWorkflow();
 
-    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
-      force: true,
+    buildLinearWorkflow({
+      blockLabel: workflowsText.runjsNodeLabel,
+      nodeName: workflowsText.runjs,
+      inputField: workflowsText.runjsInputField,
+      query: workflowsText.runjsNodeQueryForLargedataSet,
+      responseReturn: workflowsText.responseNodeQuery,
+      typeOptions: { parseSpecialCharSequences: false, delay: 0 },
     });
 
-    cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
-      .click({ force: true })
-      .realType(workflowsText.runjsNodeCode, { delay: 50 });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.runjs,
-      workflowsText.responseNodeQuery
+    // The viewer cannot expand 30,000 nodes, so expansion is capped.
+    verifyTextInResponseOutputLimited(
+      workflowsText.responseNodeExpectedValueTextForLargeDataset
     );
+
+    cy.apiDeleteWorkflow(data.workflowName);
+  });
+
+
+  it("A workflow can embed another workflow as a node and the graph builds", () => {
+    cy.apiCreateWorkflow(data.childWorkflowName);
+    cy.openWorkflow();
+
+    buildLinearWorkflow({
+      blockLabel: workflowsText.runjsNodeLabel,
+      nodeName: workflowsText.runjs,
+      inputField: workflowsText.runjsInputField,
+      query: workflowsText.runjsNodeCode,
+      responseReturn: workflowsText.responseNodeQuery,
+    });
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
-    navigateBackToWorkflowsDashboard();
-
-    cy.createWorkflowApp(data.parentWFName);
+    cy.apiCreateWorkflow(data.parentWorkflowName);
+    cy.openWorkflow();
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.workflowNodeLabel);
 
@@ -107,11 +112,11 @@ describe("Workflows features", () => {
       force: true,
     });
 
-    cy.get('input[id^="react-select-"]')
+    cy.get(workflowSelector.workflowSelectInput)
       .eq(1)
-      .type(data.childWFName, { force: true });
+      .type(data.childWorkflowName, { force: true });
     cy.get(".react-select__option")
-      .contains(data.childWFName)
+      .contains(data.childWorkflowName)
       .click({ force: true });
 
     cy.get("body").click(50, 50);
@@ -121,38 +126,8 @@ describe("Workflows features", () => {
       workflowsText.workflowNode,
       workflowsText.workflowResponseNodeQuery
     );
-    // cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-    cy.deleteWorkflow(data.childWFName);
-    cy.deleteWorkflowfromDashboard(data.parentWFName);
-  });
 
-  it("Creating workflow with large datasets and validating execution", () => {
-    cy.createWorkflowApp(data.wfName);
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
-
-    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
-      force: true,
-    });
-
-    cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
-    .click({ force: true })
-    .realType(workflowsText.runjsNodeQueryForLargedataSet, {
-      parseSpecialCharSequences: false,
-      delay: 0
-    });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.runjs,
-      workflowsText.responseNodeQuery
-    );
-    verifyTextInResponseOutputLimited(
-      workflowsText.responseNodeExpectedValueTextForLargeDataset
-    );
-
-    cy.deleteWorkflow(data.wfName);
+    cy.apiDeleteWorkflow(data.childWorkflowName);
+    cy.apiDeleteWorkflow(data.parentWorkflowName);
   });
 });

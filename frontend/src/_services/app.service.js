@@ -1,9 +1,10 @@
 import config from 'config';
-import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
+import { authHeader, handleResponse } from '@/_helpers';
 
 export const appService = {
   getConfig,
   getAll,
+  getAllAddableApps,
   createApp,
   cloneApp,
   exportApp,
@@ -16,6 +17,7 @@ export const appService = {
   getApp,
   fetchApp,
   fetchAppBySlug,
+  getRestrictedAccessInfo,
   getAppByVersion,
   fetchAppByVersion,
   saveApp,
@@ -39,6 +41,11 @@ function getAll(page, folder, searchKey) {
       `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}`,
       requestOptions
     ).then(handleResponse);
+}
+
+function getAllAddableApps() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/addable`, requestOptions).then(handleResponse);
 }
 
 function createApp(body = {}) {
@@ -136,6 +143,13 @@ function fetchAppBySlug(slug) {
   return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then((resp) => handleResponse(resp, true));
 }
 
+function getRestrictedAccessInfo(slug) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/restricted-access-info/${slug}`, requestOptions).then((resp) =>
+    handleResponse(resp, true)
+  );
+}
+
 function getAppByVersion(appId, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
@@ -193,7 +207,7 @@ function acceptInvite({ token, password }) {
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/onboarding/accept-invite`, requestOptions).then(handleResponseWithoutValidation);
+  return fetch(`${config.apiUrl}/onboarding/accept-invite`, requestOptions).then(handleResponse);
 }
 
 function getInviteeDetails(token) {

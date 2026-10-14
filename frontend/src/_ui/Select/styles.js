@@ -61,6 +61,7 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}, 
       padding: '10px 12px', // adjust padding to vertically center the text
       display: 'flex',
       alignItems: 'center',
+      fontSize: styles.fontSize ?? '12px',
     }),
     placeholder: (provided) => ({
       ...provided,
@@ -69,14 +70,15 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}, 
     singleValue: (provided) => ({
       ...provided,
       color: darkMode ? '#fff' : '#232e3c',
+      fontSize: styles.fontSize ?? '12px',
     }),
-    menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
+    menuPortal: (provided) => ({ ...provided, zIndex: 2000, pointerEvents: 'auto' }),
   };
 }
 
 export function queryManagerSelectComponentStyle(darkMode, width = 224, height = 32) {
   return {
-    menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
+    menuPortal: (provided) => ({ ...provided, zIndex: 999, pointerEvents: 'auto' }),
     menuList: (base) => ({
       ...base,
     }),

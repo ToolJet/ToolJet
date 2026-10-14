@@ -7,10 +7,21 @@ import { debounce } from 'lodash';
 
 function Slider1(props) {
   const { value, onChange, component, styleDefinition, meta } = props;
-  const { min = 0, max = 100, step = 1, parseType = 'number', staticInputText = '%' } = meta;
+  const {
+    min = 0,
+    max = 100,
+    step = 1,
+    parseType = 'number',
+    staticInputText = '%',
+    skipAutoConditionCheck = false,
+  } = meta;
   const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
   const isDisabled =
-    styleDefinition?.auto?.value === '{{false}}' ? false : styleDefinition?.auto?.value === '{{true}}' ? true : false;
+    skipAutoConditionCheck || styleDefinition?.auto?.value === '{{false}}'
+      ? false
+      : styleDefinition?.auto?.value === '{{true}}'
+      ? true
+      : false;
   useEffect(() => {
     setSliderValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps

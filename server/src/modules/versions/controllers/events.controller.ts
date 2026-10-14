@@ -9,7 +9,7 @@ import { FeatureAbilityGuard } from '../ability/guard';
 import { EventsService } from '@modules/apps/services/event.service';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { App as AppEntity } from '@entities/app.entity';
-import { CreateEventHandlerDto, UpdateEventHandlerDto } from '@modules/apps/dto/event';
+import { CreateEventHandlerDto, UpdateEventHandlerDto, BulkCreateEventHandlerDto } from '@modules/apps/dto/event';
 import { IEventsController } from '../interfaces/controllers/IEventsController';
 
 @InitModule(MODULES.VERSION)
@@ -32,6 +32,13 @@ export class EventsController implements IEventsController {
   @Post(':id/versions/:versionId/events')
   async createEvent(@App() app: AppEntity, @Body() createEventHandlerDto: CreateEventHandlerDto) {
     return this.eventService.createEvent(createEventHandlerDto, app.appVersions[0].id);
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_EVENT)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Post(':id/versions/:versionId/events/bulk')
+  async bulkCreateEvents(@App() app: AppEntity, @Body() bulkCreateEventHandlerDto: BulkCreateEventHandlerDto) {
+    return this.eventService.bulkCreateEvents(bulkCreateEventHandlerDto, app.appVersions[0].id);
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_EVENT)

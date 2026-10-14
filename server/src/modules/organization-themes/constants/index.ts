@@ -50,7 +50,7 @@ export const TJDefaultTheme: Definition = {
       },
       weak: {
         light: '#E4E7EB',
-        dark: '#EEF0F1',
+        dark: '#2B3036',
       },
     },
   },

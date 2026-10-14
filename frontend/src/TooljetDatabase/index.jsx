@@ -10,6 +10,7 @@ import { hasBuilderRole } from '@/_helpers/utils';
 import './styles/styles.scss';
 
 export const TooljetDatabaseContext = createContext({
+  canEditTjdb: false,
   organizationId: null,
   setOrganizationId: () => {},
   selectedTable: '',
@@ -73,8 +74,9 @@ export const TooljetDatabase = (props) => {
     setCollapseSidebar(!collapseSidebar);
   };
   const navigate = useNavigate();
-  const { admin } = authenticationService.currentSessionValue;
+  const { admin, user_permissions } = authenticationService.currentSessionValue;
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
+  const canEditTjdb = admin || !!user_permissions?.tjdb_c_r_u_d;
 
   if (!admin && !isBuilder) {
     navigate('/');
@@ -105,6 +107,7 @@ export const TooljetDatabase = (props) => {
 
   const value = useMemo(
     () => ({
+      canEditTjdb,
       searchParam,
       setSearchParam,
       organizationId,

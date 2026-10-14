@@ -1,7 +1,10 @@
 import React from 'react';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 
+import { cn } from '@/lib/utils';
+
 export const CustomToggleSwitch = ({
+  onClickCapture,
   isChecked,
   toggleSwitchFunction,
   action,
@@ -10,6 +13,8 @@ export const CustomToggleSwitch = ({
   dataCy = '',
   disabled = false,
   subLabel = '',
+  stopClickPropagation = false,
+  classes = null,
 }) => {
   const switchToggle = (
     <label className="switch">
@@ -17,7 +22,9 @@ export const CustomToggleSwitch = ({
         type="checkbox"
         id={action}
         checked={isChecked}
-        onClick={() => {
+        onClickCapture={onClickCapture}
+        onClick={(event) => {
+          if (stopClickPropagation) event.stopPropagation();
           if (action === 'bodyToggle') {
             toggleSwitchFunction(!isChecked);
           } else {
@@ -35,7 +42,7 @@ export const CustomToggleSwitch = ({
     <div
       data-tooltip-id={dataCy === 'copilot' ? 'tooltip-for-active-copilot' : ''}
       data-tooltip-content="Only workspace admins can enable or disable Copilot."
-      className={`custom-toggle-switch d-flex col gap-2 align-items-top`}
+      className={cn('custom-toggle-switch d-flex col gap-2 align-items-center', classes?.toggleSwitchContainer)}
     >
       {switchToggle}
       <div className="d-flex flex-column">

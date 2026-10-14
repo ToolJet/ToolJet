@@ -7,7 +7,7 @@ import { App } from 'src/entities/app.entity';
 import { Response } from 'express';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
-import { CreateDataQueryDto, UpdateDataQueryDto, UpdateSourceDto, UpdatingReferencesOptionsDto } from './dto';
+import { CreateDataQueryDto, ListTablesDto, UpdateDataQueryDto, UpdateSourceDto, UpdatingReferencesOptionsDto } from './dto';
 import { ValidateQueryAppGuard } from './guards/validate-query-app.guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
@@ -128,7 +128,8 @@ export class DataQueriesController implements IDataQueriesController {
       ability,
       dataSource,
       response,
-      mode
+      mode,
+      app
     );
   }
 
@@ -142,7 +143,19 @@ export class DataQueriesController implements IDataQueriesController {
     @Body() updateDataQueryDto: UpdateDataQueryDto,
     @Res({ passthrough: true }) response: Response
   ) {
-    return this.dataQueriesService.runQueryForApp(user, dataQueryId, updateDataQueryDto, response);
+    return this.dataQueriesService.runQueryForApp(user, dataQueryId, updateDataQueryDto, response, app);
+  }
+
+  @InitFeature(FEATURE_KEY.LIST_TABLES)
+  @UseGuards(JwtAuthGuard, ValidateQuerySourceGuard, DataSourceFeatureAbilityGuard)
+  @Get(':dataSourceId/list-tables/:environmentId')
+  async listTables(
+    @User() user: UserEntity,
+    @DataSource() dataSource: DataSourceEntity,
+    @Param('environmentId') environmentId,
+    @Query() listTablesOptions?: ListTablesDto
+  ) {
+    return this.dataQueriesService.listTablesForApp(user, dataSource, environmentId, listTablesOptions);
   }
 
   @InitFeature(FEATURE_KEY.PREVIEW)
@@ -163,6 +176,7 @@ export class DataQueriesController implements IDataQueriesController {
     @Res({ passthrough: true }) response: Response
   ) {
     const dataQuery: DataQuery = dataSource.dataQueries[0];
+
     const { options, query } = updateDataQueryDto;
     const dataQueryEntity = Object.assign(new DataQuery(), {
       ...dataQuery,
@@ -171,7 +185,9 @@ export class DataQueriesController implements IDataQueriesController {
       app,
     });
 
-    return this.dataQueriesService.preview(user, dataQueryEntity, environmentId, options, response);
+    const result = await this.dataQueriesService.preview(user, dataQueryEntity, environmentId, options, response, app);
+
+    return result;
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_DATA_SOURCE)

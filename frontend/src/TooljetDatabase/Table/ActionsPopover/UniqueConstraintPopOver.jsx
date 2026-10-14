@@ -7,7 +7,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import Select, { components } from 'react-select';
 import { formatOptionLabel } from '@/TooljetDatabase/constants';
-import { getLocalTimeZone } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import { getLocalTimeZone } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import './styles.scss';
 import defaultStyles from '@/_ui/Select/styles';
 // eslint-disable-next-line no-unused-vars

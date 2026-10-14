@@ -32,6 +32,7 @@ import {
   starratingConfig,
   dividerConfig,
   filepickerConfig,
+  fileinputConfig,
   calendarConfig,
   iframeConfig,
   codeEditorConfig,
@@ -50,12 +51,14 @@ import {
   htmlConfig,
   verticalDividerConfig,
   customComponentConfig,
+  libraryComponentConfig,
   buttonGroupConfig,
   pdfConfig,
   stepsConfig,
   kanbanConfig,
   colorPickerConfig,
   treeSelectConfig,
+  cascaderConfig,
   linkConfig,
   iconConfig,
   boundedBoxConfig,
@@ -66,22 +69,39 @@ import {
   currencyinputConfig,
   chatConfig,
   popoverMenuConfig,
+  audioRecorderConfig,
+  cameraConfig,
+  tagsInputConfig,
+  accordionConfig,
+  reorderableListConfig,
+  jsonExplorerConfig,
+  jsonEditorConfig,
+  keyValuePairConfig,
+  progressbarConfig,
+  navigationConfig,
+  fileButtonConfig,
+  buttonGroupV2Config,
+  flexContainerConfig,
 } from '../widgets';
 
 export const widgets = [
   // Buttons
   buttonConfig,
-  buttonGroupConfig,
+  buttonGroupV2Config,
   popoverMenuConfig,
+  fileButtonConfig,
 
   //Data
   tableConfig,
   chartConfig,
+  keyValuePairConfig,
 
   // Layouts
   formConfig,
   modalV2Config,
   containerConfig,
+  flexContainerConfig,
+  accordionConfig,
   tabsConfig,
   listviewConfig,
   calendarConfig,
@@ -104,10 +124,13 @@ export const widgets = [
   //Select inputs
   dropdownV2Config,
   multiselectV2Config,
+  tagsInputConfig,
   checkboxConfig,
   toggleSwitchV2Config,
   radiobuttonV2Config,
+  fileinputConfig,
   treeSelectConfig,
+  cascaderConfig,
 
   //Date and time inputs
   datePickerV2Config,
@@ -116,6 +139,7 @@ export const widgets = [
   daterangepickerConfig,
 
   //Navigation
+  navigationConfig,
   linkConfig,
   stepsConfig,
   paginationConfig,
@@ -126,20 +150,25 @@ export const widgets = [
   svgImageConfig,
   pdfConfig,
   mapConfig,
+  audioRecorderConfig,
+  cameraConfig,
 
   //Presentation
   textConfig,
   tagsConfig,
   circularProgressbarConfig,
+  progressbarConfig,
   dividerConfig,
   verticalDividerConfig,
   statisticsConfig,
   timelineConfig,
   timerConfig,
   spinnerConfig,
+  jsonExplorerConfig,
 
   //Custom
   customComponentConfig,
+  libraryComponentConfig,
   htmlConfig,
   iframeConfig,
 
@@ -150,6 +179,8 @@ export const widgets = [
   boundedBoxConfig,
   qrscannerConfig,
   chatConfig,
+  reorderableListConfig,
+  jsonEditorConfig,
 
   //Legacy
   modalConfig,
@@ -159,6 +190,7 @@ export const widgets = [
   dropdownConfig,
   multiselectConfig,
   rangeSliderConfig,
+  buttonGroupConfig,
 
   //Module
   moduleContainerConfig,

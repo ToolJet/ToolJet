@@ -1,5 +1,5 @@
-import { profileSelector } from "Selectors/profile";
-import { profileText } from "Texts/profile";
+import { profileSelector } from "Selectors/platform/profile";
+import { profileText } from "Texts/platform/profile";
 
 export const profilePageElements = () => {
   for (const elements in profileSelector.profileElements) {
@@ -31,4 +31,31 @@ export const profilePageElements = () => {
   cy.get(profileSelector.newPasswordField)
     .should("be.visible")
     .should("be.visible");
+};
+
+
+export const extApiUpdateUser = (userEmail = '', userIdCached = Cypress.env('userIdDev')) => {
+  cy.request({
+    method: 'PATCH',
+    url: `${Cypress.env("server_host")}/api/ext/user/:${userIdCached}`,
+    headers: {
+      'Authorization': `Basic ${Cypress.env('AUTH_TOKEN')}`,
+      'Content-Type': 'application/json'
+    },
+    body: {
+      name: 'The Developer',
+      email: 'dev@tooljet.io',
+      password: 'password',
+      status: 'active'
+    }
+  });
+}
+
+export const removeAvatar = (userEmail = "dev@tooljet.io") => {
+  cy.getUserIdByEmail(userEmail, "user").then((userId) => {
+    return cy.task("dbConnection", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `UPDATE users SET avatar_id = NULL WHERE id = '${userId}';`,
+    });
+  });
 };

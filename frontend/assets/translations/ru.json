@@ -462,9 +462,12 @@
       "properties": "Свойства",
       "events": "События",
       "layout": "Слой",
+      "devices": "Устройства",
       "styles": "Стили",
       "general": "Основное",
       "validation": "Валидация",
+      "data": "Данные",
+      "additionalActions": "Дополнительные действия",
       "documentation": "{{componentMeta}} документация",
       "widgetNameEmptyError": "Имя виджета не может быть пустым",
       "componentNameExistsError": "Имя компонента уже существует",
@@ -585,6 +588,14 @@
       "parseContent": "Спарсить контент",
       "fileType": "Тип файла",
       "dateFormat": "Формат даты",
+      "timeFormat": "Формат времени",
+      "minTime": "Минимальное время",
+      "maxTime": "Максимальное время",
+      "displayIn": "Отображать в",
+      "storeIn": "Сохранять в",
+      "minDate": "Минимальная дата",
+      "maxDate": "Максимальная дата",
+      "makeThisFieldMandatory": "Сделать это поле обязательным",
       "defaultDate": "Дата по умолчанию",
       "events": "События",
       "resources": "Ресурсы",
@@ -914,6 +925,22 @@
     "Back": {
       "text": "Назад",
       "tip": "Домой"
+    }
+  },
+  "datepicker": {
+    "months": {
+      "january": "Январь",
+      "february": "Февраль",
+      "march": "Март",
+      "april": "Апрель",
+      "may": "Май",
+      "june": "Июнь",
+      "july": "Июль",
+      "august": "Август",
+      "september": "Сентябрь",
+      "october": "Октябрь",
+      "november": "Ноябрь",
+      "december": "Декабрь"
     }
   }
 }

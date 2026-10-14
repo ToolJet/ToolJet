@@ -32,16 +32,19 @@ export async function signedUrlForGet(minioClient: MinioClient, queryOptions: ob
 
 export async function getObject(minioClient: MinioClient, queryOptions: object): Promise<object> {
   const stream = await minioClient.getObject(queryOptions['bucket'], queryOptions['objectName']);
-  const streamToString = (stream: Stream) =>
-    new Promise((resolve, reject) => {
-      const chunks = [];
+  const streamToBuffer = (stream: Stream) =>
+    new Promise<Buffer>((resolve, reject) => {
+      const chunks: any[] = [];
       stream.on('data', (chunk) => chunks.push(chunk));
       stream.on('error', reject);
-      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
     });
-  const bodyContents = await streamToString(stream);
+  const bufferData = await streamToBuffer(stream);
 
-  return { Body: bodyContents };
+  return { 
+    Body: bufferData.toString('utf-8'),
+    rawData: bufferData 
+  };
 }
 
 export async function uploadObject(minioClient: MinioClient, queryOptions: object): Promise<object> {

@@ -9,11 +9,11 @@ export interface ISessionService {
 
   sign(JWTPayload: any): string;
 
-  validateUserSession(userId: string, sessionId: string): Promise<void>;
+  validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void>;
 
   createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions>;
 
-  terminateSession(userId: string, sessionId: string, response: Response): Promise<void>;
+  terminateSession(user: User, sessionId: string, response: Response): Promise<void>;
 
   findActiveUser(email: string): Promise<User>;
 

@@ -1,13 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { DataSource, EntityManager, FindManyOptions, FindOptionsSelect, ILike, In, Repository } from 'typeorm';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { DataSource, EntityManager, FindManyOptions, FindOptionsSelect, ILike, In, LessThan, Repository } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
+import { WorkspaceBanList } from '@entities/workspace_ban_list.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { catchDbException, isSuperAdmin } from '@helpers/utils.helper';
 import { ConfigScope, SSOType } from '@entities/sso_config.entity';
 import { WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { CONSTRAINTS } from './constants';
 import { OrganizationInputs } from '@modules/setup-organization/types/organization-inputs';
+
+const LAST_ACCESSED_AT_UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 @Injectable()
 export class OrganizationRepository extends Repository<Organization> {
@@ -19,7 +22,11 @@ export class OrganizationRepository extends Repository<Organization> {
     return await this.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
 
-  async fetchOrganizationWithSSOConfigs(slug: string, statusList?: Array<boolean>): Promise<Organization> {
+  async fetchOrganizationWithSSOConfigs(
+    slug: string,
+    statusList?: Array<boolean>,
+    allowArchivedWorkspace: boolean = false
+  ): Promise<Organization> {
     const conditions: any = {
       relations: ['ssoConfigs', 'ssoConfigs.oidcGroupSyncs'],
       where: {
@@ -40,7 +47,7 @@ export class OrganizationRepository extends Repository<Organization> {
         where: { ...conditions.where, id: slug },
       });
     }
-    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE && !allowArchivedWorkspace)
       throw new BadRequestException('Organization is Archived');
     return organization;
   }
@@ -93,8 +100,15 @@ export class OrganizationRepository extends Repository<Organization> {
           select,
         });
       }
-      if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+      if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE) {
+        const banned = await manager.findOne(WorkspaceBanList, { where: { organizationId: organization.id } });
+        if (banned) {
+          throw new ForbiddenException({
+            message: JSON.stringify({ errorType: 'WORKSPACE_BANNED', workspaceName: organization.name }),
+          });
+        }
         throw new BadRequestException('Organization is Archived');
+      }
       return organization;
     }, manager || this.manager);
   }
@@ -226,5 +240,14 @@ export class OrganizationRepository extends Repository<Organization> {
       // Then set the new default workspace
       await manager.update(Organization, { id: organizationId }, { isDefault: true });
     }, manager || this.manager);
+  }
+
+  touchLastAccessedAt(organizationId: string): void {
+    const threshold = new Date(Date.now() - LAST_ACCESSED_AT_UPDATE_INTERVAL_MS);
+    this.manager
+      .update(Organization, { id: organizationId, lastAccessedAt: LessThan(threshold) }, { lastAccessedAt: new Date() })
+      .catch((err) => {
+        console.error('error while updating organization last_accessed_at', err);
+      });
   }
 }

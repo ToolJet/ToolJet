@@ -12,6 +12,13 @@ export const currencyinputConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    legacyInputSize: {
+      type: 'toggle',
+      displayName: 'Legacy input size',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'deprecatedStyles',
+      isFxNotRequired: true,
+    },
     label: {
       type: 'code',
       displayName: 'Label',
@@ -29,7 +36,11 @@ export const currencyinputConfig = {
       type: 'code',
       displayName: 'Default value',
       validation: {
-        schema: { type: 'number' },
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'string', pattern: "^-?[0-9.,'\\s]*$" }, { type: 'number' }],
+          defaultValue: '0',
+        },
         defaultValue: 0,
       },
     },
@@ -43,6 +54,17 @@ export const currencyinputConfig = {
       displayName: 'Enable currency change',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
+    showFlag: {
+      type: 'toggle',
+      displayName: 'Show currency flag',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+    },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -55,10 +77,34 @@ export const currencyinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
       section: 'additionalActions',
     },
     tooltip: {
@@ -67,6 +113,7 @@ export const currencyinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   validation: {
@@ -91,6 +138,12 @@ export const currencyinputConfig = {
       type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'label',
+    },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
       accordian: 'label',
     },
     alignment: {
@@ -260,6 +313,11 @@ export const currencyinputConfig = {
       ],
     },
     {
+      handle: 'setCountryCode',
+      displayName: 'Set country code',
+      params: [{ handle: 'countryCode', displayName: 'Country code', defaultValue: '' }],
+    },
+    {
       handle: 'clear',
       displayName: 'Clear',
     },
@@ -301,19 +359,27 @@ export const currencyinputConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      legacyInputSize: { value: '{{false}}' },
       value: { value: '0' },
       label: { value: 'Label' },
       placeholder: { value: 'Enter amount' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
       isCountryChangeEnabled: { value: '{{true}}' },
+      showFlag: { value: '{{true}}' },
       decimalPlaces: { value: '2' },
+      numberFormat: { value: 'us' },
+      showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },

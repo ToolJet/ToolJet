@@ -12,6 +12,9 @@ import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
 
+import './styles.scss';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+
 export const DatePickerV2 = ({
   height,
   properties,
@@ -28,7 +31,8 @@ export const DatePickerV2 = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, dateFormat } = properties;
+  const { label, defaultValue, dateFormat, placeholder: placeholderProp, showClearBtn } = properties;
+  const placeholder = placeholderProp ?? 'Select date';
   const inputProps = {
     properties,
     setExposedVariable,
@@ -51,20 +55,27 @@ export const DatePickerV2 = ({
     defaultValue ? getSelectedTimestampFromUnixTimestamp(unixTimestamp) : null
   );
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
-    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : 'Select date'
+    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : ''
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
 
-  const setInputValue = (date, format) => {
+  const setInputValue = (date, format, skipFireEvent = false) => {
     const unixTimestamp = getUnixTime(date, format ? format : dateFormat);
     const selectedTimestamp = getSelectedTimestampFromUnixTimestamp(unixTimestamp);
     setUnixTimestamp(unixTimestamp);
     setSelectedTimestamp(selectedTimestamp);
     setExposedDateVariables(unixTimestamp, selectedTimestamp);
+    if (skipFireEvent) return;
     fireEvent('onSelect');
+  };
+
+  const handleClear = () => {
+    setInputValue(null, null, true);
+    setDisplayTimestamp('');
   };
 
   const onDateSelect = (date) => {
@@ -95,12 +106,12 @@ export const DatePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setInputValue(defaultValue);
+    setInputValue(defaultValue, null, true);
   }, [defaultValue]);
 
   useEffect(() => {
     if (isInitialRender.current || textInputFocus) return;
-    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : 'Select time');
+    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : '');
   }, [selectedTimestamp, dateFormat, textInputFocus]);
 
   useEffect(() => {
@@ -125,20 +136,28 @@ export const DatePickerV2 = ({
   }, []);
 
   useEffect(() => {
+    // CSAs and clear update state and exposed variables silently — only real user selection fires
+    // onSelect (same contract as DaterangePicker). This also prevents event→action→event loops
+    // when an onSelect handler programmatically sets the value back on this widget.
     setExposedVariables({
       setValue: (value, format) => {
-        setInputValue(value, format);
+        setInputValue(value, format, true);
       },
       clearValue: () => {
-        setInputValue(null);
+        setInputValue(null, null, true);
       },
       setValueInTimestamp: (timeStamp) => {
-        setInputValue(timeStamp);
+        setInputValue(timeStamp, null, true);
       },
       setDate: (date, format) => {
         let momentObj = moment(date, [format ? format : dateFormat]);
         if (!momentObj.isValid()) momentObj = moment();
-        const updatedUnixTimestamp = moment(unixTimestamp);
+        // Base on the current value; when empty/cleared fall back to now so setDate still works
+        // (same guard as DatetimePickerV2 — moment(null) is invalid and would produce NaN)
+        let updatedUnixTimestamp = moment(unixTimestamp);
+        if (!updatedUnixTimestamp.isValid()) {
+          updatedUnixTimestamp = moment();
+        }
         updatedUnixTimestamp.set('year', momentObj.year());
         updatedUnixTimestamp.set('month', momentObj.month());
         updatedUnixTimestamp.set('date', momentObj.date());
@@ -146,7 +165,6 @@ export const DatePickerV2 = ({
         setUnixTimestamp(updatedUnixTimestamp.valueOf());
         setSelectedTimestamp(selectedTimestamp);
         setExposedDateVariables(updatedUnixTimestamp.valueOf(), selectedTimestamp);
-        fireEvent('onSelect');
       },
     });
   }, [selectedTimestamp, unixTimestamp, dateFormat]);
@@ -157,9 +175,11 @@ export const DatePickerV2 = ({
     );
   }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat]);
 
+  useFormClear(() => setInputValue(null, null, true));
+
   const componentProps = {
     className: 'input-field form-control validation-without-icon px-2',
-    popperClassName: cx('tj-table-datepicker tj-datepicker-widget datepicker-component', {
+    popperClassName: cx('tj-table-datepicker tj-datepicker-widget datepicker-component !tw-mt-0', {
       'theme-dark dark-theme': darkMode,
       'react-datepicker-month-component': datepickerMode === 'month',
       'react-datepicker-year-component': datepickerMode === 'year',
@@ -178,7 +198,8 @@ export const DatePickerV2 = ({
     },
     selected: selectedTimestamp ? moment(selectedTimestamp).toDate() : null,
     displayFormat: dateFormat,
-    excludeDates: excludedDates,
+    // Day-level exclusions must not disable whole year/month cells in year/month picker modes
+    excludeDates: datepickerMode === 'date' ? excludedDates : undefined,
     showMonthYearPicker: datepickerMode === 'month',
     showYearPicker: datepickerMode === 'year',
     minDate: moment(minDate).isValid() ? minDate : null,
@@ -209,6 +230,9 @@ export const DatePickerV2 = ({
     showValidationError,
     isValid,
     validationError,
+    showClearBtn,
+    onClear: handleClear,
+    inputPlaceholder: placeholder,
   };
 
   return (
@@ -228,6 +252,8 @@ export const DatePickerV2 = ({
       customHeaderProps={customHeaderProps}
       customDateInputProps={customDateInputProps}
       id={id}
+      showClearBtn={showClearBtn}
+      dataCy={dataCy}
     />
   );
 };

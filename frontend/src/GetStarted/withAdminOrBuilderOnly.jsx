@@ -9,9 +9,14 @@ export default function withAdminOrBuilderOnly(Component) {
     const edition = fetchEdition();
     const navigate = useNavigate();
     const isToolJetCloud = checkIfToolJetCloud(props.version || '');
+    const aiCookies = authenticationService.currentSessionValue?.ai_cookies;
     const isEndUser = authenticationService?.currentSessionValue?.role?.name == 'end-user';
-    if (isEndUser) navigate(getPrivateRoute('dashboard'));
-    if (edition === 'ce' && !isToolJetCloud) navigate(getPrivateRoute('dashboard'));
+
+    if (isEndUser) navigate(getPrivateRoute('dashboard'), { replace: true });
+
+    if (edition === 'ce' || (edition === 'cloud' && (aiCookies?.tj_ai_prompt || aiCookies?.tj_template_id)))
+      navigate(getPrivateRoute('dashboard'), { replace: true }); // if user is trying to create app from website via prompt or template then redirect to dashboard page where logic is already handled for this scenario
+
     return <Component {...props} edition={edition} isToolJetCloud={isToolJetCloud} />;
   };
 }

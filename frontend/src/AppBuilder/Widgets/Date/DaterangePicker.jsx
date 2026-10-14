@@ -5,6 +5,7 @@ import moment from 'moment-timezone';
 import cx from 'classnames';
 import { isDateRangeValid, isDateValid } from './utils';
 import './styles.scss';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const DaterangePicker = ({
   height,
@@ -23,7 +24,8 @@ export const DaterangePicker = ({
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
   const [datepickerMode, setDatePickerMode] = useState('date');
-  const { defaultStartDate, defaultEndDate, format, label } = properties;
+  const { defaultStartDate, defaultEndDate, format, label, placeholder: placeholderProp, showClearBtn } = properties;
+  const placeholder = placeholderProp ?? 'Select Date Range';
   const inputProps = {
     properties,
     setExposedVariable,
@@ -60,7 +62,7 @@ export const DaterangePicker = ({
     const isValidStartDate = startDate && moment(startDate).isValid();
     const isValidEndDate = endDate && moment(endDate).isValid();
     if (!isValidStartDate && !isValidEndDate) {
-      return 'Select Date Range';
+      return '';
     } else if (isValidStartDate && !isValidEndDate) {
       return `${moment(startDate).format(format)} → `;
     } else if (!isValidStartDate && isValidEndDate) {
@@ -71,20 +73,35 @@ export const DaterangePicker = ({
   const [displayRange, setDisplayRange] = useState(getDisplayRange(startDate, endDate));
 
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
+
+  const clearDateRangeValue = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setExposedVariables({
+      startDate: null,
+      startDateInUnix: null,
+      endDate: null,
+      endDateInUnix: null,
+      selectedDateRange: null,
+    });
+  };
+
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
 
-  const onChange = (dates) => {
+  const onChange = (dates, skipFireEvent = false) => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
     setExposedVariables({
       startDate: moment(start).format(format),
-      startDateInUnix: moment(start).valueOf(),
+      startDateInUnix: start ? moment(start).valueOf() : null,
       endDate: moment(end).format(format),
-      endDateInUnix: moment(end).valueOf(),
+      endDateInUnix: end ? moment(end).valueOf() : null,
       selectedDateRange: `${moment(start).format(format)} - ${moment(end).format(format)}`,
     });
+    if (typeof skipFireEvent === 'boolean' && skipFireEvent) return;
     fireEvent('onSelect');
   };
 
@@ -108,26 +125,18 @@ export const DaterangePicker = ({
 
     if (startDate && endDate) {
       if (moment(startDate).isSameOrBefore(endDate)) {
-        onChange([startDate, endDate]);
+        onChange([startDate, endDate], true);
       } else {
-        onChange([startDate, null]);
+        onChange([startDate, null], true);
       }
+    } else {
+      onChange([startDate, endDate], true); // If any date (start or end) would be invalid then it would pe passed as null
     }
   }, [defaultStartDate, defaultEndDate, format]);
 
   useEffect(() => {
     const exposedVariables = {
-      clearDateRange: () => {
-        setStartDate(null);
-        setEndDate(null);
-        setExposedVariables({
-          startDate: null,
-          startDateInUnix: null,
-          endDate: null,
-          endDateInUnix: null,
-          selectedDateRange: null,
-        });
-      },
+      clearDateRange: clearDateRangeValue,
       setDateRange: (startDate, endDate, customFormat) => {
         const startDateObj = moment(startDate, customFormat || format);
         const endDateObj = moment(endDate, customFormat || format);
@@ -168,6 +177,20 @@ export const DaterangePicker = ({
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
   }, []);
+
+  const handleClear = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setDisplayRange('');
+    setExposedVariables({
+      startDate: null,
+      startDateInUnix: null,
+      endDate: null,
+      endDateInUnix: null,
+      selectedDateRange: null,
+    });
+    fireEvent('onSelect');
+  };
 
   useEffect(() => {
     setExposedVariable('setEndDate', (end, customFormat) => {
@@ -236,9 +259,11 @@ export const DaterangePicker = ({
     }
   }, [format]);
 
+  useFormClear(clearDateRangeValue);
+
   const componentProps = {
     className: 'input-field form-control validation-without-icon px-2',
-    popperClassName: cx('tj-daterange-widget', {
+    popperClassName: cx('tj-daterange-widget !tw-mt-0', {
       'theme-dark dark-theme': darkMode,
       'react-datepicker-month-component': datepickerMode === 'month',
       'react-datepicker-year-component': datepickerMode === 'year',
@@ -259,7 +284,8 @@ export const DaterangePicker = ({
     endDate: endDate,
     selectsRange: true,
     monthsShown: 2,
-    excludeDates: excludedDates,
+    // Day-level exclusions must not disable whole year/month cells in year/month picker modes
+    excludeDates: datepickerMode === 'date' ? excludedDates : undefined,
     showMonthDropdown: datepickerMode === 'date',
     showYearDropdown: datepickerMode === 'date',
     showMonthYearPicker: datepickerMode === 'month',
@@ -287,6 +313,9 @@ export const DaterangePicker = ({
     showValidationError,
     isValid,
     validationError,
+    showClearBtn,
+    onClear: handleClear,
+    inputPlaceholder: placeholder,
   };
 
   const customHeaderProps = {
@@ -312,6 +341,7 @@ export const DaterangePicker = ({
       customHeaderProps={customHeaderProps}
       customDateInputProps={customDateInputProps}
       id={id}
+      showClearBtn={showClearBtn}
     />
   );
 };

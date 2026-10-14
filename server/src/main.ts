@@ -1,3 +1,4 @@
+import './otel/tracing'; // CRITICAL: This MUST be the first import to ensure OTEL patches modules before they load
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
@@ -6,32 +7,25 @@ import * as compression from 'compression';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
-import {
-  RequestMethod,
-  ValidationPipe,
-  VersioningType,
-  VERSION_NEUTRAL,
-  INestApplicationContext,
-} from '@nestjs/common';
+import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { custom } from 'openid-client';
 import { join } from 'path';
 import * as express from 'express';
 import { AppModule } from '@modules/app/module';
-import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { GuardValidator } from '@modules/app/validators/feature-guard.validator';
-import { ITemporalService } from '@modules/workflows/interfaces/ITemporalService';
-import { getTooljetEdition } from '@helpers/utils.helper';
 import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
+import { SsoInfoUpdatedInterceptor } from '@modules/session/interceptors/sso-info-updated.interceptor';
+import { shutdownOtelLogs, initializeOtelLogs } from '@otel/logs';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { startOpenTelemetry, otelMiddleware } from './otel/tracing';
 
 // Import helper functions
 import {
   handleLicensingInit,
   replaceSubpathPlaceHoldersInStaticAssets,
+  setupCsrfOriginCheck,
   setSecurityHeaders,
   buildVersion,
   rawBodyBuffer,
@@ -39,11 +33,15 @@ import {
   createLogger,
   logStartupInfo,
   logShutdownInfo,
+  initSentry,
+  initializeOtel,
 } from '@helpers/bootstrap.helper';
 
-let appContext: INestApplicationContext = undefined;
-
 async function bootstrap() {
+  // Runs before NestFactory even starts, so no early appLogger.* call can miss the OTLP
+  // stream. Idempotent — safe alongside FrontendMetricsModule's own call to this.
+  initializeOtelLogs();
+
   const logger = createLogger('Bootstrap');
   logger.log('🚀 Starting ToolJet application bootstrap...');
 
@@ -87,6 +85,9 @@ async function bootstrap() {
     await handleLicensingInit(app, appLogger);
     appLogger.log('✅ Licensing initialization completed');
 
+    // Initialize OTEL
+    await initializeOtel(app, appLogger);
+
     // Configure OIDC timeout
     appLogger.log('Configuring OIDC connection timeout...');
     const oidcTimeout = parseInt(process.env.OIDC_CONNECTION_TIMEOUT || '3500');
@@ -108,6 +109,9 @@ async function bootstrap() {
     appLogger.log('Setting up body parsers...');
     setupBodyParsers(app, configService);
     appLogger.log('✅ Body parsers configured');
+
+    // Setup CSRF origin check (only active when custom domains are enabled)
+    setupCsrfOriginCheck(app, configService);
 
     // Enable versioning
     appLogger.log('Enabling API versioning...');
@@ -133,9 +137,15 @@ async function bootstrap() {
     await guardValidator.validateJwtGuard();
     appLogger.log('✅ Ability guard validation completed');
 
+    // Initialize Sentry
+    initSentry(appLogger, configService);
+
     // Start server
     const listen_addr = process.env.LISTEN_ADDR || '::';
     const port = parseInt(process.env.PORT) || 3000;
+
+    // Apply SCIM body parser ONLY for /scim routes, can cause streame not readable issues if not configured only for SCIM
+    app.use('/api/scim', json({ type: ['application/json', 'application/scim+json'] }));
 
     appLogger.log(`Starting server on ${listen_addr}:${port}...`);
     await app.listen(port, listen_addr, async function () {
@@ -150,14 +160,17 @@ async function bootstrap() {
 function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
   const gracefulShutdown = async (signal: string) => {
     logShutdownInfo(signal, logger);
+    let exitCode = 0;
     try {
       await app.close();
       logger.log('✅ Application closed successfully');
-      process.exit(0);
     } catch (error) {
       logger.error('❌ Error during application shutdown:', error);
-      process.exit(1);
+      exitCode = 1;
     }
+    // Flush the OTel log queue before exiting, regardless of how app.close() went.
+    await shutdownOtelLogs();
+    process.exit(exitCode);
   };
 
   process.on('SIGINT', () => gracefulShutdown('SIGINT'));
@@ -166,15 +179,13 @@ function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
 
 async function setupApplicationMiddleware(app: NestExpressApplication, appLogger: any) {
   app.useLogger(appLogger);
-  app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector), appLogger, app.get(EventEmitter2)));
+  app.useGlobalInterceptors(
+    new ResponseInterceptor(app.get(Reflector), appLogger, app.get(EventEmitter2)),
+    new SsoInfoUpdatedInterceptor()
+  );
   app.useGlobalFilters(new AllExceptionsFilter(appLogger));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
-
-  if (process.env.ENABLE_OTEL === 'true') {
-    await startOpenTelemetry();
-    app.use(otelMiddleware);
-  }
 }
 
 function configureUrlPrefix() {
@@ -188,6 +199,10 @@ function configureUrlPrefix() {
   }
   pathsToExclude.push({ path: '/health', method: RequestMethod.GET });
   pathsToExclude.push({ path: '/api/health', method: RequestMethod.GET });
+  // Exclude Bull Board dashboard and all its subroutes from global prefix
+  // Need both: exact match for /jobs AND wildcard for /jobs/*
+  pathsToExclude.push({ path: '/jobs', method: RequestMethod.ALL });
+  pathsToExclude.push({ path: '/jobs/{*path}', method: RequestMethod.ALL });
 
   return { urlPrefix, pathsToExclude };
 }
@@ -208,68 +223,8 @@ function setupBodyParsers(app: NestExpressApplication, configService: ConfigServ
   );
 }
 
-async function bootstrapWorker() {
-  const logger = createLogger('Worker');
-  logger.log('🚀 Starting ToolJet worker bootstrap...');
-
-  try {
-    logger.log('Creating application context...');
-    appContext = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: false }));
-    logger.log('✅ Application context created');
-
-    // Setup graceful shutdown for worker
-    setupWorkerGracefulShutdown(logger);
-
-    logger.log('Initializing Temporal service...');
-    const importPath = await getImportPath(false);
-    const { TemporalService } = await import(`${importPath}/workflows/services/temporal.service`);
-
-    const temporalService = appContext.get<ITemporalService>(TemporalService);
-    logger.log('✅ Temporal service initialized');
-
-    logger.log('Starting Temporal worker...');
-    await temporalService.runWorker();
-    logger.log('✅ Temporal worker started');
-
-    await appContext.close();
-    logger.log('✅ Worker bootstrap completed');
-  } catch (error) {
-    logger.error('❌ Failed to bootstrap worker:', error);
-    process.exit(1);
-  }
-}
-
-function setupWorkerGracefulShutdown(logger: any) {
-  const gracefulShutdown = async (signal: string) => {
-    logShutdownInfo(signal, logger);
-    try {
-      const importPath = await getImportPath(false);
-      const { TemporalService } = await import(`${importPath}/workflows/services/temporal.service`);
-      const temporalService = appContext.get<ITemporalService>(TemporalService);
-
-      logger.log('Shutting down Temporal worker...');
-      temporalService.shutDownWorker();
-      logger.log('✅ Temporal worker shutdown completed');
-    } catch (error) {
-      logger.error('❌ Error during worker shutdown:', error);
-    }
-  };
-
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-}
-
-export function getAppContext(): INestApplicationContext {
-  return appContext;
-}
-
 // Bootstrap global agent only if TOOLJET_HTTP_PROXY is set
 setupGlobalAgent();
 
 // Main execution
-if (getTooljetEdition() === TOOLJET_EDITIONS.EE) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  process.env.WORKER ? bootstrapWorker() : bootstrap();
-} else {
-  bootstrap();
-}
+bootstrap();

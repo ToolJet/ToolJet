@@ -1,0 +1,150 @@
+# Select — Rocket Design Spec
+<!-- figma: https://www.figma.com/design/XQdM9x8x9YHcj1lUK8abUG/Rocket-components?node-id=6866-4557 -->
+<!-- synced: 2026-03-17 -->
+
+## Overview
+
+Select is a trigger + dropdown combo for choosing one value from a list. The trigger reuses the same visual tokens as Input (bg, border, focus ring, sizing). The dropdown is a popover panel with selectable items.
+
+Wraps shadcn Select (Radix `@radix-ui/react-select`).
+
+## Sub-components
+
+| Component | Wraps | Token overrides |
+|---|---|---|
+| `SelectTrigger` | shadcn `SelectTrigger` | Same tokens as Input — bg, border, focus, hover, disabled, error, sizes |
+| `SelectContent` | shadcn `SelectContent` | `bg-surface-layer-01`, `border-weak`, `rounded-lg` (10px), `elevation-300` |
+| `SelectItem` | shadcn `SelectItem` | 32px height, `text-default`, hover → `interactive-hover`, `rounded-md` |
+
+### Re-exported from shadcn (no token overrides)
+`Select` (root), `SelectValue`, `SelectGroup`, `SelectLabel`, `SelectSeparator`
+
+## Props (SelectTrigger)
+
+| Prop | Type | Values | Default |
+|---|---|---|---|
+| size | string | large \| default \| small | default |
+| className | string | — | — |
+| disabled | boolean | — | false |
+
+## Sizes (trigger)
+
+| Value | Height | Font size | Tailwind |
+|---|---|---|---|
+| large | 40px | 14px / 20px | `tw-h-10 tw-text-lg` |
+| default | 32px | 12px / 18px | `tw-h-8 tw-text-base` |
+| small | 28px | 12px / 18px | `tw-h-7 tw-text-base` |
+
+## Token Mapping — Trigger
+
+| Element | State | ToolJet token | Tailwind class |
+|---|---|---|---|
+| background | default | `--background-surface-layer-01` | `tw-bg-background-surface-layer-01` |
+| border | default | `--border-default` | `tw-border-border-default` |
+| border | hover | `--border-strong` | `hover:tw-border-border-strong` |
+| text | default | `--text-default` | `tw-text-text-default` |
+| placeholder | default | `--text-placeholder` | `data-[placeholder]:tw-text-text-placeholder` |
+| shadow | default | none | `tw-shadow-none` |
+| focus ring | focus | `--interactive-focus-outline` | `focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-1` |
+| chevron icon | default | `--icon-default` | `tw-text-icon-default` |
+| border | error | `--border-danger-strong` | `aria-[invalid=true]:tw-border-border-danger-strong` |
+| background | error | `--background-error-weak` | `aria-[invalid=true]:tw-bg-background-error-weak` |
+| background | disabled | `--background-surface-layer-02` | `disabled:tw-bg-background-surface-layer-02` |
+| text | disabled | `--text-disabled` | `disabled:tw-text-text-disabled` |
+| border | disabled | none (no border) | `disabled:tw-border-transparent` |
+
+## Token Mapping — Content (dropdown)
+
+| Element | Token | Tailwind class |
+|---|---|---|
+| background | `--background-surface-layer-01` | `tw-bg-background-surface-layer-01` |
+| border | `--border-weak` | `tw-border-border-weak` |
+| border radius | 10px | `tw-rounded-[10px]` |
+| shadow | elevation-300 | `tw-shadow-elevation-300` |
+| padding | 8px | `tw-p-2` |
+
+## Token Mapping — Item
+
+| Element | State | Token | Tailwind class |
+|---|---|---|---|
+| text | default | `--text-default` | `tw-text-text-default` |
+| height | — | 32px | `tw-h-8` |
+| padding | — | — | `tw-px-2 tw-py-1.5` |
+| border-radius | — | 6px | `tw-rounded-md` |
+| background | hover/focus | `--interactive-hover` | `focus:tw-bg-interactive-hover` |
+| check icon | selected | `--text-brand` | `tw-text-text-brand` |
+
+## Composition
+
+### Basic
+```jsx
+<Select>
+  <SelectTrigger>
+    <SelectValue placeholder="Choose..." />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="a">Option A</SelectItem>
+    <SelectItem value="b">Option B</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+### With Field
+```jsx
+<Field>
+  <FieldLabel>Country</FieldLabel>
+  <Select>
+    <SelectTrigger>
+      <SelectValue placeholder="Select country" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="us">United States</SelectItem>
+      <SelectItem value="uk">United Kingdom</SelectItem>
+    </SelectContent>
+  </Select>
+</Field>
+```
+
+## Notes
+
+- Trigger chevron: `ChevronDown` (lucide) when closed, arrow rotates via Radix data attributes.
+- `allowClearSelection` from Figma is not in v1 — can be added later as an enhancement.
+- Leading visual on trigger (icon before placeholder) from Figma — supported via children composition inside SelectTrigger.
+- Leading/trailing visuals on items — supported via custom content inside SelectItem children.
+- Disabled state uses `--background-surface-layer-02` bg token (consistent with Input).
+
+## Truncating long values (opt-in pattern)
+
+Select itself does not auto-truncate selected values or option rows. Long content already clips visually because shadcn's `SelectTrigger` carries `[&>span]:tw-line-clamp-1` on direct child spans. To get a hover tooltip showing the full string, opt in by composing with [`TruncatingText`](../TruncatingText/TruncatingText.spec.md). TruncatingText uses the browser's native `title` attribute, so no provider or extra wiring is needed.
+
+### Selected value (in the trigger)
+
+The shadcn line-clamp targets the trigger's direct child spans. Wrap inside a `<div>` to take that selector out of the picture, then apply `TruncatingText`. The selected value text is rendered by Radix from context, so pass it explicitly via the `title` prop:
+
+```jsx
+<SelectTrigger>
+  <div className="tw-min-w-0 tw-flex-1">
+    <TruncatingText title={selectedLabel}>
+      <SelectValue placeholder="Select query" />
+    </TruncatingText>
+  </div>
+</SelectTrigger>
+```
+
+The div is a flex item of the trigger (which is `display: flex`); `tw-min-w-0` lets it shrink below its content width, `tw-flex-1` lets it claim the available space so the chevron sits flush right.
+
+If the consumer doesn't already track the selected label as state, pass `text={selectedLabel}` instead of children — but the SelectValue child form is the cleanest fit for most callsites because Radix handles the placeholder fallback automatically.
+
+### Option rows (in the dropdown)
+
+`SelectItem` children render as text inside `Select.ItemText`. Wrap the label children in `TruncatingText` per row — string children make auto-detection work without the manual `title` prop:
+
+```jsx
+<SelectItem value={item.value}>
+  <TruncatingText>{item.name}</TruncatingText>
+</SelectItem>
+```
+
+### Why opt-in, not built-in
+
+Truncation is a layout decision, not a primitive concern. Most callsites either size the trigger generously enough to never overflow, or actively want clipped text without a tooltip. Forcing TruncatingText into `SelectValue` would also collide with the shadcn line-clamp selector on the trigger — fixing that cleanly would require modifying the primitive itself. The opt-in pattern keeps the primitive untouched and gives consumers control where the truncation actually matters.

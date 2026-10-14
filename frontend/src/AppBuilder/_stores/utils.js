@@ -2,9 +2,9 @@ import { create as _create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { dfs } from '@/_stores/handleReferenceTransactions';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
+import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
+import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 var _ = require('lodash');
 
@@ -15,7 +15,10 @@ export function debounce(func) {
 
   return (...args) => {
     const event = args[0] || {};
-    const eventId = uuidv4();
+    const moduleId = args[3] || 'canvas';
+    // Row included: inside a List View every row shares one event id, so one row would cancel another.
+    const rowIndex = args[4] ?? '';
+    const eventId = moduleId + '-' + (event?.id || uuidv4()) + '-' + rowIndex;
 
     const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {
@@ -182,6 +185,7 @@ export const resolveCode = (
     }
   }
 
+  result = materializeFileHandleRefs(result);
   if (withError) return [result, error];
   return result;
 };
@@ -190,8 +194,7 @@ export const resolveCode = (
 // Eg, input: "Hello, {{name}}! Welcome to {{city}}."
 //     output: ["{{name}}", "{{city}}"]
 export const getDynamicVariables = (text) => {
-  /* eslint-disable no-useless-escape */
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/gs) || text.match(/%%(.*?)%%/gs);
   return matchedParams;
 };
 
@@ -345,8 +348,14 @@ export const checkSubstringRegex = (mainString, subString) => {
   // Escape special characters in the subString
   const escapedSubString = subString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  // Create a regular expression
-  const regex = new RegExp(`(^|[^a-zA-Z0-9\\].])(${escapedSubString})($|[.\\[])`);
+  // Matches `subString` used as a standalone reference.
+  // - The trailing set is deliberately narrow —
+  // - a property access (`.`), an index (`[`), optional chaining (`?.`), whitespace, or end of string.
+  //
+  // Whitespace is what a bare identifier is followed by in practice.
+  // Optional chaining is matched as the two-character `?.`.
+  // The cost is the unspaced ternary `listItem?a:b`; the spaced form is covered by whitespace.
+  const regex = new RegExp(`(^|[^a-zA-Z0-9\\].])(${escapedSubString})($|[.\\[\\s]|\\?\\.)`);
 
   // Test the mainString against the regex
   return regex.test(mainString);
@@ -393,8 +402,8 @@ export function findAllEntityReferences(node, allRefs) {
 
       if (typeof value === 'string') {
         if (containsBracketNotation(value)) {
-          // Skip if the value is a bracket notation
-          break;
+          // Skip this value only — `break` would abort scanning the object's remaining keys
+          continue;
         }
 
         if (
@@ -418,26 +427,17 @@ export function findAllEntityReferences(node, allRefs) {
 /**
  * Replaces entity names with their corresponding IDs in the given code.
  *
+ * Delegates to the AST-based walker so that only genuine `components.X` / `queries.X`
+ * member expressions inside {{ }} are converted — an entity name appearing as plain
+ * text or inside a string literal must never be rewritten.
+ *
  * @param {Object} code - The code object containing entity names.
- * @param {Object} componentNameIdMapping - A map of component IDs to their names.
- * @param {Object} queryNameIdMapping - A map of query IDs to their names.
+ * @param {Object} componentNameIdMapping - A map of component names to their IDs.
+ * @param {Object} queryNameIdMapping - A map of query names to their IDs.
  * @returns {Object} The code object with entity references replaced by IDs.
  */
-export const replaceEntityReferencesWithIds = (code, componentNameIdMapping = {}, queryNameIdMapping = {}) => {
-  const entityNameReferences = findAllEntityReferences(code, []);
-
-  let diffObj = deepClone(code);
-  entityNameReferences.forEach((entityName) => {
-    //! TODO revisit this
-    const entityId = componentNameIdMapping[entityName]
-      ? componentNameIdMapping[entityName]
-      : queryNameIdMapping[entityName]
-        ? queryNameIdMapping[entityName]
-        : entityName;
-    diffObj = dfs(diffObj, entityName, entityId);
-  });
-  return diffObj;
-};
+export const replaceEntityReferencesWithIds = (code, componentNameIdMapping = {}, queryNameIdMapping = {}) =>
+  replaceQueryOptionsEntityReferencesWithIds(code, componentNameIdMapping, queryNameIdMapping);
 
 export function replaceQueryOptionsEntityReferencesWithIds(
   options,
@@ -478,28 +478,7 @@ export function createReferencesLookup(
   if (forQueryParams && _.isEmpty(currentState['parameters'])) {
     return { suggestionList: [] };
   }
-  const actions = [
-    'runQuery',
-    'setVariable',
-    'unsetAllVariables',
-    'unSetVariable',
-    'showAlert',
-    'logout',
-    'showModal',
-    'closeModal',
-    'setLocalStorage',
-    'copyToClipboard',
-    'goToApp',
-    'generateFile',
-    'setPageVariable',
-    'unsetAllPageVariables',
-    'unsetPageVariable',
-    'switchPage',
-    'logInfo',
-    'log',
-    'logError',
-    'toggleAppMode',
-  ];
+  const actions = ACTIONS;
 
   const suggestionList = [];
   const map = new Map();
@@ -519,6 +498,7 @@ export function createReferencesLookup(
       } else {
         if (path === 'queries') {
           map.set(`${path}.${key}.run()`, { type: 'Function' });
+          map.set(`${path}.${key}.reset()`, { type: 'Function' });
         }
         newPath = `${path}.${key}`;
       }
@@ -551,38 +531,6 @@ export function createReferencesLookup(
     });
   }
   return suggestionList;
-}
-
-export function convertAllKeysToSnakeCase(o) {
-  if (Array.isArray(o)) {
-    return o.map(function (value) {
-      if (typeof value === 'object' && value !== null) {
-        value = convertAllKeysToSnakeCase(value);
-      }
-      return value;
-    });
-  } else if (typeof o === 'object' && o !== null) {
-    const newO = {};
-    for (const origKey in o) {
-      if (Object.prototype.hasOwnProperty.call(o, origKey)) {
-        if (!['pages', 'events'].includes(origKey)) {
-          const newKey = origKey
-            .split(/(?=[A-Z])/)
-            .join('_')
-            .toLowerCase();
-          let value = o[origKey];
-          if (typeof value === 'object' && value !== null) {
-            value = convertAllKeysToSnakeCase(value);
-          }
-          newO[newKey] = value;
-        } else {
-          newO[origKey] = o[origKey];
-        }
-      }
-    }
-    return newO;
-  }
-  return o;
 }
 
 export function convertKeysToCamelCase(object) {
@@ -783,8 +731,8 @@ export const baseTheme = {
         },
         weak: {
           light: '#E4E7EB',
-          dark: '#EEF0F1',
-        }
+          dark: '#2B3036',
+        },
       },
     },
     systemStatus: {
@@ -824,4 +772,28 @@ export const baseTheme = {
       },
     },
   },
+};
+
+export const blobToDataURL = (blob) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = () => resolve(reader.result);
+  });
+};
+
+export const blobToBinary = (blob) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsBinaryString(blob);
+    reader.onloadend = () => resolve(reader.result);
+  });
+};
+
+export const formatSecondsToHHMMSS = (totalSeconds) => {
+  const seconds = Number.isFinite(totalSeconds) ? Math.max(0, Math.floor(totalSeconds)) : 0;
+  const hh = String(Math.floor(seconds / 3600)).padStart(2, '0');
+  const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+  const ss = String(seconds % 60).padStart(2, '0');
+  return `${hh}:${mm}:${ss}`;
 };

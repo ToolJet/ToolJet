@@ -51,8 +51,8 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     );
 
     return new Fuse(allMethods, {
-      keys: ['label', 'serviceLabel'],
-      threshold: 0.4,
+      keys: ['serviceLabel', 'label'],
+      threshold: 0.3,
       shouldSort: true,
     });
   }, [options]);
@@ -139,17 +139,24 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     // Use pre-computed search index
     const results = searchIndex.search(debouncedSearchTerm).map((r) => r.item);
 
-    // Group results by service using optimized approach
+    // Group by service, including only matched methods
     const grouped = {};
     results.forEach((method) => {
-      if (!grouped[method.serviceLabel]) {
-        grouped[method.serviceLabel] = {
-          ...options.find((s) => s.label === method.serviceLabel),
+      const serviceKey = method.serviceValue;
+
+      if (!grouped[serviceKey]) {
+        const originalService = options.find((s) => s.value === method.serviceValue);
+        grouped[serviceKey] = {
+          label: originalService.label,
+          value: originalService.value,
+          type: originalService.type,
+          service: originalService.service,
           methods: [],
         };
       }
-      grouped[method.serviceLabel].methods.push(method);
+      grouped[serviceKey].methods.push(method);
     });
+
     return Object.values(grouped);
   }, [debouncedSearchTerm, options, searchIndex]);
 
@@ -213,13 +220,13 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
 
       {isOpen && (
         <div className="grpcv2-dropdown__menu">
-          {(isLoading || (options.length === 0 && !debouncedSearchTerm.trim())) ? (
+          {isLoading || (options.length === 0 && !debouncedSearchTerm.trim()) ? (
             <div className="grpcv2-dropdown__loading">Loading services...</div>
           ) : getFilteredOptions.length === 0 ? (
             <div className="grpcv2-dropdown__no-results">No results found</div>
           ) : (
             getFilteredOptions.map((service, index) => (
-              <React.Fragment key={service.value}>
+              <React.Fragment key={`service-${index}`}>
                 {index > 0 && <div className="grpcv2-dropdown__separator" />}
                 <div>
                   <div onClick={() => toggleService(service.label)} className="grpcv2-dropdown__service">
@@ -344,7 +351,21 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     setIsLoadingServices(showLoading);
 
     try {
-      const result = await dataqueryService.invoke(selectedDataSource.id, 'discoverServices', currentEnvironment?.id);
+      const protoMode = selectedDataSource?.options?.proto_files?.value;
+      const selectedServices = selectedDataSource?.options?.selected_services?.value;
+      const hasSelectedServices = Array.isArray(selectedServices) && selectedServices.length > 0;
+
+      // Filesystem mode requires at least one service selected in DS config
+      if (protoMode === 'import_protos_from_filesystem' && !hasSelectedServices) {
+        throw new Error('Please select at least one service in the data source configuration');
+      }
+
+      const result = await dataqueryService.invoke(
+        selectedDataSource.id,
+        'getServiceDefinitions',
+        currentEnvironment?.id,
+        hasSelectedServices ? { serviceNames: selectedServices } : undefined
+      );
 
       if (result.status === 'failed') {
         console.error('Failed to discover services:', result.errorMessage);

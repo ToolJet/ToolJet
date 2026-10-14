@@ -41,6 +41,7 @@ import { OnboardingStatus } from '@modules/onboarding/constants';
 import { IAuthUtilService } from './interfaces/IUtilService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 
 @Injectable()
 export class AuthUtilService implements IAuthUtilService {
@@ -60,8 +61,16 @@ export class AuthUtilService implements IAuthUtilService {
     protected readonly rolesRepository: RolesRepository,
     protected readonly profileUtilService: ProfileUtilService,
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
-    protected readonly groupPermissionsRepository: GroupPermissionsRepository
+    protected readonly groupPermissionsRepository: GroupPermissionsRepository,
+    protected readonly userBanListRepository: UserBanListRepository
   ) {}
+
+  async checkUserBanned(email: string): Promise<void> {
+    const bannedUser = await this.userBanListRepository.findByEmail(email);
+    if (bannedUser) {
+      throw new UnauthorizedException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
+    }
+  }
 
   async validateLoginUser(email: string, password: string, organizationId?: string): Promise<User> {
     const user = await this.userRepository.findByEmail(email, organizationId, [
@@ -75,6 +84,11 @@ export class AuthUtilService implements IAuthUtilService {
 
     if (user.status !== USER_STATUS.ACTIVE) {
       throw new UnauthorizedException(getUserErrorMessages(user.status));
+    }
+
+    const bannedUser = await this.userBanListRepository.findByEmail(email);
+    if (bannedUser) {
+      throw new UnauthorizedException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
     }
 
     if (organizationId) {
@@ -141,6 +155,11 @@ export class AuthUtilService implements IAuthUtilService {
 
     if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new UnauthorizedException('User is archived in the workspace');
+    }
+
+    const bannedUser = await this.userBanListRepository.findByEmail(email);
+    if (bannedUser) {
+      throw new UnauthorizedException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
     }
 
     const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
@@ -295,23 +314,39 @@ export class AuthUtilService implements IAuthUtilService {
           }
         }
       } else {
-        // No role specified -> finding role
-        newRole = await this.findUserRoleFromGroups(customGroups, manager);
-        if (newRole === USER_ROLE.END_USER) {
-          // If new role is end user and but user is app owner, assign editor role
-          const appCounts = await manager.count(App, {
-            where: {
-              userId: userId,
-              organizationId: organizationId,
-            },
-          });
-          if (appCounts > 0) {
-            newRole = USER_ROLE.END_USER;
+        // No explicit role group mapped from IdP — derive role from custom groups if present,
+        // only elevating (never demoting). If no custom groups, preserve existing role.
+        const existingRoleObj = await this.rolesRepository.getUserRole(userId, organizationId, manager);
+        const existingRole = existingRoleObj?.name as USER_ROLE;
+
+        if (existingRole) {
+          if (customGroups.length > 0) {
+            // Infer required role from custom groups. If it demands a higher privilege
+            // than the user currently holds, elevate — never demote.
+            const inferredRole = await this.findUserRoleFromGroups(customGroups, manager);
+            newRole = rolePriority[inferredRole] < rolePriority[existingRole] ? inferredRole : existingRole;
+          } else {
+            newRole = existingRole;
+          }
+        } else {
+          // New user with no existing role — infer from custom group permissions
+          newRole = await this.findUserRoleFromGroups(customGroups, manager);
+          if (newRole === USER_ROLE.END_USER) {
+            // If new role is end user but user is app owner, assign editor role
+            const appCounts = await manager.count(App, {
+              where: {
+                userId: userId,
+                organizationId: organizationId,
+              },
+            });
+            if (appCounts > 0) {
+              newRole = USER_ROLE.END_USER;
+            }
           }
         }
       }
 
-      // Remove user from existing role
+      // Remove user from existing custom groups (will be re-added below from IdP mapping)
       await this.groupPermissionsUtilService.deleteFromAllCustomGroupUser(userId, organizationId);
 
       /* Sync LDAP / SAML / OIDC groups before signup to the workspace */

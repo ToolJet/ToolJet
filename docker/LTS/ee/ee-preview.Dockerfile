@@ -2,8 +2,49 @@ FROM node:22.15.1 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN mkdir -p /app
+# Build nsjail for Python sandboxing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf \
+    bison \
+    flex \
+    gcc \
+    g++ \
+    libprotobuf-dev \
+    libnl-route-3-dev \
+    libtool \
+    make \
+    pkg-config \
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /build-nsjail
+RUN git clone --depth 1 --branch 3.4 https://github.com/google/nsjail.git && \
+    cd nsjail && \
+    make && \
+    strip nsjail
+
+# Build Python runtime with pre-installed packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-venv \
+    python3-pip \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/python-runtime
+
+RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/python-runtime/bin/pip install --no-cache-dir \
+    numpy==1.26.4 \
+    pandas==2.2.1 \
+    requests==2.31.0 \
+    httpx==0.27.0 \
+    python-dateutil==2.9.0 \
+    pytz==2024.1 \
+    pydantic==2.6.4 \
+    typing-extensions==4.10.0
+
+RUN mkdir -p /app
 WORKDIR /app
 
 # Set GitHub token, branch and repository URL as build arguments
@@ -76,6 +117,11 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
+# Pin ibm_db's clidriver to a build linked against glibc <=2.14. The runtime stage
+# is now bookworm (glibc 2.36) so this pin is no longer strictly required, but the
+# older clidriver is forward-compatible and keeping it avoids re-testing ibm_db.
+# Safe to drop later if you want the current driver.
+ENV IBM_DB_INSTALLER_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.9
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
@@ -97,11 +143,19 @@ ENV TOOLJET_EDITION=ee
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
+RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-FROM node:22.15.1-bullseye
+# ---------------------------------------------------------------------------
+# Runtime stage
+# Moved from node:22.15.1-bullseye to bookworm. Debian 11 reached end-of-life on
+# 31 Aug 2026, so bullseye-security no longer publishes a valid Release file and
+# apt-get update fails with exit 100. Bookworm also matches the builder stage,
+# which fixes the libprotobuf ABI mismatch for the copied nsjail binary.
+# ---------------------------------------------------------------------------
+FROM node:22.15.1-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
@@ -114,7 +168,13 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
+# Install Redis 7.x from official Redis repository for BullMQ compatibility
+# NOTE: repo suite changed bullseye -> bookworm
+# NOTE: libprotobuf23 (bullseye) -> libprotobuf32 (bookworm). This is the version
+# nsjail was actually linked against in the builder stage.
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bookworm main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y freetds-dev libaio1 libxml2 wget supervisor redis-server libprotobuf32 libnl-route-3-200 python3 python3-pip
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -126,7 +186,17 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
     cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
 # Set the Instant Client library paths
-ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
+# NOTE: LD_LIBRARY_PATH given an explicit default to silence the UndefinedVar warning
+ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10"
+
+# Copy nsjail and Python runtime from builder
+COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
+RUN chmod 755 /usr/local/bin/nsjail
+
+COPY --from=builder /opt/python-runtime /opt/python-runtime
+
+# Create nsjail config directory and Python execution temp directory
+RUN mkdir -p /etc/nsjail /tmp/python-exec && chmod 1777 /tmp/python-exec
 
 WORKDIR /
 
@@ -148,14 +218,22 @@ COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+# Copy nsjail configuration for Python sandboxing
+COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 
 WORKDIR /app
 
 # Install PostgreSQL
+# NOTE: apt-key is deprecated on bookworm and removed in trixie. Switched to the
+# signed-by keyring pattern already used above for Redis.
+# NOTE: repo suite changed bullseye-pgdg -> bookworm-pgdg. postgresql-13 is
+# published for bookworm-pgdg, so the major version and all paths stay at 13.
 USER root
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+      | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" \
+      | tee /etc/apt/sources.list.d/pgdg.list
+RUN apt-get update && apt-get -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
 
 
 # Explicitly create PG main directory with correct ownership
@@ -173,7 +251,18 @@ RUN rm -rf /var/lib/postgresql/13/main && \
 # Initialize PostgreSQL
 RUN su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
 
-# Configure Supervisor to manage PostgREST, ToolJet, and Redis
+# Configure Redis for BullMQ
+RUN mkdir -p /etc/redis /var/lib/redis /var/log/redis && \
+    chown -R redis:redis /var/lib/redis /var/log/redis && \
+    chmod 755 /var/lib/redis /var/log/redis
+
+# Copy Redis configuration
+COPY ./docker/LTS/ee/redis.conf /etc/redis/redis.conf
+RUN chown redis:redis /etc/redis/redis.conf && \
+    chmod 644 /etc/redis/redis.conf
+
+# Configure Supervisor to manage PostgREST and ToolJet
+# Note: PostgreSQL and Redis are started directly in preview.sh
 RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
     "user=root \n" \
@@ -182,6 +271,10 @@ RUN echo "[supervisord] \n" \
     "command=/bin/postgrest \n" \
     "autostart=true \n" \
     "autorestart=true \n" \
+    "stderr_logfile=/dev/stdout \n" \
+    "stderr_logfile_maxbytes=0 \n" \
+    "stdout_logfile=/dev/stdout \n" \
+    "stdout_logfile_maxbytes=0 \n" \
     "\n" \
     "[program:tooljet] \n" \
     "user=root \n" \
@@ -212,6 +305,10 @@ ENV TOOLJET_HOST=http://localhost \
     PGRST_DB_URI=postgres://postgres:postgres@localhost/tooljet_db \
     PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
     PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+    REDIS_HOST=localhost \
+    REDIS_PORT=6379 \
+    REDIS_DB=0 \
+    REDIS_TLS_ENABLED=false \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
     HOME=/home/appuser \

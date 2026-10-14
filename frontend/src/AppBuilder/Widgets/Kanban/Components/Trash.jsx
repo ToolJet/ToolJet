@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 
-export const Trash = ({ id, deleteLabel }) => {
+export const Trash = ({ id, deleteLabel, dataCy }) => {
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -23,6 +23,7 @@ export const Trash = ({ id, deleteLabel }) => {
         border: '1px solid',
         borderColor: isOver ? 'red' : '#DDD',
       }}
+      data-cy={dataCy}
     >
       {deleteLabel}
     </div>

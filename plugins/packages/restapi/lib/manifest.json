@@ -67,6 +67,21 @@
       },
       "root_cert": {
         "encrypted": true
+      },
+       "use_credential_provider_chain": {
+        "type": "boolean"
+      },
+      "aws_access_key_id": {
+        "encrypted": true
+      },
+      "aws_secret_access_key": {
+        "encrypted": true
+      },
+      "aws_region": {
+        "type": "string"
+      },
+      "aws_service": {
+        "type": "string"
       }
     },
     "exposedVariables": {
@@ -120,7 +135,7 @@
       "value": ""
     },
     "client_auth": {
-      "value": "header"
+      "value": "body"
     },
     "headers": {
       "value": [
@@ -220,7 +235,7 @@
         "title": "SECURE SOCKETS LAYER",
         "inputs": {
           "ssl_certificate": {
-            "label": "SSL Certificate",
+            "label": "SSL certificate",
             "key": "ssl_certificate",
             "type": "dropdown-component-flip",
             "description": "Single select dropdown for choosing certificates",
@@ -241,7 +256,7 @@
           },
           "ca_certificate": {
             "ca_cert": {
-              "label": "CA Cert",
+              "label": "CA cert",
               "key": "ca_cert",
               "type": "textarea",
               "encrypted": true,
@@ -250,21 +265,21 @@
           },
           "client_certificate": {
             "client_key": {
-              "label": "Client Key",
+              "label": "Client key",
               "key": "client_key",
               "type": "textarea",
               "encrypted": true,
               "description": "Enter client key"
             },
             "client_cert": {
-              "label": "Client Cert",
+              "label": "Client cert",
               "key": "client_cert",
               "type": "textarea",
               "encrypted": true,
               "description": "Enter client certificate"
             },
             "ca_cert": {
-              "label": "CA Cert",
+              "label": "CA cert",
               "key": "ca_cert",
               "type": "textarea",
               "encrypted": true,

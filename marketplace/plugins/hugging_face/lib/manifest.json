@@ -3,7 +3,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Hugging Face datasource",
   "description": "A schema defining Hugging Face datasource",
-  "type": "api",
+  "type": "ai",
   "source": {
     "name": "Hugging Face",
     "kind": "hugging_face",

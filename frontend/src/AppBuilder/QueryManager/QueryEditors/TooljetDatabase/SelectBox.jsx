@@ -750,6 +750,7 @@ const MenuList = ({
           onScroll={
             scrollEventForColumnValues && props?.handleScrollThrottled ? props.handleScrollThrottled : () => null
           }
+          data-cy="tooljetdb-dropdown-select-list-items"
         >
           {children}
           {isLoadingFKDetails && loader ? loader : null}
@@ -768,6 +769,7 @@ const MenuList = ({
             size="md"
             className="w-100"
             onClick={scrollEventForColumnValues ? handleNavigateToReferencedTable : onAdd}
+            data-cy="tooljetdb-select-add-new-button"
           >
             {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}
             {foreignKeyAccessInRowForm && <Maximize fill={'#3e63dd'} />}

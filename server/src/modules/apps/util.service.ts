@@ -28,10 +28,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
-import { cloneDeep } from 'lodash';
-import { merge } from 'lodash';
-import { mergeWith } from 'lodash';
-import { isArray } from 'lodash';
+import { cloneDeep, isArray, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
@@ -41,6 +38,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -51,7 +49,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
-  ) { }
+  ) {}
   async create(
     name: string,
     user: User,
@@ -71,55 +69,9 @@ export class AppsUtilService implements IAppsUtilService {
             userId: user.id,
             isMaintenanceOn: type === APP_TYPES.WORKFLOW ? true : false,
             ...(isInitialisedFromPrompt && {
-              aiGenerationMetadata: {
-                steps: [
-                  {
-                    name: 'Describe app',
-                    id: 'describe_app',
-                    loadingStates: ['Generating PRD', 'PRD generated successfully'],
-                  },
-                  {
-                    name: 'Define specs',
-                    id: 'define_specs',
-                    loadingStates: ['Generating app specifications', 'Specifications generated successfully'],
-                  },
-                  {
-                    name: 'Design layout',
-                    id: 'design_layout',
-                    loadingStates: ['Designing app layout', 'Layout designed successfully'],
-                  },
-                  {
-                    name: 'Select datasource',
-                    id: 'select_datasource',
-                    loadingStates: ['Selecting datasource', 'Datasource selected successfully'],
-                    hidden: true,
-                    parent_step_id: 'setup_database',
-                  },
-                  {
-                    name: 'Connect datasource',
-                    id: 'connect_datasource',
-                    loadingStates: ['Connecting to datasource', 'Datasource connected successfully'],
-                    hidden: true,
-                    parent_step_id: 'setup_database',
-                  },
-                  {
-                    name: 'Setup database',
-                    id: 'setup_database',
-                    loadingStates: ['Setting up database schema', 'Database schema setup successfully'],
-                  },
-                  {
-                    name: 'Generate app',
-                    id: 'generate_app',
-                    loadingStates: ['Generating app', 'App generated successfully'],
-                  },
-                ],
-                activeStep: 'describe_app',
-                completedSteps: [],
-                version: 'v3',
-              },
+              aiGenerationMetadata: {},
             }),
             isInitialisedFromPrompt: isInitialisedFromPrompt,
-            appBuilderMode: isInitialisedFromPrompt ? 'ai' : 'visual',
             ...(type === APP_TYPES.WORKFLOW && { workflowApiToken: uuidv4() }),
           })
         );
@@ -136,6 +88,20 @@ export class AppsUtilService implements IAppsUtilService {
           appVersionId: appVersion.id,
           index: 1,
           autoComputeLayout: true,
+          pageHeader: {
+            showOnDesktop: false,
+            showOnMobile: false,
+            backgroundColor: 'var(--cc-surface1-surface)',
+            border: 'var(--cc-weak-border)',
+            height: 60,
+          },
+          pageFooter: {
+            showOnDesktop: false,
+            showOnMobile: false,
+            backgroundColor: 'var(--cc-surface1-surface)',
+            border: 'var(--cc-weak-border)',
+            height: 60,
+          },
         })
       );
 
@@ -202,14 +168,15 @@ export class AppsUtilService implements IAppsUtilService {
 
   async findAppWithIdOrSlug(slug: string, organizationId: string): Promise<App> {
     let app: App;
-    try {
+
+    if (isUUID(slug)) {
       app = await this.appRepository.findById(slug, organizationId);
-    } catch (error) {
-      /* means: UUID error. so the slug isn't not the id of the app */
-      if (error?.code === `22P02`) {
-        /* Search against slug */
+      if (!app) {
+        /* UUID could also be a slug, try slug lookup as fallback */
         app = await this.appRepository.findBySlug(slug, organizationId);
       }
+    } else {
+      app = await this.appRepository.findBySlug(slug, organizationId);
     }
 
     if (!app) {
@@ -228,7 +195,8 @@ export class AppsUtilService implements IAppsUtilService {
       LICENSE_FIELD.MULTI_ENVIRONMENT,
       organizationId
     );
-    if (environmentName && !isMultiEnvironmentEnabled) {
+    const isDevelopmentEnv = environmentName?.toLowerCase() === 'development';
+    if (environmentName && !isDevelopmentEnv && !isMultiEnvironmentEnabled) {
       throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
     }
 
@@ -346,11 +314,14 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
-    const { name, currentEnvironmentId, definition } = body;
+    const { currentEnvironmentId, definition } = body;
     const { currentVersionId, organizationId } = app;
     let currentEnvironment: AppEnvironment;
 
-    if (version.id === currentVersionId && !body?.is_user_switched_version)
+    // Allow updates to non-released versions
+    // Note: status and name updates are already handled by versionsUtilService.updateVersion
+    // This function only handles workflow-specific fields: currentEnvironmentId and definition
+    if (version.id === currentVersionId && !body?.is_user_switched_version && (currentEnvironmentId || definition))
       throw new BadRequestException('You cannot update a released version');
 
     if (currentEnvironmentId || definition) {
@@ -360,17 +331,6 @@ export class AppsUtilService implements IAppsUtilService {
     }
 
     const editableParams = {};
-    if (name) {
-      //means user is trying to update the name
-      const versionNameExists = await this.versionRepository.findOne({
-        where: { name, appId: version.appId },
-      });
-
-      if (versionNameExists) {
-        throw new BadRequestException('Version name already exists.');
-      }
-      editableParams['name'] = name;
-    }
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
     if (currentEnvironmentId) {
@@ -413,13 +373,13 @@ export class AppsUtilService implements IAppsUtilService {
     return manager
       .createQueryBuilder(AppEnvironment, 'app_environments')
       .innerJoinAndSelect('app_versions', 'app_versions', 'app_versions.current_environment_id = app_environments.id')
-      .where('app_versions.id = :currentVersionId', {
+      .where('app_versions.id = :versionId', {
         versionId,
       })
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string): Promise<AppBase[]> {
+  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean, context?: string): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -431,7 +391,7 @@ export class AppsUtilService implements IAppsUtilService {
         resourceType = MODULES.APP;
         break;
       case APP_TYPES.MODULE:
-        resourceType = MODULES.APP;
+        resourceType = MODULES.MODULES;
         break;
       default:
         resourceType = MODULES.APP;
@@ -446,22 +406,24 @@ export class AppsUtilService implements IAppsUtilService {
         userPermission[resourceType],
         manager,
         searchKey,
-        undefined,
-        type
+        isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
+        type,
+        context
       );
 
       // Eagerly load appVersions for modules
-      if (type === APP_TYPES.MODULE) {
+      if (type === APP_TYPES.MODULE && !isGetAll) {
         viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
 
-      if (page) {
-        return await viewableAppsQb
-          .take(9)
-          .skip(9 * (page - 1))
-          .getMany();
+      if (isGetAll) {
+        return await viewableAppsQb.getMany();
       }
-      return await viewableAppsQb.getMany();
+
+      return await viewableAppsQb
+        .take(9)
+        .skip(9 * (page - 1))
+        .getMany();
     });
   }
 
@@ -471,7 +433,8 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager,
     searchKey?: string,
     select?: Array<string>,
-    type?: string
+    type?: string,
+    context?: string
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
@@ -506,8 +469,22 @@ export class AppsUtilService implements IAppsUtilService {
     const viewableApps = this.calculateViewableFrontEndApps(userAppPermissions as unknown as UserAppsPermissions);
 
     switch (type) {
+      // Modules are now permission-scoped (H1): filter to the user's editable ∪ viewable ∪ owned
+      // module ids, exactly like front-end apps. Previously modules were returned unfiltered.
       case APP_TYPES.MODULE:
-        return viewableAppsQb;
+        if (context === 'picker') {
+          return this.addPickerModulesFilter(
+            viewableAppsQb,
+            userAppPermissions as unknown as UserAppsPermissions
+          );
+        }
+        // Modules support hide-from-dashboard on Edit groups (#5135) — use dedicated helpers
+        // that treat editable ids the same as viewable ids for hiding purposes.
+        return this.addViewableModulesFilter(
+          viewableAppsQb,
+          userAppPermissions as unknown as UserAppsPermissions,
+          this.calculateViewableModules(userAppPermissions as unknown as UserAppsPermissions)
+        );
       case APP_TYPES.FRONT_END:
       default:
         return this.addViewableFrontEndAppsFilter(
@@ -519,17 +496,20 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   private calculateViewableFrontEndApps(userAppPermissions: UserAppsPermissions): string[] {
+    const visibleEditableAppsId = userAppPermissions.editableAppsId.filter(
+      (id) => !userAppPermissions.hiddenAppsId.includes(id)
+    );
     return userAppPermissions.hideAll
-      ? [null, ...userAppPermissions.editableAppsId]
+      ? [null, ...visibleEditableAppsId]
       : [
-        null,
-        ...Array.from(
-          new Set([
-            ...userAppPermissions.editableAppsId,
-            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-          ])
-        ),
-      ];
+          null,
+          ...Array.from(
+            new Set([
+              ...visibleEditableAppsId,
+              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+            ])
+          ),
+        ];
   }
 
   private addViewableFrontEndAppsFilter(
@@ -538,7 +518,18 @@ export class AppsUtilService implements IAppsUtilService {
     viewableApps: string[]
   ): SelectQueryBuilder<AppBase> {
     const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
-    if (isAllEditable) return query;
+    const { hiddenAppsId } = userAppPermissions;
+
+    if (isAllEditable) {
+      // Builder with "all apps editable" — still respect hideFromDashboard settings.
+      if (hideAll) {
+        // All apps hidden from dashboard; none should appear.
+        query.andWhere('1 = 0');
+      } else if (hiddenAppsId.length > 0) {
+        query.andWhere('apps.id NOT IN (:...hiddenApps)', { hiddenApps: hiddenAppsId });
+      }
+      return query;
+    }
 
     if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll)) {
       query.andWhere('apps.id IN (:...viewableApps)', {
@@ -547,13 +538,95 @@ export class AppsUtilService implements IAppsUtilService {
       return query;
     }
 
-    const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
-    if (!userAppPermissions.hideAll && isAllViewable && hiddenApps.length > 0) {
+    const hiddenApps = hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
+    if (!hideAll && isAllViewable && hiddenApps.length > 0) {
       query.andWhere('apps.id NOT IN (:...hiddenApps)', {
         hiddenApps,
       });
     }
 
+    return query;
+  }
+
+  /**
+   * Picker context: include hidden modules (hide_from_dashboard is irrelevant for the picker).
+   * Still intersects with the user's permitted module sets — never returns unfiltered.
+   * isAllEditable || isAllViewable → no id filter (user can see all modules in the org).
+   * Otherwise → apps.id IN (editableAppsId ∪ viewableAppsId).
+   */
+  private addPickerModulesFilter(
+    query: SelectQueryBuilder<AppBase>,
+    userModulePermissions: UserAppsPermissions
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllViewable, editableAppsId, viewableAppsId } = userModulePermissions;
+
+    if (isAllEditable || isAllViewable) {
+      // User can access all modules — no id restriction needed.
+      return query;
+    }
+
+    const viewableModules = Array.from(new Set([...editableAppsId, ...viewableAppsId]));
+
+    if (viewableModules.length === 0) {
+      query.andWhere('1 = 0'); // user has no module access
+      return query;
+    }
+
+    query.andWhere('apps.id IN (:...viewableModules)', { viewableModules });
+    return query;
+  }
+
+  /**
+   * Modules support hide-from-dashboard on Edit groups (#5135 / DEV-63).
+   * Unlike front-end apps, editable module ids are subject to hiding — a builder-role
+   * member can be hidden from the dashboard while still having URL + builder access.
+   *
+   * hideAll → everything hidden (no id in the whitelist).
+   * else    → union of editable ∪ viewable, minus hidden ids.
+   */
+  private calculateViewableModules(userModulePermissions: UserAppsPermissions): string[] {
+    const { ownedAppsId } = userModulePermissions;
+    // Owner exemption is absolute: a creator always sees their own module on the dashboard,
+    // even under hideAll or a hide-from-dashboard group containing the module.
+    if (userModulePermissions.hideAll) {
+      // Everything hidden except owned; [null] keeps the IN-clause valid when nothing is owned.
+      return [null, ...ownedAppsId];
+    }
+    const allPermittedIds = Array.from(
+      new Set([...userModulePermissions.editableAppsId, ...userModulePermissions.viewableAppsId])
+    );
+    return [
+      null,
+      ...allPermittedIds.filter((id) => !userModulePermissions.hiddenAppsId.includes(id) || ownedAppsId.includes(id)),
+    ];
+  }
+
+  private addViewableModulesFilter(
+    query: SelectQueryBuilder<AppBase>,
+    userModulePermissions: UserAppsPermissions,
+    viewableModules: string[]
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllViewable, hideAll, hiddenAppsId } = userModulePermissions;
+
+    // "All modules" grant with no per-module hides — no restriction needed.
+    if ((isAllEditable || isAllViewable) && !hideAll && hiddenAppsId.length === 0) {
+      return query;
+    }
+
+    // "All modules" grant but some specific modules are hidden — exclude them (including
+    // edit-via-group ones, unlike the apps filter which exempts editable ids). Owned modules
+    // are always exempt: a creator never loses their own module from the dashboard.
+    if ((isAllEditable || isAllViewable) && !hideAll && hiddenAppsId.length > 0) {
+      const { ownedAppsId } = userModulePermissions;
+      const hiddenExceptOwned = hiddenAppsId.filter((id) => !ownedAppsId.includes(id));
+      if (hiddenExceptOwned.length > 0) {
+        query.andWhere('apps.id NOT IN (:...hiddenExceptOwned)', { hiddenExceptOwned });
+      }
+      return query;
+    }
+
+    // All other cases (hideAll, or no isAll grant): whitelist of permitted & visible modules.
+    query.andWhere('apps.id IN (:...viewableModules)', { viewableModules });
     return query;
   }
 
@@ -570,6 +643,9 @@ export class AppsUtilService implements IAppsUtilService {
         break;
       case APP_TYPES.FRONT_END:
         resourceType = MODULES.APP;
+        break;
+      case APP_TYPES.MODULE:
+        resourceType = MODULES.MODULES;
         break;
       default:
         resourceType = MODULES.APP;
@@ -616,9 +692,20 @@ export class AppsUtilService implements IAppsUtilService {
             if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               return srcValue;
             } else if (
-              ['DropdownV2', 'MultiselectV2', 'PopoverMenu', 'Steps', 'Tabs', 'RadioButtonV2', 'Tags'].includes(
-                currentComponentData?.component?.component
-              ) &&
+              [
+                'DropdownV2',
+                'MultiselectV2',
+                'PopoverMenu',
+                'Steps',
+                'Tabs',
+                'RadioButtonV2',
+                'Tags',
+                'TagsInput',
+                'TreeSelect',
+                'Cascader',
+                'Navigation',
+                'ButtonGroupV2',
+              ].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {
               return isArray(srcValue) ? srcValue : Object.values(srcValue);
@@ -679,15 +766,13 @@ export class AppsUtilService implements IAppsUtilService {
 
       const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
 
-      const modules =
-        moduleAppIds.length > 0
-          ? await manager
+      return moduleAppIds.length > 0
+        ? await manager
             .createQueryBuilder(App, 'app')
             .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
             .distinct(true)
             .getMany()
-          : [];
-      return modules;
+        : [];
     });
     return modules;
   }

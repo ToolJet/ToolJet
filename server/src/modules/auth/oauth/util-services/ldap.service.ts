@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ILdapService } from '../interfaces/ILdapService';
 import UserResponse from '../models/user_response';
-import { SearchOptions, Client } from 'ldapjs';
+import { SearchOptions, Client } from 'ldapts';
 
 @Injectable()
 export class LdapService implements ILdapService {
@@ -17,7 +17,7 @@ export class LdapService implements ILdapService {
     throw new Error('Method not implemented');
   }
 
-  async search(dn: string, options: SearchOptions, client: Client, callback: any): Promise<void> {
+  async search(dn: string, options: SearchOptions, client: Client): Promise<any> {
     throw new Error('Method not implemented');
   }
 }

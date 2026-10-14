@@ -48,9 +48,9 @@ function getVersionsByEnvironment(appId, environmentId /* not needed for CE */) 
   ).then(handleResponse);
 }
 
-function init(editing_version_id = null) {
+function init(editing_version_id = null, env = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const query = queryString.stringify({ editing_version_id });
+  const query = queryString.stringify({ editing_version_id, env });
   return fetch(`${config.apiUrl}/app-environments/init?${query}`, requestOptions).then(handleResponse);
 }
 

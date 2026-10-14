@@ -5,15 +5,15 @@ const sectionConfig = {
   },
   buttons: {
     title: 'Buttons',
-    valueSet: new Set(['Button', 'ButtonGroup', 'PopoverMenu']),
+    valueSet: new Set(['Button', 'ButtonGroupV2', 'PopoverMenu', 'FileButton']),
   },
   data: {
     title: 'Data',
-    valueSet: new Set(['Table', 'Chart']),
+    valueSet: new Set(['Table', 'Chart', 'KeyValuePair']),
   },
   layouts: {
     title: 'Layouts',
-    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
+    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Accordion', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
   },
   textInputs: {
     title: 'Text inputs',
@@ -25,7 +25,17 @@ const sectionConfig = {
   },
   selectInputs: {
     title: 'Select inputs',
-    valueSet: new Set(['DropdownV2', 'MultiselectV2', 'ToggleSwitchV2', 'RadioButtonV2', 'Checkbox', 'TreeSelect']),
+    valueSet: new Set([
+      'TagsInput',
+      'DropdownV2',
+      'MultiselectV2',
+      'ToggleSwitchV2',
+      'RadioButtonV2',
+      'Checkbox',
+      'TreeSelect',
+      'Cascader',
+      'FileInput',
+    ]),
   },
   dateTimeInputs: {
     title: 'Date and time inputs',
@@ -33,11 +43,11 @@ const sectionConfig = {
   },
   navigation: {
     title: 'Navigation',
-    valueSet: new Set(['Link', 'Pagination', 'Steps']),
+    valueSet: new Set(['Navigation', 'Link', 'Pagination', 'Steps']),
   },
   media: {
     title: 'Media',
-    valueSet: new Set(['Icon', 'Image', 'SvgImage', 'PDF', 'Map']),
+    valueSet: new Set(['Icon', 'Image', 'SvgImage', 'PDF', 'Map', 'AudioRecorder', 'Camera']),
   },
   presentation: {
     title: 'Presentation',
@@ -45,25 +55,48 @@ const sectionConfig = {
       'Text',
       'Tags',
       'CircularProgressBar',
+      'ProgressBar',
       'Timeline',
       'Divider',
       'VerticalDivider',
       'Spinner',
       'Statistics',
       'Timer',
+      'JSONExplorer',
     ]),
   },
   custom: {
     title: 'Custom',
+    // LibraryComponent (custom component host) is deliberately NOT listed: users
+    // discover custom components via the panel's Custom TAB, which drops
+    // pre-filled instances — a bare unconfigured card would be a dead end.
     valueSet: new Set(['CustomComponent', 'Html', 'IFrame']),
   },
   miscellaneous: {
     title: 'Miscellaneous',
-    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner', 'Chat']),
+    valueSet: new Set([
+      'FilePicker',
+      'CodeEditor',
+      'ColorPicker',
+      'BoundedBox',
+      'QrScanner',
+      'Chat',
+      'ReorderableList',
+      'JSONEditor',
+    ]),
   },
   legacy: {
     title: 'Legacy',
-    valueSet: new Set(['Modal', 'Datepicker', 'RadioButton', 'ToggleSwitch', 'DropDown', 'Multiselect', 'RangeSlider']),
+    valueSet: new Set([
+      'Modal',
+      'Datepicker',
+      'RadioButton',
+      'ToggleSwitch',
+      'DropDown',
+      'Multiselect',
+      'RangeSlider',
+      'ButtonGroup',
+    ]),
   },
 };
 

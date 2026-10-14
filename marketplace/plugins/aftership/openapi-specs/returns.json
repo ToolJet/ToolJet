@@ -1,0 +1,1336 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AfterShip Returns API",
+    "version": "2025-07",
+    "description": "API for managing returns, RMAs, and dropoffs",
+    "contact": {
+      "name": "AfterShip Support",
+      "email": "support@aftership.com",
+      "url": "https://www.aftership.com/contact-us"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.aftership.com/returns/2025-07",
+      "description": "Production API Endpoint"
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/returns": {
+      "get": {
+        "operationId": "get-returns",
+        "summary": "Get returns",
+        "description": "Retrieve a list of returns with optional filtering",
+        "parameters": [
+          {
+            "name": "created_at_max",
+            "in": "query",
+            "description": "End date and time of returns created. The default value is the current time. Please make sure the value of the parameter is properly escaped in URL encoding.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "created_at_min",
+            "in": "query",
+            "description": "Start date and time of returns created. AfterShip will only respond with data from the past 365 days at most. The default value is 365 days ago. Please make sure the value of the parameter is properly escaped in URL encoding.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "approval_status",
+            "in": "query",
+            "description": "The approval status of the return.",
+            "schema": {
+              "type": "string",
+              "enum": ["submitted", "approved", "done", "rejected", "expired"]
+            }
+          },
+          {
+            "name": "customer_email",
+            "in": "query",
+            "description": "The customer email used when submitting a return. Please make sure the value of the parameter is properly escaped in URL encoding.",
+            "schema": {
+              "type": "string",
+              "format": "email"
+            }
+          },
+          {
+            "name": "outcome",
+            "in": "query",
+            "description": "The return is considered a match if the outcomes field in the resource contains at least one of the specified outcome values.",
+            "schema": {
+              "type": "string",
+              "enum": ["exchange", "refund", "upsell", "store_credit"]
+            }
+          },
+          {
+            "name": "return_method",
+            "in": "query",
+            "description": "The return method of the return.",
+            "schema": {
+              "type": "string",
+              "enum": ["happy_returns", "retail_reworks", "retailer_label", "carrier_pickup", "customer_courier", "in_store", "green_return", "carrier_dropoff"]
+            }
+          },
+          {
+            "name": "order_name",
+            "in": "query",
+            "description": "The order name of the origin order associated with the return.",
+            "schema": {
+              "type": "string",
+              "example": "#1001"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 1,
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 10,
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-returns",
+        "summary": "Create Return",
+        "description": "This API is used to create a Return. Currently, it only supports the \"Refund\" resolution and does not support \"Replace with the same item\" or \"Exchange for anything.\"",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["order", "return_items", "refund_destination"],
+                "properties": {
+                  "order": {
+                    "type": "object",
+                    "required": ["external_id", "store"],
+                    "properties": {
+                      "external_id": {
+                        "type": "string",
+                        "description": "The order ID of the original order on the e-commerce platform.",
+                        "example": "4254002020558"
+                      },
+                      "store": {
+                        "type": "object",
+                        "required": ["platform", "external_id"],
+                        "properties": {
+                          "platform": {
+                            "type": "string",
+                            "description": "The e-commerce platform where the store is located.",
+                            "example": "shopify"
+                          },
+                          "external_id": {
+                            "type": "string",
+                            "description": "The identifier of the store on the e-commerce platform.",
+                            "example": "cool-shoe-store"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "return_items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["external_order_item_id", "intended_return_quantity", "return_reason", "resolution"],
+                      "properties": {
+                        "external_order_item_id": {
+                          "type": "string",
+                          "description": "The ID of the item on the e-commerce platform.",
+                          "example": "10579097059534"
+                        },
+                        "intended_return_quantity": {
+                          "type": "integer",
+                          "description": "The number of items that the customer plans or expects to return.",
+                          "minimum": 1
+                        },
+                        "return_reason": {
+                          "type": "string",
+                          "description": "The return reason provided by the customer.",
+                          "example": "Wrong size"
+                        },
+                        "return_subreason": {
+                          "type": "string",
+                          "description": "If the return reason supports sub-reasons, this is the sub-reason provided by the customer.",
+                          "example": "Too small"
+                        },
+                        "return_reason_comment": {
+                          "type": "string",
+                          "description": "Additional information provided by the customer regarding the reason for the return.",
+                          "example": "To Small"
+                        },
+                        "shopper_uploaded_image_urls": {
+                          "type": "array",
+                          "description": "The images provided by the customer when submitting a return.",
+                          "items": {
+                            "type": "string",
+                            "example": "https://example.com/1.jpeg"
+                          }
+                        },
+                        "resolution": {
+                          "type": "string",
+                          "description": "The resolution for processing this item, currently only supports refund.",
+                          "enum": ["refund"]
+                        }
+                      }
+                    }
+                  },
+                  "return_method": {
+                    "type": "object",
+                    "required": ["type"],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["retailer_label", "customer_courier", "happy_returns", "in_store", "green_return", "retail_reworks", "carrier_pickup"]
+                      }
+                    }
+                  },
+                  "refund_destination": {
+                    "type": "string",
+                    "enum": ["original_payment", "store_credit"],
+                    "description": "The destination for the refund"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
+    "/returns/{return_id}": {
+      "get": {
+        "operationId": "get-returns-return_id",
+        "summary": "Get return detail by ID",
+        "parameters": [
+          {
+            "name": "return_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/returns/rma/{rma_number}": {
+      "get": {
+        "operationId": "get-returns-rma-rma_number",
+        "summary": "Get return detail by RMA number",
+        "parameters": [
+          {
+            "name": "rma_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/returns/{return_id}/approve": {
+      "post": {
+        "operationId": "post-returns-return_id-approve",
+        "summary": "Approve Return By Return ID",
+        "description": "Through the approve return API, you can transition a return to approved status.",
+        "parameters": [
+          {
+            "name": "return_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notify_customer": {
+                    "type": "boolean",
+                    "description": "Whether to send a notification to the customer."
+                  },
+                  "generate_label": {
+                    "type": "boolean",
+                    "description": "Whether to execute the creation of labels according to the default configuration during the approval process."
+                  },
+                  "customize_label_info": {
+                    "type": "object",
+                    "properties": {
+                      "label_reference": {
+                        "type": "string",
+                        "description": "If generate_label is set to true, this field can be used to customize the reference on the label."
+                      },
+                      "ship_from": {
+                        "type": "object",
+                        "description": "If generate_label is set to true, this field is used to specify the sender's address"
+                      },
+                      "ship_to": {
+                        "type": "object",
+                        "description": "If generate_label is set to true, this field is used to specify the receipent's address."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          }
+        }
+      }
+    },
+    "/returns/rma/{rma_number}/approve": {
+      "post": {
+        "operationId": "post-returns-rma-rma_number-approve",
+        "summary": "Approve Return By RMA number",
+        "description": "Through the approve return API, you can transition a return to approved status.",
+        "parameters": [
+          {
+            "name": "rma_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notify_customer": {
+                    "type": "boolean",
+                    "description": "Whether to send a notification to the customer."
+                  },
+                  "generate_label": {
+                    "type": "boolean",
+                    "description": "Whether to execute the creation of labels according to the default configuration during the approval process."
+                  },
+                  "customize_label_info": {
+                    "type": "object",
+                    "properties": {
+                      "label_reference": {
+                        "type": "string",
+                        "description": "If generate_label is set to true, this field can be used to customize the reference on the label."
+                      },
+                      "ship_from": {
+                        "type": "object",
+                        "description": "If generate_label is set to true, this field is used to specify the sender's address"
+                      },
+                      "ship_to": {
+                        "type": "object",
+                        "description": "If generate_label is set to true, this field is used to specify the receipent's address."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/returns/{return_id}/resolve": {
+      "post": {
+        "operationId": "post-returns-return_id-resolve",
+        "summary": "Resolve Return By Return ID",
+        "description": "Through the resolve return API, you can transition a return to resolved status.",
+        "parameters": [
+          {
+            "name": "return_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notify_customer": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/returns/rma/{rma_number}/resolve": {
+      "post": {
+        "operationId": "post-returns-rma-rma_number-resolve",
+        "summary": "Resolve Return By RMA number",
+        "description": "Through the resolve return API, you can transition a return to approved status.",
+        "parameters": [
+          {
+            "name": "rma_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notify_customer": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/returns/{return_id}/reject": {
+      "post": {
+        "operationId": "post-returns-return_id-reject",
+        "summary": "Reject Return By Return ID",
+        "description": "Through the reject return API, you can transition a return to rejected status.",
+        "parameters": [
+          {
+            "name": "return_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reject_reason"],
+                "properties": {
+                  "notify_customer": {
+                    "type": "boolean"
+                  },
+                  "reject_reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/returns/rma/{rma_number}/reject": {
+      "post": {
+        "operationId": "post-returns-rma-rma_number-reject",
+        "summary": "Reject Return By RMA number",
+        "description": "Through the reject return API, you can transition a return to rejected status.",
+        "parameters": [
+          {
+            "name": "rma_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reject_reason"],
+                "properties": {
+                  "notify_customer": {
+                    "type": "boolean"
+                  },
+                  "reject_reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/returns/{return_id}/receive-items": {
+      "post": {
+        "operationId": "post-returns-return_id-receive-items",
+        "summary": "Receive items by Return ID",
+        "description": "For a normal receive operation, the external_id in the receive items represents the item id on the e-commerce platform. You can also use our get return API to retrieve all return items and match the corresponding external_id in your code using relevant information such as sku.\n\nFor merchants using the bundle feature, there are two cases:\n\n- If the shopper submits a return for an whole bundle, the external_id in the items for the receive operation can be found in return_items[*].bundled_items within the return resource.\n- If the shopper submits a return for a child item within the bundle, the external_id in the items for the receive operation can be found in return_items within the return resource.\n\nIn other words, in the context of bundles, the external_id for the receive operation should always be the child item ID within the bundle.",
+        "parameters": [
+          {
+            "name": "return_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["items"],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["external_id", "quantity"],
+                      "properties": {
+                        "external_id": {
+                          "type": "string",
+                          "example": "12127384174838"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "example": 3
+                        },
+                        "gradings": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": ["grade", "quantity"],
+                            "properties": {
+                              "grade": {
+                                "type": "string",
+                                "example": "a"
+                              },
+                              "quantity": {
+                                "type": "integer",
+                                "example": 1
+                              },
+                              "inspector": {
+                                "type": "string",
+                                "example": "Inspector_001"
+                              },
+                              "notes": {
+                                "type": "string",
+                                "example": "All items passed inspection"
+                              },
+                              "inspected_at": {
+                                "type": "string",
+                                "example": "2019-08-24T14:15:22Z"
+                              },
+                              "image_urls": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "example": "http://example.com/image.jpeg"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "notify_customer": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/returns/rma/{rma_number}/receive-items": {
+      "post": {
+        "operationId": "post-returns-rma-rma_number-receive-items",
+        "summary": "Receive items by RMA number",
+        "description": "For a normal receive operation, the external_id in the receive items represents the item id on the e-commerce platform. You can also use our get return API to retrieve all return items and match the corresponding external_id in your code using relevant information such as sku.\n\nFor merchants using the bundle feature, there are two cases:\n\n- If the shopper submits a return for an whole bundle, the external_id in the items for the receive operation can be found in return_items[*].bundled_items within the return resource.\n- If the shopper submits a return for a child item within the bundle, the external_id in the items for the receive operation can be found in return_items within the return resource.\n\nIn other words, in the context of bundles, the external_id for the receive operation should always be the child item ID within the bundle.",
+        "parameters": [
+          {
+            "name": "rma_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["items"],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["external_id", "quantity"],
+                      "properties": {
+                        "external_id": {
+                          "type": "string",
+                          "example": "12127384174838"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "example": 3
+                        },
+                        "gradings": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": ["grade", "quantity"],
+                            "properties": {
+                              "grade": {
+                                "type": "string",
+                                "example": "a"
+                              },
+                              "quantity": {
+                                "type": "integer",
+                                "example": 1
+                              },
+                              "inspector": {
+                                "type": "string",
+                                "example": "Inspector_001"
+                              },
+                              "notes": {
+                                "type": "string",
+                                "example": "All items passed inspection"
+                              },
+                              "inspected_at": {
+                                "type": "string",
+                                "example": "2019-08-24T14:15:22Z"
+                              },
+                              "image_urls": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "example": "http://example.com/image.jpeg"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "notify_customer": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/returns/{return_id}/items/{item_id}": {
+      "put": {
+        "operationId": "put-returns-return_id-items-item_id",
+        "summary": "Update return items by Return ID",
+        "parameters": [
+          {
+            "name": "return_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "title": "TagItem",
+                    "type": "object",
+                    "properties": {
+                      "item_tags": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "title": "UpdateImages",
+                    "type": "object",
+                    "properties": {
+                      "merchant_uploaded_image_urls": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/returns/rma/{rma_number}/items/{item_id}": {
+      "put": {
+        "operationId": "put-returns-rma-rma_number-items-item_id",
+        "summary": "Update return items By RMA number",
+        "parameters": [
+          {
+            "name": "rma_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "title": "TagItem",
+                    "type": "object",
+                    "properties": {
+                      "item_tags": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "title": "UpdateImages",
+                    "type": "object",
+                    "properties": {
+                      "merchant_uploaded_image_urls": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/returns/{return_id}/attach-shipments": {
+      "post": {
+        "operationId": "post-returns-return_id-attach-shipments",
+        "summary": "Attach shipments by Return ID",
+        "description": "Through this API, merchants can upload a shipment on their own. Although the design allows for the possibility of uploading multiple shipments, currently, merchants can only upload one shipment.",
+        "parameters": [
+          {
+            "name": "return_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["shipments"],
+                "properties": {
+                  "shipments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["tracking_number", "slug", "label"],
+                      "properties": {
+                        "tracking_number": {
+                          "type": "string"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "label": {
+                          "type": "object",
+                          "required": ["url"],
+                          "properties": {
+                            "url": {
+                              "type": "string"
+                            },
+                            "total_charge": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "string",
+                                  "example": "99.99",
+                                  "description": "The amount represented with two decimal places."
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "example": "USD",
+                                  "description": "The currency code, using ISO 4217 standards."
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "notify_customer": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/returns/rma/{rma_number}/attach-shipments": {
+      "post": {
+        "operationId": "post-returns-rma-rma_number-attach-shipments",
+        "summary": "Attach shipments by RMA number",
+        "description": "Through this API, merchants can upload a shipment on their own. Although the design allows for the possibility of uploading multiple shipments, currently, merchants can only upload one shipment.",
+        "parameters": [
+          {
+            "name": "rma_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["shipments"],
+                "properties": {
+                  "shipments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["tracking_number", "slug", "label"],
+                      "properties": {
+                        "tracking_number": {
+                          "type": "string"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "label": {
+                          "type": "object",
+                          "required": ["url"],
+                          "properties": {
+                            "url": {
+                              "type": "string"
+                            },
+                            "total_charge": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "string",
+                                  "example": "99.99",
+                                  "description": "The amount represented with two decimal places."
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "example": "USD",
+                                  "description": "The currency code, using ISO 4217 standards."
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "notify_customer": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/returns/{return_id}/remove-items": {
+      "post": {
+        "operationId": "post-returns-return_id-remove-items",
+        "summary": "Remove return items by Return ID",
+        "description": "When a shopper changes their mind and no longer wants to return all items, you can use this API to remove specific items from the return. This functionality is the same as the \"Remove Return Items from an Existing RMA\" feature in the Admin Portal. For more information, please refer to: https://support.aftership.com/en/returns/article/remove-return-items-from-an-existing-rma-133vwu0",
+        "parameters": [
+          {
+            "name": "return_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["items", "edit_reason", "notify_customer"],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["external_id", "quantity"],
+                      "properties": {
+                        "external_id": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      }
+                    }
+                  },
+                  "edit_reason": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "notify_customer": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/returns/rma/{rma_number}/remove-items": {
+      "post": {
+        "operationId": "post-returns-rma-rma_number-remove-items",
+        "summary": "Remove return items by RMA number",
+        "description": "When a shopper changes their mind and no longer wants to return all items, you can use this API to remove specific items from the return. This functionality is the same as the \"Remove Return Items from an Existing RMA\" feature in the Admin Portal. For more information, please refer to: https://support.aftership.com/en/returns/article/remove-return-items-from-an-existing-rma-133vwu0",
+        "parameters": [
+          {
+            "name": "rma_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["items", "edit_reason", "notify_customer"],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["external_id", "quantity"],
+                      "properties": {
+                        "external_id": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      }
+                    }
+                  },
+                  "edit_reason": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "notify_customer": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/returns/rma/{rma_number}/dropoffs/{dropoff_id}/drops": {
+      "post": {
+        "operationId": "post-returns-rma-rma_number-dropoffs-dropoff_id-drops",
+        "summary": "Record dropped-off return items",
+        "description": "This endpoint applies to dropoffs powered by AfterShip QR Code: When a shopper drops some return items at the location, the merchant's sytem should scan the QR code, extract the rma_number, dropoff_id, and then call this endpoint to mark the items as dropped.\n\nFor 3rd party droppoff service providers to call this endpoint on behalf of merchant: please note that you need to extract the organization_id and use an API Key of that specific organization.",
+        "parameters": [
+          {
+            "name": "rma_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dropoff_id",
+            "in": "path",
+            "required": true,
+            "description": "This dropoff ID can be found in the QR code generated at AfterShip Returns.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "external_order_item_id": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      }
+                    }
+                  },
+                  "dropped_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/returns/link": {
+      "post": {
+        "operationId": "post-create-return-deep-link",
+        "summary": "Create Returns Page Deep Link",
+        "description": "This API is used to generate a deep link that redirects the user to a returns page with pre-filled information. It is suitable for scenarios where a return submission link needs to be constructed and sent to the shopper, allowing them to submit an RMA more conveniently without having to manually open the returns page and entering order details.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["order_number"],
+                "properties": {
+                  "order_number": {
+                    "type": "string"
+                  },
+                  "customer_email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "postal_code": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/item-tags": {
+      "get": {
+        "operationId": "get-item-tags",
+        "summary": "Get item tags",
+        "description": "By using the get item-tags API, you can retrieve all available item tags under the organization. These tags can be applied to return items. Since the number of item tags that each organization can create is limited, we do not provide pagination functionality in this API. And currently, we also do not offer APIs for creating, editing, or deleting item tags; if needed, please perform these actions through the admin.returnscenter.com. For more information about the functionality of item tags, you can visit https://support.returnscenter.com/en/article/how-to-tag-returned-items-and-upload-images-for-better-management-1s79bl/.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "name": "as-api-key",
+        "in": "header"
+      }
+    }
+  }
+}

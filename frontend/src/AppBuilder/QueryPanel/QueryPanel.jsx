@@ -1,4 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect, memo } from 'react';
+import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
+
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
@@ -8,10 +10,11 @@ import { isEmpty, isEqual } from 'lodash';
 import cx from 'classnames';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-import SectionCollapse from '@/_ui/Icon/solidIcons/SectionCollapse';
-import SectionExpand from '@/_ui/Icon/solidIcons/SectionExpand';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 const MemoizedQueryDataPane = memo(QueryDataPane);
 const MemoizedQueryManager = memo(QueryManager);
@@ -23,6 +26,7 @@ export const QueryPanel = ({ darkMode }) => {
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
+  const selectedQueryId = useStore((state) => state.queryPanel?.selectedQuery?.id, shallow);
 
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -56,7 +60,12 @@ export const QueryPanel = ({ darkMode }) => {
       const formattedPrevQuery = deepClone(prevState?.queryPanel?.selectedQuery || {});
       delete formattedPrevQuery.updated_at;
 
-      if (!isEqual(formattedQuery, formattedPrevQuery)) {
+      const diffResult = diff(formattedPrevQuery, formattedQuery);
+
+      // Skip saveData if only the name changed - renameQuery handles that separately
+      const isOnlyNameChange = Object.keys(diffResult).length === 1 && 'name' in diffResult;
+
+      if (!isEqual(formattedQuery, formattedPrevQuery) && !isOnlyNameChange) {
         useStore.getState().dataQuery.saveData(selectedQuery);
       }
     });
@@ -110,7 +119,7 @@ export const QueryPanel = ({ darkMode }) => {
         const componentTop = Math.round(queryPaneRef.current.getBoundingClientRect().top);
         const clientY = e.clientY;
 
-        const withinDraggableArea = clientY >= componentTop && clientY <= componentTop + 5;
+        const withinDraggableArea = clientY >= componentTop && clientY <= componentTop + 2;
         if (withinDraggableArea !== isTopOfQueryPanel) {
           setTopOfQueryPanel(withinDraggableArea);
         }
@@ -171,15 +180,20 @@ export const QueryPanel = ({ darkMode }) => {
               height: '100%',
               paddingTop: isQueryPaneExpanded ? '2px' : '4px',
               borderTop: isQueryPaneExpanded && '2px solid #4368E3',
-              width: '77px',
             }}
           >
             <button
               data-cy="query-manager-toggle-button"
-              className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button gap-1"
+              className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button tw-gap-1.5"
               onClick={toggleQueryEditor}
             >
-              <span>{isQueryPaneExpanded ? <SectionCollapse width="13.33" /> : <SectionExpand width="13.33" />}</span>
+              <span>
+                {isQueryPaneExpanded ? (
+                  <PanelBottomClose size="14" color="var(--icon-strong)" />
+                ) : (
+                  <PanelBottomOpen size="14" color="var(--icon-strong)" />
+                )}
+              </span>
               <span>Queries</span>
             </button>
           </div>
@@ -200,20 +214,32 @@ export const QueryPanel = ({ darkMode }) => {
           ...(!isQueryPaneExpanded && {
             border: 'none',
           }),
+          ...((isTopOfQueryPanel || isDraggingQueryPane) && { borderColor: 'var(--border-accent-weak, #97AEFC)' }),
           ...(isDraggingQueryPane && {
             zIndex: 11,
           }),
         }}
       >
         {isQueryPaneExpanded && (
-          <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
-            <MemoizedQueryDataPane darkMode={darkMode} />
-            <div className="query-definition-pane-wrapper">
-              <div className="query-definition-pane">
-                <MemoizedQueryManager darkMode={darkMode} />
+          <FallbackBoundary label="Query panel" location="Query Panel" darkMode={darkMode}>
+            <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
+              <FallbackBoundary label="Query list" location="Query Panel Query list" darkMode={darkMode}>
+                <MemoizedQueryDataPane darkMode={darkMode} />
+              </FallbackBoundary>
+              <div className="query-definition-pane-wrapper">
+                <div className="query-definition-pane">
+                  <FallbackBoundary
+                    label="Query manager"
+                    location="Query Panel Query manager"
+                    darkMode={darkMode}
+                    resetKeys={[selectedQueryId]}
+                  >
+                    <MemoizedQueryManager darkMode={darkMode} />
+                  </FallbackBoundary>
+                </div>
               </div>
-            </div>
-          </QueryKeyHooks>
+            </QueryKeyHooks>
+          </FallbackBoundary>
         )}
       </div>
       <Tooltip id="tooltip-for-query-panel-footer-btn" className="tooltip" />

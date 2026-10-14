@@ -226,6 +226,7 @@ import BooleanCol from './BooleanCol.jsx';
 import SerialCol from './SerialCol.jsx';
 import DatetimeCol from './DatetimeCol';
 import AITag from './AITag.jsx';
+import AITripleSparkles from './AITripleSparkles.jsx';
 import SectionCollapse from './SectionCollapse.jsx';
 import SectionExpand from './SectionExpand.jsx';
 import Reset from './Reset.jsx';
@@ -279,6 +280,7 @@ import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
+import MarkerCircle from './MarkerCircle.jsx';
 import DataDatabase from './DataDatabase.jsx';
 import Flash from './Flash.jsx';
 import Json from './Json.jsx';
@@ -287,6 +289,11 @@ import AITopupWhite from './AITopupWhite.jsx';
 import AITopupGrey from './AITopupGrey.jsx';
 import MobileEmptyStateIcon from './MobileEmptyStateIcon';
 import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
+import Google from './Google.jsx';
+import GitHub from './GitHub.jsx';
+import BackWithoutArrow from './BackWithoutArrow.jsx';
+import PlayLucide from './PlayLucide.jsx';
+import Slack from './Slack.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -712,6 +719,8 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'markercircle':
+      return <MarkerCircle {...props} />;
     case 'workspace':
       return <Workspace {...props} />;
     case 'workflows':
@@ -788,6 +797,8 @@ const Icon = (props) => {
       return <DatetimeCol {...props} />;
     case 'AI-tag':
       return <AITag {...props} />;
+    case 'ai-triple-sparkles':
+      return <AITripleSparkles {...props} />;
     case 'clearhistory':
       return <ClearHistory {...props} />;
     case 'pagedownload':
@@ -867,6 +878,16 @@ const Icon = (props) => {
       return <AITopupWhite {...props} />;
     case 'ai-topup-grey':
       return <AITopupGrey {...props} />;
+    case 'google':
+      return <Google {...props} />;
+    case 'github':
+      return <GitHub {...props} />;
+    case 'backwithoutarrow':
+      return <BackWithoutArrow {...props} />;
+    case 'play-lucide':
+      return <PlayLucide {...props} />;
+    case 'slack':
+      return <Slack {...props} />;
     default:
       return <Apps {...props} />;
   }

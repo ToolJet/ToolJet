@@ -12,10 +12,16 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { ArtifactRepository } from './repositories/artifact.repository';
 import { SubModule } from '@modules/app/sub-module';
 import { DataQueryRepository } from '@modules/data-queries/repository';
+import { AppHistoryModule } from '@modules/app-history/module';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { VersionRepository } from '@modules/versions/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
+import { EncryptionModule } from '@modules/encryption/module';
+import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/module';
+import { AiAttachmentService } from './services/ai-attachment.service';
+import { AiAttachmentCleanupListener } from './services/ai-attachment-cleanup.listener';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -26,6 +32,8 @@ export class AiModule extends SubModule {
     const { AgentsService } = await import(`${importPath}/ai/services/agents.service`);
     const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
     const { EventsService } = await import(`${importPath}/apps/services/event.service`);
+    const { PageService } = await import(`${importPath}/apps/services/page.service`);
+    const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
     const { AiCacheService } = await import(`${importPath}/ai/ai-cache`);
 
@@ -36,11 +44,19 @@ export class AiModule extends SubModule {
         await DataQueriesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await ImportExportResourcesModule.register(configs),
+        await AppHistoryModule.register(configs),
         await DataSourcesModule.register(configs),
         await AppEnvironmentsModule.register(configs),
+        await EncryptionModule.register(configs),
+        // The app-builder hands the agent a session minted for the SIGNED-IN user, so its writes
+        // carry that user's identity into the audit log. Registered without isMainImport so the
+        // PAT controller is not mounted a second time.
+        await PersonalAccessTokensModule.register(configs),
       ],
       controllers: isMainImport ? [AiController] : [],
       providers: [
+        AiAttachmentService,
+        { provide: 'AI_ATTACHMENT_AGENT', useExisting: AiUtilService },
         AiUtilService,
         AgentsService,
         ComponentsService,
@@ -51,13 +67,16 @@ export class AiModule extends SubModule {
         AppsRepository,
         AiResponseVoteRepository,
         OrganizationRepository,
+        UserRepository,
         FeatureAbilityFactory,
         ArtifactRepository,
         DataQueryRepository,
         EventsService,
+        PageService,
+        PageHelperService,
         AppsUtilService,
         AiCacheService,
-        ...(isMainImport ? [AiService, AiCacheService] : []),
+        ...(isMainImport ? [AiService, AiCacheService, AiAttachmentCleanupListener] : []),
       ],
       exports: [AiUtilService],
     };

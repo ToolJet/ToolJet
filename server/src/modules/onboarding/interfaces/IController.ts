@@ -11,7 +11,7 @@ export interface IOnboardingController {
 
   setupSuperAdmin(userCreateDto: CreateAdminDto, response: Response): Promise<any>;
 
-  signup(appSignupDto: AppSignupDto): Promise<any>;
+  signup(appSignupDto: AppSignupDto, response: Response): Promise<any>;
 
   acceptInvite(user: UserEntity, acceptInviteDto: AcceptInviteDto, response: Response): Promise<any>;
 

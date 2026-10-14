@@ -7,6 +7,7 @@ export interface SendWelcomeEmailPayload {
   organizationName?: string;
   sender?: string;
   redirectTo?: string;
+  invitationTokenExpiry?: Date | null;
 }
 
 export interface SendOrganizationUserWelcomeEmailPayload {
@@ -17,6 +18,7 @@ export interface SendOrganizationUserWelcomeEmailPayload {
   organizationName: string;
   organizationId: string;
   redirectTo?: string;
+  invitationTokenExpiry?: Date | null;
 }
 
 export interface SendPasswordResetEmailPayload {
@@ -24,6 +26,24 @@ export interface SendPasswordResetEmailPayload {
   token: string;
   firstName?: string;
   organizationId: string;
+  redirectTo?: string;
+  orgSlug?: string;
+  forgotPasswordTokenExpiry?: Date | null;
+}
+
+export interface SendPasswordExpiredResetEmailPayload {
+  to: string;
+  token: string;
+  firstName?: string;
+  organizationId: string;
+  redirectTo?: string;
+  orgSlug?: string;
+}
+
+export interface SendEmailOtpPayload {
+  name: string;
+  otp: string;
+  email: string;
 }
 
 export interface SendCommentMentionEmailPayload {
@@ -36,4 +56,29 @@ export interface SendCommentMentionEmailPayload {
   comment: string;
   fromAvatar: string;
   organizationId: string;
+}
+
+export interface SendAppBuildCompletedEmailPayload {
+  to: string;
+  name: string;
+  appName: string;
+  /**
+   * The app's URL slug, not its name. Defaults to the app's UUID on creation and only changes if
+   * someone deliberately edits it, so the link survives the rename the AI performs mid-build.
+   */
+  appSlug: string;
+  /** Organization slug, falling back to the organization id — both resolve as the workspace segment. */
+  workspaceSlug: string;
+  organizationId: string;
+}
+
+export interface SendUserBannedEmailPayload {
+  to: string;
+  name: string;
+}
+
+export interface SendWorkspaceBannedEmailPayload {
+  to: string;
+  adminName: string;
+  workspaceName: string;
 }

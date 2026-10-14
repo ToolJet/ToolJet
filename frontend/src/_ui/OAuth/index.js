@@ -13,6 +13,10 @@ const OAuth = ({
   client_secret,
   audience,
   client_auth,
+  company_id,
+  site_url,
+  code_verifier,
+  code_challenge_method,
   custom_auth_params,
   custom_query_params,
   scopes,
@@ -32,9 +36,10 @@ const OAuth = ({
   optionsChanged,
   selectedDataSource,
   oauth_configs,
+  isRestApi = false,
 }) => {
   const { allowed_auth_types } = oauth_configs || {};
-  const authOptions = (isGrpc = false) => {
+  const authOptions = (isGrpc = false, isRestApi = false) => {
     const options = [
       { name: 'None', value: 'none' },
       { name: 'Basic', value: 'basic' },
@@ -49,6 +54,10 @@ const OAuth = ({
       options.push({ name: 'API Key', value: 'api_key' });
     }
 
+    if (isRestApi) {
+      options.push({ name: 'AWS v4', value: 'aws_v4' });
+    }
+
     if (allowed_auth_types && allowed_auth_types.length > 0) {
       return options.filter((option) => allowed_auth_types.includes(option.value));
     }
@@ -59,16 +68,19 @@ const OAuth = ({
 
   return (
     <>
-      {authOptions(isGrpc).length > 1 && (
+      {(authOptions(isGrpc).length > 1 || oauth_configs?.show_auth_type_dropdown) && (
         <>
-          <label className="form-label">Authentication type</label>
+          <label className="form-label" data-cy="authentication-type-dropdown-label">
+            Authentication type
+          </label>
           <Select
-            options={authOptions(isGrpc)}
+            options={authOptions(isGrpc, isRestApi)}
             value={auth_type}
             onChange={(value) => optionchanged('auth_type', value)}
             width={'100%'}
             useMenuPortal={false}
             isDisabled={isDisabled}
+            dataCy="authentication-type"
           />
         </>
       )}
@@ -86,6 +98,10 @@ const OAuth = ({
         audience={audience}
         client_secret={client_secret}
         client_auth={client_auth}
+        company_id={company_id}
+        site_url={site_url}
+        code_verifier={code_verifier}
+        code_challenge_method={code_challenge_method}
         multiple_auth_enabled={multiple_auth_enabled}
         scopes={scopes}
         username={username}

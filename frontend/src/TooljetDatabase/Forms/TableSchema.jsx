@@ -10,17 +10,17 @@ import MenuIcon from '../Icons/Unique-menu.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Tick from '../Icons/Tick.svg';
 import Information from '@/_ui/Icon/solidIcons/Information';
-import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
+import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, serialDataType } from '../constants';
 import Select, { components } from 'react-select';
 import Skeleton from 'react-loading-skeleton';
 import './styles.scss';
-import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import DateTimePicker from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import {
   convertDateToTimeZoneFormatted,
   getLocalTimeZone,
   timeZonesWithOffsets,
-} from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+} from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 import _ from 'lodash';
@@ -369,10 +369,10 @@ function TableSchema({
                       isEditMode && columnDetails[index]?.constraints_type?.is_primary_key === true ? true : false
                     }
                     classNames={{
-                      control: (state) => cx({
-                        '!tw-border-border-default': true,
-                      }),
-                      
+                      control: (state) =>
+                        cx({
+                          '!tw-border-border-default': true,
+                        }),
                     }}
                   />
                 </div>

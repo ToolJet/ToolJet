@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { EntityManager, FindOptionsOrderValue } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -14,7 +14,7 @@ import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
 
 @Injectable()
 export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
-  constructor(protected readonly licenseTermsService: LicenseTermsService) {}
+  constructor(protected readonly licenseTermsService: LicenseTermsService) { }
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(
@@ -123,6 +123,32 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     };
   }
 
+  /**
+   * Resolves the effective environment ID, respecting license restrictions.
+   * Throws ForbiddenException if a non-dev environment is requested without multi-environment license.
+   * If no environment is requested, defaults to the development environment.
+   */
+  async resolveEnvironmentId(
+    organizationId: string,
+    requestedEnvironmentId?: string,
+    manager?: EntityManager
+  ): Promise<string> {
+    const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
+
+    const devEnv = await this.getByPriority(organizationId, true, manager);
+
+    if (!isMultiEnvEnabled && requestedEnvironmentId && requestedEnvironmentId !== devEnv.id) {
+      throw new ForbiddenException(
+        'Multi-environment is not enabled for this organization. Please contact the super admin.'
+      );
+    }
+
+    return requestedEnvironmentId || devEnv.id;
+  }
+
   async get(
     organizationId: string,
     id?: string,
@@ -180,12 +206,29 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
   async getOptions(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSourceOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
+      let envName: string;
+
       if (!environmentId) {
-        envId = (await this.get(organizationId, null, false, manager)).id;
+        const environment = await this.get(organizationId, null, false, manager);
+        envId = environment.id;
+        envName = environment.name;
+      } else {
+        // Fetch environment name for the given environment ID
+        const environment = await manager.findOne(AppEnvironment, {
+          where: { id: envId, organizationId },
+          select: ['name'],
+        });
+        envName = environment?.name || 'unknown';
       }
-      return await manager.findOneOrFail(DataSourceOptions, {
+
+      const dataSourceOptions = await manager.findOneOrFail(DataSourceOptions, {
         where: { environmentId: envId, dataSourceId },
       });
+
+      // Add environment name to the returned object
+      (dataSourceOptions as any).environmentName = envName;
+
+      return dataSourceOptions;
     });
   }
 

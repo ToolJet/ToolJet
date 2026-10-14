@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Delete, UseGuards, Body, Patch, Param } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { OrganizationConfigsUpdateDto } from './dto';
@@ -43,6 +43,14 @@ export class LoginConfigsController implements ILoginConfigsController {
   async updateOrganizationSSOConfigs(@Body() body, @User() user: UserEntity) {
     const result: any = await this.loginConfigsService.updateOrganizationSSOConfigs(user, body);
     return decamelizeKeys({ id: result.id });
+  }
+
+  //delete organization-sso config
+  @InitFeature(FEATURE_KEY.DELETE_ORGANIZATION_SSO)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Delete('/organization-sso/:configId')
+  async deleteOrganizationSSOConfig(@Param('configId') configId: string, @User() user: UserEntity) {
+    return await this.loginConfigsService.deleteOrganizationSSOConfig(user, configId);
   }
 
   //get instance-sso configs

@@ -19,6 +19,7 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
+    "isolatedModules": true,
     "paths": {
       "@ee/*": [
         "ee/*"
@@ -34,6 +35,9 @@
       ],
       "@helpers/*": [
         "src/helpers/*"
+      ],
+      "@otel/*": [
+        "src/otel/*"
       ],
     },
   },

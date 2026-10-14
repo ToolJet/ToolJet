@@ -10,7 +10,8 @@ import ErrorMessage from './Components/ErrorMessage';
 import './style.scss';
 import { useFilePicker } from './hooks/useFilePicker';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
 const FilePicker = (props) => {
   const {
@@ -27,6 +28,10 @@ const FilePicker = (props) => {
     setExposedVariable,
     setExposedVariables,
     dataCy,
+    currentLayout,
+    currentMode,
+    subContainerIndex,
+    componentType,
   } = props;
 
   const numericWidgetHeight = Number.parseFloat(String(height).replace('px', '')) || 0; // Default to 0 if parsing fails
@@ -65,6 +70,27 @@ const FilePicker = (props) => {
   } = useFilePicker({ ...props, setExposedVariable, setExposedVariables });
 
   const rootRef = useRef(null);
+
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  // Base (authored) pixel height — used as the dropzone's floor so it keeps its size
+  // while the widget grows downward to reveal the selected-file list.
+  const dropzoneBaseHeight = numericWidgetHeight + (containerPadding === 'default' ? 0 : 4);
+
+  // FilePicker height is deterministic: a fixed-height dropzone plus fixed-height file rows.
+  // Drive the reflow off the file count (and the error/uploading state, which can change a
+  // row's height) instead of a DOM observer — useDynamicHeight still measures the real
+  // offsetHeight; the value just needs to change when the height changes.
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: JSON.stringify({ count: selectedFiles.length, fileErrors, uploadingStatus }),
+    currentLayout,
+    width,
+    visibility: isVisible,
+    subContainerIndex,
+    componentType,
+  });
 
   useEffect(() => {
     if (!rootRef.current) return;
@@ -117,11 +143,12 @@ const FilePicker = (props) => {
       display: isVisible ? 'flex' : 'none',
       backgroundColor: 'var(--cc-surface1-surface)',
       color: darkMode ? '#c3c9d2' : '#5e6571',
-      height: `${numericWidgetHeight + (containerPadding === 'default' ? 0 : 4)}px`,
-      overflowY: isSmallWidget ? 'auto' : 'scroll',
+      height: isDynamicHeightEnabled ? 'auto' : `${dropzoneBaseHeight}px`,
+      ...(isDynamicHeightEnabled && { minHeight: `${dropzoneBaseHeight}px` }),
+      overflowY: isDynamicHeightEnabled ? 'visible' : isSmallWidget ? 'auto' : 'scroll',
       opacity: disabledState ? 0.5 : 1,
     }),
-    [darkMode, numericWidgetHeight, isVisible, isSmallWidget, disabledState, containerPadding]
+    [darkMode, dropzoneBaseHeight, isVisible, isSmallWidget, disabledState, isDynamicHeightEnabled]
   );
 
   if (rootRef?.current) {
@@ -194,9 +221,18 @@ const FilePicker = (props) => {
         </div>
       ) : (
         <>
-          <div className={topSectionClasses}>
-            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }} id={`${id}-label`}>
+          <div
+            className={topSectionClasses}
+            style={isDynamicHeightEnabled ? { minHeight: `${dropzoneBaseHeight}px` } : undefined}
+          >
+            <h3
+              className="file-picker-title"
+              style={{ color: 'var(--file-picker-text-primary)' }}
+              id={`${id}-label`}
+              data-cy={`${dataCy}-upload-files-label`}
+            >
               {labelText}
+              {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)' }}>*</span>}
             </h3>
             <ValidationBar
               minSize={minSize}
@@ -205,6 +241,7 @@ const FilePicker = (props) => {
               minFileCount={minFileCount}
               maxFileCount={maxFileCount}
               enableMultiple={enableMultiple}
+              dataCy={dataCy}
             />
             <UploadArea
               getRootProps={getRootProps}
@@ -230,6 +267,7 @@ const FilePicker = (props) => {
               isVisible={isVisible}
               isLoading={isLoading}
               isMandatory={isMandatory}
+              dataCy={dataCy}
             />
           </div>
           {selectedFiles.length > 0 && (

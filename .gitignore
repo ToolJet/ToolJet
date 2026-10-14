@@ -37,3 +37,15 @@
 
 .idea/*
 ti-*
+.claude/
+.worktrees/
+.serena/
+
+
+.local/
+docs/superpowers/
+taskfile.yml
+
+memory/
+
+frontend/assets/custom-components/vendor/

@@ -95,6 +95,7 @@ export enum LICENSE_FIELD {
   IS_EXPIRED = 'expired',
   APP_COUNT = 'appCount',
   TABLE_COUNT = 'tableCount',
+  TJDB_ROW_COUNT = 'tjdbRowCount',
   TOTAL_USERS = 'usersCount',
   EDITORS = 'editorsCount',
   VIEWERS = 'viewersCount',
@@ -121,8 +122,32 @@ export enum LICENSE_FIELD {
   GIT_SYNC = 'gitSyncEnabled',
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
+  AI_PLAN = 'aiPlan',
   EXTERNAL_API = 'externalApiEnabled',
+  APP_HISTORY = 'appHistoryEnabled',
+  APP_JS_LIBRARIES = 'appJsLibrariesEnabled',
+  SCIM = 'scimEnabled',
+  MFA = 'mfaEnabled',
   PLAN = 'plan',
+  MODULES = 'modulesEnabled',
+  CUSTOM_GROUPS = 'customGroupsEnabled',
+  APP_PAGES_ENABLED = 'appPagesEnabled',
+  APP_PAGES_HEADER_AND_LOGO = 'appPagesHeaderAndLogoEnabled',
+  APP_PAGES_NAV_GROUP = 'appPagesAddNavGroupEnabled',
+  CANVAS_PAGE_HEADER = 'canvasPageHeaderEnabled',
+  CANVAS_PAGE_FOOTER = 'canvasPageFooterEnabled',
+  APP_PERMISSIONS_COMPONENT = 'appPermissionComponentEnabled',
+  APP_PERMISSIONS_QUERY = 'appPermissionQueryEnabled',
+  APP_PERMISSIONS_PAGES = 'appPermissionPagesEnabled',
+  CUSTOM_DOMAINS = 'customDomainsEnabled',
+  APP_PAGES_LIMIT = 'appPagesLimit',
+  GOOGLE = 'googleEnabled',
+  GITHUB = 'githubEnabled',
+  OBSERVABILITY_ENABLED = 'observabilityEnabled',
+  MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
+  QUERY_FOLDERS = 'queryFoldersEnabled',
+  PUBLIC_APP = 'publicAppEnabled',
+  CUSTOM_COMPONENT_LIBRARIES = 'customComponentLibrariesEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -142,6 +167,9 @@ export enum LICENSE_LIMITS_LABEL {
 
   //Tables
   TABLES = 'Tables',
+
+  //Rows
+  ROWS = 'Rows',
 }
 
 export enum LICENSE_TYPE {

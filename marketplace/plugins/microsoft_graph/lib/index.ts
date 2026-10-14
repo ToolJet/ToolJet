@@ -5,9 +5,11 @@ import {
   User,
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
+  OAuthUnauthorizedClientError,
 } from '@tooljet-marketplace/common';
 import { SourceOptions, ConvertedFormat } from './types';
-import got, { OptionsOfTextResponseBody, Headers } from 'got';
+import got, { OptionsOfTextResponseBody, Headers, HTTPError } from 'got';
+import { getCurrentToken } from '@tooljet-marketplace/common';
 
 export default class Microsoft_graph implements QueryService {
   authUrl(source_options: SourceOptions) {
@@ -131,23 +133,62 @@ export default class Microsoft_graph implements QueryService {
       if (_requestOptions.status === 'needs_oauth') return _requestOptions;
       requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
     } else {
-      requestOptions =
-        operation === 'get' || operation === 'delete'
-          ? {
-              method: operation,
-              headers: this.authHeader(accessToken),
-              searchParams: queryParams,
-            }
-          : {
-              method: operation,
-              headers: this.authHeader(accessToken),
-              json: bodyParams,
-              searchParams: queryParams,
-            };
+      if (operation === 'get' || operation === 'delete') {
+        requestOptions = {
+          method: operation,
+          headers: this.authHeader(accessToken),
+          searchParams: queryParams,
+        };
+      } else if (this.isBinaryUpload(operation, path)) {
+        const fileContent = bodyParams?.['fileContent'] ?? '';
+        const mimeType = bodyParams?.['mimeType'] ?? 'application/octet-stream';
+        const base64Data = fileContent.includes(',') ? fileContent.split(',')[1] : fileContent;
+        requestOptions = {
+          method: operation,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': mimeType,
+          },
+          body: Buffer.from(base64Data, 'base64'),
+          searchParams: queryParams,
+        };
+      } else if (this.isHtmlUpload(operation, path)) {
+        requestOptions = {
+          method: operation,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'text/html',
+          },
+          body: this.parseHtmlContent(bodyParams),
+          searchParams: queryParams,
+        };
+      } else if (this.isOneNoteContentPatch(operation, path)) {
+        requestOptions = {
+          method: operation,
+          headers: this.authHeader(accessToken),
+          json: this.parseOneNotePatchCommands(bodyParams),
+          searchParams: queryParams,
+        };
+      } else {
+        requestOptions = {
+          method: operation,
+          headers: this.authHeader(accessToken),
+          json: this.parseBodyParams(bodyParams),
+          searchParams: queryParams,
+        };
+      }
     }
     try {
       const response = await got(url, requestOptions);
-      if (response && response.body) {
+      if (this.isBinaryDownload(operation, path)) {
+        const rawBody = (response as any).rawBody as Buffer;
+        const mimeType = (response.headers?.['content-type'] ?? 'application/octet-stream').split(';')[0].trim();
+        result = {
+          base64: rawBody.toString('base64'),
+          mimeType,
+          size: rawBody.length,
+        };
+      } else if (response && response.body) {
         try {
           result = JSON.parse(response.body);
         } catch (parseError) {
@@ -157,6 +198,9 @@ export default class Microsoft_graph implements QueryService {
         result = 'Query Success';
       }
     } catch (error) {
+      if (error instanceof HTTPError && error?.response?.statusCode === 401) {
+        throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, {});
+      }
       if (error.response && error.response.body) {
         try {
           result = JSON.parse(error.response.body);
@@ -183,12 +227,74 @@ export default class Microsoft_graph implements QueryService {
     };
   }
 
+  private isBinaryUpload(operation: string, path: string): boolean {
+    // Matches only the SharePoint colon-path upload pattern: items/{folder-id}:/{filename}:/content
+    // Does NOT match the OneDrive simple upload: items/{item-id}/content
+    return operation === 'put' && path.includes(':/') && path.endsWith('/content');
+  }
+
+  private isBinaryDownload(operation: string, path: string): boolean {
+    return operation === 'get' && path.endsWith('/content') && !path.includes(':/') && !this.isOneNotePageContent(path);
+  }
+
+  // OneNote page content is HTML, not a binary payload, so it is returned as text. Scoped to pages so
+  // that /onenote/resources/{resource-id}/content (embedded images and files) still downloads as binary.
+  private isOneNotePageContent(path: string): boolean {
+    return path.includes('/onenote/pages/') && path.endsWith('/content');
+  }
+
+  // Creating a OneNote page takes the page as a text/html body rather than JSON.
+  private isHtmlUpload(operation: string, path: string): boolean {
+    return operation === 'post' && path.includes('/onenote/') && path.endsWith('/pages');
+  }
+
+  // Updating OneNote page content takes a JSON array of patch commands as the request body.
+  private isOneNoteContentPatch(operation: string, path: string): boolean {
+    return operation === 'patch' && this.isOneNotePageContent(path);
+  }
+
+  private parseHtmlContent(params: Record<string, any>): string {
+    return String(params?.['htmlContent'] ?? '');
+  }
+
+  private parseOneNotePatchCommands(params: Record<string, any>): Array<Record<string, any>> {
+    const commands = this.parseBodyParams(params)?.['commands'];
+    if (!Array.isArray(commands)) {
+      throw new QueryError(
+        'Query could not be completed',
+        'OneNote page content updates expect "commands" to be a JSON array of patch commands',
+        {}
+      );
+    }
+    return commands;
+  }
+
+  private parseBodyParams(params: Record<string, any>): Record<string, any> {
+    if (!params) return params;
+    return Object.keys(params).reduce(
+      (acc, key) => {
+        const value = params[key];
+        if (typeof value === 'string') {
+          try {
+            acc[key] = JSON.parse(value);
+          } catch {
+            acc[key] = value;
+          }
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, any>
+    );
+  }
+
   private constructSourceOptions(sourceOptions) {
     const baseUrl = 'https://graph.microsoft.com/v1.0';
     const tenantId = sourceOptions['tenant_id'] || 'common';
     const accessTokenUrl = sourceOptions['access_token_url'];
     const authUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`;
-    const scope = 'https://graph.microsoft.com/.default';
+    const scope = 'https://graph.microsoft.com/.default offline_access';
 
     const addSourceOptions = {
       url: baseUrl,
@@ -210,7 +316,8 @@ export default class Microsoft_graph implements QueryService {
       access_token_custom_headers: [['', '']],
       ssl_certificate: 'none',
       retry_network_errors: true,
-      scopes: this.encodeOAuthScope(scope),
+      scopes: scope,
+      // scopes: this.encodeOAuthScope(scope),
     };
 
     const newSourceOptions = {
@@ -253,7 +360,20 @@ export default class Microsoft_graph implements QueryService {
     }
 
     if (!['get', 'delete'].includes(result.method) && params.request) {
-      result.json = params.request;
+      if (this.isBinaryUpload(result.method, queryOptions.path ?? '')) {
+        const fileContent = params.request?.fileContent ?? '';
+        const mimeType = params.request?.mimeType ?? 'application/octet-stream';
+        const base64Data = fileContent.includes(',') ? fileContent.split(',')[1] : fileContent;
+        result.body = Buffer.from(base64Data, 'base64');
+        result.headers['Content-Type'] = mimeType;
+      } else if (this.isHtmlUpload(result.method, queryOptions.path ?? '')) {
+        result.body = this.parseHtmlContent(params.request);
+        result.headers['Content-Type'] = 'text/html';
+      } else if (this.isOneNoteContentPatch(result.method, queryOptions.path ?? '')) {
+        result.json = this.parseOneNotePatchCommands(params.request);
+      } else {
+        result.json = this.parseBodyParams(params.request);
+      }
     }
 
     return result;
@@ -287,16 +407,76 @@ export default class Microsoft_graph implements QueryService {
     const accessTokenUrl = this.getOptionValue(options.access_token_url);
     const scopes = this.getOptionValue(options.scopes);
 
+    let host = process.env.TOOLJET_HOST;
     if (oauthType === 'tooljet_app') {
       clientId = process.env.MICROSOFT_CLIENT_ID;
       clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
+    } else {
+      host = this.getOptionValue(options.tj_redirect_host) || process.env.TOOLJET_HOST;
     }
 
-    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;
 
     return { clientId, clientSecret, tenantId, accessTokenUrl, scopes, redirectUri };
+  }
+
+  async refreshToken(sourceOptions, dataSourceId, userId, isAppPublic) {
+    let refreshToken: string;
+    // If multi user authentication is enabled, we would need specific users refresh token.
+    if (sourceOptions?.multiple_auth_enabled) {
+      const currentToken = getCurrentToken(
+        sourceOptions['multiple_auth_enabled'],
+        sourceOptions['tokenData'],
+        userId,
+        isAppPublic
+      );
+
+      if (!currentToken?.refresh_token) {
+        throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
+      }
+      refreshToken = currentToken['refresh_token'];
+    } else {
+      if (!sourceOptions?.refresh_token) {
+        throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
+      }
+      refreshToken = sourceOptions['refresh_token'];
+    }
+
+    const accessTokenDetails = {};
+    // Refresh token logic here
+    const { clientId, clientSecret, tenantId } = this.getOAuthCredentials(sourceOptions);
+    const tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+
+    const tokenRequestBody = {
+      grant_type: 'refresh_token',
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+    };
+
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    };
+
+    try {
+      const response = await got(tokenEndpoint, {
+        method: 'post',
+        headers,
+        form: tokenRequestBody,
+        responseType: 'json', // Automatically parse JSON response
+      });
+      const result = response.body;
+      if (result['access_token']) {
+        accessTokenDetails['access_token'] = result['access_token'];
+        accessTokenDetails['refresh_token'] = result['refresh_token'];
+      } else {
+        throw new QueryError('Refresh token failed', 'Access token not found in response', {});
+      }
+    } catch (error) {
+      throw new QueryError('Error while generating refresh access token', JSON.stringify(error), {});
+    }
+    return accessTokenDetails;
   }
 }

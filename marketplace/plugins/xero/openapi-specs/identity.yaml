@@ -1,0 +1,158 @@
+openapi: 3.0.0
+info:
+  version: 12.0.0
+  title: Xero OAuth 2 Identity Service API
+  description: These endpoints are related to managing authentication tokens and identity for Xero API
+  termsOfService: https://developer.xero.com/xero-developer-platform-terms-conditions/
+  contact:
+    name: Xero Platform Team
+    email: api@xero.com
+    url: https://developer.xero.com
+  license:
+    name: MIT
+    url: https://github.com/XeroAPI/Xero-OpenAPI/blob/master/LICENSE
+servers:
+  - description: Xero Identity service API
+    url: https://api.xero.com
+paths:
+  /Connections:
+    get:
+      security:
+        - OAuth2: []
+      tags:
+        - identity
+      description: Override the base server url that include version
+      operationId: getConnections
+      summary: Retrieves the connections for this user
+      parameters:
+        - in: query
+          required: false
+          name: authEventId
+          description: Filter by authEventId
+          example: 00000000-0000-0000-0000-000000000000
+          schema:
+            type: string
+            format: uuid
+      x-basepath: https://api.xero.com
+      responses:
+        "200":
+          description: Success - return response of type Connections array with 0 to n Connection
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Connection"
+              example: '[ { "id": "7cb59f93-2964-421d-bb5e-a0f7a4572a44", "tenantId": "fe79f7dd-b6d4-4a92-ba7b-538af6289c58", "tenantName": "Demo Company (NZ)", "tenantType": "ORGANISATION", "createdDateUtc": "2019-12-07T18:46:19.5165400", "updatedDateUtc": "2019-12-07T18:46:19.5187840" } ]'
+  /Connections/{id}:
+    delete:
+      security:
+        - OAuth2: []
+      tags:
+        - identity
+      description: Override the base server url that include version
+      operationId: deleteConnection
+      summary: Deletes a connection for this user (i.e. disconnect a tenant)
+      x-basepath: https://api.xero.com
+      parameters:
+        - required: true
+          in: path
+          name: id
+          description: Unique identifier for retrieving single object
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Success - connection has been deleted no content returned
+        "404":
+          description: Resource not found
+components:
+  schemas:
+    Connection:
+      externalDocs:
+        url: http://developer.xero.com
+      properties:
+        id:
+          description: Xero identifier
+          type: string
+          format: uuid
+        tenantId:
+          description: Xero identifier of organisation
+          type: string
+          format: uuid
+        authEventId:
+          description: Identifier shared across connections authorised at the same time
+          type: string
+          format: uuid
+        tenantType:
+          description: Xero tenant type (i.e. ORGANISATION, PRACTICE)
+          type: string
+        tenantName:
+          description: Xero tenant name
+          type: string
+        createdDateUtc:
+          description: The date when the user connected this tenant to your app
+          type: string
+          format: date-time
+          x-is-datetime: true
+          x-php-format: \DateTime
+        updatedDateUtc:
+          description: The date when the user most recently connected this tenant to your app. May differ to the created date if the user has disconnected and subsequently reconnected this tenant to your app.
+          type: string
+          format: date-time
+          x-is-datetime: true
+          x-php-format: \DateTime
+    RefreshToken:
+      externalDocs:
+        url: http://developer.xero.com
+      type: object
+      properties:
+        grant_type:
+          description: Xero grant type
+          type: string
+        refresh_token:
+          description: refresh token provided during authentication flow
+          type: string
+        client_id:
+          description: client id for Xero app
+          type: string
+        client_secret:
+          description: client secret for Xero app 2
+          type: string
+    AccessToken:
+      externalDocs:
+        url: http://developer.xero.com
+      type: object
+      properties:
+        id_token:
+          description: Xero unique identifier
+          type: string
+        access_token:
+          description: access token provided during authentication flow
+          type: string
+        expires_in:
+          description: time in seconds until access token expires.
+          type: integer
+          format: int64
+        token_type:
+          description: type of token i.e. Bearer
+          type: string
+        refresh_token:
+          description: token used to refresh an expired access token
+          type: string
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    OAuth2:
+      type: oauth2
+      description: For more information
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.xero.com/identity/connect/authorize
+          tokenUrl: https://identity.xero.com/connect/token
+          scopes:
+            email: Grant read-only access to your email
+            openid: Grant read-only access to your open id
+            profile: your profile information

@@ -1,0 +1,692 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "URL redirects",
+    "description" : "URL redirect operations",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Redirects"
+  } ],
+  "paths" : {
+    "/cms/v3/url-redirects/" : {
+      "get" : {
+        "tags" : [ "Redirects" ],
+        "summary" : "Get current redirects",
+        "description" : "Returns all existing URL redirects. Results can be limited and filtered by creation or updated date.",
+        "operationId" : "get-/cms/v3/url-redirects/_getPage",
+        "parameters" : [ {
+          "name" : "createdAt",
+          "in" : "query",
+          "description" : "Only return redirects created on exactly this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "createdAfter",
+          "in" : "query",
+          "description" : "Only return redirects created after this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "createdBefore",
+          "in" : "query",
+          "description" : "Only return redirects created before this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "updatedAt",
+          "in" : "query",
+          "description" : "Only return redirects last updated on exactly this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "updatedAfter",
+          "in" : "query",
+          "description" : "Only return redirects last updated after this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "updatedBefore",
+          "in" : "query",
+          "description" : "Only return redirects last updated before this date.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "properties",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "after",
+          "in" : "query",
+          "description" : "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "before",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "Maximum number of result per page",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "archived",
+          "in" : "query",
+          "description" : "Whether to return only results that have been archived.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponseWithTotalUrlMapping"
+                },
+                "example" : {
+                  "total" : 2,
+                  "results" : [ {
+                    "id" : "3212223134",
+                    "createdAt" : "2017-07-24T17:24:09.141Z",
+                    "updatedAt" : "2017-07-24T17:24:09.141Z",
+                    "routePrefix" : "http://test.hs-sites.com/(?P<page_slug>.*)",
+                    "destination" : "http://www.example.online/{page_slug}",
+                    "redirectStyle" : 301,
+                    "isOnlyAfterNotFound" : true,
+                    "isMatchFullUrl" : true,
+                    "isMatchQueryString" : false,
+                    "isPattern" : false,
+                    "isTrailingSlashOptional" : true,
+                    "isProtocolAgnostic" : true,
+                    "precedence" : 3
+                  }, {
+                    "id" : "3212242073",
+                    "createdAt" : "2017-07-25T15:42:06.410Z",
+                    "updatedAt" : "2017-07-25T15:42:06.410Z",
+                    "routePrefix" : "/mytest/(?P<page_slug>.*)",
+                    "destination" : "/newtest/{page_slug}",
+                    "redirectStyle" : 301,
+                    "isOnlyAfterNotFound" : true,
+                    "isMatchFullUrl" : true,
+                    "isMatchQueryString" : false,
+                    "isPattern" : false,
+                    "isTrailingSlashOptional" : true,
+                    "isProtocolAgnostic" : true,
+                    "precedence" : 999999993
+                  } ],
+                  "paging" : {
+                    "next" : {
+                      "after" : "Mg%3D%3D",
+                      "link" : "https://api.hubspot.com/cms/v3/url-redirects?hapikey&after=Mg%3D%3D"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ "content" ]
+        }, {
+          "hapikey" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Redirects" ],
+        "summary" : "Create a redirect",
+        "description" : "Creates and configures a new URL redirect.",
+        "operationId" : "post-/cms/v3/url-redirects/_create",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UrlMappingCreateRequestBody"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UrlMapping"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ "content" ]
+        }, {
+          "hapikey" : [ ]
+        } ]
+      }
+    },
+    "/cms/v3/url-redirects/{urlRedirectId}" : {
+      "get" : {
+        "tags" : [ "Redirects" ],
+        "summary" : "Get details for a redirect",
+        "description" : "Returns the details for a single existing URL redirect by ID.",
+        "operationId" : "get-/cms/v3/url-redirects/{urlRedirectId}_getById",
+        "parameters" : [ {
+          "name" : "urlRedirectId",
+          "in" : "path",
+          "description" : "The ID of the target redirect.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UrlMapping"
+                },
+                "example" : {
+                  "id" : "3212223134",
+                  "createdAt" : "2017-07-24T17:24:09.141Z",
+                  "updatedAt" : "2017-07-24T17:24:09.141Z",
+                  "routePrefix" : "http://test.hs-sites.com/(?P<page_slug>.*)",
+                  "destination" : "http://www.example.online/{page_slug}",
+                  "isOnlyAfterNotFound" : true,
+                  "isMatchFullUrl" : true,
+                  "isMatchQueryString" : false,
+                  "isPattern" : false,
+                  "isTrailingSlashOptional" : true,
+                  "isProtocolAgnostic" : true
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ "content" ]
+        }, {
+          "hapikey" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Redirects" ],
+        "summary" : "Delete a redirect",
+        "description" : "Delete one existing redirect, so it is no longer mapped.",
+        "operationId" : "delete-/cms/v3/url-redirects/{urlRedirectId}_archive",
+        "parameters" : [ {
+          "name" : "urlRedirectId",
+          "in" : "path",
+          "description" : "The ID of the target redirect.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Delete succeeded",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ "content" ]
+        }, {
+          "hapikey" : [ ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Redirects" ],
+        "summary" : "Update a redirect",
+        "description" : "Updates the settings for an existing URL redirect.",
+        "operationId" : "patch-/cms/v3/url-redirects/{urlRedirectId}_update",
+        "parameters" : [ {
+          "name" : "urlRedirectId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UrlMapping"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UrlMapping"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ "content" ]
+        }, {
+          "hapikey" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CollectionResponseWithTotalUrlMapping" : {
+        "required" : [ "results", "total" ],
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "description" : "The number of available results.",
+            "format" : "int32"
+          },
+          "results" : {
+            "type" : "array",
+            "description" : "Matched URLs.",
+            "items" : {
+              "$ref" : "#/components/schemas/UrlMapping"
+            }
+          },
+          "paging" : {
+            "$ref" : "#/components/schemas/Paging"
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "NextPage" : {
+        "required" : [ "after" ],
+        "type" : "object",
+        "properties" : {
+          "after" : {
+            "type" : "string"
+          },
+          "link" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Paging" : {
+        "type" : "object",
+        "properties" : {
+          "next" : {
+            "$ref" : "#/components/schemas/NextPage"
+          }
+        }
+      },
+      "UrlMapping" : {
+        "required" : [ "cdnPurgeEmbargoTime", "contentGroupId", "cosObjectType", "created", "createdById", "deletedAt", "destination", "id", "internallyCreated", "isMatchFullUrl", "isMatchQueryString", "isOnlyAfterNotFound", "isPattern", "isProtocolAgnostic", "isRegex", "isTrailingSlashOptional", "label", "name", "note", "portalId", "precedence", "redirectStyle", "routePrefix", "updated", "updatedById" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "description" : "The unique ID of this URL redirect.",
+            "format" : "int64"
+          },
+          "portalId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "created" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "updated" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "createdById" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "updatedById" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "routePrefix" : {
+            "type" : "string",
+            "description" : "The target incoming URL, path, or pattern to match for redirection."
+          },
+          "destination" : {
+            "type" : "string",
+            "description" : "The destination URL, where the target URL should be redirected if it matches the `routePrefix`."
+          },
+          "redirectStyle" : {
+            "type" : "integer",
+            "description" : "The type of redirect to create. Options include: 301 (permanent), 302 (temporary), or 305 (proxy). Find more details [here](https://knowledge.hubspot.com/cos-general/how-to-redirect-a-hubspot-page).",
+            "format" : "int32"
+          },
+          "contentGroupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "isOnlyAfterNotFound" : {
+            "type" : "boolean",
+            "description" : "Whether the URL redirect mapping should apply only if a live page on the URL isn't found. If False, the URL redirect mapping will take precedence over any existing page."
+          },
+          "isRegex" : {
+            "type" : "boolean"
+          },
+          "isMatchFullUrl" : {
+            "type" : "boolean",
+            "description" : "Whether the `routePrefix` should match on the entire URL, including the domain."
+          },
+          "isMatchQueryString" : {
+            "type" : "boolean",
+            "description" : "Whether the `routePrefix` should match on the entire URL path, including the query string."
+          },
+          "isPattern" : {
+            "type" : "boolean",
+            "description" : "Whether the `routePrefix` should match based on pattern."
+          },
+          "isTrailingSlashOptional" : {
+            "type" : "boolean",
+            "description" : "Whether a trailing slash will be ignored."
+          },
+          "isProtocolAgnostic" : {
+            "type" : "boolean",
+            "description" : "Whether the `routePrefix` should match both HTTP and HTTPS protocols."
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "precedence" : {
+            "type" : "integer",
+            "description" : "Used to prioritize URL redirection. If a given URL matches more than one redirect, the one with the **lower** precedence will be used.",
+            "format" : "int32"
+          },
+          "deletedAt" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "note" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "internallyCreated" : {
+            "type" : "boolean"
+          },
+          "cosObjectType" : {
+            "type" : "string",
+            "enum" : [ "CONTENT", "EXTENSION_RESOURCE", "LAYOUT", "CUSTOM_WIDGET", "WIDGET", "FORM", "PLACEMENT", "IMAGE", "DOMAIN_SETTINGS", "SITE_SETTINGS", "EMAIL_ADDRESS", "WORKFLOW", "HUBDB_TABLE", "REDIRECT_URL", "DESIGN_FOLDER", "SITE_MAP", "DOMAIN", "BLOG", "FILE", "FOLDER", "SITE_MENU", "THEME", "CONTENT_GROUP", "FOLLOW_ME", "KNOWLEDGE_BASE", "LIST_MEMBERSHIP", "CONTACT_MEMBERSHIP", "PASSWORD_PROTECTED", "UNRESTRICTED_ACCESS", "MARKETPLACE_LISTING", "LAYOUT_SECTION", "THEME_SETTINGS", "VIDEO_PLAYER", "URL_MAPPING", "KNOWLEDGE_CATEGORY", "KNOWLEDGE_HOMEPAGE_CATEGORY", "RAW_ASSET", "GLOBAL_CONTENT", "HUBDB_TABLE_ROW", "BLOG_AUTHOR", "SERVERLESS_FUNCTION", "KNOWLEDGE_CATEGORY_TRANSLATION" ]
+          },
+          "cdnPurgeEmbargoTime" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "UrlMappingCreateRequestBody" : {
+        "required" : [ "destination", "redirectStyle", "routePrefix" ],
+        "type" : "object",
+        "properties" : {
+          "routePrefix" : {
+            "type" : "string"
+          },
+          "destination" : {
+            "type" : "string"
+          },
+          "redirectStyle" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "precedence" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "isOnlyAfterNotFound" : {
+            "type" : "boolean"
+          },
+          "isMatchFullUrl" : {
+            "type" : "boolean"
+          },
+          "isMatchQueryString" : {
+            "type" : "boolean"
+          },
+          "isPattern" : {
+            "type" : "boolean"
+          },
+          "isTrailingSlashOptional" : {
+            "type" : "boolean"
+          },
+          "isProtocolAgnostic" : {
+            "type" : "boolean"
+          }
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      },
+      "oauth2" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "content" : "Read from and write to my Content"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -104,7 +104,7 @@ export const sanitizeHeaders = (
   queryOptions: any,
   hasDataSource = true
 ): { [k: string]: string } => {
-  const cleanHeaders = (headers) => headers.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
+  const cleanHeaders = (headers) => headers.filter(([k, _]) => k != null && k !== '').map(([k, v]) => [k.trim(), v]);
   const filterValidHeaderEntries = (headers) => {
     return headers.filter(([_, value]) => {
       if (value == null) return false;
@@ -271,3 +271,16 @@ export const redactHeaders = (headers) => {
   });
   return redactedHeaders;
 };
+
+export function getTooljetEdition(): string {
+  if (process.env.TOOLJET_EDITION) {
+    return process.env.TOOLJET_EDITION.toLowerCase();
+  }
+  return 'ce';
+}
+
+export function throwIfSignalAborted(signal: AbortSignal, timeout: number) {
+  if (signal.aborted) {
+    throw new QueryError(`Defined query timeout of ${timeout}ms exceeded when running query.`, `Query timed out`, {});
+  }
+}

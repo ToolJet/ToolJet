@@ -1,17 +1,15 @@
 import React from 'react';
-import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { SortableItem } from './components';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
 export function SortableList({ items, onChange, renderItem }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { 
+      activationConstraint: {
         delay: 250,
-        distance: 10
+        distance: 10,
       },
     })
     // useSensor(KeyboardSensor, {
@@ -19,7 +17,8 @@ export function SortableList({ items, onChange, renderItem }) {
     // })
   );
 
-  const shouldFreeze = useStore((state) => state.isVersionReleased || state.isEditorFreezed);
+  const shouldFreeze = useStore((state) => state.isVersionReleased || state.isEditorFreezed || state.isEditorReadOnly);
+  const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState);
 
   return (
@@ -27,7 +26,10 @@ export function SortableList({ items, onChange, renderItem }) {
       sensors={sensors}
       onDragEnd={({ active, over }) => {
         if (shouldFreeze) {
-          enableReleasedVersionPopupState();
+          if (!isEditorReadOnly) {
+            enableReleasedVersionPopupState(); // only show version popup for version-frozen state
+          }
+          // For isEditorReadOnly, silently block — the banner explains why
           return;
         }
         if (over) {

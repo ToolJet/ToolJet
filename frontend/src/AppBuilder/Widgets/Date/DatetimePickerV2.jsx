@@ -1,7 +1,50 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 import moment from 'moment-timezone';
-import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatetimePickerV2';
+// import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatetimePickerV2';
+
+export const TIMEZONE_OPTIONS = [
+  { name: 'UTC', value: 'Etc/UTC' },
+  { name: '-12:00', value: 'Etc/GMT+12' },
+  { name: '-11:00', value: 'Etc/GMT+11' },
+  { name: '-10:00', value: 'Pacific/Honolulu' },
+  { name: '-09:30', value: 'Pacific/Marquesas' },
+  { name: '-09:00', value: 'America/Anchorage' },
+  { name: '-08:00', value: 'America/Santa_Isabel' },
+  { name: '-07:00', value: 'America/Chihuahua' },
+  { name: '-06:00', value: 'America/Guatemala' },
+  { name: '-05:00', value: 'America/Bogota' },
+  { name: '-04:00', value: 'America/Halifax' },
+  { name: '-03:30', value: 'America/St_Johns' },
+  { name: '-03:00', value: 'America/Sao_Paulo' },
+  { name: '-02:00', value: 'Etc/GMT+2' },
+  { name: '-01:00', value: 'Atlantic/Cape_Verde' },
+  { name: '+00:00', value: 'UTC' },
+  { name: '+01:00', value: 'Europe/Berlin' },
+  { name: '+02:00', value: 'Africa/Gaborone' },
+  { name: '+03:00', value: 'Asia/Baghdad' },
+  { name: '+03:30', value: 'Asia/Tehran' },
+  { name: '+04:00', value: 'Asia/Muscat' },
+  { name: '+04:30', value: 'Asia/Kabul' },
+  { name: '+05:00', value: 'Asia/Tashkent' },
+  { name: '+05:30', value: 'Asia/Colombo' },
+  { name: '+05:45', value: 'Asia/Kathmandu' },
+  { name: '+06:00', value: 'Asia/Almaty' },
+  { name: '+06:30', value: 'Asia/Yangon' },
+  { name: '+07:00', value: 'Asia/Bangkok' },
+  { name: '+08:00', value: 'Asia/Makassar' },
+  { name: '+09:00', value: 'Asia/Seoul' },
+  { name: '+09:30', value: 'Australia/Darwin' },
+  { name: '+10:00', value: 'Pacific/Chuuk' },
+  { name: '+11:00', value: 'Pacific/Pohnpei' },
+  { name: '+12:00', value: 'Etc/GMT-12' },
+  { name: '+13:00', value: 'Pacific/Auckland' },
+];
+
+export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
+  acc[curr.name] = curr.value;
+  return acc;
+}, {});
 
 import {
   convertToIsoWithTimezoneOffset,
@@ -16,6 +59,7 @@ import {
 
 import { BaseDateComponent } from './BaseDateComponent';
 import { useDateInput, useTimeInput, useDatetimeInput } from './hooks';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const DatetimePickerV2 = ({
   height,
@@ -34,7 +78,16 @@ export const DatetimePickerV2 = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, dateFormat, timeFormat, isTimezoneEnabled } = properties;
+  const {
+    label,
+    defaultValue,
+    dateFormat,
+    timeFormat,
+    placeholder: placeholderProp,
+    isTimezoneEnabled,
+    showClearBtn,
+  } = properties;
+  const placeholder = placeholderProp ?? 'Select date and time';
   const inputProps = {
     properties,
     setExposedVariable,
@@ -87,14 +140,15 @@ export const DatetimePickerV2 = ({
   );
 
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
-    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : 'Select date and time'
+    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : ''
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
 
-  const setInputValue = (date, format, propStoreTimezone) => {
+  const setInputValue = (date, format, propStoreTimezone, skipFireEvent = false) => {
     const isISOString = typeof date === 'string' && date.includes('T');
     const unixTimestamp = isISOString
       ? moment(date).valueOf()
@@ -107,7 +161,13 @@ export const DatetimePickerV2 = ({
     setUnixTimestamp(unixTimestamp);
     setSelectedTimestamp(selectedTimestamp);
     setExposedDateVariables(unixTimestamp, selectedTimestamp);
+    if (skipFireEvent) return;
     fireEvent('onSelect');
+  };
+
+  const handleClear = () => {
+    setInputValue(null, null, null, true);
+    setDisplayTimestamp('');
   };
 
   const onDateSelect = (date) => {
@@ -185,14 +245,12 @@ export const DatetimePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setInputValue(defaultValue, displayFormat, isTimezoneEnabled ? properties.storeTimezone : moment.tz.guess());
+    setInputValue(defaultValue, displayFormat, isTimezoneEnabled ? properties.storeTimezone : moment.tz.guess(), true);
   }, [defaultValue, displayFormat, properties.storeTimezone]);
 
   useEffect(() => {
     if (isInitialRender.current || textInputFocus) return;
-    setDisplayTimestamp(
-      selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : 'Select date and time'
-    );
+    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : '');
   }, [selectedTimestamp, displayFormat, textInputFocus]);
 
   useEffect(() => {
@@ -242,15 +300,18 @@ export const DatetimePickerV2 = ({
   }, []);
 
   useEffect(() => {
+    // CSAs and clear update state and exposed variables silently — only real user selection fires
+    // onSelect (same contract as DaterangePicker). This also prevents event→action→event loops
+    // when an onSelect handler programmatically sets the value back on this widget.
     setExposedVariables({
       setValue: (value, format) => {
-        setInputValue(value, format);
+        setInputValue(value, format, null, true);
       },
       clearValue: () => {
-        setInputValue(null);
+        setInputValue(null, null, null, true);
       },
       setValueInTimestamp: (timeStamp) => {
-        setInputValue(timeStamp);
+        setInputValue(timeStamp, null, null, true);
       },
       setDate: (date, format) => {
         const momentObj = moment(date, [format ? format : dateFormat, displayFormat]);
@@ -268,7 +329,6 @@ export const DatetimePickerV2 = ({
         setUnixTimestamp(updatedUnixTimestamp.valueOf());
         setSelectedTimestamp(selectedTimestamp);
         setExposedDateVariables(updatedUnixTimestamp.valueOf(), selectedTimestamp);
-        fireEvent('onSelect');
       },
       setTime: (time, format) => {
         const momentObj = moment(time, [format ? format : timeFormat, displayFormat]);
@@ -285,7 +345,6 @@ export const DatetimePickerV2 = ({
         setUnixTimestamp(updatedUnixTimestamp.valueOf());
         setSelectedTimestamp(selectedTimestamp);
         setExposedDateVariables(updatedUnixTimestamp.valueOf(), selectedTimestamp);
-        fireEvent('onSelect');
       },
     });
   }, [
@@ -347,10 +406,12 @@ export const DatetimePickerV2 = ({
     dateFormat,
   ]);
 
+  useFormClear(() => setInputValue(null, null, null, true));
+
   const isTwentyFourHourMode = is24HourFormat(displayFormat);
 
   const componentProps = {
-    popperClassName: cx('tj-table-datepicker tj-datepicker-widget', {
+    popperClassName: cx('tj-table-datepicker tj-datepicker-widget datetimepicker-widget !tw-mt-0', {
       'theme-dark dark-theme': darkMode,
       'react-datepicker-month-component': datepickerMode === 'month',
       'react-datepicker-year-component': datepickerMode === 'year',
@@ -373,7 +434,8 @@ export const DatetimePickerV2 = ({
     dateFormat,
     displayFormat,
     timeFormat,
-    excludeDates: excludedDates,
+    // Day-level exclusions must not disable whole year/month cells in year/month picker modes
+    excludeDates: datepickerMode === 'date' ? excludedDates : undefined,
     showTimeInput: datepickerMode === 'date',
     showMonthYearPicker: datepickerMode === 'month',
     showYearPicker: datepickerMode === 'year',
@@ -411,6 +473,9 @@ export const DatetimePickerV2 = ({
     showValidationError,
     isValid,
     validationError,
+    showClearBtn,
+    onClear: handleClear,
+    inputPlaceholder: placeholder,
   };
 
   return (
@@ -431,6 +496,8 @@ export const DatetimePickerV2 = ({
       customTimeInputProps={customTimeInputProps}
       customDateInputProps={customDateInputProps}
       id={id}
+      showClearBtn={showClearBtn}
+      dataCy={dataCy}
     />
   );
 };

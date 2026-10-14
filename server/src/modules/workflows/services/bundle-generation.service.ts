@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { IBundleGenerationService, BundleStatus } from '../interfaces/IBundleGenerationService';
+import { IBundleGenerationService, IBundleStatus } from '../interfaces/IBundleGenerationService';
 
+/**
+ * CE stub for JavaScriptBundleGenerationService.
+ * JavaScript/NPM bundle generation is only available in Enterprise Edition.
+ */
 @Injectable()
-export class BundleGenerationService implements IBundleGenerationService {
+export class JavaScriptBundleGenerationService implements IBundleGenerationService {
   async updatePackages(workflowId: string, dependencies: Record<string, string>): Promise<void> {
     throw new Error('Package bundling is not available in Community Edition');
   }
@@ -19,7 +23,7 @@ export class BundleGenerationService implements IBundleGenerationService {
     return {};
   }
 
-  async getBundleStatus(workflowId: string): Promise<BundleStatus> {
+  async getBundleStatus(workflowId: string): Promise<IBundleStatus> {
     return { status: 'none' };
   }
 

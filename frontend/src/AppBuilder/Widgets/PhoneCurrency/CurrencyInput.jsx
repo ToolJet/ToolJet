@@ -1,18 +1,43 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { default as ReactCurrencyInput, formatValue } from 'react-currency-input-field';
-import { useInput, getWidthTypeOfComponentStyles, getLabelWidthOfInput } from '../BaseComponents/hooks/useInput';
+import {
+  useInput,
+  getLabelFontSize,
+  getLabelHeight,
+  getWidthTypeOfComponentStyles,
+  getLabelWidthOfInput,
+} from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
-import { CurrencyMap } from './constants';
-import { getModifiedColor } from '@/Editor/Components/utils';
-const tinycolor = require('tinycolor2');
+import {
+  CurrencyMap,
+  getNumberFormatConfig,
+  parseValueToNumber,
+  resolveDecimalPlaces,
+  toCanonicalAmount,
+} from './constants';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 export const CurrencyInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
+
+  // A Currency Input's value is a plain number, always
+  // Applying it here, before the hook sees the authored value, means the very first render already
+  // holds a canonical amount instead of text the currency library would re-parse its own way.
   const transformedProps = {
     ...props,
     inputType: 'currency',
+    properties: {
+      ...props.properties,
+      value: toCanonicalAmount(
+        props.properties?.value,
+        props.properties?.numberFormat,
+        resolveDecimalPlaces(props.properties?.decimalPlaces).places
+      ),
+    },
   };
   const inputLogic = useInput(transformedProps);
 
@@ -23,7 +48,7 @@ export const CurrencyInput = (props) => {
     loading,
     disable,
     showValidationError,
-    handlePhoneCurrencyInputChange,
+    setCurrencyInputValue,
     isFocused,
     labelWidth,
     isValid,
@@ -35,7 +60,31 @@ export const CurrencyInput = (props) => {
     country,
     setCountry,
   } = inputLogic;
-  const { label, placeholder, decimalPlaces, isCountryChangeEnabled, defaultCountry = 'US' } = properties;
+
+  const {
+    label,
+    placeholder,
+    decimalPlaces,
+    isCountryChangeEnabled,
+    defaultCountry = 'US',
+    showFlag = true,
+    numberFormat = 'us',
+    showClearBtn,
+  } = properties;
+
+  // `decimalsLimit` cannot express "no decimals":
+  // the library resolves `decimalsLimit || fixedDecimalLength || 2`, so a 0 is read as UNSET and replaced with 2
+  // `allowDecimals` is the only lever that refuses the separator outright, which is what a whole-number currency such as JPY or KRW needs.
+  const decimalPlacesSetting = useMemo(() => {
+    const { isSet, places } = resolveDecimalPlaces(decimalPlaces);
+    return { allowDecimals: isSet ? places > 0 : true, decimalsLimit: places };
+  }, [decimalPlaces]);
+
+  // Separator characters (rendered as-is) and the locale that drives grouping positions.
+  const { separators, intlConfig } = useMemo(() => {
+    const { locale, groupSeparator, decimalSeparator } = getNumberFormatConfig(numberFormat);
+    return { separators: { groupSeparator, decimalSeparator }, intlConfig: { locale } };
+  }, [numberFormat]);
 
   const handleKeyUp = (e) => {
     if (e.key === 'Enter') {
@@ -51,11 +100,11 @@ export const CurrencyInput = (props) => {
     }));
   }, []);
 
-  const onInputValueChange = (value) => {
-    handlePhoneCurrencyInputChange(value);
-    setExposedVariables({
-      country: country,
-    });
+  // `numericValue` is the library-parsed float (from onValueChange);
+  // it keeps the exposed numeric `value` accurate and set BEFORE onChange fires.
+  const onInputValueChange = (displayValue, numericValue) => {
+    setCurrencyInputValue(displayValue ?? '', numericValue);
+    fireEvent('onChange');
   };
 
   const {
@@ -72,11 +121,20 @@ export const CurrencyInput = (props) => {
     boxShadow,
     borderRadius,
     widthType,
+    labelFontSize,
+    padding,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const disabledState = disable || loading;
   const isInitialRender = useRef(true);
+  // The format the current `value` string is in; needed to parse it before a format switch reformats it.
+  const previousNumberFormat = useRef(numberFormat);
+  const hasValue = value !== '' && value !== null && value !== undefined;
+  const shouldShowClearBtn = showClearBtn && hasValue && !disabledState && !loading;
   const computedStyles = {
     height: '100%',
     borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
@@ -104,35 +162,33 @@ export const CurrencyInput = (props) => {
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
+    paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     borderLeft: 'none',
   };
 
   const loaderStyle = {
-    right:
-      direction === 'right' &&
-      defaultAlignment === 'side' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-        ? `${labelWidth + 11}px`
-        : '11px',
-    top:
-      defaultAlignment === 'top'
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-          'calc(50% + 10px)'
-        : '',
-    transform:
-      defaultAlignment === 'top' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-      ' translateY(-50%)',
+    right: direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px',
+    top: defaultAlignment === 'top' ? hasLabel && `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '',
+    transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
+  const clearButtonRight =
+    direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
+  // Half the label's own height: the button is positioned against the whole widget, so it must be
+  // pushed down by half of whatever a top-aligned label consumes to land on the middle of the
+  // field. A fixed 10px was only correct at the 12px default. Mirrors the BaseInput fix.
+  const clearButtonTop =
+    defaultAlignment === 'top' && hasLabel ? `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '50%';
+
+  const clearButtonTransform = 'translateY(-50%)';
 
   const formattedValue = (value) => {
     return formatValue({
       value: `${value}`,
-      groupSeparator: ',',
-      decimalSeparator: '.',
+      intlConfig,
+      ...separators,
     });
   };
 
@@ -140,7 +196,23 @@ export const CurrencyInput = (props) => {
     if (!isInitialRender.current) {
       setCountry(defaultCountry);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultCountry]);
+
+  // Reformat when the number format changes:
+  // rebuild the display string from the format-agnostic number
+  // so it re-renders with the new separators without mis-parsing.
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    // `value` is still in the PREVIOUS format's separators here, so parse it with that format.
+    const num = parseValueToNumber(value, previousNumberFormat.current);
+    previousNumberFormat.current = numberFormat;
+    // Reformat any non-empty value; guarding on emptiness (not `num !== 0`) so "0"/"0,00" reformat too.
+    if (value !== '' && value !== null && value !== undefined && Number.isFinite(num)) {
+      setCurrencyInputValue(String(num), num);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [numberFormat]);
 
   useEffect(() => {
     if (!isInitialRender.current) {
@@ -149,35 +221,32 @@ export const CurrencyInput = (props) => {
         formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
       });
     }
-  }, [country]);
-
-  useEffect(() => {
-    if (!isInitialRender.current) {
-      setExposedVariables({
-        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
-        value: Number(value),
-      });
-    }
-  }, [value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country, value, numberFormat]);
 
   useEffect(() => {
     if (isInitialRender.current) {
       setExposedVariables({
         country: country,
         formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
-        value: Number(value),
         setCountryCode: (code) => {
           setCountry(code);
         },
       });
+      // Publish the number through the one writer rather than re-deriving it here. This has to
+      // run: the hook's own mount effect republishes the raw seed afterwards, so without a final
+      // write `value` would be left as a string instead of the number apps expect.
+      setCurrencyInputValue(value);
       isInitialRender.current = false;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const labelClasses = { labelContainer: defaultAlignment === 'top' && 'tw-flex-shrink-0' };
 
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
         className={`text-input d-flex phone-input-widget ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -207,13 +276,25 @@ export const CurrencyInput = (props) => {
           labelWidth={labelWidth}
           widthType={widthType}
           inputId={`component-${id}`}
+          classes={labelClasses}
+          dataCy={dataCy}
+          fontSize={labelFontSizeValue}
         />
         <div
-          className="d-flex h-100"
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
+          className="d-flex"
           style={{
             boxShadow,
             borderRadius: `${borderRadius}px`,
             ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
+            ...(defaultAlignment === 'top' && label?.length != 0
+              ? {
+                  height: `calc(100% - ${getLabelHeight(labelFontSize)}px - ${
+                    padding === 'default' ? BOX_PADDING * 2 : 0
+                  }px)`,
+                  flex: 1,
+                }
+              : { height: '100%' }),
           }}
         >
           <CountrySelect
@@ -237,17 +318,15 @@ export const CurrencyInput = (props) => {
             showValidationError={showValidationError}
             darkMode={darkMode}
             isCurrencyInput={true}
+            showFlag={showFlag}
             onChange={(selectedOption) => {
               if (selectedOption) {
                 setCountry(selectedOption.value);
                 fireEvent('onChange');
-                setExposedVariables({
-                  country: selectedOption.value,
-                  formattedValue: `${CurrencyMap[selectedOption.value]?.prefix} ${selectedOption.value}`,
-                });
               }
             }}
             componentId={id}
+            dataCy={dataCy}
           />
           <ReactCurrencyInput
             ref={inputRef}
@@ -256,32 +335,66 @@ export const CurrencyInput = (props) => {
               !isValid && showValidationError ? 'is-invalid' : ''
             } validation-without-icon`}
             value={value}
-            decimalsLimit={decimalPlaces}
+            allowDecimals={decimalPlacesSetting.allowDecimals}
+            decimalsLimit={decimalPlacesSetting.decimalsLimit}
+            intlConfig={intlConfig}
+            groupSeparator={separators.groupSeparator}
+            decimalSeparator={separators.decimalSeparator}
             style={computedStyles}
             data-ignore-hover={true}
-            onValueChange={(newVal) => {
+            onValueChange={(newVal, _name, values) => {
               if (newVal === value) return;
-              onInputValueChange(newVal);
+              // `values.float` is the library-parsed number; pass it so the exposed value is accurate.
+              onInputValueChange(newVal, values?.float);
             }}
-            // prefix={`${CurrencyMap?.[country]?.prefix || ''} `}
             prefix={''}
             onBlur={handleBlur}
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
             id={`component-${id}`}
+            disabled={disabledState}
             aria-disabled={disabledState}
             aria-busy={loading}
             aria-required={isMandatory}
             aria-hidden={!visibility}
             aria-invalid={!isValid && showValidationError}
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
           />
         </div>
+        {shouldShowClearBtn && (
+          <button
+            type="button"
+            className="tj-input-clear-btn"
+            aria-label="Clear"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onInputValueChange('');
+              // Reveal here rather than inside onInputValueChange: that is also the typing handler,
+              // and a keystroke must not accuse the user mid-edit.
+              // Clearing is a completed action, not a keystroke, so it reveals any resulting error the way a blur does.
+              inputLogic.setShowValidationError(true);
+            }}
+            style={{
+              position: 'absolute',
+              right: clearButtonRight,
+              top: clearButtonTop,
+              transform: clearButtonTransform,
+              zIndex: 3,
+            }}
+          >
+            <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+          </button>
+        )}
         {loading && <Loader style={loaderStyle} width="16" />}
       </div>
       {showValidationError && visibility && (
         <div
-          data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
+          data-cy={`${String(dataCy).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
             textAlign: direction == 'left' && 'end',

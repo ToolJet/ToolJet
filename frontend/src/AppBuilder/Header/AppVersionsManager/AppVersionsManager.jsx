@@ -7,6 +7,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { decodeEntities } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './style.scss';
 
 const appVersionLoadingStatus = Object.freeze({
@@ -17,6 +18,8 @@ const appVersionLoadingStatus = Object.freeze({
 
 export const AppVersionsManager = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
 
   const [deleteVersion, setDeleteVersion] = useState({
@@ -106,6 +109,21 @@ export const AppVersionsManager = ({ darkMode }) => {
       id,
       (newDeff) => {
         setCurrentVersionId(id);
+
+        if (isViewer) {
+          const selectedVersionObj = versionsPromotedToEnvironment.find((v) => v.id === id);
+          if (selectedVersionObj) {
+            const searchParams = new URLSearchParams(location.search);
+            searchParams.set('version', selectedVersionObj.name);
+            navigate(
+              {
+                pathname: location.pathname,
+                search: searchParams.toString(),
+              },
+              { replace: true }
+            );
+          }
+        }
       },
       (error) => {
         toast.error(error.message);
@@ -197,7 +215,6 @@ export const AppVersionsManager = ({ darkMode }) => {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-
   };
 
   const handleToggleMenu = async () => {
@@ -206,7 +223,7 @@ export const AppVersionsManager = ({ darkMode }) => {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-    setForceMenuOpen(prev => {
+    setForceMenuOpen((prev) => {
       return !prev;
     });
   };
@@ -237,10 +254,7 @@ export const AppVersionsManager = ({ darkMode }) => {
     };
   }, [forceMenuOpen]);
   return (
-    <div
-      className="d-flex align-items-center p-0"
-      ref={clickedOutsideRef}
-    >
+    <div className="d-flex align-items-center p-0" ref={clickedOutsideRef}>
       <div
         className={cx('d-flex version-manager-container p-0', {
           'w-100': isViewer && currentLayout === 'mobile',

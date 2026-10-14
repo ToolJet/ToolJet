@@ -14,7 +14,10 @@ export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
 
 @Injectable()
 export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
-  constructor(protected manager: EntityManager, protected abilityService: AbilityService) {
+  constructor(
+    protected manager: EntityManager,
+    protected abilityService: AbilityService
+  ) {
     super(abilityService);
   }
 
@@ -28,7 +31,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     extractedMetadata: { moduleName: string; features: string[] },
     request?: any
   ): Promise<void> {
-    const { superAdmin, isAdmin, isBuilder } = UserAllPermissions;
+    const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
 
     const requestContext = request;
     const dataQueryId = requestContext.headers['data-query-id'];
@@ -44,8 +47,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     }
     const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && dataQuery.app.isPublic;
     const isUserLoggedin = !isEmpty(requestContext.user) && !isEmpty(organizationId);
+    const orgMismatch = !isEmpty(dataQuery) && dataQuery?.app?.organizationId !== organizationId;
 
-    if (superAdmin || isAdmin || isBuilder) {
+    if (superAdmin || isAdmin || userPermission.tjdbCRUD) {
       can(
         [
           FEATURE_KEY.CREATE_TABLE,
@@ -53,7 +57,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.ADD_COLUMN,
           FEATURE_KEY.DROP_COLUMN,
           FEATURE_KEY.RENAME_TABLE,
-          FEATURE_KEY.BULK_UPLOAD,
           FEATURE_KEY.EDIT_COLUMN,
           FEATURE_KEY.ADD_FOREIGN_KEY,
           FEATURE_KEY.UPDATE_FOREIGN_KEY,
@@ -62,8 +65,16 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         InternalTable
       );
     }
+    if (superAdmin || isAdmin || isBuilder) {
+      can([FEATURE_KEY.BULK_UPLOAD], InternalTable);
+    }
 
-    if (isPublicAppRequest || isUserLoggedin) {
+    if (isPublicAppRequest) {
+      can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
+    }
+
+    if (isUserLoggedin && (isAdmin || isBuilder || !orgMismatch)) {
+      //For logged in users only with valid organization and data query, allow proxy postgrest feature
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 

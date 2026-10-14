@@ -9,6 +9,7 @@
 @import "./typography.scss";
 @import "./designtheme.scss";
 @import "./dropdown-custom.scss";
+@import "./editor/react-select-search.scss";
 @import "./ui-operations.scss";
 @import "./license.scss";
 @import "react-loading-skeleton/dist/skeleton.css";
@@ -21,6 +22,7 @@
 @import "./pages-sidebar.scss";
 @import "./modules.scss";
 @import "./rocket/card.scss";
+@import './widgets/datepicker.scss';
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -176,6 +178,119 @@
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
+/* ibm-plex-mono-100 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 100;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-100.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-100italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: italic;
+  font-weight: 100;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-100italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-200 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 200;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-200.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-200italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: italic;
+  font-weight: 200;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-200italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-300 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-300.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-300italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: italic;
+  font-weight: 300;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-300italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: italic;
+  font-weight: 400;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-500 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-500.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-500italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: italic;
+  font-weight: 500;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-500italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-600 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-600.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-600italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: italic;
+  font-weight: 600;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-600italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-700 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-700.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* ibm-plex-mono-700italic - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Mono';
+  font-style: italic;
+  font-weight: 700;
+  src: url('/assets/fonts/ibm-plex-mono-v20-latin/ibm-plex-mono-v20-latin-700italic.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
 .transparent-scrollbar {
   &::-webkit-scrollbar {
     width: 6px;
@@ -210,8 +325,6 @@
 
 @layer utilities {
   .tw-transparent-scrollbar {
-    // scrollbar-color: transparent transparent;
-
     &::-webkit-scrollbar-thumb {
       background: transparent;
     }
@@ -222,10 +335,21 @@
   }
 
   .tw-show-scrollbar {
-    // scrollbar-color: var(--slate8);
+    &::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
 
     &::-webkit-scrollbar-thumb {
-      background: var(--slate8);
+      background: var(--interactive-hover);
+      background-clip: padding-box;
+      border: 2px solid transparent;
+      border-radius: 9999px;
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+      background: var(--interactive-selected);
+      background-clip: padding-box;
     }
 
     &::-webkit-scrollbar-track {
@@ -577,7 +701,7 @@ button {
     background-color: var(--surfaces-surface-01);
     background-clip: border-box;
     height: 100vh;
-    z-index: 2;
+    z-index: 1041;
 
     >div {
       background-color: var(--surfaces-surface-01);
@@ -1204,6 +1328,15 @@ button {
       object-fit: contain;
     }
 
+    // Tighter gaps than the image preview (85% x 75%) to use the modal space
+    iframe.template-image {
+      height: 96.25%;
+      width: 97.5%;
+      padding: 0;
+      border: 1px solid var(--slate5);
+      border-radius: 6px;
+    }
+
     .template-spinner {
       width: 3rem;
       height: 3rem;
@@ -1465,7 +1598,7 @@ button {
     /* IE and Edge */
     scrollbar-width: none;
     /* Firefox */
-    border-top: 1px solid var(--slate5) !important;
+    border-top: none !important;
   }
 
   &.module-editor-inspector {
@@ -2621,18 +2754,9 @@ hr {
   }
 }
 
-.multiple-components-config-handle {
-  position: absolute;
-  left: 54px;
-  top: -20px;
-  transform: translate(-50%, 0px);
-  width: 110px;
-}
-
 .config-handle {
-  top: -20px;
+  top: -22px;
   position: fixed;
-  max-height: 10px;
   z-index: 100;
   min-width: 108px;
 
@@ -2641,36 +2765,6 @@ hr {
       cursor: move;
       color: #fff;
       background: #c6cad0 !important;
-    }
-  }
-}
-
-.config-handle,
-.multiple-components-config-handle {
-  .handle-content {
-    cursor: move;
-    color: #ffffff;
-    background: $primary;
-  }
-
-  .badge {
-    font-size: 9px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-
-    .delete-part {
-      margin-left: 10px;
-      float: right;
-    }
-
-    .delete-part::before {
-      height: 12px;
-      display: inline-block;
-      width: 2px;
-      background-color: rgba(255, 255, 255, 0.8);
-      opacity: 0.5;
-      content: "";
-      vertical-align: middle;
     }
   }
 }
@@ -3812,6 +3906,12 @@ input[type="text"] {
   }
 }
 
+.daterange-picker-widget.has-clear-btn {
+  .DateRangePickerInput {
+    padding-right: 32px;
+  }
+}
+
 .form-ele {
   .DateRangePicker_picker {
     top: 40px !important;
@@ -3905,17 +4005,6 @@ input[type="text"] {
   &:hover {
     border-color: rgba(101, 109, 119, 0.24) !important;
   }
-}
-
-.empty-welcome-header {
-  font-style: normal;
-  font-weight: 500;
-  font-size: 32px;
-  line-height: 40px;
-  margin-bottom: 16px;
-  margin-top: 40px;
-  color: var(--slate12);
-  font-family: Inter;
 }
 
 .homepage-empty-image {
@@ -4230,6 +4319,22 @@ input[type="text"] {
     .resize-handle {
       cursor: move;
     }
+  }
+}
+
+// Overrides the percentage offsets below, which tied the popup's saved coordinates to document height.
+.resize-modal-portal.modal-portal-wrapper {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  transform: none;
+  pointer-events: none;
+
+  .resize-modal {
+    pointer-events: auto;
   }
 }
 
@@ -5082,20 +5187,21 @@ div#driver-page-overlay {
 
 .editor .editor-sidebar .inspector .inspector-edit-widget-name {
   padding: 4px 8px;
-  color: var(--slate12);
+  color: var(--text-default);
   border: 1px solid transparent !important;
   border-radius: 6px;
-  background-color: var(--base);
-
+  font-size: 14px;
+  font-weight: 500;
+  background-color: transparent;
   &:hover {
-    background-color: var(--slate4);
-    border: 1px solid var(--slate7);
+    background-color: var(--interactive-hover);
+    border: 1px solid var(--border-weak);
   }
 
-  &:focus {
+  &:focus, &:active {
     border: 1px solid var(--indigo9) !important;
-    background-color: var(--indigo2);
-    box-shadow: 0px 0px 0px 1px #c6d4f9;
+    background-color: var(--indigo2) !important;
+    box-shadow: 0px 0px 0px 1px #c6d4f9 !important;
   }
 }
 
@@ -6352,29 +6458,7 @@ input.hide-input-arrows {
   width: 36px;
 }
 
-.custom-checkbox-tree {
-  overflow-y: auto;
-  color: #3e525b;
 
-  .react-checkbox-tree label:hover {
-    background: none !important;
-  }
-
-  .rct-icons-fa4 {
-
-    .rct-icon-expand-open,
-    .rct-icon-expand-close {
-      &::before {
-        content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024' focusable='false' data-icon='caret-down' width='12px' height='12px' fill='currentColor' aria-hidden='true'%3E%3Cpath d='M840.4 300H183.6c-19.7 0-30.7 20.8-18.5 35l328.4 380.8c9.4 10.9 27.5 10.9 37 0L858.9 335c12.2-14.2 1.2-35-18.5-35z'%3E%3C/path%3E%3C/svg%3E") !important;
-      }
-    }
-
-    .rct-icon-expand-close {
-      transform: rotate(-90deg);
-      -webkit-transform: rotate(-90deg);
-    }
-  }
-}
 
 // sso enable/disable box
 .tick-cross-info {
@@ -7638,10 +7722,6 @@ tbody {
   @media only screen and (max-width: 767px) {
     display: none;
   }
-}
-
-.empty-home-page-image {
-  margin-top: 14px;
 }
 
 .create-new-app-dropdown {
@@ -9324,7 +9404,6 @@ tbody {
     border-bottom: 1px solid var(--border-weak);
     display: flex;
     justify-content: space-between;
-    gap: 8px;
   }
 
   tr>td {
@@ -9388,8 +9467,22 @@ tbody {
 }
 
 .workspace-settings-table-wrap {
-  min-width: 930px;
+  min-width: 936px;
   margin: 0 auto;
+
+  ::-webkit-scrollbar {
+    display: block;
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--base);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--slate7);
+    border-radius: 6px;
+  }
 
   &:hover {
     .tj-user-table-wrapper {
@@ -9606,7 +9699,7 @@ tbody {
 }
 
 .workspace-page-header {
-  width: 930px;
+  width: 936px;
   margin: 0 auto !important;
 
   div:first-child {
@@ -10132,6 +10225,7 @@ tbody {
   min-width: 300px;
   flex-grow: 1;
   gap: 12px;
+  min-width: 0;
 }
 
 .apps-folder-permission-wrap,
@@ -10934,7 +11028,7 @@ tbody {
 }
 
 .bounded-box {
-  .sc-iwsKbI.lmGPCf {
+  .sc-dxgOiQ.jcdOkx {
     height: 100%;
     margin: auto;
     width: max-content;
@@ -12132,6 +12226,10 @@ tbody {
 .profile-page-card {
   background-color: var(--surfaces-surface-01);
   border-radius: 6px;
+  // Stated explicitly rather than inherited from .card. Note the fallback: --slate5 is
+  // referenced 112 times in this file and defined nowhere, so `var(--slate5)` on its own
+  // is invalid at computed-value time and collapses the whole shorthand to border:none.
+  border: 1px solid var(--slate5, #e6e8eb);
 }
 
 .all-apps-link-cotainer {
@@ -13585,7 +13683,8 @@ tbody {
   }
 }
 
-#popover-basic-2 {
+#popover-basic-2,
+#table-column-popover-basic {
   .sketch-picker {
     left: 7px;
     width: 170px !important;
@@ -13921,7 +14020,8 @@ tbody {
   }
 }
 
-#popover-basic-2 {
+#popover-basic-2,
+#table-column-popover-basic {
   .sketch-picker {
     left: 7px;
     width: 170px !important;
@@ -13970,7 +14070,9 @@ tbody {
 
 .overflow-tooltip {
   .tooltip-inner {
-    max-width: 100%;
+    max-width: 280px;
+    white-space: normal;
+    word-break: break-word;
   }
 }
 
@@ -14313,7 +14415,8 @@ tbody {
   }
 }
 
-#popover-basic-2 {
+#popover-basic-2,
+#table-column-popover-basic {
   .sketch-picker {
     left: 7px;
     width: 170px !important;
@@ -14353,12 +14456,6 @@ tbody {
 
 .custom-gap-12 {
   gap: 12px;
-}
-
-.overflow-tooltip {
-  .tooltip-inner {
-    max-width: 100%;
-  }
 }
 
 #inspector-tabpane-properties {
@@ -14686,12 +14783,6 @@ tbody {
   opacity: 0.4;
 }
 
-.overflow-tooltip {
-  .tooltip-inner {
-    max-width: 100%;
-  }
-}
-
 .card-table {
   overflow: visible;
 }
@@ -14821,23 +14912,6 @@ tbody {
   padding-top: 1.5rem;
 }
 
-.blank-page-wrapper {
-  @media only screen and (max-width: 768px) {
-    display: none;
-  }
-}
-
-.blank-page-wrapper-mobile {
-  display: none !important;
-
-  @media only screen and (max-width: 768px) {
-    transform: translateY(50%);
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
 .reset-password-info-banner {
   width: inherit;
   background-color: #f8faff;
@@ -14925,6 +14999,21 @@ textarea.tj-text-input-widget {
   &::placeholder {
     color: var(--text-placeholder) !important;
   }
+}
+
+.tj-input-clear-btn {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  padding: 2px;
+}
+
+.tj-input-clear-btn:hover {
+  background-color: var(--interactive-overlays-fill-hover);
 }
 
 .icon-style-container {
@@ -15217,6 +15306,12 @@ textarea.tj-text-input-widget {
   @extend .widget-version-identifier;
 }
 
+.widget-version-beta-identifier {
+  background-color: var(--indigo9);
+  @extend .widget-version-identifier;
+  width: 36px;
+}
+
 .tjdb-display-time-pill {
   height: 12px;
   gap: 10px;
@@ -15254,7 +15349,8 @@ textarea.tj-text-input-widget {
   }
 }
 
-.ds-svg-container svg {
+.ds-svg-container svg,
+.ds-svg-container img {
   padding: 2px;
   object-fit: contain;
 }
@@ -15299,7 +15395,7 @@ textarea.tj-text-input-widget {
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: var(--cc-surface1-surface) !important;
+  background-color: var(--dropdown-menu-bg, var(--cc-surface1-surface)) !important;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 
@@ -15458,19 +15554,6 @@ fieldset:disabled {
     input.dark-theme {
       background-color: var(--slate3);
       color: var(--slate12);
-    }
-  }
-}
-
-
-#component-portal {
-  .datepicker-component {
-    .react-datepicker {
-      .react-datepicker__month-container {
-        border-top-right-radius: 10px !important;
-        border-bottom-right-radius: 10px !important;
-        border-bottom-left-radius: 5px !important;
-      }
     }
   }
 }
@@ -15888,12 +15971,17 @@ section.ai-message-prompt-input-wrapper {
     /* Elevations/300 */
     box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)),
       0px 4px 8px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1));
-    z-index: 2;
+
+    /* Above `.conversation-wrapper` (2) AND the phase collapsible (10) that sits directly on top of
+       this input. Both this rule and `position: relative` make the input a stacking context, which
+       traps the "@" suggestions popup inside it (CodeMirror's .cm-tooltip, z-index 500) — the popup
+       opens upwards into the phase panel, so the input itself has to outrank that panel. */
+    z-index: 20;
   }
 
   div.input {
     color: var(--text-default, #1b1f24);
-    font-size: 12px;
+    font-size: var(--font-size-large);
     font-style: normal;
     font-weight: 400;
     line-height: 18px;
@@ -16395,17 +16483,9 @@ section.ai-message-prompt-input-wrapper {
   z-index: 1000;
   overflow-y: auto;
 
-  border-left: 1px solid var(--border-weak, #e4e7eb);
-  background-color: #fff;
+  background-color: var(--background-surface-layer-01);
   box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)),
     0px 8px 16px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1));
-
-  .input-box-gradient {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    z-index: 1;
-  }
 
   .reactMarkdown {
     * {
@@ -16418,14 +16498,6 @@ section.ai-message-prompt-input-wrapper {
     align-self: flex-start;
     background-color: var(--text-placeholder, #6a727c);
     margin-top: 6px;
-  }
-
-  &.dark-theme {
-    background-color: #1f2936;
-
-    .header {
-      background-color: #1f2936;
-    }
   }
 
   button.dropdown-toggle {
@@ -16459,46 +16531,10 @@ section.ai-message-prompt-input-wrapper {
     }
   }
 
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-
-    background-color: #fff;
-    padding: 0.75rem 1.75rem;
-
-    border-bottom: 1px solid var(--border-weak, #e4e7eb);
-
-    section {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      button {
-        height: 28px;
-        width: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-
-        &:hover {
-          background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
-        }
-
-        // &:focus {
-        //     border: 1px solid var(--border-default, #CCD1D5);
-        //     background: var(--button-outline, #FFF);
-        //     box-shadow: 0px 0px 0px 2px var(--Interactive-focusActive, #4368E3);
-        // }
-      }
-    }
-  }
-
   .conversation-wrapper {
     overflow-y: auto;
     flex-grow: 1;
-    padding: 1.25rem 1.75rem 1rem;
+    padding: 1.25rem 1.25rem 1rem;
     z-index: 2;
     scroll-behavior: smooth;
 
@@ -16921,7 +16957,7 @@ section.ai-message-prompt-input-wrapper {
           white-space: pre-wrap;
           display: inline-block;
           border-radius: 8px;
-          background: #f5f6f7;
+          background-color: var(--interactive-default);
           padding: 0.75rem 1rem;
           justify-content: flex-end;
           align-items: center;
@@ -16929,10 +16965,6 @@ section.ai-message-prompt-input-wrapper {
           color: var(--text-default, #1b1f24);
 
           margin-left: auto;
-
-          &.dark-theme {
-            background-color: #1b1f24;
-          }
         }
       }
     }
@@ -17046,78 +17078,6 @@ section.ai-message-prompt-input-wrapper {
 
       &:hover {
         background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
-      }
-    }
-  }
-}
-
-.ai-message-loading-state {
-  display: flex;
-  margin-top: 12px;
-  gap: 20px;
-
-  .logo {
-    height: 28px;
-    width: 28px;
-    border-radius: 24px;
-    background: var(--background-surface-layer-01, #ffffff);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid var(--border-weak, #e4e7eb);
-  }
-
-  .right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    span {
-      color: var(--text-placeholder, #6a727c);
-      text-align: center;
-      font-size: 11px;
-      font-style: normal;
-      font-weight: 400;
-      line-height: 16px;
-    }
-
-    div.dots {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-
-      .dot {
-        width: 8px;
-        height: 8px;
-        background-color: #ff5f6d;
-        opacity: 0.3;
-        border-radius: 50%;
-        animation: dot-blink 1.2s infinite;
-      }
-
-      .dot:nth-child(1) {
-        animation-delay: 0s;
-      }
-
-      .dot:nth-child(2) {
-        animation-delay: 0.3s;
-      }
-
-      .dot:nth-child(3) {
-        animation-delay: 0.6s;
-      }
-
-      @keyframes dot-blink {
-
-        0%,
-        80%,
-        100% {
-          opacity: 0;
-        }
-
-        40% {
-          opacity: 1;
-        }
       }
     }
   }
@@ -17307,26 +17267,12 @@ section.ai-message-prompt-input-wrapper {
   }
 
   &.dark-theme {
-    .copilot-loader-wrapper {
-      background-color: #858c9414;
-    }
-
     section.content {
       background-color: #858c9414;
 
       pre {
         color: #fff;
       }
-    }
-  }
-
-  .copilot-loader-wrapper {
-    border-radius: 6px;
-    background-color: #f6f7f7;
-    padding: 8px;
-
-    .ai-message-loading-state {
-      margin-top: 0;
     }
   }
 }
@@ -17526,7 +17472,7 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .cm-tooltip {
-  z-index: 9999 !important;
+  z-index: 99999 !important;
 }
 
 .accordion-item {
@@ -17548,6 +17494,12 @@ section.ai-message-prompt-input-wrapper {
 
   .accordion-body {
     border-bottom: 1px solid rgba(101, 109, 119, 0.16);
+  }
+
+  &:last-child {
+    .accordion-body {
+      border-bottom: none;
+    }
   }
 }
 
@@ -17856,7 +17808,7 @@ section.ai-message-prompt-input-wrapper {
 
 .table-component-footer,
 .table-card-header {
-  .tj-ghost-black-btn:hover {
+  .tj-ghost-black-btn:hover:not(:disabled) {
     background-color: var(--cc-table-footer-action-hover, #eceef0) !important;
   }
 }

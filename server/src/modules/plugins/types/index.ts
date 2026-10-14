@@ -12,6 +12,7 @@ interface Features {
   [FEATURE_KEY.DEPENDENT_PLUGINS]: FeatureConfig;
   [FEATURE_KEY.INSTALL_DEPENDENT_PLUGINS]: FeatureConfig;
   [FEATURE_KEY.UNINSTALL_PLUGINS]: FeatureConfig;
+  [FEATURE_KEY.GET_SPEC]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

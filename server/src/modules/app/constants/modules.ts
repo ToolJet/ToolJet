@@ -43,5 +43,12 @@ export enum MODULES {
   MODULES = 'Modules',
   APP_GIT = 'AppGit',
   GIT_SYNC = 'GitSync',
+  APP_HISTORY = 'AppHistory',
   CRM = 'CRM',
+  SCIM = 'SCIM',
+  CUSTOM_DOMAINS = 'customDomains',
+  DATA_QUERY_FOLDERS = 'DataQueryFolders',
+  PERSONAL_ACCESS_TOKENS = 'PersonalAccessTokens',
+  FRONTEND_METRICS = 'FrontendMetrics',
+  CUSTOM_COMPONENT_LIBRARIES = 'CustomComponentLibraries',
 }

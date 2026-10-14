@@ -1,0 +1,4206 @@
+{
+	"openapi": "3.0.0",
+	"servers": [
+		{
+			"url": "https://apis-sandbox.fedex.com",
+			"description": "Sandbox Server"
+		},
+		{
+			"url": "https://apis.fedex.com",
+			"description": "Production Server"
+		}
+	],
+	"schemes": [
+		"https"
+	],
+	"info": {
+		"version": "1.0.0",
+		"title": "Basic Integrated Visibility "
+	},
+	"paths": {
+		"/track/v1/associatedshipments": {
+			"post": {
+				"summary": "Track Multiple Piece Shipment",
+				"description": "This endpoint returns tracking information for multiplee piece shipments, Group MPS, or an outbounddd shipment which is linked to a return shipment.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Track Multiple Piece Shipment",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"oneOf": [
+									{
+										"$ref": "#/components/schemas/Full_Schema_Multiple_Piece_Shipment"
+									}
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TrkcResponseVO_Associated"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "TRACKING.REFERENCETYPE.INVALID",
+											"message": "Please provide a valid reference/associated type"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/track/v1/associatedshipments\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/track/v1/associatedshipments\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/track/v1/associatedshipments\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/track/v1/associatedshipments');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/track/v1/associatedshipments\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/track/v1/associatedshipments\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/track/v1/associatedshipments\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/track/v1/notifications": {
+			"post": {
+				"summary": "Send Notification",
+				"description": "This endpoint helps you setup up, customize the tracking event notifications to be received for a shipment.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "19f112535f47e237486334074740bb66",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"oneOf": [
+									{
+										"$ref": "#/components/schemas/Full_Schema_Notification"
+									}
+								]
+							}
+						}
+					},
+					"required": false
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TrkcResponseVO_Notifications"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "TRACKING.TRACKINGNUMBER.NOTFOUND",
+											"message": "Tracking number cannot be found. Please correct the tracking number and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/track/v1/notifications\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/track/v1/notifications\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/track/v1/notifications\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/track/v1/notifications');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/track/v1/notifications\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/track/v1/notifications\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/track/v1/notifications\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/track/v1/referencenumbers": {
+			"post": {
+				"summary": "Track by References",
+				"description": "This endpoint returns tracking information based on alternate references other than Tracking Number such as Customer reference numbers, etc.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Track by References",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"oneOf": [
+									{
+										"$ref": "#/components/schemas/Full_Schema_Tracking_References"
+									}
+								]
+							}
+						}
+					},
+					"required": false
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TrkcResponseVO_ReferenceNumber"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "TRACKING.TRACKINGNUMBER.EMPTY",
+											"message": "Please provide tracking number."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/track/v1/referencenumbers\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/track/v1/referencenumbers\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/track/v1/referencenumbers\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/track/v1/referencenumbers');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/track/v1/referencenumbers\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/track/v1/referencenumbers\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/track/v1/referencenumbers\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/track/v1/tcn": {
+			"post": {
+				"summary": "Track by Tracking Control Number",
+				"description": "Use this endpoint to return tracking information based on a Tracking Control Number.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "f1f9080e8452d9ac903f562a2d2626d0",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"oneOf": [
+									{
+										"$ref": "#/components/schemas/Full_Schema_TCN"
+									}
+								]
+							}
+						}
+					},
+					"required": false
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TrkcResponseVO_TCN"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "TRACKING.TCN.NOTFOUND",
+											"message": "Transportation control number cannot be found. Please correct the transportation control number and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/track/v1/tcn\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/track/v1/tcn\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/track/v1/tcn\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/track/v1/tcn');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/track/v1/tcn\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/track/v1/tcn\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/track/v1/tcn\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/track/v1/trackingdocuments": {
+			"post": {
+				"summary": "Track Document",
+				"description": "This endpoint helps you to request a letter that includes the recipient's signature as a proof of delivery.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "TrackingDocuments",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"oneOf": [
+									{
+										"$ref": "#/components/schemas/Full_Schema_SPOD"
+									}
+								]
+							}
+						}
+					},
+					"required": false
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TrkcResponseVO_SPOD"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "TRACKING.TRACKINGNUMBER.NOTFOUND",
+											"message": "Tracking number cannot be found. Please correct the tracking number and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/track/v1/trackingdocuments\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/track/v1/trackingdocuments\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/track/v1/trackingdocuments\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/track/v1/trackingdocuments');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/track/v1/trackingdocuments\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/track/v1/trackingdocuments\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/track/v1/trackingdocuments\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/track/v1/trackingnumbers": {
+			"post": {
+				"summary": "Track by Tracking Number",
+				"description": "This endpoint provides customers package tracking information based on a tracking number for various shipping services.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Track by Tracking Number",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"oneOf": [
+									{
+										"$ref": "#/components/schemas/Full_Schema_Tracking_Numbers"
+									}
+								]
+							}
+						}
+					},
+					"required": false
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TrkcResponseVO_TrackingNumber"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "TRACKING.TRACKINGNUMBER.EMPTY",
+											"message": "Please provide tracking number."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/track/v1/trackingnumbers\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/track/v1/trackingnumbers\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/track/v1/trackingnumbers\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/track/v1/trackingnumbers');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/track/v1/trackingnumbers\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/track/v1/trackingnumbers\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/track/v1/trackingnumbers\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"Full_Schema_Multiple_Piece_Shipment": {
+				"required": [
+					"associatedType",
+					"masterTrackingNumberInfo"
+				],
+				"type": "object",
+				"properties": {
+					"includeDetailedScans": {
+						"type": "boolean",
+						"description": "Indicates if detailed scans are requested or not. <br>Valid values are True, or False.",
+						"example": true
+					},
+					"masterTrackingNumberInfo": {
+						"$ref": "#/components/schemas/MasterTrackingInfo"
+					},
+					"associatedType": {
+						"type": "string",
+						"description": "The associated shipment type, such as MPS, Group MPS, or an outbound shipment which is linked to a return shipment.<br>Example: STANDARD_MPS<br>STANDARD_MPS: Single shipment with multiple packages, where tracking number got assigned to all pieces, one tracking number is treated as master tracking number while others are child tracking numbers.<br>Group MPS: Behavior is just like standard MPS but it’s created differently. The shipper must be enrolled for this by a particular reference type like ‘PO’ (purchase order).Then any package order create on the same day going to the same place that has the reference number will get grouped into GMPS relationships.<br>OUTBOUND_LINK_TO_RETURN: is an RTRN relationship.Same concept as an MPS.the OUTBOUND_LINK_TO_RETURN is the Master outbound package tracking number, that when tracked with this indicator you can get all the child return pieces.",
+						"example": "STANDARD_MPS",
+						"enum": [
+							"OUTBOUND_LINK_TO_RETURN",
+							"STANDARD_MPS",
+							"GROUP_MPS"
+						]
+					},
+					"pagingDetails": {
+						"$ref": "#/components/schemas/PagingDetails"
+					}
+				},
+				"description": "The request elements for Tracking by associated shipment.",
+				"example": {
+					"includeDetailedScans": true,
+					"associatedType": "STANDARD_MPS",
+					"masterTrackingNumberInfo": {
+						"shipDateEnd": "2018-11-03",
+						"shipDateBegin": "2018-11-01",
+						"trackingNumberInfo": {
+							"trackingNumberUniqueId": "245822~123456789012~FDEG",
+							"carrierCode": "FDXE",
+							"trackingNumber": "858488600850"
+						}
+					},
+					"pagingDetails": {
+						"resultsPerPage": 56,
+						"pagingToken": "38903279038"
+					}
+				}
+			},
+			"MasterTrackingInfo": {
+				"description": "The detailed master tracking details for the shipment to be tracked.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/TrackingInfo"
+					}
+				]
+			},
+			"TrackingInfo": {
+				"required": [
+					"trackingNumberInfo"
+				],
+				"type": "object",
+				"properties": {
+					"shipDateBegin": {
+						"type": "string",
+						"description": "ShipDateBegin and ShipDateEnd are recommended to narrow the search, reduce lookup time, and avoid duplicates when searching for a specific tracking number within a specific date range. <br>Format: YYYY-MM-DD<br> Example: 2020-03-29",
+						"example": "2020-03-29"
+					},
+					"shipDateEnd": {
+						"type": "string",
+						"description": "ShipDateBegin and ShipDateEnd are recommended to narrow the search, reduce lookup time, and avoid duplicates when searching for a specific tracking number within a specific date range. <br>Format: YYYY-MM-DD<br> Example: 2020-04-01",
+						"example": "2020-04-01"
+					},
+					"trackingNumberInfo": {
+						"$ref": "#/components/schemas/TrackingNumberInfo"
+					}
+				},
+				"description": "Tracking details for the shipment to be tracked"
+			},
+			"TrackingNumberInfo": {
+				"required": [
+					"trackingNumber"
+				],
+				"type": "object",
+				"properties": {
+					"trackingNumber": {
+						"type": "string",
+						"description": "This is a Tracking number for FedEx packages used for tracking a single package or group of packages. <br> Example: 128667043726<br><a onclick='loadDocReference(\"mocktrackingnumbersforfedexexpressandfedexground\")'>Click here to see Mock Tracking Numbers.</a>",
+						"example": "128667043726"
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "This is a placeholder to provide the FedEx operating company (transportation) code used for package delivery. <br> Example: FDXE",
+						"example": "FDXE",
+						"enum": [
+							"FDXE",
+							"FDXG",
+							"FXSP",
+							"FXFR",
+							"FDXC",
+							"FXCC",
+							"FEDEX_CARGO",
+							"FEDEX_CUSTOM_CRITICAL",
+							"FEDEX_EXPRESS",
+							"FEDEX_FREIGHT",
+							"FEDEX_GROUND",
+							"FEDEX_OFFICE",
+							"FEDEX_KINKOS",
+							"FX",
+							"FDFR",
+							"FDEG",
+							"FXK",
+							"FDC",
+							"FDCC"
+						]
+					},
+					"trackingNumberUniqueId": {
+						"type": "string",
+						"description": "Unique identifier used to distinguish duplicate FedEx tracking numbers. This value will be set by FedEx systems. <br> Example: 245822\\~123456789012\\~FDEG",
+						"example": "245822~123456789012~FDEG"
+					}
+				},
+				"description": "Information uniquely identifying a shipment such as Tracking number, ShipDate, and Tracking number uniqueId."
+			},
+			"PagingDetails": {
+				"description": "The details about how to retrieve the subsequent pages when there is more than one page in the TrackReply.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/PagingDetails_2"
+					}
+				]
+			},
+			"PagingDetails_2": {
+				"type": "object",
+				"properties": {
+					"resultsPerPage": {
+						"type": "integer",
+						"description": "<p>Use this element to specify the number of Tracking results to be returned in the Tracking response. Use this and pagingToken elements, to retrieve remaining set of the track results.</p><p><u>Here is how the paging works:</u><br>For your first track request, send element <i>resultsPerPage</i>, with a number XX (5) and the response will return XX (5) results along with element <i>pagingToken</i> and <i>moreDataAvailable</i> = true or false based on the number of tracking results.</p><ul><li>If <i>moreDataAvailable</i> = false, then there are no more track results can be retrieved further.</li><li>If <i>moreDataAvailable</i> = True, then it means there are more track results and hence send the next tracking request with <i>resultsPerPage</i> = YY (4) and <i>pagingToken</i> = XX + 1 (5)  from Track Response element <i>pagingToken</i>. This can be continued until the <i>moreDataAvailable</i> becomes false or there are no more tracking results.</li></ul> <br> Example: 10",
+						"format": "int32",
+						"example": 56
+					},
+					"pagingToken": {
+						"type": "string",
+						"description": "<p>Use this element to specify the starting sequence for the next set of tracking results. This element can be specified if paging is used in the initial tracking request and you need to request next set of track results.</p><p><i>Note:  This element not to be used in the initial tracking request and only should be used in the subsequent track requests when there is paging (element </i>resultsPerPage <i>is specified) indicated.</i></p> <br> Example: 1234567890",
+						"example": "38903279038"
+					}
+				},
+				"description": "Specify the details about how to retrieve the subsequent pages when there is more than one page in the TrackReply."
+			},
+			"TrkcResponseVO_Associated": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_Associated"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO_Associated": {
+				"$ref": "#/components/schemas/TrackingMPSResponse"
+			},
+			"TrackingMPSResponse": {
+				"type": "object",
+				"properties": {
+					"completeTrackResults": {
+						"type": "array",
+						"description": "Contains the detailed tracking entry information.",
+						"items": {
+							"$ref": "#/components/schemas/CompleteTrackResult"
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"description": "The cxs alert type, alert code, and alert messages.<br>Example: example: TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"example": "TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				},
+				"description": "The response elements for Tracking by Associated Shipment request."
+			},
+			"CompleteTrackResult": {
+				"type": "object",
+				"properties": {
+					"trackingNumber": {
+						"type": "string",
+						"description": "A tracking number to identify a package.<br> Example: 123456789012",
+						"example": "123456789012"
+					},
+					"trackResults": {
+						"type": "array",
+						"description": "An array of detailed tracking information for the requested packages(s). In case of duplicate shipments, multiple track details will be populated.",
+						"items": {
+							"$ref": "#/components/schemas/TrackResult"
+						}
+					}
+				},
+				"description": "Detailed and complete track results"
+			},
+			"TrackResult": {
+				"type": "object",
+				"properties": {
+					"trackingNumberInfo": {
+						"$ref": "#/components/schemas/TrackingNumberInfo_1"
+					},
+					"additionalTrackingInfo": {
+						"$ref": "#/components/schemas/AdditionalTrackingInfo"
+					},
+					"distanceToDestination": {
+						"$ref": "#/components/schemas/Distance"
+					},
+					"consolidationDetail": {
+						"type": "array",
+						"description": "Indicates the consolidation details.",
+						"items": {
+							"$ref": "#/components/schemas/ConsolidationDetail"
+						}
+					},
+					"meterNumber": {
+						"type": "string",
+						"description": "The associated meter number for your FedEx account number. Maximum of 9 characters. <br> Example: 8468376",
+						"example": "8468376"
+					},
+					"returnDetail": {
+						"$ref": "#/components/schemas/ReturnDetail"
+					},
+					"serviceDetail": {
+						"$ref": "#/components/schemas/ServiceDescriptionDetail"
+					},
+					"destinationLocation": {
+						"description": "Location details for the recipient where the package will be or has been delivered.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/LocationDetail1"
+							}
+						]
+					},
+					"latestStatusDetail": {
+						"$ref": "#/components/schemas/StatusDetail"
+					},
+					"serviceCommitMessage": {
+						"$ref": "#/components/schemas/ServiceCommitMessage"
+					},
+					"informationNotes": {
+						"type": "array",
+						"description": "Notifications to the end user that provide additional information relevant to the tracked shipment. For example, a notification may indicate that a change in behavior has occurred.",
+						"items": {
+							"$ref": "#/components/schemas/InformationNoteDetail"
+						}
+					},
+					"error": {
+						"$ref": "#/components/schemas/CXSError"
+					},
+					"specialHandlings": {
+						"type": "array",
+						"description": "Indicate the special handlings on the package being tracked. Includes Special handlings requested for the package like signature options, Broker select or COD etc.<br><a onclick='loadDocReference(\"fedexexpressspecialhandlingcodes\")'>Click here to see FedEx Express Special Handling Codes.</a>",
+						"items": {
+							"$ref": "#/components/schemas/TrackSpecialHandling"
+						}
+					},
+					"availableImages": {
+						"type": "array",
+						"description": "The available tracking documents for the shipment being tracked. Available tracking documents includes SPOD and Bill of lading.",
+						"items": {
+							"$ref": "#/components/schemas/AvailableImagesDetail"
+						}
+					},
+					"deliveryDetails": {
+						"$ref": "#/components/schemas/DeliveryDetails"
+					},
+					"scanEvents": {
+						"type": "array",
+						"description": "FedEx scan event information for a shipment. Includes the list of events and/or scans applied.",
+						"items": {
+							"$ref": "#/components/schemas/ScanEvent"
+						}
+					},
+					"dateAndTimes": {
+						"type": "array",
+						"description": "Date and time information for the tracked shipment. Date and time information for the tracked shipment includes various type of date time including when the package was shipped, when it is expected to deliver, when it is actually delivered etc.",
+						"items": {
+							"$ref": "#/components/schemas/TrackingDateAndTime"
+						}
+					},
+					"packageDetails": {
+						"$ref": "#/components/schemas/PackageDetail"
+					},
+					"goodsClassificationCode": {
+						"type": "string",
+						"description": "Classification codes for the goods in package. Goods classification codes required for clearance purpose. <br> Example: goodsClassificationCode",
+						"example": "goodsClassificationCode"
+					},
+					"holdAtLocation": {
+						"description": "Location details for the FedEx facility holding package for delivery. Populated only when REDIRECT_TO_HOLD_AT_LOCATION is available as custom delivery options.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/LocationDetail1"
+							}
+						]
+					},
+					"customDeliveryOptions": {
+						"type": "array",
+						"description": "List of delivery options that can be used to customize the delivery of the package.",
+						"items": {
+							"$ref": "#/components/schemas/CustomDeliveryOption"
+						}
+					},
+					"estimatedDeliveryTimeWindow": {
+						"description": "The estimated window for time of delivery.  May be periodically updated based on available in-flight shipment information.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TimeWindow"
+							}
+						]
+					},
+					"pieceCounts": {
+						"type": "array",
+						"description": "Piece count information at origin and destination.",
+						"items": {
+							"$ref": "#/components/schemas/PieceCountDetail"
+						}
+					},
+					"originLocation": {
+						"$ref": "#/components/schemas/OriginLocation"
+					},
+					"recipientInformation": {
+						"description": "Contact and address information of recipient.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ContactAndAddress1"
+							}
+						]
+					},
+					"standardTransitTimeWindow": {
+						"description": "The standard committed window of time by which the package is expected to be delivered.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TimeWindow"
+							}
+						]
+					},
+					"shipmentDetails": {
+						"$ref": "#/components/schemas/TrackShipmentDetail"
+					},
+					"reasonDetail": {
+						"$ref": "#/components/schemas/ReasonDetail"
+					},
+					"availableNotifications": {
+						"type": "array",
+						"description": "The types of email notifications that are available for the package. <br> Example:ON_DELIVERY",
+						"example": [
+							"ON_DELIVERY",
+							"ON_EXCEPTION"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"shipperInformation": {
+						"description": "Contact and address information of shipper.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ContactAndAddress1"
+							}
+						]
+					},
+					"lastUpdatedDestinationAddress": {
+						"description": "Last updated delivery address for the package.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AddressVO1"
+							}
+						]
+					}
+				},
+				"description": "Contains detailed tracking information for the requested packages(s). In case of duplicates, multiple track details will be populated. "
+			},
+			"AdditionalTrackingInfo": {
+				"type": "object",
+				"properties": {
+					"hasAssociatedShipments": {
+						"type": "boolean",
+						"description": "Field which indicates if the current shipment has associated shipments.<br> Example: false",
+						"example": false
+					},
+					"nickname": {
+						"type": "string",
+						"description": "Field which holds information about nickname of the shipment. <br> Example: Shipment nickname",
+						"example": "shipment nickname"
+					},
+					"packageIdentifiers": {
+						"type": "array",
+						"description": "Other related identifiers for this package such as reference numbers, purchase order number etc. Provides identifiers other than tracking number that can be used in order to track the shipment.",
+						"items": {
+							"$ref": "#/components/schemas/PackageIdentifier"
+						}
+					},
+					"shipmentNotes": {
+						"type": "string",
+						"description": "Field which holds customer assigned notes for a package.<br> Example: shipment notes",
+						"example": "shipment notes"
+					}
+				},
+				"description": "Additional Tracking number information like nickname, notes, shipment attributes etc."
+			},
+			"PackageIdentifier": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"description": "Indicate the package identifier to identify the package.<br> Example: SHIPPER_REFERENCE",
+						"example": "SHIPPER_REFERENCE",
+						"enum": [
+							"BILL_OF_LADING",
+							"COD_RETURN_TRACKING_NUMBER",
+							"CUSTOMER_AUTHORIZATION_NUMBER",
+							"CUSTOMER_REFERENCE",
+							"DEPARTMENT",
+							"DOCUMENT_AIRWAY_BILL",
+							"EXPRESS_ALTERNATE_REFERENCE",
+							"FEDEX_OFFICE_JOB_ORDER_NUMBER",
+							"FREE_FORM_REFERENCE",
+							"GROUND_INTERNATIONAL",
+							"GROUND_SHIPMENT_ID",
+							"GROUP_MPS",
+							"INTERNATIONAL_DISTRIBUTION",
+							"INVOICE",
+							"JOB_GLOBAL_TRACKING_NUMBER",
+							"ORDER_GLOBAL_TRACKING_NUMBER",
+							"ORDER_TO_PAY_NUMBER",
+							"OUTBOUND_LINK_TO_RETURN",
+							"PART_NUMBER",
+							"PARTNER_CARRIER_NUMBER",
+							"PURCHASE_ORDER",
+							"REROUTE_TRACKING_NUMBER",
+							"RETURN_MATERIALS_AUTHORIZATION",
+							"RETURNED_TO_SHIPPER_TRACKING_NUMBER",
+							"SHIPPER_REFERENCE",
+							"STANDARD_MPS",
+							"TRACKING_CONTROL_NUMBER",
+							"TRACKING_NUMBER_OR_DOORTAG",
+							"TRANSBORDER_DISTRIBUTION",
+							"TRANSPORTATION_CONTROL_NUMBER",
+							"VIRTUAL_CONSOLIDATION"
+						]
+					},
+					"value": {
+						"type": "array",
+						"description": "Field which holds the value of the identifier used to identify the package. <br>Example: 'ASJFGVAS'",
+						"example": "ASJFGVAS",
+						"items": {
+							"type": "string"
+						}
+					},
+					"trackingNumberUniqueId": {
+						"type": "string",
+						"description": "Unique identifier used to distinguish duplicate FedEx tracking numbers. This value will be set by FedEx systems. <br> Example: 245822\\~123456789012\\~FDEG",
+						"example": "245822~123456789012~FDEG"
+					}
+				},
+				"description": "The type and value of the package identifier that is to be used to retrieve the tracking information for a package or group of packages."
+			},
+			"Distance": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Field which holds the distance unit type.",
+						"example": "KM",
+						"enum": [
+							"KM",
+							"MI"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "Field which holds the value for the distance.<br> Example: 685.78",
+						"format": "double",
+						"example": 685.7
+					}
+				},
+				"description": "Distance remaining to the destination. Only returned for FedEx Custom Critical shipments."
+			},
+			"ConsolidationDetail": {
+				"type": "object",
+				"properties": {
+					"timeStamp": {
+						"type": "string",
+						"description": "The timestamp for the consolidation. <br> Example: 2020-10-13T03:54:44-06:00",
+						"example": "2020-10-13T03:54:44-06:00"
+					},
+					"consolidationID": {
+						"type": "string",
+						"description": "The identifier for the consolidation. <br> Example: 47936927",
+						"example": "47936927"
+					},
+					"reasonDetail": {
+						"description": "Specifies the reason details for the consolidation event for a package.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ReasonDetail"
+							}
+						]
+					},
+					"packageCount": {
+						"type": "integer",
+						"description": "Specifies the package count for the consolidation. <br> Example: 25",
+						"format": "int32",
+						"example": 25
+					},
+					"eventType": {
+						"type": "string",
+						"description": "Specifies the consolidation event type for a package.  A package can be ADDED to, REMOVED from, or EXCLUDED from a consolidation. <br> Example: PACKAGE_ADDED_TO_CONSOLIDATION",
+						"example": "PACKAGE_ADDED_TO_CONSOLIDATION"
+					}
+				},
+				"description": "This is the consolidation details for packages within a shipment identified as CONSOLIDATED."
+			},
+			"ReasonDetail": {
+				"type": "object",
+				"properties": {
+					"description": {
+						"type": "string",
+						"description": "Field which holds the reason description. <br> Example: Wrong color",
+						"example": "Wrong color"
+					},
+					"type": {
+						"type": "string",
+						"description": "Field which holds the reason type.<br> Example: REJECTED",
+						"example": "REJECTED"
+					}
+				},
+				"description": "This object contains reason description and type."
+			},
+			"ReturnDetail": {
+				"type": "object",
+				"properties": {
+					"authorizationName": {
+						"type": "string",
+						"description": "Name of person authorizing the return, entered by the customer.",
+						"example": "Sammy Smith"
+					},
+					"reasonDetail": {
+						"type": "array",
+						"description": "Specifies the return reason details.",
+						"items": {
+							"$ref": "#/components/schemas/ReasonDetail"
+						}
+					}
+				},
+				"description": "Specifies return information related to a return shipment."
+			},
+			"ServiceDescriptionDetail": {
+				"type": "object",
+				"properties": {
+					"description": {
+						"type": "string",
+						"description": "Field which holds the text description of the service type of this package.<br> Example: FedEx Freight Economy",
+						"example": "FedEx Freight Economy."
+					},
+					"shortDescription": {
+						"type": "string",
+						"description": "Field which holds the abbreviated text description of the service type of this package.<br> Example: FL",
+						"example": "FL"
+					},
+					"type": {
+						"type": "string",
+						"description": "This is the service type.<br> Example: FEDEX_FREIGHT_ECONOMY<br><a onclick='loadDocReference(\"servicetypes\")'>Click here to see Service Types</a>",
+						"example": "FEDEX_FREIGHT_ECONOMY"
+					}
+				},
+				"description": "This object contains service description details for the package."
+			},
+			"LocationDetail_1": {
+				"required": [
+					"locationContactAndAddress",
+					"locationType"
+				],
+				"type": "object",
+				"properties": {
+					"locationId": {
+						"type": "string",
+						"description": "Location Identification for facilities identified by an alpha numeric location code. Passing Location Id of the Hold at Location (HAL) address is strongly recommended to ensure packages are delivered to the correct address.<br> Example: SEA",
+						"example": "SEA"
+					},
+					"locationContactAndAddress": {
+						"$ref": "#/components/schemas/ContactAndAddress_1"
+					},
+					"locationType": {
+						"type": "string",
+						"description": "The FedEx Location Type.<br> Example: PICKUP_LOCTION",
+						"example": "PICKUP_LOCATION",
+						"enum": [
+							"FEDEX_AUTHORIZED_SHIP_CENTER",
+							"FEDEX_OFFICE",
+							"FEDEX_SELF_SERVICE_LOCATION",
+							"FEDEX_STAFFED",
+							"RETAIL_ALLICANCE_LOCATION",
+							"FEDEX_GROUND_TERMINAL",
+							"FEDEX_ONSITE"
+						]
+					}
+				},
+				"description": "Location details for the fedex facility."
+			},
+			"ContactAndAddress_1": {
+				"required": [
+					"address",
+					"contact"
+				],
+				"type": "object",
+				"properties": {
+					"contact": {
+						"$ref": "#/components/schemas/ContactVO_1"
+					},
+					"address": {
+						"description": "Required.\n\nDescriptive data for a physical location.  may be used as an actual physical address(place to which one could go), or a container of 'address parts' which should be handled as a unit(such as a city-state-zip combination within the US).\n\nConditional when used with Payor object.  Required if entering using RECIPIENT or THIRD_PARTY.  Required if not-authenticated and SENDER is selected",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AddressVO_1"
+							}
+						]
+					}
+				},
+				"description": "Location Contact And Address."
+			},
+			"ContactVO_1": {
+				"type": "object",
+				"properties": {
+					"personName": {
+						"type": "string",
+						"description": "Identifies the contact person's name. Max Length is 70.<br> Example: John Taylor",
+						"example": "John Taylor"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "Identifies the phone number associated with this contact. Max length is 15. <br>Example: '1234567890'",
+						"example": "1234567890"
+					},
+					"companyName": {
+						"type": "string",
+						"description": "Identifies the company this contact is associated with. Max length is 35. <br> Example: Fedex",
+						"example": "Fedex"
+					}
+				},
+				"description": "Indicate the contact details for this package.<br>Note: contact is shown in response only in secured flow. For non secured flow, contact is not shown in the response.'"
+			},
+			"AddressVO_1": {
+				"required": [
+					"addressVerificationId",
+					"countryCode",
+					"streetLines"
+				],
+				"type": "object",
+				"properties": {
+					"classification": {
+						"type": "string",
+						"description": "Specifies the FedEx classification type for an address. <br>Valid values are BUSINESS, RESIDENTIAL, MIXED, UNKNOWN.<br> Example: BUSINESS",
+						"example": "BUSINESS"
+					},
+					"residential": {
+						"type": "boolean",
+						"description": "Placeholder to indicate whether the address is residential (as opposed to commercial).",
+						"example": false,
+						"enum": [
+							true,
+							false
+						]
+					},
+					"streetLines": {
+						"type": "array",
+						"description": "Combination of number, street name, etc. At least one line is required for a valid physical address; empty lines should not be included.<br> Example: [\"1043 North Easy Street\", \"Suite 999\"]. <br>Note: Street lines is shown in response only in secured flow. For non secured flow, street lines is not shown in the response.",
+						"example": [
+							"1043 North Easy Street",
+							"Suite 999"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"city": {
+						"type": "string",
+						"description": "Conditional<br>The name of the city, town, etc. <br> Example: SEATTLE",
+						"example": "SEATTLE"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is a placeholder for State or Province code. <br> Example: CA<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State/Province Code</a>",
+						"example": "WA"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "Placeholder to specify postal code for the address. Postal Code is required for postal-aware countries.<br> Example: 98101<br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+						"example": "98101"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "Placeholder for country code (2 characters) for the address.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					}
+				},
+				"description": "Address where the package was actually delivered. Contrast with destinationAddress, which is the location to which the package was intended to be delivered. Addresses may differ due to delivery to a behavior, hold at FedEx location, etc."
+			},
+			"StatusDetail": {
+				"type": "object",
+				"properties": {
+					"scanLocation": {
+						"description": "Address information related to the associated Status.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AddressVO1"
+							}
+						]
+					},
+					"code": {
+						"type": "string",
+						"description": "A code that identifies this type of status.<br> Example:PU,DE,DP,HL,OC",
+						"example": "PU"
+					},
+					"derivedCode": {
+						"type": "string",
+						"description": "Specifies the latest status detail code of the package.<br> Example:PU,DE,DP,HL,OC",
+						"example": "PU"
+					},
+					"ancillaryDetails": {
+						"type": "array",
+						"description": "Specifies the cause of exception along with any action that needs to taken by customer.",
+						"items": {
+							"$ref": "#/components/schemas/StatusAncillaryDetail"
+						}
+					},
+					"statusByLocale": {
+						"type": "string",
+						"description": "This is the latest tracking status by locale.<br> Example: Picked up",
+						"example": "Picked up"
+					},
+					"description": {
+						"type": "string",
+						"description": "A human-readable description of this status.<br> Example: Picked up",
+						"example": "Picked up"
+					},
+					"delayDetail": {
+						"$ref": "#/components/schemas/DelayDetail"
+					}
+				},
+				"description": "Specifies details about the status of the track information for the shipment being tracked.  AncilliaryDetails may also be available which describe the cause of exception along with any action that needs to taken by customer."
+			},
+			"AddressVO": {
+				"required": [
+					"addressVerificationId",
+					"countryCode",
+					"streetLines"
+				],
+				"type": "object",
+				"properties": {
+					"classification": {
+						"type": "string",
+						"description": "Specifies the FedEx classification type for an address. <br>Valid values are BUSINESS, RESIDENTIAL, MIXED, UNKNOWN.<br> Example: BUSINESS",
+						"example": "BUSINESS"
+					},
+					"residential": {
+						"type": "boolean",
+						"description": "Placeholder to indicate whether the address is residential (as opposed to commercial).",
+						"example": false,
+						"enum": [
+							true,
+							false
+						]
+					},
+					"streetLines": {
+						"type": "array",
+						"description": "Combination of number, street name, etc. At least one line is required for a valid physical address; empty lines should not be included.<br> Example: [\"1043 North Easy Street\", \"Suite 999\"]",
+						"example": [
+							"1043 North Easy Street",
+							"Suite 999"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"city": {
+						"type": "string",
+						"description": "Conditional<br>The name of the city, town, etc. <br> Example: SEATTLE",
+						"example": "SEATTLE"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is a placeholder for State or Province code. <br> Example: CA<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State/Province Code</a>",
+						"example": "WA"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "Placeholder to specify postal code for the address. Postal Code is required for postal-aware countries.<br> Example: 98101<br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+						"example": "98101"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "Placeholder for country code (2 characters) for the address.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"countryName": {
+						"type": "string",
+						"description": "Field holds the fully spelled out name of a country.<br> Example: United States",
+						"example": "United States"
+					}
+				},
+				"description": "Address where the package was actually delivered. Contrast with destinationAddress, which is the location to which the package was intended to be delivered. Addresses may differ due to delivery to a behavior, hold at FedEx location, etc."
+			},
+			"StatusAncillaryDetail": {
+				"type": "object",
+				"properties": {
+					"reason": {
+						"type": "string",
+						"description": "Field which holds Reason code associated to the status of the shipment being tracked.<br> Example: 15,84,IN001,015A,02",
+						"example": "15"
+					},
+					"reasonDescription": {
+						"type": "string",
+						"description": "Field which holds Reason description associated to the status of the shipment being tracked.<br> Example: Customer not available or business closed,Local delivery restriction, delivery not attempted,Package delivered to recipient address - release authorized",
+						"example": "Customer not available or business closed"
+					},
+					"action": {
+						"type": "string",
+						"description": "Field which holds recommended action for customer to resolve reason.<br> Example: Contact us at <http://www.fedex.com/us/customersupport/call/index.html> to discuss possible delivery or pickup alternatives.",
+						"example": "Contact us at <http://www.fedex.com/us/customersupport/call/index.html> to discuss possible delivery or pickup alternatives."
+					},
+					"actionDescription": {
+						"type": "string",
+						"description": "Field which holds recommended action description for customer to resolve reason.<br> Example: Customer not Available or Business Closed",
+						"example": "Customer not Available or Business Closed"
+					}
+				},
+				"description": "Field which holds status code of the track information for the shipment being tracked."
+			},
+			"DelayDetail": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"description": "Specifies the type of delay.",
+						"example": "WEATHER",
+						"enum": [
+							"WEATHER",
+							"OPERATIONAL",
+							"LOCAL",
+							"GENERAL",
+							"CLEARANCE"
+						]
+					},
+					"subType": {
+						"type": "string",
+						"description": "Specifies the subType of delay.",
+						"example": "SNOW",
+						"enum": [
+							"SNOW",
+							"TORNADO",
+							"EARTHQUAKE etc"
+						]
+					},
+					"status": {
+						"type": "string",
+						"description": "Specifies the status of package indicating whether a package is arriving early or is on time or has been delayed.",
+						"example": "DELAYED",
+						"enum": [
+							"DELAYED",
+							"ON_TIME",
+							"EARLY"
+						]
+					}
+				},
+				"description": "Specifies the information about delays."
+			},
+			"ServiceCommitMessage": {
+				"type": "object",
+				"properties": {
+					"message": {
+						"type": "string",
+						"description": "Field which holds the commitment message for this package.<br> Example: No scheduled delivery date available at this time.",
+						"example": "No scheduled delivery date available at this time."
+					},
+					"type": {
+						"type": "string",
+						"description": "Field which holds the type of service commit message.<br> Example: ESTIMATED_DELIVERY_DATE_UNAVAILABLE",
+						"example": "ESTIMATED_DELIVERY_DATE_UNAVAILABLE",
+						"enum": [
+							"BROKER_DELIVERED_DESCRIPTION",
+							"CANCELLED_DESCRIPTION",
+							"DELIVERY_IN_MULTIPLE_PIECE_SHIPMENT",
+							"ESTIMATED_DELIVERY_DATE_UNAVAILABLE",
+							"EXCEPTION_IN_MULTIPLE_PIECE_SHIPMENT",
+							"FINAL_DELIVERY_ATTEMPTED",
+							"FIRST_DELIVERY_ATTEMPTED",
+							"HELD_PACKAGE_AVAILABLE_FOR_RECIPIENT_PICKUP",
+							"HELD_PACKAGE_AVAILABLE_FOR_RECIPIENT_PICKUP_WITH_ADDRESS",
+							"HELD_PACKAGE_NOT_AVAILABLE_FOR_RECIPIENT_PICKUP",
+							"SHIPMENT_LABEL_CREATED",
+							"SUBSEQUENT_DELIVERY_ATTEMPTED",
+							"USPS_DELIVERED",
+							"USPS_DELIVERING\""
+						]
+					}
+				},
+				"description": "Commitment message for this package. Informative messages related to the package. Used to convey information such as FedEx has received information about a package but has not yet taken possession of it. FedEx has handed the package off to a third party for final delivery. The package delivery has been cancelled."
+			},
+			"InformationNoteDetail": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Field which holds the code that designates the type of informational message being returned. <br>Example: 'CLEARANCE_ENTRY_FEE_APPLIES'",
+						"example": "CLEARANCE_ENTRY_FEE_APPLIES"
+					},
+					"description": {
+						"type": "string",
+						"description": "Field which holds the The informational message in human readable form.<br> Example: this is an informational message",
+						"example": "this is an informational message"
+					}
+				},
+				"description": "Notifications to the end user that provide additional information relevant to the tracked shipment. For example, a notification may indicate that a change in behavior has occurred."
+			},
+			"CXSError": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Error Code. <br> Example: TRACKING.TRACKINGNUMBER.EMPTY",
+						"example": "TRACKING.TRACKINGNUMBER.EMPTY"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "List of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Error Message. <br>Example: Please provide tracking number.",
+						"example": "Please provide tracking number."
+					}
+				},
+				"description": "Contains error details."
+			},
+			"Parameter": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied. <br>Example: value",
+						"example": "value"
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key.<br> Example: key",
+						"example": "key"
+					}
+				},
+				"description": "List of parameters which indicates the properties of the alert message."
+			},
+			"TrackSpecialHandling": {
+				"type": "object",
+				"properties": {
+					"description": {
+						"type": "string",
+						"description": "Field which holds the text description of the special handling code.<br> Example: Deliver Weekday",
+						"example": "Deliver Weekday"
+					},
+					"type": {
+						"type": "string",
+						"description": "Field which holds type representing the special handling.<br> Example: DELIVER_WEEKDAY",
+						"example": "DELIVER_WEEKDAY"
+					},
+					"paymentType": {
+						"type": "string",
+						"description": "Field which holds information about the payment handling related to the special handling.<br> Example: OTHER",
+						"example": "OTHER"
+					}
+				},
+				"description": "Specify types of special handlings that are applied to this package.<br><a onclick='loadDocReference(\"fedexexpressspecialhandlingcodes\")'>Click here to see FedEx Express Special Handling Codes.</a>"
+			},
+			"AvailableImagesDetail": {
+				"type": "object",
+				"properties": {
+					"size": {
+						"type": "string",
+						"description": "Field which holds the size of available images for the shipment being tracked. Example: LARGE",
+						"example": "LARGE",
+						"enum": [
+							"SMALL",
+							"LARGE"
+						]
+					},
+					"type": {
+						"type": "string",
+						"description": "Field which holds the type of available images for the shipment being tracked.<br> Example: BILL_OF_LADING",
+						"example": "BILL_OF_LADING",
+						"enum": [
+							"SIGNATURE_PROOF_OF_DELIVERY",
+							"BILL_OF_LADING"
+						]
+					}
+				},
+				"description": "The available tracking documents for the shipment being tracked. Available tracking documents includes SPOD and Bill of lading."
+			},
+			"DeliveryDetails": {
+				"type": "object",
+				"properties": {
+					"receivedByName": {
+						"type": "string",
+						"description": "Field which holds the name of the person who received the package, if applicable.<br> Example: Receiver",
+						"example": "Reciever"
+					},
+					"destinationServiceArea": {
+						"type": "string",
+						"description": "Field which holds the destination service area code.<br> Example: EDDUNAVAILABLE",
+						"example": "EDDUNAVAILABLE"
+					},
+					"destinationServiceAreaDescription": {
+						"type": "string",
+						"description": "Field which holds the description corresponding to the destination service area.<br> Example: Appointment Required",
+						"example": "Appointment required"
+					},
+					"locationDescription": {
+						"type": "string",
+						"description": "Field which holds the FedEx location description for the package destination.<br> Example: Receptionist/Front Desk",
+						"example": "Receptionist/Front Desk"
+					},
+					"actualDeliveryAddress": {
+						"$ref": "#/components/schemas/AddressVO1"
+					},
+					"deliveryToday": {
+						"type": "boolean",
+						"description": "This element indicates whether the package will be delivered today. The value 'True', indicates that today is package delivery.<br> Example: true",
+						"example": false
+					},
+					"locationType": {
+						"type": "string",
+						"description": "Field which holds the FedEx location type code for the package destination. If  Location Type not available we will get empty value.",
+						"example": "APARTMENT_OFFICE",
+						"enum": [
+							"RECEPTIONIST_OR_FRONT_DESK",
+							"SHIPPING_RECEIVING",
+							"MAILROOM",
+							"RESIDENCE",
+							"GUARD_OR_SECURITY_STATION",
+							"FEDEX_LOCATION",
+							"IN_BOND_OR_CAGE",
+							"PHARMACY",
+							"GATE_HOUSE",
+							"MANAGER_OFFICE",
+							"MAIN_OFFICE",
+							"LEASING_OFFICE",
+							"RENTAL_OFFICE",
+							"APARTMENT_OFFICE",
+							"OTHER"
+						]
+					},
+					"signedByName": {
+						"type": "string",
+						"description": "Field which holds the name of the person who signed for the package, if applicable.<br> Example: Reciever",
+						"example": "Reciever"
+					},
+					"officeOrderDeliveryMethod": {
+						"type": "string",
+						"description": "Field which identifies the method of office order delivery. 'Pickup' - the recipient will be picking up the office order from the FedEx Office Center. 'Shipment' - the office order will be delivered to the recipient as a FedEx shipment using the FedEx Service Type requested. 'Courier' - the office order will be delivered to the recipient by local courier. <br> Example: Courier",
+						"example": "Courier"
+					},
+					"deliveryAttempts": {
+						"type": "string",
+						"description": "Field which holds the number of delivery attempts made to deliver the package.<br> Example: 0",
+						"example": "0"
+					},
+					"deliveryOptionEligibilityDetails": {
+						"type": "array",
+						"description": "Specifies eligibility type for the different delivery option.",
+						"items": {
+							"$ref": "#/components/schemas/DeliveryOptionElgibilityDetails"
+						}
+					}
+				},
+				"description": "Delivery related information for the tracked package. Provides delivery details as actual delivery address once the package is delivered, the number of delivery attempts made etc."
+			},
+			"DeliveryOptionElgibilityDetails": {
+				"type": "object",
+				"properties": {
+					"option": {
+						"type": "string",
+						"description": "This is the type of delivery option.<br><br><i>Note: For eligibile DISPUTE_DELIVERY, RETURN_TO_SHIPPER, SUPPLEMENT_ADDRESS go to fedex.com to perform the option/action.</i><br><br>Example: INDIRECT_SIGNATURE_RELEASE",
+						"example": "INDIRECT_SIGNATURE_RELEASE",
+						"enum": [
+							"DISPUTE_DELIVERY",
+							"INDIRECT_SIGNATURE_RELEASE",
+							"REDIRECT_TO_HOLD_AT_LOCATION",
+							"REROUTE",
+							"RESCHEDULE",
+							"RETURN_TO_SHIPPER",
+							"SUPPLEMENT_ADDRESS"
+						]
+					},
+					"eligibility": {
+						"type": "string",
+						"description": "Eligibility of the customer for the specific delivery options.<br> Example: INELIGIBLE",
+						"example": "INELIGIBLE"
+					}
+				},
+				"description": "Specifies details of delivery options and its eligibility type"
+			},
+			"ScanEvent": {
+				"type": "object",
+				"properties": {
+					"date": {
+						"type": "string",
+						"description": "Date and time of the scan event.<br> Example: '2018-02-02T12:01:00-07:00'",
+						"example": "2018-02-02T12:01:00-07:00"
+					},
+					"derivedStatus": {
+						"type": "string",
+						"description": "Field which holds status description of the track information for the scan event.<br> Example: 'Picked Up'",
+						"example": "Picked Up"
+					},
+					"scanLocation": {
+						"description": "Location Details for the FedEx facility where the scan event occurred.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AddressVO1"
+							}
+						]
+					},
+					"locationId": {
+						"type": "string",
+						"description": "Location Identification for facilities identified by an alpha numeric location code. Passing Location Id of the Hold at Location (HAL) address is strongly recommended to ensure packages are delivered to the correct address.<br> Example: SEA",
+						"example": "SEA"
+					},
+					"locationType": {
+						"type": "string",
+						"description": "This field holds Location Type. If  Location Type not available we will get empty value",
+						"example": "CUSTOMS_BROKER",
+						"enum": [
+							"AIRPORT",
+							"CUSTOMS_BROKER",
+							"CUSTOMER",
+							"DELIVERY_LOCATION",
+							"DESTINATION_AIRPORT",
+							"DROP_BOX",
+							"DESTINATION_FEDEX_FACILITY",
+							"ENROUTE",
+							"FEDEX_FACILITY",
+							"INTERLINE_CARRIER",
+							"FEDEX_OFFICE_LOCATION",
+							"NON_FEDEX_FACILITY",
+							"ORIGIN_AIRPORT",
+							"ORIGIN_FEDEX_FACILITY",
+							"PORT_OF_ENTRY",
+							"PICKUP_LOCATION",
+							"PLANE",
+							"SORT_FACILITY",
+							"SHIP_AND_GET_LOCATION",
+							"TURNPOINT",
+							"VEHICLE"
+						]
+					},
+					"exceptionDescription": {
+						"type": "string",
+						"description": "Field which holds the text description for the exception if the event was an exception .<br>Example: Package available for clearance",
+						"example": "Package available for clearance"
+					},
+					"eventDescription": {
+						"type": "string",
+						"description": "Field which holds the text description of the scan event.<br> Example: 'Picked Up'",
+						"example": "Picked Up"
+					},
+					"eventType": {
+						"type": "string",
+						"description": "Field which holds the code identifying the type of scan event.<br> Example: 'PU'",
+						"example": "PU"
+					},
+					"derivedStatusCode": {
+						"type": "string",
+						"description": "Field which holds status code of the track information for the scan event.<br> Example: 'PU'",
+						"example": "PU"
+					},
+					"exceptionCode": {
+						"type": "string",
+						"description": "Field which holds the code identifier for the exception if the event was an exception. <br> Example: A25",
+						"example": "A25"
+					},
+					"delayDetail": {
+						"$ref": "#/components/schemas/DelayDetail"
+					}
+				},
+				"description": "FedEx scanning event information for a package.<br><a onclick='loadDocReference(\"trackservicescancodes\")'>Click here to see Track Service Scan Codes.</a>"
+			},
+			"TrackingDateAndTime": {
+				"type": "object",
+				"properties": {
+					"dateTime": {
+						"type": "string",
+						"description": "Field which holds the tracking date or timestamp in ISO format.<br>Format: YYYY-MM-DD<br> Example: '2019-05-07'",
+						"example": "2007-09-27T00:00:00"
+					},
+					"type": {
+						"type": "string",
+						"description": "Field which holds information about the type of tracking date or timestamp.<br> Example: 'ACTUAL_DELIVERY'",
+						"example": "ACTUAL_DELIVERY",
+						"enum": [
+							"ACTUAL_DELIVERY",
+							"ACTUAL_PICKUP",
+							"ACTUAL_TENDER",
+							"ANTICIPATED_TENDER",
+							"APPOINTMENT_DELIVERY",
+							"ATTEMPTED_DELIVERY",
+							"COMMITMENT",
+							"ESTIMATED_ARRIVAL_AT_GATEWAY",
+							"ESTIMATED_DELIVERY",
+							"ESTIMATED_PICKUP",
+							"ESTIMATED_RETURN_TO_STATION",
+							"SHIP",
+							"SHIPMENT_DATA_RECEIVED"
+						]
+					}
+				},
+				"description": "Date and time information for the tracked shipment. Date and time information for the tracked shipment includes various type of date time including when the package was shipped, when it is expected to deliver, when it is actually delivered etc."
+			},
+			"PackageDetail": {
+				"type": "object",
+				"properties": {
+					"physicalPackagingType": {
+						"type": "string",
+						"description": "Indicate the physical package type for non-Express shipments.<br><a onclick='loadDocReference(\"subpackagetypes\")'>Click here to see Available Types</a>",
+						"example": "BARREL"
+					},
+					"sequenceNumber": {
+						"type": "string",
+						"description": "Field which holds the number representing which package in a multi-piece shipment applies to this TrackDetail.<br> Example: 45",
+						"example": "45"
+					},
+					"undeliveredCount": {
+						"type": "string",
+						"description": "Field which holds information about total count of the undelivered packages in the shipment. <br> Example: 7",
+						"example": "7"
+					},
+					"packagingDescription": {
+						"$ref": "#/components/schemas/PackagingDescription"
+					},
+					"count": {
+						"type": "string",
+						"description": "Field which holds the total number of pieces in the shipment which includes the package represented by this TrackDetail.<br> Example: 1",
+						"example": "1"
+					},
+					"weightAndDimensions": {
+						"$ref": "#/components/schemas/TrackingWeightAndDimensions"
+					},
+					"packageContent": {
+						"type": "array",
+						"description": "Field which holds information about the package content of the shipment. Populated for secure users only.<br> Example: wire hangers.",
+						"example": [
+							"wire hangers",
+							"buttons"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"contentPieceCount": {
+						"type": "string",
+						"description": "Field which holds information about total count of the packages in the shipment.<br> Example: 100",
+						"example": "100"
+					},
+					"declaredValue": {
+						"description": "This is the declared value. Declared Value represents FedEx maximum liability in connection with a shipment of that Package, including but not limited to, any loss, damage, delay, misdelivery, any failure to provide information, or misdelivery of information relating to the Shipment.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Amount"
+							}
+						]
+					}
+				},
+				"description": "Details of the packages in the shipment being tracked. Includes details like package type, weight, dimensions, declared value, etc."
+			},
+			"PackagingDescription": {
+				"type": "object",
+				"properties": {
+					"description": {
+						"type": "string",
+						"description": "Indicate the packaging type description.<br> Example: FedEx Pak",
+						"example": "FedEx Pak"
+					},
+					"type": {
+						"type": "string",
+						"description": "Indicate the packaging type.<br><a onclick='loadDocReference(\"packagetypes\")'>Click here to see Package Types</a>",
+						"example": "FEDEX_PAK"
+					}
+				},
+				"description": "Description of the packaging used for this shipment."
+			},
+			"TrackingWeightAndDimensions": {
+				"type": "object",
+				"properties": {
+					"weight": {
+						"type": "array",
+						"description": "Field which holds the weight of the package.",
+						"items": {
+							"$ref": "#/components/schemas/Weight"
+						}
+					},
+					"dimensions": {
+						"type": "array",
+						"description": "Indicate the dimensions of the package.<br> Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul>Note: The maximum/minimum dimension values varies based on the services and the packaging types. Refer <a href=\"https://www.fedex.com/en-us/service-guide.html#\" target=\"_blank\">FedEx Service Guide</a> for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.",
+						"items": {
+							"$ref": "#/components/schemas/Dimensions"
+						}
+					}
+				},
+				"description": "Field which holds the weight and dimension information."
+			},
+			"Weight": {
+				"type": "object",
+				"properties": {
+					"unit": {
+						"type": "string",
+						"description": "This is package weight type.",
+						"example": "LB",
+						"enum": [
+							"KG",
+							"LB"
+						]
+					},
+					"value": {
+						"type": "string",
+						"description": "This is package weight. Max. Length is 99999. <br> Example: 22222.0",
+						"example": "22222.0"
+					}
+				},
+				"description": "These are the package weight details."
+			},
+			"Dimensions": {
+				"type": "object",
+				"properties": {
+					"length": {
+						"type": "integer",
+						"description": "Indicate the length of the package. No implied decimal places. Maximum value: 999 <br> Example: 20",
+						"format": "int32",
+						"example": 100
+					},
+					"width": {
+						"type": "integer",
+						"description": "Indicate the width of the package. No implied decimal places. Maximum value: 999 <br> Example: 10",
+						"format": "int32",
+						"example": 50
+					},
+					"height": {
+						"type": "integer",
+						"description": "Indicate the height of the package. No implied decimal places. Maximum value: 999 <br> Example: 10",
+						"format": "int32",
+						"example": 30
+					},
+					"units": {
+						"type": "string",
+						"description": "Unit of measure for the provided dimensions.<br>Valid Values are IN - inches, CM - centimeters. <br>Note: Any value other than CM including blank/null will default to IN. <br>Example: CM",
+						"example": "CM",
+						"enum": [
+							"CM",
+							"IN"
+						]
+					}
+				},
+				"description": "Indicate the dimensions of the package.<br> Following conditions will apply: <ul><li>Dimensions are optional but when added, then all three dimensions must be indicated.</li><li>Dimensions are required with YOUR_PACKAGING package type.</li></ul>Note: The maximum/minimum dimension values varies based on the services and the packaging types. Refer <a href=\"https://www.fedex.com/en-us/service-guide.html#\" target=\"_blank\">FedEx Service Guide</a> for service details related to DIM Weighting for FedEx Express and oversize conditions for FedEx Express and FedEx Ground.",
+				"example": {
+					"length": 100,
+					"width": 50,
+					"height": 30,
+					"units": "CM"
+				}
+			},
+			"Amount": {
+				"type": "object",
+				"properties": {
+					"currency": {
+						"type": "string",
+						"description": "Indicate the currency code.<br> Example: USD<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Currency Codes</a>",
+						"example": "USD"
+					},
+					"value": {
+						"type": "number",
+						"description": "Field which holds the amount value. <br> Example: 56.80",
+						"format": "double",
+						"example": 56.8
+					}
+				}
+			},
+			"LocationDetail": {
+				"required": [
+					"locationContactAndAddress",
+					"locationType"
+				],
+				"type": "object",
+				"properties": {
+					"locationId": {
+						"type": "string",
+						"description": "Location Identification for facilities identified by an alpha numeric location code. Passing Location Id of the Hold at Location (HAL) address is strongly recommended to ensure packages are delivered to the correct address.<br> Example: SEA",
+						"example": "SEA"
+					},
+					"locationContactAndAddress": {
+						"$ref": "#/components/schemas/ContactAndAddress"
+					},
+					"locationType": {
+						"type": "string",
+						"description": "The FedEx Location Type.<br> Example: PICKUP_LOCTION",
+						"example": "PICKUP_LOCATION",
+						"enum": [
+							"FEDEX_AUTHORIZED_SHIP_CENTER",
+							"FEDEX_OFFICE",
+							"FEDEX_SELF_SERVICE_LOCATION",
+							"FEDEX_STAFFED",
+							"RETAIL_ALLICANCE_LOCATION",
+							"FEDEX_GROUND_TERMINAL",
+							"FEDEX_ONSITE"
+						]
+					}
+				},
+				"description": "Location details for the fedex facility."
+			},
+			"ContactAndAddress": {
+				"required": [
+					"address",
+					"contact"
+				],
+				"type": "object",
+				"properties": {
+					"contact": {
+						"$ref": "#/components/schemas/ContactVO"
+					},
+					"address": {
+						"description": "Required.\n\nDescriptive data for a physical location.  may be used as an actual physical address(place to which one could go), or a container of 'address parts' which should be handled as a unit(such as a city-state-zip combination within the US).\n\nConditional when used with Payor object.  Required if entering using RECIPIENT or THIRD_PARTY.  Required if not-authenticated and SENDER is selected",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AddressVO"
+							}
+						]
+					}
+				},
+				"description": "Location Contact And Address."
+			},
+			"ContactVO": {
+				"type": "object",
+				"properties": {
+					"personName": {
+						"type": "string",
+						"description": "Identifies the contact person's name. Max Length is 70.<br> Example: John Taylor",
+						"example": "John Taylor"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "Identifies the phone number associated with this contact. Max length is 15. <br>Example: '1234567890'",
+						"example": "1234567890"
+					},
+					"companyName": {
+						"type": "string",
+						"description": "Identifies the company this contact is associated with. Max length is 35. <br> Example: Fedex",
+						"example": "Fedex"
+					}
+				},
+				"description": "Indicate the contact details for this package."
+			},
+			"CustomDeliveryOption": {
+				"type": "object",
+				"properties": {
+					"requestedAppointmentDetail": {
+						"$ref": "#/components/schemas/RequestedAppointmentDetail"
+					},
+					"description": {
+						"type": "string",
+						"description": "Field which specifies the description of the custom delivery option requested <br> Example: Redirect the package to the hold location.",
+						"example": "Redirect the package to the hold location."
+					},
+					"type": {
+						"type": "string",
+						"description": "Field which specifies the type of the custom delivery option requested.<br> Example: REDIRECT_TO_HOLD_AT_LOCATION",
+						"example": "REDIRECT_TO_HOLD_AT_LOCATION",
+						"enum": [
+							"REROUTE",
+							"APPOINTMENT",
+							"DATE_CERTAIN",
+							"EVENING",
+							"REDIRECT_TO_HOLD_AT_LOCATION",
+							"ELECTRONIC_SIGNATURE_RELEASE"
+						]
+					},
+					"status": {
+						"type": "string",
+						"description": "Field which specifies the status of the custom delivery option requested.<br> Example: HELD",
+						"example": "HELD"
+					}
+				},
+				"description": "List of delivery options that can be used to customize the delivery of the package."
+			},
+			"RequestedAppointmentDetail": {
+				"type": "object",
+				"properties": {
+					"date": {
+						"type": "string",
+						"description": "Field which holds the requested appointment date.<br>Format: YYYY-MM-DD<br> example: '2019-05-07'",
+						"example": "2019-05-07"
+					},
+					"window": {
+						"type": "array",
+						"description": "Array of different appointment time windows available on the date specified such as, Morning, afternoon, mid-day.",
+						"items": {
+							"$ref": "#/components/schemas/TimeWindow"
+						}
+					}
+				},
+				"description": "Field which specifies the details of the requested appointment."
+			},
+			"TimeWindow": {
+				"type": "object",
+				"properties": {
+					"description": {
+						"type": "string",
+						"description": "Field which describes the time window provided. <br> Example: Description field",
+						"example": "Description field"
+					},
+					"window": {
+						"$ref": "#/components/schemas/TimeRange"
+					},
+					"type": {
+						"type": "string",
+						"description": "Field which holds the code representing the description for the time window provided. <br> Example: ESTIMATED_DELIVERY",
+						"example": "ESTIMATED_DELIVERY",
+						"enum": [
+							"ACTUAL_DELIVERY",
+							"ACTUAL_PICKUP",
+							"ACTUAL_TENDER",
+							"ANTICIPATED_TENDER",
+							"APPOINTMENT_DELIVERY",
+							"ATTEMPTED_DELIVERY",
+							"COMMITMENT",
+							"ESTIMATED_ARRIVAL_AT_GATEWAY",
+							"ESTIMATED_DELIVERY",
+							"ESTIMATED_PICKUP",
+							"ESTIMATED_RETURN_TO_STATION",
+							"SHIP",
+							"SHIPMENT_DATA_RECEIVED"
+						]
+					}
+				}
+			},
+			"TimeRange": {
+				"type": "object",
+				"properties": {
+					"begins": {
+						"type": "string",
+						"description": "Field which holds the begin date/timestamp for a range.<br> Example: '2021-10-01T08:00:00'",
+						"example": "2021-10-01T08:00:00"
+					},
+					"ends": {
+						"type": "string",
+						"description": "Field which holds the end date/timestamp for a range.<br> Example: '2021-10-15T00:00:00-06:00'",
+						"example": "2021-10-15T00:00:00-06:00"
+					}
+				},
+				"description": "Field which holds a date/timestamp window."
+			},
+			"PieceCountDetail": {
+				"type": "object",
+				"properties": {
+					"count": {
+						"type": "string",
+						"description": "Field which holds the piece count. <br> Example: 35",
+						"example": "35"
+					},
+					"description": {
+						"type": "string",
+						"description": "Field which holds the piece count description detail. <br> Example: picec count description",
+						"example": "picec count description"
+					},
+					"type": {
+						"type": "string",
+						"description": "Field which holds the piece count location type. <br> Example: ORIGIN",
+						"example": "ORIGIN",
+						"enum": [
+							"DESTINATION",
+							"ORIGIN"
+						]
+					}
+				},
+				"description": "Specifies the count of the packages delivered and the count of the packages at the origin which can be used for verification purposes. Populated for secure users only."
+			},
+			"OriginLocation": {
+				"description": "Location details for the FedEx facility where the shipment originated.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/LocationDetail_origin"
+					}
+				]
+			},
+			"TrackShipmentDetail": {
+				"type": "object",
+				"properties": {
+					"contents": {
+						"type": "array",
+						"description": "Field which holds information about contents of the shipment. Populated for secure users only.",
+						"items": {
+							"$ref": "#/components/schemas/ShipmentContent"
+						}
+					},
+					"beforePossessionStatus": {
+						"type": "boolean",
+						"description": "Indicates the shipment is not yet in FedEx possession, but is still in shipper's possession.<br> Example: false",
+						"example": false
+					},
+					"weight": {
+						"type": "array",
+						"description": "Array of package level weights, which represent the total weight of the shipment.",
+						"items": {
+							"$ref": "#/components/schemas/Weight"
+						}
+					},
+					"contentPieceCount": {
+						"type": "string",
+						"description": "Field which holds information about content piece count of the shipment.<br> Example: 3333",
+						"example": "3333"
+					},
+					"splitShipments": {
+						"type": "array",
+						"description": "Field which holds information about split shipments.",
+						"items": {
+							"$ref": "#/components/schemas/TrackSplitShipment"
+						}
+					}
+				},
+				"description": "Shipment level details for the shipment being tracked. Includes overall shipment weight, contents etc."
+			},
+			"ShipmentContent": {
+				"type": "object",
+				"properties": {
+					"itemNumber": {
+						"type": "string",
+						"description": "Field holds the item number for the contents of shipment. <br> Example: RZ5678 ",
+						"example": "RZ5678"
+					},
+					"receivedQuantity": {
+						"type": "string",
+						"description": "Field which holds information about the quantity received. <br> Example: 13",
+						"example": "13"
+					},
+					"description": {
+						"type": "string",
+						"description": "Field which holds informative description about shipment content. <br> Example:  pulyurethane rope",
+						"example": "pulyurethane rope"
+					},
+					"partNumber": {
+						"type": "string",
+						"description": "Holds the part number of the content in shipment. <br> Example: RK1345",
+						"example": "RK1345"
+					}
+				},
+				"description": "Field which holds information about contents of the shipment. Populated for secure users only."
+			},
+			"TrackSplitShipment": {
+				"type": "object",
+				"properties": {
+					"pieceCount": {
+						"type": "string",
+						"description": "Field which holds the number of pieces in the part.<br> Example: 10",
+						"example": "10"
+					},
+					"statusDescription": {
+						"type": "string",
+						"description": "Field which holds human-readable description of the status. <br> Example: status",
+						"example": "status"
+					},
+					"timestamp": {
+						"type": "string",
+						"description": "Field which holds the date and time the status began.<br>Example: '2019-05-07T08:00:07'",
+						"example": "2019-05-07T08:00:07"
+					},
+					"statusCode": {
+						"type": "string",
+						"description": "Field which holds the status code. <br> Example: statusCode",
+						"example": "statuscode"
+					}
+				},
+				"description": "Holds the information about split shipments."
+			},
+			"Alert": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Specifies the api alert code."
+					},
+					"alertType": {
+						"type": "string",
+						"description": "Specifies the api alert type.",
+						"enum": [
+							"NOTE",
+							"WARNING"
+						]
+					},
+					"message": {
+						"type": "string",
+						"description": "Specifies the api alert message."
+					}
+				},
+				"description": "Specifies the api alerts."
+			},
+			"ErrorResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError_2"
+						}
+					}
+				}
+			},
+			"CXSError_2": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: TRACKING.TRACKINGNUMBER.EMPTY"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: Please provide tracking number."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO401": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401"
+						}
+					}
+				}
+			},
+			"CXSError401": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "List of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO403": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403"
+						}
+					}
+				}
+			},
+			"CXSError403": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "List of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO404": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404"
+						}
+					}
+				}
+			},
+			"CXSError404": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "List of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO500": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500"
+						}
+					}
+				}
+			},
+			"CXSError500": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "List of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO503": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError503"
+						}
+					}
+				}
+			},
+			"CXSError503": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: SERVICE.UNAVAILABLE.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "List of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Full_Schema_Notification": {
+				"required": [
+					"senderContactName",
+					"senderEMailAddress",
+					"trackingEventNotificationDetail",
+					"trackingNumberInfo"
+				],
+				"type": "object",
+				"properties": {
+					"senderContactName": {
+						"type": "string",
+						"description": "Placeholder for Sender contact name.<br> Example: Sam Smith",
+						"example": "Sam Smith"
+					},
+					"senderEMailAddress": {
+						"type": "string",
+						"description": "Email address of the sender from which the shipment notification will be sent.<br>Example: LSR123@gmail.com",
+						"example": "Lsr1234@gmail.com"
+					},
+					"trackingEventNotificationDetail": {
+						"$ref": "#/components/schemas/TrackingEventNotificationDetail"
+					},
+					"trackingNumberInfo": {
+						"$ref": "#/components/schemas/TrackingNumberInfo"
+					},
+					"shipDateBegin": {
+						"type": "string",
+						"description": "ShipDateBegin and ShipDateEnd are recommended to narrow the search, reduce lookup time, and avoid duplicates when searching for a specific tracking number in a specific time range. <br>Format: YYYY-MM-DD<br>example:'2019-10-13'",
+						"example": "2019-10-13"
+					},
+					"shipDateEnd": {
+						"type": "string",
+						"description": "ShipDateBegin and ShipDateEnd are recommended to narrow the search, reduce lookup time, and avoid duplicates when searching for a specific tracking number in a specific time range. <br>Format: YYYY-MM-DD<br>example:'2019-10-13'",
+						"example": "2019-10-31"
+					}
+				},
+				"description": "The request to receive a tracking notification."
+			},
+			"TrackingEventNotificationDetail": {
+				"description": "Object for holding tracking event Notification details.",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/TrackingEventNotificationDetail_2"
+					}
+				]
+			},
+			"TrackingEventNotificationDetail_2": {
+				"required": [
+					"trackingNotifications"
+				],
+				"type": "object",
+				"properties": {
+					"trackingNotifications": {
+						"type": "array",
+						"description": "List of Tracking notifications requested for events like ON_DELIVERY, ON_ESTIMATED_DELIVERY, ON_EXCEPTION, ON_TENDER.",
+						"items": {
+							"$ref": "#/components/schemas/TrackingNotification"
+						}
+					},
+					"personalMessage": {
+						"type": "string",
+						"description": "An optional message which will be included in the body of the email.",
+						"example": "Personal message content"
+					},
+					"supportHTML": {
+						"title": "@Ignore4TPP",
+						"description": "If value is 'true' then html tags are included in the response date.  If 'false' they are not provided in the response."
+					}
+				},
+				"description": "Tracking Event Notification details."
+			},
+			"TrackingNotification": {
+				"required": [
+					"notificationDetail",
+					"notificationEventTypes"
+				],
+				"type": "object",
+				"properties": {
+					"notificationDetail": {
+						"$ref": "#/components/schemas/TrackingNotificationDetail"
+					},
+					"role": {
+						"type": "string",
+						"description": "This is to specify Recipient_Role in the shipment. <br>Possible values - BROKER, OTHER, RECIPIENT, SHIPPER <br> Example: SHIPPER",
+						"example": "SHIPPER"
+					},
+					"notificationEventTypes": {
+						"type": "array",
+						"description": "Identifies the events for which the client is requesting notifications. <br>Possible Values are: ON_DELIVERY, ON_ESTIMATED_DELIVERY, ON_EXCEPTION, ON_TENDER",
+						"example": [
+							"ON_DELIVERY",
+							"ON_EXCEPTION",
+							"ON_ESTIMATED_DELIVERY"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"currentResultRequestedFlag": {
+						"type": "boolean",
+						"description": "If value is 'true' the current tracking results for the shipment along with notification details will be provided to the client. If 'false' only results for the notification request is provided.<br>Defaults to 'false'<br>Example: true",
+						"example": true
+					}
+				},
+				"description": "Identifies a list of details for Tracking Notifications"
+			},
+			"TrackingNotificationDetail": {
+				"required": [
+					"emailDetail",
+					"localization",
+					"notificationType"
+				],
+				"type": "object",
+				"properties": {
+					"localization": {
+						"$ref": "#/components/schemas/Localization"
+					},
+					"emailDetail": {
+						"$ref": "#/components/schemas/EmailDetail"
+					},
+					"notificationType": {
+						"type": "string",
+						"description": "Identifies the format of the notification. <br>valid values are 'HTML' or 'TEXT'.",
+						"example": "HTML"
+					}
+				},
+				"description": "Information about the notification email and the language of the notification requested."
+			},
+			"Localization": {
+				"required": [
+					"languageCode"
+				],
+				"type": "object",
+				"properties": {
+					"languageCode": {
+						"type": "string",
+						"description": "Identifies two-letter code for the language (e.g. en/EN, fr/FR, es/ES etc..).<br> Example: en",
+						"example": "en"
+					},
+					"localeCode": {
+						"type": "string",
+						"description": "Identifies the two-letter code for the region, used to further identify the requested language.  for example, if you request Spanish, you must include a locale code of <i>US</i> for North American Spanish, or <i>MX</i> for Mexico. <br> Example: US<br><a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"example": "US"
+					}
+				},
+				"description": "Specifies the language details for email notification."
+			},
+			"EmailDetail": {
+				"required": [
+					"emailAddress"
+				],
+				"type": "object",
+				"properties": {
+					"emailAddress": {
+						"type": "string",
+						"description": "Specifies email address on which user wants to get notified for various registered events.<br>Example: p1@fedex.com",
+						"example": "p1@fedex.com"
+					},
+					"name": {
+						"type": "string",
+						"description": "Specifies the name of the notification recipient.<br>Example: Sam Smith",
+						"example": "Preethi"
+					}
+				},
+				"description": "Specifies the Email Notification Details."
+			},
+			"TrackingNumberInfo_2": {
+				"required": [
+					"trackingNumber"
+				],
+				"type": "object",
+				"properties": {
+					"trackingNumber": {
+						"type": "string",
+						"description": "This is a Tracking number for FedEx packages used for tracking a single package or group of packages. <br> Example: 128667043726<br><a onclick='loadDocReference(\"mocktrackingnumbersforfedexexpressandfedexground\")'>Click here to see Mock Tracking Numbers.</a>",
+						"example": "128667043726"
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "This is a placeholder to provide the FedEx operating company (transportation) code used for package delivery. <br> Example: FDXE",
+						"example": "FDXE",
+						"enum": [
+							"FDXE",
+							"FDXG",
+							"FXSP",
+							"FXFR",
+							"FDXC",
+							"FXCC",
+							"FEDEX_CARGO",
+							"FEDEX_CUSTOM_CRITICAL",
+							"FEDEX_EXPRESS",
+							"FEDEX_FREIGHT",
+							"FEDEX_GROUND",
+							"FEDEX_OFFICE",
+							"FEDEX_KINKOS",
+							"FX",
+							"FDFR",
+							"FDEG",
+							"FXK",
+							"FDC",
+							"FDCC"
+						]
+					},
+					"trackingNumberUniqueId": {
+						"type": "string",
+						"description": "Unique identifier used to distinguish duplicate FedEx tracking numbers. This value will be set by FedEx systems. <br> Example: 245822\\~123456789012\\~FDEG",
+						"example": "245822~123456789012~FDEG"
+					}
+				},
+				"description": "Information uniquely identifying a shipment such as Tracking number, ShipDate, and Tracking number uniqueId."
+			},
+			"TrkcResponseVO_Notifications": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_Notification"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO_Notification": {
+				"$ref": "#/components/schemas/SendNotificationOutputVO"
+			},
+			"SendNotificationOutputVO": {
+				"properties": {
+					"TrackingNumberInfo": {
+						"description": "Tracking number information which uniquely identifies a package. Tracking number information includes tracking number, carrier code and a unique qualifier.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TrackingNumberInfo_2"
+							}
+						]
+					},
+					"destinationAddress": {
+						"description": "Address where the package was actually delivered. Contrast with destination Address, which is the location to which the package was intended to be delivered. Addresses may differ due to delivery to a neighbor, hold at FedEx location, etc.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AddressVO"
+							}
+						]
+					},
+					"recipientDetails": {
+						"type": "array",
+						"description": "Details of the recipient notification events. Possible events are - ON_DELIVERY, ON_ESTIMATED_DELIVERY, ON_EXCEPTION, ON_TENDER.",
+						"items": {
+							"$ref": "#/components/schemas/notificationEventTypes"
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"description": "The cxs shipment alerts. This includes the alert type, code, and            message.<br>example: TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"example": "TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				}
+			},
+			"notificationEventTypes": {
+				"type": "array",
+				"description": "Identifies the events for which the client is requesting notifications. Possible events are -  ON_DELIVERY, ON_ESTIMATED_DELIVERY, ON_EXCEPTION, ON_TENDER <br> Example: [ON_DELIVERY,ON_ESTIMATED_DELIVERY,ON_EXCEPTION]",
+				"items": {
+					"type": "string",
+					"example": "[\"ON_ESTIMATED_DELIVERY\"]"
+				}
+			},
+			"Full_Schema_Tracking_References": {
+				"required": [
+					"referencesInformation"
+				],
+				"type": "object",
+				"properties": {
+					"referencesInformation": {
+						"$ref": "#/components/schemas/ReferenceInformation"
+					},
+					"includeDetailedScans": {
+						"type": "boolean",
+						"description": "Indicates if the detailed scans are being requested or not. If true, the detailed scans will be included in the response returned. <br>Valid values are True or False.",
+						"example": true
+					}
+				},
+				"description": "Specifies the request elements for Track by alternate reference.<br> For a valid request there are two combinations:<br> 1.) A referenceValue and accountNumber is required OR <br>2.) referenceType & carrierCode, shipdateBegin and shipDateEnd, destinationPostalCode and destinationCountryCode are required.",
+				"example": {
+					"referencesInformation": {
+						"type": "BILL_OF_LADING",
+						"value": "56754674567546754",
+						"accountNumber": "XXX61073",
+						"carrierCode": "FDXE",
+						"shipDateBegin": "2019-02-13",
+						"shipDateEnd": "2019-02-13",
+						"destinationCountryCode": "US",
+						"destinationPostalCode": "75063"
+					},
+					"includeDetailedScans": "true"
+				}
+			},
+			"ReferenceInformation": {
+				"required": [
+					"shipDateBegin",
+					"shipDateEndDate",
+					"value"
+				],
+				"type": "object",
+				"properties": {
+					"carrierCode": {
+						"type": "string",
+						"description": "Specifies which carrier should be included.<br> Example: FDXE",
+						"example": "FDXE"
+					},
+					"type": {
+						"type": "string",
+						"description": "Specify the type of alternate reference used. This is Conditionally required.<br> Valid Values :<ul><li>BILL_OF_LADING</li><li>COD_RETURN_TRACKING_NUMBER</li><li>CUSTOMER_AUTHORIZATION_NUMBER</li><li>CUSTOMER_REFERENCE</li><li>DEPARTMENT</li><li>DOCUMENT_AIRWAY_BILL</li><li>EXPRESS_ALTERNATE_REFERENCE</li><li>FEDEX_OFFICE_JOB_ORDER_NUMBER</li><li>FREE_FORM_REFERENCE</li><li>GROUND_INTERNATIONAL</li><li>GROUND_SHIPMENT_ID</li><li>INTERNATIONAL_DISTRIBUTION</li><li>INVOICE</li><li>JOB_GLOBAL_TRACKING_NUMBER</li><li>ORDER_GLOBAL_TRACKING_NUMBER</li><li>ORDER_TO_PAY_NUMBER</li><li>PART_NUMBER</li><li>PARTNER_CARRIER_NUMBER</li><li>PURCHASE_ORDER</li><li>REROUTE_TRACKING_NUMBER</li><li>RETURN_MATERIALS_AUTHORIZATION</li><li>RETURNED_TO_SHIPPER_TRACKING_NUMBER</li><li>SHIPPER_REFERENCE</li><li>TRANSBORDER_DISTRIBUTION</li><li>TRANSPORTATION_CONTROL_NUMBER</li><li>VIRTUAL_CONSOLIDATION</li></ul>",
+						"example": " BILL_OF_LADING"
+					},
+					"value": {
+						"type": "string",
+						"description": "Conditionally required. <br>Specifies the alternate reference value. <br> Example: 56754674567546754",
+						"example": "56754674567546754"
+					},
+					"accountNumber": {
+						"type": "string",
+						"description": "Conditionally required. <br>Specifies the shipper's account number. <br> Note: Either account number or destination postal code and country code are mandatory to track by reference.<br> Example: 697561862",
+						"example": "XXX61073"
+					},
+					"shipDateBegin": {
+						"type": "string",
+						"description": "ShipDateBegin and ShipDateEnd are recommended to narrow the search, reduce lookup time, and avoid duplicates when searching for a specific tracking number within a specific date range. <br>Format: YYYY-MM-DD <br> Example: 2020-03-29",
+						"example": "2020-03-29"
+					},
+					"shipDateEndDate": {
+						"type": "string",
+						"description": "ShipDateBegin and ShipDateEnd are recommended to narrow the search, reduce lookup time, and avoid duplicates when searching for a specific tracking number within a specific date range. <br>Format: YYYY-MM-DD <br> Example: 2020-04-01",
+						"example": "2020-04-01"
+					},
+					"destinationCountryCode": {
+						"type": "string",
+						"description": "Conditionally required. <br>Specifies the recipient's country code. <br> Note: Either account number or destination postal code and country code are mandatory to track by reference.<br> Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"destinationPostalCode": {
+						"type": "string",
+						"description": "Conditionally required. <br>Indicate recipient postal code. Required for postal-aware countries. <br> Note: Either account number or destination postal code and country code are mandatory to track by reference. <br> Example: 75063<br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+						"example": "75063"
+					}
+				},
+				"description": "Specifies the reference details for the tracked shipment. The following rules apply <br>- Either shipper.AccountNumber or Destination.countryCode(and postal for postal aware countries) are required<br>- If ShipDateRangeBegin and End are not present, shipDateRangeBegin will be set to the current date minus 30 days, and shipDdateRangeEnd will default to current date plus one day."
+			},
+			"TrkcResponseVO_ReferenceNumber": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_ReferenceNumber"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO_ReferenceNumber": {
+				"$ref": "#/components/schemas/TrackingReferencesResponse"
+			},
+			"TrackingReferencesResponse": {
+				"type": "object",
+				"properties": {
+					"cxsErrors": {
+						"type": "array",
+						"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter.",
+						"items": {
+							"$ref": "#/components/schemas/CXSError"
+						}
+					},
+					"completeTrackResults": {
+						"type": "array",
+						"description": "Contains detailed tracking entry information.  <br>Valid values: ACTUAL_DELIVERY, ACTUAL_PICKKUP, ACTUAL_TENDER, ANTICIPATED_TENDER, APPOINTMENT_DELIVERY, ATTEMPTED_DELIVERY, COMMITMENT, ESTIMATED_ARRIVAL_AT_GATEWAY, ESTIMATED_DELIVERY, ESTIMATED_PICKUP, ESTIMATED_RETURN_TO_STATION, SHIP, SHIPMENT_DATE_RECEIVED",
+						"items": {
+							"$ref": "#/components/schemas/CompleteTrackResult"
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"description": "The cxs alert type, alert code, and alert message that is received.<br>example: TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"example": "TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					},
+					"successful": {
+						"type": "boolean",
+						"description": "Indicates whether the tracking is successful."
+					}
+				},
+				"description": "Specifies the response elements for Track by alternate reference request."
+			},
+			"Full_Schema_TCN": {
+				"required": [
+					"tcnInfo"
+				],
+				"type": "object",
+				"properties": {
+					"tcnInfo": {
+						"description": "The information associated with the transportation control number.<br>Only 1 TCN is supported per request.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TCNInfo"
+							}
+						]
+					},
+					"includeDetailedScans": {
+						"type": "boolean",
+						"description": "Indicates if detailed scans are requested or not. <br/>Valid values are True, or False.",
+						"example": true
+					}
+				},
+				"description": "The request elements for Tracking by TCN request type.",
+				"example": {
+					"tcnInfo": {
+						"value": "N552428361Y555XXX",
+						"carrierCode": "FDXE",
+						"shipDateBegin": "2019-02-13",
+						"shipDateEnd": "2019-02-13"
+					},
+					"includeDetailedScans": true
+				}
+			},
+			"TCNInfo": {
+				"required": [
+					"value"
+				],
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Field which holds the Transportation Control Number value.<br> Example: N552428361Y555XXX",
+						"example": "N552428361Y555XXX"
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "Field which holds information about carrier code of the shipment.<br> Example: FDXE",
+						"example": "FDXE"
+					},
+					"shipDateBegin": {
+						"type": "string",
+						"description": "ShipDateBegin and ShipDateEnd are recommended to narrow the search, reduce lookup time, and avoid duplicates when searching for a specific tracking number within a specific date range. <br>Format: YYYY-MM-DD <br> Example: 2020-03-29",
+						"example": "2020-03-29"
+					},
+					"shipDateEnd": {
+						"type": "string",
+						"description": "ShipDateBegin and ShipDateEnd are recommended to narrow the search, reduce lookup time, and avoid duplicates when searching for a specific tracking number within a specific date range. <br>Format: YYYY-MM-DD <br> Example: 2020-04-01",
+						"example": "2020-04-01"
+					}
+				}
+			},
+			"TrkcResponseVO_TCN": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_TCN"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO_TCN": {
+				"$ref": "#/components/schemas/TrackingNumbersResponse_TCN"
+			},
+			"TrackingNumbersResponse_TCN": {
+				"type": "object",
+				"properties": {
+					"completeTrackResults": {
+						"type": "array",
+						"description": "Contains detailed tracking entry information.",
+						"items": {
+							"$ref": "#/components/schemas/CompleteTrackResult"
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"description": "alert type, alert code, and alert message<br>Example: TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"example": "TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				},
+				"description": "The response elements for the Track by TCN request."
+			},
+			"Parameter_2": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"example": "value"
+					},
+					"key": {
+						"type": "string",
+						"example": "key"
+					}
+				},
+				"description": "Parameter is a class having key-value pair."
+			},
+			"Full_Schema_SPOD": {
+				"required": [
+					"trackDocumentDetail",
+					"trackDocumentSpecification"
+				],
+				"type": "object",
+				"properties": {
+					"trackDocumentDetail": {
+						"description": "This object specifies the tracking document details such as types of documents, for example, SIGNATURE_PROOF_OF_DELIVERY and also the format of tracking document. Supported values are PDF and PNG. Default is PDF.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/TrackDocumentDetail"
+							}
+						]
+					},
+					"trackDocumentSpecification": {
+						"type": "array",
+						"description": "This is the placeholder for document specification details required to identify the shipment being tracked. This includes tracking information such as tracking qualifier, carrier code, and tracking number.<br>At least one trackDocumentSpecification is required. Maximum limit is 30.",
+						"items": {
+							"$ref": "#/components/schemas/TrackDocumentSpecification"
+						}
+					}
+				}
+			},
+			"TrackDocumentDetail": {
+				"required": [
+					"documentType"
+				],
+				"type": "object",
+				"properties": {
+					"documentType": {
+						"type": "string",
+						"description": "Indicate the Tracking Document. <br>Valid values are SIGNATURE_PROOF_OF_DELIVERY, BILL_OF_LADING and FREIGHT_BILLING_DOCUMENT.<br>Example: SIGNATURE_PROOF_OF_DELIVERY.<br><i>Note: The SPOD information will be presented as a byte array instead of an image. The byte array is a base64 encoded string, which should be decoded to get the final signature image in PDF or PNG format</i>",
+						"example": "SIGNATURE_PROOF_OF_DELIVERY"
+					},
+					"documentFormat": {
+						"type": "string",
+						"description": "Specifies the format of tracking document. <br>Valid values are PDF or PNG.<br>The values are key sensitive.<br>Note: documentTypes BILL_OF_LADING and FREIGHT_BILLING_DOCUMENT does not support PNG.",
+						"example": "PNG"
+					}
+				},
+				"description": "Specifies the tracking document details."
+			},
+			"TrackDocumentSpecification": {
+				"required": [
+					"trackingNumberInfo"
+				],
+				"type": "object",
+				"properties": {
+					"trackingNumberInfo": {
+						"allOf": [
+							{
+								"description": "Information uniquely identifying the shipment such as Tracking number, Carrier Code, and Tracking number uniqueId."
+							},
+							{
+								"$ref": "#/components/schemas/TrackingNumberInfo"
+							}
+						]
+					},
+					"shipDateBegin": {
+						"type": "string",
+						"description": "ShipDateBegin and ShipDateEnd are used to narrow the search, reduce lookup time, and avoid duplicates when searching for a specific tracking number during a specific date range.<br>Format: YYYY-MM-DD<br>example: '2020-03-29'",
+						"example": "2020-03-29"
+					},
+					"shipDateEnd": {
+						"type": "string",
+						"description": "ShipDateBegin and ShipDateEnd are recommended to narrow the search, reduce lookup time, and avoid duplicates when searching for a specific tracking number during a specific date range.<br>Format: YYYY-MM-DD<br>example: '2020-04-01'",
+						"example": "2020-04-01"
+					},
+					"accountNumber": {
+						"type": "string",
+						"description": "Specifies Signature Proof of Delivery(SPOD) account number for the shipment being tracked.<br>Conditionally required when documentType is BILL_OF_LADING or FREIGHT_BILLING_DOCUMENT<br>Example: 123456789",
+						"example": "XXX61073"
+					}
+				}
+			},
+			"TrkcResponseVO_SPOD": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_SPOD"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO_SPOD": {
+				"$ref": "#/components/schemas/SPODResponseVO"
+			},
+			"SPODResponseVO": {
+				"type": "object",
+				"properties": {
+					"localization": {
+						"$ref": "#/components/schemas/Localization"
+					},
+					"documentType": {
+						"type": "string",
+						"description": "The types of tracking document.<br> Example: SIGNATURE_PROOF_OF_DELIVERY"
+					},
+					"documentFormat": {
+						"type": "string",
+						"description": "The format of the tracking document. <br>Valid values are PDF and PNG.",
+						"example": "PNG"
+					},
+					"document": {
+						"type": "array",
+						"format": "base64",
+						"description": "This field holds the list of byte array(base64) which specifies the image of the recipient's signature (if the signature is available) once the shipment has been delivered. <br>Example: [iVBORw0KGgoAAAANSUhEUgAABX0AAAfECAIAAACJ1ysDAACAAElEQVR42uzdeXxM9/4/8EhC3ZZkskmotlpuq6227r1ur6KqrSXLZLHvhKyIndJy7ZLMlgiy2BJ71E4QewmCICUqJAiCIIgkM3P2M/P7nDkxHQm97b0339b9vZ6P92MeM3P2kX8+L5/FzgQAAAAAAAAAUDvs8BMAAAAAAAAAQC1B7gAAAAAAAAAAtQW5AwAAAAAAAADUFuQOAAAAAAAAAFBbkDsAAAAAAAAAQG1B7gAAAAAAAAAAtQW5AwAAAAAAAADUFuQOAAAAAAAAAFBbkDsAAAAAAAAAQG1B7gAAAAAAAAAAtQW5AwAAAAAAAADUFuQOAAAAAAAAAFBbkDsAAAAAAAAAQG1B7gAAAAAAAAAAtQW5AwAAAAAAAADUFuQOAAAAAAAAAFBbkDsAAAAAAAAAQG1B7gAAAAAAAAAAtQW5AwAAAAAAAADUFuQOAAAAAAAAAFBbkDsAAAAAAAAAQG1B7gAAAAAAAAAAtQW5AwAAAAAAAADUFuQOAAAAAAAAAFBbkDsAAAAAAAAAQG1B7gAAAAAAAAAAtQW5AwAAAAAAAADUFuQOAAAAAAAAAFBbkDsAAAAAAAAAQG1B7gAAAAAAAAAAtQW5AwAAAAAAAADUFuQO/6bl0/+dhCEfLh7eOonUsE8S5RouFfly8YD34od8lKAK23ruUKGhXO7v8CtzB1Mt5A6FP+cOLuRxrLmDLtBD1d9rtmWcxRf6Yba5g6MlenAwRdTlo5zoyU2N0/5snPYe9d179Hfvst+1YL9rznwrFT2pKf1tCyqlN3V8BVOcKxjLkDsAAAAAAAAgd4B/J3dQukiv/d5eGPH3ZdMCNySO27du/vH10cdXzzm6ek6Wba345+HUWT/sXZ17K/8uYzSIAmey5A6m58cKctwgWsry/tmbeXGL+l+nFKKcOwyTcodeTeOUUu6gepo7aAM9YmrmDqawuqYw6VUMqy+MUHD//J]",
+						"items": {
+							"type": "string",
+							"format": "byte"
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"description": "Specifies the alert received when the recipient's signature has been            taken as a proof of shipment delivery.<br>Example: TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"example": "TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				}
+			},
+			"Full_Schema_Tracking_Numbers": {
+				"required": [
+					"includeDetailedScans",
+					"trackingInfo"
+				],
+				"type": "object",
+				"properties": {
+					"includeDetailedScans": {
+						"type": "boolean",
+						"description": "Indicates if detailed scans are requested or not. <br/>Valid values are True, or False."
+					},
+					"trackingInfo": {
+						"type": "array",
+						"description": "The tracking information of the shipment to be tracked. At least one occurrence of TrackingInfo is required. Maximum limit is 30.",
+						"items": {
+							"$ref": "#/components/schemas/TrackingInfo"
+						}
+					}
+				},
+				"description": "The request elements for Tracking by Tracking Number. "
+			},
+			"TrackingNumberInfo_1": {
+				"type": "object",
+				"properties": {
+					"trackingNumber": {
+						"type": "string",
+						"description": "This is a Tracking number for FedEx packages used for tracking a single package or group of packages. <br> Example: 128667043726<br><a onclick='loadDocReference(\"mocktrackingnumbersforfedexexpressandfedexground\")'>Click here to see Mock Tracking Numbers.</a>",
+						"example": "128667043726"
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "This is a placeholder to provide the FedEx operating company (transportation) code used for package delivery. <br> Example: FDXE",
+						"example": "FDXE",
+						"enum": [
+							"FDXE",
+							"FDXG",
+							"FXSP",
+							"FXFR",
+							"FDXC",
+							"FXCC",
+							"FEDEX_CARGO",
+							"FEDEX_CUSTOM_CRITICAL",
+							"FEDEX_EXPRESS",
+							"FEDEX_FREIGHT",
+							"FEDEX_GROUND",
+							"FEDEX_OFFICE",
+							"FEDEX_KINKOS",
+							"FX",
+							"FDFR",
+							"FDEG",
+							"FXK",
+							"FDC",
+							"FDCC"
+						]
+					},
+					"trackingNumberUniqueId": {
+						"type": "string",
+						"description": "Unique identifier used to distinguish duplicate FedEx tracking numbers. This value will be set by FedEx systems. <br> Example: 245822\\~123456789012\\~FDEG",
+						"example": "245822~123456789012~FDEG"
+					}
+				},
+				"description": "Information uniquely identifying a shipment such as Tracking number, ShipDate, and Tracking number uniqueId."
+			},
+			"TrkcResponseVO_TrackingNumber": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_TrackingNumber"
+					}
+				},
+				"description": "This is a wrapper class for outputVO"
+			},
+			"BaseProcessOutputVO_TrackingNumber": {
+				"$ref": "#/components/schemas/TrackingNumbersResponse"
+			},
+			"TrackingNumbersResponse": {
+				"type": "object",
+				"properties": {
+					"completeTrackResults": {
+						"type": "array",
+						"description": "Contains detailed tracking entry information. <br>Valid values are- ACTUAL_DELIVERY, ACTUAL_PICKUP, ACTUAL_TENDER, ANTICIPATED_TENDER, APPOINTMENT_DELIVERY, ATTEMPTED_DELIVERY, COMMITMENT, ESTIMATED_ARRIVAL_AT_GATEWAY, ESTIMATED_DELIVERY, ESTIMATED_PICKUP, ESTIMATED_RETURN_TO_STATION, SHIP, SHIPMENT_DATA_RECEIVED.",
+						"items": {
+							"$ref": "#/components/schemas/CompleteTrackResult"
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"description": "The cxs alert type, alert code and alert message<br>Example: TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"example": "TRACKING.DATA.NOTFOUND -  Tracking data unavailable",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				},
+				"description": "The response elements for Tracking by tracking number request",
+				"xml": {
+					"name": "TrackingNumbersResponse"
+				}
+			},
+			"LocationDetail_origin": {
+				"type": "object",
+				"properties": {
+					"locationId": {
+						"type": "string",
+						"description": "Location Identification for facilities identified by an alpha numeric location code. Passing Location Id of the Hold at Location (HAL) address is strongly recommended to ensure packages are delivered to the correct address.<br> Example: SEA",
+						"example": "SEA"
+					},
+					"locationContactAndAddress": {
+						"$ref": "#/components/schemas/ContactAndAddress1"
+					}
+				},
+				"description": "Location details for the fedex facility."
+			},
+			"LocationDetail1": {
+				"type": "object",
+				"properties": {
+					"locationId": {
+						"type": "string",
+						"description": "Location Identification for facilities identified by an alpha numeric location code. Passing Location Id of the Hold at Location (HAL) address is strongly recommended to ensure packages are delivered to the correct address.<br> Example: SEA",
+						"example": "SEA"
+					},
+					"locationContactAndAddress": {
+						"$ref": "#/components/schemas/ContactAndAddress1"
+					},
+					"locationType": {
+						"type": "string",
+						"description": "This field holds FedEx Location Type. If  Location Type not available we will get empty value.",
+						"example": "FEDEX_SHIPSITE",
+						"enum": [
+							"FEDEX_AUTHORIZED_SHIP_CENTER",
+							"FEDEX_OFFICE",
+							"FEDEX_SELF_SERVICE_LOCATION",
+							"FEDEX_GROUND_TERMINAL",
+							"FEDEX_ONSITE",
+							"FEDEX_EXPRESS_STATION",
+							"FEDEX_FACILITY",
+							"FEDEX_FREIGHT_SERVICE_CENTER",
+							"FEDEX_HOME_DELIVERY_STATION",
+							"FEDEX_SHIP_AND_GET",
+							"FEDEX_SHIPSITE",
+							"FEDEX_SMART_POST_HUB"
+						]
+					}
+				},
+				"description": "Location details for the fedex facility."
+			},
+			"ContactAndAddress1": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"description": "Required.\n\nDescriptive data for a physical location.  may be used as an actual physical address(place to which one could go), or a container of 'address parts' which should be handled as a unit(such as a city-state-zip combination within the US).\n\nConditional when used with Payor object.  Required if entering using RECIPIENT or THIRD_PARTY.  Required if not-authenticated and SENDER is selected",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AddressVO1"
+							}
+						]
+					}
+				},
+				"description": "Location Contact And Address."
+			},
+			"ContactVO1": {
+				"type": "object",
+				"properties": {
+					"personName": {
+						"type": "string",
+						"description": "Identifies the contact person's name. Max Length is 70.<br> Example: John Taylor",
+						"example": "John Taylor"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "Identifies the phone number associated with this contact. Max length is 15. <br>Example: '1234567890'",
+						"example": "1234567890"
+					},
+					"companyName": {
+						"type": "string",
+						"description": "Identifies the company this contact is associated with. Max length is 35. <br> Example: Fedex",
+						"example": "Fedex"
+					}
+				},
+				"description": "Indicate the contact details for this package.<br>Note: contact is shown in response only in secured flow. For non secured flow, contact is not shown in the response.'"
+			},
+			"AddressVO1": {
+				"type": "object",
+				"properties": {
+					"addressClassification": {
+						"type": "string",
+						"description": "Specifies the FedEx classification type for an address. <br>Valid values are BUSINESS, RESIDENTIAL, MIXED, UNKNOWN.<br> Example: BUSINESS",
+						"example": "BUSINESS"
+					},
+					"residential": {
+						"type": "boolean",
+						"description": "Placeholder to indicate whether the address is residential (as opposed to commercial).",
+						"example": false,
+						"enum": [
+							true,
+							false
+						]
+					},
+					"streetLines": {
+						"type": "array",
+						"description": "Combination of number, street name, etc. At least one line is required for a valid physical address; empty lines should not be included.<br> Example: [\"1043 North Easy Street\", \"Suite 999\"]. <br>Note: Street lines is shown in response only in secured flow. For non secured flow, street lines is not shown in the response.",
+						"example": [
+							"1043 North Easy Street",
+							"Suite 999"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"city": {
+						"type": "string",
+						"description": "Conditional<br>The name of the city, town, etc. <br> Example: SEATTLE",
+						"example": "SEATTLE"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is a placeholder for State or Province code. <br> Example: CA<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State/Province Code</a>",
+						"example": "WA"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "Placeholder to specify postal code for the address. Postal Code is required for postal-aware countries.<br> Example: 98101<br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+						"example": "98101"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "Placeholder for country code (2 characters) for the address.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"countryName": {
+						"type": "string",
+						"description": "Field holds the fully spelled out name of a country.<br> Example: United States",
+						"example": "United States"
+					}
+				},
+				"description": "Address where the package was actually delivered. Contrast with destinationAddress, which is the location to which the package was intended to be delivered. Addresses may differ due to delivery to a behavior, hold at FedEx location, etc."
+			}
+		}
+	}
+}

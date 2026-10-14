@@ -36,8 +36,8 @@ const ResetPasswordForm = ({ token, onResetSuccess }) => {
   };
   useEffect(() => {
     if (
-      formData.password != '' &&
-      formData.password_confirmation != '' &&
+      formData.password.trim() != '' &&
+      formData.password_confirmation.trim() != '' &&
       password_comparison_check(formData) &&
       Object.keys(errors).length === 0
     ) {
@@ -54,9 +54,7 @@ const ResetPasswordForm = ({ token, onResetSuccess }) => {
   const validateField = (name, value) => {
     let newErrors = { ...errors };
     if (name === 'password') {
-      if (value.length < 5) {
-        newErrors.password = 'Password should be at least 5 characters';
-      } else if (value.length > 100) {
+      if (value.length > 100) {
         newErrors.password = 'Password should be max 100 characters';
       } else {
         delete newErrors.password;

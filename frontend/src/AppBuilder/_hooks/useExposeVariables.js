@@ -5,13 +5,19 @@ export const useExposeState = (loadingState, visibleState, disabledState, setExp
   const [isVisible, setVisibility] = useState(visibleState || true);
   const [isLoading, setLoading] = useState(loadingState || false);
 
+  const applyVisibility = (value) => {
+    setVisibility(value);
+    setExposedVariable('isVisible', value);
+  };
+
   // Effect to conditionally update state from properties passed to widget
   useEffect(() => {
     setDisable(disabledState);
   }, [disabledState]);
 
   useEffect(() => {
-    setVisibility(visibleState);
+    applyVisibility(visibleState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleState]);
 
   useEffect(() => {
@@ -22,7 +28,7 @@ export const useExposeState = (loadingState, visibleState, disabledState, setExp
   useEffect(() => {
     setExposedVariables({
       setDisable: async (value) => setDisable(value),
-      setVisibility: async (value) => setVisibility(value),
+      setVisibility: async (value) => applyVisibility(value),
       setLoading: async (value) => setLoading(value),
     });
   }, [setExposedVariables]);

@@ -1,0 +1,77 @@
+import React from 'react';
+import { SortableTree as SharedSortableTree } from '@/_ui/SortableTree';
+import { MenuItem } from '../MenuItem';
+import { GroupMenuItem } from '../GroupMenuItem';
+import { NavMenuItemGhost } from './NavMenuItemGhost';
+
+const PROPERTY_NAMES = {
+  isGroup: 'isGroup',
+  parentId: 'parentId',
+};
+
+export function SortableTree({
+  componentId,
+  menuItems,
+  onReorder,
+  onDeleteItem,
+  onItemChange,
+  validateItemId,
+  getResolvedValue,
+  collapsible = true,
+  indicator = true,
+  indentationWidth = 15,
+  darkMode,
+}) {
+  const renderItem = (item, props) => {
+    if (!item?.isGroup) {
+      return (
+        <MenuItem
+          componentId={componentId}
+          darkMode={darkMode}
+          item={item}
+          onDeleteItem={onDeleteItem}
+          onItemChange={onItemChange}
+          validateItemId={validateItemId}
+          getResolvedValue={getResolvedValue}
+        />
+      );
+    }
+    return (
+      <GroupMenuItem
+        darkMode={darkMode}
+        item={item}
+        highlight={props.isHighlighted}
+        collapsed={props.collapsed}
+        onCollapse={props.onCollapse}
+        onDeleteItem={onDeleteItem}
+        onItemChange={onItemChange}
+        validateItemId={validateItemId}
+        getResolvedValue={getResolvedValue}
+      />
+    );
+  };
+
+  const renderGhost = (item) => (
+    <NavMenuItemGhost darkMode={darkMode} item={item} getResolvedValue={getResolvedValue} />
+  );
+
+  // Keyed by `_key`, not `id` — editing an item's id must not remount its row.
+  const getItemKey = (item) => item._key || item.id;
+
+  return (
+    <SharedSortableTree
+      items={menuItems}
+      onReorder={onReorder}
+      propertyNames={PROPERTY_NAMES}
+      renderItem={renderItem}
+      renderGhost={renderGhost}
+      getItemKey={getItemKey}
+      collapsible={collapsible}
+      indicator={indicator}
+      indentationWidth={indentationWidth}
+      darkMode={darkMode}
+      handlerClassName="nav-handler"
+      containerElement="ul"
+    />
+  );
+}

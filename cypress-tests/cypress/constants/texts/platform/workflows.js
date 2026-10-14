@@ -1,0 +1,76 @@
+export const workflowsText = {
+  runjs: "runjs1",
+  workflowNode: "workflows1",
+  postgresqlNodeName: "postgresql1",
+  restapiNodeName: "restapi1",
+  harperdbNodeName: "harperdb1",
+  runjsInputField: "runjs-input-field",
+  pgsqlQueryInputField: "query-input-field",
+  harperdbInputField: "sql-query-input-field",
+  restapiUrlInputField: "url-input-field",
+  workflowNameInputField: "workflow-name-input",
+  exportWFOption: "export-workflow",
+  jsonKeyPlaceholder: "key",
+  jsonValuePlaceholder: "your value",
+  workflowRunhelperText: "A few seconds ago",
+  responseNodeKey: "data",
+  responseNodeLabel: "Response",
+  responseNodeName: "response1",
+  runjsNodeLabel: "Run JavaScript code",
+  workflowNodeLabel: "Run Workflow",
+  runjsNodeCode: "return startTrigger.params",
+  responseNodeQuery: "return runjs1.data",
+  runjsNodeQueryForLargedataSet:
+    "const bigArray = new Array(30000).fill(null).map((_, i) => 'test' + (i + 1)); const result = new Object(); result.data = bigArray; return result;",
+
+  responseNodeExpectedValueTextForLargeDataset: "test1",
+  workflowResponseNodeQuery: "return workflows1.data",
+  responseNodeExpectedValueText: "your value",
+  longStringJsonText:
+    "ToolJet is an AI-native open-source low-code platform for building and deploying internal tools and business applications with minimal effort",
+  // Self-contained, so the result doesn't depend on what the shared test
+  // database happens to contain.
+  postgresNodeQuery: "SELECT current_database() AS database_name;",
+  postgresResponseNodeQuery: "return postgresql1.data",
+  // The database createPostgresDataSource connects to.
+  postgresExpectedValue: "postgres",
+  
+  restApiUrl: "http://9.234.17.31:8000/delay/10s",
+  restApiResponseNodeQuery: "return restapi1.data",
+  restApiExpectedValue: "<!DOCTYPE html>",
+
+  harperDbNodeQuery: "SELECT * FROM tooljet_harper.tooljet_table;",
+  harperDbNode: /sql/i,
+  harperDbResponseNodeQuery: "return harperdb1.data",
+  harperDbExpectedValue: "Test Record 3",
+  harperDbPluginName: "HarperDB",
+
+  runjsCodeForWebhooks: 'return "Verifying webhooks response"',
+  runjsExpectedValueForWebhooks: "Verifying webhooks response",
+  expectedStatusCodeText: 200,
+  exportFixturePath: "cypress/fixtures/exportedApp.json",
+  workflowLabel: "Workflow",
+
+  // Workflow card menu copy. Workflow-specific — do NOT substitute the app
+  // strings in Texts/common ("Delete app", "Clone app"): they do not render on a
+  // workflow card.
+  renameWorkflowOption: "Rename workflow",
+  changeIconOption: "Change Icon",
+  exportWorkflowOption: "Export workflow",
+  deleteWorkflowOption: "Delete workflow",
+  // No clone control renders on a workflow card. Both possible spellings are
+  // asserted absent.
+  cloneAppOption: "Clone app",
+  cloneWorkflowOption: "Clone workflow",
+
+  // Folder delete confirmation. The trailing sentence says "Apps ... will not be
+  // deleted" even on the workflows dashboard, so only the stable prefix is
+  // asserted.
+  folderDeletePrefix: (folderName) =>
+    `Are you sure you want to delete the folder ${folderName}?`,
+
+  llmAgentFixturePath:
+    "cypress/fixtures/templates/workflows/workflow_llm_agent_node-export-1781268843647.json",
+  marketplacePluginsToBeInstalled: "Marketplace plugins to be installed",
+  agentExecutionFailed: "Agent execution failed",
+};

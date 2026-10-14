@@ -15,6 +15,16 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
   const selectedMinute = momentObj?.minute() || 0;
   const selectedAmPm = selectedHour >= 12 ? 'PM' : 'AM';
 
+  // Convert 24-hour format to 12-hour display format
+  const get12HourDisplay = (hour24) => {
+    if (hour24 === 0) return 12; // 0 (midnight) -> 12 AM
+    if (hour24 <= 12) return hour24; // 1-12 -> 1-12
+    return hour24 - 12; // 13-23 -> 1-11
+  };
+
+  // Get display hour for current selection
+  const selectedHourDisplay = !isTwentyFourHourMode ? get12HourDisplay(selectedHour) : selectedHour;
+
   let minHour = 0;
   let minMinute = 0;
   if (minTime) {
@@ -37,11 +47,12 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
     }
   }
 
-  const addHours = (time) => {
-    if (!isTwentyFourHourMode && selectedAmPm === 'PM') {
-      return time + 12;
+  // Convert 12-hour display to 24-hour format
+  const convertTo24Hour = (hour12, isPM) => {
+    if (hour12 === 12) {
+      return isPM ? 12 : 0; // 12 PM = 12, 12 AM = 0
     }
-    return time;
+    return isPM ? hour12 + 12 : hour12; // 1-11 PM = 13-23, 1-11 AM = 1-11
   };
 
   return (
@@ -56,20 +67,38 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
       <div className={cx('d-block')}>
         <div className={cx('d-flex time-input-body')}>
           <div className={cx('time-col')}>
-            {[...Array(isTwentyFourHourMode ? 24 : 12).keys()].map((hour) => (
-              <div
-                key={hour}
-                className={cx('time-item', {
-                  'selected-time': selectedHour == hour || (!isTwentyFourHourMode && selectedHour - 12 == hour),
-                  'disabled-time': addHours(hour) < minHour || addHours(hour) > maxHour,
+            {isTwentyFourHourMode
+              ? [...Array(24).keys()].map((hour) => (
+                  <div
+                    key={hour}
+                    className={cx('time-item', {
+                      'selected-time': selectedHour === hour,
+                      'disabled-time': hour < minHour || hour > maxHour,
+                    })}
+                    onClick={() => {
+                      onTimeChange(hour, 'hours');
+                    }}
+                  >
+                    {String(hour).padStart(2, '0')}
+                  </div>
+                ))
+              : [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((hour12) => {
+                  const hour24 = convertTo24Hour(hour12, selectedAmPm === 'PM');
+                  return (
+                    <div
+                      key={hour12}
+                      className={cx('time-item', {
+                        'selected-time': selectedHourDisplay === hour12,
+                        'disabled-time': hour24 < minHour || hour24 > maxHour,
+                      })}
+                      onClick={() => {
+                        onTimeChange(hour24, 'hours');
+                      }}
+                    >
+                      {String(hour12).padStart(2, '0')}
+                    </div>
+                  );
                 })}
-                onClick={() => {
-                  onTimeChange(addHours(hour), 'hours');
-                }}
-              >
-                {String(hour).padStart(2, '0')}
-              </div>
-            ))}
           </div>
           <div className={cx('time-col')}>
             {[...Array(60).keys()].map((minute) => (
@@ -97,8 +126,10 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
                   'disabled-time': minHour > 11,
                 })}
                 onClick={() => {
-                  const newHour = selectedHour >= 12 ? selectedHour - 12 : selectedHour;
-                  onTimeChange(newHour, 'hours');
+                  // Convert current hour to AM
+                  const hour12 = get12HourDisplay(selectedHour);
+                  const newHour24 = convertTo24Hour(hour12, false); // false = AM
+                  onTimeChange(newHour24, 'hours');
                 }}
               >
                 AM
@@ -109,8 +140,10 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
                   'disabled-time': maxHour < 12,
                 })}
                 onClick={() => {
-                  const newHour = selectedHour < 12 ? selectedHour + 12 : selectedHour;
-                  onTimeChange(newHour, 'hours');
+                  // Convert current hour to PM
+                  const hour12 = get12HourDisplay(selectedHour);
+                  const newHour24 = convertTo24Hour(hour12, true); // true = PM
+                  onTimeChange(newHour24, 'hours');
                 }}
               >
                 PM

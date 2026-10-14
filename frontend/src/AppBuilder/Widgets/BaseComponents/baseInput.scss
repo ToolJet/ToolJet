@@ -1,0 +1,27 @@
+.tj-text-input-widget-container {
+  overflow: hidden;
+
+  // `:not(.tj-input-has-error)` keeps a revealed validation error visible under the pointer.
+  // The error colour is set inline, and this rule is `!important`, so without the guard a
+  // hover repaints the red border with the ordinary darker one and the field looks valid
+  // again until the pointer leaves.
+  &:hover:not(:focus-within):not(.tj-input-has-error) {
+    border: 1px solid var(--tblr-input-border-color-darker) !important;
+  }
+
+  .tj-text-input-widget {
+    border: none !important;
+
+    &:hover:not(:focus):not([data-ignore-hover="true"]) {
+      border: none !important;
+    }
+
+    &.is-invalid {
+      border: none !important;
+    }
+
+    &:focus {
+      border: none !important;
+    }
+  }
+}

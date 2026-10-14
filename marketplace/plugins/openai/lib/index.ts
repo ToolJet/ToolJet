@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
 import OpenAI from 'openai'; // Correct import for SDK 4.56.0
-import { getCompletion, getChatCompletion, generateImage, generateEmbedding } from './query_operations';
+import { getChatCompletion, generateImage, generateEmbedding } from './query_operations';
 
 export default class Openai implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -11,10 +11,6 @@ export default class Openai implements QueryService {
 
     try {
       switch (operation) {
-        case Operation.Completion:
-          result = await getCompletion(openai, queryOptions);
-          break;
-
         case Operation.Chat:
           result = await getChatCompletion(openai, queryOptions);
           break;

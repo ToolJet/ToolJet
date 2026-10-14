@@ -9,7 +9,10 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   UseGuards,
+  NotFoundException,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { decode } from 'js-base64';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { User } from '@modules/app/decorators/user.decorator';
@@ -21,13 +24,17 @@ import { CreatePluginDto, UpdatePluginDto } from './dto';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { IPluginsController } from './interfaces/IController';
+import { FilesRepository } from '@modules/files/repository';
 
 @Controller('plugins')
 @UseInterceptors(ClassSerializerInterceptor)
 @InitModule(MODULES.PLUGINS)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
 export class PluginsController implements IPluginsController {
-  constructor(protected readonly pluginsService: PluginsService) {}
+  constructor(
+    protected readonly pluginsService: PluginsService,
+    protected readonly filesRepository: FilesRepository
+  ) {}
 
   @Post('install')
   @InitFeature(FEATURE_KEY.INSTALL)
@@ -44,6 +51,25 @@ export class PluginsController implements IPluginsController {
       plugin.manifestFile.data = JSON.parse(decode(plugin.manifestFile.data.toString('utf8')));
       return plugin;
     });
+  }
+
+  // Must be declared before @Get(':id') to avoid route collision — ':id' wildcard would capture 'specs'
+  @Get('specs/:pluginKind/:specName')
+  @InitFeature(FEATURE_KEY.GET_SPEC)
+  async getSpec(@Param('pluginKind') pluginKind: string, @Param('specName') specName: string, @Res() res: Response) {
+    const plugin = await this.pluginsService.findByKind(pluginKind);
+    if (!plugin?.specFilesMap || !plugin.specFilesMap[specName]) {
+      throw new NotFoundException(`Spec '${specName}' not found for plugin '${pluginKind}'`);
+    }
+
+    const fileId = plugin.specFilesMap[specName];
+    const file = await this.filesRepository.getOne(fileId);
+
+    const content = decode(file.data.toString('utf8'));
+    const isJson = specName.endsWith('.json') || content.trimStart().startsWith('{');
+    res.setHeader('Content-Type', isJson ? 'application/json' : 'text/yaml');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(content);
   }
 
   @Get(':id')

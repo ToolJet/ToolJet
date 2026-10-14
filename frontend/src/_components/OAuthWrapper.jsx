@@ -1,12 +1,16 @@
 import OAuth from '@/_ui/OAuth';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { datasourceService } from '@/_services';
+import { getHostURL } from '@/_helpers/routes';
+import { datasourceService, authenticationService } from '@/_services';
 import { capitalize } from 'lodash';
 import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Input from '@/_ui/Input';
 import cx from 'classnames';
+import { Modal } from 'react-bootstrap';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const OAuthWrapper = ({
   optionchanged,
@@ -24,26 +28,60 @@ const OAuthWrapper = ({
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
+  const [initialOptions, setInitialOptions] = useState(null);
+  const [initialName, setInitialName] = useState(null);
+  useEffect(() => {
+    if (selectedDataSource?.id && !initialOptions) {
+      setInitialOptions(options);
+      setInitialName(selectedDataSource.name);
+    }
+  }, [selectedDataSource?.id, options, initialOptions]);
+
+  const hasFieldsChanged = () => {
+    if (!selectedDataSource?.id || !initialOptions) {
+      return true;
+    }
+
+    if (selectedDataSource?.name !== initialName) {
+      return true;
+    }
+
+    const optionKeys = Object.keys(options || {});
+    for (const key of optionKeys) {
+      const currentValue = options[key]?.value;
+      const initialValue = initialOptions[key]?.value;
+      if (currentValue !== initialValue) {
+        return true;
+      }
+    }
+    return false;
+  };
+  const isAuthorizationCodeGrant = ['authorization_code', 'authorization_code_pkce'].includes(
+    options?.grant_type?.value
+  );
   const needConnectionButton =
-    selectedDataSource.kind !== 'openapi' &&
-    options?.auth_type?.value === 'oauth2' &&
-    options?.grant_type?.value === 'authorization_code' &&
-    multiple_auth_enabled !== true;
+    selectedDataSource.kind !== 'openapi' && options?.auth_type?.value === 'oauth2' && isAuthorizationCodeGrant;
   const dataSourceNameCapitalize = capitalize(
     selectedDataSource?.plugin?.manifestFile?.data?.source?.name || selectedDataSource?.kind
   );
-  const hostUrl = window.public_config?.TOOLJET_HOST;
-  const subPathUrl = window.public_config?.SUB_PATH;
-  const fullUrl = `${hostUrl}${subPathUrl ? subPathUrl : '/'}oauth2/authorize`;
-  const redirectUri = fullUrl;
+  const redirectUri = `${getHostURL()}/oauth2/authorize`;
+
+  const docLink =
+    selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
 
   function authorizeWithProvider() {
     const provider = selectedDataSource?.kind;
     const plugin_id = selectedDataSource?.plugin?.id;
     const source_options = options;
+    const organizationId = authenticationService.currentSessionValue?.current_organization_id;
     setAuthStatus('waiting_for_url');
 
-    const fetchArgs = plugin_id ? [provider, plugin_id, source_options] : [provider, null, source_options];
+    // Pass envId, orgId to resolve workspace constants on the backend
+    const fetchArgs = plugin_id
+      ? [provider, plugin_id, source_options, currentAppEnvironmentId, organizationId]
+      : [provider, null, source_options, currentAppEnvironmentId, organizationId];
 
     datasourceService
       .fetchOauth2BaseUrl(...fetchArgs)
@@ -85,6 +123,10 @@ const OAuthWrapper = ({
           client_id={options?.client_id?.value}
           client_secret={options?.client_secret?.value}
           client_auth={options?.client_auth?.value}
+          company_id={options?.company_id?.value}
+          site_url={options?.site_url?.value}
+          code_verifier={options?.code_verifier?.value}
+          code_challenge_method={options?.code_challenge_method?.value}
           scopes={options?.scopes?.value}
           username={options?.username?.value}
           password={options?.password?.value}
@@ -133,7 +175,7 @@ const OAuthWrapper = ({
           className="form-control"
         />
       </div>
-      {options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code' && (
+      {options?.auth_type?.value === 'oauth2' && isAuthorizationCodeGrant && (
         <div>
           <label className="form-check form-switch mt-3">
             <input
@@ -145,41 +187,116 @@ const OAuthWrapper = ({
             <div>
               <span className="form-check-label">Authentication required for all users</span>
               <span className="text-muted" style={{ fontSize: '12px' }}>
-                User will be redirected to OAuth flow once first query of this data source is run in an app.
+                Other users will be redirected to OAuth flow once first query of this data source is run in an app.
               </span>
             </div>
           </label>
         </div>
       )}
-      {needConnectionButton && (
-        <div className="row mt-3">
-          <center>
-            {authStatus === 'waiting_for_token' && (
-              <div>
-                <Button
-                  className={`m2 ${isSaving ? ' loading' : ''}`}
-                  disabled={isSaving}
-                  onClick={() => saveDataSource()}
-                >
-                  {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
-                </Button>
-              </div>
-            )}
-
-            {(!authStatus || authStatus === 'waiting_for_url') && (
-              <Button
-                className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
-                disabled={isSaving}
-                onClick={() => authorizeWithProvider()}
-              >
-                {t(
-                  `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
-                  `Connect to ${dataSourceNameCapitalize}`
-                )}
-              </Button>
-            )}
-          </center>
+      {oauth_configs?.allowed_dynamic_params_field && (
+        <div>
+          <label className="form-check form-switch mt-3">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              checked={options?.[oauth_configs.allowed_dynamic_params_field.key]?.value || false}
+              onChange={() =>
+                optionchanged(
+                  oauth_configs.allowed_dynamic_params_field.key,
+                  !options?.[oauth_configs.allowed_dynamic_params_field.key]?.value
+                )
+              }
+            />
+            <div>
+              <span className="form-check-label">{oauth_configs.allowed_dynamic_params_field.label}</span>
+              {oauth_configs.allowed_dynamic_params_field.help_text && (
+                <span className="text-muted" style={{ fontSize: '12px' }}>
+                  {oauth_configs.allowed_dynamic_params_field.help_text}
+                </span>
+              )}
+            </div>
+          </label>
         </div>
+      )}
+      {needConnectionButton && (
+        <Modal.Footer
+          style={{
+            marginTop: '32px',
+            borderTop: '1px solid var(--border-weak)',
+            marginLeft: '-24px',
+            marginRight: '-24px',
+            paddingLeft: '24px',
+            paddingRight: '24px',
+            paddingTop: '6px',
+            paddingBottom: 0,
+          }}
+        >
+          <>
+            <div className="col">
+              <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
+              <a
+                className="color-primary tj-docs-link tj-text-sm"
+                data-cy="link-read-documentation"
+                href={docLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t('globals.readDocumentation', 'Read documentation')}
+              </a>
+            </div>
+            <div className="col-auto d-flex gap-2">
+              {selectedDataSource?.kind === 'googlesheetsv2' ? (
+                <>
+                  <ButtonSolid
+                    className={`m2 googlesheetsv2-save-btn${isSaving ? ' btn-loading' : ''}`}
+                    isLoading={isSaving}
+                    disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                    onClick={() => saveDataSource()}
+                    variant="tertiary"
+                  >
+                    {t('globals.save', 'Save')}
+                  </ButtonSolid>
+                  {(!authStatus || authStatus === 'waiting_for_url') && (
+                    <ButtonSolid
+                      className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
+                      isLoading={authStatus === 'waiting_for_url'}
+                      disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                      onClick={() => authorizeWithProvider()}
+                      variant="primary"
+                    >
+                      {t(`${selectedDataSource.kind}.saveAndConnect${dataSourceNameCapitalize}`, 'Save and Connect')}
+                    </ButtonSolid>
+                  )}
+                </>
+              ) : (
+                <>
+                  {authStatus === 'waiting_for_token' && (
+                    <Button
+                      className={`m2 ${isSaving ? ' loading' : ''}`}
+                      disabled={isSaving}
+                      onClick={() => saveDataSource()}
+                    >
+                      {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
+                    </Button>
+                  )}
+
+                  {(!authStatus || authStatus === 'waiting_for_url') && (
+                    <Button
+                      className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
+                      disabled={isSaving}
+                      onClick={() => authorizeWithProvider()}
+                    >
+                      {t(
+                        `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
+                        `Connect to ${dataSourceNameCapitalize}`
+                      )}
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
+          </>
+        </Modal.Footer>
       )}
     </div>
   );

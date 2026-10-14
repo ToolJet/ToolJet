@@ -121,25 +121,25 @@ const BaseManageOrgConstants = ({
     const globalCount =
       allConstants.length > 0
         ? allConstants.filter((constant) => {
-          if (constant.type === Constants.Global) {
-            const foundConstant = constant.values.find((env) => env.environmentName === envName);
-            if (!foundConstant || foundConstant.value === '') return false;
-            return true;
-          }
-          return false;
-        }).length
+            if (constant.type === Constants.Global) {
+              const foundConstant = constant.values.find((env) => env.environmentName === envName);
+              if (!foundConstant || foundConstant.value === '') return false;
+              return true;
+            }
+            return false;
+          }).length
         : 0;
 
     const secretCount =
       allConstants.length > 0
         ? allConstants.filter((constant) => {
-          if (constant.type === Constants.Secret) {
-            const foundConstant = constant.values.find((env) => env.environmentName === envName);
-            if (!foundConstant || foundConstant.value === '') return false;
-            return true;
-          }
-          return false;
-        }).length
+            if (constant.type === Constants.Secret) {
+              const foundConstant = constant.values.find((env) => env.environmentName === envName);
+              if (!foundConstant || foundConstant.value === '') return false;
+              return true;
+            }
+            return false;
+          }).length
         : 0;
 
     setGlobalCount(globalCount);
@@ -408,7 +408,7 @@ const BaseManageOrgConstants = ({
   };
 
   // this function marks the constant as duplicate if same constant name is present in env
-  function flagDuplicateConstants (constants) {
+  function flagDuplicateConstants(constants) {
     const envConstants = constants.filter((constant) => constant.fromEnv).map((constant) => constant.name);
     constants.forEach((constant) => {
       if (!constant.fromEnv && envConstants.includes(constant.name)) {
@@ -574,13 +574,7 @@ const BaseManageOrgConstants = ({
 
                       <div>
                         <Button
-                          // Todo: Update link to documentation: workspace constants
-                          onClick={() =>
-                            window.open(
-                              'https://docs.tooljet.ai/docs/org-management/workspaces/workspace_constants/',
-                              '_blank'
-                            )
-                          }
+                          onClick={() => window.open('https://docs.tooljet.com/docs/security/constants/', '_blank')}
                           darkMode={darkMode}
                           size="sm"
                           styles={{
@@ -598,7 +592,7 @@ const BaseManageOrgConstants = ({
                 <div className="manage-sso-container h-100">
                   <div className="d-flex manage-constant-wrapper-card">
                     {(activeTab === Constants.Global && globalCount > 0) ||
-                      (activeTab === Constants.Secret && secretCount > 0) ? (
+                    (activeTab === Constants.Secret && secretCount > 0) ? (
                       <div className="w-100 workspace-constant-card-body">
                         <ConstantTable
                           constants={currentTableData}

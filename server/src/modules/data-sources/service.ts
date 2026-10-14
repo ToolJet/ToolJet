@@ -1,6 +1,7 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
+import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { User } from '@entities/user.entity';
 import { decode } from 'js-base64';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -29,6 +30,7 @@ export class DataSourcesService implements IDataSourcesService {
   constructor(
     protected readonly dataSourcesRepository: DataSourcesRepository,
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
+    protected readonly dataQueriesUtilService: DataQueriesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector
   ) {}
@@ -138,7 +140,17 @@ export class DataSourcesService implements IDataSourcesService {
       organizationId: user.organizationId,
       resourceId: dataSource?.id,
       resourceName: dataSource?.name,
-      metadata: dataSource,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+        environmentId: environment_id,
+        pluginId: pluginId,
+      },
+      metadata: {
+        createdAt: dataSource?.createdAt,
+      },
     });
 
     return dataSource;
@@ -148,7 +160,10 @@ export class DataSourcesService implements IDataSourcesService {
     const { name, options } = updateDataSourceDto;
     const { dataSourceId, environmentId } = updateOptions;
 
-    await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, name, options, environmentId);
+    // Fetch datasource details for audit log
+    const dataSource = await this.dataSourcesRepository.findById(dataSourceId, user.organizationId);
+
+    await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, user.id, name, options, environmentId);
 
     // Setting data for audit logs
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -156,17 +171,37 @@ export class DataSourcesService implements IDataSourcesService {
       organizationId: user.organizationId,
       resourceId: dataSourceId,
       resourceName: name,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+        environmentId: environmentId,
+        updatedFields: Object.keys(updateDataSourceDto),
+      },
       metadata: updateDataSourceDto,
     });
     return;
   }
 
-  async decryptOptions(options: Record<string, any>) {
-    return await this.dataSourcesUtilService.decrypt(options);
+  async validateOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    options: Record<string, any>,
+    schema: Record<string, any>
+  ) {
+    return await this.dataSourcesUtilService.validateOptions(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      options,
+      schema
+    );
   }
 
   async delete(dataSourceId: string, user: User) {
-    const dataSource = await this.dataSourcesRepository.findById(dataSourceId);
+    const dataSource = await this.dataSourcesRepository.findById(dataSourceId, user.organizationId);
     if (!dataSource) {
       return;
     }
@@ -187,7 +222,15 @@ export class DataSourcesService implements IDataSourcesService {
       organizationId: user.organizationId,
       resourceId: dataSourceId,
       resourceName: dataSource.name,
-      metadata: dataSource,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+      },
+      metadata: {
+        deletedAt: new Date().toISOString(),
+      },
     });
     return;
   }
@@ -224,6 +267,7 @@ export class DataSourcesService implements IDataSourcesService {
     testDataSourceDto.options = dataSource.options;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }
+
   async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
     return this.dataSourcesUtilService.getAuthUrl(getDataSourceOauthUrlDto);
   }
@@ -281,7 +325,9 @@ export class DataSourcesService implements IDataSourcesService {
     dataSource: DataSource,
     methodName: string,
     user: User,
-    environmentId: string
+    environmentId: string,
+    args?: any,
+    resolvedOptions?: object
   ): Promise<QueryResult> {
     const service = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
 
@@ -302,10 +348,104 @@ export class DataSourcesService implements IDataSourcesService {
       user
     );
 
+    if (sourceOptions['oauth_type'] !== 'tooljet_app') {
+      sourceOptions['tj_redirect_host'] = await this.dataSourcesUtilService.resolveOAuthRedirectHost(
+        user.organizationId
+      );
+    }
+
+    const resolvedArgs = resolvedOptions
+      ? await this.dataQueriesUtilService.parseQueryOptions(
+          args,
+          resolvedOptions,
+          user.organizationId,
+          environmentId,
+          user
+        )
+      : args;
+
     try {
-      const result = await service.invokeMethod(methodName, sourceOptions);
+      const result = await service.invokeMethod(
+        methodName,
+        {
+          user: { id: user?.id },
+          app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
+          dataSourceDetails: {
+            datasourceId: dataSource?.id,
+            datasourcekind: dataSource?.kind,
+            datasourceUpdatedAt: dataSourceOptions?.updatedAt,
+            dataSourceOptionsEnvironmentId: dataSourceOptions?.environmentId,
+          },
+        },
+        sourceOptions,
+        resolvedArgs
+      );
       return { status: 'ok', data: result };
     } catch (error) {
+      if (error.constructor.name === 'OAuthUnauthorizedClientError') {
+        const currentUserToken = sourceOptions['refresh_token']
+          ? sourceOptions
+          : this.getCurrentUserToken(sourceOptions['multiple_auth_enabled'], sourceOptions['tokenData'], user?.id);
+
+        if (currentUserToken && currentUserToken['refresh_token']) {
+          try {
+            const accessTokenDetails = await service.refreshToken(sourceOptions);
+
+            await this.dataSourcesUtilService.updateOAuthAccessToken(
+              accessTokenDetails,
+              dataSourceOptions.options,
+              dataSource.id,
+              user?.id,
+              user?.organizationId,
+              environmentId
+            );
+
+            // Re-fetch options to use the new token
+            const updatedDataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
+              dataSource.id,
+              user.organizationId,
+              environmentId
+            );
+
+            const updatedSourceOptions = await this.dataSourcesUtilService.parseSourceOptions(
+              updatedDataSourceOptions.options,
+              user.organizationId,
+              updatedDataSourceOptions.environmentId,
+              user
+            );
+
+            // Retry invoke
+            const result = await service.invokeMethod(
+              methodName,
+              {
+                user: { id: user?.id },
+                app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
+              },
+              updatedSourceOptions,
+              resolvedArgs
+            );
+            return { status: 'ok', data: result };
+          } catch (refreshError) {
+            // If refresh fails or retry fails, return original or new error data
+            if (refreshError.constructor.name === 'QueryError') {
+              return {
+                status: 'failed',
+                data: refreshError.data,
+                errorMessage: refreshError.message,
+                metadata: refreshError.metadata,
+              };
+            }
+
+            return {
+              status: 'failed',
+              data: error.data,
+              errorMessage: error.message,
+              metadata: error.metadata,
+            };
+          }
+        }
+      }
+
       if (error.constructor.name === 'QueryError') {
         return {
           status: 'failed',
@@ -317,4 +457,13 @@ export class DataSourcesService implements IDataSourcesService {
       throw error;
     }
   }
+
+  protected getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string) => {
+    if (isMultiAuthEnabled) {
+      if (!tokenData || !Array.isArray(tokenData)) return null;
+      return userId ? tokenData.find((token: any) => token.user_id === userId) : tokenData[0];
+    } else {
+      return tokenData;
+    }
+  };
 }

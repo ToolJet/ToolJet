@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import Select from '@/_ui/Select';
 import { useTranslation } from 'react-i18next';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { resolveReferences } from '@/_helpers/utils';
 import styles from '@/_ui/Select/styles';
-import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 const TIMEZONE_OPTIONS = [
@@ -13,6 +13,7 @@ const TIMEZONE_OPTIONS = [
   { name: '-12:00', value: 'Etc/GMT+12' },
   { name: '-11:00', value: 'Etc/GMT+11' },
   { name: '-10:00', value: 'Pacific/Honolulu' },
+  { name: '-09:30', value: 'Pacific/Marquesas' },
   { name: '-09:00', value: 'America/Anchorage' },
   { name: '-08:00', value: 'America/Santa_Isabel' },
   { name: '-07:00', value: 'America/Chihuahua' },
@@ -27,6 +28,7 @@ const TIMEZONE_OPTIONS = [
   { name: '+01:00', value: 'Europe/Berlin' },
   { name: '+02:00', value: 'Africa/Gaborone' },
   { name: '+03:00', value: 'Asia/Baghdad' },
+  { name: '+03:30', value: 'Asia/Tehran' },
   { name: '+04:00', value: 'Asia/Muscat' },
   { name: '+04:30', value: 'Asia/Kabul' },
   { name: '+05:00', value: 'Asia/Tashkent' },
@@ -78,9 +80,11 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
   const { t } = useTranslation();
   const items = [];
   const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(
+    // eslint-disable-next-line no-constant-binary-expression
     !column?.notActiveFxActiveFields?.includes('dateFormat') ?? true
   );
   const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(
+    // eslint-disable-next-line no-constant-binary-expression
     !column?.notActiveFxActiveFields?.includes('parseDateFormat') ?? true
   );
 

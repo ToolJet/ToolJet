@@ -58,28 +58,42 @@ class DependencyGraph {
 
   removeNode(path) {
     if (this.hasNode(path)) {
-      const nodesToRemove = this.graph.overallOrder().filter((node) => node.startsWith(`${path}.`));
-      const potentialOrphans = new Set();
+      this.removeNodes(this.graph.overallOrder().filter((node) => node.startsWith(`${path}.`)));
+    }
+  }
 
-      nodesToRemove.forEach((node) => {
-        const dependents = this.getDependents(node);
-        const dependencies = this.getDependencies(node);
+  /**
+   * Remove every node registered under an array property, eg. menuItems[0].label or
+   * menuItems[2].children[1].visible. removeNode only matches a `path.` prefix, and no node
+   * exists at the bare property path, so array entries are unreachable through it.
+   */
+  removePropertyNodes(path) {
+    this.removeNodes(
+      this.graph.overallOrder().filter((node) => node.startsWith(`${path}.`) || node.startsWith(`${path}[`))
+    );
+  }
 
-        dependents.forEach((dependent) => {
-          this.graph.removeDependency(dependent, node);
-          potentialOrphans.add(dependent);
-        });
+  removeNodes(nodes) {
+    const potentialOrphans = new Set();
 
-        dependencies.forEach((dependency) => {
-          this.graph.removeDependency(node, dependency);
-          potentialOrphans.add(dependency);
-        });
+    nodes.forEach((node) => {
+      const dependents = this.getDependents(node);
+      const dependencies = this.getDependencies(node);
 
-        this.graph.removeNode(node);
+      dependents.forEach((dependent) => {
+        this.graph.removeDependency(dependent, node);
+        potentialOrphans.add(dependent);
       });
 
-      this.cleanupOrphanedNodes(potentialOrphans);
-    }
+      dependencies.forEach((dependency) => {
+        this.graph.removeDependency(node, dependency);
+        potentialOrphans.add(dependency);
+      });
+
+      this.graph.removeNode(node);
+    });
+
+    this.cleanupOrphanedNodes(potentialOrphans);
   }
 
   cleanupOrphanedNodes(potentialOrphans) {
@@ -160,6 +174,16 @@ class DependencyGraph {
 
   getDirectDependents(path) {
     return this.hasNode(path) ? this.graph.directDependantsOf(path) : [];
+  }
+
+  /**
+   * Remove a leaf node (e.g., __options__ sentinel) and disconnect all its edges.
+   * Unlike removeNode() which removes children (nodes starting with path.),
+   * this removes the exact node at the given path.
+   */
+  removeLeafNode(path) {
+    if (!this.hasNode(path)) return;
+    this.graph.removeNode(path);
   }
 
   getOverallOrder() {

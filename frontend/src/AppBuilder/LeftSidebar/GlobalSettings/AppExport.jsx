@@ -6,7 +6,7 @@ import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import cx from 'classnames';
 
-const AppExport = ({ darkMode }) => {
+const AppExport = ({ darkMode, isModuleEditor = false }) => {
   const { moduleId } = useModuleContext();
   const { app } = useStore(
     (state) => ({
@@ -41,9 +41,9 @@ const AppExport = ({ darkMode }) => {
             setIsExportingApp(true);
             document.getElementById('maintenance-app-modal').click();
           }}
-          data-cy="button-user-status-change"
+          data-cy="export-app-button"
         >
-          Export app
+          {isModuleEditor ? 'Export module' : 'Export app'}
         </Button>
       </div>
       {/* {isExportingApp && <ExportAppModal app={app} setIsExportingApp={toggleExportingApp} darkMode={darkMode} />} */}

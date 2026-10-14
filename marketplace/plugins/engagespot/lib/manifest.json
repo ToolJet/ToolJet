@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Engagespot datasource",
@@ -13,15 +12,15 @@
       "rawData": {}
     },
     "options": {
-      "apiKey":{
+      "apiKey": {
         "type": "string"
       },
-      "apiSecret":{
+      "apiSecret": {
         "type": "string",
         "encrypted": true
       },
-      "signingKey":{
-        "type":"string"
+      "signingKey": {
+        "type": "string"
       },
       "endpoint": {
         "type": "string"
@@ -30,14 +29,14 @@
     "customTesting": false
   },
   "defaults": {
-    "apiKey":{
+    "apiKey": {
       "value": ""
     },
-    "apiSecret":{
+    "apiSecret": {
       "value": ""
     },
-    "signingKey":{
-      "value":""
+    "signingKey": {
+      "value": ""
     },
     "endpoint": {
       "value": "https://api.engagespot.com/v3"
@@ -48,25 +47,25 @@
   },
   "properties": {
     "apiKey": {
-      "label": "Api Key",
+      "label": "Api key",
       "key": "apiKey",
       "type": "text",
       "description": "The unique identifier of your engagespot app (X-ENGAGESPOT-API-KEY)"
     },
     "apiSecret": {
-      "label": "Api Secret",
+      "label": "Api secret",
       "key": "apiSecret",
       "type": "password",
       "description": "Engagespot Api secret key (X-ENGAGESPOT-API-SECRET)"
     },
     "signingKey": {
-      "label": "Signing Key",
+      "label": "Signing key",
       "key": "signingKey",
       "type": "text",
       "description": "The secret signing key that you'll use to sign your user's authentication tokens in engagespot"
     },
     "endpoint_enabled": {
-      "label": "Custom Endpoint",
+      "label": "Custom endpoint",
       "key": "endpoint_enabled",
       "type": "toggle",
       "description": "Toggle for endpoint_enabled"
@@ -76,7 +75,7 @@
       "type": "text",
       "description": "Enter custom endpoint",
       "controller": "endpoint_enabled"
-    } 
+    }
   },
   "required": [
     "Api Key",

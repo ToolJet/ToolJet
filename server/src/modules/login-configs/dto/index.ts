@@ -10,6 +10,18 @@ export class OrganizationConfigsUpdateDto {
   domain?: string;
 
   @IsOptional()
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(250, { message: 'Password allowed domains cannot be longer than 250 characters' })
+  passwordAllowedDomains?: string;
+
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(250, { message: 'Password restricted domains cannot be longer than 250 characters' })
+  passwordRestrictedDomains?: string;
+
+  @IsOptional()
   @IsBoolean()
   enableSignUp?: boolean;
 
@@ -28,6 +40,18 @@ export class InstanceConfigsUpdateDto {
   @Transform(({ value }) => sanitizeInput(value))
   @MaxLength(250, { message: 'Domains cannot be longer than 250 characters' })
   allowedDomains?: string;
+  
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(250, { message: 'Allowed domains cannot be longer than 250 characters' })
+  passwordAllowedDomains?: string;
+
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(250, { message: 'Restricted domains cannot be longer than 250 characters' })
+  passwordRestrictedDomains?: string;
 
   @IsOptional()
   @IsBoolean()

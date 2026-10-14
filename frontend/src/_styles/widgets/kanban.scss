@@ -268,6 +268,7 @@ $focused-outline-color: #4c9ffe;
     }
   }
 
+  
 }
 
 .kanban-modal-close-icon {
@@ -290,5 +291,9 @@ $focused-outline-color: #4c9ffe;
 }
 
 .dark {
-  background-color: $bg-dark !important;
-}
+    background-color: $bg-dark;
+  }
+  .dark-light {
+    background-color: $bg-dark-light ;
+  }
+

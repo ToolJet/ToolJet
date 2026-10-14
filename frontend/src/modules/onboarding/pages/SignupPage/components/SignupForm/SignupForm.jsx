@@ -23,9 +23,12 @@ const SignupForm = ({
   organizationToken,
   inviteeEmail,
   redirectTo,
+  setRedirectUrlToCookie,
   onSubmit,
   setSignupOrganizationDetails,
   initialData,
+  appName,
+  appSlug,
 }) => {
   const defaultState = checkWhiteLabelsDefaultState();
   const { t } = useTranslation();
@@ -40,12 +43,17 @@ const SignupForm = ({
   const [isDefaultFormName, setisDefaultFormName] = useState(true);
   const [isDefaultFormEmail, setisDefaultFormEmail] = useState(true);
   const [isDefaultFormPassword, setisDefaultFormPassword] = useState(true);
+  // For OIDC, handle both array (multi-tenant) and single object (legacy) formats
+  const hasEnabledOidc = Array.isArray(configs?.openid)
+    ? configs.openid.some((config) => config.enabled)
+    : configs?.openid?.enabled;
+
   const isAnySSOEnabled =
     configs?.google?.enabled ||
     configs?.git?.enabled ||
     configs?.ldap?.enabled ||
     configs?.saml?.enabled ||
-    configs?.openid?.enabled;
+    hasEnabledOidc;
 
   const isFormSignUpEnabled = organizationId ? configs?.form?.enabled : configs?.form?.enable_sign_up;
   const shouldShowSignInCTA = !organizationToken;
@@ -144,12 +152,12 @@ const SignupForm = ({
     if (!validateEmail(formData.email)) {
       newErrors.email = 'Invalid email';
     }
-    if (formData.password.length < 5) {
-      newErrors.password = 'Password must be at least 5 characters long';
-    }
-    if (formData.password.length > 100) {
-      newErrors.password = 'Password can be at max 100 characters long';
-    }
+    // if (formData.password.length < 5) {
+    //   newErrors.password = 'Password must be at least 5 characters long';
+    // }
+    // if (formData.password.length > 100) {
+    //   newErrors.password = 'Password can be at max 100 characters long';
+    // }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -161,21 +169,18 @@ const SignupForm = ({
           <FormHeader>{t('loginSignupPage.signUp', 'Sign up')}</FormHeader>
           {(organizationId || shouldShowSignInCTA) && (
             <p className="signup-info" data-cy="signup-info">
-              {organizationId && (
+              {appName ? (
                 <>
-                  Sign up to the workspace -{' '}
-                  <span className="workspace-name" data-cy="workspace-name">
-                    {configs?.name}
+                  Sign up to application -{' '}
+                  <span className="workspace-name" data-cy="app-name">
+                    {appName}
                   </span>
-                  .
-                </>
-              )}{' '}
-              {shouldShowSignInCTA && (
-                <>
-                  {t('loginSignupPage.alreadyHaveAnAccount', 'Already have an account?')}{' '}
+                  . Already have an account?{' '}
                   <Link
-                    to={`/login${paramOrganizationSlug ? `/${paramOrganizationSlug}` : ''}${
-                      redirectTo ? `?redirectTo=${redirectTo}` : ''
+                    to={`/applications/${appSlug}/login${
+                      redirectTo && redirectTo !== `/applications/${appSlug}`
+                        ? `?redirectTo=${encodeURIComponent(redirectTo)}`
+                        : ''
                     }`}
                     className="signin-link"
                     tabIndex="-1"
@@ -183,6 +188,33 @@ const SignupForm = ({
                   >
                     {t('loginSignupPage.signIn', 'Sign in')}
                   </Link>
+                </>
+              ) : (
+                <>
+                  {organizationId && (
+                    <>
+                      Sign up to the workspace -{' '}
+                      <span className="workspace-name" data-cy="workspace-name">
+                        {configs?.name}
+                      </span>
+                      .
+                    </>
+                  )}{' '}
+                  {shouldShowSignInCTA && (
+                    <>
+                      {t('loginSignupPage.alreadyHaveAnAccount', 'Already have an account?')}{' '}
+                      <Link
+                        to={`/login${paramOrganizationSlug ? `/${paramOrganizationSlug}` : ''}${
+                          redirectTo ? `?redirectTo=${redirectTo}` : ''
+                        }`}
+                        className="signin-link"
+                        tabIndex="-1"
+                        data-cy="signin-link"
+                      >
+                        {t('loginSignupPage.signIn', 'Sign in')}
+                      </Link>
+                    </>
+                  )}
                 </>
               )}
             </p>
@@ -232,6 +264,8 @@ const SignupForm = ({
                 organizationSlug={paramOrganizationSlug}
                 buttonText="Sign up with"
                 setSignupOrganizationDetails={() => setSignupOrganizationDetails()}
+                setRedirectUrlToCookie={setRedirectUrlToCookie}
+                redirectTo={redirectTo}
               />
               {defaultState && <TermsAndPrivacyInfo />}
             </>

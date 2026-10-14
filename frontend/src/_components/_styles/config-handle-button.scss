@@ -1,0 +1,36 @@
+.config-handle-button {
+    height: 24px;
+    button {
+        border-radius: 6px !important;
+        font-size: 11px; 
+        font-weight: 500;
+        text-transform: none;
+        cursor: move;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        position: relative;
+        overflow: hidden;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: transparent;
+            transition: background 0.15s ease;
+        }
+    }
+
+    &:not(.no-hover) {
+        button:hover::after {
+            background: var(--interactive-hover);
+        }
+
+        button.badge:active::after {
+            background: var(--interactive-selected);
+        }
+    }
+}

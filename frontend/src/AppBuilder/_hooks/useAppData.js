@@ -1,10 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  setCurrentAppName,
+  setCurrentAppMeta,
+  markAppLoadStart,
+  markAppLoaded,
+} from '@/_services/frontend-metrics.service';
 import {
   appEnvironmentService,
   appService,
   appsService,
   appVersionService,
   dataqueryService,
+  dataQueryFolderService,
   orgEnvironmentConstantService,
   authenticationService,
   customStylesService,
@@ -14,43 +21,22 @@ import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
+import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
-import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
+import { baseTheme } from '../_stores/utils';
+import { convertAllKeysToSnakeCase, normalizeQueryTransformationOptions } from '../_stores/utils/appDataCaseConversion';
 import { getPreviewQueryParams } from '@/_helpers/routes';
-import { useLocation, useMatch, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
-
-/**
- * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
- * This will get redundanted once api response for appdata is made uniform across all the endpoints.
- **/
-export const normalizeQueryTransformationOptions = (query) => {
-  if (query?.options) {
-    if (query.options.enable_transformation) {
-      const enableTransformation = query.options.enable_transformation;
-      delete query.options.enable_transformation;
-      if (!query.options.enableTransformation) {
-        query.options.enableTransformation = enableTransformation;
-      }
-    }
-
-    if (query.options.transformation_language) {
-      const transformationLanguage = query.options.transformation_language;
-      delete query.options.transformation_language;
-      if (!query.options.transformationLanguage) {
-        query.options.transformationLanguage = transformationLanguage;
-      }
-    }
-  }
-  return query;
-};
+import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 
 const useAppData = (
   appId,
@@ -75,16 +61,21 @@ const useAppData = (
   const setPages = useStore((state) => state.setPages);
   const setPageSettings = useStore((state) => state.setPageSettings);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
+  const setFolders = useStore((state) => state.queryFolders?.setFolders);
+  const setFolderMappings = useStore((state) => state.queryFolders?.setFolderMappings);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const setComponentNameIdMapping = useStore((state) => state.setComponentNameIdMapping);
   const initDependencyGraph = useStore((state) => state.initDependencyGraph);
   const setCurrentPageId = useStore((state) => state.setCurrentPageId);
   const updateEventsField = useEventActions().updateEventsField;
   const setCurrentMode = useStore((state) => state.setCurrentMode);
+  const setIsEditorReadOnly = useStore((state) => state.setIsEditorReadOnly);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
+  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
+  const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
   const setResolvedConstants = useStore((state) => state.setResolvedConstants);
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
@@ -102,13 +93,17 @@ const useAppData = (
   const setEnvironmentLoadingState = useStore((state) => state.setEnvironmentLoadingState);
   const updateReleasedVersionId = useStore((state) => state.updateReleasedVersionId);
   const resetUndoRedoStack = useStore((state) => state.resetUndoRedoStack);
-  const checkAndSetTrueBuildSuggestionsFlag = useStore((state) => state.checkAndSetTrueBuildSuggestionsFlag);
+  const initSuggestions = useStore((state) => state.initSuggestions);
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
-  const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+  const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
+  const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
+  const isLicenseFetched = useStore((state) => state.isLicenseFetched);
+  const startExposedValueBatch = useStore((state) => state.startExposedValueBatch);
+  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -116,17 +111,35 @@ const useAppData = (
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
 
+  const fetchAllModules = useCallback(async () => {
+    const allModules = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    while (currentPage <= totalPages) {
+      const data = await appsService.getAll(currentPage, '', '', 'module', 'picker');
+      const pageModules = data?.apps || [];
+
+      allModules.push(...pageModules);
+
+      const pageCount = Number(data?.meta?.total_pages);
+      totalPages = Number.isFinite(pageCount) && pageCount > 0 ? pageCount : currentPage;
+      currentPage += 1;
+    }
+
+    return allModules;
+  }, []);
+
   const themeAccess = useThemeAccess();
   const detectThemeChange = useStore((state) => state.detectThemeChange);
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
-  const setConversationZeroState = useStore((state) => state.ai?.setConversationZeroState);
   const sendMessage = useStore((state) => state.ai?.sendMessage);
   const getCreditBalance = useStore((state) => state.ai?.getCreditBalance);
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
-  const slug = moduleMode ? '' : pathParams?.slug;
+  let slug = pathParams?.slug;
 
   const previousVersion = usePrevious(currentVersionId);
   const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
@@ -139,13 +152,45 @@ const useAppData = (
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
-  const isAppModeSwitchedToVisualPostLayoutGeneration = useStore(
-    (state) => state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration
-  );
+
+  useEffect(() => {
+    setCurrentAppName(appName || '');
+    return () => setCurrentAppName('');
+  }, [appName]);
+
+  useEffect(() => {
+    setCurrentAppMeta({
+      environment: selectedEnvironment?.name,
+      version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
+    });
+    return () => setCurrentAppMeta({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEnvironment?.name, selectedVersion?.display_name, selectedVersion?.displayName, selectedVersion?.name]);
+
+  useEffect(() => {
+    markAppLoadStart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (isComponentLayoutReady) markAppLoaded();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isComponentLayoutReady]);
+
+  // Used to trigger app refresh flow after restoring app history
+  const restoreTimestamp = useStore((state) => state.restoreTimestamp);
+  const previousRestoreTimestamp = usePrevious(restoreTimestamp);
+  // Used to trigger the same refresh in place, without unmounting the editor chrome
+  const hotReloadTimestamp = useStore((state) => state.hotReloadTimestamp);
+  const previousHotReloadTimestamp = usePrevious(hotReloadTimestamp);
+  const setCanvasReloading = useStore((state) => state.setCanvasReloading);
+  const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady);
 
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
+  const promptSentRef = useRef(false);
+  const isPageSwitchRef = useRef(false);
 
   const appTypeRef = useRef(null);
   const { isReleasedVersionId } = useStore(
@@ -178,16 +223,13 @@ const useAppData = (
     }
   };
 
+  // Only observes pageSwitchInProgress — must not reset it. Ownership of that flag's
+  // lifecycle belongs solely to appSlice.js's switchPage/doSwitch.
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
-      const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
-      setPageSwitchInProgress(false);
-      setTimeout(() => {
-        handleEvent('onPageLoad', currentPageEvents, {});
-        checkAndSetTrueBuildSuggestionsFlag();
-      }, 0);
+      isPageSwitchRef.current = true;
     }
-  }, [pageSwitchInProgress, currentPageId, moduleMode]);
+  }, [pageSwitchInProgress, moduleMode]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -229,20 +271,21 @@ const useAppData = (
     if (!currentSession) {
       return;
     }
+    // Guards against a Module unmounted mid-load by rapid page switching: its stale promise
+    // would otherwise still call startExposedValueBatch() below, opening a batch nothing
+    // will ever flush (its own layout-ready cycle belongs to a fresh mount that already
+    // ran its own load-and-flush) — an orphaned +1 that leaves the shared batch stuck open.
+    let isCancelled = false;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
-    const isPublicAccess = moduleMode
-      ? false
-      : (currentSession?.load_app && currentSession?.authentication_failed) ||
-        (!queryParams.version && mode !== 'edit');
+    const isPublicAccess =
+      (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
       const moduleDefinition = getModuleDefinition(appId);
       if (moduleDefinition) {
-        // clean up the module definition from the store
-        deleteModuleDefinition(appId);
-        appDataPromise = Promise.resolve(moduleDefinition);
+        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
       } else {
         appDataPromise = appService.fetchApp(appId);
       }
@@ -256,10 +299,6 @@ const useAppData = (
       }
     }
 
-    if (isAppModeSwitchedToVisualPostLayoutGeneration && !moduleMode) {
-      setEditorLoading(true, moduleId);
-    }
-
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
@@ -267,14 +306,8 @@ const useAppData = (
         let editorEnvironment = result.editorEnvironment;
         let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
-          const rawDataQueries = appData?.data_queries;
-          const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
+          // `convertAllKeysToSnakeCase` normalises the metadata envelope.
           appData = convertAllKeysToSnakeCase(appData);
-
-          appData.data_queries = rawDataQueries;
-          if (appData.editing_version && rawEditingVersionDataQueries) {
-            appData.editing_version.data_queries = rawEditingVersionDataQueries;
-          }
 
           editorEnvironment = {
             id: environmentId,
@@ -286,7 +319,12 @@ const useAppData = (
         if (mode !== 'edit') {
           try {
             const queryParams = { slug: slug };
-            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+
+            const viewerEnvironment =
+              moduleMode && isPublicAccess
+                ? { environment: { id: environmentId, name: 'development' } } // This needs to be replaced once the environment is implemented for modules
+                : await appEnvironmentService.getEnvironment(environmentId, queryParams);
+
             editorEnvironment = {
               id: viewerEnvironment?.environment?.id,
               name: viewerEnvironment?.environment?.name,
@@ -307,10 +345,12 @@ const useAppData = (
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
-        constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
-          constantsResp?.constants,
-          editorEnvironment?.name
-        );
+        if (constantsResp) {
+          constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
+            constantsResp?.constants,
+            editorEnvironment?.name
+          );
+        }
 
         !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
@@ -321,8 +361,13 @@ const useAppData = (
         });
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
+        // Modules go through the same AI init as apps: the server always returns an ai_conversation
+        // for every app/module (see server ee apps service), and getCreditBalance() sets
+        // aiFeaturesEnabled which gates the AI sidebar trigger. Gating this behind !moduleMode left
+        // modules without a conversation (crash on open) and without the credit fetch (trigger hidden
+        // unless the singleton store happened to be primed by the create-with-prompt flow).
         if (setConversation && setDocsConversation) {
-          setConversation(conversation, { appBuilderMode: appData.app_builder_mode });
+          setConversation(conversation);
           setDocsConversation(docsConversation);
           // important to control ai inputs
           getCreditBalance();
@@ -336,7 +381,10 @@ const useAppData = (
 
         appTypeRef.current = appData.type;
 
-        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+        // appId prop is undefined for public app viewers (AppsRoute skips onValidSession → extraProps never set).
+        // Fall back to appData response so isReleasedApp evaluates correctly and the title omits "Preview -".
+        const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
+        const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
 
         setApp(
           {
@@ -363,19 +411,77 @@ const useAppData = (
           moduleId
         );
 
+        const liveMessages = useStore.getState().ai?.conversation?.aiConversationMessages;
+        if (
+          state?.prompt &&
+          !promptSentRef.current &&
+          (conversation?.aiConversationMessages || []).length === 0 &&
+          (liveMessages || []).length === 0
+        ) {
+          promptSentRef.current = true;
+          setSelectedSidebarItem('tooljetai');
+          toggleLeftSidebar(true);
+          // Structured datasources/tables the user tagged via "@mentions" in the create prompt. Sent
+          // alongside the kickoff message so the backend can auto-complete the data-clarification /
+          // datasource-selection / table-mapping steps for what was already referenced.
+          const taggedResources = state?.taggedResources;
+          const hasTaggedResources =
+            taggedResources && (taggedResources.datasources?.length ?? 0) + (taggedResources.tables?.length ?? 0) > 0;
+          const clearKickoffDraft = () => {
+            const {
+              prompt: _prompt,
+              taggedResources: _taggedResources,
+              attachments: _attachments,
+              kickoffAttempted: _kickoffAttempted,
+              ...restUsrState
+            } = window.history.state?.usr || {};
+            window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
+          };
+          if (state.kickoffAttempted) {
+            // A reload restores an unaccepted draft for explicit retry, never silently resubmits it.
+            useStore.setState((draft) => {
+              draft.ai.failedSubmission = {
+                conversationId: conversation.id,
+                content: state.prompt,
+                attachments: state.attachments || [],
+              };
+            });
+          } else {
+            window.history.replaceState(
+              { ...window.history.state, usr: { ...window.history.state?.usr, kickoffAttempted: true } },
+              '',
+              window.location.href
+            );
+            sendMessage(
+              state.prompt,
+              {},
+              {
+                ...(hasTaggedResources ? { taggedResources } : {}),
+                attachments: state.attachments,
+                restoreDraftOnFailure: true,
+                onAccepted: clearKickoffDraft,
+              },
+              moduleId
+            );
+          }
+          setIsQueryPaneExpanded(false);
+        }
+
+        if (initialLoadRef.current) {
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
+        }
+
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
-
-          // If the app builder mode is AI
-          // - Do not show zero state - if there is some conversation already done or if route state has prompt
-          setConversationZeroState(
-            state?.prompt ? true : Boolean(appData.ai_conversation?.aiConversationMessages?.length)
-          );
+          setIsQueryPaneExpanded(false);
         }
 
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
+        }
+        // Skip overriding global settings so an embedded module's own settings never overwrite the app's.
+        if (!isEmbeddedModuleInstance(mode, moduleMode)) {
           const global_settings = mapKeys(
             appData.editing_version?.global_settings || appData.global_settings,
             (value, key) => camelCase(key)
@@ -385,10 +491,13 @@ const useAppData = (
           }
           setGlobalSettings(global_settings);
         }
+
         setPages(pages, moduleId);
-        setPageSettings(
-          computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
-        );
+        if (!moduleMode) {
+          setPageSettings(
+            computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
+          );
+        }
 
         // set starting page as homepage initially
         let startingPage = appData.pages.find((page) => page.id === homePageId);
@@ -424,14 +533,19 @@ const useAppData = (
           // navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${startingPage.handle}`);
         }
 
-        // Add page id and handle to the state on initial load
-        const currentState = window.history.state || {};
-        const pageInfo = {
-          id: startingPage.id,
-          handle: startingPage.handle,
-        };
-        const newState = { ...currentState, ...pageInfo };
-        window.history.replaceState(newState, '', window.location.href);
+        // Add page id and handle to the state on initial load.
+        // Only the main app may write the browser history entry — an embedded module instance
+        // runs this same hook and would otherwise overwrite history.state.id with the module's
+        // page id, which the canvas page lookup can't resolve (blanks the page on back/forward).
+        if (!moduleMode) {
+          const currentState = window.history.state || {};
+          const pageInfo = {
+            id: startingPage.id,
+            handle: startingPage.handle,
+          };
+          const newState = { ...currentState, ...pageInfo };
+          window.history.replaceState(newState, '', window.location.href);
+        }
 
         setCurrentPageHandle(startingPage.handle, moduleId);
         setCurrentPageId(startingPage.id, moduleId);
@@ -448,6 +562,20 @@ const useAppData = (
         if (!moduleMode) {
           updateFeatureAccess();
           setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+          setIsEditorReadOnly(false); // non-module editors are never gated by module read-only
+        } else if (moduleId === 'canvas') {
+          // Module opened as the main editor (not a nested module): AppLoader resets all
+          // stores on mount, so feature access must be reloaded here too — otherwise
+          // modulesEnabled stays false and the ModuleContainer renders with the `disabled`
+          // class (opacity + pointer-events:none), breaking drops/move inside the module.
+          updateFeatureAccess();
+          // Needs its own currentVersionId so saveComponentChanges can reach the correct version endpoint.
+          setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+          // Build-with (view-only) access → read-only editor. Security is enforced server-side;
+          // this only switches the editor UI into read-only (see getShouldFreeze).
+          const moduleOwnerId = appData?.user_id ?? appData?.editing_version?.app?.user_id ?? appData?.app?.user_id;
+          const canEdit = canEditModule(authenticationService.currentSessionValue, appId, moduleOwnerId);
+          setIsEditorReadOnly(!canEdit);
         }
         setAppHomePageId(homePageId, moduleId);
         if (!moduleMode && appData.modules) {
@@ -458,9 +586,10 @@ const useAppData = (
           isPublicAccess || (mode !== 'edit' && appData.is_public)
             ? appData
             : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
-        const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
-        dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+
+        const dataQueries = (queryData.data_queries || []).map((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
+
         if (dataQueries?.length > 0) {
           !moduleMode && setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(
@@ -468,6 +597,23 @@ const useAppData = (
             moduleId
           );
         }
+
+        if (mode === 'edit' && !moduleMode && setFolders) {
+          const versionId = appData.editing_version?.id || appData.current_version_id;
+          dataQueryFolderService
+            .getAll(versionId)
+            .then((folderData) => {
+              setFolders(folderData.folders ?? []);
+              setFolderMappings(folderData.folderMappings ?? []);
+            })
+            .catch(() => {});
+        } else if (moduleMode && moduleId === 'canvas' && setFolders) {
+          // Modules have no folder structure. Signal foldersReady so the EE QueryFolderTree
+          // renders the flat query list instead of returning null while waiting for fetch.
+          setFolders([]);
+          setFolderMappings([]);
+        }
+
         const constants = constantsResp?.constants;
 
         if (constants) {
@@ -485,7 +631,11 @@ const useAppData = (
         }
         setQueryMapping(moduleId);
 
-        setResolvedGlobals('environment', editorEnvironment, moduleId);
+        setResolvedGlobals(
+          'environment',
+          selectedEnvironment ? { id: selectedEnvironment.id, name: selectedEnvironment.name } : editorEnvironment,
+          moduleId
+        );
         setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
@@ -505,33 +655,35 @@ const useAppData = (
         initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
-        if (
-          !moduleMode &&
-          state?.prompt &&
-          initialLoadRef.current &&
-          (conversation?.aiConversationMessages || []).length === 0
-        ) {
-          sendMessage(state.prompt);
-        }
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
           const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
-          useStore.getState().init(appData.editing_version?.id || appData.current_version_id, envFromQueryParams);
-          fetchGlobalDataSources(
-            appData.organization_id,
-            appData.editing_version?.id || appData.current_version_id,
-            editorEnvironment.id
-          );
+          // Use versionId from URL if available (preview mode), otherwise use editing version
+          const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
+          useStore.getState().init(versionIdToInit, envFromQueryParams);
+          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
+        } else if (!isPublicAccess && moduleMode && moduleId === 'canvas') {
+          // Standalone module editor: load static data sources (RunJS, RestAPI, RunPy) the same
+          // way a regular app editor does. Embedded modules skip this — they inherit the parent's.
+          const versionIdToInit = appData.editing_version?.id || appData.current_version_id;
+          // init() populates selectedVersion and selectedEnvironment, which useAppPreviewLink
+          // needs to build the preview URL with correct ?version=...&env=... params.
+          useStore.getState().init(versionIdToInit);
+          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
-        if (!moduleMode) {
+        if (!moduleMode || moduleId === 'canvas') {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
           updateReleasedVersionId(appData.current_version_id);
         }
 
+        // This instance was torn down (e.g. its Module got unmounted by a rapid page
+        // switch) before its own load finished — skip opening a batch nobody will flush.
+        if (isCancelled) return;
+
+        startExposedValueBatch();
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
 
-        !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
         return () => {
           document.title = retrieveWhiteLabelText();
         };
@@ -542,21 +694,78 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession, isAppModeSwitchedToVisualPostLayoutGeneration]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
-    if (isComponentLayoutReady) {
-      runOnLoadQueries(moduleId).then(() => {
+    if (isComponentLayoutReady && isLicenseFetched) {
+      setSuppressQueryRerun(moduleId, true);
+
+      // The flush runs the initial-settle dependency cascade synchronously.
+      // Suppress dependency-triggered query re-runs for THIS module during that window,
+      // so queries don't run on load when components publish their initial exposed values.
+      // Only Genuine post-load changes cascade outside this window and rerun as expected.
+      try {
+        flushExposedValueBatch();
+      } finally {
+        setSuppressQueryRerun(moduleId, false);
+      }
+
+      mode === 'edit' && initSuggestions(moduleId);
+
+      const loadLibrariesAndRun = async () => {
+        // Load JS libraries and preloaded JS from globalSettings before running queries.
+        // The BE strips libraries from globalSettings when the org is not licensed, so
+        // no feature-access check is needed here.
+        const globalSettings = useStore.getState().globalSettings;
+        const jsLibraries = globalSettings?.libraries?.javascript || [];
+        const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
+
+        if (jsLibraries.length > 0 || preloadedJS) {
+          setJsLibraryLoading(true);
+          try {
+            const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};
+
+            // Execute preloaded JS — its returned exports merge into the registry
+            const preloadedExports = await executePreloadedJS(preloadedJS, registry);
+            const fullRegistry = { ...registry, ...preloadedExports };
+
+            setJsLibraryRegistry(fullRegistry);
+          } catch (error) {
+            toast.error(`Failed to load JS libraries: ${error?.message ?? String(error)}`);
+          } finally {
+            setJsLibraryLoading(false);
+          }
+        }
+
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
-        handleEvent('onPageLoad', currentPageEvents, {});
-      });
+        if (isPageSwitchRef.current) {
+          // Page switch: skip runOnLoadQueries and only fire onPageLoad.
+          // Running runOnLoadQueries here would create an infinite loop if any
+          // runOnPageLoad query has a success/failure event that navigates to another
+          // page — each navigation would re-trigger queries which re-trigger navigation.
+          // Apps that need data refresh on navigation should trigger queries from the
+          // onPageLoad event instead of relying on runOnPageLoad.
+          isPageSwitchRef.current = false;
+          handleEvent('onPageLoad', currentPageEvents, {}, moduleId);
+        } else {
+          runOnLoadQueries(moduleId).then(() => {
+            handleEvent('onPageLoad', currentPageEvents, {}, moduleId);
+          });
+        }
+      };
+
+      loadLibrariesAndRun();
     }
-  }, [isComponentLayoutReady, moduleId]);
+  }, [isComponentLayoutReady, isLicenseFetched, moduleId, mode]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;
     fetchAndSetWindowTitle({
-      page: pageTitles.EDITOR,
+      page: mode === 'edit' ? pageTitles.EDITOR : pageTitles.VIEWER,
       appName: appName,
       mode: mode,
       isReleased: isReleasedVersionId,
@@ -597,15 +806,28 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
+    const isForceRefreshTriggered = restoreTimestamp != previousRestoreTimestamp;
+    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
+    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
+    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
 
-    if (isEnvChanged || isVersionChanged) {
-      setEditorLoading(true, moduleId);
+    if (isEnvChanged || isVersionChanged || isForceRefreshTriggered || isHotReload) {
+      if (isHotReload) {
+        setCanvasReloading(true, moduleId);
+        // The canvas subtree unmounts while reloading (AppCanvas), but AppCanvas itself stays
+        // mounted, so its unmount cleanup won't clear this. Clear it here so it can flip back to
+        // true once the rebuilt canvas settles — that transition is what re-runs the on-load
+        // queries, onPageLoad events and JS libraries.
+        setIsComponentLayoutReady(false, moduleId);
+      } else {
+        setEditorLoading(true, moduleId);
+      }
       clearSelectedComponents();
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
       }
       appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
-        cleanUpStore(false);
+        cleanUpStore();
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 
@@ -614,7 +836,9 @@ const useAppData = (
         const pages = appData.pages.map((page) => page);
         setSelectedQuery(null);
         setPreviewData(null);
-        const isReleasedApp = appId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
+        // See comment at first effectiveAppId usage above
+        const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
+        const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
           appName: appData.name,
           appId: appData.id,
@@ -641,10 +865,25 @@ const useAppData = (
         );
 
         setPages(pages, moduleId);
+        setPageSettings(
+          computePageSettings(deepCamelCase(appData?.editing_version?.pageSettings ?? appData?.pageSettings))
+        );
         let startingPage = appData.pages.find(
           (page) => page.id === appData.editing_version.home_page_id || appData.editing_version.homePageId
         );
-        setCurrentPageId(startingPage.id, moduleId);
+        // A hot reload keeps the user where they are; everything else lands on the home page
+        const pageToLoad = (isHotReload && appData.pages.find((page) => page.id === currentPageId)) || startingPage;
+        setCurrentPageId(pageToLoad.id, moduleId);
+        if (isHotReload) {
+          // We're staying on the same page, and the refresh may have renamed it — so refresh the
+          // handle and the {{page.*}} constants, which this effect otherwise never sets. Scoped to
+          // hot reload to leave the version/env/history flows behaving exactly as before.
+          setCurrentPageHandle(pageToLoad?.handle, moduleId);
+          setResolvedPageConstants(
+            { id: pageToLoad?.id, handle: pageToLoad?.handle, name: pageToLoad?.name },
+            moduleId
+          );
+        }
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
         // const queryData = await dataqueryService.getAll(currentVersionId);
@@ -670,12 +909,26 @@ const useAppData = (
         }
 
         const queryData = await dataqueryService.getAll(currentVersionId, mode);
-        const dataQueries = queryData.data_queries;
-        dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+        const dataQueries = (queryData.data_queries || []).map((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
+
         if (dataQueries?.length > 0) {
           setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
+        }
+
+        if (setFolders) {
+          setFolders([]);
+          setFolderMappings([]);
+          if (mode === 'edit') {
+            dataQueryFolderService
+              .getAll(currentVersionId)
+              .then((folderData) => {
+                setFolders(folderData.folders ?? []);
+                setFolderMappings(folderData.folderMappings ?? []);
+              })
+              .catch(() => {});
+          }
         }
 
         try {
@@ -687,6 +940,7 @@ const useAppData = (
         }
 
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
+
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
         setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode });
@@ -702,27 +956,49 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
+        if (isHotReload) {
+          // The canvas stayed mounted, so pair the batch the same way initial load does: open it
+          // before the rebuilt canvas settles and let the layout-ready effect flush it.
+          startExposedValueBatch();
+          // Datasources/modules may be new in this definition (the env branch above only covers
+          // datasources, and only when the environment changed).
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
+          if (appData.modules) setModuleDefinition(appData.modules);
+        }
+        setCanvasReloading(false, moduleId);
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp, hotReloadTimestamp]);
 
   useEffect(() => {
     if (moduleMode) return;
     if (mode === 'edit') {
       requestIdleCallback(
         () => {
-          appsService.getAll(0, '', '', 'module').then((data) => {
-            setModulesIsLoading(false);
-            setModulesList(data.apps);
-          });
+          fetchAllModules()
+            .then((modules) => {
+              setModulesList(modules);
+            })
+            .catch((error) => {
+              console.error('Failed to preload modules', error);
+            })
+            .finally(() => {
+              setModulesIsLoading(false);
+            });
         },
         { timeout: 2000 }
       ); // Adding a timeout of 2 seconds as fallback
     }
-  }, [setModulesIsLoading, setModulesList, mode, moduleMode]);
+  }, [fetchAllModules, setModulesIsLoading, setModulesList, mode, moduleMode]);
 
   return appTypeRef.current;
 };
 
 export default useAppData;
+
+export function isEmbeddedModuleInstance(mode, moduleMode) {
+  // As of now this would be True only when Viewer is mounted by ModuleViewer for an embedded module (module
+  // preview uses the same Viewer path but with moduleMode false, so it's unaffected).
+  return mode === 'view' && moduleMode;
+}

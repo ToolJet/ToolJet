@@ -1,5 +1,5 @@
 import React from 'react';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 

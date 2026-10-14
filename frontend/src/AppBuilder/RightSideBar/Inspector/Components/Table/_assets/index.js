@@ -12,4 +12,7 @@ export { default as MarkdownTypeIcon } from './MarkdownTypeIcon';
 export { default as HTMLTypeIcon } from './HTMLTypeIcon';
 export { default as BadgeTypeIcon } from './BadgeTypeIcon';
 export { default as TagsTypeIcon } from './TagsTypeIcon';
+export { default as TagsV2TypeIcon } from './TagsV2TypeIcon';
 export { default as RadioTypeIcon } from './RadioTypeIcon';
+export { default as RatingTypeIcon } from './RadioTypeIcon';
+export { default as ButtonTypeIcon } from './ButtonTypeIcon';

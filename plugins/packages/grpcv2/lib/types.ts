@@ -43,6 +43,7 @@ export type SourceOptions = {
   // Filesystem proto files
   proto_files_directory?: string;
   proto_files_pattern?: string;
+  selected_services?: string[];
   auth_type: 'none' | 'basic' | 'bearer' | 'oauth2' | 'api_key';
   username?: string;
   password?: string;

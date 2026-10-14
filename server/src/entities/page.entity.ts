@@ -22,6 +22,7 @@ export enum PageType {
   GROUP = 'group',
   URL = 'url',
   APP = 'app',
+  CUSTOM = 'custom',
 }
 
 @Entity({ name: 'pages' })
@@ -86,6 +87,12 @@ export class Page {
     default: PageType.DEFAULT,
   })
   type: PageType;
+
+  @Column('jsonb', { name: 'page_header', nullable: true })
+  pageHeader;
+
+  @Column('jsonb', { name: 'page_footer', nullable: true })
+  pageFooter;
 
   @Column({ name: 'app_id', type: 'varchar', nullable: true }) // Assuming appId is a varchar/string
   appId: string | null;

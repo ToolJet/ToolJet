@@ -95,12 +95,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "document": {
         "label": "Document",
@@ -127,14 +136,23 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
-      "document": {
+      "documents": {
         "label": "Documents",
         "key": "documents",
         "type": "codehinter",
@@ -159,12 +177,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "filter": {
         "label": "Filter",
@@ -189,15 +216,24 @@
     },
     "find_many": {
       "collection": {
-        "label": "Collection",
-        "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
-      },
+          "label": "Collection",
+          "key": "collection",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listCollections",
+            "label": "Fetch Collections"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a collection from the dropdown",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select or enter collection name",
+          "order": 20
+        },
       "filter": {
         "label": "Filter",
         "key": "filter",
@@ -223,12 +259,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "options": {
         "label": "Options",
@@ -245,12 +290,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "filter": {
         "label": "Filter",
@@ -277,12 +331,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "field": {
         "label": "Field",
@@ -320,12 +383,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "filter": {
         "label": "Filter",
@@ -362,12 +434,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "filter": {
         "label": "Filter",
@@ -404,12 +485,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "filter": {
         "label": "Filter",
@@ -446,12 +536,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "filter": {
         "label": "Filter",
@@ -488,12 +587,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "filter": {
         "label": "Filter",
@@ -530,12 +638,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "filter": {
         "label": "Filter",
@@ -562,12 +679,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "filter": {
         "label": "Filter",
@@ -594,12 +720,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "filter": {
         "label": "Filter",
@@ -626,12 +761,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "operations": {
         "label": "Operations",
@@ -658,12 +802,21 @@
       "collection": {
         "label": "Collection",
         "key": "collection",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter collection"
+        "placeholder": "Select or enter collection name",
+        "order": 20
       },
       "pipeline": {
         "label": "Pipeline",

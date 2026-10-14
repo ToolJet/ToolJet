@@ -496,9 +496,12 @@
             "properties": "Propiedades",
             "events": "Eventos",
             "layout": "Diseño",
+            "devices": "Dispositivos",
             "styles": "Estilos",
             "general": "General",
             "validation": "Validación",
+            "data": "Datos",
+            "additionalActions": "Acciones adicionales",
             "documentation": "{{componentMeta}} documentación",
             "widgetNameEmptyError": "El nombre del widget no puede estar vacío",
             "componentNameExistsError": "El nombre del componente ya existe",
@@ -568,6 +571,9 @@
             "enableTimeSelection": "Habilitar selección de tiempo",
             "enableDateSelection": "Habilitar selección de fecha",
             "disabledDates": "Fechas deshabilitadas",
+            "minDate": "Fecha mínima",
+            "maxDate": "Fecha máxima",
+            "makeThisFieldMandatory": "Hacer este campo obligatorio",
             "setChecked": "Establecer marcado",
             "status": "Estado",
             "defaultStatus": "Estado predeterminado",
@@ -619,6 +625,9 @@
             "parseContent": "Analizar contenido",
             "fileType": "Tipo de archivo",
             "dateFormat": "Formato de fecha",
+            "timeFormat": "Formato de hora",
+            "displayIn": "Mostrar en",
+            "storeIn": "Almacenar en",
             "defaultDate": "Fecha predeterminada",
             "events": "Eventos",
             "resources": "Recursos",
@@ -954,6 +963,22 @@
         "Back": {
             "text": "Atrás",
             "tip": "Atrás a la vista anterior (página principal)"
+        }
+    },
+    "datepicker": {
+        "months": {
+            "january": "Enero",
+            "february": "Febrero",
+            "march": "Marzo",
+            "april": "Abril",
+            "may": "Mayo",
+            "june": "Junio",
+            "july": "Julio",
+            "august": "Agosto",
+            "september": "Septiembre",
+            "october": "Octubre",
+            "november": "Noviembre",
+            "december": "Diciembre"
         }
     }
 }

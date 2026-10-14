@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import Layout from '@/_ui/Layout';
+import Beta from '@/_ui/Beta';
 import { authenticationService } from '@/_services';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { redirectToErrorPage } from '@/_helpers/routes';
@@ -17,9 +18,20 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   const location = useLocation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const navigate = useNavigate();
-  const [conditionObj, setConditionObj] = useState({
-    admin: authenticationService.currentSessionValue?.admin,
-    wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
+  const edition = fetchEdition();
+  const isEEorCloud = edition === 'ee' || edition === 'cloud';
+
+  const [conditionObj, setConditionObj] = useState(() => {
+    const current = authenticationService.currentSessionValue || {};
+    const isAdmin = !!current.admin;
+    const isBuilder = !!current.user_permissions?.is_builder;
+    return {
+      admin: isAdmin,
+      isBuilder,
+      wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
+      // admins and builders only on EE or Cloud
+      canAccessThemes: isEEorCloud && (isAdmin || isBuilder),
+    };
   });
 
   //Filtered Links from the workspace settings links array
@@ -34,16 +46,35 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
 
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
+      const isAdmin = !!newOrd?.admin;
+      const isBuilder = !!newOrd?.user_permissions?.is_builder;
+      const editionNow = fetchEdition();
+      const isEEorCloudNow = editionNow === 'ee' || editionNow === 'cloud';
       setConditionObj({
-        admin: newOrd?.admin,
+        admin: isAdmin,
+        isBuilder,
         wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
+        canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
       });
     });
-    const selectedTabFromRoute = location.pathname.split('/').pop();
+
+    const pathParts = location.pathname.split('/').filter(Boolean);
+    const selectedTabFromRoute = pathParts.pop();
+
     if (selectedTabFromRoute === 'workspace-settings') {
-      // No Sub routes added loading first one
-      setSelectedTab(admin ? workspaceSettingsLinks[0].id : 'workspace-variables');
-      navigate(admin ? workspaceSettingsLinks[0].route : 'workspace-variables');
+      const availableLinks = filteredLinks();
+
+      if (availableLinks.length > 0) {
+        let target = availableLinks[0];
+
+        if (!admin && conditionObj.isBuilder) {
+          const themesLink = availableLinks.find((l) => l.id === 'themes');
+          if (themesLink) target = themesLink;
+        }
+
+        setSelectedTab(target.id);
+        navigate(target.route, { replace: true });
+      }
     } else {
       const FieldDisabled = window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'false';
       if (FieldDisabled && selectedTabFromRoute === 'workspace-login') {
@@ -55,7 +86,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
     }
 
     return () => subscription.unsubscribe();
-  }, [admin, location.pathname]);
+  }, [admin, location.pathname, conditionObj.isBuilder]);
 
   const handleClick = (data) => {
     setSelectedTab(data.id);
@@ -90,15 +121,19 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
                           handleClick(item);
                         }}
                         selectedItem={selectedTab == item.id}
-                        renderBadgeForItems={[]}
-                        renderBadge={() => (
-                          <span
-                            style={{ width: '40px', textTransform: 'lowercase' }}
-                            className="badge bg-color-primary badge-pill"
-                          >
-                            new
-                          </span>
-                        )}
+                        renderBadgeForItems={['Custom component libraries']}
+                        renderBadge={() =>
+                          item.isBeta ? (
+                            <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none tw-ml-0.5" />
+                          ) : (
+                            <span
+                              style={{ width: '40px', textTransform: 'lowercase' }}
+                              className="badge bg-color-primary badge-pill"
+                            >
+                              new
+                            </span>
+                          )
+                        }
                         dataCy={item.name.toLowerCase().replace(/\s+/g, '-')}
                       >
                         {item.name}
@@ -111,7 +146,10 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
             <OrganizationList />
           </div>
 
-          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
+          <div
+            className={cx('col workspace-content-wrapper')}
+            style={{ paddingTop: '40px', scrollbarGutter: 'stable' }}
+          >
             <div className="w-100">
               <Outlet />
             </div>

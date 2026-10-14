@@ -493,9 +493,12 @@
             "properties": "属性",
             "events": "事件",
             "layout": "布局",
+            "devices": "设备",
             "styles": "样式",
             "general": "一般",
             "validation": "验证",
+            "data": "数据",
+            "additionalActions": "附加操作",
             "documentation": "读取 {{componentMeta}} 的文档",
             "widgetNameEmptyError": "部件名称不能为空",
             "componentNameExistsError": "组件名称已存在",
@@ -564,6 +567,9 @@
             "enableTimeSelection": "启用时间选择？",
             "enableDateSelection": "启用日期选择？",
             "disabledDates": "禁用日期",
+            "minDate": "最小日期",
+            "maxDate": "最大日期",
+            "makeThisFieldMandatory": "将此字段设为必填",
             "setChecked": "设置选中状态",
             "status": "状态",
             "defaultStatus": "默认状态",
@@ -615,6 +621,9 @@
             "parseContent": "解析内容",
             "fileType": "文件类型",
             "dateFormat": "日期格式",
+            "timeFormat": "时间格式",
+            "displayIn": "显示时区",
+            "storeIn": "存储时区",
             "defaultDate": "默认日期",
             "events": "事件",
             "resources": "资源",
@@ -948,6 +957,22 @@
         "Back": {
             "text": "返回",
             "tip": "返回主页"
+        }
+    },
+    "datepicker": {
+        "months": {
+            "january": "一月",
+            "february": "二月",
+            "march": "三月",
+            "april": "四月",
+            "may": "五月",
+            "june": "六月",
+            "july": "七月",
+            "august": "八月",
+            "september": "九月",
+            "october": "十月",
+            "november": "十一月",
+            "december": "十二月"
         }
     }
 }

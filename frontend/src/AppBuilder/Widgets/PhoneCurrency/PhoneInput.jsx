@@ -1,24 +1,47 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Input, { getCountries, getCountryCallingCode } from 'react-phone-number-input/input';
-import { getCountryCallingCodeSafe } from './utils';
+import { getCountryCallingCodeSafe, toE164 } from './utils';
 // eslint-disable-next-line import/no-unresolved
 import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
-import { getLabelWidthOfInput, getWidthTypeOfComponentStyles, useInput } from '../BaseComponents/hooks/useInput';
+import {
+  getLabelFontSize,
+  getLabelHeight,
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+  useInput,
+} from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { CountrySelect } from './CountrySelect';
-import { getModifiedColor } from '@/Editor/Components/utils';
-
-const tinycolor = require('tinycolor2');
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 export const PhoneInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
+
+  // A Phone Input's value is E.164, always
+  // Applying it here, before the hook sees the authored value, means the very first render already
+  // holds a canonical value instead of raw text that four later writers each had to re-normalize.
+  // `toE164` is idempotent, so a value already in that shape passes through untouched.
+  const seedCountryCode = getCountryCallingCodeSafe(props.properties?.defaultCountry || 'US');
+
   const transformedProps = {
     ...props,
     inputType: 'phone',
+    properties: {
+      ...props.properties,
+      // An unknown country has no dial code to build on, so there is nothing to normalize to
+      // and the authored text passes through untouched.
+      // Without it an unresolvable country would prepend a bare `+`.
+      value: seedCountryCode
+        ? toE164(props.properties?.value, seedCountryCode, seedCountryCode)
+        : props.properties?.value,
+    },
   };
+
   const inputLogic = useInput(transformedProps);
   const {
     inputRef,
@@ -35,11 +58,12 @@ export const PhoneInput = (props) => {
     handleBlur,
     handleFocus,
     value,
-    handlePhoneCurrencyInputChange,
     country,
     setCountry,
+    setPhoneInputValue,
   } = inputLogic;
-  const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US' } = properties;
+
+  const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US', showClearBtn } = properties;
 
   const {
     textColor,
@@ -55,10 +79,22 @@ export const PhoneInput = (props) => {
     boxShadow,
     borderRadius,
     widthType,
+    labelFontSize,
+    padding,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const isInitialRender = useRef(true);
+
+  const countryCode = getCountryCallingCodeSafe(country);
+  const safeCountry = countryCode ? country : 'US'; // fall back to a valid country so the library never gets an unknown one.
+
+  // Nothing to re-normalize: the seed is normalized above and every later write goes through
+  // `setPhoneInputValue`, so the state is always either E.164 or the library's own empty.
+  const inputValue = countryCode ? value : `${value ?? ''}`.trim();
 
   const options = useMemo(
     () =>
@@ -71,13 +107,35 @@ export const PhoneInput = (props) => {
     []
   );
 
+  /**
+   * Changes the active country and re-bases the current value onto its calling code.
+   *   - Strips the previously applied calling code prefix from the current value, and prepends the new country's calling code.
+   *   - Updates the country and input value states.
+   *
+   * NOTE -
+   * `react-phone-number-input` expects `value` to be an E.164 number consistent with the `country` prop.
+   * Changing `country` alone leaves the old calling code on `value` (e.g. country "US" + "+91XXXXXXXXXX" still holds IN);
+   * the library then mangles the number and fires a corrective `onChange`, which can spiral into a re-render loop.
+   */
+  const onCountryChange = (nextCountry) => {
+    const newCode = getCountryCallingCodeSafe(nextCountry);
+    if (!newCode) return;
+
+    // Strip the PREVIOUS country's code, which is the one the current value carries.
+    const nextValue = toE164(value, newCode, getCountryCallingCodeSafe(country));
+
+    // Return early so a re-resolved-but-unchanged country won't trigger re-renders.
+    if (nextCountry === country && nextValue === value) return;
+
+    setCountry(nextCountry);
+    // Pass nextCountry so the value is validated/published against the new country,
+    // since the `country` state closure isn't updated until the re-render.
+    setPhoneInputValue(nextValue, nextCountry);
+  };
+
   const onInputValueChange = (value) => {
-    setExposedVariables({
-      country: country,
-      countryCode: `+${getCountryCallingCodeSafe(country)}`,
-      formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-    });
-    handlePhoneCurrencyInputChange(value);
+    setPhoneInputValue(value);
+    fireEvent('onChange');
   };
 
   const handleKeyUp = (e) => {
@@ -88,58 +146,62 @@ export const PhoneInput = (props) => {
 
   useEffect(() => {
     if (isInitialRender.current) {
-      setExposedVariables({
-        country: country,
-        countryCode: `+${getCountryCallingCodeSafe(country)}`,
-        formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-        value: value,
-        setCountryCode: (code) => {
-          let value = getCountryCallingCodeSafe(code);
-          if (value) {
-            setCountry(code);
-          } else {
-            value = getCountries().find((country) => `+${getCountryCallingCode(country)}` === code);
-            setCountry(value ? value : '');
-          }
-          setExposedVariables({
-            country: country,
-            countryCode: `+${getCountryCallingCodeSafe(country)}`,
-            formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-          });
-        },
-      });
+      // Publish through the one writer every other entry point uses, so the mount-time variables
+      // are derived by exactly the same rules as every later write. This has to run: the hook's
+      // own mount effect republishes a bare `value` after the seed was written, and without this
+      // the derived views would still describe the seed while `value` had moved on.
+      setPhoneInputValue(value);
       isInitialRender.current = false;
     }
   }, []);
 
+  // Accepts either a country code ('CN') or a calling code ('+86'),
+  // then routes through onCountryChange, which re-bases the value onto the new calling code and ignores an unresolvable country.
+  useEffect(() => {
+    setExposedVariables({
+      setCountryCode: (code) => {
+        const resolvedCountry = getCountryCallingCodeSafe(code)
+          ? code
+          : getCountries().find((c) => `+${getCountryCallingCode(c)}` === code) || '';
+        onCountryChange(resolvedCountry);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country, value]);
+
   useEffect(() => {
     if (!isInitialRender.current) {
-      if (getCountryCallingCodeSafe(defaultCountry)) {
-        setCountry(defaultCountry);
-      }
+      onCountryChange(defaultCountry);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultCountry]);
 
   const disabledState = disable || loading;
 
   const loaderStyle = {
-    right:
-      direction === 'right' &&
-      defaultAlignment === 'side' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-        ? `${labelWidth + 11}px`
-        : '11px',
-    top:
-      defaultAlignment === 'top'
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-          'calc(50% + 10px)'
-        : '',
-    transform:
-      defaultAlignment === 'top' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-      ' translateY(-50%)',
+    right: direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px',
+    top: defaultAlignment === 'top' ? hasLabel && `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '',
+    transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
+
+  const hasValue = (() => {
+    if (value === '' || value === null || value === undefined) return false;
+    if (!countryCode) return true;
+    const normalizedValue = `${value}`.trim();
+    const strippedValue = normalizedValue.replace(new RegExp(`^\\+${countryCode}`), '').trim();
+    return strippedValue.length > 0;
+  })();
+  const shouldShowClearBtn = showClearBtn && hasValue && !disabledState && !loading;
+  const clearButtonRight =
+    direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
+  // Half the label's own height: the button is positioned against the whole widget, so it must be
+  // pushed down by half of whatever a top-aligned label consumes to land on the middle of the
+  // field. A fixed 10px was only correct at the 12px default. Mirrors the BaseInput fix.
+  const clearButtonTop =
+    defaultAlignment === 'top' && hasLabel ? `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)` : '50%';
+
+  const clearButtonTransform = 'translateY(-50%)';
 
   const computedStyles = {
     height: '100%',
@@ -168,15 +230,17 @@ export const PhoneInput = (props) => {
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
+    paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     borderLeft: 'none',
   };
 
+  const labelClasses = { labelContainer: defaultAlignment === 'top' && 'tw-flex-shrink-0' };
+
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
         className={`text-input d-flex phone-input-widget ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -206,13 +270,33 @@ export const PhoneInput = (props) => {
           labelWidth={labelWidth}
           widthType={widthType}
           inputId={`component-${id}`}
+          classes={labelClasses}
+          dataCy={dataCy}
+          fontSize={labelFontSizeValue}
         />
+        {/*
+          `h-100` is `height: 100% !important` (tabler.scss:6829), which an inline height cannot
+          override, so the class is dropped and BOTH branches set the height here. Top-aligned, the
+          field sits below the label in a flex column, so a full wrapper height is added to the
+          label's and the content spills out of its own widget box as the label grows; subtracting
+          the label height keeps it contained until the label alone exceeds the box. The side
+          branch restores exactly what the class used to supply.
+        */}
         <div
-          className="d-flex h-100"
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
+          className="d-flex"
           style={{
             boxShadow,
             borderRadius: `${borderRadius}px`,
             ...getWidthTypeOfComponentStyles(widthType, width, auto, defaultAlignment),
+            ...(defaultAlignment === 'top' && label?.length != 0
+              ? {
+                  height: `calc(100% - ${getLabelHeight(labelFontSize)}px - ${
+                    padding === 'default' ? BOX_PADDING * 2 : 0
+                  }px)`,
+                  flex: 1,
+                }
+              : { height: '100%' }),
           }}
         >
           <CountrySelect
@@ -227,20 +311,22 @@ export const PhoneInput = (props) => {
             darkMode={darkMode}
             onChange={(selectedOption) => {
               if (selectedOption) {
-                setCountry(selectedOption.value);
+                onCountryChange(selectedOption.value);
               }
             }}
             componentId={id}
+            dataCy={dataCy}
           />
           <Input
             ref={inputRef}
-            country={country}
+            country={safeCountry}
             international={true}
-            value={value}
+            value={inputValue}
             onChange={onInputValueChange}
             placeholder={placeholder}
             style={computedStyles}
             id={`component-${id}`}
+            disabled={disabledState}
             aria-disabled={disabledState}
             aria-busy={loading}
             aria-required={isMandatory}
@@ -254,8 +340,37 @@ export const PhoneInput = (props) => {
             onBlur={handleBlur}
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
           />
         </div>
+        {shouldShowClearBtn && (
+          <button
+            type="button"
+            className="tj-input-clear-btn"
+            aria-label="Clear"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onInputValueChange('');
+              // Reveal here rather than inside onInputValueChange: that is also the typing handler,
+              // and a keystroke must not accuse the user mid-edit.
+              // Clearing is a completed action, not a keystroke, so it reveals any resulting error the way a blur does.
+              inputLogic.setShowValidationError(true);
+            }}
+            style={{
+              position: 'absolute',
+              right: clearButtonRight,
+              top: clearButtonTop,
+              transform: clearButtonTransform,
+              zIndex: 3,
+            }}
+          >
+            <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+          </button>
+        )}
         {loading && <Loader style={loaderStyle} width="16" />}
       </div>
       {showValidationError && visibility && (

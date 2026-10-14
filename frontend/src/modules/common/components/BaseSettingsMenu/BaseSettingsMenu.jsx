@@ -1,8 +1,8 @@
-// src/modules/common/components/BaseSettingsMenu/BaseSettingsMenu.jsx
 import React, { useState } from 'react';
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
 import { authenticationService, appService, sessionService } from '@/_services';
+import { teardownFrontendMetrics } from '@/_services/frontend-metrics.service';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { getPrivateRoute } from '@/_helpers/routes';
@@ -23,6 +23,7 @@ function BaseSettingsMenu({
   },
 }) {
   const edition = fetchEdition();
+  const isEEorCloud = edition === 'ee' || edition === 'cloud';
   const [showOverlay, setShowOverlay] = useState(false);
   const { tooljetVersion } = useAppDataStore(
     (state) => ({
@@ -36,7 +37,10 @@ function BaseSettingsMenu({
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
   const superAdmin = currentUserValue?.super_admin;
-  const marketplaceEnabled = admin && !options.hideMarketPlaceMenuItem;
+  const isBuilder = !!currentUserValue?.user_permissions?.is_builder;
+  const isCloudEdition = edition === 'cloud' || (!!tooljetVersion && checkIfToolJetCloud(tooljetVersion));
+  const marketplaceEnabled = !options.hideMarketPlaceMenuItem && !isCloudEdition && (admin || superAdmin || isBuilder);
+  const canAccessWorkspaceSettings = !!admin || (isEEorCloud && isBuilder);
   const isValidUrl = (url) => {
     try {
       new URL(url);
@@ -46,6 +50,7 @@ function BaseSettingsMenu({
     }
   };
   async function handleLogout() {
+    teardownFrontendMetrics();
     // Get latest config first to ensure we have the most up-to-date custom logout url
     await appService
       .getConfig()
@@ -65,6 +70,12 @@ function BaseSettingsMenu({
       });
   }
 
+  const getWorkspaceSettingsRoute = () => {
+    if (isBuilder && isEEorCloud) {
+      return getPrivateRoute('workspace_settings_builder');
+    }
+    return getPrivateRoute('workspace_settings');
+  };
   const getOverlay = () => {
     // Get the extension items with the required context
     const preWorkspaceContent = getPreWorkspaceItems({
@@ -82,7 +93,7 @@ function BaseSettingsMenu({
     const currentVersion = localStorage.getItem('currentVersion');
     return (
       <div className={`settings-card tj-text card ${darkMode ? 'dark-theme' : ''}`}>
-        <div className="tw-px-2.5 tw-py-2 tw-text-xs tw-font-light tw-text-text-placeholder">
+        <div className="tw-px-2.5 tw-py-2 tw-text-xs tw-font-light tw-text-text-placeholder" data-cy="version-label">
           <span>Version {currentVersion}</span>
         </div>
         <div className="divider" />
@@ -111,10 +122,12 @@ function BaseSettingsMenu({
         {edition === 'cloud' && admin && !superAdmin && midMenuContent}
 
         {/* Admin section - Workspace settings */}
-        {admin && (
+        {/* Admin and builder both can access workspace setting.
+            Builder can access for themes.  */}
+        {canAccessWorkspaceSettings && (
           <Link
-            onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
-            to={getPrivateRoute('workspace_settings')}
+            onClick={(event) => checkForUnsavedChanges(getWorkspaceSettingsRoute(), event)}
+            to={getWorkspaceSettingsRoute()}
             className="dropdown-item tj-text-xsm"
             data-cy="workspace-settings"
           >

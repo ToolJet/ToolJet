@@ -10,3 +10,5 @@ export const getMaxHeight = (isMaxRowHeightAuto, maxRowHeightValue, cellHeight) 
   }
   return '45px';
 };
+
+export const DEFAULT_EXPANSION_HEIGHT = 229;

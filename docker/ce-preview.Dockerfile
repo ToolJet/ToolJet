@@ -11,6 +11,9 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
+# Pin ibm_db's clidriver to a build linked against glibc <=2.14, since the runtime
+# stage is bullseye (glibc 2.31) and the latest clidriver requires glibc 2.32+
+ENV IBM_DB_INSTALLER_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.9
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
@@ -29,6 +32,7 @@ ENV NODE_ENV=production
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
+RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
@@ -39,7 +43,7 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
+RUN apt-get update && apt-get install -y freetds-dev libaio1 libxml2 wget supervisor
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -141,6 +145,6 @@ ENV TOOLJET_HOST=http://localhost \
     TERM=xterm
 
 
-RUN chmod +x ./server/scripts/preview.sh
+RUN chmod +x ./server/scripts/ce-preview.sh
 # Set the entrypoint
-ENTRYPOINT ["./server/scripts/preview.sh"]
+ENTRYPOINT ["./server/scripts/ce-preview.sh"]

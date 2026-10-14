@@ -1,0 +1,229 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { determineJustifyContentValue } from '@/_helpers/utils';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { noop } from 'lodash';
+import { isCellContentOverflowing, placeCaretAtEnd } from '../utils';
+
+/**
+ * StringRenderer - Pure string value renderer with editing support
+ *
+ * Renders string values with optional editing, validation, and search highlighting.
+ * Context-independent - all dependencies are passed as props.
+ *
+ * @param {Object} props
+ * @param {string} props.value - The string value to render
+ * @param {boolean} props.isEditable - Whether the value can be edited
+ * @param {Function} props.onChange - Callback when value changes (receives new value)
+ * @param {string} props.textColor - Text color
+ * @param {string} props.horizontalAlignment - Horizontal alignment ('left' | 'center' | 'right')
+ * @param {number} props.containerWidth - Container width for overlay
+ * @param {boolean} props.darkMode - Whether dark mode is enabled
+ * @param {string} props.maxHeight - Max height CSS value
+ * @param {boolean} props.isValid - Whether current value is valid
+ * @param {string} props.validationError - Validation error message
+ * @param {string} props.searchText - Search text for highlighting
+ * @param {React.Component} props.SearchHighlightComponent - Optional component for search highlighting
+ * @param {boolean} props.enableTabNavigation - Opt in to keyboard editing: makes the idle cell focusable
+ *                  so Tab (and a single click) enters edit mode, and focuses the editor once it renders.
+ */
+export const StringRenderer = ({
+  value = '',
+  isEditable = false,
+  onChange,
+  textColor,
+  horizontalAlignment = 'left',
+  containerWidth,
+  darkMode = false,
+  maxHeight,
+  isValid = true,
+  validationError,
+  searchText,
+  SearchHighlightComponent,
+  id,
+  isEditing,
+  setIsEditing = noop,
+  widgetType,
+  enableTabNavigation = false,
+}) => {
+  const ref = useRef(null);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  // const [isEditing, setIsEditing] = useState(false);
+
+  // Set on pointerdown so onFocus can tell pointer-driven focus from keyboard focus.
+  const pointerFocusRef = useRef(false);
+
+  useEffect(() => {
+    setShowOverlay(hovered);
+  }, [hovered]);
+
+  // Take ownership of focus once the editor exists. Two paths need this:
+  // - click: the idle cell is not contenteditable, so the browser never focused anything
+  // - Tab: focus survives the cell content swap, but React rewrites this node's content via innerHTML
+  //        in the same commit, which leaves the element focused with no usable caret
+  //
+  // NOTE: Deliberately keyed on isEditing only — adding `value` would drag the caret to the end on
+  //       every keystroke that round-trips through the store.
+  useEffect(() => {
+    if (!enableTabNavigation || !isEditing) return;
+    const node = ref.current;
+    if (!node) return;
+    if (document.activeElement !== node) node.focus({ preventScroll: true });
+    placeCaretAtEnd(node);
+  }, [isEditing, enableTabNavigation]);
+
+  const getOverlay = () => (
+    <div
+      className={`overlay-cell-table ${darkMode ? 'dark-theme' : ''}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ color: 'var(--text-primary)' }}
+    >
+      <span style={{ width: `${containerWidth}px` }}>{String(value)}</span>
+    </div>
+  );
+
+  const _showOverlay = isCellContentOverflowing(ref?.current);
+
+  const focusInput = () => {
+    if (ref.current) {
+      ref.current.focus();
+    }
+  };
+
+  const renderText = (text) => {
+    if (SearchHighlightComponent) {
+      return <SearchHighlightComponent text={String(text)} searchTerm={searchText} />;
+    }
+    return String(text);
+  };
+
+  const renderEditableContent = () => (
+    <div className="h-100 d-flex flex-column justify-content-center position-relative">
+      <div
+        onMouseMove={() => !hovered && setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className={`${!isValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''} h-100`}
+      >
+        {isEditing ? (
+          <div
+            ref={ref}
+            id={id}
+            contentEditable={true}
+            // Inert on a contentEditable element, but it keeps the attribute constant across the
+            // idle/editing swap so React never removes tabindex from document.activeElement
+            // mid-commit — behaviour that varies by engine.
+            tabIndex={enableTabNavigation ? 0 : undefined}
+            className={`${
+              !isValid ? 'is-invalid' : ''
+            } h-100 text-container long-text-input d-flex align-items-safe-center ${
+              darkMode ? 'textarea-dark-theme' : ''
+            } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+            style={{
+              color: textColor || 'inherit',
+              outline: 'none',
+              border: 'none',
+              background: 'inherit',
+              position: 'relative',
+              height: '100%',
+            }}
+            onBlur={(e) => {
+              setIsEditing(false);
+              if (value !== e.target.textContent) {
+                onChange?.(e.target.textContent);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.target.blur();
+              }
+            }}
+            onFocus={(e) => {
+              setIsEditing(true);
+              e.stopPropagation();
+            }}
+            suppressContentEditableWarning={true}
+            dangerouslySetInnerHTML={{ __html: value }}
+          />
+        ) : (
+          <div
+            ref={ref}
+            onClick={() => setIsEditing(true)}
+            // A pointer (mouse, touch or pen) must enter edit mode from onClick above, never from onFocus.
+            // Focus lands during pointerdown/mousedown, and entering edit mode there swaps the display div with editor div,
+            // whose dangerouslySetInnerHTML detaches the node the press landed on, so the browser then never dispatches the click at all.
+            // That click is what carries row selection, onRowClicked and selectedCell up to the <td>/<tr>
+            // so entering edit mode from focus silently breaks "Select row on cell edit".
+            onPointerDown={enableTabNavigation ? () => (pointerFocusRef.current = true) : undefined}
+            // The props below are what make Tab navigation work.
+            // Without them Tab has nothing to land on, since the display look is not contenteditable.
+            tabIndex={enableTabNavigation ? 0 : undefined}
+            onFocus={
+              enableTabNavigation
+                ? (e) => {
+                    // Pointer-driven focus: leave it to onClick, so the click event bubbles up to the row.
+                    if (pointerFocusRef.current) {
+                      pointerFocusRef.current = false;
+                      return;
+                    }
+                    setIsEditing(true); // When focused via Keyboard, switch to edit look
+                    e.stopPropagation();
+                  }
+                : undefined
+            }
+            // Reset the flag on the way out, so a press that never produced a click can't strand it.
+            onBlur={enableTabNavigation ? () => (pointerFocusRef.current = false) : undefined}
+            className={`${
+              !isValid ? 'is-invalid' : ''
+            } h-100 text-container long-text-input d-flex align-items-center ${
+              darkMode ? 'textarea-dark-theme' : ''
+            } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+            style={{
+              color: textColor || 'inherit',
+              outline: 'none',
+              border: 'none',
+              background: 'inherit',
+              position: 'relative',
+              height: '100%',
+            }}
+          >
+            {renderText(value)}
+          </div>
+        )}
+      </div>
+      {widgetType !== 'KeyValuePair' && !isValid && (
+        <div className="invalid-feedback text-truncate" onClick={focusInput}>
+          {validationError}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderReadOnlyContent = () => (
+    <div
+      className={`d-flex align-items-safe-center h-100 w-100 justify-content-${determineJustifyContentValue(
+        horizontalAlignment
+      )}`}
+      style={{ color: textColor || 'inherit' }}
+      onMouseMove={() => !hovered && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      ref={ref}
+    >
+      <span style={{ maxHeight: maxHeight }}>{renderText(value)}</span>
+    </div>
+  );
+
+  return (
+    <OverlayTrigger
+      placement="bottom"
+      overlay={_showOverlay ? getOverlay() : <div />}
+      trigger={_showOverlay && ['hover', 'focus']}
+      rootClose={true}
+      show={_showOverlay && showOverlay && !isEditing}
+    >
+      {isEditable ? renderEditableContent() : renderReadOnlyContent()}
+    </OverlayTrigger>
+  );
+};
+
+export default StringRenderer;

@@ -3,6 +3,7 @@ import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import { useTranslation } from 'react-i18next';
+import { getHostURL } from '@/_helpers/routes';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
@@ -15,8 +16,9 @@ import { UserMetadata } from './components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { bulkUploadFileTooLargeMessage, isBulkUpsertEnabled, isBulkUploadFileTooLarge } from './bulkUploadLimits';
 
-function InviteUsersForm ({
+function InviteUsersForm({
   onClose,
   manageUser,
   changeNewUserOption,
@@ -174,8 +176,8 @@ function InviteUsersForm ({
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
-    if (Math.round(file.size / 1024) > 1024) {
-      toast.error('File size cannot exceed more than 1MB');
+    if (isBulkUploadFileTooLarge(file)) {
+      toast.error(bulkUploadFileTooLargeMessage());
     } else {
       handleFileChange(file);
       setFileUpload(true);
@@ -245,10 +247,10 @@ function InviteUsersForm ({
     const { first_name, last_name } = currentEditingUser || {};
     return isEditing
       ? fields['fullName'] !== `${first_name}${last_name && ` ${last_name}`}` ||
-      groupsToRemove.length ||
-      newRole ||
-      newGroupsToAdd.length ||
-      JSON.stringify(Object.fromEntries(userMetadata)) !== JSON.stringify(currentEditingUser.user_metadata)
+          groupsToRemove.length ||
+          newRole ||
+          newGroupsToAdd.length ||
+          JSON.stringify(Object.fromEntries(userMetadata)) !== JSON.stringify(currentEditingUser.user_metadata)
       : !inValidUserDetail || activeTab == 2;
   };
 
@@ -298,9 +300,11 @@ function InviteUsersForm ({
           <div className="card-header">
             <div className="card-header-inner-wrap">
               <h3 className="tj-text-lg tj-text font-weight-500" data-cy="add-users-card-title">
-                {!isEditing
-                  ? t('header.organization.menus.manageUsers.addNewUser', 'Add new user')
-                  : 'Edit user details'}
+                {isEditing
+                  ? 'Edit user details'
+                  : isBulkUpsertEnabled()
+                  ? 'Invite user'
+                  : t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
               </h3>
               <div
                 onClick={() => {
@@ -313,7 +317,8 @@ function InviteUsersForm ({
                 <SolidIcon name="remove" width="16" />
               </div>
             </div>
-            {!isEditing && (
+            {/* EE opens bulk upload from its own drawer (BulkUploadUsersDrawer), so only CE shows these tabs. */}
+            {!isEditing && !isBulkUpsertEnabled() && (
               <div className="tj-drawer-tabs-container-outer">
                 <div className="tj-drawer-tabs-container">
                   <button
@@ -452,8 +457,9 @@ function InviteUsersForm ({
                       Files in any other format may not be recognized.{' '}
                     </p>
                     <ButtonSolid
-                      href={`${window.public_config?.TOOLJET_HOST}${window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                        }assets/csv/${edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'}`}
+                      href={`${getHostURL()}/assets/csv/${
+                        edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'
+                      }`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"

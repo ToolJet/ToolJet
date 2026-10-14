@@ -147,3 +147,106 @@ export const processDataInBatches = async <T>(
     }
   } while (data.length === batchSize);
 };
+
+/**
+ * Deletes app history entries for affected app versions when a migration
+ * modifies the structure of components, pages, queries, or global settings.
+ * This prevents corruption when users try to restore from incompatible history.
+ *
+ * @param entityManager - TypeORM entity manager
+ * @param options - Object containing either appVersionIds or componentIds
+ * @param migrationName - Name of the migration for logging purposes
+ */
+export const deleteAppHistoryForStructuralMigration = async (
+  entityManager: EntityManager,
+  options: {
+    appVersionIds?: string[];
+    componentIds?: string[];
+  },
+  migrationName = ''
+): Promise<void> => {
+  console.log(`[${migrationName}] Starting app history cleanup for structural migration`);
+
+  try {
+    let appVersionIds = options.appVersionIds;
+
+    // If componentIds are provided but not appVersionIds, resolve appVersionIds from components.
+    // Batch the lookup in chunks of 5000 to avoid passing huge arrays to ANY($1).
+    if (!appVersionIds && options.componentIds?.length > 0) {
+      console.log(`[${migrationName}] Resolving app version IDs from ${options.componentIds.length} component IDs`);
+
+      const LOOKUP_BATCH = 5000;
+      const versionIdSet = new Set<string>();
+
+      for (let i = 0; i < options.componentIds.length; i += LOOKUP_BATCH) {
+        const batch = options.componentIds.slice(i, i + LOOKUP_BATCH);
+        const rows = await entityManager.query(
+          `SELECT DISTINCT p.app_version_id
+           FROM components c
+           INNER JOIN pages p ON c.page_id = p.id
+           WHERE c.id = ANY($1)`,
+          [batch]
+        );
+        rows.forEach((row: any) => versionIdSet.add(row.app_version_id));
+      }
+
+      appVersionIds = [...versionIdSet];
+      console.log(`[${migrationName}] Found ${appVersionIds.length} app versions from components`);
+    }
+
+    if (!appVersionIds?.length) {
+      console.log(`[${migrationName}] No app versions to clean up history for`);
+      return;
+    }
+
+    // Cursor-based batch DELETE on app_history rows.
+    // Batching by row count (not by appVersionIds count) gives predictable
+    // per-query load — one version could have 1 or 10,000 history entries.
+    const batchSize = 2000;
+    let totalDeleted = 0;
+    let batchNumber = 0;
+
+    // app_history has a self-referential FK: parent_id → app_history.id.
+    // The data can have irregular parent references due to a historical bug in
+    // restoreToPoint() that set parentId = targetEntry.id (where targetEntry
+    // could be a delta, not just a snapshot). This means any row type can
+    // reference any other row type, so filtering by history_type or parent_id
+    // is unreliable.
+    //
+    // Strategy: repeatedly delete only true leaf nodes — rows in the affected
+    // app versions that are not currently referenced by any other row's parent_id.
+    // Each iteration peels one layer of leaves off the tree until all rows are gone.
+    // The NOT EXISTS subquery is unfiltered by app_version_id so cross-version
+    // references (shouldn't exist, but defensive) also prevent deletion.
+    const leafDeleteSql = `
+      DELETE FROM app_history
+      WHERE id IN (
+        SELECT h.id FROM app_history h
+        WHERE h.app_version_id = ANY($1)
+          AND NOT EXISTS (
+            SELECT 1 FROM app_history child WHERE child.parent_id = h.id
+          )
+        LIMIT $2
+      )`;
+
+    while (true) {
+      const result = await entityManager.query(leafDeleteSql, [appVersionIds, batchSize]);
+
+      const deleted: number = result[1] ?? 0;
+      if (deleted === 0) break;
+
+      totalDeleted += deleted;
+      batchNumber++;
+      console.log(
+        `[${migrationName}] Batch ${batchNumber}: Deleted ${deleted} history entries (total: ${totalDeleted})`
+      );
+    }
+
+    console.log(
+      `[${migrationName}] Completed: Deleted ${totalDeleted} app history entries for ${appVersionIds.length} app versions`
+    );
+  } catch (error) {
+    console.error(`[${migrationName}] Failed to delete app history:`, error);
+    throw error;
+  }
+};

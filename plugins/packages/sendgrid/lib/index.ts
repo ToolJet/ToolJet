@@ -11,9 +11,14 @@ export default class SendGridQueryService implements QueryService {
     sgMail.setApiKey(sourceOptions.api_key);
 
     let result = {};
+
+    const fromAddress = queryOptions.send_mail_from_name && queryOptions.send_mail_from_name.trim()
+      ? { email: queryOptions.send_mail_from, name: queryOptions.send_mail_from_name.trim() }
+      : queryOptions.send_mail_from;
+
     const sendgridEmailOptions: EmailOptions = {
       to: queryOptions.send_mail_to,
-      from: queryOptions.send_mail_from,
+      from: fromAddress,
       subject: queryOptions.subject,
       text: queryOptions.text,
       isMultiple: queryOptions.multiple_recipients ?? false,

@@ -1,4 +1,4 @@
-export const getDefaultIconFillColor = (variant) => {
+export const getDefaultIconFillColor = (variant, iconOnly = false) => {
   switch (variant) {
     case 'primary':
     case 'dangerPrimary':
@@ -8,7 +8,7 @@ export const getDefaultIconFillColor = (variant) => {
       return 'var(--icon-brand)';
     case 'outline':
     case 'ghost':
-      return 'var(--icon-strong)';
+      return iconOnly ? 'var(--icon-strong)' : 'var(--icon-default)';
     case 'dangerSecondary':
     case 'dangerGhost':
       return 'var(--icon-danger)';
@@ -16,6 +16,7 @@ export const getDefaultIconFillColor = (variant) => {
       return '';
   }
 };
+
 export const defaultButtonFillColour = ['#FFFFFF', '#4368E3', '#ACB2B9', '#D72D39']; // all default fill colors
 
 export const getIconSize = (size) => {
@@ -28,5 +29,18 @@ export const getIconSize = (size) => {
       return '14px';
     case 'small':
       return '12px';
+  }
+};
+
+export const getLucideIconSize = (size) => {
+  switch (size) {
+    case 'large':
+      return 20;
+    case 'default':
+      return 16;
+    case 'medium':
+      return 14;
+    case 'small':
+      return 12;
   }
 };

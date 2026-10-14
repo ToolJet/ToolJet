@@ -12,6 +12,13 @@ export const textinputConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    legacyInputSize: {
+      type: 'toggle',
+      displayName: 'Legacy input size',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'deprecatedStyles',
+      isFxNotRequired: true,
+    },
     label: {
       type: 'code',
       displayName: 'Label',
@@ -35,6 +42,12 @@ export const textinputConfig = {
         defaultValue: 'Default value',
       },
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -47,10 +60,31 @@ export const textinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
       section: 'additionalActions',
     },
     tooltip: {
@@ -59,6 +93,7 @@ export const textinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   validation: {
@@ -85,6 +120,12 @@ export const textinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -108,6 +149,7 @@ export const textinputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -182,6 +224,12 @@ export const textinputConfig = {
       type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'field',
+    },
+    placeholderTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
       accordian: 'field',
     },
     errTextColor: {
@@ -300,17 +348,24 @@ export const textinputConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      legacyInputSize: { value: '{{false}}' },
       value: { value: '' },
       label: { value: 'Label' },
       placeholder: { value: 'Enter your input' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
+      showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
+      placeholderTextColor: { value: 'var(--cc-placeholder-text)' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },

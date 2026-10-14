@@ -1,0 +1,829 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Webhooks API",
+    "description" : "Provides a way for apps to subscribe to certain change events in HubSpot. Once configured, apps will receive event payloads containing details about the changes at a specified target URL. There can only be one target URL for receiving event notifications per app.",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Settings",
+    "description" : "Operations to manage app-level webhook settings."
+  }, {
+    "name" : "Subscriptions",
+    "description" : "Operations to manage event subscriptions."
+  } ],
+  "paths" : {
+    "/webhooks/v3/{appId}/settings" : {
+      "get" : {
+        "tags" : [ "Settings" ],
+        "operationId" : "get-/webhooks/v3/{appId}/settings_getAll",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SettingsResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Settings" ],
+        "operationId" : "put-/webhooks/v3/{appId}/settings_configure",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SettingsChangeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SettingsResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Settings" ],
+        "operationId" : "delete-/webhooks/v3/{appId}/settings_clear",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      }
+    },
+    "/webhooks/v3/{appId}/subscriptions" : {
+      "get" : {
+        "tags" : [ "Subscriptions" ],
+        "operationId" : "get-/webhooks/v3/{appId}/subscriptions_getAll",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SubscriptionListResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Subscriptions" ],
+        "operationId" : "post-/webhooks/v3/{appId}/subscriptions_create",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SubscriptionCreateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      }
+    },
+    "/webhooks/v3/{appId}/subscriptions/batch/update" : {
+      "post" : {
+        "tags" : [ "Subscriptions" ],
+        "operationId" : "post-/webhooks/v3/{appId}/subscriptions/batch/update_updateBatch",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BatchInputSubscriptionBatchUpdateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BatchResponseSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "207" : {
+            "description" : "multiple statuses",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BatchResponseSubscriptionResponseWithErrors"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      }
+    },
+    "/webhooks/v3/{appId}/subscriptions/{subscriptionId}" : {
+      "get" : {
+        "tags" : [ "Subscriptions" ],
+        "operationId" : "get-/webhooks/v3/{appId}/subscriptions/{subscriptionId}_getById",
+        "parameters" : [ {
+          "name" : "subscriptionId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "appId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Subscriptions" ],
+        "operationId" : "delete-/webhooks/v3/{appId}/subscriptions/{subscriptionId}_archive",
+        "parameters" : [ {
+          "name" : "subscriptionId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "appId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Subscriptions" ],
+        "operationId" : "patch-/webhooks/v3/{appId}/subscriptions/{subscriptionId}_update",
+        "parameters" : [ {
+          "name" : "subscriptionId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "appId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SubscriptionPatchRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ThrottlingSettings" : {
+        "required" : [ "maxConcurrentRequests", "period" ],
+        "type" : "object",
+        "properties" : {
+          "maxConcurrentRequests" : {
+            "type" : "integer",
+            "description" : "The maximum number of HTTP requests HubSpot will attempt to make to your app in a given time frame determined by `period`.",
+            "format" : "int32"
+          },
+          "period" : {
+            "type" : "string",
+            "description" : "Time scale for this setting. Can be either `SECONDLY` (per second) or `ROLLING_MINUTE` (per minute).",
+            "enum" : [ "SECONDLY", "ROLLING_MINUTE" ]
+          }
+        },
+        "description" : "Configuration details for webhook throttling."
+      },
+      "StandardError" : {
+        "required" : [ "category", "context", "errors", "links", "message", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/ErrorCategory"
+          },
+          "subCategory" : {
+            "type" : "object",
+            "properties" : { }
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "BatchResponseSubscriptionResponse" : {
+        "required" : [ "completedAt", "results", "startedAt", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "PROCESSING", "CANCELED", "COMPLETE" ]
+          },
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SubscriptionResponse"
+            }
+          },
+          "requestedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "SubscriptionListResponse" : {
+        "required" : [ "results" ],
+        "type" : "object",
+        "properties" : {
+          "results" : {
+            "type" : "array",
+            "description" : "List of event subscriptions for your app",
+            "items" : {
+              "$ref" : "#/components/schemas/SubscriptionResponse"
+            }
+          }
+        },
+        "description" : "List of event subscriptions for your app"
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "SettingsChangeRequest" : {
+        "required" : [ "targetUrl", "throttling" ],
+        "type" : "object",
+        "properties" : {
+          "targetUrl" : {
+            "type" : "string",
+            "description" : "A publicly available URL for Hubspot to call where event payloads will be delivered. See [link-so-some-doc](#) for details about the format of these event payloads."
+          },
+          "throttling" : {
+            "$ref" : "#/components/schemas/ThrottlingSettings"
+          }
+        },
+        "description" : "New or updated webhook settings for an app.",
+        "example" : {
+          "targetUrl" : "https://www.example.com/hubspot/target",
+          "throttling" : {
+            "maxConcurrentRequests" : 10,
+            "period" : "SECONDLY"
+          }
+        }
+      },
+      "SubscriptionPatchRequest" : {
+        "type" : "object",
+        "properties" : {
+          "active" : {
+            "type" : "boolean",
+            "description" : "Determines if the subscription is active or paused."
+          }
+        },
+        "description" : "Updated details for the subscription.",
+        "example" : {
+          "active" : true
+        }
+      },
+      "BatchResponseSubscriptionResponseWithErrors" : {
+        "required" : [ "completedAt", "results", "startedAt", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "PROCESSING", "CANCELED", "COMPLETE" ]
+          },
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SubscriptionResponse"
+            }
+          },
+          "numErrors" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StandardError"
+            }
+          },
+          "requestedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "SettingsResponse" : {
+        "required" : [ "createdAt", "targetUrl", "throttling" ],
+        "type" : "object",
+        "properties" : {
+          "targetUrl" : {
+            "type" : "string",
+            "description" : "A publicly available URL for Hubspot to call where event payloads will be delivered. See [link-so-some-doc](#) for details about the format of these event payloads."
+          },
+          "throttling" : {
+            "$ref" : "#/components/schemas/ThrottlingSettings"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "description" : "When this subscription was created. Formatted as milliseconds from the [Unix epoch](#).",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "description" : "When this subscription was last updated. Formatted as milliseconds from the [Unix epoch](#).",
+            "format" : "date-time"
+          }
+        },
+        "description" : "Webhook settings for an app.",
+        "example" : {
+          "targetUrl" : "https://www.example.com/hubspot/target",
+          "throttling" : {
+            "maxConcurrentRequests" : 10,
+            "period" : "SECONDLY"
+          },
+          "createdAt" : "2020-01-24T16:27:59Z",
+          "updatedAt" : "2020-01-24T16:32:43Z"
+        }
+      },
+      "ErrorCategory" : {
+        "required" : [ "httpStatus", "name" ],
+        "type" : "object",
+        "properties" : {
+          "httpStatus" : {
+            "type" : "string",
+            "enum" : [ "CONTINUE", "SWITCHING_PROTOCOLS", "PROCESSING", "OK", "CREATED", "ACCEPTED", "NON_AUTHORITATIVE_INFORMATION", "NO_CONTENT", "RESET_CONTENT", "PARTIAL_CONTENT", "MULTI_STATUS", "ALREADY_REPORTED", "IM_USED", "MULTIPLE_CHOICES", "MOVED_PERMANENTLY", "FOUND", "SEE_OTHER", "NOT_MODIFIED", "USE_PROXY", "TEMPORARY_REDIRECT", "PERMANENT_REDIRECT", "BAD_REQUEST", "UNAUTHORIZED", "PAYMENT_REQUIRED", "FORBIDDEN", "NOT_FOUND", "METHOD_NOT_ALLOWED", "NOT_ACCEPTABLE", "PROXY_AUTHENTICATION_REQUIRED", "REQUEST_TIMEOUT", "CONFLICT", "GONE", "LENGTH_REQUIRED", "PRECONDITION_FAILED", "REQUEST_ENTITY_TOO_LARGE", "REQUEST_URI_TOO_LONG", "UNSUPPORTED_MEDIA_TYPE", "REQUESTED_RANGE_NOT_SATISFIABLE", "EXPECTATION_FAILED", "IM_A_TEAPOT", "MISDIRECTED_REQUEST", "UNPROCESSABLE_ENTITY", "LOCKED", "FAILED_DEPENDENCY", "UPGRADE_REQUIRED", "PRECONDITION_REQUIRED", "TOO_MANY_REQUESTS", "REQUEST_HEADERS_FIELDS_TOO_LARGE", "INTERNAL_STALE_SERVICE_DISCOVERY", "UNAVAILABLE_FOR_LEGAL_REASONS", "MIGRATION_IN_PROGRESS", "INTERNAL_SERVER_ERROR", "NOT_IMPLEMENTED", "BAD_GATEWAY", "SERVICE_UNAVAILABLE", "GATEWAY_TIMEOUT", "HTTP_VERSION_NOT_SUPPORTED", "VARIANT_ALSO_NEGOTIATES", "INSUFFICIENT_STORAGE", "LOOP_DETECTED", "NOT_EXTENDED", "NETWORK_AUTHENTICATION_REQUIRED" ]
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "BatchInputSubscriptionBatchUpdateRequest" : {
+        "required" : [ "inputs" ],
+        "type" : "object",
+        "properties" : {
+          "inputs" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SubscriptionBatchUpdateRequest"
+            }
+          }
+        }
+      },
+      "SubscriptionBatchUpdateRequest" : {
+        "required" : [ "active", "id" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "SubscriptionResponse" : {
+        "required" : [ "active", "createdAt", "eventType", "id" ],
+        "type" : "object",
+        "properties" : {
+          "eventType" : {
+            "type" : "string",
+            "description" : "Type of event to listen for. Can be one of `create`, `delete`, `deletedForPrivacy`, or `propertyChange`.",
+            "enum" : [ "contact.propertyChange", "company.propertyChange", "deal.propertyChange", "ticket.propertyChange", "product.propertyChange", "line_item.propertyChange", "contact.creation", "contact.deletion", "contact.privacyDeletion", "company.creation", "company.deletion", "deal.creation", "deal.deletion", "ticket.creation", "ticket.deletion", "product.creation", "product.deletion", "line_item.creation", "line_item.deletion", "conversation.creation", "conversation.deletion", "conversation.newMessage", "conversation.privacyDeletion", "conversation.propertyChange" ]
+          },
+          "propertyName" : {
+            "type" : "string",
+            "description" : "The internal name of the property being monitored for changes. Only applies when `eventType` is `propertyChange`."
+          },
+          "active" : {
+            "type" : "boolean",
+            "description" : "Determines if the subscription is active or paused."
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "The unique ID of the subscription."
+          },
+          "createdAt" : {
+            "type" : "string",
+            "description" : "When this subscription was created. Formatted as milliseconds from the [Unix epoch](#).",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "description" : "When this subscription was last updated. Formatted as milliseconds from the [Unix epoch](#).",
+            "format" : "date-time"
+          }
+        },
+        "description" : "Complete details for an event subscription."
+      },
+      "SubscriptionCreateRequest" : {
+        "required" : [ "eventType" ],
+        "type" : "object",
+        "properties" : {
+          "eventType" : {
+            "type" : "string",
+            "description" : "Type of event to listen for. Can be one of `create`, `delete`, `deletedForPrivacy`, or `propertyChange`.",
+            "enum" : [ "contact.propertyChange", "company.propertyChange", "deal.propertyChange", "ticket.propertyChange", "product.propertyChange", "line_item.propertyChange", "contact.creation", "contact.deletion", "contact.privacyDeletion", "company.creation", "company.deletion", "deal.creation", "deal.deletion", "ticket.creation", "ticket.deletion", "product.creation", "product.deletion", "line_item.creation", "line_item.deletion", "conversation.creation", "conversation.deletion", "conversation.newMessage", "conversation.privacyDeletion", "conversation.propertyChange" ]
+          },
+          "propertyName" : {
+            "type" : "string",
+            "description" : "The internal name of the property to monitor for changes. Only applies when `eventType` is `propertyChange`."
+          },
+          "active" : {
+            "type" : "boolean",
+            "description" : "Determines if the subscription is active or paused. Defaults to false."
+          }
+        },
+        "description" : "New webhook settings for an app.",
+        "example" : {
+          "active" : true,
+          "eventType" : "contact.propertyChange",
+          "propertyName" : "email"
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "developer_hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}

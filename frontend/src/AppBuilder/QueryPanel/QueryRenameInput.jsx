@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { decodeEntities } from '@/_helpers/utils';
 
 export const QueryRenameInput = ({ dataQuery, darkMode, onUpdate }) => {
   const [value, setValue] = useState('');
+  const escapeRef = useRef(false);
 
   useEffect(() => {
     setValue(decodeEntities(dataQuery.name));
@@ -10,11 +11,20 @@ export const QueryRenameInput = ({ dataQuery, darkMode, onUpdate }) => {
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
-      onUpdate(dataQuery, value);
+      event.currentTarget.blur();
+    }
+    if (event.key === 'Escape') {
+      escapeRef.current = true;
+      event.currentTarget.blur();
     }
   };
 
   const handleBlur = () => {
+    if (escapeRef.current) {
+      escapeRef.current = false;
+      onUpdate(dataQuery, dataQuery.name);
+      return;
+    }
     onUpdate(dataQuery, value);
   };
 
@@ -26,8 +36,7 @@ export const QueryRenameInput = ({ dataQuery, darkMode, onUpdate }) => {
   return (
     <input
       data-cy={`query-edit-input-field`}
-      className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${darkMode && 'text-white'
-        }`}
+      className="query-name query-rename-input"
       type="text"
       value={value}
       onChange={handleChange}

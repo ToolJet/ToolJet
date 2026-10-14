@@ -5,13 +5,14 @@ import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { handleAppAccess } from '@/_helpers/handleAppAccess';
-import { getQueryParams } from '@/_helpers/routes';
+import { handleAppAccess, handleError } from '@/_helpers/handleAppAccess';
+import { getQueryParams, getSubpath } from '@/_helpers/routes';
 import queryString from 'query-string';
 import useStore from '@/AppBuilder/_stores/store';
 import { useMobileRouteGuard } from '@/_hooks/useMobileRouteGuard';
 import { MobileEmptyState } from './MobileBlock';
-import { authenticationService } from '@/_services';
+import { authenticationService, appsService } from '@/_services';
+import { getEnvironmentAccessFromPermissions, getSafeEnvironment } from '@/_helpers/environmentAccess';
 
 export const AppsRoute = ({ children, componentType, darkMode }) => {
   const params = useParams();
@@ -42,9 +43,46 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
   }, [isValidSession]);
 
   useEffect(() => {
-    if (isInvalidSession) {
+    const validateSession = async () => {
+      if (!isInvalidSession || componentType !== 'viewer') return;
+
+      const { slug, versionId, environmentId } = params;
+      const queryParams = getQueryParams();
+      const isOldLocalPreview = !!(versionId && environmentId);
+      const isLocalPreview = !!(queryParams['env'] || queryParams['version'] || isOldLocalPreview);
+
+      if (!isLocalPreview && !isOldLocalPreview) {
+        /* Released app — check if the plan allows public apps */
+        try {
+          await appsService.validateReleasedApp(slug);
+        } catch (errorResponse) {
+          const editPermission = errorResponse?.error?.editPermission;
+          handleError(componentType, errorResponse, `/apps/${slug}`, editPermission, slug);
+          return;
+        }
+      } else {
+        /* Preview URL — always requires authentication (public and private apps alike). */
+        const previewQueryParams = {
+          ...(queryParams['version'] && { version_name: queryParams['version'] }),
+          ...(queryParams['env'] && { environment_name: queryParams['env'] }),
+        };
+        const apiQueryParams = {
+          ...previewQueryParams,
+          ...(isOldLocalPreview && { version_id: versionId, environment_id: environmentId }),
+          access_type: 'view',
+        };
+
+        try {
+          await appsService.validatePrivateApp(slug, apiQueryParams);
+        } catch (errorResponse) {
+          handleError(componentType, errorResponse);
+          return;
+        }
+      }
       setLoading(false);
-    }
+    };
+
+    validateSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInvalidSession]);
 
@@ -59,44 +97,94 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
       const { slug, versionId, environmentId, pageHandle } = params;
       /* Validate the app permissions */
       let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);
-      const { versionName, environmentName, ...restDetails } = accessDetails;
+      const { versionName, environmentName, id: appId, ...restDetails } = accessDetails;
       if (versionName) {
         const restQueryParams = getQueryParams();
         const envFromUrl = restQueryParams.env;
-        // Only coerce env for view-only users
+
+        // Get user's environment access permissions
         const session = authenticationService.currentSessionValue;
         const perms = session?.app_group_permissions;
         const hasEditPermission =
           perms?.is_all_editable ||
-          (slug && Array.isArray(perms?.editable_apps_id) && perms.editable_apps_id.includes(slug));
-        const isViewOnly = !hasEditPermission;
-        const requestedEnv = (environmentName || envFromUrl || '').toLowerCase();
-        const effectiveEnv =
-          isViewOnly && requestedEnv === 'production' ? 'development' : environmentName || envFromUrl;
+          (appId && Array.isArray(perms?.editable_apps_id) && perms.editable_apps_id.includes(appId));
 
-        const search = queryString.stringify({
+        // Get environment access for this user - use appId instead of slug
+        const environmentAccess = getEnvironmentAccessFromPermissions(perms, appId);
+
+        // For all users (edit and view), validate environment access and use safe environment
+        // Even editors need to be restricted if they don't have permission to requested environment
+        const requestedEnv = (environmentName || envFromUrl || '').toLowerCase();
+        const effectiveEnv = getSafeEnvironment(environmentAccess, requestedEnv, hasEditPermission);
+
+        // Check if license is invalid/expired (basic plan) - from store
+        const storeState = useStore.getState();
+        const featureAccess = storeState?.license?.featureAccess;
+        // Only exclude env if license is explicitly expired or invalid
+        // If license status is undefined (not loaded yet), default to including env
+        const isBasicPlan =
+          featureAccess?.licenseStatus?.isExpired === true ||
+          featureAccess?.licenseStatus?.isLicenseValid === false ||
+          featureAccess?.multiEnvironment === false;
+
+        // Don't add env param for free/basic/starter plan, expired or invalid license
+        // Also don't add env if it wasn't in the original URL (user didn't request specific env)
+        const shouldIncludeEnv = !isBasicPlan && (envFromUrl || environmentName);
+
+        const queryParams = {
           // Keep other params but let env/version below override
           ...Object.fromEntries(Object.entries(restQueryParams).filter(([k]) => k !== 'env' && k !== 'version')),
-          env: effectiveEnv,
           version: versionName || restQueryParams.version,
-        });
-        /* means. the User is trying to load old preview URL. Let's change these to query params */
-        navigate(
-          {
-            pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`,
-            search,
-          },
-          { replace: true, state: location?.state }
-        );
+          // Only add env if license is valid AND env was explicitly requested in URL
+          ...(shouldIncludeEnv && effectiveEnv ? { env: effectiveEnv } : {}),
+        };
+
+        const newSearch = queryString.stringify(queryParams);
+        const currentSearch = location.search?.replace('?', '');
+
+        // Only navigate if the search params actually changed to avoid infinite loops
+        if (newSearch !== currentSearch) {
+          /* means. the User is trying to load old preview URL. Let's change these to query params */
+          navigate(
+            {
+              pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`,
+              search: newSearch,
+            },
+            { replace: true, state: location?.state }
+          );
+        }
       }
-      setExtraProps(restDetails);
+      // Include appId in extraProps so it's available to the app
+      setExtraProps({ ...restDetails, id: appId });
       setLoading(false);
     }
   };
 
   const handleBrowserNavigation = (e) => {
-    const { id, handle } = e.state;
-    switchPage(id, handle, [], 'canvas', true);
+    const pages = useStore.getState().modules?.canvas?.pages ?? [];
+
+    // The URL is authoritative on back/forward — the browser sets it before popstate fires.
+    // The page id stored on the history entry can be stale (e.g. it was captured under a
+    // different app version, or overwritten by an embedded module's load, or sits under React
+    // Router's state.usr instead of the top level), so resolve the target page from the URL
+    // handle against the live page list first.
+    const handleFromUrl = window.location.pathname.split('/').filter(Boolean).pop();
+    let page = pages.find((p) => p.handle === handleFromUrl && !p.isPageGroup);
+
+    // Fallback to whatever the history entry carries (covering both the raw-pushState shape and
+    // React Router's state.usr shape), matched against live pages so we never switch to an id
+    // the store doesn't know — which is what blanks the canvas.
+    if (!page) {
+      const rawState = e.state ?? {};
+      const stateId = rawState.id ?? rawState.usr?.id;
+      const stateHandle = rawState.handle ?? rawState.usr?.handle;
+      page = pages.find((p) => p.id === stateId || p.handle === stateHandle);
+    }
+
+    // Can't resolve a real page — keep the current one rather than blanking the canvas.
+    if (!page) return;
+
+    switchPage(page.id, page.handle, [], 'canvas', true);
   };
 
   // Show mobile empty state for protected routes (editor mode)

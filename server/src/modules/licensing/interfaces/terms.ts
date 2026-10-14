@@ -13,6 +13,7 @@ export interface Terms {
   };
   database?: {
     table?: number | string;
+    row?: number | string;
   };
   domains?: Array<{ hostname?: string; subpath?: string }>;
   features?: {
@@ -31,6 +32,13 @@ export interface Terms {
     ai?: boolean;
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
+    scim?: boolean;
+    mfa?: boolean;
+    customDomains?: boolean;
+    google?: boolean;
+    github?: boolean;
+    observability?: boolean;
+    queryFolders?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
@@ -40,6 +48,40 @@ export interface Terms {
   auditLogs?: {
     maximumDays?: number | string;
   };
+  app?: {
+    pages: {
+      enabled: boolean;
+      count: number | string;
+      features: {
+        appHeaderAndLogo: boolean;
+        addNavGroup: boolean;
+        canvasPageHeader?: boolean;
+        canvasPageFooter?: boolean;
+      };
+    };
+    permissions: {
+      component: boolean;
+      query: boolean;
+      pages: boolean;
+    };
+    features?: {
+      promote: boolean;
+      release: boolean;
+      history: boolean;
+      jsLibraries: boolean;
+      publicApp: boolean;
+      customComponentLibraries?: boolean;
+    };
+  };
+  modules?: {
+    enabled: boolean;
+  };
+  permissions?: {
+    customGroups: boolean;
+  };
+  observability?: {
+    enabled: boolean;
+  };
   meta?: {
     customerName?: string;
     generatedFrom?: 'API';
@@ -47,6 +89,7 @@ export interface Terms {
     createdBy?: string;
   };
   workflows?: {
+    enabled?: boolean;
     execution_timeout?: number;
     workspace?: {
       total?: number | string;
@@ -61,5 +104,6 @@ export interface Terms {
   };
   ai?: {
     apiKey?: string;
+    plan?: 'byok' | 'selfhostai' | 'credits';
   };
 }

@@ -7,6 +7,8 @@ export type QueryOptions = {
   model?: string; // Added model as an optional field
   operation: Operation;
   prompt?: string;
+  system_prompt?: string;           
+  message_history?: string | any[];
   max_tokens?: number | string;
   temperature?: number | string;
   stop_sequence?: string;
@@ -25,7 +27,6 @@ export type QueryOptions = {
 };
 
 export enum Operation {
-  Completion = 'completion',
   Chat = 'chat',
   ImageGeneration = 'image_generation',
   GenerateEmbedding = 'generate_embedding',

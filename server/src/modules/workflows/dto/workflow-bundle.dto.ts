@@ -1,12 +1,27 @@
-import { IsObject, IsString, IsOptional } from 'class-validator';
+import { IsObject, IsString, IsOptional, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class UpdatePackagesDto {
+export enum BundleLanguage {
+  JAVASCRIPT = 'javascript',
+  PYTHON = 'python',
+}
+
+export class LanguageParamDto {
+  @IsEnum(BundleLanguage)
+  language: BundleLanguage;
+}
+
+export class UpdateJavascriptPackagesDto {
   @IsObject()
   dependencies: Record<string, string>;
 }
 
-export class RebuildBundleDto {}
+export class UpdatePythonPackagesDto {
+  @IsString()
+  dependencies: string; // Raw requirements.txt content, e.g., "requests==2.31.0\nnumpy>=1.24.0"
+}
+
+export class RebuildBundleDto { }
 
 export class PackageSearchQueryDto {
   @IsString()
@@ -17,7 +32,7 @@ export class PackageSearchQueryDto {
   limit?: number;
 }
 
-export class PackageSearchResult {
+export class JavascriptPackageSearchResult {
   name: string;
   version: string;
   description: string;
@@ -26,11 +41,11 @@ export class PackageSearchResult {
   modified?: string;
 }
 
-export class GetPackagesResult {
+export class GetJavascriptPackagesResult {
   dependencies: Record<string, string>;
 }
 
-export class BundleStatus {
+export class JavascriptBundleStatus {
   status: 'none' | 'building' | 'ready' | 'failed';
   sizeBytes?: number;
   generationTimeMs?: number;
@@ -49,4 +64,88 @@ export class RebuildBundleResult {
   success: boolean;
   message: string;
   bundleStatus: 'building';
+}
+
+// Python-specific DTOs
+export class PythonPackageSearchResult {
+  name: string;
+  version: string;
+  description: string;
+  author?: string;
+  keywords?: string[];
+  releaseDate?: string;
+  hasWheel?: boolean;
+}
+
+export class PythonPackageInfo {
+  name: string;
+  version: string;
+  description: string;
+  versions: string[];
+  author?: string;
+  license?: string;
+  homepage?: string;
+  requiresPython?: string;
+}
+
+export class PythonPackageVersionsResult {
+  versions: string[];
+}
+
+export class WheelCheckResult {
+  hasWheel: boolean;
+  packageName: string;
+  version: string;
+}
+
+export class PythonBundleStatus {
+  status: 'none' | 'building' | 'ready' | 'failed';
+  sizeBytes?: number;
+  generationTimeMs?: number;
+  error?: string;
+  dependencies?: string; // Raw requirements.txt content
+  bundleSha?: string;
+  language: 'python';
+  runtimeVersion?: string;
+}
+
+export class GetPythonPackagesResult {
+  dependencies: string; // Raw requirements.txt content
+}
+
+export class UnifiedPackageInfo {
+  name: string;
+  version: string;
+  description: string;
+  versions: string[];
+  author?: string;
+  license?: string;
+  homepage?: string;
+  language: BundleLanguage;
+  // Python-specific
+  requiresPython?: string;
+  // JS-specific
+  downloads?: number;
+}
+
+export class UnifiedPackageVersionsResult {
+  versions: string[];
+  language: BundleLanguage;
+}
+
+/**
+ * Unified bundle status that includes language field
+ * Note: dependencies format varies by language:
+ * - JavaScript: JSON object { "lodash": "4.17.21" }
+ * - Python: string (requirements.txt content) "requests==2.31.0\nnumpy>=1.24.0"
+ */
+export class UnifiedBundleStatus {
+  status: 'none' | 'building' | 'ready' | 'failed';
+  sizeBytes?: number;
+  generationTimeMs?: number;
+  error?: string;
+  dependencies?: Record<string, string> | string;
+  bundleSha?: string;
+  language: BundleLanguage;
+  runtimeVersion?: string;
 }

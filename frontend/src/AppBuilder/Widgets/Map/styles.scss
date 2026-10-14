@@ -1,0 +1,3 @@
+.pac-container:not(:has(.pac-item)) {
+  display: none !important;
+}

@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { IconX } from '@tabler/icons-react';
 import moment from 'moment-timezone';
 
 export const DatepickerInput = forwardRef(
@@ -31,7 +32,26 @@ export const DatepickerInput = forwardRef(
     auto,
     labelWidth,
     label,
+    showClearBtn,
+    onClear,
+    inputPlaceholder = 'Select date',
+    clearButtonRightOffset = 0,
+    dataCy,
   }) => {
+    const isPlaceholderValue = value === null || value === undefined || value === '';
+
+    const computedInputStyles = {
+      ...inputStyles,
+      color: isPlaceholderValue ? 'var(--cc-placeholder-text)' : inputStyles?.color,
+    };
+
+    const hasValue = value !== null && value !== undefined && value !== '';
+    const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
+    const clearButtonBaseRight = loaderStyles?.right ?? '11px';
+    const clearButtonRight =
+      clearButtonRightOffset > 0 ? `calc(${clearButtonBaseRight} + ${clearButtonRightOffset}px)` : clearButtonBaseRight;
+    const clearButtonTop = '50%';
+    const clearButtonTransform = 'translateY(-50%)';
     return (
       <>
         <input
@@ -39,6 +59,7 @@ export const DatepickerInput = forwardRef(
             'is-invalid': !isValid && showValidationError,
           })}
           value={value}
+          placeholder={inputPlaceholder}
           onClick={onClick}
           onFocus={() => setTextInputFocus(true)}
           onBlur={() => {
@@ -53,7 +74,7 @@ export const DatepickerInput = forwardRef(
           aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           ref={dateInputRef}
           id={`component-${inputId}`}
-          style={inputStyles}
+          style={computedInputStyles}
           onChange={(e) => {
             const inputVal = e.target.value;
             setDisplayTimestamp(inputVal);
@@ -71,10 +92,16 @@ export const DatepickerInput = forwardRef(
               }
             }
           }}
-          // disabled={disable || loading}
+          disabled={disable || loading}
+          data-cy={`${String(dataCy).toLowerCase()}-input-field`}
         />
         <span className="cell-icon-display">
-          <IconElement style={iconStyles} width="16" className="table-column-datepicker-input-icon" />
+          <IconElement
+            style={iconStyles}
+            width="16"
+            className="table-column-datepicker-input-icon"
+            data-cy={`${String(dataCy).toLowerCase()}-icon`}
+          />
         </span>
         <span>
           {!isValid && showValidationError && visibility && (
@@ -92,6 +119,31 @@ export const DatepickerInput = forwardRef(
             </div>
           )}
         </span>
+        {shouldShowClearBtn && (
+          <button
+            type="button"
+            className="tj-input-clear-btn"
+            aria-label="Clear"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onClear?.();
+            }}
+            style={{
+              position: 'absolute',
+              right: clearButtonRight,
+              top: clearButtonTop,
+              transform: clearButtonTransform,
+              zIndex: 3,
+            }}
+            data-cy={`${dataCy}-clear-button`}
+          >
+            <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+          </button>
+        )}
         {loading && <Loader style={{ ...loaderStyles }} width="16" />}
       </>
     );

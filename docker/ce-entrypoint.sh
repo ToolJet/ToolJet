@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Start Redis if not already running (bundled sidecar for single-instance CE)
+if ! pgrep -x redis-server > /dev/null 2>&1; then
+  redis-server /app/redis.conf
+  echo "Redis started"
+fi
+
 if [ -f "./.env" ]; then
   export $(grep -v '^#' ./.env | xargs -d '\n') || true
 fi

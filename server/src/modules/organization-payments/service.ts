@@ -28,7 +28,11 @@ export class OrganizationPaymentService implements IOrganizationPaymentService {
   licenseUpgradeValidation(organizationId: string, checkParam: any, manager?: any): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  UpdateOrInsertCloudLicense(organizationSubscription: OrganizationSubscription, manager?: any): Promise<void> {
+  UpdateOrInsertCloudLicense(
+    organizationSubscription: OrganizationSubscription,
+    period: { start: Date; end: Date },
+    manager?: any
+  ): Promise<void> {
     throw new Error('Method not implemented.');
   }
   paymentFailedHandler(invoiceObject: any): Promise<void> {

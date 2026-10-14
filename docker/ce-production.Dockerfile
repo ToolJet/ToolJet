@@ -31,6 +31,7 @@ ENV NODE_ENV=production
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
+RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
@@ -54,10 +55,15 @@ ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && \
-    apt-get install -y postgresql-client freetds-dev libaio1 wget && \
+    apt-get install -y postgresql-client freetds-dev libaio1 libxml2 wget supervisor && \
     apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
     apt-get -y autoremove && \
     apt-get -y autoclean
+
+# Install Redis 7.x from official Redis repository (Debian's bundled package is stale)
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bookworm main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y redis-server
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -96,12 +102,19 @@ COPY --from=builder /app/server/dist ./app/server/dist
 
 COPY ./docker/ce-entrypoint.sh ./app/server/entrypoint.sh
 
-# Define non-sudo user
+# Define non-sudo user and set up Redis dirs in one layer (appuser must exist before chown)
 RUN useradd --create-home --home-dir /home/appuser appuser \
     && chown -R appuser:0 /app \
     && chown -R appuser:0 /home/appuser \
     && chmod u+x /app \
-    && chmod -R g=u /app
+    && chmod -R g=u /app \
+    && mkdir -p /var/lib/redis /var/log/redis \
+    && chown -R appuser:0 /var/lib/redis /var/log/redis \
+    && chmod -R g=u /var/lib/redis /var/log/redis
+# Configure Redis — bind to localhost only, daemonized, no persistence needed for CE single-instance
+# Written to /app (appuser-owned) to avoid /etc/redis permission issues
+RUN printf 'bind 127.0.0.1\nport 6379\nprotected-mode yes\ndaemonize yes\nlogfile /var/log/redis/redis.log\ndir /var/lib/redis\n' \
+    > /app/redis.conf
 
 # Set npm cache directory
 ENV npm_config_cache /home/appuser/.npm

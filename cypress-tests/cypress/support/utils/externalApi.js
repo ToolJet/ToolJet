@@ -1,4 +1,4 @@
-import { groupsSelector } from "Selectors/manageGroups";
+import { groupsSelector } from "Selectors/platform/manageGroups";
 import { navigateToManageGroups } from 'Support/utils/common';
 export const apiRequest = (method, url, body = {}, headers = {}) => {
     return cy.request({
@@ -55,6 +55,16 @@ export const exportApp = (workspaceId, appId, endpoint, headers) => {
 
 export const allAppsDetails = (workspaceIds) => {
     return apiRequest("GET", `${Cypress.env('API_URL')}/ext/workspace/${workspaceIds}/apps`);
+}
+
+export const fetchWorkspaceApps = (workspaceId, authToken) => {
+    const headers = authToken ? { Authorization: authToken } : {};
+    return apiRequest(
+        "GET",
+        `${Cypress.env('API_URL')}/ext/workspace/${workspaceId}/apps`,
+        {},
+        headers
+    );
 }
 
 export const createGroup = (groupName) => {

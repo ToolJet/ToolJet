@@ -1,10 +1,10 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "Woocommerce datasource",
-  "description": "A schema defining Woocommerce datasource",
+  "title": "WooCommerce datasource",
+  "description": "A schema defining WooCommerce datasource",
   "type": "api",
   "source": {
-    "name": "Woocommerce",
+    "name": "WooCommerce",
     "kind": "woocommerce",
     "exposedVariables": {
       "isLoading": false,
@@ -37,19 +37,19 @@
       "label": "Consumer key",
       "key": "consumer_key",
       "type": "password",
-      "description": "Consumer key for Woocommerce"
+      "description": "Consumer key for WooCommerce"
     },
     "consumer_secret": {
       "label": "Consumer secret",
       "key": "consumer_secret",
       "type": "password",
-      "description": "Consumer secret for Woocommerce"
+      "description": "Consumer secret for WooCommerce"
     },
     "host": {
       "label": "Host",
       "key": "host",
       "type": "text",
-      "description": "Host for Woocommerce"
+      "description": "Host for WooCommerce"
     }
   },
   "required": ["consumer_key","consumer_secret","host"]

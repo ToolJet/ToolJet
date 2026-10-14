@@ -8,7 +8,7 @@ import { User } from '@entities/user.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { Organization } from '@entities/organization.entity';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
-import { isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
+import { applyCustomDomainCookieOptions, isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
 import { CookieOptions } from 'express';
 import { decamelizeKeys } from 'humps';
 import { JWTPayload } from '@modules/session/interfaces/IService';
@@ -43,7 +43,7 @@ export class SessionUtilService {
     protected readonly rolesRepository: RolesRepository,
     protected readonly encryptionService: EncryptionService,
     protected readonly jwtService: JwtService
-  ) {}
+  ) { }
 
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -53,6 +53,20 @@ export class SessionUtilService {
 
   sign(JWTPayload: any): string {
     return this.jwtService.sign(JWTPayload);
+  }
+
+  getClearCookieOptions(): CookieOptions {
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      secure: isHttpsEnabled(),
+      sameSite: 'strict',
+    };
+    if (this.configService.get<string>('ENABLE_PRIVATE_APP_EMBED') === 'true') {
+      cookieOptions.sameSite = 'none';
+      cookieOptions.secure = true;
+    }
+    applyCustomDomainCookieOptions(cookieOptions, this.configService);
+    return cookieOptions;
   }
 
   async generateLoginResultPayload(
@@ -78,8 +92,7 @@ export class SessionUtilService {
         const clientIp = (request as any)?.clientIp;
         const session: UserSessions = await this.createSession(
           user.id,
-          `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
-            request?.headers['user-agent'] || 'unknown'
+          `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
           }`,
           manager
         );
@@ -97,10 +110,15 @@ export class SessionUtilService {
         ...(isPatLogin ? { isPATLogin: true } : {}),
         ...(isPatLogin && extraData?.token ? { token: extraData?.token } : {}),
         ...(isPatLogin && extraData?.appId ? { appId: extraData?.appId, scope: 'App' } : {}),
+        ...(isPatLogin && extraData?.patScope ? { patScope: extraData.patScope } : {}),
         ...(extraData?.tj_api_source ? { tj_api_source: extraData.tj_api_source } : {}),
       };
 
-      if (organization) user.organizationId = organization.id;
+      if (organization) {
+        user.organizationId = organization.id;
+        // Unconditional update on login — low frequency event
+        await manager.update(Organization, { id: organization.id }, { lastAccessedAt: new Date() });
+      }
 
       const cookieOptions: CookieOptions = {
         secure: isHttpsEnabled(),
@@ -114,6 +132,8 @@ export class SessionUtilService {
         cookieOptions.sameSite = 'none';
         cookieOptions.secure = true;
       }
+
+      applyCustomDomainCookieOptions(cookieOptions, this.configService);
       let signedPat;
       if (isPatLogin) {
         signedPat = this.sign(JWTPayload);
@@ -253,7 +273,7 @@ export class SessionUtilService {
 
   async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.save(
+      const session = await manager.save(
         manager.create(UserSessions, {
           userId,
           device,
@@ -262,6 +282,8 @@ export class SessionUtilService {
           lastLoggedIn: new Date(),
         })
       );
+
+      return session;
     }, manager);
   }
 
@@ -270,10 +292,10 @@ export class SessionUtilService {
     const now = new Date();
     return new Date(
       now.getTime() +
-        (this.configService.get<string>('USER_SESSION_EXPIRY')
-          ? this.configService.get<number>('USER_SESSION_EXPIRY')
-          : 14400) *
-          60000
+      (this.configService.get<string>('USER_SESSION_EXPIRY')
+        ? this.configService.get<number>('USER_SESSION_EXPIRY')
+        : 14400) *
+      60000
     );
   }
 
@@ -289,8 +311,7 @@ export class SessionUtilService {
 
     const session: UserSessions = await this.createSession(
       user.id,
-      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
-        request?.headers['user-agent'] || 'unknown'
+      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
       }`,
       manager
     );
@@ -317,6 +338,8 @@ export class SessionUtilService {
       cookieOptions.sameSite = 'none';
       cookieOptions.secure = true;
     }
+
+    applyCustomDomainCookieOptions(cookieOptions, this.configService);
     response.cookie('tj_auth_token', this.sign(JWTPayload), cookieOptions);
 
     return decamelizeKeys({
@@ -338,9 +361,9 @@ export class SessionUtilService {
         ? currentOrganization
           ? currentOrganization
           : await manager.findOneOrFail(Organization, {
-              where: { id: currentOrganizationId },
-              select: ['slug', 'name', 'id'],
-            })
+            where: { id: currentOrganizationId },
+            select: ['slug', 'name', 'id'],
+          })
         : null;
 
       const noWorkspaceAttachedInTheSession = (await this.checkUserWorkspaceStatus(user.id)) && !isSuperAdmin(user);
@@ -352,6 +375,7 @@ export class SessionUtilService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        aiBuildNotificationsEnabled: user.aiBuildNotificationsEnabled,
         noWorkspaceAttachedInTheSession,
         isAllWorkspacesArchived,
         currentOrganizationId,
@@ -454,7 +478,7 @@ export class SessionUtilService {
     return this.userRepository.getUser({ email, status: USER_STATUS.ACTIVE });
   }
 
-  async validateUserSession(userId: string, sessionId: string): Promise<void> {
+  async validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const session: UserSessions = await manager.findOne(UserSessions, {
         where: {
@@ -505,6 +529,11 @@ export class SessionUtilService {
       manager.save(session).catch((err) => {
         console.error('error while extending session expiry', err);
       });
+
+      // Fire-and-forget: update workspace last_accessed_at at most once per interval
+      if (organizationId) {
+        this.organizationRepository.touchLastAccessedAt(organizationId);
+      }
     });
   }
 

@@ -1,9 +1,11 @@
 import React from 'react';
 import { renderElement } from '../../Utils';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 import { EventManager } from '../../EventManager';
 import { OptionsList } from './components';
 import { useOptionsManager } from './hooks/useOptionsManager';
+import { COMPONENT_INSPECTOR_CONFIG, DEFAULT_CONFIG } from './constants';
 import './styles.scss';
 
 export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
@@ -19,6 +21,9 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     pages,
   } = restProps;
 
+  const componentType = component?.component?.component;
+  const config = { ...DEFAULT_CONFIG, ...COMPONENT_INSPECTOR_CONFIG[componentType] };
+
   // Use the custom hook for options management
   const {
     options,
@@ -31,9 +36,11 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     getItemStyle,
     getResolvedValue,
     isDynamicOptionsEnabled,
-  } = useOptionsManager(component, paramUpdated);
+    handleDefaultChange,
+  } = useOptionsManager(component, paramUpdated, config.optionLabelPrefix);
 
   // ===== PROPERTY ORGANIZATION =====
+  const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
   let optionsProperties = [];
@@ -61,8 +68,11 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
         onOptionChange={handleOptionChange}
         onAddOption={handleAddOption}
         onDragEnd={onDragEnd}
+        onDefaultChange={handleDefaultChange}
         getResolvedValue={getResolvedValue}
         getItemStyle={getItemStyle}
+        componentType={componentType}
+        config={config}
         {...restProps}
       />
     );
@@ -86,31 +96,41 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   };
 
   // Helper function to create accordion items
-  const createAccordionItem = (title, children, isOpen = true) => ({
+  const createAccordionItem = (title, children, isOpen = true, id) => ({
+    id,
     title,
     isOpen,
     children,
   });
 
   // Section configurations
+  const mainProperties = properties.filter((property) => !optionsProperties.includes(property));
+
   const sections = [
+    ...(!config.singleDataSection && mainProperties.length > 0
+      ? [
+          {
+            title: config.propertiesAccordionTitle,
+            type: 'properties',
+            properties: mainProperties,
+          },
+        ]
+      : []),
     {
-      title: 'Menu',
-      type: 'properties',
-      properties: properties.filter((property) => !optionsProperties.includes(property)),
-    },
-    {
-      title: 'Options',
+      title: !config.singleDataSection ? config.optionsAccordionTitle || 'Options' : config.propertiesAccordionTitle,
       custom: () => (
         <>
           {createRenderElement('advanced')}
           {isDynamicOptionsEnabled ? (
             <>
-              {createRenderElement('schema')} {createRenderElement('optionsLoadingState')}
+              {createRenderElement('schema')}{' '}
+              {optionsProperties.includes('optionsLoadingState') && createRenderElement('optionsLoadingState')}
             </>
           ) : (
             _renderOptions()
           )}
+          {optionsProperties.includes('multiSelection') && createRenderElement('multiSelection')}
+          {optionsProperties.includes('layout') && createRenderElement('layout')}
         </>
       ),
     },
@@ -130,14 +150,31 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
         />
       ),
     },
-    {
-      title: 'Additional Actions',
-      type: 'properties',
-      properties: additionalActions,
-      extraProps: (property) => ({
-        placeholder: componentMeta.properties?.[property]?.placeholder,
-      }),
-    },
+    ...(validations.length > 0
+      ? [
+          {
+            title: 'Validation',
+            type: 'validation',
+            properties: validations,
+            extraProps: (property) => ({
+              placeholder: componentMeta.validation?.[property]?.placeholder,
+            }),
+          },
+        ]
+      : []),
+    ...(additionalActions.length > 0
+      ? [
+          {
+            id: ADDITIONAL_ACTIONS_ACCORDION_ID,
+            title: 'Additional Actions',
+            type: 'properties',
+            properties: additionalActions,
+            extraProps: (property) => ({
+              placeholder: componentMeta.properties?.[property]?.placeholder,
+            }),
+          },
+        ]
+      : []),
     {
       title: 'Devices',
       type: 'others',
@@ -149,7 +186,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   // Build accordion items
   const items = sections.map((section) => {
     if (section.custom) {
-      return createAccordionItem(section.title, section.custom());
+      return createAccordionItem(section.title, section.custom(), section.isOpen, section.id);
     }
 
     const children = section.properties.map((property) => {
@@ -157,7 +194,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
       return createRenderElement(property, section.type, extraProps);
     });
 
-    return createAccordionItem(section.title, children);
+    return createAccordionItem(section.title, children, section.isOpen, section.id);
   });
 
   return <Accordion items={items} />;

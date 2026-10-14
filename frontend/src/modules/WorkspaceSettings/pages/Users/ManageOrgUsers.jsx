@@ -4,17 +4,19 @@ import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import urlJoin from 'url-join';
-import ErrorBoundary from '@/Editor/ErrorBoundary';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import UsersFilter from '@/modules/common/components/UsersTable/components/UsersFilter';
 import UsersTable from '@/modules/common/components/UsersTable';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
-import { getQueryParams } from '@/_helpers/routes';
+import { getQueryParams, getHostURL } from '@/_helpers/routes';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import EditRoleErrorModal from '@/modules/common/components/ErrorModal';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { isBulkUpsertEnabled } from './bulkUploadLimits';
+import BulkUploadUsersDrawer from './components/BulkUploadUsersDrawer';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -37,6 +39,7 @@ class ManageOrgUsersComponent extends React.Component {
       options: {},
       file: null,
       isInviteUsersDrawerOpen: false,
+      isBulkUploadDrawerOpen: false,
       userLimits: {},
       currentEditingUser: null,
       userDrawerMode: USER_DRAWER_MODES.CREATE,
@@ -350,20 +353,30 @@ class ManageOrgUsersComponent extends React.Component {
   generateInvitationURL = (user) => {
     if (user.account_setup_token) {
       return urlJoin(
-        window.public_config?.TOOLJET_HOST,
-        window.public_config?.SUB_PATH ?? '',
+        getHostURL(),
         `/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${authenticationService?.currentSessionValue.current_organization_id}`
       );
     }
     return urlJoin(
-      window.public_config?.TOOLJET_HOST,
-      window.public_config?.SUB_PATH ?? '',
+      getHostURL(),
       `/organization-invitations/${user.invitation_token}?oid=${authenticationService?.currentSessionValue.current_organization_id}`
     );
   };
 
   invitationLinkCopyHandler = () => {
     toast.success('Invitation URL copied');
+  };
+
+  reInviteHandler = (user) => {
+    const organizationId = authenticationService?.currentSessionValue?.current_organization_id;
+    const senderName = authenticationService?.currentSessionValue?.current_user?.first_name;
+    authenticationService
+      .resendInvite(user.email, organizationId, undefined, senderName)
+      .then(() => {
+        toast.success('Invite resent successfully');
+        this.fetchUsers(this.state.currentPage, this.state.options);
+      })
+      .catch(() => toast.error('Failed to resend invite'));
   };
 
   clearErrorState = () => {
@@ -434,6 +447,16 @@ class ManageOrgUsersComponent extends React.Component {
             iconName={errorIconName}
             onClose={this.clearErrorState}
           />
+          {this.state.isBulkUploadDrawerOpen && (
+            <BulkUploadUsersDrawer
+              isOpen={this.state.isBulkUploadDrawerOpen}
+              onClose={() => this.setState({ isBulkUploadDrawerOpen: false })}
+              onUploaded={() => {
+                this.fetchUsers();
+                this.fetchUserLimits();
+              }}
+            />
+          )}
           {this.state.isInviteUsersDrawerOpen && (
             <ManageOrgUsersDrawer
               isInviteUsersDrawerOpen={this.state.isInviteUsersDrawerOpen}
@@ -467,15 +490,45 @@ class ManageOrgUsersComponent extends React.Component {
                       {meta?.total_count} users
                     </div>
                     <div className=" workspace-setting-buttons-wrap">
-                      <ButtonSolid
-                        data-cy="button-invite-new-user"
-                        className="singleuser-btn"
-                        onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
-                        leftIcon="usergroup"
-                        fill={'#FDFDFE'}
-                      >
-                        {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
-                      </ButtonSolid>
+                      {isBulkUpsertEnabled() && (
+                        <ButtonSolid
+                          data-cy="button-bulk-upload-users"
+                          variant="tertiary"
+                          size="md"
+                          className="bulk-upload-header-btn"
+                          onClick={() => this.setState({ isBulkUploadDrawerOpen: true })}
+                          leftIcon="IconUsers"
+                          isTablerIcon
+                          iconWidth="16"
+                          fill="var(--icon-default)"
+                        >
+                          Bulk upload users
+                        </ButtonSolid>
+                      )}
+                      {isBulkUpsertEnabled() ? (
+                        <ButtonSolid
+                          data-cy="button-invite-new-user"
+                          size="md"
+                          className="bulk-upload-header-btn"
+                          onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
+                          leftIcon="IconPlus"
+                          isTablerIcon
+                          iconWidth="16"
+                          fill="#FDFDFE"
+                        >
+                          Add user
+                        </ButtonSolid>
+                      ) : (
+                        <ButtonSolid
+                          data-cy="button-invite-new-user"
+                          className="singleuser-btn"
+                          onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
+                          leftIcon="usergroup"
+                          fill={'#FDFDFE'}
+                        >
+                          {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
+                        </ButtonSolid>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -518,6 +571,7 @@ class ManageOrgUsersComponent extends React.Component {
                     meta={meta}
                     generateInvitationURL={this.generateInvitationURL}
                     invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                    onReInvite={this.reInviteHandler}
                     unarchiveOrgUser={this.unarchiveOrgUser}
                     archiveOrgUser={this.archiveOrgUser}
                     pageChanged={this.pageChanged}

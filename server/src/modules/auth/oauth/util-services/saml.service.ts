@@ -7,12 +7,12 @@ export class SamlService implements ISamlService {
   async signIn(
     samlResponseId: string,
     configs: any,
-    extraProps: { configId: string; orgSlug: string }
+    extraProps: { configId: string; orgSlug: string; host?: string }
   ): Promise<UserResponse> {
     throw new Error('Method not implemented');
   }
 
-  async getSAMLAuthorizationURL(configId: string): Promise<string> {
+  async getSAMLAuthorizationURL(configId: string, host?: string): Promise<string> {
     throw new Error('Method not implemented');
   }
 

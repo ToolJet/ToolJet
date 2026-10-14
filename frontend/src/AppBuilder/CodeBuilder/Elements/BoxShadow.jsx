@@ -4,6 +4,8 @@ import Popover from 'react-bootstrap/Popover';
 import Slider from 'rc-slider';
 import { Color } from './Color';
 
+const coerceShadowString = (v) => (typeof v === 'string' ? v : '');
+
 export const BoxShadow = ({ value, onChange, cyLabel }) => {
   const defaultValue = { X: 0, Y: 0, Blur: 0, Spread: 0, Color: '#00000040' };
   const [showPicker, setShowPicker] = useState(false);
@@ -33,8 +35,9 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
   };
 
   useEffect(() => {
-    if (value) {
-      const valueArr = value.split('px ');
+    const stringValue = coerceShadowString(value);
+    if (stringValue) {
+      const valueArr = stringValue.split('px ');
       const newValue = {
         X: valueArr[0],
         Y: valueArr[1],
@@ -93,7 +96,10 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
 
   const eventPopover = () => {
     return (
-      <Popover className={`${darkMode && 'dark-theme'}`} style={{ width: '350px', maxWidth: '350px' }}>
+      <Popover
+        className={`${darkMode && 'dark-theme'} boxshadow-picker-popover`}
+        style={{ width: '350px', maxWidth: '350px' }}
+      >
         <Popover.Body className={`${darkMode && 'dark-theme'}`}>
           <>
             {input.map((item) => (
@@ -142,7 +148,7 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
       </Popover>
     );
   };
-  const _value = `#${(value || '').split('#')[1]}`;
+  const _value = `#${coerceShadowString(value).split('#')[1] || ''}`;
   const outerStyles = {
     width: '142px',
     height: '32px',

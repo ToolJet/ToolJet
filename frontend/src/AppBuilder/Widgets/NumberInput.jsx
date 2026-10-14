@@ -1,16 +1,25 @@
 import React, { useEffect } from 'react';
 import { BaseInput } from './BaseComponents/BaseInput';
 import { useInput } from './BaseComponents/hooks/useInput';
+import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const NumberInput = (props) => {
+  const beforeSetInputValue = (value) => {
+    if (value === '' || value === null || value === undefined) return value;
+    return Number(parseFloat(value).toFixed(props.properties.decimalPlaces));
+  };
+
   const inputLogic = useInput({
     ...props,
     properties: {
       ...props.properties,
-      value: Number(parseFloat(props.properties.value).toFixed(props.properties.decimalPlaces)),
+      value: beforeSetInputValue(props.properties.value),
     },
+    beforeSetInputValue,
   });
+
+  const { showClearBtn, disableStepControls } = props.properties;
 
   const handleChange = (e) => {
     if (e.target.value === '') {
@@ -26,15 +35,15 @@ export const NumberInput = (props) => {
   };
 
   const handleBlur = (e) => {
-    const value = Number(parseFloat(e.target.value).toFixed(props.properties.decimalPlaces));
-    inputLogic.setInputValue(value);
+    inputLogic.setInputValue(e.target.value);
     inputLogic.handleBlur(e);
   };
 
   const handleIncrement = (e) => {
     e.preventDefault();
-    const newValue = (inputLogic.value || 0) + 1;
+    const newValue = Number(((inputLogic.value || 0) + 1).toFixed(props.properties.decimalPlaces));
     inputLogic.setInputValue(newValue);
+    inputLogic.setShowValidationError(true);
     if (!isNaN(newValue)) {
       props.fireEvent('onChange');
     }
@@ -42,94 +51,95 @@ export const NumberInput = (props) => {
 
   const handleDecrement = (e) => {
     e.preventDefault();
-    const newValue = (inputLogic.value || 0) - 1;
+    const newValue = Number(((inputLogic.value || 0) - 1).toFixed(props.properties.decimalPlaces));
     inputLogic.setInputValue(newValue);
+    inputLogic.setShowValidationError(true);
     if (!isNaN(newValue)) {
       props.fireEvent('onChange');
     }
   };
 
-  // Override the base input styles to account for number controls
   const getCustomStyles = (baseStyles) => {
     return {
       ...baseStyles,
-      paddingRight: '20px', // Make room for number controls
+      paddingRight: showClearBtn ? '30px' : '0px',
     };
   };
 
-  const numberControls = !inputLogic.isResizing && (
-    <div
-      style={{
-        position: 'absolute',
-        right:
-          inputLogic.labelWidth === 0
-            ? 0
-            : props.styles.alignment === 'side' && props.styles.direction === 'right'
-            ? `${inputLogic.labelWidth}px`
-            : 0,
-        top: 0,
-        height: '100%',
-        width: '20px',
-        display: 'flex',
-        flexDirection: 'column',
-        zIndex: 2,
-      }}
-    >
+  const handleClear = () => {
+    inputLogic.setInputValue('');
+    // Clearing is a completed action, not a keystroke, so it reveals any resulting error the way a blur does
+    inputLogic.setShowValidationError(true);
+    props.fireEvent('onChange');
+  };
+
+  const handleKeyDown = (e) => {
+    if (disableStepControls && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+    }
+  };
+
+  const numberControls = !disableStepControls && !inputLogic.isResizing && (
+    <div className="tw-w-5 tw-z-[2] tw-shrink-0 tw-self-stretch tw-flex tw-flex-col tw-border-0 tw-border-l tw-border-solid tw-border-[var(--cc-default-border)]">
       <div
         onClick={handleIncrement}
-        style={{
-          height: '50%',
-          cursor: 'pointer',
-          position: 'relative',
-        }}
+        className="tw-grid tw-place-items-center tw-cursor-pointer tw-border-0 tw-border-b tw-border-solid tw-border-[var(--cc-default-border)] tw-flex-1 number-input-arrow"
       >
-        <SolidIcon
-          width={props.styles.padding === 'default' ? `${props.height / 2 - 1}px` : `${props.height / 2 + 1}px`}
-          height={props.styles.padding === 'default' ? `${props.height / 2 - 1}px` : `${props.height / 2 + 1}px`}
-          fill={'var(--icons-default)'}
-          style={{
-            position: 'absolute',
-            top:
-              props.styles.alignment === 'top' && props.properties.label?.length > 0 && props.styles.width > 0
-                ? '21px'
-                : '1px',
-            right: '1px',
-            borderLeft: '1px solid var(--cc-default-border)',
-            borderBottom: '.5px solid var(--cc-default-border)',
-            borderTopRightRadius: props.styles.borderRadius - 1,
-            backgroundColor: 'transparent',
-          }}
-          className="numberinput-up-arrow arrow number-input-arrow"
-          name="TriangleDownCenter"
-        />
+        <SolidIcon width="16" fill={'var(--icons-default)'} name="TriangleDownCenter" />
       </div>
+
       <div
         onClick={handleDecrement}
-        style={{
-          height: '50%',
-          cursor: 'pointer',
-          position: 'relative',
-        }}
+        className="tw-grid tw-place-items-center tw-cursor-pointer tw-flex-1 number-input-arrow"
       >
-        <SolidIcon
-          fill={'var(--icons-default)'}
-          style={{
-            position: 'absolute',
-            right: '1px',
-            bottom: '1px',
-            borderLeft: '1px solid var(--cc-default-border)',
-            borderTop: '.5px solid var(--cc-default-border)',
-            borderBottomRightRadius: props.styles.borderRadius - 1,
-            backgroundColor: 'transparent',
-          }}
-          width={props.styles.padding === 'default' ? `${props.height / 2 - 1}px` : `${props.height / 2 + 1}px`}
-          height={props.styles.padding === 'default' ? `${props.height / 2 - 1}px` : `${props.height / 2 + 1}px`}
-          className="numberinput-down-arrow arrow number-input-arrow"
-          name="TriangleUpCenter"
-        />
+        <SolidIcon fill={'var(--icons-default)'} width="16" name="TriangleUpCenter" />
       </div>
     </div>
   );
+
+  useEffect(() => {
+    if (!disableStepControls || !inputLogic.inputRef.current) return;
+
+    const el = inputLogic.inputRef.current;
+
+    // undefined = not yet searched, null = searched but no scrollable ancestor found
+    let scrollableParent = undefined;
+
+    const handleWheel = (e) => {
+      // Prevent the browser from changing the input value on scroll
+      e.preventDefault();
+
+      // Lazy-init: walk the DOM only on the first scroll, then cache the result.
+      // This avoids doing any work if the user never scrolls over the input.
+      if (scrollableParent === undefined) {
+        scrollableParent = null;
+
+        let parent = el.parentElement;
+
+        while (parent) {
+          // String concat lets one regex check both overflow and overflowY at once.
+          // e.g. overflow="visible", overflowY="auto" → "visibleauto" → matches "auto"
+          const { overflow, overflowY } = window.getComputedStyle(parent);
+
+          const isScrollable = /(auto|scroll)/.test(overflow + overflowY) && parent.scrollHeight > parent.clientHeight;
+
+          if (isScrollable) {
+            scrollableParent = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+      }
+
+      (scrollableParent ?? window).scrollBy(0, e.deltaY);
+    };
+
+    // { passive: false } is required — without it the browser silently ignores preventDefault()
+    el.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => el.removeEventListener('wheel', handleWheel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disableStepControls]);
 
   useEffect(() => {
     if (isNaN(inputLogic.value) || inputLogic.value === '') {
@@ -147,8 +157,15 @@ export const NumberInput = (props) => {
       additionalInputProps={{
         min: props.validation?.minValue ?? null,
         max: props.validation?.maxValue ?? null,
+        onKeyDown: handleKeyDown,
       }}
       rightIcon={numberControls}
+      classes={{
+        inputContainer: cn({ 'tw-pr-0 tw-py-0': !inputLogic.loading }),
+      }}
+      showClearBtn={showClearBtn}
+      onClear={handleClear}
+      clearButtonRightOffset={20}
       getCustomStyles={getCustomStyles}
     />
   );

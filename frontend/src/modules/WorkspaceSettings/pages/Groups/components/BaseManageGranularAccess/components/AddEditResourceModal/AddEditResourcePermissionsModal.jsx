@@ -6,6 +6,7 @@ import AppPermissionsActions from './AppPermissionActionContainer';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import DsPermissionsActions from './DataSourcPermissionActionContainer';
 import WorkflowPermissionsActions from './WorkflowPermissionActionContainer';
+import ModulePermissionsActions from './ModulePermissionActionContainer';
 import { RESOURCE_TYPE } from '../../../../index';
 
 function AddEditResourcePermissionsModal({
@@ -23,6 +24,11 @@ function AddEditResourcePermissionsModal({
   addableApps,
   darkMode,
   groupName,
+  isBuilderLevel,
+  hasEndUsers,
+  selectedEnvironments,
+  setSelectedEnvironments,
+  isBasicPlan,
 }) {
   const isCustom = currentState?.isCustom;
   const newPermissionName = currentState?.newPermissionName;
@@ -36,6 +42,8 @@ function AddEditResourcePermissionsModal({
         return 'This will select all apps in the workspace including any new apps created';
       case RESOURCE_TYPE.WORKFLOWS:
         return 'This will select all workflows in the workspace including any new workflows created';
+      case RESOURCE_TYPE.MODULES:
+        return 'This will select all modules in the workspace';
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'This will select all data sources in the workspace including any new connections created';
     }
@@ -44,6 +52,7 @@ function AddEditResourcePermissionsModal({
   const RESOURCE_NAME_MAPPING = {
     [RESOURCE_TYPE.APPS]: 'apps',
     [RESOURCE_TYPE.WORKFLOWS]: 'workflows',
+    [RESOURCE_TYPE.MODULES]: 'modules',
     [RESOURCE_TYPE.DATA_SOURCES]: 'data sources',
   };
 
@@ -53,6 +62,8 @@ function AddEditResourcePermissionsModal({
         return 'All apps';
       case RESOURCE_TYPE.WORKFLOWS:
         return 'All workflows';
+      case RESOURCE_TYPE.MODULES:
+        return 'All modules';
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'All data sources';
       default:
@@ -71,7 +82,6 @@ function AddEditResourcePermissionsModal({
                   ...prevState.initialPermissionState,
                   canEdit: !prevState.initialPermissionState.canEdit,
                   canView: prevState.initialPermissionState.canEdit,
-                  ...(!prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
                 },
               }));
             }}
@@ -81,7 +91,46 @@ function AddEditResourcePermissionsModal({
                   ...prevState.initialPermissionState,
                   canView: !prevState.initialPermissionState.canView,
                   canEdit: prevState.initialPermissionState.canView,
-                  ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                },
+              }));
+            }}
+            handleHideFromDashboard={() => {
+              updateParentState((prevState) => ({
+                initialPermissionState: {
+                  ...prevState.initialPermissionState,
+                  hideFromDashboard: !prevState.initialPermissionState.hideFromDashboard,
+                },
+              }));
+            }}
+            disableBuilderLevelUpdate={disableBuilderLevelUpdate}
+            initialPermissionState={initialPermissionState}
+            selectedEnvironments={selectedEnvironments}
+            setSelectedEnvironments={setSelectedEnvironments}
+            groupName={groupName}
+            isBuilderLevel={isBuilderLevel}
+            hasEndUsers={hasEndUsers}
+            isBasicPlan={isBasicPlan}
+          />
+        );
+
+      case RESOURCE_TYPE.WORKFLOWS:
+        return (
+          <WorkflowPermissionsActions
+            handleClickEdit={() => {
+              updateParentState((prevState) => ({
+                initialPermissionState: {
+                  ...prevState.initialPermissionState,
+                  canEdit: !prevState.initialPermissionState.canEdit,
+                  canView: prevState.initialPermissionState.canEdit,
+                },
+              }));
+            }}
+            handleClickView={() => {
+              updateParentState((prevState) => ({
+                initialPermissionState: {
+                  ...prevState.initialPermissionState,
+                  canView: !prevState.initialPermissionState.canView,
+                  canEdit: prevState.initialPermissionState.canView,
                 },
               }));
             }}
@@ -98,16 +147,16 @@ function AddEditResourcePermissionsModal({
           />
         );
 
-      case RESOURCE_TYPE.WORKFLOWS:
+      case RESOURCE_TYPE.MODULES:
         return (
-          <WorkflowPermissionsActions
+          <ModulePermissionsActions
             handleClickEdit={() => {
               updateParentState((prevState) => ({
                 initialPermissionState: {
                   ...prevState.initialPermissionState,
                   canEdit: !prevState.initialPermissionState.canEdit,
                   canView: prevState.initialPermissionState.canEdit,
-                  ...(!prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                  // hideFromDashboard is preserved when switching Edit ⇄ Build-with (#5135)
                 },
               }));
             }}
@@ -117,7 +166,7 @@ function AddEditResourcePermissionsModal({
                   ...prevState.initialPermissionState,
                   canView: !prevState.initialPermissionState.canView,
                   canEdit: prevState.initialPermissionState.canView,
-                  ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                  // hideFromDashboard is preserved when switching Edit ⇄ Build-with (#5135)
                 },
               }));
             }}

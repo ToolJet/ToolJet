@@ -50,20 +50,32 @@ export default function ModalBase({
           </div>
         )}
       </Modal.Body>
-      <Modal.Footer>
-        {footerBody ? (
-          footerBody
-        ) : (
-          <>
-            <ButtonSolid disabled={cancelDisabled} variant="tertiary" onClick={handleClose} data-cy="cancel-button">
-              Cancel
-            </ButtonSolid>
+      {showFooter && (
+        <Modal.Footer>
+          {footerBody ? (
+            footerBody
+          ) : (
+            <>
+              <ButtonSolid disabled={cancelDisabled} variant="tertiary" onClick={handleClose} data-cy="cancel-button">
+                Cancel
+              </ButtonSolid>
 
-            <ToolTip
-              show={confirmBtnProps?.tooltipMessage && confirmBtnProps?.disabled}
-              message={confirmBtnProps?.tooltipMessage}
-            >
-              <div>
+              {confirmBtnProps?.tooltipMessage && confirmBtnProps?.disabled ? (
+                <ToolTip show={true} message={confirmBtnProps?.tooltipMessage}>
+                  <div>
+                    <ButtonSolid
+                      disabled={isLoading || confirmBtnProps?.disabled}
+                      isLoading={isLoading}
+                      variant={confirmBtnProps?.variant || 'primary'}
+                      onClick={handleConfirm}
+                      {...confirmBtnProps}
+                      data-cy="confirm-button"
+                    >
+                      {confirmBtnProps?.title || 'Continue'}
+                    </ButtonSolid>
+                  </div>
+                </ToolTip>
+              ) : (
                 <ButtonSolid
                   disabled={isLoading || confirmBtnProps?.disabled}
                   isLoading={isLoading}
@@ -74,11 +86,11 @@ export default function ModalBase({
                 >
                   {confirmBtnProps?.title || 'Continue'}
                 </ButtonSolid>
-              </div>
-            </ToolTip>
-          </>
-        )}
-      </Modal.Footer>
+              )}
+            </>
+          )}
+        </Modal.Footer>
+      )}
     </Modal>
   );
 }

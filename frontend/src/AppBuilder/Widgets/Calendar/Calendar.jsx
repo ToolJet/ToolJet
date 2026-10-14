@@ -27,7 +27,7 @@ const parseDate = (date, dateFormat) => {
 
 const allowedCalendarViews = ['month', 'week', 'day'];
 
-export const Calendar = function ({
+export default function Calendar({
   id,
   component,
   height,
@@ -40,7 +40,7 @@ export const Calendar = function ({
   setExposedVariable,
   dataCy,
 }) {
-  const style = { height };
+  const style = { height, borderRadius: `${styles.borderRadius}px`, overflow: 'hidden' };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
   const events = Array.isArray(properties?.events)
     ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
@@ -65,7 +65,7 @@ export const Calendar = function ({
         : {};
     const color = event.textColor ?? 'white';
     const style = { backgroundColor, ...textStyle, padding: 3, paddingLeft: 5, paddingRight: 5, color };
-    
+
     return { style };
   };
 
@@ -129,7 +129,12 @@ export const Calendar = function ({
   return (
     <div
       id={id}
-      style={{ display: styles.visibility ? 'block' : 'none', boxShadow: styles.boxShadow }}
+      style={{
+        display: styles.visibility ? 'block' : 'none',
+        boxShadow: styles.boxShadow,
+        border: `1px solid ${styles.borderColor}`,
+        borderRadius: `${styles.borderRadius}px`,
+      }}
       data-cy={dataCy}
       className="scrollbar-container"
     >
@@ -200,4 +205,4 @@ export const Calendar = function ({
       />
     </div>
   );
-};
+}

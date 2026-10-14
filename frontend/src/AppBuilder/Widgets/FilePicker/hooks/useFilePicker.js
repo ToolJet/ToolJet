@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 // eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
-import { formatFileSize } from '@/_helpers/utils';
+import { v4 as uuidv4 } from 'uuid';
+import { formatFileSize, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { processFileContent, DEPRECATED_processFileContent, parseFileContentEnabled } from '../helpers/fileProcessing';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { registerFileHandle, releaseFileHandle, createFileFieldRef } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 export const useFilePicker = ({
   validation,
@@ -17,6 +20,8 @@ export const useFilePicker = ({
   height,
   id, // id might be needed for events
   component, // component might be needed for events
+  focusFn, // optional external focus handler (e.g., for FileInput)
+  blurFn, // optional external blur handler (e.g., for FileInput)
 }) => {
   const isInitialRender = useRef(true);
 
@@ -27,6 +32,8 @@ export const useFilePicker = ({
   const enableMultiple = properties?.enableMultiple ?? false;
   const parseContent = properties.parseContent ?? false;
   const fileTypeFromExtension = properties.parseFileType ?? 'auto-detect';
+  const fileParsingDelimiter = properties.delimiter ?? ',';
+
   const labelText = properties.label ?? '';
 
   const initialLoading = properties.loadingState ?? false;
@@ -61,6 +68,10 @@ export const useFilePicker = ({
 
   // --- State ---
   const [selectedFiles, setSelectedFiles] = useState([]);
+  // Lets clearFiles read the current selection without depending on
+  // selectedFiles, keeping its identity stable (other effects key off it).
+  const selectedFilesRef = useRef(selectedFiles);
+  selectedFilesRef.current = selectedFiles;
   const [fileErrors, setFileErrors] = useState({});
   const [uploadingStatus, setUploadingStatus] = useState({});
   const [isParsing, setIsParsing] = useState(false);
@@ -71,6 +82,7 @@ export const useFilePicker = ({
   const [dropzoneRejections, setDropzoneRejections] = useState([]);
   const [uiErrorMessage, setUiErrorMessage] = useState('');
   const [isTouched, setIsTouched] = useState(false);
+  useShowValidationOnFormSubmit(setIsTouched);
 
   // Calculate total file size
   const totalFileSize = useMemo(() => {
@@ -97,8 +109,35 @@ export const useFilePicker = ({
     });
   }, []);
 
+  const stripFileId = useCallback((file) => {
+    if (!file) return file;
+    const { internalId, ...publicFile } = file;
+    return publicFile;
+  }, []);
+
+  const isSameFile = useCallback((firstFile, secondFile) => {
+    if (!firstFile || !secondFile) return false;
+
+    return (
+      firstFile.name === secondFile.name &&
+      firstFile.size === secondFile.size &&
+      firstFile.lastModified === secondFile.lastModified &&
+      firstFile.type === secondFile.type
+    );
+  }, []);
+
+  // Reusable function to clear error states
+  const clearErrorStates = useCallback(() => {
+    setUiErrorMessage('');
+    setDropzoneRejections([]);
+    setFileErrors({});
+    setUploadingStatus({});
+  }, []);
+
   const fileReader = useCallback(
-    async (file) => {
+    async (file, internalId) => {
+      const fileStateKey = internalId ?? file?.name;
+
       try {
         const readFileAsText = await getFileData(file, 'readAsText');
         const readFileAsDataURLResult = await getFileData(file, 'readAsDataURL');
@@ -114,35 +153,52 @@ export const useFilePicker = ({
             readFileAsText: readFileAsText,
             readFileAsDataURL: base64Data,
           };
-          parsedValue = await processFileContent(file.type, contentForParsing);
-          parsedData = await DEPRECATED_processFileContent(file.type, contentForParsing);
+          parsedValue = await processFileContent(file.type, contentForParsing, {
+            fileParsingDelimiter,
+            fileTypeFromExtension,
+          });
+          parsedData = await DEPRECATED_processFileContent(file.type, contentForParsing, {
+            fileParsingDelimiter,
+            fileTypeFromExtension,
+          });
         }
 
+        // Keep the heavy strings (and the Blob itself) in the main-thread
+        // registry; expose lightweight string-like refs through the store.
+        // Refs materialize to real strings at the resolver boundary.
+        // internalId doubles as the registry key — no need for a second id.
+        registerFileHandle(fileStateKey, file, {
+          content: readFileAsText,
+          base64Data: base64Data,
+          dataURL: readFileAsDataURLResult,
+        });
+
         return {
+          internalId: fileStateKey,
           lastModified: file.lastModified,
           lastModifiedDate: file.lastModifiedDate,
           name: file.name,
           size: file.size,
           type: file.type,
           webkitRelativePath: file.webkitRelativePath,
-          content: readFileAsText,
-          base64Data: base64Data,
+          content: createFileFieldRef(fileStateKey, 'content'),
+          base64Data: createFileFieldRef(fileStateKey, 'base64Data'),
           parsedValue: parsedValue,
           parsedData: parsedData,
-          filePath: file.path
+          filePath: file.path,
         };
       } catch (error) {
         console.error(`Error reading file ${file.name}:`, error);
         // Update status/errors directly here or ensure it's handled by caller
-        setUploadingStatus((prev) => ({ ...prev, [file.name]: 'error' }));
+        setUploadingStatus((prev) => ({ ...prev, [fileStateKey]: 'error' }));
         setFileErrors((prev) => ({
           ...prev,
-          [file.name]: error.message || 'Failed to read file',
+          [fileStateKey]: error.message || 'Failed to read file',
         }));
         throw error; // Re-throw for Promise.allSettled
       }
     },
-    [getFileData, parseContent, fileTypeFromExtension]
+    [getFileData, parseContent, fileTypeFromExtension, fileParsingDelimiter]
   );
 
   // --- Dropzone Setup ---
@@ -197,11 +253,6 @@ export const useFilePicker = ({
       }
       // dropzoneRejections state can be kept raw for other potential uses or removed if only for this UI message
       setDropzoneRejections(rejectedFiles); // Keep raw rejections for potential debugging or detailed listing elsewhere
-
-      // Clear setUiErrorMessage afgter 5 seconds
-      setTimeout(() => {
-        clearErrorStates();
-      }, 10000);
     },
     [fileTypeCategory, minSize, maxSize, maxFileCount]
   );
@@ -210,7 +261,7 @@ export const useFilePicker = ({
   const validateFile = useCallback(
     (file) => {
       // Check 1: Duplicate file
-      if (selectedFiles.some((existingFile) => existingFile.name === file.name && existingFile.size === file.size)) {
+      if (selectedFiles.some((existingFile) => isSameFile(existingFile, file))) {
         return {
           code: 'duplicate-file',
           message: `The file "${file.name}" has already been selected.`,
@@ -235,7 +286,7 @@ export const useFilePicker = ({
 
       return null; // File passes custom validation
     },
-    [selectedFiles, enableMultiple, maxFileCount]
+    [selectedFiles, enableMultiple, maxFileCount, isSameFile]
   );
 
   const onDrop = useCallback(
@@ -244,8 +295,16 @@ export const useFilePicker = ({
       fireEvent?.('onFileSelected');
       setIsTouched(true); // Set touched state
 
-      const currentFileNames = selectedFiles.map((f) => f.name);
-      const newFilesToAdd = acceptedDropFiles.filter((f) => !currentFileNames.includes(f.name));
+      const newFilesToAdd = acceptedDropFiles
+        .filter((file) => !selectedFiles.some((existingFile) => isSameFile(existingFile, file)))
+        .map((file) => ({
+          rawFile: file,
+          internalId: uuidv4(),
+        }));
+
+      if (newFilesToAdd.length === 0) {
+        return;
+      }
 
       if (parseContent) {
         setIsParsing(true);
@@ -255,9 +314,9 @@ export const useFilePicker = ({
         });
       }
 
-      const processPromises = newFilesToAdd.map((file) => {
-        setUploadingStatus((prev) => ({ ...prev, [file.name]: 'uploading' }));
-        return fileReader(file);
+      const processPromises = newFilesToAdd.map(({ rawFile, internalId }) => {
+        setUploadingStatus((prev) => ({ ...prev, [internalId]: 'uploading' }));
+        return fileReader(rawFile, internalId);
       });
 
       const results = await Promise.allSettled(processPromises);
@@ -267,16 +326,16 @@ export const useFilePicker = ({
       const currentStatuses = { ...uploadingStatus };
 
       results.forEach((result, index) => {
-        const fileName = newFilesToAdd[index].name;
+        const { internalId, rawFile } = newFilesToAdd[index];
         if (result.status === 'fulfilled') {
           successfullyProcessedFiles.push(result.value);
-          currentStatuses[fileName] = 'uploaded';
-          if (currentErrors[fileName]) delete currentErrors[fileName]; // Clear previous error
+          currentStatuses[internalId] = 'uploaded';
+          if (currentErrors[internalId]) delete currentErrors[internalId]; // Clear previous error
         } else {
           const errorMsg = result.reason?.message || 'Failed to process file';
-          currentErrors[fileName] = errorMsg;
-          currentStatuses[fileName] = 'error';
-          toast.error(`Error processing ${fileName}: ${errorMsg}`);
+          currentErrors[internalId] = errorMsg;
+          currentStatuses[internalId] = 'error';
+          toast.error(`Error processing ${rawFile.name}: ${errorMsg}`);
         }
       });
 
@@ -284,7 +343,14 @@ export const useFilePicker = ({
         const updatedFiles = enableMultiple
           ? [...prevFiles, ...successfullyProcessedFiles]
           : [...successfullyProcessedFiles];
-        return enableMultiple ? updatedFiles.slice(0, maxFileCount) : updatedFiles;
+        const finalFiles = enableMultiple ? updatedFiles.slice(0, maxFileCount) : updatedFiles;
+        // Release registry entries for files that fell out of the selection
+        // (single-mode replacement or maxFileCount overflow).
+        const keptHandles = new Set(finalFiles.map((f) => f.internalId));
+        [...prevFiles, ...successfullyProcessedFiles].forEach((f) => {
+          if (f.internalId && !keptHandles.has(f.internalId)) releaseFileHandle(f.internalId);
+        });
+        return finalFiles;
       });
 
       setFileErrors(currentErrors); // Update state with errors from this drop
@@ -299,7 +365,9 @@ export const useFilePicker = ({
 
       // Fire 'onFileLoaded' event after processing
       if (fireEvent && successfullyProcessedFiles.length > 0) {
-        fireEvent?.('onFileLoaded', { files: successfullyProcessedFiles });
+        fireEvent?.('onFileLoaded', {
+          files: successfullyProcessedFiles.map(stripFileId),
+        });
       }
 
       // Clear dropzone rejections when new files are accepted
@@ -316,7 +384,9 @@ export const useFilePicker = ({
       enableMultiple,
       maxFileCount,
       fileErrors,
+      stripFileId,
       uploadingStatus,
+      isSameFile,
     ]
   );
 
@@ -334,14 +404,6 @@ export const useFilePicker = ({
     }, {});
   }, [fileTypeCategory]);
 
-  // Reusable function to clear error states
-  const clearErrorStates = useCallback(() => {
-    setUiErrorMessage('');
-    setDropzoneRejections([]);
-    setFileErrors({});
-    setUploadingStatus({});
-  }, []);
-
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
     accept: acceptProp, // Use the calculated accept prop
     noClick: !enablePicker || disablePicker,
@@ -358,9 +420,6 @@ export const useFilePicker = ({
       // After files are accepted, check if minFileCount is met
       if (selectedFiles.length + acceptedFiles.length < minFileCount) {
         setUiErrorMessage(`Please select at least ${minFileCount} file${minFileCount > 1 ? 's' : ''}.`);
-        setTimeout(() => {
-          clearErrorStates();
-        }, 5000);
       } else {
         setUiErrorMessage('');
       }
@@ -378,31 +437,38 @@ export const useFilePicker = ({
     (indexToRemove) => {
       const fileToRemove = selectedFiles[indexToRemove];
       if (!fileToRemove) return;
+      const fileStateKey = fileToRemove?.internalId ?? fileToRemove.name;
 
       setSelectedFiles((prevFiles) => prevFiles.filter((_, index) => index !== indexToRemove));
 
       setFileErrors((prev) => {
         const newErrors = { ...prev };
-        delete newErrors[fileToRemove.name];
+        delete newErrors[fileStateKey];
         return newErrors;
       });
       setUploadingStatus((prev) => {
         const newStatus = { ...prev };
-        delete newStatus[fileToRemove.name];
+        delete newStatus[fileStateKey];
         return newStatus;
       });
 
-      fireEvent?.('onFileDeselected', { file: fileToRemove });
+      fireEvent?.('onFileDeselected', { file: stripFileId(fileToRemove) });
+      if (fileToRemove.internalId) releaseFileHandle(fileToRemove.internalId);
     },
-    [selectedFiles, fireEvent]
+    [selectedFiles, fireEvent, stripFileId]
   );
 
   // --- Exposed Actions ---
   const clearFiles = useCallback(() => {
+    const filesBeingCleared = selectedFilesRef.current;
+    if (filesBeingCleared.length > 0) {
+      fireEvent?.('onFileDeselected', { files: filesBeingCleared.map(stripFileId) });
+    }
+    filesBeingCleared.forEach((f) => f.internalId && releaseFileHandle(f.internalId));
     setSelectedFiles([]);
     setFileErrors({});
     setUploadingStatus({});
-  }, []);
+  }, [fireEvent, stripFileId]);
 
   const setFileName = useCallback(
     (indexOrUpdates, newNameIfSingle) => {
@@ -443,6 +509,8 @@ export const useFilePicker = ({
     [] // No dependencies needed
   );
 
+  useFormClear(clearFiles);
+
   // --- Effects ---
   useEffect(() => {
     const newIsMandatoryMet = !isMandatory || selectedFiles.length > 0;
@@ -459,11 +527,15 @@ export const useFilePicker = ({
       isValid: newIsValid,
     });
 
+    const minCountMessage = `Please select at least ${minFileCount} file${minFileCount > 1 ? 's' : ''}.`;
+
     if (isMandatory && selectedFiles.length === 0 && isTouched && !isDragActive) {
       setUiErrorMessage('This field is mandatory. Please select a file.');
+    } else if (!newIsMinCountMet && selectedFiles.length > 0 && !isDragActive) {
+      setUiErrorMessage(minCountMessage);
     } else if (
-      uiErrorMessage === 'This field is mandatory. Please select a file.' &&
-      (selectedFiles.length > 0 || !isMandatory || !isTouched || isDragActive)
+      (uiErrorMessage === 'This field is mandatory. Please select a file.' || uiErrorMessage === minCountMessage) &&
+      (newIsValid || isDragActive)
     ) {
       setUiErrorMessage('');
     }
@@ -473,7 +545,6 @@ export const useFilePicker = ({
     isTouched,
     uiErrorMessage,
     isDragActive,
-    setUiErrorMessage,
     minFileCount,
     enableMultiple,
     setExposedVariables,
@@ -492,8 +563,8 @@ export const useFilePicker = ({
       const legacySelectedFiles = [];
       const formattedSelectedFiles = [];
 
-      selectedFiles.forEach(file => {
-        const { filePath, ...formattedFile } = file;
+      for (const file of selectedFiles) {
+        const { internalId, filePath, ...formattedFile } = file;
 
         legacySelectedFiles.push({
           name: file.name,
@@ -502,15 +573,16 @@ export const useFilePicker = ({
           dataURL: file.base64Data,
           base64Data: file.base64Data,
           parsedData: file.parsedData,
-          filePath: file.filePath
+          filePath: file.filePath,
         });
         formattedSelectedFiles.push(formattedFile);
-      })
+      }
 
       // useExposeState handles: isLoading, isVisible, isDisabled, setVisibility, setLoading, setDisable
       // We manually expose widget-specific items:
       setExposedVariables?.({
         clearFiles: clearFiles,
+        clear: clearFiles, // alias for clearFiles, aligned with CSA handle
         setFileName: setFileName,
         files: formattedSelectedFiles, // Contains parsedValue
         file: legacySelectedFiles, // Contains parsedValue
@@ -519,7 +591,25 @@ export const useFilePicker = ({
         isValid: currentIsValid,
         fileSize: totalFileSize,
         uiErrorMessage: uiErrorMessage,
+        ...(focusFn ? { setFocus: focusFn } : {}),
+        ...(blurFn ? { setBlur: blurFn } : {}),
       });
+
+      // Custom rule validation (FileInput/FilePicker)
+      const customRule = validation?.customRule?.value;
+      if (customRule) {
+        const resolvedCustomRule = resolveWidgetFieldValue(customRule, '', {
+          files: formattedSelectedFiles,
+        });
+        if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
+          setIsValid(false);
+          setUiErrorMessage(resolvedCustomRule);
+          setExposedVariables?.({
+            isValid: false,
+            uiErrorMessage: resolvedCustomRule,
+          });
+        }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -532,7 +622,9 @@ export const useFilePicker = ({
     setFileName,
     setExposedVariables,
     uiErrorMessage,
-    dropzoneRejections,
+    focusFn,
+    blurFn,
+    validation?.customRule?.value,
   ]); // Multi-line dependencies
 
   useEffect(() => {
@@ -542,6 +634,7 @@ export const useFilePicker = ({
     // We manually expose widget-specific items initially:
     setExposedVariables?.({
       clearFiles: clearFiles,
+      clear: clearFiles, // alias for clearFiles, aligned with CSA handle
       setFileName: setFileName,
       files: [],
       file: [],
@@ -550,13 +643,15 @@ export const useFilePicker = ({
       isValid: initialIsValid,
       fileSize: 0,
       uiErrorMessage: '',
+      ...(focusFn ? { setFocus: focusFn } : {}),
+      ...(blurFn ? { setBlur: blurFn } : {}),
     });
 
     setIsMandatoryMet(!isMandatory);
     setIsValid(initialIsValid); // Set initial state using the calculated value
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMandatory, clearFiles, setFileName, setExposedVariables]); // Multi-line dependencies
+  }, [isMandatory, clearFiles, setFileName, setExposedVariables, focusFn, blurFn]); // Multi-line dependencies
 
   useEffect(() => {
     // Update internal disablePicker based on isDisabled from useExposeState and other logic
@@ -568,10 +663,21 @@ export const useFilePicker = ({
     // Use isDisabled from useExposeState for dropzone disabled prop
   }, [selectedFiles.length, maxFileCount, enableMultiple, isDisabled]);
 
+  // Release all registry entries when the widget unmounts — the exposed refs
+  // then materialize to '' instead of leaking Blobs/strings in the registry.
   useEffect(() => {
-    // Clear UI error message when isDisabled state changes
+    return () => {
+      selectedFilesRef.current.forEach((f) => f.internalId && releaseFileHandle(f.internalId));
+    };
+  }, []);
+
+  // Clear UI error message when isDisabled state changes.
+  // `setUiErrorMessage` is stable from useState, so we intentionally
+  // omit it from the dependency array to satisfy linter preferences.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: controlled dependency list
+  useEffect(() => {
     setUiErrorMessage('');
-  }, [isDisabled, setUiErrorMessage]);
+  }, [isDisabled]);
 
   // --- Styles for Dropzone ---
   // Moved style calculation to component as it depends on drag states from useDropzone return

@@ -1,12 +1,25 @@
 import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import * as Icons from '@tabler/icons-react';
-import { getModifiedColor } from '@/Editor/Components/utils';
-import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { IconX } from '@tabler/icons-react';
+import { cn } from '@/lib/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import {
+  getLabelFontSize,
+  getLabelHeight,
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from './hooks/useInput';
+
+import './baseInput.scss';
 
 const RenderInput = forwardRef((props, ref) => {
-  return props.inputType !== 'textarea' ? <input {...props} ref={ref} /> : <textarea {...props} ref={ref} />;
+  const { inputType, ...restProps } = props;
+
+  return inputType !== 'textarea' ? <input {...restProps} ref={ref} /> : <textarea rows={1} {...restProps} ref={ref} />;
 });
 
 export const BaseInput = ({
@@ -37,8 +50,13 @@ export const BaseInput = ({
   inputType = 'text',
   additionalInputProps = {},
   rightIcon,
-  getCustomStyles,
+  isDynamicHeightEnabled,
   id,
+  classes = null,
+  showClearBtn,
+  onClear,
+  clearButtonRightOffset = 0,
+  getCustomStyles,
 }) => {
   const {
     padding,
@@ -46,6 +64,7 @@ export const BaseInput = ({
     borderColor,
     backgroundColor,
     textColor,
+    placeholderTextColor,
     boxShadow,
     width,
     alignment,
@@ -58,93 +77,106 @@ export const BaseInput = ({
     iconVisibility: showLeftIcon,
     icon,
     widthType,
+    labelFontSize,
   } = styles;
 
   const { label, placeholder } = properties;
+  const { contextPath } = useSubcontainerContext();
+  // A DOM id is unique per document, so a repeated row needs its own or every label points at row 1.
+  const domId = `component-${id}${contextPath.map((segment) => `-${segment.index}`).join('')}`;
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
+  const hasValue = value !== '' && value !== null && value !== undefined;
+  const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
+  const shouldOverridePlaceholderTextColor =
+    typeof placeholderTextColor === 'string' &&
+    placeholderTextColor.length > 0 &&
+    placeholderTextColor !== 'var(--cc-placeholder-text)';
+  const shouldUsePlaceholderTextColorForIcon =
+    shouldOverridePlaceholderTextColor &&
+    (!iconColor || iconColor === 'var(--cc-default-icon)' || iconColor === '#CFD3D859');
+  const computedIconColor = shouldUsePlaceholderTextColorForIcon
+    ? placeholderTextColor
+    : iconColor !== '#CFD3D859'
+    ? iconColor
+    : 'var(--icons-weak-disabled)';
 
-  const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
-    borderRadius: `${borderRadius}px`,
+  const inputStyles = {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disable || loading
       ? 'var(--text-disabled)'
       : 'var(--text-primary)',
-    borderColor: isFocused
-      ? accentColor != '4368E3'
-        ? accentColor
-        : 'var(--primary-accent-strong)'
-      : borderColor != '#CCD1D5'
-      ? borderColor
-      : disable || loading
-      ? '1px solid var(--borders-disabled-on-white)'
-      : 'var(--borders-default)',
-    '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
-    backgroundColor:
-      backgroundColor != '#fff'
-        ? backgroundColor
-        : disable || loading
-        ? darkMode
-          ? 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-03)'
-        : 'var(--surfaces-surface-01)',
-    boxShadow,
-    padding: showLeftIcon ? '8px 10px 8px 29px' : '8px 10px',
-    overflow: 'hidden',
     textOverflow: 'ellipsis',
+    backgroundColor: 'inherit',
+    ...(shouldOverridePlaceholderTextColor && { '--cc-placeholder-text': placeholderTextColor }),
   };
 
   let loaderStyle;
   // for textarea loader position is fixed on top right of input box.
   if (inputType !== 'textarea') {
     loaderStyle = {
-      right:
-        direction === 'right' &&
-        defaultAlignment === 'side' &&
-        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-          ? `${labelWidth + 11}px`
-          : '11px',
-      top:
-        defaultAlignment === 'top'
-          ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-            'calc(50% + 10px)'
-          : '',
-      transform:
-        defaultAlignment === 'top' &&
-        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-        ' translateY(-50%)',
       zIndex: 3,
     };
   } else {
     loaderStyle = {
-      right:
-        direction === 'right' &&
-        defaultAlignment === 'side' &&
-        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-          ? `${labelWidth + 11}px`
-          : '11px',
-      top: defaultAlignment === 'top' ? '30px' : '10px',
-      transform: 'none',
       zIndex: 3,
+      alignSelf: 'start',
     };
   }
 
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[icon] ?? Icons['IconHome2'];
-
-  const finalStyles = getCustomStyles ? getCustomStyles(computedStyles) : computedStyles;
+  const finalStyles = getCustomStyles ? getCustomStyles(inputStyles) : inputStyles;
+  const clearButtonBaseRight =
+    direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
+  const clearButtonRight =
+    clearButtonRightOffset > 0 ? `calc(${clearButtonBaseRight} + ${clearButtonRightOffset}px)` : clearButtonBaseRight;
+  const clearButtonTop =
+    inputType === 'textarea'
+      ? defaultAlignment === 'top'
+        ? '30px'
+        : '10px'
+      : defaultAlignment === 'top' && hasLabel
+      ? // Half the label's own height: the button is positioned against the whole widget,
+        // so it must be pushed down by half of whatever the top-aligned label consumes to
+        // land on the middle of the field. A fixed 10px was only correct at the 12px default.
+        `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)`
+      : '50%';
+  const clearButtonTransform = inputType === 'textarea' ? 'none' : 'translateY(-50%)';
+  const clearButton = shouldShowClearBtn ? (
+    <button
+      type="button"
+      className="tj-input-clear-btn"
+      aria-label="Clear"
+      onMouseDown={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClear?.();
+      }}
+      style={{
+        position: 'absolute',
+        right: clearButtonRight,
+        top: clearButtonTop,
+        transform: clearButtonTransform,
+        zIndex: 3,
+      }}
+    >
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+    </button>
+  ) : null;
 
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
         className={`text-input scrollbar-container d-flex ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
             ? 'flex-column'
-            : inputType != 'textarea' && 'align-items-center'
+            : ''
         } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
         ${visibility || 'invisible'}`}
@@ -152,6 +184,7 @@ export const BaseInput = ({
           position: 'relative',
           whiteSpace: 'nowrap',
           width: '100%',
+          height: '100%',
         }}
       >
         <Label
@@ -168,71 +201,107 @@ export const BaseInput = ({
           labelWidth={labelWidth}
           top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
           widthType={widthType}
-          inputId={`component-${id}`}
+          inputId={domId}
+          fontSize={labelFontSizeValue}
+          classes={{
+            labelContainer: cn({
+              'tw-self-center': inputType !== 'textarea' && defaultAlignment !== 'top',
+              'tw-flex-shrink-0': defaultAlignment === 'top',
+            }),
+          }}
+          dataCy={`${String(dataCy).toLowerCase()}`}
         />
 
-        {showLeftIcon && (
-          <IconElement
-            data-cy={'text-input-icon'}
-            style={{
-              width: '16px',
-              height: '16px',
-              left:
-                direction === 'right'
-                  ? '11px'
-                  : defaultAlignment === 'top'
-                  ? '11px'
-                  : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
-                  ? `${labelWidth + 11}px`
-                  : '11px',
-              position: 'absolute',
-              top:
-                inputType === 'textarea'
-                  ? defaultAlignment === 'top'
-                    ? '38px'
-                    : '18px'
-                  : defaultAlignment === 'side'
-                  ? '50%'
-                  : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
-                  ? 'calc(50% + 10px)'
-                  : '50%',
-              transform: 'translateY(-50%)',
-              color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
-              zIndex: 3,
-            }}
-            stroke={1.5}
-          />
-        )}
-        <RenderInput
-          inputType={inputType}
-          data-cy={dataCy}
-          ref={inputRef}
-          type={inputType}
-          className={`tj-text-input-widget ${
-            !isValid && showValidationError ? 'is-invalid' : ''
-          } validation-without-icon`}
-          value={value}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onFocus={handleFocus}
-          onKeyUp={handleKeyUp}
-          placeholder={placeholder}
+        <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
+          className={cn(
+            'tw-px-2.5 tw-py-2 tw-border tw-border-solid tw-flex tw-items-center tw-gap-1.5 tj-text-input-widget-container',
+            // The error border is an inline style, which the container's hover rule overrides
+            // with `!important`. This flag opts the field out of that rule so a revealed error
+            // survives the pointer passing over it.
+            { 'tj-input-has-error': !isValid && showValidationError },
+            classes?.inputContainer
+          )}
           style={{
-            ...finalStyles,
+            borderRadius: `${borderRadius}px`,
+            borderColor:
+              !isValid && showValidationError
+                ? 'var(--cc-error-systemStatus)'
+                : isFocused
+                ? accentColor != '4368E3'
+                  ? accentColor
+                  : 'var(--primary-accent-strong)'
+                : borderColor != '#CCD1D5'
+                ? borderColor
+                : disable || loading
+                ? '1px solid var(--borders-disabled-on-white)'
+                : 'var(--borders-default)',
+            '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
+            backgroundColor:
+              backgroundColor != '#fff'
+                ? backgroundColor
+                : disable || loading
+                ? darkMode
+                  ? 'var(--surfaces-app-bg-default)'
+                  : 'var(--surfaces-surface-03)'
+                : 'var(--surfaces-surface-01)',
+            boxShadow,
+            ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
+            ...(defaultAlignment === 'top' &&
+              label?.length != 0 && {
+                height: `calc(100% - ${getLabelHeight(labelFontSize)}px - ${
+                  padding === 'default' ? BOX_PADDING * 2 : 0
+                }px)`,
+                flex: 1,
+              }),
             ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
           }}
-          {...additionalInputProps}
-          id={`component-${id}`}
-          aria-disabled={disable || loading}
-          aria-busy={loading}
-          aria-required={isMandatory}
-          aria-hidden={!visibility}
-          aria-invalid={!isValid && showValidationError}
-          aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
-        />
+        >
+          {showLeftIcon && (
+            <TablerIcon
+              iconName={icon}
+              data-cy={`${String(dataCy).toLowerCase()}-icon`}
+              className={cn('tw-shrink-0', classes?.leftIcon)}
+              style={{
+                width: '16px',
+                height: '16px',
+                color: computedIconColor,
+                zIndex: 3,
+                ...(inputType === 'textarea' && { alignSelf: 'start' }),
+              }}
+              stroke={2}
+            />
+          )}
 
-        {rightIcon}
-        {loading && <Loader style={loaderStyle} width="16" />}
+          <RenderInput
+            inputType={inputType}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
+            ref={inputRef}
+            type={inputType}
+            className={cn(
+              `tj-text-input-widget ${!isValid && showValidationError ? 'is-invalid' : ''} validation-without-icon`,
+              classes?.input
+            )}
+            value={value}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            onKeyUp={handleKeyUp}
+            placeholder={placeholder}
+            style={finalStyles}
+            {...additionalInputProps}
+            id={domId}
+            disabled={disable || loading}
+            aria-disabled={disable || loading}
+            aria-busy={loading}
+            aria-required={isMandatory}
+            aria-hidden={!visibility}
+            aria-invalid={!isValid && showValidationError}
+            aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
+          />
+          {clearButton}
+          {loading ? <Loader classes={classes} style={loaderStyle} absolute={false} width="16" /> : rightIcon}
+        </div>
       </div>
 
       {showValidationError && visibility && (

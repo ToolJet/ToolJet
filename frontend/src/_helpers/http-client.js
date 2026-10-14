@@ -3,6 +3,7 @@ import { authenticationService } from '@/_services';
 import urlJoin from 'url-join';
 import { isEmpty } from 'lodash';
 import { handleUnSubscription } from '@/_helpers/utils';
+import { refreshSsoInfo } from '@/_helpers/refreshSsoInfo';
 
 const HttpVerb = {
   Get: 'GET',
@@ -14,12 +15,20 @@ const HttpVerb = {
 
 class HttpClient {
   constructor(args = {}) {
-    this.host = args.host ?? config.apiUrl;
+    this._host = args.host;
+    this._hostFn = args.hostFn;
     this.namespace = args.namespace || ''; // TODO: add versioning (/v1) to all endpoints (https://docs.nestjs.com/techniques/versioning#uri-versioning-type)
     this.headers = {
       'content-type': 'application/json',
       ...args.headers,
     };
+  }
+
+  // Lazy getter: config.apiUrl is mutated after module load on custom domains
+  // (see index.jsx), so we must read it at request time, not construction time.
+  get host() {
+    if (this._hostFn) return this._hostFn();
+    return this._host ?? config.apiUrl;
   }
 
   extractResponseHeaders(response) {
@@ -61,14 +70,31 @@ class HttpClient {
       statusText: response.statusText,
       headers: this.extractResponseHeaders(response),
     };
+
+    // Check if OIDC tokens were refreshed on the backend.
+    // Also checked in handle-response.js to cover both HttpClient and legacy fetch call paths.
+    if (response.headers.get('X-SSO-Info-Updated') === 'true') {
+      refreshSsoInfo(); // Fire-and-forget — don't block the current request
+    }
+
     const text = await response.text();
     try {
       payload.data = isEmpty(text) ? text : JSON.parse(text);
       if (!response.ok) {
         // TODO: add 403 to the below [401] array?
         if ([401].indexOf(response.status) !== -1) {
-          // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
-          location.reload();
+          // Skip redirect on app-scoped auth pages — they handle their own auth
+          const isAppAuthPage = /^\/applications\/[^/]+\/(login|signup|forgot-password|reset-password)/.test(
+            window.location.pathname
+          );
+          // Skip reload for public app viewers — they operate without auth,
+          // so 401 on authenticated-only endpoints is expected and not an error
+          const currentSession = authenticationService?.currentSessionValue;
+          const isPublicAppAccess = currentSession?.authentication_failed && currentSession?.load_app;
+          if (!isAppAuthPage && !isPublicAppAccess) {
+            // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
+            location.reload();
+          }
         }
 
         throw payload;

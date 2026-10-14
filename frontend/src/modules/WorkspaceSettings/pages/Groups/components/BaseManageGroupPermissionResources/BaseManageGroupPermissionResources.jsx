@@ -4,7 +4,7 @@ import { groupPermissionV2Service, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
-import ErrorBoundary from '@/Editor/ErrorBoundary';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import { FilterPreview, MultiSelectUser } from '@/_components';
@@ -22,8 +22,10 @@ import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
 import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
+import ModulePermissionsUI from '../ModulePermissionsUI';
 import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import VirtualizedUserList from './VirtualizedUserList';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -62,11 +64,22 @@ class BaseManageGroupPermissionResources extends React.Component {
       autoRoleChangeModalList: [],
       autoRoleChangeMessageType: '',
       updateParam: {},
+      hasEndUserMembers: false, // Whether this custom group contains any end-users
+      endUserIds: null, // Cache of end-user IDs to avoid repeated API calls
     };
+    this.userListRef = React.createRef();
+    this.searchDebounceTimer = null;
   }
 
   componentDidMount() {
     if (this.props.groupPermissionId) this.fetchGroupAndResources(this.props.groupPermissionId);
+  }
+
+  componentWillUnmount() {
+    // Clean up debounce timer
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -75,33 +88,44 @@ class BaseManageGroupPermissionResources extends React.Component {
       this.setState({
         showUserSearchBox: false,
         currentTab: 'users',
+        hasEndUserMembers: false, // Reset when switching groups
+        endUserIds: null, // Reset cache
       });
     }
   }
 
   fetchGroupPermission = (groupPermissionId) => {
-    groupPermissionV2Service.getGroup(groupPermissionId).then(({ group, isBuilderLevel }) => {
-      this.setState((prevState) => {
-        return {
-          isRoleGroup: group.type === 'default',
-          groupPermission: group,
-          currentTab: prevState.currentTab,
-          isLoadingGroup: false,
-          isBuilderLevel: isBuilderLevel,
-        };
+    return groupPermissionV2Service.getGroup(groupPermissionId).then(({ group, isBuilderLevel }) => {
+      return new Promise((resolve) => {
+        this.setState(
+          (prevState) => {
+            return {
+              isRoleGroup: group.type === 'default',
+              groupPermission: group,
+              currentTab: prevState.currentTab,
+              isLoadingGroup: false,
+              isBuilderLevel: isBuilderLevel,
+            };
+          },
+          () => {
+            this.setSelectedUsers([]);
+            resolve(group);
+          }
+        );
       });
-      this.setSelectedUsers([]);
     });
   };
 
   fetchGroupAndResources = (groupPermissionId) => {
     this.setState({ isLoadingGroup: true });
-    this.fetchGroupPermission(groupPermissionId);
-    this.fetchUsersInGroup(groupPermissionId);
+    // Fetch group first to ensure groupPermission is in state before checking for end-users
+    this.fetchGroupPermission(groupPermissionId).then(() => {
+      this.fetchUsersInGroup(groupPermissionId);
+    });
   };
 
   userFullName = (user) => {
-    return `${user?.first_name} ${user?.last_name ?? ''}`;
+    return `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
   };
 
   searchUsersNotInGroup = async (query, groupPermissionId) => {
@@ -111,8 +135,9 @@ class BaseManageGroupPermissionResources extends React.Component {
         .then((users) => {
           resolve(
             users.map((user) => {
+              const fullName = `${user.firstName || ''}   ${user.lastName || ''}`.trim();
               return {
-                name: `${this.userFullName(user)} (${user.email})`,
+                name: `${fullName} (${user.email})`,
                 value: user.id,
                 first_name: user.firstName,
                 last_name: user.lastName,
@@ -128,11 +153,53 @@ class BaseManageGroupPermissionResources extends React.Component {
 
   fetchUsersInGroup = (groupPermissionId, searchString = '') => {
     groupPermissionV2Service.getUsersInGroup(groupPermissionId, searchString).then((data) => {
-      this.setState({
-        usersInGroup: data,
-        isLoadingUsers: false,
-      });
+      this.setState(
+        {
+          usersInGroup: data,
+          isLoadingUsers: false,
+        },
+        () => {
+          // After users are loaded, check if this custom group has end-users
+          this.checkForEndUsersInGroup();
+        }
+      );
     });
+  };
+
+  // Check if the current group (must be custom) contains any end-user role members
+  checkForEndUsersInGroup = async () => {
+    const { groupPermission, usersInGroup, endUserIds } = this.state;
+
+    // Only check for custom groups
+    if (groupPermission?.type !== 'custom') {
+      return;
+    }
+
+    // If group has no users, there are no end-users
+    if (usersInGroup.length === 0) {
+      this.setState({ hasEndUserMembers: false });
+      return;
+    }
+
+    // Get end-user IDs (use cache if available)
+    let endUsers = endUserIds;
+    if (!endUsers) {
+      const groupsResponse = await groupPermissionV2Service.getGroups();
+      const groups = groupsResponse.groupPermissions || [];
+      const endUserGroup = groups.find((g) => g.name === 'end-user' && g.type === 'default');
+
+      if (endUserGroup) {
+        const endUserMembers = await groupPermissionV2Service.getUsersInGroup(endUserGroup.id);
+        endUsers = new Set(endUserMembers.map((eu) => eu.userId));
+        this.setState({ endUserIds: endUsers });
+      } else {
+        return;
+      }
+    }
+
+    // Check if any user in this group is also in the end-user group
+    const hasEndUserMembers = usersInGroup.some((ug) => endUsers.has(ug.userId));
+    this.setState({ hasEndUserMembers });
   };
 
   clearErrorState = () => {
@@ -273,7 +340,7 @@ class BaseManageGroupPermissionResources extends React.Component {
           <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.ai/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -360,7 +427,13 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   handleUserSearchInGroup = (e) => {
-    this.fetchUsersInGroup(this.props.groupPermissionId, e?.target?.value);
+    const searchValue = e?.target?.value;
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+    this.searchDebounceTimer = setTimeout(() => {
+      this.fetchUsersInGroup(this.props.groupPermissionId, searchValue);
+    }, 300);
   };
 
   toggleUserTabSearchBox = () => {
@@ -458,15 +531,31 @@ class BaseManageGroupPermissionResources extends React.Component {
 
     const { featureAccess } = this.props;
 
-    const { licenseStatus: { isExpired, isLicenseValid } = {} } = featureAccess || {};
-    const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid;
-    const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid;
+    const { licenseStatus: { isExpired, isLicenseValid, licenseType } = {}, plan } = featureAccess || {};
+    // Treat basic, starter and basicplus plans as restricted plans
+    const isBasicPlan =
+      featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter' || plan === 'basicplus';
+    const isPaidPlan =
+      featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter' && plan !== 'basicplus';
+    const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
     const showPermissionInfo =
       isRoleGroup && (groupPermission?.name === 'admin' || groupPermission?.name === 'end-user');
     const disablePermissionUpdate =
       isBasicPlan || groupPermission?.name === 'admin' || groupPermission?.name === 'end-user';
+
+    const disableNonPromoteReleasePermissions =
+      disablePermissionUpdate ||
+      (groupPermission?.type === 'default' && groupPermission?.name === 'builder' && !featureAccess?.customGroups);
+
+    // Check if this group contains any end-user role members
+    // For default end-user group: always true
+    // For custom groups: check hasEndUserMembers from state
+    const { hasEndUserMembers } = this.state;
+    const hasEndUsers =
+      (groupPermission?.name === 'end-user' && groupPermission?.type === 'default') ||
+      (groupPermission?.type === 'custom' && hasEndUserMembers);
 
     return (
       <ErrorBoundary showFallback={false}>
@@ -742,6 +831,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                             iconWidth="15"
                             fill="#889096"
                             className="search-user-group-btn"
+                            data-cy="user-group-search-btn"
                           />
                           <p className="tj-text-xsm" data-cy="name-header" style={{ padding: '10px' }}>
                             User name
@@ -753,8 +843,8 @@ class BaseManageGroupPermissionResources extends React.Component {
                         </div>
                       )}
 
-                      <section className="group-users-list-container">
-                        {isLoadingGroup || isLoadingUsers ? (
+                      {isLoadingGroup || isLoadingUsers ? (
+                        <section className="group-users-list-container">
                           <tr>
                             <td className="col-auto">
                               <div className="row">
@@ -768,72 +858,17 @@ class BaseManageGroupPermissionResources extends React.Component {
                               <div className="skeleton-line w-10"></div>
                             </td>
                           </tr>
-                        ) : usersInGroup.length > 0 ? (
-                          usersInGroup.map((item) => {
-                            const user = item.user;
-                            const groupUserId = item.id;
-                            return (
-                              <div
-                                key={user.id}
-                                className="manage-group-users-row"
-                                data-cy={`${String(user.email).toLowerCase().replace(/\s+/g, '-')}-user-row`}
-                                style={{ alignItems: 'center' }}
-                              >
-                                <p className="tj-text-sm d-flex align-items-center">
-                                  <Avatar
-                                    className="name-avatar"
-                                    avatarId={user?.avatarId}
-                                    text={`${user.firstName ? user.firstName[0] : ''}${
-                                      user.lastName ? user.lastName[0] : ''
-                                    }`}
-                                  />
-                                  <span>{`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}</span>
-                                </p>
-                                <p className="tj-text-sm d-flex align-items-center" style={{ paddingLeft: '12px' }}>
-                                  <span> {user.email}</span>
-                                </p>
-                                <p className="tj-text-sm d-flex align-items-center">
-                                  <div className="d-flex align-items-center edit-role-btn">
-                                    {!isRoleGroup && (
-                                      <Link to="#" className="remove-decoration">
-                                        <ButtonSolid
-                                          variant="dangerSecondary"
-                                          className="apps-remove-btn remove-decoration tj-text-xsm font-weight-600"
-                                          onClick={() => {
-                                            this.removeUserFromGroup(groupUserId);
-                                          }}
-                                          leftIcon="remove"
-                                          fill="#F3B0A2"
-                                          iconWidth="18"
-                                          data-cy="remove-button"
-                                        >
-                                          {this.props.t('globals.remove', 'Remove')}
-                                        </ButtonSolid>
-                                      </Link>
-                                    )}
-                                  </div>
-                                  {isRoleGroup && (
-                                    <div className="edit-role-btn">
-                                      <ButtonSolid
-                                        variant="tertiary"
-                                        iconWidth="17"
-                                        fill="var(--slate9)"
-                                        className="apps-remove-btn remove-decoration tj-text-xsm font-weight-600"
-                                        leftIcon="editable"
-                                        onClick={() => {
-                                          this.openChangeRoleModal(user);
-                                        }}
-                                        data-cy="edit-role-button"
-                                      >
-                                        Edit role
-                                      </ButtonSolid>
-                                    </div>
-                                  )}
-                                </p>
-                              </div>
-                            );
-                          })
-                        ) : !showUserSearchBox ? (
+                        </section>
+                      ) : usersInGroup.length > 0 ? (
+                        <VirtualizedUserList
+                          users={usersInGroup}
+                          isRoleGroup={isRoleGroup}
+                          removeUserFromGroup={this.removeUserFromGroup}
+                          openChangeRoleModal={this.openChangeRoleModal}
+                          t={this.props.t}
+                        />
+                      ) : !showUserSearchBox ? (
+                        <section className="group-users-list-container">
                           <div className="manage-groups-no-apps-wrap">
                             <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
                               <BulkIcon name="users" fill="#3E63DD" width="48" />
@@ -846,7 +881,9 @@ class BaseManageGroupPermissionResources extends React.Component {
                               <br /> permissions for them!
                             </span>
                           </div>
-                        ) : (
+                        </section>
+                      ) : (
+                        <section className="group-users-list-container">
                           <div className="manage-groups-no-apps-wrap">
                             <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
                               <SolidIcon name="warning-user-notfound" width="48" />
@@ -859,8 +896,8 @@ class BaseManageGroupPermissionResources extends React.Component {
                               try changing the filters and try again.
                             </span>
                           </div>
-                        )}
-                      </section>
+                        </section>
+                      )}
                     </div>
                   </div>
 
@@ -924,14 +961,16 @@ class BaseManageGroupPermissionResources extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.appCreate}
-                                          disabled={disablePermissionUpdate}
+                                          disabled={disableNonPromoteReleasePermissions}
                                           data-cy="app-create-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="app-create-label">
                                           {this.props.t('globals.create', 'Create')}
                                         </span>
                                         <span
-                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          class={`tj-text-xxsm ${
+                                            disableNonPromoteReleasePermissions && 'check-label-disable'
+                                          }`}
                                           data-cy="app-create-helper-text"
                                         >
                                           Create apps in this workspace
@@ -950,14 +989,16 @@ class BaseManageGroupPermissionResources extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.appDelete}
-                                          disabled={disablePermissionUpdate}
+                                          disabled={disableNonPromoteReleasePermissions}
                                           data-cy="app-delete-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="app-delete-label">
                                           {this.props.t('globals.delete', 'Delete')}
                                         </span>
                                         <span
-                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          class={`tj-text-xxsm ${
+                                            disableNonPromoteReleasePermissions && 'check-label-disable'
+                                          }`}
                                           data-cy="app-delete-helper-text"
                                         >
                                           Delete any app in this workspace
@@ -970,15 +1011,26 @@ class BaseManageGroupPermissionResources extends React.Component {
                                         disablePermissionUpdate={disablePermissionUpdate}
                                         updateGroupPermission={this.updateGroupPermission}
                                         updateState={this.updateParamState}
+                                        featureAccess={featureAccess}
+                                        isBasicPlan={isBasicPlan}
                                       />
                                     </div>
                                   </div>
                                   {/* //App till here */}
                                 </div>
-                                {/* Worklfow Permission */}
+
+                                {/* Module Permission */}
+                                <ModulePermissionsUI
+                                  groupPermission={groupPermission}
+                                  disablePermissionUpdate={disableNonPromoteReleasePermissions}
+                                  updateGroupPermission={this.updateGroupPermission}
+                                  updateState={this.updateParamState}
+                                />
+
+                                {/* Workflow Permission */}
                                 <WorkflowPermissionsUI
                                   groupPermission={groupPermission}
-                                  disablePermissionUpdate={disablePermissionUpdate}
+                                  disablePermissionUpdate={disableNonPromoteReleasePermissions}
                                   updateGroupPermission={this.updateGroupPermission}
                                   updateState={this.updateParamState}
                                 />
@@ -986,7 +1038,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                 {/* Data source */}
                                 <DataSourcePermissionsUI
                                   groupPermission={groupPermission}
-                                  disablePermissionUpdate={disablePermissionUpdate}
+                                  disablePermissionUpdate={disableNonPromoteReleasePermissions}
                                   updateGroupPermission={this.updateGroupPermission}
                                   updateState={this.updateParamState}
                                 />
@@ -1012,7 +1064,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.folderCRUD}
-                                          disabled={disablePermissionUpdate}
+                                          disabled={disableNonPromoteReleasePermissions}
                                           data-cy="folder-create-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="folder-create-label">
@@ -1022,7 +1074,9 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           )}
                                         </span>
                                         <span
-                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          class={`tj-text-xxsm ${
+                                            disableNonPromoteReleasePermissions && 'check-label-disable'
+                                          }`}
                                           data-cy="folder-helper-text"
                                         >
                                           All operations on folders
@@ -1050,7 +1104,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.orgConstantCRUD}
-                                          disabled={disablePermissionUpdate}
+                                          disabled={disableNonPromoteReleasePermissions}
                                           data-cy="env-variable-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="workspace-variable-create-label">
@@ -1060,10 +1114,55 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           )}
                                         </span>
                                         <span
-                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          class={`tj-text-xxsm ${
+                                            disableNonPromoteReleasePermissions && 'check-label-disable'
+                                          }`}
                                           data-cy="workspace-constants-helper-text"
                                         >
                                           All operations on workspace constants
+                                        </span>
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="manage-groups-permission-apps">
+                                  <div data-cy="resource-tjdb">
+                                    {this.props.t(
+                                      'header.organization.menus.manageGroups.permissionResources.tooljetDatabase',
+                                      'ToolJet Database'
+                                    )}
+                                  </div>
+                                  <div className="text-muted">
+                                    <div className="d-flex apps-permission-wrap flex-column">
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              tjdbCRUD: !groupPermission.tjdbCRUD,
+                                            });
+                                            this.setState({
+                                              updateParam: { tjdbCRUD: !groupPermission.tjdbCRUD },
+                                            });
+                                          }}
+                                          checked={groupPermission.tjdbCRUD}
+                                          disabled={disableNonPromoteReleasePermissions}
+                                          data-cy="tjdb-create-checkbox"
+                                        />
+                                        <span className="form-check-label" data-cy="tjdb-create-label">
+                                          {this.props.t(
+                                            'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
+                                            'Create/Update/Delete'
+                                          )}
+                                        </span>
+                                        <span
+                                          className={`tj-text-xxsm ${
+                                            disableNonPromoteReleasePermissions && 'check-label-disable'
+                                          }`}
+                                          data-cy="tjdb-helper-text"
+                                        >
+                                          All operations on ToolJet Database
                                         </span>
                                       </label>
                                     </div>
@@ -1087,6 +1186,9 @@ class BaseManageGroupPermissionResources extends React.Component {
                       fetchGroup={this.fetchGroupPermission}
                       darkMode={this.props.darkMode}
                       isBasicPlan={isBasicPlan}
+                      isFeatureEnabled={isFeatureEnabled}
+                      isModulesEnabled={isModulesEnabled}
+                      hasEndUsers={hasEndUsers}
                     />
                   </aside>
                 </div>

@@ -1,16 +1,11 @@
 import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
-import {
-  verifyandModifyUserRole,
-  verifyandModifySizeOftheCompany,
-} from "Support/utils/selfHostSignUp";
-import { navigateToManageUsers, logout } from "Support/utils/common";
-import { ssoSelector } from "Selectors/manageSSO";
-import { ssoText } from "Texts/manageSSO";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { ssoSelector } from "Selectors/platform/manageSSO";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
+import { logout, navigateToManageUsers } from "Support/utils/common";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
-import { onboardingText } from "Texts/onboarding";
+import { commonText } from "Texts/common";
+import { ssoText } from "Texts/platform/manageSSO";
+import { onboardingText } from "Texts/platform/onboarding";
 
 export const verifyConfirmEmailPage = (email) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
@@ -68,7 +63,6 @@ export const verifyInvalidInvitationLink = () => {
 };
 
 export const userSignUp = (fullName, email, workspaceName = "test") => {
-  let invitationLink;
   cy.intercept("GET", "/api/login-configs/public").as("publicConfig");
   cy.visit("/");
   cy.wait("@publicConfig");
@@ -85,20 +79,11 @@ export const userSignUp = (fullName, email, workspaceName = "test") => {
   cy.get(commonSelectors.signUpButton).click();
 
   cy.wait(2500);
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select invitation_token from users where email='${email}';`,
-  }).then((resp) => {
-    invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
-    cy.visit(invitationLink);
-    cy.wait(2500);
-  });
   if (Cypress.env("environment") == "Cloud") {
     cy.clearAndType(
       '[data-cy="onboarding-workspace-name-input"]',
       workspaceName
     );
-    cy.get('[data-cy="onboarding-submit-button"]').click();
   }
 };
 
@@ -109,7 +94,7 @@ export const inviteUser = (firstName, email) => {
   cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
   cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   // cy.intercept("GET", "/api/organizations").as("org");
-  cy.get(commonSelectors.continueButton).click();
+  cy.get(commonSelectors.signUpButton).click();
   cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
 };
@@ -316,7 +301,16 @@ export const onboardingStepTwo = (workspaceName = "My workspace") => {
   cy.get(commonSelectors.workspaceNameInputLabel)
     .should("be.visible")
     .and("have.text", commonText.workspaceNameInputLabel);
+
+  cy.waitForElement(commonSelectors.workspaceNameInputField);
+  cy.wait(500);
+
   cy.clearAndType(commonSelectors.workspaceNameInputField, workspaceName);
+  cy.get(commonSelectors.workspaceNameInputField).verifyVisibleElement(
+    "have.value",
+    workspaceName
+  );
+
   cy.get(commonSelectors.OnbordingContinue)
     .verifyVisibleElement("have.text", "Continue")
     .click();
@@ -387,9 +381,7 @@ export const userMetadataOnboarding = (
   cy.apiUserInvite(firstName, email, userRole, metadata);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  cy.get(commonSelectors.continueButton).click();
-  cy.get(commonSelectors.acceptInviteButton).click();
+  enterPasswordAndAcceptInvite();
   return cy.wrap(metadataCount);
 };
 
@@ -414,4 +406,13 @@ export const selectUserGroup = (groupName) => {
   cy.get(onboardingSelectors.userGroupSelect)
     .should("contain.text", groupName)
     .click();
+};
+
+export const enterPasswordAndAcceptInvite = (password = "password") => {
+  cy.waitForElement(onboardingSelectors.loginPasswordInput);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
+  cy.waitForElement(commonSelectors.signUpButton);
+  cy.get(commonSelectors.signUpButton).click();
+  cy.waitForElement(commonSelectors.acceptInviteButton);
+  cy.get(commonSelectors.acceptInviteButton).click();
 };

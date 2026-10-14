@@ -19,6 +19,7 @@ import {
   sanitizeSearchParams,
   fetchHttpsCertsForCustomCA,
   sanitizeSortPairs,
+  getTooljetEdition,
 } from './utils.helper';
 import { ConnectionTestResult } from './connection_test_result.type';
 import {
@@ -30,6 +31,14 @@ import {
   checkIfContentTypeIsJson,
   validateAndSetRequestOptionsBasedOnAuthType,
 } from './oauth';
+import {
+  validateUrlForSSRF,
+  validateUrlForSSRFSync,
+  isPrivateIP,
+  getSSRFConfig,
+  getSSRFProtectionOptions,
+} from './ssrf-protection';
+import { QueryBuilder, QueryBuilderError, createQueryBuilder } from './queryBuilder';
 
 export {
   QueryError,
@@ -61,4 +70,13 @@ export {
   redactHeaders,
   cookiesToString,
   sanitizeSortPairs,
+  validateUrlForSSRF,
+  validateUrlForSSRFSync,
+  isPrivateIP,
+  getSSRFConfig,
+  getSSRFProtectionOptions,
+  getTooljetEdition,
+  QueryBuilder,
+  QueryBuilderError,
+  createQueryBuilder,
 };

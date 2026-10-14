@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Accordion from '@/_ui/Accordion';
+import { v4 as uuidv4 } from 'uuid';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
-import { renderElement } from '../Utils';
+import { renderElement, validateStaticId, trimStaticId } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import List from '@/ToolJetUI/List/List';
@@ -13,7 +15,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';;
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -34,11 +36,19 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     component?.component?.definition?.properties?.useDynamicOptions?.value,
     currentState
   );
+  const commonBackgroundColor = component?.component?.definition?.styles?.commonBackgroundColor?.value;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
+  const getContainerChildrenMapping = useStore((state) => state.getContainerChildrenMapping, shallow);
 
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
   const [hoveredTabItemIndex, setHoveredTabItemIndex] = useState(null);
+  // Bumped per row (by `_key`) to force just that row's Id field to remount and re-seed.
+  const [idFieldResetKeys, setIdFieldResetKeys] = useState({});
+  const bumpIdFieldResetKey = (itemKey) => {
+    setIdFieldResetKeys((prev) => ({ ...prev, [itemKey]: (prev[itemKey] || 0) + 1 }));
+  };
   let properties = [];
   let additionalActions = [];
 
@@ -61,6 +71,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     }
     return tabItems?.map((tabItem) => {
       const newTabItem = { ...tabItem };
+      // Stable row identity, independent of the editable `id`/`title`; backfilled for legacy items.
+      newTabItem._key = tabItem._key || uuidv4();
 
       Object.keys(tabItem)?.forEach((key) => {
         if (typeof tabItem[key]?.value === 'boolean') {
@@ -90,12 +102,13 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
 
       return {
         id,
+        _key: uuidv4(),
         title,
         visible: { value: '{{true}}' },
         disable: { value: '{{false}}' },
         iconVisibility: { value: '{{false}}' },
         icon: { value: 'IconHome2' },
-        fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+        fieldBackgroundColor: { value: commonBackgroundColor },
       };
     };
 
@@ -131,12 +144,49 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     reorderTabItems(source.index, destination.index);
   };
 
-  const handleValueChange = (item, value, property, index) => {
+  const handleOnFxPress = (item, property, active) => {
     const updatedTabItems = tabItems.map((tabItem) => {
       if (tabItem.id === item.id) {
         return {
           ...tabItem,
-          [property]: value,
+          [property]: {
+            ...tabItem[property],
+            fxActive: active,
+          },
+        };
+      }
+      return tabItem;
+    });
+    setTabItems(updatedTabItems);
+    updateAllTabItemsParams(updatedTabItems);
+  };
+
+  const handleValueChange = (item, rawValue, property, index) => {
+    // Store id trimmed, matching what was validated.
+    const value = property === 'id' ? trimStaticId(rawValue) : rawValue;
+
+    // Reject a colliding id outright, even locally (matches Nav's fix), and bump
+    // the row's reset key so its Id field snaps back to the current id.
+    if (property === 'id') {
+      const [isValid] = validateTabId(value, item?.id);
+      if (!isValid) {
+        bumpIdFieldResetKey(item._key);
+        return;
+      }
+      // Nothing else would resync the field's own displayed text after a trim.
+      if (value !== rawValue) bumpIdFieldResetKey(item._key);
+    }
+
+    const updatedTabItems = tabItems.map((tabItem) => {
+      if (tabItem.id === item.id) {
+        return {
+          ...tabItem,
+          [property]: ['title', 'id'].includes(property)
+            ? value
+            : {
+                ...tabItem[property],
+                ...value,
+              },
         };
       }
       return tabItem;
@@ -145,9 +195,29 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     setTabItems(updatedTabItems);
 
     if (property === 'id') {
-      const [isValid] = validateTabId(value, item?.id);
-      if (!isValid) {
-        return;
+      const tabsComponentId = component.id;
+      const oldTabId = item.id;
+      const newTabId = value;
+
+      const oldParentId = `${tabsComponentId}-${oldTabId}`;
+      const newParentId = `${tabsComponentId}-${newTabId}`;
+
+      // Collect all child components that need to be reparented
+      const childIdsToReparent = getContainerChildrenMapping(oldParentId);
+
+      // Batch update all parent changes together using setComponentLayout
+      if (childIdsToReparent.length > 0) {
+        const batchLayouts = childIdsToReparent.reduce((layouts, childId) => {
+          // Use empty layout object since we only want to update the parent
+          layouts[childId] = {};
+          return layouts;
+        }, {});
+
+        setComponentLayout(batchLayouts, newParentId, 'canvas', {
+          updateParent: true,
+          skipUndoRedo: false,
+          saveAfterAction: true,
+        });
       }
     }
 
@@ -187,26 +257,17 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     updateAllTabItemsParams(updatedTabItems);
   };
 
-  const validateTabId = (value, currentItemId) => {
-    if (value === null || value === undefined || value === '') {
-      return [false, 'Tab ID cannot be empty'];
-    }
-
-    const stringValue = String(value);
-    const trimmedValue = stringValue.trim();
-
-    if (!trimmedValue) {
-      return [false, 'Tab ID cannot be empty'];
-    }
-
-    const duplicateTab = tabItems.find((tabItem) => tabItem.id === trimmedValue && tabItem.id !== currentItemId);
-
-    if (duplicateTab) {
-      return [false, 'Tab ID must be unique. This ID is already used by another tab.'];
-    }
-
-    return [true, null];
-  };
+  const validateTabId = (value, currentItemId) =>
+    validateStaticId(
+      value,
+      tabItems.map((tab) => tab.id),
+      currentItemId,
+      {
+        emptyMessage: 'Tab ID cannot be empty',
+        bindingMessage: 'Tab ID cannot contain a dynamic binding ({{ }}). Use a plain, static value.',
+        duplicateMessage: 'Tab ID must be unique. This ID is already used by another tab.',
+      }
+    );
 
   const areAllTabIdsValid = () => {
     const ids = tabItems.map((tab) => tab.id);
@@ -216,7 +277,9 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
 
   const updateAllTabItemsParams = (tabItems) => {
     if (areAllTabIdsValid()) {
-      paramUpdated({ name: 'tabItems' }, 'value', tabItems, 'properties', false);
+      // `_key` is render-only identity; strip before persisting.
+      const itemsToPersist = tabItems.map(({ _key, ...tabItem }) => tabItem);
+      paramUpdated({ name: 'tabItems' }, 'value', itemsToPersist, 'properties', false);
     }
   };
 
@@ -248,6 +311,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               {'Id'}
             </label>
             <CodeHinter
+              key={idFieldResetKeys[item._key] || 0}
               currentState={currentState}
               type={'basic'}
               initialValue={item?.id}
@@ -314,6 +378,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => {
                 handleValueChange(item, { value }, 'loading', index);
               }}
+              onFxPress={(active) => handleOnFxPress(item, 'loading', active)}
+              fxActive={item?.loading?.fxActive}
               fieldMeta={{ type: 'toggle', displayName: 'Loading' }}
               paramType={'toggle'}
             />
@@ -331,7 +397,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Visibility'}
               onChange={(value) => handleValueChange(item, { value }, 'visible', index)}
               paramName={'visible'}
-              onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
+              onFxPress={(active) => handleOnFxPress(item, 'visible', active)}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -352,7 +418,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Disable'}
               paramName={'disable'}
               onChange={(value) => handleValueChange(item, { value }, 'disable', index)}
-              onFxPress={(active) => handleOnFxPress(active, index, 'disable')}
+              onFxPress={(active) => handleOnFxPress(item, 'disable', active)}
               fxActive={item?.disable?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -386,8 +452,9 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             {({ innerRef, droppableProps, placeholder }) => (
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {tabItems?.map((item, index) => {
+                  const dragId = item._key || item.title + item.id;
                   return (
-                    <Draggable key={item.title + item.id} draggableId={item.title + item.id} index={index}>
+                    <Draggable key={dragId} draggableId={dragId} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
@@ -401,6 +468,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                             trigger="click"
                             placement="left"
                             rootClose
+                            show={activeColumnPopoverIndex === index}
                             overlay={_renderOverlay(item, index)}
                             onToggle={(show) => {
                               if (show) {
@@ -526,6 +594,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `Additional Actions`,
     isOpen: true,
     children: additionalActions.map((property) => {

@@ -14,6 +14,7 @@ const WHITE_LABEL_OPTIONS = {
   WHITE_LABEL_TEXT: 'white_label_text',
   WHITE_LABEL_LOGO: 'white_label_logo',
   WHITE_LABEL_FAVICON: 'white_label_favicon',
+  WHITE_LABEL_BANNER: 'white_label_banner',
 };
 
 const initialState = {
@@ -21,6 +22,7 @@ const initialState = {
   whiteLabelText: DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_TEXT,
   whiteLabelLogo: DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_LOGO,
   whiteLabelFavicon: DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_FAVICON,
+  whiteLabelBanner: null,
   loadingWhiteLabelDetails: true,
   isWhiteLabelDetailsFetched: false,
 };
@@ -46,6 +48,7 @@ export const useWhiteLabellingStore = create(
                   whiteLabelText: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_TEXT],
                   whiteLabelLogo: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_LOGO],
                   whiteLabelFavicon: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_FAVICON],
+                  whiteLabelBanner: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_BANNER] || null,
                   loadingWhiteLabelDetails: false,
                   isWhiteLabelDetailsFetched: true,
                   isDefaultWhiteLabel: settings.is_default,
@@ -79,4 +82,5 @@ export const useWhiteLabellingStore = create(
 export const useWhiteLabelText = () => useWhiteLabellingStore((state) => state.whiteLabelText);
 export const useWhiteLabelLogo = () => useWhiteLabellingStore((state) => state.whiteLabelLogo);
 export const useWhiteLabelFavicon = () => useWhiteLabellingStore((state) => state.whiteLabelFavicon);
+export const useWhiteLabelBanner = () => useWhiteLabellingStore((state) => state.whiteLabelBanner);
 export const useWhiteLabellingActions = () => useWhiteLabellingStore((state) => state.actions);

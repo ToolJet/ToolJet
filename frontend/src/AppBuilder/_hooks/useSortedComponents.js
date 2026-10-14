@@ -1,8 +1,9 @@
 import { useMemo, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { getOrderedFlexChildrenFromSnapshot } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
-const useSortedComponents = (components, currentLayout, id, moduleId) => {
+const useSortedComponents = (components, currentLayout, id, moduleId, isFlexContainer = false) => {
   const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents, shallow);
   // Only subscribe to reorderContainerChildren when it's relevant to this specific container
   const reorderContainerChildren = useStore((state) => {
@@ -16,7 +17,10 @@ const useSortedComponents = (components, currentLayout, id, moduleId) => {
   }, shallow);
 
   const prevForceUpdateRef = useRef(0);
-  const prevComponentsOrder = useRef(components);
+  // Initialize to empty so the first render always triggers sorting.
+  // else in viewer mode Grid.jsx is not rendered so setReorderContainerChildren
+  // is never called, leaving components permanently unsorted.
+  const prevComponentsOrder = useRef([]);
 
   // Function to sort the components based on position in container for tab navigation
   const sortedComponents = useMemo(() => {
@@ -37,31 +41,34 @@ const useSortedComponents = (components, currentLayout, id, moduleId) => {
     // 1. This container is not the target of reorder
     // 2. Components haven't changed
     // 3. No forced update occurred
-    if (!shouldReorder && !componentsChanged && !isForcedUpdate) {
+    // For FlexContainer, always derive order from the parent-owned childOrder.
+    if (!isFlexContainer && !shouldReorder && !componentsChanged && !isForcedUpdate) {
       return prevComponentsOrder.current;
     }
 
-    const currentPageComponents = getCurrentPageComponents();
+    const currentPageComponents = getCurrentPageComponents(moduleId);
 
-    const newComponentsOrder = [...components].sort((a, b) => {
-      const aTop = currentPageComponents?.[a]?.layouts?.[currentLayout]?.top;
-      const bTop = currentPageComponents?.[b]?.layouts?.[currentLayout]?.top;
-      if (aTop !== bTop) {
-        return aTop - bTop;
-      } else {
-        const aLeft = currentPageComponents?.[a]?.layouts?.[currentLayout]?.left;
-        const bLeft = currentPageComponents?.[b]?.layouts?.[currentLayout]?.left;
-        if (aLeft !== bLeft) {
-          return aLeft - bLeft;
-        }
-        return 0;
-      }
-    });
+    const newComponentsOrder = isFlexContainer
+      ? getOrderedFlexChildrenFromSnapshot(currentPageComponents, id, components)
+      : [...components].sort((a, b) => {
+          const aTop = currentPageComponents?.[a]?.layouts?.[currentLayout]?.top;
+          const bTop = currentPageComponents?.[b]?.layouts?.[currentLayout]?.top;
+          if (aTop !== bTop) {
+            return aTop - bTop;
+          } else {
+            const aLeft = currentPageComponents?.[a]?.layouts?.[currentLayout]?.left;
+            const bLeft = currentPageComponents?.[b]?.layouts?.[currentLayout]?.left;
+            if (aLeft !== bLeft) {
+              return aLeft - bLeft;
+            }
+            return 0;
+          }
+        });
 
     prevComponentsOrder.current = newComponentsOrder;
     return newComponentsOrder;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [components, currentLayout, reorderContainerChildren.triggerUpdate, reorderContainerChildren.shouldReorder]);
+  }, [components, currentLayout, id, reorderContainerChildren.triggerUpdate, reorderContainerChildren.shouldReorder]);
 
   return sortedComponents;
 };

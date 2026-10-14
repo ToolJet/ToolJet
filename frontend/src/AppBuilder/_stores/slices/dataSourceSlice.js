@@ -6,6 +6,13 @@ const initialState = {
   loadingDataSources: true,
   globalDataSources: [],
   sampleDataSource: null,
+  isFetchingGlobalDataSource: false,
+  globalDataSourceList: null,
+  sampleDataSourceList: null,
+  // Set of datasource ids the user may tag in the AI prompt (RBAC-filtered). `null` = not loaded
+  // yet → the AI list falls back to the full RBAC list; the server still drops inaccessible tags.
+  aiTaggableDataSourceIds: null,
+  isFetchingAiTaggableDataSources: false,
 };
 
 export const createDataSourceSlice = (set) => ({
@@ -30,14 +37,54 @@ export const createDataSourceSlice = (set) => ({
 
   fetchGlobalDataSources: (organizationId, appVersionId, environmentId, options) => {
     set({ loadingDataSources: true });
-    globalDatasourceService.getForApp(organizationId, appVersionId, environmentId).then((data) => {
-      set({
-        globalDataSources: data.data_sources?.filter((source) => source?.type != DATA_SOURCE_TYPE.SAMPLE),
-        sampleDataSource: data.data_sources?.filter((source) => source?.type == DATA_SOURCE_TYPE.SAMPLE)[0],
-        loadingDataSources: false,
+    globalDatasourceService
+      .getForApp(organizationId, appVersionId, environmentId)
+      .then((data) => {
+        set({
+          globalDataSources: data.data_sources?.filter((source) => source?.type != DATA_SOURCE_TYPE.SAMPLE),
+          sampleDataSource: data.data_sources?.filter((source) => source?.type == DATA_SOURCE_TYPE.SAMPLE)[0],
+          loadingDataSources: false,
+        });
+        options?.onSuccess?.(data);
+      })
+      .catch((err) => {
+        console.error('fetchGlobalDataSources failed', err);
+        set({ loadingDataSources: false });
       });
+  },
+  getAiTaggableDataSourceIds: () => {
+    set({ isFetchingAiTaggableDataSources: true });
 
-      options?.onSuccess?.(data);
-    });
+    globalDatasourceService
+      .getAiTaggableDataSources()
+      .then((data) => {
+        set({ aiTaggableDataSourceIds: new Set((data ?? []).map((ds) => ds.id)) });
+      })
+      .catch(() => {
+        // Fail open: leave ids null so the AI list falls back to the full RBAC list. The server
+        // still drops inaccessible tags before they reach the agent (AiService.sendUserMessage).
+      })
+      .finally(() => {
+        set({ isFetchingAiTaggableDataSources: false });
+      });
+  },
+  getAllGlobalDataSourceList: (organizationId, options) => {
+    set({ isFetchingGlobalDataSource: true });
+
+    globalDatasourceService
+      .getAll(organizationId)
+      .then((data) => {
+        set({
+          globalDataSourceList: data.data_sources?.filter((source) => source?.type !== DATA_SOURCE_TYPE.SAMPLE) ?? [],
+          sampleDataSourceList: data.data_sources?.filter((source) => source?.type === DATA_SOURCE_TYPE.SAMPLE) ?? [],
+        });
+
+        options?.onSuccess?.(data);
+      })
+      .finally(() => {
+        set({
+          isFetchingGlobalDataSource: false,
+        });
+      });
   },
 });

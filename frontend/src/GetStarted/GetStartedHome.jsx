@@ -5,7 +5,33 @@ import GetStartedCard from './GetStartedCard';
 import withAdminOrBuilderOnly from './withAdminOrBuilderOnly';
 import HomePagePromptSection from './HomePagePromptSection';
 import { authenticationService } from '@/_services';
+import useStore from '@/AppBuilder/_stores/store';
 import toast from 'react-hot-toast';
+import { LINE_TOP, LINE_BOTTOM } from './homeBackgroundAssets';
+
+// The two decorative grid + diamond clusters from the Figma AI-interface home (nodes 20887:95166 /
+// 20887:95168), placed in opposite corners — top-right and bottom-left — behind the hero. These are
+// the exact Figma vectors (inlined in homeBackgroundAssets), not an approximation. Purely cosmetic
+// and non-interactive. `tw-max-w-none` opts out of the global `img { max-width: 100% }` reset so the
+// clusters keep their intended 606x364 footprint.
+function HomeDecorativeBackground() {
+  return (
+    <div aria-hidden="true" className="tw-pointer-events-none tw-absolute tw-inset-0 tw-overflow-hidden">
+      <img
+        src={LINE_TOP}
+        alt=""
+        className="tw-absolute tw-select-none tw-max-w-none"
+        style={{ top: 0, right: 0, width: 606, height: 364 }}
+      />
+      <img
+        src={LINE_BOTTOM}
+        alt=""
+        className="tw-absolute tw-select-none tw-max-w-none"
+        style={{ bottom: 0, left: 0, width: 606, height: 364 }}
+      />
+    </div>
+  );
+}
 
 const WIDGET_TYPES = {
   APP: {
@@ -38,7 +64,12 @@ function DividerWithText() {
   return (
     <div className="tw-flex tw-items-center tw-justify-center tw-w-full">
       <div className="tw-min-w-0 tw-grow tw-border-solid tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-mr-4" />
-      <p className="tw-flex tw-items-center tw-font-body-default tw-text-text-placeholder tw-m-0">OR START WITH</p>
+      <p
+        className="tw-flex tw-items-center tw-font-body-default tw-text-text-placeholder tw-m-0"
+        data-cy="divider-text"
+      >
+        OR START WITH
+      </p>
       <div className="tw-min-w-0 tw-grow tw-border-solid tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-ml-4" />
     </div>
   );
@@ -57,10 +88,14 @@ function ContentBlock({ title, description, descriptionClassName = '', titleClas
     >
       <p
         className={`tw-block tw-text-text-default tw-font-title-large tw-whitespace-pre tw-m-0 tw-mb-0.5 ${titleClassName}`}
+        data-cy="widget-card-title"
       >
         {title}
       </p>
-      <p className={`tw-block tw-font-body-default tw-text-text-placeholder tw-m-0 tw-mb-0.5 ${descriptionClassName}`}>
+      <p
+        className={`tw-block tw-font-body-default tw-text-text-placeholder tw-m-0 tw-mb-0.5 ${descriptionClassName}`}
+        data-cy="widget-card-description"
+      >
         {description}
       </p>
     </article>
@@ -70,7 +105,7 @@ function ContentBlock({ title, description, descriptionClassName = '', titleClas
 function GetStartedWidget({ type, to, onClick }) {
   const { title, description } = WIDGET_TYPES[type];
   return (
-    <GetStartedCard to={to} onClick={onClick}>
+    <GetStartedCard to={to} onClick={onClick} data-cy={`getstarted-${type.toLowerCase()}-widget`}>
       <WidgetIcon type={type} />
       <ContentBlock
         title={title}
@@ -116,6 +151,7 @@ function GetStartedOptionsRow({ edition, isToolJetCloud }) {
       </div>
     );
   }
+
   return (
     <div className="tw-flex tw-flex-row tw-gap-4 tw-items-start tw-justify-start tw-w-full">
       <GetStartedWidget type="APP" to={getPrivateRoute('dashboard')} />
@@ -126,11 +162,26 @@ function GetStartedOptionsRow({ edition, isToolJetCloud }) {
 }
 
 function GetStartedHome({ edition, isToolJetCloud }) {
+  // When AI is enabled, the hero's own "OR USE TOOLJET IN ANY EDITOR" cards replace these
+  // app-creation shortcuts (per the redesign); without AI the shortcuts remain the primary CTAs.
+  // Read the raw flag (null until the gateway responds) and render the shortcuts ONLY once we know
+  // AI is disabled — checking `=== false`, not `!enabled`. Otherwise, on an AI-enabled instance, the
+  // flag is momentarily null/false during load and the shortcuts flash in before the redesign replaces
+  // them. Rendering nothing until the flag resolves avoids that flash.
+  const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled);
+
   return (
-    <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
-      <HomePagePromptSection />
-      <DividerWithText />
-      <GetStartedOptionsRow edition={edition} isToolJetCloud={isToolJetCloud} />
+    <div className="tw-relative tw-size-full tw-overflow-hidden">
+      <HomeDecorativeBackground />
+      <div className="tw-relative tw-z-[1] tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-size-full tw-max-w-[896px]">
+        <HomePagePromptSection />
+        {aiFeaturesEnabled === false && (
+          <>
+            <DividerWithText />
+            <GetStartedOptionsRow edition={edition} isToolJetCloud={isToolJetCloud} />
+          </>
+        )}
+      </div>
     </div>
   );
 }

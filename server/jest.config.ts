@@ -1,16 +1,21 @@
 import type { Config } from '@jest/types';
+import { coverageConfig } from './test/jest-coverage.config';
 
 const config: Config.InitialOptions = {
   verbose: true,
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
   rootDir: '.',
   testEnvironment: 'node',
-  testRegex: '.spec.ts$',
+  globalSetup: '<rootDir>/test/jest-global-setup.ts',
+  setupFiles: ['<rootDir>/test/jest-setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts'],
+  testRegex: 'test/modules/.*/unit/.*spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': [
       'ts-jest',
       {
         tsconfig: 'tsconfig.json',
+        diagnostics: false,
       },
     ],
   },
@@ -30,11 +35,21 @@ const config: Config.InitialOptions = {
     '@helpers/(.*)': '<rootDir>/src/helpers/$1',
     '@licensing/(.*)': '<rootDir>/ee/licensing/$1',
     '@instance-settings/(.*)': '<rootDir>/ee/instance-settings/$1',
+    '@otel/(.*)': '<rootDir>/src/otel/$1',
+    // Mock mariadb — v3.5.0+ is ESM-only, Jest can't require() it (jestjs/jest#15275)
+    '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
+    '^test-helper$': '<rootDir>/test/test.helper.ts',
   },
+  ...coverageConfig(),
+  coverageDirectory: '<rootDir>/coverage-unit',
   runner: 'groups',
   testTimeout: 30000,
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   transformIgnorePatterns: [
-    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)',
+    // thrift's nested uuid dependency ships an ESM-only build; both names must be
+    // whitelisted since node_modules/ appears twice in that nested path and each
+    // occurrence is checked independently.
+    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object|thrift|uuid)/)',
   ],
 };
 

@@ -17,13 +17,14 @@ export const formConfig = {
       },
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow', 'verticalAlignment'],
       defaultValue: {
         text: 'Form title',
         textSize: 16,
         textColor: 'var(--cc-primary-text)',
         fontWeight: 'bold',
         boxShadow: '0px 0px 0px 0px #00000090',
+        verticalAlignment: 'center',
       },
     },
     {
@@ -134,15 +135,15 @@ export const formConfig = {
         defaultValue: false,
       },
     },
-    // dynamicHeight: {
-    //   type: 'toggle',
-    //   displayName: 'Dynamic height',
-    //   validation: {
-    //     schema: { type: 'boolean' },
-    //     defaultValue: false,
-    //   },
-    //   section: 'additionalActions',
-    // },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     advanced: {
       type: 'toggle',
       displayName: ' Use custom schema',
@@ -184,6 +185,13 @@ export const formConfig = {
         defaultValue: true,
       },
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -193,12 +201,27 @@ export const formConfig = {
         defaultValue: false,
       },
     },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
       validation: { schema: { type: 'string' } },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: {
@@ -208,26 +231,56 @@ export const formConfig = {
   styles: {
     headerBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Header background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
+      accordian: 'header',
     },
-    footerBackgroundColor: {
+    headerDividerColor: {
       type: 'colorSwatches',
-      displayName: 'Footer background color',
+      displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
+        defaultValue: 'var(--cc-weak-border)',
       },
+      accordian: 'header',
     },
     backgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
       },
+      accordian: 'container',
+    },
+    footerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'footer',
+    },
+    footerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-weak-border)',
+      },
+      accordian: 'footer',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-weak-border)',
+      },
+      accordian: 'container',
     },
     borderRadius: {
       type: 'code',
@@ -239,14 +292,7 @@ export const formConfig = {
         },
         defaultValue: 6,
       },
-    },
-    borderColor: {
-      type: 'colorSwatches',
-      displayName: 'Border color',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '#fff',
-      },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -264,6 +310,10 @@ export const formConfig = {
     {
       handle: 'resetForm',
       displayName: 'Reset Form',
+    },
+    {
+      handle: 'clearForm',
+      displayName: 'Clear Form',
     },
     {
       handle: 'setVisibility',
@@ -288,7 +338,7 @@ export const formConfig = {
     },
     properties: {
       loadingState: { value: '{{false}}' },
-      // dynamicHeight: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       advanced: { value: '{{false}}' },
       JSONSchema: {
         value:
@@ -301,6 +351,8 @@ export const formConfig = {
       showHeader: { value: '{{true}}' },
       showFooter: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       headerHeight: { value: 60 },
       footerHeight: { value: 60 },
@@ -312,6 +364,12 @@ export const formConfig = {
       JSONData: {
         value: {},
       },
+      tooltipFormat: {
+        value: 'plainText',
+      },
+      tooltip: {
+        value: '',
+      },
     },
     events: [],
     styles: {
@@ -319,7 +377,9 @@ export const formConfig = {
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '6' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      headerDividerColor: { value: 'var(--cc-weak-border)' },
+      footerDividerColor: { value: 'var(--cc-weak-border)' },
     },
   },
 };

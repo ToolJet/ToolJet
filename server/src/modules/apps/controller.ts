@@ -2,7 +2,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { AppsService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { Body, Controller, Delete, Get, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -14,12 +14,13 @@ import { AbilityDecorator as Ability, AppAbility } from '@modules/app/decorators
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { App as AppEntity } from '@entities/app.entity';
 import { AppAuthGuard } from './guards/app-auth.guard';
-import { ValidSlugGuard } from './guards/valid-slug.guard';
 import { ValidAppGuard } from './guards/valid-app.guard';
+import { ValidatePublicAppGuard } from './guards/validate-public-app.guard';
+import { PrivateAppAuthGuard } from './guards/private-app-auth.guard';
 import { IAppsController } from './interfaces/IController';
 import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
 import { Response } from 'express';
-import { isHttpsEnabled } from '@helpers/utils.helper';
+import { isHttpsEnabled, getCookieDomain } from '@helpers/utils.helper';
 
 @InitModule(MODULES.APP)
 @Controller('apps')
@@ -37,26 +38,39 @@ export class AppsController implements IAppsController {
   ) {
     // clear ai cookies
     // FIXME: can move this to service or middlewares
+    const cookieDomain = getCookieDomain();
+    const clearOptions = {
+      secure: isHttpsEnabled(),
+      httpOnly: true,
+      sameSite: 'lax' as const,
+      // Must match the domain used when setting, otherwise clearCookie has no effect
+      ...(cookieDomain && { domain: cookieDomain }),
+    };
     if (cookies.tj_ai_prompt) {
-      response.clearCookie('tj_ai_prompt', {
-        secure: isHttpsEnabled(),
-        httpOnly: true,
-        sameSite: 'lax',
-      });
+      response.clearCookie('tj_ai_prompt', clearOptions);
     }
     if (cookies.tj_template_id) {
-      response.clearCookie('tj_template_id', {
-        secure: isHttpsEnabled(),
-        httpOnly: true,
-        sameSite: 'lax',
-      });
+      response.clearCookie('tj_template_id', clearOptions);
     }
 
     return this.appsService.create(user, appCreateDto);
   }
 
+  @InitFeature(FEATURE_KEY.GET_APP_AUTHENTICATION_CONFIG)
+  @Get('app-authentication-config/:slug')
+  getAppAuthenticationConfig(@Param('slug') slug: string) {
+    return this.appsService.getAppAuthenticationConfig(slug);
+  }
+
+  @InitFeature(FEATURE_KEY.GET_RESTRICTED_ACCESS_INFO)
+  @UseGuards(JwtAuthGuard)
+  @Get('restricted-access-info/:slug')
+  getRestrictedAccessInfo(@Param('slug') slug: string, @User() user: UserEntity) {
+    return this.appsService.getRestrictedAccessInfo(slug, user);
+  }
+
   @InitFeature(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS)
-  @UseGuards(JwtAuthGuard, ValidSlugGuard, FeatureAbilityGuard)
+  @UseGuards(PrivateAppAuthGuard, FeatureAbilityGuard)
   @Get('validate-private-app-access/:slug')
   validatePrivateAppAccess(
     @Query('access_type') accessType: string,
@@ -65,9 +79,10 @@ export class AppsController implements IAppsController {
     @Query('version_id') versionId: string,
     @Query('environment_id') envId: string,
     @Ability() ability: AppAbility,
-    @App() app: AppEntity
+    @App() app: AppEntity,
+    @User() user: UserEntity
   ) {
-    return this.appsService.validatePrivateAppAccess(app, ability, {
+    return this.appsService.validatePrivateAppAccess(app, ability, user, {
       accessType,
       versionName,
       environmentName,
@@ -77,7 +92,7 @@ export class AppsController implements IAppsController {
   }
 
   @InitFeature(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS)
-  @UseGuards(AppAuthGuard, FeatureAbilityGuard)
+  @UseGuards(AppAuthGuard, ValidatePublicAppGuard, FeatureAbilityGuard)
   @Get('validate-released-app-access/:slug')
   validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity) {
     return this.appsService.validateReleasedApp(ability, app);
@@ -113,8 +128,25 @@ export class AppsController implements IAppsController {
       folderId: query.folder,
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
+      context: query.context,
     };
-    return this.appsService.getAllApps(user, AppListDto);
+    return this.appsService.getAllApps(user, AppListDto, false);
+  }
+
+  @InitFeature(FEATURE_KEY.GET)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get('/addable')
+  indexAddable(@User() user: UserEntity) {
+    return this.appsService.getAllApps(
+      user,
+      {
+        page: '1',
+        folderId: null,
+        searchKey: '',
+        type: 'front-end',
+      },
+      true
+    );
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_ICON)

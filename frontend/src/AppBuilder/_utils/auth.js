@@ -12,7 +12,7 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
 
 export function logoutAction() {
   localStorage.clear();
-  sessionService.logout(true);
+  sessionService.logout(false);
 
   return Promise.resolve();
 }

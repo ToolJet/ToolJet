@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { renderElement } from '../Utils';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import List from '@/ToolJetUI/List/List';
 import ListGroup from 'react-bootstrap/ListGroup';
@@ -14,7 +15,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { resolveReferences } from '@/_helpers/utils';
 
 export const Tags = ({
@@ -136,7 +137,12 @@ export const Tags = ({
       if (i === index) {
         return {
           ...option,
-          [property]: value,
+          [property]: ['visible'].includes(property)
+            ? {
+                ...option[property],
+                ...value,
+              }
+            : value,
         };
       }
       return option;
@@ -435,6 +441,7 @@ export const Tags = ({
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `Additional Actions`,
     isOpen: true,
     children: additionalActions.map((property) => {

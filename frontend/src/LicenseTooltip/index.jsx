@@ -22,10 +22,13 @@ const LicenseTooltip = ({
     'OpenID Connect': 'openid',
     LDAP: 'ldap',
     SAML: 'saml',
+    Google: 'google',
+    GitHub: 'github',
     'Multi-environments': 'multiEnvironment',
     'Import from git': 'gitSync',
     GitSync: 'gitSync',
     'Custom themes': 'customThemes',
+    'Custom groups': 'customGroups',
   };
 
   const generateMessage = () => {

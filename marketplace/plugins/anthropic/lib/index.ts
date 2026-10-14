@@ -14,6 +14,9 @@ export default class AnthropicService implements QueryService {
         case Operation.Chat:
           result = await getChatCompletion(anthropicClient, queryOptions);
           break;
+        case Operation.ChatV2:
+          result = await getChatCompletion(anthropicClient, queryOptions);
+          break;
 
         /*case Operation.Vision:
           result = await getVisionCompletion(anthropicClient, queryOptions);
@@ -54,7 +57,7 @@ export default class AnthropicService implements QueryService {
 
     try {
       await anthropicClient.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-haiku-4-5',
         max_tokens: 1,
         messages: [{ role: 'user', content: 'ping' }],
       });

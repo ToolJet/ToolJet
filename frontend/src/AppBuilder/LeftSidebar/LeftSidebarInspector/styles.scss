@@ -1,3 +1,29 @@
+.inspector-header {
+	padding: 16px;
+	border-bottom: 1px solid var(--border-weak, #E4E7EB);
+	display: flex;
+	gap: 8px;
+	flex-direction: column;
+
+	.inspector-header-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: 28px;
+	}
+
+	.inspector-header-title {
+		font-size: 14px;
+		font-weight: 500;
+		line-height: 20px;
+		color: var(--text-default);
+	}
+
+	.inspector-header-search {
+		width: 100%;
+	}
+}
+
 .json-tree-view {
 	// ul {
 	//   margin-left:16px !important;
@@ -15,7 +41,6 @@
 			ul {
 				margin-left: 10px !important;
 				padding-left: 16px !important;
-				border-left: 1px solid var(--slate6, #D7DBDF) !important;
 			}
 		}
 
@@ -284,5 +309,5 @@
 	align-items: center;
 	gap: 4px;
 	color: var(--text-placeholder, #858C94);
-	
+
 }

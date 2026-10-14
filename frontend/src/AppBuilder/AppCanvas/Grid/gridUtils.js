@@ -3,6 +3,10 @@ import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
 import { NO_OF_GRIDS } from '../appCanvasConstants';
+import {
+  RESTRICTED_WIDGETS_CONFIG,
+  RESTRICTED_WIDGET_SLOTS_CONFIG,
+} from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 
 export function correctBounds(layout, bounds) {
   layout = scaleLayouts(layout);
@@ -316,17 +320,24 @@ export function findHighestLevelofSelection(_selectedComponents) {
   return result;
 }
 
+const collectChildrenAndGrandchildren = (parentId, widgets, visited) => {
+  if (visited.has(parentId)) return [];
+  visited.add(parentId);
+  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
+  let result = [];
+  for (const child of children) {
+    if (visited.has(child.id)) continue;
+    result.push(child.id);
+    result = result.concat(...collectChildrenAndGrandchildren(child.id, widgets, visited));
+  }
+  return result;
+};
+
 export function findChildrenAndGrandchildren(parentId, widgets) {
   if (isEmpty(widgets)) {
     return [];
   }
-  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
-  let result = [];
-  for (const child of children) {
-    result.push(child.id);
-    result = result.concat(...findChildrenAndGrandchildren(child.id, widgets));
-  }
-  return result;
+  return collectChildrenAndGrandchildren(parentId, widgets, new Set());
 }
 
 export function adjustWidth(width, posX, gridWidth) {
@@ -417,20 +428,6 @@ export function hideGridLines() {
   });
 }
 
-export function showGridLinesOnSlot(slotId) {
-  var canvasElm = document.getElementById(`canvas-${slotId}`);
-
-  canvasElm.classList.remove('hide-grid');
-  canvasElm.classList.add('show-grid');
-}
-
-export function hideGridLinesOnSlot(slotId) {
-  var canvasElm = document.getElementById(`canvas-${slotId}`);
-
-  canvasElm.classList.remove('show-grid');
-  canvasElm.classList.add('hide-grid');
-}
-
 // Track previously active elements for efficient cleanup
 let previousActiveWidgets = null;
 let previousActiveCanvas = null;
@@ -479,7 +476,16 @@ export const clearNonDraggingComponentsCache = () => {
 };
 
 export const handleActivateTargets = (parentId) => {
-  const WIDGETS_WITH_CANVAS_OUTLINE = ['Container', 'Modal', 'Form', 'Listview', 'Kanban', 'ModalV2'];
+  const WIDGETS_WITH_CANVAS_OUTLINE = [
+    'Container',
+    'Modal',
+    'Form',
+    'Listview',
+    'Kanban',
+    'ModalV2',
+    'Accordion',
+    'Table',
+  ];
 
   const newParentType = document.getElementById('canvas-' + parentId)?.getAttribute('component-type');
   let _parentId = parentId;
@@ -545,16 +551,16 @@ export const computeScrollDeltaOnDrag = (canvasId) => {
   return 0;
 };
 
-export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
-  const targetCanvasWidth = document.getElementById(`canvas-${canvasParentId}`)?.offsetWidth || 0;
-  const gridUnitWidth = targetCanvasWidth / NO_OF_GRIDS;
-  const gridUnits = Math.round(widgetWidth / gridUnitWidth);
-  const draggingWidgetWidth = gridUnits * gridUnitWidth;
+export const getDraggingWidgetWidth = (widgetWidth, gridWidth) => {
+  const gridUnits = Math.round(widgetWidth / gridWidth);
+  const draggingWidgetWidth = gridUnits * gridWidth;
   return draggingWidgetWidth;
 };
 
 /**
- * Positions a ghost/feedback element relative to the main canvas
+ * Positions a ghost/feedback element relative to its offset parent
+ * Uses the ghost's own offsetParent to align correctly with the DOM structure
+ * (header + canvas wrapper are siblings under the same positioned ancestor)
  * @param {HTMLElement} targetElement - The element being dragged/resized
  * @param {string} ghostElementId - The ID of the ghost element to position
  */
@@ -563,21 +569,99 @@ export const positionGhostElement = (targetElement, ghostElementId) => {
 
   if (!ghostElement || !targetElement) return;
 
-  const mainCanvas = document.getElementById('real-canvas');
-  if (!mainCanvas) return;
+  const referenceElement = ghostElement.offsetParent;
+  if (!referenceElement) return;
 
-  const mainCanvasRect = mainCanvas.getBoundingClientRect();
+  const referenceRect = referenceElement.getBoundingClientRect();
   const targetRect = targetElement.getBoundingClientRect();
 
-  // Calculate position relative to main canvas
-  const relativeLeft = targetRect.left - mainCanvasRect.left;
-  const relativeTop = targetRect.top - mainCanvasRect.top;
+  // Calculate position relative to the ghost's offset parent
+  const relativeLeft = targetRect.left - referenceRect.left;
+  const relativeTop = targetRect.top - referenceRect.top;
 
   // Apply the position
   ghostElement.style.left = `${relativeLeft}px`;
   ghostElement.style.top = `${relativeTop}px`;
   ghostElement.style.width = `${targetRect.width}px`;
   ghostElement.style.height = `${targetRect.height}px`;
+};
+
+/**
+ * Calculates the unified bounding box for a group of elements
+ * @param {HTMLElement[]} targetElements - Array of elements being dragged as a group
+ * @param {HTMLElement} ghostElement - The ghost element to use as positioning reference
+ * @returns {Object} - Bounding box with left, top, width, height relative to ghost's offset parent
+ */
+export const calculateGroupBoundingBox = (targetElements, ghostElement) => {
+  if (!targetElements || targetElements.length === 0) return null;
+
+  const referenceElement = ghostElement?.offsetParent || document.getElementById('real-canvas');
+  if (!referenceElement) return null;
+
+  const referenceRect = referenceElement.getBoundingClientRect();
+
+  // Initialize with extreme values
+  let minLeft = Infinity;
+  let minTop = Infinity;
+  let maxRight = -Infinity;
+  let maxBottom = -Infinity;
+
+  // Find the bounds of all elements
+  targetElements.forEach((element) => {
+    if (!element) return;
+
+    const rect = element.getBoundingClientRect();
+    const relativeLeft = rect.left - referenceRect.left;
+    const relativeTop = rect.top - referenceRect.top;
+    const relativeRight = relativeLeft + rect.width;
+    const relativeBottom = relativeTop + rect.height;
+
+    minLeft = Math.min(minLeft, relativeLeft);
+    minTop = Math.min(minTop, relativeTop);
+    maxRight = Math.max(maxRight, relativeRight);
+    maxBottom = Math.max(maxBottom, relativeBottom);
+  });
+
+  return {
+    left: minLeft,
+    top: minTop,
+    width: maxRight - minLeft,
+    height: maxBottom - minTop,
+  };
+};
+
+/**
+ * Positions a ghost element to cover the entire bounding box of a group
+ * @param {Object} boundingBox - Bounding box with left, top, width, height
+ * @param {string} ghostElementId - The ID of the ghost element to position
+ */
+export const positionGroupGhostElement = (events, ghostElementId, gridWidth) => {
+  if (!events || events.length === 0) return;
+
+  const ghostElement = document.getElementById(ghostElementId);
+  if (!ghostElement) return;
+
+  const boundingBox = calculateGroupBoundingBox(
+    events.map((e) => e.target),
+    ghostElement
+  );
+
+  if (!boundingBox) return;
+  ghostElement.style.width = `${boundingBox.width}px`;
+  ghostElement.style.height = `${boundingBox.height}px`;
+  ghostElement.style.willChange = 'transform';
+
+  ghostElement.style.transform = `translate(${boundingBox.left}px, ${boundingBox.top}px)`;
+};
+
+export const isPointerOverCanvasArea = (clientX, clientY) => {
+  const canvasArea = document.getElementsByClassName('tj-canvas-area')?.[0];
+  if (!canvasArea) return false;
+
+  // Hit-test instead of comparing against the canvas area's rect: when the canvas is scrolled
+  // under an open right sidebar, the rect extends beneath the sidebar even though it is hidden.
+  const hitElement = document.elementFromPoint(clientX, clientY);
+  return !!hitElement && canvasArea.contains(hitElement);
 };
 
 /**
@@ -617,10 +701,64 @@ export const clearActiveTargetClassNamesAfterSnapping = (selectedComponents) => 
   }
 };
 
-export const getInitialPosition = (currentWidget, temporaryLayouts, _gridWidth) => {
-  const height = temporaryLayouts[currentWidget.id]?.height ?? currentWidget.height;
-  const width = currentWidget.width * _gridWidth;
-  const transformX = currentWidget.left * _gridWidth;
-  const transformY = temporaryLayouts[currentWidget.id]?.top ?? currentWidget.top;
-  return { height, width, transformX, transformY };
+export const updateDashedBordersOnHover = (targetId) => {
+  const dynamicHeight = useStore.getState().checkHoveredComponentDynamicHeight(targetId);
+  const targetMoveableBox = document.querySelector(`.moveable-control-box[target-id="${targetId}"]`);
+  if (targetMoveableBox && dynamicHeight && !targetMoveableBox.classList.contains('moveable-dynamic-height')) {
+    targetMoveableBox.classList.add('moveable-dynamic-height');
+  } else if (targetMoveableBox && !dynamicHeight) {
+    targetMoveableBox.classList.remove('moveable-dynamic-height');
+  }
 };
+
+// Check if dropping from modal to canvas, including nested containers within modals
+export const isDraggingModalToCanvas = (source, target, boxList) => {
+  if (!source.isModal) return false;
+
+  // If target is the same as source, it's not modal to canvas
+  if (source.id === target.id) return false;
+
+  // Check if target or any of its parents is a modal
+  let currentTargetId = target.id;
+  while (currentTargetId && currentTargetId !== 'canvas') {
+    const targetComponent = boxList.find((b) => b.id === currentTargetId);
+    if (!targetComponent) break;
+
+    // If we find a modal in the parent chain, it's not modal to canvas
+    if (source.id === targetComponent.parent) return false;
+
+    currentTargetId = targetComponent.parent;
+  }
+
+  // If we've reached canvas without finding a modal parent, it's modal to canvas
+  return currentTargetId === 'canvas' || currentTargetId === null;
+};
+
+export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClassList) => {
+  const hasDynamicHeight = useStore.getState().checkHoveredComponentDynamicHeight(targetId);
+  if (hasDynamicHeight && !moveableControlBoxClassList?.contains('moveable-dynamic-height')) {
+    moveableControlBoxClassList?.add('moveable-dynamic-height');
+  } else if (moveableControlBoxClassList?.contains('moveable-dynamic-height') && !hasDynamicHeight) {
+    moveableControlBoxClassList?.remove('moveable-dynamic-height');
+  }
+};
+
+export const isDroppingRestrictedWidget = (target, dragged) => {
+  const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
+  const restrictedWidgetsOnTargetSlot = ['header', 'footer'].includes(target.slotType)
+    ? RESTRICTED_WIDGET_SLOTS_CONFIG
+    : [];
+
+  const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
+  return restrictedWidgets.includes(dragged.widgetType);
+};
+
+export function getCanvasBottomBound() {
+  const footerElement = document.querySelector('[component-id="canvas-footer"]');
+  const realCanvas = document.getElementById('real-canvas');
+  if (!footerElement || !realCanvas) return Infinity;
+
+  const footerRect = footerElement.getBoundingClientRect();
+  const realCanvasRect = realCanvas.getBoundingClientRect();
+  return footerRect.top - realCanvasRect.top;
+}
