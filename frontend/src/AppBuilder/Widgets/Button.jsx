@@ -214,13 +214,19 @@ export const Button = function Button(props) {
         position: 'relative',
         // height,
       }}
-      disabled={disable || loading}
     >
       <button
         ref={buttonRef}
-        className={cx('overflow-hidden jet-btn')}
+        className={cx(
+          'overflow-hidden jet-btn',
+          // accessible keyboard focus — outline (not ring) so it's immune to the inline boxShadow
+          'focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
+        )}
         style={computedStyles}
         onClick={handleClick}
+        // native disabled on the real <button>: removes it from the tab order and
+        // blocks Enter/Space activation (aria-disabled alone does neither)
+        disabled={disable || loading}
         data-cy={`${generateCypressDataCy(dataCy)}-button`}
         type="default"
         onMouseOver={() => {

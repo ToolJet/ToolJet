@@ -794,8 +794,8 @@ describe('Checkbox', () => {
       expect(widget.variables().changed).toBe('YES');
     });
 
-    test.failing('[Checkbox-BUG-002] the checkbox can be reached and toggled with the keyboard', async () => {
-      // Pins the accessibility gap: the only input is display:none and the wrapper is not focusable.
+    test('[Checkbox-BUG-002] the checkbox can be reached and toggled with the keyboard', async () => {
+      // The input is hidden but still focusable, so Tab reaches it and Space toggles.
       widget.render({ properties: { defaultValue: binding('{{false}}') } });
       await waitFor(() => expect(widget.exposed().value).toBe(false));
 

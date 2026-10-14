@@ -620,9 +620,8 @@ describe('ToggleSwitchV2: known unfixed bugs', () => {
 
   // BUG (unfixed, contract D-03): `disabled` reaches the input, so the label
   // and keyboard paths are correctly blocked, but the switch body's wrapper
-  // onClick is not gated on `disable` — clicking the switch itself still flips
-  // it. Fix: return early from handleToggleChange while disabled.
-  test.failing('[ToggleSwitchV2-BUG-002] a disabled switch does not change when its body is clicked', async () => {
+  // Clicking the switch while disabled leaves it alone; the handler returns early.
+  test('[ToggleSwitchV2-BUG-002] a disabled switch does not change when its body is clicked', async () => {
     await mount({ properties: { disabledState: binding('{{true}}') } });
     await waitFor(() => expect(exposed('isDisabled')).toBe(true));
 
