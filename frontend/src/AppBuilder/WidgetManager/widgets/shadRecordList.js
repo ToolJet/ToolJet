@@ -56,7 +56,15 @@ export const shadRecordListConfig = {
       displayName: "Meta fields (comma list; 'total|currency', 'due|date:Due {}')",
       validation: {
         schema: {
-          type: 'string',
+          type: 'union',
+          schemas: [
+            {
+              type: 'array',
+            },
+            {
+              type: 'string',
+            },
+          ],
         },
         defaultValue: '',
       },

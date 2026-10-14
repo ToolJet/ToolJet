@@ -145,6 +145,13 @@ describe('mapModel', () => {
       expect(popupLines(row, '')).toEqual([]);
       expect(popupLines(null, 'eta')).toEqual([]);
     });
+    // A list of names, as models write metaFields, reached the widget as '' and showed nothing (2026-10-14).
+    it('takes a list of specs too', () => {
+      expect(popupLines({ eta: '9:10 AM', driver: 'Maya Chen' }, ['eta:ETA {}', 'driver'])).toEqual([
+        'ETA 9:10 AM',
+        'Maya Chen',
+      ]);
+    });
   });
 
   describe('Web Mercator', () => {

@@ -134,7 +134,15 @@ export const shadCardGridConfig = {
       displayName: "Meta fields (comma list; 'prep:{} min')",
       validation: {
         schema: {
-          type: 'string',
+          type: 'union',
+          schemas: [
+            {
+              type: 'array',
+            },
+            {
+              type: 'string',
+            },
+          ],
         },
         defaultValue: '',
       },

@@ -126,13 +126,17 @@ export const mapPoints = (data, fields = {}) => {
   return { points: uniqueKeys(points), skipped, rows: data.length };
 };
 
-/** The popup's detail lines: popupFields is a comma list of field specs, as the Record list's metaFields ('driver',
+/** The popup's detail lines: popupFields is a comma list (or a list) of field specs, as the Record list's metaFields ('driver',
  *  'eta|datetime:ETA {}', 'total|currency', 'seats:Seats'). Fields the row lacks or leaves empty are left out. */
 export const popupLines = (row, popupFields, currency) => {
-  if (!row || typeof row !== 'object' || !isText(popupFields)) return [];
-  return popupFields
-    .split(',')
-    .map((s) => s.trim())
+  const specs = Array.isArray(popupFields)
+    ? popupFields.filter(isText)
+    : isText(popupFields)
+    ? popupFields.split(',')
+    : [];
+  if (!row || typeof row !== 'object' || !specs.length) return [];
+  return specs
+    .map((s) => String(s).trim())
     .filter(Boolean)
     .map((spec) => recordMetaPart(row, spec, currency))
     .filter(Boolean);
