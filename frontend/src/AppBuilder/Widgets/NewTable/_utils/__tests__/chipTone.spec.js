@@ -132,4 +132,10 @@ describe('chipTone, everyday operations states', () => {
     expect(chipTone('Vacant')).toBe('success');
     expect(chipTone('Busy')).toBe('warning');
   });
+  it('reads alerts and watch states (cold chain and billing apps, 2026-10-14)', () => {
+    expect(chipTone('OUT OF RANGE')).toBe('danger');
+    expect(chipTone('Alert')).toBe('danger');
+    expect(chipTone('Watch · 31-60')).toBe('warning');
+    expect(chipTone('In range')).toBe('success');
+  });
 });
