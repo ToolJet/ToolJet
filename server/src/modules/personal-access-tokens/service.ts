@@ -15,11 +15,11 @@ export class PersonalAccessTokensService implements IPersonalAccessTokensService
     throw new NotImplementedException();
   }
 
-  async listPats(userId: string, organizationId: string): Promise<PatView[]> {
+  async listPats(userId: string, organizationId: string, canRevokeAny: boolean): Promise<PatView[]> {
     throw new NotImplementedException();
   }
 
-  async deletePat(userId: string, id: string): Promise<void> {
+  async deletePat(userId: string, organizationId: string, id: string, canRevokeAny: boolean): Promise<void> {
     throw new NotImplementedException();
   }
 
