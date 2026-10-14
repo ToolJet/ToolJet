@@ -411,7 +411,8 @@ export const ShadBarChart = (props) => {
         <BarChart
           data={data}
           layout={horizontal ? 'vertical' : 'horizontal'}
-          margin={{ left: 4, right: 12, top: 12 }}
+          // Names drawn at an angle reach left of their bar: the first one was cut ("me & Mystery", bookshop sales).
+          margin={{ left: !horizontal && angledCategories(data, xField, props.width) ? 28 : 4, right: 12, top: 12 }}
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
           {compact ? null : <CartesianGrid vertical={horizontal} horizontal={!horizontal} stroke={GRID} />}
@@ -433,7 +434,11 @@ export const ShadBarChart = (props) => {
                 // Every bar keeps its name: Recharts thinned the labels of a 6-bar chart to every other one. Past a dozen
                 // bars the names can outnumber the lines the chart has room for (26 reps in 240px printed over each
                 // other), so every nth name shows, as many as fit.
-                interval={data.length <= 12 ? 0 : 'equidistantPreserveStart'}
+                // Every name while each bar has a line of its own (about 15px): a 14-region chart with room for all of
+                // them showed every other one (wine cellar, 2026-10-14).
+                interval={
+                  data.length <= 12 || (Number(props.height) - 60) / data.length >= 15 ? 0 : 'equidistantPreserveStart'
+                }
                 minTickGap={2}
               />
             </>

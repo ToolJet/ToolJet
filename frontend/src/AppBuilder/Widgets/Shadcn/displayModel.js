@@ -115,6 +115,9 @@ const TABLER_TWINS = {
   calendarcheck: 'CalendarCheck',
   clipboardlist: 'ClipboardList',
   clipboardcheck: 'ClipboardCheck',
+  glassfull: 'Wine',
+  news: 'Newspaper',
+  books: 'Library',
 };
 
 export const resolveIcon = (name, maps, fallback) => {
@@ -146,6 +149,12 @@ export const resolveIcon = (name, maps, fallback) => {
   // Then by the trailing words, where Tabler groups its names (IconDeviceLaptop reads Laptop).
   for (let n = 1; n < words.length; n += 1) {
     const found = lookup(words.slice(n).join(''));
+    if (found) return found;
+  }
+  // Then as one of a kind: "pills" reads Pill, "IconTicketsStub" reads TicketStub (a pharmacy stat, 2026-10-14).
+  const singular = base.replace(/(?:es|s)$/, '');
+  if (singular && singular !== base) {
+    const found = lookup(singular) || lookup(base.replace(/s$/, ''));
     if (found) return found;
   }
   return fallback;
