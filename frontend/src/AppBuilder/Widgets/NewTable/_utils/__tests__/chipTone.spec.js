@@ -140,5 +140,7 @@ describe('chipTone, everyday operations states', () => {
   });
   it('reads Reserved as held for someone (blood bank, 2026-10-14)', () => {
     expect(chipTone('Reserved')).toBe('info');
+    // An aircraft out on a lesson (flight school, 2026-10-14).
+    expect(chipTone('Flying')).toBe('info');
   });
 });
