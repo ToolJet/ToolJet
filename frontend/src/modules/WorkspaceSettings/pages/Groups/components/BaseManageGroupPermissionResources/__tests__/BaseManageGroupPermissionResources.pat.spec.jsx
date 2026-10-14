@@ -59,7 +59,7 @@ function useGroupHandlers(group, onUpdate = jest.fn()) {
   return onUpdate;
 }
 
-function renderPermissions() {
+function renderPermissions(featureAccessOverrides = {}) {
   return render(
     <BaseManageGroupPermissionResources
       groupPermissionId={GROUP_ID}
@@ -67,11 +67,12 @@ function renderPermissions() {
       roleOptions={[]}
       darkMode={false}
       updateGroupName={jest.fn()}
-      // Valid license, custom groups off: PAT stays editable on the default Builder group.
+      // Valid license with custom groups on by default; override to test the unlicensed Builder lock.
       featureAccess={{
         licenseStatus: { isExpired: false, isLicenseValid: true },
         plan: 'enterprise',
-        customGroups: false,
+        customGroups: true,
+        ...featureAccessOverrides,
       }}
     />
   );
@@ -89,6 +90,15 @@ describe('BaseManageGroupPermissionResources | Personal access token row', () =>
     expect(create).toBeChecked();
     expect(revoke).not.toBeChecked();
     expect(create).toBeEnabled();
+  });
+
+  it('should disable both PAT checkboxes for the Builder group when custom groups are not licensed', async () => {
+    useGroupHandlers(builderGroup);
+
+    renderPermissions({ customGroups: false });
+
+    expect(await screen.findByRole('checkbox', { name: /Create a token in this workspace/ })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: /Revoke a token in this workspace/ })).toBeDisabled();
   });
 
   it.each([
