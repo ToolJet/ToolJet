@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { McpOAuthService } from '@modules/mcp-oauth/service';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DeepPartial, EntityManager, MoreThanOrEqual, Not } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { UserSessions } from '@entities/user_sessions.entity';
@@ -32,6 +33,9 @@ import { SessionType } from '@modules/external-apis/constants';
 
 @Injectable()
 export class SessionUtilService {
+  @Inject(McpOAuthService)
+  protected readonly mcpOAuthService: McpOAuthService;
+
   constructor(
     protected readonly configService: ConfigService,
     protected readonly userRepository: UserRepository,
@@ -99,7 +103,21 @@ export class SessionUtilService {
         sessionId = session.id;
       }
 
+      // Only actual login callers set this marker; workspace switching never invents new proof.
+      const { oauthAuthenticationMethod, oauthAuthenticationProviderId, oauthAuthenticationReset, ...publicExtraData } = extraData || {};
+      let workspaceAuthentication = !isPatLogin && !oauthAuthenticationReset && loggedInUser?.id === user.id ? loggedInUser.workspaceAuthentication : undefined;
+      if (!isPatLogin && !oauthAuthenticationReset && oauthAuthenticationMethod) {
+        try {
+          workspaceAuthentication = await this.mcpOAuthService.captureAuthentication(
+            organization?.id, oauthAuthenticationMethod, oauthAuthenticationProviderId,
+          );
+        } catch {
+          // Ordinary login remains available; OAuth fails closed without its signed evidence.
+          workspaceAuthentication = undefined;
+        }
+      }
       const JWTPayload: JWTPayload = {
+        ...(workspaceAuthentication ? { workspaceAuthentication } : {}),
         sessionId: sessionId,
         username: user.id,
         sub: user.email,
@@ -154,7 +172,7 @@ export class SessionUtilService {
           : { noWorkspaceAttachedInTheSession: true }),
         ...permissionData,
         noActiveWorkspaces,
-        ...(extraData ? extraData : {}),
+        ...publicExtraData,
         ...(isPatLogin ? { signedPat } : {}),
       };
 

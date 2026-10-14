@@ -55,7 +55,7 @@ export class PatScopeInterceptor implements NestInterceptor {
     }
 
     if (user.patAppId) {
-      const denial = this.denyViewer(user, request, module, feature);
+      const denial = appViewerDenial(user.patAppId, request, module, feature);
       if (denial) {
         if (auditOnly()) {
           logAudit('DENY', request, module, feature, denial);
@@ -78,9 +78,11 @@ export class PatScopeInterceptor implements NestInterceptor {
     return next.handle();
   }
 
-  /** Returns the denial message, or undefined if the request is allowed. */
-  private denyViewer(
-    user: User,
+}
+
+/** Shared app-pinned render ceiling for workspace PAT and OAuth viewer credentials. */
+export function appViewerDenial(
+    appId: string,
     request: { method?: string; originalUrl?: string; url?: string; tj_app?: { id: string } },
     module: MODULES | undefined,
     feature: string | undefined
@@ -93,7 +95,7 @@ export class PatScopeInterceptor implements NestInterceptor {
        in the path); the regex is the fallback for routes with no app guard. */
     const requestedAppId: string | undefined =
       request?.tj_app?.id ?? extractAppIdFromPath(request?.originalUrl || request?.url);
-    if (requestedAppId && requestedAppId !== user.patAppId) {
+    if (requestedAppId && requestedAppId !== appId) {
       return `This session is scoped to a single app and cannot access ${requestedAppId}.`;
     }
 
@@ -106,7 +108,6 @@ export class PatScopeInterceptor implements NestInterceptor {
 
     return undefined;
   }
-}
 
 // Local copy of the @otel/tracing helper: importing it drags an ESM-only uuid into Jest.
 const APP_ID_IN_PATH = /\/apps\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:[/?#]|$)/i;
