@@ -434,7 +434,9 @@ const InlineProgress = ({ pct, className }) => (
       className="shrink-0 text-xs font-medium tabular-nums"
       style={{
         color: 'var(--lk-fg,var(--sc-muted-foreground))',
-        minWidth: '2.5rem',
+        // Room for "100.0%", so every bar in a list is the same length: at 2.5rem a "10.2%" row's bar came out shorter
+        // than its neighbours' (nonprofit programmes, 2026-10-14).
+        minWidth: '3rem',
         textAlign: 'right',
       }}
     >
