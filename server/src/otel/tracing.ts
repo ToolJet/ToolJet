@@ -28,23 +28,12 @@ import { getTooljetEdition } from '../helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '../modules/app/constants';
 import { ATTR, ATTR_DEPLOYMENT_ENVIRONMENT_NAME, METRIC, deploymentEnvironmentName } from './semconv';
 import { shutdownOtelLogs } from './logs';
+import { requestSpanAttributes } from './http-span';
 
 // Set this up to see debug logs
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 }
-
-const sanitizeObject = (obj: any) => {
-  const sanitized: any = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'object' && value !== null) {
-      sanitized[key] = sanitizeObject(value);
-    } else if (typeof value !== 'function') {
-      sanitized[key] = value;
-    }
-  }
-  return sanitized;
-};
 
 // SDK instance - created lazily in startOpenTelemetry()
 let sdk: NodeSDK | null = null;
@@ -105,18 +94,7 @@ function createSDK(): NodeSDK {
             span.updateName(`${request.method} ${path}`);
             span.setAttribute('http.route', path);
             span.setAttribute('http.method', request.method);
-
-            if (request.params && Object.keys(request.params).length > 0) {
-              span.setAttribute('http.params', JSON.stringify(sanitizeObject(request.params)));
-            }
-
-            if (request.query && Object.keys(request.query).length > 0) {
-              span.setAttribute('http.query', JSON.stringify(sanitizeObject(request.query)));
-            }
-
-            if (request.body && Object.keys(request.body).length > 0) {
-              span.setAttribute('http.body', JSON.stringify(sanitizeObject(request.body)));
-            }
+            span.setAttributes(requestSpanAttributes(request));
           }
         },
       }),
