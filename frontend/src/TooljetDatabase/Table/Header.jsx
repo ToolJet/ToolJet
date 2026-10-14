@@ -4,6 +4,8 @@ import EditRowDrawer from '../Drawers/EditRowDrawer';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
 import BulkUploadDrawer from '../Drawers/BulkUploadDrawer';
+import SeedDataDrawer from '../Drawers/SeedDataDrawer';
+import { isSqlModeDisabled } from '@/TooljetDatabase/constants';
 import Filter from '../Filter';
 import Sort from '../Sort';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
@@ -15,6 +17,8 @@ import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 import config from 'config';
+import { shallow } from 'zustand/shallow';
+import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 
 const Header = ({
   isCreateColumnDrawerOpen,
@@ -23,6 +27,8 @@ const Header = ({
   setIsCreateRowDrawerOpen,
   setIsBulkUploadDrawerOpen,
   isBulkUploadDrawerOpen,
+  isSeedDataDrawerOpen,
+  setIsSeedDataDrawerOpen,
   selectedRowIds,
   handleDeleteRow,
   rows,
@@ -43,19 +49,19 @@ const Header = ({
   const [uploadResult, setUploadResult] = useState(null);
   const {
     totalRecords,
-    sortFilters,
-    setSortFilters,
     handleBuildSortQuery,
     resetFilterQuery,
     resetSortQuery,
-    queryFilters,
-    setQueryFilters,
     handleBuildFilterQuery,
     selectedTable,
     organizationId,
     handleRefetchQuery,
-    pageSize,
   } = useContext(TooljetDatabaseContext);
+  const { queryFilters, sortFilters, pageSize } = useTjdbStore(
+    (state) => ({ queryFilters: state.queryFilters, sortFilters: state.sortFilters, pageSize: state.pageSize }),
+    shallow
+  );
+  const { setQueryFilters, setSortFilters } = useTjdbActions();
 
   useEffect(() => {
     setErrors({ client: [], server: [] });
@@ -145,6 +151,10 @@ const Header = ({
     setIsBulkUploadDrawerOpen(isOpenBulkUploadDrawer);
   };
 
+  const handleOnClickSeedData = (isOpenSeedDataDrawer) => {
+    setIsSeedDataDrawerOpen(isOpenSeedDataDrawer);
+  };
+
   return (
     <>
       <div className="database-table-header-wrapper">
@@ -162,6 +172,8 @@ const Header = ({
                         toggleAddNewDataMenu={toggleAddNewDataMenu}
                         handleOnClickCreateNewRow={handleOnClickCreateNewRow}
                         handleOnClickBulkUpdateData={handleOnClickBulkUpdateData}
+                        handleOnClickSeedData={handleOnClickSeedData}
+                        hideSeedDataOption={isSqlModeDisabled()}
                       >
                         <span className="col-auto">
                           <ButtonSolid
@@ -284,6 +296,7 @@ const Header = ({
         isBulkUploading={isBulkUploading}
         errors={errors}
       />
+      <SeedDataDrawer isSeedDataDrawerOpen={isSeedDataDrawerOpen} setIsSeedDataDrawerOpen={setIsSeedDataDrawerOpen} />
     </>
   );
 };

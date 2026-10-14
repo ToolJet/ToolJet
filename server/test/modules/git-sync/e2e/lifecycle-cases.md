@@ -49,8 +49,7 @@ and only falls back to `run-ci/<uuid>` when unset. (The old static defaults `gsm
 FS readers, branching-tag/target helpers, `git-tree-sha` ls-remote/ls-tree parsing,
 `AppGitFileOperationsUtil` layout resolvers + `validateAppJsonForImport` normalization,
 the whole `GitOperationsUtil` simple-git wrapper — clone/sparseClone/commit/push/branchExists/
-resolveTagToSha argv shaping — and `PlatformGitPushService`'s fs-only meta helpers
-(`deleteAppFromRepo`, `readAppMeta`/`writeAppMeta`)) — plus two host-free guards for the
+resolveTagToSha argv shaping) — plus two host-free guards for the
 **app-open** path (§35): `apps/unit/apps-service-open-no-git-pull.spec.ts` (EE `getOne` hydrates on
 `is_stub` only, never for a materialized draft) and
 `platform-git-sync/unit/hydrate-stale-referenced-modules-gate.spec.ts` (the referenced-module

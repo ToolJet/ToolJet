@@ -351,6 +351,10 @@ describe('OrganizationUsersController', () => {
       expect(viewerUserData.orgUser.status).toBe('archived');
     });
 
+    // The PAT-session variant of this IDOR check lives in the EE tree
+    // (ee/test/modules/organization-users/e2e/organization-users.spec.ts): workspace PATs are an
+    // EE feature, so /api/personal-access-tokens is only implemented under the EE app. The plain
+    // cross-tenant case (non-super-admin attacker, cookie session) is covered below in CE.
     it('should not allow a workspace admin to archive a user in a different organization via body.organizationId override', async () => {
       const attackerData = await createUser(app, {
         email: 'attacker@tooljet.io',

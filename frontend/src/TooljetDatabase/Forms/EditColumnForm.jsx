@@ -1,27 +1,26 @@
 import React, { useState, useContext, useEffect, useMemo } from 'react';
+import cx from 'classnames';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import tjdbDropdownStyles, {
-  dataTypes,
-  formatOptionLabel,
-  serialDataType,
-  getColumnDataType,
-  renderDatatypeIcon,
-} from '../constants';
+import { shallow } from 'zustand/shallow';
+import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, renderDatatypeIcon } from '../constants';
 import Drawer from '@/_ui/Drawer';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
 import WarningInfo from '../Icons/Edit-information.svg';
 import Information from '@/_ui/Icon/solidIcons/Information';
+import CheckCircle from '@/_ui/Icon/solidIcons/CheckCircle';
+import Warning from '@/_ui/Icon/solidIcons/Warning';
+import Spinner from '@/_ui/Spinner';
 import { isEmpty } from 'lodash';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
 import { ToolTip } from '@/_components/ToolTip';
-import { ConfirmDialog } from '@/_components';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
@@ -33,6 +32,37 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
+import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
+import { CHANGE_TYPE, typeChangeDetail } from '../MigrationConfirmModal';
+import {
+  castFor,
+  buildCastabilityCountQuery,
+  inconsistentRowsFilter,
+  allowedTargets,
+  blockedReason,
+  buildTypeChangeSql,
+  ALWAYS_BLOCKED_REASONS,
+} from '../columnTypeChange';
+import { CircleAlert } from 'lucide-react';
+
+// Info boxes for the cast report and the omitted-conversions notice, shaped to match the existing
+// `.edit-warning-info` box above (Forms/styles.scss) so all the drawer's callouts read as one
+// family: full 1px border, tw-rounded-md (--radius-md is literally 6px, matching that box), icon +
+// text row.
+// Arbitrary-value classes, not the theme's compound color keys directly (tw-text-warning etc. are
+// not real generated utilities here - this config's colors are extended as flat compound keys like
+// 'text-warning' with no separate textColor/borderColor override, so Tailwind would only emit
+// tw-text-text-warning for that key). tw-*-[var(--token)] is the pattern already used throughout
+// this codebase (e.g. HomePage.jsx, EventManager.jsx) to sidestep that.
+const INFO_BOX_TONE_CLASSES = {
+  accent: 'tw-border-[var(--border-accent-weak)] tw-bg-[var(--background-accent-weak)] tw-text-[var(--text-accent)]',
+  success:
+    'tw-border-[var(--border-success-weak)] tw-bg-[var(--background-success-weak)] tw-text-[var(--text-success)]',
+  danger: 'tw-border-[var(--border-danger-weak)] tw-bg-[var(--background-error-weak)] tw-text-[var(--text-danger)]',
+};
+
+const infoBoxClass = (tone) =>
+  cx('tw-flex tw-items-start tw-gap-2 tw-rounded-md tw-border tw-p-2 tw-text-base', INFO_BOX_TONE_CLASSES[tone]);
 
 const ColumnForm = ({
   onClose,
@@ -51,45 +81,56 @@ const ColumnForm = ({
     organizationId,
     selectedTable,
     handleRefetchQuery,
-    queryFilters,
-    pageCount,
-    pageSize,
-    sortFilters,
     setForeignKeys,
     foreignKeys,
     configurations,
     setConfigurations,
   } = useContext(TooljetDatabaseContext);
+  const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
+    (state) => ({
+      queryFilters: state.queryFilters,
+      sortFilters: state.sortFilters,
+      pageCount: state.pageCount,
+      pageSize: state.pageSize,
+    }),
+    shallow
+  );
+  const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
+  const { fetchTableMetadata, setQueryFilters } = useTjdbActions();
 
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
+  const { runMigration, modal: migrationModal } = useMigrationModal();
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
-  const [dataType, setDataType] = useState(selectedColumn?.dataType);
-  const [onDeletePopup, setOnDeletePopup] = useState(false);
-  const [fetching, setFetching] = useState(false);
+  // Holds the react-select option (`{ value, label, ... }`), not a bare type string - matches what
+  // `handleTypeChange` receives from `Select`'s `onChange` and what every other read site here
+  // already expected (`dataType?.value`) even before the dropdown could ever produce one.
+  const [dataType, setDataType] = useState(dataTypes.find((type) => type.value === selectedColumn?.dataType) ?? null);
   const [isNotNull, setIsNotNull] = useState(nullValue);
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [isForeignKey, setIsForeignKey] = useState(false);
   const [isUniqueConstraint, setIsUniqueConstraint] = useState(uniqueConstraintValue);
   const [isForeignKeyDraweOpen, setIsForeignKeyDraweOpen] = useState(false);
-  const [onChangeInForeignKey, setOnChangeInForeignKey] = useState(false);
   const [selectedForeignkeyIndex, setSelectedForeignKeyIndex] = useState([]);
   const [sourceColumn, setSourceColumn] = useState([]);
   const [targetTable, setTargetTable] = useState([]);
   const [targetColumn, setTargetColumn] = useState([]);
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
-  const isTimestamp = dataType === 'timestamp with time zone';
-  const isJsonbColumnType = dataType === 'jsonb';
+  // Advisory only - Postgres' own ALTER decides whether the cast succeeds. This exists because its
+  // error names one arbitrary bad value and no count.
+  const [castReport, setCastReport] = useState(null);
+  const isTimestamp = dataType?.value === 'timestamp with time zone';
+  const isJsonbColumnType = dataType?.value === 'jsonb';
   const { Option } = components;
 
   //  this is for DropDownDetails component which is react select
   const [foreignKeyDefaultValue, setForeignKeyDefaultValue] = useState(() => {
-    if (dataType === 'integer' || dataType === 'bigint' || dataType === 'double precision') {
+    if (['integer', 'bigint', 'double precision'].includes(dataType?.value)) {
       return {
         value: parseInt(selectedColumn?.column_default),
         label: parseInt(selectedColumn?.column_default),
       };
-    } else if (dataType === 'booolean') {
+    } else if (dataType?.value === 'booolean') {
       return {
         value: selectedColumn?.column_default === 'true' ? true : false,
         label: selectedColumn?.column_default === 'true' ? true : false,
@@ -126,11 +167,7 @@ const ColumnForm = ({
 
       const query = selectQuery.url.toString();
 
-      const { data = [], error } = await tooljetDatabaseService.findOne(
-        organizationId,
-        referencedColumns.referenced_table_id,
-        query
-      );
+      const { data = [], error } = await tooljetDatabaseService.findOne(referencedColumns.referenced_table_id, query);
 
       if (error) {
         toast.error(error?.message ?? `Failed to validate default value`);
@@ -205,13 +242,13 @@ const ColumnForm = ({
 
   const columns = {
     column_name: columnName,
-    data_type: dataType,
+    data_type: dataType?.value,
     constraints_type: {
       is_not_null: isNotNull,
       is_primary_key: selectedColumn.is_primary_key,
       is_unique: isUniqueConstraint,
     },
-    dataTypeDetails: dataTypes.filter((item) => item.value === dataType),
+    dataTypeDetails: dataTypes.filter((item) => item.value === dataType?.value),
     column_default: defaultValue,
   };
 
@@ -224,7 +261,7 @@ const ColumnForm = ({
   const currentReferencedTableName = targetTable?.value;
   const currentReferencedColumnName = targetColumn?.value;
 
-  const handleCreateForeignKeyinEditMode = async () => {
+  const handleCreateForeignKeyinEditMode = () => {
     const data = [
       {
         column_names: [sourceColumn?.value],
@@ -234,20 +271,30 @@ const ColumnForm = ({
         on_update: onUpdate?.value,
       },
     ];
-    const { error } = await tooljetDatabaseService.createForeignKey(organizationId, selectedTable.table_name, data);
 
-    if (error) {
-      toast.error(error?.message ?? `Failed to edit foreign key`);
-      return;
-    }
-
-    await fetchMetaDataApi();
-    toast.success(`Foreign key created successfully`);
-    setCreateForeignKeyInEdit(false);
-    setIsForeignKeyDraweOpen(false);
+    runMigration({
+      titlePlaceholder: `Add foreign key on "${selectedTable.table_name}"`,
+      changes: [
+        {
+          type: CHANGE_TYPE.ADD,
+          name: selectedTable.table_name,
+          detail: `${sourceColumn?.value} → ${targetTable?.value}.${targetColumn?.value}`,
+        },
+      ],
+      tableId: selectedTable.id,
+      showSqlEditor: true,
+      run: (migrationName) =>
+        tooljetDatabaseService.createForeignKey(organizationId, selectedTable.table_name, data, migrationName),
+      onSuccess: async () => {
+        await fetchMetaDataApi();
+        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        toast.success(`Foreign key created successfully`);
+        setCreateForeignKeyInEdit(false);
+        setIsForeignKeyDraweOpen(false);
+      },
+    });
   };
 
-  const disabledDataType = dataTypes.find((e) => e.value === dataType);
   const [defaultValueLength] = useState(defaultValue?.length);
   const darkDisabledBackground = '#1f2936';
   const lightDisabledBackground = '#f4f6fa';
@@ -307,35 +354,45 @@ const ColumnForm = ({
     dropdownContainerWidth
   );
 
+  const hasCastError = castReport?.status === 'done' && castReport.count > 0;
+
+  // Scoped to just the type-change Select below (constants.js's tjdbDropdownStyles is shared with
+  // ColumnForm.jsx/TableSchema.jsx - overriding here instead of there keeps their dropdowns as-is).
+  // TWEAK HERE for the type dropdown's own look:
+  //   - menu width/radius
+  //   - option hover color/radius
+  //   - error border color/width
+  const typeDropdownStyles = {
+    ...customStyles,
+    menu: (base) => ({
+      ...customStyles.menu(base),
+      width: '100%', // match the input field's width instead of the fixed dropdownContainerWidth
+      borderRadius: 'var(--radius-lg)', // 8px
+    }),
+    option: (base, state) => ({
+      ...customStyles.option(base, state),
+      borderRadius: 'var(--radius-md)', // 6px
+      ':hover': { backgroundColor: 'var(--background-accent-weak)' },
+    }),
+    control: (base, state) => ({
+      ...customStyles.control(base, state),
+      ...(hasCastError && {
+        borderColor: 'var(--border-danger-strong)',
+        ':hover': { borderColor: 'var(--border-danger-strong)' },
+      }),
+    }),
+  };
+
   const handleTypeChange = (value) => {
     setDataType(value);
   };
 
   const fetchMetaDataApi = async () => {
-    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
-      if (error) {
-        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-        return;
-      }
-
-      const { foreign_keys = [] } = data?.result || {};
-      setConfigurations(data?.result?.configurations || {});
-      if (data?.result?.columns?.length > 0) {
-        setColumns(
-          data?.result?.columns.map(({ column_name, data_type, ...rest }) => ({
-            Header: column_name,
-            accessor: column_name,
-            dataType: getColumnDataType({ column_default: rest.column_default, data_type }),
-            ...rest,
-          }))
-        );
-      }
-      if (foreign_keys.length > 0) {
-        setForeignKeys([...foreign_keys]);
-      } else {
-        setForeignKeys([]);
-      }
-    });
+    const metadata = await fetchTableMetadata(organizationId, selectedTable.table_name);
+    if (!metadata) return;
+    setConfigurations(metadata.configurations);
+    if (metadata.columns.length > 0) setColumns(metadata.columns);
+    setForeignKeys([...metadata.foreignKeys]);
   };
 
   const onCloseForeignKeyDrawer = () => {
@@ -350,78 +407,220 @@ const ColumnForm = ({
 
   const getForeignKeyColumnDetails = foreignKeys?.filter((item) => item.column_names[0] === selectedColumn?.Header); // this is for getting current foreign key column
 
-  const handleEdit = async () => {
-    const reqConfigurations = {};
-    if (selectedColumn?.dataType === 'timestamp with time zone') reqConfigurations['timezone'] = timezone;
+  const currentDataType = selectedColumn?.dataType;
+  // The serial and foreign-key locks mirror real backend gates in applyEditColumn (assertStructuredTypeChangeAllowed's
+  // nextval check, and fetchForeignKeys). The primary-key lock is UI-only, not backend-enforced: a PK's type is
+  // conceptually load-bearing, so it is withheld here defensively.
+  const isTypeChangeLocked =
+    currentDataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key === true || isForeignKey === true;
 
-    const colDetails = {
-      column: {
-        column_name: selectedColumn?.Header,
-        data_type: selectedColumn?.dataType,
-        ...(selectedColumn?.dataType !== 'serial' && { column_default: defaultValue }),
-        constraints_type: {
-          is_not_null: isNotNull,
-          is_primary_key: selectedColumn?.constraints_type?.is_primary_key ?? false,
-          is_unique: isUniqueConstraint,
-        },
-        configurations: { ...columnConfigurations, ...reqConfigurations },
-        ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
-      },
+  // Default-deny: only the pairs in CAST_TIERS are offerable, plus the column's own current type so
+  // the dropdown can show what it is.
+  const typeOptions = React.useMemo(() => {
+    if (isTypeChangeLocked) return dataTypes.filter((type) => type.value === currentDataType);
+    const reachable = new Set(allowedTargets(currentDataType).map(({ to }) => to));
+    return dataTypes.filter((type) => type.value === currentDataType || reachable.has(type.value));
+  }, [currentDataType, isTypeChangeLocked]);
 
-      ...(isForeignKey === false && { foreignKeyIdToDelete: getForeignKeyColumnDetails[0]?.constraint_name }),
-    };
+  // A type that isn't offered would otherwise just be silently missing from the dropdown, leaving a
+  // user who wants `double precision -> integer` with no idea why. Column-specific reasons come
+  // first, deduplicated, then the two reasons that hold regardless of the current type - unless a
+  // column-specific reason already said the same thing.
+  const omittedReasons = React.useMemo(() => {
+    if (isTypeChangeLocked) return [];
+    const offered = new Set(typeOptions.map((type) => type.value));
+    const reasons = dataTypes
+      .filter((type) => !offered.has(type.value))
+      .map((type) => blockedReason(currentDataType, type.value))
+      .filter(Boolean);
+    const merged = [...new Set(reasons)];
+    ALWAYS_BLOCKED_REASONS.forEach((reason) => {
+      if (!merged.includes(reason)) merged.push(reason);
+    });
+    return merged;
+  }, [typeOptions, currentDataType, isTypeChangeLocked]);
 
-    if (
+  // Pure CSS hover (see .tj-db-type-omitted-footer in Forms/styles.scss) rather than a React-state
+  // popover - toggling state here re-renders ColumnForm, which recreates this Menu component with a
+  // new identity every time, and react-select remounts its open menu when that identity changes.
+  // The result was the dropdown closing the instant it was hovered.
+  const CustomTypeMenu = (menuProps) => (
+    <components.Menu {...menuProps}>
+      {menuProps.children}
+      {omittedReasons.length > 0 && (
+        <div className="tj-db-type-omitted-footer" data-cy="data-type-omitted-footer">
+          <CircleAlert color="var(--icon-strong)" width="14" height="14" />
+          <span className="tj-db-type-omitted-text">
+            Not seeing the type you need?{' '}
+            <span className="tj-db-type-omitted-link">
+              Some conversions
+              <div
+                className="tj-db-type-omitted-popover tw-border tw-border-solid tw-border-border-weak tw-rounded-md tw-p-2 tw-bg-background-surface-layer-01 tw-text-accent tw-text-sm"
+                data-cy="data-type-omitted-popover"
+              >
+                <CircleAlert color="var(--icon-accent)" width="16" height="16" />
+                <div className="tw-flex tw-items-start tw-gap-2 tw-mt-2">
+                  <span>
+                    The following conversions are not supported out of the box:
+                    <ul className="tw-mt-1 tw-mb-2 tw-pl-4">
+                      {omittedReasons.map((reason) => (
+                        <li key={reason}>{reason}</li>
+                      ))}
+                    </ul>
+                    Write SQL migration from the migration history drawer for these.
+                  </span>
+                </div>
+              </div>
+            </span>{' '}
+            need SQL migration
+          </span>
+        </div>
+      )}
+    </components.Menu>
+  );
+
+  const handleEdit = () => {
+    const isTypeChanged = !!dataType?.value && dataType.value !== selectedColumn?.dataType;
+    const hasChange =
       columnName !== selectedColumn?.Header ||
       defaultValue?.length > 0 ||
       defaultValue !== selectedColumn?.column_default ||
       nullValue !== isNotNull ||
       uniqueConstraintValue !== isUniqueConstraint ||
-      !isForeignKey
-    ) {
-      setFetching(true);
-      const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
-      setFetching(false);
-      if (error) {
-        toast.error(error?.message ?? `Failed to edit a column in "${selectedTable.table_name}" table`);
-        return;
-      }
+      !isForeignKey ||
+      isTypeChanged;
+
+    const finish = () => {
+      fetchMetaDataApi();
+      handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+      toast.success(`Column edited successfully`);
+      onClose && onClose();
+    };
+
+    // Nothing actually changed - close without a request, same as before this modal existed.
+    if (!hasChange) {
+      finish();
+      return;
     }
 
-    fetchMetaDataApi();
-    handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
-    toast.success(`Column edited successfully`);
-    onClose && onClose();
+    const isRenamed = columnName !== selectedColumn?.Header;
+    const cast = isTypeChanged ? castFor(selectedColumn?.dataType, dataType.value) : null;
+    // A lossless widening cast is the only one `edit_column` performs itself; every other supported
+    // cast needs a USING clause, which is generated into the SQL step below and recorded as a raw
+    // SQL migration by useMigrationModal after the structured request succeeds.
+    const isStructuredTypeChange = cast?.tier === 'lossless';
+    const needsGeneratedSql = !!cast && !isStructuredTypeChange;
+
+    // One row per changed dimension, all against the (possibly renamed) new column name - matches
+    // the existing rename-vs-type-change split, extended to the other constraint edits.
+    const changeRows = [];
+    if (isRenamed) {
+      changeRows.push({ type: CHANGE_TYPE.EDIT, name: columnName, oldName: selectedColumn?.Header });
+    }
+    if (isTypeChanged) {
+      changeRows.push({
+        type: CHANGE_TYPE.EDIT,
+        name: columnName,
+        detail: typeChangeDetail(selectedColumn?.dataType, dataType.value),
+      });
+    }
+    if (isNotNull !== nullValue) {
+      changeRows.push({
+        type: CHANGE_TYPE.EDIT,
+        name: columnName,
+        detail: isNotNull ? 'add NOT NULL constraint' : 'drop NOT NULL constraint',
+      });
+    }
+    if (defaultValue !== selectedColumn?.column_default && (defaultValue || selectedColumn?.column_default)) {
+      changeRows.push({ type: CHANGE_TYPE.EDIT, name: columnName, detail: `default ${defaultValue}` });
+    }
+    if (isUniqueConstraint !== uniqueConstraintValue) {
+      changeRows.push({
+        type: CHANGE_TYPE.EDIT,
+        name: columnName,
+        detail: isUniqueConstraint ? 'add UNIQUE constraint' : 'drop UNIQUE constraint',
+      });
+    }
+    // FK-only edits (isForeignKey flipped false) don't touch the column shape - fall back to a
+    // plain row so the list isn't empty.
+    if (changeRows.length === 0) {
+      changeRows.push({ type: CHANGE_TYPE.EDIT, name: columnName });
+    }
+
+    runMigration({
+      titlePlaceholder: isRenamed
+        ? `Rename column "${selectedColumn?.Header}" to "${columnName}"`
+        : `Edit column "${selectedColumn?.Header}"`,
+      changes: changeRows,
+      tableId: selectedTable.id,
+      showSqlEditor: true,
+      // The structured request runs first (see useMigrationModal's run sequence), so if this save
+      // also renames the column, the cast has to name the column by its new name.
+      // `sqlRequired`: the structured request above resends the *old* type for this cast - the SQL
+      // step is the only thing that performs it, so an empty box here must block submission, not
+      // silently skip the cast while still reporting success.
+      ...(needsGeneratedSql && {
+        initialSql: buildTypeChangeSql({
+          columnName: isRenamed ? columnName : selectedColumn?.Header,
+          targetType: dataType.value,
+          hasDefault: !!defaultValue || !!selectedColumn?.column_default,
+        }),
+        sqlRequired: true,
+      }),
+      run: (migrationName) => {
+        const reqConfigurations = {};
+        if (selectedColumn?.dataType === 'timestamp with time zone') reqConfigurations['timezone'] = timezone;
+
+        const colDetails = {
+          column: {
+            column_name: selectedColumn?.Header,
+            // Only a lossless cast travels in the structured request. For every other cast this
+            // deliberately resends the *current* type, so `edit_column` applies the rename,
+            // default and constraints while the generated SQL step performs the cast.
+            data_type: isStructuredTypeChange ? dataType.value : selectedColumn?.dataType,
+            ...(selectedColumn?.dataType !== 'serial' && { column_default: defaultValue }),
+            constraints_type: {
+              is_not_null: isNotNull,
+              is_primary_key: selectedColumn?.constraints_type?.is_primary_key ?? false,
+              is_unique: isUniqueConstraint,
+            },
+            configurations: { ...columnConfigurations, ...reqConfigurations },
+            ...(isRenamed ? { new_column_name: columnName } : {}),
+          },
+          ...(isForeignKey === false && { foreignKeyIdToDelete: getForeignKeyColumnDetails[0]?.constraint_name }),
+          ...(migrationName && { migration_name: migrationName }),
+        };
+        return tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
+      },
+      onSuccess: finish,
+    });
   };
 
   const toolTipPlacementStyle = {
     width: '126px',
   };
 
-  const handleDeleteForeignKeyColumn = async () => {
+  const handleDeleteForeignKeyColumn = () => {
     const id = foreignKeys[selectedForeignkeyIndex]?.constraint_name;
-    const { error } = await tooljetDatabaseService.deleteForeignKey(organizationId, selectedTable.table_name, id);
-
-    if (error) {
-      toast.error(error?.message ?? `Failed to delete foreign key`);
-      return;
-    }
-
-    fetchMetaDataApi();
-    setOnDeletePopup(false);
-    setIsForeignKey(false);
-    setForeignKeyDetails([]);
-    onCloseForeignKeyDrawer();
-    toast.success(`Foreign key deleted successfully`);
+    runMigration({
+      titlePlaceholder: `Remove foreign key on "${selectedTable.table_name}"`,
+      changes: [{ type: CHANGE_TYPE.REMOVE, name: selectedTable.table_name }],
+      tableId: selectedTable.id,
+      showSqlEditor: false,
+      run: (migrationName) =>
+        tooljetDatabaseService.deleteForeignKey(organizationId, selectedTable.table_name, id, migrationName),
+      onSuccess: () => {
+        fetchMetaDataApi();
+        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        setIsForeignKey(false);
+        setForeignKeyDetails([]);
+        onCloseForeignKeyDrawer();
+        toast.success(`Foreign key deleted successfully`);
+      },
+    });
   };
 
-  const footerStyle = {
-    borderTop: '1px solid var(--slate5)',
-    paddingTop: '12px',
-    marginTop: '0px',
-  };
-
-  const handleEditForeignKey = async () => {
+  const handleEditForeignKey = () => {
     const id = foreignKeys[selectedForeignkeyIndex]?.constraint_name;
     const data = [
       {
@@ -433,16 +632,37 @@ const ColumnForm = ({
       },
     ];
 
-    const { error } = await tooljetDatabaseService.editForeignKey(organizationId, selectedTable.table_name, id, data);
-
-    if (error) {
-      toast.error(error?.message ?? `Failed to edit foreign key`);
-      return;
-    }
-
-    fetchMetaDataApi();
-    onCloseForeignKeyDrawer();
-    toast.success(`Foreign key edited successfully`);
+    runMigration({
+      titlePlaceholder: `Edit foreign key on "${selectedTable.table_name}"`,
+      changes: [
+        {
+          type: CHANGE_TYPE.EDIT,
+          name: selectedTable.table_name,
+          detail: `${sourceColumn?.value} → ${targetTable?.value}.${targetColumn?.value}`,
+        },
+      ],
+      tableId: selectedTable.id,
+      showSqlEditor: true,
+      // Folded in from the old "Change in foreign key relation" ConfirmDialog.
+      banner:
+        newChangesInForeignKey.length > 0 ? (
+          <div className="mb-3">
+            <div className={cx('form-label', { 'form-label-light': !darkMode })}>Change in foreign key relation</div>
+            <div className="tw-text-muted tw-mb-2" style={{ fontSize: '13px' }}>
+              Updating the foreign key relation will drop the current constraint and add the new one. This will also
+              replace the default value set in the target table columns with those of the source table.
+            </div>
+          </div>
+        ) : null,
+      run: (migrationName) =>
+        tooljetDatabaseService.editForeignKey(organizationId, selectedTable.table_name, id, data, migrationName),
+      onSuccess: () => {
+        fetchMetaDataApi();
+        handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
+        onCloseForeignKeyDrawer();
+        toast.success(`Foreign key edited successfully`);
+      },
+    });
   };
 
   const changesInForeignKey = () => {
@@ -529,19 +749,91 @@ const ColumnForm = ({
     return matchingColumn;
   }
 
-  const [disabledSaveButton, setDisabledSaveButton] = useState(true);
+  // Derived, not state written from three separate places (two effects + handleInputError below) -
+  // whichever of those last ran used to clobber what the others had decided, e.g. clearing the
+  // column name and then toggling NOT NULL would re-enable Save with an empty name.
+  const [inputError, setInputError] = useState(false);
+  const disabledSaveButton =
+    columnName === '' || inputError || (dataType?.value !== 'serial' && isNotNull === true && isEmpty(defaultValue));
 
   useEffect(() => {
-    setDisabledSaveButton(columnName === '');
-  }, [columnName]);
+    const currentType = selectedColumn?.dataType;
+    const targetType = dataType?.value;
+    const cast = targetType && currentType !== targetType ? castFor(currentType, targetType) : null;
 
-  useEffect(() => {
-    const shouldDisableForNullValue = dataType?.value !== 'serial' && isNotNull === true && isEmpty(defaultValue);
-    setDisabledSaveButton(shouldDisableForNullValue);
-  }, [isNotNull, defaultValue, dataType]);
+    if (!cast || cast.tier !== 'may_fail') {
+      setCastReport(null);
+      return;
+    }
+
+    if (!selectedEnvironment?.id) return;
+
+    const query = buildCastabilityCountQuery({
+      columnName: selectedColumn?.Header,
+      probe: cast.probe,
+    });
+
+    if (!query) {
+      setCastReport({ status: 'uncheckable' });
+      return;
+    }
+
+    let cancelled = false;
+    setCastReport({ status: 'loading' });
+
+    tooljetDatabaseService
+      .sqlExecution(organizationId, selectedTable.id, { sql: query, environment_id: selectedEnvironment.id })
+      .then(({ error, data }) => {
+        if (cancelled) return;
+
+        // A SQL-level failure comes back as a 2xx body shaped { result: { status: 'failed', ... } },
+        // so the adapter's own `error` stays unset - checking only `error` reads a failed probe as
+        // "every value converts cleanly", which is the one wrong answer this report must never give.
+        const result = data?.result;
+        if (error || result?.status === 'failed') {
+          const message =
+            error?.message ??
+            [result?.error_message, result?.data?.message].filter(Boolean).join(': ') ??
+            'Could not check existing values';
+          setCastReport({ status: 'error', message });
+          return;
+        }
+
+        // Raw array since commit 026740b242 ("return raw array for join_tables and sql_execution").
+        // COUNT(*) comes back as a numeric-looking string, not a number. `|| 0` used to turn a
+        // missing/reshaped row into "0 will fail" - the exact wrong answer the comment above bans -
+        // Number(...) + Number.isFinite catches that instead of masking it.
+        const rows = Array.isArray(result?.data) ? result.data : [];
+        const count = Number(rows[0]?.count);
+        if (!Number.isFinite(count)) {
+          setCastReport({ status: 'error', message: 'Could not check existing values' });
+          return;
+        }
+        // probe/columnName travel with the report so "Show rows" doesn't have to re-derive `cast`
+        // from dataType/selectedColumn a second time - it uses exactly what this check ran against.
+        setCastReport({ status: 'done', count, probe: cast.probe, columnName: selectedColumn?.Header });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dataType, selectedColumn, selectedTable, selectedEnvironment, organizationId]);
+
+  // Filters the table down to exactly the rows the count above counts, replacing whatever filters
+  // were already active (a fresh "show me these" view, not a further-narrow-what-you-had-open one),
+  // then closes the drawer so the user lands straight on the table. Only reachable for regex probes -
+  // inconsistentRowsFilter returns null for range probes and the link isn't rendered for those.
+  const handleShowInconsistentRows = () => {
+    const filter = inconsistentRowsFilter(castReport?.probe);
+    if (!filter) return;
+    const newFilters = { 0: { column: castReport.columnName, operator: filter.operator, value: filter.value } };
+    setQueryFilters(newFilters);
+    handleRefetchQuery(newFilters, sortFilters, 1, pageSize);
+    onClose && onClose();
+  };
 
   const handleInputError = (bool = false) => {
-    setDisabledSaveButton(bool);
+    setInputError(bool);
   };
 
   const codehinterCallback = React.useCallback(() => {
@@ -652,20 +944,90 @@ const ColumnForm = ({
             <div className="form-label" data-cy="data-type-input-field-label">
               Data type
             </div>
-            <ToolTip message={'Data type cannot be modified'} placement="top" tooltipClassName="tootip-table">
-              <div className="tj-select-text">
-                <Select
-                  isDisabled={true}
-                  defaultValue={selectedColumn?.dataType === 'serial' ? serialDataType : disabledDataType}
-                  formatOptionLabel={formatOptionLabel}
-                  options={dataTypes}
-                  onChange={handleTypeChange}
-                  components={{ IndicatorSeparator: () => null }}
-                  styles={customStyles}
-                  isSearchable={false}
-                />
+            <div className="tj-select-text">
+              <Select
+                // Primary keys and auto-incrementing columns keep the old lockdown: a PK's type is
+                // load-bearing for every foreign key pointing at it, and a serial carries a sequence
+                // that would have to move with it.
+                isDisabled={isTypeChangeLocked}
+                value={dataType}
+                formatOptionLabel={formatOptionLabel}
+                options={typeOptions}
+                onChange={handleTypeChange}
+                components={{ IndicatorSeparator: () => null, Menu: CustomTypeMenu }}
+                styles={typeDropdownStyles}
+                isSearchable={false}
+              />
+            </div>
+            {isTypeChangeLocked && (
+              <div className="tw-text-xs tw-text-[var(--text-placeholder)] tw-mt-1" data-cy="data-type-locked-reason">
+                {selectedColumn?.constraints_type?.is_primary_key
+                  ? 'A primary key’s type cannot be changed.'
+                  : isForeignKey
+                    ? 'A column under a foreign key needs both sides changed together — use a SQL migration.'
+                    : 'An auto-incrementing column’s type cannot be changed.'}
               </div>
-            </ToolTip>
+            )}
+            {castReport?.status === 'loading' && (
+              <div className={cx(infoBoxClass('accent'), 'tw-mt-2')} data-cy="cast-report-loading">
+                <Spinner size="small" />
+                <span>Checking existing values…</span>
+              </div>
+            )}
+            {castReport?.status === 'uncheckable' && (
+              <div className={cx(infoBoxClass('accent'), 'tw-mt-2')} data-cy="cast-report-uncheckable">
+                <Information fill="var(--icon-accent)" width="28" />
+                <span>
+                  Existing values can&apos;t be checked in advance for this conversion. Rows that aren&apos;t valid will
+                  stop the migration.
+                </span>
+              </div>
+            )}
+            {castReport?.status === 'error' && (
+              <div className={cx(infoBoxClass('accent'), 'tw-mt-2')} data-cy="cast-report-error">
+                <Information fill="var(--icon-accent)" width="28" />
+                <span>Couldn&apos;t check existing values: {castReport.message}</span>
+              </div>
+            )}
+            {hasCastError && castReport.probe?.kind === 'regex' && (
+              <div
+                className="tw-flex tw-items-start tw-gap-1 tw-mt-1 tw-text-xs tw-text-[var(--text-danger)]"
+                data-cy="cast-report-bad-values"
+              >
+                <Warning fill="var(--icon-danger)" width="14" height="14" />
+                <span>
+                  {castReport.count} value(s) in this column can&apos;t be converted.{' '}
+                  <span
+                    className="tw-underline tw-cursor-pointer"
+                    onClick={handleShowInconsistentRows}
+                    data-cy="cast-report-show-rows"
+                  >
+                    Show rows
+                  </span>
+                </span>
+              </div>
+            )}
+            {hasCastError && castReport.probe?.kind === 'range' && (
+              <div
+                className="tw-flex tw-items-start tw-gap-1 tw-mt-1 tw-text-xs tw-text-[var(--text-danger)]"
+                data-cy="cast-report-bad-values-range"
+              >
+                <Warning fill="var(--icon-danger)" width="14" height="14" />
+                <span>
+                  {castReport.count} value(s) in this column can&apos;t be converted — they&apos;re outside
+                  integer&apos;s range.
+                </span>
+              </div>
+            )}
+            {castReport?.status === 'done' && castReport.count === 0 && (
+              <div className={cx(infoBoxClass('success'), 'tw-mt-2')} data-cy="cast-report-clean">
+                <CheckCircle fill="var(--icon-success)" width="28" height="28" />
+                <span>
+                  Every value in this environment converts cleanly. Other environments are checked when you switch to
+                  them.
+                </span>
+              </div>
+            )}
           </div>
           {isTimestamp && (
             <div
@@ -817,7 +1179,7 @@ const ColumnForm = ({
                       setReferencedColumnDetails={setReferencedColumnDetails}
                       scrollEventForColumnValues={true}
                       cellColumnName={selectedColumn?.Header}
-                      columnDataType={dataType}
+                      columnDataType={dataType?.value}
                       isEditColumn={true}
                     />
                     {defaultValue === null && <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>}
@@ -844,13 +1206,13 @@ const ColumnForm = ({
           <div className="row mb-3">
             <ToolTip
               message={
-                dataType === 'serial'
+                dataType?.value === 'serial'
                   ? 'Foreign key relation cannot be created for serial type column'
-                  : dataType === 'boolean'
+                  : dataType?.value === 'boolean'
                     ? 'Foreign key relation cannot be created for boolean type column'
-                    : dataType === 'timestamp with time zone'
+                    : dataType?.value === 'timestamp with time zone'
                       ? 'Foreign key relation cannot be created for this data type'
-                      : dataType === 'jsonb'
+                      : dataType?.value === 'jsonb'
                         ? 'Foreign key relation cannot be created for JSON data type'
                         : 'Fill in column details to create a foreign key relation'
               }
@@ -859,7 +1221,7 @@ const ColumnForm = ({
               show={
                 isEmpty(dataType) ||
                 isEmpty(columnName) ||
-                ['boolean', 'serial', 'timestamp with time zone', 'jsonb'].includes(dataType)
+                ['boolean', 'serial', 'timestamp with time zone', 'jsonb'].includes(dataType?.value)
               }
             >
               <div className="col-1">
@@ -882,7 +1244,7 @@ const ColumnForm = ({
                       dataType?.value === 'serial' ||
                       isEmpty(dataType) ||
                       isEmpty(columnName) ||
-                      ['boolean', 'serial', 'timestamp with time zone', 'jsonb'].includes(dataType)
+                      ['boolean', 'serial', 'timestamp with time zone', 'jsonb'].includes(dataType?.value)
                     }
                   />
                 </label>
@@ -950,12 +1312,10 @@ const ColumnForm = ({
               onDelete={onDelete}
               setOnUpdate={setOnUpdate}
               onUpdate={onUpdate}
-              handleEditForeignKey={() =>
-                newChangesInForeignKey.length > 0 ? setOnChangeInForeignKey(true) : handleEditForeignKey()
-              }
+              handleEditForeignKey={handleEditForeignKey}
               createForeignKeyInEdit={createForeignKeyInEdit}
               isForeignKeyDraweOpen={isForeignKeyDraweOpen}
-              onDeletePopup={() => setOnDeletePopup(true)}
+              onDeletePopup={handleDeleteForeignKeyColumn}
               selectedForeignkeyIndex={selectedForeignkeyIndex}
               initiator="ForeignKeyTableForm"
             />
@@ -1067,7 +1427,6 @@ const ColumnForm = ({
         </div>
         <DrawerFooter
           isEditMode={true}
-          fetching={fetching}
           onClose={onClose}
           onEdit={handleEdit}
           shouldDisableCreateBtn={disabledSaveButton}
@@ -1075,59 +1434,7 @@ const ColumnForm = ({
           initiator={initiator}
         />
       </div>
-      <ConfirmDialog
-        title={'Delete foreign key'}
-        show={onDeletePopup}
-        message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
-        onConfirm={handleDeleteForeignKeyColumn}
-        onCancel={() => {
-          setOnDeletePopup(false);
-        }}
-        darkMode={darkMode}
-        confirmButtonType="dangerPrimary"
-        cancelButtonType="tertiary"
-        onCloseIconClick={() => {
-          setOnDeletePopup(false);
-        }}
-        confirmButtonText={'Continue'}
-        cancelButtonText={'Cancel'}
-        // confirmIcon={<DeleteIcon />}
-        footerStyle={footerStyle}
-      />
-      <ConfirmDialog
-        title={'Change in foreign key relation'}
-        show={onChangeInForeignKey}
-        message={
-          <div>
-            <span>
-              Updating the foreign key relation will drop the current constraint and add the new one. This will also
-              replace the default value set in the target table columns with those of the source table. Read docs to
-              know more.
-            </span>
-            <p className="mt-3 mb-0">Are you sure you want to continue?</p>
-          </div>
-        }
-        onConfirm={() => {
-          handleEditForeignKey();
-          setOnChangeInForeignKey(false);
-        }}
-        onCancel={() => setOnChangeInForeignKey(false)}
-        darkMode={darkMode}
-        confirmButtonType="primary"
-        cancelButtonType="tertiary"
-        onCloseIconClick={() => setOnChangeInForeignKey(false)}
-        confirmButtonText={'Continue'}
-        cancelButtonText={'Cancel'}
-        footerStyle={footerStyle}
-        // currentPrimaryKeyIcons={currentPrimaryKeyIcons}
-        // newPrimaryKeyIcons={newPrimaryKeyIcons}
-        isEditToolJetDbTable={true}
-        foreignKeyChanges={newChangesInForeignKey}
-        existingReferencedTableName={existingReferencedTableName}
-        existingReferencedColumnName={existingReferencedColumnName}
-        currentReferencedTableName={currentReferencedTableName}
-        currentReferencedColumnName={currentReferencedColumnName}
-      />
+      {migrationModal}
     </>
   );
 };
