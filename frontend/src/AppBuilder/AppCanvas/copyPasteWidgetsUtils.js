@@ -191,7 +191,23 @@ function calculateComponentPosition(component, existingComponents, layout, targe
     newLeft = 0;
   }
 
+  // Only a row-scoped parent clips its children; every other parent keeps the position as found.
+  const targetRowHeight = getRowHeightOfParent(targetParentId);
+  if (targetRowHeight) {
+    newTop = clampDuplicateTopToRow(newTop, component.layouts[layout].height, targetRowHeight);
+  }
+
   return { newTop, newLeft };
+}
+
+function getRowHeightOfParent(targetParentId) {
+  if (!targetParentId) return null;
+  const state = useStore.getState();
+  const baseParentId = state.getBaseParentId?.(targetParentId) ?? targetParentId;
+  const parentType = state.getComponentTypeFromId?.(baseParentId);
+  if (parentType !== 'Listview') return null;
+  const rowHeight = Number(state.getResolvedComponent?.(baseParentId, null)?.properties?.rowHeight);
+  return rowHeight > 0 ? rowHeight : null;
 }
 
 function calculateGroupPosition(components, existingComponents, layout, targetParentId) {
@@ -523,3 +539,10 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     !isCloning &&
     toast.success(`Component${filteredComponentsCount > 1 ? 's' : ''} pasted successfully`);
 }
+
+// A row hides whatever runs past its height, so a copy stepped below the original can be filed in
+// the row and drawn outside it.
+export const clampDuplicateTopToRow = (top, height, rowHeight) => {
+  if (!(rowHeight > 0)) return top;
+  return Math.max(0, Math.min(top, rowHeight - height));
+};

@@ -51,7 +51,7 @@ export const Listview = function Listview({
     showBorder,
     rowsPerPage = 10,
     enablePagination = false,
-    mode = 'list',
+    mode: rawMode = 'list',
     columns = 1,
     dataSourceSelector,
     dynamicHeight,
@@ -66,7 +66,13 @@ export const Listview = function Listview({
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
-  const rowPerPageValue = Number(rowsPerPage) ? +rowsPerPage || 10 : 10;
+  // A page size has to be a whole number of at least one: a negative runs the slice backwards and
+  // returns nothing, and a fraction lands mid-record and hands neighbouring pages different sizes.
+  const requestedRowsPerPage = Math.floor(Number(rowsPerPage));
+  const rowPerPageValue = requestedRowsPerPage >= 1 ? requestedRowsPerPage : 10;
+  // Two places compare this against their own lower-case literal, so a capitalised value would
+  // match neither and the row and its canvas would pick different modes.
+  const mode = String(rawMode ?? 'list').toLowerCase();
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
 
   const computedStyles = {
@@ -133,6 +139,23 @@ export const Listview = function Listview({
   const pageChanged = (page) => {
     setCurrentPage(page);
   };
+  // A page number outlives the records it pointed at, so a new data set would open mid-list.
+  const prevRecordCount = useRef(_.isArray(data) ? data.length : 0);
+  const recordCount = _.isArray(data) ? data.length : 0;
+  if (prevRecordCount.current !== recordCount) {
+    prevRecordCount.current = recordCount;
+    if (currentPage !== 1) setCurrentPage(1);
+    // A selection outlives its record otherwise, and a handler acts on a row the data no longer has.
+    if (selectedRowIndex !== undefined && selectedRowIndex >= recordCount) {
+      setSelectedRowIndex(undefined);
+      setExposedVariables({
+        selectedRecordId: undefined,
+        selectedRecord: undefined,
+        selectedRowId: undefined,
+        selectedRow: undefined,
+      });
+    }
+  }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   const filteredData = _.isArray(data)
@@ -171,9 +194,9 @@ export const Listview = function Listview({
     // Update the customResolvables with the new listItems
     if (listItems.length > 0) {
       updateCustomResolvables(id, listItems, 'listItem', moduleId, parentIndices);
-      // Initialize exposed value arrays for children so per-row writes are correctly sized
-      initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
     }
+    // Runs even at zero rows: this is the call that drops rows the data no longer has.
+    initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
   }
 
   const onRecordOrRowClicked = useCallback(
@@ -227,7 +250,7 @@ export const Listview = function Listview({
         <Spinner />
       ) : (
         <>
-          <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
+          <div role="list" className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
             {filteredData.map((_listItem, index) => (
               <ListviewSubcontainer
                 // Keyed by record: a page-local key makes React reuse row 0's children on every page.

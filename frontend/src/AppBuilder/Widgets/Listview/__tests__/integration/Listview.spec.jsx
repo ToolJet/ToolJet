@@ -1477,3 +1477,317 @@ describe('Listview: Control component from a row event', () => {
     await waitFor(() => expect(inputValues()).toEqual(['', '', 'picked']));
   });
 });
+
+/**
+ * Pagination state has to follow the data. A page number outlives the records it pointed at, and a
+ * rows-per-page value the user typed can be a number the slice cannot use.
+ */
+describe('Listview: the pager follows the data', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const manyRecords = (count, prefix) =>
+    binding(`{{${JSON.stringify(Array.from({ length: count }, (_, index) => ({ text: `${prefix}${index}` })))}}}`);
+
+  const paged = (records, perPage) => ({
+    properties: {
+      data: records,
+      enablePagination: binding('{{true}}'),
+      rowsPerPage: perPage,
+    },
+  });
+
+  const activePage = () => document.querySelector('.page-item.active')?.textContent;
+
+  test('[Listview-BUG-020] changing the data sends the pager back to page one', async () => {
+    // Break this catches: the page number living on after the records it pointed at are gone, so a
+    // fresh data set opens somewhere in the middle, or past its own end.
+    await mount(paged(manyRecords(30, 'a'), binding('{{10}}')));
+    await waitFor(() => expect(rowTexts()[0]).toBe('a0'));
+
+    await user().click(document.querySelector('[data-cy="next-page-link"]'));
+    await user().click(document.querySelector('[data-cy="next-page-link"]'));
+    await waitFor(() => expect(rowTexts()[0]).toBe('a20'));
+
+    await widget.session.store.act(() => {
+      widget.setComponentProperty(ID, 'data', manyRecords(25, 'b').value, 'properties');
+    });
+
+    await waitFor(() => expect(rowTexts()[0]).toBe('b0'));
+    expect(activePage()).toBe('1');
+  });
+
+  test('[Listview-BUG-021] a negative rows-per-page falls back to ten', async () => {
+    // Break this catches: only guarding zero and NaN. A negative passes the guard, the page count
+    // goes negative, and the slice runs backwards and returns nothing.
+    await mount(paged(manyRecords(12, 'c'), binding('{{-5}}')));
+
+    await waitFor(() => expect(rows()).toHaveLength(10));
+  });
+
+  test('[Listview-BUG-021] a fractional rows-per-page gives every page the same size', async () => {
+    // Break this catches: passing 2.5 to the slice, which lands on half a record and hands one page
+    // two rows and the next three.
+    await mount(paged(manyRecords(12, 'd'), binding('{{2.5}}')));
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    await user().click(document.querySelector('[data-cy="next-page-link"]'));
+
+    await waitFor(() => expect(rowTexts()).toEqual(['d2', 'd3']));
+  });
+});
+
+/**
+ * Two property values the inspector accepts but the widget misreads: a boolean typed without braces,
+ * and a mode whose capitalisation matches neither branch that reads it.
+ */
+describe('Listview: property values the widget misreads', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const resolvedProperties = () => store().getResolvedComponent(ID, null, MODULE_ID)?.properties;
+  const rowShape = () => ({
+    fullWidth: rows()[0].className.includes('w-100'),
+    canvasGrid: rows()[0].querySelector('.real-canvas')?.style.backgroundSize,
+  });
+
+  test('[Listview-BUG-022] the word false, typed without braces, is false', async () => {
+    // Break this catches: coercing a boolean property by truthiness, so the non-empty string
+    // "false" becomes true and the setting does the opposite of what it says.
+    // Asserted on the resolved value, not the border: jsdom drops a shorthand holding var(), so the
+    // inline border style reads empty either way and cannot answer this.
+    await mount({ properties: { showBorder: { value: 'false' } } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    expect(resolvedProperties().showBorder).toBe(false);
+  });
+
+  test('[Listview-BUG-023] a Mode of "Grid" renders as grid, not half of each', async () => {
+    // Break this catches: two places comparing mode against their own lower-case literal, so a
+    // capitalised value matches neither and the row and its canvas pick different modes.
+    await mount({ properties: { mode: binding('{{"grid"}}'), columns: binding('{{3}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    const lowercase = rowShape();
+
+    await mount({ properties: { mode: binding('{{"Grid"}}'), columns: binding('{{3}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    expect(rowShape()).toEqual(lowercase);
+  });
+});
+
+/**
+ * A list of records should read as a list and be reachable without a mouse. Focus alone must not
+ * count as a record click: an app wired to Record clicked would then run its query as someone tabs.
+ */
+describe('Listview: rows are reachable without a mouse', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BUG-024] the list and its rows carry list semantics and take focus', async () => {
+    // Break this catches: a row rendered as a plain div, which assistive tech reads as nothing and
+    // the keyboard cannot reach at all.
+    await mount();
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    expect(container().closest('[role="list"]') ?? document.querySelector('[role="list"]')).toBeTruthy();
+    rows().forEach((row) => {
+      expect(row.getAttribute('role')).toBe('listitem');
+      expect(row.tabIndex).toBeGreaterThanOrEqual(0);
+    });
+
+    rows()[2].focus();
+    expect(document.activeElement).toBe(rows()[2]);
+  });
+
+  test('[Listview-BUG-024] Enter on a focused row selects that record', async () => {
+    // Break this catches: making rows focusable without making them act, so a keyboard user can
+    // land on a row and still not choose it.
+    await mount({ events: [counting('onRecordClicked', 'rec')] });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    rows()[2].focus();
+    await user().keyboard('{Enter}');
+
+    await waitFor(() => expect(fired('rec')).toBe(1));
+    expect(exposed('selectedRecordId')).toBe(2);
+  });
+
+  test('[Listview-BUG-024] focusing a row does not select it on its own', async () => {
+    // Break this catches: treating focus as a click. An app wired to Record clicked would fire its
+    // query as a keyboard user tabbed through the rows, writes included.
+    await mount({ events: [counting('onRecordClicked', 'rec')] });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    rows()[2].focus();
+
+    expect(fired('rec')).toBe(0);
+  });
+});
+
+/**
+ * A row's canvas has to leave the same room at its edges in both modes. Grid mode computed its own
+ * width instead of asking the shared helper every other List View canvas uses.
+ */
+describe('Listview: a grid column fits inside the list', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const rowCanvasWidth = () => rows()[0].querySelector('.real-canvas')?.style.backgroundSize;
+
+  test('[Listview-BUG-028] a single grid column is exactly as wide as a list row', async () => {
+    // Break this catches: grid mode subtracting a flat 2px from the raw width while every other
+    // List View canvas subtracts the real padding, so each column runs ~21px past the right edge.
+    await mount({ properties: { mode: binding('list') } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    const listWidth = rowCanvasWidth();
+
+    await mount({ properties: { mode: binding('grid'), columns: binding('{{1}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    expect(rowCanvasWidth()).toBe(listWidth);
+  });
+});
+
+/**
+ * A query that comes back empty must leave the list's published values empty too. Anything reading
+ * `components.listview1.data` otherwise still sees the records that are no longer on screen.
+ */
+describe('Listview: emptying the data empties what the list publishes', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BUG-030] rebinding the data to an empty array drops every published row', async () => {
+    // Break this catches: running the row cleanup only when there are rows left, so the one case
+    // that needs it most — no rows at all — is the case it is skipped for.
+    await mount();
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    expect(Object.keys(exposed('data'))).toHaveLength(3);
+
+    await widget.session.store.act(async () => {
+      widget.setComponentProperty(ID, 'data', `{{[]}}`, 'properties');
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(0));
+    expect(Object.keys(exposed('data') ?? {})).toHaveLength(0);
+    expect(Object.keys(exposed('children') ?? {})).toHaveLength(0);
+  });
+});
+
+/**
+ * A Custom Component talks to its own iframe over `window.postMessage`, which every row hears.
+ * Every row's copy carries the same component id, so the id alone cannot say which row sent one.
+ */
+function customComponentChild() {
+  const definition = componentDefinition('cc1', 'customcomponent1', 'CustomComponent', {
+    data: binding(`{{{ picked: false }}}`),
+    code: binding(''),
+  });
+  definition.component.parent = ID;
+  definition.component.definition.styles = {};
+  definition.component.definition.others = {
+    showOnDesktop: binding('{{true}}'),
+    showOnMobile: binding('{{false}}'),
+  };
+  return definition;
+}
+
+const customComponentWidget = createWidgetHarness({
+  componentType: 'Listview',
+  handle: NAME,
+  id: ID,
+  defaultProperties: {
+    dataSourceSelector: binding('rawJson'),
+    data: binding(THREE_RECORDS),
+    mode: binding('list'),
+    columns: binding('{{1}}'),
+    rowHeight: binding('100'),
+    loadingState: binding('{{false}}'),
+    dynamicHeight: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    collapseWhenHidden: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    showBorder: binding('{{true}}'),
+    rowsPerPage: binding('{{10}}'),
+    enablePagination: binding('{{false}}'),
+  },
+  defaultStyles: {
+    backgroundColor: binding('var(--cc-surface1-surface)'),
+    borderColor: binding('var(--cc-weak-border)'),
+  },
+  defaultExtraComponents: { cc1: customComponentChild() },
+  capabilities: { dnd: true },
+  widgetHeight: 450,
+  widgetWidth: 600,
+});
+
+describe('Listview: a Custom Component belongs to its own row', () => {
+  beforeEach(customComponentWidget.setup);
+  afterEach(customComponentWidget.teardown);
+
+  test('[Listview-BUG-032] an update from one row s iframe leaves the other rows alone', async () => {
+    // Break this catches: accepting the message on component id alone. Every row's copy shares that
+    // id, so one row's update is applied by all three and the rows stop being independent.
+    customComponentWidget.render({ currentMode: 'view' });
+    await waitFor(() => expect(document.querySelectorAll('iframe')).toHaveLength(3));
+
+    const frames = [...document.querySelectorAll('iframe')];
+    await customComponentWidget.session.store.act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { from: 'customComponent', componentId: 'cc1', message: 'UPDATE_DATA', updatedObj: { picked: true } },
+          source: frames[1].contentWindow,
+        })
+      );
+    });
+
+    const published = () => customComponentWidget.exposed()?.data ?? {};
+    await waitFor(() => expect(published()['1']?.customcomponent1?.data?.picked).toBe(true));
+    expect(published()['0']?.customcomponent1?.data?.picked).toBe(false);
+    expect(published()['2']?.customcomponent1?.data?.picked).toBe(false);
+  });
+});
+
+/**
+ * Three things that follow the rows: the selection, the pager's position, and where a duplicated
+ * child lands.
+ */
+describe('Listview: state and layout that must follow the rows', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const THREE = binding(`{{[{ text: 'Alpha' }, { text: 'Beta' }, { text: 'Gamma' }]}}`);
+  const ONE = binding(`{{[{ text: 'Alpha' }]}}`);
+
+  test('[Listview-BUG-033] a selection the data no longer holds is cleared', async () => {
+    // Break this catches: the selection outliving its record, so a handler reading selectedRecord
+    // acts on a row that is no longer in the data.
+    await mount();
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    await user().click(rows()[2]);
+    await waitFor(() => expect(exposed('selectedRecordId')).toBe(2));
+
+    await widget.session.store.act(() => {
+      widget.setComponentProperty(ID, 'data', ONE.value, 'properties');
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(exposed('selectedRecordId')).toBeUndefined();
+    expect(exposed('selectedRecord')).toBeUndefined();
+  });
+
+  test('[Listview-BUG-033] a selection the data still holds survives', async () => {
+    // Guard, not a bug: shrinking the data must not throw away a selection that is still valid.
+    await mount({ properties: { data: THREE } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    await user().click(rows()[0]);
+    await waitFor(() => expect(exposed('selectedRecordId')).toBe(0));
+
+    await widget.session.store.act(() => {
+      widget.setComponentProperty(ID, 'data', binding(`{{[{ text: 'Alpha' }, { text: 'Beta' }]}}`).value, 'properties');
+    });
+
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    expect(exposed('selectedRecordId')).toBe(0);
+  });
+});

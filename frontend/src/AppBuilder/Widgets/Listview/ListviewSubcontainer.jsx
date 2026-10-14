@@ -67,7 +67,16 @@ export const ListviewSubcontainer = ({
           ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
         }}
         key={index}
+        role="listitem"
+        tabIndex={0}
         data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
+        // Enter and Space only: focus alone must not select, or tabbing would fire Record clicked.
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          onRecordOrRowClicked(index);
+        }}
         // Bubble, not capture: capture ran before the child's own handler, so Record clicked read a stale value.
         onClick={(event) => {
           // A modal this row opened covers the page; clicking it is not clicking the row beneath.

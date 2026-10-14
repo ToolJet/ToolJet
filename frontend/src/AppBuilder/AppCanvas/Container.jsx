@@ -197,7 +197,9 @@ const Container = React.memo(
 
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
-        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
+        // A grid column divides the SAME width a list row gets, or it runs past the list's edge.
+        if (componentType === 'Listview' && listViewMode == 'grid')
+          return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef) / columns;
         if (id === 'canvas') return canvasWidth;
         return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
       }

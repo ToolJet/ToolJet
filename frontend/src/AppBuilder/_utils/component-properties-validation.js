@@ -49,7 +49,14 @@ export const generateSchemaFromValidationDefinition = (definition, recursionDept
       schema = boolean();
 
       if (recursionDepth === 0) {
-        schema = coerce(schema, any(), (value) => (value ? true : false));
+        // "false" typed without braces is a non-empty string, and truthiness alone would read it
+        // as true — the opposite of what the field says.
+        schema = coerce(schema, any(), (value) => {
+          if (typeof value === 'string' && ['true', 'false'].includes(value.trim().toLowerCase())) {
+            return value.trim().toLowerCase() === 'true';
+          }
+          return value ? true : false;
+        });
       }
       break;
     }
