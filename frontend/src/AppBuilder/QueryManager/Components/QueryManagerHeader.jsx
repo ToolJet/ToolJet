@@ -106,13 +106,14 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
       });
   };
   const tabs = [
-    { id: 1, label: 'Setup' },
+    { id: 1, key: 'setup', label: 'Setup' },
     {
       id: 2,
+      key: 'transformation',
       label: 'Transformation',
       condition: !TRANSFORMATION_DISABLED_KINDS.has(selectedQuery?.kind),
     },
-    { id: 3, label: 'Settings' },
+    { id: 3, key: 'settings', label: 'Settings' },
   ];
 
   const iconOnly = headerWidth > 0 && headerWidth < ICON_ONLY_BUTTON_BREAKPOINT;
@@ -137,6 +138,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
                   <p
                     key={tab.id}
                     data-cy={`query-tab-${tab.label.toLowerCase()}`}
+                    data-tab-key={tab.key}
+                    aria-selected={activeTab === tab.id}
                     className="m-0 d-flex align-items-center h-100"
                     onClick={() => setActiveTab(tab.id)}
                     style={{

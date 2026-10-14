@@ -87,11 +87,15 @@ export const BaseLeftSidebar = ({
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const returnToSearch = useStore((state) => state.codeSearch.returnToSearch);
+  const setCodeSearchReturnToSearch = useStore((state) => state.setCodeSearchReturnToSearch);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
 
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
+    // Only a search result opens Settings with a way back to the search panel.
+    setCodeSearchReturnToSearch(false);
     setSelectedSidebarItem(item);
     localStorage.setItem('selectedSidebarItem', item);
     // Only treat a repeat click as "close" when the panel is actually OPEN. Panels that close
@@ -192,6 +196,7 @@ export const BaseLeftSidebar = ({
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
             onClose={() => toggleLeftSidebar(false)}
+            onBackToSearch={returnToSearch ? () => handleSelectedSidebarItem('search') : undefined}
           />
         );
     }

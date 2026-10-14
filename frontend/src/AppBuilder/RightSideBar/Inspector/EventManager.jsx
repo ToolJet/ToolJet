@@ -56,6 +56,7 @@ import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { appsService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -134,6 +135,20 @@ export const EventManager = ({
     onEventHandlersUpdated,
     dismissEventPopoverAutoOpen,
   } = useNewEventAutoPopoverOpen(focusedEventIndex, setFocusedEventIndex);
+
+  // Code search opens a handler's popover by event id. Several EventManagers can share a sourceId (a
+  // Table's component, column and action lists), so only the one listing the handler opens it.
+  useCodeSearchReveal(
+    'event',
+    sourceId,
+    (eventId) => {
+      const index = events.findIndex((event) => event.id === eventId);
+      if (index < 0) return false;
+      setFocusedEventIndex(index);
+      return true;
+    },
+    [events]
+  );
 
   const { t } = useTranslation();
 
@@ -588,16 +603,18 @@ export const EventManager = ({
                   />
                 </div>
               </FieldRow>
-              <FieldRow label={t('editor.inspector.eventManager.eventName', 'Event name')} dataCy="event-name-label">
-                <Input
-                  key={eventHandler?.id}
-                  type="text"
-                  defaultValue={eventHandler?.name ?? ''}
-                  onBlur={(e) => handlerChanged(index, 'name', e.target.value)}
-                  className="tw-w-full"
-                  data-cy="event-name-input"
-                />
-              </FieldRow>
+              <div data-param="name">
+                <FieldRow label={t('editor.inspector.eventManager.eventName', 'Event name')} dataCy="event-name-label">
+                  <Input
+                    key={eventHandler?.id}
+                    type="text"
+                    defaultValue={eventHandler?.name ?? ''}
+                    onBlur={(e) => handlerChanged(index, 'name', e.target.value)}
+                    className="tw-w-full"
+                    data-cy="event-name-input"
+                  />
+                </FieldRow>
+              </div>
             </div>
             <div className="tw-flex tw-flex-col tw-gap-3">
               <FieldRow label={t('editor.inspector.eventManager.event', 'Event')} dataCy="event-label">
@@ -1236,6 +1253,7 @@ export const EventManager = ({
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                                 data-cy="event-handler-card"
+                                data-event-id={event.id}
                                 className="tw-mb-1 tw-h-14 tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-md tw-bg-interactive-default tw-p-2 hover:tw-bg-interactive-hover"
                               >
                                 <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-justify-center tw-gap-0.5">
@@ -1323,6 +1341,7 @@ export const EventManager = ({
                                 darkMode && 'dark-theme'
                               )}
                               data-cy="popover-card"
+                              data-reveal-root={`event:${event.id}`}
                               onInteractOutside={(e) => {
                                 const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
                                 if (autocomplete && autocomplete.contains(e.target)) {

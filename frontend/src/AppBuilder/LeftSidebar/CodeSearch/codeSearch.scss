@@ -58,9 +58,21 @@
     }
   }
 
+  .code-search-filters,
   .code-search-chips {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .code-search-chip svg {
+    vertical-align: -1px;
+  }
+
+  .code-search-empty-actions {
+    display: flex;
+    justify-content: flex-start;
     gap: 4px;
   }
 
@@ -218,7 +230,10 @@
   }
 
   .code-search-row-label {
-    flex: 0 0 88px;
+    // Sized to the label (event and list-item labels run long); the preview keeps at least 40%.
+    flex: 0 1 auto;
+    max-width: 60%;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 11px;
@@ -261,5 +276,5 @@
 // Every match of the active search term inside code editors (codeSearchHighlight).
 .tj-code-search-match {
   border-radius: 2px;
-  background: var(--background-warning-weak, #ffe9a8);
+  background: #cde7fc;
 }

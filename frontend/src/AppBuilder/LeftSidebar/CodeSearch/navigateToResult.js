@@ -4,15 +4,19 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 import { highlightMatch } from './highlightMatch';
 
 const WAIT_TIMEOUT_MS = 5000;
+// How long a reveal step may wait for the editor to open it (its list may still be mounting).
+const REVEAL_STEP_TIMEOUT_MS = 1500;
+// Edited in the left sidebar's Libraries panel, not Global settings.
+const LIBRARY_FIELDS = new Set(['preloadedScript', 'libraries']);
 
 // Resolves true once `isReady(state)` holds, or false after the timeout.
-const waitForStore = (isReady) =>
+const waitForStore = (isReady, timeoutMs = WAIT_TIMEOUT_MS) =>
   new Promise((resolve) => {
     if (isReady(useStore.getState())) return resolve(true);
     const timer = setTimeout(() => {
       unsubscribe();
       resolve(false);
-    }, WAIT_TIMEOUT_MS);
+    }, timeoutMs);
     const unsubscribe = useStore.subscribe((state) => {
       if (!isReady(state)) return;
       clearTimeout(timer);
@@ -62,6 +66,26 @@ const revealOnCanvas = async (componentId, moduleId) => {
   }
 };
 
+// Asks the editor to open each step of the record's reveal chain (a list item's popover, a tab, an
+// event handler), outermost first, waiting for each to be opened by its useCodeSearchReveal. A step
+// nobody opens (its list isn't mounted, or isn't openable) ends the chain and is withdrawn so it
+// can't fire later. Returns the opened steps, or `superseded` when a newer search took over.
+const runReveal = async (steps = []) => {
+  const opened = [];
+  for (const step of steps) {
+    const nonce = useStore.getState().requestCodeSearchReveal(step);
+    await waitForStore((state) => state.codeSearch.revealRequest?.nonce !== nonce, REVEAL_STEP_TIMEOUT_MS);
+    const current = useStore.getState().codeSearch.revealRequest;
+    if (current?.nonce === nonce) {
+      useStore.getState().consumeCodeSearchReveal(nonce);
+      break;
+    }
+    if (current) return { superseded: true };
+    opened.push(step);
+  }
+  return { opened };
+};
+
 // Opens the place a search match came from, then selects the match inside it.
 export const navigateToResult = async (match, moduleId = 'canvas') => {
   const { record } = match;
@@ -76,7 +100,8 @@ export const navigateToResult = async (match, moduleId = 'canvas') => {
 
   const ownerType = record.ownerType || record.entityType;
   const ownerId = record.ownerId || record.entityId;
-  const { setSelectedComponents, queryPanel, setSelectedSidebarItem } = useStore.getState();
+  const { setSelectedComponents, queryPanel, setSelectedSidebarItem, setCodeSearchReturnToSearch } =
+    useStore.getState();
 
   if (ownerType === 'component') {
     // Opening a modal selects the modal itself, so select the component after revealing it.
@@ -87,14 +112,29 @@ export const navigateToResult = async (match, moduleId = 'canvas') => {
   } else if (ownerType === 'query') {
     queryPanel.setSelectedQuery(ownerId, moduleId);
     queryPanel.expandQueryPaneIfNeeded();
-  } else if (ownerType === 'page' || ownerId === 'pageSettings') {
-    // Pages and app-wide navigation settings are both edited in the right sidebar's Pages panel.
+  } else if (ownerId === 'pageSettings') {
+    // App-wide navigation settings are edited in the right sidebar's Pages panel.
     openRightSidebar(RIGHT_SIDE_BAR_TAB.PAGES);
+  } else if (ownerType === 'page') {
+    // A page's own fields (hidden, disabled, icon, …) are edited in its details popover, which the
+    // reveal chain opens.
+    openRightSidebar(RIGHT_SIDE_BAR_TAB.PAGES);
+  } else if (
+    ownerType === 'app' &&
+    LIBRARY_FIELDS.has(record.fieldPath[0]) &&
+    useStore.getState().license?.featureAccess?.appJsLibraries
+  ) {
+    // The preloaded script's editor is a modal the reveal chain opens. Unlicensed, the Libraries
+    // panel isn't offered, so these fall through to Global settings below.
+    setSelectedSidebarItem('libraries');
   } else if (ownerType === 'app') {
-    // Global settings live in the left sidebar; the search term survives in the store.
+    // Global settings replace this panel in the left sidebar; its header offers the way back, and
+    // the search term survives in the store.
+    setCodeSearchReturnToSearch(true);
     setSelectedSidebarItem('settings');
     return;
   }
 
-  highlightMatch(match);
+  const { opened, superseded } = await runReveal(record.reveal);
+  if (!superseded) highlightMatch(match, opened);
 };

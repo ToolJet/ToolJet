@@ -17,6 +17,10 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { resolveReferences } from '@/_helpers/utils';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
+
+// Code search names a tag by its id, else its title.
+const tagIdentity = (tag) => String([tag?.id, tag?.title].find((v) => v != null && v !== ''));
 
 export const Tags = ({
   component,
@@ -37,6 +41,20 @@ export const Tags = ({
 
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
   const currentOptions = component?.component?.definition?.properties?.options?.value || [];
+  // The tag whose popover is open, by identity: indexes shift when tags are reordered.
+  const [openTagId, setOpenTagId] = useState(null);
+  // Code search opens a tag's popover by its title.
+  useCodeSearchReveal(
+    'listItem',
+    component?.id,
+    (tagId) => {
+      // Dynamic options replace the list, so there is no popover to open.
+      if (isDynamicOptionsEnabled || !currentOptions.some((tag) => tagIdentity(tag) === tagId)) return false;
+      setOpenTagId(tagId);
+      return true;
+    },
+    [currentOptions, isDynamicOptionsEnabled]
+  );
 
   let additionalActions = [];
   let optionsProperties = [];
@@ -201,13 +219,17 @@ export const Tags = ({
       item?.iconVisibility?.value !== undefined
         ? getResolvedValue(item?.iconVisibility?.value)
         : item?.iconVisibility !== undefined
-          ? item?.iconVisibility
-          : false;
+        ? item?.iconVisibility
+        : false;
 
     return (
-      <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
+      <Popover
+        className={`${darkMode && 'dark-theme theme-dark'}`}
+        style={{ minWidth: '248px' }}
+        data-reveal-root={`listItem:${tagIdentity(item)}`}
+      >
         <Popover.Body onClick={(e) => e.stopPropagation()}>
-          <div className="field mb-3" data-cy={`input-and-label-tag-title`}>
+          <div data-param="title" className="field mb-3" data-cy={`input-and-label-tag-title`}>
             <label data-cy={`label-tag-title`} className="font-weight-500 mb-1 font-size-12">
               {'Title'}
             </label>
@@ -223,7 +245,7 @@ export const Tags = ({
             />
           </div>
 
-          <div className="field mb-2">
+          <div data-param="backgroundColor" className="field mb-2">
             <CodeHinter
               currentState={currentState}
               initialValue={item?.backgroundColor?.value}
@@ -241,7 +263,7 @@ export const Tags = ({
               paramType={'colorSwatches'}
             />
           </div>
-          <div className="field mb-2">
+          <div data-param="textColor" className="field mb-2">
             <CodeHinter
               currentState={currentState}
               initialValue={item?.textColor?.value}
@@ -260,7 +282,7 @@ export const Tags = ({
             />
           </div>
 
-          <div className="field mb-3" data-cy={`input-and-label-tag-icon`}>
+          <div data-param="icon" className="field mb-3" data-cy={`input-and-label-tag-icon`}>
             <CodeHinter
               currentState={currentState}
               initialValue={item?.icon?.value || ''}
@@ -281,7 +303,7 @@ export const Tags = ({
             />
           </div>
 
-          <div className="field mb-2" data-cy={`input-and-label-tag-visible`}>
+          <div data-param="visible" className="field mb-2" data-cy={`input-and-label-tag-visible`}>
             <CodeHinter
               currentState={currentState}
               initialValue={item?.visible?.value}
@@ -333,8 +355,10 @@ export const Tags = ({
                             trigger="click"
                             placement="left"
                             rootClose
+                            show={openTagId === tagIdentity(item)}
                             overlay={_renderOverlay(item, index)}
                             onToggle={(isOpen) => {
+                              setOpenTagId(isOpen ? tagIdentity(item) : null);
                               if (!isOpen) {
                                 document.activeElement?.blur(); // Manually trigger blur when popover closes
                               }
