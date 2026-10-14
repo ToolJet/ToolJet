@@ -56,7 +56,11 @@ export const statValue = (value, { valueFormat = 'auto', currency } = {}) => {
       : typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim());
   if (!numeric) return String(value);
   if (!FORMATS.includes(valueFormat)) return typeof value === 'number' ? formatter({ format: 'number' })(value) : value;
-  return formatter({ format: valueFormat, currency })(Number(value));
+  // A percent below 1 is a ratio, as the pack's charts read a series of fractions (percentScale): a churn rate of 0.021
+  // and a margin of 0.70 showed "0%" and "0.7%" (2026-10-14). A whole percentage (42.5) shows as written.
+  const n = Number(value);
+  const shown = valueFormat === 'percent' && n !== 0 && Math.abs(n) < 1 ? n * 100 : n;
+  return formatter({ format: valueFormat, currency })(shown);
 };
 
 /** A change written with its context ("+8 vs semana passada") as { chip: '+8', context: 'vs semana passada' }: the chip
