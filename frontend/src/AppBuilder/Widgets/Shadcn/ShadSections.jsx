@@ -872,8 +872,11 @@ export const ShadRecordList = (props) => {
                   <RecordAvatar src={row.image} name={row.avatarName} size={density.avatar} shape={p.avatarShape} />
                 ) : null}
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  {/* Two lines before it clips: in a narrow column beside a chip and a time, one line left titles such as
+                      "Workspace setti…" that said nothing (a content calendar's drafts list, 2026-10-14). */}
                   <span
-                    className={cn('truncate font-medium leading-snug', density.title)}
+                    className={cn('line-clamp-2 break-words font-medium leading-snug', density.title)}
+                    title={typeof row.title === 'string' ? row.title : undefined}
                     style={{
                       color: 'var(--lk-title,var(--sc-foreground))',
                       fontFamily: TITLE_FONT,
