@@ -266,7 +266,15 @@ export const shadLineChartConfig = {
       displayName: 'Series labels ({ field: label })',
       validation: {
         schema: {
-          type: 'object',
+          type: 'union',
+          schemas: [
+            {
+              type: 'object',
+            },
+            {
+              type: 'array',
+            },
+          ],
         },
         defaultValue: {},
       },

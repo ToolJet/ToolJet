@@ -111,7 +111,11 @@ export const formatter = ({ format, currency, prefix, suffix } = {}, short = fal
       style: 'currency',
       currency: code.toUpperCase(),
       ...(compact
-        ? { notation: 'compact', minimumFractionDigits: 0, maximumFractionDigits: 1 }
+        ? {
+            notation: 'compact',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 1,
+          }
         : { minimumFractionDigits: 0, maximumFractionDigits: 2 }),
     });
   } else if (compact && kind !== 'percent') {
@@ -124,7 +128,12 @@ export const formatter = ({ format, currency, prefix, suffix } = {}, short = fal
   // Money with cents shows both digits ("$3,043.50", never "$3,043.5"); whole amounts and compact ticks stay as they are.
   const cents =
     kind === 'currency' && !compact
-      ? intl({ style: 'currency', currency: code.toUpperCase(), minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      ? intl({
+          style: 'currency',
+          currency: code.toUpperCase(),
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
       : null;
   return (v) => {
     const n = num(v);
@@ -135,7 +144,12 @@ export const formatter = ({ format, currency, prefix, suffix } = {}, short = fal
 
 // ---- Line ----------------------------------------------------------------------------------------------------------
 
-const CURVES = { monotone: 'monotone', linear: 'linear', step: 'step', natural: 'natural' };
+const CURVES = {
+  monotone: 'monotone',
+  linear: 'linear',
+  step: 'step',
+  natural: 'natural',
+};
 export const curveOf = (c) => (typeof c === 'string' && Object.hasOwn(CURVES, c) ? CURVES[c] : 'monotone');
 
 // ---- Sparkline -----------------------------------------------------------------------------------------------------
@@ -255,11 +269,34 @@ export const resolveChartFields = (data, xField, series) => {
       : keys.find((key) => !numeric(key) && rows.some((row) => typeof row[key] === 'string')) ?? xField;
   const named = series.filter((key) => has(key));
   const fallback = keys.filter((key) => key !== x && numeric(key) && typeof rows[0][key] !== 'boolean').slice(0, 6);
-  return { x, series: named.length ? named : fallback.length ? fallback : series };
+  return {
+    x,
+    series: named.length ? named : fallback.length ? fallback : series,
+  };
 };
 
 /** A series' name in the legend and tooltip: the author's label for it (seriesLabels), else its field name made
  *  readable ("food_cost_pct" reads "Food cost pct", "lastWeek" reads "Last week"; a build's legend showed raw keys). */
+/** seriesLabels as written: an object ({ hours: 'Flight hours' }) or a list naming the series in order (['Flight
+ *  hours'], as models often write it; the object-only property dropped it, 35 charts, 2026-10-14). */
+export const seriesLabelMap = (labels, series) => {
+  const list = series || [];
+  // The list can arrive as an object keyed by position ({ 0: 'Flight hours' }) once resolved; keys that are positions
+  // and not series names are read as the list.
+  const positional =
+    labels &&
+    typeof labels === 'object' &&
+    !Array.isArray(labels) &&
+    Object.keys(labels).length > 0 &&
+    Object.keys(labels).every((k) => /^\d+$/.test(k) && !list.includes(k));
+  if (Array.isArray(labels) || positional) {
+    return Object.fromEntries(
+      list.map((s, i) => [s, labels[i]]).filter(([, l]) => l !== undefined && l !== null && String(l).trim() !== '')
+    );
+  }
+  return labels && typeof labels === 'object' ? labels : {};
+};
+
 export const seriesLabel = (key, labels) => {
   const own = labels && typeof labels === 'object' && !Array.isArray(labels) ? labels[key] : undefined;
   if (own !== undefined && own !== null && String(own).trim() !== '') return String(own);
@@ -349,8 +386,16 @@ export const comboSeries = (barFields, lineFields, rightFields) => {
   const right = fieldList(rightFields);
   const lines = fieldList(lineFields).filter((f) => !bars.includes(f));
   return [
-    ...bars.map((field) => ({ field, kind: 'bar', axis: right.includes(field) ? 'right' : 'left' })),
-    ...lines.map((field) => ({ field, kind: 'line', axis: right.includes(field) ? 'right' : 'left' })),
+    ...bars.map((field) => ({
+      field,
+      kind: 'bar',
+      axis: right.includes(field) ? 'right' : 'left',
+    })),
+    ...lines.map((field) => ({
+      field,
+      kind: 'line',
+      axis: right.includes(field) ? 'right' : 'left',
+    })),
   ].slice(0, MAX_SERIES);
 };
 

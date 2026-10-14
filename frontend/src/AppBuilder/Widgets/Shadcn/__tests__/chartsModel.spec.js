@@ -1,4 +1,6 @@
 import {
+  seriesLabel,
+  seriesLabelMap,
   wholeTicks,
   compactFigure,
   centreValueFit,
@@ -266,5 +268,23 @@ describe('wholeTicks', () => {
     expect(wholeTicks(rows(-1, 2), ['y'])).toEqual({});
     expect(wholeTicks(rows(40, 2), ['y'])).toEqual({});
     expect(wholeTicks([], ['y'])).toEqual({});
+  });
+});
+
+describe('seriesLabelMap', () => {
+  // Models write seriesLabels as a list (["Flight hours"]); the object-only property dropped it and the tooltip said
+  // "Flight hours" as the raw field (35 charts, 2026-10-14). A list names the series in order.
+  it('names the series in order from a list', () => {
+    expect(seriesLabelMap(['Flight hours', 'Target'], ['hours', 'target'])).toEqual({
+      hours: 'Flight hours',
+      target: 'Target',
+    });
+    expect(seriesLabel('hours', seriesLabelMap(['Flight hours'], ['hours']))).toBe('Flight hours');
+    // As ToolJet resolves a written list.
+    expect(seriesLabelMap({ 0: 'Flight hours' }, ['hours'])).toEqual({ hours: 'Flight hours' });
+  });
+  it('keeps an object and ignores anything else', () => {
+    expect(seriesLabelMap({ hours: 'Hours flown' }, ['hours'])).toEqual({ hours: 'Hours flown' });
+    expect(seriesLabelMap('Hours', ['hours'])).toEqual({});
   });
 });
