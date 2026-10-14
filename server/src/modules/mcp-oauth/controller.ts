@@ -65,20 +65,36 @@ export class McpOAuthController {
     const cookie = req.cookies?.[this.oauth.cookieName(id)];
     if (
       req.method !== 'GET' &&
-      (req.headers.origin !== new URL(this.oauth.settings().browser).origin ||
+      (typeof req.headers.origin !== 'string' ||
         req.headers['x-tooljet-oauth-csrf'] !== cookie)
     ) {
       throw new OAuthFailure('access_denied', 'Invalid browser authorization request', 403);
     }
     return cookie;
   }
-  private browserMutation(req: Request) {
+  private origin(req: Request): string {
+    const origin = req.headers.origin || req.headers['x-tooljet-oauth-origin'];
+    return typeof origin === 'string' ? origin : new URL(this.oauth.settings().browser).origin;
+  }
+  private async browserMutation(req: Request) {
     if (
-      req.headers.origin !== new URL(this.oauth.settings().browser).origin ||
+      typeof req.headers.origin !== 'string' ||
       req.headers['x-tooljet-oauth'] !== '1'
     ) {
       throw new OAuthFailure('access_denied', 'Invalid browser request', 403);
     }
+    await this.oauth.assertBrowserOrigin((req.user as any).organizationId, req.headers.origin);
+  }
+  @Post('interactions/:id/bootstrap')
+  async bootstrap(@Param('id') id: string, @Body() body, @Req() req: Request, @Res() res: Response) {
+    this.headers(res);
+    if (typeof req.headers.origin !== 'string') throw new OAuthFailure('access_denied', 'Missing browser origin', 403);
+    const csrf = await this.oauth.bootstrapBrowser(id, body.ticket, body.nonce, req.headers.origin);
+    res.cookie(this.oauth.cookieName(id), csrf, {
+      httpOnly: true, secure: req.headers.origin.startsWith('https:'), sameSite: 'lax',
+      path: new URL(this.oauth.settings().issuer).pathname, maxAge: 600000,
+    });
+    res.status(204).end();
   }
   @Get('authorize')
   async authorize(@Query() query, @Res() res: Response) {
@@ -96,13 +112,13 @@ export class McpOAuthController {
   @Get('interactions/:id')
   async interaction(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
-    res.json(await this.oauth.preview(id, this.csrf(req, id)));
+    res.json(await this.oauth.preview(id, this.csrf(req, id), this.origin(req)));
   }
   @Get('interactions/:id/session')
   @UseGuards(JwtAuthGuard)
   async session(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
-    const flow = await this.oauth.interaction(id, this.csrf(req, id));
+    const flow = await this.oauth.interaction(id, this.csrf(req, id), undefined, this.origin(req));
     await this.oauth.assertCurrentAuthentication(req.user as any, flow.payload.organizationId);
     res.json({ email: (req.user as any).email });
   }
@@ -111,7 +127,7 @@ export class McpOAuthController {
   async consent(@Param('id') id: string, @Body() body, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     if (typeof body.allow !== 'boolean') throw new OAuthFailure('invalid_request', 'Choose Allow or Cancel');
-    const result = await this.oauth.consent(id, this.csrf(req, id), req.user as any, body.allow);
+    const result = await this.oauth.consent(id, this.csrf(req, id), req.user as any, body.allow, this.origin(req));
     res.clearCookie(this.oauth.cookieName(id), { path: new URL(this.oauth.settings().issuer).pathname });
     res.status(200).json(result);
   }
@@ -163,7 +179,7 @@ export class McpOAuthController {
   @UseGuards(JwtAuthGuard)
   async disconnect(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
-    this.browserMutation(req);
+    await this.browserMutation(req);
     await this.oauth.disconnect(req.user as any, id);
     res.status(204).end();
   }

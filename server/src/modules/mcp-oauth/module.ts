@@ -1,4 +1,5 @@
 import { LoginConfigsModule } from '@modules/login-configs/module';
+import { CustomDomainsModule } from '@modules/custom-domains/module';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -16,6 +17,6 @@ import { McpOAuthController, McpOAuthMetadataController } from './controller';
 })
 export class McpOAuthModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    return { module: McpOAuthModule, imports: [await LoginConfigsModule.register(configs)] };
+    return { module: McpOAuthModule, imports: [await LoginConfigsModule.register(configs), await CustomDomainsModule.register(configs)] };
   }
 }

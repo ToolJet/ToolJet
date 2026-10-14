@@ -1,6 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ConsentPage from '../ConsentPage';
+import config from 'config';
 
 const requestId = 'A'.repeat(43);
 const flow = {
@@ -21,6 +22,32 @@ beforeEach(() => {
 });
 afterEach(() => {
   global.fetch = originalFetch;
+});
+test('scrubs and exchanges a custom-domain bootstrap before loading consent', async () => {
+  window.history.replaceState({}, '', `/mcp/consent?request=${requestId}#bootstrap=${'B'.repeat(43)}`);
+  global.fetch
+    .mockImplementationOnce(() => result({}, 204))
+    .mockImplementationOnce(() => result(flow))
+    .mockImplementationOnce(() => result({ email: 'builder@synthetic.example' }));
+  render(<ConsentPage />);
+  expect(await screen.findByText('builder@synthetic.example')).toBeInTheDocument();
+  expect(window.location.hash).toBe('');
+  expect(global.fetch.mock.calls[0][0]).toContain(`/interactions/${requestId}/bootstrap`);
+  const bootstrap = JSON.parse(global.fetch.mock.calls[0][1].body);
+  expect(bootstrap.ticket).toBe('B'.repeat(43));
+  expect(bootstrap.nonce).toMatch(/^[A-Za-z0-9_-]{43}$/);
+  expect(global.fetch.mock.calls[1][1].headers['x-tooljet-oauth-origin']).toBe(window.location.origin);
+});
+test('reads the runtime API URL after custom-domain configuration changes', async () => {
+  const originalApiUrl = config.apiUrl;
+  config.apiUrl = '/installation/api';
+  global.fetch
+    .mockImplementationOnce(() => result(flow))
+    .mockImplementationOnce(() => result({ email: 'builder@synthetic.example' }));
+  render(<ConsentPage />);
+  expect(await screen.findByText('builder@synthetic.example')).toBeInTheDocument();
+  expect(global.fetch.mock.calls[0][0]).toBe(`/installation/api/mcp-oauth/interactions/${requestId}`);
+  config.apiUrl = originalApiUrl;
 });
 test('shows the workspace, callback, approved scopes and signed-in user before consent', async () => {
   global.fetch

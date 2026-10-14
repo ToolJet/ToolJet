@@ -122,6 +122,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       CREATE TABLE apps (id uuid PRIMARY KEY, organization_id uuid);
       CREATE TABLE users (id uuid PRIMARY KEY, email text, status text);
       CREATE TABLE organizations (id uuid PRIMARY KEY, name text, slug text, status text, domain text, password_allowed_domains text, password_restricted_domains text, inherit_sso boolean DEFAULT false);
+      CREATE TABLE custom_domains (id uuid PRIMARY KEY, organization_id uuid UNIQUE, domain text UNIQUE, status text, ssl_status text);
       CREATE TABLE instance_settings (key text PRIMARY KEY, value text);
       CREATE TABLE sso_configs (id uuid PRIMARY KEY, organization_id uuid, sso text, enabled boolean, config_scope text, configs jsonb);
       CREATE TABLE sso_config_oidc_group_sync (id uuid PRIMARY KEY, sso_config_id uuid, organization_id uuid, claim_name text, group_mapping jsonb, enable_group_sync boolean);
@@ -156,7 +157,7 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   });
   beforeEach(async () => {
     await db.query(
-      'TRUNCATE mcp_oauth_clients, users, organizations, organization_users, user_sessions, workspace_ban_list, instance_settings, sso_configs, sso_config_oidc_group_sync CASCADE',
+      'TRUNCATE mcp_oauth_clients, users, organizations, organization_users, user_sessions, workspace_ban_list, instance_settings, sso_configs, sso_config_oidc_group_sync, custom_domains CASCADE',
     );
     organizationId = randomUUID();
     user = {
@@ -198,6 +199,128 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
   const refreshBody = (refresh_token) => ({ grant_type: 'refresh_token', refresh_token, resource: resource() });
   const registerConfidential = (method) => oauth.register({
     client_name: 'Synthetic hosted connector', redirect_uris: [redirectUri], token_endpoint_auth_method: method,
+  });
+
+  describe('custom-domain transactions', () => {
+    const customOrigin = 'https://orchard.synthetic.example';
+    let licensed: boolean;
+    beforeEach(async () => {
+      licensed = true;
+      oauth = new McpOAuthService(
+        db, new ConfigService({ ...settings, ENABLE_CUSTOM_DOMAINS: 'true' }), new JwtService(),
+        { findOne: async () => ({ ...user }), findByEmail: async () => ({ ...user }) } as any,
+        loginConfigs as any,
+        { resolveCustomDomain: async (domain) => {
+          const [row] = await db.query("SELECT organization_id FROM custom_domains WHERE domain=$1 AND status='active' AND ssl_status='active'", [domain]);
+          return licensed && row ? { organizationId: row.organization_id } : null;
+        } },
+      );
+      await db.query("INSERT INTO custom_domains VALUES ($1,$2,$3,'active','active')", [randomUUID(), organizationId, 'orchard.synthetic.example']);
+    });
+    const begin = async () => {
+      const flow = await oauth.start(request());
+      const ticket = new URLSearchParams(new URL(flow.location).hash.slice(1)).get('bootstrap');
+      return { ...flow, ticket };
+    };
+
+    test('one browser binding wins concurrent bootstrap attempts and a lost-response retry recovers it', async () => {
+      const flow = await begin();
+      const nonces = ['B'.repeat(43), 'C'.repeat(43)];
+      const outcomes = await Promise.allSettled(nonces.map((nonce) => oauth.bootstrapBrowser(flow.id, flow.ticket, nonce, customOrigin)));
+      expect(outcomes.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+      const winner = outcomes.findIndex((result) => result.status === 'fulfilled');
+      const csrf = (outcomes[winner] as PromiseFulfilledResult<string>).value;
+      await expect(oauth.bootstrapBrowser(flow.id, flow.ticket, nonces[winner], customOrigin)).resolves.toBe(csrf);
+      const preview = await oauth.preview(flow.id, csrf, customOrigin);
+      expect(preview.loginUrl).toContain(`${customOrigin}/login/garden`);
+      await expect(oauth.preview(flow.id, flow.csrf, customOrigin)).rejects.toThrow();
+      await expect(oauth.preview(flow.id, csrf, 'https://other.synthetic.example')).rejects.toThrow();
+      const grants = await Promise.allSettled([
+        oauth.consent(flow.id, csrf, user, true, customOrigin),
+        oauth.consent(flow.id, csrf, user, true, customOrigin),
+      ]);
+      expect(grants.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+      await expect(oauth.bootstrapBrowser(flow.id, flow.ticket, nonces[winner], customOrigin)).rejects.toThrow();
+    });
+
+    test.each(['replace', 'remove', 'tls', 'license', 'owner'])('rejects unfinished consent after domain %s changes', async (change) => {
+      const flow = await begin();
+      const csrf = await oauth.bootstrapBrowser(flow.id, flow.ticket, 'D'.repeat(43), customOrigin);
+      if (change === 'replace') await db.query("UPDATE custom_domains SET domain='replacement.synthetic.example'");
+      if (change === 'remove') await db.query('DELETE FROM custom_domains');
+      if (change === 'tls') await db.query("UPDATE custom_domains SET ssl_status='pending_issuance'");
+      if (change === 'license') licensed = false;
+      if (change === 'owner') await db.query('UPDATE custom_domains SET organization_id=$1', [randomUUID()]);
+      await expect(oauth.preview(flow.id, csrf, customOrigin)).rejects.toThrow('domain changed');
+      await expect(oauth.consent(flow.id, csrf, user, true, customOrigin)).rejects.toThrow();
+      expect(await db.query('SELECT id FROM mcp_oauth_grants')).toEqual([]);
+      await expect(oauth.assertBrowserOrigin(organizationId, customOrigin)).rejects.toThrow();
+    });
+
+    test('activation invalidates an unfinished canonical interaction', async () => {
+      await db.query("UPDATE custom_domains SET status='pending_verification'");
+      const flow = await begin();
+      expect(flow.ticket).toBeNull();
+      await db.query("UPDATE custom_domains SET status='active'");
+      await expect(oauth.preview(flow.id, flow.csrf)).rejects.toThrow('domain changed');
+    });
+
+    test('canonical SSO return uses the original issuer cookie for the same custom-domain interaction', async () => {
+      const flow = await begin();
+      await oauth.bootstrapBrowser(flow.id, flow.ticket, 'E'.repeat(43), customOrigin);
+      const preview = await oauth.preview(flow.id, flow.csrf);
+      expect(preview.organizationId).toBe(organizationId);
+      expect(preview.loginUrl).toContain('https://tooljet.synthetic.example/login/garden');
+      const consent = await oauth.consent(flow.id, flow.csrf, user, true);
+      const tokens = await redeem(new URL(consent.redirectUrl).searchParams.get('code'));
+      expect((await exchange(tokens.access_token)).browser_url).toBe(customOrigin);
+      await db.query('DELETE FROM custom_domains');
+      const renewed = await refresh(tokens.refresh_token);
+      const delegated = await exchange(renewed.access_token);
+      expect(delegated.browser_url).toBe('https://tooljet.synthetic.example');
+      await oauth.assertBrowserOrigin(organizationId, 'https://tooljet.synthetic.example');
+      await oauth.disconnect(user, delegated.grant_id);
+      await expect(exchange(renewed.access_token)).rejects.toThrow();
+    });
+
+    test('expired tickets and wrong origins never establish a custom browser binding', async () => {
+      const flow = await begin();
+      await expect(oauth.bootstrapBrowser(flow.id, flow.ticket, 'F'.repeat(43), 'https://other.synthetic.example')).rejects.toThrow();
+      await db.query("UPDATE mcp_oauth_artifacts SET expires_at=now()-interval '1 second' WHERE id=$1", [hash(flow.id)]);
+      await expect(oauth.bootstrapBrowser(flow.id, flow.ticket, 'F'.repeat(43), customOrigin)).rejects.toThrow('expired');
+    });
+
+    test('a concurrent domain replacement cannot slip between consent validation and grant creation', async () => {
+      const flow = await begin();
+      const csrf = await oauth.bootstrapBrowser(flow.id, flow.ticket, 'G'.repeat(43), customOrigin);
+      const writer = db.createQueryRunner();
+      await writer.connect();
+      await writer.startTransaction();
+      let approval: Promise<any>;
+      try {
+        await writer.query("SET LOCAL statement_timeout = '3s'");
+        const [{ pid }] = await writer.query('SELECT pg_backend_pid() AS pid');
+        await writer.query('SELECT id FROM custom_domains WHERE organization_id=$1 FOR NO KEY UPDATE', [organizationId]);
+        approval = oauth.consent(flow.id, csrf, user, true, customOrigin)
+          .then((result) => ({ result }), (error) => ({ error }));
+        const deadline = Date.now() + 2000;
+        let waiting = false;
+        while (!waiting && Date.now() < deadline) {
+          const [row] = await db.query('SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE $1 = ANY(pg_blocking_pids(pid))) AS waiting', [pid]);
+          waiting = row.waiting;
+          if (!waiting) await new Promise((resolve) => setTimeout(resolve, 5));
+        }
+        expect(waiting).toBe(true);
+        await writer.query("UPDATE custom_domains SET domain='replacement.synthetic.example'");
+        await writer.commitTransaction();
+        expect((await approval).error?.message).toContain('domain changed');
+        expect(await db.query('SELECT id FROM mcp_oauth_grants')).toEqual([]);
+      } finally {
+        if (writer.isTransactionActive) await writer.rollbackTransaction();
+        await writer.release();
+        await approval;
+      }
+    }, 10000);
   });
 
   test('DCR defaults new clients to Basic, stores only the hash, and keeps explicit public clients public', async () => {

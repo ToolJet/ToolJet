@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import config from 'config';
 import './oauth.css';
+import { captureMcpOAuthBootstrap, clearMcpOAuthBootstrap, getMcpOAuthBootstrap } from './bootstrap';
 
 export const SCOPE_LABELS = {
   apps: 'Create and manage apps and their components',
@@ -8,7 +9,7 @@ export const SCOPE_LABELS = {
   workflows: 'Create, manage, and run workflows',
   workspace_users: 'Manage workspace users and custom groups',
 };
-const api = `${config.apiUrl}/mcp-oauth`;
+const api = () => `${config.apiUrl.replace(/\/$/, '')}/mcp-oauth`;
 
 export default function ConsentPage() {
   const id = new URLSearchParams(window.location.search).get('request');
@@ -28,8 +29,26 @@ export default function ConsentPage() {
       if (window.top !== window.self) throw new Error('Open this connection in a separate browser tab to continue.');
       if (!/^[A-Za-z0-9_-]{43}$/.test(id || ''))
         throw new Error('This connection link is invalid. Start again from your AI client.');
-      const response = await fetch(`${api}/interactions/${id}`, {
+      // ConsentPage can be mounted directly in tests or embedded builds where
+      // index.jsx was not the entry point. Capture still scrubs synchronously.
+      captureMcpOAuthBootstrap();
+      const bootstrap = getMcpOAuthBootstrap(id);
+      if (bootstrap) {
+        const bootstrapped = await fetch(`${api()}/interactions/${id}/bootstrap`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bootstrap),
+        });
+        if (!bootstrapped.ok)
+          throw new Error(
+            'This workspace domain changed or the connection link expired. Start again from your AI client.'
+          );
+        clearMcpOAuthBootstrap(id);
+      }
+      const response = await fetch(`${api()}/interactions/${id}`, {
         credentials: 'include',
+        headers: { 'x-tooljet-oauth-origin': window.location.origin },
       });
       if (response.status === 404)
         throw new Error(
@@ -42,9 +61,9 @@ export default function ConsentPage() {
       const info = await response.json();
       if (!active) return;
       setFlow(info);
-      const session = await fetch(`${api}/interactions/${id}/session`, {
+      const session = await fetch(`${api()}/interactions/${id}/session`, {
         credentials: 'include',
-        headers: { 'tj-workspace-id': info.organizationId },
+        headers: { 'tj-workspace-id': info.organizationId, 'x-tooljet-oauth-origin': window.location.origin },
       });
       if (!active) return;
       if (session.status === 401) {
@@ -87,7 +106,7 @@ export default function ConsentPage() {
     setBusy(true);
     setError('');
     try {
-      const response = await fetch(`${api}/interactions/${id}`, {
+      const response = await fetch(`${api()}/interactions/${id}`, {
         method: 'POST',
         credentials: 'include',
         headers: {

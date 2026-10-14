@@ -277,6 +277,7 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
   const logger = createLogger('CsrfOriginCheck');
   const tooljetHost = configService.get<string>('TOOLJET_HOST')?.replace(/\/+$/, '');
   const safeMethods = new Set(['GET', 'HEAD', 'OPTIONS']);
+  const subpath = (configService.get<string>('SUB_PATH') || '').replace(/^\/+|\/+$/g, '');
   // These paths use non-cookie auth (API keys, SAML assertions, webhook signatures)
   // and don't need Origin checks.
   const exemptPrefixes = [
@@ -289,6 +290,9 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
     '/api/ext/',
     '/api/sso/saml/',
     '/api/oauth/saml/',
+    // IdP form posts still use assertion authentication when ToolJet is mounted
+    // below a subpath. Do not subject those callbacks to browser-session CSRF.
+    ...(subpath ? [`/${subpath}/api/sso/saml/`, `/${subpath}/api/oauth/saml/`] : []),
   ];
 
   let dataSource: DataSource | null = null;

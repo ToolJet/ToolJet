@@ -310,14 +310,14 @@ function passwordExpiredReset(email, redirectTo, orgSlug) {
   return fetch(`${config.apiUrl}/password-expired-reset`, requestOptions).then(handleResponse);
 }
 
-function signInViaOAuth(configId, ssoType, ssoResponse) {
-  const organizationId = getLoginOrganizationId();
-  const signupOrganizationId = getSignupOrganizationId();
-  const invitationToken = getInviteFlowIndetifier();
-  const redirectTo = getCookie('redirectPath');
+function signInViaOAuth(configId, ssoType, ssoResponse, mcpContext) {
+  const organizationId = mcpContext ? mcpContext.organizationId : getLoginOrganizationId();
+  const signupOrganizationId = mcpContext ? undefined : getSignupOrganizationId();
+  const invitationToken = mcpContext ? undefined : getInviteFlowIndetifier();
+  const redirectTo = mcpContext ? mcpContext.redirectTo : getCookie('redirectPath');
   const requestOptions = {
     method: 'POST',
-    headers: authHeader(),
+    headers: mcpContext ? authHeader(false, organizationId) : authHeader(),
     credentials: 'include',
     body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId, invitationToken, redirectTo }),
   };

@@ -1,10 +1,10 @@
 import { Cron } from '@nestjs/schedule';
 import type { ILoginConfigsUtilService } from '@modules/login-configs/interfaces/IUtilsService';
-import { Inject, Injectable, NotFoundException, OnModuleInit, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException, OnModuleInit, Optional, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DataSource, EntityManager } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { randomUUID } from 'crypto';
+import { createHmac, randomUUID } from 'crypto';
 import OAuth2Server = require('@node-oauth/oauth2-server');
 import { User } from '@entities/user.entity';
 import { UserRepository } from '@modules/users/repositories/repository';
@@ -34,6 +34,9 @@ import {
   clientAuthentication,
 } from './protocol';
 
+export const needsBrowserBootstrap = (issuer: string, browserTarget: string) =>
+  new URL(browserTarget).hostname !== new URL(issuer).hostname;
+
 @Injectable()
 export class McpOAuthService implements OnModuleInit {
   constructor(
@@ -43,6 +46,8 @@ export class McpOAuthService implements OnModuleInit {
     private readonly users: UserRepository,
     @Inject('MCP_LOGIN_CONFIGS')
     private readonly loginConfigs: Pick<ILoginConfigsUtilService, 'fetchOrganizationDetails'>,
+    @Optional() @Inject('MCP_CUSTOM_DOMAINS')
+    private readonly customDomains?: { resolveCustomDomain(domain: string): Promise<{ organizationId: string }> },
   ) {}
 
   onModuleInit() {
@@ -185,8 +190,10 @@ export class McpOAuthService implements OnModuleInit {
     const subpath = (this.config.get<string>('SUB_PATH') || '').replace(/^\/+|\/+$/g, '');
     const browser =
       trustedUrl(this.config.get<string>('TOOLJET_HOST')).origin + (subpath ? `/${subpath}` : '');
-    const issuer = this.config.get<string>('MCP_OAUTH_ISSUER') || `${browser}/api/mcp-oauth`;
-    const resource = this.config.get<string>('MCP_OAUTH_RESOURCE_URL');
+    const configuredIssuer = this.config.get<string>('MCP_OAUTH_ISSUER') || `${browser}/api/mcp-oauth`;
+    const configuredResource = this.config.get<string>('MCP_OAUTH_RESOURCE_URL');
+    const issuer = trustedUrl(configuredIssuer).href.replace(/\/$/, '');
+    const resource = configuredResource && trustedUrl(configuredResource).href.replace(/\/$/, '');
     if (new URL(issuer).pathname !== `${subpath ? `/${subpath}` : ''}/api/mcp-oauth`)
       throw new Error('MCP_OAUTH_ISSUER must point to this installation’s /api/mcp-oauth endpoint');
     if (
@@ -196,12 +203,71 @@ export class McpOAuthService implements OnModuleInit {
     ) {
       throw new Error('MCP OAuth requires a resource URL and an exchange secret of at least 32 characters');
     }
-    for (const value of [issuer, resource]) {
+    for (const value of [configuredIssuer, configuredResource]) {
       const url = trustedUrl(value);
       if (url.search || value.endsWith('/'))
         throw new Error('MCP OAuth URLs must have no query or trailing slash');
     }
+    // Consent needs the host-only cookie issued by /authorize, including when SSO
+    // returns from a custom domain. Split backends must proxy this public endpoint.
+    const issuerUrl = new URL(issuer);
+    const browserUrl = new URL(browser);
+    if (issuerUrl.hostname !== browserUrl.hostname || issuerUrl.protocol !== browserUrl.protocol)
+      throw new Error('MCP OAuth issuer must use the TOOLJET_HOST hostname and scheme; proxy /api/mcp-oauth through the browser host');
     return { browser, issuer, resource };
+  }
+  /** Read current domain ownership directly: stale cache entries must not authorize a removed domain. */
+  async browserTarget(organizationId: string, manager: EntityManager = this.dataSource.manager, lock = false) {
+    const { browser } = this.settings();
+    const primary = { url: browser, revision: 'primary' };
+    if (this.config.get('ENABLE_CUSTOM_DOMAINS') !== 'true' || !this.customDomains) return primary;
+    const [domain] = await manager.query(
+      `SELECT id,domain FROM custom_domains
+       WHERE organization_id = $1 AND status = 'active' AND ssl_status = 'active'
+       ${lock ? 'FOR SHARE' : ''}`,
+      [organizationId],
+    );
+    if (!domain) return primary;
+    if (typeof domain.domain !== 'string' || !/^[a-z0-9.-]+$/i.test(domain.domain))
+      throw new Error('Invalid workspace custom domain');
+    try {
+      const resolved = await this.customDomains.resolveCustomDomain(domain.domain);
+      if (!resolved || resolved.organizationId !== organizationId) return primary;
+    } catch (error) {
+      if (error instanceof ForbiddenException || error instanceof NotFoundException) return primary;
+      throw error;
+    }
+    const origin = trustedUrl(`https://${domain.domain}`).origin;
+    return {
+      url: origin + new URL(browser).pathname.replace(/\/$/, ''),
+      revision: `${domain.id}:${domain.domain.toLowerCase()}`,
+    };
+  }
+  private async browserTargetOrPrimary(organizationId: string) {
+    try {
+      return await this.browserTarget(organizationId);
+    } catch {
+      return { url: this.settings().browser, revision: 'primary' };
+    }
+  }
+  async assertBrowserOrigin(organizationId: string, origin: string) {
+    const { browser } = this.settings();
+    if (origin === new URL(browser).origin) return;
+    if (origin !== new URL((await this.browserTarget(organizationId)).url).origin)
+      throw new OAuthFailure('access_denied', 'Invalid browser origin', 403);
+  }
+  private async assertInteractionOrigin(row, origin: string, manager: EntityManager = this.dataSource.manager, lock = false) {
+    const primary = new URL(this.settings().browser).origin;
+    const target = row.payload.browserTarget || { url: this.settings().browser, revision: 'primary' };
+    if (origin !== primary && origin !== new URL(target.url).origin)
+      throw new OAuthFailure('access_denied', 'Invalid browser origin', 403);
+    if (row.payload.primaryOrigin && row.payload.primaryOrigin !== primary)
+      throw new OAuthFailure('invalid_request', 'ToolJet domain changed; restart the connection');
+    if (row.payload.browserTarget) {
+      const current = await this.browserTarget(row.payload.organizationId, manager, lock);
+      if (current.url !== target.url || current.revision !== target.revision)
+        throw new OAuthFailure('invalid_request', 'Workspace domain changed; restart the connection');
+    }
   }
   metadata() {
     const { issuer } = this.settings();
@@ -309,8 +375,12 @@ export class McpOAuthService implements OnModuleInit {
     if (!client || !client.redirectUris.some((registered) => matchesRedirectUri(params.redirect_uri, registered)))
       throw new OAuthFailure('invalid_client', 'Unregistered client or redirect URI');
     const org = await this.workspace(params.resource);
+    const browserTarget = await this.browserTarget(org.id);
     const id = secret();
     const csrf = secret();
+    // /authorize sets a host-only cookie on the issuer. Bootstrap whenever the
+    // consent page is on another host so its API calls remain first-party.
+    const bootstrap = needsBrowserBootstrap(this.settings().issuer, browserTarget.url) ? secret() : undefined;
     await store.put(
       id,
       'interaction',
@@ -320,15 +390,49 @@ export class McpOAuthService implements OnModuleInit {
         params: { ...params, scope: scopes.join(' ') },
         organizationId: org.id,
         csrfHash: hash(csrf),
+        primaryOrigin: new URL(browser).origin,
+        browserTarget,
+        ...(bootstrap ? { bootstrapHash: hash(bootstrap) } : {}),
       },
       new Date(Date.now() + INTERACTION_SECONDS * 1000),
     );
-    return { id, csrf, browser, location: `${browser}/mcp/consent?request=${encodeURIComponent(id)}` };
+    return { id, csrf, browser, location: `${browserTarget.url}/mcp/consent?request=${encodeURIComponent(id)}${bootstrap ? `#bootstrap=${bootstrap}` : ''}` };
   }
   cookieName(id: string) {
     return `tj_mcp_${hash(id).slice(0, 16)}`;
   }
-  async interaction(id: string, csrf: string, manager = this.dataSource.manager) {
+  async bootstrapBrowser(id: string, ticket: unknown, nonce: unknown, origin: string) {
+    this.assertEnabled();
+    stringParam(id, 'request');
+    const token = stringParam(ticket, 'bootstrap');
+    const browserNonce = stringParam(nonce, 'nonce');
+    if (!/^[A-Za-z0-9_-]{43}$/.test(browserNonce))
+      throw new OAuthFailure('invalid_request', 'Invalid browser bootstrap');
+    return this.dataSource.transaction(async (manager) => {
+      await manager.query('SELECT id FROM mcp_oauth_artifacts WHERE id = $1 FOR UPDATE', [hash(id)]);
+      const row = await this.store(manager).artifact(id, 'interaction');
+      if (!row || row.consumed_at || row.expires_at <= new Date() ||
+          !row.payload.bootstrapHash || !equalSecret(hash(token), row.payload.bootstrapHash))
+        throw new OAuthFailure('invalid_request', 'Connection request expired or already opened');
+      await this.assertInteractionOrigin(row, origin, manager, true);
+      if (origin !== new URL(row.payload.browserTarget.url).origin)
+        throw new OAuthFailure('access_denied', 'Open the connection on its workspace domain', 403);
+      const nonceHash = hash(browserNonce);
+      if (row.payload.bootstrapNonceHash && !equalSecret(nonceHash, row.payload.bootstrapNonceHash))
+        throw new OAuthFailure('invalid_request', 'Connection request expired or already opened');
+      // Deterministic only for this ticket+browser nonce. This makes an
+      // ambiguous network retry idempotent without issuing a second browser
+      // binding or storing the CSRF secret in the database.
+      const csrf = createHmac('sha256', this.config.get<string>('MCP_OAUTH_EXCHANGE_SECRET'))
+        .update(`${id}\0${token}\0${browserNonce}`)
+        .digest('base64url');
+      const payload = row.payload;
+      await manager.query('UPDATE mcp_oauth_artifacts SET payload = $2 WHERE id = $1',
+        [row.id, JSON.stringify({ ...payload, bootstrapNonceHash: nonceHash, customCsrfHash: hash(csrf) })]);
+      return csrf;
+    });
+  }
+  async interaction(id: string, csrf: string, manager = this.dataSource.manager, origin = new URL(this.settings().browser).origin) {
     this.assertEnabled();
     stringParam(id, 'request');
     const row = await this.store(manager).artifact(id, 'interaction');
@@ -337,18 +441,23 @@ export class McpOAuthService implements OnModuleInit {
       row.consumed_at ||
       row.expires_at <= new Date() ||
       typeof csrf !== 'string' ||
-      !equalSecret(hash(csrf), row.payload.csrfHash)
+      !equalSecret(hash(csrf), origin === new URL(this.settings().browser).origin
+        ? row.payload.csrfHash : row.payload.customCsrfHash || '')
     ) {
       throw new OAuthFailure('invalid_request', 'Connection request expired or belongs to another browser');
     }
+    await this.assertInteractionOrigin(row, origin, manager);
     return row;
   }
-  async preview(id: string, csrf: string) {
-    const row = await this.interaction(id, csrf);
+  async preview(id: string, csrf: string, origin = new URL(this.settings().browser).origin) {
+    const row = await this.interaction(id, csrf, this.dataSource.manager, origin);
     const client = await this.store().client(row.client_id);
     if (!client) throw new OAuthFailure('invalid_client', 'Client is unavailable');
     const org = await this.workspace(row.payload.params.resource);
-    const { browser } = this.settings();
+    // A primary-domain SSO callback stays on the primary host with its original
+    // transaction cookie. Custom-domain callbacks use the separately bootstrapped cookie.
+    const browser = origin === new URL(this.settings().browser).origin
+      ? this.settings().browser : row.payload.browserTarget.url;
     return {
       clientName: client.name,
       clientId: client.id,
@@ -372,11 +481,15 @@ export class McpOAuthService implements OnModuleInit {
       throw new UnauthorizedException('Sign in to this workspace before authorizing a connection');
     }
   }
-  async consent(id: string, csrf: string, user: User, allow: boolean) {
+  async consent(id: string, csrf: string, user: User, allow: boolean, origin = new URL(this.settings().browser).origin) {
     const { issuer } = this.settings();
     return this.dataSource.transaction(async (manager) => {
       await manager.query('SELECT id FROM mcp_oauth_artifacts WHERE id = $1 FOR UPDATE', [hash(id)]);
-      const interaction = await this.interaction(id, csrf, manager);
+      const interaction = await this.interaction(id, csrf, manager, origin);
+      // Serialize consent with custom-domain replacement/removal. The
+      // interaction was checked above; the locked recheck closes the race
+      // before the grant is created.
+      await this.assertInteractionOrigin(interaction, origin, manager, true);
       const authentication = await this.assertCurrentAuthentication(user, interaction.payload.organizationId);
       const store = this.store(manager);
       if (!(await store.client(interaction.client_id)))
@@ -565,6 +678,7 @@ export class McpOAuthService implements OnModuleInit {
       expires_in: seconds,
       organization_id: grant.organization_id,
       organization_slug: org.slug,
+      browser_url: (await this.browserTargetOrPrimary(grant.organization_id)).url,
       user_id: grant.user_id,
       grant_id: grant.id,
       client_id: grant.client_id,

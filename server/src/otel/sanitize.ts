@@ -1,5 +1,5 @@
 const CREDENTIAL_KEYS =
-  /^(?:password|current_password|new_password|token|access_token|refresh_token|subject_token|actor_token|id_token|client_secret|code|code_verifier|code_challenge|state|clientSecret|csrfToken|secret|authorization|cookie|tj_oauth_viewer|x-tooljet-delegation|x-tooljet-oauth-csrf)$/i;
+  /^(?:password|current_password|new_password|token|access_token|refresh_token|subject_token|actor_token|id_token|client_secret|code|code_verifier|code_challenge|state|ticket|bootstrap|nonce|clientSecret|csrfToken|secret|authorization|cookie|tj_oauth_viewer|x-tooljet-delegation|x-tooljet-oauth-csrf)$/i;
 
 /** Keep credential-bearing OAuth requests out of trace attributes. */
 export function sanitizeTraceObject(value: any): any {
@@ -36,6 +36,7 @@ export function sanitizeOAuthRequest(request: any): any {
     url,
     ...(request.query ? { query: oauth ? '[REDACTED]' : sanitizeTraceObject(request.query) } : {}),
     ...(request.params && oauth ? { params: '[REDACTED]' } : {}),
+    ...(request.body ? { body: sanitizeTraceObject(request.body) } : {}),
     ...(request.headers ? { headers: { ...request.headers, referer: sanitizeOAuthUrl(request.headers.referer) } } : {}),
   };
 }
