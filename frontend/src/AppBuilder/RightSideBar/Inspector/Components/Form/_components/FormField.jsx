@@ -37,7 +37,11 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave })
   const darkMode = localStorage.getItem('darkMode') === 'true' ?? false;
 
   const mainPopover = (
-    <Popover id="popover-basic" className={`shadow form-fields-column-popover ${darkMode ? 'dark-theme' : ''}`}>
+    <Popover
+      id="popover-basic"
+      className={`shadow form-fields-column-popover ${darkMode ? 'dark-theme' : ''}`}
+      data-reveal-root={`listItem:${field.componentId}`}
+    >
       <FieldPopoverContent
         field={fieldData}
         mode="edit"
@@ -130,6 +134,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave })
           className={`field-item tw-flex tw-items-center tw-justify-between tw-gap-2 hover:tw-cursor-pointer ${
             (fieldData.name === activeMenu || showPopover) && 'selected'
           }`}
+          data-list-item-id={String(field.componentId ?? '')}
         >
           <div className="tw-flex tw-items-center tw-gap-[6px] tw-flex-1" style={{ width: 'calc(100% - 100px)' }}>
             <div className="field-icon tw-w-6 tw-h-6 tw-flex tw-items-center tw-justify-center tw-rounded tw-bg-gray-100">

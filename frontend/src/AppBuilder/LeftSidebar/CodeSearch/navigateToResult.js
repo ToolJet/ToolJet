@@ -38,6 +38,8 @@ const openRightSidebar = (tab) => {
 
 const MODAL_TYPES = new Set(['Modal', 'ModalV2']);
 const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+// Resolves after the event that started navigation has finished dispatching.
+const afterCurrentEvent = () => new Promise((resolve) => setTimeout(resolve));
 
 // Makes a component visible on the canvas: opens every modal it sits in and switches every Tabs
 // ancestor to the tab holding it, outermost first. A child's `parent` is the container id, or
@@ -71,6 +73,10 @@ const revealOnCanvas = async (componentId, moduleId) => {
 // nobody opens (its list isn't mounted, or isn't openable) ends the chain and is withdrawn so it
 // can't fire later. Returns the opened steps, or `superseded` when a newer search took over.
 const runReveal = async (steps = []) => {
+  // A result click is an outside click for any popover already open, and its close handler runs on
+  // the document after this one: opening the next popover before it would have it closed (and its
+  // shared state, such as the page being edited, cleared) right away.
+  await afterCurrentEvent();
   const opened = [];
   for (const step of steps) {
     const nonce = useStore.getState().requestCodeSearchReveal(step);
@@ -132,9 +138,11 @@ export const navigateToResult = async (match, moduleId = 'canvas') => {
     // the search term survives in the store.
     setCodeSearchReturnToSearch(true);
     setSelectedSidebarItem('settings');
-    return;
   }
 
-  const { opened, superseded } = await runReveal(record.reveal);
+  // Tabs put the field on screen. Popovers are flashed, not opened: the result already names the path.
+  const TAB_KINDS = new Set(['queryTab', 'restTab']);
+  const steps = (record.reveal || []).filter((step) => TAB_KINDS.has(step.kind));
+  const { opened, superseded } = steps.length ? await runReveal(steps) : { opened: [] };
   if (!superseded) highlightMatch(match, opened);
 };

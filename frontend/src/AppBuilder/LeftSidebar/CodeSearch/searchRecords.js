@@ -1,6 +1,9 @@
 // Matches a term against the rows from buildSearchRecords and groups the hits for display:
 // group (page / Queries / App) → entity → one row per field, every occurrence in that row.
-// Pure, like buildSearchRecords, so both can move into a Web Worker together.
+// Pure, like buildSearchRecords; both run in the code-search worker (codeSearch.worker.js).
+
+import { buildSearchRecords } from './buildSearchRecords';
+import { replaceIdsWithName } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
 
 export const MIN_TERM_LENGTH = 2;
 export const MAX_RESULTS = 1000; // field rows
@@ -42,10 +45,10 @@ export const buildPreview = (text, matches) => {
   const clean = (value) => value.replace(/\s+/g, ' ');
   const segments = from > 0 ? [{ text: '…', match: false }] : [];
   let cursor = from;
-  for (const { start, end } of matches) {
+  for (const { start, end, occurrence } of matches) {
     if (start >= to) break;
     if (start > cursor) segments.push({ text: clean(text.slice(cursor, start)), match: false });
-    segments.push({ text: clean(text.slice(start, Math.min(end, to))), match: true });
+    segments.push({ text: clean(text.slice(start, Math.min(end, to))), match: true, occurrence });
     cursor = Math.min(end, to);
   }
   if (cursor < to) segments.push({ text: clean(text.slice(cursor, to)), match: false });
@@ -145,5 +148,29 @@ export const searchRecords = (
     truncated: fieldCount > rows.length,
     typeCounts,
     error: null,
+  };
+};
+
+// One search session: `input` (the app definition, see CodeSearch.jsx) rebuilds the records; a
+// search without it reuses the last ones, so only definition changes pay for indexing. Page order
+// comes from the indexed pages, so a search only sends `currentPageId`.
+export const createSearcher = () => {
+  let records = [];
+  let pages = [];
+  return ({ input, term, filters, currentPageId }) => {
+    if (input) {
+      const { queryIdNameMapping, defs, ...rest } = input;
+      pages = input.pages;
+      const mappings = {
+        components: Object.fromEntries(
+          pages.flatMap((page) =>
+            Object.entries(page.components || {}).map(([id, { component } = {}]) => [id, component?.name])
+          )
+        ),
+        queries: queryIdNameMapping || {},
+      };
+      records = buildSearchRecords({ ...rest, ...defs, translate: (text) => replaceIdsWithName(text, mappings) });
+    }
+    return searchRecords(records, term, filters, { currentPageId, pages });
   };
 };

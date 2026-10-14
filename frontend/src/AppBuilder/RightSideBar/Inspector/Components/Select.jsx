@@ -17,8 +17,6 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
-
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
     layoutPropertyChanged,
@@ -78,17 +76,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
   // The option whose popover is open, by value: indexes shift when options are sorted.
   const [openOptionValue, setOpenOptionValue] = useState(null);
-  // Code search opens an option's popover by its value.
-  useCodeSearchReveal(
-    'listItem',
-    component?.id,
-    (optionValue) => {
-      if (!options.some((option) => String(option?.value) === optionValue)) return false;
-      setOpenOptionValue(optionValue);
-      return true;
-    },
-    [options]
-  );
   const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
@@ -477,7 +464,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                               }
                             }}
                           >
-                            <div key={item?.value}>
+                            <div key={item?.value} data-list-item-id={String(item?.value ?? '')}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
                                 onMouseEnter={() => setHoveredOptionIndex(index)}

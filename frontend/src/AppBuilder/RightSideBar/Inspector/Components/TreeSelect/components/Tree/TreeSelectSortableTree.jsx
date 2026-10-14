@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { SortableTree as SharedSortableTree } from '@/_ui/SortableTree';
 import { TreeSelectItem } from '../TreeSelectItem';
 import { TreeSelectItemGhost } from './TreeSelectItemGhost';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 const PROPERTY_NAMES = {
   isGroup: 'hasChildren',
@@ -35,18 +34,6 @@ export function TreeSelectSortableTree({
 }) {
   // Shared popover state: { id, type } or null
   const [activePopover, setActivePopover] = useState(null);
-  // Code search opens a node's edit popover by value, at any depth (one request per level, outermost first).
-  useCodeSearchReveal(
-    'listItem',
-    componentId,
-    (value) => {
-      const path = findPath(treeItems, value);
-      if (!path) return false;
-      setActivePopover({ id: path[path.length - 1].value, type: 'edit' });
-      return true;
-    },
-    [treeItems]
-  );
   // Ancestors of the node whose popover is open stay expanded, so its row is rendered to anchor it.
   const openPath = activePopover ? findPath(treeItems, String(activePopover.id)) : null;
   const openAncestors = new Set((openPath ?? []).slice(0, -1).map((item) => item.value));

@@ -5,7 +5,6 @@ import { PropertiesTabElements } from './PropertiesTabElements';
 import { TableColumnContext } from './TableColumnContext';
 import { Button } from '@/components/ui/Button/Button';
 import { useButtonManager } from '../hooks/useButtonManager';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 export const ColumnPopoverContent = ({
   column,
@@ -23,11 +22,6 @@ export const ColumnPopoverContent = ({
   onDeleteColumn,
 }) => {
   const [activeTab, setActiveTab] = useState('propertiesTab');
-  // Code search opens the Styles tab for a column style field.
-  useCodeSearchReveal('popoverTab', String(column?.id), (tab) => {
-    setActiveTab(tab === 'styles' ? 'stylesTab' : 'propertiesTab');
-    return true;
-  });
   const [selectedButtonId, setSelectedButtonId] = useState(null);
 
   const timeZoneOptions = [
@@ -164,7 +158,10 @@ export const ColumnPopoverContent = ({
           </div>
         </div>
       </Popover.Header>
-      <Popover.Body className={`table-column-popover ${darkMode && 'theme-dark'}`}>
+      <Popover.Body
+        className={`table-column-popover ${darkMode && 'theme-dark'}`}
+        data-reveal-root={isButtonDetailView ? `listItem:${selectedButtonId}` : undefined}
+      >
         {activeTab === 'propertiesTab' ? (
           <PropertiesTabElements
             column={column}

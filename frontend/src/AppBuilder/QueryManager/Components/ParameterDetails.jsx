@@ -7,17 +7,10 @@ import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import ParameterForm from './ParameterForm';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
-const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, otherParams, queryId }) => {
+const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, otherParams }) => {
   const [showModal, setShowModal] = useState(false);
   const closeMenu = () => setShowModal(false);
-
-  useCodeSearchReveal('queryParam', queryId, (paramName) => {
-    if (!isEdit || paramName !== name) return false;
-    setShowModal(true);
-    return true;
-  });
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -93,7 +86,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
         </Popover>
       }
     >
-      <span className="parameterItem">
+      <span className="parameterItem" data-list-item-id={isEdit ? String(name ?? '') : undefined}>
         {isEdit ? (
           <PillButton
             className="parameterItemPillButton"

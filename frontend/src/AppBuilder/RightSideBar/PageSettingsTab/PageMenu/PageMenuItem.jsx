@@ -1,5 +1,4 @@
 import React, { memo, useRef, useState, useCallback } from 'react';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import cx from 'classnames';
 import * as Icons from '@tabler/icons-react';
 import { AlertTriangle } from 'lucide-react';
@@ -153,13 +152,6 @@ export const PageMenuItem = withRouter(
       setNewPagePopupConfig({ type, mode: 'edit' });
     };
 
-    // Code search asks for this page's details popover, as if the row was clicked.
-    useCodeSearchReveal('page', null, (pageId) => {
-      if (!page?.id || pageId !== page.id) return false;
-      handleOpenPopup(page?.type || 'page', page);
-      return true;
-    });
-
     function getTooltip() {
       const permission = page?.permissions?.length ? page?.permissions[0] : null;
       if (!permission) return 'Access restricted';
@@ -203,6 +195,7 @@ export const PageMenuItem = withRouter(
           className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
             (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
           }`}
+          data-page-id={page?.id}
           style={{
             position: 'relative',
             width: '100%',

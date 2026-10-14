@@ -519,8 +519,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                      ? 'Toggle Switch'
-                      : componentMeta.component,
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>
@@ -609,7 +609,7 @@ export const Inspector = ({
     }
 
     return (
-      <div className="input-icon">
+      <div data-param="name" className="input-icon">
         <input
           onChange={(e) => setNewComponentName(e.target.value)}
           type="text"

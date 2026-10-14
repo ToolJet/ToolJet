@@ -24,7 +24,6 @@ import { getColumnIcon } from './utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useColumnManager, useActionButtonManager, usePopoverState } from './hooks';
 import useStore from '@/AppBuilder/_stores/store';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import { shallow } from 'zustand/shallow';
 
 // Helper function to get display text for column type
@@ -108,25 +107,11 @@ export const Table = (props) => {
     activeIndex: activeColumnPopoverIndex,
     isRootCloseEnabled,
     togglePopover: handleToggleColumnPopover,
-    openPopover: openColumnPopover,
     closePopover: closeColumnPopover,
     setRootCloseBlocker: setColumnPopoverRootCloseBlocker,
   } = usePopoverState();
 
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
-
-  // Code search opens a column's popover by column id (open, never toggle: it may already be open).
-  useCodeSearchReveal(
-    'listItem',
-    component?.id,
-    (columnId) => {
-      const index = filteredColumns.findIndex((column) => String(column.id) === columnId);
-      if (index < 0) return false;
-      openColumnPopover(index);
-      return true;
-    },
-    [filteredColumns]
-  );
 
   useEffect(() => {
     if (isQueryPaneExpanded && activeColumnPopoverIndex !== null) {

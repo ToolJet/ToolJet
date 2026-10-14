@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { FieldPopoverContent, FieldsList } from './FieldManager';
 import { useFieldManager, usePopoverState } from './hooks';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
-import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 // Constants
 const ADDITIONAL_ACTIONS = [
@@ -67,19 +66,6 @@ export const KeyValuePair = (props) => {
     const value = component.component.definition.properties.useDynamicField?.value;
     return value ? resolveReferences(value) ?? false : false;
   }, [component.component.definition.properties.useDynamicField?.value]);
-
-  // Code search opens a field's popover by field id (open, never toggle: it may already be open).
-  useCodeSearchReveal(
-    'listItem',
-    component?.id,
-    (fieldId) => {
-      const field = filteredFields.find((item) => String(item.id) === fieldId);
-      if (useDynamicField || !field) return false; // dynamic fields render no list
-      openPopover(field.id);
-      return true;
-    },
-    [filteredFields, useDynamicField]
-  );
 
   // Event handlers
   const handleDragEnd = useCallback(

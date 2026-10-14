@@ -1,5 +1,6 @@
 /** @jest-environment node */
-import { buildSearchRecords } from '../buildSearchRecords';
+import { buildSearchRecords, toPlainDefs } from '../buildSearchRecords';
+import { createSearcher } from '../searchRecords';
 
 const TABLE_ID = '11111111-1111-4111-8111-111111111111';
 const CHILD_ID = '22222222-2222-4222-8222-222222222222';
@@ -386,6 +387,8 @@ describe('reveal chains: the steps that open where a value is edited', () => {
   const NAV_ID = '44444444-4444-4444-8444-444444444444';
   const SELECT_ID = '55555555-5555-4555-8555-555555555555';
   const GRAPHQL_ID = '66666666-6666-4666-8666-666666666666';
+  const FORM_ID = '77777777-7777-4777-8777-777777777777';
+  const FORM_FIELD_ID = '88888888-8888-4888-8888-888888888888';
   const revealPages = [
     {
       id: PAGE_ID,
@@ -396,7 +399,25 @@ describe('reveal chains: the steps that open where a value is edited', () => {
             name: 'table1',
             component: 'Table',
             definition: {
-              properties: { columns: { value: [{ id: 'col-1', name: 'email', key: 'email', textColor: '#ff0000' }] } },
+              properties: {
+                columns: {
+                  value: [
+                    { id: 'col-1', name: 'email', key: 'email', textColor: '#ff0000' },
+                    {
+                      id: 'col-2',
+                      name: 'actions',
+                      columnType: 'button',
+                      buttons: [{ id: 'btn-1', buttonLabel: 'Edit' }],
+                    },
+                    {
+                      id: 'col-3',
+                      name: 'interest',
+                      columnType: 'newMultiSelect',
+                      options: [{ label: 'Reading', value: 'Reading' }],
+                    },
+                  ],
+                },
+              },
             },
           },
         },
@@ -412,6 +433,25 @@ describe('reveal chains: the steps that open where a value is edited', () => {
             name: 'dropdown1',
             component: 'DropdownV2',
             definition: { properties: { options: { value: [{ label: 'One', value: 'opt-1' }] } } },
+          },
+        },
+        [FORM_ID]: {
+          component: {
+            name: 'form1',
+            component: 'Form',
+            definition: {
+              properties: {
+                fields: {
+                  value: [
+                    {
+                      componentId: FORM_FIELD_ID,
+                      key: 'email',
+                      dataType: 'string',
+                    },
+                  ],
+                },
+              },
+            },
           },
         },
       },
@@ -444,6 +484,7 @@ describe('reveal chains: the steps that open where a value is edited', () => {
     handler('ev-query', 'data_query', QUERY_ID),
     handler('ev-page', 'page', PAGE_ID),
     handler('ev-column', 'table_column', TABLE_ID, { ref: 'email' }),
+    handler('ev-button', 'table_column', TABLE_ID, { ref: 'actions::btn-1' }),
     handler('ev-nav', 'component', NAV_ID, { ref: 'nav-item-1' }),
   ];
   const records = () =>
@@ -457,6 +498,33 @@ describe('reveal chains: the steps that open where a value is edited', () => {
     expect(revealOf(column('textColor'))).toEqual([
       { kind: 'listItem', ownerId: TABLE_ID, itemId: 'col-1' },
       { kind: 'popoverTab', ownerId: 'col-1', itemId: 'styles' },
+    ]);
+  });
+
+  test("a Table column's option opens the column, then that option", () => {
+    expect(revealOf((r) => r.fieldPath.join('.') === 'properties.columns.value.2.options.0.label')).toEqual([
+      { kind: 'listItem', ownerId: TABLE_ID, itemId: 'col-3' },
+      { kind: 'listItem', ownerId: TABLE_ID, itemId: 'Reading' },
+    ]);
+  });
+
+  test('a button column button and its handlers open the button inside its column', () => {
+    const button = [
+      { kind: 'listItem', ownerId: TABLE_ID, itemId: 'col-2' },
+      { kind: 'listItem', ownerId: TABLE_ID, itemId: 'btn-1' },
+    ];
+    expect(revealOf((r) => r.fieldPath.join('.') === 'properties.columns.value.1.buttons.0.buttonLabel')).toEqual(
+      button
+    );
+    expect(revealOf((r) => r.eventId === 'ev-button' && r.fieldPath.join('.') === 'event.message')).toEqual([
+      ...button,
+      eventStep('ev-button', TABLE_ID),
+    ]);
+  });
+
+  test('a Form field opens its popover, found by the component it renders', () => {
+    expect(revealOf((r) => r.entityId === FORM_ID && r.fieldPath.at(-1) === 'key')).toEqual([
+      { kind: 'listItem', ownerId: FORM_ID, itemId: FORM_FIELD_ID },
     ]);
   });
 
@@ -539,5 +607,44 @@ describe('reveal chains: the steps that open where a value is edited', () => {
       { kind: 'listItem', ownerId: NAV_ID, itemId: 'nav-item-1' },
       eventStep('ev-nav', NAV_ID),
     ]);
+  });
+});
+
+// What the code-search worker runs: the definition arrives as a structured clone, so the widget
+// definitions must be plain data, and ids are translated from the posted mappings.
+describe('createSearcher', () => {
+  const rawWidgetDefs = {
+    Table: {
+      ...widgetDefs.Table,
+      properties: { data: { displayName: 'Data', validate: () => true } },
+      icon: () => null,
+    },
+  };
+  const input = {
+    pages,
+    queries,
+    events,
+    globalSettings: {},
+    queryIdNameMapping: { [QUERY_ID]: 'getUsers' },
+    defs: toPlainDefs({ widgetDefs: rawWidgetDefs, actionDefs }),
+  };
+  const request = (term) => ({ term, filters: {}, currentPageId: PAGE_ID });
+
+  test('indexes a cloned definition with labels and ids translated to names', () => {
+    const { rows } = createSearcher()({ input: structuredClone(input), ...request('getUsers') });
+    const data = rows.find((r) => r.record.entityId === TABLE_ID && r.record.fieldPath.join('.') === 'properties.data');
+    expect(data.record).toMatchObject({
+      text: '{{queries.getUsers.data}}',
+      shortLabel: 'Data',
+      entitySubtype: 'Table',
+    });
+    const handler = rows.find((r) => r.record.eventId === 'ev1');
+    expect(handler.record.shortLabel).toMatch(/^On row clicked → Run query/);
+  });
+
+  test('a search without input reuses the last index', () => {
+    const search = createSearcher();
+    search({ input, ...request('users') });
+    expect(search(request('getUsers')).total).toBeGreaterThan(0);
   });
 });

@@ -41,7 +41,7 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
 
   return (
     <div className="tw-flex tw-flex-col tw-gap-3" data-cy="go-to-app-panel">
-      <FieldRow label="App" dataCy="go-to-app-label">
+      <FieldRow param="correlationId" label="App" dataCy="go-to-app-label">
         <div className="tw-flex tw-flex-col tw-gap-1 tw-min-w-0 tw-flex-1">
           <OptionCombobox
             options={appOptions}
