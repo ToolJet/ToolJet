@@ -108,7 +108,8 @@ const CardBody = ({ card, fields, compact, badgeColors, progressStyle, expanded 
         </div>
       ) : null}
       {isSet(badge) || isSet(avatar) || isSet(meta) ? (
-        <div className={cn('flex items-center gap-2', compact ? 'mt-2' : 'mt-3')}>
+        // Wraps beside a wide badge, the meta moving whole to the next line, before the meta is cut ("28 Oct 2...").
+        <div className={cn('flex flex-wrap items-center gap-x-2 gap-y-1', compact ? 'mt-2' : 'mt-3')}>
           {isSet(badge) ? (
             badgeLook(badge, badgeColors) ? (
               <Badge

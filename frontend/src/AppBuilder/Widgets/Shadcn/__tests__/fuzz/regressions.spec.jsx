@@ -326,6 +326,9 @@ describe('Kanban', () => {
     const meta = [...document.querySelectorAll('span')].find((s) => s.textContent === 'Follow-up Oct 14, 2026');
     expect(meta.className).toContain('truncate');
     expect(meta.getAttribute('title')).toBe('Follow-up Oct 14, 2026');
+    // Beside a wide badge the line wraps, the meta moving whole under it, before the meta is cut ("28 Oct 2...", a
+    // grants board, 2026-10-14).
+    expect(meta.parentElement.className).toMatch(/\bflex-wrap\b/);
     unmount();
     expect(problems()).toEqual([]);
   });
