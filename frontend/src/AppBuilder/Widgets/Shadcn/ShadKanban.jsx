@@ -382,10 +382,11 @@ const KanbanColumn = ({
       // A set column width is the preferred width: columns shrink to fit the board (down to the minimum, or the set
       // width if narrower) before it scrolls; five 245px stages clipped their last column. Without one the columns
       // share the board, at least the minimum each: 200px, or 160px on a board of six or more stages (a seventh
-      // stage was cut off at the right edge of a full-width board).
+      // stage was cut off at the right edge of a full-width board). Columns grow to fill a wider board, as table
+      // columns do: four 250px stages left a 165px empty strip at the right of a full-width board (2026-10-14).
       style={{
         ...(width
-          ? { ...look.column, width, flex: `0 1 ${width}`, minWidth: `min(${width}, ${minColumn}px)` }
+          ? { ...look.column, width, flex: `1 1 ${width}`, minWidth: `min(${width}, ${minColumn}px)` }
           : { ...look.column, minWidth: `${minColumn}px` }),
         ...(!fixed && maxHeight ? { maxHeight: `${maxHeight}px` } : {}),
       }}

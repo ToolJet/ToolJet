@@ -333,6 +333,18 @@ describe('Kanban', () => {
     expect(problems()).toEqual([]);
   });
 
+  it('lets columns with a set width grow to fill a wider board (a 165px empty strip at the right)', async () => {
+    const { problems, unmount } = await mount('ShadKanban', {
+      data: [{ id: 1, title: 'One', status: 'a' }],
+      columns: ['a', 'b', 'c', 'd'],
+      columnWidth: 250,
+    });
+    const column = document.querySelector('[data-collapsed="false"]');
+    expect(column.style.flex.startsWith('1 1')).toBe(true);
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+
   it('lets six or more columns narrow to 160px so a seven-stage board fits instead of clipping its last stage', async () => {
     const stages = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
     const { problems, unmount } = await mount('ShadKanban', {
