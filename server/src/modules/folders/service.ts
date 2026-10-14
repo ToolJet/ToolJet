@@ -129,31 +129,36 @@ export class FoldersService implements IFoldersService {
     throw new ForbiddenException('You do not have access to perform this action');
   }
 
+  // Refusals single folder delete applies; the dashboard bulk folder delete dry run reuses them.
+  async assertFolderDeletable(user, folder: Folder, manager: EntityManager): Promise<void> {
+    await this.checkFolderManagePermission(user, folder, manager, 'delete');
+
+    const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
+      user.organizationId
+    );
+    // Multi-branch: block deletion of any folder that has apps on any branch.
+    // Single-branch: allow deletion only if the folder is empty (same check, same guard).
+    if (isGitSyncEnabled && isMultiBranchingEnabled) {
+      const branchNames = await this.foldersUtilService.findBranchNamesWithApps(folder.id, manager);
+      if (branchNames.length > 0) {
+        // AllExceptionsFilter collapses every error response down to { message, ... } and
+        // drops any other fields on the exception body — so the branch list is JSON-encoded
+        // into the message itself and parsed back out on the frontend (same pattern already
+        // used for the SSO organizationId payload in handle-response.js).
+        throw new BadRequestException(
+          JSON.stringify({ message: 'Folder with apps cannot be deleted', branches: branchNames })
+        );
+      }
+    }
+  }
+
   async deleteFolder(user, id): Promise<DeleteResult> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const folder = await manager.findOneOrFail(Folder, {
         where: { id, organizationId: user.organizationId },
       });
 
-      await this.checkFolderManagePermission(user, folder, manager, 'delete');
-
-      const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
-        user.organizationId
-      );
-      // Multi-branch: block deletion of any folder that has apps on any branch.
-      // Single-branch: allow deletion only if the folder is empty (same check, same guard).
-      if (isGitSyncEnabled && isMultiBranchingEnabled) {
-        const branchNames = await this.foldersUtilService.findBranchNamesWithApps(folder.id, manager);
-        if (branchNames.length > 0) {
-          // AllExceptionsFilter collapses every error response down to { message, ... } and
-          // drops any other fields on the exception body — so the branch list is JSON-encoded
-          // into the message itself and parsed back out on the frontend (same pattern already
-          // used for the SSO organizationId payload in handle-response.js).
-          throw new BadRequestException(
-            JSON.stringify({ message: 'Folder with apps cannot be deleted', branches: branchNames })
-          );
-        }
-      }
+      await this.assertFolderDeletable(user, folder, manager);
 
       return manager.delete(Folder, { id: folder.id, organizationId: user.organizationId });
     });

@@ -8,7 +8,8 @@ import { AppsRepository } from '@modules/apps/repository';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { RequestContext } from '@modules/request-context/service';
-import { FEATURE_KEY } from '@modules/apps/constants';
+import { APP_TYPES, FEATURE_KEY } from '@modules/apps/constants';
+import { UserPermissions } from '@modules/ability/types';
 import { deletable } from './actions';
 import { DashboardService } from './dashboard.service';
 import { BulkDeleteAppsDto, BulkResultResponseDto, bulkResult } from './dto/bulk.dto';
@@ -28,17 +29,7 @@ export class BulkDeleteService {
     const blockedIds: string[] = [];
     for (const id of dto.app_ids) {
       const app = await this.appsRepository.findById(id, user.organizationId, undefined, dto.branch_id);
-      const permitted =
-        !!app &&
-        app.type === dto.type &&
-        deletable(permissions, dto.type, user.id, {
-          id: app.id,
-          ownerId: app.userId,
-          folderId: null,
-          currentVersionId: app.currentVersionId,
-          isMaintenanceOn: !!app.isMaintenanceOn,
-        });
-      if (permitted && (await this.passesServiceChecks(app, user, dto.branch_id))) allowed.push(app);
+      if (await this.canDelete(user, permissions, dto.type, app, dto.branch_id)) allowed.push(app);
       else blockedIds.push(id);
     }
     const result = bulkResult(
@@ -49,12 +40,9 @@ export class BulkDeleteService {
     if (!result.applied) return result;
     let done = 0;
     for (const app of allowed) {
-      try {
-        await this.appsService.delete(app, user, dto.branch_id);
-        this.emitDeleteAuditLogEntry();
+      if (await this.deleteOne(app, user, dto.branch_id)) {
         done++;
-      } catch (error) {
-        if (!(error instanceof HttpException)) throw error;
+      } else {
         result.blockedIds.push(app.id);
         result.counts.allowed--;
         result.counts.blocked++;
@@ -62,6 +50,39 @@ export class BulkDeleteService {
     }
     result.counts.done = done;
     return result;
+  }
+
+  // The per-app check bulk app delete applies; the folder bulk delete reuses it for folder_and_apps.
+  async canDelete(
+    user: User,
+    permissions: UserPermissions,
+    type: APP_TYPES,
+    app: App | null,
+    branchId?: string
+  ): Promise<boolean> {
+    const permitted =
+      !!app &&
+      app.type === type &&
+      deletable(permissions, type, user.id, {
+        id: app.id,
+        ownerId: app.userId,
+        folderId: null,
+        currentVersionId: app.currentVersionId,
+        isMaintenanceOn: !!app.isMaintenanceOn,
+      });
+    return permitted && (await this.passesServiceChecks(app, user, branchId));
+  }
+
+  // Deletes one checked app (AppsService.delete + its audit entry); false on an HttpException refusal.
+  async deleteOne(app: App, user: User, branchId?: string): Promise<boolean> {
+    try {
+      await this.appsService.delete(app, user, branchId);
+      this.emitDeleteAuditLogEntry();
+      return true;
+    } catch (error) {
+      if (!(error instanceof HttpException)) throw error;
+      return false;
+    }
   }
 
   // appsService.delete sets one audit-log local per call, meant to be read once by the response
