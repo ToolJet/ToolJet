@@ -3,6 +3,7 @@
 // clean values: numbers or null, plain rows, text labels. Nothing here throws.
 
 import { stringify } from '../packJson';
+import { chipTone } from '../NewTable/_utils/chipTone';
 
 export const MAX_ROWS = 2000;
 export const MAX_SERIES = 12;
@@ -271,6 +272,33 @@ export const seriesLabel = (key, labels) => {
   // Acronyms read in capitals: a legend said "Mrr" for mrr (subscription dashboard, 2026-10-14).
   const spoken = words.replace(ACRONYMS, (word) => word.toUpperCase());
   return spoken.charAt(0).toUpperCase() + spoken.slice(1);
+};
+
+// The status tones as chart fills (info is a fixed blue, --sc-chart-info in shadcn.scss: beside green, amber and red
+// the states must stay apart whatever the brand colour, as on the map).
+const STATUS_FILLS = {
+  success: 'var(--sc-success)',
+  warning: 'var(--sc-warning)',
+  danger: 'var(--sc-destructive)',
+  info: 'var(--sc-chart-info)',
+};
+
+/** Fills for series (or slices) that are all states, Completed, In progress, Missed: their status tones, so a chart
+ *  reads like the chips beside it (a stacked chart of visits drew Completed orange and Missed yellow from a warm theme,
+ *  field visits, 2026-10-14). A second state of one tone takes a lighter shade. null when any label is not a state, or
+ *  all share one tone: the theme's series colours then. */
+export const statusColors = (labels) => {
+  if (!Array.isArray(labels) || labels.length < 2 || labels.length > MAX_SERIES) return null;
+  const tones = labels.map((label) => chipTone(isText(label) ? String(label) : ''));
+  if (tones.some((tone) => !STATUS_FILLS[tone]) || new Set(tones).size < 2) return null;
+  const seen = {};
+  return tones.map((tone) => {
+    seen[tone] = (seen[tone] || 0) + 1;
+    const fill = STATUS_FILLS[tone];
+    return seen[tone] === 1
+      ? fill
+      : `color-mix(in srgb, ${fill} ${Math.max(30, 100 - 35 * (seen[tone] - 1))}%, var(--sc-background))`;
+  });
 };
 
 const ACRONYMS =

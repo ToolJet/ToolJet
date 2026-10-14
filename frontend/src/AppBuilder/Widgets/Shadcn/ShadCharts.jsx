@@ -53,6 +53,7 @@ import {
   trendOf,
   resolveChartFields,
   seriesLabel,
+  statusColors,
   highlightIndexes,
   comboSeries,
   funnelStages,
@@ -266,7 +267,8 @@ export const ShadAreaChart = (props) => {
   const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
   const Chart = p.lineOnly === true ? LineChart : AreaChart;
   const compact = isCompactChart(props.height);
-  const color = (i) => seriesColor(p.colors, i);
+  const states = isSet(p.colors) ? null : statusColors(series.map((s) => seriesLabel(s, p.seriesLabels)));
+  const color = (i) => states?.[i] ?? seriesColor(p.colors, i);
   return (
     <ChartFrame props={props} empty={!data.length || !series.length}>
       {(onDatum) => (
@@ -330,7 +332,8 @@ export const ShadBarChart = (props) => {
   const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
   const horizontal = p.horizontal === true;
   const compact = isCompactChart(props.height);
-  const color = (i) => seriesColor(p.colors, i);
+  const states = isSet(p.colors) ? null : statusColors(series.map((s) => seriesLabel(s, p.seriesLabels)));
+  const color = (i) => states?.[i] ?? seriesColor(p.colors, i);
   // Highlight: the picked bars keep the series colour (or the Highlight color style), the rest draw muted (the Muted
   // bar color style, else the series colour faded), so one month or one site stands out.
   const picked = highlightIndexes(data, xField, series, p.highlight);
@@ -442,9 +445,9 @@ export const ShadBarChart = (props) => {
 
 export const ShadPieChart = (props) => {
   const p = props.properties;
-  const data = list(p.data)
-    .slice(0, MAX_SLICES)
-    .map((d, i) => ({ ...d, fill: seriesColor(p.colors, i) }));
+  const slices = list(p.data).slice(0, MAX_SLICES);
+  const states = isSet(p.colors) ? null : statusColors(slices.map((d) => d?.[p.categoryField]));
+  const data = slices.map((d, i) => ({ ...d, fill: states?.[i] ?? seriesColor(p.colors, i) }));
   const donut = p.donut !== false;
   const format = fmt(p, false);
   return (
