@@ -41,11 +41,16 @@ describe('backend validation catalog parity', () => {
   });
 
   it('agrees with validateKebabCase on page handles', () => {
-    const handlePattern = new RegExp(pagesCatalog.handlePattern);
+    const handlePattern = new RegExp(pagesCatalog.handlePattern, 'u');
     const samples = [
       'orders',
       'order-details',
       'a1-b2-c3',
+      // The editor's handle generator (lodash kebabCase of the name) keeps non-Latin
+      // scripts, so both sides must accept them.
+      'отчёты',
+      'ダッシュボード',
+      'данные-заказов',
       'Order Details',
       'order--details',
       '-orders',
@@ -82,5 +87,27 @@ describe('backend validation catalog parity', () => {
     const serverTypes = new Set(serverWidgets.map((widget) => widget.component));
     const missing = frontendWidgets.map((widget) => widget.component).filter((type) => !serverTypes.has(type));
     expect(missing).toEqual([]);
+  });
+
+  it('offers no option or event the server copy does not know', () => {
+    // The rules read option lists (PROPERTY_ENUM_MISMATCH) and events from the server's
+    // widget configs: an option or event added only in the editor would 400 every PAT/MCP
+    // write that uses it.
+    const SECTIONS = ['properties', 'styles', 'general', 'generalStyles', 'validation', 'others'];
+    const OPTION_CONTROLS = new Set(['switch', 'dropdownMenu']);
+    const optionValues = (setting) =>
+      OPTION_CONTROLS.has(setting?.type) ? (setting.options ?? []).map((option) => option?.value) : undefined;
+    const serverByType = new Map(serverWidgets.map((widget) => [widget.component, widget]));
+    for (const widget of frontendWidgets) {
+      const server = serverByType.get(widget.component);
+      const serverEvents = Object.keys(server.events ?? {});
+      expect(serverEvents).toEqual(expect.arrayContaining(Object.keys(widget.events ?? {})));
+      for (const section of SECTIONS) {
+        for (const [key, setting] of Object.entries(widget[section] ?? {})) {
+          const serverOptions = optionValues(server[section]?.[key]);
+          if (serverOptions) expect(serverOptions).toEqual(expect.arrayContaining(optionValues(setting) ?? []));
+        }
+      }
+    }
   });
 });

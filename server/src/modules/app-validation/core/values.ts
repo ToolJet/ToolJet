@@ -112,6 +112,16 @@ export interface BrokenBraces {
   syntaxError?: { code: string; message: string };
 }
 
+// The editor stores entity references by id; the runtime rewrites them to bracket form
+// before compiling (ast.js extractAndReplaceReferencesFromString, same regex). Mirror it
+// here, or every stored id-form binding ({{queries.<uuid>.data}}) is a false syntax error.
+const ENTITY_ID_REF =
+  /\b(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(['"]?\])?/gi;
+
+function withBracketRefs(value: string): string {
+  return value.replace(ENTITY_ID_REF, (_match, root, sep, id) => `${root}${sep.startsWith('?') ? '?.' : ''}["${id}"]`);
+}
+
 // Undefined when the value is fine. Code is parsed, never executed.
 export function findBrokenBraces(value: unknown): BrokenBraces | undefined {
   if (!hasBraces(value)) return undefined;
@@ -121,7 +131,7 @@ export function findBrokenBraces(value: unknown): BrokenBraces | undefined {
 
   let syntaxError: BrokenBraces['syntaxError'];
   if (!unclosed) {
-    for (const code of compiledCodeUnits(value)) {
+    for (const code of compiledCodeUnits(withBracketRefs(value))) {
       if (code.length > MAX_EXPRESSION_LENGTH) continue;
       try {
         // The runtime compiles `return <code>` with `Function(...)`.

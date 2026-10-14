@@ -87,6 +87,12 @@ describe('component rules', () => {
       ]);
     });
 
+    it('reports instead of blocking when bulk data reproduces a legacy name', () => {
+      expect(componentNameFormat.check(write('Text Input 1'), { ...ctx, source: 'import' })).toEqual([
+        expect.objectContaining({ code: 'COMPONENT_NAME_INVALID', severity: 'medium' }),
+      ]);
+    });
+
     it('rejects empty and non-string names', () => {
       expect(componentNameFormat.check(write(''), ctx)).toHaveLength(1);
       expect(componentNameFormat.check(write(42), ctx)).toHaveLength(1);
@@ -189,6 +195,13 @@ describe('component rules', () => {
       );
     });
 
+    it('never judges a skipResolve entry: the runtime renders it as-is, without compiling {{ }}', () => {
+      const customComponentCode = "const App = () => <div style={{ color: 'red' }}>Hi</div>;";
+      expect(
+        componentValueTypes.check(write({ code: { value: customComponentCode, skipResolve: true } }), ctx)
+      ).toEqual([]);
+    });
+
     it('rejects a value outside a dropdown-style setting\u2019s options', () => {
       const styled: ComponentWrite = {
         op: 'create',
@@ -198,6 +211,15 @@ describe('component rules', () => {
       expect(componentValueTypes.check(styled, ctx)).toEqual([
         expect.objectContaining({ code: 'PROPERTY_ENUM_MISMATCH', severity: 'high', confidence: 'certain' }),
       ]);
+    });
+
+    it('skips the option check in fx mode, where the editor\u2019s code box saves any plain value', () => {
+      const fxStyled: ComponentWrite = {
+        op: 'create',
+        id: 'c1',
+        data: { name: 'button1', type: 'Button', styles: { type: { value: 'Primary', fxActive: true } } },
+      };
+      expect(componentValueTypes.check(fxStyled, ctx)).toEqual([]);
     });
 
     it('blocks structure mismatches but only warns on scalar ones, like ToolJet\u2019s own numbers-as-text', () => {
@@ -292,9 +314,8 @@ describe('component rules', () => {
   });
 
   // Calibration: ToolJet ships these templates, so no component rule may block their import.
-  // Known template defects stay warnings there: one broken expression (url-splitter-and-parser
-  // references a query by raw UUID) and 35 orphaned components whose parent was deleted before
-  // export. Anything else firing is a rule bug.
+  // One known template defect stays a warning there: 35 orphaned components whose parent was
+  // deleted before export. Anything else firing is a rule bug.
   it('finds no blocking problem in any ToolJet template', async () => {
     const errors = [];
     const unexpectedWarnings = [];
@@ -307,9 +328,7 @@ describe('component rules', () => {
       };
       const result = await runRules(componentRules, toComponentWrites(version), versionCtx);
       errors.push(...result.errors);
-      unexpectedWarnings.push(
-        ...result.warnings.filter((w) => !['COMPONENT_BROKEN_CODE', 'COMPONENT_PARENT_NOT_FOUND'].includes(w.code))
-      );
+      unexpectedWarnings.push(...result.warnings.filter((w) => w.code !== 'COMPONENT_PARENT_NOT_FOUND'));
     }
     expect(errors).toEqual([]);
     expect(unexpectedWarnings).toEqual([]);

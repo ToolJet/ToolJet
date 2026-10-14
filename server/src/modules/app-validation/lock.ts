@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
 
-// `data_query_name` matches the key DataQueriesService.assertUniqueQueryName already uses.
+// `data_query_name` is the key DataQueriesService.assertUniqueQueryName locks with.
 export type ValidationLockScope = 'component_name' | 'page_handle' | 'data_query_name';
 
 // Serialises uniqueness checks for one scope and app version until the transaction ends.

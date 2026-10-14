@@ -21,6 +21,10 @@ describe('app-validation JSON catalogs', () => {
     expect(QUERY_NAME_PATTERN.test('getOrders')).toBe(true);
     expect(QUERY_NAME_PATTERN.test('get orders')).toBe(false);
     expect(PAGE_HANDLE_PATTERN.test('order-details')).toBe(true);
+    // The editor's handle generator (lodash kebabCase of the name) keeps non-Latin
+    // scripts, so the pattern spans Unicode letters and digits.
+    expect(PAGE_HANDLE_PATTERN.test('отчёты')).toBe(true);
+    expect(PAGE_HANDLE_PATTERN.test('ダッシュボード')).toBe(true);
     expect(PAGE_HANDLE_PATTERN.test('Order Details')).toBe(false);
     expect(PAGE_HANDLE_PATTERN.test('a--b')).toBe(false);
   });

@@ -7,20 +7,16 @@ import {
   PAGE_EVENT_IDS_BY_TYPE,
   widgetEvents,
 } from '../catalog';
-import { EventWrite, Rule, RuleContext, Severity, WriteSource } from '../types';
+import { EventWrite, Rule, RuleContext } from '../types';
+import { referenceSeverity } from '../core/severity';
 import { hasBraces } from '../core/values';
 import type { VersionIndex } from '../version-index';
 
 export { DATA_QUERY_EVENT_IDS, EVENT_TARGETS };
 
-// Sources that reproduce stored data. ToolJet's own templates contain orphaned events
-// (their source was deleted but the rows were exported), so a dangling reference in bulk
-// data is a defect to report, not a reason to reject the whole app.
-const BULK_SOURCES: ReadonlySet<WriteSource> = new Set(['import', 'git', 'copy', 'restore']);
-
-function referenceSeverity(source: WriteSource): Severity {
-  return BULK_SOURCES.has(source) ? 'medium' : 'high';
-}
+// ToolJet's own templates contain orphaned events (their source was deleted but the rows
+// were exported), so a dangling reference in bulk data is a defect to report, not a
+// reason to reject the whole app - referenceSeverity (core/severity.ts) handles that.
 
 function labelOf(write: EventWrite): string {
   const eventId = write.data?.event?.eventId;
@@ -160,9 +156,13 @@ export const eventActionTargetExists: Rule<EventWrite> = {
 export const eventNoSwitchPageInModule: Rule<EventWrite> = {
   id: 'event-no-switch-page-in-module',
   description: 'Modules cannot switch pages',
-  check(write, ctx) {
+  async check(write, ctx) {
     if (write.op === 'delete' || eventUntouched(write)) return [];
-    if (ctx.appType !== 'module' || write.data?.event?.actionId !== 'switch-page') return [];
+    if (write.data?.event?.actionId !== 'switch-page') return [];
+    // The event call sites don't pass appType, so fall back to the module's one
+    // structural giveaway - same detection as pageModuleSinglePage.
+    const isModule = ctx.appType === 'module' || (await ctx.index()).hasComponentOfType('ModuleContainer');
+    if (!isModule) return [];
     return [
       {
         code: 'EVENT_SWITCH_PAGE_IN_MODULE',

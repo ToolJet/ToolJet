@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { EntityManager } from 'typeorm';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { getDBConnection } from '@helpers/database.helper';
+import { Component } from '@entities/component.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { VALIDATION_WARNINGS_LOCALS_KEY } from './core/constants';
 import { AppValidationException } from './core/exception';
@@ -9,7 +10,7 @@ import { getMode, resolveSource } from './core/mode';
 import { rulesFor } from './rules';
 import { runRules } from './core/runner';
 import { Issue, Rule, RuleContext, ValidationArea, ValidationMode, ValidationResult, WriteSource } from './types';
-import { VersionIndex } from './version-index';
+import { IndexedComponent, VersionIndex } from './version-index';
 
 export interface CheckOptions {
   appVersionId: string;
@@ -21,6 +22,9 @@ export interface CheckOptions {
   manager?: EntityManager;
   // Prebuilt lookup (e.g. an import's in-memory data); skips the database.
   index?: VersionIndex;
+  // Components this request creates, overlaid on the loaded lookup so siblings can
+  // reference each other. Loaded lazily inside check(), so an off mode never pays for it.
+  overlayComponents?: IndexedComponent[];
   // Overrides the area's registered rules.
   rules?: Rule<any>[];
 }
@@ -77,17 +81,50 @@ export class AppValidationService {
 
   protected buildContext(source: WriteSource, options: CheckOptions): RuleContext {
     let index: Promise<VersionIndex> | undefined = options.index ? Promise.resolve(options.index) : undefined;
+    const known = new Map<string, boolean>();
     return {
       appVersionId: options.appVersionId,
       organizationId: options.organizationId,
       appType: options.appType,
       source,
-      index: () =>
-        (index ??= dbTransactionWrap(
-          (manager: EntityManager) => VersionIndex.load(manager, options.appVersionId),
-          options.manager
-        )),
+      index: () => (index ??= this.loadIndex(options)),
+      componentsInVersion: async (ids) => {
+        // An existing lookup (prebuilt, or one a rule already loaded) answers for free.
+        if (index) {
+          const loaded = await index;
+          return new Set(ids.filter((id) => loaded.component(id)));
+        }
+        for (const component of options.overlayComponents ?? []) known.set(component.id, true);
+        const unknown = [...new Set(ids.filter((id) => !known.has(id)))];
+        if (unknown.length) {
+          const rows: { id: string }[] = await this.inSavepoint(options, (manager) =>
+            manager
+              .createQueryBuilder(Component, 'component')
+              .innerJoin('component.page', 'page')
+              .where('component.id IN (:...ids)', { ids: unknown })
+              .andWhere('page.appVersionId = :appVersionId', { appVersionId: options.appVersionId })
+              .select('component.id', 'id')
+              .getRawMany()
+          );
+          const present = new Set(rows.map((row) => row.id));
+          for (const id of unknown) known.set(id, present.has(id));
+        }
+        return new Set(ids.filter((id) => known.get(id)));
+      },
     };
+  }
+
+  protected async loadIndex(options: CheckOptions): Promise<VersionIndex> {
+    const loaded = await this.inSavepoint(options, (manager) => VersionIndex.load(manager, options.appVersionId));
+    return options.overlayComponents ? loaded.withComponents(options.overlayComponents) : loaded;
+  }
+
+  // Lookup reads run in a savepoint on the caller's manager (EntityManager.transaction
+  // nests when already in a transaction): a failing read - say a statement_timeout on the
+  // heaviest statement of a small save - must roll back only itself, not abort the save's
+  // transaction it was merely checking. Without a caller manager it opens its own.
+  private inSavepoint<T>(options: CheckOptions, read: (manager: EntityManager) => Promise<T>): Promise<T> {
+    return (options.manager ?? getDBConnection()).transaction((manager: EntityManager) => read(manager));
   }
 
   // Picked up by ValidationWarningsInterceptor.

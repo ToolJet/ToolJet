@@ -149,14 +149,16 @@ describe('query rules', () => {
     });
   });
 
-  // Calibration: ToolJet ships these templates, so no query rule may block their import.
+  // Calibration: ToolJet ships these templates, so no query rule may block their import -
+  // held to the `pat` bar (the enforced source), which also pins that template queries on
+  // global data sources resolve (export-reader keeps untagged sources for every version).
   it('finds no blocking problem in any ToolJet template', async () => {
     const errors = [];
     for (const version of templateAppVersions()) {
       const versionCtx: RuleContext = {
         appVersionId: version.appVersionId,
         appType: version.appType,
-        source: 'import',
+        source: 'pat',
         index: async () => VersionIndex.fromData(toIndexData(version)),
       };
       const result = await runRules(queryRules, toQueryWrites(version), versionCtx);

@@ -53,9 +53,12 @@ describe('AppImportExportService.checkImportedAppData', () => {
 
   it('reports a spaced component name from the import data, without touching the database', async () => {
     const result = await check(appParams);
-    // Report mode records instead of throwing, but the problem still comes back as blocking-grade.
-    expect(result.errors).toEqual([expect.objectContaining({ code: 'COMPONENT_NAME_INVALID', path: 'button 1.name' })]);
-    expect(logger.warn).toHaveBeenCalled();
+    // Reproduced stored data: the name problem is recorded as a warning (medium under
+    // bulk sources), never as a blocker - one legacy name must not block a whole import.
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual([
+      expect.objectContaining({ code: 'COMPONENT_NAME_INVALID', severity: 'medium', path: 'button 1.name' }),
+    ]);
   });
 
   it('skips nested modules: each one is validated by its own import() call', async () => {
@@ -73,5 +76,34 @@ describe('AppImportExportService.checkImportedAppData', () => {
     expect(result.errors).toEqual([]);
     expect(result.warnings).toEqual([]);
     expect(logger.warn).not.toHaveBeenCalled();
+  });
+
+  // The write source decides the mode (copy is always report; import and git are report
+  // today, pat is enforce), so a call site passing the wrong one changes what blocks.
+  it.each([
+    [{ cloning: true, isGitApp: false }, 'copy'],
+    [{ cloning: false, isGitApp: true }, 'git'],
+    [{ cloning: false, isGitApp: false }, 'import'],
+  ])('setupImportedAppAssociations checks %p as %s', async ({ cloning, isGitApp }, expected) => {
+    const stop = new Error('stop after the check');
+    const checked = jest.spyOn(service as any, 'checkImportedAppData').mockRejectedValueOnce(stop);
+    await expect(
+      service.setupImportedAppAssociations(
+        null as any,
+        { type: 'front-end' } as any,
+        appParams,
+        null as any,
+        {},
+        true,
+        null,
+        undefined,
+        false,
+        undefined,
+        cloning,
+        isGitApp
+      )
+    ).rejects.toBe(stop);
+    expect(checked).toHaveBeenCalledWith(appParams, 'front-end', expected);
+    checked.mockRestore();
   });
 });

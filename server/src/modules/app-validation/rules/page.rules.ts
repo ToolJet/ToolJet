@@ -1,5 +1,6 @@
 import { PAGE_HANDLE_PATTERN } from '../catalog';
-import { PageWrite, Rule, RuleContext, Severity, WriteSource } from '../types';
+import { PageWrite, Rule, RuleContext } from '../types';
+import { referenceSeverity, touchedField } from '../core/severity';
 import { isLiterallyTrue } from '../core/values';
 
 // The editor's validateKebabCase (frontend/src/_helpers/utils.js): the handle is the URL
@@ -10,19 +11,9 @@ export { PAGE_HANDLE_PATTERN };
 // in the inventory-management and supply-chain templates), and the viewer still routes
 // them via percent-encoding - so reproducing stored data only warns, while interactive
 // writes that create such a handle block.
-const BULK_SOURCES: ReadonlySet<WriteSource> = new Set(['import', 'git', 'copy', 'restore']);
-
-function referenceSeverity(source: WriteSource): Severity {
-  return BULK_SOURCES.has(source) ? 'medium' : 'high';
-}
 
 function labelOf(write: PageWrite): string {
   return write.data?.name ?? write.data?.handle ?? write.id;
-}
-
-function touchedField(write: PageWrite, field: string): boolean {
-  if (write.op !== 'update' || !write.touched) return true;
-  return write.touched.includes(field);
 }
 
 // CreatePageDto has no pattern and no @IsNotEmpty on handle, and updatePage writes the raw
@@ -222,7 +213,10 @@ export const pageHomeStaysVisible: Rule<PageWrite> = {
       return [
         {
           code: 'PAGE_HOME_HIDDEN',
-          severity: 'high',
+          // The settings popup forbids hiding the home page, but the page menu's "Mark
+          // home" has no hidden guard and a hidden home still renders when opened - so
+          // the editor itself produces this state. Report-only until product settles it.
+          severity: 'medium',
           confidence: 'certain',
           path: `${labelOf(write)}.hidden`,
           message: `${labelOf(write)}, hidden: this is the home page, hiding it strands the app's entry point`,

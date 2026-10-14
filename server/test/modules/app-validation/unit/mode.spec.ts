@@ -40,6 +40,10 @@ describe('app-validation mode', () => {
       );
     });
 
+    it('detects the AI builder\u2019s sessions, which must stay on report, not the enforced pat', () => {
+      expect(resolveSource({ user: { tjApiSource: 'ai_builder' }, originalUrl: '/api/v2/apps/1' })).toBe('ai');
+    });
+
     it('detects the external API, with or without a sub path', () => {
       expect(resolveSource({ originalUrl: '/api/ext/apps/import' })).toBe('ext_api');
       expect(resolveSource({ originalUrl: '/tooljet/api/ext/users?x=1' })).toBe('ext_api');

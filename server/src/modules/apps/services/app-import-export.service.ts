@@ -1867,13 +1867,9 @@ export class AppImportExportService {
     };
   }
 
-  /*
-   * With new multi-env changes. the imported apps will not have any released versions from now (if the importing schema has any currentVersionId).
-   * All version's default environment will be development or least priority environment only.
-   */
   // Runs the app-validation rules over the in-memory app, one app version at a time, with a
-  // lookup built from the import data itself — no database reads. Nested modules are skipped:
-  // each missing module goes through its own import() call (and existing ones are not written).
+  // lookup built from the import data itself - no database reads. Nested modules skipped:
+  // each imports through its own import() call.
   protected async checkImportedAppData(
     appParams: any,
     appType: string | undefined,
@@ -1897,6 +1893,10 @@ export class AppImportExportService {
     return collected;
   }
 
+  /*
+   * With new multi-env changes. the imported apps will not have any released versions from now (if the importing schema has any currentVersionId).
+   * All version's default environment will be development or least priority environment only.
+   */
   async setupImportedAppAssociations(
     manager: EntityManager,
     importedApp: App,
@@ -1922,9 +1922,6 @@ export class AppImportExportService {
       return;
     }
 
-    // One funnel covers UI import, templates, /ext, modules and every git pull. The source
-    // defaults from the funnel's own flags (clones reproduce stored data, git pulls are bulk);
-    // report mode records problems, an enforced source rejects here before anything is written.
     await this.checkImportedAppData(
       appParams,
       importedApp.type,

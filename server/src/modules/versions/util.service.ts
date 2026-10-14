@@ -79,24 +79,6 @@ export class VersionUtilService implements IVersionUtilService {
     const touched = ['homePageId', 'globalSettings', 'pageSettings'].filter(
       (field) => appVersionUpdateDto?.[field] !== undefined
     );
-    if (touched.length) {
-      await this.appValidationService.check(
-        'versionSettings',
-        [
-          {
-            op: 'update',
-            id: appVersion.id,
-            data: {
-              homePageId: appVersionUpdateDto?.homePageId,
-              globalSettings: appVersionUpdateDto?.globalSettings,
-              pageSettings: appVersionUpdateDto?.pageSettings,
-            },
-            touched,
-          } as VersionSettingsWrite,
-        ],
-        { appVersionId: appVersion.id, manager }
-      );
-    }
 
     const editableParams = {};
 
@@ -166,6 +148,27 @@ export class VersionUtilService implements IVersionUtilService {
             'version'
           );
         }
+      }
+
+      // After assertVersionEditable (a released version answers "not editable", not a
+      // validation 400) and on the write's own manager, so the lookup sees this transaction.
+      if (touched.length) {
+        await this.appValidationService.check(
+          'versionSettings',
+          [
+            {
+              op: 'update',
+              id: appVersion.id,
+              data: {
+                homePageId: appVersionUpdateDto?.homePageId,
+                globalSettings: appVersionUpdateDto?.globalSettings,
+                pageSettings: appVersionUpdateDto?.pageSettings,
+              },
+              touched,
+            } as VersionSettingsWrite,
+          ],
+          { appVersionId: appVersion.id, manager: mgr }
+        );
       }
 
       await this.versionRepository.updateVersion(appVersion.id, editableParams, mgr);

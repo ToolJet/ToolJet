@@ -13,6 +13,8 @@ export const VALIDATION_MODE_BY_SOURCE: Record<WriteSource, ValidationMode> = {
   ext_api: 'report',
   import: 'report',
   git: 'report',
+  // Reaches here via the AI-builder session's AI_BUILDER_API_SOURCE claim (EE mints it);
+  // the EE server-side AI writes pass no source yet and resolve to 'ui'.
   ai: 'report',
   copy: 'report',
   restore: 'report',

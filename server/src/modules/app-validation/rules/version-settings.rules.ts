@@ -1,11 +1,7 @@
 import { isPlainObject } from 'lodash';
 import { Issue, Rule, RuleContext, VersionSettingsWrite } from '../types';
+import { touchedField } from '../core/severity';
 import { isLiterallyTrue } from '../core/values';
-
-function touchedField(write: VersionSettingsWrite, field: string): boolean {
-  if (write.op !== 'update' || !write.touched) return true;
-  return write.touched.includes(field);
-}
 
 // The DTO only checks that homePageId is a UUID; nothing checks it is a page of this
 // version, and an app whose home page is missing cannot open.
@@ -48,7 +44,10 @@ export const versionHomePageExists: Rule<VersionSettingsWrite> = {
       return [
         {
           code: 'VERSION_HOME_PAGE_HIDDEN',
-          severity: 'high',
+          // The page menu's "Mark home" allows hidden pages and a hidden home still renders
+          // when opened; only the settings popup forbids it. Report-only until product
+          // settles whether a hidden page may be home (same stance as PAGE_HOME_HIDDEN).
+          severity: 'medium',
           confidence: 'certain',
           path: 'homePageId',
           message: `home page: ${page.name ?? write.data.homePageId} is hidden, the app would open on an invisible page`,

@@ -41,6 +41,11 @@ describe('app-validation values', () => {
     it.each([
       ['{{queries.q1.data}}'],
       ['Hello {{components.text1.value}}!'],
+      // Stored id-form references: the runtime rewrites them to bracket form before
+      // compiling (ast.js), so they are valid even though `queries.<uuid>` alone is not JS.
+      ['{{queries.4e201fca-599e-4c1a-9b7d-2f3a1c0d9e8b.data}}'],
+      ['{{components.4e201fca-599e-4c1a-9b7d-2f3a1c0d9e8b.value}}'],
+      ['{{queries?.4e201fca-599e-4c1a-9b7d-2f3a1c0d9e8b?.data}}'],
       ['{{ {a: 1, b: [1, 2]} }}'],
       ['{{`${a}-${b}`}}'],
       ['{{\n  (() => {\n    return 1;\n  })()\n}}'],

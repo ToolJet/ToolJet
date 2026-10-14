@@ -13,7 +13,6 @@ import { APP_TYPES, LayoutDimensionUnits } from '../constants';
 import { AppValidationService } from '@modules/app-validation/service';
 import { lockForValidation } from '@modules/app-validation/lock';
 import { ComponentWrite, LayoutWrite } from '@modules/app-validation/types';
-import { VersionIndex } from '@modules/app-validation/version-index';
 import {
   IComponentsService,
   ComponentCreateContext,
@@ -619,14 +618,16 @@ export class ComponentsService implements IComponentsService {
 
   // Validation writes for an update diff. `data` carries the request's values plus the stored
   // type and page (partial MCP updates don't send them); `touched` lists what the request
-  // changes, so old mistakes elsewhere stay warnings. Definition sections arrive under the
-  // editor's names ('others'), stored under their column names.
+  // changes - `name` only when it differs from the stored row, since the editor's property
+  // saves send the whole component and must not re-trip the name rules (or the name lock).
+  // Definition sections arrive under the editor's names ('others'), stored under their
+  // column names.
   private async updateWritesFromDiff(diff: Record<string, any>, manager: EntityManager): Promise<ComponentWrite[]> {
     const ids = Object.keys(diff);
     if (!ids.length) return [];
     const storedRows = await manager.find(Component, {
       where: { id: In(ids) },
-      select: ['id', 'name', 'type', 'pageId'],
+      select: ['id', 'name', 'type', 'pageId', 'properties'],
     });
     const storedById = new Map(storedRows.map((row) => [row.id, row]));
 
@@ -641,10 +642,9 @@ export class ComponentsService implements IComponentsService {
       };
 
       for (const field of ['name', 'type', 'parent'] as const) {
-        if (field in request) {
-          data[field] = request[field];
-          touched.push(field);
-        }
+        if (!(field in request)) continue;
+        data[field] = request[field];
+        if (field !== 'name' || request.name !== stored?.name) touched.push(field);
       }
 
       const definition = request.definition ?? {};
@@ -653,6 +653,17 @@ export class ComponentsService implements IComponentsService {
         data[column] = definition[section];
         for (const key of Object.keys(definition[section] ?? {})) {
           touched.push(`${section}.${key}`);
+        }
+      }
+
+      // The save's mergeWith keeps a stored `skipResolve` (render as-is, don't compile
+      // {{ }}) unless the request overwrites it - mirror that for the checked entries, or
+      // an update to a Custom Component's code would be judged as {{ }} code it is not.
+      const storedProperties = (stored?.properties ?? {}) as Record<string, any>;
+      for (const [key, entry] of Object.entries((data.properties ?? {}) as Record<string, any>)) {
+        const storedFlag = storedProperties[key]?.skipResolve;
+        if (_.isPlainObject(entry) && entry.skipResolve === undefined && storedFlag !== undefined) {
+          data.properties = { ...data.properties, [key]: { ...entry, skipResolve: storedFlag } };
         }
       }
 
@@ -700,18 +711,21 @@ export class ComponentsService implements IComponentsService {
       }
     }
 
-    // Name lock first, cycle lock second — every component write path takes them in this
-    // order. The index overlays the components this request creates, so siblings can
-    // reference each other as parents and in-batch duplicate names are caught.
+    // Name lock before cycle lock - every component write path takes them in this order.
+    // The overlay adds the components this request creates, so siblings can reference each
+    // other as parents and in-batch duplicate names are caught.
     await lockForValidation(manager, 'component_name', appVersionId);
-    const index = (await VersionIndex.load(manager, appVersionId)).withComponents(
-      newComponents.map((c) => ({ id: c.id, name: c.name, type: c.type, parent: c.parent ?? null, pageId }))
-    );
     await this.appValidationService.check('components', this.createWritesFromComponents(newComponents, pageId), {
       appVersionId,
       appType: moduleContainerId ? APP_TYPES.MODULE : undefined,
       manager,
-      index,
+      overlayComponents: newComponents.map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        parent: c.parent ?? null,
+        pageId,
+      })),
     });
 
     // Validate the proposed graph BEFORE inserting. New components overlay the
@@ -793,13 +807,18 @@ export class ComponentsService implements IComponentsService {
     // For module apps, resolve ModuleContainer id once for the entire batch
     const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
 
-    // Name lock first, cycle lock second — same order as the create path.
-    await lockForValidation(manager, 'component_name', appVersionId);
-    await this.appValidationService.check(
-      'components',
-      await this.updateWritesFromDiff(diff as Record<string, any>, manager),
-      { appVersionId, appType: moduleContainerId ? APP_TYPES.MODULE : undefined, manager }
-    );
+    const writes = await this.updateWritesFromDiff(diff as Record<string, any>, manager);
+    // Name lock before cycle lock - same order as the create path. Only a real rename
+    // needs it: the editor's property saves send the whole component, and serialising
+    // every one of them would make two builders in one version wait on each other.
+    if (writes.some((write) => write.touched?.includes('name'))) {
+      await lockForValidation(manager, 'component_name', appVersionId);
+    }
+    await this.appValidationService.check('components', writes, {
+      appVersionId,
+      appType: moduleContainerId ? APP_TYPES.MODULE : undefined,
+      manager,
+    });
 
     const parentWrites = this.collectParentWritesFromDiff(diff as any);
     if (Object.keys(parentWrites).length > 0) {

@@ -63,6 +63,20 @@ describe('readAppVersionsFromExport', () => {
     expect(v2.queries.map((q) => q.id)).toEqual(['q1']);
   });
 
+  it('keeps untagged (global) data sources for every version of a multi-version export', () => {
+    // Exports store global data sources without appVersionId; only local ones carry it.
+    // Dropping them from any version makes every query on one a false
+    // QUERY_DATASOURCE_NOT_FOUND warning on import.
+    const withDataSources = JSON.parse(JSON.stringify(exported));
+    withDataSources.app[0].definition.appV2.dataSources = [
+      { id: 'global-runjs', kind: 'runjs' },
+      { id: 'local-pg', kind: 'postgresql', appVersionId: 'v2' },
+    ];
+    const [v1, v2] = readAppVersionsFromExport(withDataSources);
+    expect(v1.dataSources.map((d) => d.id)).toEqual(['global-runjs']);
+    expect(v2.dataSources.map((d) => d.id)).toEqual(['global-runjs', 'local-pg']);
+  });
+
   it('includes modules nested in the export', () => {
     const module = readAppVersionsFromExport(exported).find((v) => v.appType === 'module');
     expect(module).toMatchObject({ appName: 'Header module', appVersionId: 'mv1' });

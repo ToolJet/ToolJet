@@ -1,35 +1,26 @@
 import { QUERY_NAME_PATTERN } from '../catalog';
-import { QueryWrite, Rule, RuleContext, Severity, WriteSource } from '../types';
+import { QueryWrite, Rule, RuleContext } from '../types';
+import { referenceSeverity, touchedField } from '../core/severity';
 
 // Matches the editor's validateQueryName (frontend/src/_helpers/utils.js): queries are
 // referenced from code as `queries.<name>`, so names stay identifier-like.
 export { QUERY_NAME_PATTERN };
 
-const BULK_SOURCES: ReadonlySet<WriteSource> = new Set(['import', 'git', 'copy', 'restore']);
-
-function referenceSeverity(source: WriteSource): Severity {
-  return BULK_SOURCES.has(source) ? 'medium' : 'high';
-}
-
 function labelOf(write: QueryWrite): string {
   return write.data?.name ?? write.id;
-}
-
-function touchedField(write: QueryWrite, field: string): boolean {
-  if (write.op !== 'update' || !write.touched) return true;
-  return write.touched.includes(field);
 }
 
 export const queryNameFormat: Rule<QueryWrite> = {
   id: 'query-name-format',
   description: 'The query name is a valid identifier',
-  check(write) {
+  check(write, ctx: RuleContext) {
     if (write.op === 'delete' || !write.data?.name || !touchedField(write, 'name')) return [];
     if (QUERY_NAME_PATTERN.test(write.data.name)) return [];
     return [
       {
         code: 'QUERY_NAME_INVALID',
-        severity: 'high',
+        // Reproduced stored names must not block a bulk operation.
+        severity: referenceSeverity(ctx.source),
         confidence: 'certain',
         path: `${labelOf(write)}.name`,
         message: `${labelOf(write)}, name: only letters, digits, underscore and hyphen are allowed, got "${write.data.name}"`,
@@ -53,7 +44,7 @@ export const queryNameUnique: Rule<QueryWrite> = {
     return [
       {
         code: 'QUERY_NAME_TAKEN',
-        severity: 'high',
+        severity: referenceSeverity(ctx.source),
         confidence: 'certain',
         path: `${labelOf(write)}.name`,
         message: `${labelOf(write)}, name: a query named "${write.data.name}" already exists in this app version`,

@@ -9,21 +9,14 @@ import {
   SettingSection,
   valueSchemaOf,
 } from '../catalog';
-import { ComponentWrite, Issue, Rule, RuleContext, Severity, WriteSource } from '../types';
+import { ComponentWrite, Issue, Rule, RuleContext } from '../types';
+import { BULK_SOURCES, referenceSeverity } from '../core/severity';
 import { findBrokenBraces, hasBraces, plainValueFit } from '../core/values';
 
 // Matches the editor's rename validation (Inspector.jsx -> validateQueryName): code references
 // components as `components.<name>`, so names stay identifier-like. Imports are the main way
 // spaced names get in today - the editor itself never allows them.
 export { COMPONENT_NAME_PATTERN };
-
-// Sources that reproduce stored data: dangling references there are defects to report,
-// not reasons to reject the whole app.
-const BULK_SOURCES: ReadonlySet<WriteSource> = new Set(['import', 'git', 'copy', 'restore']);
-
-function referenceSeverity(source: WriteSource): Severity {
-  return BULK_SOURCES.has(source) ? 'medium' : 'high';
-}
 
 function labelOf(write: ComponentWrite): string {
   return write.data?.name ?? write.id;
@@ -74,7 +67,7 @@ export const componentKnownType: Rule<ComponentWrite> = {
 export const componentNameFormat: Rule<ComponentWrite> = {
   id: 'component-name-format',
   description: 'The component name is a valid identifier',
-  check(write) {
+  check(write, ctx: RuleContext) {
     if (write.op === 'delete' || write.data?.name === undefined) return [];
     if (write.op === 'update' && !write.touched?.includes('name')) return [];
     const name = write.data.name;
@@ -82,7 +75,9 @@ export const componentNameFormat: Rule<ComponentWrite> = {
     return [
       {
         code: 'COMPONENT_NAME_INVALID',
-        severity: 'high',
+        // Spaced names arrive mainly through bulk sources and still work at runtime
+        // (components["Text Input 1"]), so reproducing them must not block an import.
+        severity: referenceSeverity(ctx.source),
         confidence: 'certain',
         path: `${name || write.id}.name`,
         message: `${name || write.id}, name: only letters, numbers, underscore and hyphen are allowed, got "${name}"`,
@@ -107,7 +102,7 @@ export const componentNameUnique: Rule<ComponentWrite> = {
     return [
       {
         code: 'COMPONENT_NAME_TAKEN',
-        severity: 'high',
+        severity: referenceSeverity(ctx.source),
         confidence: 'certain',
         path: `${labelOf(write)}.name`,
         message: `${labelOf(write)}, name: another component on this page is already called "${write.data.name}"`,
@@ -161,9 +156,9 @@ export const componentSettingsWellFormed: Rule<ComponentWrite> = {
   },
 };
 
-// The §6.2 value rule: broken {{ }} code, dropdown-style settings outside their options, and
-// loose plain-value type fit against the widget definition. Dynamic values are never
-// type-checked; numbers-as-text are fine (ToolJet itself stores them).
+// Broken {{ }} code, dropdown-style settings outside their options, and loose plain-value
+// type fit against the widget definition. Dynamic values are never type-checked;
+// numbers-as-text are fine (ToolJet stores them itself).
 export const componentValueTypes: Rule<ComponentWrite> = {
   id: 'component-value-types',
   description: 'Plain setting values match the widget definition',
@@ -176,6 +171,9 @@ export const componentValueTypes: Rule<ComponentWrite> = {
       for (const [key, entry] of sectionEntries(write, section)) {
         if (!touchedSetting(write, section, key)) continue;
         if (!isPlainObject(entry) || !('value' in (entry as any))) continue;
+        // skipResolve: the runtime renders the value as-is instead of compiling {{ }}
+        // (Custom Component code is saved this way), so there is nothing to judge.
+        if ((entry as any).skipResolve) continue;
         const value = (entry as any).value;
         const path = `${labelOf(write)}.${section}.${key}.value`;
 
@@ -185,13 +183,14 @@ export const componentValueTypes: Rule<ComponentWrite> = {
             issues.push({
               code: 'COMPONENT_BROKEN_CODE',
               // The editor saves while the user types, and bulk paths reproduce apps that
-              // already live with the broken expression (one ships in ToolJet's own
-              // templates) - only agents and the API get blocked.
+              // already live with the broken expression - only agents and the API get blocked.
               severity: ctx.source === 'ui' || BULK_SOURCES.has(ctx.source) ? 'medium' : 'high',
               confidence: 'certain',
               path,
               message: `${labelOf(write)}, ${settingLabel(type, section, key)}: the {{ }} code is not valid JavaScript${
-                broken.unclosed ? ' ({{ is never closed)' : ''
+                broken.unclosed
+                  ? ' ({{ is never closed; for literal braces in text, close the pair or bind a string like {{"{{"}})'
+                  : ''
               }`,
               entity: { type: 'component', id: write.id, name: write.data.name },
               fix: 'Fix the expression inside {{ }}; the app compiles it as `return <code>`.',
@@ -200,7 +199,11 @@ export const componentValueTypes: Rule<ComponentWrite> = {
           continue; // dynamic values are never type-checked
         }
 
-        const allowed = allowedOptionValues(type, section, key);
+        // In fx mode the editor's code box saves any plain value without complaint, so an
+        // fx entry counts as builder code even when it carries no {{ }} yet.
+        const allowed = (entry as { fxActive?: boolean }).fxActive
+          ? undefined
+          : allowedOptionValues(type, section, key);
         if (allowed) {
           if (!allowed.includes(value) && value !== undefined && value !== null && value !== '') {
             issues.push({

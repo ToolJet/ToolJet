@@ -18,6 +18,7 @@ import { App } from '@entities/app.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { AppValidationService } from '@modules/app-validation/service';
+import { lockForValidation } from '@modules/app-validation/lock';
 import { QueryWrite } from '@modules/app-validation/types';
 
 @Injectable()
@@ -110,7 +111,7 @@ export class DataQueriesService implements IDataQueriesService {
   ): Promise<void> {
     if (!appVersionId || !name) return;
 
-    await manager.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [`data_query_name:${appVersionId}`]);
+    await lockForValidation(manager, 'data_query_name', appVersionId);
 
     const where: any = { appVersionId, name };
     if (excludeQueryId) where.id = Not(excludeQueryId);

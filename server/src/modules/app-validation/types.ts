@@ -31,6 +31,10 @@ export interface RuleContext {
   appType?: string;
   source: WriteSource;
   index(): Promise<VersionIndex>;
+  // Which of `ids` are components of this version. One slim query (memoised per check)
+  // instead of index()'s full-version load - built by the service; specs that hand-roll
+  // a context may omit it, rules fall back to index().
+  componentsInVersion?(ids: string[]): Promise<ReadonlySet<string>>;
 }
 
 export interface Rule<TInput> {

@@ -58,10 +58,18 @@ describe('event rules', () => {
       ]);
     });
 
-    it('accepts every editor action and skips reorders', () => {
+    it('accepts every editor action and skips reorders, even of a handler that would fail the check', () => {
       expect(eventActionKnown.check(write(), ctx)).toEqual([]);
       expect(
-        eventActionKnown.check(write({ op: 'update', id: 'e1', touched: ['index'], data: write().data }), ctx)
+        eventActionKnown.check(
+          write({
+            op: 'update',
+            id: 'e1',
+            touched: ['index'],
+            data: { ...write().data, event: { eventId: 'onClick', actionId: 'run-queryy' } },
+          }),
+          ctx
+        )
       ).toEqual([]);
     });
   });
@@ -146,19 +154,36 @@ describe('event rules', () => {
   });
 
   describe('event-no-switch-page-in-module', () => {
-    it('rejects switch-page inside a module', () => {
+    it('rejects switch-page inside a module', async () => {
       const moduleCtx = { ...ctx, appType: 'module' };
       expect(
-        eventNoSwitchPageInModule.check(
+        await eventNoSwitchPageInModule.check(
           withEvent({ eventId: 'onClick', actionId: 'switch-page', pageId: 'p1' }),
           moduleCtx
         )
       ).toEqual([expect.objectContaining({ code: 'EVENT_SWITCH_PAGE_IN_MODULE', severity: 'high' })]);
     });
 
-    it('allows it in apps', () => {
+    it('detects a module by its ModuleContainer when the call site passes no appType', async () => {
+      const moduleIndex = VersionIndex.fromData({
+        components: [{ id: 'mc1', name: 'container', type: 'ModuleContainer', parent: null, pageId: 'p1' }],
+        pages: [{ id: 'p1', name: 'Main', handle: 'main' }],
+      });
+      const moduleCtx = { ...ctx, index: async () => moduleIndex };
       expect(
-        eventNoSwitchPageInModule.check(withEvent({ eventId: 'onClick', actionId: 'switch-page', pageId: 'p1' }), ctx)
+        await eventNoSwitchPageInModule.check(
+          withEvent({ eventId: 'onClick', actionId: 'switch-page', pageId: 'p1' }),
+          moduleCtx
+        )
+      ).toEqual([expect.objectContaining({ code: 'EVENT_SWITCH_PAGE_IN_MODULE' })]);
+    });
+
+    it('allows it in apps', async () => {
+      expect(
+        await eventNoSwitchPageInModule.check(
+          withEvent({ eventId: 'onClick', actionId: 'switch-page', pageId: 'p1' }),
+          ctx
+        )
       ).toEqual([]);
     });
   });

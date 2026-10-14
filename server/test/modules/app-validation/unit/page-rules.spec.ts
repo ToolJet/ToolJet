@@ -135,6 +135,19 @@ describe('page rules', () => {
       ).toEqual([expect.objectContaining({ code: 'PAGE_LAST_DELETE', severity: 'high' })]);
     });
 
+    it('does not count a page group as a remaining page', async () => {
+      const pageAndEmptyGroup = VersionIndex.fromData({
+        pages: [
+          { id: 'p1', name: 'Home', handle: 'home' },
+          { id: 'g1', name: 'Admin', handle: 'admin', isPageGroup: true },
+        ],
+      });
+      const ctxWithGroup = { ...ctx, index: async () => pageAndEmptyGroup };
+      expect(await pageDeleteSafe.check(write({ op: 'delete', id: 'p1', data: {} }), ctxWithGroup)).toEqual([
+        expect.objectContaining({ code: 'PAGE_LAST_DELETE' }),
+      ]);
+    });
+
     it('accepts a normal delete', async () => {
       expect(await pageDeleteSafe.check(write({ op: 'delete', id: 'p2', data: {} }), ctx)).toEqual([]);
     });
@@ -170,15 +183,15 @@ describe('page rules', () => {
       touched: Object.keys(data),
     });
 
-    it('rejects literally hiding or disabling the home page', async () => {
+    it('reports hiding the home page (the page menu allows it) and rejects disabling it', async () => {
       expect(await pageHomeStaysVisible.check(update('p1', { hidden: { value: '{{true}}' } }), ctx)).toEqual([
-        expect.objectContaining({ code: 'PAGE_HOME_HIDDEN', severity: 'high', confidence: 'certain' }),
+        expect.objectContaining({ code: 'PAGE_HOME_HIDDEN', severity: 'medium', confidence: 'certain' }),
       ]);
       expect(await pageHomeStaysVisible.check(update('p1', { hidden: true }), ctx)).toEqual([
         expect.objectContaining({ code: 'PAGE_HOME_HIDDEN' }),
       ]);
       expect(await pageHomeStaysVisible.check(update('p1', { disabled: true }), ctx)).toEqual([
-        expect.objectContaining({ code: 'PAGE_HOME_DISABLED' }),
+        expect.objectContaining({ code: 'PAGE_HOME_DISABLED', severity: 'high' }),
       ]);
     });
 

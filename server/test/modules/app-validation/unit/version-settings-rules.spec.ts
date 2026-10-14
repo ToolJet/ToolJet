@@ -35,13 +35,21 @@ describe('version settings rules', () => {
       ]);
     });
 
-    it('rejects a literally hidden or disabled page as home page', async () => {
+    it('reports a literally hidden page as home only: the page menu itself allows it', async () => {
       expect(await versionHomePageExists.check(write({ homePageId: 'p2' }), ctx)).toEqual([
-        expect.objectContaining({ code: 'VERSION_HOME_PAGE_HIDDEN', severity: 'high', confidence: 'certain' }),
+        expect.objectContaining({ code: 'VERSION_HOME_PAGE_HIDDEN', severity: 'medium', confidence: 'certain' }),
       ]);
+    });
+
+    it('rejects a disabled page as home page', async () => {
       expect(await versionHomePageExists.check(write({ homePageId: 'p3' }), ctx)).toEqual([
-        expect.objectContaining({ code: 'VERSION_HOME_PAGE_DISABLED' }),
+        expect.objectContaining({ code: 'VERSION_HOME_PAGE_DISABLED', severity: 'high' }),
       ]);
+    });
+
+    it('skips the home page check on create: imports remap page ids after it would run', async () => {
+      const create = { ...write({ homePageId: 'nope' }), op: 'create' as const };
+      expect(await versionHomePageExists.check(create, ctx)).toEqual([]);
     });
 
     it('never judges a dynamically hidden page', async () => {

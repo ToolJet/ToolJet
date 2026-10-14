@@ -49,7 +49,9 @@ Checklist when adding a new action:
    sometimes differ.
 3. **`server/src/modules/app-validation/catalog/events.json`** — add the id to `actionIds`, and
    when the action stores a plain UUID add it to `actionEntityRefs` with the runtime field name.
-   `frontend/src/AppBuilder/__tests__/validationCatalogParity.spec.js` fails until this is done.
+   `frontend/src/AppBuilder/__tests__/validationCatalogParity.spec.js` fails on a missing or
+   extra `actionIds` entry; the `actionEntityRefs` field name is NOT covered by the spec —
+   verify it against `eventsSlice.js` by hand.
 4. **`create.service.ts` → `updateEventActionsForNewVersionWithNewMappingIds`** — add:
    ```ts
    if (eventDefinition?.actionId === '<your-new-action-id>') {

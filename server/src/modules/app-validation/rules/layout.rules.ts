@@ -112,8 +112,12 @@ export const layoutComponentInVersion: Rule<LayoutWrite> = {
     if (write.op === 'delete') return [];
     const componentId = write.data?.componentId ?? write.id;
     if (!componentId) return [];
-    const index = await ctx.index();
-    if (index.component(componentId)) return [];
+    // One id-membership query, not index()'s full-version load: this rule runs on every
+    // drag and resize, and "does this id belong to the version" is all it needs.
+    const present = ctx.componentsInVersion
+      ? (await ctx.componentsInVersion([componentId])).has(componentId)
+      : !!(await ctx.index()).component(componentId);
+    if (present) return [];
     return [
       {
         code: 'LAYOUT_COMPONENT_NOT_FOUND',

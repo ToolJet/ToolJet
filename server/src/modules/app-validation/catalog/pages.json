@@ -1,9 +1,9 @@
 {
   "$sources": {
-    "handlePattern": "frontend/src/_helpers/utils.js validateKebabCase",
+    "handlePattern": "frontend/src/_helpers/utils.js validateKebabCase; kebab-case over Unicode letters and digits, because the editor's handle generator (lodash kebabCase of the page name) keeps non-Latin scripts and the viewer routes them via percent-encoding",
     "eventsByType": "frontend/src/AppBuilder/RightSideBar/PageSettingsTab/PageMenu/pageEventsMeta.js (used by AddNewPagePopup.jsx and SettingsModal.jsx); url/app/group pages fire no events"
   },
-  "handlePattern": "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$",
+  "handlePattern": "^[\\p{L}\\p{N}]+(?:-[\\p{L}\\p{N}]+)*$",
   "eventsByType": {
     "default": ["onPageLoad"],
     "custom": ["onClick"]

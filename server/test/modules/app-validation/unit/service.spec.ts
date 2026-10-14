@@ -76,6 +76,19 @@ describe('AppValidationService', () => {
     });
   });
 
+  it('report mode: keeps warnings from every check in the request', async () => {
+    // The component batch route runs one check per operation kind; a refactor that stopped
+    // appending would silently drop all but the last check's warnings.
+    setMode('report');
+    const first = issue({ code: 'FIRST' });
+    const second = issue({ code: 'SECOND' });
+    await inRequest({}, async (res) => {
+      await check([ruleReturning(first)], 'pat');
+      await check([ruleReturning(second)], 'pat');
+      expect(res.locals[VALIDATION_WARNINGS_LOCALS_KEY]).toEqual([first, second]);
+    });
+  });
+
   it('enforce mode: throws with every blocking problem and the warnings', async () => {
     setMode('enforce');
     const warning = issue({ code: 'TEST_WARNING', severity: 'medium' });
@@ -144,5 +157,49 @@ describe('AppValidationService', () => {
     };
     await service.check('components', [{}, {}], { appVersionId: 'v1', source: 'ui', rules: [rule], index });
     expect(seen).toEqual(['Button', 'Button']);
+  });
+
+  it("loads the lookup in a savepoint on the caller's manager", async () => {
+    // A failing lookup read (e.g. a statement_timeout) must roll back only itself; on the
+    // caller's manager EntityManager.transaction nests as SAVEPOINT / ROLLBACK TO SAVEPOINT,
+    // so the save's transaction survives and batch saves still see their own writes.
+    setMode('report');
+    const inner = {} as any;
+    const manager = { transaction: jest.fn((fn: any) => fn(inner)) } as any;
+    const load = jest.spyOn(VersionIndex, 'load').mockResolvedValue(VersionIndex.fromData({}));
+    const readsIndex: Rule<unknown> = {
+      id: 'reads-index',
+      description: 'test',
+      check: async (_input, ctx) => (await ctx.index(), []),
+    };
+
+    await service.check('components', [{}], { appVersionId: 'v1', source: 'ui', rules: [readsIndex], manager });
+
+    expect(manager.transaction).toHaveBeenCalledTimes(1);
+    expect(load).toHaveBeenCalledWith(inner, 'v1');
+    load.mockRestore();
+  });
+
+  it('overlays the components the request creates on the loaded lookup', async () => {
+    setMode('report');
+    const manager = { transaction: jest.fn((fn: any) => fn({})) } as any;
+    const load = jest.spyOn(VersionIndex, 'load').mockResolvedValue(VersionIndex.fromData({}));
+    const seen: (string | undefined)[] = [];
+    const rule: Rule<unknown> = {
+      id: 'reads-overlay',
+      description: 'test',
+      check: async (_input, ctx) => (seen.push((await ctx.index()).component('new1')?.name), []),
+    };
+
+    await service.check('components', [{}], {
+      appVersionId: 'v1',
+      source: 'ui',
+      rules: [rule],
+      manager,
+      overlayComponents: [{ id: 'new1', name: 'button1', type: 'Button', parent: null, pageId: 'p1' }],
+    });
+
+    expect(seen).toEqual(['button1']);
+    load.mockRestore();
   });
 });

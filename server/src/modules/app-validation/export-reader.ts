@@ -38,6 +38,7 @@ function versionsOf(appV2: any, toolJetVersion?: string): ExportedAppVersion[] {
   const versions: any[] = appV2.appVersions?.length ? appV2.appVersions : [appV2.editingVersion].filter(Boolean);
 
   // Older exports don't tag rows with appVersionId; with one version everything belongs to it.
+  // Global data sources are stored untagged in every export, so they belong to each version.
   const single = versions.length <= 1;
   const belongsTo = (row: any, versionId: string) => single || row?.appVersionId === versionId;
 
@@ -59,7 +60,7 @@ function versionsOf(appV2: any, toolJetVersion?: string): ExportedAppVersion[] {
       components: components.filter((c) => pageIds.has(c.pageId)),
       events: events.filter((e) => belongsTo(e, version.id)),
       queries: queries.filter((q) => belongsTo(q, version.id)),
-      dataSources: dataSources.filter((d) => belongsTo(d, version.id)),
+      dataSources: dataSources.filter((d) => !d?.appVersionId || belongsTo(d, version.id)),
     };
   });
 

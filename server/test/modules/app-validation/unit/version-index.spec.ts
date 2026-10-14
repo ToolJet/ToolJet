@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { VersionIndex } from '@modules/app-validation/version-index';
 
 const component = (id: string, name: string, pageId = 'p1', parent: string | null = null) => ({
@@ -104,12 +105,17 @@ describe('VersionIndex', () => {
     // The event's action reference is resolved into refId while loading.
     expect(loaded.event('e1')).toMatchObject({ eventId: 'onClick', actionId: 'run-query', refId: 'q1' });
     expect(loaded.dataSource('ds1')?.kind).toBe('postgresql');
-    // Reachable sources = version-local, referenced by existing queries, or workspace-global.
-    const dataSourceFind = manager.find.mock.calls[3][1];
-    expect(dataSourceFind.where).toEqual([
-      { appVersionId: 'v1' },
-      { id: expect.anything() },
-      { organizationId: 'org1', scope: 'global' },
+    // Every read is scoped to this app version - dropping any filter must fail here.
+    expect(manager.find.mock.calls.map(([entity, options]: any[]) => [entity.name, options.where])).toEqual([
+      ['Page', { appVersionId: 'v1' }],
+      ['DataQuery', { appVersionId: 'v1' }],
+      ['EventHandler', { appVersionId: 'v1' }],
+      // Reachable sources = version-local, referenced by existing queries, or workspace-global.
+      ['DataSource', [{ appVersionId: 'v1' }, { id: In(['ds1']) }, { organizationId: 'org1', scope: 'global' }]],
+    ]);
+    expect(manager.findOne.mock.calls.map(([entity, options]: any[]) => [entity.name, options.where])).toEqual([
+      ['AppVersion', { id: 'v1' }],
+      ['App', { id: 'a1' }],
     ]);
   });
 
