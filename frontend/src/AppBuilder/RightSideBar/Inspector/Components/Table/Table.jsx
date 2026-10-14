@@ -24,6 +24,7 @@ import { getColumnIcon } from './utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useColumnManager, useActionButtonManager, usePopoverState } from './hooks';
 import useStore from '@/AppBuilder/_stores/store';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import { shallow } from 'zustand/shallow';
 
 // Helper function to get display text for column type
@@ -107,11 +108,25 @@ export const Table = (props) => {
     activeIndex: activeColumnPopoverIndex,
     isRootCloseEnabled,
     togglePopover: handleToggleColumnPopover,
+    openPopover: openColumnPopover,
     closePopover: closeColumnPopover,
     setRootCloseBlocker: setColumnPopoverRootCloseBlocker,
   } = usePopoverState();
 
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
+
+  // Code search opens a column's popover by column id (open, never toggle: it may already be open).
+  useCodeSearchReveal(
+    'listItem',
+    component?.id,
+    (columnId) => {
+      const index = filteredColumns.findIndex((column) => String(column.id) === columnId);
+      if (index < 0) return false;
+      openColumnPopover(index);
+      return true;
+    },
+    [filteredColumns]
+  );
 
   useEffect(() => {
     if (isQueryPaneExpanded && activeColumnPopoverIndex !== null) {
@@ -155,6 +170,7 @@ export const Table = (props) => {
     (column, index) => (
       <Popover
         id="table-column-popover-basic"
+        data-reveal-root={`listItem:${column.id}`}
         className={`${darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
           width: '280px',
@@ -561,7 +577,7 @@ export const Table = (props) => {
                                       ],
                                     }}
                                   >
-                                    <div className="table-column-lists">
+                                    <div className="table-column-lists" data-list-item-id={item.id}>
                                       <List.Item
                                         isDraggable
                                         primaryText={resolvedItemName}

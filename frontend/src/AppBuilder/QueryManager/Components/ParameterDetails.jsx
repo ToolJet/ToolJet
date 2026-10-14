@@ -7,10 +7,17 @@ import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import ParameterForm from './ParameterForm';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
-const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, otherParams }) => {
+const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, otherParams, queryId }) => {
   const [showModal, setShowModal] = useState(false);
   const closeMenu = () => setShowModal(false);
+
+  useCodeSearchReveal('queryParam', queryId, (paramName) => {
+    if (!isEdit || paramName !== name) return false;
+    setShowModal(true);
+    return true;
+  });
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -72,6 +79,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
           id="parameter-form-popover"
           className={`query-manager-sort-filter-popup p-0 ${darkMode && 'popover-dark-themed dark-theme theme-dark'}`}
           style={{ width: '268px' }}
+          data-reveal-root={isEdit ? `queryParam:${name}` : undefined}
         >
           <ParameterForm
             darkMode={darkMode}

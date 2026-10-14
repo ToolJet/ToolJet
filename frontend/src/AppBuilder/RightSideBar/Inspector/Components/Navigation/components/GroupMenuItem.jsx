@@ -6,8 +6,10 @@ import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import NavItemPopover from './NavItemPopover';
 import { isClickInsidePortaledOverlay } from '@/AppBuilder/RightSideBar/Inspector/Utils';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 export const GroupMenuItem = ({
+  componentId,
   darkMode,
   item,
   highlight,
@@ -27,6 +29,18 @@ export const GroupMenuItem = ({
     setShowActionsPopover(false);
     setShowEditPopover(true);
   };
+
+  // Code search opens a group's popover by its id.
+  useCodeSearchReveal(
+    'listItem',
+    componentId,
+    (itemId) => {
+      if (itemId !== String(item?.id)) return false;
+      handleEdit();
+      return true;
+    },
+    [item?.id]
+  );
 
   const handleDelete = () => {
     setShowActionsPopover(false);

@@ -5,6 +5,7 @@ import { ChevronsDownUp, ChevronsUpDown, FileText } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig';
+import { ActionTypes } from '@/AppBuilder/RightSideBar/Inspector/ActionTypes';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import InputComponent from '@/components/ui/Input/Index';
 import { ToolTip } from '@/_components/ToolTip';
@@ -94,6 +95,7 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
         pageSettings,
         translate: (text) => replaceIdsWithName(text, moduleId),
         widgetDefs: componentTypeDefinitionMap,
+        actionDefs: ActionTypes,
         pageSettingsDef: pageConfig,
       }),
     [pages, queries, events, globalSettings, pageSettings, replaceIdsWithName, moduleId]
@@ -238,9 +240,16 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
       return (
         <div className="code-search-empty">
           No matches for “{debouncedTerm}”{currentPageOnly ? ' on this page' : ''}
-          <ButtonComponent variant="ghost" size="small" onClick={() => setTerm('')}>
-            Clear search
-          </ButtonComponent>
+          <div className="code-search-empty-actions">
+            {currentPageOnly && (
+              <ButtonComponent variant="ghost" size="small" onClick={() => setOptions({ currentPageOnly: false })}>
+                Search all pages
+              </ButtonComponent>
+            )}
+            <ButtonComponent variant="ghost" size="small" onClick={() => setTerm('')}>
+              Clear search
+            </ButtonComponent>
+          </div>
         </div>
       );
     return renderTree();
@@ -284,13 +293,6 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
           ))}
           <span className="code-search-divider" aria-hidden="true" />
           {toolbarButton({
-            key: 'page',
-            title: currentPageOnly ? 'Searching this page only. Click to search all pages' : 'Search this page only',
-            pressed: currentPageOnly,
-            onClick: () => setOptions({ currentPageOnly: !currentPageOnly }),
-            icon: FileText,
-          })}
-          {toolbarButton({
             key: 'collapse',
             title: allCollapsed ? 'Expand all' : 'Collapse all',
             pressed: false,
@@ -298,22 +300,36 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
             icon: allCollapsed ? ChevronsUpDown : ChevronsDownUp,
           })}
         </div>
-        {hasSearch && result.typeCounts.all > 0 && (
-          <div className="code-search-chips" role="radiogroup" aria-label="Filter by type">
-            {['all', ...RESULT_TYPES]
-              .filter((key) => key === 'all' || result.typeCounts[key] > 0)
-              .map((key) => (
-                <button
-                  type="button"
-                  key={key}
-                  role="radio"
-                  aria-checked={type === key}
-                  className={cx('code-search-chip', { active: type === key })}
-                  onClick={() => setOptions({ type: key })}
-                >
-                  {TYPE_LABELS[key]} <span className="code-search-chip-count">{result.typeCounts[key]}</span>
-                </button>
-              ))}
+        {/* Shown at zero results too, so "This page" can always be switched off. */}
+        {hasSearch && (
+          <div className="code-search-filters">
+            <button
+              type="button"
+              aria-pressed={currentPageOnly}
+              className={cx('code-search-chip', { active: currentPageOnly })}
+              onClick={() => setOptions({ currentPageOnly: !currentPageOnly })}
+            >
+              <FileText width="11" height="11" aria-hidden="true" /> This page
+            </button>
+            {result.typeCounts.all > 0 && <span className="code-search-divider" aria-hidden="true" />}
+            {result.typeCounts.all > 0 && (
+              <div className="code-search-chips" role="radiogroup" aria-label="Filter by type">
+                {['all', ...RESULT_TYPES]
+                  .filter((key) => key === 'all' || result.typeCounts[key] > 0)
+                  .map((key) => (
+                    <button
+                      type="button"
+                      key={key}
+                      role="radio"
+                      aria-checked={type === key}
+                      className={cx('code-search-chip', { active: type === key })}
+                      onClick={() => setOptions({ type: key })}
+                    >
+                      {TYPE_LABELS[key]} <span className="code-search-chip-count">{result.typeCounts[key]}</span>
+                    </button>
+                  ))}
+              </div>
+            )}
           </div>
         )}
         {hasSearch && result.total > 0 && (

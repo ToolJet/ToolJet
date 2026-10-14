@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import ListGroup from 'react-bootstrap/ListGroup';
@@ -7,6 +7,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OptionDetailsPopover from './OptionDetailsPopover';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 const OptionItem = ({
   item,
@@ -23,7 +24,19 @@ const OptionItem = ({
   ...restProps
 }) => {
   const { dataCy: dataCyPrefix } = config;
-  const { onDefaultChange, componentType } = restProps;
+  const { onDefaultChange, componentType, component } = restProps;
+  const [showPopover, setShowPopover] = useState(false);
+  // Code search opens an option's popover by its value.
+  useCodeSearchReveal(
+    'listItem',
+    component?.id,
+    (optionValue) => {
+      if (optionValue !== String(item?.value)) return false;
+      setShowPopover(true);
+      return true;
+    },
+    [item?.value]
+  );
 
   return (
     <Draggable key={item?.value} draggableId={item?.value} index={index}>
@@ -41,6 +54,7 @@ const OptionItem = ({
               trigger="click"
               placement="left"
               rootClose
+              show={showPopover}
               overlay={
                 <OptionDetailsPopover
                   item={item}
@@ -55,6 +69,7 @@ const OptionItem = ({
                 />
               }
               onToggle={(isOpen) => {
+                setShowPopover(isOpen);
                 if (!isOpen) {
                   document.activeElement?.blur(); // Manually trigger blur when popover closes
                 }

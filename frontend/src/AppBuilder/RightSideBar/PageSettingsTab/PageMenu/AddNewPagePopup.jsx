@@ -295,6 +295,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   return (
     <Popover
       id="add-new-page-popup"
+      data-reveal-root={`page:${page?.id}`}
       ref={ref}
       {...props}
       className={`add-new-page-popup ${darkMode && 'dark-theme theme-dark'}`}

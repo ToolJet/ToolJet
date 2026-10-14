@@ -7,6 +7,7 @@ import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import NavItemPopover from './NavItemPopover';
 import { isClickInsidePortaledOverlay } from '@/AppBuilder/RightSideBar/Inspector/Utils';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 export const MenuItem = ({
   componentId,
@@ -28,6 +29,18 @@ export const MenuItem = ({
     setShowActionsPopover(false);
     setShowEditPopover(true);
   };
+
+  // Code search opens an item's popover by its id.
+  useCodeSearchReveal(
+    'listItem',
+    componentId,
+    (itemId) => {
+      if (itemId !== String(item?.id)) return false;
+      handleEdit();
+      return true;
+    },
+    [item?.id]
+  );
 
   const handleDelete = () => {
     setShowActionsPopover(false);

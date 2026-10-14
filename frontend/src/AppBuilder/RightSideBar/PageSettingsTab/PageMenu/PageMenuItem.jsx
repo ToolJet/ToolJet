@@ -1,4 +1,5 @@
 import React, { memo, useRef, useState, useCallback } from 'react';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import cx from 'classnames';
 import * as Icons from '@tabler/icons-react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -145,6 +146,13 @@ export const PageMenuItem = withRouter(
       setShowEditPopover(true);
       setNewPagePopupConfig({ type, mode: 'edit' });
     };
+
+    // Code search asks for this page's details popover, as if the row was clicked.
+    useCodeSearchReveal('page', null, (pageId) => {
+      if (!page?.id || pageId !== page.id) return false;
+      handleOpenPopup(page?.type || 'page', page);
+      return true;
+    });
 
     function getTooltip() {
       const permission = page?.permissions?.length ? page?.permissions[0] : null;

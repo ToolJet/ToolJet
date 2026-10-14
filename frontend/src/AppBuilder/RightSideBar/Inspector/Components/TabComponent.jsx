@@ -18,6 +18,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -43,6 +44,18 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
 
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
+  // Code search opens a tab item's popover by its id.
+  useCodeSearchReveal(
+    'listItem',
+    component?.id,
+    (tabId) => {
+      const index = tabItems.findIndex((tab) => String(tab?.id) === tabId);
+      if (index < 0) return false;
+      setActiveColumnPopoverIndex(index);
+      return true;
+    },
+    [tabItems]
+  );
   const [hoveredTabItemIndex, setHoveredTabItemIndex] = useState(null);
   // Bumped per row (by `_key`) to force just that row's Id field to remount and re-seed.
   const [idFieldResetKeys, setIdFieldResetKeys] = useState({});
@@ -288,9 +301,13 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
       item?.iconVisibility?.value !== undefined ? getResolvedValue(item?.iconVisibility?.value) : item?.iconVisibility;
 
     return (
-      <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
+      <Popover
+        className={`${darkMode && 'dark-theme theme-dark'}`}
+        style={{ minWidth: '248px' }}
+        data-reveal-root={`listItem:${item?.id}`}
+      >
         <Popover.Body onClick={(e) => e.stopPropagation()}>
-          <div className="field mb-3" data-cy={`input-and-label-tab-title`}>
+          <div data-param="title" className="field mb-3" data-cy={`input-and-label-tab-title`}>
             <label data-cy={`label-tab-title`} className="font-weight-500 mb-1 font-size-12">
               {'Tab Title'}
             </label>
@@ -306,7 +323,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             />
           </div>
 
-          <div className="field mb-3" data-cy={`input-and-label-tab-id`}>
+          <div data-param="id" className="field mb-3" data-cy={`input-and-label-tab-id`}>
             <label data-cy={`label-tab-id`} className="font-weight-500 mb-1 font-size-12">
               {'Id'}
             </label>
@@ -324,7 +341,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             />
           </div>
 
-          <div className="field mb-3" data-cy={`input-and-label-tab-id`}>
+          <div data-param="icon" className="field mb-3" data-cy={`input-and-label-tab-id`}>
             <CodeHinter
               currentState={currentState}
               initialValue={item?.icon?.value || ''}
@@ -345,7 +362,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             />
           </div>
 
-          <div className="field mb-2">
+          <div data-param="fieldBackgroundColor" className="field mb-2">
             <CodeHinter
               currentState={currentState}
               initialValue={item?.fieldBackgroundColor?.value}
@@ -364,7 +381,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             />
           </div>
 
-          <div className="field mb-2">
+          <div data-param="loading" className="field mb-2">
             <CodeHinter
               currentState={currentState}
               initialValue={item?.loading?.value}
@@ -385,7 +402,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             />
           </div>
 
-          <div className="field mb-2" data-cy={`input-and-label-tab-visible`}>
+          <div data-param="visible" className="field mb-2" data-cy={`input-and-label-tab-visible`}>
             <CodeHinter
               currentState={currentState}
               initialValue={item?.visible?.value}
@@ -406,7 +423,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramType={'toggle'}
             />
           </div>
-          <div className="field" data-cy={`input-and-label-tab-disable`}>
+          <div data-param="disable" className="field" data-cy={`input-and-label-tab-disable`}>
             <CodeHinter
               currentState={currentState}
               initialValue={item?.disable?.value}
