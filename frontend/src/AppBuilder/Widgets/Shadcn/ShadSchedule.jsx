@@ -190,7 +190,9 @@ export const ShadSchedule = (props) => {
 
   const rw = num(p.resourceWidth, 168, 80, 400);
   const rowHeight = num(p.rowHeight, 56, 32, 160);
-  const columnMin = range.scale === 'days' ? 96 : 72;
+  // A day column holds "Mon 12 Oct" and a truncated booking at 80px: at 96 a week beside a 190px resource column needed
+  // 862px, and a rental desk's two-thirds-width card cut Sunday off behind a scroll (2026-10-14).
+  const columnMin = range.scale === 'days' ? 80 : 72;
   const frame = {
     borderColor: LINE,
     borderRadius: 'var(--lk-radius,calc(var(--sc-radius) + 4px))',
