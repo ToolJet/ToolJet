@@ -26,6 +26,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -37,6 +38,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -48,6 +50,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -58,6 +61,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -69,6 +73,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -79,6 +84,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -90,6 +96,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -100,6 +107,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Launch Modal',
       },
@@ -139,6 +147,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'lg',
       },
@@ -158,6 +167,7 @@ export const shadDialogConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 400,
       },
@@ -208,6 +218,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -230,6 +241,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'dialog',
       },
@@ -252,6 +264,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'right',
       },
@@ -335,6 +348,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'var(--cc-surface1-surface)',
       },
@@ -346,6 +360,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'var(--cc-default-border)',
       },
@@ -357,6 +372,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'var(--cc-surface1-surface)',
       },
@@ -368,6 +384,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'var(--cc-surface1-surface)',
       },
@@ -379,6 +396,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'var(--cc-default-border)',
       },
@@ -390,6 +408,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'var(--cc-primary-brand)',
       },
@@ -401,6 +420,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'auto',
       },
@@ -424,6 +444,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'var(--cc-primary-brand)',
       },
@@ -439,6 +460,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'var(--cc-surface1-surface)',
       },
@@ -458,6 +480,7 @@ export const shadDialogConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 14,
       },
@@ -496,6 +519,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'center',
       },
@@ -507,6 +531,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       accordian: 'trigger button',
@@ -518,6 +543,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       accordian: 'trigger button',
@@ -529,6 +555,7 @@ export const shadDialogConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       showLabel: false,

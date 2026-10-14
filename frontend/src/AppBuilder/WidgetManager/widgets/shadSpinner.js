@@ -36,6 +36,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'ring',
       },
@@ -56,6 +57,7 @@ export const shadSpinnerConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -66,6 +68,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -86,6 +89,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'right',
       },
@@ -98,6 +102,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -109,6 +114,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -120,6 +126,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -131,6 +138,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -167,6 +175,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -190,6 +199,7 @@ export const shadSpinnerConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -201,6 +211,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -210,6 +221,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -219,6 +231,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -228,6 +241,7 @@ export const shadSpinnerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'left',
       },

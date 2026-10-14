@@ -26,6 +26,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -37,6 +38,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'month',
       },
@@ -55,6 +57,7 @@ export const shadBarChartConfig = {
               type: 'array',
             },
           ],
+          optional: true,
         },
         defaultValue: 'revenue',
       },
@@ -65,6 +68,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -75,6 +79,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -85,6 +90,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -103,6 +109,7 @@ export const shadBarChartConfig = {
               type: 'array',
             },
           ],
+          optional: true,
         },
         defaultValue: {},
       },
@@ -114,6 +121,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No data',
       },
@@ -124,6 +132,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -135,6 +144,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -145,6 +155,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -166,6 +177,7 @@ export const shadBarChartConfig = {
               type: 'array',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -176,6 +188,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'object',
+          optional: true,
         },
         defaultValue: {},
       },
@@ -187,6 +200,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -208,6 +222,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -221,6 +236,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -232,6 +248,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -243,6 +260,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -279,6 +297,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -309,6 +328,7 @@ export const shadBarChartConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -320,6 +340,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -329,6 +350,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -338,6 +360,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -347,6 +370,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -356,6 +380,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -365,6 +390,7 @@ export const shadBarChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

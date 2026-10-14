@@ -28,6 +28,23 @@ const write = (file, code) => {
   written += 1;
 };
 
+// A pack widget renders a missing value, so a property bound to a query that has not answered yet is not an error:
+// every property and style schema is optional. Required, a fresh analytics app opened with 66 "Expected a value of
+// type string, but received undefined" in the debugger (2026-10-13). Wrong types are still reported. Marked here, in
+// the generated literals, so a regeneration keeps it (a hand edit of the registry was lost to one, 2026-10-15).
+const optionalSchemas = (cfg) => {
+  const section = (defs) =>
+    Object.fromEntries(
+      Object.entries(defs ?? {}).map(([key, def]) => [
+        key,
+        def?.validation?.schema
+          ? { ...def, validation: { ...def.validation, schema: { ...def.validation.schema, optional: true } } }
+          : def,
+      ])
+    );
+  return { ...cfg, properties: section(cfg.properties), styles: section(cfg.styles) };
+};
+
 const names = [];
 for (const source of sources) {
   const mod = await import(join(tmp, source));
@@ -37,7 +54,7 @@ for (const source of sources) {
     const file = cfg.name.charAt(0).toLowerCase() + cfg.name.slice(1) + '.js';
     write(
       join(out, file),
-      `// GENERATED from WidgetManager/${source} by scripts-shadcn-literals.mjs. Do not edit by hand.\nexport const ${exportName} = ${JSON.stringify(cfg, null, 2)};\n`
+      `// GENERATED from WidgetManager/${source} by scripts-shadcn-literals.mjs. Do not edit by hand.\nexport const ${exportName} = ${JSON.stringify(optionalSchemas(cfg), null, 2)};\n`
     );
     names.push([exportName, file]);
   }

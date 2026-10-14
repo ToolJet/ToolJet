@@ -25,6 +25,7 @@ export const shadBreadcrumbConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -36,6 +37,7 @@ export const shadBreadcrumbConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -57,6 +59,7 @@ export const shadBreadcrumbConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -70,6 +73,7 @@ export const shadBreadcrumbConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -81,6 +85,7 @@ export const shadBreadcrumbConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -92,6 +97,7 @@ export const shadBreadcrumbConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -128,6 +134,7 @@ export const shadBreadcrumbConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -155,6 +162,7 @@ export const shadBreadcrumbConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -166,6 +174,7 @@ export const shadBreadcrumbConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -175,6 +184,7 @@ export const shadBreadcrumbConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -184,6 +194,7 @@ export const shadBreadcrumbConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

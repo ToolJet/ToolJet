@@ -26,6 +26,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -36,6 +37,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -46,6 +48,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Drag & drop files here',
       },
@@ -56,6 +59,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -66,6 +70,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -77,6 +82,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -95,6 +101,7 @@ export const shadFileUploadConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 5,
       },
@@ -113,6 +120,7 @@ export const shadFileUploadConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 5242880,
       },
@@ -131,6 +139,7 @@ export const shadFileUploadConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 0,
       },
@@ -141,6 +150,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -151,6 +161,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -187,6 +198,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'auto-detect',
       },
@@ -197,6 +209,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: ',',
       },
@@ -207,6 +220,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -218,6 +232,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -229,6 +244,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -240,6 +256,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -251,6 +268,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -287,6 +305,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -331,6 +350,7 @@ export const shadFileUploadConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -342,6 +362,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -351,6 +372,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -360,6 +382,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -369,6 +392,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -378,6 +402,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -387,6 +412,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -396,6 +422,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -405,6 +432,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -414,6 +442,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -423,6 +452,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -432,6 +462,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -441,6 +472,7 @@ export const shadFileUploadConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -458,6 +490,7 @@ export const shadFileUploadConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

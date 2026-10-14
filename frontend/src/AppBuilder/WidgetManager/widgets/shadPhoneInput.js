@@ -26,6 +26,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Phone number',
       },
@@ -36,6 +37,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -46,6 +48,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -56,6 +59,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -66,6 +70,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'US',
       },
@@ -76,6 +81,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -87,6 +93,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -97,6 +104,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -107,6 +115,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -118,6 +127,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -129,6 +139,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -140,6 +151,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -176,6 +188,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -238,6 +251,7 @@ export const shadPhoneInputConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -249,6 +263,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -258,6 +273,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -267,6 +283,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -276,6 +293,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -285,6 +303,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -294,6 +313,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -303,6 +323,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -312,6 +333,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -329,6 +351,7 @@ export const shadPhoneInputConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -338,6 +361,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -347,6 +371,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -356,6 +381,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -365,6 +391,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -374,6 +401,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -383,6 +411,7 @@ export const shadPhoneInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

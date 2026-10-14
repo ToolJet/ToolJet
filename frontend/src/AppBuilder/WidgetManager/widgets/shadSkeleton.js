@@ -25,6 +25,7 @@ export const shadSkeletonConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 3,
       },
@@ -35,6 +36,7 @@ export const shadSkeletonConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -45,6 +47,7 @@ export const shadSkeletonConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -56,6 +59,7 @@ export const shadSkeletonConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -67,6 +71,7 @@ export const shadSkeletonConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -78,6 +83,7 @@ export const shadSkeletonConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -114,6 +120,7 @@ export const shadSkeletonConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -137,6 +144,7 @@ export const shadSkeletonConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -148,6 +156,7 @@ export const shadSkeletonConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

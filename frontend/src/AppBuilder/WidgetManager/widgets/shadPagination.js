@@ -26,6 +26,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 10,
       },
@@ -44,6 +45,7 @@ export const shadPaginationConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -54,6 +56,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 10,
       },
@@ -64,6 +67,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 1,
       },
@@ -74,6 +78,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 1,
       },
@@ -84,6 +89,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -94,6 +100,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -114,6 +121,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -126,6 +134,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -137,6 +146,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -148,6 +158,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -159,6 +170,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -195,6 +207,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -222,6 +235,7 @@ export const shadPaginationConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -233,6 +247,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -242,6 +257,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -251,6 +267,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -260,6 +277,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -269,6 +287,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -286,6 +305,7 @@ export const shadPaginationConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -295,6 +315,7 @@ export const shadPaginationConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'left',
       },

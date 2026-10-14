@@ -26,6 +26,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -36,6 +37,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -60,6 +62,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'cover',
       },
@@ -104,6 +107,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'auto',
       },
@@ -114,6 +118,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -138,6 +143,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'placeholder',
       },
@@ -150,6 +156,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -160,6 +167,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -170,6 +178,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -180,6 +189,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -191,6 +201,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -212,6 +223,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -225,6 +237,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -236,6 +249,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -247,6 +261,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -283,6 +298,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -310,6 +326,7 @@ export const shadImageConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -329,6 +346,7 @@ export const shadImageConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -338,6 +356,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -347,6 +366,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -356,6 +376,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -365,6 +386,7 @@ export const shadImageConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

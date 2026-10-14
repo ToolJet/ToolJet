@@ -26,6 +26,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -37,6 +38,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'stage',
       },
@@ -47,6 +49,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'count',
       },
@@ -57,6 +60,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -77,6 +81,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'previous',
       },
@@ -99,6 +104,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'center',
       },
@@ -111,6 +117,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -139,6 +146,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'number',
       },
@@ -151,6 +159,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'USD',
       },
@@ -161,6 +170,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -171,6 +181,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -181,6 +192,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No data',
       },
@@ -191,6 +203,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -201,6 +214,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -212,6 +226,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -233,6 +248,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -246,6 +262,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -257,6 +274,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -268,6 +286,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -304,6 +323,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -334,6 +354,7 @@ export const shadFunnelChartConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -345,6 +366,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -354,6 +376,7 @@ export const shadFunnelChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

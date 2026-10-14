@@ -26,6 +26,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -37,6 +38,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'customer',
       },
@@ -47,6 +49,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -65,6 +68,7 @@ export const shadRecordListConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -75,6 +79,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -85,6 +90,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -95,6 +101,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -135,6 +142,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'currency',
       },
@@ -145,6 +153,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'USD',
       },
@@ -155,6 +164,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'id',
       },
@@ -165,6 +175,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -185,6 +196,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'circle',
       },
@@ -211,6 +223,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -223,6 +236,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -243,6 +257,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'card',
       },
@@ -255,6 +270,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -265,6 +281,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Nothing here yet',
       },
@@ -275,6 +292,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -286,6 +304,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -307,6 +326,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -320,6 +340,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -331,6 +352,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -342,6 +364,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -378,6 +401,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -408,6 +432,7 @@ export const shadRecordListConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -419,6 +444,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -428,6 +454,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -437,6 +464,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -446,6 +474,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -455,6 +484,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -472,6 +502,7 @@ export const shadRecordListConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -503,6 +534,7 @@ export const shadRecordListConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'theme',
       },

@@ -26,6 +26,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -37,6 +38,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 0,
       },
@@ -77,6 +79,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '16/9',
       },
@@ -97,6 +100,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'cover',
       },
@@ -123,6 +127,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'overlay',
       },
@@ -135,6 +140,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 1,
       },
@@ -145,6 +151,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -155,6 +162,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -165,6 +173,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -175,6 +184,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -185,6 +195,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 5000,
       },
@@ -195,6 +206,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -205,6 +217,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -216,6 +229,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -237,6 +251,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -250,6 +265,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -261,6 +277,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -272,6 +289,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -308,6 +326,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -338,6 +357,7 @@ export const shadCarouselConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -349,6 +369,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -358,6 +379,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -367,6 +389,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -376,6 +399,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -385,6 +409,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -394,6 +419,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -403,6 +429,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -412,6 +439,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -421,6 +449,7 @@ export const shadCarouselConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -438,6 +467,7 @@ export const shadCarouselConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -455,6 +485,7 @@ export const shadCarouselConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

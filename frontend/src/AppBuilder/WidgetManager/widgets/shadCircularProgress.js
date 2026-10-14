@@ -26,6 +26,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 63,
       },
@@ -36,6 +37,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 96,
       },
@@ -46,6 +48,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 8,
       },
@@ -66,6 +69,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'round',
       },
@@ -92,6 +96,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'value',
       },
@@ -104,6 +109,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -114,6 +120,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -124,6 +131,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -135,6 +143,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -156,6 +165,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -169,6 +179,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -180,6 +191,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -191,6 +203,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -227,6 +240,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -250,6 +264,7 @@ export const shadCircularProgressConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -261,6 +276,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -270,6 +286,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -279,6 +296,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -288,6 +306,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -297,6 +316,7 @@ export const shadCircularProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'left',
       },

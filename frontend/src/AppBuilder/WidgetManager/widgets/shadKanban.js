@@ -26,6 +26,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -37,6 +38,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -48,6 +50,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'status',
       },
@@ -58,6 +61,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'id',
       },
@@ -78,6 +82,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'fields',
       },
@@ -90,6 +95,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 96,
       },
@@ -100,6 +106,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'title',
       },
@@ -110,6 +117,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -120,6 +128,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -130,6 +139,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -140,6 +150,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -150,6 +161,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -160,6 +172,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -170,6 +183,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -190,6 +204,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'comfortable',
       },
@@ -210,6 +225,7 @@ export const shadKanbanConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -227,6 +243,7 @@ export const shadKanbanConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -236,6 +253,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -246,6 +264,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -256,6 +275,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -267,6 +287,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -277,6 +298,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -287,6 +309,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -297,6 +320,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No cards',
       },
@@ -307,6 +331,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'object',
+          optional: true,
         },
         defaultValue: {},
       },
@@ -318,6 +343,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -329,6 +355,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -350,6 +377,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -363,6 +391,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -374,6 +403,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -385,6 +415,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -421,6 +452,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -469,6 +501,7 @@ export const shadKanbanConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -480,6 +513,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -489,6 +523,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -498,6 +533,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -507,6 +543,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -516,6 +553,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -525,6 +563,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -542,6 +581,7 @@ export const shadKanbanConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -559,6 +599,7 @@ export const shadKanbanConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -568,6 +609,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -577,6 +619,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -586,6 +629,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -595,6 +639,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -604,6 +649,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -621,6 +667,7 @@ export const shadKanbanConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -648,6 +695,7 @@ export const shadKanbanConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'sm',
       },

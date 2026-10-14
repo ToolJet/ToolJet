@@ -26,6 +26,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Text',
       },
@@ -58,6 +59,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'paragraph',
       },
@@ -70,6 +72,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -81,6 +84,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -102,6 +106,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -115,6 +120,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -126,6 +132,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -137,6 +144,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -173,6 +181,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -203,6 +212,7 @@ export const shadTextConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -214,6 +224,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -223,6 +234,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'left',
       },
@@ -255,6 +267,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'theme',
       },
@@ -291,6 +304,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -309,6 +323,7 @@ export const shadTextConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -336,6 +351,7 @@ export const shadTextConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'none',
       },
@@ -354,6 +370,7 @@ export const shadTextConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

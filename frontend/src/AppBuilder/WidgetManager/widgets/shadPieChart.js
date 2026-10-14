@@ -25,6 +25,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -36,6 +37,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'type',
       },
@@ -46,6 +48,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'value',
       },
@@ -56,6 +59,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -66,6 +70,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -76,6 +81,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -86,6 +92,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -96,6 +103,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No data',
       },
@@ -106,6 +114,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -117,6 +126,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -138,6 +148,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -151,6 +162,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -162,6 +174,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -173,6 +186,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -209,6 +223,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -239,6 +254,7 @@ export const shadPieChartConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -250,6 +266,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -259,6 +276,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -268,6 +286,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -277,6 +296,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -286,6 +306,7 @@ export const shadPieChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

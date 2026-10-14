@@ -26,6 +26,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -38,6 +39,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'object',
+          optional: true,
         },
         defaultValue: {},
       },
@@ -63,6 +65,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'letters',
       },
@@ -75,6 +78,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -85,6 +89,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Submit',
       },
@@ -95,6 +100,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Thanks for your answers',
       },
@@ -105,6 +111,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -125,6 +132,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'card',
       },
@@ -137,6 +145,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -148,6 +157,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -159,6 +169,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -170,6 +181,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -181,6 +193,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -217,6 +230,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -247,6 +261,7 @@ export const shadQuestionnaireConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -258,6 +273,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -267,6 +283,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -276,6 +293,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -285,6 +303,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -294,6 +313,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -311,6 +331,7 @@ export const shadQuestionnaireConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -342,6 +363,7 @@ export const shadQuestionnaireConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'theme',
       },

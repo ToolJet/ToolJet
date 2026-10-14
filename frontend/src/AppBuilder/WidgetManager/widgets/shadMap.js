@@ -26,6 +26,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -37,6 +38,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'lat',
       },
@@ -47,6 +49,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'lng',
       },
@@ -57,6 +60,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'name',
       },
@@ -67,6 +71,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -77,6 +82,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'status',
       },
@@ -87,6 +93,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'object',
+          optional: true,
         },
         defaultValue: {},
       },
@@ -98,6 +105,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'id',
       },
@@ -108,6 +116,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -118,6 +127,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -136,6 +146,7 @@ export const shadMapConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -146,6 +157,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -156,6 +168,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -166,6 +179,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -176,6 +190,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -186,6 +201,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -196,6 +212,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -217,6 +234,7 @@ export const shadMapConfig = {
               type: 'object',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -228,6 +246,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -239,6 +258,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'object',
+          optional: true,
         },
         defaultValue: {},
       },
@@ -249,6 +269,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -260,6 +281,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'outline',
       },
@@ -270,6 +292,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'name',
       },
@@ -280,6 +303,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'status',
       },
@@ -290,6 +314,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'radius',
       },
@@ -314,6 +339,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'markers',
       },
@@ -326,6 +352,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -336,6 +363,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 28,
       },
@@ -346,6 +374,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -367,6 +396,7 @@ export const shadMapConfig = {
               type: 'object',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -377,6 +407,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -387,6 +418,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Search for an address',
       },
@@ -397,6 +429,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -407,6 +440,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -417,6 +451,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -438,6 +473,7 @@ export const shadMapConfig = {
               type: 'object',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -449,6 +485,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 12,
       },
@@ -469,6 +506,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'streets',
       },
@@ -481,6 +519,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -491,6 +530,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -501,6 +541,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -511,6 +552,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No locations to show',
       },
@@ -521,6 +563,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -532,6 +575,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -542,6 +586,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -553,6 +598,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -564,6 +610,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -575,6 +622,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -611,6 +659,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -650,6 +699,7 @@ export const shadMapConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -661,6 +711,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -670,6 +721,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -679,6 +731,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -688,6 +741,7 @@ export const shadMapConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -705,6 +759,7 @@ export const shadMapConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

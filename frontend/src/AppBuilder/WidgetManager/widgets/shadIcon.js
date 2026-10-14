@@ -26,6 +26,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'trending-up',
       },
@@ -37,6 +38,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 20,
       },
@@ -47,6 +49,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 2,
       },
@@ -83,6 +86,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'primary',
       },
@@ -107,6 +111,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'square',
       },
@@ -127,6 +132,7 @@ export const shadIconConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -137,6 +143,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -158,6 +165,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -171,6 +179,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -182,6 +191,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -193,6 +203,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -229,6 +240,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -259,6 +271,7 @@ export const shadIconConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -270,6 +283,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -279,6 +293,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -296,6 +311,7 @@ export const shadIconConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -305,6 +321,7 @@ export const shadIconConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'left',
       },

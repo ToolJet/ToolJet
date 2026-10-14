@@ -26,6 +26,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -47,6 +48,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'dot',
       },
@@ -69,6 +71,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'comfortable',
       },
@@ -81,6 +84,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -101,6 +105,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'right',
       },
@@ -113,6 +118,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -123,6 +129,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'object',
+          optional: true,
         },
         defaultValue: {},
       },
@@ -134,6 +141,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -145,6 +153,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -166,6 +175,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -179,6 +189,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -190,6 +201,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -201,6 +213,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -237,6 +250,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -264,6 +278,7 @@ export const shadTimelineConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -275,6 +290,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -284,6 +300,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -293,6 +310,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -302,6 +320,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -311,6 +330,7 @@ export const shadTimelineConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

@@ -25,6 +25,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -35,6 +36,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -45,6 +47,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -55,6 +58,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -65,6 +69,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -76,6 +81,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -87,6 +93,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -98,6 +105,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -134,6 +142,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -196,6 +205,7 @@ export const shadTextareaConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -207,6 +217,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -216,6 +227,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -225,6 +237,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -234,6 +247,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -243,6 +257,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -252,6 +267,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -261,6 +277,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -270,6 +287,7 @@ export const shadTextareaConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -287,6 +305,7 @@ export const shadTextareaConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

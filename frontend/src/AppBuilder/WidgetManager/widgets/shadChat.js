@@ -26,6 +26,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Chat',
       },
@@ -39,6 +40,7 @@ export const shadChatConfig = {
           element: {
             type: 'object',
           },
+          optional: true,
         },
         defaultValue: [],
       },
@@ -50,6 +52,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '{{globals.currentUser.firstName}}',
       },
@@ -60,6 +63,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -70,6 +74,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Assistant',
       },
@@ -80,6 +85,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -90,6 +96,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Ask me anything!',
       },
@@ -100,6 +107,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Start the conversation',
       },
@@ -110,6 +118,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -120,6 +129,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -130,6 +140,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -140,6 +151,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -150,6 +162,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -160,6 +173,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -170,6 +184,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -180,6 +195,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -191,6 +207,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -202,6 +219,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -213,6 +231,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -249,6 +268,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -279,6 +299,7 @@ export const shadChatConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -290,6 +311,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -299,6 +321,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -316,6 +339,7 @@ export const shadChatConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -325,6 +349,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -334,6 +359,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -343,6 +369,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -352,6 +379,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -361,6 +389,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -370,6 +399,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -379,6 +409,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -388,6 +419,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -397,6 +429,7 @@ export const shadChatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

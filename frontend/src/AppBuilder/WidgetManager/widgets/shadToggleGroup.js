@@ -25,6 +25,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -53,6 +54,7 @@ export const shadToggleGroupConfig = {
               type: 'object',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -63,6 +65,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -73,6 +76,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -84,6 +88,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -95,6 +100,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -106,6 +112,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -142,6 +149,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -169,6 +177,7 @@ export const shadToggleGroupConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -180,6 +189,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -189,6 +199,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -198,6 +209,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -207,6 +219,7 @@ export const shadToggleGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -224,6 +237,7 @@ export const shadToggleGroupConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

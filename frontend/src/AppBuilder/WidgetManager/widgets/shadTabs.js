@@ -26,6 +26,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -36,6 +37,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -55,6 +57,7 @@ export const shadTabsConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 't0',
       },
@@ -79,6 +82,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'pills',
       },
@@ -105,6 +109,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'start',
       },
@@ -117,6 +122,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -127,6 +133,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -137,6 +144,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -147,6 +155,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -157,6 +166,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Next',
       },
@@ -167,6 +177,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Back',
       },
@@ -177,6 +188,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Finish',
       },
@@ -187,6 +199,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -197,6 +210,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -208,6 +222,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -229,6 +244,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -242,6 +258,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -253,6 +270,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -264,6 +282,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -300,6 +319,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -330,6 +350,7 @@ export const shadTabsConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -341,6 +362,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -350,6 +372,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -359,6 +382,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -368,6 +392,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -377,6 +402,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -386,6 +412,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -395,6 +422,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -404,6 +432,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -421,6 +450,7 @@ export const shadTabsConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -438,6 +468,7 @@ export const shadTabsConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -447,6 +478,7 @@ export const shadTabsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },

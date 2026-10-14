@@ -26,6 +26,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -36,6 +37,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -46,6 +48,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -57,6 +60,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Select',
       },
@@ -67,6 +71,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Search...',
       },
@@ -77,6 +82,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No results found.',
       },
@@ -87,6 +93,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -97,6 +104,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -107,6 +115,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -117,6 +126,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -144,6 +154,7 @@ export const shadComboboxConfig = {
               type: 'object',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -154,6 +165,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -165,6 +177,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -176,6 +189,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -187,6 +201,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -198,6 +213,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -234,6 +250,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -284,6 +301,7 @@ export const shadComboboxConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -295,6 +313,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -304,6 +323,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -313,6 +333,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -322,6 +343,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -331,6 +353,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -340,6 +363,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -349,6 +373,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -358,6 +383,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -375,6 +401,7 @@ export const shadComboboxConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -384,6 +411,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -393,6 +421,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -402,6 +431,7 @@ export const shadComboboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

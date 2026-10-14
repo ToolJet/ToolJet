@@ -25,6 +25,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 60,
       },
@@ -35,6 +36,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -45,6 +47,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -55,6 +58,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -76,6 +80,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -89,6 +94,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -100,6 +106,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -111,6 +118,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -147,6 +155,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -170,6 +179,7 @@ export const shadProgressConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -181,6 +191,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -190,6 +201,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -199,6 +211,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -208,6 +221,7 @@ export const shadProgressConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -225,6 +239,7 @@ export const shadProgressConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

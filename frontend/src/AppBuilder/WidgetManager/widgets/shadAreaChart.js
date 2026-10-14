@@ -25,6 +25,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -36,6 +37,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'month',
       },
@@ -54,6 +56,7 @@ export const shadAreaChartConfig = {
               type: 'array',
             },
           ],
+          optional: true,
         },
         defaultValue: 'revenue',
       },
@@ -64,6 +67,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -74,6 +78,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -84,6 +89,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -102,6 +108,7 @@ export const shadAreaChartConfig = {
               type: 'array',
             },
           ],
+          optional: true,
         },
         defaultValue: {},
       },
@@ -113,6 +120,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No data',
       },
@@ -123,6 +131,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -134,6 +143,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -144,6 +154,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -172,6 +183,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'monotone',
       },
@@ -184,6 +196,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -205,6 +218,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -218,6 +232,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -229,6 +244,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -240,6 +256,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -276,6 +293,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -306,6 +324,7 @@ export const shadAreaChartConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -317,6 +336,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -326,6 +346,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -335,6 +356,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -344,6 +366,7 @@ export const shadAreaChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
