@@ -52,9 +52,10 @@ module.exports = {
         // PDF.jsx sets the pdfjs worker via `new URL(..., import.meta.url)` at
         // module scope. @babel/preset-env rewrites ESM->CJS, where `import.meta`
         // has no equivalent and throws "Cannot use 'import.meta' outside a
-        // module". This plugin rewrites import.meta to a CJS-safe file URL so the
-        // module loads under jest. PDF is the only frontend/src widget using it.
-        plugins: ['babel-plugin-transform-import-meta'],
+        // module". This local plugin (scripts/babel-plugin-local-import-meta.js)
+        // rewrites import.meta to a CJS-safe file URL so the module loads under
+        // jest. PDF is the only frontend/src widget using it.
+        plugins: [require.resolve('./scripts/babel-plugin-local-import-meta')],
       },
     ],
     '^.+\\.svg$': '<rootDir>/__mocks__/svg.js',
