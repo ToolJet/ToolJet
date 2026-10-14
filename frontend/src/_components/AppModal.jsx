@@ -34,6 +34,8 @@ export function AppModal({
   dependentPluginsDetail = [],
   dependentPlugins = [],
   modalType,
+  footerLeading = null, // shown at the left of the footer, e.g. the plan limit counter
+  hideCancel = false, // the limit design shows only the primary action next to the counter
   // isAutoCommit = false,
 }) {
   if (!selectedAppName && templateDetails) {
@@ -143,15 +145,18 @@ export function AppModal({
       titleAdornment={titleAdornment}
       footerContent={
         <>
-          <ButtonSolid
-            variant="tertiary"
-            onClick={closeModal}
-            data-cy="cancel-button"
-            className="modal-footer-divider"
-            disabled={isLoading}
-          >
-            Cancel
-          </ButtonSolid>
+          {footerLeading && <div className="!tw-mr-auto">{footerLeading}</div>}
+          {!hideCancel && (
+            <ButtonSolid
+              variant="tertiary"
+              onClick={closeModal}
+              data-cy="cancel-button"
+              className="modal-footer-divider"
+              disabled={isLoading}
+            >
+              Cancel
+            </ButtonSolid>
+          )}
           <ButtonSolid
             form="createAppForm"
             type="submit"

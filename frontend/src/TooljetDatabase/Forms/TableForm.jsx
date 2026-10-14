@@ -1,6 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
+import LimitCounter from '@/modules/common/components/LimitCounter';
+import { getLimitState } from '@/modules/common/helpers/limitGating';
 import CreateColumnsForm from './ColumnsForm';
 import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
@@ -30,6 +32,7 @@ const TableForm = ({
   onClose,
   updateSelectedTable,
   initiator,
+  tablesLimit = null, // plan limit for tables; shows the limit counter in the create footer
 }) => {
   const isEditMode = !isEmpty(selectedTable);
   const selectedTableColumns = isEditMode ? selectedTableData : selectedColumns;
@@ -391,6 +394,11 @@ const TableForm = ({
         }
         showToolTipForFkOnReadDocsSection={true}
         initiator={initiator}
+        footerLeading={
+          !isEditMode && getLimitState(tablesLimit).limited ? (
+            <LimitCounter limit={tablesLimit} unit="database tables" />
+          ) : null
+        }
       />
       <ConfirmDialog
         title={'Change in primary key'}

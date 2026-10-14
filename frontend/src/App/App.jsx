@@ -51,6 +51,8 @@ import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import LimitReachedModal from '@/modules/common/components/LimitReachedModal';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -133,6 +135,8 @@ class AppComponent extends React.Component {
     setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
+    // Plan tags need the plan catalog; it's static per deployment, so load it once here.
+    useLicenseStore.getState().actions.ensurePlanCatalog();
     // check if version is cloud or ee
     const data = localStorage.getItem('currentVersion');
     if (data && data.includes('cloud')) {
@@ -502,6 +506,7 @@ class AppComponent extends React.Component {
           </div>
 
           <Toast toastOptions={toastOptions} />
+          <LimitReachedModal />
         </div>
       </>
     );

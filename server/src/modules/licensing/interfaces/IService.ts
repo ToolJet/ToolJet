@@ -2,6 +2,7 @@ import { EntityManager } from 'typeorm';
 import { LIMIT_TYPE } from '@modules/users/constants/lifecycle';
 import LicenseBase from '../configs/LicenseBase';
 import { User } from '@entities/user.entity';
+import { PlanCatalogSlice } from '../constants/plan-catalog';
 
 export interface ILicenseWorkflowsService {
   getWorkflowLimit(params: { limitFor: string; workspaceId?: string }): Promise<any>;
@@ -80,4 +81,5 @@ export interface ILicenseService {
   getLicenseTerms(organizationId: string): Promise<{ terms: any }>;
   updateLicense(dto: any, user: User): Promise<void>;
   plans(): Promise<{ plans: any }>;
+  planCatalog(): PlanCatalogSlice;
 }

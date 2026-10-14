@@ -16,6 +16,7 @@ export const createEditorLicenseSlice = (set) => ({
     }
     licenseService.getFeatureAccess().then((data) => {
       set({ featureAccess: data });
+      useLicenseStore.getState().actions.setFeatureAccess(data);
     });
   },
 });

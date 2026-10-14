@@ -108,6 +108,7 @@ Nest schedules and BullMQ share Redis configuration from `AppModuleLoader`. Work
 - JWT session: `server/src/modules/session/`, cookie `tj_auth_token`.
 - Feature authorization: module/feature metadata plus CASL in `server/src/modules/app/ability-factory.ts` and `guards/ability.guard.ts`.
 - Resource validation: App, Version, Data Source, workspace, public/private, and feature/license guards close to each controller.
+- License-driven UI: `GET /license/access` returns feature flags, license status and `planTier`; `GET /license/plan-catalog` returns the static lowest-plan-per-feature map the frontend uses for plan tags (`server/src/modules/licensing/constants/plan-catalog.ts`). Both are public; enforcement stays in the license guards (HTTP 451).
 - Secrets: source options and workspace secrets are decrypted/resolved server-side during query execution.
 - Security middleware: CSRF-origin checks for custom domains, body validation/whitelisting, security headers, redacted request logging, parameterized-query rule, and throttling on app query runs.
 

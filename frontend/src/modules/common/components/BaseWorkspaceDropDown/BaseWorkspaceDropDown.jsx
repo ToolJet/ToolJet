@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
-import { authenticationService } from '@/_services';
+import { authenticationService, organizationService } from '@/_services';
 import { ToolTip } from '@/_components';
 import { decodeEntities } from '@/_helpers/utils';
 import { CreateOrganization } from '@/modules/common/components/OrganizationManager';
 import WorkspaceActions from '@/modules/dashboard/components/WorkspaceActions';
-import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { getLimitState } from '@/modules/common/helpers/limitGating';
 
 function BaseWorkspaceDropDown({ ...props }) {
   const workspacesLimit = props.workspacesLimit;
@@ -35,7 +36,6 @@ function BaseWorkspaceDropDown({ ...props }) {
             </div>
           </div>
           <div className={`${darkMode && 'dark-theme'}`}>{menuProps.children}</div>
-          <LicenseBanner classes="mb-3 mx-1 small" limits={workspacesLimit} type="workspaces" size="small" />
         </div>
       </components.Menu>
     );
@@ -50,14 +50,27 @@ function BaseWorkspaceDropDown({ ...props }) {
       </div>
     </ToolTip>
   );
-  const handleAddWorkspace = () => {
-    if (workspacesLimit != null && !workspacesLimit.canAddUnlimited && workspacesLimit?.percentage >= 100) return;
+  // Re-check the plan limit on click so the decision uses fresh counts. At the limit, the
+  // limit-reached modal opens instead of the create form.
+  const handleAddWorkspace = async () => {
+    const limit = await organizationService
+      .getWorkspacesLimit()
+      .then((data) => data?.workspacesCount)
+      .catch(() => workspacesLimit);
+    if (getLimitState(limit).reached) {
+      useLicenseStore.getState().actions.openLimitReached({ resource: 'workspaces', limit });
+      return;
+    }
     setShowCreateOrg(true);
   };
 
   return (
     <>
-      <CreateOrganization showCreateOrg={showCreateOrg} setShowCreateOrg={setShowCreateOrg} />
+      <CreateOrganization
+        showCreateOrg={showCreateOrg}
+        setShowCreateOrg={setShowCreateOrg}
+        workspacesLimit={workspacesLimit}
+      />
       <Select
         className={`react-select-container ${darkMode && 'dark-theme'}`}
         width={'262px'}

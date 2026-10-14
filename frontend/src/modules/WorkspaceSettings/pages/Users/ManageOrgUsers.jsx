@@ -16,6 +16,8 @@ import EditRoleErrorModal from '@/modules/common/components/ErrorModal';
 import ChangeRoleModal from '../Groups/components/ChangeRoleModal';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { getLimitState } from '@/modules/common/helpers/limitGating';
+import { useLicenseStore } from '@/_stores/licenseStore';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -115,6 +117,30 @@ class ManageOrgUsersComponent extends React.Component {
         userLimits: data,
       });
     });
+  };
+
+  // Re-check the plan limits on click. The form opens while either role has room; when builders and
+  // end users are both full (or the total is), the limit-reached modal opens instead.
+  openInviteUsers = async () => {
+    try {
+      const data = await userService.getUserLimits('all');
+      const editors = getLimitState(data?.editorsCount);
+      const viewers = getLimitState(data?.viewersCount);
+      const bothFull = editors.reached && viewers.reached;
+      if (bothFull || getLimitState(data?.usersCount).reached) {
+        useLicenseStore.getState().actions.openLimitReached({
+          resource: 'users',
+          limits: [
+            { label: 'Builders', limit: data?.editorsCount },
+            { label: 'End-users', limit: data?.viewersCount },
+          ],
+        });
+        return;
+      }
+    } catch {
+      // Fall through: the backend still blocks creation at the limit.
+    }
+    this.setState({ isInviteUsersDrawerOpen: true });
   };
 
   changeNewUserOption = (name, e) => {
@@ -530,7 +556,7 @@ class ManageOrgUsersComponent extends React.Component {
                       <ButtonSolid
                         data-cy="button-invite-new-user"
                         className="singleuser-btn"
-                        onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
+                        onClick={this.openInviteUsers}
                         leftIcon="usergroup"
                         fill={'#FDFDFE'}
                       >

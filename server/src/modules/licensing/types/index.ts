@@ -7,6 +7,7 @@ interface Features {
   [FEATURE_KEY.GET_DOMAINS]: FeatureConfig;
   [FEATURE_KEY.GET_LICENSE]: FeatureConfig;
   [FEATURE_KEY.GET_PLANS]: FeatureConfig;
+  [FEATURE_KEY.GET_PLAN_CATALOG]: FeatureConfig;
   [FEATURE_KEY.GET_TERMS]: FeatureConfig;
   [FEATURE_KEY.GET_APP_LIMITS]: FeatureConfig;
   [FEATURE_KEY.CHECK_AUDIT_LOGS_LICENSE]: FeatureConfig;

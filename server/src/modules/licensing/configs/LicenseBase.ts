@@ -626,6 +626,10 @@ export default class LicenseBase {
       customComponentLibraries: this.customComponentLibraries,
       aiPlan: this.aiPlan,
       publicApp: this.publicApp,
+      // Derived, display-only: automatic SSO login is an Enterprise feature (usable in a trial); it has no license term of its own.
+      automaticSsoLogin: [LICENSE_TYPE.ENTERPRISE, LICENSE_TYPE.TRIAL].includes(this.licenseType as LICENSE_TYPE),
+      // Derived, display-only: configuring SSO and git sync from environment variables is Enterprise-only.
+      envConfigMapping: this.licenseType === LICENSE_TYPE.ENTERPRISE,
     };
   }
 

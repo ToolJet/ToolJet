@@ -1,4 +1,5 @@
 import { licenseService } from '@/_services';
+import { useLicenseStore } from '@/_stores/licenseStore';
 import _ from 'lodash';
 
 const initialState = {
@@ -26,6 +27,9 @@ export const createLicenseSlice = (set, get) => ({
           };
           state.isLicenseFetched = true;
         });
+        // The editor isn't rendered under Layout, so share the result with the global
+        // license store that plan tags read.
+        useLicenseStore.getState().actions.setFeatureAccess(data);
       })
       .catch(() => {
         // For public/unauthenticated apps the license API may be inaccessible.

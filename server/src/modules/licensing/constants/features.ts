@@ -10,6 +10,9 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_PLANS]: {
       isPublic: true,
     },
+    [FEATURE_KEY.GET_PLAN_CATALOG]: {
+      isPublic: true,
+    },
     [FEATURE_KEY.GET_LICENSE]: {},
     [FEATURE_KEY.GET_DOMAINS]: {},
     [FEATURE_KEY.GET_TERMS]: {},

@@ -1,4 +1,6 @@
 import React from 'react';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+import PlanTag from '@/modules/common/components/PlanTag';
 import Skeleton from 'react-loading-skeleton';
 import { datasourceService, pluginsService, globalDatasourceService, libraryAppService } from '@/_services';
 import cx from 'classnames';
@@ -953,7 +955,7 @@ class DataSourceManagerComponent extends React.Component {
         <nav className="nav nav-tabs mt-3">
           {this.props?.environments.map((env, key) => {
             const Wrapper = ({ children }) =>
-              !env?.enabled ? (
+              !env?.enabled && fetchEdition() === 'ce' ? (
                 <LicenseTooltip
                   placement="bottom"
                   feature={'multi-environments'}
@@ -988,13 +990,20 @@ class DataSourceManagerComponent extends React.Component {
                 >
                   <ToolTip
                     message={'Multi-environments is a paid plan feature'}
-                    show={isTrial && licenseValid}
+                    show={isTrial && licenseValid && fetchEdition() === 'ce'}
                     placement="bottom"
                   >
                     <div className="d-flex align-items-center">
                       {capitalize(env.name)}
                       {env.priority > 1 && (!multiEnvironmentEnabled || isTrial) && (
-                        <SolidIcon className="mx-1" name="enterprisesmall" />
+                        <PlanTag
+                          gateKey="multiEnvironment"
+                          iconOnly
+                          featureName="Multi-environments"
+                          plural
+                          className="mx-1"
+                          ceFallback={<SolidIcon className="mx-1" name="enterprisesmall" />}
+                        />
                       )}
                     </div>
                   </ToolTip>

@@ -16,7 +16,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
     const { superAdmin, isAdmin, isBuilder } = UserAllPermissions;
-    can([FEATURE_KEY.GET_PLANS, FEATURE_KEY.GET_ACCESS, FEATURE_KEY.GET_APP_LIMITS], InstanceSettings);
+    can(
+      [FEATURE_KEY.GET_PLANS, FEATURE_KEY.GET_PLAN_CATALOG, FEATURE_KEY.GET_ACCESS, FEATURE_KEY.GET_APP_LIMITS],
+      InstanceSettings
+    );
     if (superAdmin) {
       // super admin can do all operations
       can(
