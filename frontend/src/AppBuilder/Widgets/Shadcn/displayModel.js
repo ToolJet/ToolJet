@@ -108,6 +108,13 @@ const TABLER_TWINS = {
   clockhour3: 'Clock',
   clockhour4: 'Clock',
   hourglass: 'Timer',
+  percentage: 'Percent',
+  toolskitchen: 'UtensilsCrossed',
+  toolskitchen2: 'UtensilsCrossed',
+  toolskitchen3: 'UtensilsCrossed',
+  calendarcheck: 'CalendarCheck',
+  clipboardlist: 'ClipboardList',
+  clipboardcheck: 'ClipboardCheck',
 };
 
 export const resolveIcon = (name, maps, fallback) => {
