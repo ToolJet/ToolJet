@@ -11,6 +11,7 @@ import { ERROR_TYPES } from '@/_helpers/constants';
 import { BreadCrumbContext } from '@/App/App';
 import { checkConditionsForRoute } from '@/_helpers/utils';
 import { OrganizationList } from '@/modules/dashboard/components';
+import { canAccessPatPage } from '@/_helpers/patPermissions';
 
 export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   const workspaceSettingsLinks = constructWorkspaceSettingsLinks(extraLinks);
@@ -48,6 +49,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
       isGroupAdmin,
       wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
       canAccessThemes: isEEorCloud && (isAdmin || isBuilder),
+      canAccessPat: isEEorCloud && canAccessPatPage(current),
       canManageGroups: isAdmin || (isGroupAdmin && hasCustomGroupsLicense),
     };
   });
@@ -79,6 +81,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
         isGroupAdmin,
         wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
         canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
+        canAccessPat: isEEorCloudNow && canAccessPatPage(newOrd),
         canManageGroups: isAdmin || (isGroupAdmin && hasCustomGroupsLicense),
       });
     });
