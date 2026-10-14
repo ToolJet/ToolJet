@@ -214,7 +214,9 @@ export const dateTicks = (data, key) => {
 export const wrapLabel = (value, max, lines = 2) => {
   const cut = (text) => (text.length > max ? `${text.slice(0, Math.max(1, max - 1))}…` : text);
   const out = [];
-  for (const word of String(value ?? '').split(/\s+/).filter(Boolean)) {
+  for (const word of String(value ?? '')
+    .split(/\s+/)
+    .filter(Boolean)) {
     const last = out[out.length - 1];
     if (last !== undefined && `${last} ${word}`.length <= max) out[out.length - 1] = `${last} ${word}`;
     else out.push(word);
@@ -382,8 +384,11 @@ export const ShadBarChart = (props) => {
                 {...AXIS}
                 hide={compact}
                 width={categoryAxisWidth(data, xField)}
-                // Every bar keeps its name: Recharts thinned the labels of a 6-bar chart to every other one.
-                interval={data.length <= 40 ? 0 : 'preserveStartEnd'}
+                // Every bar keeps its name: Recharts thinned the labels of a 6-bar chart to every other one. Past a dozen
+                // bars the names can outnumber the lines the chart has room for (26 reps in 240px printed over each
+                // other), so every nth name shows, as many as fit.
+                interval={data.length <= 12 ? 0 : 'equidistantPreserveStart'}
+                minTickGap={2}
               />
             </>
           ) : (
