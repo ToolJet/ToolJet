@@ -307,3 +307,13 @@ describe('ShadHeatmapChart', () => {
     errors.mockRestore();
   });
 });
+
+describe('a legend for one series', () => {
+  // A fleet page's spend chart printed a legend reading "Cost" under its one line (2026-10-14): one series needs no key.
+  it('is left out; two series keep theirs', () => {
+    const one = mount(ShadLineChart, shadLineChartConfig, { showLegend: true, yFields: ['revenue'] });
+    expect(one.container.querySelector('.recharts-legend-wrapper')).toBeNull();
+    const two = mount(ShadLineChart, shadLineChartConfig, { showLegend: true });
+    expect(two.container.querySelector('.recharts-legend-wrapper')).not.toBeNull();
+  });
+});

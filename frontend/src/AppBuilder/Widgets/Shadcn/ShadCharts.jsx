@@ -295,7 +295,7 @@ export const ShadAreaChart = (props) => {
             allowDecimals={!wholeNumbers(data, series)}
           />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={fmt(p, false)} />} />
-          {p.showLegend === true && !compact ? <Legend content={<LegendContent />} /> : null}
+          {p.showLegend === true && series.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
           {series.map((s, i) =>
             p.lineOnly === true ? (
               <Line
@@ -424,7 +424,7 @@ export const ShadBarChart = (props) => {
             </>
           )}
           <Tooltip cursor={{ fill: 'var(--sc-muted)' }} content={<ChartTooltip format={fmt(p, false)} />} />
-          {p.showLegend === true && !compact ? <Legend content={<LegendContent />} /> : null}
+          {p.showLegend === true && series.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
           {series.map((s, i) => (
             <Bar
               key={s}
@@ -631,7 +631,7 @@ export const ShadLineChart = (props) => {
             allowDecimals={!wholeNumbers(rows, series)}
           />
           <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={full} />} />
-          {p.showLegend === true && !compact ? <Legend content={<LegendContent />} /> : null}
+          {p.showLegend === true && series.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
           {target !== null ? (
             <ReferenceLine
               y={target}
