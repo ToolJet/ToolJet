@@ -55,15 +55,41 @@ export function redactUrlQuery(url: string): string {
   return url.slice(0, q + 1) + query + url.slice(end);
 }
 
+// Frontend routes with a token segment (reset-password, invitations); /api/ routes take tokens in query/body.
+function redactUrlPath(path: string): string {
+  if (path.includes('/api/')) return path;
+  return path
+    .replace(/(\/invitations\/[^/?#]+\/workspaces\/)[^/?#]+/, `$1${REDACTED}`)
+    .replace(/\/(reset-password|invitations|organization-invitations)\/[^/?#]+/g, `/$1/${REDACTED}`);
+}
+
+// Incoming request url (path + query); empty when nothing needed redacting.
+export function incomingHttpAttributes(raw: string, host: string): Record<string, string> {
+  const q = raw.indexOf('?');
+  const path = redactUrlPath(q === -1 ? raw : raw.slice(0, q));
+  const target = path + (q === -1 ? '' : redactUrlQuery(raw.slice(q)));
+  if (target === raw) return {};
+  const attrs: Record<string, string> = {
+    'http.target': target,
+    'http.url': `http://${host}${target}`,
+    'url.path': path,
+  };
+  if (q !== -1) attrs['url.query'] = target.slice(path.length + 1);
+  return attrs;
+}
+
 // Outgoing http.ClientRequest: path carries the query.
 export function outgoingHttpAttributes(req: {
   path?: string;
   host?: string;
   protocol?: string;
+  getHeader?: (name: string) => unknown;
 }): Record<string, string> {
   if (typeof req.path !== 'string' || !req.path.includes('?')) return {};
   const path = redactUrlQuery(req.path);
-  const url = `${req.protocol ?? 'http:'}//${req.host ?? 'localhost'}${path}`;
+  const hostHeader = req.getHeader?.('host');
+  const host = typeof hostHeader === 'string' ? hostHeader : (req.host ?? 'localhost');
+  const url = `${req.protocol ?? 'http:'}//${host}${path}`;
   return {
     'http.target': path,
     'http.url': url,

@@ -19,7 +19,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
-import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
+import { PgInstrumentation, PgInstrumentationConfig } from '@opentelemetry/instrumentation-pg';
 import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 import { RuntimeNodeInstrumentation } from '@opentelemetry/instrumentation-runtime-node';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
@@ -30,8 +30,8 @@ import { TOOLJET_EDITIONS } from '../modules/app/constants';
 import { ATTR, ATTR_DEPLOYMENT_ENVIRONMENT_NAME, METRIC, deploymentEnvironmentName } from './semconv';
 import { shutdownOtelLogs } from './logs';
 import {
+  incomingHttpAttributes,
   outgoingHttpAttributes,
-  redactUrlQuery,
   requestSpanAttributes,
   routeSpanName,
   undiciRequestHook,
@@ -43,6 +43,31 @@ import { UndiciInstrumentation } from '@opentelemetry/instrumentation-undici';
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 }
+
+export const PG_INSTRUMENTATION_CONFIG: PgInstrumentationConfig = {
+  // Bound values carry tokens, session ids and password hashes.
+  enhancedDatabaseReporting: false,
+  responseHook: (span: Span, responseInfo: any) => {
+    // Add more detailed DB query information
+    if (responseInfo?.data) {
+      span.setAttribute('db.rows_affected', responseInfo.data.rowCount || 0);
+    }
+  },
+  requestHook: (span: Span, requestInfo: any) => {
+    // Add query execution context
+    if (requestInfo?.query) {
+      // Truncate very long queries for better readability
+      const query = requestInfo.query.text || requestInfo.query;
+      const truncatedQuery = query.length > 500 ? query.substring(0, 500) + '...' : query;
+      span.setAttribute('db.statement', truncatedQuery);
+
+      // Add query parameter count if available
+      if (requestInfo.query.values) {
+        span.setAttribute('db.query_parameters_count', requestInfo.query.values.length);
+      }
+    }
+  },
+};
 
 // SDK instance - created lazily in startOpenTelemetry()
 let sdk: NodeSDK | null = null;
@@ -100,14 +125,7 @@ function createSDK(): NodeSDK {
             span.setAttributes(outgoingHttpAttributes(request as ClientRequest));
             return;
           }
-          if (!raw.includes('?')) return;
-          const host = (request as IncomingMessage).headers?.host ?? 'localhost';
-          const redacted = redactUrlQuery(raw);
-          span.setAttributes({
-            'http.target': redacted,
-            'http.url': `http://${host}${redacted}`,
-            'url.query': redacted.slice(redacted.indexOf('?') + 1),
-          });
+          span.setAttributes(incomingHttpAttributes(raw, (request as IncomingMessage).headers?.host ?? 'localhost'));
         },
       }),
       new UndiciInstrumentation({ requestHook: undiciRequestHook }),
@@ -123,29 +141,7 @@ function createSDK(): NodeSDK {
         },
       }),
       new NestInstrumentation(),
-      new PgInstrumentation({
-        enhancedDatabaseReporting: true,
-        responseHook: (span: Span, responseInfo: any) => {
-          // Add more detailed DB query information
-          if (responseInfo?.data) {
-            span.setAttribute('db.rows_affected', responseInfo.data.rowCount || 0);
-          }
-        },
-        requestHook: (span: Span, requestInfo: any) => {
-          // Add query execution context
-          if (requestInfo?.query) {
-            // Truncate very long queries for better readability
-            const query = requestInfo.query.text || requestInfo.query;
-            const truncatedQuery = query.length > 500 ? query.substring(0, 500) + '...' : query;
-            span.setAttribute('db.statement', truncatedQuery);
-
-            // Add query parameter count if available
-            if (requestInfo.query.values) {
-              span.setAttribute('db.query_parameters_count', requestInfo.query.values.length);
-            }
-          }
-        },
-      }),
+      new PgInstrumentation(PG_INSTRUMENTATION_CONFIG),
       new PinoInstrumentation(),
     ],
   });

@@ -21,12 +21,18 @@ describe('BaggageAttributesSpanProcessor', () => {
     const attrs = exporter.getFinishedSpans()[0].attributes;
     expect(attrs['tooljet.origin']).toBe('ai');
     expect(attrs['gen_ai.conversation.id']).toHaveLength(128);
-    expect(attrs).not.toHaveProperty('user.email');
+    expect(attrs).not.toHaveProperty(['user.email']);
+  });
+
+  it('drops unknown tooljet.origin values (metric label)', () => {
+    const baggage = propagation.createBaggage({ 'tooljet.origin': { value: 'evil' } });
+    tracer.startSpan('s', {}, propagation.setBaggage(ROOT_CONTEXT, baggage)).end();
+    expect(exporter.getFinishedSpans()[0].attributes).not.toHaveProperty(['tooljet.origin']);
   });
 
   it('does nothing without baggage', () => {
     tracer.startSpan('s', {}, ROOT_CONTEXT).end();
-    expect(exporter.getFinishedSpans()[0].attributes).not.toHaveProperty('tooljet.origin');
+    expect(exporter.getFinishedSpans()[0].attributes).not.toHaveProperty(['tooljet.origin']);
   });
 });
 

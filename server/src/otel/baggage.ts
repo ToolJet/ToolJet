@@ -5,6 +5,8 @@ import { ATTR } from './semconv';
 
 export const PROPAGATED_BAGGAGE_KEYS: readonly string[] = [ATTR.ORIGIN, ATTR.GEN_AI_CONVERSATION_ID];
 const MAX_VALUE_LENGTH = 128;
+// tooljet.origin is a spanmetrics dimension: unknown values would mint label series.
+const ORIGIN_VALUES: readonly string[] = ['ai'];
 
 // Makes AI-originated requests queryable on every span they cause.
 export class BaggageAttributesSpanProcessor implements SpanProcessor {
@@ -13,7 +15,8 @@ export class BaggageAttributesSpanProcessor implements SpanProcessor {
     if (!baggage) return;
     for (const key of PROPAGATED_BAGGAGE_KEYS) {
       const value = baggage.getEntry(key)?.value;
-      if (value) span.setAttribute(key, value.slice(0, MAX_VALUE_LENGTH));
+      if (!value || (key === ATTR.ORIGIN && !ORIGIN_VALUES.includes(value))) continue;
+      span.setAttribute(key, value.slice(0, MAX_VALUE_LENGTH));
     }
   }
 
