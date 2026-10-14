@@ -143,4 +143,13 @@ describe('chipTone, everyday operations states', () => {
     // An aircraft out on a lesson (flight school, 2026-10-14).
     expect(chipTone('Flying')).toBe('info');
   });
+  it('reads plural alerts, pass and fail, and renewal stages (greenhouse, water quality, insurance, 2026-10-14)', () => {
+    expect(chipTone('2 alerts')).toBe('danger');
+    expect(chipTone('Fail')).toBe('danger');
+    expect(chipTone('Pass')).toBe('success');
+    expect(chipTone('Renewed')).toBe('success');
+    expect(chipTone('Lapsed')).toBe('danger');
+    expect(chipTone('Quoted')).toBe('info');
+    expect(chipTone('Passenger')).toBe('neutral');
+  });
 });
