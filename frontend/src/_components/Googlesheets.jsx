@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { datasourceService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
-import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
+import GoogleSheetsAccessType from '@/_components/GoogleSheetsAccessType';
 
 const Googlesheets = ({
   optionchanged,
@@ -16,7 +15,6 @@ const Googlesheets = ({
   isDisabled,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
-  const whiteLabelText = retrieveWhiteLabelText();
   const { t } = useTranslation();
 
   function authGoogle() {
@@ -55,50 +53,11 @@ const Googlesheets = ({
 
   return (
     <div>
-      <div className="row">
-        <div className="col-md-12">
-          <div className="mb-3">
-            <div data-cy="google-sheet-connection-form-header" className="form-label">
-              {t('globals.authorize', 'Authorize')}
-            </div>
-            <p
-              data-cy="google-sheet-connection-form-description"
-              className="text-muted"
-              style={{ fontSize: '12px', marginBottom: '12px' }}
-            >
-              {t(
-                'googleSheets.enableReadAndWrite',
-                'If you want your ${whiteLabelText} apps to modify your Google sheets, make sure to select read and write access',
-                { whiteLabelText }
-              )}
-            </p>
-            <div>
-              <Radio
-                checked={options?.access_type?.value === 'read'}
-                disabled={authStatus === 'waiting_for_token' || isDisabled}
-                onClick={() => optionchanged('access_type', 'read')}
-                text={t('googleSheets.readOnly', 'Read only')}
-                helpText={t(
-                  'googleSheets.readDataFromSheets',
-                  'Your ${whiteLabelText} apps can only read data from Google sheets',
-                  { whiteLabelText }
-                )}
-              />
-              <Radio
-                checked={options?.access_type?.value === 'write'}
-                disabled={authStatus === 'waiting_for_token' || isDisabled}
-                onClick={() => optionchanged('access_type', 'write')}
-                text={t('googleSheets.readWrite', 'Read and write')}
-                helpText={t(
-                  'googleSheets.readModifySheets',
-                  'Your ${whiteLabelText} apps can read data from sheets, modify sheets, and more.',
-                  { whiteLabelText }
-                )}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      <GoogleSheetsAccessType
+        options={options}
+        optionchanged={optionchanged}
+        disabled={authStatus === 'waiting_for_token' || isDisabled}
+      />
       {options?.authentication_type?.value === 'oauth2' && selectedDataSource?.kind !== 'googlesheetsv2' && (
         <div className="row mt-3">
           <center>

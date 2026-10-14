@@ -1415,16 +1415,40 @@ export const hasBuilderRole = (roleObj) => {
   return false;
 };
 
+// Server's buildVersion(): <raw>-<edition>[-lts], and <raw> may carry -beta, so edition is the last segment.
+function getEditionFromVersion(version) {
+  if (!version) return null;
+  const withoutLts = version.trim().replace(/-lts$/i, '');
+  const segments = withoutLts.split('-');
+  return segments[segments.length - 1]?.toLowerCase();
+}
+
+export function getTooljetEditionFromVersion(version) {
+  const edition = getEditionFromVersion(version);
+  return edition === 'cloud' || edition === 'ee' ? edition : 'ce';
+}
+
 export function checkIfToolJetCloud(version) {
-  if (!version) return false;
-  const parsed = version.split('-');
-  return parsed[1] === 'cloud';
+  return getTooljetEditionFromVersion(version) === 'cloud';
 }
 
 export function checkIfToolJetEE(version) {
-  if (!version) return false;
-  const parsed = version.split('-');
-  return parsed[1] === 'ee';
+  return getTooljetEditionFromVersion(version) === 'ee';
+}
+
+export function resolveEditionSpecificDefaults(defaults, version) {
+  if (!defaults || typeof defaults !== 'object') return defaults;
+  const edition = getTooljetEditionFromVersion(version);
+  return Object.entries(defaults).reduce((acc, [key, entry]) => {
+    if (entry && typeof entry === 'object' && entry.editions && edition in entry.editions) {
+      // eslint-disable-next-line no-unused-vars
+      const { editions, ...rest } = entry;
+      acc[key] = { ...rest, value: entry.editions[edition] };
+    } else {
+      acc[key] = entry;
+    }
+    return acc;
+  }, {});
 }
 
 export const calculateDueDate = (currentPeriodEnd) => {

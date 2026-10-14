@@ -33,7 +33,12 @@
       "value": "read"
     },
     "authentication_type": {
-      "value": "oauth2"
+      "value": "oauth2",
+      "editions": {
+        "ce": "service_account",
+        "ee": "service_account",
+        "cloud": "oauth2"
+      }
     },
     "redirect_url": {
         "value": "http://localhost:8082/oauth2/authorize",
@@ -54,7 +59,12 @@
         "value": "authorization_code"
     },
     "oauth_type": {
-      "value": "custom_app"
+      "value": "custom_app",
+      "editions": {
+        "ce": "custom_app",
+        "ee": "custom_app",
+        "cloud": "tooljet_app"
+      }
     },
     "access_token_url": {
       "value": "https://oauth2.googleapis.com/token"
@@ -78,12 +88,6 @@
       ]
     },
     "oauth2": {
-      "sheets" : {
-        "label": "",
-        "key": "sheets",
-        "type": "react-component-google-sheets",
-        "description": "A component for google sheets"
-      },
       "oauth": {
         "key": "oauth",
         "type": "react-component-oauth",
@@ -122,18 +126,18 @@
       }
     },
     "service_account": {
-      "sheets" : {
-        "label": "",
-        "key": "sheets",
-        "type": "react-component-google-sheets",
-        "description": "A component for google sheets"
-      },
       "service_account_key": {
         "label": "Service account key",
         "key": "service_account_key",
         "type": "textarea",
         "description": "Enter JSON private key for service account",
-        "encrypted": true 
+        "encrypted": true
+      },
+      "sheets" : {
+        "label": "",
+        "key": "sheets",
+        "type": "react-component-google-sheets",
+        "description": "A component for google sheets"
       }
     }
   }
