@@ -1371,7 +1371,11 @@ export class TooljetDbTableOperationsService {
         if (isTimestampWithTimeZone())
           return {
             data_type,
-            column_default: this.addQuotesIfMissing(column_default),
+            // now() must stay an expression: quoted, Postgres would fix it to the table's creation time
+            column_default:
+              typeof column_default === 'string' && /^\s*(now\(\)|current_timestamp)\s*$/i.test(column_default)
+                ? column_default
+                : this.addQuotesIfMissing(column_default),
           };
         if (isJSONB()) {
           if (typeof column_default === 'object') {

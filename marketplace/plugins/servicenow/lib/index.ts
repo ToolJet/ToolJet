@@ -26,7 +26,7 @@ export default class Servicenow implements QueryService {
   private async authHeaders(
     sourceOptions: SourceOptions,
     context?: { user?: User; app?: App }
-  ): Promise<Record<string, string>> {
+  ): Promise<Record<string, string> | { needsOAuth: QueryResult }> {
     const baseHeaders: Record<string, string> = {};
 
     try {
@@ -35,8 +35,8 @@ export default class Servicenow implements QueryService {
       } as any);
 
       if (validated && validated.status === 'needs_oauth') {
-        // Let the caller handle initiating OAuth; surface an informative error here.
-        throw new QueryError('OAuth authorization required', 'OAuth flow must be completed for this datasource', {});
+        // No token for this user yet: hand the OAuth redirect back to the caller.
+        return { needsOAuth: validated };
       }
 
       const resolved = (validated && (validated.data as any)) || { headers: baseHeaders };
@@ -215,10 +215,11 @@ export default class Servicenow implements QueryService {
     context: { user?: User; app?: App } | undefined,
     method: string,
     params: Record<string, unknown>
-  ): Promise<unknown> {
+  ): Promise<unknown | { needsOAuth: QueryResult }> {
     const url = this.mcpEndpoint(sourceOptions);
     await validateUrlForSSRF(url);
     const authHeaders = await this.authHeaders(sourceOptions, context);
+    if ('needsOAuth' in authHeaders) return authHeaders;
     const baseHeaders: Record<string, string> = {
       ...authHeaders,
       'Content-Type': 'application/json',
@@ -440,9 +441,9 @@ export default class Servicenow implements QueryService {
 
         case 'list_workflows': {
           // Action Fabric MCP: enumerate available workflow tools (subflows).
-          const mcpResult = (await this.mcpRequest(sourceOptions, context, 'tools/list', {})) as {
-            tools?: Array<{ name?: string }>;
-          };
+          const listed = await this.mcpRequest(sourceOptions, context, 'tools/list', {});
+          if ((listed as any)?.needsOAuth) return this.patchNeedsOauth((listed as any).needsOAuth);
+          const mcpResult = listed as { tools?: Array<{ name?: string }> };
           let tools = Array.isArray(mcpResult?.tools) ? mcpResult.tools : [];
           const nameFilter = queryOptions.name_filter;
           if (nameFilter !== undefined && nameFilter !== null && `${nameFilter}` !== '') {
@@ -454,10 +455,12 @@ export default class Servicenow implements QueryService {
 
         case 'invoke_workflow': {
           // Action Fabric MCP: invoke a workflow tool (synchronous subflow).
-          const mcpResult = (await this.mcpRequest(sourceOptions, context, 'tools/call', {
+          const invoked = await this.mcpRequest(sourceOptions, context, 'tools/call', {
             name: queryOptions.workflow,
             arguments: this.parseBody(queryOptions.arguments),
-          })) as { content?: unknown; isError?: boolean } | undefined;
+          });
+          if ((invoked as any)?.needsOAuth) return this.patchNeedsOauth((invoked as any).needsOAuth);
+          const mcpResult = invoked as { content?: unknown; isError?: boolean } | undefined;
           if (mcpResult?.isError) {
             throw new QueryError(
               'Workflow invocation returned an error',
