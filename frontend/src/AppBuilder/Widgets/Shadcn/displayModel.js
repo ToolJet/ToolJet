@@ -302,10 +302,11 @@ const STATUS_TOKENS = {
   warning: 'var(--sc-warning)',
   pending: 'var(--sc-warning)',
   waiting: 'var(--sc-warning)',
-  'in progress': 'var(--sc-primary)',
+  // Work under way is the info blue, apart from success and warning whatever the brand (2026-10-14).
+  'in progress': 'var(--sc-chart-info)',
   active: 'var(--sc-primary)',
   current: 'var(--sc-primary)',
-  info: 'var(--sc-primary)',
+  info: 'var(--sc-chart-info)',
   primary: 'var(--sc-primary)',
   error: 'var(--sc-destructive)',
   failed: 'var(--sc-destructive)',

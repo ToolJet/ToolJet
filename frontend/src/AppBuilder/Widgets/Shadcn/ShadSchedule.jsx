@@ -30,7 +30,8 @@ const TONE_VAR = {
   success: 'var(--sc-success)',
   warning: 'var(--sc-warning)',
   danger: 'var(--sc-destructive)',
-  info: 'var(--sc-chart-2,var(--sc-primary))',
+  // A fixed blue, apart from success, warning and danger whatever the brand (as the chips and charts).
+  info: 'var(--sc-chart-info)',
   neutral: 'var(--sc-muted-foreground)',
 };
 const RESOURCES_PER_STEP = 50;

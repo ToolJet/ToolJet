@@ -313,7 +313,9 @@ const TONE_VAR = {
   success: 'var(--sc-success)',
   warning: 'var(--sc-warning)',
   danger: 'var(--sc-destructive)',
-  info: 'var(--sc-primary)',
+  // A fixed blue, as charts and the map use: in the brand colour, Booked and In progress read as Completed under a green
+  // theme and as Pending under an orange one (pet salon, helpdesk, 2026-10-14).
+  info: 'var(--sc-chart-info)',
   neutral: 'var(--sc-muted-foreground)',
 };
 

@@ -161,6 +161,8 @@ describe('timeline', () => {
   it('maps status words to theme colours, the author map first', () => {
     expect(statusColor('Done')).toBe('var(--sc-success)');
     expect(statusColor('failed')).toBe('var(--sc-destructive)');
+    // Work under way is the fixed info blue, apart from success under a green brand (2026-10-14).
+    expect(statusColor('In progress')).toBe('var(--sc-chart-info)');
     expect(statusColor('shipped', { Shipped: '#2563eb' })).toBe('#2563eb');
     expect(statusColor('unknown')).toBeUndefined();
     expect(statusColor({})).toBeUndefined();
