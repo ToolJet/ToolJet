@@ -82,6 +82,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   The resolver's raw joins add `deleted_at IS NULL` by hand since raw SQL skips TypeORM's automatic
   filter. The `(organization_id, table_name)` unique index is partial, so a dropped name is
   immediately reusable.
+- `findDependents` (the drop blocker and `/dependents` warning) scans every non-stub version of every app
+  type, drafts included - `apps.current_version_id` is the *released* version and `released_at` is never
+  written, so filtering on either hid drafts. Matches `options.table_id`, join tables (incl.
+  `join_table.from.name`) and SQL-mode queries by table name (`tableNamesInSqlQuery`).
 - "Owned table, not in this (environment, branch)" is always worded by `tableNotInEnvironmentMessage`
   (`relation-resolver.service.ts`) and names the table, never its logical id - `getRelation()`, the proxy,
   join and `resolveTable` all route through it.

@@ -2,8 +2,8 @@ import { App } from '@entities/app.entity';
 import { InternalTable } from '@entities/internal_table.entity';
 import { Injectable } from '@nestjs/common';
 import { isEmpty } from 'lodash';
-import { DataSource, EntityManager, Repository } from 'typeorm';
-import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
+import { Brackets, DataSource, EntityManager, Repository } from 'typeorm';
+import { findTenantSchema, tableNamesInSqlQuery } from 'src/helpers/tooljet_db.helper';
 
 // Shared between findTables and findDependents - a join_tables query references a table through
 // the joined table itself and through either side of each join condition, three depths plus
@@ -64,23 +64,32 @@ export class InternalTableRepository extends Repository<InternalTable> {
   }
 
   /**
-   * Apps (front-end, workflow, or module - same `apps` table, same query) whose current draft or
-   * any ever-released version has a query referencing `tableId`, org-wide. A floor, not a ceiling:
-   * only finds *query* references (`options.table_id` or a join condition), so a table id
-   * hardcoded in a RunJS query is invisible here.
+   * Apps (front-end, workflow, or module - same `apps` table, same query) with a query in any
+   * version referencing `tableId`, org-wide. A floor, not a ceiling:
+   * only finds *query* references (`options.table_id`, a join condition, or a SQL-mode query naming
+   * the table), so a table id hardcoded in a RunJS query is invisible here.
    *
    * `data_queries.options` is `json`, not `jsonb` - no containment operator, no GIN index - so this
    * prefilters in SQL with a `LIKE` on the id's text form (a v4 uuid substring cannot collide
    * accidentally) and verifies the exact reference in JS with the same walker `findTables` uses,
-   * rather than re-deriving the join-condition-scraping logic against SQL.
+   * rather than re-deriving the join-condition-scraping logic against SQL. SQL-mode queries name
+   * the table instead of holding its id, so they are prefiltered by a case-insensitive `LIKE` on the
+   * name (over-matches, then `tableNamesInSqlQuery` verifies) and matched exactly, as the query
+   * runner resolves them.
    *
-   * Version-scoped narrower than `findTables` (which scans every version for one app): a table
-   * referenced only by an abandoned old version of some other app must not alarm anyone here.
+   * Every non-stub version counts: `apps.current_version_id` is the *released* version (null until
+   * first release) and `app_versions.released_at` is never written, so filtering on either hid
+   * every draft and every superseded version and let the drop through.
    */
   async findDependents(
     tableId: string,
     organizationId: string
   ): Promise<{ count: number; dependents: TableDependent[] }> {
+    const table = await this.dataSource
+      .getRepository(InternalTable)
+      .findOne({ where: { id: tableId, organizationId }, select: ['tableName'] });
+    const tableName = table?.tableName;
+
     const rows = await this.dataSource
       .getRepository('data_queries')
       .createQueryBuilder('dq')
@@ -89,8 +98,16 @@ export class InternalTableRepository extends Repository<InternalTable> {
       .innerJoin('apps', 'a', 'a.id = av.app_id')
       .where('ds.kind = :kind', { kind: 'tooljetdb' })
       .andWhere('a.organization_id = :organizationId', { organizationId })
-      .andWhere('dq.options::text LIKE :tableIdLike', { tableIdLike: `%${tableId}%` })
-      .andWhere('(av.id = a.current_version_id OR av.released_at IS NOT NULL)')
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('dq.options::text LIKE :tableIdLike', { tableIdLike: `%${tableId}%` });
+          if (tableName)
+            qb.orWhere("dq.options->>'operation' = 'sql_execution' AND dq.options::text ILIKE :tableNameLike", {
+              tableNameLike: `%${tableName.replace(/[\\%_]/g, '\\$&')}%`,
+            });
+        })
+      )
+      .andWhere('av.is_stub = false')
       .select([
         'dq.id AS dq_id',
         'dq.name AS dq_name',
@@ -106,9 +123,13 @@ export class InternalTableRepository extends Repository<InternalTable> {
       const options = typeof row.dq_options === 'string' ? JSON.parse(row.dq_options) : row.dq_options;
       const referencedTableIds = new Set<string>();
       if (options?.table_id) referencedTableIds.add(options.table_id);
-      if (options?.operation === 'join_tables')
+      if (options?.operation === 'join_tables') {
+        // The primary table is only in join_table.from.name - join queries have no top-level table_id.
+        if (options?.join_table?.from?.name) referencedTableIds.add(options.join_table.from.name);
         addTablesInJoinOperation(referencedTableIds, options?.join_table?.joins || []);
-      if (!referencedTableIds.has(tableId)) continue;
+      }
+      if (!referencedTableIds.has(tableId) && !(tableName && tableNamesInSqlQuery(options).includes(tableName)))
+        continue;
 
       if (!byApp.has(row.app_id)) {
         byApp.set(row.app_id, { id: row.app_id, name: row.app_name, type: row.app_type, queries: [] });
