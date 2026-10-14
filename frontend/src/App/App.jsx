@@ -17,11 +17,11 @@ const TooljetDatabase = React.lazy(() => import('@/TooljetDatabase'));
 const ProfileSettingsPage = React.lazy(() => import('@/SettingsPage'));
 
 const MarketplacePage = React.lazy(() => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage'));
-const InstalledPlugins = React.lazy(
-  () => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage/InstalledPlugins')
+const InstalledPlugins = React.lazy(() =>
+  import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage/InstalledPlugins')
 );
-const MarketplacePlugins = React.lazy(
-  () => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage/MarketplacePlugins')
+const MarketplacePlugins = React.lazy(() =>
+  import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage/MarketplacePlugins')
 );
 
 const WorkspaceSettings = React.lazy(() => import('@/modules/WorkspaceSettings'));
@@ -65,6 +65,7 @@ import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
+import UpgradePlanModal from '@/modules/common/components/UpgradePlanModal';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -505,6 +506,7 @@ class AppComponent extends React.Component {
               </Routes>
             </BreadCrumbContext.Provider>
             <div id="modal-div" />
+            <UpgradePlanModal />
           </div>
 
           <Toast toastOptions={toastOptions} />

@@ -4,8 +4,8 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { authenticationService } from '@/_services';
-import { getWorkspaceId } from '@/_helpers/utils';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { openUpgradePlanModal } from '@/_stores/upgradePlanModalStore';
 
 const LegalReasonsErrorModal = ({
   showModal: propShowModal,
@@ -27,7 +27,6 @@ const LegalReasonsErrorModal = ({
     edition == 'ee'
       ? authenticationService.currentSessionValue?.super_admin
       : authenticationService.currentSessionValue?.admin;
-  const workspaceId = getWorkspaceId();
 
   useEffect(() => {
     setShowModal(propShowModal);
@@ -68,35 +67,26 @@ const LegalReasonsErrorModal = ({
             <Button className="cancel-btn" onClick={handleClose} data-cy="cancel-button">
               Cancel
             </Button>
-            {actionButtonAdmin &&
-              (edition === 'ee' ? (
-                <Button
-                  className="upgrade-btn"
-                  style={{ marginLeft: '5px', color: 'white', textDecoration: 'none' }}
-                  href="https://www.tooljet.com/pricing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-cy="upgrade-button"
-                >
-                  Upgrade
-                </Button>
-              ) : (
-                <Button
-                  className="upgrade-btn"
-                  style={{ marginLeft: '5px', color: 'white', textDecoration: 'none' }}
-                  autoFocus
-                  onClick={() => {
-                    posthogHelper.captureEvent('click_upgrade_plan', {
-                      workspace_id:
-                        authenticationService?.currentUserValue?.organization_id ||
-                        authenticationService?.currentSessionValue?.current_organization_id,
-                    });
-                    window.location.href = `/${workspaceId}/settings/subscription?currentTab=upgradePlan`;
-                  }}
-                >
-                  Upgrade
-                </Button>
-              ))}
+            {actionButtonAdmin && (
+              <Button
+                className="upgrade-btn"
+                style={{ marginLeft: '5px', color: 'white', textDecoration: 'none' }}
+                autoFocus
+                data-cy="upgrade-button"
+                onClick={() => {
+                  posthogHelper.captureEvent('click_upgrade_plan', {
+                    workspace_id:
+                      authenticationService?.currentUserValue?.organization_id ||
+                      authenticationService?.currentSessionValue?.current_organization_id,
+                  });
+                  // The pricing table takes over from here; this dialog only explains why.
+                  handleClose();
+                  openUpgradePlanModal();
+                }}
+              >
+                Upgrade
+              </Button>
+            )}
           </Modal.Footer>
         )}
       </Modal>
