@@ -6,7 +6,7 @@ services:
     command: ["--config=/etc/otelcol/config.yaml"]
     volumes:
       - ./otel-collector.yaml:/etc/otelcol/config.yaml:ro
-    ports: ["4317:4317", "4318:4318"]
+    ports: ["127.0.0.1:4317:4317", "127.0.0.1:4318:4318"]
     depends_on: [tempo, loki, prometheus]
 
   tempo:
@@ -15,7 +15,7 @@ services:
     volumes:
       - ./tempo.yaml:/etc/tempo.yaml:ro
       - tempo-data:/var/tempo
-    ports: ["3200:3200"]
+    ports: ["127.0.0.1:3200:3200"]
 
   loki:
     image: grafana/loki:3.3.2
@@ -23,7 +23,7 @@ services:
     volumes:
       - ./loki.yaml:/etc/loki/config.yaml:ro
       - loki-data:/loki
-    ports: ["3100:3100"]
+    ports: ["127.0.0.1:3100:3100"]
 
   prometheus:
     image: prom/prometheus:v3.1.0
@@ -33,7 +33,7 @@ services:
       - --enable-feature=exemplar-storage
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
-    ports: ["9090:9090"]
+    ports: ["127.0.0.1:9090:9090"]
 
   grafana:
     image: grafana/grafana:11.4.0
@@ -45,7 +45,7 @@ services:
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
-    ports: ["3900:3000"]
+    ports: ["127.0.0.1:3900:3000"]
     depends_on: [prometheus, loki, tempo]
 
 volumes:

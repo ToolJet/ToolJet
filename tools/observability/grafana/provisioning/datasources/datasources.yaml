@@ -36,7 +36,8 @@ datasources:
         datasourceUid: loki
         spanStartTimeShift: '-5m'
         spanEndTimeShift: '5m'
-        filterByTraceID: true
+        customQuery: true
+        query: '{$${__tags}} | trace_id="$${__span.traceId}"'
         tags:
           - { key: service.name, value: service_name }
       tracesToMetrics:

@@ -13,6 +13,16 @@ function redact(value: unknown): unknown {
   return out;
 }
 
+// Template route only: unmatched/middleware layers have no req.route, and the literal path carries ids.
+export function routeSpanName(request: {
+  method?: string;
+  route?: { path?: string };
+}): { name: string; route: string } | undefined {
+  const route = request.route?.path;
+  if (typeof route !== 'string' || !route.startsWith('/api/') || route === '/api/health') return undefined;
+  return { name: `${request.method ?? 'UNKNOWN_METHOD'} ${route}`, route };
+}
+
 export function requestSpanAttributes(request: { params?: Plain; query?: Plain }): Record<string, string> {
   const attrs: Record<string, string> = {};
   if (request.params && Object.keys(request.params).length)

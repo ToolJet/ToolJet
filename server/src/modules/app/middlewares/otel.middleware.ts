@@ -7,6 +7,7 @@ import { NextFunction } from 'express';
 import { Request, Response } from 'express';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import { routeSpanName } from '../../../otel/http-span';
 
 @Injectable()
 export class OtelMiddleware implements NestMiddleware {
@@ -27,13 +28,11 @@ export class OtelMiddleware implements NestMiddleware {
     }
 
     const span = trace.getSpan(context.active());
-    const route = req.route?.path || req.path || 'unknown_route';
-    const method = req.method || 'UNKNOWN_METHOD';
-
-    if (span && route.startsWith('/api/') && route !== '/api/health') {
-      span.updateName(`${method} ${route}`);
-      span.setAttribute('http.route', route);
-      span.setAttribute('http.method', method);
+    const named = routeSpanName(req);
+    if (span && named) {
+      span.updateName(named.name);
+      span.setAttribute('http.route', named.route);
+      span.setAttribute('http.method', req.method);
     }
 
     next();

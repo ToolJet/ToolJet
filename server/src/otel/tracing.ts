@@ -29,7 +29,13 @@ import { getTooljetEdition } from '../helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '../modules/app/constants';
 import { ATTR, ATTR_DEPLOYMENT_ENVIRONMENT_NAME, METRIC, deploymentEnvironmentName } from './semconv';
 import { shutdownOtelLogs } from './logs';
-import { outgoingHttpAttributes, redactUrlQuery, requestSpanAttributes, undiciRequestHook } from './http-span';
+import {
+  outgoingHttpAttributes,
+  redactUrlQuery,
+  requestSpanAttributes,
+  routeSpanName,
+  undiciRequestHook,
+} from './http-span';
 import { BaggageAttributesSpanProcessor, ExtractOnlyBaggagePropagator } from './baggage';
 import { UndiciInstrumentation } from '@opentelemetry/instrumentation-undici';
 
@@ -107,10 +113,10 @@ function createSDK(): NodeSDK {
       new UndiciInstrumentation({ requestHook: undiciRequestHook }),
       new ExpressInstrumentation({
         requestHook: (span: Span, { request }) => {
-          const path = request.route?.path || request.path || '';
-          if (path.startsWith('/api/') && path !== '/api/health') {
-            span.updateName(`${request.method} ${path}`);
-            span.setAttribute('http.route', path);
+          const named = routeSpanName(request);
+          if (named) {
+            span.updateName(named.name);
+            span.setAttribute('http.route', named.route);
             span.setAttribute('http.method', request.method);
             span.setAttributes(requestSpanAttributes(request));
           }

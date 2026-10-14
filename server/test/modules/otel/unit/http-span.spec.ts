@@ -1,4 +1,10 @@
-import { REDACTED, redactUrlQuery, outgoingHttpAttributes, requestSpanAttributes } from '@otel/http-span';
+import {
+  REDACTED,
+  redactUrlQuery,
+  outgoingHttpAttributes,
+  requestSpanAttributes,
+  routeSpanName,
+} from '@otel/http-span';
 
 describe('requestSpanAttributes', () => {
   it('never returns the request body', () => {
@@ -55,5 +61,21 @@ describe('outgoingHttpAttributes', () => {
   });
   it('is empty without a query', () => {
     expect(outgoingHttpAttributes({ path: '/x' })).toEqual({});
+  });
+});
+
+describe('routeSpanName', () => {
+  it('does not rename without a matched route (literal path carries ids)', () => {
+    expect(routeSpanName({ method: 'GET' })).toBeUndefined();
+  });
+  it('uses the route template', () => {
+    expect(routeSpanName({ method: 'GET', route: { path: '/api/apps/:id' } })).toEqual({
+      name: 'GET /api/apps/:id',
+      route: '/api/apps/:id',
+    });
+  });
+  it('skips non-api and health routes', () => {
+    expect(routeSpanName({ method: 'GET', route: { path: '/api/health' } })).toBeUndefined();
+    expect(routeSpanName({ method: 'GET', route: { path: '/assets' } })).toBeUndefined();
   });
 });
