@@ -605,6 +605,24 @@ describe('Card grid', () => {
 });
 
 describe('Record list and summary strip', () => {
+  // A Kanban with dynamic height (the pack default) grew to fit every card: a board of 40 loans stood 2,274px tall
+  // (a DeepSeek IT assets app, 2026-10-13). It now shrinks to its cards up to its drawn height; past that, each column
+  // scrolls inside it.
+  it('a dynamic-height Kanban grows only up to its drawn height, then its columns scroll', async () => {
+    const data = Array.from({ length: 40 }, (_, i) => ({ id: i, title: `Laptop ${i}`, status: 'out' }));
+    const board = await mountCase({
+      name: 'ShadKanban',
+      properties: { ...defaultsOf('ShadKanban'), data, columns: [{ id: 'out', title: 'Checked out' }], statusField: 'status' },
+      styles: styleDefaultsOf('ShadKanban'),
+      height: 420,
+    });
+    const list = [...document.querySelectorAll('div')].find((el) => el.className.includes('overflow-y-auto'));
+    expect(list).toBeTruthy();
+    const column = list.parentElement;
+    expect(column.style.maxHeight).toBe('420px');
+    board.unmount();
+  });
+
   // A plain list's selected row drew its 3px accent bar against the title: rows had 4px of side padding (a field
   // service app, 2026-10-13). A plain list whose rows can be selected pads them 12px, so the bar and tint have room.
   it('gives a selectable plain list room between the selection bar and the text', async () => {

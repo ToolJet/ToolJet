@@ -308,8 +308,12 @@ const KanbanColumn = ({
   collapsed,
   onCollapse,
   fixed,
+  maxHeight,
   minColumn = 200,
 }) => {
+  // A board that fits its content still stops at its drawn height (maxHeight): past it the column scrolls like a
+  // fixed board's. Without the cap, 40 loans stood a board 2,274px tall (2026-10-13).
+  const scrolls = fixed || !!maxHeight;
   const { setNodeRef, isOver } = useDroppable({
     id: `col-${column.id}`,
     data: { type: 'column', columnId: column.id },
@@ -322,7 +326,7 @@ const KanbanColumn = ({
   const [moreBelow, setMoreBelow] = useState(false);
   useEffect(() => {
     const el = listRef.current;
-    if (!fixed || !el) return undefined;
+    if (!scrolls || !el) return undefined;
     const check = () => setMoreBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 4);
     check();
     el.addEventListener('scroll', check, { passive: true });
@@ -332,7 +336,7 @@ const KanbanColumn = ({
       el.removeEventListener('scroll', check);
       observer.disconnect();
     };
-  }, [fixed, column.cards.length, shownCards]);
+  }, [scrolls, column.cards.length, shownCards]);
   // A collapsed column is a narrow strip: title read sideways and the count. It still takes dropped cards, and a
   // click opens it again.
   if (collapsed) {
@@ -378,15 +382,16 @@ const KanbanColumn = ({
       // width if narrower) before it scrolls; five 245px stages clipped their last column. Without one the columns
       // share the board, at least the minimum each: 200px, or 160px on a board of six or more stages (a seventh
       // stage was cut off at the right edge of a full-width board).
-      style={
-        width
+      style={{
+        ...(width
           ? { ...look.column, width, flex: `0 1 ${width}`, minWidth: `min(${width}, ${minColumn}px)` }
-          : { ...look.column, minWidth: `${minColumn}px` }
-      }
+          : { ...look.column, minWidth: `${minColumn}px` }),
+        ...(!fixed && maxHeight ? { maxHeight: `${maxHeight}px` } : {}),
+      }}
       className={cn(
         'group/col flex flex-col p-3 transition-shadow',
         look.columnFramed && 'border border-[color:var(--kb-column-border)]',
-        fixed && 'min-h-0 overflow-hidden',
+        scrolls && 'min-h-0 overflow-hidden',
         !width && 'flex-1',
         compact ? 'gap-1.5' : 'gap-2',
         isOver && 'ring-1 ring-border'
@@ -416,11 +421,11 @@ const KanbanColumn = ({
       </div>
       <div
         ref={listRef}
-        style={fixed && moreBelow ? BOTTOM_FADE : undefined}
+        style={scrolls && moreBelow ? BOTTOM_FADE : undefined}
         className={cn(
           'flex flex-col',
           compact ? 'gap-1.5' : 'gap-2',
-          fixed && '-mx-1 min-h-0 flex-1 overflow-y-auto px-1 [&>*]:shrink-0'
+          scrolls && '-mx-1 min-h-0 flex-1 overflow-y-auto px-1 [&>*]:shrink-0'
         )}
       >
         {column.cards.length ? (
@@ -822,6 +827,7 @@ export const ShadKanban = (props) => {
               onDelete={onDelete}
               onAdd={onAdd}
               fixed={fixed}
+              maxHeight={!fixed && Number(props.height) > 0 ? Number(props.height) : undefined}
               minColumn={columns.length >= 6 ? 160 : 200}
             />
           ))}
