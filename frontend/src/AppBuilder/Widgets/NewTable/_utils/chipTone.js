@@ -31,6 +31,8 @@ export const chipTone = (value) => {
   // Work under way, as In progress is: "In review" was amber in a claims list beside the same state in blue in the table
   // next to it (2026-10-14). "Needs review" and a bare "Review" still need attention.
   if (/^(in|under) review$/.test(text)) return 'info';
+  // Gear or a book that is out with someone, as Checked out is ("Out" was grey on a rental desk, 2026-10-14).
+  if (/^(out|on hire|hired out|lent out)$/.test(text)) return 'info';
   for (const [tone, words] of TONES) if (words.test(text)) return tone;
   return 'neutral';
 };

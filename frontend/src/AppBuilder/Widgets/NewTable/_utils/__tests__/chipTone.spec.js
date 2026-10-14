@@ -110,4 +110,9 @@ describe('chipTone, everyday operations states', () => {
     expect(chipTone('Cleared')).toBe('success');
     expect(chipTone('Not verified')).toBe('warning');
   });
+  it('reads Out and On hire as items out with someone', () => {
+    expect(chipTone('Out')).toBe('info');
+    expect(chipTone('On hire')).toBe('info');
+    expect(chipTone('Out of stock')).toBe('danger');
+  });
 });
