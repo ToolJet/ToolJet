@@ -59,6 +59,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FileButton',
   'FlexContainer',
   'Timeline',
+  'SvgImage',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',

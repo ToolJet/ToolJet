@@ -17,6 +17,7 @@ const HANDLE = 'svgimage1';
 const ID2 = 'svg2';
 const HANDLE2 = 'svgimage2';
 const LAYOUT_HEIGHT = 50;
+const OFFSET_HEIGHT = 96;
 const SHADOW = '1px 2px 3px 4px rgba(0, 0, 0, 0.5)';
 
 // Two distinguishable vectors: the assertions below key off the shape element, never off markup text.
@@ -25,12 +26,17 @@ const RECT_SVG =
 const CIRCLE_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="8" /></svg>';
 
+// D-05: visibility lives under properties (additional actions) with loading/disable/dynamic height;
+// alignment is the only remaining style.
 const defaultProperties = {
   data: binding(RECT_SVG),
+  loadingState: binding('{{false}}'),
+  visibility: binding('{{true}}'),
+  dynamicHeight: binding('{{false}}'),
   collapseWhenHidden: binding('{{false}}'),
+  disabledState: binding('{{false}}'),
 };
 const defaultStyles = {
-  visibility: binding('{{true}}'),
   alignment: binding('left'),
 };
 
@@ -39,11 +45,14 @@ const widget = createWidgetHarness({
   handle: HANDLE,
   id: ID,
   widgetHeight: LAYOUT_HEIGHT,
+  offsetHeight: OFFSET_HEIGHT,
   defaultProperties,
   defaultStyles,
 });
 
 const root = (container, handle = HANDLE) => container.querySelector(`[data-cy="${handle}"]`);
+const canvasNode = (container, handle = HANDLE) => container.querySelector(`[data-cy="draggable-widget-${handle}"]`);
+const loader = (container, handle = HANDLE) => root(container, handle)?.querySelector('.tj-widget-loader');
 const image = (container, handle = HANDLE) => root(container, handle)?.querySelector('[role="img"]');
 const shapes = (container, selector, handle = HANDLE) => image(container, handle).querySelectorAll(selector);
 const resolvedProperty = (key, id = ID) => store().getResolvedComponent(id, null, MODULE_ID)?.properties?.[key];
@@ -192,12 +201,12 @@ describe('SvgImage widget', () => {
       expect(root(container).style.display).toBe('');
       expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-      await setStyle('visibility', false);
+      await setProperty('visibility', false);
       await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
       expect(within(container).getByRole('img', { hidden: true })).toBe(imageNode);
       expect(shapes(container, 'rect')).toHaveLength(2);
 
-      await setStyle('visibility', true);
+      await setProperty('visibility', true);
       await waitFor(() => expect(root(container).style.display).toBe(''));
       expect(within(container).getByRole('img')).toBe(imageNode);
       expect(shapes(container, 'rect')).toHaveLength(2);
@@ -205,6 +214,82 @@ describe('SvgImage widget', () => {
       expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
     }
   );
+
+  test('[SvgImage-VIS-002] A saved app that still stores visibility under styles stays hidden', async () => {
+    // Break this catches: reading only properties.visibility so an app saved before the D-05 data
+    // migration (visibility under styles, no properties.visibility) pops its hidden Svg Images back
+    // on screen the moment the new build ships.
+    const definition = svgImageDefinition(ID, HANDLE);
+    delete definition.component.definition.properties.visibility;
+    definition.component.definition.styles.visibility = binding('{{false}}');
+    const { container } = widget.render({
+      extraComponents: { [ID]: definition },
+    });
+    await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
+    expect(within(container).getByRole('img', { hidden: true })).not.toBeNull();
+  });
+
+  test('[SvgImage-LOAD-001] Loading state swaps the vector for the shared loader and back', async () => {
+    // Break this catches: ignoring loadingState, unmounting the data-cy root while loading (so box
+    // shadow and the layout box vanish), or leaving the vector on screen behind the loader.
+    const { container } = widget.render({
+      afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'generalStyles'),
+    });
+    await within(container).findByRole('img');
+    expect(loader(container)).toBeNull();
+
+    await setProperty('loadingState', true);
+    await waitFor(() => expect(loader(container)).not.toBeNull());
+    expect(image(container)).toBeNull();
+    expect(root(container)).toHaveStyle({ height: `${LAYOUT_HEIGHT - 4}px`, boxShadow: SHADOW });
+    expect(canvasNode(container)).toHaveClass('disabled');
+
+    await setProperty('loadingState', false);
+    await waitFor(() => expect(loader(container)).toBeNull());
+    expect(shapes(container, 'rect')).toHaveLength(2);
+    expect(canvasNode(container)).not.toHaveClass('disabled');
+  });
+
+  test('[SvgImage-DIS-001] Disabled state marks the root and the canvas node without touching the vector', async () => {
+    // Break this catches: dropping the data-disabled hook (custom CSS / Cypress target) or breaking
+    // the shared RenderWidget `disabled` class, which is what actually greys the widget out.
+    const { container } = widget.render();
+    const imageNode = await within(container).findByRole('img');
+    expect(root(container)).toHaveAttribute('data-disabled', 'false');
+    expect(canvasNode(container)).not.toHaveClass('disabled');
+
+    await setProperty('disabledState', true);
+    await waitFor(() => expect(root(container)).toHaveAttribute('data-disabled', 'true'));
+    expect(canvasNode(container)).toHaveClass('disabled');
+    expect(image(container)).toBe(imageNode);
+    expect(shapes(container, 'rect')).toHaveLength(2);
+
+    await setProperty('disabledState', false);
+    await waitFor(() => expect(root(container)).toHaveAttribute('data-disabled', 'false'));
+    expect(canvasNode(container)).not.toHaveClass('disabled');
+  });
+
+  test('[SvgImage-SIZ-001] The vector scales to the widget box instead of its authored size', async () => {
+    // Break this catches: dropping the scoped scaling hook (class or 100% height) so Tabler's global
+    // `.icon` rule or the file's own width/height pins the vector at 20-24px regardless of widget size,
+    // and rewriting authored markup instead of overriding it with CSS.
+    const TABLER_SVG =
+      '<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1" /></svg>';
+    const { container } = widget.render({ properties: { data: binding(TABLER_SVG) } });
+    const imageNode = await within(container).findByRole('img');
+
+    // The scaling rule lives in svgImage.scss and is scoped to this hook; jsdom cannot lay out, so the
+    // hook plus the full-height content node are the DOM contract.
+    expect(imageNode).toHaveClass('svg-image-widget');
+    expect(imageNode).toHaveStyle({ height: '100%' });
+    expect(root(container)).toHaveStyle({ height: `${LAYOUT_HEIGHT - 4}px` });
+
+    // Authored markup is not rewritten: the override is CSS, so the sanitised data keeps its class and size.
+    const svg = imageNode.querySelector('svg');
+    expect(svg).toHaveClass('icon');
+    expect(svg).toHaveAttribute('width', '24');
+    expect(svg).toHaveAttribute('height', '24');
+  });
 
   test('[SvgImage-STY-001] Box shadow survives independent data, alignment, and visibility changes', async () => {
     // Break this catches: rebuilding the container's inline style on a property change without the
@@ -223,31 +308,103 @@ describe('SvgImage widget', () => {
     await waitFor(() => expect(image(container)).toHaveStyle({ justifyContent: 'center' }));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-    await setStyle('visibility', false);
+    await setProperty('visibility', false);
     await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-    await setStyle('visibility', true);
+    await setProperty('visibility', true);
     await waitFor(() => expect(root(container).style.display).toBe(''));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
   });
 
-  test('[SvgImage-API-001] SvgImage publishes no actions and no widget-owned exposed variables', async () => {
-    // Break this catches: re-introducing the exposedVariables entry removed by 5ee59e433d1, or
-    // wiring a CSA onto a widget documented and registered as having neither.
+  test('[SvgImage-API-001] Mount publishes the Svg Image state and action API', async () => {
+    // Break this catches: leaving the runtime API empty (the pre-D-05 shape), or omitting a shipped
+    // CSA/state key from the public component handle after mount.
     const { container } = widget.render();
     await within(container).findByRole('img');
 
+    await waitFor(() =>
+      expect(widget.exposed()).toMatchObject({
+        id: ID,
+        isVisible: true,
+        isLoading: false,
+        isDisabled: false,
+        setVisibility: expect.any(Function),
+        setLoading: expect.any(Function),
+        setDisable: expect.any(Function),
+      })
+    );
+    expect(frontendConfig.actions.map((action) => action.handle)).toEqual([
+      'setVisibility',
+      'setLoading',
+      'setDisable',
+    ]);
     expect(frontendConfig.events).toEqual({});
-    expect(frontendConfig.exposedVariables).toEqual({});
+  });
 
-    const exposed = widget.exposed() ?? {};
-    expect(Object.values(exposed).some((value) => typeof value === 'function')).toBe(false);
-    expect(Object.keys(exposed).filter((key) => key !== 'id')).toEqual([]);
+  test('[SvgImage-STA-001] State actions boolean-coerce and publish their DOM state', async () => {
+    // Break this catches: publishing without re-rendering, re-rendering without publishing, or
+    // retaining arbitrary truthy/falsy arguments instead of public booleans.
+    const { container } = widget.render();
+    const imageNode = await within(container).findByRole('img');
+    await waitFor(() => expect(widget.exposed().isVisible).toBe(true));
 
-    await setProperty('data', CIRCLE_SVG);
-    await waitFor(() => expect(shapes(container, 'circle')).toHaveLength(1));
-    expect(Object.keys(widget.exposed() ?? {}).filter((key) => key !== 'id')).toEqual([]);
+    await widget.act('setVisibility', 0);
+    expect(widget.exposed().isVisible).toBe(false);
+    expect(root(container)).toHaveStyle({ display: 'none' });
+    expect(within(container).getByRole('img', { hidden: true })).toBe(imageNode);
+
+    await widget.act('setVisibility', 'shown');
+    expect(widget.exposed().isVisible).toBe(true);
+    expect(root(container).style.display).toBe('');
+
+    await widget.act('setLoading', { truthy: true });
+    expect(widget.exposed().isLoading).toBe(true);
+    await waitFor(() => expect(loader(container)).not.toBeNull());
+    expect(image(container)).toBeNull();
+
+    await widget.act('setLoading', '');
+    expect(widget.exposed().isLoading).toBe(false);
+    await waitFor(() => expect(loader(container)).toBeNull());
+    expect(shapes(container, 'rect')).toHaveLength(2);
+
+    await widget.act('setDisable', ['truthy']);
+    expect(widget.exposed().isDisabled).toBe(true);
+    expect(root(container)).toHaveAttribute('data-disabled', 'true');
+    expect(canvasNode(container)).toHaveClass('disabled');
+
+    await widget.act('setDisable', null);
+    expect(widget.exposed().isDisabled).toBe(false);
+    expect(root(container)).toHaveAttribute('data-disabled', 'false');
+    expect(canvasNode(container)).not.toHaveClass('disabled');
+  });
+
+  test('[SvgImage-STA-002] A later property change wins over earlier CSA state', async () => {
+    // Break this catches: dropping the owning-property dependency from the local-state sync so a
+    // genuine visibility/loading/disabled binding change never reaches the DOM after a CSA call.
+    const { container } = widget.render();
+    await within(container).findByRole('img');
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
+    await setProperty('visibility', false);
+    await setProperty('visibility', true);
+    await waitFor(() => expect(root(container).style.display).toBe(''));
+    expect(widget.exposed().isVisible).toBe(true);
+
+    await widget.act('setLoading', true);
+    await waitFor(() => expect(loader(container)).not.toBeNull());
+    await setProperty('loadingState', true);
+    await setProperty('loadingState', false);
+    await waitFor(() => expect(loader(container)).toBeNull());
+    expect(widget.exposed().isLoading).toBe(false);
+
+    await widget.act('setDisable', true);
+    await waitFor(() => expect(root(container)).toHaveAttribute('data-disabled', 'true'));
+    await setProperty('disabledState', true);
+    await setProperty('disabledState', false);
+    await waitFor(() => expect(root(container)).toHaveAttribute('data-disabled', 'false'));
+    expect(widget.exposed().isDisabled).toBe(false);
   });
 
   test('[SvgImage-A11Y-001] The image node keeps its role and component id across changes', async () => {
@@ -265,7 +422,7 @@ describe('SvgImage widget', () => {
     await waitFor(() => expect(image(container)).toHaveStyle({ justifyContent: 'center' }));
     expect(within(container).getByRole('img')).toBe(imageNode);
 
-    await setStyle('visibility', false);
+    await setProperty('visibility', false);
     await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
     expect(within(container).getByRole('img', { hidden: true })).toHaveAttribute('id', `component-${ID}`);
   });
@@ -289,7 +446,7 @@ describe('SvgImage widget', () => {
 
     await setProperty('data', CIRCLE_SVG, ID);
     await setStyle('alignment', 'center', ID);
-    await setStyle('visibility', false, ID);
+    await setProperty('visibility', false, ID);
     await waitFor(() => expect(root(container, HANDLE)).toHaveStyle({ display: 'none' }));
     expect(shapes(container, 'circle', HANDLE2)).toHaveLength(1);
     expect(image(container, HANDLE2)).toBe(second);
@@ -312,7 +469,11 @@ describe('SvgImage widget', () => {
       defaultSize: { width: 4, height: 50 },
       properties: {
         data: { type: 'code', validation: { schema: { type: 'string' } } },
-        collapseWhenHidden: { type: 'toggle', validation: { schema: { type: 'boolean' }, defaultValue: false } },
+        loadingState: { type: 'toggle', validation: { defaultValue: false }, section: 'additionalActions' },
+        visibility: { type: 'toggle', validation: { defaultValue: true }, section: 'additionalActions' },
+        dynamicHeight: { type: 'toggle', validation: { defaultValue: false }, section: 'additionalActions' },
+        collapseWhenHidden: { type: 'toggle', validation: { defaultValue: false }, section: 'additionalActions' },
+        disabledState: { type: 'toggle', validation: { defaultValue: false }, section: 'additionalActions' },
       },
       others: {
         showOnDesktop: { type: 'toggle' },
@@ -321,18 +482,88 @@ describe('SvgImage widget', () => {
       events: {},
       exposedVariables: {},
       styles: {
-        visibility: { type: 'toggle', validation: { defaultValue: true } },
         alignment: { type: 'alignButtons', validation: { defaultValue: 'left' } },
       },
       definition: {
         others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+        properties: {
+          loadingState: { value: '{{false}}' },
+          visibility: { value: '{{true}}' },
+          dynamicHeight: { value: '{{false}}' },
+          collapseWhenHidden: { value: '{{false}}' },
+          disabledState: { value: '{{false}}' },
+        },
         events: [],
-        styles: { visibility: { value: '{{true}}' }, alignment: { value: 'left' } },
+        styles: { alignment: { value: 'left' } },
       },
     });
+    // D-05: visibility moved off styles; a stale styles entry would double-register the toggle.
+    expect(frontendConfig.styles.visibility).toBeUndefined();
+    expect(frontendConfig.definition.styles.visibility).toBeUndefined();
     expect(frontendConfig.properties.data.validation.defaultValue).toContain('<svg');
     expect(frontendConfig.definition.properties.data.value).toContain('<svg');
-    expect(frontendConfig.definition.properties.collapseWhenHidden).toEqual({ value: '{{false}}' });
-    expect(frontendConfig.actions ?? []).toEqual([]);
+    expect(frontendConfig.actions.map((action) => action.handle)).toEqual([
+      'setVisibility',
+      'setLoading',
+      'setDisable',
+    ]);
+  });
+});
+
+describe('SvgImage widget: dynamic height', () => {
+  let offsetParentDescriptor;
+  beforeEach(() => {
+    // useDynamicHeight treats `offsetParent === null` as "under a hidden ancestor" and takes the
+    // ResizeObserver-recovery branch instead of scheduling a reflow; jsdom's offsetParent is always
+    // null, so without this override the test would exercise the wrong branch.
+    offsetParentDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetParent');
+    Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
+      configurable: true,
+      get() {
+        return this.parentElement;
+      },
+    });
+    widget.setup();
+  });
+  afterEach(() => {
+    Object.defineProperty(HTMLElement.prototype, 'offsetParent', offsetParentDescriptor);
+    widget.teardown();
+  });
+
+  const tempLayout = () => widget.session.store.read((state) => state.temporaryLayouts[ID]);
+
+  test('[SvgImage-DYN-001] In view mode dynamic height frees the box and sizes the vector by width', async () => {
+    // Break this catches: keeping the fixed box/`height: 100%` hook while dynamic height is on (the
+    // vector would never grow with the viewBox ratio, D-06), or wiring the hook without the reflow so
+    // the shared layout never learns the new height.
+    const { container } = widget.render({
+      properties: { dynamicHeight: binding('{{true}}') },
+      currentMode: 'view',
+    });
+    const imageNode = await within(container).findByRole('img');
+    const layoutElement = canvasNode(container);
+    layoutElement.classList.add(`ele-${ID}`);
+    layoutElement.dataset.layoutContext = 'root';
+
+    expect(imageNode).toHaveClass('svg-image-widget', 'svg-image-widget--dynamic');
+    expect(root(container)).toHaveStyle({ height: 'auto' });
+
+    await widget.session.store.act((state) => state.clearTemporaryLayouts());
+    await setProperty('data', CIRCLE_SVG);
+    await waitFor(() => expect(shapes(container, 'circle')).toHaveLength(1));
+    await waitFor(() => expect(tempLayout()?.height).toBe(OFFSET_HEIGHT));
+  });
+
+  test('[SvgImage-DYN-002] Dynamic height only applies in view mode, never on the editor canvas', async () => {
+    // Break this catches: dropping the `currentMode === 'view'` half of the gate so the editor box
+    // collapses to the vector while authoring.
+    const { container } = widget.render({
+      properties: { dynamicHeight: binding('{{true}}') },
+      currentMode: 'edit',
+    });
+    const imageNode = await within(container).findByRole('img');
+
+    expect(imageNode).not.toHaveClass('svg-image-widget--dynamic');
+    expect(root(container)).toHaveStyle({ height: `${LAYOUT_HEIGHT - 4}px` });
   });
 });
