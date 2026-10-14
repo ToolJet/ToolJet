@@ -5,6 +5,8 @@ import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getSubpath } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+// The AI-era empty canvas ships with the AI builder (ee); without it the cards below stay.
+import { EmptyCanvasAiState } from '@ee/modules/AiBuilder/components/CanvasBuild';
 
 const NoComponentCanvasContainer = () => {
   const sampleDataSource = useStore((state) => state.sampleDataSource, shallow);
@@ -12,6 +14,7 @@ const NoComponentCanvasContainer = () => {
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded);
+  const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled);
 
   const queryBoxText = sampleDataSource
     ? 'Connect to your data source or use our sample data source to start playing around!'
@@ -33,6 +36,10 @@ const NoComponentCanvasContainer = () => {
     createDataQuery(source, true, { query });
     setPreviewData(null);
   };
+
+  if (typeof EmptyCanvasAiState === 'function' && aiFeaturesEnabled !== false) {
+    return <EmptyCanvasAiState onInviteCollaborators={openAddUserWorkspaceSetting} />;
+  }
 
   return (
     <div style={{ paddingTop: '10%' }}>
