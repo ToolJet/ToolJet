@@ -1,10 +1,11 @@
+import { LAYOUT_NUMERIC_FIELDS, LAYOUT_POSITION_FIELDS, LAYOUT_SIZE_FIELDS, LAYOUT_TYPES } from '../catalog';
 import { Issue, LayoutWrite, Rule, RuleContext } from '../types';
 
-export const LAYOUT_TYPES = ['desktop', 'mobile'] as const;
+export { LAYOUT_TYPES };
 
-const SIZE_FIELDS = ['width', 'height'] as const;
-const POSITION_FIELDS = ['top', 'left'] as const;
-const NUMERIC_FIELDS = [...POSITION_FIELDS, ...SIZE_FIELDS, 'widthPx'] as const;
+const SIZE_FIELDS = LAYOUT_SIZE_FIELDS;
+const POSITION_FIELDS = LAYOUT_POSITION_FIELDS;
+const NUMERIC_FIELDS = LAYOUT_NUMERIC_FIELDS;
 
 function labelOf(write: LayoutWrite): string {
   return write.data?.componentId ?? write.id;

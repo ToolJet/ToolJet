@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
-import { AppValidationException } from '@modules/app-validation/exception';
+import { AppValidationException } from '@modules/app-validation/core/exception';
 import { Issue } from '@modules/app-validation/types';
 
 function hostFor(response: { status: jest.Mock; json: jest.Mock }) {

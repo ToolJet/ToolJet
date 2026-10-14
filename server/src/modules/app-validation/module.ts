@@ -1,7 +1,7 @@
 import { DynamicModule } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SubModule } from '@modules/app/sub-module';
-import { ValidationWarningsInterceptor } from './warnings.interceptor';
+import { ValidationWarningsInterceptor } from './core/warnings.interceptor';
 
 export class AppValidationModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {

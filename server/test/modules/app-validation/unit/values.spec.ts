@@ -5,7 +5,7 @@ import {
   hasBraces,
   plainValueFit,
   removeNestedDoubleCurlyBraces,
-} from '@modules/app-validation/values';
+} from '@modules/app-validation/core/values';
 
 describe('app-validation values', () => {
   describe('ported resolver helpers (must match frontend/src/AppBuilder/_stores/utils.js)', () => {

@@ -9,7 +9,7 @@ import {
   eventSourceExists,
   eventTargetTypeValid,
 } from '@modules/app-validation/rules/event.rules';
-import { runRules } from '@modules/app-validation/runner';
+import { runRules } from '@modules/app-validation/core/runner';
 import { EventWrite, RuleContext } from '@modules/app-validation/types';
 import { VersionIndex } from '@modules/app-validation/version-index';
 import { templateAppVersions } from '../helpers/templates';

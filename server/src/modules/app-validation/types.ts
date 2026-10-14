@@ -1,4 +1,4 @@
-import { VALIDATION_MODES, WRITE_SOURCES } from './constants';
+import { VALIDATION_MODES, WRITE_SOURCES } from './core/constants';
 import type { VersionIndex } from './version-index';
 
 export type ValidationMode = (typeof VALIDATION_MODES)[number];

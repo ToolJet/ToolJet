@@ -1,6 +1,6 @@
 import { lastValueFrom, of } from 'rxjs';
-import { ValidationWarningsInterceptor } from '@modules/app-validation/warnings.interceptor';
-import { VALIDATION_WARNINGS_LOCALS_KEY } from '@modules/app-validation/constants';
+import { ValidationWarningsInterceptor } from '@modules/app-validation/core/warnings.interceptor';
+import { VALIDATION_WARNINGS_LOCALS_KEY } from '@modules/app-validation/core/constants';
 
 const warning = {
   code: 'COMPONENT_UNKNOWN_SETTING',

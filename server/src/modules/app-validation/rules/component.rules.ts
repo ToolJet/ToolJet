@@ -1,6 +1,7 @@
 import { isPlainObject } from 'lodash';
 import {
   allowedOptionValues,
+  COMPONENT_NAME_PATTERN,
   isKnownComponentType,
   SECTION_TO_COLUMN,
   SETTING_SECTIONS,
@@ -9,12 +10,12 @@ import {
   valueSchemaOf,
 } from '../catalog';
 import { ComponentWrite, Issue, Rule, RuleContext, Severity, WriteSource } from '../types';
-import { findBrokenBraces, hasBraces, plainValueFit } from '../values';
+import { findBrokenBraces, hasBraces, plainValueFit } from '../core/values';
 
 // Matches the editor's rename validation (Inspector.jsx -> validateQueryName): code references
 // components as `components.<name>`, so names stay identifier-like. Imports are the main way
 // spaced names get in today - the editor itself never allows them.
-export const COMPONENT_NAME_PATTERN = /^[A-Za-z0-9_-]+$/;
+export { COMPONENT_NAME_PATTERN };
 
 // Sources that reproduce stored data: dangling references there are defects to report,
 // not reasons to reject the whole app.

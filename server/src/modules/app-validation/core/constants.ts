@@ -9,7 +9,7 @@ export const WRITE_SOURCES = ['ui', 'pat', 'ext_api', 'import', 'git', 'ai', 'co
 // Change a source to 'enforce' here to start rejecting invalid data from it.
 export const VALIDATION_MODE_BY_SOURCE: Record<WriteSource, ValidationMode> = {
   ui: 'report',
-  pat: 'report',
+  pat: 'enforce',
   ext_api: 'report',
   import: 'report',
   git: 'report',

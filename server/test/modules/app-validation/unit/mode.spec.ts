@@ -1,5 +1,5 @@
-import { getMode, resolveSource } from '@modules/app-validation/mode';
-import { VALIDATION_MODE_BY_SOURCE } from '@modules/app-validation/constants';
+import { getMode, resolveSource } from '@modules/app-validation/core/mode';
+import { VALIDATION_MODE_BY_SOURCE } from '@modules/app-validation/core/constants';
 
 describe('app-validation mode', () => {
   describe('getMode', () => {
@@ -7,6 +7,16 @@ describe('app-validation mode', () => {
       for (const source of Object.keys(VALIDATION_MODE_BY_SOURCE) as (keyof typeof VALIDATION_MODE_BY_SOURCE)[]) {
         expect(getMode(source)).toBe(VALIDATION_MODE_BY_SOURCE[source]);
       }
+    });
+
+    it('enforces PAT writes and keeps every other source on report', () => {
+      // Product decision: agent/MCP traffic (PAT) is blocked on invalid writes from day 1,
+      // humans and bulk paths stay observe-only until the rollout flips them.
+      expect(VALIDATION_MODE_BY_SOURCE.pat).toBe('enforce');
+      const otherModes = Object.entries(VALIDATION_MODE_BY_SOURCE)
+        .filter(([source]) => source !== 'pat')
+        .map(([, mode]) => mode);
+      expect(otherModes.every((mode) => mode === 'report')).toBe(true);
     });
 
     it('applies a per-source mode', () => {

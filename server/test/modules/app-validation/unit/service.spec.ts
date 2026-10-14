@@ -1,8 +1,8 @@
 import { RequestContext } from '@modules/request-context/service';
 import { AppValidationService } from '@modules/app-validation/service';
-import { AppValidationException } from '@modules/app-validation/exception';
-import { VALIDATION_WARNINGS_LOCALS_KEY } from '@modules/app-validation/constants';
-import { isBlocking, runRules } from '@modules/app-validation/runner';
+import { AppValidationException } from '@modules/app-validation/core/exception';
+import { VALIDATION_WARNINGS_LOCALS_KEY } from '@modules/app-validation/core/constants';
+import { isBlocking, runRules } from '@modules/app-validation/core/runner';
 import { Issue, Rule, ValidationMode, WriteSource } from '@modules/app-validation/types';
 import { VersionIndex } from '@modules/app-validation/version-index';
 

@@ -1,9 +1,10 @@
+import { PAGE_HANDLE_PATTERN } from '../catalog';
 import { PageWrite, Rule, RuleContext, Severity, WriteSource } from '../types';
-import { isLiterallyTrue } from '../values';
+import { isLiterallyTrue } from '../core/values';
 
 // The editor's validateKebabCase (frontend/src/_helpers/utils.js): the handle is the URL
 // path segment of the page, so it stays kebab-case.
-export const PAGE_HANDLE_PATTERN = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
+export { PAGE_HANDLE_PATTERN };
 
 // ToolJet's own templates ship pages whose handle is the raw name ("Product Inventory"
 // in the inventory-management and supply-chain templates), and the viewer still routes

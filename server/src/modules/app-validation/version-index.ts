@@ -5,7 +5,7 @@ import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { EventHandler } from '@entities/event_handler.entity';
 import { Page } from '@entities/page.entity';
-import { actionEntityRef } from './event-actions';
+import { actionEntityRef } from './catalog/actions';
 
 export interface IndexedComponent {
   id: string;

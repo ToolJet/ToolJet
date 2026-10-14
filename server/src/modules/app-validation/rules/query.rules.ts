@@ -1,8 +1,9 @@
+import { QUERY_NAME_PATTERN } from '../catalog';
 import { QueryWrite, Rule, RuleContext, Severity, WriteSource } from '../types';
 
 // Matches the editor's validateQueryName (frontend/src/_helpers/utils.js): queries are
 // referenced from code as `queries.<name>`, so names stay identifier-like.
-export const QUERY_NAME_PATTERN = /^[A-Za-z0-9_-]+$/;
+export { QUERY_NAME_PATTERN };
 
 const BULK_SOURCES: ReadonlySet<WriteSource> = new Set(['import', 'git', 'copy', 'restore']);
 

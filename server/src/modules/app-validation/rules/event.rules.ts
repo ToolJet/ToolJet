@@ -1,10 +1,17 @@
-import { widgetEvents } from '../catalog';
-import { actionEntityRef, isKnownActionId } from '../event-actions';
+import {
+  actionEntityRef,
+  DATA_QUERY_EVENT_IDS,
+  DYNAMIC_EVENT_SOURCES,
+  EVENT_TARGETS,
+  isKnownActionId,
+  PAGE_EVENT_IDS_BY_TYPE,
+  widgetEvents,
+} from '../catalog';
 import { EventWrite, Rule, RuleContext, Severity, WriteSource } from '../types';
-import { hasBraces } from '../values';
+import { hasBraces } from '../core/values';
 import type { VersionIndex } from '../version-index';
 
-export const EVENT_TARGETS = ['component', 'page', 'data_query', 'table_column', 'table_action'] as const;
+export { DATA_QUERY_EVENT_IDS, EVENT_TARGETS };
 
 // Sources that reproduce stored data. ToolJet's own templates contain orphaned events
 // (their source was deleted but the rows were exported), so a dangling reference in bulk
@@ -170,20 +177,12 @@ export const eventNoSwitchPageInModule: Rule<EventWrite> = {
 };
 
 // ModuleViewer events come from the module's own contract and custom widgets declare
-// nothing, so a static list can't judge them.
-const DYNAMIC_EVENT_SOURCES = new Set(['ModuleViewer', 'ModuleContainer', 'CustomComponent']);
+// nothing, so a static list can't judge them (catalog components.json dynamicEventSources).
 
-// What a page fires depends on its type (AddNewPagePopup.jsx / SettingsModal.jsx):
-// 'default' pages fire onPageLoad, 'custom' pages render a clickable element and fire
-// onClick, and url/app/group pages never fire events - but attaching one to them is the
-// editor's own doing, so no type entry means the rule stays silent.
-const PAGE_EVENT_IDS_BY_TYPE: Record<string, readonly string[]> = {
-  default: ['onPageLoad'],
-  custom: ['onClick'],
-};
-
-// The complete list the query editor offers (frontend QueryManager/constants.js).
-export const DATA_QUERY_EVENT_IDS = ['onDataQuerySuccess', 'onDataQueryFailure'] as const;
+// What a page fires depends on its type (catalog pages.json eventsByType, mirrored from
+// pageEventsMeta.js): 'default' pages fire onPageLoad, 'custom' pages render a clickable
+// element and fire onClick, and url/app/group pages never fire events - but attaching one
+// to them is the editor's own doing, so no type entry means the rule stays silent.
 
 interface FiredBySource {
   declared: readonly string[];

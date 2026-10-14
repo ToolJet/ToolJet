@@ -1,6 +1,6 @@
 import { isPlainObject } from 'lodash';
 import { Issue, Rule, RuleContext, VersionSettingsWrite } from '../types';
-import { isLiterallyTrue } from '../values';
+import { isLiterallyTrue } from '../core/values';
 
 function touchedField(write: VersionSettingsWrite, field: string): boolean {
   if (write.op !== 'update' || !write.touched) return true;

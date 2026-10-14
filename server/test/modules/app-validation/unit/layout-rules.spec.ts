@@ -5,7 +5,7 @@ import {
   layoutRules,
   layoutTypeKnown,
 } from '@modules/app-validation/rules/layout.rules';
-import { runRules } from '@modules/app-validation/runner';
+import { runRules } from '@modules/app-validation/core/runner';
 import { LayoutWrite, RuleContext } from '@modules/app-validation/types';
 import { VersionIndex } from '@modules/app-validation/version-index';
 import { templateAppVersions } from '../helpers/templates';

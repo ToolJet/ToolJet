@@ -1,6 +1,6 @@
 import { componentTypes } from '@modules/apps/services/widget-config';
-import { ComponentData } from './types';
-import { ValueSchema } from './values';
+import { ValueSchema } from '../core/values';
+import { ComponentData } from '../types';
 
 // Rule data comes from the server's widget config, the same objects used to fill in defaults on load.
 
