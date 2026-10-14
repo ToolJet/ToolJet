@@ -1393,7 +1393,8 @@ export class AppImportExportService {
     tooljetVersion = '',
     cloning = false,
     manager?: EntityManager,
-    branchId?: string
+    branchId?: string,
+    isTemplateApp = false
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
@@ -1457,7 +1458,8 @@ export class AppImportExportService {
         undefined,
         branchId,
         cloning,
-        isGitApp
+        isGitApp,
+        isTemplateApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
       await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
@@ -1908,6 +1910,7 @@ export class AppImportExportService {
     branchId?: string,
     cloning = false,
     isGitApp = false,
+    isTemplateApp = false,
     source?: WriteSource
   ): Promise<AppResourceMappings> {
     // Old version without app version
@@ -2030,7 +2033,8 @@ export class AppImportExportService {
       createNewVersion,
       branchId,
       isGitApp || cloning || !!branchId,
-      isGitApp
+      isGitApp,
+      isTemplateApp
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -3545,6 +3549,11 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  // EE-only
+  protected async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
+    return globalSettings;
+  }
+
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
     let pageSettings = {};
     if (importedVersion.pageSettings) {
@@ -3733,7 +3742,8 @@ export class AppImportExportService {
     createNewVersion?: boolean,
     branchId?: string,
     useBranchVersionType = false,
-    isGitApp = false
+    isGitApp = false,
+    isTemplateApp = false
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -3931,7 +3941,10 @@ export class AppImportExportService {
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
-        version.globalSettings = appVersion.globalSettings;
+        // Only templates bring their theme into the workspace; every other import keeps the settings as exported
+        version.globalSettings = isTemplateApp
+          ? await this.importTheme(manager, organization.id, appVersion.globalSettings)
+          : appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation ?? true;

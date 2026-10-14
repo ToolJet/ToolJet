@@ -1653,23 +1653,37 @@ export class AppsUtilService implements IAppsUtilService {
     return false;
   }
 
-  async checkModuleInUseByApps(moduleApp: App, manager: EntityManager): Promise<void> {
+  async checkModuleInUseByApps(moduleApp: App, manager: EntityManager, branchId?: string): Promise<void> {
     if (!moduleApp?.co_relation_id) return;
     try {
-      // co_relation_id = stable module identity across branches. Self-ref excluded so a
-      // module can reference itself without blocking its own deletion.
-      const consumingApps = await manager
+      // co_relation_id = stable module identity across branches AND git-cloned workspaces.
+      // The delete only removes the module's version on the current branch, so only consumers
+      // on THAT branch would break — scope the check to branchId to match (this also pins the
+      // workspace, since a branch belongs to one). Without it the check swept every branch and
+      // every git-cloned workspace. Fall back to organizationId when no branch is in play.
+      // app.name is the legacy name column — NULL for apps created/pulled after names moved to
+      // app_versions — so read the branch-scoped app_versions.app_name (its NULL dropped only
+      // older apps, listing stale names and silently skipping newer consumers). Self-ref
+      // excluded so a module can reference itself without blocking its own deletion.
+      const query = manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
         .innerJoin('page.appVersion', 'appVersion')
         .innerJoin(App, 'app', 'app.id = appVersion.appId')
-        .select('DISTINCT app.name', 'appName')
+        .select('DISTINCT COALESCE(appVersion.app_name, app.name)', 'appName')
         .where('component.type = :type', { type: 'ModuleViewer' })
         .andWhere(`(component.properties::jsonb -> 'moduleAppId' ->> 'value') = :coRel`, {
           coRel: moduleApp.co_relation_id,
         })
-        .andWhere('app.id != :selfId', { selfId: moduleApp.id })
-        .getRawMany();
+        .andWhere('app.id != :selfId', { selfId: moduleApp.id });
+
+      if (branchId) {
+        query.andWhere('appVersion.branchId = :branchId', { branchId });
+      } else {
+        query.andWhere('app.organizationId = :orgId', { orgId: moduleApp.organizationId });
+      }
+
+      const consumingApps = await query.getRawMany();
 
       const appNames = consumingApps.map((r) => r.appName).filter(Boolean);
       if (appNames.length > 0) {
