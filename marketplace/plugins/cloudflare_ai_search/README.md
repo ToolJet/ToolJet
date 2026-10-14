@@ -1,7 +1,7 @@
 
 # Cloudflare AI Search
 
-Documentation on: https://docs.tooljet.com/docs/data-sources/cloudflare_ai_search
+Documentation on: https://docs.tooljet.com/docs/marketplace/plugins/cloudflare-ai-search
 
 The Cloudflare AI Search datasource lets you query Cloudflare AI Search instances from ToolJet.
 
