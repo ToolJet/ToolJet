@@ -25,6 +25,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Heads up',
       },
@@ -35,6 +36,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -55,6 +57,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -67,6 +70,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -78,6 +82,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -99,6 +104,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -112,6 +118,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -123,6 +130,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -134,6 +142,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -170,6 +179,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -193,6 +203,7 @@ export const shadAlertConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -204,6 +215,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -213,6 +225,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -222,6 +235,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -231,6 +245,7 @@ export const shadAlertConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -248,6 +263,7 @@ export const shadAlertConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

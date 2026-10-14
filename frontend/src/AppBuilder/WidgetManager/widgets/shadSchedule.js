@@ -26,6 +26,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -37,6 +38,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -48,6 +50,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'resource',
       },
@@ -58,6 +61,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'start',
       },
@@ -68,6 +72,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'end',
       },
@@ -78,6 +83,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'title',
       },
@@ -88,6 +94,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -98,6 +105,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'status',
       },
@@ -108,6 +116,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'id',
       },
@@ -128,6 +137,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'hours',
       },
@@ -140,6 +150,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -158,6 +169,7 @@ export const shadScheduleConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
         defaultValue: 8,
       },
@@ -176,6 +188,7 @@ export const shadScheduleConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
         defaultValue: 18,
       },
@@ -186,6 +199,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 30,
       },
@@ -196,6 +210,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 7,
       },
@@ -216,6 +231,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '12h',
       },
@@ -228,6 +244,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -238,6 +255,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 168,
       },
@@ -248,6 +266,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 56,
       },
@@ -258,6 +277,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -268,6 +288,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -278,6 +299,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No resources to schedule',
       },
@@ -288,6 +310,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -299,6 +322,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -320,6 +344,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -333,6 +358,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -344,6 +370,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -355,6 +382,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -391,6 +419,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -421,6 +450,7 @@ export const shadScheduleConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -432,6 +462,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -441,6 +472,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -450,6 +482,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -459,6 +492,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -468,6 +502,7 @@ export const shadScheduleConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -485,6 +520,7 @@ export const shadScheduleConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

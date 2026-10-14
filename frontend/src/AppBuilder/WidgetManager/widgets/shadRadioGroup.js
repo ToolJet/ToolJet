@@ -25,6 +25,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -35,6 +36,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -45,6 +47,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -73,6 +76,7 @@ export const shadRadioGroupConfig = {
               type: 'object',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -83,6 +87,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -93,6 +98,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -104,6 +110,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -115,6 +122,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -126,6 +134,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -162,6 +171,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -203,6 +213,7 @@ export const shadRadioGroupConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -214,6 +225,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -223,6 +235,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -232,6 +245,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -241,6 +255,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -250,6 +265,7 @@ export const shadRadioGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

@@ -26,6 +26,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Password',
       },
@@ -36,6 +37,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -46,6 +48,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -56,6 +59,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -66,6 +70,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -76,6 +81,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -86,6 +92,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -97,6 +104,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -108,6 +116,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -119,6 +128,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -155,6 +165,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -217,6 +228,7 @@ export const shadPasswordInputConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -228,6 +240,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -237,6 +250,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -246,6 +260,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -255,6 +270,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -264,6 +280,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -273,6 +290,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -282,6 +300,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -291,6 +310,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -308,6 +328,7 @@ export const shadPasswordInputConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -317,6 +338,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -326,6 +348,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -335,6 +358,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -344,6 +368,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -353,6 +378,7 @@ export const shadPasswordInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

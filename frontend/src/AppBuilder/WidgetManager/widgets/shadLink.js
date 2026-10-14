@@ -26,6 +26,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'View details',
       },
@@ -36,6 +37,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -56,6 +58,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'new',
       },
@@ -82,6 +85,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'on-hover',
       },
@@ -94,6 +98,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -104,6 +109,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 14,
       },
@@ -132,6 +138,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'medium',
       },
@@ -144,6 +151,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -165,6 +173,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -178,6 +187,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -189,6 +199,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -200,6 +211,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -236,6 +248,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -266,6 +279,7 @@ export const shadLinkConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -277,6 +291,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -286,6 +301,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -295,6 +311,7 @@ export const shadLinkConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'left',
       },

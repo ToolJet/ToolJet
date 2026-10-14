@@ -26,6 +26,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Heading',
       },
@@ -54,6 +55,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'h2',
       },
@@ -66,6 +68,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -77,6 +80,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -98,6 +102,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -111,6 +116,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -122,6 +128,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -133,6 +140,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -169,6 +177,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -199,6 +208,7 @@ export const shadHeadingConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -210,6 +220,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -219,6 +230,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'left',
       },
@@ -251,6 +263,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'theme',
       },
@@ -287,6 +300,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -305,6 +319,7 @@ export const shadHeadingConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -332,6 +347,7 @@ export const shadHeadingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'none',
       },
@@ -350,6 +366,7 @@ export const shadHeadingConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

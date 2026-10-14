@@ -26,6 +26,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -37,6 +38,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'hour',
       },
@@ -47,6 +49,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'day',
       },
@@ -57,6 +60,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'tickets',
       },
@@ -67,6 +71,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -78,6 +83,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -89,6 +95,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -107,6 +114,7 @@ export const shadHeatmapChartConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 3,
       },
@@ -135,6 +143,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'number',
       },
@@ -147,6 +156,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'USD',
       },
@@ -157,6 +167,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -167,6 +178,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -177,6 +189,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No data',
       },
@@ -187,6 +200,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -197,6 +211,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -218,6 +233,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -231,6 +247,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -242,6 +259,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -253,6 +271,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -289,6 +308,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -319,6 +339,7 @@ export const shadHeatmapChartConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -330,6 +351,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -339,6 +361,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -348,6 +371,7 @@ export const shadHeatmapChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

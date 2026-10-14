@@ -26,6 +26,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -37,6 +38,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'month',
       },
@@ -55,6 +57,7 @@ export const shadLineChartConfig = {
               type: 'array',
             },
           ],
+          optional: true,
         },
         defaultValue: 'revenue',
       },
@@ -79,6 +82,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'monotone',
       },
@@ -91,6 +95,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -109,6 +114,7 @@ export const shadLineChartConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 2,
       },
@@ -127,6 +133,7 @@ export const shadLineChartConfig = {
               type: 'array',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -146,6 +153,7 @@ export const shadLineChartConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -157,6 +165,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -185,6 +194,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'number',
       },
@@ -197,6 +207,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'USD',
       },
@@ -207,6 +218,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -217,6 +229,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -227,6 +240,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No data',
       },
@@ -237,6 +251,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -247,6 +262,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -257,6 +273,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -275,6 +292,7 @@ export const shadLineChartConfig = {
               type: 'array',
             },
           ],
+          optional: true,
         },
         defaultValue: {},
       },
@@ -286,6 +304,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -297,6 +316,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -318,6 +338,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -331,6 +352,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -342,6 +364,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -353,6 +376,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -389,6 +413,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -419,6 +444,7 @@ export const shadLineChartConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -430,6 +456,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -439,6 +466,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -448,6 +476,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -457,6 +486,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -466,6 +496,7 @@ export const shadLineChartConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

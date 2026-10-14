@@ -26,6 +26,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -36,6 +37,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -46,6 +48,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '#6366f1',
       },
@@ -56,6 +59,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Pick a color',
       },
@@ -66,6 +70,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -77,6 +82,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -87,6 +93,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -97,6 +104,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -117,6 +125,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'field',
       },
@@ -129,6 +138,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -140,6 +150,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -151,6 +162,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -162,6 +174,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -173,6 +186,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -209,6 +223,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -242,6 +257,7 @@ export const shadColorPickerConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -253,6 +269,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -262,6 +279,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -271,6 +289,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -280,6 +299,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -289,6 +309,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -298,6 +319,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -307,6 +329,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -324,6 +347,7 @@ export const shadColorPickerConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -333,6 +357,7 @@ export const shadColorPickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

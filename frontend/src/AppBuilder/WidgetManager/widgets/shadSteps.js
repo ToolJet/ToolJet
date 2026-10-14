@@ -26,6 +26,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -45,6 +46,7 @@ export const shadStepsConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 1,
       },
@@ -55,6 +57,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -75,6 +78,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'horizontal',
       },
@@ -97,6 +101,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'numbers',
       },
@@ -109,6 +114,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -120,6 +126,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -141,6 +148,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -154,6 +162,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -165,6 +174,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -176,6 +186,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -212,6 +223,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -239,6 +251,7 @@ export const shadStepsConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -250,6 +263,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -259,6 +273,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -268,6 +283,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -277,6 +293,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -286,6 +303,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -295,6 +313,7 @@ export const shadStepsConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

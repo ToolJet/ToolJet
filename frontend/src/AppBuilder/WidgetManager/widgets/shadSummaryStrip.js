@@ -26,6 +26,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -63,6 +64,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'auto',
       },
@@ -73,6 +75,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'USD',
       },
@@ -97,6 +100,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'percent',
       },
@@ -119,6 +123,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'panel',
       },
@@ -145,6 +150,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -167,6 +173,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'left',
       },
@@ -179,6 +186,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -190,6 +198,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -211,6 +220,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -224,6 +234,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -235,6 +246,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -246,6 +258,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -282,6 +295,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -305,6 +319,7 @@ export const shadSummaryStripConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -316,6 +331,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -325,6 +341,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -334,6 +351,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -343,6 +361,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -352,6 +371,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -361,6 +381,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -378,6 +399,7 @@ export const shadSummaryStripConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -409,6 +431,7 @@ export const shadSummaryStripConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'theme',
       },

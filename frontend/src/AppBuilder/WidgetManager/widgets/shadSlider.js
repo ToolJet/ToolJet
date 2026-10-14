@@ -26,6 +26,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -36,6 +37,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -46,6 +48,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 0,
       },
@@ -56,6 +59,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 100,
       },
@@ -66,6 +70,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 1,
       },
@@ -84,6 +89,7 @@ export const shadSliderConfig = {
               type: 'array',
             },
           ],
+          optional: true,
         },
         defaultValue: 50,
       },
@@ -94,6 +100,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -105,6 +112,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -116,6 +124,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -127,6 +136,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -163,6 +173,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -190,6 +201,7 @@ export const shadSliderConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -201,6 +213,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -210,6 +223,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -219,6 +233,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -228,6 +243,7 @@ export const shadSliderConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

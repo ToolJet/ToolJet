@@ -25,6 +25,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -35,6 +36,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -45,6 +47,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -56,6 +59,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Select',
       },
@@ -83,6 +87,7 @@ export const shadSelectConfig = {
               type: 'object',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -93,6 +98,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -104,6 +110,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -115,6 +122,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -126,6 +134,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -162,6 +171,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -209,6 +219,7 @@ export const shadSelectConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -220,6 +231,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -229,6 +241,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -238,6 +251,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -247,6 +261,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -256,6 +271,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -265,6 +281,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -274,6 +291,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -283,6 +301,7 @@ export const shadSelectConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -300,6 +319,7 @@ export const shadSelectConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

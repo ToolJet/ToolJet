@@ -26,6 +26,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Date and time',
       },
@@ -36,6 +37,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -46,6 +48,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Pick a date and time',
       },
@@ -64,6 +67,7 @@ export const shadDateTimePickerConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -74,6 +78,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'DD MMM YYYY',
       },
@@ -95,6 +100,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '12h',
       },
@@ -107,6 +113,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 5,
       },
@@ -117,6 +124,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -127,6 +135,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -137,6 +146,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -148,6 +158,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -159,6 +170,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -170,6 +182,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -181,6 +194,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -217,6 +231,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -264,6 +279,7 @@ export const shadDateTimePickerConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -275,6 +291,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -284,6 +301,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -293,6 +311,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -302,6 +321,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -311,6 +331,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -320,6 +341,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -329,6 +351,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -338,6 +361,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -355,6 +379,7 @@ export const shadDateTimePickerConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -364,6 +389,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -373,6 +399,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -382,6 +409,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -391,6 +419,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -400,6 +429,7 @@ export const shadDateTimePickerConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

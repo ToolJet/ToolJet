@@ -21,19 +21,21 @@ export const flexContainerConfig = {
       options: [
         { displayName: 'Plain', value: 'none' },
         { displayName: 'Ant card', value: 'antCard' },
-        { displayName: 'ToolJet UI 2.0 card', value: 'shadcnCard' },
+        { displayName: 'Card', value: 'shadcnCard' },
       ],
       validation: { schema: { type: 'string' }, defaultValue: 'none' },
     },
+    // Optional: a title or description bound to a query reads undefined until the query answers, and the card draws
+    // nothing for it; required, every page load logged "received undefined" for each card (2026-10-15).
     cardTitle: {
       type: 'code',
       displayName: 'Card title',
-      validation: { schema: { type: 'string' }, defaultValue: '' },
+      validation: { schema: { type: 'string', optional: true }, defaultValue: '' },
     },
     cardExtra: {
       type: 'code',
-      displayName: 'Card extra (Ant: top right; UI 2.0: description)',
-      validation: { schema: { type: 'string' }, defaultValue: '' },
+      displayName: 'Card description',
+      validation: { schema: { type: 'string', optional: true }, defaultValue: '' },
     },
     direction: {
       type: 'switch',

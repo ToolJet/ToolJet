@@ -26,6 +26,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Verification code',
       },
@@ -36,6 +37,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -46,6 +48,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 6,
       },
@@ -66,6 +69,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'numeric',
       },
@@ -78,6 +82,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -98,6 +103,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'joined',
       },
@@ -110,6 +116,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -120,6 +127,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -130,6 +138,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -140,6 +149,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -151,6 +161,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -162,6 +173,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -173,6 +185,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -209,6 +222,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -271,6 +285,7 @@ export const shadOtpInputConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -282,6 +297,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -291,6 +307,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -300,6 +317,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -309,6 +327,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -318,6 +337,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -327,6 +347,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -336,6 +357,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -345,6 +367,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -362,6 +385,7 @@ export const shadOtpInputConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -371,6 +395,7 @@ export const shadOtpInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -388,6 +413,7 @@ export const shadOtpInputConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

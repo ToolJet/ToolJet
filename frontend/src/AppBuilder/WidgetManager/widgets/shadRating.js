@@ -26,6 +26,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -36,6 +37,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -54,6 +56,7 @@ export const shadRatingConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 4,
       },
@@ -72,6 +75,7 @@ export const shadRatingConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: 5,
       },
@@ -96,6 +100,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'star',
       },
@@ -122,6 +127,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -134,6 +140,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -144,6 +151,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -154,6 +162,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -164,6 +173,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -174,6 +184,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -185,6 +196,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -196,6 +208,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -207,6 +220,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -218,6 +232,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -229,6 +244,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -265,6 +281,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -303,6 +320,7 @@ export const shadRatingConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -314,6 +332,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -323,6 +342,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -332,6 +352,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -341,6 +362,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -350,6 +372,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -359,6 +382,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -368,6 +392,7 @@ export const shadRatingConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

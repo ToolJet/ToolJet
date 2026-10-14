@@ -26,6 +26,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -36,6 +37,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -46,6 +48,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -71,6 +74,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'single',
       },
@@ -100,6 +104,7 @@ export const shadButtonGroupConfig = {
               type: 'object',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -110,6 +115,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -138,6 +144,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'outline',
       },
@@ -164,6 +171,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -186,6 +194,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'horizontal',
       },
@@ -198,6 +207,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -208,6 +218,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -219,6 +230,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -230,6 +242,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -241,6 +254,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -252,6 +266,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -288,6 +303,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -329,6 +345,7 @@ export const shadButtonGroupConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -340,6 +357,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -349,6 +367,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -358,6 +377,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -367,6 +387,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -376,6 +397,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -385,6 +407,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -394,6 +417,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -403,6 +427,7 @@ export const shadButtonGroupConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -420,6 +445,7 @@ export const shadButtonGroupConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

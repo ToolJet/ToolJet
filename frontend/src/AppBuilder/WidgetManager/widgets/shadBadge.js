@@ -25,6 +25,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Badge',
       },
@@ -61,6 +62,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -73,6 +75,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -94,6 +97,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -107,6 +111,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -118,6 +123,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -129,6 +135,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -165,6 +172,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -188,6 +196,7 @@ export const shadBadgeConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -199,6 +208,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -208,6 +218,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -217,6 +228,7 @@ export const shadBadgeConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -234,6 +246,7 @@ export const shadBadgeConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

@@ -25,6 +25,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Checkbox',
       },
@@ -35,6 +36,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -45,6 +47,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -55,6 +58,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -66,6 +70,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -77,6 +82,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -88,6 +94,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -124,6 +131,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -168,6 +176,7 @@ export const shadCheckboxConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -179,6 +188,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -188,6 +198,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -197,6 +208,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -206,6 +218,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -215,6 +228,7 @@ export const shadCheckboxConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

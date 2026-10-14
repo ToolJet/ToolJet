@@ -26,6 +26,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Total revenue',
       },
@@ -44,6 +45,7 @@ export const shadStatConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
         defaultValue: '$1,250.00',
       },
@@ -76,6 +78,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'auto',
       },
@@ -88,6 +91,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'USD',
       },
@@ -98,6 +102,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -122,6 +127,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'up',
       },
@@ -134,6 +140,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -144,6 +151,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -154,6 +162,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -178,6 +187,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'right',
       },
@@ -204,6 +214,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'square',
       },
@@ -224,6 +235,7 @@ export const shadStatConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -244,6 +256,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'area',
       },
@@ -264,6 +277,7 @@ export const shadStatConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -274,6 +288,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -298,6 +313,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -310,6 +326,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -320,6 +337,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -331,6 +349,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -352,6 +371,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -365,6 +385,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -376,6 +397,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -387,6 +409,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -423,6 +446,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -446,6 +470,7 @@ export const shadStatConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -457,6 +482,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -466,6 +492,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -483,6 +510,7 @@ export const shadStatConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -492,6 +520,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -501,6 +530,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -510,6 +540,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -519,6 +550,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -528,6 +560,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -537,6 +570,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -546,6 +580,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -555,6 +590,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -564,6 +600,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -595,6 +632,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'theme',
       },
@@ -623,6 +661,7 @@ export const shadStatConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'none',
       },
@@ -641,6 +680,7 @@ export const shadStatConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

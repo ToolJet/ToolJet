@@ -34,6 +34,7 @@ export const shadKeyValueConfig = {
               type: 'object',
             },
           ],
+          optional: true,
         },
         defaultValue: {},
       },
@@ -63,6 +64,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '1',
       },
@@ -85,6 +87,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'inline',
       },
@@ -105,6 +108,7 @@ export const shadKeyValueConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '40%',
       },
@@ -115,6 +119,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -125,6 +130,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '—',
       },
@@ -135,6 +141,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'USD',
       },
@@ -145,6 +152,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'en-US',
       },
@@ -155,6 +163,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'DD MMM YYYY',
       },
@@ -165,6 +174,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'object',
+          optional: true,
         },
         defaultValue: {},
       },
@@ -176,6 +186,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -186,6 +197,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -197,6 +209,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -218,6 +231,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -231,6 +245,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -242,6 +257,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -253,6 +269,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -289,6 +306,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -316,6 +334,7 @@ export const shadKeyValueConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -327,6 +346,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -336,6 +356,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -345,6 +366,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -354,6 +376,7 @@ export const shadKeyValueConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

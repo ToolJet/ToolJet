@@ -35,6 +35,7 @@ export const shadSeparatorConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'horizontal',
       },
@@ -47,6 +48,7 @@ export const shadSeparatorConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -58,6 +60,7 @@ export const shadSeparatorConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -69,6 +72,7 @@ export const shadSeparatorConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -80,6 +84,7 @@ export const shadSeparatorConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -116,6 +121,7 @@ export const shadSeparatorConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -139,6 +145,7 @@ export const shadSeparatorConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -150,6 +157,7 @@ export const shadSeparatorConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -167,6 +175,7 @@ export const shadSeparatorConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

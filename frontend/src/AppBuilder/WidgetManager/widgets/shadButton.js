@@ -25,6 +25,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Button',
       },
@@ -61,6 +62,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -87,6 +89,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'default',
       },
@@ -99,6 +102,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -109,6 +113,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -120,6 +125,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -131,6 +137,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -142,6 +149,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -178,6 +186,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -208,6 +217,7 @@ export const shadButtonConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -219,6 +229,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -228,6 +239,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -237,6 +249,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -246,6 +259,7 @@ export const shadButtonConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -263,6 +277,7 @@ export const shadButtonConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },

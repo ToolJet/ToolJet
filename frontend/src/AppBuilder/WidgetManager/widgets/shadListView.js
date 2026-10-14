@@ -99,6 +99,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -120,6 +121,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'list',
       },
@@ -132,6 +134,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 3,
       },
@@ -142,6 +145,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 72,
       },
@@ -152,6 +156,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 8,
       },
@@ -162,6 +167,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'id',
       },
@@ -172,6 +178,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -182,6 +189,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -192,6 +200,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -202,6 +211,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 10,
       },
@@ -212,6 +222,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -222,6 +233,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'number',
+          optional: true,
         },
         defaultValue: 0,
       },
@@ -232,6 +244,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'No items',
       },
@@ -242,6 +255,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -253,6 +267,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -274,6 +289,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'spinner',
       },
@@ -287,6 +303,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -298,6 +315,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -309,6 +327,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -345,6 +364,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -378,6 +398,7 @@ export const shadListViewConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -389,6 +410,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -398,6 +420,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -407,6 +430,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -416,6 +440,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -425,6 +450,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -434,6 +460,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -443,6 +470,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -460,6 +488,7 @@ export const shadListViewConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -479,6 +508,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'plain',
       },
@@ -507,6 +537,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'none',
       },
@@ -525,6 +556,7 @@ export const shadListViewConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -534,6 +566,7 @@ export const shadListViewConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },

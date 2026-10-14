@@ -26,6 +26,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'Amount',
       },
@@ -36,6 +37,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '',
       },
@@ -46,6 +48,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: '0.00',
       },
@@ -64,6 +67,7 @@ export const shadCurrencyInputConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
         defaultValue: 1250,
       },
@@ -74,6 +78,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'USD',
       },
@@ -84,6 +89,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'array',
+          optional: true,
         },
         defaultValue: [],
       },
@@ -95,6 +101,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'en-US',
       },
@@ -114,6 +121,7 @@ export const shadCurrencyInputConfig = {
               type: 'string',
             },
           ],
+          optional: true,
         },
         defaultValue: '',
       },
@@ -138,6 +146,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
         defaultValue: 'symbol',
       },
@@ -150,6 +159,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -161,6 +171,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: true,
       },
@@ -172,6 +183,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -183,6 +195,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'boolean',
+          optional: true,
         },
         defaultValue: false,
       },
@@ -219,6 +232,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
       section: 'additionalActions',
@@ -276,6 +290,7 @@ export const shadCurrencyInputConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
@@ -287,6 +302,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -296,6 +312,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -305,6 +322,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -314,6 +332,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -323,6 +342,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -332,6 +352,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -341,6 +362,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -350,6 +372,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -367,6 +390,7 @@ export const shadCurrencyInputConfig = {
               type: 'number',
             },
           ],
+          optional: true,
         },
       },
     },
@@ -376,6 +400,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -385,6 +410,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -394,6 +420,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -403,6 +430,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -412,6 +440,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -421,6 +450,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
@@ -430,6 +460,7 @@ export const shadCurrencyInputConfig = {
       validation: {
         schema: {
           type: 'string',
+          optional: true,
         },
       },
     },
