@@ -41,19 +41,8 @@ describe('DropdownV2 sortArray', () => {
     );
   });
 
-  /**
-   * PENDING A PRODUCTION FIX — kept as `test.failing` so the approved
-   * guarantee is recorded and the day someone fixes it, this file says so.
-   *
-   * `sortArray` sorts IN PLACE (`arr.sort(...)`), so it reorders the caller's
-   * array rather than returning a new one. DropdownV2, MultiselectV2 and
-   * TagsInput all hand it a memoised `selectOptions`; two call sites in
-   * Inspector/Components/Select.jsx already work around it by passing
-   * `[...options]`, which is the tell. The fix is `[...arr].sort(...)` in both
-   * branches of utils.js, at which point this test starts passing and the
-   * `.failing` marker must be dropped.
-   */
-  test.failing('[DropdownV2-OPT-007] sorting leaves the caller’s array untouched', () => {
+  // Fixed on 2026-09-30: `sortArray` now copies before sorting, so this is a live guarantee.
+  test('[DropdownV2-OPT-007] sorting leaves the caller’s array untouched', () => {
     const options = buildFrozenOptions();
 
     sortArray(options, 'asc');

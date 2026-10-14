@@ -6,6 +6,7 @@ import { IconX } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import {
   getLabelFontSize,
   getLabelHeight,
@@ -80,6 +81,9 @@ export const BaseInput = ({
   } = styles;
 
   const { label, placeholder } = properties;
+  const { contextPath } = useSubcontainerContext();
+  // A DOM id is unique per document, so a repeated row needs its own or every label points at row 1.
+  const domId = `component-${id}${contextPath.map((segment) => `-${segment.index}`).join('')}`;
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -96,15 +100,15 @@ export const BaseInput = ({
   const computedIconColor = shouldUsePlaceholderTextColorForIcon
     ? placeholderTextColor
     : iconColor !== '#CFD3D859'
-      ? iconColor
-      : 'var(--icons-weak-disabled)';
+    ? iconColor
+    : 'var(--icons-weak-disabled)';
 
   const inputStyles = {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disable || loading
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)',
+      ? 'var(--text-disabled)'
+      : 'var(--text-primary)',
     textOverflow: 'ellipsis',
     backgroundColor: 'inherit',
     ...(shouldOverridePlaceholderTextColor && { '--cc-placeholder-text': placeholderTextColor }),
@@ -134,11 +138,11 @@ export const BaseInput = ({
         ? '30px'
         : '10px'
       : defaultAlignment === 'top' && hasLabel
-        ? // Half the label's own height: the button is positioned against the whole widget,
-          // so it must be pushed down by half of whatever the top-aligned label consumes to
-          // land on the middle of the field. A fixed 10px was only correct at the 12px default.
-          `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)`
-        : '50%';
+      ? // Half the label's own height: the button is positioned against the whole widget,
+        // so it must be pushed down by half of whatever the top-aligned label consumes to
+        // land on the middle of the field. A fixed 10px was only correct at the 12px default.
+        `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)`
+      : '50%';
   const clearButtonTransform = inputType === 'textarea' ? 'none' : 'translateY(-50%)';
   const clearButton = shouldShowClearBtn ? (
     <button
@@ -197,7 +201,7 @@ export const BaseInput = ({
           labelWidth={labelWidth}
           top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
           widthType={widthType}
-          inputId={`component-${id}`}
+          inputId={domId}
           fontSize={labelFontSizeValue}
           classes={{
             labelContainer: cn({
@@ -224,23 +228,23 @@ export const BaseInput = ({
               !isValid && showValidationError
                 ? 'var(--cc-error-systemStatus)'
                 : isFocused
-                  ? accentColor != '4368E3'
-                    ? accentColor
-                    : 'var(--primary-accent-strong)'
-                  : borderColor != '#CCD1D5'
-                    ? borderColor
-                    : disable || loading
-                      ? '1px solid var(--borders-disabled-on-white)'
-                      : 'var(--borders-default)',
+                ? accentColor != '4368E3'
+                  ? accentColor
+                  : 'var(--primary-accent-strong)'
+                : borderColor != '#CCD1D5'
+                ? borderColor
+                : disable || loading
+                ? '1px solid var(--borders-disabled-on-white)'
+                : 'var(--borders-default)',
             '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
             backgroundColor:
               backgroundColor != '#fff'
                 ? backgroundColor
                 : disable || loading
-                  ? darkMode
-                    ? 'var(--surfaces-app-bg-default)'
-                    : 'var(--surfaces-surface-03)'
-                  : 'var(--surfaces-surface-01)',
+                ? darkMode
+                  ? 'var(--surfaces-app-bg-default)'
+                  : 'var(--surfaces-surface-03)'
+                : 'var(--surfaces-surface-01)',
             boxShadow,
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
             ...(defaultAlignment === 'top' &&
@@ -286,7 +290,7 @@ export const BaseInput = ({
             placeholder={placeholder}
             style={finalStyles}
             {...additionalInputProps}
-            id={`component-${id}`}
+            id={domId}
             disabled={disable || loading}
             aria-disabled={disable || loading}
             aria-busy={loading}

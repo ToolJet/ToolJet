@@ -38,7 +38,12 @@ export const CustomComponent = (props) => {
   useEffect(() => {
     messageEventListenerRef.current = (e) => {
       try {
-        if (e.data.from === 'customComponent' && e.data.componentId === id) {
+        // Every row of a List View shares this id, so only the sending iframe identifies the sender.
+        if (
+          e.data.from === 'customComponent' &&
+          e.data.componentId === id &&
+          e.source === iFrameRef.current?.contentWindow
+        ) {
           if (e.data.message === 'UPDATE_DATA') {
             setCustomProps({ ...customPropRef.current, ...e.data.updatedObj });
           } else if (e.data.message === 'RUN_QUERY') {

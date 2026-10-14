@@ -76,7 +76,7 @@ export const TableRow = ({
         const cellBackgroundColor =
           pinnedPosition && [undefined, null, '', 'inherit', 'transparent'].includes(resolvedCellBackgroundColor)
             ? 'var(--cc-table-pinned-column-bg, var(--cc-surface1-surface))'
-            : (resolvedCellBackgroundColor ?? 'inherit');
+            : resolvedCellBackgroundColor ?? 'inherit';
         const cellStyles = {
           backgroundColor: cellBackgroundColor,
           justifyContent: isButtonColumn

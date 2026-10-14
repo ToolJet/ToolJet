@@ -98,6 +98,8 @@ export const createEventsSlice = (set, get) => ({
       // stale value. Resolve every pending write that isn't part of an explicit mount-time
       // bracket (ListView/Form/page-switch) — never touches bracket-protected writes.
       get().flushImplicitBatchEntries();
+      // Row writes are queued in a microtask, so a handler would otherwise read the previous value.
+      get().flushPendingPerRowWrites?.();
       const events = get().eventsSlice.module[moduleId].events;
       const componentEvents = events.filter((event) => event.sourceId === id);
       const mode = getCurrentMode(moduleId);
@@ -105,7 +107,12 @@ export const createEventsSlice = (set, get) => ({
       handleEvent(
         eventName,
         componentEvents,
-        { ...options, customVariables: { ...customResolvables }, sourceSubContainerIndex },
+        {
+          ...options,
+          customVariables: { ...customResolvables, ...options?.customVariables },
+          // A list fires its row events, so the clicked row wins over the list's own position.
+          sourceSubContainerIndex: options?.sourceSubContainerIndex ?? sourceSubContainerIndex,
+        },
         moduleId,
         mode
       );
@@ -945,7 +952,10 @@ export const createEventsSlice = (set, get) => ({
                 const parentType = parentDefinition?.component?.component;
                 let component = getExposedValueOfComponent(event.componentId, moduleId, sourceSubContainerIndex);
                 if (parentType === 'Form' && componentName) {
-                  component = getExposedValueOfComponent(parent, moduleId)?.children?.[componentName];
+                  // The Form is itself per-row inside a list, so its children come from its own row.
+                  component = getExposedValueOfComponent(parent, moduleId, sourceSubContainerIndex)?.children?.[
+                    componentName
+                  ];
                 }
 
                 if (!event.componentId || !Object.keys(component).length) {

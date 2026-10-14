@@ -28,6 +28,7 @@ import {
   updateDashedBordersOnDragResize,
   getCanvasBottomBound,
   findNewParentIdFromMousePosition,
+  wrapDropIntoListviewRow,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -59,7 +60,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
-import { getDropTargetLabel } from '../appCanvasUtils';
+import { getDropTargetLabel, getParentWidgetFromId } from '../appCanvasUtils';
 import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
@@ -459,8 +460,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             y = 0;
           }
 
-          if (componentType === 'Listview' && y > parentHeight) {
-            y = y % parentHeight;
+          if (componentType === 'Listview') {
+            y = wrapDropIntoListviewRow(y, parentHeight);
           }
         }
         newParent = parent ? parent : null;
@@ -569,7 +570,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
       let restrictedWidgetsTobeDropped =
         [
-          ...(RESTRICTED_WIDGETS_CONFIG?.[parentWidgetType] || []),
+          // Same translation the single-widget path uses: a Kanban's drop area is keyed `Kanban_card`.
+          ...(RESTRICTED_WIDGETS_CONFIG?.[getParentWidgetFromId(parentWidgetType, targetSlotId)] || []),
           ...(['header', 'footer'].includes(parentSlotType) ? RESTRICTED_WIDGET_SLOTS_CONFIG : []),
         ].filter((widgetType) => widgetsTypeToBeDropped.includes(widgetType)) || [];
 

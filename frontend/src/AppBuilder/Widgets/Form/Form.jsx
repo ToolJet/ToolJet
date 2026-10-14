@@ -380,8 +380,10 @@ const FormComponent = (props) => {
   }, [effectiveChildrenData, advanced]);
 
   useEffect(() => {
-    document.addEventListener('submitForm', handleFormSubmission);
-    return () => document.removeEventListener('submitForm', handleFormSubmission);
+    // Listening on the form, not the document: inside a List View every row shares one component id.
+    const node = parentRef.current ?? document;
+    node.addEventListener('submitForm', handleFormSubmission);
+    return () => node.removeEventListener('submitForm', handleFormSubmission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), resetOnSubmit, validateOnSubmit]);
 

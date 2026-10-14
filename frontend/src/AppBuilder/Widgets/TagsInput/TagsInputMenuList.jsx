@@ -27,12 +27,11 @@ const TagsInputMenuList = ({
     ? [selectProps.value]
     : [];
 
-  // Check if inputValue already exists in selected tags or all options (case-insensitive)
+  // The user types a label, so a label match counts as much as a value match.
   const trimmedInput = inputValue?.trim()?.toLowerCase();
-  const isAlreadyExists =
-    trimmedInput &&
-    (selectedValues.some((tag) => String(tag.value ?? '').toLowerCase() === trimmedInput) ||
-      allOptions.some((opt) => String(opt.value ?? '').toLowerCase() === trimmedInput));
+  const matchesInput = (tag) =>
+    String(tag?.value ?? '').toLowerCase() === trimmedInput || String(tag?.label ?? '').toLowerCase() === trimmedInput;
+  const isAlreadyExists = trimmedInput && (selectedValues.some(matchesInput) || allOptions.some(matchesInput));
 
   // Only show create footer if value doesn't already exist
   const showCreateFooter = allowNewTags && inputValue?.trim() && !isAlreadyExists;

@@ -641,6 +641,7 @@ export const EventManager = ({
                   onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
                   usePortalEditor={false}
                   component={component}
+                  componentId={component?.id}
                   cyLabel={`run-only-if`}
                 />
               </FieldRow>
@@ -673,6 +674,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'message', value)}
                       usePortalEditor={false}
                       component={component}
+                      componentId={component?.id}
                     />
                   </div>
                 </FieldRow>
@@ -707,6 +709,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'url', value)}
                     usePortalEditor={false}
                     component={component}
+                    componentId={component?.id}
                   />
                 </FieldRow>
                 <FieldRow label="Open in" dataCy="open-in-label">
@@ -734,6 +737,7 @@ export const EventManager = ({
                 eventIndex={index}
                 getAllApps={getAllApps}
                 component={component}
+                componentId={component?.id}
               />
             )}
 
@@ -765,6 +769,7 @@ export const EventManager = ({
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
                   usePortalEditor={false}
                   component={component}
+                  componentId={component?.id}
                 />
               </FieldRow>
             )}
@@ -818,6 +823,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'key', value)}
                     usePortalEditor={false}
                     component={component}
+                    componentId={component?.id}
                   />
                 </FieldRow>
                 <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
@@ -827,6 +833,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'value', value)}
                     usePortalEditor={false}
                     component={component}
+                    componentId={component?.id}
                   />
                 </FieldRow>
               </>
@@ -850,6 +857,7 @@ export const EventManager = ({
                     initialValue={event.fileName}
                     onChange={(value) => handlerChanged(index, 'fileName', value)}
                     component={component}
+                    componentId={component?.id}
                   />
                 </FieldRow>
                 <FieldRow label={t('editor.inspector.eventManager.data', 'Data')} dataCy="data-label">
@@ -858,6 +866,7 @@ export const EventManager = ({
                     initialValue={event.data}
                     onChange={(value) => handlerChanged(index, 'data', value)}
                     component={component}
+                    componentId={component?.id}
                   />
                 </FieldRow>
               </>
@@ -878,6 +887,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'pageIndex', value)}
                     usePortalEditor={false}
                     component={component}
+                    componentId={component?.id}
                   />
                 </FieldRow>
               </>
@@ -892,6 +902,7 @@ export const EventManager = ({
                     enablePreview={true}
                     cyLabel={`event-key`}
                     component={component}
+                    componentId={component?.id}
                   />
                 </FieldRow>
                 <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
@@ -901,6 +912,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'value', value)}
                     cyLabel={`variable`}
                     component={component}
+                    componentId={component?.id}
                   />
                 </FieldRow>
               </>
@@ -912,6 +924,7 @@ export const EventManager = ({
                   initialValue={event.key}
                   onChange={(value) => handlerChanged(index, 'key', value)}
                   component={component}
+                  componentId={component?.id}
                 />
               </FieldRow>
             )}
@@ -924,6 +937,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'key', value)}
                     cyLabel={`key`}
                     component={component}
+                    componentId={component?.id}
                   />
                 </FieldRow>
                 <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
@@ -933,6 +947,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'value', value)}
                     cyLabel={`variable`}
                     component={component}
+                    componentId={component?.id}
                   />
                 </FieldRow>
               </>
@@ -945,6 +960,7 @@ export const EventManager = ({
                   onChange={(value) => handlerChanged(index, 'key', value)}
                   cyLabel={`key`}
                   component={component}
+                  componentId={component?.id}
                 />
               </FieldRow>
             )}
@@ -955,6 +971,7 @@ export const EventManager = ({
                 eventIndex={index}
                 getPages={() => getPageOptions(event)}
                 component={component}
+                componentId={component?.id}
               />
             )}
             {event.actionId === 'scroll-component-into-view' && (
@@ -1086,6 +1103,7 @@ export const EventManager = ({
                             fieldMeta={{ options: param?.options }}
                             cyLabel={`event-${param.displayName}`}
                             component={component}
+                            componentId={component?.id}
                             isEventManagerParam={true}
                           />
                         </div>
@@ -1118,6 +1136,7 @@ export const EventManager = ({
                 onChange={(value) => handlerChanged(index, 'debounce', value)}
                 usePortalEditor={false}
                 component={component}
+                componentId={component?.id}
                 cyLabel={'debounce'}
               />
             </FieldRow>

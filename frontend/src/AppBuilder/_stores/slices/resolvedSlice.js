@@ -671,8 +671,8 @@ export const createResolvedSlice = (set, get) => {
     },
 
     updateChildComponentsLength: (parentId, length, data = [], moduleId = 'canvas', parentIndices = []) => {
-      const { getContainerChildrenMapping, copyResolvedDataFromFirstIndex } = get();
-      const childComponents = getContainerChildrenMapping(parentId, moduleId);
+      const { getRowScopedDescendants, copyResolvedDataFromFirstIndex } = get();
+      const childComponents = getRowScopedDescendants(parentId, moduleId);
       if (parentIndices.length === 0) {
         // Flat case: set length and copy (existing behavior — kept as single set to preserve
         // the length-check optimization inside copyResolvedDataFromFirstIndex)

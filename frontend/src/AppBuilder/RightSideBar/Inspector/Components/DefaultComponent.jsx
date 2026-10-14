@@ -5,7 +5,6 @@ import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
-import { resolveReferences } from '@/_helpers/utils';
 // import { AllComponents } from '@/Editor/Box';
 import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
@@ -221,7 +220,8 @@ export const baseComponentProperties = (
     Layout: [],
   };
   if (component.component.component === 'Listview') {
-    if (!resolveReferences(component.component.definition.properties?.enablePagination?.value)) {
+    // Resolved against the live store, so a binding to another component is read rather than dropped.
+    if (!useStore.getState().getResolvedValue(component.component.definition.properties?.enablePagination?.value)) {
       properties = properties.filter((property) => property !== 'rowsPerPage');
     }
   }

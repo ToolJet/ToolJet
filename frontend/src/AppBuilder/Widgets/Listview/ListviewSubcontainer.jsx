@@ -67,8 +67,23 @@ export const ListviewSubcontainer = ({
           ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
         }}
         key={index}
+        role="listitem"
+        tabIndex={0}
         data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
-        onClickCapture={(_event) => {
+        // Enter and Space only: focus alone must not select, or tabbing would fire Record clicked.
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          onRecordOrRowClicked(index);
+        }}
+        // Bubble, not capture: capture ran before the child's own handler, so Record clicked read a stale value.
+        onClick={(event) => {
+          // A modal this row opened covers the page; clicking it is not clicking the row beneath.
+          // It is lifted out of the row in a browser and left inside it under jsdom, so both count.
+          if (!event.currentTarget.contains(event.target)) return;
+          const dialog = event.target?.closest?.('[role="dialog"]');
+          if (dialog && event.currentTarget.contains(dialog)) return;
           onRecordOrRowClicked(index);
         }}
       >

@@ -2007,38 +2007,43 @@ export const createComponentsSlice = (set, get) => ({
       'setComponentLayout'
     );
 
-    Object.keys(componentLayouts).forEach((componentId) => {
+    Object.keys(componentLayouts).forEach((draggedId) => {
       const newParentComponentType = getComponentTypeFromId(newParentId, moduleId);
       const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
-      const { component } = getComponentDefinition(componentId, moduleId);
 
       if (
         ROW_SCOPED_WIDGET_TYPES.includes(newParentComponentType) ||
         ROW_SCOPED_WIDGET_TYPES.includes(oldParentComponentType)
       ) {
-        // Add the component to the resolved store
-        let resolvedComponentValues = { [componentId]: {} };
+        // A dragged wrapper carries its children, and their scope changed with it, not just its own.
+        const pageComponents = get().getCurrentPageComponents(moduleId);
+        const movedIds = [draggedId, ...getAllChildComponents(pageComponents, draggedId).map((child) => child.id)];
+        movedIds.forEach((componentId) => {
+          const { component } = getComponentDefinition(componentId, moduleId);
+          // Add the component to the resolved store
+          let resolvedComponentValues = { [componentId]: {} };
 
-        // Update resolved values and dependency graph for each object in the component
-        const objectsToUpdate = ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'];
+          // Update resolved values and dependency graph for each object in the component
+          const objectsToUpdate = ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'];
 
-        objectsToUpdate.forEach((paramType) => {
-          if (component.definition[paramType]) {
-            Object.entries(component.definition[paramType]).forEach(([property, value]) => {
-              checkValueAndResolve(
-                componentId,
-                paramType,
-                property,
-                value.value,
-                component,
-                resolvedComponentValues,
-                true,
-                moduleId
-              );
-            });
-          }
+          objectsToUpdate.forEach((paramType) => {
+            if (component.definition[paramType]) {
+              Object.entries(component.definition[paramType]).forEach(([property, value]) => {
+                checkValueAndResolve(
+                  componentId,
+                  paramType,
+                  property,
+                  value.value,
+                  component,
+                  resolvedComponentValues,
+                  true,
+                  moduleId
+                );
+              });
+            }
+          });
+          setResolvedComponent(componentId, resolvedComponentValues[componentId], moduleId);
         });
-        setResolvedComponent(componentId, resolvedComponentValues[componentId], moduleId);
 
         // // Clean up old dependency graph edges, rebuild deps, and re-resolve for the moved component
         // const rebuildComponentDeps = (cId, comp) => {
@@ -2344,7 +2349,6 @@ export const createComponentsSlice = (set, get) => ({
     { skipUndoRedo = false, saveAfterAction = true } = {}
   ) => {
     const {
-      currentPageIndex,
       saveComponentChanges,
       checkValueAndResolve,
       getComponentDefinition,
@@ -2352,7 +2356,10 @@ export const createComponentsSlice = (set, get) => ({
       setResolvedComponent,
       withUndoRedo,
       getBaseParentId,
+      getCurrentPageIndex,
     } = get();
+    // The page index is per module, so reading it off the store root yielded undefined.
+    const currentPageIndex = getCurrentPageIndex(moduleId);
 
     // Reject self-parenting or descendant-as-new-parent. Covers multiplayer
     // remote parent events and undo/redo replays that bypass the drag UX's
@@ -2519,11 +2526,11 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
   setFocusedParentId: (parentId) => {
-    (set((state) => {
+    set((state) => {
       state.focusedParentId = parentId;
     }),
       false,
-      { type: 'setFocusedParentId', payload: { parentId } });
+      { type: 'setFocusedParentId', payload: { parentId } };
   },
   saveComponentChanges: (diff, type, operation, moduleId = 'canvas', { onCycleReject } = {}) => {
     set(
@@ -2708,6 +2715,24 @@ export const createComponentsSlice = (set, get) => ({
     const { containerChildrenMapping } = get();
     return containerChildrenMapping[id] || [];
   },
+  // Reaches a child behind a wrapper, but stops at a nested list, which expands its own rows.
+  getRowScopedDescendants: (parentId, moduleId = 'canvas') => {
+    const { getContainerChildrenMapping, getComponentDefinition } = get();
+    const collected = [];
+    const seen = new Set();
+    const walk = (id) => {
+      getContainerChildrenMapping(id, moduleId).forEach((childId) => {
+        if (seen.has(childId)) return;
+        seen.add(childId);
+        collected.push(childId);
+        const type = getComponentDefinition(childId, moduleId)?.component?.component;
+        if (!ROW_SCOPED_WIDGET_TYPES.includes(type)) walk(childId);
+      });
+    };
+    walk(parentId);
+    return collected;
+  },
+
   getChildComponents: (parentId, moduleId = 'canvas') => {
     const { getCurrentPageComponents } = get();
     const allComponents = getCurrentPageComponents(moduleId);
@@ -2902,6 +2927,15 @@ export const createComponentsSlice = (set, get) => ({
     return component?.component?.parent;
   },
 
+  // A nested list files its records per outer row; a flat one stores an array and yields no paths.
+  enumerateOuterRowPaths: function walk(stored) {
+    if (!stored || Array.isArray(stored) || typeof stored !== 'object') return [];
+    return Object.keys(stored).flatMap((key) => {
+      const deeper = walk(stored[key]);
+      return deeper.length > 0 ? deeper.map((rest) => [Number(key), ...rest]) : [[Number(key)]];
+    });
+  },
+
   updateChildComponentResolvedValues: (dependency, path, length, moduleId = 'canvas', parentIndices = []) => {
     const {
       getCustomResolvables,
@@ -2922,6 +2956,15 @@ export const createComponentsSlice = (set, get) => ({
     const resolvableParentId = nearestListviewId || parentId;
     const unResolvedValue = getNodeData(dependency, moduleId);
     const shouldValidate = entityType === 'components' && entityId;
+
+    // A variable or query has no row position, so expand it; else a nested row reads a group, not a record.
+    if (parentIndices.length === 0) {
+      const outerPaths = get().enumerateOuterRowPaths(getCustomResolvables(resolvableParentId, null, moduleId, []));
+      if (outerPaths.length > 0) {
+        outerPaths.forEach((p) => get().updateChildComponentResolvedValues(dependency, path, length, moduleId, p));
+        return;
+      }
+    }
 
     // Collect all resolved values first, then apply in a single batched store update.
     //
@@ -3215,13 +3258,13 @@ export const createComponentsSlice = (set, get) => ({
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
     const labelType = componentDefinition?.component?.definition?.properties?.labelType;
     const resolvedLabelType = labelType
-      ? (resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto')
+      ? resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto'
       : undefined;
     const legacyInputSizeProperty = componentDefinition?.component?.definition?.properties?.legacyInputSize;
     const resolvedLegacyInputSize =
       resolvedStyleLegacyInputSize ??
       (legacyInputSizeProperty
-        ? (resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false)
+        ? resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false
         : false);
 
     const { alignment: resolvedAlignment, isDynamicAlignment } = resolveInputCanvasAlignment({
