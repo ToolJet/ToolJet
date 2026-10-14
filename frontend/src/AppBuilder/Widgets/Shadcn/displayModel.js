@@ -91,6 +91,23 @@ const TABLER_TWINS = {
   firstaidkit: 'BriefcaseMedical',
   heartbeat: 'HeartPulse',
   barbell: 'Dumbbell',
+  vaccine: 'Syringe',
+  vaccinebottle: 'Syringe',
+  paw: 'PawPrint',
+  alertoctagon: 'OctagonAlert',
+  infocircle: 'Info',
+  helpcircle: 'CircleHelp',
+  squarecheck: 'SquareCheck',
+  checkbox: 'SquareCheck',
+  motorbike: 'Bike',
+  reportmedical: 'ClipboardPlus',
+  rosettediscountcheck: 'BadgeCheck',
+  shoppingcart: 'ShoppingCart',
+  messagedots: 'MessageSquare',
+  chartbarpopular: 'ChartNoAxesColumn',
+  clockhour3: 'Clock',
+  clockhour4: 'Clock',
+  hourglass: 'Timer',
 };
 
 export const resolveIcon = (name, maps, fallback) => {
