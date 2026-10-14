@@ -51,6 +51,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     isBuilderLevel: true,
     appPromote: true,
     appRelease: true,
+    patCreate: true,
+    patRevoke: true,
   },
   BUILDER: {
     name: USER_ROLE.BUILDER,
@@ -74,6 +76,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     isBuilderLevel: true,
     appPromote: true,
     appRelease: true,
+    patCreate: true,
+    patRevoke: false,
   },
   END_USER: {
     name: USER_ROLE.END_USER,
@@ -93,6 +97,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     isBuilderLevel: false,
     appPromote: false,
     appRelease: false,
+    patCreate: false,
+    patRevoke: false,
   },
 } as Record<string, CreateDefaultGroupObject>;
 

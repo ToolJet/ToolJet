@@ -1578,6 +1578,55 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     </div>
                                   </div>
                                 </div>
+                                {!isCE && (
+                                  <div className="manage-groups-permission-apps">
+                                    <div data-cy="resource-pat">Personal access token</div>
+                                    <div className="text-muted">
+                                      <div className="d-flex apps-permission-wrap flex-column">
+                                        {[
+                                          {
+                                            key: 'patCreate',
+                                            label: 'Create',
+                                            helper: 'Create a token in this workspace',
+                                          },
+                                          {
+                                            key: 'patRevoke',
+                                            label: 'Revoke',
+                                            helper: 'Revoke a token in this workspace',
+                                          },
+                                        ].map(({ key, label, helper }) => (
+                                          <label key={key} className="form-check form-check-inline">
+                                            <input
+                                              className="form-check-input"
+                                              type="checkbox"
+                                              onChange={() => {
+                                                this.updateGroupPermission(groupPermission.id, {
+                                                  [key]: !groupPermission[key],
+                                                });
+                                                this.setState({ updateParam: { [key]: !groupPermission[key] } });
+                                              }}
+                                              checked={!!groupPermission[key]}
+                                              disabled={disableNonPromoteReleasePermissions}
+                                              data-cy={`pat-${label.toLowerCase()}-checkbox`}
+                                            />
+                                            <span
+                                              className="form-check-label"
+                                              data-cy={`pat-${label.toLowerCase()}-label`}
+                                            >
+                                              {label}
+                                            </span>
+                                            <span
+                                              className={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+                                              data-cy={`pat-${label.toLowerCase()}-helper-text`}
+                                            >
+                                              {helper}
+                                            </span>
+                                          </label>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
                               </>
                             )}
                           </div>
