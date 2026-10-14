@@ -103,6 +103,26 @@ describe('category tick labels', () => {
     const cats = Array.from({ length: 8 }, (_, i) => ({ c: `Category ${i}` }));
     expect(keepsEveryCategory(cats, 'c')).toBe(true);
     expect(keepsEveryCategory([{ d: '2026-09-10' }, { d: '2026-09-11' }], 'd')).toBe(false);
-    expect(keepsEveryCategory(Array.from({ length: 40 }, (_, i) => ({ c: `C${i}` })), 'c')).toBe(false);
+    expect(
+      keepsEveryCategory(
+        Array.from({ length: 40 }, (_, i) => ({ c: `C${i}` })),
+        'c'
+      )
+    ).toBe(false);
+  });
+});
+
+// A subscription dashboard's legend read "Mrr" for the field mrr (2026-10-14): known acronyms read in capitals.
+describe('seriesLabel, acronyms', () => {
+  const { seriesLabel } = require('../chartsModel');
+  it.each([
+    ['mrr', 'MRR'],
+    ['arr_growth', 'ARR growth'],
+    ['nps', 'NPS'],
+    ['avg_sla_hours', 'Avg SLA hours'],
+    ['kpiTarget', 'KPI target'],
+    ['revenue', 'Revenue'],
+  ])('%s reads %s', (key, label) => {
+    expect(seriesLabel(key)).toBe(label);
   });
 });

@@ -267,8 +267,14 @@ export const seriesLabel = (key, labels) => {
     .replace(/[_-]+/g, ' ')
     .trim()
     .toLowerCase();
-  return words ? words.charAt(0).toUpperCase() + words.slice(1) : String(key ?? '');
+  if (!words) return String(key ?? '');
+  // Acronyms read in capitals: a legend said "Mrr" for mrr (subscription dashboard, 2026-10-14).
+  const spoken = words.replace(ACRONYMS, (word) => word.toUpperCase());
+  return spoken.charAt(0).toUpperCase() + spoken.slice(1);
 };
+
+const ACRONYMS =
+  /\b(mrr|arr|nps|sla|kpi|roi|aov|gmv|ctr|cpc|cpa|csat|ltv|cac|arpu|eta|qa|hr|it|api|sku|id|ytd|mtd|qtd)\b/g;
 
 const KEYWORDS = ['first', 'last', 'max', 'min'];
 
