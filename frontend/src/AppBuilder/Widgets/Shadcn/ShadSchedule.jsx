@@ -181,15 +181,24 @@ export const ShadSchedule = (props) => {
   const nowRef = useRef(null);
   const holdsToday = range.scale === 'days' ? range.columns.some((c) => c.today) : !!range.today;
   const showNow = p.showNowLine !== false && holdsToday;
+  // Placed when the line mounts as well as on each tick: drawn after the bookings loaded, it sat at its default, the
+  // left edge, until the next tick 30 seconds later (a week view showed now on Monday; a day view before its first hour
+  // showed it at the start, 2026-10-14).
+  const placeNow = (el) => {
+    if (!el) return;
+    const pos = positionOf(range, Date.now());
+    el.style.display = pos === null ? 'none' : '';
+    el.style.setProperty('--now', String((pos ?? 0) / 100));
+  };
+  const nowLineRef = (el) => {
+    nowRef.current = el;
+    placeNow(el);
+  };
   useEffect(() => {
     const tick = () => {
       const d = dayKey(new Date());
       if (d !== today) setToday(d);
-      const el = nowRef.current;
-      if (!el) return;
-      const pos = positionOf(range, Date.now());
-      el.style.display = pos === null ? 'none' : '';
-      el.style.setProperty('--now', String((pos ?? 0) / 100));
+      placeNow(nowRef.current);
     };
     tick();
     const timer = setInterval(tick, 30000);
@@ -411,7 +420,7 @@ export const ShadSchedule = (props) => {
               })}
               {showNow ? (
                 <div
-                  ref={nowRef}
+                  ref={nowLineRef}
                   className="pointer-events-none absolute bottom-0 top-0 z-[5] w-0"
                   style={{ left: 'calc(var(--rw) + (100% - var(--rw)) * var(--now, 0))' }}
                   aria-hidden="true"

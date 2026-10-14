@@ -796,3 +796,28 @@ describe('Dialog', () => {
     expect(problems()).toEqual([]);
   });
 });
+
+describe('Schedule now-line', () => {
+  // Drawn after the bookings loaded, the line sat at the left edge until the next 30-second tick: a week view showed
+  // now on Monday (2026-10-14). It is placed when it mounts.
+  it('is placed at today the moment it is drawn', async () => {
+    const now = new Date();
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+    const date = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(
+      monday.getDate()
+    ).padStart(2, '0')}`;
+    const { problems, unmount } = await mount('ShadSchedule', {
+      scale: 'days',
+      days: 7,
+      date,
+      resources: ['A'],
+      bookings: [],
+    });
+    const line = document.querySelector('[data-now-line]');
+    expect(line).toBeTruthy();
+    const at = Number(line.style.getPropertyValue('--now'));
+    expect(at).toBeGreaterThan(((now.getDay() + 6) % 7) / 7 - 0.01);
+    unmount();
+    expect(problems()).toEqual([]);
+  });
+});
