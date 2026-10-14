@@ -16,7 +16,9 @@ const TONES = [
   ],
   [
     'info',
-    /\b(new|open|in progress|scheduled|booked|sent|assigned|processing|planned|upcoming|started|qualified|contacted|proposal|negotiation|checked in|in transit|on the way|en route|dispatched|on site|checked out|on loan|in use)\b/,
+    // "New" is a state, not the start of a place: New York and New Zealand chips were tinted blue (a people directory,
+    // 2026-10-14).
+    /\b(new(?! (york|zealand|delhi|jersey|mexico|hampshire|south wales|orleans|brunswick|haven|england|caledonia|guinea|westminster))|open|in progress|scheduled|booked|sent|assigned|processing|planned|upcoming|started|qualified|contacted|proposal|negotiation|checked in|in transit|on the way|en route|dispatched|on site|checked out|on loan|in use)\b/,
   ],
 ];
 

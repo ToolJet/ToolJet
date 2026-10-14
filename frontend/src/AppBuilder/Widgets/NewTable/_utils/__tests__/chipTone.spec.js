@@ -89,4 +89,10 @@ describe('chipTone, everyday operations states', () => {
   ])('%s reads as %s', (value, tone) => {
     expect(chipTone(value)).toBe(tone);
   });
+  it('reads New as a state, not the start of a place name', () => {
+    expect(chipTone('New')).toBe('info');
+    expect(chipTone('New lead')).toBe('info');
+    expect(chipTone('New York, NY')).toBe('neutral');
+    expect(chipTone('New Zealand')).toBe('neutral');
+  });
 });
