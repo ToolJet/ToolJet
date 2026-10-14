@@ -317,7 +317,7 @@ $radius: var(--cc-radius-default, 6px);
 
 // Status chips for html columns and Html blocks: <span class="tj-chip tj-chip-success">Paid</span>. Tinted from the
 // app theme's status colours, so one snippet reads right in light and dark mode (the fixed light tints a build wrote
-// glowed on dark tables). Variants: success, warning, danger, info (the brand colour) and neutral.
+// glowed on dark tables). Variants: success, warning, danger, info (a fixed blue) and neutral.
 .tj-chip {
   --chip: var(--cc-placeholder-text);
   display: inline-flex;
@@ -344,8 +344,14 @@ $radius: var(--cc-radius-default, 6px);
 .tj-chip-danger {
   --chip: var(--cc-error-systemStatus, #dc2626);
 }
+// Info is a fixed blue, as the pack's charts and map draw it: in the brand colour, Open and In progress read as Pending
+// under an orange theme and as Completed under a green one (helpdesk, pet salon, 2026-10-14).
 .tj-chip-info {
-  --chip: var(--cc-primary-brand, #2563eb);
+  --chip: #2563eb;
+}
+.theme-dark .tj-chip-info,
+.dark-theme .tj-chip-info {
+  --chip: #60a5fa;
 }
 .tj-chip-neutral {
   --chip: var(--cc-placeholder-text, #64748b);
