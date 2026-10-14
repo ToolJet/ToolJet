@@ -783,7 +783,9 @@ export const ShadRecordList = (props) => {
   const dividers = p.showDividers !== false;
   const card = p.listStyle !== 'plain';
   const clickable = (hasClick || p.highlightSelected !== false) && !busy(p);
-  const inset = card ? 'px-4' : 'px-1';
+  // A selected row draws a 3px accent bar and a tint: a plain list that can show it pads its rows 12px, or the bar sat
+  // against the title (a field service app, 2026-10-13).
+  const inset = card ? 'px-4' : p.highlightSelected !== false ? 'px-3' : 'px-1';
 
   const click = (row) => {
     if (busy(p)) return;

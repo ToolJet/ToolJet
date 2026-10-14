@@ -605,6 +605,19 @@ describe('Card grid', () => {
 });
 
 describe('Record list and summary strip', () => {
+  // A plain list's selected row drew its 3px accent bar against the title: rows had 4px of side padding (a field
+  // service app, 2026-10-13). A plain list whose rows can be selected pads them 12px, so the bar and tint have room.
+  it('gives a selectable plain list room between the selection bar and the text', async () => {
+    const data = [{ id: 1, name: 'Union Square Hotel' }, { id: 2, name: 'Oakland Ice Rink' }];
+    const plain = await mount('ShadRecordList', { data, titleField: 'name', listStyle: 'plain' });
+    const row = document.querySelector('li[role=button]');
+    expect(row.className).toMatch(/\bpx-3\b/);
+    plain.unmount();
+    const fixed = await mount('ShadRecordList', { data, titleField: 'name', listStyle: 'plain', highlightSelected: false });
+    expect(document.querySelector('li[role=button]').className).toMatch(/\bpx-1\b/);
+    fixed.unmount();
+  });
+
   // The pack's preflight sets every border width to 0 with !important: an inline border drew nothing in a browser, so
   // the list's frame and dividers and the strip's separators were missing. They are border classes.
   it('draw their frame, row dividers and figure separators as border classes', async () => {
