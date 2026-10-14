@@ -8,7 +8,7 @@ const TONES = [
   ],
   [
     'warning',
-    /\b(pending|unpaid|due|reorder|low stock|waiting|awaiting|review|in review|on hold|hold|draft|medium|at risk|risk|partial|partially paid|tentative|requested|needs attention|warning|maintenance|occupied|busy|trial|missing|incomplete|in repair|repair|in workshop|workshop)\b/,
+    /\b(pending|unpaid|due|reorder|low stock|waiting|awaiting|review|in review|on hold|hold|draft|medium|at risk|risk|partial|partially paid|tentative|requested|needs attention|needs [a-z]+|follow up|warning|maintenance|occupied|busy|trial|missing|incomplete|in repair|repair|in workshop|workshop)\b/,
   ],
   [
     'success',
