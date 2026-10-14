@@ -538,18 +538,21 @@ describe('long text in buttons, badges, pickers, fields and sections', () => {
 
 describe('Stat change', () => {
   // A long change beside the label ("+12.4% after a long weekend of record sales") was cut off hard at the card's
-  // edge: the badge kept its full width (shrink-0) and had no ellipsis. It shrinks to at most 60% of the label row and
-  // ends in an ellipsis, with its whole text as a tooltip. jsdom has no layout: this pins the structure.
-  it('never clips a long change: the badge shrinks with an ellipsis and a tooltip', async () => {
+  // edge, and later ended in an ellipsis ("+8 vs semana pa...", a clinic app, 2026-10-13). Now the leading figure stays
+  // in the badge and the words join the context line, which wraps; a change without a figure wraps in the badge.
+  // jsdom has no layout: this pins the structure.
+  it('never clips a long change: the figure stays in the badge, the words wrap beside it', async () => {
     const change = '+12.4% after a long weekend of record sales across every store';
     const { problems, unmount } = await mount('ShadStat', { label: 'Revenue', value: 48210, change, trend: 'up' });
-    const text = [...document.querySelectorAll('span')].find((el) => el.textContent === change);
-    expect(text).toBeTruthy();
-    expect(text.className).toMatch(/\btruncate\b/);
-    const badge = text.parentElement;
+    const chip = [...document.querySelectorAll('span')].find((el) => el.textContent === '+12.4%');
+    expect(chip).toBeTruthy();
+    expect(chip.className).not.toMatch(/\btruncate\b/);
+    const badge = chip.parentElement;
     expect(badge.getAttribute('title')).toBe(change);
     expect(badge.className).toMatch(/\bmin-w-0\b/);
     expect(badge.className).not.toMatch(/\bshrink-0\b/);
+    const words = [...document.querySelectorAll('span')].find((el) => el.textContent === 'after a long weekend of record sales across every store');
+    expect(words).toBeTruthy();
     unmount();
     expect(problems()).toEqual([]);
   });

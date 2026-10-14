@@ -1,4 +1,4 @@
-import { progressPercent, sparkPaths, STAT_SIZES, statSize, statValue } from '../statModel';
+import { progressPercent, sparkPaths, splitChange, STAT_SIZES, statSize, statValue } from '../statModel';
 
 describe('sparkPaths', () => {
   it('draws a line and a closed area across the box', () => {
@@ -64,5 +64,20 @@ describe('statValue money', () => {
   it('shows cents on a non-integer amount (an inventory value read "$3,043.5")', () => {
     expect(statValue(3043.5, { valueFormat: 'currency', currency: 'USD' })).toBe('$3,043.50');
     expect(statValue(3043, { valueFormat: 'currency', currency: 'USD' })).toBe('$3,043');
+  });
+});
+
+// A clinic app (2026-10-13) set change to "+8 vs semana passada": the chip, capped at 60% of the row, read
+// "+8 vs semana pa...". The figure stays in the chip and the words move to the context line, which wraps.
+describe('splitChange', () => {
+  it('keeps the leading figure in the chip and moves the words to the context', () => {
+    expect(splitChange('+8 vs semana passada')).toEqual({ chip: '+8', context: 'vs semana passada' });
+    expect(splitChange('-12.5% vs last month')).toEqual({ chip: '-12.5%', context: 'vs last month' });
+    expect(splitChange('+$1,240 this week')).toEqual({ chip: '+$1,240', context: 'this week' });
+  });
+  it('leaves a bare figure or words without a leading figure alone', () => {
+    expect(splitChange('+12%')).toEqual({ chip: '+12%', context: '' });
+    expect(splitChange('Up from last week')).toEqual({ chip: 'Up from last week', context: '' });
+    expect(splitChange('')).toEqual({ chip: '', context: '' });
   });
 });

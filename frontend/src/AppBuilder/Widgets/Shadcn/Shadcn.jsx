@@ -51,7 +51,7 @@ import { GROUP_LOADING } from './looks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { stringify } from '../packJson';
-import { progressPercent, sparkPaths, statSize, statValue } from './statModel';
+import { progressPercent, sparkPaths, splitChange, statSize, statValue } from './statModel';
 import { textArg, truthy, useFocusEvents, useHasEvent, useOverrides } from './parity';
 import { LoadingBox, Spinner, wantsSkeleton } from './loadingLook';
 import './shadcn.scss';
@@ -637,7 +637,10 @@ export const ShadStat = (props) => {
   const iconSize = size === 'lg' ? 20 : size === 'sm' ? 14 : 16;
   const iconNode = icon ? <StatIcon name={icon} shape={iconShape} size={iconSize} /> : null;
   const progress = progressPercent(properties.progress);
-  const changeBadge = properties.change ? (
+  // "+8 vs semana passada" as change: the figure stays in the chip, the words join the context line (statModel).
+  const change = splitChange(properties.change);
+  const context = [change.context, properties.changeLabel ? String(properties.changeLabel) : ''].filter(Boolean).join(' · ');
+  const changeBadge = change.chip ? (
     <Badge
       variant="outline"
       style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) : undefined}
@@ -650,18 +653,19 @@ export const ShadStat = (props) => {
       )}
     >
       {trend !== 'neutral' ? <TrendIcon className="h-3 w-3 shrink-0" /> : null}
-      <span className="min-w-0 truncate">{String(properties.change)}</span>
+      {/* Words without a leading figure wrap rather than being cut. */}
+      <span className="min-w-0 whitespace-normal break-words">{change.chip}</span>
     </Badge>
   ) : null;
   // The badge sits in the label row unless the icon takes that corner; then it follows the figure.
   const badgeInHeader = !(icon && iconPosition === 'right');
-  const changeLabel = properties.changeLabel ? (
+  const changeLabel = context ? (
     // In a fixed box the context line keeps to one line: wrapping to two, it pushed the title out of a KPI tile.
     <span
       className={cn('text-xs text-[color:var(--lk-help,var(--sc-muted-foreground))]', fixed && 'line-clamp-1')}
-      title={fixed ? String(properties.changeLabel) : undefined}
+      title={fixed ? context : undefined}
     >
-      {String(properties.changeLabel)}
+      {context}
     </span>
   ) : null;
   const content = (
