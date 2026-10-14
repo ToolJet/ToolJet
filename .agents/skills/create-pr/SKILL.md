@@ -85,8 +85,10 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - "What this does" = 1-2 sentence why; "Changes" = concrete what, no overlap
 - No file paths, function or class names unless they ARE the change
 - No per-line prefixes (fix:/feat:) — the title has the category
-- Change bullets: one line each, past tense, max 5; combine related items
-- **Break up anything verbose:** a paragraph past 2-3 lines or a bullet with more than one idea gets split — one idea per line. Still long after splitting → cut it
+- Change bullets: past tense, max 5, about 15 words each — the headline of the change, not its explanation. Group related items into one bullet rather than adding more
+- Detail that doesn't fit is cut, not moved into sub-bullets: how it works → Architecture, scope or caveats → Merge impact, numbers → Evidence, the rest → the diff
+- **Break up anything verbose:** a paragraph past 2-3 lines gets split — one idea per line. Still long after splitting → cut it
+- Before posting, reread Changes: any bullet that wraps on a wide screen or needs a sub-bullet is too long
 - Test steps: action-first, short. "Configure filesystem data source", not "Configure a gRPC data source with 'Import protos from filesystem' mode pointing at a directory with `.proto` files"
 - Only evidence actually produced; never an empty or placeholder section
 - Blank line between block elements (paragraphs, labelled lines, lists, code) — GitHub joins consecutive lines into one paragraph
@@ -152,7 +154,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 **Submodules:** [ee-server #<n>](<url>) · [ee-frontend #<n>](<url>)
 
 ## 🔀 Changes
-- <what changed, past tense, no prefixes, max 5 bullets>
+- <what changed, past tense, ~15 words, max 5 bullets>
 
 <details>
 <summary>🛡️ <b>Merge impact:</b> <🟢 reversible | 🔴 not reversible></summary>
