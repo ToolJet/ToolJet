@@ -46,6 +46,9 @@ export class TooljetDbRelationResolverService {
    * this TJDB-shaped rule - it is shared with apps. So the sibling check lives here instead, folded
    * into the bulk relation lookup below (join in the priority, no second query) rather than costing
    * a per-request round trip of its own.
+   *
+   * The refusal applies only to that migration-B shape. A table created after the rollout and then
+   * promoted has its data in development, so an unlicensed workspace keeps reading and writing it.
    */
   async resolve(
     organizationId: string,
@@ -84,9 +87,14 @@ export class TooljetDbRelationResolverService {
 
       resolved.set(tableId, resolvedRow.relationId);
 
+      // Only the row migration B re-pointed upward (id === logical id) holds the data above an empty
+      // development twin. A promoted table's higher relations are schema-only replays; development
+      // stays its source of truth, so it keeps serving after a lapse.
       const resolvedToDevelopment = resolvedRow.priority === DEVELOPMENT_PRIORITY;
-      const hasHigherPrioritySibling = rowsForTable.some((row) => row.priority > DEVELOPMENT_PRIORITY);
-      if (!resolvedToDevelopment || !hasHigherPrioritySibling) continue;
+      const hasLegacyRelationAboveDevelopment = rowsForTable.some(
+        (row) => row.priority > DEVELOPMENT_PRIORITY && row.relationId === tableId
+      );
+      if (!resolvedToDevelopment || !hasLegacyRelationAboveDevelopment) continue;
 
       isUnlicensed ??= !(await this.licenseTermsService.getLicenseTerms(
         LICENSE_FIELD.MULTI_ENVIRONMENT,

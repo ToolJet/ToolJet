@@ -91,10 +91,12 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   join and `resolveTable` all route through it.
 - The migration compiler's SQL (`compile()`) is display-only: history drawer, promote preview, raw-SQL
   response. Nothing executes it; replay re-runs the structured action instead.
-- Licence lapse fails closed on every resolver path: `resolve()` 403s when a table resolves to
-  development while a higher-priority relation exists and the workspace is unlicensed, and
-  `getRelation()` goes through `resolve()` so the single-table paths (`sql_execution`, bulk ops,
-  `view_table`) refuse the same way instead of serving development.
+- Licence lapse fails closed for migration-B tables only: `resolve()` 403s when an unlicensed table
+  resolves to development while its migration-B relation (`id === internal_table_id`, re-pointed
+  above an empty development twin) sits at a higher priority. `getRelation()` goes through
+  `resolve()` so the single-table paths (`sql_execution`, bulk ops, `view_table`) refuse the same
+  way. A table created after the rollout and promoted keeps its data in development (promote
+  replays schema only), so it keeps serving development after a lapse.
 - **Promote never leaves a ghost relation.** `has_relation` (and the resolver, and the app-promote block)
   mean "a relation row exists", so a row with no table behind it reads as "available in staging".
   `promote` therefore (1) rejects with 400 `Promote "<parent>" first` before creating anything when a missing
