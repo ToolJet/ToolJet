@@ -15,6 +15,8 @@ import {
   toggle,
 } from './shadcnPackHelpers.js';
 
+const ARRAY_OR_STRING = { type: 'union', schemas: [ARRAY, STRING] };
+
 const STOPS =
   "{{[{ id: 'S-101', customer: 'Ferry Building Market', address: '1 Ferry Building', status: 'Delivered', eta: '9:10 AM', driver: 'Maya Chen', lat: 37.7955, lng: -122.3937 }, { id: 'S-102', customer: 'Dolores Bakery', address: '3498 18th St', status: 'Delivered', eta: '9:40 AM', driver: 'Maya Chen', lat: 37.7614, lng: -122.4269 }, { id: 'S-103', customer: 'Mission Bay Labs', address: '1700 Owens St', status: 'In transit', eta: '10:25 AM', driver: 'Owen Hart', lat: 37.7683, lng: -122.3934 }, { id: 'S-104', customer: 'Sunset Florist', address: '1101 Irving St', status: 'Delayed', eta: '11:05 AM', driver: 'Owen Hart', lat: 37.7641, lng: -122.4703 }, { id: 'S-105', customer: 'Wharf Seafood Co.', address: '2800 Leavenworth St', status: 'Scheduled', eta: '11:30 AM', driver: 'Priya Nair', lat: 37.8063, lng: -122.4182 }, { id: 'S-106', customer: 'Union Square Books', address: '345 Stockton St', status: 'Failed', eta: '10:50 AM', driver: 'Priya Nair', lat: 37.7881, lng: -122.4065 }, { id: 'S-107', customer: 'Hayes Valley Cafe', address: '432 Octavia St', status: 'Delivered', eta: '9:55 AM', driver: 'Leo Martins', lat: 37.7764, lng: -122.4241 }, { id: 'S-108', customer: 'Presidio Outfitters', address: '50 Moraga Ave', status: 'Pending', eta: '12:15 PM', driver: 'Leo Martins', lat: 37.7989, lng: -122.4662 }]}}";
 
@@ -44,7 +46,7 @@ export const shadMapConfig = shadConfig({
     idField: code('Id field', STRING, 'id'),
     labelField: code('Pin label field (a stop number, a price)', STRING, ''),
     iconField: code('Pin icon field (a lucide icon name)', STRING, ''),
-    popupFields: code("Popup fields (comma list; 'eta:ETA {}', 'total|currency')", STRING, ''),
+    popupFields: code("Popup fields (comma list; 'eta:ETA {}', 'total|currency')", ARRAY_OR_STRING, ''),
     showPopup: toggle('Show a popup on marker click', true),
     showLegend: toggle('Show a legend of the colours', true),
     clusterMarkers: toggle('Group nearby markers', true),

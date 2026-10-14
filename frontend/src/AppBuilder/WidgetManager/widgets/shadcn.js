@@ -75,23 +75,7 @@ import { shadRecordListConfig } from './shadRecordList';
 import { shadSummaryStripConfig } from './shadSummaryStrip';
 import { shadTableConfig } from './shadTable';
 
-// A pack widget renders a missing value, so a property bound to a query that has not answered yet is not an error:
-// every schema is optional. Required, a fresh analytics app opened with 66 "Expected a value of type string, but
-// received undefined" in the debugger, one per KPI property per query run (2026-10-13). Wrong types are still reported.
-const optionalSchemas = (config) => {
-  const section = (defs) =>
-    Object.fromEntries(
-      Object.entries(defs ?? {}).map(([key, def]) => [
-        key,
-        def?.validation?.schema
-          ? { ...def, validation: { ...def.validation, schema: { ...def.validation.schema, optional: true } } }
-          : def,
-      ])
-    );
-  return { ...config, properties: section(config.properties), styles: section(config.styles) };
-};
-
-const packConfigs = [
+export const shadcnConfigs = [
   shadButtonGroupConfig,
   shadCalendarConfig,
   shadCarouselConfig,
@@ -168,5 +152,4 @@ const packConfigs = [
   shadSummaryStripConfig,
   shadTableConfig,
 ];
-export const shadcnConfigs = packConfigs.map(optionalSchemas);
 export const SHADCN_COMPONENTS = shadcnConfigs.map((c) => c.name);

@@ -127,7 +127,15 @@ export const shadMapConfig = {
       displayName: "Popup fields (comma list; 'eta:ETA {}', 'total|currency')",
       validation: {
         schema: {
-          type: 'string',
+          type: 'union',
+          schemas: [
+            {
+              type: 'array',
+            },
+            {
+              type: 'string',
+            },
+          ],
         },
         defaultValue: '',
       },

@@ -104,7 +104,7 @@ export const shadCardGridConfig = shadConfig({
     avatarField: code('Avatar field (image URL or a name)', STRING, ''),
     descriptionField: code('Description field', STRING, ''),
     progressField: code('Progress field (a percentage, 0 to 100)', STRING, ''),
-    metaFields: code("Meta fields (comma list; 'prep:{} min')", STRING, ''),
+    metaFields: code("Meta fields (comma list; 'prep:{} min')", ARRAY_OR_STRING, ''),
     idField: code('Id field', STRING, 'id'),
     layout: choice('Layout', ['stacked', 'row'], 'stacked', {
       stacked: 'Image on top',
@@ -174,7 +174,7 @@ export const shadRecordListConfig = shadConfig({
     }),
     titleField: code('Title field', STRING, 'customer'),
     avatarField: code('Avatar field (image URL or a name; empty uses the title)', STRING, ''),
-    metaFields: code("Meta fields (comma list; 'total|currency', 'due|date:Due {}')", STRING, ''),
+    metaFields: code("Meta fields (comma list; 'total|currency', 'due|date:Due {}')", ARRAY_OR_STRING, ''),
     statusField: code('Status field (a chip toned by its words)', STRING, ''),
     progressField: code('Progress field (a percentage, 0 to 100)', STRING, ''),
     valueField: code('Trailing value field', STRING, ''),
