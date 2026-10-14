@@ -38,6 +38,9 @@ interface Features {
   [FEATURE_KEY.GET_WORKSPACE_USERS_BY_GROUPS]: FeatureConfig;
   [FEATURE_KEY.LIST_WORKSPACE_USER_APPS_V2]: FeatureConfig;
   [FEATURE_KEY.LIST_WORKSPACE_APP_USERS_V2]: FeatureConfig;
+  [FEATURE_KEY.LIST_WORKSPACE_USERS_V2]: FeatureConfig;
+  [FEATURE_KEY.GET_WORKSPACE_USER_V2]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_WORKSPACE_USER_V2]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
