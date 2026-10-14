@@ -152,4 +152,15 @@ describe('chipTone, everyday operations states', () => {
     expect(chipTone('Quoted')).toBe('info');
     expect(chipTone('Passenger')).toBe('neutral');
   });
+  it('reads capacity, NPS and delivery states (gym classes, NPS feedback, budgets, projects, 2026-10-14)', () => {
+    expect(chipTone('Full')).toBe('danger');
+    expect(chipTone('Few spots')).toBe('warning');
+    expect(chipTone('Promoter')).toBe('success');
+    expect(chipTone('Passive')).toBe('warning');
+    expect(chipTone('Detractor')).toBe('danger');
+    expect(chipTone('Committed')).toBe('info');
+    expect(chipTone('In Testing')).toBe('info');
+    // An employment type, not a full class.
+    expect(chipTone('Full-time')).toBe('neutral');
+  });
 });
