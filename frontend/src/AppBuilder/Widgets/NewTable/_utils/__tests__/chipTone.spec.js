@@ -115,4 +115,8 @@ describe('chipTone, everyday operations states', () => {
     expect(chipTone('On hire')).toBe('info');
     expect(chipTone('Out of stock')).toBe('danger');
   });
+  it('reads Expiring soon as needing attention and Expired as danger (pharmacy stock, 2026-10-14)', () => {
+    expect(chipTone('Expiring soon')).toBe('warning');
+    expect(chipTone('Expired')).toBe('danger');
+  });
 });

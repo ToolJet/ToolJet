@@ -23,6 +23,18 @@ describe('statValue', () => {
 describe('statValue with a number that is not finite', () => {
   // Infinity and NaN (a division by zero in a binding) printed as "Infinity" and "NaN" in the figure.
   it.each([Infinity, -Infinity, NaN])('%s shows nothing in any format', (v) => {
-    for (const valueFormat of ['auto', 'number', 'currency', 'percent', 'compact']) expect(statValue(v, { valueFormat })).toBe('');
+    for (const valueFormat of ['auto', 'number', 'currency', 'percent', 'compact'])
+      expect(statValue(v, { valueFormat })).toBe('');
+  });
+});
+
+// A churn rate of 0.021 and an average margin of 0.70 showed "0%" and "0.7%" (subscription and menu dashboards,
+// 2026-10-14): a percent below 1 is a ratio, as the pack's charts already read a series of fractions.
+describe('a percent stat given as a ratio', () => {
+  it('reads a fraction as a ratio and a whole percentage as written', () => {
+    expect(statValue(0.021, { valueFormat: 'percent' })).toBe(statValue(2.1, { valueFormat: 'percent' }));
+    expect(statValue(0.7, { valueFormat: 'percent' })).toBe(statValue(70, { valueFormat: 'percent' }));
+    expect(statValue(42.5, { valueFormat: 'percent' })).toContain('42.5');
+    expect(statValue(0, { valueFormat: 'percent' })).toBe(statValue(0, { valueFormat: 'percent' }));
   });
 });
