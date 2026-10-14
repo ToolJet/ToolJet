@@ -161,6 +161,13 @@ describe('ShadKeyValue', () => {
     expect(screen.getByText('Yes')).toBeTruthy();
   });
 
+  // Two inline columns in a 400px card cut a claim's values to "PO 88" and "$8," (2026-10-14): columns that do not fit
+  // the width fold into fewer.
+  it('folds its columns into the width it has', () => {
+    const { view } = mount('ShadKeyValue', { data: { Policy: 'POL-884213', Amount: '$8,450' }, columns: 2 });
+    expect(view.container.querySelector('dl').style.gridTemplateColumns).toBe('repeat(1, minmax(0, 1fr))');
+  });
+
   it('reads an object', () => {
     mount('ShadKeyValue', { data: { Status: 'Active' } });
     expect(screen.getByText('Status')).toBeTruthy();

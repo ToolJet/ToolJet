@@ -100,4 +100,9 @@ describe('chipTone, everyday operations states', () => {
     expect(chipTone('Needs review')).toBe('warning');
     expect(chipTone('Follow up')).toBe('warning');
   });
+  it('reads In review as work under way, a bare Review as needing attention', () => {
+    expect(chipTone('In Review')).toBe('info');
+    expect(chipTone('Under review')).toBe('info');
+    expect(chipTone('Review')).toBe('warning');
+  });
 });

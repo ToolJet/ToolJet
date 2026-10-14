@@ -8,7 +8,7 @@ const TONES = [
   ],
   [
     'warning',
-    /\b(pending|unpaid|due|reorder|low stock|waiting|awaiting|review|in review|on hold|hold|draft|medium|at risk|risk|partial|partially paid|tentative|requested|needs attention|needs [a-z]+|follow up|warning|maintenance|occupied|busy|trial|missing|incomplete|in repair|repair|in workshop|workshop)\b/,
+    /\b(pending|unpaid|due|reorder|low stock|waiting|awaiting|review|on hold|hold|draft|medium|at risk|risk|partial|partially paid|tentative|requested|needs attention|needs [a-z]+|follow up|warning|maintenance|occupied|busy|trial|missing|incomplete|in repair|repair|in workshop|workshop)\b/,
   ],
   [
     'success',
@@ -28,6 +28,9 @@ export const chipTone = (value) => {
   if (!text) return 'neutral';
   // "Not started" is not "started"; "Not paid" or "Not delivered" still needs attention.
   if (/^not\b/.test(text)) return TONES[2][1].test(text.slice(3)) ? 'warning' : 'neutral';
+  // Work under way, as In progress is: "In review" was amber in a claims list beside the same state in blue in the table
+  // next to it (2026-10-14). "Needs review" and a bare "Review" still need attention.
+  if (/^(in|under) review$/.test(text)) return 'info';
   for (const [tone, words] of TONES) if (words.test(text)) return tone;
   return 'neutral';
 };
