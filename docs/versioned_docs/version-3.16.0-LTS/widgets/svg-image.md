@@ -30,7 +30,13 @@ Refer to the resources where SVG files are downloaded for free. You can copy-pas
 
 ## Component Specific Actions (CSA)
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
+
+| <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"170px"}}> Description </div> | <div style={{width: "200px"}}> RunJS Query </div> |
+| :------------------------------------------- | :------------------------------------------------ | :------------------------------------------------ |
+| setVisibility( )                             | Sets the visibility of the component.             | `components.svgimage1.setVisibility(false)`       |
+| setLoading( )                                | Sets the loading state of the component.          | `components.svgimage1.setLoading(true)`           |
+| setDisable( )                                | Disables the component.                           | `components.svgimage1.setDisable(true)`           |
 
 </div>
 
@@ -38,7 +44,29 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Exposed Variables
 
-There are currently no exposed variables for the component.
+| Variable   | <div style={{ width:"250px"}}> Description </div> | How To Access                          |
+| :--------- | :------------------------------------------------ | :------------------------------------- |
+| isLoading  | Indicates if the component is loading.            | `{{components.svgimage1.isLoading}}`   |
+| isVisible  | Indicates if the component is visible.            | `{{components.svgimage1.isVisible}}`   |
+| isDisabled | Indicates if the component is disabled.           | `{{components.svgimage1.isDisabled}}`  |
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Additional Actions
+
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Show loading state | Displays a loading spinner in place of the SVG, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Dynamic height | Sets the component's height from the SVG's aspect ratio (its `viewBox`) at the current width, so components below it reflow. Only applies in the viewer mode. SVG data without a `viewBox` keeps its own `height` attribute. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+<!-- TODO verify: visual/interaction effect of the Disable toggle on SVG Image (PR #18417 only sets a data-disabled attribute) -->
+
+<!-- TODO screenshot: SVG Image inspector showing the Additional Actions section (Show loading state, Visibility, Dynamic height, Collapse when hidden, Disable) -->
 
 </div>
 
@@ -73,7 +101,6 @@ Under the <b>General</b> accordion, you can set the value as **Plain text**, **M
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | Configuration Options |
 |:------------ |:-------------|:--------- |
-| Visibility | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Box-Shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or programmatically set it using **fx**. |
 
 ### Advanced
