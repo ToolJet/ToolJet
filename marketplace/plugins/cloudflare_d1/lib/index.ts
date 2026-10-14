@@ -4,6 +4,9 @@ import { SourceOptions, QueryOptions } from './types';
 
 const BASE_URL = 'https://api.cloudflare.com/client/v4';
 
+/**
+ * Extracts and formats human-readable error messages from Cloudflare API responses.
+ */
 const getErrorMessage = (error: any): string => {
   const cloudflareErrors = error?.response?.data?.errors;
   if (Array.isArray(cloudflareErrors) && cloudflareErrors.length > 0) {
@@ -16,6 +19,9 @@ const getErrorMessage = (error: any): string => {
   return error?.response?.data?.error || error?.message || 'Unknown error occurred';
 };
 
+/**
+ * Parses SQL query parameter bindings from arrays, JSON strings, or comma-separated values.
+ */
 export const parseParams = (params: any): any[] => {
   if (params === undefined || params === null || params === '') {
     return [];
@@ -44,6 +50,9 @@ export const parseParams = (params: any): any[] => {
   return [params];
 };
 
+/**
+ * REST API client for Cloudflare D1 (v4 API).
+ */
 export class CloudflareD1Client {
   private client: AxiosInstance;
   private accountId: string;
@@ -67,6 +76,7 @@ export class CloudflareD1Client {
     });
   }
 
+  // List databases with optional pagination and name filter
   async listDatabases(params?: { name?: string; page?: number | string; per_page?: number | string }) {
     const queryParams: Record<string, any> = {};
     if (params?.name && params.name.trim()) queryParams.name = params.name.trim();
@@ -82,6 +92,7 @@ export class CloudflareD1Client {
     return data;
   }
 
+  // Get database metadata by UUID
   async getDatabase(databaseId: string) {
     const encodedDbId = encodeURIComponent(databaseId.trim());
     const { data } = await this.client.get(`/accounts/${this.accountId}/d1/database/${encodedDbId}`);
@@ -91,6 +102,7 @@ export class CloudflareD1Client {
     return data;
   }
 
+  // Create a new D1 database with optional location hint
   async createDatabase(name: string, primaryLocationHint?: string) {
     const payload: Record<string, any> = {
       name: name.trim(),
@@ -105,6 +117,7 @@ export class CloudflareD1Client {
     return data;
   }
 
+  // Delete a D1 database by UUID
   async deleteDatabase(databaseId: string) {
     const encodedDbId = encodeURIComponent(databaseId.trim());
     const { data } = await this.client.delete(`/accounts/${this.accountId}/d1/database/${encodedDbId}`);
@@ -114,6 +127,7 @@ export class CloudflareD1Client {
     return data;
   }
 
+  // Execute parameterized SQL query
   async query(databaseId: string, sql: string, params: any[] = []) {
     const encodedDbId = encodeURIComponent(databaseId.trim());
     const payload: Record<string, any> = {
@@ -129,6 +143,7 @@ export class CloudflareD1Client {
     return data;
   }
 
+  // Execute raw SQL statements
   async rawQuery(databaseId: string, sql: string, params: any[] = []) {
     const encodedDbId = encodeURIComponent(databaseId.trim());
     const payload: Record<string, any> = {
@@ -153,6 +168,7 @@ export default class Cloudflare_d1 implements QueryService {
       const client = new CloudflareD1Client(sourceOptions);
 
       switch (queryOptions?.operation) {
+        // Run SQL query with parameter bindings (? / ?1)
         case 'query': {
           if (!queryOptions?.database_id || !queryOptions.database_id.trim()) {
             throw new QueryError('Query could not be completed', 'Database ID is required for running queries', {});
@@ -167,6 +183,7 @@ export default class Cloudflare_d1 implements QueryService {
             const stmt = statements[0];
             if (Array.isArray(stmt.results) && stmt.results.length > 0) {
               const rows = [...stmt.results];
+              // Attach metadata as non-enumerable properties for ToolJet Table component compatibility
               Object.defineProperty(rows, 'meta', {
                 value: stmt.meta,
                 enumerable: false,
@@ -189,6 +206,7 @@ export default class Cloudflare_d1 implements QueryService {
           break;
         }
 
+        // Run raw SQL queries and return columns and rows
         case 'raw_query': {
           if (!queryOptions?.database_id || !queryOptions.database_id.trim()) {
             throw new QueryError('Query could not be completed', 'Database ID is required for running raw queries', {});
@@ -219,6 +237,7 @@ export default class Cloudflare_d1 implements QueryService {
           break;
         }
 
+        // List databases in the account
         case 'list_databases': {
           const filterParams: any = {};
           if (queryOptions?.name) filterParams.name = queryOptions.name;
@@ -233,6 +252,7 @@ export default class Cloudflare_d1 implements QueryService {
           break;
         }
 
+        // Get database details by UUID
         case 'get_database': {
           if (!queryOptions?.database_id || !queryOptions.database_id.trim()) {
             throw new QueryError('Query could not be completed', 'Database ID is required', {});
@@ -242,6 +262,7 @@ export default class Cloudflare_d1 implements QueryService {
           break;
         }
 
+        // Create a new D1 database
         case 'create_database': {
           if (!queryOptions?.name || !queryOptions.name.trim()) {
             throw new QueryError('Query could not be completed', 'Database name is required', {});
@@ -251,6 +272,7 @@ export default class Cloudflare_d1 implements QueryService {
           break;
         }
 
+        // Delete a D1 database by UUID
         case 'delete_database': {
           if (!queryOptions?.database_id || !queryOptions.database_id.trim()) {
             throw new QueryError('Query could not be completed', 'Database ID is required', {});
@@ -280,6 +302,7 @@ export default class Cloudflare_d1 implements QueryService {
     };
   }
 
+  // Verifies credentials with a lightweight listDatabases ping
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
       if (!sourceOptions?.account_id || !sourceOptions.account_id.trim() || !sourceOptions?.api_token || !sourceOptions.api_token.trim()) {
