@@ -106,12 +106,8 @@ const avatarOf = (value, fallback) => {
 export const cardItems = (data, fields = {}) => {
   if (!Array.isArray(data)) return [];
   const f = fields || {};
-  const metaSpecs = isText(f.metaFields)
-    ? f.metaFields
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : [];
+  // A comma list or a list of names (metaFields={["duration_label", "seats_label"]} showed nothing, 2026-10-14).
+  const metaSpecs = fieldList(f.metaFields);
   const badgeKeys = [...new Set([...(isText(f.badgeField) ? [f.badgeField.trim()] : []), ...fieldList(f.badgeFields)])];
   const items = data.flatMap((row, index) => {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
@@ -252,12 +248,8 @@ export const recordMetaPart = (row, spec, currency) => {
 export const recordItems = (data, fields = {}) => {
   if (!Array.isArray(data)) return [];
   const f = fields || {};
-  const metaSpecs = isText(f.metaFields)
-    ? f.metaFields
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : [];
+  // A comma list or a list of names (metaFields={["duration_label", "seats_label"]} showed nothing, 2026-10-14).
+  const metaSpecs = fieldList(f.metaFields);
   const format = VALUE_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
   const items = data.flatMap((row, index) => {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return [];

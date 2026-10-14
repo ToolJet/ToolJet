@@ -468,3 +468,17 @@ describe('cardItems, a subtitle that repeats the badge', () => {
     expect(card.subtitle).toBe('Portland');
   });
 });
+
+describe('meta fields given as a list', () => {
+  // A course catalog wrote metaFields={["duration_label", "seats_label"]} and its cards showed no duration or seats
+  // (2026-10-14): a list of names reads as the comma list does.
+  const row = { id: 1, title: 'Practical SQL', duration_label: '6 hours', seats_label: '4 seats left' };
+  it('reads a list of field names on cards and records', () => {
+    const asList = cardItems([row], { titleField: 'title', metaFields: ['duration_label', 'seats_label'] })[0];
+    const asText = cardItems([row], { titleField: 'title', metaFields: 'duration_label, seats_label' })[0];
+    expect(asList.meta).toEqual(asText.meta);
+    expect(JSON.stringify(asList.meta)).toContain('6 hours');
+    const record = recordItems([row], { titleField: 'title', metaFields: ['duration_label', 'seats_label'] })[0];
+    expect(JSON.stringify(record.meta)).toContain('4 seats left');
+  });
+});
