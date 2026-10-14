@@ -2,6 +2,11 @@ import toast from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { highlightMatch } from './highlightMatch';
+import type { RevealStep } from './buildSearchRecords';
+import type { SearchMatch } from './searchRecords';
+
+// The App Builder store is untyped JS.
+type StoreState = any;
 
 const WAIT_TIMEOUT_MS = 5000;
 // How long a reveal step may wait for the editor to open it (its list may still be mounting).
@@ -10,14 +15,14 @@ const REVEAL_STEP_TIMEOUT_MS = 1500;
 const LIBRARY_FIELDS = new Set(['preloadedScript', 'libraries']);
 
 // Resolves true once `isReady(state)` holds, or false after the timeout.
-const waitForStore = (isReady, timeoutMs = WAIT_TIMEOUT_MS) =>
-  new Promise((resolve) => {
+const waitForStore = (isReady: (state: StoreState) => boolean, timeoutMs = WAIT_TIMEOUT_MS) =>
+  new Promise<boolean>((resolve) => {
     if (isReady(useStore.getState())) return resolve(true);
     const timer = setTimeout(() => {
       unsubscribe();
       resolve(false);
     }, timeoutMs);
-    const unsubscribe = useStore.subscribe((state) => {
+    const unsubscribe = useStore.subscribe((state: StoreState) => {
       if (!isReady(state)) return;
       clearTimeout(timer);
       unsubscribe();
@@ -28,27 +33,29 @@ const waitForStore = (isReady, timeoutMs = WAIT_TIMEOUT_MS) =>
 // switchPage starts an async switch and returns nothing. Wait for the page id to change, not for
 // `pageSwitchInProgress`: that flag clears only after the new page's exposed-value batch flushes,
 // which on-load queries can push past any sensible wait, and selection does not need it.
-const waitForPage = (pageId, moduleId) => waitForStore((state) => state.modules[moduleId]?.currentPageId === pageId);
+const waitForPage = (pageId: string, moduleId: string) =>
+  waitForStore((state) => state.modules[moduleId]?.currentPageId === pageId);
 
-const openRightSidebar = (tab) => {
+const openRightSidebar = (tab: string) => {
   const { setRightSidebarOpen, setActiveRightSideBarTab } = useStore.getState();
   setRightSidebarOpen(true);
   setActiveRightSideBarTab(tab);
 };
 
 const MODAL_TYPES = new Set(['Modal', 'ModalV2']);
-const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+const nextFrame = () =>
+  new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 // Resolves after the event that started navigation has finished dispatching.
-const afterCurrentEvent = () => new Promise((resolve) => setTimeout(resolve));
+const afterCurrentEvent = () => new Promise<void>((resolve) => setTimeout(resolve));
 
 // Makes a component visible on the canvas: opens every modal it sits in and switches every Tabs
 // ancestor to the tab holding it, outermost first. A child's `parent` is the container id, or
 // `<tabsId>-<tabId>` inside Tabs.
-const revealOnCanvas = async (componentId, moduleId) => {
+const revealOnCanvas = async (componentId: string, moduleId: string) => {
   const { getCurrentPageComponents, getAllExposedValues } = useStore.getState();
   const components = getCurrentPageComponents(moduleId);
-  const steps = [];
-  const visited = new Set();
+  const steps: { containerId: string; action: 'open' | 'setTab'; tabId?: string }[] = [];
+  const visited = new Set<string>();
   let parent = components?.[componentId]?.component?.parent;
   while (parent && !visited.has(parent)) {
     visited.add(parent);
@@ -72,12 +79,12 @@ const revealOnCanvas = async (componentId, moduleId) => {
 // event handler), outermost first, waiting for each to be opened by its useCodeSearchReveal. A step
 // nobody opens (its list isn't mounted, or isn't openable) ends the chain and is withdrawn so it
 // can't fire later. Returns the opened steps, or `superseded` when a newer search took over.
-const runReveal = async (steps = []) => {
+const runReveal = async (steps: RevealStep[] = []): Promise<{ opened?: RevealStep[]; superseded?: boolean }> => {
   // A result click is an outside click for any popover already open, and its close handler runs on
   // the document after this one: opening the next popover before it would have it closed (and its
   // shared state, such as the page being edited, cleared) right away.
   await afterCurrentEvent();
-  const opened = [];
+  const opened: RevealStep[] = [];
   for (const step of steps) {
     const nonce = useStore.getState().requestCodeSearchReveal(step);
     await waitForStore((state) => state.codeSearch.revealRequest?.nonce !== nonce, REVEAL_STEP_TIMEOUT_MS);
@@ -93,12 +100,12 @@ const runReveal = async (steps = []) => {
 };
 
 // Opens the place a search match came from, then selects the match inside it.
-export const navigateToResult = async (match, moduleId = 'canvas') => {
+export const navigateToResult = async (match: SearchMatch, moduleId = 'canvas'): Promise<unknown> => {
   const { record } = match;
   const state = useStore.getState();
 
   if (record.pageId && record.pageId !== state.getCurrentPageId(moduleId)) {
-    const page = state.modules[moduleId].pages.find((p) => p.id === record.pageId);
+    const page = state.modules[moduleId].pages.find((p: { id: string }) => p.id === record.pageId);
     if (!page) return toast.error('That page no longer exists');
     state.switchPage(page.id, page.handle, [], moduleId);
     if (!(await waitForPage(page.id, moduleId))) return toast.error(`Couldn't open page ${page.name}`);
@@ -141,7 +148,7 @@ export const navigateToResult = async (match, moduleId = 'canvas') => {
   }
 
   // Tabs put the field on screen. Popovers are flashed, not opened: the result already names the path.
-  const TAB_KINDS = new Set(['queryTab', 'restTab']);
+  const TAB_KINDS = new Set<RevealStep['kind']>(['queryTab', 'restTab']);
   const steps = (record.reveal || []).filter((step) => TAB_KINDS.has(step.kind));
   const { opened, superseded } = steps.length ? await runReveal(steps) : { opened: [] };
   if (!superseded) highlightMatch(match, opened);

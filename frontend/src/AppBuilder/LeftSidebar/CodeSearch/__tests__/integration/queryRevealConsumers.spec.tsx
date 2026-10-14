@@ -3,12 +3,18 @@
  * A parameter is a popover, so search flashes its pill and does not open the form.
  */
 import React from 'react';
-import { render, screen, act } from '@/test/test-utils';
+import { render, act } from '@/test/test-utils';
 import useStore from '@/AppBuilder/_stores/store';
-import RestTabs from '@/AppBuilder/QueryManager/QueryEditors/Restapi/Tabs';
-import GraphqlKeyValueTabs from '@/AppBuilder/QueryManager/QueryEditors/Graphql/GraphqlKeyValueTabs';
-import ParameterList from '@/AppBuilder/QueryManager/Components/ParameterList';
+import RawRestTabs from '@/AppBuilder/QueryManager/QueryEditors/Restapi/Tabs';
+import RawGraphqlKeyValueTabs from '@/AppBuilder/QueryManager/QueryEditors/Graphql/GraphqlKeyValueTabs';
+import RawParameterList from '@/AppBuilder/QueryManager/Components/ParameterList';
 import { createAppBuilderControls } from '@/test/app-builder/controls';
+import type { RevealStep } from '../../buildSearchRecords';
+
+// Untyped JS components.
+const RestTabs = RawRestTabs as React.ComponentType<any>;
+const GraphqlKeyValueTabs = RawGraphqlKeyValueTabs as React.ComponentType<any>;
+const ParameterList = RawParameterList as React.ComponentType<any>;
 
 // Icon adapter only (external package). The shared __mocks__/lucideDynamicIcon.jsx hands lucide's
 // Icon a component where it expects an icon node, which crashes any ui/Button with an icon.
@@ -20,8 +26,9 @@ const selectQuery = () => {
   state().dataQuery.setQueries([{ id: QUERY_ID, name: 'query1', kind: 'restapi', options: {} }], 'canvas');
   state().queryPanel.setSelectedQuery(QUERY_ID, 'canvas');
 };
-const reveal = (kind, itemId) => act(() => state().requestCodeSearchReveal({ kind, ownerId: QUERY_ID, itemId }));
-const rootOf = (key) => document.querySelector(`[data-reveal-root="${key}"]`);
+const reveal = (kind: RevealStep['kind'], itemId: string) =>
+  act(() => state().requestCodeSearchReveal({ kind, ownerId: QUERY_ID, itemId }));
+const rootOf = (key: string) => document.querySelector(`[data-reveal-root="${key}"]`);
 
 const controls = createAppBuilderControls();
 beforeEach(() => {

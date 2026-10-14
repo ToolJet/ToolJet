@@ -1,6 +1,9 @@
-import { queryTabFor } from '../buildSearchRecords';
+import { queryTabFor, type SearchRecord } from '../buildSearchRecords';
 
-const queryField = (...fieldPath) => ({ entityType: 'query', fieldPath });
+const queryField = (...fieldPath: (string | number)[]): Pick<SearchRecord, 'entityType' | 'fieldPath'> => ({
+  entityType: 'query',
+  fieldPath: fieldPath.map(String),
+});
 
 describe('queryTabFor', () => {
   test('transformation fields open the Transformation tab', () => {
@@ -16,7 +19,12 @@ describe('queryTabFor', () => {
   });
 
   test("a query's event handlers live in the Settings tab", () => {
-    expect(queryTabFor({ entityType: 'event', ownerType: 'query', fieldPath: ['event', 'message'] })).toBe('settings');
+    const handler: Pick<SearchRecord, 'entityType' | 'ownerType' | 'fieldPath'> = {
+      entityType: 'event',
+      ownerType: 'query',
+      fieldPath: ['event', 'message'],
+    };
+    expect(queryTabFor(handler)).toBe('settings');
   });
 
   test('the query name and data source options open Setup', () => {

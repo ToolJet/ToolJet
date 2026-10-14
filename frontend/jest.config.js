@@ -61,7 +61,7 @@ module.exports = {
     'modules/common/helpers/posthogHelper(\\.js)?$': '<rootDir>/src/test/mocks/posthogHelper.js',
     // Real module creates the code-search worker via `import.meta.url` (bundler-only); in tests the
     // stub returns null, so code search runs the same searcher on the main thread.
-    '/createCodeSearchWorker(\\.js)?$': '<rootDir>/src/test/mocks/createCodeSearchWorker.js',
+    '/createCodeSearchWorker(\\.ts)?$': '<rootDir>/src/test/mocks/createCodeSearchWorker.ts',
     '\\.(css|less|sass|scss)$': '<rootDir>/__mocks__/style.js',
     // STUB, not transform, and deliberately so: react-markdown pulls a tree of
     // ~30 ESM-only micromark/mdast/unified packages. Transforming that tree

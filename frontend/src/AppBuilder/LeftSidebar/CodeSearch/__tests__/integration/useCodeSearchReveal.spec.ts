@@ -44,7 +44,7 @@ describe('useCodeSearchReveal', () => {
   });
 
   test('a request that arrives before its item is loaded is opened once the item shows up', () => {
-    let items = [];
+    let items: string[] = [];
     const open = jest.fn((itemId) => items.includes(itemId));
     const { rerender } = renderHook(({ list }) => useCodeSearchReveal('listItem', 'table1', open, [list]), {
       initialProps: { list: items },

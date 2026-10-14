@@ -1,20 +1,107 @@
 // Matches a term against the rows from buildSearchRecords and groups the hits for display:
 // group (page / Queries / App) → entity → one row per field, every occurrence in that row.
-// Pure, like buildSearchRecords; both run in the code-search worker (codeSearch.worker.js).
+// Pure, like buildSearchRecords; both run in the code-search worker (codeSearch.worker.ts).
 
-import { buildSearchRecords } from './buildSearchRecords';
+import {
+  buildSearchRecords,
+  type EntityType,
+  type PlainDefs,
+  type SearchInput,
+  type SearchRecord,
+} from './buildSearchRecords';
 import { replaceIdsWithName } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
+
+export interface MatchOptions {
+  caseSensitive?: boolean;
+  wholeWord?: boolean;
+  regex?: boolean;
+}
+
+export interface SearchFilters extends MatchOptions {
+  type?: 'all' | EntityType;
+  currentPageOnly?: boolean;
+}
+
+export interface Match {
+  start: number;
+  end: number;
+  occurrence: number;
+}
+
+// One clicked occurrence: what navigation opens and highlights.
+export type SearchMatch = Match & { record: SearchRecord };
+
+export interface PreviewSegment {
+  text: string;
+  match: boolean;
+  occurrence?: number;
+}
+
+export interface ResultRow {
+  record: SearchRecord;
+  matches: Match[];
+  preview: PreviewSegment[];
+}
+
+export interface ResultEntity {
+  entityId: string;
+  entityType: EntityType;
+  entityName: string;
+  entitySubtype?: string;
+  componentType?: string;
+  query?: SearchRecord['query'];
+  defined: boolean;
+  count: number;
+  rows: ResultRow[];
+}
+
+export interface ResultGroup {
+  key: string;
+  pageId?: string | null;
+  count: number;
+  entities: ResultEntity[];
+}
+
+export interface SearchResult {
+  groups: ResultGroup[];
+  rows: ResultRow[];
+  total: number;
+  fieldCount: number;
+  truncated: boolean;
+  typeCounts: Record<'all' | EntityType, number>;
+  error: string | null;
+}
+
+// A page as the searcher needs it: its id for ordering, plus whatever buildSearchRecords reads.
+type SearchPage = { id: string; components?: Record<string, { component?: { name?: string } }> };
+
+// What the panel posts: the app definition (only when it changed) and the search to run.
+export interface SearchInputDefinition extends Omit<SearchInput, 'pages' | 'translate' | keyof PlainDefs> {
+  pages: SearchPage[];
+  queryIdNameMapping?: Record<string, string>;
+  defs: PlainDefs;
+}
+
+export interface SearchRequest {
+  input?: SearchInputDefinition;
+  term: string;
+  filters?: SearchFilters;
+  currentPageId?: string | null;
+}
 
 export const MIN_TERM_LENGTH = 2;
 export const MAX_RESULTS = 1000; // field rows
-export const RESULT_TYPES = ['component', 'query', 'event', 'page', 'app'];
+export const RESULT_TYPES: EntityType[] = ['component', 'query', 'event', 'page', 'app'];
 const PREVIEW_LEAD = 10; // characters kept before the first match, so the match is always in view
 const PREVIEW_LENGTH = 160; // wider than the panel on purpose; CSS ellipsis does the visual cut
 
-const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Returns a global RegExp for the term, or { error } when the user's regex does not compile.
-export const buildMatcher = (term, { caseSensitive = false, wholeWord = false, regex = false } = {}) => {
+export const buildMatcher = (
+  term: string,
+  { caseSensitive = false, wholeWord = false, regex = false }: MatchOptions = {}
+): { matcher?: RegExp; error?: string } => {
   const source = regex ? term : escapeRegExp(term);
   try {
     return { matcher: new RegExp(wholeWord ? `\\b(?:${source})\\b` : source, caseSensitive ? 'g' : 'gi') };
@@ -23,8 +110,8 @@ export const buildMatcher = (term, { caseSensitive = false, wholeWord = false, r
   }
 };
 
-const findMatches = (matcher, text) => {
-  const matches = [];
+const findMatches = (matcher: RegExp, text: string) => {
+  const matches: Match[] = [];
   matcher.lastIndex = 0;
   let hit;
   while ((hit = matcher.exec(text)) !== null) {
@@ -39,11 +126,11 @@ const findMatches = (matcher, text) => {
 
 // Text segments for one row: starts just before the first match, every match inside is marked.
 // Whitespace runs collapse to one space so multi-line code previews as one line.
-export const buildPreview = (text, matches) => {
+export const buildPreview = (text: string, matches: Match[]): PreviewSegment[] => {
   const from = Math.max(0, matches[0].start - PREVIEW_LEAD);
   const to = Math.min(text.length, from + PREVIEW_LENGTH);
-  const clean = (value) => value.replace(/\s+/g, ' ');
-  const segments = from > 0 ? [{ text: '…', match: false }] : [];
+  const clean = (value: string) => value.replace(/\s+/g, ' ');
+  const segments: PreviewSegment[] = from > 0 ? [{ text: '…', match: false }] : [];
   let cursor = from;
   for (const { start, end, occurrence } of matches) {
     if (start >= to) break;
@@ -55,17 +142,31 @@ export const buildPreview = (text, matches) => {
   return segments;
 };
 
-const groupKeyOf = (record) =>
+const groupKeyOf = (record: SearchRecord) =>
   record.pageId ? `page:${record.pageId}` : record.entityType === 'app' ? 'app' : 'queries';
 
 export const searchRecords = (
-  records,
-  term,
-  { caseSensitive = false, wholeWord = false, regex = false, type = 'all', currentPageOnly = false } = {},
-  { currentPageId = null, pages = [] } = {}
-) => {
-  const typeCounts = Object.fromEntries(['all', ...RESULT_TYPES].map((key) => [key, 0]));
-  const empty = { groups: [], rows: [], total: 0, fieldCount: 0, truncated: false, typeCounts, error: null };
+  records: SearchRecord[],
+  term: string,
+  {
+    caseSensitive = false,
+    wholeWord = false,
+    regex = false,
+    type = 'all',
+    currentPageOnly = false,
+  }: SearchFilters = {},
+  { currentPageId = null, pages = [] }: { currentPageId?: string | null; pages?: { id: string }[] } = {}
+): SearchResult => {
+  const typeCounts = Object.fromEntries(['all', ...RESULT_TYPES].map((key) => [key, 0])) as SearchResult['typeCounts'];
+  const empty: SearchResult = {
+    groups: [],
+    rows: [],
+    total: 0,
+    fieldCount: 0,
+    truncated: false,
+    typeCounts,
+    error: null,
+  };
   if (!term || term.length < MIN_TERM_LENGTH) return empty;
 
   const { matcher, error } = buildMatcher(term, { caseSensitive, wholeWord, regex });
@@ -73,14 +174,14 @@ export const searchRecords = (
 
   // Current-page scope narrows the search itself; the type filter only narrows what is shown,
   // so chip counts always tell the user what a filter hides.
-  const inScope = currentPageOnly ? (record) => record.pageId === currentPageId : () => true;
+  const inScope = currentPageOnly ? (record: SearchRecord) => record.pageId === currentPageId : () => true;
 
-  const rows = [];
+  const rows: ResultRow[] = [];
   let total = 0;
   let fieldCount = 0;
   for (const record of records) {
     if (!inScope(record)) continue;
-    const matches = findMatches(matcher, record.text);
+    const matches = findMatches(matcher as RegExp, record.text);
     if (!matches.length) continue;
     typeCounts.all += matches.length;
     typeCounts[record.entityType] += matches.length;
@@ -90,13 +191,15 @@ export const searchRecords = (
     if (rows.length < MAX_RESULTS) rows.push({ record, matches, preview: buildPreview(record.text, matches) });
   }
 
-  const groups = new Map();
+  // Entities are keyed by id while grouping, then listed in display order.
+  type GroupDraft = Omit<ResultGroup, 'entities'> & { entities: Map<string, ResultEntity> };
+  const groups = new Map<string, GroupDraft>();
   for (const row of rows) {
     const { record } = row;
     const groupKey = groupKeyOf(record);
     if (!groups.has(groupKey))
       groups.set(groupKey, { key: groupKey, pageId: record.pageId, count: 0, entities: new Map() });
-    const group = groups.get(groupKey);
+    const group = groups.get(groupKey) as GroupDraft;
     // Events display under the component / query / page that owns them.
     const entityId = record.ownerId || record.entityId;
     if (!group.entities.has(entityId)) {
@@ -112,22 +215,23 @@ export const searchRecords = (
         rows: [],
       });
     }
-    const entity = group.entities.get(entityId);
+    const entity = group.entities.get(entityId) as ResultEntity;
     entity.rows.push(row);
     entity.count += row.matches.length;
     group.count += row.matches.length;
   }
 
-  const sameName = (name) => (caseSensitive ? name === term : String(name).toLowerCase() === term.toLowerCase());
+  const sameName = (name: string) =>
+    caseSensitive ? name === term : String(name).toLowerCase() === term.toLowerCase();
   const pageOrder = new Map(pages.map((page, index) => [page.id, index]));
-  const groupRank = (group) => {
+  const groupRank = (group: ResultGroup) => {
     if (group.entities[0]?.defined) return -2;
     if (group.pageId === currentPageId) return -1;
     if (group.pageId) return pageOrder.get(group.pageId) ?? pages.length;
     return group.key === 'queries' ? pages.length + 1 : pages.length + 2;
   };
 
-  const sortedGroups = [...groups.values()]
+  const sortedGroups: ResultGroup[] = [...groups.values()]
     .map((group) => {
       const entities = [...group.entities.values()];
       for (const entity of entities) entity.defined = sameName(entity.entityName);
@@ -155,9 +259,9 @@ export const searchRecords = (
 // search without it reuses the last ones, so only definition changes pay for indexing. Page order
 // comes from the indexed pages, so a search only sends `currentPageId`.
 export const createSearcher = () => {
-  let records = [];
-  let pages = [];
-  return ({ input, term, filters, currentPageId }) => {
+  let records: SearchRecord[] = [];
+  let pages: SearchPage[] = [];
+  return ({ input, term, filters, currentPageId }: SearchRequest): SearchResult => {
     if (input) {
       const { queryIdNameMapping, defs, ...rest } = input;
       pages = input.pages;

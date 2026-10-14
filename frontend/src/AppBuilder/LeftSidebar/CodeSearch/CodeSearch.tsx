@@ -1,29 +1,43 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { ChevronsDownUp, ChevronsUpDown, FileText } from 'lucide-react';
+import { ChevronsDownUp, ChevronsUpDown, FileText, type LucideIcon } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig';
 import { ActionTypes } from '@/AppBuilder/RightSideBar/Inspector/ActionTypes';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button';
-import InputComponent from '@/components/ui/Input/Index';
+import { Button as RawButton } from '@/components/ui/Button/Button';
+import RawInput from '@/components/ui/Input/Index';
 import { ToolTip } from '@/_components/ToolTip';
-import { toPlainDefs } from './buildSearchRecords';
-import { searchRecords, MIN_TERM_LENGTH, RESULT_TYPES } from './searchRecords';
+import type { CodeSearchOptions } from '@/AppBuilder/_stores/slices/codeSearchSlice';
+import { toPlainDefs, type EntityType, type PlainDefs } from './buildSearchRecords';
+import {
+  searchRecords,
+  MIN_TERM_LENGTH,
+  RESULT_TYPES,
+  type ResultGroup,
+  type ResultRow as ResultRowData,
+  type SearchResult,
+} from './searchRecords';
 import { runSearch, disposeSearchWorker } from './searchWorker';
 import { navigateToResult } from './navigateToResult';
 import { Chevron, CountBadge, EntityIcon, ResultRow } from './ResultRow';
 import './codeSearch.scss';
 
+// Untyped JS components.
+const ButtonComponent = RawButton as React.ComponentType<any>;
+const InputComponent = RawInput as React.ComponentType<any>;
+// The App Builder store is untyped JS.
+type StoreState = any;
+
 const SEARCH_DEBOUNCE_MS = 150;
-const EMPTY = [];
+const EMPTY: never[] = [];
 const REGEX_TOO_SLOW = 'Regular expression takes too long to run';
 const EMPTY_RESULT = searchRecords([], '');
 
 // The editor's widget / action / page-settings definitions, reduced to the labels the index shows.
 // They never change at runtime, so they are reduced once.
-let plainDefs = null;
+let plainDefs: PlainDefs | null = null;
 const getPlainDefs = () =>
   (plainDefs ||= toPlainDefs({
     widgetDefs: componentTypeDefinitionMap,
@@ -31,7 +45,12 @@ const getPlainDefs = () =>
     pageSettingsDef: pageConfig,
   }));
 
-const MATCH_TOGGLES = [
+const MATCH_TOGGLES: {
+  key: 'caseSensitive' | 'wholeWord' | 'regex';
+  label: string;
+  title: string;
+  className?: string;
+}[] = [
   { key: 'caseSensitive', label: 'Aa', title: 'Match case' },
   { key: 'wholeWord', label: 'ab', title: 'Match whole word', className: 'tw-underline' },
   { key: 'regex', label: '.*', title: 'Use regular expression' },
@@ -40,7 +59,19 @@ const MATCH_TOGGLES = [
 // Icon-only controls get a real tooltip (the native `title` is slow and easy to miss). A mouse click
 // leaves focus in the search input, as in code editors' find widgets: a focused toggle would keep its
 // focus-triggered tooltip up over the results and the Inspector while you keep searching.
-const IconButton = ({ title, pressed, className, onClick, children }) => (
+const IconButton = ({
+  title,
+  pressed,
+  className,
+  onClick,
+  children,
+}: {
+  title: string;
+  pressed: boolean;
+  className?: string;
+  onClick: () => void;
+  children: ReactNode;
+}) => (
   <ToolTip message={title} placement="bottom">
     <button
       type="button"
@@ -54,7 +85,7 @@ const IconButton = ({ title, pressed, className, onClick, children }) => (
     </button>
   </ToolTip>
 );
-const TYPE_LABELS = {
+const TYPE_LABELS: Record<'all' | EntityType, string> = {
   all: 'All',
   component: 'Components',
   query: 'Queries',
@@ -63,15 +94,31 @@ const TYPE_LABELS = {
   app: 'App',
 };
 
-const plural = (count, word) => `${count.toLocaleString()} ${word}${count === 1 ? '' : 's'}`;
+const plural = (count: number, word: string) => `${count.toLocaleString()} ${word}${count === 1 ? '' : 's'}`;
 
-const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
-  const [term, options, setTerm, setOptions] = useStore(
-    (state) => [state.codeSearch.term, state.codeSearch.options, state.setCodeSearchTerm, state.setCodeSearchOptions],
+interface CodeSearchProps {
+  darkMode: boolean;
+  onClose: () => void;
+  moduleId?: string;
+}
+
+const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps) => {
+  const [term, options, setTerm, setOptions]: [
+    string,
+    CodeSearchOptions,
+    (term: string) => void,
+    (options: Partial<CodeSearchOptions>) => void
+  ] = useStore(
+    (state: StoreState) => [
+      state.codeSearch.term,
+      state.codeSearch.options,
+      state.setCodeSearchTerm,
+      state.setCodeSearchOptions,
+    ],
     shallow
   );
   const [pages, queries, events, globalSettings, pageSettings, currentPageId, queryIdNameMapping] = useStore(
-    (state) => [
+    (state: StoreState) => [
       state.modules[moduleId]?.pages || EMPTY,
       state.dataQuery.queries.modules[moduleId] || EMPTY,
       state.eventsSlice.module[moduleId]?.events || EMPTY,
@@ -86,9 +133,9 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
   const [debouncedTerm, setDebouncedTerm] = useState(term);
   const [activeIndex, setActiveIndex] = useState(-1);
   // Collapsed group (`group:<key>`) and entity (`entity:<id>`) keys; reset whenever the results change.
-  const [collapsed, setCollapsed] = useState(() => new Set());
-  const rootRef = useRef(null);
-  const activeRowRef = useRef(null);
+  const [collapsed, setCollapsed] = useState(() => new Set<string>());
+  const rootRef = useRef<HTMLDivElement>(null);
+  const activeRowRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     rootRef.current?.querySelector('input')?.focus();
@@ -109,14 +156,14 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
   const { caseSensitive, wholeWord, regex, type, currentPageOnly } = options;
 
   // The panel keeps showing the last result until the worker answers.
-  const [result, setResult] = useState(EMPTY_RESULT);
+  const [result, setResult] = useState<SearchResult>(EMPTY_RESULT);
   useEffect(() => {
     if (debouncedTerm.length < MIN_TERM_LENGTH) return setResult(EMPTY_RESULT);
     let current = true;
     const filters = { caseSensitive, wholeWord, regex, type, currentPageOnly };
     runSearch({ input, term: debouncedTerm, filters, currentPageId }).then((outcome) => {
-      if (!current || outcome.superseded) return;
-      setResult(outcome.timedOut ? { ...EMPTY_RESULT, error: REGEX_TOO_SLOW } : outcome.result);
+      if (!current || 'superseded' in outcome) return;
+      setResult('timedOut' in outcome ? { ...EMPTY_RESULT, error: REGEX_TOO_SLOW } : outcome.result);
     });
     return () => {
       current = false;
@@ -146,7 +193,7 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
     activeRowRef.current?.scrollIntoView({ block: 'nearest' });
   }, [activeIndex]);
 
-  const toggle = (key) =>
+  const toggle = (key: string) =>
     setCollapsed((previous) => {
       const next = new Set(previous);
       next.has(key) ? next.delete(key) : next.add(key);
@@ -159,8 +206,8 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
   const toggleAll = () => setCollapsed(allCollapsed ? new Set() : new Set(entityKeys));
 
   // Opening the same row again steps to its next occurrence; a clicked mark opens that one.
-  const lastOpened = useRef({ row: null, occurrence: 0 });
-  const open = (row, occurrence) => {
+  const lastOpened = useRef<{ row: ResultRowData | null; occurrence: number }>({ row: null, occurrence: 0 });
+  const open = (row: ResultRowData, occurrence?: number) => {
     const previous = lastOpened.current;
     const next = occurrence ?? (previous.row === row ? (previous.occurrence + 1) % row.matches.length : 0);
     lastOpened.current = { row, occurrence: next };
@@ -168,9 +215,9 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
     navigateToResult({ record: row.record, ...row.matches[next] }, moduleId);
   };
 
-  const entityKeyOf = (row) => `entity:${row.record.ownerId || row.record.entityId}`;
+  const entityKeyOf = (row: ResultRowData) => `entity:${row.record.ownerId || row.record.entityId}`;
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const activeRow = visibleRows[activeIndex];
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
@@ -180,7 +227,11 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
     } else if (e.key === 'Enter' && activeRow) {
       e.preventDefault();
       open(activeRow);
-    } else if (activeRow && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && e.target.tagName !== 'INPUT') {
+    } else if (
+      activeRow &&
+      (e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+      (e.target as HTMLElement).tagName !== 'INPUT'
+    ) {
       e.preventDefault();
       const key = entityKeyOf(activeRow);
       if ((e.key === 'ArrowLeft') !== collapsed.has(key)) toggle(key);
@@ -192,13 +243,14 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
     }
   };
 
-  const pageName = (pageId) => pages.find((page) => page.id === pageId)?.name || 'Page';
-  const groupTitle = (group) =>
+  const pageName = (pageId?: string | null) =>
+    pages.find((page: { id: string; name: string }) => page.id === pageId)?.name || 'Page';
+  const groupTitle = (group: ResultGroup) =>
     group.key === 'queries' ? 'Queries' : group.key === 'app' ? 'App' : pageName(group.pageId);
   const entityCount = result.groups.reduce((count, group) => count + group.entities.length, 0);
   const hasSearch = debouncedTerm.length >= MIN_TERM_LENGTH && !result.error;
 
-  const renderRow = (row) => {
+  const renderRow = (row: ResultRowData) => {
     const index = visibleRows.indexOf(row);
     return (
       <ResultRow
@@ -272,7 +324,19 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
     return renderTree();
   };
 
-  const toolbarButton = ({ key, title, pressed, onClick, icon: Icon }) => (
+  const toolbarButton = ({
+    key,
+    title,
+    pressed,
+    onClick,
+    icon: Icon,
+  }: {
+    key: string;
+    title: string;
+    pressed: boolean;
+    onClick: () => void;
+    icon: LucideIcon;
+  }) => (
     <IconButton key={key} title={title} pressed={pressed} onClick={onClick}>
       <Icon width="14" height="14" />
     </IconButton>
@@ -289,7 +353,7 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
           <div className="code-search-input">
             <InputComponent
               leadingIcon="search01"
-              onChange={(e) => setTerm(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTerm(e.target.value)}
               onClear={() => setTerm('')}
               size="medium"
               placeholder="Search in app"
@@ -331,7 +395,7 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }) => {
             {result.typeCounts.all > 0 && <span className="code-search-divider" aria-hidden="true" />}
             {result.typeCounts.all > 0 && (
               <div className="code-search-chips" role="radiogroup" aria-label="Filter by type">
-                {['all', ...RESULT_TYPES]
+                {(['all', ...RESULT_TYPES] as const)
                   .filter((key) => key === 'all' || result.typeCounts[key] > 0)
                   .map((key) => (
                     <button

@@ -1,16 +1,19 @@
 /** @jest-environment node */
-import { searchRecords, MAX_RESULTS } from '../searchRecords';
+import { searchRecords, MAX_RESULTS, type ResultRow } from '../searchRecords';
+import type { SearchRecord } from '../buildSearchRecords';
 
-const component = (overrides) => ({
-  entityType: 'component',
-  entityId: 'c1',
-  entityName: 'usersTable',
-  pageId: 'p1',
-  fieldPath: ['properties', 'data'],
-  fieldLabel: 'Properties › Data',
-  shortLabel: 'Data',
-  ...overrides,
-});
+const component = (overrides: Partial<SearchRecord>) =>
+  ({
+    entityType: 'component',
+    entityId: 'c1',
+    entityName: 'usersTable',
+    pageId: 'p1',
+    fieldPath: ['properties', 'data'],
+    fieldLabel: 'Properties › Data',
+    shortLabel: 'Data',
+    ...overrides,
+  } as SearchRecord);
+// Fixtures carry only the fields searchRecords reads.
 const records = [
   component({ text: '{{queries.getUsers.data}}' }),
   component({ entityId: 'c2', entityName: 'title', pageId: 'p2', text: 'Users: {{queries.getUsers.data.length}}' }),
@@ -43,10 +46,10 @@ const records = [
     fieldLabel: 'Events › On row clicked › Query id',
     text: 'getUsers',
   },
-];
+] as SearchRecord[];
 const ctx = { currentPageId: 'p2', pages: [{ id: 'p1' }, { id: 'p2' }] };
-const previewText = (row) => row.preview.map((s) => s.text).join('');
-const marked = (row) => row.preview.filter((s) => s.match).map((s) => s.text);
+const previewText = (row: ResultRow) => row.preview.map((s) => s.text).join('');
+const marked = (row: ResultRow) => row.preview.filter((s) => s.match).map((s) => s.text);
 
 describe('searchRecords', () => {
   test('ignores terms shorter than two characters', () => {
@@ -92,8 +95,8 @@ describe('searchRecords', () => {
 
   test('events nest under their owner entity', () => {
     const p1 = searchRecords(records, 'getUsers', {}, ctx).groups.find((g) => g.key === 'page:p1');
-    expect(p1.entities).toHaveLength(1);
-    expect(p1.entities[0].rows).toHaveLength(2);
+    expect(p1?.entities).toHaveLength(1);
+    expect(p1?.entities[0].rows).toHaveLength(2);
   });
 
   test('several occurrences in one field make one row with every occurrence marked', () => {
@@ -109,9 +112,9 @@ describe('searchRecords', () => {
     expect(row.preview.filter((s) => s.match).map((s) => s.occurrence)).toEqual([0, 1, 2]);
   });
 
-  test('matches found elsewhere (the regex worker) are used as given, one list per record', () => {
+  test('a regex marks what it matches, per record', () => {
     const texts = [component({ text: 'alpha' }), component({ entityId: 'c2', text: 'beta' })];
-    const result = searchRecords(texts, 'al+', { regex: true }, ctx, [[{ start: 0, end: 2, occurrence: 0 }], []]);
+    const result = searchRecords(texts, 'al+', { regex: true }, ctx);
     expect(result.rows).toHaveLength(1);
     expect(result.rows[0].matches).toEqual([{ start: 0, end: 2, occurrence: 0 }]);
     expect(marked(result.rows[0])).toEqual(['al']);
@@ -132,8 +135,8 @@ describe('searchRecords', () => {
   test('counts occurrences per entity and per group', () => {
     const result = searchRecords(records, 'getUsers', {}, ctx);
     const p1 = result.groups.find((g) => g.key === 'page:p1');
-    expect(p1.count).toBe(2);
-    expect(p1.entities[0].count).toBe(2);
+    expect(p1?.count).toBe(2);
+    expect(p1?.entities[0].count).toBe(2);
   });
 
   test('type filter narrows rows but chip counts stay unfiltered', () => {

@@ -1,7 +1,8 @@
 /** @jest-environment node */
 // jest.config.js stubs createCodeSearchWorker to return null, so every search here takes the
 // main-thread fallback.
-import { runSearch } from '../searchWorker';
+import { runSearch, type SearchOutcome } from '../searchWorker';
+import type { SearchFilters, SearchResult } from '../searchRecords';
 
 const input = {
   pages: [],
@@ -19,7 +20,8 @@ const input = {
   queryIdNameMapping: {},
   defs: { widgetDefs: {}, actionDefs: [], pageSettingsDef: {} },
 };
-const search = (term, filters = {}) => runSearch({ input, term, filters, currentPageId: null });
+const search = (term: string, filters: SearchFilters = {}) =>
+  runSearch({ input, term, filters, currentPageId: null }) as Promise<SearchOutcome & { result: SearchResult }>;
 
 describe('runSearch without a worker', () => {
   test('runs a literal search on the main thread', async () => {

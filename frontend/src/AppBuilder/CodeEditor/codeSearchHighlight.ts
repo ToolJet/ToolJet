@@ -1,14 +1,18 @@
-import { Decoration, ViewPlugin } from '@codemirror/view';
+import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate } from '@codemirror/view';
 import { RangeSetBuilder, StateEffect } from '@codemirror/state';
 import useStore from '@/AppBuilder/_stores/store';
+import type { CodeSearchState } from '@/AppBuilder/_stores/slices/codeSearchSlice';
 import { buildMatcher, MIN_TERM_LENGTH } from '@/AppBuilder/LeftSidebar/CodeSearch/searchRecords';
 
 // Marks every match of the code search term in this editor while the Code search panel is open,
 // so a jump lands on a field whose matches are all visible at a glance.
 const matchMark = Decoration.mark({ class: 'tj-code-search-match' });
-const refresh = StateEffect.define();
+const refresh = StateEffect.define<null>();
 
-const activeMatcher = (state) => {
+// The store fields this plugin reads.
+type HighlightState = CodeSearchState & { isSidebarOpen: boolean; selectedSidebarItem: string };
+
+const activeMatcher = (state: HighlightState): RegExp | null => {
   const { term, options } = state.codeSearch;
   const panelOpen = state.isSidebarOpen && state.selectedSidebarItem === 'search';
   if (!panelOpen || !term || term.length < MIN_TERM_LENGTH) return null;
@@ -18,8 +22,8 @@ const activeMatcher = (state) => {
   return buildMatcher(term, options).matcher || null;
 };
 
-const buildDecorations = (view, matcher) => {
-  const builder = new RangeSetBuilder();
+const buildDecorations = (view: EditorView, matcher: RegExp | null): DecorationSet => {
+  const builder = new RangeSetBuilder<Decoration>();
   if (!matcher) return builder.finish();
   for (const { from, to } of view.visibleRanges) {
     const text = view.state.sliceDoc(from, to);
@@ -40,10 +44,14 @@ const buildDecorations = (view, matcher) => {
 // shared subscription if editor counts grow large.
 export const codeSearchHighlight = ViewPlugin.fromClass(
   class {
-    constructor(view) {
+    matcher: RegExp | null;
+    decorations: DecorationSet;
+    unsubscribe: () => void;
+
+    constructor(view: EditorView) {
       this.matcher = activeMatcher(useStore.getState());
       this.decorations = buildDecorations(view, this.matcher);
-      this.unsubscribe = useStore.subscribe((state, previous) => {
+      this.unsubscribe = useStore.subscribe((state: HighlightState, previous: HighlightState) => {
         const changed =
           state.codeSearch !== previous.codeSearch ||
           state.isSidebarOpen !== previous.isSidebarOpen ||
@@ -55,7 +63,7 @@ export const codeSearchHighlight = ViewPlugin.fromClass(
       });
     }
 
-    update(update) {
+    update(update: ViewUpdate) {
       const refreshed = update.transactions.some((tr) => tr.effects.some((effect) => effect.is(refresh)));
       if (refreshed || update.docChanged || update.viewportChanged) {
         this.decorations = buildDecorations(update.view, this.matcher);

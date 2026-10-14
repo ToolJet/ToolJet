@@ -1,4 +1,4 @@
-// Indexes the app definition and runs searches off the main thread; see searchWorker.js.
+// Indexes the app definition and runs searches off the main thread; see searchWorker.ts.
 import { createSearcher } from './searchRecords';
 
 const search = createSearcher();

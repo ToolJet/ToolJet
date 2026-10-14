@@ -2,8 +2,63 @@
 // Pure: no store access, so it can move into a Web Worker unchanged. Reads the saved definition
 // only — never resolved state — so `{{secrets.x}}` is indexed as written, never as its value.
 
+export type EntityType = 'component' | 'query' | 'event' | 'page' | 'app';
+
+// One thing navigation asks the editor to open; see useCodeSearchReveal.
+export interface RevealStep {
+  kind: 'listItem' | 'page' | 'queryTab' | 'queryParam' | 'restTab' | 'popoverTab' | 'event' | 'preloadedScript';
+  ownerId: string | null;
+  itemId: string;
+}
+
+// The saved app definition is untyped store data; it is read defensively throughout.
+type Saved = any;
+
+interface RecordBase {
+  entityType: EntityType;
+  entityId: string;
+  entityName: string;
+  entitySubtype?: string;
+  componentType?: string;
+  pageId?: string | null;
+  query?: Saved;
+  // Events: the component / query / page that owns the handler.
+  ownerType?: EntityType;
+  ownerId?: string;
+  eventId?: string;
+  reveal?: RevealStep[];
+}
+
+export interface SearchRecord extends RecordBase {
+  fieldPath: string[];
+  fieldLabel: string;
+  shortLabel: string;
+  text: string;
+}
+
+type Labels = { displayName?: string } & Record<string, Record<string, { displayName: string }> | string | undefined>;
+
+export interface PlainDefs {
+  widgetDefs: Record<string, Labels | undefined>;
+  actionDefs: { id: string; name: string }[];
+  pageSettingsDef: Labels | undefined;
+}
+
+// Definitions are read defensively, so raw widget configs work as well as their plain labels.
+export interface SearchInput {
+  widgetDefs?: Record<string, Saved>;
+  actionDefs?: PlainDefs['actionDefs'];
+  pageSettingsDef?: Saved;
+  pages?: Saved[];
+  queries?: Saved[];
+  events?: Saved[];
+  globalSettings?: Saved;
+  pageSettings?: Saved;
+  translate?: (text: string) => string;
+}
+
 const COMPONENT_SECTIONS = ['properties', 'styles', 'general', 'generalStyles', 'validation', 'others'];
-const SECTION_LABELS = {
+const SECTION_LABELS: Record<string, string> = {
   properties: 'Properties',
   styles: 'Styles',
   general: 'Properties',
@@ -30,7 +85,7 @@ const GLOBAL_SETTINGS_SKIP_KEYS = new Set(['preloadedScript', 'libraries', 'them
 const BARE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // `onRowClicked` → `On row clicked`, `url_params` → `Url params` (sentence case, like the Inspector).
-const humanize = (key) =>
+const humanize = (key: string): string =>
   String(key)
     .replace(/[_-]+/g, ' ')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -38,7 +93,7 @@ const humanize = (key) =>
     .replace(/^./, (c) => c.toUpperCase());
 
 // Calls visit(path, value) for every string/number/boolean leaf under `value`.
-const walkLeaves = (value, path, visit) => {
+const walkLeaves = (value: Saved, path: string[], visit: (path: string[], text: string) => void): void => {
   if (value === null || value === undefined) return;
   if (typeof value === 'object') {
     for (const [key, child] of Object.entries(value)) {
@@ -54,7 +109,7 @@ const walkLeaves = (value, path, visit) => {
 };
 
 // Trigger names for events that don't come from a widget config (query and page handlers).
-const NON_WIDGET_EVENT_NAMES = {
+const NON_WIDGET_EVENT_NAMES: Record<string, string> = {
   onDataQuerySuccess: 'Query Success',
   onDataQueryFailure: 'Query Failure',
   onPageLoad: 'On page load',
@@ -62,33 +117,34 @@ const NON_WIDGET_EVENT_NAMES = {
 // Shown in the handler label instead of indexed as content.
 const EVENT_SKIP_KEYS = new Set(['eventId', 'actionId']);
 // Action params store ids under `queryId`, `componentId`, …; the card labels them `Query`, `Component`.
-const stripIdSuffix = (key) => String(key).replace(/(.)Id$/, '$1');
+const stripIdSuffix = (key: string) => String(key).replace(/(.)Id$/, '$1');
 
 // `properties.data.value` is stored as `{ data: { value } }`; the field is `data`. A list item's own
 // `value` (`options[0].value`) is a real field, not that wrapper, so it stays.
-const stripValueKey = (path) =>
+const stripValueKey = (path: string[]) =>
   path[path.length - 1] === 'value' && !/^\d+$/.test(path[path.length - 2]) ? path.slice(0, -1) : path;
 
 const STYLE_SECTIONS = new Set(['styles', 'generalStyles']);
 
 // Short name for a nested settings path: `Page header · Height` rather than five `Page header` rows.
-const pathShortLabel = (fieldPath) =>
+const pathShortLabel = (fieldPath: string[]) =>
   fieldPath.length > 1
     ? `${humanize(fieldPath[0])} · ${humanize(fieldPath[fieldPath.length - 1])}`
     : humanize(fieldPath[0]);
 
 // A key-value row (REST headers, params, cookies, body) is stored as `[key, value]`.
-const isKeyValuePair = (item) => Array.isArray(item) && item.length === 2 && typeof item[0] === 'string';
+const isKeyValuePair = (item: Saved): boolean =>
+  Array.isArray(item) && item.length === 2 && typeof item[0] === 'string';
 
 // A list item's own name (`email` column, `Submit` action, `page` header), or its position when it has none.
-const itemName = (item, index) =>
+const itemName = (item: Saved, index: string): string =>
   [isKeyValuePair(item) ? item[0] : undefined, item?.name, item?.label, item?.title, item?.key, item?.buttonText].find(
     (v) => typeof v === 'string' && v.trim()
   ) ?? `#${Number(index) + 1}`;
 
 // How a list editor finds one of its items: by id, else by the value / title / name it is keyed on,
 // else (a Form's field) by the component it renders.
-const itemIdentity = (item) => {
+const itemIdentity = (item: Saved): string | undefined => {
   if (!item || typeof item !== 'object') return undefined;
   const identity = [item.id, item.value, item.title, item.name, item.componentId].find((v) => v != null && v !== '');
   return identity === undefined ? undefined : String(identity);
@@ -97,9 +153,9 @@ const itemIdentity = (item) => {
 // Readable rest of a field path: drops the `value` wrapper and names list items instead of
 // numbering them (`Table Columns › email › Name`, not `› Value › 3 › Name`). Also returns the
 // identity of each list item on the way down, outermost first, so navigation can open them.
-const readableRest = (savedField, rest, { valueWrapper = true } = {}) => {
-  const parts = [];
-  const itemIds = [];
+const readableRest = (savedField: Saved, rest: string[], { valueWrapper = true } = {}) => {
+  const parts: string[] = [];
+  const itemIds: string[] = [];
   let node = savedField;
   rest.forEach((key, i) => {
     const parent = node;
@@ -118,7 +174,7 @@ const readableRest = (savedField, rest, { valueWrapper = true } = {}) => {
 };
 
 // Full path for the tooltip, short name for the result row (`Disable`, `Style · Box shadow`).
-const componentFieldLabels = (widgetDef, section, fieldPath, saved) => {
+const componentFieldLabels = (widgetDef: Saved, section: string, fieldPath: string[], saved: Saved) => {
   const key = fieldPath[0];
   const name = widgetDef?.[section]?.[key]?.displayName?.trim() || humanize(key);
   const { parts, itemIds } = readableRest(saved?.[key], fieldPath.slice(1));
@@ -154,7 +210,7 @@ const SETTINGS_OPTIONS = new Set([
 ]);
 
 // The query manager tab a query field (or query event handler) is edited in.
-export const queryTabFor = (record) => {
+export const queryTabFor = (record: Pick<SearchRecord, 'entityType' | 'fieldPath'>): string => {
   if (record.entityType === 'event') return 'settings';
   if (record.fieldPath[0] !== 'options') return 'setup';
   if (TRANSFORMATION_OPTIONS.has(record.fieldPath[1])) return 'transformation';
@@ -182,13 +238,13 @@ const TABLE_COLUMN_STYLE_KEYS = new Set([
 
 // Reveal steps: what navigation asks the editor to open, outermost first, so the match is on screen.
 // Each is consumed by the component that shows it (see useCodeSearchReveal).
-const listItemStep = (ownerId, itemId) => ({
+const listItemStep = (ownerId: string, itemId: string): RevealStep => ({
   kind: 'listItem',
   ownerId,
   itemId,
 });
-const pageStep = (pageId) => ({ kind: 'page', ownerId: null, itemId: pageId });
-const queryTabStep = (queryId, tab) => ({
+const pageStep = (pageId: string): RevealStep => ({ kind: 'page', ownerId: null, itemId: pageId });
+const queryTabStep = (queryId: string, tab: string): RevealStep => ({
   kind: 'queryTab',
   ownerId: queryId,
   itemId: tab,
@@ -196,7 +252,7 @@ const queryTabStep = (queryId, tab) => ({
 
 // Request sub-tabs, by query kind: option key → tab key (REST shows `url_params` as `params` and
 // edits the raw body in its Body tab; GraphQL's tabs are keyed by the option name).
-const REQUEST_TABS = {
+const REQUEST_TABS: Record<string, Record<string, string>> = {
   restapi: {
     headers: 'headers',
     url_params: 'params',
@@ -209,7 +265,7 @@ const REQUEST_TABS = {
 };
 
 // Inside the Setup tab: a parameter's popover (`parameters[i]`, by name) or a request sub-tab.
-const queryOptionReveal = (query, path) => {
+const queryOptionReveal = (query: Saved, path: string[]): RevealStep[] => {
   const steps = [queryTabStep(query.id, queryTabFor({ entityType: 'query', fieldPath: ['options', ...path] }))];
   const paramName = path[0] === 'parameters' ? query.options.parameters?.[path[1]]?.name : undefined;
   if (paramName)
@@ -223,7 +279,13 @@ const queryOptionReveal = (query, path) => {
   return steps;
 };
 
-const componentFieldReveal = (componentId, type, section, fieldPath, itemIds) => {
+const componentFieldReveal = (
+  componentId: string,
+  type: string,
+  section: string,
+  fieldPath: string[],
+  itemIds: string[]
+): RevealStep[] => {
   const steps = itemIds.map((itemId) => listItemStep(componentId, itemId));
   // properties.columns.value[i].<styleKey>
   const isColumnStyle =
@@ -238,10 +300,10 @@ const componentFieldReveal = (componentId, type, section, fieldPath, itemIds) =>
 // popover, a Table column's popover (`ref` = column name; `<column>::<buttonId>` for a button in a
 // button column), a Table action (`ref` = action name), a Navigation item (`ref` = item id), or the
 // component's own Events section.
-const eventReveal = (event, columnsOf) => {
+const eventReveal = (event: Saved, columnsOf: (componentId: string) => Saved[]): RevealStep[] => {
   const { sourceId, target } = event;
   const ref = event.event?.ref;
-  const handler = { kind: 'event', ownerId: sourceId, itemId: event.id };
+  const handler: RevealStep = { kind: 'event', ownerId: sourceId, itemId: event.id };
   if (target === 'data_query') return [queryTabStep(sourceId, 'settings'), handler];
   if (target === 'page') return [pageStep(sourceId), handler];
   if (target === 'table_column') {
@@ -259,12 +321,14 @@ const eventReveal = (event, columnsOf) => {
 // A widget config (or the page settings config) keeps only its display labels: `displayName` and
 // `<section>.<key>.displayName` (sections include `events`). Configs also hold functions and JSX,
 // which can't be posted to the search worker.
-const plainLabels = (def) => {
+const plainLabels = (def: Saved): Labels | undefined => {
   if (!def || typeof def !== 'object') return undefined;
-  const plain = typeof def.displayName === 'string' ? { displayName: def.displayName } : {};
+  const plain: Labels = typeof def.displayName === 'string' ? { displayName: def.displayName } : {};
   for (const [section, fields] of Object.entries(def)) {
     if (!fields || typeof fields !== 'object' || Array.isArray(fields)) continue;
-    const labels = Object.entries(fields).filter(([, field]) => typeof field?.displayName === 'string');
+    const labels = Object.entries(fields).filter(
+      ([, field]: [string, Saved]) => typeof field?.displayName === 'string'
+    );
     if (labels.length)
       plain[section] = Object.fromEntries(labels.map(([key, field]) => [key, { displayName: field.displayName }]));
   }
@@ -272,7 +336,15 @@ const plainLabels = (def) => {
 };
 
 // The parts of the editor's definitions buildSearchRecords reads, as plain cloneable data.
-export const toPlainDefs = ({ widgetDefs = {}, actionDefs = [], pageSettingsDef = {} }) => ({
+export const toPlainDefs = ({
+  widgetDefs = {},
+  actionDefs = [],
+  pageSettingsDef = {},
+}: {
+  widgetDefs?: Record<string, Saved>;
+  actionDefs?: Saved[];
+  pageSettingsDef?: Saved;
+}): PlainDefs => ({
   widgetDefs: Object.fromEntries(Object.entries(widgetDefs).map(([type, def]) => [type, plainLabels(def)])),
   actionDefs: actionDefs.map(({ id, name }) => ({ id, name })),
   pageSettingsDef: plainLabels(pageSettingsDef),
@@ -288,20 +360,20 @@ export const buildSearchRecords = ({
   widgetDefs = {},
   actionDefs = [],
   pageSettingsDef = {},
-}) => {
-  const idNames = {};
+}: SearchInput): SearchRecord[] => {
+  const idNames: Record<string, string> = {};
   for (const page of pages) {
     idNames[page.id] = page.name;
-    for (const [id, { component } = {}] of Object.entries(page.components || {})) idNames[id] = component?.name;
+    for (const [id, { component } = {}] of Object.entries<Saved>(page.components || {})) idNames[id] = component?.name;
   }
   for (const query of queries) idNames[query.id] = query.name;
 
-  const records = [];
+  const records: SearchRecord[] = [];
   // Owner lookup for events: an event's sourceId is a component, query or page id.
-  const owners = new Map();
-  const savedColumns = new Map();
-  const columnsOf = (componentId) => savedColumns.get(componentId) || [];
-  const push = (base, fieldPath, fieldLabel, value, shortLabel = fieldLabel) => {
+  const owners = new Map<string, RecordBase>();
+  const savedColumns = new Map<string, Saved[]>();
+  const columnsOf = (componentId: string) => savedColumns.get(componentId) || [];
+  const push = (base: RecordBase, fieldPath: string[], fieldLabel: string, value: string, shortLabel = fieldLabel) => {
     records.push({
       ...base,
       fieldPath,
@@ -312,7 +384,7 @@ export const buildSearchRecords = ({
   };
 
   for (const page of pages) {
-    const pageBase = {
+    const pageBase: RecordBase = {
       entityType: 'page',
       entityId: page.id,
       entityName: page.name,
@@ -331,11 +403,11 @@ export const buildSearchRecords = ({
       push(pageBase, fieldPath, fieldPath.map(humanize).join(' › '), text, pathShortLabel(fieldPath));
     });
 
-    for (const [componentId, { component } = {}] of Object.entries(page.components || {})) {
+    for (const [componentId, { component } = {}] of Object.entries<Saved>(page.components || {})) {
       if (!component) continue;
       const type = component.component;
       const widgetDef = widgetDefs[type];
-      const base = {
+      const base: RecordBase = {
         entityType: 'component',
         entityId: componentId,
         entityName: component.name,
@@ -362,7 +434,7 @@ export const buildSearchRecords = ({
   }
 
   for (const query of queries) {
-    const base = {
+    const base: RecordBase = {
       entityType: 'query',
       entityId: query.id,
       entityName: query.name,
@@ -385,31 +457,31 @@ export const buildSearchRecords = ({
 
   // Handlers sharing a trigger and action on one owner look alike, so those get a suffix.
   const ownedEvents = events.filter((event) => owners.has(event.sourceId));
-  const kindOf = (event) => `${event.sourceId}:${event.event?.eventId}:${event.event?.actionId}`;
-  const lookAlikes = {};
+  const kindOf = (event: Saved) => `${event.sourceId}:${event.event?.eventId}:${event.event?.actionId}`;
+  const lookAlikes: Record<string, Saved[]> = {};
   for (const event of ownedEvents) (lookAlikes[kindOf(event)] ||= []).push(event);
   // Told apart by handler name, unless the names repeat too (auto-named handlers): then by position.
-  const suffixOf = (event) => {
+  const suffixOf = (event: Saved) => {
     const group = lookAlikes[kindOf(event)];
     if (group.length < 2) return '';
-    const namesUnique = group.every((other) => other === event || other.name !== event.name);
+    const namesUnique = group.every((other: Saved) => other === event || other.name !== event.name);
     if (event.name && namesUnique) return ` (${event.name})`;
-    const byIndex = [...group].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+    const byIndex = [...group].sort((a: Saved, b: Saved) => (a.index ?? 0) - (b.index ?? 0));
     return ` #${byIndex.indexOf(event) + 1}`;
   };
 
   for (const event of ownedEvents) {
-    const owner = owners.get(event.sourceId);
+    const owner = owners.get(event.sourceId) as RecordBase;
     const { eventId, actionId } = event.event || {};
     // Same text the handler card shows: `<trigger> → <action>`.
     const trigger =
-      widgetDefs[owner.componentType]?.events?.[eventId]?.displayName ||
+      widgetDefs[owner.componentType ?? '']?.events?.[eventId]?.displayName ||
       NON_WIDGET_EVENT_NAMES[eventId] ||
       humanize(eventId || event.name || 'event');
     const action = actionDefs.find((def) => def.id === actionId)?.name;
     const handler = (action ? `${trigger} → ${action}` : trigger) + suffixOf(event);
     const fullPrefix = ['Events', event.name, handler].filter(Boolean).join(' › ');
-    const base = {
+    const base: RecordBase = {
       ...owner,
       ownerType: owner.entityType,
       ownerId: owner.entityId,
@@ -432,7 +504,7 @@ export const buildSearchRecords = ({
   }
 
   // App-wide page navigation settings (header, menu, pill styles); edited in the Pages panel.
-  const pageSettingsBase = {
+  const pageSettingsBase: RecordBase = {
     entityType: 'app',
     entityId: 'pageSettings',
     entityName: 'Pages and navigation',
@@ -449,7 +521,7 @@ export const buildSearchRecords = ({
     });
   }
 
-  const appBase = {
+  const appBase: RecordBase = {
     entityType: 'app',
     entityId: 'app',
     entityName: 'App',
@@ -458,7 +530,7 @@ export const buildSearchRecords = ({
   };
   const preloaded = globalSettings?.preloadedScript?.javascript;
   if (preloaded) {
-    const reveal = [{ kind: 'preloadedScript', ownerId: null, itemId: 'javascript' }];
+    const reveal: RevealStep[] = [{ kind: 'preloadedScript', ownerId: null, itemId: 'javascript' }];
     push({ ...appBase, reveal }, ['preloadedScript', 'javascript'], 'Preloaded JavaScript', preloaded);
   }
   walkLeaves(globalSettings, [], (path, text) => {
@@ -467,9 +539,9 @@ export const buildSearchRecords = ({
     if (fieldPath.length === 0) return;
     push(appBase, fieldPath, fieldPath.map(humanize).join(' › '), text, pathShortLabel(fieldPath));
   });
-  (globalSettings?.libraries?.javascript || []).forEach((library, index) => {
+  (globalSettings?.libraries?.javascript || []).forEach((library: Saved, index: number) => {
     const value = typeof library === 'string' ? library : library?.url || library?.name;
-    if (value) push(appBase, ['libraries', 'javascript', index], 'JavaScript libraries', value);
+    if (value) push(appBase, ['libraries', 'javascript', String(index)], 'JavaScript libraries', value);
   });
 
   return records;

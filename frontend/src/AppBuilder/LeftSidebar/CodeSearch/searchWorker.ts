@@ -3,28 +3,44 @@
 // (`(a+)+$`) would freeze it — a running RegExp can't be interrupted, only its worker terminated.
 
 import { createCodeSearchWorker } from './createCodeSearchWorker';
-import { createSearcher, searchRecords } from './searchRecords';
+import {
+  createSearcher,
+  searchRecords,
+  type SearchInputDefinition,
+  type SearchRequest,
+  type SearchResult,
+} from './searchRecords';
+
+export type SearchOutcome = { result: SearchResult } | { timedOut: true } | { superseded: true };
+
+interface PendingSearch {
+  id: number;
+  regex: boolean;
+  timer: ReturnType<typeof setTimeout> | null;
+  resolve: (outcome: SearchOutcome) => void;
+  request: SearchRequest;
+}
 
 export const REGEX_TIMEOUT_MS = 2000;
 
-let worker = null;
-let postedInput = null; // the definition this worker instance has indexed
-let pending = null; // { id, regex, timer, resolve, request } of the search the worker is running
+let worker: Worker | null = null;
+let postedInput: SearchInputDefinition | undefined; // the definition this worker instance has indexed
+let pending: PendingSearch | null = null; // { id, regex, timer, resolve, request } of the search the worker is running
 let nextId = 0;
 // Main-thread fallback when workers can't start or the worker fails: same searcher, same results.
 let workerFailed = false;
-let mainThreadSearch = null;
-let mainThreadInput = null;
+let mainThreadSearch: ReturnType<typeof createSearcher> | null = null;
+let mainThreadInput: SearchInputDefinition | undefined;
 
 const stop = () => {
   worker?.terminate();
   worker = null;
-  postedInput = null;
+  postedInput = undefined;
 };
 
-const settle = (outcome) => {
+const settle = (outcome: SearchOutcome) => {
   if (!pending) return;
-  clearTimeout(pending.timer);
+  if (pending.timer) clearTimeout(pending.timer);
   const { resolve } = pending;
   pending = null;
   resolve(outcome);
@@ -33,7 +49,7 @@ const settle = (outcome) => {
 const REGEX_NEEDS_WORKER = "Regular expression search isn't available in this browser";
 
 // A user's regex can backtrack for seconds and can't be interrupted, so it never runs here.
-const searchOnMainThread = ({ input, ...request }) => {
+const searchOnMainThread = ({ input, ...request }: SearchRequest): SearchOutcome => {
   if (request.filters?.regex) return { result: { ...searchRecords([], ''), error: REGEX_NEEDS_WORKER } };
   mainThreadSearch ||= createSearcher();
   const changed = input !== mainThreadInput;
@@ -54,7 +70,7 @@ const giveUpOnWorker = () => {
 // `input` is the app definition (see CodeSearch.jsx); it is posted only when it changed since the
 // worker last indexed it. Resolves `{ result }`, `{ timedOut: true }` when a regex ran past the
 // timeout, or `{ superseded: true }` when a newer search replaced this one.
-export const runSearch = (request) =>
+export const runSearch = (request: SearchRequest): Promise<SearchOutcome> =>
   new Promise((resolve) => {
     if (pending) {
       const mayBeStuck = pending.regex;
@@ -104,5 +120,5 @@ export const disposeSearchWorker = () => {
   settle({ superseded: true });
   stop();
   mainThreadSearch = null;
-  mainThreadInput = null;
+  mainThreadInput = undefined;
 };

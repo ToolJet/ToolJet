@@ -4,13 +4,14 @@
  * element counts as on screen unless it sits inside `[data-offscreen]` (an inactive tab pane).
  */
 import { highlightMatch } from '../highlightMatch';
+import type { RevealStep, SearchRecord } from '../buildSearchRecords';
 
 const FLASH = 'tj-code-search-flash';
 
 beforeEach(() => {
   jest.useFakeTimers();
-  jest.spyOn(Element.prototype, 'getClientRects').mockImplementation(function () {
-    return this.closest('[data-offscreen]') ? [] : [{}];
+  jest.spyOn(Element.prototype, 'getClientRects').mockImplementation(function (this: Element) {
+    return (this.closest('[data-offscreen]') ? [] : [{}]) as unknown as DOMRectList;
   });
   Element.prototype.scrollIntoView = jest.fn();
 });
@@ -21,14 +22,15 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-const mount = (html) => {
+const mount = (html: string) => {
   document.body.innerHTML = html;
 };
 
-const land = (record, opened = []) => {
-  highlightMatch({ record, start: 0, end: record.text.length }, opened);
+// Fixtures carry only the fields highlightMatch reads.
+const land = (record: Partial<SearchRecord>, opened: RevealStep[] = []) => {
+  highlightMatch({ record: record as SearchRecord, start: 0, end: record.text?.length ?? 0, occurrence: 0 }, opened);
   jest.advanceTimersByTime(200);
-  return document.querySelector(`.${FLASH}`);
+  return document.querySelector<HTMLElement>(`.${FLASH}`);
 };
 
 describe('highlightMatch: landing on the field', () => {
@@ -44,7 +46,7 @@ describe('highlightMatch: landing on the field', () => {
       text: 'table1',
     });
     expect(flashed?.dataset.param).toBe('name');
-    expect(document.activeElement.value).toBe('table1');
+    expect((document.activeElement as HTMLInputElement).value).toBe('table1');
   });
 
   test('two fields holding the same text: each lands on its own key, skipping an off-screen tab', () => {
@@ -61,7 +63,7 @@ describe('highlightMatch: landing on the field', () => {
       text: 'var(--text)',
     });
     expect(flashed?.dataset.param).toBe('textColor');
-    expect(flashed.closest('[data-offscreen]')).toBeNull();
+    expect(flashed?.closest('[data-offscreen]')).toBeNull();
   });
 
   test('a value inside a popover flashes that popover row', () => {
@@ -105,6 +107,6 @@ describe('highlightMatch: landing on the field', () => {
       fieldPath: ['properties', 'columns', 'value', '0', 'name'],
       text: 'email',
     });
-    expect(document.querySelector('[data-param="name"]').classList.contains(FLASH)).toBe(false);
+    expect(document.querySelector('[data-param="name"]')?.classList.contains(FLASH)).toBe(false);
   });
 });

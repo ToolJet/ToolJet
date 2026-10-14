@@ -1,6 +1,8 @@
 /** @jest-environment node */
-import { buildSearchRecords, toPlainDefs } from '../buildSearchRecords';
+import { buildSearchRecords, toPlainDefs, type SearchInput, type SearchRecord } from '../buildSearchRecords';
 import { createSearcher } from '../searchRecords';
+
+type Predicate = (record: SearchRecord) => boolean;
 
 const TABLE_ID = '11111111-1111-4111-8111-111111111111';
 const CHILD_ID = '22222222-2222-4222-8222-222222222222';
@@ -95,9 +97,9 @@ const actionDefs = [
   { id: 'show-alert', name: 'Show Alert' },
 ];
 // Mirrors the store's replaceIdsWithName for the one id used in these fixtures.
-const translate = (text) => text.replaceAll(`queries.${QUERY_ID}`, 'queries.getUsers');
+const translate = (text: string) => text.split(`queries.${QUERY_ID}`).join('queries.getUsers');
 
-const build = (overrides = {}) =>
+const build = (overrides: SearchInput = {}) =>
   buildSearchRecords({
     pages,
     queries,
@@ -108,7 +110,8 @@ const build = (overrides = {}) =>
     actionDefs,
     ...overrides,
   });
-const find = (records, predicate) => records.find(predicate);
+// Fixtures always hold the record a test looks for.
+const find = (records: SearchRecord[], predicate: Predicate) => records.find(predicate) as SearchRecord;
 
 describe('buildSearchRecords', () => {
   test('indexes component properties with ids translated to names and the widget display label', () => {
@@ -151,7 +154,7 @@ describe('buildSearchRecords', () => {
 
   test('keeps a UUID typed into a field as literal text; only event action ids become names', () => {
     const UNKNOWN_ID = '44444444-4444-4444-8444-444444444444';
-    const input = (id, value) => ({
+    const input = (id: string, value: string) => ({
       component: {
         name: id,
         component: 'TextInput',
@@ -165,7 +168,7 @@ describe('buildSearchRecords', () => {
       },
     ];
     const records = build({ pages: literalPages, events: [] });
-    const valueOf = (id) =>
+    const valueOf = (id: string) =>
       find(records, (r) => r.entityId === id && r.fieldPath.join('.') === 'properties.value')?.text;
     expect(valueOf('a')).toBe(UNKNOWN_ID);
     expect(valueOf('b')).toBe(TABLE_ID);
@@ -177,7 +180,7 @@ describe('buildSearchRecords', () => {
 
   test('short labels name the field the way the Inspector does', () => {
     const records = build();
-    const label = (predicate) => find(records, predicate).shortLabel;
+    const label = (predicate: Predicate) => find(records, predicate).shortLabel;
     expect(label((r) => r.fieldPath.join('.') === 'properties.data')).toBe('Data');
     expect(label((r) => r.fieldPath.join('.') === 'styles.textColor')).toBe('Style · Text color');
     expect(label((r) => r.fieldPath.join('.') === 'options.query')).toBe('Query');
@@ -197,7 +200,7 @@ describe('buildSearchRecords', () => {
   });
 
   test('look-alike handlers whose names repeat too are told apart by position', () => {
-    const twin = (id, index, message) => ({
+    const twin = (id: string, index: number, message: string) => ({
       id,
       name: 'onClick → show-alert',
       index,
@@ -373,7 +376,7 @@ describe('buildSearchRecords', () => {
         },
       },
     });
-    const field = (path) => find(records, (r) => r.fieldPath.join('.') === path);
+    const field = (path: string) => find(records, (r) => r.fieldPath.join('.') === path);
     expect(field('properties.columns.value.0.name')).toMatchObject({
       shortLabel: 'Table Columns › email › Name',
       fieldLabel: 'Properties › Table Columns › email › Name',
@@ -414,7 +417,9 @@ describe('buildSearchRecords', () => {
       ],
       widgetDefs: {},
     });
-    expect(find(records, (r) => r.fieldPath.at(-1) === 'visible').shortLabel).toBe('Tab items › Profile › Visible');
+    expect(find(records, (r) => r.fieldPath[r.fieldPath.length - 1] === 'visible').shortLabel).toBe(
+      'Tab items › Profile › Visible'
+    );
   });
 
   test('query lists are labelled by item: key-value rows by key, parameters by name', () => {
@@ -431,7 +436,7 @@ describe('buildSearchRecords', () => {
         },
       ],
     });
-    const label = (path) => find(records, (r) => r.fieldPath.join('.') === path).shortLabel;
+    const label = (path: string) => find(records, (r) => r.fieldPath.join('.') === path).shortLabel;
     expect(label('options.url_params.0.0')).toBe('Url params › page › Key');
     expect(label('options.url_params.0.1')).toBe('Url params › page › Value');
     expect(label('options.parameters.0.defaultValue')).toBe('Parameters › limit › Default value');
@@ -580,7 +585,7 @@ describe('reveal chains: the steps that open where a value is edited', () => {
       options: { url_params: [['limit', '10']] },
     },
   ];
-  const handler = (id, target, sourceId, extra = {}) => ({
+  const handler = (id: string, target: string, sourceId: string, extra = {}) => ({
     id,
     name: id,
     sourceId,
@@ -607,11 +612,14 @@ describe('reveal chains: the steps that open where a value is edited', () => {
       events: revealEvents,
       globalSettings: {},
     });
-  const revealOf = (predicate) => records().find(predicate)?.reveal;
-  const eventStep = (itemId, ownerId) => ({ kind: 'event', ownerId, itemId });
+  const revealOf = (predicate: Predicate) => records().find(predicate)?.reveal;
+  const eventStep = (itemId: string, ownerId: string) => ({ kind: 'event', ownerId, itemId });
 
   test('a Table column field opens the column; a column style field also opens its Styles tab', () => {
-    const column = (key) => (r) => r.fieldPath.join('.') === `properties.columns.value.0.${key}`;
+    const column =
+      (key: string): Predicate =>
+      (r) =>
+        r.fieldPath.join('.') === `properties.columns.value.0.${key}`;
     expect(revealOf(column('name'))).toEqual([{ kind: 'listItem', ownerId: TABLE_ID, itemId: 'col-1' }]);
     expect(revealOf(column('textColor'))).toEqual([
       { kind: 'listItem', ownerId: TABLE_ID, itemId: 'col-1' },
@@ -641,21 +649,21 @@ describe('reveal chains: the steps that open where a value is edited', () => {
   });
 
   test('a Form field opens its popover, found by the component it renders', () => {
-    expect(revealOf((r) => r.entityId === FORM_ID && r.fieldPath.at(-1) === 'key')).toEqual([
+    expect(revealOf((r) => r.entityId === FORM_ID && r.fieldPath[r.fieldPath.length - 1] === 'key')).toEqual([
       { kind: 'listItem', ownerId: FORM_ID, itemId: FORM_FIELD_ID },
     ]);
   });
 
   test('a list item without an id is revealed by its value', () => {
-    expect(revealOf((r) => r.entityId === SELECT_ID && r.fieldPath.at(-1) === 'label')).toEqual([
+    expect(revealOf((r) => r.entityId === SELECT_ID && r.fieldPath[r.fieldPath.length - 1] === 'label')).toEqual([
       { kind: 'listItem', ownerId: SELECT_ID, itemId: 'opt-1' },
     ]);
   });
 
   test("a list item's own `value` field keeps its key (it is a field, not a `{ value }` wrapper)", () => {
     const optionValue = records().find((r) => r.entityId === SELECT_ID && r.text === 'opt-1');
-    expect(optionValue.fieldPath).toEqual(['properties', 'options', 'value', '0', 'value']);
-    expect(optionValue.shortLabel).toBe('Options › One › Value');
+    expect(optionValue?.fieldPath).toEqual(['properties', 'options', 'value', '0', 'value']);
+    expect(optionValue?.shortLabel).toBe('Options › One › Value');
   });
 
   test('a query field opens the query tab it lives in', () => {
@@ -703,11 +711,11 @@ describe('reveal chains: the steps that open where a value is edited', () => {
     const preloaded = buildSearchRecords({
       globalSettings: { preloadedScript: { javascript: 'window.x = 1' } },
     }).find((r) => r.fieldPath[0] === 'preloadedScript');
-    expect(preloaded.reveal).toEqual([{ kind: 'preloadedScript', ownerId: null, itemId: 'javascript' }]);
+    expect(preloaded?.reveal).toEqual([{ kind: 'preloadedScript', ownerId: null, itemId: 'javascript' }]);
   });
 
   test('event handlers open their popover, after whatever holds their list', () => {
-    const ofEvent = (id) => revealOf((r) => r.eventId === id && r.fieldPath.join('.') === 'event.message');
+    const ofEvent = (id: string) => revealOf((r) => r.eventId === id && r.fieldPath.join('.') === 'event.message');
     expect(ofEvent('ev-component')).toEqual([eventStep('ev-component', TABLE_ID)]);
     expect(ofEvent('ev-query')).toEqual([
       { kind: 'queryTab', ownerId: QUERY_ID, itemId: 'settings' },
@@ -746,7 +754,7 @@ describe('createSearcher', () => {
     queryIdNameMapping: { [QUERY_ID]: 'getUsers' },
     defs: toPlainDefs({ widgetDefs: rawWidgetDefs, actionDefs }),
   };
-  const request = (term) => ({ term, filters: {}, currentPageId: PAGE_ID });
+  const request = (term: string) => ({ term, filters: {}, currentPageId: PAGE_ID });
 
   test('indexes a cloned definition with labels and ids translated to names', () => {
     const { rows } = createSearcher()({
@@ -754,13 +762,13 @@ describe('createSearcher', () => {
       ...request('getUsers'),
     });
     const data = rows.find((r) => r.record.entityId === TABLE_ID && r.record.fieldPath.join('.') === 'properties.data');
-    expect(data.record).toMatchObject({
+    expect(data?.record).toMatchObject({
       text: '{{queries.getUsers.data}}',
       shortLabel: 'Data',
       entitySubtype: 'Table',
     });
     const handler = rows.find((r) => r.record.eventId === 'ev1');
-    expect(handler.record.shortLabel).toMatch(/^On row clicked → Run query/);
+    expect(handler?.record.shortLabel).toMatch(/^On row clicked → Run query/);
   });
 
   test('a search without input reuses the last index', () => {

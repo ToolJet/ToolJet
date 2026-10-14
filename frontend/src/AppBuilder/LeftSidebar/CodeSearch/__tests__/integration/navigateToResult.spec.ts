@@ -10,9 +10,11 @@ import useStore from '@/AppBuilder/_stores/store';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { componentDefinition, binding } from '@/test/app-builder';
 import { navigateToResult } from '../../navigateToResult';
+import type { RevealStep, SearchRecord } from '../../buildSearchRecords';
+import type { RevealRequest } from '@/AppBuilder/_stores/slices/codeSearchSlice';
 
 jest.mock('react-hot-toast', () => {
-  const toast = jest.fn();
+  const toast = Object.assign(jest.fn(), {} as Record<string, jest.Mock>);
   toast.success = jest.fn();
   toast.error = jest.fn();
   toast.loading = jest.fn();
@@ -24,7 +26,8 @@ import toast from 'react-hot-toast';
 
 const state = () => useStore.getState();
 
-const insideModal = (definition, modalId) => ({
+// Fixture helpers take the untyped component definitions @/test/app-builder builds.
+const insideModal = (definition: any, modalId: string) => ({
   ...definition,
   component: { ...definition.component, parent: modalId },
 });
@@ -61,8 +64,9 @@ function seedApp() {
 }
 
 // Lets navigateToResult run to completion, including any page switch it starts.
-async function go(record, { hops = 5 } = {}) {
-  const done = navigateToResult({ record, start: 0, end: 1 });
+// Fixtures carry only the fields navigation reads.
+async function go(record: Partial<SearchRecord>, { hops = 5 } = {}) {
+  const done = navigateToResult({ record: record as SearchRecord, start: 0, end: 1, occurrence: 0 });
   // 16ms per hop: page switches yield on setTimeout(0), modal reveal waits on animation frames.
   for (let i = 0; i < hops; i++) await jest.advanceTimersByTimeAsync(16);
   await done;
@@ -70,11 +74,11 @@ async function go(record, { hops = 5 } = {}) {
 
 // Stands in for the editors that open reveal steps (useCodeSearchReveal): records every request and
 // opens the ones whose kind is in `opens`.
-function revealSpy(opens = []) {
-  const requested = [];
-  const unsubscribe = useStore.subscribe((s) => {
-    const request = s.codeSearch.revealRequest;
-    if (!request || requested.at(-1)?.nonce === request.nonce) return;
+function revealSpy(opens: RevealStep['kind'][] = []) {
+  const requested: RevealRequest[] = [];
+  const unsubscribe = useStore.subscribe((s: any) => {
+    const request: RevealRequest | null = s.codeSearch.revealRequest;
+    if (!request || requested[requested.length - 1]?.nonce === request.nonce) return;
     requested.push(request);
     if (opens.includes(request.kind)) s.consumeCodeSearchReveal(request.nonce);
   });
@@ -114,8 +118,8 @@ describe('navigateToResult', () => {
 
   test('does not open a column popover or an event handler', async () => {
     const spy = revealSpy(['listItem', 'event']);
-    const column = { kind: 'listItem', ownerId: 't1', itemId: 'col-email' };
-    const handler = { kind: 'event', ownerId: 't1', itemId: 'ev-1' };
+    const column: RevealStep = { kind: 'listItem', ownerId: 't1', itemId: 'col-email' };
+    const handler: RevealStep = { kind: 'event', ownerId: 't1', itemId: 'ev-1' };
 
     await go({
       entityType: 'event',
@@ -137,7 +141,7 @@ describe('navigateToResult', () => {
     const card = document.createElement('div');
     card.dataset.eventId = 'ev-1';
     document.body.appendChild(card);
-    jest.spyOn(Element.prototype, 'getClientRects').mockImplementation(() => [{}]);
+    jest.spyOn(Element.prototype, 'getClientRects').mockImplementation(() => [{}] as unknown as DOMRectList);
 
     await go(
       {
@@ -166,7 +170,7 @@ describe('navigateToResult', () => {
       entityType: 'component',
       entityId: 't1',
       pageId: 'page-a',
-      fieldPath: ['properties', 'columns', 'value', 0, 'name'],
+      fieldPath: ['properties', 'columns', 'value', '0', 'name'],
       reveal: [
         { kind: 'listItem', ownerId: 't1', itemId: 'col-email' },
         { kind: 'popoverTab', ownerId: 'col-email', itemId: 'styles' },
@@ -193,9 +197,10 @@ describe('navigateToResult', () => {
         fieldPath: ['options', 'url'],
         text: 'a',
         reveal: [{ kind: 'queryTab', ownerId: 'q1', itemId: 'setup' }],
-      },
+      } as SearchRecord,
       start: 0,
       end: 1,
+      occurrence: 0,
     });
     await Promise.resolve();
     await Promise.resolve();
@@ -212,7 +217,7 @@ describe('navigateToResult', () => {
 
   test('a page property opens the Pages panel and does not open the page details popover', async () => {
     const spy = revealSpy(['page']);
-    const page = { kind: 'page', ownerId: null, itemId: 'page-a' };
+    const page: RevealStep = { kind: 'page', ownerId: null, itemId: 'page-a' };
 
     await go({ entityType: 'page', entityId: 'page-a', pageId: 'page-a', fieldPath: ['hidden'], reveal: [page] });
     spy.unsubscribe();
@@ -230,9 +235,9 @@ describe('navigateToResult', () => {
   });
 
   // License is an edition boundary; set it the way widgetHarness.setLicenseFeatures does.
-  const licenseLibraries = (enabled) =>
-    useStore.setState((s) => ({ license: { ...s.license, featureAccess: { appJsLibraries: enabled } } }));
-  const preloadedScript = {
+  const licenseLibraries = (enabled: boolean) =>
+    useStore.setState((s: any) => ({ license: { ...s.license, featureAccess: { appJsLibraries: enabled } } }));
+  const preloadedScript: Partial<SearchRecord> = {
     entityType: 'app',
     entityId: 'app',
     pageId: null,

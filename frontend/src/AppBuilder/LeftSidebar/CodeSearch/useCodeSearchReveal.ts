@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
+import type { CodeSearchState } from '@/AppBuilder/_stores/slices/codeSearchSlice';
+import type { RevealStep } from './buildSearchRecords';
 
 /**
  * Lets code search open an item this component shows behind a click (a list row's popover, an
@@ -10,8 +12,13 @@ import useStore from '@/AppBuilder/_stores/store';
  * `deps`: values `open` reads (e.g. the loaded list), so a request that arrived before the item
  * existed is retried once it does.
  */
-export const useCodeSearchReveal = (kind, ownerId, open, deps = []) => {
-  const request = useStore((state) => state.codeSearch.revealRequest);
+export const useCodeSearchReveal = (
+  kind: RevealStep['kind'],
+  ownerId: string | null | undefined,
+  open: (itemId: string) => boolean,
+  deps: unknown[] = []
+): void => {
+  const request = useStore((state: CodeSearchState) => state.codeSearch.revealRequest);
   const openRef = useRef(open);
   openRef.current = open;
 
