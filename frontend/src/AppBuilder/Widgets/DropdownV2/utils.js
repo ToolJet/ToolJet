@@ -71,15 +71,16 @@ export const highlightText = (text = '', highlight) => {
   );
 };
 
+// Copies first: sorting in place reordered the caller's own options as a side effect.
 export const sortArray = (arr, sort) => {
   if (sort === 'asc') {
-    return arr.sort((a, b) => {
+    return [...arr].sort((a, b) => {
       const labelA = typeof a.label === 'string' ? a.label : '';
       const labelB = typeof b.label === 'string' ? b.label : '';
       return labelA.localeCompare(labelB);
     });
   } else if (sort === 'desc') {
-    return arr.sort((a, b) => {
+    return [...arr].sort((a, b) => {
       const labelA = typeof a.label === 'string' ? a.label : '';
       const labelB = typeof b.label === 'string' ? b.label : '';
       return labelB.localeCompare(labelA);

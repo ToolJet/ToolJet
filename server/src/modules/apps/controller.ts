@@ -62,6 +62,13 @@ export class AppsController implements IAppsController {
     return this.appsService.getAppAuthenticationConfig(slug);
   }
 
+  @InitFeature(FEATURE_KEY.GET_RESTRICTED_ACCESS_INFO)
+  @UseGuards(JwtAuthGuard)
+  @Get('restricted-access-info/:slug')
+  getRestrictedAccessInfo(@Param('slug') slug: string, @User() user: UserEntity) {
+    return this.appsService.getRestrictedAccessInfo(slug, user);
+  }
+
   @InitFeature(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS)
   @UseGuards(PrivateAppAuthGuard, FeatureAbilityGuard)
   @Get('validate-private-app-access/:slug')
@@ -121,6 +128,7 @@ export class AppsController implements IAppsController {
       folderId: query.folder,
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
+      context: query.context,
     };
     return this.appsService.getAllApps(user, AppListDto, false);
   }

@@ -12,6 +12,13 @@ export const phoneinputConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    legacyInputSize: {
+      type: 'toggle',
+      displayName: 'Legacy input size',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'deprecatedStyles',
+      isFxNotRequired: true,
+    },
     label: {
       type: 'code',
       displayName: 'Label',
@@ -264,6 +271,7 @@ export const phoneinputConfig = {
   },
   exposedVariables: {
     value: '',
+    domesticNumber: '',
     isMandatory: false,
     isVisible: true,
     isDisabled: false,
@@ -325,6 +333,7 @@ export const phoneinputConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      legacyInputSize: { value: '{{false}}' },
       value: { value: '' },
       label: { value: 'Label' },
       placeholder: { value: 'Enter your phone' },

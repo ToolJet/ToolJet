@@ -34,6 +34,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
     handleAddItemToGroup,
     handleReorder,
     getResolvedValue,
+    validateItemId,
   } = useMenuItemsManager(component, paramUpdated);
 
   // Property organization
@@ -52,6 +53,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
   const _renderMenuItems = () => {
     return (
       <NavItemsList
+        componentId={component?.id}
         menuItems={menuItems}
         darkMode={darkMode}
         hoveredItemIndex={hoveredItemIndex}
@@ -59,6 +61,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
         onMouseLeave={() => setHoveredItemIndex(null)}
         onDeleteItem={handleDeleteItem}
         onItemChange={handleItemChange}
+        validateItemId={validateItemId}
         onAddItem={handleAddItem}
         onAddGroup={handleAddGroup}
         onAddItemToGroup={handleAddItemToGroup}
@@ -99,16 +102,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
   const sections = [
     {
       title: 'Content',
-      custom: () => (
-        <>
-          {_renderMenuItems()}
-          {createRenderElement('orientation')}
-          {createRenderElement('displayStyle')}
-          {createRenderElement('navItemSize')}
-          {createRenderElement('horizontalAlignment')}
-          {createRenderElement('verticalAlignment')}
-        </>
-      ),
+      custom: () => <>{_renderMenuItems()}</>,
     },
     {
       title: 'Events',
@@ -117,6 +111,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
           sourceId={component?.id}
           eventSourceType="component"
           eventMetaDefinition={componentMeta}
+          excludeRefEvents
           dataQueries={dataQueries}
           components={allComponents}
           eventsChanged={eventsChanged}

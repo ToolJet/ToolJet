@@ -15,4 +15,8 @@ export class ResendInviteDto {
   @IsString()
   @IsOptional()
   redirectTo?: string;
+
+  @IsString()
+  @IsOptional()
+  senderName?: string;
 }

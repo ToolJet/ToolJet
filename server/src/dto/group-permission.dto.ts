@@ -59,6 +59,14 @@ export class UpdateGroupDto {
 
   @IsOptional()
   @IsBoolean()
+  module_create;
+
+  @IsOptional()
+  @IsBoolean()
+  module_delete;
+
+  @IsOptional()
+  @IsBoolean()
   data_source_create;
 
   @IsOptional()

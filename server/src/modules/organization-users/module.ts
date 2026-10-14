@@ -1,6 +1,7 @@
 import { DynamicModule } from '@nestjs/common';
 import { EncryptionModule } from '@modules/encryption/module';
 import { UserRepository } from '@modules/users/repositories/repository';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { RolesRepository } from '@modules/roles/repository';
 import { OrganizationUsersRepository } from './repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
@@ -40,6 +41,7 @@ export class OrganizationUsersModule extends SubModule {
         OrganizationRepository,
         RolesRepository,
         UserRepository,
+        UserBanListRepository,
         UserDetailsService,
         GroupPermissionsRepository,
         FeatureAbilityFactory,

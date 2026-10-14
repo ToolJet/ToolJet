@@ -62,7 +62,8 @@ export const listviewConfig = {
         schema: {
           type: 'union',
           schemas: [
-            { type: 'array', element: { type: 'object' } },
+            // A null element is tolerated: a query row can be empty without voiding the whole list.
+            { type: 'array', element: { type: 'union', schemas: [{ type: 'object' }, { type: 'null' }] } },
             { type: 'array', element: { type: 'string' } },
           ],
         },

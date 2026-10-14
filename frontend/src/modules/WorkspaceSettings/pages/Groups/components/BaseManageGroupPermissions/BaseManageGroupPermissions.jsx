@@ -411,7 +411,14 @@ class BaseManageGroupPermissions extends React.Component {
 
     const grounNameErrorStyle =
       this.state.newGroupName?.length > 50 ? { color: '#ff0000', borderColor: '#ff0000' } : {};
-    const { addPermission, addApps, addUsers, addDataSource = null, addWorkflows = null } = groupDuplicateOption;
+    const {
+      addPermission,
+      addApps,
+      addUsers,
+      addDataSource = null,
+      addWorkflows = null,
+      addModules = null,
+    } = groupDuplicateOption;
     const allFalse = Object.values(groupDuplicateOption).every((value) => !value);
     const isSaveBtnDisabled = creatingGroup || this.state.isSaveBtnDisabled || this.state.newGroupName?.trim() === '';
 
@@ -557,6 +564,31 @@ class BaseManageGroupPermissions extends React.Component {
                     <div className="col-11">
                       <div className="tj-text " data-cy="workflows-label">
                         Workflows
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {addModules !== null && (
+                  <div className="row check-row">
+                    <div className="col-1 ">
+                      <input
+                        class="form-check-input"
+                        checked={addModules}
+                        type="checkbox"
+                        onChange={() => {
+                          this.setState((prevState) => ({
+                            groupDuplicateOption: {
+                              ...prevState.groupDuplicateOption,
+                              addModules: !prevState.groupDuplicateOption.addModules,
+                            },
+                          }));
+                        }}
+                        data-cy="modules-check-input"
+                      />
+                    </div>
+                    <div className="col-11">
+                      <div className="tj-text " data-cy="modules-label">
+                        Modules
                       </div>
                     </div>
                   </div>

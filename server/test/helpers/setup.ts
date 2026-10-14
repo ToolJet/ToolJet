@@ -313,13 +313,15 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   app: {
     pages: { enabled: true, count: 'UNLIMITED', features: { appHeaderAndLogo: true, addNavGroup: true } },
     permissions: { component: true, query: true, pages: true },
-    features: { promote: true, release: true, history: true },
+    features: { promote: true, release: true, history: true, customComponentLibraries: true },
   },
   modules: { enabled: true },
   permissions: { customGroups: true },
   observability: { enabled: true },
   workflows: {
-    enabled: true, execution_timeout: 0,
+    // workflowExecutionTimeout is a literal timeout ceiling, not a sentinel like the
+    // 'UNLIMITED' fields above -- 0 means "time out immediately", not "no limit".
+    enabled: true, execution_timeout: 3600,
     workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
     instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
   },

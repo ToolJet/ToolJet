@@ -42,7 +42,8 @@ const QueryManager = ({ mode, darkMode }) => {
 
   // This effect only re-resolves the datasource when the datasource lists change.
   useEffect(() => {
-    setSelectedDataSource(resolveDataSourceForQuery(selectedQuery));
+    const resolved = resolveDataSourceForQuery(selectedQuery);
+    setSelectedDataSource(resolved);
     // selectedQuery + selectedDataSource are kept in sync atomically inside setSelectedQuery,
     // so query switches don't need handling here.
     // eslint-disable-next-line react-hooks/exhaustive-deps

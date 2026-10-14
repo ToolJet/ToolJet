@@ -77,6 +77,24 @@ const calculateButtonColumnWidth = (buttons, getResolvedValue) => {
   return Math.max(90, Math.ceil(totalWidth));
 };
 
+/**
+ * TableCell - Stable element type for every cell in every column.
+ *
+ *  - flexRender() turns columnDef.cell into the React element *type*.
+ *  - Building that as an inline arrow gave every rebuild of generateColumnsData a brand new type,
+ *    which React treats as a different component: the whole cell subtree unmounts and remounts.
+ *  - That destroys DOM focus and adapter state (e.g. StringColumnAdapter's isEditing) mid-edit,
+ *    which is why Tab could not carry a value from one cell to the next in the add-new-row popup.
+ *  — focusin/focusout are discrete priority, so the commit triggered by blurring cell A lands between
+ *    focusout on A and focusin on B, and B's node is detached before the browser can focus it.
+ *
+ * Delegating to columnDef.renderCell keeps the type constant while the renderer itself is still
+ * replaced on every rebuild, so nothing goes stale. Read through the live Column instance rather
+ * than a captured columnDef so the newest renderer is always the one invoked.
+ */
+const TableCell = (props) => props.cell.column.columnDef.renderCell(props);
+TableCell.displayName = 'TableCell';
+
 export default function generateColumnsData({
   columnProperties,
   columnSizes,
@@ -166,7 +184,7 @@ export default function generateColumnsData({
           pinPosition,
         },
 
-        cell: ({ cell, row }) => {
+        renderCell: ({ cell, row }) => {
           const changeSet = columnForAddNewRow
             ? getAddNewRowDetailFromIndex(id, row.index)
             : getEditedFieldsOnIndex(id, row.index);
@@ -585,13 +603,12 @@ export default function generateColumnsData({
         },
       };
 
-      // Disable sorting, filtering, and resizing for button columns; auto-size to content
+      // Button columns: no sorting/filtering, auto-size to content unless a width is set explicitly
       if (columnType === 'button') {
         columnDef.enableSorting = false;
         columnDef.enableColumnFilter = false;
-        columnDef.enableResizing = false;
         const buttons = column.buttons || [];
-        columnDef.size = calculateButtonColumnWidth(buttons, getResolvedValue);
+        columnDef.size = columnSize || calculateButtonColumnWidth(buttons, getResolvedValue);
       }
 
       // Add sorting configuration for specific column types
@@ -656,6 +673,9 @@ export default function generateColumnsData({
           return dateA.getTime() - dateB.getTime();
         };
       }
+
+      // Keep the element *type* constant across rebuilds; see TableCell.
+      columnDef.cell = TableCell;
 
       return columnDef;
     })

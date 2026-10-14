@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+import { workspaceConstantsSelectors } from "Selectors/platform/workspaceConstants";
 import {
     assertTooltipText,
     importConstantsApp,
@@ -10,9 +10,9 @@ import {
     verifyInputValues,
     verifySecretConstantNotResolved,
 } from "Support/utils/workspaceConstants";
-import { workspaceConstantsText } from "Texts/workspaceConstants";
+import { workspaceConstantsText } from "Texts/platform/workspaceConstants";
 
-import { dataSourceSelector } from "Selectors/dataSource";
+import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { setUpSlug } from "Support/utils/apps";
 import { releaseApp, sanitize } from "Support/utils/common";
 

@@ -15,7 +15,7 @@ import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
 import Select from '@/_ui/Select';
 import _, { sample, isEmpty, capitalize, has } from 'lodash';
 import { Folders } from './Folders';
-import { BlankPage } from './BlankPage';
+import { AppsEmptyState, WorkflowsEmptyState } from '@/components/ui/Rocket/Empty/states';
 import { toast } from 'react-hot-toast';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 import Layout from '@/_ui/Layout';
@@ -47,8 +47,6 @@ import {
   ConsultationBanner,
   AppTypeTab,
 } from '@/modules/dashboard/components';
-import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
-import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
@@ -57,6 +55,7 @@ import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
 const MAX_APPS_PER_PAGE = 9;
@@ -323,7 +322,7 @@ class HomePageComponent extends React.Component {
     return 'app';
   };
 
-  createApp = async (appName, type, prompt) => {
+  createApp = async (appName, type, prompt, taggedResources) => {
     appName = appName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ creatingApp: true });
@@ -347,7 +346,7 @@ class HomePageComponent extends React.Component {
 
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
-        state: { commitEnabled: this.state.commitEnabled, prompt },
+        state: { commitEnabled: this.state.commitEnabled, prompt, taggedResources },
       });
       this.eraseAIOnboardingRelatedCookies();
       this.props.appType !== 'front-end' && toast.success(`${capitalize(this.getAppType())} created successfully!`);
@@ -722,9 +721,32 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
-    } else {
-      // Module permissions return true if builder
-      return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
+    } else if (this.props.appType === 'module') {
+      // Admins have implicit full access to all modules
+      if (currentSession?.admin || currentSession?.super_admin) {
+        return true;
+      }
+      const modulePerms = currentSession?.module_group_permissions;
+      if (modulePerms) {
+        // Shared with the module editor read-only gate (useAppData) so the two can't drift.
+        const canEdit = canEditModule(currentSession, app?.id, app?.user_id);
+        const canReadModule =
+          canEdit || modulePerms.is_all_viewable || (app?.id && modulePerms.viewable_apps_id?.includes(app.id));
+        switch (action) {
+          case 'create':
+            return user_permissions.module_create;
+          case 'read':
+            return this.isUserOwnerOfApp(user, app) || canReadModule;
+          case 'update':
+            return canEdit;
+          case 'delete':
+            return user_permissions.module_delete || this.isUserOwnerOfApp(user, app);
+          default:
+            return false;
+        }
+      }
+      // CE fallback: any builder can perform all module actions
+      return currentSession?.role?.name === 'builder';
     }
   }
 
@@ -791,7 +813,7 @@ class HomePageComponent extends React.Component {
         }
       })
       .catch(({ error }) => {
-        toast.error('Could not delete the app.');
+        toast.error(error ?? error.message ?? 'Could not delete the app.');
       })
       .finally(() => {
         this.cancelDeleteAppDialog();
@@ -1278,6 +1300,11 @@ class HomePageComponent extends React.Component {
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
 
+    // The apps/workflows list is empty and nothing is filtering it — a genuinely empty
+    // workspace rather than a search that found nothing.
+    const showEmptyState =
+      !isLoading && featuresLoaded && meta?.total_count === 0 && !currentFolder.id && !appSearchKey;
+
     const getDisabledState = () => {
       if (this.props.appType === 'module') {
         return !moduleEnabled;
@@ -1289,11 +1316,7 @@ class HomePageComponent extends React.Component {
     };
 
     const showCreateAppButtonTooltip = () => {
-      if (this.props.appType === 'module') {
-        return true;
-      } else {
-        return this.canCreateApp();
-      }
+      return this.canCreateApp();
     };
     const modalConfigs = {
       create: {
@@ -1845,7 +1868,19 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
-              <div className="w-100 mb-5 container home-page-content-container">
+              {/*
+                When empty, the container becomes a full-height flex column so the empty state —
+                which already carries `flex-1` and `justify-center` — centres in the space left
+                under the tab row, instead of sitting at the top of the scroll area. `mb-5` is
+                dropped in that case; with `h-full` it would push the column past its parent and
+                introduce a scrollbar.
+              */}
+              <div
+                className={cx('w-100 container home-page-content-container', {
+                  'mb-5': !showEmptyState,
+                  'tw-flex tw-h-full tw-flex-col': showEmptyState,
+                })}
+              >
                 {featuresLoaded && !isLoading ? (
                   <>
                     <AppTypeTab
@@ -1858,12 +1893,6 @@ class HomePageComponent extends React.Component {
                 ) : (
                   !appSearchKey && <HeaderSkeleton />
                 )}
-
-                {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
-                  <CreateAppWithPrompt createApp={this.createApp} />
-                )}
-
-                {this.props.appType === 'module' && this.canCreateApp() && <CreateModuleWithPrompt />}
 
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
@@ -1898,34 +1927,21 @@ class HomePageComponent extends React.Component {
                     </div>
                   </>
                 )}
-                {!isLoading &&
-                  featuresLoaded &&
-                  meta?.total_count === 0 &&
-                  !currentFolder.id &&
-                  !appSearchKey &&
-                  (['front-end', 'workflow'].includes(this.props.appType) ? (
-                    <BlankPage
-                      canCreateApp={this.canCreateApp}
-                      isLoading={true}
-                      createApp={this.createApp}
-                      readAndImport={this.readAndImport}
-                      isImportingApp={isImportingApp}
-                      fileInput={this.fileInput}
-                      openCreateAppModal={this.openCreateAppModal}
-                      openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
-                      creatingApp={creatingApp}
-                      darkMode={this.props.darkMode}
-                      showTemplateLibraryModal={this.state.showTemplateLibraryModal}
-                      viewTemplateLibraryModal={this.showTemplateLibraryModal}
-                      hideTemplateLibraryModal={this.hideTemplateLibraryModal}
-                      appType={this.props.appType}
-                      workflowsLimit={
-                        workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
-                          ? workflowInstanceLevelLimit
-                          : workflowWorkspaceLevelLimit
+                {showEmptyState &&
+                  (this.props.appType === 'front-end' ? (
+                    /*
+                      Replaces the old "Welcome to your new workspace" page. Illustration and copy
+                      only — no action button: every route into creating an app (blank, import,
+                      template, git) already sits in the sidebar's split button a few pixels away,
+                      so repeating one of them here would just pick a winner among equals.
+                    */
+                    <AppsEmptyState data-cy="apps-empty-state" />
+                  ) : this.props.appType === 'workflow' ? (
+                    <WorkflowsEmptyState
+                      onCreateWorkflow={
+                        this.canCreateApp() && !getDisabledState() ? this.openCreateAppModal : undefined
                       }
+                      data-cy="workflows-empty-state"
                     />
                   ) : (
                     <div className="empty-module-container">
@@ -1971,6 +1987,8 @@ class HomePageComponent extends React.Component {
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
+                        : this.props.appType === 'module'
+                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
                         : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>

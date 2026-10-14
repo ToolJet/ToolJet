@@ -35,27 +35,54 @@ const getSchemaMetadata = (schema, key) => {
   return schema.source[key];
 };
 
-//Commonly Used DS
-export const CommonlyUsedDataSources = Object.keys(allManifests)
-  .reduce((accumulator, currentValue) => {
+const commonlyUsedSourceNames = [
+  'REST API',
+  'MongoDB',
+  'Google Sheets 2.0',
+  'PostgreSQL',
+  'Snowflake',
+  'GraphQL',
+  'OpenAPI',
+  'gRPC 2.0',
+  'Databricks',
+  'AWS S3',
+];
+
+const getInstalledPluginId = (plugin) => `${plugin?.pluginId || plugin?.plugin_id || plugin?.id || ''}`.toLowerCase();
+
+export const getCommonlyUsedDataSources = (installedPlugins = []) => {
+  const builtInSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
     const sourceName = getSchemaMetadata(allManifests[currentValue], 'name');
-    if (
-      sourceName === 'REST API' ||
-      sourceName === 'MongoDB' ||
-      sourceName === 'Airtable' ||
-      sourceName === 'Google Sheets 2.0' ||
-      sourceName === 'PostgreSQL' ||
-      sourceName === 'Snowflake'
-    ) {
+    if (commonlyUsedSourceNames.includes(sourceName)) {
       accumulator.push(getSchemaDetailsForRender(allManifests[currentValue]));
     }
-
     return accumulator;
-  }, [])
-  .sort((a, b) => {
-    const order = ['REST API', 'PostgreSQL', 'Google Sheets 2.0', 'MongoDB', 'Snowflake', 'Airtable'];
+  }, []);
+
+  // OpenAI isn't a manifest-based source — it only exists as an installed plugin.
+  // Pull it from the real installed plugins list instead of allManifests.
+  const openAIPlugin = (installedPlugins || []).find((p) => getInstalledPluginId(p) === 'openai');
+  const installedOpenAISource = openAIPlugin ? [openAIPlugin] : [];
+
+  return [...builtInSources, ...installedOpenAISource].sort((a, b) => {
+    const order = [
+      'REST API',
+      'PostgreSQL',
+      'Google Sheets 2.0',
+      'MongoDB',
+      'Snowflake',
+      'GraphQL',
+      'OpenAPI',
+      'gRPC 2.0',
+      'Databricks',
+      'AWS S3',
+      'OpenAI',
+    ];
     return order.indexOf(a.name) - order.indexOf(b.name);
   });
+};
+
+export const CommonlyUsedDataSources = getCommonlyUsedDataSources();
 
 export const DataBaseSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
   if (getSchemaMetadata(allManifests[currentValue], 'type') === 'database') {
@@ -80,11 +107,20 @@ export const CloudStorageSources = Object.keys(allManifests).reduce((accumulator
   return accumulator;
 }, []);
 
+export const AiSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
+  if (getSchemaMetadata(allManifests[currentValue], 'type') === 'ai') {
+    accumulator.push(getSchemaDetailsForRender(allManifests[currentValue]));
+  }
+
+  return accumulator;
+}, []);
+
 export const OtherSources = [RunjsSchema.source, RunpySchema.source, TooljetDbSchema.source, WorkflowsSchema.source];
 export const DataSourceTypes = [
   ...DataBaseSources,
   ...ApiSources,
   ...CloudStorageSources,
+  ...AiSources,
   ...OtherSources,
   ...CommonlyUsedDataSources,
 ];

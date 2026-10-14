@@ -366,20 +366,6 @@ export class EventsService implements IEventsService {
     return result;
   }
 
-  async updateEventsOrderOnDelete(sourceId: string, deletedIndex: number) {
-    const allEvents = await this.findAllEventsWithSourceId(sourceId);
-
-    const eventsToUpdate = allEvents.filter((event) => event.index > deletedIndex);
-
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await Promise.all(
-        eventsToUpdate.map(async (event) => {
-          return await manager.update(EventHandler, { id: event.id }, { index: event.index - 1 });
-        })
-      );
-    });
-  }
-
   async deleteEvent(eventId: string, appVersionId: string) {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeEventDelete(eventId, appVersionId);
@@ -393,15 +379,13 @@ export class EventsService implements IEventsService {
         return new BadRequestException('No event found');
       }
 
-      const sourceId = event.sourceId;
-      const deletedIndex = event.index;
-
       const deleteResponse = await manager.delete(EventHandler, event.id);
 
       if (!deleteResponse?.affected) {
         throw new NotFoundException();
       }
-      await this.updateEventsOrderOnDelete(sourceId, deletedIndex);
+      // Siblings keep their index. Gaps are fine, and renumbering here scoped by sourceId alone
+      // also renumbered unrelated panels (a Table's column/action handlers share its sourceId).
       return deleteResponse;
     }, appVersionId);
 

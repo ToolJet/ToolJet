@@ -2,31 +2,48 @@ import React, { useEffect, useLayoutEffect, useState, useMemo, useRef } from 're
 import cx from 'classnames';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from '@/components/ui/navigation-menu';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { ToolTip } from '@/_components';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useCalculateOverflow } from './hooks/useCalculateOverflow';
-import { findItemById, findParentGroup } from './utils';
+import {
+  findItemById,
+  findParentGroup,
+  isItemVisible,
+  isItemDisabled,
+  toDisplayText,
+  isGroupVisible,
+  isMenuItemVisible,
+  updateItemById,
+  parseStyleDimension,
+} from './utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
 
-// Render individual nav item - uses tj-list-item class like page navigation
-const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle }) => {
-  const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
-  const isDisabled =
-    typeof item.disable === 'object'
-      ? item.disable.value === '{{true}}' || item.disable.value === true
-      : item.disable === true;
+// max length for label and caption
+const NAV_TEXT_MAX_LENGTH = 25;
 
-  if (!isVisible) return null;
+// Render individual nav item - uses tj-list-item class like page navigation
+const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientation, isNested }) => {
+  if (!isItemVisible(item)) return null;
+
+  const isDisabled = isItemDisabled(item);
 
   const showIcon = displayStyle !== 'textOnly' && item.iconVisibility !== false;
   const showLabel = displayStyle !== 'iconOnly';
 
   const iconColor = isSelected ? 'var(--selected-nav-item-icon-color)' : 'var(--nav-item-icon-color)';
 
-  return (
+  const isHorizontalTopLevel = orientation === 'horizontal' && !isNested;
+  const showInlineCaption = !isHorizontalTopLevel && !!item.caption;
+  const showTooltip = isHorizontalTopLevel && !!item.caption;
+
+  const buttonEl = (
     <button
       className={cx('tj-list-item', {
         'tj-list-item-selected': isSelected,
@@ -53,25 +70,50 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle }) => {
         </div>
       )}
       {showLabel && (
-        <div className="page-name" data-cy={`nav-label-${item.id}`}>
-          {item.label}
+        <div className="nav-item-text">
+          <OverflowTooltip
+            childrenClassName="page-name"
+            maxLetters={NAV_TEXT_MAX_LENGTH}
+            data-cy={`nav-label-${item.id}`}
+          >
+            {toDisplayText(item.label)}
+          </OverflowTooltip>
+          {showInlineCaption ? (
+            <OverflowTooltip childrenClassName="nav-item-caption" maxLetters={NAV_TEXT_MAX_LENGTH}>
+              {toDisplayText(item.caption)}
+            </OverflowTooltip>
+          ) : null}
         </div>
       )}
     </button>
   );
+
+  if (!showTooltip) return buttonEl;
+
+  return (
+    <ToolTip message={toDisplayText(item.caption)} placement="top">
+      {buttonEl}
+    </ToolTip>
+  );
 };
 
 // Render nav group (collapsible) - uses page-group-wrapper class like page navigation
-const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displayStyle, orientation, darkMode }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const RenderNavGroup = ({
+  group,
+  selectedItemId,
+  onItemClick,
+  styles,
+  displayStyle,
+  orientation,
+  darkMode,
+  childAlignment,
+  popupThemeVars,
+  isExpanded,
+  onToggleExpand,
+}) => {
+  if (!isGroupVisible(group)) return null;
 
-  const isVisible = typeof group.visible === 'object' ? group.visible.value !== '{{true}}' : group.visible !== true;
-  const isDisabled =
-    typeof group.disable === 'object'
-      ? group.disable.value === '{{true}}' || group.disable.value === true
-      : group.disable === true;
-
-  if (!isVisible) return null;
+  const isDisabled = isItemDisabled(group);
 
   const showIcon = displayStyle !== 'textOnly' && group.iconVisibility !== false;
   const showLabel = displayStyle !== 'iconOnly';
@@ -91,7 +133,7 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
   // Check if any child is selected
   const hasSelectedChild = deduplicatedChildren.some((child) => child.id === selectedItemId);
 
-  const TriggerBody = () => (
+  const triggerBody = (
     <div className="group-info">
       {showIcon && (
         <div className="custom-icon">
@@ -105,57 +147,70 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
           />
         </div>
       )}
-      {showLabel && <div className="page-name">{group.label}</div>}
+      {showLabel && (
+        <OverflowTooltip childrenClassName="page-name" maxLetters={NAV_TEXT_MAX_LENGTH}>
+          {toDisplayText(group.label)}
+        </OverflowTooltip>
+      )}
     </div>
   );
 
-  // For horizontal orientation, use Radix DropdownMenu — native collision
-  // detection flips the dropdown above the trigger when there isn't enough
-  // space below. We skip Portal so the content stays inside .navigation-widget
-  // (keeps existing SCSS nesting working). `asChild` lets us keep our custom
-  // button styles and the group-[data-state] chevron rotation — Radix
-  // propagates data-state onto the delegated child element.
   if (orientation === 'horizontal') {
+    const triggerButton = (
+      <button
+        type="button"
+        className={cx('tw-group page-group-wrapper', {
+          'page-group-selected': hasSelectedChild,
+          'page-group-disabled': isDisabled,
+        })}
+        disabled={isDisabled}
+        {...(isDisabled ? { 'data-state': 'closed' } : {})}
+        aria-label={group.label}
+        data-cy={`nav-group-${group.id}`}
+      >
+        {triggerBody}
+        <TablerIcon
+          iconName="IconChevronUp"
+          size={16}
+          className="nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180"
+        />
+      </button>
+    );
+
+    if (isDisabled) {
+      return <NavigationMenuItem key={group.id}>{triggerButton}</NavigationMenuItem>;
+    }
+
     return (
       <NavigationMenuItem key={group.id}>
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <button
-              type="button"
-              className={cx('tw-group page-group-wrapper', {
-                'page-group-selected': hasSelectedChild,
+        {/* modal={false}: default modal Radix menu disables page-wide pointer-events while open. */}
+        <DropdownMenu.Root modal={false}>
+          <DropdownMenu.Trigger asChild>{triggerButton}</DropdownMenu.Trigger>
+          {/* Portal escapes the widget's transformed wrapper for correct z-index/positioning. */}
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              className={cx('page-menu-popup', childAlignment && `nav-subalign-${childAlignment}`, {
+                'dark-theme': darkMode,
               })}
-              disabled={isDisabled}
-              aria-label={group.label}
-              data-cy={`nav-group-${group.id}`}
+              style={popupThemeVars}
+              sideOffset={6}
+              align="start"
+              collisionPadding={8}
             >
-              <TriggerBody />
-              <TablerIcon
-                iconName="IconChevronUp"
-                size={16}
-                className="nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180"
-              />
-            </button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content
-            className={cx('page-menu-popup', { 'dark-theme': darkMode })}
-            sideOffset={6}
-            align="start"
-            collisionPadding={8}
-          >
-            {deduplicatedChildren.map((child) => (
-              <RenderNavItem
-                key={child.id}
-                item={child}
-                isSelected={child.id === selectedItemId}
-                onItemClick={onItemClick}
-                styles={styles}
-                displayStyle={displayStyle}
-                orientation={orientation}
-                isNested={true}
-              />
-            ))}
-          </DropdownMenu.Content>
+              {deduplicatedChildren.map((child) => (
+                <RenderNavItem
+                  key={child.id}
+                  item={child}
+                  isSelected={child.id === selectedItemId}
+                  onItemClick={onItemClick}
+                  styles={styles}
+                  displayStyle={displayStyle}
+                  orientation={orientation}
+                  isNested={true}
+                />
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
         </DropdownMenu.Root>
       </NavigationMenuItem>
     );
@@ -167,17 +222,18 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
       <button
         className={cx('tw-group page-group-wrapper', {
           'page-group-selected': hasSelectedChild,
+          'page-group-disabled': isDisabled,
         })}
         onClick={(e) => {
           e.stopPropagation();
-          if (!isDisabled) setIsExpanded(!isExpanded);
+          if (!isDisabled) onToggleExpand(group.id);
         }}
         disabled={isDisabled}
         data-state={isExpanded ? 'open' : 'closed'}
         aria-label={group.label}
         aria-expanded={isExpanded}
       >
-        <TriggerBody />
+        {triggerBody}
         <TablerIcon
           iconName="IconChevronUp"
           size={16}
@@ -185,7 +241,7 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
         />
       </button>
       <div className={cx('accordion-body', { expanded: isExpanded, collapsed: !isExpanded })}>
-        <div className="accordion-content">
+        <div className={cx('accordion-content', childAlignment && `nav-subalign-${childAlignment}`)}>
           {deduplicatedChildren.map((child) => (
             <RenderNavItem
               key={child.id}
@@ -207,6 +263,7 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
 export const Navigation = function Navigation(props) {
   const {
     id,
+    height,
     width,
     properties,
     styles,
@@ -216,20 +273,20 @@ export const Navigation = function Navigation(props) {
     setExposedVariables,
     darkMode,
     currentMode,
+    currentLayout,
+    subContainerIndex,
+    componentType,
   } = props;
 
-  const {
-    orientation,
-    displayStyle,
-    navItemSize = 'equalWidth',
-    loadingState,
-    disabledState,
-    visibility,
-    horizontalAlignment = 'left',
-    verticalAlignment = 'top',
-  } = properties;
+  const { loadingState, disabledState, visibility } = properties;
 
   const {
+    orientation: orientationStyle,
+    displayStyle: displayStyleStyle,
+    navItemSize: navItemSizeStyle,
+    horizontalAlignment: horizontalAlignmentStyle,
+    verticalAlignment: verticalAlignmentStyle,
+    subMenuAlignment,
     backgroundColor = 'var(--cc-surface1-surface)',
     borderColor = 'var(--cc-weak-border)',
     borderRadius = 8,
@@ -239,8 +296,24 @@ export const Navigation = function Navigation(props) {
     pillBorderRadius = 6,
   } = styles || {};
 
-  // Get menu items from component definition
-  const menuItems = properties.menuItems || [];
+  const orientation = orientationStyle ?? properties?.orientation;
+  const displayStyle = displayStyleStyle ?? properties?.displayStyle;
+  const navItemSize = navItemSizeStyle ?? properties?.navItemSize ?? 'equalWidth';
+  const horizontalAlignment = horizontalAlignmentStyle ?? properties?.horizontalAlignment ?? 'left';
+  const verticalAlignment = verticalAlignmentStyle ?? properties?.verticalAlignment ?? 'top';
+  const childAlignment = subMenuAlignment;
+
+  // Menu items — kept as local state so setItemVisibility/setItemDisable actions can mutate
+  // individual items by id, while still resyncing when the definition changes (e.g. inspector edits)
+  const [menuItems, setMenuItems] = useState(properties.menuItems || []);
+  const menuItemsRef = useRef(menuItems);
+
+  useEffect(() => {
+    if (JSON.stringify(menuItemsRef.current) !== JSON.stringify(properties.menuItems)) {
+      setMenuItems(properties.menuItems || []);
+      menuItemsRef.current = properties.menuItems || [];
+    }
+  }, [properties.menuItems]);
 
   // Refs for overflow calculation
   const containerRef = useRef(null);
@@ -251,11 +324,35 @@ export const Navigation = function Navigation(props) {
   const selectedItemRef = useRef(null);
   const selectItemRef = useRef(null);
 
+  // Which groups are expanded (vertical/accordion mode). Manual header clicks toggle a
+  // group independently; selecting an item collapses every group except the selected
+  // item's parent (or all of them, if the selection is a top-level item) — see applySelection.
+  const [expandedGroups, setExpandedGroups] = useState({});
+  const toggleGroupExpanded = (groupId) => {
+    setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+  };
+
   // Local state bridge for exposed variables — allows both prop changes (sidebar)
   // and action calls (setVisibility/setLoading) to drive rendering
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
     isVisible: visibility,
+  });
+
+  // ===== DYNAMIC HEIGHT =====
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility: exposedVariablesTemporaryState.isVisible,
+    subContainerIndex,
+    componentType,
   });
 
   const updateExposedVariablesState = (key, value) => {
@@ -278,11 +375,8 @@ export const Navigation = function Navigation(props) {
       }
     }
 
-    // Then filter by visibility
-    return deduplicatedItems.filter((item) => {
-      const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
-      return isVisible;
-    });
+    // Then filter by visibility (a group also needs at least one visible child; disabled doesn't count against it)
+    return deduplicatedItems.filter(isMenuItemVisible);
   }, [menuItems]);
 
   // Overflow calculation for horizontal orientation
@@ -312,13 +406,24 @@ export const Navigation = function Navigation(props) {
     setSelectedItemId(item.id);
     setExposedVariable('selectedItem', clickData);
     setExposedVariable('previousSelectedItem', previousSelected);
+
+    // Collapse every other group; keep the selected item's own group (if any) open.
+    // Selecting a top-level item collapses all groups.
+    setExpandedGroups(() => {
+      const next = {};
+      menuItems.forEach((menuItem) => {
+        if (menuItem.isGroup) next[menuItem.id] = menuItem.id === parentGroup?.id;
+      });
+      return next;
+    });
   };
 
   // Handle item click
   const handleItemClick = (item) => {
     if (disabledState) return;
     applySelection(item);
-    fireEvent('onClick');
+
+    fireEvent('onNavigationItemClicked', { itemId: item.id });
   };
 
   // Actions
@@ -378,6 +483,12 @@ export const Navigation = function Navigation(props) {
       selectItem: async function (itemId) {
         selectItemRef.current(itemId);
       },
+      setItemVisibility: async function (itemId, value) {
+        setMenuItems((prev) => updateItemById(prev, itemId, (item) => ({ ...item, visible: !value })));
+      },
+      setItemDisable: async function (itemId, value) {
+        setMenuItems((prev) => updateItemById(prev, itemId, (item) => ({ ...item, disable: !!value })));
+      },
     };
 
     setExposedVariables(exposedVariables);
@@ -422,6 +533,9 @@ export const Navigation = function Navigation(props) {
     shallow
   );
 
+  // Below 3 grid columns the "More" button's fixed width no longer fits its label — show icon only.
+  const isCompactMoreBtn = gridColumns != null && gridColumns < 3;
+
   const [viewerMaxWidth, setViewerMaxWidth] = useState(undefined);
   useLayoutEffect(() => {
     if (currentMode !== 'view' || orientation !== 'horizontal') {
@@ -443,8 +557,8 @@ export const Navigation = function Navigation(props) {
 
   // Container styles
   const containerStyle = useMemo(() => {
-    const parsedPadding = parseInt(padding, 10) || 2;
-    const parsedBorderRadius = parseInt(borderRadius, 10) || 8;
+    const parsedPadding = parseStyleDimension(padding, 2);
+    const parsedBorderRadius = parseStyleDimension(borderRadius, 8);
     const bgColor = backgroundColor || 'var(--cc-surface1-surface)';
     const bdrColor = borderColor || 'var(--cc-weak-border)';
 
@@ -455,14 +569,15 @@ export const Navigation = function Navigation(props) {
       flexDirection: isHorizontal ? 'row' : 'column',
       alignItems: isHorizontal ? mapAlignment(verticalAlignment) : undefined,
       width: '100%',
-      height: '100%',
+      height: isDynamicHeightEnabled ? 'auto' : '100%',
+      ...(isDynamicHeightEnabled && { minHeight: height }),
       maxWidth: viewerMaxWidth ? `${viewerMaxWidth}px` : undefined,
       backgroundColor: bgColor,
       border: `1px solid ${bdrColor}`,
       borderRadius: `${parsedBorderRadius}px`,
       padding: `${parsedPadding}px`,
       boxSizing: 'border-box',
-      overflow: orientation === 'horizontal' ? 'visible' : 'auto',
+      overflow: isDynamicHeightEnabled ? 'visible' : orientation === 'horizontal' ? 'visible' : 'auto',
       '--nav-container-bg': bgColor,
       '--nav-container-border': bdrColor,
     };
@@ -475,7 +590,20 @@ export const Navigation = function Navigation(props) {
     padding,
     verticalAlignment,
     viewerMaxWidth,
+    isDynamicHeightEnabled,
+    height,
   ]);
+
+  // Theming CSS vars set on .navigation-widget don't inherit into the portaled popup content;
+  // re-declare them here to pass as inline style on the popup.
+  const popupThemeVars = useMemo(
+    () => ({
+      ...navItemStyles,
+      '--nav-container-bg': containerStyle['--nav-container-bg'],
+      '--nav-container-border': containerStyle['--nav-container-border'],
+    }),
+    [navItemStyles, containerStyle]
+  );
 
   // Loading state
   if (exposedVariablesTemporaryState.isLoading) {
@@ -507,7 +635,7 @@ export const Navigation = function Navigation(props) {
             className={`navigation-horizontal-list ${justifyTwClass} ${
               navItemSize === 'equalWidth' ? `nav-equal-width nav-align-${horizontalAlignment}` : ''
             }`}
-            style={{ ...navItemStyles, flex: navItemSize === 'equalWidth' ? '1' : 'none' }}
+            style={{ flex: navItemSize === 'equalWidth' ? '1' : 'none' }}
           >
             {links.visible.map((item) => {
               if (item.isGroup) {
@@ -521,6 +649,8 @@ export const Navigation = function Navigation(props) {
                     displayStyle={displayStyle}
                     orientation={orientation}
                     darkMode={darkMode}
+                    childAlignment={childAlignment}
+                    popupThemeVars={popupThemeVars}
                   />
                 );
               }
@@ -537,57 +667,67 @@ export const Navigation = function Navigation(props) {
                 </NavigationMenuItem>
               );
             })}
-            {/* More button for overflow items — Radix DropdownMenu provides
-                auto-positioning (flips above when no space below). align="end"
-                keeps the dropdown's right edge aligned with the button, since
-                the More button sits at the end of the nav bar. Portal is
-                skipped so content renders inside .navigation-widget (existing
-                SCSS nesting stays intact). */}
+            {/* align="end" keeps the dropdown's right edge aligned with the button. */}
             {links.overflow.length > 0 && (
               <NavigationMenuItem>
-                <DropdownMenu.Root>
+                <DropdownMenu.Root modal={false}>
                   <DropdownMenu.Trigger asChild>
-                    <button type="button" className="more-pages-btn">
+                    <button
+                      type="button"
+                      className={cx('more-pages-btn', { 'more-pages-btn-icon-only': isCompactMoreBtn })}
+                      aria-label="More"
+                    >
                       <TablerIcon iconName="IconDotsVertical" size={16} color="var(--nav-item-icon-color)" />
-                      More
+                      {!isCompactMoreBtn && 'More'}
                     </button>
                   </DropdownMenu.Trigger>
-                  <DropdownMenu.Content
-                    className={cx('page-menu-popup', { 'dark-theme': darkMode })}
-                    sideOffset={6}
-                    align="end"
-                    collisionPadding={8}
-                  >
-                    {links.overflow.map((item) => {
-                      if (item.isGroup) {
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.Content
+                      className={cx('page-menu-popup', { 'dark-theme': darkMode })}
+                      style={{
+                        ...popupThemeVars,
+                        // Caps growth to Radix's available-height var so it never needs to flip sides.
+                        maxHeight: 'min(75vh, var(--radix-dropdown-menu-content-available-height, 75vh))',
+                        overflowY: 'auto',
+                      }}
+                      sideOffset={6}
+                      align="end"
+                      collisionPadding={8}
+                    >
+                      {links.overflow.map((item) => {
+                        if (item.isGroup) {
+                          return (
+                            <RenderNavGroup
+                              key={item.id}
+                              group={item}
+                              selectedItemId={selectedItemId}
+                              onItemClick={handleItemClick}
+                              styles={styles}
+                              displayStyle={displayStyle}
+                              orientation="vertical"
+                              darkMode={darkMode}
+                              isInOverflow={true}
+                              childAlignment={childAlignment}
+                              isExpanded={!!expandedGroups[item.id]}
+                              onToggleExpand={toggleGroupExpanded}
+                            />
+                          );
+                        }
                         return (
-                          <RenderNavGroup
+                          <RenderNavItem
                             key={item.id}
-                            group={item}
-                            selectedItemId={selectedItemId}
+                            item={item}
+                            isSelected={item.id === selectedItemId}
                             onItemClick={handleItemClick}
                             styles={styles}
                             displayStyle={displayStyle}
                             orientation="vertical"
-                            darkMode={darkMode}
                             isInOverflow={true}
                           />
                         );
-                      }
-                      return (
-                        <RenderNavItem
-                          key={item.id}
-                          item={item}
-                          isSelected={item.id === selectedItemId}
-                          onItemClick={handleItemClick}
-                          styles={styles}
-                          displayStyle={displayStyle}
-                          orientation="vertical"
-                          isInOverflow={true}
-                        />
-                      );
-                    })}
-                  </DropdownMenu.Content>
+                      })}
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Portal>
                 </DropdownMenu.Root>
               </NavigationMenuItem>
             )}
@@ -597,20 +737,16 @@ export const Navigation = function Navigation(props) {
     }
 
     // Vertical orientation - use visibleMenuItems (deduplicated and filtered)
-    // Auto-margins handle alignment without clipping scrollable content:
-    // center → auto margins on both sides; end → auto margin on start side only
+    // Nav-item CSS vars now live on the widget root, so only layout margins remain here.
     const verticalMenuStyle = {
-      ...navItemStyles,
       marginTop: verticalAlignment === 'center' ? 'auto' : verticalAlignment === 'bottom' ? 'auto' : undefined,
       marginBottom: verticalAlignment === 'center' ? 'auto' : undefined,
-      marginLeft: horizontalAlignment === 'center' ? 'auto' : horizontalAlignment === 'right' ? 'auto' : undefined,
-      marginRight: horizontalAlignment === 'center' ? 'auto' : undefined,
     };
 
     return (
       <div
-        className={`navigation-vertical-menu ${
-          navItemSize === 'equalWidth' ? `nav-equal-width nav-align-${horizontalAlignment}` : ''
+        className={`navigation-vertical-menu nav-align-${horizontalAlignment} ${
+          navItemSize === 'equalWidth' ? 'nav-equal-width' : ''
         }`}
         style={verticalMenuStyle}
       >
@@ -626,6 +762,9 @@ export const Navigation = function Navigation(props) {
                 displayStyle={displayStyle}
                 orientation={orientation}
                 darkMode={darkMode}
+                childAlignment={childAlignment}
+                isExpanded={!!expandedGroups[item.id]}
+                onToggleExpand={toggleGroupExpanded}
               />
             );
           }
@@ -654,7 +793,7 @@ export const Navigation = function Navigation(props) {
         'navigation-horizontal': orientation === 'horizontal',
         'navigation-vertical': orientation === 'vertical',
       })}
-      style={containerStyle}
+      style={{ ...navItemStyles, ...containerStyle }}
       data-cy={dataCy}
       role="navigation"
       aria-label="Navigation menu"
@@ -685,7 +824,7 @@ export const Navigation = function Navigation(props) {
                 fontWeight: 500,
               }}
             >
-              {item.label}
+              {toDisplayText(item.label)}
             </div>
           ))}
         </div>

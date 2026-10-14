@@ -53,16 +53,17 @@ export const BulkUploadPrimaryKey = () => {
         <div className="field flex-grow-1 minw-400-w-400">
           <CodeHinter
             type="basic"
-            initialValue={
-              bulkUpdatePrimaryKey?.rows_update
-                ? `{{${JSON.stringify(bulkUpdatePrimaryKey?.rows_update ?? [])}}}`
-                : null
-            }
+            // initialValue={
+            //   bulkUpdatePrimaryKey?.rows_update
+            //     ? `{{${JSON.stringify(bulkUpdatePrimaryKey?.rows_update ?? [])}}}`
+            //     : null
+            // }
+            initialValue={bulkUpdatePrimaryKey?.rows_update ?? []}
             className="codehinter-plugins"
             placeholder="{{ [ { 'column1': 'value', ... } ] }}"
             onChange={(newValue) => {
-              const [_, __, resolvedValue] = resolveReferences(newValue);
-              handleBulkUpdateWithPrimaryKeysRowsUpdateOptionChanged(resolvedValue);
+              // const [_, __, resolvedValue] = resolveReferences(newValue);
+              handleBulkUpdateWithPrimaryKeysRowsUpdateOptionChanged(newValue);
             }}
           />
         </div>

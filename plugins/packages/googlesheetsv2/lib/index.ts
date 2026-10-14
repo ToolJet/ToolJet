@@ -41,9 +41,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
         return option?.value || option || '';
       }
     };
-    const host = process.env.TOOLJET_HOST;
-    const subpath = process.env.SUB_PATH;
-    const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const oauth_type = getSourceOptionValue('oauth_type');
     const userScopes =
       getSourceOptionValue('access_type') === 'write'
@@ -51,6 +48,12 @@ export default class Googlesheetsv2QueryService implements QueryService {
         : 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
     const clientId = oauth_type === 'tooljet_app' ? process.env.GOOGLE_CLIENT_ID : getSourceOptionValue('client_id');
+    const host =
+      oauth_type === 'tooljet_app'
+        ? process.env.TOOLJET_HOST
+        : getSourceOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
 
     const alwaysScope = 'https://www.googleapis.com/auth/drive.metadata.readonly';
 
@@ -91,6 +94,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
 
     let clientId = '';
     let clientSecret = '';
+    let host = process.env.TOOLJET_HOST;
     const oauth_type = getSourceOptionValue('oauth_type');
 
     if (oauth_type === 'tooljet_app') {
@@ -99,6 +103,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
     } else {
       clientId = getSourceOptionValue('client_id');
       clientSecret = getSourceOptionValue('client_secret');
+      host = getSourceOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
     }
 
     if (!clientId || !clientSecret) {
@@ -106,7 +111,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
     }
 
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
-    const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;

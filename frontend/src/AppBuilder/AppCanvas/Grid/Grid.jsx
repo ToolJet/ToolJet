@@ -1185,8 +1185,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             let top = e.translate[1] + scrollDelta.y;
 
             if (currentDragCanvasId === 'canvas') {
-              left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
-              top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
+              // Snap the scroll-compensated position so the ghost stays on the grid.
+              // scrollDelta (from autoscroll) is generally NOT a multiple of the grid
+              // width, so adding it AFTER snapping would push the ghost a constant
+              // (scrollDelta % gridWidth) px off the grid lines. Fold it into the
+              // value being rounded instead.
+              left = Math.round((e.translate[0] + scrollDelta.x) / _gridWidth) * _gridWidth || 0;
+              top = Math.round((e.translate[1] + scrollDelta.y) / GRID_HEIGHT) * GRID_HEIGHT || 0;
 
               const _canvasWidth = NO_OF_GRIDS * _gridWidth;
               left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
@@ -1246,9 +1251,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
           // Get scroll delta from autoscroll hook
           const scrollDelta = getScrollDelta();
-          // Snap to grid + add scroll delta to keep widget under cursor
-          let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
-          let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
+          // Snap the scroll-compensated position so the widget stays on the grid.
+          // scrollDelta is generally not a multiple of the grid width, so adding it
+          // after snapping would push the widget (scrollDelta % gridWidth) px off the
+          // grid lines. Fold it into the value being rounded instead.
+          let left = Math.round((e.translate[0] + scrollDelta.x) / _gridWidth) * _gridWidth || 0;
+          let top = Math.round((e.translate[1] + scrollDelta.y) / GRID_HEIGHT) * GRID_HEIGHT || 0;
           const draggingWidgetWidth = getDraggingWidgetWidth(e.target.clientWidth, _gridWidth);
           e.target.style.width = `${draggingWidgetWidth}px`;
 
@@ -1307,22 +1315,21 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           // Update autoscroll with current mouse position and target
           updateMousePosition(e.clientX, e.clientY, e.target);
         }}
-        onDragGroupStart={(e) => {
-          showGridLines();
-          handleActivateNonDraggingComponents();
-          // Don't start autoscroll if dragging via config handle
-          if (isGroupHandleHoverd) return;
-          // Start autoscroll for group drag with all target elements
-          const targets = e.targets || [];
-          if (targets.length > 0) {
-            startAutoScroll(e.clientX, e.clientY, targets, 'groupDrag');
-          }
-        }}
         onDragGroup={(ev) => {
           const { events } = ev;
           lastGroupDragEventRef.current = events;
           const parentElm = events[0]?.target?.closest('.real-canvas');
+          // Start-of-drag side effects wait for the first movement: a plain click inside the group
+          // area clears the selection on mouseup, which unmounts the group Moveable before
+          // onDragGroupEnd can undo them, leaving the grid lines stuck on.
           if (!isGroupDraggingRef.current) {
+            showGridLines();
+            handleActivateNonDraggingComponents();
+            // Don't start autoscroll if dragging via config handle
+            const targets = ev.targets || [];
+            if (!isGroupHandleHoverd && targets.length > 0) {
+              startAutoScroll(ev.clientX, ev.clientY, targets, 'groupDrag');
+            }
             useStore.getState().setIsGroupDragging(true);
             isGroupDraggingRef.current = true;
             // Add the class to the targets that are being dragged to hide the group selection

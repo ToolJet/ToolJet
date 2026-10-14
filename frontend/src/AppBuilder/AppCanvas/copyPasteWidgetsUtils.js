@@ -8,6 +8,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
+import { utilityFuncForNameSeed } from '@/_helpers/utils';
 
 const getSelectedText = () => {
   let selectedText = '';
@@ -275,14 +276,21 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
 
 export const debouncedPasteComponents = debounce(pasteComponents, 300);
 
-export function resolvePastedComponentName({ isCut, isCloning, originalName, componentType, mergedComponents }) {
+export function resolvePastedComponentName({
+  isCut,
+  isCloning,
+  originalName,
+  componentType,
+  mergedComponents,
+  componentDef = {},
+}) {
   if (isCut && !isCloning && typeof originalName === 'string' && originalName.length > 0) {
     const taken = Object.values(mergedComponents).some((c) => c.component.name === originalName);
     if (!taken) {
       return originalName;
     }
   }
-  return computeComponentName(componentType, mergedComponents);
+  return computeComponentName(utilityFuncForNameSeed(componentDef), mergedComponents);
 }
 
 export async function pasteComponents(targetParentId, copiedComponentObj) {
@@ -333,6 +341,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
       originalName: component.component.name,
       componentType: component.component.component,
       mergedComponents,
+      componentDef: component,
     });
     const parentRef = component.isParentTabORCalendar
       ? component.component.parent.split('-').slice(0, -1).join('-')
@@ -413,9 +422,23 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     finalComponents.push(newComponent);
   });
   const canAddToParent = useStore.getState().canAddToParent;
-  const fc = finalComponents.filter((component) => {
+  let fc = finalComponents.filter((component) => {
     return canAddToParent(component?.component.parent, component?.component.component);
   });
+  // A refused component takes its subtree with it, or the children land on a parent never created.
+  const getBaseParentId = useStore.getState().getBaseParentId;
+  const pastedIds = new Set(finalComponents.map((component) => component.id));
+  for (let dropped = true; dropped; ) {
+    const kept = new Set(fc.map((component) => component.id));
+    const survivors = fc.filter((component) => {
+      const parentId = component.component.parent;
+      if (!parentId) return true;
+      const baseParentId = getBaseParentId(parentId);
+      return !pastedIds.has(baseParentId) || kept.has(baseParentId);
+    });
+    dropped = survivors.length !== fc.length;
+    fc = survivors;
+  }
   const filteredFinalComponents = fc.map((component) => {
     if (formComponentIds.has(component.id)) {
       const fields = component.component.definition?.properties?.fields?.value || [];
@@ -429,7 +452,8 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
   const filteredComponentsCount = filteredFinalComponents.length;
 
   let pasteSucceeded = false;
-  if (filteredComponentsCount < 0) return;
+  // A count can never be negative; nothing survived the filter, so there is nothing to paste.
+  if (filteredComponentsCount === 0) return;
 
   if (currentPageId === pageId) {
     const components = useStore.getState().getCurrentPageComponents();

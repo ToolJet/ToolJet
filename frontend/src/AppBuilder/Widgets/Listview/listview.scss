@@ -9,3 +9,17 @@
         }
     }
 }
+
+.listview-scroll-container {
+    // Hidden until hover, matching .hide-scrollbar on the Form body.
+    scrollbar-width: none;
+
+    &:hover {
+        scrollbar-color: var(--interactive-selected) transparent;
+        scrollbar-width: auto;
+    }
+}
+
+.real-canvas.flex-container-canvas .listview-scroll-container {
+    scrollbar-color: inherit;
+}

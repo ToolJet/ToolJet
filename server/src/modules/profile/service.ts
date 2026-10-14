@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '@modules/users/repositories/repository';
-import { ProfileUpdateDto } from '@modules/profile/dto';
+import { ProfilePreferencesDto, ProfileUpdateDto } from '@modules/profile/dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { ProfileUtilService } from '@modules/profile/util.service';
@@ -16,13 +16,15 @@ export class ProfileService implements IProfileService {
   constructor(protected userRepository: UserRepository, protected serviceUtils: ProfileUtilService) {}
 
   getSessionUserDetails(user: User): Partial<User> {
-    const { firstName, lastName, avatarId, email, id } = user;
+    const { firstName, lastName, avatarId, email, id, mfaEnabled, aiBuildNotificationsEnabled } = user;
     return {
       firstName,
       lastName,
       avatarId,
       email,
       id,
+      mfaEnabled,
+      aiBuildNotificationsEnabled,
     };
   }
 
@@ -57,11 +59,16 @@ export class ProfileService implements IProfileService {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
       });
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
+        ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+        : null;
       await this.userRepository.updateOne(
         userId,
         {
           password,
           passwordRetryCount: 0,
+          passwordExpiry,
         },
         manager
       );
@@ -95,6 +102,31 @@ export class ProfileService implements IProfileService {
           updated_user_details: {
             first_name: firstName,
             last_name: lastName,
+          },
+        },
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogData);
+    });
+  }
+
+  async updatePreferences(userId: string, preferencesDto: ProfilePreferencesDto): Promise<void> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const user = await manager.findOneOrFail(User, {
+        where: { id: userId },
+      });
+      const { ai_build_notifications_enabled: aiBuildNotificationsEnabled } = preferencesDto;
+      await this.userRepository.updateOne(userId, { aiBuildNotificationsEnabled }, manager);
+      const auditLogData = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: user.email,
+        resourceData: {
+          previous_user_details: {
+            ai_build_notifications_enabled: user.aiBuildNotificationsEnabled,
+          },
+          updated_user_details: {
+            ai_build_notifications_enabled: aiBuildNotificationsEnabled,
           },
         },
       };

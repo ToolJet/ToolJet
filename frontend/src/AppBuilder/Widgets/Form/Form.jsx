@@ -26,7 +26,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 
 import './form.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-import FormValidationContext from './FormValidationContext';
+import FormSignalContext from './FormSignalContext';
 
 const FormComponent = (props) => {
   const {
@@ -243,6 +243,7 @@ const FormComponent = (props) => {
 
   const [isValid, setValidation] = useState(true);
   const [submitAttemptCount, setSubmitAttemptCount] = useState(0);
+  const [clearCount, setClearCount] = useState(0);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
 
@@ -251,6 +252,10 @@ const FormComponent = (props) => {
       resetForm: async function () {
         setSubmitAttemptCount(0);
         resetComponent();
+      },
+      clearForm: async function () {
+        setSubmitAttemptCount(0);
+        setClearCount((n) => n + 1);
       },
       submitForm: async function () {
         if (validateOnSubmit) {
@@ -375,8 +380,10 @@ const FormComponent = (props) => {
   }, [effectiveChildrenData, advanced]);
 
   useEffect(() => {
-    document.addEventListener('submitForm', handleFormSubmission);
-    return () => document.removeEventListener('submitForm', handleFormSubmission);
+    // Listening on the form, not the document: inside a List View every row shares one component id.
+    const node = parentRef.current ?? document;
+    node.addEventListener('submitForm', handleFormSubmission);
+    return () => node.removeEventListener('submitForm', handleFormSubmission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), resetOnSubmit, validateOnSubmit]);
 
@@ -434,6 +441,8 @@ const FormComponent = (props) => {
     setCanHeight(`${roundedHeight}px`);
   }, [computedFormBodyHeight, canvasHeight]);
 
+  const formSignalContextValue = useMemo(() => ({ submitAttemptCount, clearCount }), [submitAttemptCount, clearCount]);
+
   return (
     <form
       className={`jet-container jet-form-widget ${advanced && 'jet-container-json-form'}`}
@@ -474,7 +483,7 @@ const FormComponent = (props) => {
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
-            <FormValidationContext.Provider value={submitAttemptCount}>
+            <FormSignalContext.Provider value={formSignalContextValue}>
               {!advanced && (
                 <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
                   <SubContainer
@@ -528,7 +537,7 @@ const FormComponent = (props) => {
                     </div>
                   );
                 })}
-            </FormValidationContext.Provider>
+            </FormSignalContext.Provider>
           </fieldset>
         )}
       </div>

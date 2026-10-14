@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -25,6 +25,7 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { Page, PageOpenIn, PageType } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
@@ -43,6 +44,7 @@ import { PagePermission } from '@entities/page_permissions.entity';
 import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping, ChildType } from '@entities/data_query_folder_mapping.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
@@ -113,7 +115,8 @@ type NewRevampedComponent =
   | 'ButtonGroupV2'
   | 'ModalV2'
   | 'PopoverMenu'
-  | 'Pagination';
+  | 'Pagination'
+  | 'Timeline';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -167,6 +170,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ModalV2',
   'PopoverMenu',
   'Pagination',
+  'Timeline',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -216,6 +220,12 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
   DaterangePicker: 'Select Date Range',
 };
 
+// Components that turned dynamicHeight on by default AFTER shipping without it. An export that
+// predates the property has no key, so without this pin it would take the new default on import and
+// resize the app. Mirrors the matching backfill migration, which only reaches components already in
+// this database. A component born with the default on never needs listing here.
+const DYNAMIC_HEIGHT_ON_BY_DEFAULT_COMPONENT_TYPES = ['Checkbox'];
+
 const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'Accordion',
   'Button',
@@ -256,6 +266,17 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TimePicker',
   'ToggleSwitchV2',
   'TreeSelect',
+];
+
+const LEGACY_INPUT_SIZE_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'Cascader',
+  'TextArea',
 ];
 
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
@@ -312,6 +333,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextArea',
   'TextInput',
   'TimePicker',
+  'Timeline',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
@@ -326,7 +348,8 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager,
-    protected readonly transactionLogger: TransactionLogger
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly abilityService: AbilityService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -598,6 +621,24 @@ export class AppImportExportService {
             .getMany()
         : [];
 
+    // Gate: if any referenced module is missing, the user must have module_create permission
+    if (appParams?.modules?.length > 0) {
+      const missingModules = appParams.modules.filter(
+        (m) => !existingModules.find((existing) => existing.name === m?.appV2?.name)
+      );
+      if (missingModules.length > 0) {
+        const perms = await this.abilityService.resourceActionsPermission(user, {
+          organizationId: user.organizationId,
+        });
+        const canCreateModule = perms.isSuperAdmin || perms.isAdmin || !!perms.moduleCreate;
+        if (!canCreateModule) {
+          throw new ForbiddenException(
+            "This app requires creating modules, but you don't have permission to create modules. Contact admin."
+          );
+        }
+      }
+    }
+
     // Process each module from the import data
     if (appParams?.modules?.length > 0) {
       for (const importedModule of appParams.modules) {
@@ -651,7 +692,8 @@ export class AppImportExportService {
     isGitApp = false,
     tooljetVersion = '',
     cloning = false,
-    manager?: EntityManager
+    manager?: EntityManager,
+    isTemplateApp = false
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (typeof appParamsObj !== 'object') {
@@ -703,9 +745,12 @@ export class AppImportExportService {
         externalResourceMappings,
         isNormalizedAppDefinitionSchema,
         currentTooljetVersion,
-        moduleResourceMappings
+        moduleResourceMappings,
+        undefined,
+        isTemplateApp
       );
       await this.updateEntityReferencesForImportedApp(manager, resourceMapping);
+      await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
       // Update latest version as editing version
       const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
@@ -797,6 +842,16 @@ export class AppImportExportService {
       await this.updateWorkflowDefinitionQueryReferences(manager, appVersionIds, resourceMapping);
     }
   }
+
+  // EE-only
+  protected async remapCustomComponentLibraries(
+    manager: EntityManager,
+    organizationId: string,
+    resourceMapping: AppResourceMappings
+  ): Promise<void> {
+    return;
+  }
+
   async createImportedAppForUser(
     manager: EntityManager,
     appParams: any,
@@ -885,7 +940,8 @@ export class AppImportExportService {
     isNormalizedAppDefinitionSchema: boolean,
     tooljetVersion: string | null,
     moduleResourceMappings?: Record<string, unknown>,
-    createNewVersion?: boolean
+    createNewVersion?: boolean,
+    isTemplateApp = false
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -926,7 +982,8 @@ export class AppImportExportService {
       importingAppVersions,
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
-      createNewVersion
+      createNewVersion,
+      isTemplateApp
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -1497,8 +1554,10 @@ export class AppImportExportService {
             appResourceMappings.componentsMapping[component.id] = savedComponent.id;
             const componentLayout = component.layouts;
 
+            // Deduplicate layouts by type to prevent duplicate layout rows on import
+            const uniqueLayouts = deduplicateLayoutsByType(componentLayout);
             await Promise.all(
-              componentLayout.map(async (layout) => {
+              uniqueLayouts.map(async (layout) => {
                 const newLayout = new Layout();
                 newLayout.type = layout.type;
                 newLayout.top = layout.top;
@@ -2006,6 +2065,11 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  // EE-only
+  protected async importTheme(manager: EntityManager, organizationId: string, globalSettings: any) {
+    return globalSettings;
+  }
+
   createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
     let pageSettings = {};
     if (importedVersion.pageSettings) {
@@ -2191,7 +2255,8 @@ export class AppImportExportService {
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
     isNormalizedAppDefinitionSchema: boolean,
-    createNewVersion?: boolean
+    createNewVersion?: boolean,
+    isTemplateApp = false
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -2232,7 +2297,10 @@ export class AppImportExportService {
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
-        version.globalSettings = appVersion.globalSettings;
+        // Only templates bring their theme into the workspace; every other import keeps the settings as exported
+        version.globalSettings = isTemplateApp
+          ? await this.importTheme(manager, organization.id, appVersion.globalSettings)
+          : appVersion.globalSettings;
         version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
@@ -2722,6 +2790,13 @@ export class AppImportExportService {
         eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
       }
 
+      if (
+        eventDefinition?.actionId === 'scroll-component-into-view' &&
+        oldComponentToNewComponentMapping[eventDefinition.componentId]
+      ) {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
       event.event = eventDefinition;
 
       await manager.save(event);
@@ -2834,7 +2909,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
-function migrateProperties(
+export function migrateProperties(
   componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
@@ -2846,8 +2921,16 @@ function migrateProperties(
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
 
+  if (LEGACY_INPUT_SIZE_COMPONENT_TYPES.includes(componentType) && properties.legacyInputSize === undefined) {
+    properties.legacyInputSize = { value: '{{true}}' };
+  }
+
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };
+  }
+
+  if (DYNAMIC_HEIGHT_ON_BY_DEFAULT_COMPONENT_TYPES.includes(componentType) && properties.dynamicHeight === undefined) {
+    properties.dynamicHeight = { value: '{{false}}' };
   }
 
   if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
@@ -3121,6 +3204,34 @@ function migrateProperties(
 
     // Steps
     if (componentType === 'Steps') {
+      // These keys moved from styles to properties/styles (see StepsV2Migration data migration
+      // for the equivalent one-off DB fixup). Apps exported before that change still carry the
+      // old keys, so relocate on import too.
+      if (styles.theme !== undefined) {
+        if (properties.variant === undefined) {
+          properties.variant = styles.theme;
+        }
+        delete styles.theme;
+      }
+      if (styles.color !== undefined) {
+        if (styles.completedAccent === undefined) {
+          styles.completedAccent = styles.color;
+        }
+        delete styles.color;
+      }
+      if (styles.textColor !== undefined) {
+        if (styles.completedLabel === undefined) {
+          styles.completedLabel = styles.textColor;
+        }
+        if (styles.incompletedLabel === undefined) {
+          styles.incompletedLabel = styles.textColor;
+        }
+        if (styles.currentStepLabel === undefined) {
+          styles.currentStepLabel = styles.textColor;
+        }
+        delete styles.textColor;
+      }
+
       if (!properties.advanced) {
         properties.advanced = { value: '{{true}}' };
       }
@@ -3159,6 +3270,19 @@ function migrateProperties(
       if (properties.numberFormat == undefined) {
         properties.numberFormat = { value: 'us' };
       }
+      if (properties.value !== undefined && (properties.value?.value === '' || properties.value?.value === null)) {
+        properties.value = { ...properties.value, value: '0' };
+      }
+    }
+
+    if (['PhoneInput', 'CurrencyInput'].includes(componentType) && properties.dateFormat !== undefined) {
+      if (properties.dateFormat?.fxActive !== undefined) {
+        properties.defaultCountry = {
+          ...properties.defaultCountry,
+          fxActive: properties.defaultCountry?.fxActive ?? properties.dateFormat.fxActive,
+        };
+      }
+      delete properties.dateFormat;
     }
 
     // TreeSelect
@@ -3307,6 +3431,20 @@ function migrateProperties(
 
   if (componentType === 'ModuleViewer' && styles.padding === undefined) {
     styles.padding = { value: 'default' };
+  }
+
+  // Navigation: these keys moved from properties to styles (see server/data-migrations/
+  // 1783372800000-MoveNavigationLayoutStylesToStyles.ts for the equivalent one-off DB fixup).
+  // Apps exported before that change still carry them under properties, so relocate on import too.
+  if (['Navigation'].includes(componentType)) {
+    for (const key of ['orientation', 'displayStyle', 'navItemSize', 'horizontalAlignment', 'verticalAlignment']) {
+      if (properties[key] !== undefined) {
+        if (styles[key] === undefined) {
+          styles[key] = properties[key];
+        }
+        delete properties[key];
+      }
+    }
   }
 
   return { properties, styles, general, generalStyles, validation };

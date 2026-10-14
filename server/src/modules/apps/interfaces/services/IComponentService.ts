@@ -64,6 +64,12 @@ export interface IComponentsService {
     appVersionId: string
   ): Promise<void | { error: { message: string } }>;
   getAllComponents(pageId: string, manager?: EntityManager): Promise<Record<string, any>>;
+  /**
+   * Batched variant of getAllComponents — loads components for many pages in one
+   * query/transaction. Returns a map keyed by pageId; pages without components are
+   * absent from the map.
+   */
+  getAllComponentsForPages(pageIds: string[], manager?: EntityManager): Promise<Record<string, Record<string, any>>>;
   transformComponentData(data: object): Component[];
   createComponentWithLayout(
     componentData: Component,

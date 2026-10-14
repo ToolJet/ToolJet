@@ -10,8 +10,6 @@ import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../Grid/gridUtils';
 
-const BUFFER_OFFSET = 15;
-
 export const useCanvasDropHandler = () => {
   const { isModuleEditor } = useModuleContext();
 
@@ -63,6 +61,9 @@ export const useCanvasDropHandler = () => {
           }
         : undefined;
 
+      // Custom-tab drops carry which library component the LibraryComponent instance renders.
+      const libraryComponentInfo = component?.libraryComponentInfo;
+
       let addedComponent;
 
       if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(draggedComponentType)) {
@@ -71,7 +72,8 @@ export const useCanvasDropHandler = () => {
           currentLayout,
           realCanvasRef,
           canvasId,
-          moduleInfo
+          moduleInfo,
+          libraryComponentInfo
         );
         const childComponents = addChildrenWidgetsToParent(draggedComponentType, parentComponent?.id, currentLayout);
         if (draggedComponentType === 'Form') {
@@ -85,30 +87,12 @@ export const useCanvasDropHandler = () => {
           currentLayout,
           realCanvasRef,
           canvasId,
-          moduleInfo
+          moduleInfo,
+          libraryComponentInfo
         );
         addedComponent = [newComponent];
         await addComponentToCurrentPage(addedComponent);
       }
-
-      // const canvas = document.querySelector('.canvas-container');
-      // const sidebar = document.querySelector('.editor-sidebar');
-      // const droppedElem = document.getElementById(addedComponent?.[0]?.id);
-
-      // if (!canvas || !sidebar || !droppedElem) return;
-
-      // const droppedRect = droppedElem.getBoundingClientRect();
-      // const sidebarRect = sidebar.getBoundingClientRect();
-
-      // const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
-
-      // if (isOverlapping) {
-      //   const overlap = droppedRect.right - sidebarRect.left;
-      //   canvas.scrollTo({
-      //     left: canvas.scrollLeft + overlap + BUFFER_OFFSET,
-      //     behavior: 'smooth',
-      //   });
-      // }
     } finally {
       // Reset drag bookkeeping when dropping
       setCurrentDragCanvasId(null);

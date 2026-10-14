@@ -35,6 +35,7 @@ export const Listview = function Listview({
   const parentIndices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
   const childComponentCount = useStore((state) => (state.containerChildrenMapping?.[id] || []).length);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
+  const deriveListviewExposedData = useStore((state) => state.deriveListviewExposedData, shallow);
   const initExposedValueArrayForChildren = useStore((state) => state.initExposedValueArrayForChildren, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const isWidgetInContainerDragging = useStore(
@@ -121,30 +122,6 @@ export const Listview = function Listview({
 
   // children/data are now derived directly in the store by deriveListviewExposedData.
   // onRecordOrRowClicked reads from the store imperatively at click time.
-  const onRecordOrRowClicked = useCallback(
-    (index) => {
-      setSelectedRowIndex(index);
-      const state = useStore.getState();
-      let lvExposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
-      // For nested ListView, navigate to current row's exposed values
-      if (Array.isArray(lvExposed) && parentIndices.length > 0) {
-        for (const idx of parentIndices) {
-          lvExposed = lvExposed?.[idx];
-          if (!lvExposed) break;
-        }
-      }
-      const selectedRow = lvExposed?.children?.[index];
-      setExposedVariables({
-        selectedRecordId: index,
-        selectedRecord: selectedRow,
-        selectedRowId: index,
-        selectedRow: selectedRow,
-      });
-      fireEvent('onRecordClicked');
-      fireEvent('onRowClicked');
-    },
-    [id, moduleId, parentIndices, setExposedVariables, fireEvent]
-  );
 
   useEffect(() => {
     if (columns < 1) {
@@ -175,9 +152,15 @@ export const Listview = function Listview({
     childComponentCount !== prevChildComponentCount.current ||
     parentIndicesChanged
   ) {
+    const childrenChanged = childComponentCount !== prevChildComponentCount.current;
     prevFilteredDataRef.current = filteredData;
     prevParentIndicesRef.current = parentIndices;
     prevChildComponentCount.current = childComponentCount;
+
+    // A child leaving writes nothing, so only an explicit re-derive drops it from the published rows.
+    if (childrenChanged) {
+      filteredData.forEach((_row, rowIndex) => deriveListviewExposedData(id, rowIndex, parentIndices, moduleId));
+    }
 
     // Adding listItem as key value pair to the customResolvables
     const listItems = filteredData.map((listItem) => {
@@ -193,6 +176,39 @@ export const Listview = function Listview({
     }
   }
 
+  const onRecordOrRowClicked = useCallback(
+    (index) => {
+      setSelectedRowIndex(index);
+      // The clicked child's own write is still queued; read after it lands or selectedRecord is stale.
+      useStore.getState().flushPendingPerRowWrites?.();
+      const state = useStore.getState();
+      let lvExposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
+      // For nested ListView, navigate to current row's exposed values
+      if (Array.isArray(lvExposed) && parentIndices.length > 0) {
+        for (const idx of parentIndices) {
+          lvExposed = lvExposed?.[idx];
+          if (!lvExposed) break;
+        }
+      }
+      const selectedRow = lvExposed?.children?.[index];
+      setExposedVariables({
+        selectedRecordId: index,
+        selectedRecord: selectedRow,
+        selectedRowId: index,
+        selectedRow: selectedRow,
+      });
+      // Every row event carries its record, so a handler on the list itself can read {{listItem}}.
+      const fireRowEvent = (name) =>
+        fireEvent(name, {
+          customVariables: { listItem: filteredData[index] },
+          sourceSubContainerIndex: [...parentIndices, index],
+        });
+      fireRowEvent('onRecordClicked');
+      fireRowEvent('onRowClicked');
+    },
+    [id, moduleId, parentIndices, setExposedVariables, fireEvent, filteredData]
+  );
+
   const renderedRowCount = filteredData.length;
 
   useExposedValueBatch(renderedRowCount);
@@ -200,7 +216,7 @@ export const Listview = function Listview({
   return (
     <div
       data-disabled={disabledState}
-      className={cx(`flex-column w-100 position-relative dynamic-${id}`, {
+      className={cx(`flex-column w-100 position-relative dynamic-${id} listview-scroll-container`, {
         'jet-container-loading': loadingState,
       })}
       id={id}
@@ -214,7 +230,8 @@ export const Listview = function Listview({
           <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
             {filteredData.map((_listItem, index) => (
               <ListviewSubcontainer
-                key={index}
+                // Keyed by record: a page-local key makes React reuse row 0's children on every page.
+                key={startIndexOfRowInThePage + index}
                 id={id}
                 index={index}
                 mode={mode}

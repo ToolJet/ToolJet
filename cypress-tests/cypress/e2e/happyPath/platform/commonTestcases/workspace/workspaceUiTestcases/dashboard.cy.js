@@ -17,9 +17,9 @@ import {
   verifyAppDelete,
 } from "Support/utils/dashboard";
 import { commonSelectors } from "Selectors/common";
-import { dashboardSelector } from "Selectors/dashboard";
+import { dashboardSelector } from "Selectors/platform/dashboard";
 import { commonText } from "Texts/common";
-import { dashboardText } from "Texts/dashboard";
+import { dashboardText } from "Texts/platform/dashboard";
 import { logout } from "Support/utils/common";
 
 
@@ -138,27 +138,15 @@ describe("dashboard", () => {
       dashboardText.dashboardAppsHeaderLabel
     );
 
-    cy.get(dashboardSelector.emptyPageImage).should("be.visible");
-    cy.get(dashboardSelector.emptyPageHeader).verifyVisibleElement(
-      "have.text",
-      dashboardText.emptyPageHeader
-    );
-    cy.get(dashboardSelector.emptyPageDescription).verifyVisibleElement(
-      "have.text",
-      dashboardText.emptyPageDescription
-    );
-    cy.get(commonSelectors.dashboardAppCreateButton).verifyVisibleElement(
+    cy.get(dashboardSelector.appsEmptyState).within(() => {
+      cy.get("svg").should("be.visible");
+      cy.contains(dashboardText.emptyPageHeader).should("be.visible");
+      cy.contains(dashboardText.emptyPageDescription).should("be.visible");
+    });
+    cy.get(commonSelectors.appCreateButton).verifyVisibleElement(
       "have.text",
       dashboardText.createAppButton
     );
-    cy.get(dashboardSelector.importAppButton).should("be.visible");
-    cy.get(dashboardSelector.importAppButton)
-      .invoke("text")
-      .then((text) => {
-        expect(text.trim()).equal(dashboardText.importAppButton);
-      });
-
-    cy.get(dashboardSelector.appTemplateRow).should("be.visible");
     cy.reload();
     const env = Cypress.env("environment");
     if (env === "Enterprise" || env === "Cloud") {

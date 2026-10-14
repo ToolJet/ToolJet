@@ -6,6 +6,7 @@ import { IconX } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import {
   getLabelFontSize,
   getLabelHeight,
@@ -80,6 +81,9 @@ export const BaseInput = ({
   } = styles;
 
   const { label, placeholder } = properties;
+  const { contextPath } = useSubcontainerContext();
+  // A DOM id is unique per document, so a repeated row needs its own or every label points at row 1.
+  const domId = `component-${id}${contextPath.map((segment) => `-${segment.index}`).join('')}`;
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -134,7 +138,10 @@ export const BaseInput = ({
         ? '30px'
         : '10px'
       : defaultAlignment === 'top' && hasLabel
-      ? 'calc(50% + 10px)'
+      ? // Half the label's own height: the button is positioned against the whole widget,
+        // so it must be pushed down by half of whatever the top-aligned label consumes to
+        // land on the middle of the field. A fixed 10px was only correct at the 12px default.
+        `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)`
       : '50%';
   const clearButtonTransform = inputType === 'textarea' ? 'none' : 'translateY(-50%)';
   const clearButton = shouldShowClearBtn ? (
@@ -194,7 +201,7 @@ export const BaseInput = ({
           labelWidth={labelWidth}
           top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
           widthType={widthType}
-          inputId={`component-${id}`}
+          inputId={domId}
           fontSize={labelFontSizeValue}
           classes={{
             labelContainer: cn({
@@ -209,6 +216,10 @@ export const BaseInput = ({
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className={cn(
             'tw-px-2.5 tw-py-2 tw-border tw-border-solid tw-flex tw-items-center tw-gap-1.5 tj-text-input-widget-container',
+            // The error border is an inline style, which the container's hover rule overrides
+            // with `!important`. This flag opts the field out of that rule so a revealed error
+            // survives the pointer passing over it.
+            { 'tj-input-has-error': !isValid && showValidationError },
             classes?.inputContainer
           )}
           style={{
@@ -279,7 +290,7 @@ export const BaseInput = ({
             placeholder={placeholder}
             style={finalStyles}
             {...additionalInputProps}
-            id={`component-${id}`}
+            id={domId}
             disabled={disable || loading}
             aria-disabled={disable || loading}
             aria-busy={loading}

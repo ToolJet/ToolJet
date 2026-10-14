@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 // eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { formatFileSize, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { processFileContent, DEPRECATED_processFileContent, parseFileContentEnabled } from '../helpers/fileProcessing';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { registerFileHandle, releaseFileHandle, createFileFieldRef } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 export const useFilePicker = ({
   validation,
@@ -67,6 +68,10 @@ export const useFilePicker = ({
 
   // --- State ---
   const [selectedFiles, setSelectedFiles] = useState([]);
+  // Lets clearFiles read the current selection without depending on
+  // selectedFiles, keeping its identity stable (other effects key off it).
+  const selectedFilesRef = useRef(selectedFiles);
+  selectedFilesRef.current = selectedFiles;
   const [fileErrors, setFileErrors] = useState({});
   const [uploadingStatus, setUploadingStatus] = useState({});
   const [isParsing, setIsParsing] = useState(false);
@@ -158,6 +163,16 @@ export const useFilePicker = ({
           });
         }
 
+        // Keep the heavy strings (and the Blob itself) in the main-thread
+        // registry; expose lightweight string-like refs through the store.
+        // Refs materialize to real strings at the resolver boundary.
+        // internalId doubles as the registry key — no need for a second id.
+        registerFileHandle(fileStateKey, file, {
+          content: readFileAsText,
+          base64Data: base64Data,
+          dataURL: readFileAsDataURLResult,
+        });
+
         return {
           internalId: fileStateKey,
           lastModified: file.lastModified,
@@ -166,8 +181,8 @@ export const useFilePicker = ({
           size: file.size,
           type: file.type,
           webkitRelativePath: file.webkitRelativePath,
-          content: readFileAsText,
-          base64Data: base64Data,
+          content: createFileFieldRef(fileStateKey, 'content'),
+          base64Data: createFileFieldRef(fileStateKey, 'base64Data'),
           parsedValue: parsedValue,
           parsedData: parsedData,
           filePath: file.path,
@@ -238,13 +253,8 @@ export const useFilePicker = ({
       }
       // dropzoneRejections state can be kept raw for other potential uses or removed if only for this UI message
       setDropzoneRejections(rejectedFiles); // Keep raw rejections for potential debugging or detailed listing elsewhere
-
-      // Clear setUiErrorMessage afgter 5 seconds
-      setTimeout(() => {
-        clearErrorStates();
-      }, 10000);
     },
-    [fileTypeCategory, minSize, maxSize, maxFileCount, clearErrorStates]
+    [fileTypeCategory, minSize, maxSize, maxFileCount]
   );
 
   // Custom validator
@@ -333,7 +343,14 @@ export const useFilePicker = ({
         const updatedFiles = enableMultiple
           ? [...prevFiles, ...successfullyProcessedFiles]
           : [...successfullyProcessedFiles];
-        return enableMultiple ? updatedFiles.slice(0, maxFileCount) : updatedFiles;
+        const finalFiles = enableMultiple ? updatedFiles.slice(0, maxFileCount) : updatedFiles;
+        // Release registry entries for files that fell out of the selection
+        // (single-mode replacement or maxFileCount overflow).
+        const keptHandles = new Set(finalFiles.map((f) => f.internalId));
+        [...prevFiles, ...successfullyProcessedFiles].forEach((f) => {
+          if (f.internalId && !keptHandles.has(f.internalId)) releaseFileHandle(f.internalId);
+        });
+        return finalFiles;
       });
 
       setFileErrors(currentErrors); // Update state with errors from this drop
@@ -403,9 +420,6 @@ export const useFilePicker = ({
       // After files are accepted, check if minFileCount is met
       if (selectedFiles.length + acceptedFiles.length < minFileCount) {
         setUiErrorMessage(`Please select at least ${minFileCount} file${minFileCount > 1 ? 's' : ''}.`);
-        setTimeout(() => {
-          clearErrorStates();
-        }, 5000);
       } else {
         setUiErrorMessage('');
       }
@@ -439,16 +453,22 @@ export const useFilePicker = ({
       });
 
       fireEvent?.('onFileDeselected', { file: stripFileId(fileToRemove) });
+      if (fileToRemove.internalId) releaseFileHandle(fileToRemove.internalId);
     },
     [selectedFiles, fireEvent, stripFileId]
   );
 
   // --- Exposed Actions ---
   const clearFiles = useCallback(() => {
+    const filesBeingCleared = selectedFilesRef.current;
+    if (filesBeingCleared.length > 0) {
+      fireEvent?.('onFileDeselected', { files: filesBeingCleared.map(stripFileId) });
+    }
+    filesBeingCleared.forEach((f) => f.internalId && releaseFileHandle(f.internalId));
     setSelectedFiles([]);
     setFileErrors({});
     setUploadingStatus({});
-  }, []);
+  }, [fireEvent, stripFileId]);
 
   const setFileName = useCallback(
     (indexOrUpdates, newNameIfSingle) => {
@@ -489,6 +509,8 @@ export const useFilePicker = ({
     [] // No dependencies needed
   );
 
+  useFormClear(clearFiles);
+
   // --- Effects ---
   useEffect(() => {
     const newIsMandatoryMet = !isMandatory || selectedFiles.length > 0;
@@ -505,11 +527,15 @@ export const useFilePicker = ({
       isValid: newIsValid,
     });
 
+    const minCountMessage = `Please select at least ${minFileCount} file${minFileCount > 1 ? 's' : ''}.`;
+
     if (isMandatory && selectedFiles.length === 0 && isTouched && !isDragActive) {
       setUiErrorMessage('This field is mandatory. Please select a file.');
+    } else if (!newIsMinCountMet && selectedFiles.length > 0 && !isDragActive) {
+      setUiErrorMessage(minCountMessage);
     } else if (
-      uiErrorMessage === 'This field is mandatory. Please select a file.' &&
-      (selectedFiles.length > 0 || !isMandatory || !isTouched || isDragActive)
+      (uiErrorMessage === 'This field is mandatory. Please select a file.' || uiErrorMessage === minCountMessage) &&
+      (newIsValid || isDragActive)
     ) {
       setUiErrorMessage('');
     }
@@ -636,6 +662,14 @@ export const useFilePicker = ({
     setDisablePicker(shouldDisable);
     // Use isDisabled from useExposeState for dropzone disabled prop
   }, [selectedFiles.length, maxFileCount, enableMultiple, isDisabled]);
+
+  // Release all registry entries when the widget unmounts — the exposed refs
+  // then materialize to '' instead of leaking Blobs/strings in the registry.
+  useEffect(() => {
+    return () => {
+      selectedFilesRef.current.forEach((f) => f.internalId && releaseFileHandle(f.internalId));
+    };
+  }, []);
 
   // Clear UI error message when isDisabled state changes.
   // `setUiErrorMessage` is stable from useState, so we intentionally

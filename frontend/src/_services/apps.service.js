@@ -65,12 +65,17 @@ function validatePrivateApp(slug, queryParams) {
 }
 
 //use default value for type of apps i.e.'front-end'
-function getAll(page, folder, searchKey, type = 'front-end') {
+function getAll(page, folder, searchKey, type = 'front-end', context = undefined) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}`, requestOptions).then(handleResponse);
+  if (page === 0)
+    return fetch(`${config.apiUrl}/apps?type=${type}${context ? `&context=${context}` : ''}`, requestOptions).then(
+      handleResponse
+    );
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}${
+        context ? `&context=${context}` : ''
+      }`,
       requestOptions
     ).then(handleResponse);
 }

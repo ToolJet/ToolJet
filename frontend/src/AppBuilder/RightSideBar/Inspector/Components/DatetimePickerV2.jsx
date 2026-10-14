@@ -30,6 +30,22 @@ export const DATE_FORMAT_OPTIONS = [
     label: 'YYYY/MM/DD',
     value: 'YYYY/MM/DD',
   },
+  {
+    label: 'DD-MM-YYYY',
+    value: 'DD-MM-YYYY',
+  },
+  {
+    label: 'MM-DD-YYYY',
+    value: 'MM-DD-YYYY',
+  },
+  {
+    label: 'YYYY-DD-MM',
+    value: 'YYYY-DD-MM',
+  },
+  {
+    label: 'YYYY-MM-DD',
+    value: 'YYYY-MM-DD',
+  },
 ];
 
 export const TIME_FORMAT_OPTIONS = [
@@ -56,6 +72,7 @@ export const TIMEZONE_OPTIONS = [
   { name: '-12:00', value: 'Etc/GMT+12' },
   { name: '-11:00', value: 'Etc/GMT+11' },
   { name: '-10:00', value: 'Pacific/Honolulu' },
+  { name: '-09:30', value: 'Pacific/Marquesas' },
   { name: '-09:00', value: 'America/Anchorage' },
   { name: '-08:00', value: 'America/Santa_Isabel' },
   { name: '-07:00', value: 'America/Chihuahua' },
@@ -70,6 +87,7 @@ export const TIMEZONE_OPTIONS = [
   { name: '+01:00', value: 'Europe/Berlin' },
   { name: '+02:00', value: 'Africa/Gaborone' },
   { name: '+03:00', value: 'Asia/Baghdad' },
+  { name: '+03:30', value: 'Asia/Tehran' },
   { name: '+04:00', value: 'Asia/Muscat' },
   { name: '+04:30', value: 'Asia/Kabul' },
   { name: '+05:00', value: 'Asia/Tashkent' },

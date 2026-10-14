@@ -15,20 +15,36 @@ import {
   IsUrl,
   IsInt,
   Min,
+  Max,
   IsNumber,
   IsPositive,
   registerDecorator,
   ValidationOptions,
   ValidationArguments,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
+import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { TjdbSchemaToLatestVersion } from '@dto/transformers/resource-transformer';
 import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-database.validator';
 export enum Status {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
   INVITED = 'invited',
+}
+
+export class GetAllUsersQueryDto {
+  @IsOptional()
+  @IsString()
+  group_names?: string;
+
+  @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',').map((v) => v.trim()).filter((v) => v !== '') : value
+  )
+  @IsArray()
+  @IsEnum(USER_STATUS, { each: true })
+  status?: USER_STATUS[];
 }
 
 export class GroupDto {
@@ -360,6 +376,26 @@ export class UpdateUserMetadataDto {
   userDetails: UserDetailKeyValueDto[];
 }
 
+export enum GroupMatchMode {
+  ALL = 'all',
+  ANY = 'any',
+}
+
+export class GetWorkspaceUsersByGroupsDto {
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  group_names: string[];
+
+  @IsEnum(GroupMatchMode)
+  @IsOptional()
+  match?: GroupMatchMode = GroupMatchMode.ALL;
+
+  @IsEnum(Status)
+  @IsOptional()
+  status?: Status;
+}
+
 export enum TjdbFilterOperator {
   EQUALS = 'equals',
   GREATER_THAN = 'greater than',
@@ -468,4 +504,227 @@ export class ExportTjdbTableAsCsvDto {
   @IsNumber()
   @Min(0)
   offset?: number;
+}
+
+export class ExportAppAdminDto {
+  @ValidateIf((o) => !o.appSlug)
+  @IsNotEmpty()
+  @IsUUID()
+  appId?: string;
+
+  @ValidateIf((o) => !o.appId)
+  @IsNotEmpty()
+  @IsString()
+  appSlug?: string;
+}
+
+export class BanUserDto {
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsObject()
+  info?: object;
+}
+
+export class BanWorkspaceDto {
+  @ValidateIf((o) => !o.slug)
+  @IsNotEmpty()
+  @IsUUID()
+  workspaceId?: string;
+
+  @ValidateIf((o) => !o.workspaceId)
+  @IsNotEmpty()
+  @IsString()
+  slug?: string;
+
+  @IsOptional()
+  @IsObject()
+  info?: object;
+}
+
+export class UnbanWorkspaceDto {
+  @ValidateIf((o) => !o.slug)
+  @IsNotEmpty()
+  @IsUUID()
+  workspaceId?: string;
+
+  @ValidateIf((o) => !o.workspaceId)
+  @IsNotEmpty()
+  @IsString()
+  slug?: string;
+}
+
+export enum AppAccessPermission {
+  VIEW = 'view',
+  EDIT = 'edit',
+}
+
+class AppAccessListV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(AppAccessPermission)
+  permission?: AppAccessPermission;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ListWorkspaceUserAppsV2QueryDto extends AppAccessListV2QueryDto {}
+
+export class ListWorkspaceAppUsersV2QueryDto extends AppAccessListV2QueryDto {}
+
+@Exclude()
+export class PaginationV2ResponseDto {
+  @Expose()
+  page: number;
+
+  @Expose({ name: 'per_page' })
+  perPage: number;
+
+  @Expose({ name: 'total_count' })
+  totalCount: number;
+}
+
+@Exclude()
+export class AppEnvironmentAccessV2ResponseDto {
+  @Expose()
+  development: boolean;
+
+  @Expose()
+  staging: boolean;
+
+  @Expose()
+  production: boolean;
+
+  @Expose()
+  released: boolean;
+}
+
+@Exclude()
+export class AppPermissionsV2ResponseDto {
+  @Expose({ name: 'can_view' })
+  canView: boolean;
+
+  @Expose({ name: 'can_edit' })
+  canEdit: boolean;
+
+  @Expose({ name: 'hidden_from_dashboard' })
+  hiddenFromDashboard: boolean;
+
+  @Expose()
+  @Type(() => AppEnvironmentAccessV2ResponseDto)
+  environments: AppEnvironmentAccessV2ResponseDto;
+}
+
+@Exclude()
+export class AccessSourceGroupV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  type: string;
+}
+
+@Exclude()
+export class AppAccessSourceV2ResponseDto {
+  @Expose()
+  type: 'group' | 'owner' | 'super_admin';
+
+  @Expose()
+  @Type(() => AccessSourceGroupV2ResponseDto)
+  group?: AccessSourceGroupV2ResponseDto;
+
+  @Expose()
+  scope?: 'all_apps' | 'selected_apps';
+
+  @Expose()
+  permission?: AppAccessPermission;
+
+  @Expose({ name: 'hidden_from_dashboard' })
+  hiddenFromDashboard?: boolean;
+}
+
+@Exclude()
+export class UserAppAccessV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  slug: string;
+
+  @Expose()
+  @Type(() => AppPermissionsV2ResponseDto)
+  permissions: AppPermissionsV2ResponseDto;
+
+  @Expose({ name: 'access_sources' })
+  @Type(() => AppAccessSourceV2ResponseDto)
+  accessSources: AppAccessSourceV2ResponseDto[];
+}
+
+@Exclude()
+export class AppUserAccessV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  status: string;
+
+  @Expose()
+  role: string;
+
+  @Expose()
+  @Type(() => AppPermissionsV2ResponseDto)
+  permissions: AppPermissionsV2ResponseDto;
+
+  @Expose({ name: 'access_sources' })
+  @Type(() => AppAccessSourceV2ResponseDto)
+  accessSources: AppAccessSourceV2ResponseDto[];
+}
+
+@Exclude()
+export class ListWorkspaceUserAppsV2ResponseDto {
+  @Expose()
+  @Type(() => UserAppAccessV2ResponseDto)
+  data: UserAppAccessV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class ListWorkspaceAppUsersV2ResponseDto {
+  @Expose()
+  @Type(() => AppUserAccessV2ResponseDto)
+  data: AppUserAccessV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
 }

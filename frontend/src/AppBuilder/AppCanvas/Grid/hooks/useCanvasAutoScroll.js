@@ -147,8 +147,11 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     const currentPos = parseTransform(element);
     let newX = currentPos.x;
     let newY = currentPos.y;
-    newX = Math.round(newX / _gridWidth) * _gridWidth + scrollX;
-    newY = Math.round(newY / GRID_HEIGHT) * GRID_HEIGHT + scrollY;
+    // Snap the scroll-compensated position so the widget stays on the grid. Adding
+    // the scroll delta after snapping would push it (scroll % gridWidth) px off the
+    // grid lines, since the scroll amount is not a multiple of the grid width.
+    newX = Math.round((newX + scrollX) / _gridWidth) * _gridWidth;
+    newY = Math.round((newY + scrollY) / GRID_HEIGHT) * GRID_HEIGHT;
 
     // Clamp position to stay within canvas bounds
     // Left bound: newX >= 0
