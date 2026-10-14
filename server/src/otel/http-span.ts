@@ -1,3 +1,4 @@
+import type { Span } from '@opentelemetry/api';
 // Express span attributes. Bodies are never recorded: they carry passwords, tokens and AI prompts.
 export const REDACTED = '[REDACTED]';
 const SECRET_KEY = /pass|token|secret|key|auth|code|otp|session|cookie|credential/i;
@@ -42,4 +43,34 @@ export function redactUrlQuery(url: string): string {
     })
     .join('&');
   return url.slice(0, q + 1) + query + url.slice(end);
+}
+
+// Outgoing http.ClientRequest: path carries the query.
+export function outgoingHttpAttributes(req: {
+  path?: string;
+  host?: string;
+  protocol?: string;
+}): Record<string, string> {
+  if (typeof req.path !== 'string' || !req.path.includes('?')) return {};
+  const path = redactUrlQuery(req.path);
+  const url = `${req.protocol ?? 'http:'}//${req.host ?? 'localhost'}${path}`;
+  return {
+    'http.target': path,
+    'http.url': url,
+    'url.full': url,
+    'url.query': path.slice(path.indexOf('?') + 1),
+  };
+}
+
+export function undiciRequestHook(span: Span, request: { origin?: string | URL; path: string }): void {
+  if (!request.path.includes('?')) return;
+  const path = redactUrlQuery(request.path);
+  try {
+    span.setAttributes({
+      'url.full': new URL(path, request.origin).toString(),
+      'url.query': new URL(path, 'http://x').search,
+    });
+  } catch {
+    // instrumentation already skips unparsable urls
+  }
 }

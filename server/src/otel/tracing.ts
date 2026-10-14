@@ -1,4 +1,4 @@
-import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
+import { CompositePropagator, W3CTraceContextPropagator } from '@opentelemetry/core';
 import { getWorkspaceLabel, getWorkspaceNameLabel } from './org-plan-cache';
 import {
   Span,
@@ -13,7 +13,7 @@ import {
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
-import type { IncomingMessage } from 'http';
+import type { ClientRequest, IncomingMessage } from 'http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
@@ -29,7 +29,9 @@ import { getTooljetEdition } from '../helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '../modules/app/constants';
 import { ATTR, ATTR_DEPLOYMENT_ENVIRONMENT_NAME, METRIC, deploymentEnvironmentName } from './semconv';
 import { shutdownOtelLogs } from './logs';
-import { redactUrlQuery, requestSpanAttributes } from './http-span';
+import { outgoingHttpAttributes, redactUrlQuery, requestSpanAttributes, undiciRequestHook } from './http-span';
+import { BaggageAttributesSpanProcessor, ExtractOnlyBaggagePropagator } from './baggage';
+import { UndiciInstrumentation } from '@opentelemetry/instrumentation-undici';
 
 // Set this up to see debug logs
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
@@ -72,13 +74,12 @@ function createSDK(): NodeSDK {
 
   return new NodeSDK({
     resource: resource,
-    traceExporter: traceExporter,
-    spanProcessor: new BatchSpanProcessor(traceExporter),
+    spanProcessors: [new BaggageAttributesSpanProcessor(), new BatchSpanProcessor(traceExporter)],
     metricReader: new PeriodicExportingMetricReader({
       exporter: metricExporter,
     }),
     textMapPropagator: new CompositePropagator({
-      propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
+      propagators: [new W3CTraceContextPropagator(), new ExtractOnlyBaggagePropagator()],
     }),
     instrumentations: [
       new RuntimeNodeInstrumentation({ monitoringPrecision: 5000 }),
@@ -88,9 +89,12 @@ function createSDK(): NodeSDK {
           return url.includes('/api/health') || url === '/api/health';
         },
         requestHook: (span: Span, request) => {
-          // incoming only: IncomingMessage has url, ClientRequest does not
           const raw = (request as IncomingMessage).url;
-          if (typeof raw !== 'string' || !raw.includes('?')) return;
+          if (typeof raw !== 'string') {
+            span.setAttributes(outgoingHttpAttributes(request as ClientRequest));
+            return;
+          }
+          if (!raw.includes('?')) return;
           const host = (request as IncomingMessage).headers?.host ?? 'localhost';
           const redacted = redactUrlQuery(raw);
           span.setAttributes({
@@ -100,6 +104,7 @@ function createSDK(): NodeSDK {
           });
         },
       }),
+      new UndiciInstrumentation({ requestHook: undiciRequestHook }),
       new ExpressInstrumentation({
         requestHook: (span: Span, { request }) => {
           const path = request.route?.path || request.path || '';

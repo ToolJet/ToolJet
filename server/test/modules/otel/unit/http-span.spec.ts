@@ -1,4 +1,4 @@
-import { REDACTED, redactUrlQuery, requestSpanAttributes } from '@otel/http-span';
+import { REDACTED, redactUrlQuery, outgoingHttpAttributes, requestSpanAttributes } from '@otel/http-span';
 
 describe('requestSpanAttributes', () => {
   it('never returns the request body', () => {
@@ -41,5 +41,19 @@ describe('redactUrlQuery', () => {
   });
   it('handles full urls and fragments', () => {
     expect(redactUrlQuery('http://h/x?token=a#f')).toBe(`http://h/x?token=${REDACTED}#f`);
+  });
+});
+
+describe('outgoingHttpAttributes', () => {
+  it('redacts secret query on outgoing requests', () => {
+    expect(outgoingHttpAttributes({ path: '/x?api_key=s&page=2', host: 'h.io', protocol: 'https:' })).toEqual({
+      'http.target': `/x?api_key=${REDACTED}&page=2`,
+      'http.url': `https://h.io/x?api_key=${REDACTED}&page=2`,
+      'url.full': `https://h.io/x?api_key=${REDACTED}&page=2`,
+      'url.query': `api_key=${REDACTED}&page=2`,
+    });
+  });
+  it('is empty without a query', () => {
+    expect(outgoingHttpAttributes({ path: '/x' })).toEqual({});
   });
 });
