@@ -143,7 +143,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `resulting_schema`. FK ops replay against a never-persisted stand-in `InternalTableMigration` so
   their internal confirm/discard become no-ops. Migration A's baseline DDL uses `{{self}}`/`{{ref_N}}`
   placeholders (resolved via `refs`/`resolveSiblingByCoRelationId`) and rewrites any `serial` default
-  to a `{{self}}`-derived sequence — never bakes in a physical relation id.
+  to a `{{self}}`-derived sequence — never bakes in a physical relation id. A baselined FK's target is a
+  physical relation id; `buildForeignKeyDdl` maps it through `internal_table_relations` to the table's
+  `co_relation_id` (relation id ≠ internal table id for any table created after environments), falling
+  back to reading it as an `internal_tables` id for Migration A's not-yet-inserted targets.
   Known gaps: replay's `edit_column` never re-applies `writeThroughColumnConfigurations` (only the
   inserting migration's display settings survive); `targetRelation` and any FK sibling must already be
   committed/visible (a crash before `applyMigrations` runs is self-healing via retry, not stuck); a
