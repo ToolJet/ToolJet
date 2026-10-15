@@ -8,6 +8,10 @@ import { DataSourcesUtilService } from '../util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { Injectable } from '@nestjs/common';
+import { SampleDbRole, provisionSampleDbRole, sampleDbAdminConfig, sampleDbRole } from '@helpers/sample-db-role.helper';
+import { buildAndValidateDatabaseConfig } from 'scripts/database-config-utils';
+
+const SAMPLE_DB_NAME = 'sample_db';
 
 @Injectable()
 export class SampleDataSourceService {
@@ -28,8 +32,15 @@ export class SampleDataSourceService {
     }, manager);
   }
 
-  async updateSampleDs(manager?: EntityManager) {
-    const options = [
+  // Null when the operator supplies SAMPLE_PG_DB_USER: their credentials are used as-is.
+  protected sampleDbRole(): SampleDbRole | null {
+    if (this.configService.get<string>('SAMPLE_PG_DB_USER')) return null;
+    return sampleDbRole(this.configService.get<string>('LOCKBOX_MASTER_KEY'));
+  }
+
+  protected connectionOptions() {
+    const role = this.sampleDbRole();
+    return [
       {
         key: 'host',
         value: this.configService.get<string>('SAMPLE_PG_DB_HOST') || this.configService.get<string>('PG_HOST'),
@@ -40,28 +51,37 @@ export class SampleDataSourceService {
         value: this.configService.get<string>('SAMPLE_PG_DB_PORT') || this.configService.get<string>('PG_PORT'),
         encrypted: true,
       },
-      {
-        key: 'database',
-        value: 'sample_db',
-      },
+      { key: 'database', value: SAMPLE_DB_NAME },
       {
         key: 'username',
-        value: this.configService.get<string>('SAMPLE_PG_DB_USER') || this.configService.get<string>('PG_USER'),
+        value: role ? role.name : this.configService.get<string>('SAMPLE_PG_DB_USER'),
         encrypted: true,
       },
       {
         key: 'password',
-        value: this.configService.get<string>('SAMPLE_PG_DB_PASS') || this.configService.get<string>('PG_PASS'),
+        value: role
+          ? role.password
+          : this.configService.get<string>('SAMPLE_PG_DB_PASS') || this.configService.get<string>('PG_PASS'),
         encrypted: true,
       },
-      {
-        key: 'ssl_enabled',
-        value: this.configService.get<string>('PGSSLMODE') === 'require' ? true : false,
-        encrypted: false,
-      },
+      { key: 'ssl_enabled', value: this.configService.get<string>('PGSSLMODE') === 'require', encrypted: false },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
       { key: 'connection_type', value: 'manual', encrypted: false },
     ];
+  }
+
+  // Same admin connection populate-sample-db uses. False when there is no role to provision.
+  async provisionRestrictedRole(): Promise<boolean> {
+    const role = this.sampleDbRole();
+    if (!role) return false;
+    const { value: envVars, error } = buildAndValidateDatabaseConfig();
+    if (error) throw new Error(`Config validation error: ${error.message}`);
+    await provisionSampleDbRole(sampleDbAdminConfig(envVars), role);
+    return true;
+  }
+
+  async updateSampleDs(manager?: EntityManager) {
+    const options = this.connectionOptions();
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const allSampleDs = await this.getAllSampleDataSource(null, manager);
       if (!allSampleDs?.length) {
@@ -88,39 +108,7 @@ export class SampleDataSourceService {
       scope: DataSourceScopes.GLOBAL,
       organizationId,
     };
-    const options = [
-      {
-        key: 'host',
-        value: this.configService.get<string>('SAMPLE_PG_DB_HOST') || this.configService.get<string>('PG_HOST'),
-        encrypted: true,
-      },
-      {
-        key: 'port',
-        value: this.configService.get<string>('SAMPLE_PG_DB_PORT') || this.configService.get<string>('PG_PORT'),
-        encrypted: true,
-      },
-      {
-        key: 'database',
-        value: 'sample_db',
-      },
-      {
-        key: 'username',
-        value: this.configService.get<string>('SAMPLE_PG_DB_USER') || this.configService.get<string>('PG_USER'),
-        encrypted: true,
-      },
-      {
-        key: 'password',
-        value: this.configService.get<string>('SAMPLE_PG_DB_PASS') || this.configService.get<string>('PG_PASS'),
-        encrypted: true,
-      },
-      {
-        key: 'ssl_enabled',
-        value: this.configService.get<string>('PGSSLMODE') === 'require' ? true : false,
-        encrypted: false,
-      },
-      { key: 'ssl_certificate', value: 'none', encrypted: false },
-      { key: 'connection_type', value: 'manual', encrypted: false },
-    ];
+    const options = this.connectionOptions();
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const dataSource = manager.create(DataSource, config);

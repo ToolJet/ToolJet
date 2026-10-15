@@ -5,6 +5,7 @@ import { ExecFileSyncOptions, execFileSync } from 'child_process';
 import { buildAndValidateDatabaseConfig } from './database-config-utils';
 import { isEmpty } from 'lodash';
 import { populateSampleData } from './populate-sample-db';
+import { provisionSampleDbRole, sampleDbAdminConfig, sampleDbRole } from '../src/helpers/sample-db-role.helper';
 async function createDatabaseFromFile(envPath: string): Promise<void> {
   const result = dotenv.config({ path: envPath });
 
@@ -40,7 +41,18 @@ async function createDatabase(): Promise<void> {
     await createDb(envVars, envVars.PG_DB);
     await createTooljetDb(envVars, envVars.TOOLJET_DB);
     createSampleDb(envVars, envVars.SAMPLE_DB);
-    populateSampleData(envVars);
+    await populateSampleData(envVars);
+    await provisionSampleRole(envVars);
+  }
+}
+
+// Every boot: keeps the role in step with the current master key.
+async function provisionSampleRole(envVars): Promise<void> {
+  if (process.env.SAMPLE_PG_DB_USER || !process.env.LOCKBOX_MASTER_KEY) return;
+  try {
+    await provisionSampleDbRole(sampleDbAdminConfig(envVars), sampleDbRole(process.env.LOCKBOX_MASTER_KEY));
+  } catch (error) {
+    console.warn(`Sample database role not provisioned: ${error.message}`);
   }
 }
 

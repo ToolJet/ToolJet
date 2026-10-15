@@ -8,6 +8,7 @@ async function sampleDbConfigReset() {
   });
   const dataSourceService = app.get(SampleDataSourceService);
 
+  await dataSourceService.provisionRestrictedRole();
   await dataSourceService.updateSampleDs();
   await app.close();
   // TODO: process exit wasn't needed earlier
