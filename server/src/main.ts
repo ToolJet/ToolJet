@@ -24,6 +24,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 // Import helper functions
 import {
   handleLicensingInit,
+  handleSampleDataSourceSync,
+  warnIfDatabaseSuperuser,
   replaceSubpathPlaceHoldersInStaticAssets,
   setupCsrfOriginCheck,
   setSecurityHeaders,
@@ -84,6 +86,8 @@ async function bootstrap() {
     appLogger.log('Initializing licensing...');
     await handleLicensingInit(app, appLogger);
     appLogger.log('✅ Licensing initialization completed');
+
+    await warnIfDatabaseSuperuser(app, appLogger);
 
     // Initialize OTEL
     await initializeOtel(app, appLogger);
@@ -151,6 +155,9 @@ async function bootstrap() {
     await app.listen(port, listen_addr, async function () {
       logStartupInfo(configService, appLogger);
     });
+
+    // Off the readiness path: first sync after upgrade rewrites every workspace's sample source.
+    void handleSampleDataSourceSync(app, appLogger);
   } catch (error) {
     logger.error('❌ Failed to bootstrap application:', error);
     process.exit(1);

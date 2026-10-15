@@ -1,14 +1,18 @@
 import { AppModule } from '@modules/app/module';
-import { SampleDataSourceService } from '@modules/data-sources/services/sample-ds.service';
+import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 import { NestFactory } from '@nestjs/core';
 
 async function sampleDbConfigReset() {
   const app = await NestFactory.create(await AppModule.register({ IS_GET_CONTEXT: true }), {
     logger: ['error', 'warn'],
   });
+  // EE/Cloud register the edition subclass, not the CE class.
+  const { SampleDataSourceService } = await import(
+    `${await getImportPath(true, getTooljetEdition() as TOOLJET_EDITIONS)}/data-sources/services/sample-ds.service`
+  );
   const dataSourceService = app.get(SampleDataSourceService);
 
-  await dataSourceService.provisionRestrictedRole();
   await dataSourceService.updateSampleDs();
   await app.close();
   // TODO: process exit wasn't needed earlier

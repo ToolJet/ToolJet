@@ -31,6 +31,27 @@ export function sampleDbAdminConfig(env: SampleDbEnv): ClientConfig {
   };
 }
 
+const ELEVATED_ROLE_SQL = `SELECT rolsuper OR rolcreaterole OR rolcreatedb OR rolreplication OR rolbypassrls
+         OR EXISTS (SELECT 1 FROM pg_auth_members m WHERE m.member = r.oid) AS elevated
+  FROM pg_roles r WHERE rolname = $1`;
+
+async function assertNotElevated(client: Client, name: string): Promise<void> {
+  const { rows } = await client.query(ELEVATED_ROLE_SQL, [name]);
+  if (rows[0]?.elevated) {
+    throw new Error(`Role ${name} has elevated attributes or role memberships`);
+  }
+}
+
+export async function assertSampleDbRoleNotElevated(admin: ClientConfig, name: string): Promise<void> {
+  const client = new Client(admin);
+  await client.connect();
+  try {
+    await assertNotElevated(client, name);
+  } finally {
+    await client.end();
+  }
+}
+
 export async function provisionSampleDbRole(admin: ClientConfig, role: SampleDbRole): Promise<void> {
   const client = new Client(admin);
   await client.connect();
@@ -45,15 +66,7 @@ export async function provisionSampleDbRole(admin: ClientConfig, role: SampleDbR
       await client.query(`CREATE ROLE ${roleId} LOGIN`);
     }
 
-    const { rows } = await client.query(
-      `SELECT rolsuper OR rolcreaterole OR rolcreatedb OR rolreplication OR rolbypassrls
-              OR EXISTS (SELECT 1 FROM pg_auth_members m WHERE m.member = r.oid) AS elevated
-       FROM pg_roles r WHERE rolname = $1`,
-      [role.name]
-    );
-    if (rows[0]?.elevated) {
-      throw new Error(`Role ${role.name} has elevated attributes or role memberships`);
-    }
+    await assertNotElevated(client, role.name);
 
     await client.query(`ALTER ROLE ${roleId} WITH LOGIN PASSWORD ${client.escapeLiteral(role.password)}`);
     await client.query(`GRANT CONNECT ON DATABASE ${client.escapeIdentifier(admin.database)} TO ${roleId}`);

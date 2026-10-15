@@ -1,11 +1,11 @@
 import { Client, ClientConfig } from 'pg';
 import { ConfigService } from '@nestjs/config';
 import { getEnvVars } from 'scripts/database-config-utils';
-import { SampleDataSourceService } from '@modules/data-sources/services/sample-ds.service';
+import { SampleDataSourceService, SampleDbCredentials } from '@modules/data-sources/services/sample-ds.service';
 import { SampleDbRole, provisionSampleDbRole, sampleDbRole } from '@helpers/sample-db-role.helper';
 
 type ConnectionOption = { key: string; value: string | boolean };
-type ServiceInternals = { connectionOptions(): ConnectionOption[] };
+type ServiceInternals = { connectionOptions(credentials: SampleDbCredentials): ConnectionOption[] };
 
 const env = getEnvVars();
 const admin: ClientConfig = {
@@ -34,11 +34,6 @@ const asRole = <T>(fn: (client: Client) => Promise<T>, password = role.password)
 
 function service(config: Record<string, string>): SampleDataSourceService {
   return new SampleDataSourceService(null, new ConfigService(config), null);
-}
-
-function optionsFor(config: Record<string, string>): Record<string, string | boolean> {
-  const options = (service(config) as unknown as ServiceInternals).connectionOptions();
-  return Object.fromEntries(options.map(({ key, value }) => [key, value]));
 }
 
 /**
@@ -154,35 +149,87 @@ describe('Sample data source role', () => {
   });
 
   describe('SampleDataSourceService', () => {
+    const SERVICE_DB = `sample_service_spec_${Date.now()}`;
     const base = {
-      PG_HOST: 'db.internal',
-      PG_PORT: '5432',
-      PG_USER: 'app_user',
-      PG_PASS: 'app_password',
-      LOCKBOX_MASTER_KEY: 'a'.repeat(64),
+      PG_HOST: env.PG_HOST,
+      PG_PORT: String(env.PG_PORT),
+      PG_USER: env.PG_USER,
+      PG_PASS: env.PG_PASS,
+      SAMPLE_DB: SERVICE_DB,
+      LOCKBOX_MASTER_KEY: `sample-service-spec-${Date.now()}`,
     };
+    const expected = sampleDbRole(base.LOCKBOX_MASTER_KEY);
+    const server = { host: base.PG_HOST, port: base.PG_PORT };
+    const credentialsFor = (config: Record<string, string>) => service(config).sampleDbCredentials();
+    const asPostgres = <T>(fn: (client: Client) => Promise<T>) => withClient({ ...admin, database: 'postgres' }, fn);
+    const roleExists = async () =>
+      (await asPostgres((c) => c.query('SELECT 1 FROM pg_roles WHERE rolname = $1', [expected.name]))).rowCount > 0;
 
-    it('should connect as the dedicated role, not the application user, when SAMPLE_PG_DB_USER is unset', () => {
-      const expected = sampleDbRole(base.LOCKBOX_MASTER_KEY);
+    beforeAll(async () => {
+      await asPostgres((c) => c.query(`CREATE DATABASE ${SERVICE_DB}`));
+    });
 
-      expect(optionsFor(base)).toMatchObject({
-        host: 'db.internal',
-        database: 'sample_db',
-        username: expected.name,
-        password: expected.password,
+    afterAll(async () => {
+      await asPostgres(async (c) => {
+        await c.query(`DROP DATABASE IF EXISTS ${SERVICE_DB} WITH (FORCE)`);
+        await c.query(`DROP ROLE IF EXISTS ${expected.name}`);
       });
     });
 
-    it('should keep operator-supplied credentials when SAMPLE_PG_DB_USER is set', () => {
-      expect(optionsFor({ ...base, SAMPLE_PG_DB_USER: 'sample_reader', SAMPLE_PG_DB_PASS: 'sample_pw' })).toMatchObject(
-        { username: 'sample_reader', password: 'sample_pw' }
-      );
+    it('should use operator credentials without provisioning when SAMPLE_PG_DB_USER is set', async () => {
+      await expect(
+        credentialsFor({ ...base, SAMPLE_PG_DB_USER: 'sample_reader', SAMPLE_PG_DB_PASS: 'sample_pw' })
+      ).resolves.toEqual({ ...server, user: 'sample_reader', password: 'sample_pw' });
+      expect(await roleExists()).toBe(false);
     });
 
-    it('should skip provisioning when SAMPLE_PG_DB_USER is set', async () => {
-      await expect(service({ ...base, SAMPLE_PG_DB_USER: 'sample_reader' }).provisionRestrictedRole()).resolves.toBe(
-        false
-      );
+    it('should disable sample SQL when SAMPLE_PG_DB_USER has elevated rights', async () => {
+      await expect(credentialsFor({ ...base, SAMPLE_PG_DB_USER: env.PG_USER })).resolves.toMatchObject({
+        user: env.PG_USER,
+        password: '',
+        disabled: true,
+      });
+    });
+
+    it('should provision the restricted role and use it', async () => {
+      await expect(credentialsFor(base)).resolves.toEqual({
+        ...server,
+        user: expected.name,
+        password: expected.password,
+      });
+      await expect(
+        withClient({ ...admin, database: SERVICE_DB, user: expected.name, password: expected.password }, (c) =>
+          c.query('SELECT 1')
+        )
+      ).resolves.toBeDefined();
+    });
+
+    it('should provision the role even when PG_DB_OWNER is false', async () => {
+      await expect(credentialsFor({ ...base, PG_DB_OWNER: 'false' })).resolves.toMatchObject({ user: expected.name });
+    });
+
+    it('should disable sample SQL, never falling back to the application user, when provisioning fails', async () => {
+      await expect(credentialsFor({ ...base, SAMPLE_DB: 'no_such_database' })).resolves.toEqual({
+        ...server,
+        user: expected.name,
+        password: '',
+        disabled: true,
+      });
+    });
+
+    it('should flag disabled sample SQL in the connection options', () => {
+      const options = (service(base) as unknown as ServiceInternals).connectionOptions({
+        ...server,
+        user: expected.name,
+        password: '',
+        disabled: true,
+      });
+
+      expect(Object.fromEntries(options.map(({ key, value }) => [key, value]))).toMatchObject({
+        database: 'sample_db',
+        username: expected.name,
+        sample_sql_disabled: true,
+      });
     });
   });
 });
