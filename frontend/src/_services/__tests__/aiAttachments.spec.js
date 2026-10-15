@@ -98,7 +98,11 @@ test('a progress-making upload can exceed two minutes, and silence aborts it', a
       },
       jest.fn()
     );
-    const rejection = await expect(pending).rejects.toMatchObject({ stalled: true });
+    // Deliberately deferred: awaiting here would deadlock — the rejection only
+    // settles after the timers below advance past the stall window. The deferred
+    // handle is awaited at the end of the test.
+    // eslint-disable-next-line jest/valid-expect
+    const rejection = expect(pending).rejects.toMatchObject({ stalled: true });
     for (let i = 0; i < 4; i++) {
       await jest.advanceTimersByTimeAsync(60000);
       xhr.upload.onprogress({ loaded: i + 1 });
@@ -187,7 +191,10 @@ test('ends a long attachment stream so the existing generation watcher can take 
     Object.assign(xhr, { readyState: 2, status: 200, statusText: 'OK', responseText: 'x'.repeat(9 * 1024 * 1024) });
     xhr.onreadystatechange();
     const response = await pending;
-    const rejected = await expect(response.text()).rejects.toThrow('response buffer limit');
+    // Deliberately deferred: the buffer-limit rejection only settles after the
+    // onprogress below fires; the handle is awaited right after.
+    // eslint-disable-next-line jest/valid-expect
+    const rejected = expect(response.text()).rejects.toThrow('response buffer limit');
     xhr.onprogress();
     await rejected;
     expect(xhr.aborted).toBe(true);
