@@ -129,9 +129,15 @@ export const Rating = ({
     return '';
   };
 
+  // Only clamp against a real star count. maxRating is usually a binding, and a
+  // degenerate or still-resolving 0 would otherwise wipe a live rating to 0 and
+  // never restore it once the binding resolved.
+  const clampToRange = (v) => (_maxRating > 0 && typeof v === 'number' ? Math.min(Math.max(v, 0), _maxRating) : v);
+
   const resetValue = () => {
-    setRatingIndex(defaultSelected - 1);
-    setExposedVariable('value', defaultSelected);
+    const clamped = clampToRange(defaultSelected);
+    setRatingIndex(clamped - 1);
+    setExposedVariable('value', clamped);
   };
 
   const setValue = React.useCallback(
@@ -195,6 +201,19 @@ export const Rating = ({
     setExposedVariable('label', label);
     setExposedVariable('setValue', setValue);
   }, [setValue, allowHalfStar, _maxRating, label, setExposedVariable]);
+
+  // When the star count moves, pull the LIVE rating inside it.
+  // Deliberately not the resetValue effect: re-running that would republish the configured default.
+  React.useEffect(() => {
+    const current = currentRatingIndex + 1;
+    if (!Number.isFinite(current)) return;
+    const clamped = clampToRange(current);
+    if (clamped !== current) {
+      setRatingIndex(clamped - 1);
+      setExposedVariable('value', clamped);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_maxRating]);
 
   React.useEffect(() => {
     resetValue();

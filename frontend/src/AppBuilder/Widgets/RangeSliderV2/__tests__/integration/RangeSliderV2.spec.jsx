@@ -174,24 +174,24 @@ describe('RangeSliderV2', () => {
       expect(labelEl(container)).toBeInTheDocument();
     });
 
-    test('[RangeSliderV2-DEF-004] a default above the maximum is published unclamped', async () => {
-      // CHARACTERIZATION (D-02). Not endorsed: the control draws clamped while
-      // the published value is not, so a binding reads a number the slider
-      // cannot represent. Pinned so a future clamp is a deliberate change.
+    test('[RangeSliderV2-DEF-004] a default above the maximum is clamped to it', async () => {
+      // D-02 reversed 2026-10-14. Break this catches: publishing the configured
+      // default verbatim, so a binding reads a number the slider cannot show and
+      // the control and the value disagree from the first paint.
       const { container } = widget.render({
         properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{100}}'), value: binding('{{150}}') },
       });
 
-      await waitFor(() => expect(widget.exposed().value).toBe(150));
+      await waitFor(() => expect(widget.exposed().value).toBe(100));
       expect(valueNow(handle(container))).toBe(100);
     });
 
-    test('[RangeSliderV2-DEF-004] a default below the minimum is published unclamped', async () => {
+    test('[RangeSliderV2-DEF-004] a default below the minimum is clamped to it', async () => {
       const { container } = widget.render({
         properties: { ...SINGLE, min: binding('{{20}}'), max: binding('{{100}}'), value: binding('{{5}}') },
       });
 
-      await waitFor(() => expect(widget.exposed().value).toBe(5));
+      await waitFor(() => expect(widget.exposed().value).toBe(20));
       expect(valueNow(handle(container))).toBe(20);
     });
   });
@@ -436,10 +436,26 @@ describe('RangeSliderV2', () => {
       expect(handles(container)).toHaveLength(1);
     });
 
-    test('[RangeSliderV2-BIND-003] lowering max under the live value leaves the published value stale', async () => {
-      // CHARACTERIZATION (D-02), and the higher-risk half: min/max are usually
-      // bound, so a query returning a smaller ceiling leaves a binding reading
-      // a number the control no longer offers. Not endorsed; pinned.
+    test('[RangeSliderV2-DEF-004] a default changed to an out-of-bounds value is clamped too', async () => {
+      // The bounds effect only fires when min/max move, so this is the case that
+      // makes the clamp inside the reset path load-bearing: the default changes
+      // while the bounds stay put.
+      widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{100}}'), value: binding('{{40}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(40));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'value', '{{500}}', 'properties');
+      });
+
+      await waitFor(() => expect(widget.exposed().value).toBe(100));
+    });
+
+    test('[RangeSliderV2-BIND-003] lowering max under the live value pulls the value down with it', async () => {
+      // D-02 reversed 2026-10-14, and the half that bites hardest: min/max are
+      // usually bound, so a query returning a smaller ceiling used to strand the
+      // published value above a maximum the control no longer offers.
       const { container } = widget.render({
         properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{200}}'), value: binding('{{150}}') },
       });
@@ -450,8 +466,108 @@ describe('RangeSliderV2', () => {
       });
 
       await waitFor(() => expect(handle(container).getAttribute('aria-valuemax')).toBe('100'));
+      await waitFor(() => expect(widget.exposed().value).toBe(100));
       expect(valueNow(handle(container))).toBe(100);
+    });
+
+    test('[RangeSliderV2-BIND-003] moving the bounds clamps what the USER set, it does not reset to the default', async () => {
+      // The distinction that makes this safe: a bounds change must not discard a
+      // value the user chose by republishing the configured default over it.
+      const { container } = widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{200}}'), value: binding('{{10}}'), schema: binding('{{[]}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(10));
+
+      press(handle(container), 'End'); // user takes it to 200
+      await waitFor(() => expect(widget.exposed().value).toBe(200));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'max', '{{120}}', 'properties');
+      });
+
+      // Clamped to the new ceiling — NOT reset to the configured default of 10.
+      await waitFor(() => expect(widget.exposed().value).toBe(120));
+    });
+
+    test.each([
+      ['an unresolved binding', '{{queries.notReady.data.ceiling}}'],
+      ['a non-numeric binding', "{{'abc'}}"],
+      ['null', '{{null}}'],
+      ['undefined', '{{undefined}}'],
+      ['infinity', '{{1/0}}'],
+    ])('[RangeSliderV2-BIND-003] a max of %s leaves the value exactly as it was', async (_l, maxBinding) => {
+      widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{200}}'), value: binding('{{150}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(150));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'max', maxBinding, 'properties');
+      });
+      await drain();
+
       expect(widget.exposed().value).toBe(150);
+    });
+
+    test('[RangeSliderV2-BIND-003] a NaN value is left alone when the bounds move', async () => {
+      // NaN is reachable through setValue (ACT-003 pins it). Clamping must not
+      // touch it — and NaN !== NaN must not be read as "the value changed".
+      widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{200}}'), value: binding('{{150}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(150));
+
+      await widget.act('setValue', 'abc');
+      await waitFor(() => expect(Number.isNaN(widget.exposed().value)).toBe(true));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'max', '{{50}}', 'properties');
+      });
+      await drain();
+
+      expect(Number.isNaN(widget.exposed().value)).toBe(true);
+    });
+
+    test('[RangeSliderV2-BIND-003] bounds that have not resolved yet do not destroy the value', async () => {
+      // The clamp follows the bounds, so unusable bounds must not be followed.
+      // max is usually a binding; before a query returns it falls back to 0, and
+      // min falls back to 0 too — collapsing a live value to 0 that would never
+      // come back once the query resolved.
+      widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{200}}'), value: binding('{{150}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(150));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'max', '{{queries.notReady.data.ceiling}}', 'properties');
+      });
+      await drain();
+      expect(widget.exposed().value).toBe(150);
+
+      // ...and once the real ceiling arrives, it clamps normally.
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'max', '{{120}}', 'properties');
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(120));
+    });
+
+    test('[RangeSliderV2-BIND-003] a range slider clamps both handles when the bounds move', async () => {
+      widget.render({
+        properties: {
+          ...RANGE,
+          min: binding('{{0}}'),
+          max: binding('{{200}}'),
+          startValue: binding('{{30}}'),
+          endValue: binding('{{180}}'),
+        },
+      });
+      await waitFor(() => expect(widget.exposed().value).toEqual([30, 180]));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'max', '{{100}}', 'properties');
+      });
+
+      await waitFor(() => expect(widget.exposed().value).toEqual([30, 100]));
     });
 
     test('[RangeSliderV2-BIND-003] changing a default value property does re-derive it', async () => {
