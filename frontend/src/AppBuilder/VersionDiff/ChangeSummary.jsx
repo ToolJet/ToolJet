@@ -36,7 +36,12 @@ export const summarise = (diff) => {
 export const findBaseInEnvironment = async (appId, environment, releasedVersionId, excludeId) => {
   if (!environment) return null;
   const response = await appEnvironmentService.getVersionsByEnvironment(appId, environment.id);
-  const versions = (response?.appVersions ?? []).filter((version) => version.id !== excludeId);
+  // The endpoint also returns versions that sit in later environments, so keep
+  // only the ones whose own environment is the target.
+  const versions = (response?.appVersions ?? []).filter(
+    (version) =>
+      version.id !== excludeId && (!version.currentEnvironmentId || version.currentEnvironmentId === environment.id)
+  );
   const released = versions.find((version) => version.id === releasedVersionId);
   if (released) return { version: released, where: 'environment' };
   if (versions.length) {
