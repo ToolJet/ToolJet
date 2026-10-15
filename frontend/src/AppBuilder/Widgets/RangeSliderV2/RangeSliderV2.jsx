@@ -312,10 +312,15 @@ export const RangeSliderV2 = ({
                 activeDotStyle={rangeStyles.activeDotStyle}
                 marks={(Array.isArray(schema) ? schema : []).reduce((acc, item) => {
                   if (item && typeof item === 'object' && item.value !== undefined && item.label !== undefined) {
+                    const minValue = typeof min === 'number' ? min : Number(min);
                     const maxValue = typeof max === 'number' ? max : Number(max);
                     const itemValue = Number(item.value);
 
-                    if (!isNaN(maxValue) && !isNaN(itemValue) && itemValue <= maxValue) {
+                    // A mark outside the track cannot be reached, at either end.
+                    const withinMin = isNaN(minValue) || itemValue >= minValue;
+                    const withinMax = isNaN(maxValue) || itemValue <= maxValue;
+
+                    if (!isNaN(itemValue) && withinMin && withinMax) {
                       acc[item.value] = {
                         style: { color: markerLabel },
                         label: String(item.label).replace('%', ''),
@@ -353,10 +358,15 @@ export const RangeSliderV2 = ({
                 activeDotStyle={rangeStyles.activeDotStyle}
                 marks={(Array.isArray(schema) ? schema : []).reduce((acc, item) => {
                   if (item && typeof item === 'object' && item.value !== undefined && item.label !== undefined) {
+                    const minValue = typeof min === 'number' ? min : Number(min);
                     const maxValue = typeof max === 'number' ? max : Number(max);
                     const itemValue = Number(item.value);
 
-                    if (!isNaN(maxValue) && !isNaN(itemValue) && itemValue <= maxValue) {
+                    // A mark outside the track cannot be reached, at either end.
+                    const withinMin = isNaN(minValue) || itemValue >= minValue;
+                    const withinMax = isNaN(maxValue) || itemValue <= maxValue;
+
+                    if (!isNaN(itemValue) && withinMin && withinMax) {
                       acc[item.value] = {
                         style: { color: markerLabel },
                         label: String(item.label).replace('%', ''),
