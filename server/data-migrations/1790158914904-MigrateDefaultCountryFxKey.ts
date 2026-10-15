@@ -46,7 +46,7 @@ export class MigrateDefaultCountryFxKey1790158914904 implements MigrationInterfa
         `SELECT id, page_id, properties
            FROM components
            WHERE type = ANY($1)
-           ORDER BY "created_at" ASC
+           ORDER BY "created_at" ASC, id ASC
            LIMIT $2 OFFSET $3`,
         [TYPES, batchSize, offset]
       );

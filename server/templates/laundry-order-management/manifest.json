@@ -1,0 +1,16 @@
+{
+  "name": "Laundry order management",
+  "description": "Track laundry orders from drop-off and care instructions to processing and collection.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "laundry-order-management",
+  "category": "local-services"
+}

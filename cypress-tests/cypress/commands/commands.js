@@ -242,7 +242,9 @@ Cypress.Commands.add(
     });
     cy.visit(`/${workspaceId}/apps/${workflowId}/${slug}`);
 
-    cy.wait("@getWorkflowData").then((interception) => {
+    // The editor fetches the workflow only once its bundle has loaded, which
+    // can take longer than the 10s default on a development build.
+    cy.wait("@getWorkflowData", { requestTimeout: 30000 }).then((interception) => {
       const responseData = interception.response.body;
 
       Cypress.env("editingVersionId", responseData.editing_version.id);
