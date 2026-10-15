@@ -316,8 +316,13 @@ export const starratingConfig = {
       accordian: 'Container',
     },
   },
+  validation: {
+    mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
+  },
   exposedVariables: {
     value: 0,
+    isValid: true,
+    isMandatory: false,
   },
   actions: [
     {
@@ -367,6 +372,9 @@ export const starratingConfig = {
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
       tooltipFormat: { value: 'plainText' },
+    },
+    validation: {
+      mandatory: { value: '{{false}}' },
     },
     events: [],
     styles: {

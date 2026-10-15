@@ -11,7 +11,7 @@ import {
 import classNames from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
-import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const checkIfStarRatingLabelTypeIsDeprecated = (value) => {
   return value === 'legacy';
@@ -26,6 +26,9 @@ export const Rating = ({
   darkMode,
   dataCy,
   id,
+  validation,
+  validate,
+  componentName,
 }) => {
   const {
     iconType = 'stars',
@@ -69,6 +72,15 @@ export const Rating = ({
   const reactId = React.useId();
   const [announceValue, setAnnounceValue] = React.useState('');
 
+  // Validations
+  const isMandatory = validation?.mandatory ?? false;
+  const [userInteracted, setUserInteracted] = React.useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
+  const [validationStatus, setValidationStatus] = React.useState(
+    () => validate?.(defaultSelected) ?? { isValid: true }
+  );
+  const { isValid, validationError } = validationStatus;
+
   // Whole, finite icons only: a fractional or infinite count cannot size the animation trail
   // and throws out of render. `{{1/0}}` arrives as Infinity, which is truthy and not < 0.
   // Coerced first, because the registered definition ships maxRating as the string '5'.
@@ -111,6 +123,7 @@ export const Rating = ({
 
     // On change reports a CHANGE of rating, not the click.
     // but the activation is still confirmed to a screen reader, since silence there reads as "did that register?".
+    setUserInteracted(true);
 
     if (newValue === currentRatingIndex + 1) {
       setAnnounceValue(ratingText);
@@ -212,6 +225,21 @@ export const Rating = ({
     setExposedVariable('setValue', setValue);
   }, [setValue, allowHalfStar, _maxRating, label, setExposedVariable]);
 
+  // One writer for validity: every path that changes the rating lands here.
+  const applyValidation = React.useCallback(
+    (value) => {
+      const status = validate?.(value) ?? { isValid: true };
+      setValidationStatus(status);
+      setExposedVariable('isValid', status?.isValid ?? true);
+      return status;
+    },
+    [validate, setExposedVariable]
+  );
+
+  React.useEffect(() => {
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory, setExposedVariable]);
+
   // When the star count moves, pull the LIVE rating inside it.
   // Deliberately not the resetValue effect: re-running that would republish the configured default.
   React.useEffect(() => {
@@ -224,6 +252,11 @@ export const Rating = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [_maxRating]);
+
+  React.useEffect(() => {
+    applyValidation(currentRatingIndex + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRatingIndex, isMandatory]);
 
   React.useEffect(() => {
     resetValue();
@@ -304,6 +337,16 @@ export const Rating = ({
     );
   };
 
+  const renderValidationError = () =>
+    !isValid && isVisible && userInteracted ? (
+      <div
+        data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
+        style={{ color: 'var(--cc-error-systemStatus)', fontSize: '11px', fontWeight: '400', lineHeight: '16px' }}
+      >
+        {validationError}
+      </div>
+    ) : null;
+
   if (labelStyle === 'legacy') {
     return (
       <div
@@ -325,6 +368,7 @@ export const Rating = ({
           ) : (
             _renderRatingWidget()
           )}
+          {renderValidationError()}
         </div>
       </div>
     );
@@ -356,7 +400,7 @@ export const Rating = ({
         defaultAlignment={defaultAlignment}
         direction={direction}
         auto={auto}
-        isMandatory={false}
+        isMandatory={isMandatory}
         _width={_width}
         widthType={widthType}
         top={alignment !== 'top' && '1px'}
@@ -375,7 +419,10 @@ export const Rating = ({
         {isLoading ? (
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute', top: 0 }} width="20" />
         ) : (
-          _renderRatingWidget()
+          <>
+            {_renderRatingWidget()}
+            {renderValidationError()}
+          </>
         )}
       </div>
     </div>

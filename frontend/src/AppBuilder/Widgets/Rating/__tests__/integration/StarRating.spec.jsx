@@ -936,6 +936,80 @@ describe('StarRating', () => {
     });
   });
 
+  describe('validation', () => {
+    test('[StarRating-VAL-001] a mandatory rating with no stars is invalid, and says so once touched', async () => {
+      // Break this catches: registering the toggle without wiring it, so a
+      // builder marks a rating mandatory and nothing ever stops an empty one.
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{0}}') },
+        validation: { mandatory: binding('{{true}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(0));
+
+      await waitFor(() => expect(widget.exposed().isMandatory).toBe(true));
+      await waitFor(() => expect(widget.exposed().isValid).toBe(false));
+      // Not shouted at before the user has done anything.
+      expect(container.querySelector('[data-cy$="-invalid-feedback"]')).toBeNull();
+
+      await widget.session.user.click(icons(container)[2]);
+
+      await waitFor(() => expect(widget.exposed().value).toBe(3));
+      await waitFor(() => expect(widget.exposed().isValid).toBe(true));
+      expect(container.querySelector('[data-cy$="-invalid-feedback"]')).toBeNull();
+    });
+
+    test('[StarRating-VAL-001] the error appears once the user has interacted and the rating is still empty', async () => {
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{2}}') },
+        validation: { mandatory: binding('{{true}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(2));
+
+      // Clear it through the action, after a real interaction has happened.
+      await widget.session.user.click(icons(container)[3]);
+      await widget.act('setValue', 0);
+
+      await waitFor(() => expect(widget.exposed().isValid).toBe(false));
+      expect(await screen.findByText('Field cannot be empty')).toBeInTheDocument();
+    });
+
+    test('[StarRating-VAL-001] a rating that is not mandatory is always valid, even at zero', async () => {
+      widget.render({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{0}}') },
+        validation: { mandatory: binding('{{false}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(0));
+
+      await waitFor(() => expect(widget.exposed().isValid).toBe(true));
+      expect(widget.exposed().isMandatory).toBe(false);
+    });
+
+    test('[StarRating-VAL-002] half a star satisfies mandatory', async () => {
+      // Product call: zero is "not rated", but half a star is a real rating.
+      widget.render({
+        properties: {
+          maxRating: binding('{{5}}'),
+          defaultSelected: binding('{{0.5}}'),
+          allowHalfStar: binding('{{true}}'),
+        },
+        validation: { mandatory: binding('{{true}}') },
+      });
+
+      await waitFor(() => expect(widget.exposed().value).toBe(0.5));
+      await waitFor(() => expect(widget.exposed().isValid).toBe(true));
+    });
+
+    test('[StarRating-VAL-003] a mandatory rating marks its label', async () => {
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{5}}'), label: binding('Rate us') },
+        validation: { mandatory: binding('{{true}}') },
+      });
+      await waitFor(() => expect(widget.exposed().isMandatory).toBe(true));
+
+      expect(within(container.querySelector('label')).getByText('*')).toBeInTheDocument();
+    });
+  });
+
   describe('Form lifecycle', () => {
     test('[StarRating-FORM-001] clearing the parent Form empties the rating', async () => {
       // CHARACTERIZATION (D-03): the clear target is 0, not the configured
@@ -992,23 +1066,53 @@ describe('StarRating', () => {
       await waitFor(() => expect(widget.exposed(LATE).value).toBe(0));
     }, 30000);
 
-    test('[StarRating-FORM-003] a rating never blocks Form submission', async () => {
-      // The widget registers no validation at all, so it cannot make a Form
-      // invalid however it is configured.
+    test('[StarRating-FORM-003] a mandatory rating blocks Form submission until it is rated', async () => {
+      // Reversal of the pre-feature guarantee that a rating NEVER blocks submit —
+      // that held only because the widget registered no validation at all.
+      // Break this catches: exposing isValid but never flipping it false, so a
+      // mandatory rating looks enforced in the Inspector and enforces nothing.
       widget.renderInsideForm({
         properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{0}}') },
+        validation: { mandatory: binding('{{true}}') },
       });
       await waitFor(() => expect(widget.exposed().value).toBe(0));
+      await waitFor(() => expect(widget.exposed().isValid).toBe(false));
 
-      expect(widget.exposed().isValid).toBeUndefined();
-      expect(widget.exposed().isMandatory).toBeUndefined();
+      // The Form sees an invalid child, so it reports itself invalid.
+      await waitFor(() => expect(widget.exposed(FORM).isValid).toBe(false));
+
+      // Rating it clears the block.
+      await widget.act('setValue', 4);
+      await waitFor(() => expect(widget.exposed().isValid).toBe(true));
+      await waitFor(() => expect(widget.exposed(FORM).isValid).toBe(true));
+    }, 30000);
+
+    test('[StarRating-FORM-003] submitting the Form reveals the error without touching the stars', async () => {
+      // The other inputs behave this way: a submit asks every child to show what
+      // it has, so an untouched mandatory field stops hiding its message.
+      widget.renderInsideForm({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{0}}') },
+        validation: { mandatory: binding('{{true}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(0));
+      expect(screen.queryByText('Field cannot be empty')).not.toBeInTheDocument();
 
       await waitFor(() => expect(widget.exposed(FORM).submitForm).toBeInstanceOf(Function));
       await widget.session.store.act(async () => {
         await widget.exposed(FORM).submitForm();
       });
 
-      expect(widget.exposed().value).toBe(0);
+      expect(await screen.findByText('Field cannot be empty')).toBeInTheDocument();
+    }, 30000);
+
+    test('[StarRating-FORM-003] a rating that is not mandatory still never blocks submission', async () => {
+      widget.renderInsideForm({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{0}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(0));
+
+      await waitFor(() => expect(widget.exposed().isValid).toBe(true));
+      expect(widget.exposed(FORM).isValid).not.toBe(false);
     }, 30000);
   });
 

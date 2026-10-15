@@ -861,9 +861,14 @@ export const createComponentsSlice = (set, get) => ({
     const isLegitimateFalsyOptionValue =
       (widgetValue === false && optionValueWidgets.includes(componentType)) ||
       (widgetValue === '' && componentType === 'DropdownV2');
+    // Widgets where 0 is the ABSENCE of a value rather than a value.
+    // A NumberInput at 0 is answered; a StarRating at 0 is unrated.
+    const zeroMeansEmptyWidgets = ['StarRating'];
+
     const isEmpty = Array.isArray(widgetValue)
       ? widgetValue.length === 0
-      : !widgetValue && widgetValue !== 0 && !isLegitimateFalsyOptionValue;
+      : (!widgetValue && widgetValue !== 0 && !isLegitimateFalsyOptionValue) ||
+        (widgetValue === 0 && zeroMeansEmptyWidgets.includes(componentType));
 
     if (resolvedMandatory == true && isEmpty) {
       return {
