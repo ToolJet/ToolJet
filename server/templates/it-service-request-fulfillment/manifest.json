@@ -1,0 +1,21 @@
+{
+  "name": "IT service request fulfillment",
+  "description": "Handle employee IT requests from submission to verified delivery, with approvals, ownership and a clear service catalog.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "it-service-request-fulfillment",
+  "category": "it-operations"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Internal audit management",
+  "description": "Plan audit engagements, record fieldwork and findings, and track remediation across your audit universe.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "internal-audit-management",
+  "category": "risk-and-compliance"
+}

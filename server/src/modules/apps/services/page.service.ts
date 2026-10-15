@@ -150,14 +150,20 @@ export class PageService implements IPageService {
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
-    const pagesWithComponents = await Promise.all(
-      allPages.map(async (page) => {
-        const components = await this.componentsService.getAllComponents(page.id, manager);
-        delete page.appVersionId;
-        return { ...page, components, restricted: false };
-      })
+    // One batched query for every page's components (one pool connection) instead of
+    // one transaction per page — the per-page fan-out starved the pool on large apps
+    // and 500ed GET /api/apps/:id with "timeout exceeded when trying to connect".
+    const componentsByPage = await this.componentsService.getAllComponentsForPages(
+      allPages.map((page) => page.id),
+      manager
     );
-    return pagesWithComponents;
+    return allPages.map((page) => {
+      // Keyed map { [componentId]: ... }, not Component[] — same shape the endpoint
+      // always returned; Page.components was implicitly `any` before batching.
+      const components: any = componentsByPage[page.id] ?? {};
+      delete page.appVersionId;
+      return { ...page, components, restricted: false };
+    });
   }
 
   async findOne(id: string): Promise<Page> {

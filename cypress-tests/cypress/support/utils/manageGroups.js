@@ -1,14 +1,14 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
-import { groupsSelector } from "Selectors/manageGroups";
-import { usersSelector } from "Selectors/manageUsers";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { groupsSelector } from "Selectors/platform/manageGroups";
+import { usersSelector } from "Selectors/platform/manageUsers";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { navigateToManageGroups } from "Support/utils/common";
 import { getUser } from "Support/utils/externalApi";
 import {
   fetchAndVisitInviteLink,
   fillUserInviteForm,
 } from "Support/utils/manageUsers";
-import { groupsText } from "Texts/manageGroups";
+import { groupsText } from "Texts/platform/manageGroups";
 import { enterPasswordAndAcceptInvite } from "Support/utils/onboarding";
 
 export const apiCreateGroup = (groupName, cachedHeaders = false) => {
@@ -197,7 +197,7 @@ export const verifyUserPrivileges = (
   userRole = "End-user",
   shouldHaveWorkspaceSettings
 ) => {
-  cy.get(commonSelectors.dashboardAppCreateButton).should(expectedButtonState);
+  cy.get(commonSelectors.appCreateButton).should(expectedButtonState);
   cy.get(commonSelectors.settingsIcon).click();
   if (!shouldHaveWorkspaceSettings) {
     cy.get(commonSelectors.workspaceSettings).should("not.exist");

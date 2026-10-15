@@ -1,12 +1,12 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { dataSourceSelector } from "Selectors/dataSource";
-import { importSelectors } from "Selectors/exportImport";
-import { workflowSelector } from "Selectors/workflows";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+import { dataSourceSelector } from "Selectors/marketplace/dataSource";
+import { importSelectors } from "Selectors/platform/exportImport";
+import { workflowSelector } from "Selectors/platform/workflows";
+import { workspaceConstantsSelectors } from "Selectors/platform/workspaceConstants";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText } from "Texts/common";
-import { workspaceConstantsText } from "Texts/workspaceConstants";
-import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/eeCommon";
+import { workspaceConstantsText } from "Texts/platform/workspaceConstants";
+import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/platform/eeCommon";
 
 
 export const contantsNameValidation = (

@@ -1,5 +1,5 @@
 import { fake } from "Fixtures/fake";
-import { navigateAndVerifyInspector } from "Support/utils/inspector";
+import { navigateAndVerifyInspector } from "Support/utils/appBuilder/inspector";
 
 describe("Globals - Inspector", () => {
   beforeEach(() => {

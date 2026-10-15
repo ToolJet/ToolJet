@@ -1,3 +1,4 @@
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import {
   Entity,
   Column,
@@ -228,4 +229,8 @@ export class User extends BaseEntity {
   sessionId: string;
   roleGroup: USER_ROLE;
   tjApiSource?: string;
+  // Session provenance, mirrored from the JWT. Session kinds: personal-access-tokens/AGENTS.md.
+  isPATLogin?: boolean;
+  patScope?: PersonalAccessTokenScope;
+  patAppId?: string;
 }
