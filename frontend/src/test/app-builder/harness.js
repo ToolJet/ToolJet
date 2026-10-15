@@ -4,11 +4,16 @@ import userEvent from '@testing-library/user-event';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import useStore from '@/AppBuilder/_stores/store';
+import { useGridStore } from '@/_stores/gridStore';
 import { render as renderWithRouter } from '@/test/test-utils';
 import { createAppBuilderControls } from './controls';
 import { createAppBuilderNetwork } from './network';
 
 const sessions = (globalThis.__TOOLJET_APP_BUILDER_TEST_SESSIONS__ ||= []);
+
+// Standalone stores outside the composed App Builder store that specs may read
+// (never write) through `store.read(selector, { store })`.
+const READABLE_STORES = Object.freeze({ grid: useGridStore });
 
 export class AppBuilderTestSession {
   #controls;
@@ -58,7 +63,11 @@ export class AppBuilderTestSession {
           }
         });
       },
-      read: (selector) => selector(useStore.getState()),
+      read: (selector, { store } = {}) => {
+        if (store === undefined) return selector(useStore.getState());
+        if (!Object.hasOwn(READABLE_STORES, store)) throw new Error(`Unknown App Builder readable store: ${store}`);
+        return selector(READABLE_STORES[store].getState());
+      },
     });
     sessions.push(async () => {
       this.#network.close();
