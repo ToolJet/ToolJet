@@ -14,6 +14,8 @@ export default function ReleaseConfirmation(props) {
   const { t } = useTranslation();
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const openCompare = useVersionDiffStore((state) => state.openCompare);
+  // Re-check the gate when the compare view closes: the review may have been approved in it.
+  const compareOpen = useVersionDiffStore((state) => state.isOpen);
   const { name, selectedVersionId, appId, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } =
     useStore(
       (state) => ({
@@ -30,7 +32,7 @@ export default function ReleaseConfirmation(props) {
   // person clicks Yes (the server refuses it either way).
   const [gate, setGate] = useState(null);
   useEffect(() => {
-    if (!show || !appId || !selectedVersionId) return;
+    if (!show || !appId || !selectedVersionId || compareOpen) return;
     let cancelled = false;
     reviewService
       .gate(appId, selectedVersionId)
@@ -39,7 +41,7 @@ export default function ReleaseConfirmation(props) {
     return () => {
       cancelled = true;
     };
-  }, [show, appId, selectedVersionId]);
+  }, [show, appId, selectedVersionId, compareOpen]);
   const locked = gate?.required && !gate?.allowed;
 
   const releasedVersionName =
