@@ -5,7 +5,7 @@ import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import CustomDatePickerHeader from '@/AppBuilder/Widgets/NewTable/_components/DataTypes/_components/CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import OverlayTrigger from '@/AppBuilder/_engines/rendering/LazyOverlayTrigger';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 

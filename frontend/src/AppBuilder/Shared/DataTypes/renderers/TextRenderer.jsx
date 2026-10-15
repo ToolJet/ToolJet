@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import OverlayTrigger from '@/AppBuilder/_engines/rendering/LazyOverlayTrigger';
 import { isCellContentOverflowing } from '../utils';
 
 /**

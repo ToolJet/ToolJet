@@ -1,12 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
-import {
-  getCoreRowModel,
-  useReactTable,
-  getSortedRowModel,
-  getPaginationRowModel,
-  getFilteredRowModel,
-} from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { applyFilters } from '../_components/Header/_components/Filter/filterUtils';
+import { lowerContains, prepareTerm } from '@/AppBuilder/_engines/data/text';
+import { useTableView } from './useTableView';
+
+// TanStack holds no data rows: it would build a heavy row object for every row (see _utils/tableView.js).
+const NO_ROWS = [];
+
+// The search: `String(value || '').toLowerCase().includes(term.toLowerCase())`, without lower-casing a copy of every
+// cell. The term is prepared once per search (resolveFilterValue). searchCandidates relies on it being a "contains".
+const searchCell = (row, columnId, term) => lowerContains(row.getValue(columnId), term);
+searchCell.resolveFilterValue = prepareTerm;
 
 export function useTable({
   data,
@@ -60,20 +64,13 @@ export function useTable({
     }));
   }, [enablePagination, rowsPerPage, data.length, serverSidePagination]);
 
-  // When the columns change, the data is not getting re-rendered. So, we need to create a new data array
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const newData = useMemo(() => [...data], [data, columns]);
-
   const meta = useMemo(() => ({ expandedRows }), [expandedRows]);
 
   const table = useReactTable({
-    data: newData,
+    data: NO_ROWS,
     columns,
     enableSorting: true,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     enableColumnPinning: true,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
@@ -100,18 +97,21 @@ export function useTable({
         return applyFilters(row, columnId, filters);
       },
     },
-    globalFilterFn: (row, columnId, filterValue) => {
-      const value = String(row.getValue(columnId) || '').toLowerCase();
-      return value.includes(String(filterValue).toLowerCase());
-    },
+    globalFilterFn: searchCell,
     getColumnCanGlobalFilter: (column) => column.getIsVisible(),
     manualPagination: serverSidePagination,
     manualSorting: serverSideSort,
     manualFiltering: serverSideFilter,
   });
 
+  // Filtering, sorting and paging of the data, and the rows on screen (TanStack keeps the state).
+  const view = useTableView(table, data);
+  // For code that only gets the TanStack table (the select-all header, export).
+  table.tjView = view;
+
   return {
     table,
+    view,
     pagination,
     setPagination,
     columnVisibility,

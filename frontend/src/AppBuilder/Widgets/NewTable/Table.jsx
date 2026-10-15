@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, memo, useRef, useState } from 'react';
-// eslint-disable-next-line import/no-unresolved
-import { diff } from '@/AppBuilder/_engines/data/diff';
+import { sameValue } from '@/AppBuilder/_engines/data/equality';
 import { shallow } from 'zustand/shallow';
 import { isEmpty, isEqual } from 'lodash';
 import { useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
@@ -324,11 +323,16 @@ const Table = memo(
     const prevVisibility = usePrevious(exposedVariablesTemporaryState?.isVisible);
     const hasVisibilityChanged = prevVisibility !== exposedVariablesTemporaryState.isVisible;
 
+    // Changes when what the height depends on changes. (A JSON string of every row was built on every render: past
+    // ~500 MB of text, millions of rows, the browser refuses to build it and the table failed.)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const dynamicHeightSignal = useMemo(() => ({}), [heightChangeValue, tableData, expandedRows]);
+
     useDynamicHeight({
       isDynamicHeightEnabled,
       id: id,
       height,
-      value: JSON.stringify({ heightChangeValue, tableData, expandedRows }),
+      value: dynamicHeightSignal,
       skipAdjustment: exposedVariablesTemporaryState.isLoading || (tableData.length === 0 && !hasVisibilityChanged),
       currentLayout,
       width,
@@ -382,10 +386,10 @@ const Table = memo(
       </div>
     );
   },
-  (prevProps, nextProps) => {
-    // Avoid re-rendering if the props are same
-    return Object.keys(diff(prevProps, nextProps)).length === 0;
-  }
+  // Avoid re-rendering if the props are the same. sameValue answers as lodash's isEqual (at least as strict as the deep
+  // diff used before) and remembers pairs of frozen values it has compared: a re-render of the parent no longer walks
+  // every row of new-but-equal data again.
+  (prevProps, nextProps) => sameValue(prevProps, nextProps)
 );
 
 export default Table;

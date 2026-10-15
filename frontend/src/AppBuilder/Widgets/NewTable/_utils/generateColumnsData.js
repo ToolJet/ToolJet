@@ -184,7 +184,10 @@ export default function generateColumnsData({
           pinPosition,
         },
 
-        renderCell: ({ cell, row }) => {
+        // Without `tableData` / `searchText` (the Table's own columns), the row's data and the search come from the
+        // row and the table at render time: columns that captured them were rebuilt on every data change and keystroke.
+        renderCell: ({ cell, row, table }) => {
+          const cellSearchText = searchText ?? table?.getState().globalFilter ?? '';
           const changeSet = columnForAddNewRow
             ? getAddNewRowDetailFromIndex(id, row.index)
             : getEditedFieldsOnIndex(id, row.index);
@@ -194,7 +197,7 @@ export default function generateColumnsData({
               ? changeSet[accessorKey]
               : cell.getValue();
           cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
-          const rowData = tableData?.[row.index];
+          const rowData = tableData ? tableData[row.index] : row.original;
           const isEditable = getResolvedValue(column.isEditable, { cellValue, rowData });
           switch (columnType) {
             case 'string':
@@ -213,7 +216,7 @@ export default function generateColumnsData({
                   cell={cell}
                   row={row}
                   id={id}
-                  searchText={searchText}
+                  searchText={cellSearchText}
                 />
               );
 
@@ -231,7 +234,7 @@ export default function generateColumnsData({
                   cell={cell}
                   row={row}
                   id={id}
-                  searchText={searchText}
+                  searchText={cellSearchText}
                 />
               );
 
@@ -248,7 +251,7 @@ export default function generateColumnsData({
                   cell={cell}
                   row={row}
                   id={id}
-                  searchText={searchText}
+                  searchText={cellSearchText}
                   darkMode={darkMode}
                 />
               );

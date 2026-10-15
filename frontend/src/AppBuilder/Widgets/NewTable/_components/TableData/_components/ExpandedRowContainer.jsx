@@ -13,7 +13,7 @@ export const ExpandedRowContainer = ({
   darkMode,
   canvasWidth,
   expansionHeight = DEFAULT_EXPANSION_HEIGHT,
-  virtualizer,
+  resizeItem,
   virtualItemIndex,
 }) => {
   const parentContext = useSubcontainerContext();
@@ -40,10 +40,10 @@ export const ExpandedRowContainer = ({
     backgroundColor: containerBackgroundColor,
   };
 
-  // Single effect to update virtualizer slot when expanded row height is changed
+  // Single effect to update the row window's slot when expanded row height is changed
   useEffect(() => {
-    virtualizer.resizeItem(virtualItemIndex, expansionHeight);
-  }, [expansionHeight, virtualizer, virtualItemIndex]);
+    resizeItem(virtualItemIndex, expansionHeight);
+  }, [expansionHeight, resizeItem, virtualItemIndex]);
 
   return (
     <SubcontainerContext.Provider value={contextValue}>
@@ -52,7 +52,7 @@ export const ExpandedRowContainer = ({
         data-index={virtualItemIndex}
         style={{
           position: 'absolute',
-          top: `${top}px`,
+          top,
           left: 0,
           width: '100%',
         }}

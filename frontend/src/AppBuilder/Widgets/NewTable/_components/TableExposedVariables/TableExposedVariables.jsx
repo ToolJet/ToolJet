@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useMemo, useRef } from 'react';
 import useTableStore from '../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
@@ -8,6 +8,7 @@ import { isArray, debounce } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { usePrevious } from '@dnd-kit/utilities';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { mapIndexes, rowsAt } from '@/AppBuilder/_engines/data/indexList';
 // Component to expose variables & fire events from the table
 // It might miss some variables which are tightly coupled with the component state
 export const TableExposedVariables = ({
@@ -16,6 +17,7 @@ export const TableExposedVariables = ({
   setExposedVariables,
   fireEvent,
   table,
+  view,
   componentName,
   pageIndex = 1,
   lastClickedRowRef,
@@ -40,10 +42,7 @@ export const TableExposedVariables = ({
   const lastClickedRow = lastClickedRowRef.current;
 
   const {
-    selectedRows,
     sorting,
-    currentPageData,
-    filteredData,
     searchText,
     appliedFilters,
     toggleAllRowsSelected,
@@ -54,13 +53,10 @@ export const TableExposedVariables = ({
     columnSizing,
     resetRowSelection,
   } = {
-    selectedRows: table.getFilteredSelectedRowModel()?.rows,
     sorting: table.getState()?.sorting,
-    currentPageData: table.getPaginationRowModel()?.rows,
-    filteredData: table.getFilteredRowModel()?.rows,
     searchText: table.getState().globalFilter ?? '',
     appliedFilters: table.getState().columnFilters,
-    toggleAllRowsSelected: table.toggleAllRowsSelected,
+    toggleAllRowsSelected: view.toggleAllRowsSelected,
     setPageIndex: table.setPageIndex,
     setRowSelection: table.setRowSelection,
     setColumnFilters: table.setColumnFilters,
@@ -68,6 +64,31 @@ export const TableExposedVariables = ({
     columnSizing: table.getState().columnSizing,
     resetRowSelection: table.resetRowSelection,
   };
+
+  // The rows from the table's view (positions in the data), each list rebuilt when what TanStack's row model for it
+  // depended on changes: the selection and the filtered rows; the current page.
+  const rowSelection = table.getState().rowSelection;
+  const selectedIndexes = useMemo(
+    () => view.selectedIndexes(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [view.filtered, rowSelection]
+  );
+  // The data itself when every row is there in data order (`filtered` keeps data order, and unsorted, unpaged rows are
+  // that same list): no copy of every row.
+  const isAllRows = (indexes) => indexes === view.filtered && indexes.length === view.data.length;
+  const currentPageData = useMemo(
+    () => (isAllRows(view.page) ? view.data : rowsAt(view.data, view.page)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [view.page, view.data]
+  );
+  const filteredData = useMemo(
+    () => (isAllRows(view.filtered) ? view.data : rowsAt(view.data, view.filtered)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [view.filtered, view.data]
+  );
+  // While a search, filter or sort runs in slices the table shows the previous rows (none for new data): the exposed
+  // rows stay as they were until it finishes, instead of passing through that interim state.
+  const isViewPending = view.isFiltering || view.isSorting;
 
   const prevSortingLength = useRef(null);
 
@@ -100,10 +121,14 @@ export const TableExposedVariables = ({
   }, [editedRows, editedFields, fireEvent]);
 
   useEffect(() => {
-    let updatedData = [...data];
-    editedRows.forEach((value, key) => {
-      updatedData[key] = value;
-    });
+    // The data itself until a row is edited (a copy of every row on each change otherwise).
+    let updatedData = data;
+    if (editedRows.size > 0) {
+      updatedData = [...data];
+      editedRows.forEach((value, key) => {
+        updatedData[key] = value;
+      });
+    }
 
     setExposedVariables({
       changeSet: Object.fromEntries(editedFields),
@@ -122,19 +147,20 @@ export const TableExposedVariables = ({
 
   useEffect(() => {
     if (!allowSelection) {
-      return table.toggleAllRowsSelected(false);
+      return view.toggleAllRowsSelected(false);
     }
     if (allowSelection && !showBulkSelector) {
-      return table.toggleAllRowsSelected(false);
+      return view.toggleAllRowsSelected(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allowSelection, showBulkSelector, table, setExposedVariables]);
 
   // Expose selected rows
   useEffect(() => {
     if (allowSelection && showBulkSelector) {
       setExposedVariables({
-        selectedRows: selectedRows.map((row) => row.original),
-        selectedRowsId: selectedRows.map((row) => row.id),
+        selectedRows: mapIndexes(selectedIndexes, (index) => view.data[index]),
+        selectedRowsId: mapIndexes(selectedIndexes, (index) => String(index)),
       });
     } else {
       setExposedVariables({
@@ -143,7 +169,7 @@ export const TableExposedVariables = ({
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRows, allowSelection, setExposedVariables, fireEvent, lastClickedRow, showBulkSelector]); // Didn't add mounted as it's not a dependency
+  }, [selectedIndexes, allowSelection, setExposedVariables, fireEvent, lastClickedRow, showBulkSelector]); // Didn't add mounted as it's not a dependency
 
   // Expose page index
   useEffect(() => {
@@ -181,13 +207,13 @@ export const TableExposedVariables = ({
 
   //   // Expose current page data
   useEffect(() => {
-    setExposedVariables({ currentPageData: currentPageData.map((row) => row.original) });
-  }, [currentPageData, setExposedVariables]);
+    if (!isViewPending) setExposedVariables({ currentPageData });
+  }, [currentPageData, setExposedVariables, isViewPending]);
 
   //   Expose filtered data
   useEffect(() => {
-    setExposedVariables({ filteredData: filteredData.map((row) => row.original) });
-  }, [filteredData, setExposedVariables, fireEvent]);
+    if (!isViewPending) setExposedVariables({ filteredData });
+  }, [filteredData, setExposedVariables, fireEvent, isViewPending]);
 
   // Expose search text
   useEffect(() => {
@@ -231,7 +257,7 @@ export const TableExposedVariables = ({
   }, [setPageIndex, setExposedVariables]);
 
   useEffect(() => {
-    if (selectedRows.length === 0 && allowSelection && !showBulkSelector) {
+    if (selectedIndexes.length === 0 && allowSelection && !showBulkSelector) {
       setExposedVariables({
         selectedRow: {},
         selectedRowId: null,
@@ -242,7 +268,7 @@ export const TableExposedVariables = ({
         selectedRowId: isNaN(lastClickedRow?.index) ? String(lastClickedRow?.index) : lastClickedRow?.index,
       });
     }
-  }, [allowSelection, lastClickedRow, selectedRows, setExposedVariables, showBulkSelector]);
+  }, [allowSelection, lastClickedRow, selectedIndexes, setExposedVariables, showBulkSelector]);
 
   // Clear dataUpdates & changeSet when data is changed
   useEffect(() => {

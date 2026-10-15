@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import OverlayTrigger from '@/AppBuilder/_engines/rendering/LazyOverlayTrigger';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { default as ReactMarkdown } from 'react-markdown';
 import DOMPurify from 'dompurify';

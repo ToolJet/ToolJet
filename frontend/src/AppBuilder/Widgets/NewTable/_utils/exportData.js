@@ -23,11 +23,11 @@ const getData = (table, forExcel = false) => {
       accessorKeys.push(column.columnDef.accessorKey || column.columnDef.header);
     });
 
-  // Get data rows
-  const data = table.getCoreRowModel().rows.map((row) => {
+  // Get data rows: every row of the data, in data order (TanStack holds no rows; the table's view has the data)
+  const data = table.tjView.data.map((original) => {
     const rowData = [];
     accessorKeys.forEach((accessorKey) => {
-      const cellValue = row.original[accessorKey];
+      const cellValue = original[accessorKey];
       const isNumber = typeof cellValue === 'number';
 
       rowData.push(
