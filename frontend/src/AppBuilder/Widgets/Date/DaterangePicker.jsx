@@ -100,6 +100,7 @@ export const DaterangePicker = ({
   const clearDateRangeValue = () => {
     setStartDate(null);
     setEndDate(null);
+    setTextParseError(false);
     setExposedVariables({
       startDate: null,
       startDateInUnix: null,
@@ -116,6 +117,9 @@ export const DaterangePicker = ({
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
+    // Any committed change (calendar pick, default rebind, CSA) supersedes
+    // whatever unparseable text was being held on screen.
+    setTextParseError(false);
     setExposedVariables({
       startDate: formatExposedDate(start, format, legacyInvalidDates),
       startDateInUnix: start ? moment(start).valueOf() : null,
@@ -218,6 +222,7 @@ export const DaterangePicker = ({
   const handleClear = () => {
     setStartDate(null);
     setEndDate(null);
+    setTextParseError(false);
     setDisplayRange('');
     setExposedVariables({
       startDate: null,
@@ -234,8 +239,10 @@ export const DaterangePicker = ({
       const date = moment(end, customFormat || format);
       const endDate = date.isValid() ? date.toDate() : null;
       setEndDate(endDate);
+      setTextParseError(false);
       setExposedVariables({
         endDate: formatExposedDate(endDate, format, legacyInvalidDates),
+        endDateInUnix: endDate ? moment(endDate).valueOf() : null,
         selectedDateRange: formatExposedDateRange(startDate, endDate, format, legacyInvalidDates),
       });
     });
@@ -251,8 +258,10 @@ export const DaterangePicker = ({
       const date = moment(start, customFormat || format);
       const startDate = date.isValid() ? date.toDate() : null;
       setStartDate(startDate);
+      setTextParseError(false);
       setExposedVariables({
         startDate: formatExposedDate(startDate, format, legacyInvalidDates),
+        startDateInUnix: startDate ? moment(startDate).valueOf() : null,
         selectedDateRange: formatExposedDateRange(startDate, endDate, format, legacyInvalidDates),
       });
     });
@@ -324,13 +333,22 @@ export const DaterangePicker = ({
       'react-datepicker-month-component': datepickerMode === 'month',
       'react-datepicker-year-component': datepickerMode === 'year',
     }),
-    onChange,
+    // Calendar picks route through this wrapper (NOT the typed-commit path):
+    // a pick supersedes whatever text is mid-typing or held as a parse error,
+    // so the display must sync immediately — the blur-gated effect is too late
+    // for the field the user is looking at.
+    onChange: (dates) => {
+      onChange(dates);
+      setDisplayRange(getDisplayRange(dates[0], dates[1]));
+    },
     onSelect: (start) => {
       if (!startDate && endDate) {
         if (moment(start).isSameOrBefore(endDate)) {
           onChange([start, endDate]);
+          setDisplayRange(getDisplayRange(start, endDate));
         } else {
           onChange([start, null]);
+          setDisplayRange(getDisplayRange(start, null));
         }
       }
     },

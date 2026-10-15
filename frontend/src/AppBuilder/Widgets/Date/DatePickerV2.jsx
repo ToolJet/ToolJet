@@ -71,6 +71,7 @@ export const DatePickerV2 = ({
   const [datepickerMode, setDatePickerMode] = useState('date');
 
   const setInputValue = (date, format, skipFireEvent = false) => {
+    setTextParseError(false);
     const unixTimestamp = getUnixTime(date, format ? format : dateFormat);
     const selectedTimestamp = getSelectedTimestampFromUnixTimestamp(unixTimestamp);
     setUnixTimestamp(unixTimestamp);
@@ -86,6 +87,7 @@ export const DatePickerV2 = ({
   };
 
   const onDateSelect = (date) => {
+    setTextParseError(false);
     const selectedTime = getUnixTime(date, dateFormat);
     setSelectedTimestamp(selectedTime);
     const unixTimestamp = getUnixTimestampFromSelectedTimestamp(selectedTime);
@@ -219,6 +221,9 @@ export const DatePickerV2 = ({
         updatedDate = modifiedDate.toDate();
       }
       onDateSelect(updatedDate);
+      // A calendar pick supersedes typed text held on screen (parse error or
+      // mid-typing); sync the display immediately rather than waiting for blur.
+      setDisplayTimestamp(getFormattedSelectTimestamp(updatedDate, dateFormat));
       setDatePickerMode('date');
     },
     selected: selectedTimestamp ? moment(selectedTimestamp).toDate() : null,

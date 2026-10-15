@@ -129,6 +129,7 @@ export const DatetimePickerV2 = ({
   const [datepickerMode, setDatePickerMode] = useState('date');
 
   const setInputValue = (date, format, propStoreTimezone, skipFireEvent = false) => {
+    setTextParseError(false);
     const isISOString = typeof date === 'string' && date.includes('T');
     const unixTimestamp = isISOString
       ? moment(date).valueOf()
@@ -151,6 +152,7 @@ export const DatetimePickerV2 = ({
   };
 
   const onDateSelect = (date) => {
+    setTextParseError(false);
     const selectedTime = getUnixTime(date, displayFormat);
     setSelectedTimestamp(selectedTime);
     const unixTimestamp = getUnixTimestampFromSelectedTimestamp(selectedTime, displayTimezone);
@@ -171,6 +173,8 @@ export const DatetimePickerV2 = ({
     setUnixTimestamp(updatedUnixTimestamp);
     setSelectedTimestamp(updatedSelectedTimestamp.valueOf());
     setExposedDateVariables(updatedUnixTimestamp, updatedSelectedTimestamp.valueOf());
+    // A dropdown pick supersedes typed text held on screen — sync the display.
+    setDisplayTimestamp(getFormattedSelectTimestamp(updatedSelectedTimestamp.valueOf(), displayFormat));
     fireEvent('onSelect');
   };
 
@@ -426,6 +430,9 @@ export const DatetimePickerV2 = ({
         updatedDate = modifiedDate.toDate();
       }
       onDateSelect(updatedDate);
+      // A calendar pick supersedes typed text held on screen (parse error or
+      // mid-typing); sync the display immediately rather than waiting for blur.
+      setDisplayTimestamp(getFormattedSelectTimestamp(getUnixTime(updatedDate, displayFormat), displayFormat));
       setDatePickerMode('date');
     },
 

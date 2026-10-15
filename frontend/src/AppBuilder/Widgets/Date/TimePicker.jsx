@@ -69,6 +69,7 @@ export const TimePicker = ({
   );
 
   const setInputValue = (date, format, skipFireEvent = false) => {
+    setTextParseError(false);
     const timestamp = getUnixTime(date, format ? format : timeFormat);
     setSelectedTimestamp(timestamp);
     setExposedVariables({
@@ -84,6 +85,7 @@ export const TimePicker = ({
   };
 
   const onDateSelect = (date) => {
+    setTextParseError(false);
     const timestamp = getUnixTime(date, timeFormat);
     setSelectedTimestamp(timestamp);
     setExposedVariables({
@@ -102,6 +104,8 @@ export const TimePicker = ({
     setExposedVariables({
       value: getFormattedSelectTimestamp(updatedTimestamp, timeFormat),
     });
+    // A dropdown pick supersedes typed text held on screen — sync the display.
+    setDisplayTimestamp(getFormattedSelectTimestamp(updatedTimestamp, timeFormat));
     fireEvent('onSelect');
   };
 
@@ -141,6 +145,12 @@ export const TimePicker = ({
     // when an onSelect handler programmatically sets the value back on this widget.
     setExposedVariables({
       setValue: (value, format) => {
+        setInputValue(value, format, true);
+      },
+      // Registered in the config as its own action ("Set time") but never
+      // exposed by the runtime, so a button's control-component call hit
+      // `undefined` and silently did nothing. Same semantics as setValue.
+      setTime: (value, format) => {
         setInputValue(value, format, true);
       },
       clearValue: () => {
