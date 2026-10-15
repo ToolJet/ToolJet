@@ -27,8 +27,24 @@ export class VersionDiffController {
     @App() app: AppEntity,
     @Param('versionId') versionId: string,
     @Query('base') base: string,
-    @Query('unchanged') unchanged?: string
+    @Query('unchanged') unchanged?: string,
+    @Query('baseSnapshot') baseSnapshot?: string
   ) {
-    return this.versionDiffService.diff(app, versionId, base, unchanged === 'true' || unchanged === '1');
+    return this.versionDiffService.diff(app, versionId, base, unchanged === 'true' || unchanged === '1', baseSnapshot);
+  }
+
+  // Layout boxes for drawing a page without running it (blueprint mode).
+  @InitFeature(FEATURE_KEY.COMPARE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Get(':id/versions/:versionId/layout')
+  versionLayout(@App() app: AppEntity, @Param('versionId') versionId: string, @Query('page') page?: string) {
+    return this.versionDiffService.layout(app, { versionId }, page);
+  }
+
+  @InitFeature(FEATURE_KEY.COMPARE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Get(':id/snapshots/:snapshotId/layout')
+  snapshotLayout(@App() app: AppEntity, @Param('snapshotId') snapshotId: string, @Query('page') page?: string) {
+    return this.versionDiffService.layout(app, { snapshotId }, page);
   }
 }

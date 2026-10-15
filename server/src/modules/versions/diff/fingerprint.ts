@@ -21,7 +21,11 @@ export function contentFingerprint(snapshot: VersionSnapshot): string {
     }
     return value;
   };
-  const { versionId, name, status, ...content } = snapshot;
+  // The version's own id, name and status are not content.
+  const content = { ...snapshot };
+  delete content.versionId;
+  delete content.name;
+  delete content.status;
   const sortByKey = (items: Array<{ key: string }>) => [...items].sort((a, b) => a.key.localeCompare(b.key));
   const hash = createHash('sha256')
     .update(

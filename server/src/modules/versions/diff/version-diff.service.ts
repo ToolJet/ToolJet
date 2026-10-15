@@ -5,17 +5,88 @@ import { App } from '@entities/app.entity';
 import { buildSnapshot, VersionRows } from './snapshot';
 import { diffVersions } from './version-diff';
 import { VersionDiff, VersionSnapshot } from './types';
+import { VersionSnapshotStore } from './snapshot-store';
 
 @Injectable()
 export class VersionDiffService {
-  async diff(app: App, targetVersionId: string, baseVersionId: string, includeUnchanged = false): Promise<VersionDiff> {
-    if (!baseVersionId) throw new BadRequestException('Pass the version to compare against as ?base=<versionId>');
+  async diff(
+    app: App,
+    targetVersionId: string,
+    baseVersionId: string,
+    includeUnchanged = false,
+    baseSnapshotId?: string
+  ): Promise<VersionDiff> {
+    if (!baseVersionId && !baseSnapshotId)
+      throw new BadRequestException('Pass ?base=<versionId> or ?baseSnapshot=<snapshotId> to compare against');
     return dbTransactionWrap(async (manager: EntityManager) => {
+      const store = new VersionSnapshotStore();
       const [base, target] = await Promise.all([
-        this.snapshot(manager, app.id, baseVersionId),
+        baseSnapshotId
+          ? store.snapshot(manager, app.id, baseSnapshotId)
+          : this.snapshot(manager, app.id, baseVersionId),
         this.snapshot(manager, app.id, targetVersionId),
       ]);
-      return diffVersions(base, target, { includeUnchanged });
+      const result = diffVersions(base, target, { includeUnchanged });
+      if (baseSnapshotId) {
+        const stored = await store.load(manager, app.id, baseSnapshotId);
+        return {
+          ...result,
+          base: {
+            ...result.base,
+            snapshot: { versionId: stored.versionId, reason: stored.reason, createdAt: stored.createdAt },
+          },
+        };
+      }
+      return result;
+    });
+  }
+
+  // What the blueprint renderer needs to draw a page without running it:
+  // every component's box, parent, type and a short label.
+  async layout(app: App, source: { versionId?: string; snapshotId?: string }, pageKey?: string) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const snapshot = source.snapshotId
+        ? await new VersionSnapshotStore().snapshot(manager, app.id, source.snapshotId)
+        : await this.snapshot(manager, app.id, source.versionId);
+      const page =
+        snapshot.pages.find((item) => item.key === pageKey) ??
+        snapshot.pages.find((item) => item.key === snapshot.homePage) ??
+        snapshot.pages[0];
+      const unwrap = (value: any) => (value && typeof value === 'object' && 'value' in value ? value.value : value);
+      const label = (properties: Record<string, any>) => {
+        for (const key of ['text', 'label', 'title', 'buttonText', 'placeholder']) {
+          const value = unwrap(properties?.[key]);
+          if (typeof value === 'string' && value.trim() && !value.includes('{{')) return value.trim().slice(0, 80);
+        }
+        return null;
+      };
+      return {
+        pages: snapshot.pages.map((item) => ({ key: item.key, name: item.name })),
+        page: page ? { key: page.key, name: page.name } : null,
+        components: snapshot.components
+          .filter((component) => component.pageKey === page?.key)
+          .map((component) => ({
+            key: component.key,
+            id: component.id,
+            name: component.name,
+            type: component.type,
+            parent: component.parent,
+            layouts: component.layouts,
+            label: label(component.properties),
+            hidden:
+              unwrap(component.properties?.visibility) === '{{false}}' ||
+              unwrap(component.properties?.visibility) === false,
+            flex: /Flex/.test(component.type)
+              ? {
+                  direction:
+                    unwrap(component.properties?.direction) ?? unwrap(component.properties?.flexDirection) ?? 'row',
+                  childOrder: (unwrap(component.properties?.childOrder) ?? []).map((ref: string) =>
+                    String(ref).replace(/^@component:/, '')
+                  ),
+                }
+              : null,
+          })),
+      };
     });
   }
 
