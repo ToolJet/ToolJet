@@ -18,7 +18,9 @@ export const usePopoverState = () => {
       setActiveIndex(index);
     } else {
       document.activeElement?.blur();
-      setActiveIndex(null);
+      // Only the active popover may close itself, so a stale outside-click close from the previous popover
+      // can't undo the open of the newly clicked one
+      setActiveIndex((prev) => (prev === index ? null : prev));
     }
   }, []);
 
