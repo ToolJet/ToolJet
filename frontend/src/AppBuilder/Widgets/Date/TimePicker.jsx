@@ -32,10 +32,9 @@ export const TimePicker = ({
   const datePickerRef = useRef(null);
   const { label, defaultValue, timeFormat: timeFormatProp, placeholder: placeholderProp, showClearBtn } = properties;
   const placeholder = placeholderProp ?? 'Select time';
-  // Tokenless format (e.g. {{42}}) → config error + shipped default fallback.
+  // Tokenless format (e.g. {{42}}) → panel error + shipped default fallback.
   const hasUsableFormat = isUsableTimeFormat(timeFormatProp);
   const timeFormat = hasUsableFormat ? timeFormatProp : 'HH:mm';
-  const formatConfigError = Boolean(timeFormatProp) && !hasUsableFormat;
   const inputProps = {
     properties,
     setExposedVariable,
@@ -45,6 +44,8 @@ export const TimePicker = ({
     dateInputRef,
     datePickerRef,
     timeFormat,
+    componentName,
+    id,
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const timeLogic = useTimeInput(inputProps);
@@ -160,16 +161,12 @@ export const TimePicker = ({
   }, [selectedTimestamp, timeFormat]);
 
   useEffect(() => {
-    if (formatConfigError) {
-      setValidationStatus({ isValid: false, validationError: 'Invalid time format', isConfigError: true });
-      return;
-    }
     if (textParseError) {
       setValidationStatus({ isValid: false, validationError: 'Invalid time' });
       return;
     }
     setValidationStatus(isDateValid(selectedTimestamp, { minTime, maxTime, customRule, isMandatory, timeFormat }));
-  }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp, timeFormat, formatConfigError, textParseError]);
+  }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp, timeFormat, textParseError]);
 
   useFormClear(() => setInputValue(null, null, true));
 
@@ -203,7 +200,6 @@ export const TimePicker = ({
     onTimeChange,
     minTime,
     maxTime,
-    timeFormat,
   };
 
   const customDateInputProps = {
@@ -214,9 +210,7 @@ export const TimePicker = ({
     setTextInputFocus,
     setShowValidationError,
     onTextParse: (parsed) => setTextParseError(parsed.hasError),
-    // Config contradictions (min>max time) display immediately; input errors
-    // keep the blur/submit gate.
-    showValidationError: showValidationError || !!validationStatus.isConfigError,
+    showValidationError,
     isValid,
     validationError,
     showClearBtn,

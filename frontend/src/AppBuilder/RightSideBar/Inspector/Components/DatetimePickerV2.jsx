@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
-import { renderElement } from '../Utils';
+import { renderElement, getFormatFallbackError } from '../Utils';
 import { EventManager } from '../EventManager';
 import Select from '@/_ui/Select';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -110,6 +110,14 @@ export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
   return acc;
 }, {});
 
+// Region-name options for the Display in / Store in dropdowns: zones sharing an
+// offset (Asia/Colombo vs Asia/Kolkata, both +05:30) must stay distinguishable.
+// Values are IANA ids — exactly what existing apps already store, because the
+// old offset-labelled options also persisted IANA values.
+export const TIMEZONE_REGION_OPTIONS = moment.tz
+  .names()
+  .map((zone) => ({ name: `${zone} (UTC${moment.tz(zone).format('Z')})`, value: zone }));
+
 const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...restProps }) => {
   const { t } = useTranslation();
   const {
@@ -138,44 +146,62 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
   const displayTimezone = resolvedProperties?.displayTimezone;
   const storeTimezone = resolvedProperties?.storeTimezone;
 
+  // A format with no recognizable tokens (e.g. a {{42}} binding resolving to
+  // "42") is a configuration error. It surfaces inside the Format field's
+  // CodeHinter preview popover (via validationFn, same surface as Tabs'
+  // duplicate-id error) — the widget silently falls back to its shipped
+  // default format.
+  const dateFormatError = getFormatFallbackError(dateFormat, 'date');
+  const timeFormatError = getFormatFallbackError(timeFormat, 'time');
+  const effectiveDateFormat = !dateFormat || dateFormatError ? 'DD/MM/YYYY' : dateFormat;
+  const effectiveTimeFormat = !timeFormat || timeFormatError ? 'HH:mm' : timeFormat;
+  const dateFormatValidationFn = (value) => {
+    const message = getFormatFallbackError(value, 'date');
+    return [!message, message];
+  };
+  const timeFormatValidationFn = (value) => {
+    const message = getFormatFallbackError(value, 'time');
+    return [!message, message];
+  };
+
   const dateValidator = useMemo(() => {
     return (date) => {
       if (typeof date !== 'string')
         return [false, [`Expected a value of type string, but received ${typeof date}`], date];
       if (!date) return [true, null, date];
 
-      const isValid = moment(date, dateFormat, true).isValid();
+      const isValid = moment(date, effectiveDateFormat, true).isValid();
 
-      return [isValid, isValid ? null : [`Invalid date. Expected date format: ${dateFormat}`], date];
+      return [isValid, isValid ? null : [`Invalid date. Expected date format: ${effectiveDateFormat}`], date];
     };
-  }, [dateFormat]);
+  }, [effectiveDateFormat]);
 
   const timeValidator = useMemo(() => {
     return (time) => {
       if (typeof time !== 'string')
         return [false, [`Expected a value of type string, but received ${typeof time}`], time];
       if (!time) return [true, null, time];
-      const isValid = moment(time, timeFormat, true).isValid();
-      return [isValid, isValid ? null : [`Invalid time. Expected time format: ${timeFormat}`], time];
+      const isValid = moment(time, effectiveTimeFormat, true).isValid();
+      return [isValid, isValid ? null : [`Invalid time. Expected time format: ${effectiveTimeFormat}`], time];
     };
-  }, [timeFormat]);
+  }, [effectiveTimeFormat]);
 
   const dateArrayValidator = useMemo(() => {
     return (date) => {
       if (!Array.isArray(date)) return [false, [`Expected a value of type array, but received ${typeof date}`], date];
       else if (!date) return [true, null, date];
-      const isValid = date.every((d) => moment(d, dateFormat, true).isValid());
-      return [isValid, isValid ? null : [`Invalid format. Expected date format: ${dateFormat}`], date];
+      const isValid = date.every((d) => moment(d, effectiveDateFormat, true).isValid());
+      return [isValid, isValid ? null : [`Invalid format. Expected date format: ${effectiveDateFormat}`], date];
     };
-  }, [dateFormat]);
+  }, [effectiveDateFormat]);
 
   const getDynamicPlaceholder = (property) => {
     const dynamicType = componentMeta.validation?.[property]?.dynamicType;
     switch (dynamicType) {
       case 'date':
-        return dateFormat;
+        return effectiveDateFormat;
       case 'time':
-        return timeFormat;
+        return effectiveTimeFormat;
       case 'arrayDate':
         return ``;
       default:
@@ -236,6 +262,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
             mode="javascript"
             lineNumbers={false}
             onChange={(value) => paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties')}
+            validationFn={timeFormatValidationFn}
           />
         ) : (
           <Select
@@ -292,6 +319,24 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
       children: (
         <>
           {properties?.map((property) => {
+            // DaterangePicker's Format is a generic code property — the
+            // invalid-format fallback error shows inside its CodeHinter
+            // preview popover via validationFn.
+            if (property === 'format') {
+              return renderElement(
+                component,
+                componentMeta,
+                paramUpdated,
+                dataQueries,
+                property,
+                'properties',
+                currentState,
+                allComponents,
+                darkMode,
+                '',
+                dateFormatValidationFn
+              );
+            }
             if (['isTimezoneEnabled', 'customDateFormat'].includes(property)) {
               return (
                 <>
@@ -326,6 +371,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                           mode="javascript"
                           lineNumbers={false}
                           onChange={(value) => paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties')}
+                          validationFn={dateFormatValidationFn}
                         />
                       ) : (
                         <Select
@@ -372,7 +418,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                               {t('widget.commonProperties.displayIn', 'Display in')}
                             </label>
                             <Select
-                              options={TIMEZONE_OPTIONS}
+                              options={TIMEZONE_REGION_OPTIONS}
                               value={displayTimezone || 'UTC'}
                               search={true}
                               closeOnSelect={true}
@@ -394,7 +440,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                               {t('widget.commonProperties.storeIn', 'Store in')}
                             </label>
                             <Select
-                              options={TIMEZONE_OPTIONS}
+                              options={TIMEZONE_REGION_OPTIONS}
                               value={storeTimezone || 'UTC'}
                               search={true}
                               closeOnSelect={true}

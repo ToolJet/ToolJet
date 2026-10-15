@@ -25,11 +25,10 @@ import moment from 'moment-timezone';
 import {
   formatExposedDate,
   formatExposedDateRange,
-  isMinMaxDateValid,
-  isMinMaxTimeValid,
+  getUsableDateBounds,
+  getUsableTimeBounds,
   isDateValid,
   isDateRangeValid,
-  parseTimeBound,
   getTimeSelectionBase,
   isUsableDateFormat,
   isUsableTimeFormat,
@@ -120,98 +119,108 @@ describe('legacy behavior (components migrated with legacyInvalidDates = true)',
 // SELECTED date — isDateValid stayed `isValid: true`, so no error message
 // could ever surface. The contradictory configuration itself must fail
 // validation, for the date pair and the time pair alike.
-describe('isMinMaxDateValid', () => {
-  const FORMAT = 'DD/MM/YY';
+// Invalid Min/Max bounds are configuration problems, not widget errors: the
+// bound(s) are IGNORED by the calendar and validation (the widget surfaces
+// nothing), the problem is reported to the debugger by the hooks, and the
+// exposed minDate/maxDate keep whatever the user wrote or the dynamic value
+// resolved to — even when invalid.
+describe('getUsableDateBounds', () => {
+  const FORMAT = 'DD/MM/YYYY';
 
-  test('min later than max is invalid (reported repro: 01/12/26 > 10/11/26)', () => {
-    expect(isMinMaxDateValid('01/12/26', '10/11/26', FORMAT)).toBe(false);
+  test('valid ordered bounds pass through as Dates', () => {
+    const bounds = getUsableDateBounds('10/11/2026', '01/12/2026', FORMAT);
+    expect(moment(bounds.minDate).format(FORMAT)).toBe('10/11/2026');
+    expect(moment(bounds.maxDate).format(FORMAT)).toBe('01/12/2026');
+    expect(bounds.conflict).toBe(false);
+    expect(bounds.invalidMin).toBe(false);
+    expect(bounds.invalidMax).toBe(false);
   });
 
-  test('min before max is valid', () => {
-    expect(isMinMaxDateValid('10/11/26', '01/12/26', FORMAT)).toBe(true);
+  test('min after max is a conflict: BOTH bounds are ignored (the reported repro: 01/12/2026 > 10/11/2026)', () => {
+    const bounds = getUsableDateBounds('01/12/2026', '10/11/2026', FORMAT);
+    expect(bounds.minDate).toBeNull();
+    expect(bounds.maxDate).toBeNull();
+    expect(bounds.conflict).toBe(true);
+  });
+
+  test('an unparseable bound is ignored and flagged, the other side survives', () => {
+    const bounds = getUsableDateBounds('not-a-date', '10/11/2026', FORMAT);
+    expect(bounds.minDate).toBeNull();
+    expect(bounds.invalidMin).toBe(true);
+    expect(moment(bounds.maxDate).format(FORMAT)).toBe('10/11/2026');
+    expect(bounds.conflict).toBe(false);
+  });
+
+  test('missing bounds are nulls without flags', () => {
+    expect(getUsableDateBounds(null, undefined, FORMAT)).toEqual({
+      minDate: null,
+      maxDate: null,
+      conflict: false,
+      invalidMin: false,
+      invalidMax: false,
+    });
   });
 
   test('min equal to max is a legitimate single-day window', () => {
-    expect(isMinMaxDateValid('10/11/26', '10/11/26', FORMAT)).toBe(true);
-  });
-
-  test('Date-object bounds (the shape useDateInput feeds the widgets) are compared', () => {
-    expect(isMinMaxDateValid(new Date(2026, 11, 1), new Date(2026, 10, 10), FORMAT)).toBe(false);
-    expect(isMinMaxDateValid(new Date(2026, 10, 10), new Date(2026, 11, 1), FORMAT)).toBe(true);
-  });
-
-  test('a missing bound never conflicts', () => {
-    expect(isMinMaxDateValid(null, '10/11/26', FORMAT)).toBe(true);
-    expect(isMinMaxDateValid('01/12/26', null, FORMAT)).toBe(true);
-    expect(isMinMaxDateValid(undefined, undefined, FORMAT)).toBe(true);
-  });
-
-  test('an unparseable bound never conflicts (no false positives)', () => {
-    expect(isMinMaxDateValid('not-a-date', '10/11/26', FORMAT)).toBe(true);
+    const bounds = getUsableDateBounds('10/11/2026', '10/11/2026', FORMAT);
+    expect(bounds.conflict).toBe(false);
+    expect(bounds.minDate).not.toBeNull();
   });
 });
 
-describe('isMinMaxTimeValid', () => {
-  const TIME_FORMAT = 'HH:mm';
+describe('getUsableTimeBounds', () => {
+  const TIME_FORMAT = 'hh:mm A';
 
-  test('min time later than max time is invalid', () => {
-    expect(isMinMaxTimeValid('18:00', '09:00', TIME_FORMAT)).toBe(false);
+  test('valid ordered bounds pass through as the original strings', () => {
+    expect(getUsableTimeBounds('09:00 AM', '06:00 PM', TIME_FORMAT)).toEqual({
+      minTime: '09:00 AM',
+      maxTime: '06:00 PM',
+      conflict: false,
+      invalidMin: false,
+      invalidMax: false,
+    });
   });
 
-  test('min time before max time is valid', () => {
-    expect(isMinMaxTimeValid('09:00', '18:00', TIME_FORMAT)).toBe(true);
+  test('min after max is a conflict: both bounds ignored', () => {
+    const bounds = getUsableTimeBounds('18:00', '09:00', 'HH:mm');
+    expect(bounds.minTime).toBeNull();
+    expect(bounds.maxTime).toBeNull();
+    expect(bounds.conflict).toBe(true);
   });
 
-  test('equal times are a legitimate single-minute window', () => {
-    expect(isMinMaxTimeValid('09:00', '09:00', TIME_FORMAT)).toBe(true);
+  test('the documented HH:mm shape parses under a 12-hour display format', () => {
+    const bounds = getUsableTimeBounds('19:30', '21:00', TIME_FORMAT);
+    expect(bounds.minTime).toBe('19:30');
+    expect(bounds.invalidMin).toBe(false);
   });
 
-  test('a missing or unparseable bound never conflicts', () => {
-    expect(isMinMaxTimeValid(null, '18:00', TIME_FORMAT)).toBe(true);
-    expect(isMinMaxTimeValid('25:99', '18:00', TIME_FORMAT)).toBe(true);
+  test('an unparseable bound is ignored and flagged', () => {
+    const bounds = getUsableTimeBounds('25:99', '18:00', 'HH:mm');
+    expect(bounds.minTime).toBeNull();
+    expect(bounds.invalidMin).toBe(true);
+    expect(bounds.maxTime).toBe('18:00');
   });
 });
 
-describe('isDateValid with contradictory bounds', () => {
+describe('isDateValid with ignored (invalid) bounds', () => {
   const FORMAT = 'DD/MM/YY';
 
-  test('min > max fails validation even with NO date selected (the reported repro)', () => {
-    const result = isDateValid(null, { minDate: '01/12/26', maxDate: '10/11/26', dateFormat: FORMAT });
-    expect(result.isValid).toBe(false);
-    expect(result.validationError).toBe('Minimum date (01/12/26) cannot be greater than maximum date (10/11/26)');
-    // Configuration contradictions bypass the blur gate and display immediately.
-    expect(result.isConfigError).toBe(true);
+  test('nulled-out bounds mean NO bound validation runs — any date is valid', () => {
+    // The widgets feed isDateValid the bounds AFTER getUsableDateBounds nulled
+    // a conflicting pair, so no "less than minimum"/"greater than maximum"
+    // error can fire from a contradictory configuration.
+    expect(isDateValid(new Date(2026, 10, 20), { minDate: null, maxDate: null, dateFormat: FORMAT })).toEqual({
+      isValid: true,
+      validationError: '',
+    });
   });
 
-  test('min > max takes precedence over the misleading per-date error when a date IS selected', () => {
-    const result = isDateValid(new Date(2026, 10, 20), {
-      minDate: '01/12/26',
-      maxDate: '10/11/26',
-      dateFormat: FORMAT,
-    });
-    expect(result.isValid).toBe(false);
-    expect(result.validationError).toBe('Minimum date (01/12/26) cannot be greater than maximum date (10/11/26)');
-    expect(result.isConfigError).toBe(true);
-  });
-
-  test('a mandatory empty field still reports the mandatory error first', () => {
-    const result = isDateValid(null, {
-      minDate: '01/12/26',
-      maxDate: '10/11/26',
-      dateFormat: FORMAT,
-      isMandatory: true,
-    });
+  test('a mandatory empty field still reports the mandatory error', () => {
+    const result = isDateValid(null, { minDate: null, maxDate: null, dateFormat: FORMAT, isMandatory: true });
     expect(result).toEqual({ isValid: false, validationError: 'Input is mandatory' });
   });
 
-  test('min time > max time fails validation with no time selected (TimePicker shape)', () => {
-    const result = isDateValid(null, { minTime: '18:00', maxTime: '09:00', timeFormat: 'HH:mm' });
-    expect(result.isValid).toBe(false);
-    expect(result.validationError).toBe('Minimum time (18:00) cannot be greater than maximum time (09:00)');
-    expect(result.isConfigError).toBe(true);
-  });
-
-  test('a selected date outside well-ordered bounds is an input error, not a config error', () => {
+  test('a selected date outside well-ordered bounds is still an input error', () => {
     const result = isDateValid(new Date(2026, 0, 1), {
       minDate: '10/11/26',
       maxDate: '01/12/26',
@@ -219,7 +228,6 @@ describe('isDateValid with contradictory bounds', () => {
     });
     expect(result.isValid).toBe(false);
     expect(result.validationError).toContain('less than minimum date');
-    expect(result.isConfigError).toBeUndefined();
   });
 
   test('well-ordered bounds with no selection remain valid', () => {
@@ -245,7 +253,6 @@ describe('isDateRangeValid ordering', () => {
     expect(isDateRangeValid(APRIL_1_2022, APRIL_10_2021, [], FORMAT)).toEqual({
       isValid: false,
       validationError: 'Start date cannot be greater than end date',
-      isConfigError: true,
     });
   });
 
@@ -272,7 +279,6 @@ describe('isDateRangeValid ordering', () => {
     expect(isDateRangeValid(APRIL_1_2022, APRIL_10_2021, ['05/04/2022'], FORMAT)).toEqual({
       isValid: false,
       validationError: 'Start date cannot be greater than end date',
-      isConfigError: true,
     });
   });
 
@@ -281,46 +287,6 @@ describe('isDateRangeValid ordering', () => {
       isValid: false,
       validationError: 'Selected date range is excluded',
     });
-  });
-});
-
-// Bug: "Time picker: unable to select PM and other [hours] as per the min and
-// max time." The dropdown's bound parsing was a naive split(':'): with
-// Min '07:00 AM' / Max '07:00 PM' the meridiem was discarded (max hour became
-// 07, disabling PM and hours 8-12 outright) and the minute bound became the
-// string '00 PM'. Bounds must be parsed meridiem-aware against the widget's
-// time format, with the documented 'HH:mm' shape as fallback.
-describe('parseTimeBound', () => {
-  test("'07:00 PM' under 'hh:mm A' is 19:00 (the reported repro)", () => {
-    expect(parseTimeBound('07:00 PM', 'hh:mm A', { hour: 23, minute: 59 })).toEqual({ hour: 19, minute: 0 });
-  });
-
-  test("'07:00 AM' under 'hh:mm A' is 07:00", () => {
-    expect(parseTimeBound('07:00 AM', 'hh:mm A', { hour: 0, minute: 0 })).toEqual({ hour: 7, minute: 0 });
-  });
-
-  test("a 24-hour 'HH:mm' bound still parses when the display format is 12-hour", () => {
-    expect(parseTimeBound('19:30', 'hh:mm A', { hour: 23, minute: 59 })).toEqual({ hour: 19, minute: 30 });
-  });
-
-  test("a bound matching the widget's 24-hour format parses directly", () => {
-    expect(parseTimeBound('18:45', 'HH:mm', { hour: 23, minute: 59 })).toEqual({ hour: 18, minute: 45 });
-  });
-
-  test('a Date-object bound uses its own hours/minutes', () => {
-    expect(parseTimeBound(new Date(2026, 0, 1, 21, 15), 'hh:mm A', { hour: 23, minute: 59 })).toEqual({
-      hour: 21,
-      minute: 15,
-    });
-  });
-
-  test('a missing bound returns the fallback', () => {
-    expect(parseTimeBound(null, 'hh:mm A', { hour: 0, minute: 0 })).toEqual({ hour: 0, minute: 0 });
-    expect(parseTimeBound('', 'HH:mm', { hour: 23, minute: 59 })).toEqual({ hour: 23, minute: 59 });
-  });
-
-  test('an unparseable bound returns the fallback instead of NaN gating', () => {
-    expect(parseTimeBound('not-a-time', 'hh:mm A', { hour: 23, minute: 59 })).toEqual({ hour: 23, minute: 59 });
   });
 });
 
@@ -469,9 +435,12 @@ describe('resolveTimezone (DatetimePickerV2 timezone CSA lookup)', () => {
     expect(resolveTimezone('+00:00')).toBe('UTC');
   });
 
-  test('accepts an option-list IANA id as-is, so exposed values round-trip into the CSA', () => {
+  test('accepts ANY valid IANA zone id — the dropdowns list region names and zones sharing an offset stay distinct', () => {
     expect(resolveTimezone('Etc/UTC')).toBe('Etc/UTC');
     expect(resolveTimezone('Asia/Colombo')).toBe('Asia/Colombo');
+    // Not in the curated option list, but a real zone (the reported repro:
+    // Asia/Kolkata and Asia/Colombo are both +05:30 yet different regions).
+    expect(resolveTimezone('Asia/Kolkata')).toBe('Asia/Kolkata');
     expect(resolveTimezone('Etc/GMT-12')).toBe('Etc/GMT-12');
   });
 
@@ -479,14 +448,12 @@ describe('resolveTimezone (DatetimePickerV2 timezone CSA lookup)', () => {
     expect(resolveTimezone('UTC')).toBe('Etc/UTC');
   });
 
-  test('anything outside the widget timezone vocabulary is undefined (CSA no-op)', () => {
-    // Valid IANA zone, but not one the widget offers — the inspector could
-    // never produce it, so the CSA must not accept it either.
-    expect(resolveTimezone('Asia/Kolkata')).toBeUndefined();
+  test('anything moment-tz does not know is undefined (CSA no-op)', () => {
     expect(resolveTimezone('Mars/Olympus')).toBeUndefined();
     expect(resolveTimezone('')).toBeUndefined();
     expect(resolveTimezone(null)).toBeUndefined();
     expect(resolveTimezone(undefined)).toBeUndefined();
+    expect(resolveTimezone(42)).toBeUndefined();
   });
 });
 

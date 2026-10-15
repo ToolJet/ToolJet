@@ -46,16 +46,15 @@ const TIMEZONE_LABEL_TO_ID = TIMEZONE_OPTIONS.reduce((acc, curr) => {
   return acc;
 }, {});
 
-const TIMEZONE_IDS = new Set(TIMEZONE_OPTIONS.map((option) => option.value));
-
 // Lookup for the setStoreTimezone/setDisplayTimezone CSAs. Accepts an
-// inspector offset label ('+05:30', 'UTC') or an option-list IANA id
-// ('Etc/UTC', 'Asia/Colombo' — what the property and the exposed variable
-// hold, so inspector values round-trip into the CSA). Labels win the 'UTC'
-// label/id collision; both mean +00:00. Anything outside the widget's
-// vocabulary resolves to undefined and the CSA no-ops.
+// inspector offset label ('+05:30', 'UTC') or ANY valid IANA zone id
+// ('Asia/Colombo', 'Asia/Calcutta', 'Etc/UTC') — the property dropdowns list
+// region names, and a CSA must accept whatever moment-tz knows so zones that
+// share an offset stay distinguishable. Labels win the 'UTC' label/id
+// collision; both mean +00:00. Anything else resolves to undefined and the
+// CSA no-ops.
 export const resolveTimezone = (timezone) =>
-  TIMEZONE_LABEL_TO_ID[timezone] ?? (TIMEZONE_IDS.has(timezone) ? timezone : undefined);
+  TIMEZONE_LABEL_TO_ID[timezone] ?? (typeof timezone === 'string' && moment.tz.zone(timezone) ? timezone : undefined);
 
 // This function is used to get the unix time from a parsed date and timezone
 // It takes the date converts into a moment object which will now have local timezone
@@ -214,44 +213,6 @@ export const isCustomRuleValid = (customRule) => {
   return true;
 };
 
-// A minimum bound later than the maximum bound is a contradictory
-// configuration: no date (or time) can satisfy both, the calendar disables
-// every day, and the per-bound rules below — which only judge a SELECTED
-// value — never fire. The pair itself must fail validation so the widget can
-// surface an error message. Bounds may arrive as strings (raw validation
-// config) or Date objects (useDateInput state); a missing or unparseable
-// bound never conflicts — those are the per-bound rules' concern.
-export const isMinMaxDateValid = (minDate, maxDate, dateFormat) => {
-  if (!minDate || !maxDate) return true;
-  const parsedMinDate = moment(minDate, dateFormat, true);
-  const parsedMaxDate = moment(maxDate, dateFormat, true);
-  if (!parsedMinDate.isValid() || !parsedMaxDate.isValid()) return true;
-  return !parsedMinDate.isAfter(parsedMaxDate);
-};
-
-export const isMinMaxTimeValid = (minTime, maxTime, timeFormat) => {
-  if (!minTime || !maxTime) return true;
-  const parsedMinTime = moment(minTime, timeFormat, true);
-  const parsedMaxTime = moment(maxTime, timeFormat, true);
-  if (!parsedMinTime.isValid() || !parsedMaxTime.isValid()) return true;
-  return !parsedMinTime.isAfter(parsedMaxTime);
-};
-
-// The time dropdown's min/max bounds arrive as strings (the validation fields
-// document 'HH:mm', but users naturally enter the widget's own display format,
-// e.g. '07:00 PM' under 'hh:mm A') or as Date objects. A naive split(':')
-// discarded the meridiem — Max '07:00 PM' became hour 7, disabling PM and
-// every afternoon hour — and left the minute bound as the string '00 PM'.
-// Parse strictly against the widget's time format first, then the documented
-// 'HH:mm' shape; anything missing or unparseable keeps the fallback bound
-// instead of NaN-gating the dropdown.
-export const parseTimeBound = (bound, timeFormat, fallback) => {
-  if (!bound) return fallback;
-  if (bound instanceof Date) return { hour: bound.getHours(), minute: bound.getMinutes() };
-  const parsed = moment(bound, [timeFormat, 'HH:mm'], true);
-  return parsed.isValid() ? { hour: parsed.hour(), minute: parsed.minute() } : fallback;
-};
-
 // Base for a time-dropdown unit change. With nothing selected the base must be
 // today's MIDNIGHT: seeding from `moment()` (now) leaked the current
 // wall-clock minutes/seconds into the value when only an hour was picked
@@ -263,12 +224,58 @@ export const getTimeSelectionBase = (selectedTimestamp) => {
 
 // A format with no recognizable tokens (e.g. a `{{42}}` binding resolving to
 // "42") makes every display a literal and every parse fail, silently. It is a
-// configuration error: the widgets show "Invalid date/time format" immediately
-// (isConfigError channel) and fall back to their shipped default format so the
-// field stays usable.
+// configuration error surfaced on the Format field in the properties panel;
+// the widgets fall back to their shipped default format so the field stays
+// usable.
 export const isUsableDateFormat = (format) => typeof format === 'string' && /[dmy]/i.test(format);
 
 export const isUsableTimeFormat = (format) => typeof format === 'string' && /[hm]/i.test(format);
+
+// Min/Max bounds are configuration: when a bound is unparseable, or the pair
+// is contradictory (min after max), the bound(s) are IGNORED — no widget-level
+// error, no validation against them — and the widget reports the problem to
+// the debugger instead. The exposed minDate/maxDate keep whatever the user
+// wrote (or the resolved dynamic value), even when invalid.
+export const getUsableDateBounds = (minDate, maxDate, format) => {
+  const parse = (bound) => {
+    if (!bound) return { date: null, invalid: false };
+    const parsed = moment(bound, format);
+    return parsed.isValid() ? { date: parsed.toDate(), invalid: false } : { date: null, invalid: true };
+  };
+  const min = parse(minDate);
+  const max = parse(maxDate);
+  const conflict = Boolean(min.date && max.date && moment(min.date).isAfter(max.date));
+  return {
+    minDate: conflict ? null : min.date,
+    maxDate: conflict ? null : max.date,
+    conflict,
+    invalidMin: min.invalid,
+    invalidMax: max.invalid,
+  };
+};
+
+export const getUsableTimeBounds = (minTime, maxTime, timeFormat) => {
+  const parse = (bound) => {
+    if (!bound) return { time: null, invalid: false };
+    return moment(bound, [timeFormat, 'HH:mm'], true).isValid()
+      ? { time: bound, invalid: false }
+      : { time: null, invalid: true };
+  };
+  const min = parse(minTime);
+  const max = parse(maxTime);
+  const conflict = Boolean(
+    min.time &&
+      max.time &&
+      moment(min.time, [timeFormat, 'HH:mm'], true).isAfter(moment(max.time, [timeFormat, 'HH:mm'], true))
+  );
+  return {
+    minTime: conflict ? null : min.time,
+    maxTime: conflict ? null : max.time,
+    conflict,
+    invalidMin: min.invalid,
+    invalidMax: max.invalid,
+  };
+};
 
 // Typed text for a single date/time field, parsed with the same leniency as
 // committed input and defaults. `hasError` marks genuinely unparseable text,
@@ -324,11 +331,9 @@ export const isDateRangeValid = (startDate, endDate, excludedDates, format) => {
 
   // An inverted range (e.g. Default end date earlier than Default start date,
   // or one built via the setStartDate/setEndDate actions) used to pass
-  // silently; the order itself is a validation failure. `isConfigError` marks
-  // it as a configuration contradiction, which the widgets display immediately
-  // instead of waiting for the blur/submit gate input errors use.
+  // silently; the order itself is a validation failure.
   if (parsedStartDate.isAfter(parsedEndDate)) {
-    return { isValid: false, validationError: 'Start date cannot be greater than end date', isConfigError: true };
+    return { isValid: false, validationError: 'Start date cannot be greater than end date' };
   }
 
   if (excludedDates && excludedDates.length) {
@@ -346,23 +351,6 @@ export const isDateValid = (selectedDate, validation) => {
     validation;
 
   if (!isMandatoryValid(isMandatory, selectedDate)) return { isValid: false, validationError: 'Input is mandatory' };
-
-  if (!isMinMaxDateValid(minDate, maxDate, dateFormat))
-    return {
-      isValid: false,
-      validationError: `Minimum date (${moment(minDate, dateFormat).format(
-        dateFormat
-      )}) cannot be greater than maximum date (${moment(maxDate, dateFormat).format(dateFormat)})`,
-      // Configuration contradiction: displayed immediately, bypassing the blur gate.
-      isConfigError: true,
-    };
-
-  if (!isMinMaxTimeValid(minTime, maxTime, timeFormat))
-    return {
-      isValid: false,
-      validationError: `Minimum time (${minTime}) cannot be greater than maximum time (${maxTime})`,
-      isConfigError: true,
-    };
 
   if (!isMinDateValid(minDate, selectedDate, dateFormat) && moment(minDate, dateFormat).isValid())
     return {

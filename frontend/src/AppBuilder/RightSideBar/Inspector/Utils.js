@@ -5,6 +5,7 @@ import { convertToKebabCase } from '@/_helpers/utils';
 import { LabeledDivider } from './Components/Form/_components';
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
+import { isUsableDateFormat, isUsableTimeFormat } from '@/AppBuilder/Widgets/Date/utils';
 
 // Resolves against the live zustand store instead of the (stale/unsynced)
 // legacy `currentState`, so a conditionallyRender driver bound to another
@@ -36,6 +37,17 @@ export function shouldClearLegacyInvalidDates({ componentType, paramName, paramT
     Boolean(definition?.properties?.legacyInvalidDates) &&
     definition.properties.legacyInvalidDates.value !== '{{false}}'
   );
+}
+
+// A date/time Format with no recognizable tokens (e.g. a {{42}} binding
+// resolving to "42") is a configuration error surfaced on the Format field in
+// the properties panel — the widget itself silently falls back to its shipped
+// default format. Returns the panel message, or null when the format is empty
+// (not set ≠ mis-set) or usable.
+export function getFormatFallbackError(format, kind = 'date') {
+  const usable = kind === 'date' ? isUsableDateFormat(format) : isUsableTimeFormat(format);
+  if (!format || usable) return null;
+  return `Invalid format. Falling back to ${kind === 'date' ? 'DD/MM/YYYY' : 'HH:mm'}`;
 }
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {

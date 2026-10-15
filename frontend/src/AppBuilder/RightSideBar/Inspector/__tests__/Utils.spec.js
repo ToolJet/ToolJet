@@ -16,7 +16,12 @@
 jest.mock('../Elements/Code', () => ({ Code: () => null }));
 jest.mock('../Components/Form/_components', () => ({ LabeledDivider: () => null }));
 
-import { validateStaticId, isClickInsidePortaledOverlay, shouldClearLegacyInvalidDates } from '../Utils';
+import {
+  validateStaticId,
+  isClickInsidePortaledOverlay,
+  shouldClearLegacyInvalidDates,
+  getFormatFallbackError,
+} from '../Utils';
 
 describe('validateStaticId', () => {
   describe('empty/blank values', () => {
@@ -202,5 +207,33 @@ describe('shouldClearLegacyInvalidDates', () => {
 
   test('other component types are never affected', () => {
     expect(shouldClearLegacyInvalidDates(change({ componentType: 'DatetimePickerV2' }))).toBe(false);
+  });
+});
+
+// Bug: "unable to see null for min date and error message for max and min
+// field is 'Expected date format: 20'". A tokenless Format (a {{42}} binding
+// resolving to "42") is a configuration error surfaced on the FORMAT field in
+// the properties panel — naming the fallback the widget silently uses — not on
+// the widget input, and not leaked into the Min/Max hints.
+describe('getFormatFallbackError', () => {
+  test('a tokenless date format names the DD/MM/YYYY fallback (the reported repro: "20"/"42")', () => {
+    expect(getFormatFallbackError('42', 'date')).toBe('Invalid format. Falling back to DD/MM/YYYY');
+    expect(getFormatFallbackError('20', 'date')).toBe('Invalid format. Falling back to DD/MM/YYYY');
+  });
+
+  test('a tokenless time format names the HH:mm fallback', () => {
+    expect(getFormatFallbackError('42', 'time')).toBe('Invalid format. Falling back to HH:mm');
+  });
+
+  test('usable formats produce no error', () => {
+    expect(getFormatFallbackError('DD/MM/YYYY', 'date')).toBeNull();
+    expect(getFormatFallbackError('DD-MM-YY', 'date')).toBeNull();
+    expect(getFormatFallbackError('hh:mm A', 'time')).toBeNull();
+  });
+
+  test('an empty/unset format is not an error (not set is not mis-set)', () => {
+    expect(getFormatFallbackError('', 'date')).toBeNull();
+    expect(getFormatFallbackError(undefined, 'date')).toBeNull();
+    expect(getFormatFallbackError(null, 'time')).toBeNull();
   });
 });

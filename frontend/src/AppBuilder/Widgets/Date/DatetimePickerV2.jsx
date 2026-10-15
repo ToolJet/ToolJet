@@ -57,15 +57,11 @@ export const DatetimePickerV2 = ({
     showClearBtn,
   } = properties;
   const placeholder = placeholderProp ?? 'Select date and time';
-  // Tokenless formats (e.g. {{42}}) → config error + shipped default fallback.
+  // Tokenless formats (e.g. {{42}}) → panel error + shipped default fallback.
   const hasUsableDateFormat = isUsableDateFormat(dateFormatProp);
   const hasUsableTimeFormat = isUsableTimeFormat(timeFormatProp);
   const dateFormat = hasUsableDateFormat ? dateFormatProp : 'DD/MM/YYYY';
   const timeFormat = hasUsableTimeFormat ? timeFormatProp : 'HH:mm';
-  const dateFormatConfigError = Boolean(dateFormatProp) && !hasUsableDateFormat;
-  const timeFormatConfigError = Boolean(timeFormatProp) && !hasUsableTimeFormat;
-  const formatConfigError = dateFormatConfigError || timeFormatConfigError;
-  const formatConfigErrorMessage = dateFormatConfigError ? 'Invalid date format' : 'Invalid time format';
   const inputProps = {
     properties,
     setExposedVariable,
@@ -76,6 +72,8 @@ export const DatetimePickerV2 = ({
     datePickerRef,
     timeFormat,
     dateFormat,
+    componentName,
+    id,
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const dateLogic = useDateInput(inputProps);
@@ -373,10 +371,6 @@ export const DatetimePickerV2 = ({
   }, [isTimezoneEnabled, defaultValue, displayFormat, displayTimezone, storeTimezone]);
 
   useEffect(() => {
-    if (formatConfigError) {
-      setValidationStatus({ isValid: false, validationError: formatConfigErrorMessage, isConfigError: true });
-      return;
-    }
     if (textParseError) {
       setValidationStatus({ isValid: false, validationError: 'Invalid date' });
       return;
@@ -405,8 +399,6 @@ export const DatetimePickerV2 = ({
     excludedDates,
     timeFormat,
     dateFormat,
-    formatConfigError,
-    formatConfigErrorMessage,
     textParseError,
   ]);
 
@@ -468,7 +460,6 @@ export const DatetimePickerV2 = ({
     onTimeChange,
     minTime,
     maxTime,
-    timeFormat,
   };
 
   const customDateInputProps = {
@@ -479,9 +470,7 @@ export const DatetimePickerV2 = ({
     setTextInputFocus,
     setShowValidationError,
     onTextParse: (parsed) => setTextParseError(parsed.hasError),
-    // Config contradictions (min>max date or time) display immediately; input
-    // errors keep the blur/submit gate.
-    showValidationError: showValidationError || !!validationStatus.isConfigError,
+    showValidationError,
     isValid,
     validationError,
     showClearBtn,

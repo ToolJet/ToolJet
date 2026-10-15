@@ -34,11 +34,10 @@ export const DaterangePicker = ({
   } = properties;
   const placeholder = placeholderProp ?? 'Select Date Range';
   // A format with no date tokens (e.g. a {{42}} binding) is a configuration
-  // error; the widget falls back to the shipped default so the field stays
-  // usable while "Invalid date format" is shown immediately.
+  // error surfaced on the Format field in the properties panel; the widget
+  // falls back to the shipped default so the field stays usable.
   const hasUsableFormat = isUsableDateFormat(formatProp);
   const format = hasUsableFormat ? formatProp : 'DD/MM/YYYY';
-  const formatConfigError = Boolean(formatProp) && !hasUsableFormat;
   // Opt-in legacy marker written only by the backfill migration (never part of
   // the default widget config): migrated components keep exposing the
   // historical "Invalid date" strings until the flag is cleared by explicitly
@@ -54,6 +53,8 @@ export const DaterangePicker = ({
     dateInputRef,
     datePickerRef,
     dateFormat: format,
+    componentName,
+    id,
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const dateLogic = useDateInput(inputProps);
@@ -268,10 +269,6 @@ export const DaterangePicker = ({
   }, [endDate, format, legacyInvalidDates]);
 
   useEffect(() => {
-    if (formatConfigError) {
-      setValidationStatus({ isValid: false, validationError: 'Invalid date format', isConfigError: true });
-      return;
-    }
     if (textParseError) {
       setValidationStatus({ isValid: false, validationError: 'Invalid date' });
       return;
@@ -300,18 +297,7 @@ export const DaterangePicker = ({
     }
     validationStatus = isDateRangeValid(startDate, endDate, excludedDates, format);
     setValidationStatus(validationStatus);
-  }, [
-    minDate,
-    maxDate,
-    customRule,
-    isMandatory,
-    startDate,
-    endDate,
-    excludedDates,
-    format,
-    formatConfigError,
-    textParseError,
-  ]);
+  }, [minDate, maxDate, customRule, isMandatory, startDate, endDate, excludedDates, format, textParseError]);
 
   useEffect(() => {
     const transformedFormat = format.toLowerCase();
@@ -385,9 +371,7 @@ export const DaterangePicker = ({
     setTextInputFocus,
     setShowValidationError,
     onTextParse: (parsed) => setTextParseError(parsed.hasError),
-    // Config contradictions (min>max, inverted range) display immediately;
-    // input errors keep the blur/submit gate.
-    showValidationError: showValidationError || !!validationStatus.isConfigError,
+    showValidationError,
     isValid,
     validationError,
     showClearBtn,

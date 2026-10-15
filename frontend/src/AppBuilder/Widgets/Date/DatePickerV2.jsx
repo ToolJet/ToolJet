@@ -34,10 +34,9 @@ export const DatePickerV2 = ({
   const datePickerRef = useRef(null);
   const { label, defaultValue, dateFormat: dateFormatProp, placeholder: placeholderProp, showClearBtn } = properties;
   const placeholder = placeholderProp ?? 'Select date';
-  // Tokenless format (e.g. {{42}}) → config error + shipped default fallback.
+  // Tokenless format (e.g. {{42}}) → panel error + shipped default fallback.
   const hasUsableFormat = isUsableDateFormat(dateFormatProp);
   const dateFormat = hasUsableFormat ? dateFormatProp : 'DD/MM/YYYY';
-  const formatConfigError = Boolean(dateFormatProp) && !hasUsableFormat;
   const inputProps = {
     properties,
     setExposedVariable,
@@ -47,6 +46,8 @@ export const DatePickerV2 = ({
     dateInputRef,
     datePickerRef,
     dateFormat,
+    componentName,
+    id,
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const dateLogic = useDateInput(inputProps);
@@ -179,10 +180,6 @@ export const DatePickerV2 = ({
   }, [selectedTimestamp, unixTimestamp, dateFormat]);
 
   useEffect(() => {
-    if (formatConfigError) {
-      setValidationStatus({ isValid: false, validationError: 'Invalid date format', isConfigError: true });
-      return;
-    }
     if (textParseError) {
       setValidationStatus({ isValid: false, validationError: 'Invalid date' });
       return;
@@ -190,17 +187,7 @@ export const DatePickerV2 = ({
     setValidationStatus(
       isDateValid(selectedTimestamp, { minDate, maxDate, customRule, isMandatory, excludedDates, dateFormat })
     );
-  }, [
-    minDate,
-    maxDate,
-    customRule,
-    isMandatory,
-    selectedTimestamp,
-    excludedDates,
-    dateFormat,
-    formatConfigError,
-    textParseError,
-  ]);
+  }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat, textParseError]);
 
   useFormClear(() => setInputValue(null, null, true));
 
@@ -258,9 +245,7 @@ export const DatePickerV2 = ({
     setTextInputFocus,
     setShowValidationError,
     onTextParse: (parsed) => setTextParseError(parsed.hasError),
-    // Config contradictions (min>max) display immediately; input errors keep
-    // the blur/submit gate.
-    showValidationError: showValidationError || !!validationStatus.isConfigError,
+    showValidationError,
     isValid,
     validationError,
     showClearBtn,
