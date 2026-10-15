@@ -1764,7 +1764,29 @@ describe('Table: add row and refresh', () => {
       return el;
     });
 
-    expect(addRow.style.minHeight).toBe('32px');
+    // default cellHeight ('regular') matches the main table body row
+    expect(addRow.style.minHeight).toBe('45px');
+  });
+
+  test('[Table-ADDROW-004b] the add-new-row popup row floor follows cellHeight: condensed uses the condensed body row height', async () => {
+    const STRING_ONLY_COLUMNS = [
+      { name: 'id', key: 'id', id: 'col-id-only', columnType: 'string', columnSize: 120, isEditable: true },
+      { name: 'name', key: 'name', id: 'col-name-only', columnType: 'string', columnSize: 120, isEditable: true },
+    ];
+    widget.render({
+      properties: { columns: { value: STRING_ONLY_COLUMNS } },
+      styles: { cellSize: binding('condensed') },
+    });
+    await waitFor(() => expect(table()).toBeInTheDocument());
+
+    rtlFireEvent.click(document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`));
+    const addRow = await waitFor(() => {
+      const el = document.querySelector('[data-cy="add-new-row-0"]');
+      if (!el) throw new Error('add-row popup not open yet');
+      return el;
+    });
+
+    expect(addRow.style.minHeight).toBe('39px');
   });
 
   const MAXLEN_COLUMNS_ADDROW = [
