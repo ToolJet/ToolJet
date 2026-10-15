@@ -947,7 +947,24 @@ const Missing = ({ side, isBase }) => (
   </div>
 );
 
-const Stage = ({ mode, base, target, shared }) => {
+// How long the later version waits on the earlier one before it starts anyway.
+const STAGGER_TIMEOUT_MS = 20000;
+
+const Stage = ({ mode, base: baseSide, target: targetSide, shared }) => {
+  // Each live frame boots a whole viewer on the editor's main thread; two at once froze the editor
+  // for seconds on slow machines. The later version starts once the earlier one has rendered.
+  const baseKey =
+    !baseSide.missing && !baseSide.blueprint && baseSide.src ? `${baseSide.src}|${shared.viewport}` : null;
+  const [baseDone, setBaseDone] = useState(null);
+  const [waitedOut, setWaitedOut] = useState(null);
+  useEffect(() => {
+    if (!baseKey || baseDone === baseKey) return undefined;
+    const timer = setTimeout(() => setWaitedOut(baseKey), STAGGER_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [baseKey, baseDone]);
+  const base = baseKey ? { ...baseSide, onSettled: () => setBaseDone(baseKey) } : baseSide;
+  const target = { ...targetSide, hold: !!baseKey && baseDone !== baseKey && waitedOut !== baseKey };
+
   const stageRef = useRef(null);
   const [split, setSplit] = useState(null);
   const [dragging, setDragging] = useState(false);

@@ -58,6 +58,8 @@ export const VersionFrame = ({
   syncScroll,
   onScrollChange,
   onEscape,
+  onSettled,
+  hold = false,
   className,
 }) => {
   const wrapRef = useRef(null);
@@ -69,7 +71,11 @@ export const VersionFrame = ({
   const [settled, setSettled] = useState(false);
   const applyingScroll = useRef(false);
   const callbacks = useRef({});
-  callbacks.current = { onSelect, onHover, onFound, onScrollChange, onEscape };
+  callbacks.current = { onSelect, onHover, onFound, onScrollChange, onEscape, onSettled };
+  // A held frame waits to start loading; once started, it keeps its document even if held again.
+  const frameKey = `${src}|${viewport}`;
+  const [startedKey, setStartedKey] = useState(hold ? null : frameKey);
+  const started = !hold || startedKey === frameKey;
 
   // Desktop renders at least 1280 wide, and at the frame's own width when it is wider.
   const logicalWidth = viewport === 'mobile' ? 390 : Math.max(1280, Math.floor(size.width));
@@ -95,6 +101,14 @@ export const VersionFrame = ({
     setLoaded(0);
     setSettled(false);
   }, [src, viewport]);
+
+  useEffect(() => {
+    if (!hold) setStartedKey(frameKey);
+  }, [hold, frameKey]);
+
+  useEffect(() => {
+    if (settled) callbacks.current.onSettled?.();
+  }, [settled]);
 
   const doc = useCallback(() => {
     try {
@@ -253,7 +267,7 @@ export const VersionFrame = ({
       ref={wrapRef}
       className={cx('vd-frame', { 'vd-frame--mobile': isMobile, 'vd-frame--ready': settled }, className)}
     >
-      {src && size.width > 0 && (
+      {src && size.width > 0 && started && (
         <iframe
           key={viewport}
           ref={iframeRef}
@@ -272,7 +286,7 @@ export const VersionFrame = ({
       {!settled && (
         <div className="vd-frame__loading" aria-live="polite">
           <span className="vd-frame__shimmer" />
-          <span>Rendering this version</span>
+          <span>{started ? 'Rendering this version' : 'Renders after the other version'}</span>
         </div>
       )}
     </div>
