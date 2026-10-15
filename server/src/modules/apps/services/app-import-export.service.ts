@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Inj
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
 import { App } from 'src/entities/app.entity';
+import { AppBase } from 'src/entities/app_base.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
@@ -630,13 +631,13 @@ export class AppImportExportService {
       const coRelationIds = uniqueModuleAppIds.map((m) => m.moduleId).filter(Boolean);
       const moduleAppsById: Record<string, string> = {};
       if (coRelationIds.length > 0) {
-        const resolvedModules = await manager
-          .createQueryBuilder(App, 'app')
+        const resolvedModules: { id: string; co_relation_id: string }[] = await manager
+          .createQueryBuilder(AppBase, 'app')
           .where('app.co_relation_id IN (:...coRelationIds)', { coRelationIds })
           .andWhere('app.organization_id = :organizationId', { organizationId: appToExport.organizationId })
           .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
-          .select(['app.id', 'app.co_relation_id'])
-          .getMany();
+          .select(['app.id AS id', 'app.co_relation_id AS co_relation_id'])
+          .getRawMany();
         for (const mod of resolvedModules) {
           moduleAppsById[mod.co_relation_id] = mod.id;
         }
@@ -934,10 +935,11 @@ export class AppImportExportService {
     // the module, tries to recreate it, and violates app_versions(app_name, branch_id, type).
     const nameMatchBranchIds = Array.from(new Set([defaultBranchId, branchId].filter(Boolean)));
 
-    const existingModules =
+    const existingModules: { id: string; co_relation_id: string }[] =
       moduleAppNames.length > 0 || moduleAppCoRelIds.length > 0
         ? await manager
-            .createQueryBuilder(App, 'app')
+            .createQueryBuilder(AppBase, 'app')
+            .select(['app.id AS id', 'app.co_relation_id AS co_relation_id'])
             .where('app.organizationId = :organizationId', { organizationId: user.organizationId })
             .andWhere(
               new Brackets((qb: any) => {
@@ -966,15 +968,15 @@ export class AppImportExportService {
               })
             )
             .distinct(true)
-            .getMany()
+            .getRawMany()
         : [];
 
     // Index existing modules by passport first, name as fallback. Resolve each module's
     // canonical name from the same source as the lookup above.
-    const existingByCoRel = new Map<string, App>(
+    const existingByCoRel = new Map<string, { id: string; co_relation_id: string }>(
       existingModules.filter((m) => m.co_relation_id).map((m) => [m.co_relation_id, m])
     );
-    const existingByName = new Map<string, App>();
+    const existingByName = new Map<string, { id: string; co_relation_id: string }>();
     if (existingModules.length > 0 && moduleAppNames.length > 0) {
       const nameQb = manager
         .createQueryBuilder(AppVersion, 'av')
@@ -1317,7 +1319,7 @@ export class AppImportExportService {
     manager: EntityManager,
     user: User,
     importedModule: any,
-    existingModule: App,
+    existingModule: { id: string },
     branchId: string,
     externalResourceMappings: any,
     tooljetVersion: string
