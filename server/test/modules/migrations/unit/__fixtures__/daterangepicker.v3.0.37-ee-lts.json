@@ -1,0 +1,21 @@
+{
+  "id": "238f5e83-39ba-41d8-b4f9-0c92843a55e4",
+  "type": "DaterangePicker",
+  "properties": {
+    "defaultStartDate": { "value": "01/04/2022" },
+    "defaultEndDate": { "value": "10/04/2022" },
+    "format": { "value": "DD/MM/YYYY" }
+  },
+  "styles": {
+    "borderRadius": { "value": "4" },
+    "visibility": { "value": "{{true}}" },
+    "disabledState": { "value": "{{false}}" }
+  },
+  "general_properties": {
+    "tooltip": { "value": "Select a start and end date" }
+  },
+  "general_styles": {
+    "boxShadow": { "value": "0px 0px 0px 0px #00000040" }
+  },
+  "validation": {}
+}
