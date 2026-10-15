@@ -1306,35 +1306,6 @@ Cypress.Commands.add("apiDeleteAllModules", () => {
   });
 });
 
-Cypress.Commands.add("apiDeleteAllCustomGroups", () => {
-  const defaultGroups = ["admin", "builder", "end-user"];
-  cy.getAuthHeaders().then((headers) => {
-    cy.request({
-      method: "GET",
-      url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
-      headers,
-      log: false,
-    }).then((response) => {
-      expect(response.status).to.equal(200);
-      const customGroups = (response.body.groupPermissions || []).filter(
-        (group) => !defaultGroups.includes(String(group.name).toLowerCase()),
-      );
-      if (customGroups.length > 0) {
-        cy.wrap(customGroups).each((group) => {
-          cy.request({
-            method: "DELETE",
-            url: `${Cypress.env("server_host")}/api/v2/group-permissions/${group.id}`,
-            headers,
-            log: false,
-          }).then((deleteResponse) => {
-            expect(deleteResponse.status).to.equal(200);
-          });
-        });
-      }
-    });
-  });
-});
-
 Cypress.Commands.add("apiCreateModuleFolder", (folderName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy

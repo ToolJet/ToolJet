@@ -6,7 +6,7 @@ import {
   apiAddUserToGroup,
   addUserInGroup,
 } from "Support/utils/manageGroups";
-import { apiArchiveUnarchiveUser, cleanAllUsers } from "Support/utils/manageUsers";
+import { apiArchiveUnarchiveUser } from "Support/utils/manageUsers";
 import { getGroupPermissionInput } from "Support/utils/userPermissions";
 import {
   apiAssignGroupAdmin,
@@ -55,30 +55,33 @@ describe("Group Admin - functionality (Builder & End-user)", () => {
     data.endUser2 = { name: fake.firstName, email: fake.email.toLowerCase() };
     data.g1 = `g1${sanitize(fake.firstName)}`; // end-user-level custom group
     data.g3 = `g3${sanitize(fake.firstName)}`; // builder-level custom group
+    data.workspaceName = fake.firstName;
+    data.workspaceSlug = data.workspaceName.toLowerCase().replace(/[^a-z0-9]/g, "");
 
     cy.defaultWorkspaceLogin();
-
-    cleanAllUsers();
-    cy.apiDeleteAllCustomGroups();
-
-    cy.apiGetDefaultWorkspace().then((ws) => {
-      Cypress.env("workspaceId", ws.id);
-      cy.wrap(ws.id).as("orgId");
-      data.workspaceSlug = ws.slug;
+    
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((response) => {
+      const orgId = response.body.organization_id;
+      Cypress.env("workspaceId", orgId);
+      cy.wrap(orgId).as("orgId");
     });
 
-    apiCreateGroup(data.g1);
-    apiCreateGroup(data.g3).then(() => {
-      cy.apiUpdateGroupPermission(data.g3, getGroupPermissionInput(true, true));
-    });
+    cy.get("@orgId").then((orgId) => {
+      cy.apiLogin("dev@tooljet.io", "password", orgId);
 
-    cy.apiFullUserOnboarding(data.builder.name, data.builder.email, "builder", "password", "My workspace");
-    cy.apiLogout();
-    cy.apiLogin();
-    cy.apiFullUserOnboarding(data.endUser1.name, data.endUser1.email, "end-user", "password", "My workspace");
-    cy.apiLogout();
-    cy.apiLogin();
-    cy.apiFullUserOnboarding(data.endUser2.name, data.endUser2.email, "end-user", "password", "My workspace");
+      apiCreateGroup(data.g1);
+      apiCreateGroup(data.g3).then(() => {
+        cy.apiUpdateGroupPermission(data.g3, getGroupPermissionInput(true, true));
+      });
+
+      cy.apiFullUserOnboarding(data.builder.name, data.builder.email, "builder", "password", data.workspaceName);
+      cy.apiLogout();
+      cy.apiLogin("dev@tooljet.io", "password", orgId);
+      cy.apiFullUserOnboarding(data.endUser1.name, data.endUser1.email, "end-user", "password", data.workspaceName);
+      cy.apiLogout();
+      cy.apiLogin("dev@tooljet.io", "password", orgId);
+      cy.apiFullUserOnboarding(data.endUser2.name, data.endUser2.email, "end-user", "password", data.workspaceName);
+    });
 
     loginAsAdmin();
   });
