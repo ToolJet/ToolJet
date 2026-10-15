@@ -85,6 +85,10 @@ function renderWidget(session, { id, name, type, properties = {} }) {
 
 describe('RTL seam: real App Builder widgets render under jest', () => {
   let session;
+  // Loads Table's module, not its lazy: the test below still suspends and resolves through
+  // TrackedSuspense, but its import is a cached require instead of a cold one inside the test
+  // (see preloadLazyComponent in widgetHarness.js for why that flakes).
+  beforeAll(() => import('@/AppBuilder/Widgets/NewTable/Table'));
   beforeEach(() => {
     session = new AppBuilderTestSession({ scenario });
   });
@@ -153,16 +157,10 @@ describe('RTL seam: real App Builder widgets render under jest', () => {
 
     // The real NewTable/Table module — not a stub — is what produces these.
     // ToolJet marks test hooks with data-cy, not RTL's default data-testid.
-    // The generous timeout is not padding: on a cold jest cache the lazy
-    // import() has to Babel-transform the whole Table chunk before it resolves,
-    // which reliably overruns RTL's 1s default and made this flake.
-    await waitFor(
-      () => {
-        expect(container.querySelector('.jet-table')).toBeInTheDocument();
-        expect(container.querySelector('[data-cy="table1-filter-button"]')).toBeInTheDocument();
-      },
-      { timeout: 15000 }
-    );
+    await waitFor(() => {
+      expect(container.querySelector('.jet-table')).toBeInTheDocument();
+      expect(container.querySelector('[data-cy="table1-filter-button"]')).toBeInTheDocument();
+    });
 
     // Deliberately NOT asserting on 'Ada'/'Grace'. Table's header and body are
     // virtualized off the measured container height, and jsdom reports every
@@ -170,5 +168,5 @@ describe('RTL seam: real App Builder widgets render under jest', () => {
     // rows are windowed in. That is a jsdom geometry limit, not a seam failure:
     // a spec that needs real rows must stub the height source, e.g. with the
     // session's `geometry` capability, or assert against the store instead.
-  }, 20000);
+  });
 });
