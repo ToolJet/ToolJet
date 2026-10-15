@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { cn } from '@/lib/utils';
-import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
@@ -182,8 +181,8 @@ export const Statistics = function Statistics({
     gap: '1.5rem 2rem',
     wordBreak: 'break-all',
     overflow: isDynamicHeightEnabled ? 'visible' : 'hidden',
-    height: isDynamicHeightEnabled ? 'auto' : padding === 'default' ? height : height + BOX_PADDING * 2,
-    ...(isDynamicHeightEnabled && { minHeight: padding === 'default' ? height : height + BOX_PADDING * 2 }),
+    height: isDynamicHeightEnabled ? 'auto' : height,
+    ...(isDynamicHeightEnabled && { minHeight: height }),
     boxShadow,
     padding: '1.5rem',
     ...((dataAlignment === 'center' || exposedVariablesTemporaryState.isLoading === true) && {

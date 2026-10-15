@@ -289,6 +289,16 @@ export const popoverMenuConfig = {
             validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
             accordian: 'Options',
         },
+        padding: {
+            type: 'switch',
+            displayName: 'Margin',
+            validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+            options: [
+                { displayName: 'Default', value: 'default' },
+                { displayName: 'None', value: 'none' },
+            ],
+            accordian: 'container',
+        },
     },
     exposedVariables: {
         isVisible: true,
@@ -369,6 +379,7 @@ export const popoverMenuConfig = {
         },
         events: [],
         styles: {
+            padding: { value: 'default' },
             backgroundColor: { value: 'var(--cc-primary-brand)' },
             hoverBackgroundMode: { value: 'auto' },
             hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },

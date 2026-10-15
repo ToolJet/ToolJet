@@ -11,3 +11,10 @@
     box-shadow: var(--elevation-200-box-shadow);
   }
 }
+
+// App Builder widgets whose root is a .card: keep the 1px outline inside the widget
+// box so it cannot extend past the box (visible with the Margin style set to none).
+.canvas-component._tooljet-Timeline > .card,
+.canvas-component._tooljet-Timer > .card {
+  outline-offset: -1px;
+}

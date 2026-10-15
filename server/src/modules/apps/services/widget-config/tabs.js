@@ -297,7 +297,7 @@ export const tabsConfig = {
     },
     padding: {
       type: 'switch',
-      displayName: 'Padding',
+      displayName: 'Margin',
       validation: { schema: { type: 'string' } },
       options: [
         { displayName: 'Default', value: 'default' },
