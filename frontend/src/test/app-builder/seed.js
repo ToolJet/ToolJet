@@ -32,7 +32,7 @@ export function componentDefinition(
   properties = {},
   { styles, validation, others, seedFromRegisteredDefinition = true } = {}
 ) {
-  const registered = seedFromRegisteredDefinition ? (componentTypeDefinitionMap[type]?.definition ?? {}) : {};
+  const registered = seedFromRegisteredDefinition ? componentTypeDefinitionMap[type]?.definition ?? {} : {};
   return {
     id,
     name,
