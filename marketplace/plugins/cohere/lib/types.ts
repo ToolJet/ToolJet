@@ -8,6 +8,7 @@ export type QueryOptions = {
   history?: string;
   message?: string;
   texts?: string;
+  images?: string;
   input_type?: EmbedInputType;
   query?: string;
   documents?: string;

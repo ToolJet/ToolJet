@@ -127,15 +127,17 @@ As a next step, you can refer to our documentation to see a step-by-step guide t
 
 ### Embed
 
-Use this operation to convert text into vector embeddings, which can then be used for semantic search, classification, or clustering.
+Use this operation to convert text or images into vector embeddings, which can then be used for semantic search, classification, or clustering.
 
 **Required Parameters**
 
 - **Model**: The embedding model to use. Models are loaded live from Cohere, filtered to the models that support embeddings.
 
-- **Texts**: The texts to embed, as a JSON array of strings. Example: `["What is the capital of France?", "How does photosynthesis work?"]`
+- **Texts**: The texts to embed, as a JSON array of strings. Example: `["What is the capital of France?", "How does photosynthesis work?"]`. Required unless **Input Type** is Image.
 
 - **Input Type**: The type of input being embedded. Allowed values: Search document, Search query, Classification, Clustering, Image.
+
+- **Images**: The images to embed, as a JSON array of data URIs. Required only when **Input Type** is Image, and **Texts** must be left empty in that case. One image per call, up to 5MB, in `image/jpeg`, `image/png`, `image/webp`, or `image/gif` format, using an Embed v3.0 or newer model. Example: `["data:image/jpeg;base64,/9j/4AAQSkZJRg..."]`
 
 **Optional Parameter**
 

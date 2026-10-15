@@ -97,6 +97,13 @@
           { "value": "image", "name": "Image" }
         ]
       },
+      "images": {
+        "label": "Images",
+        "key": "images",
+        "type": "codehinter",
+        "description": "Input the images to embed as a JSON array of data URIs. Required only when the input type is Image, and Texts must be left empty.",
+        "placeholder": "[\"data:image/jpeg;base64,/9j/4AAQSkZJRg...\"]"
+      },
       "advanced_parameters": {
         "label": "Advanced parameters",
         "key": "advanced_parameters",

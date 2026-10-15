@@ -52,15 +52,35 @@ export async function chat(cohere: CohereClientV2, options: QueryOptions) {
 }
 
 export async function embed(cohere: CohereClientV2, options: QueryOptions) {
-  const { model, texts, input_type, advanced_parameters } = options;
+  const { model, texts, images, input_type, advanced_parameters } = options;
 
-  if (!model || !texts || !input_type) {
-    throw new Error('Model, texts, and input type are required for embed.');
+  if (!model || !input_type) {
+    throw new Error('Model and input type are required for embed.');
   }
 
   let advancedParams = {};
   if (advanced_parameters) {
     advancedParams = JSON.parse(advanced_parameters);
+  }
+
+  // Cohere rejects texts when the input type is image; image data goes through images instead.
+  if (input_type === 'image') {
+    if (!images) {
+      throw new Error('Images are required for embed when the input type is image.');
+    }
+
+    const response = await cohere.embed({
+      model,
+      images: JSON.parse(images),
+      inputType: input_type,
+      ...advancedParams,
+    });
+
+    return response;
+  }
+
+  if (!texts) {
+    throw new Error('Texts are required for embed.');
   }
 
   const response = await cohere.embed({
