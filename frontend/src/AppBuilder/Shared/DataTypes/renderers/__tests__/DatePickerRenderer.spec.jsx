@@ -237,3 +237,46 @@ describe('[Table-COLTYPE-DATEPICKER-005] typed disabled date', () => {
     expect(onChange).toHaveBeenCalledWith('01/16/2024');
   });
 });
+
+/**
+ * [Table-COLTYPE-DATEPICKER-006] Typed text that can't be parsed as a date must revert to the previous
+ * value instead of being committed as the literal string "Invalid date".
+ */
+describe('[Table-COLTYPE-DATEPICKER-006] typed unparseable date', () => {
+  const Harness = ({ onChange }) => {
+    const [isInputFocused, setIsInputFocused] = React.useState(false);
+    return (
+      <DatePickerRenderer
+        {...baseProps}
+        value="01/10/2024"
+        onChange={onChange}
+        isInputFocused={isInputFocused}
+        setIsInputFocused={setIsInputFocused}
+      />
+    );
+  };
+
+  const typeAndBlur = (typed) => {
+    const onChange = jest.fn();
+    render(<Harness onChange={onChange} />);
+    const input = document.querySelector('input.table-column-datepicker-input');
+    fireEvent.focus(input);
+    fireEvent.click(input);
+    fireEvent.change(input, { target: { value: typed } });
+    fireEvent.mouseDown(document.body);
+    return { onChange, input };
+  };
+
+  test('reverts to the previous value and does not commit', () => {
+    const { onChange, input } = typeAndBlur('not a date');
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(input).toHaveValue('01/10/2024');
+  });
+
+  test('commits a valid typed date', () => {
+    const { onChange } = typeAndBlur('01/16/2024');
+
+    expect(onChange).toHaveBeenCalledWith('01/16/2024');
+  });
+});
