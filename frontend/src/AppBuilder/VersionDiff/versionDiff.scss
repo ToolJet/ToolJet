@@ -308,43 +308,60 @@
 }
 
 .vd-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  margin-top: 14px;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--background-surface-layer-02);
+  box-shadow: inset 0 0 0 1px var(--border-weak);
 }
 
-.vd-filter {
+// Specificity matches the .vd-root button reset above, which would otherwise
+// zero the padding.
+.vd-root .vd-filter {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  height: 26px;
+  min-width: 0;
+  height: 28px;
   padding: 0 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border-weak) !important;
+  border-radius: 7px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--text-medium) !important;
-  transition: background 120ms ease, border-color 120ms ease;
+  color: var(--text-medium);
+  transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
 
   &:hover:not(:disabled) {
-    background: var(--interactive-hover) !important;
+    color: var(--text-default);
+    background: color-mix(in srgb, var(--background-surface-layer-01) 60%, transparent);
   }
 
   &:disabled {
-    opacity: 0.45;
-    cursor: default !important;
+    opacity: 0.4;
+    cursor: default;
   }
 
-  &--on {
-    border-color: var(--border-strong) !important;
-    background: var(--interactive-selected, var(--background-surface-layer-02)) !important;
-    color: var(--text-default) !important;
+  &.vd-filter--on {
+    color: var(--text-default);
+    background: var(--background-surface-layer-01);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08), 0 0 0 1px var(--border-weak);
   }
 }
 
+.vd-filter__all {
+  font-weight: 600;
+}
+
 .vd-filter__n {
-  color: var(--text-placeholder);
+  font-weight: 600;
+  color: var(--text-default);
+
+  .vd-filter:not(.vd-filter--on) & {
+    color: var(--text-medium);
+  }
 }
 
 .vd-rail__scroll {

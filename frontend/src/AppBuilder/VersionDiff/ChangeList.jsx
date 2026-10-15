@@ -122,18 +122,22 @@ export const ChangeList = ({
           <div className="vd-filters" role="radiogroup" aria-label="Filter changes">
             {['all', 'added', 'changed', 'removed'].map((status) => {
               const n = status === 'all' ? totalComponents : components[status];
+              // The glyphs are the legend for every row below, so the segments carry the glyph and
+              // the count; the word is the accessible name and the tooltip.
+              const word = status === 'all' ? 'All changes' : STATUS_WORD[status];
               return (
                 <button
                   key={status}
                   type="button"
                   role="radio"
                   aria-checked={filter === status}
+                  aria-label={`${word}, ${n}`}
+                  title={word}
                   className={cx('vd-filter', `vd-filter--${status}`, { 'vd-filter--on': filter === status })}
                   onClick={() => onFilter(status)}
                   disabled={status !== 'all' && n === 0}
                 >
-                  {status !== 'all' && <Glyph status={status} />}
-                  <span>{status === 'all' ? 'All' : STATUS_WORD[status]}</span>
+                  {status === 'all' ? <span className="vd-filter__all">All</span> : <Glyph status={status} />}
                   <span className="vd-filter__n">{n}</span>
                 </button>
               );
