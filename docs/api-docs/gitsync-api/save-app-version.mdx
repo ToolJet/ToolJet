@@ -1,0 +1,42 @@
+---
+id: save-app-version
+title: "Save App Version"
+---
+
+<EndpointHeader method="POST" path="/apps/{appIdOrSlug}/versions/save" />
+
+<ApiColumns>
+<ApiLeft>
+
+Turns an app's current draft into a saved version and tags it in the connected git repository. Use this after making changes in the ToolJet editor, before pushing or releasing that version.
+
+<ParamsTable title="Path Parameters" params={[{"name":"appIdOrSlug","type":"string","required":true,"description":"The app's UUID or slug.","in":"path"}]} />
+
+<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":false,"description":"Name for the saved version. Up to 25 characters; spaces and the characters ~ ^ : ? * [ ] \\ @ { are not allowed (they're not valid in a git tag). If omitted, ToolJet keeps the draft's existing name.","in":"body"}]} />
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Version name contains invalid characters."},
+  {"status":"404","description":"App not found, or the app has no draft version to save."},
+  {"status":"409","description":"The current version is already saved (there is no pending draft)."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps/{appIdOrSlug}/versions/save" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{"name": "v1.2.0"}'`} />
+
+<ResponseExample statusCode="201" body={`{
+  "id": "37be6442-ca1b-4a5a-a6f4-f929e00a0ac1",
+  "name": "v1.2.0",
+  "appId": "ae06cc7a-2922-4fe7-9064-462741558813",
+  "status": "PUBLISHED",
+  "currentEnvironmentId": "env-uuid-dev",
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-06-09T10:05:00.000Z"
+}`} />
+
+</ApiRight>
+</ApiColumns>
