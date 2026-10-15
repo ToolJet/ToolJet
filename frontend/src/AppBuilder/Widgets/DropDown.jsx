@@ -5,7 +5,7 @@ import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
 import { getModifiedColor } from './utils';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const DropDown = function DropDown({
   height,
@@ -194,6 +194,8 @@ export const DropDown = function DropDown({
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   };
+
+  useFormClear(() => setInputValue(undefined));
 
   const customStyles = {
     control: (provided, state) => ({

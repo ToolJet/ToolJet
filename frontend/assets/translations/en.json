@@ -314,7 +314,8 @@
                         "resource": "Resource",
                         "createUpdateDelete": "Create/Update/Delete",
                         "folder": "Folder",
-                        "dataSource": "Data sources"
+                        "dataSource": "Data sources",
+                        "tooljetDatabase": "ToolJet Database"
                     },
                     "groupOptions": {
                         "deleteGroup": "Delete Group",
@@ -439,7 +440,8 @@
         "header": {
             "createNewApplication": "Create an app",
             "import": "Import from device",
-            "chooseFromTemplate": "Choose from template"
+            "chooseFromTemplate": "Choose from template",
+            "generateWithAi": "Generate with AI"
         },
         "pagination": {
             "showing": "Showing",

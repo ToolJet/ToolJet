@@ -13,6 +13,7 @@ export interface Terms {
   };
   database?: {
     table?: number | string;
+    row?: number | string;
   };
   domains?: Array<{ hostname?: string; subpath?: string }>;
   features?: {
@@ -32,6 +33,7 @@ export interface Terms {
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
     scim?: boolean;
+    mfa?: boolean;
     customDomains?: boolean;
     google?: boolean;
     github?: boolean;
@@ -67,9 +69,8 @@ export interface Terms {
       release: boolean;
       history: boolean;
       jsLibraries: boolean;
-    };
-    components?: {
-      navigation?: boolean;
+      publicApp: boolean;
+      customComponentLibraries?: boolean;
     };
   };
   modules?: {

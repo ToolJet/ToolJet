@@ -189,7 +189,8 @@ export class DataSourcesController implements IDataSourcesController {
       invokeDto.method,
       user,
       invokeDto.environmentId,
-      invokeDto.args
+      invokeDto.args,
+      invokeDto.resolvedOptions
     );
 
     return result;

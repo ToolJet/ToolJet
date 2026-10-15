@@ -18,6 +18,9 @@ export const USER_COLORS = [
 
 export const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
 
+// Temporarily hide inline AI actions that are not served by the standalone MCP agent.
+export const INLINE_AI_FEATURES_ENABLED = false;
+
 export const ON_BOARDING_ROLES = [
   'Head of engineering',
   'Head of product',
@@ -38,6 +41,9 @@ export const ERROR_TYPES = {
   USERS_EXCEEDING_LICENSE_LIMIT: 'user-count-exceeding',
   WORKSPACE_LOGIN_RESTRICTED: 'ws-login-restricted',
   RESTRICTED_PREVIEW: 'restricted-preview',
+  PUBLIC_APP_PLAN_RESTRICTED: 'public-app-plan-restricted',
+  WORKSPACE_SUSPENDED: 'workspace-suspended',
+  USER_SUSPENDED: 'user-suspended',
 };
 
 export const ERROR_MESSAGES = {
@@ -60,6 +66,13 @@ export const ERROR_MESSAGES = {
     message: 'Access to this environment preview is restricted. Contact admin to know more.',
     retry: false,
     cta: 'Back to home page',
+    queryParams: [],
+  },
+  'public-app-plan-restricted': {
+    title: 'Feature not available',
+    message: 'Public apps are not available in your plan. Please upgrade to share this app.',
+    cta: 'Back to home page',
+    retry: false,
     queryParams: [],
   },
   'no-accessible-pages': {
@@ -127,6 +140,16 @@ export const ERROR_MESSAGES = {
     cta: 'Back to home page',
     queryParams: [],
   },
+  'workspace-suspended': {
+    title: 'This workspace has been suspended',
+    message: '{workspaceName} has been suspended by ToolJet. To restore access, contact ToolJet support.',
+    queryParams: [],
+  },
+  'user-suspended': {
+    title: "You've been signed out",
+    message: 'This account has been suspended by ToolJet. Contact ToolJet support for help.',
+    queryParams: [],
+  },
 };
 
 export const DEFAULT_ERROR_MESSAGE = {
@@ -157,4 +180,5 @@ export const PLANS = {
   ENTERPRISE: 'enterprise',
   TRIAL: 'trial',
   STARTER: 'starter',
+  BASICPLUS: 'basicplus',
 };

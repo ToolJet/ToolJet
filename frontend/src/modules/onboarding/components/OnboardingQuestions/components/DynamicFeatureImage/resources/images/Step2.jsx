@@ -1,10 +1,11 @@
 import React from 'react';
-import StepLight from './light-mode/step2.svg';
-import StepDark from './dark-mode/step2.svg';
+import workspaceSetupImage from './light-mode/step2.svg?url';
+import workspaceSetupImageDark from './dark-mode/step2.svg?url';
 
 const Step2 = ({ darkMode }) => {
-  const Component = darkMode ? StepDark : StepLight;
-  return <Component />;
+  const imgSrc = darkMode ? workspaceSetupImageDark : workspaceSetupImage;
+
+  return <img src={imgSrc} alt="Workspace setup" />;
 };
 
 export default Step2;

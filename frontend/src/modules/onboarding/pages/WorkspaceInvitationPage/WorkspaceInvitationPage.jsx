@@ -6,10 +6,11 @@ import {
   FormHeader,
   FormDescription,
   TermsAndPrivacyInfo,
+  LinkExpiredCard,
 } from '@/modules/common/components';
 import { appService, authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
-import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
+import { FeatureGraphicRightPanel } from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import './resources/styles/workspace_invitation_page.scss';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
@@ -19,6 +20,8 @@ import { useEnterKeyPress } from '@/modules/common/hooks';
 
 const WorkspaceInvitationPage = (props) => {
   const [isLoading, setisLoading] = React.useState(false);
+  const [linkExpired, setLinkExpired] = React.useState(false);
+  const [expiredOrgSlug, setExpiredOrgSlug] = React.useState(null);
   const defaultState = checkWhiteLabelsDefaultState();
   const whiteLabelText = retrieveWhiteLabelText();
   const userName = props.name || '';
@@ -53,8 +56,19 @@ const WorkspaceInvitationPage = (props) => {
         });
         onLoginSuccess(data, props.navigate);
       })
-      .catch(() => {
-        toast.error('Error while setting up your account.', { position: 'top-center' });
+      .catch((errorObj) => {
+        if (errorObj?.data?.statusCode === 410) {
+          const orgSlug = errorObj?.data?.organizationSlug || null;
+          // Prevent auto-authorization on login page and prevent /error/no-active-workspace
+          // redirect when useSessionManagement fires on AuthRoute mount (Sign-in click)
+          updateCurrentSession({ authentication_status: false, noWorkspaceAttachedInTheSession: false });
+          setExpiredOrgSlug(orgSlug);
+          setLinkExpired(true);
+        } else if (errorObj?.error && errorObj.error.includes('reached the number of workspaces')) {
+          // Handled globally by the WorkspaceLimitModal in handle-response.js
+        } else {
+          toast.error('Error while setting up your account.', { position: 'top-center' });
+        }
         setisLoading(false);
       });
   };
@@ -98,7 +112,21 @@ const WorkspaceInvitationPage = (props) => {
       </OnboardingUIWrapper>
     );
   };
-  return <OnboardingBackgroundWrapper LeftSideComponent={LeftSideComponent} RightSideComponent={LoginPageRightPanel} />;
+  if (linkExpired) {
+    return (
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() => <LinkExpiredCard variant="invite" organizationSlug={expiredOrgSlug} />}
+      />
+    );
+  }
+
+  return (
+    <OnboardingBackgroundWrapper
+      className="feature-graphic-layout"
+      LeftSideComponent={LeftSideComponent}
+      RightSideComponent={FeatureGraphicRightPanel}
+    />
+  );
 };
 
 export default WorkspaceInvitationPage;

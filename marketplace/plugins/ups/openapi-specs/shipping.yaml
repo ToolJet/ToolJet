@@ -13979,9 +13979,10 @@ components:
       maximum: 1
       properties:
         AgentRole:
-          description: 'When the value passed to the AgentRole parameter is 30, 
-          the value passed to the IDNumberTypeCode parameter must be 1002, 1005 or 0005.
-          (SHIP_FROM=20, CONSIGNEE=30)'
+          description: >-
+            When the value passed to the AgentRole parameter is 30,
+            the value passed to the IDNumberTypeCode parameter must be 1002, 1005 or 0005.
+            (SHIP_FROM=20, CONSIGNEE=30)
           type: string
         TaxIdentificationNumber:
           items:

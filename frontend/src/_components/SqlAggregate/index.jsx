@@ -29,8 +29,7 @@ const SqlAggregateRow = React.memo(function SqlAggregateRow({
   columnSelectorDependsOn,
   selectedDataSource,
   currentAppEnvironmentId,
-  schema,
-  table,
+  queryOptions,
   queryName,
 }) {
   const selectedAggregateFunction =
@@ -72,7 +71,7 @@ const SqlAggregateRow = React.memo(function SqlAggregateRow({
             dependsOn={columnSelectorDependsOn}
             selectedDataSource={selectedDataSource}
             currentAppEnvironmentId={currentAppEnvironmentId}
-            options={{ schema, table }}
+            options={queryOptions}
             value={typeof columnValue === 'string' ? columnValue : ''}
             propertyKey={aggregateEntryKey}
             optionsChanged={(updatedOptions) => {
@@ -118,10 +117,6 @@ const SqlAggregate = React.memo(function SqlAggregate({
   currentAppEnvironmentId,
   queryName,
 }) {
-  const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
-  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
-  const table = depKeys.includes('table') ? options?.table ?? '' : '';
-
   const currentAggregates = readValueMapFromOptions(options, getter, parseKey);
   const aggregateEntries = isEmpty(currentAggregates) ? [] : Object.entries(currentAggregates);
 
@@ -189,8 +184,7 @@ const SqlAggregate = React.memo(function SqlAggregate({
           columnSelectorDependsOn={columnSelectorDependsOn}
           selectedDataSource={selectedDataSource}
           currentAppEnvironmentId={currentAppEnvironmentId}
-          schema={schema}
-          table={table}
+          queryOptions={options}
           queryName={queryName}
         />
       ))}

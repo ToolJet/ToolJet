@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tab, ListGroup, Row, Col, Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { shallow } from 'zustand/shallow';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
-import { Button } from '@/_ui/LeftSidebar';
-import Information from '@/_ui/Icon/solidIcons/Information';
-import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import useStore from '@/AppBuilder/_stores/store';
 import { v4 as uuidv4 } from 'uuid';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
-
-const noop = () => {};
+import { ToolTip } from '@/_components';
+import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
+import { AI_QUERY_SUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
+import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 
 const defaultValue = {
   javascript: `// write your code here
@@ -44,6 +45,38 @@ const labelPopoverContent = (darkMode, t) => (
   </Popover>
 );
 
+// "✨" beside the toggle: opens the AI chat pre-scoped to this query's transformation layer.
+const WriteTransformationButton = () => {
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const { openChat, isPressed, queryName, selectedDataSource } = useWriteQueryEntry('transformation');
+
+  if (!featureAccess?.ai || !queryName) return null;
+  // The transformation tab renders for kinds the AI can't write for (restapi, tooljetdb, marketplace
+  // plugins) — only runjs/runpy/workflows opt out of it. Without this gate the button would always
+  // fail with "unsupported datasource".
+  if (!AI_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
+
+  return (
+    <ToolTip message="Write transformations" placement="top" trigger={['hover']} show={true} tooltipClassName="">
+      <span>
+        <ButtonComponent
+          size="small"
+          variant="ghost"
+          iconOnly
+          aria-selected={isPressed}
+          className={isPressed ? '!tw-bg-button-outline-hover' : ''}
+          onClick={openChat}
+          disabled={shouldFreeze}
+          data-cy="write-transformation-button"
+        >
+          <AITripleSparkles width="14" height="14" />
+        </ButtonComponent>
+      </span>
+    </ToolTip>
+  );
+};
+
 const getNonActiveTransformations = (activeLang) => {
   switch (activeLang) {
     case 'javascript':
@@ -55,55 +88,12 @@ const getNonActiveTransformations = (activeLang) => {
   }
 };
 
-const EducativeLabel = ({ darkMode }) => {
-  const popoverContent = (
-    <Popover
-      id="transformation-popover-container"
-      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme'} p-0`}
-    >
-      <div className={`transformation-popover card text-center ${darkMode && 'tj-dark-mode'}`}>
-        <img src="/assets/images/icons/copilot.svg" alt="AI copilot" height={64} width={64} />
-        <div className="d-flex flex-column card-body">
-          <h4 className="mb-2">ToolJet x OpenAI</h4>
-          <p className="mb-2">
-            <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong> helps you write your queries
-            faster. It uses OpenAI&apos;s GPT-3.5 to suggest queries based on your data.
-          </p>
-          <Button
-            onClick={() => window.open('https://docs.tooljet.com/docs/tooljet-copilot', '_blank')}
-            darkMode={darkMode}
-            size="sm"
-            classNames="default-secondary-button"
-            styles={{ width: '100%', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
-          >
-            <Button.Content title="Read more" />
-          </Button>
-        </div>
-      </div>
-    </Popover>
-  );
-
-  return (
-    <div>
-      <OverlayTrigger
-        overlay={popoverContent}
-        rootClose
-        trigger="click"
-        placement="right"
-        container={document.getElementsByClassName('query-details')[0]}
-      >
-        <span style={{ cursor: 'pointer', marginLeft: '10px' }} data-cy="transformation-info-icon" className="lh-1">
-          <Information width={18} fill="#CCD1D5" style={{ position: 'absolute', left: '152px' }} />
-        </span>
-      </OverlayTrigger>
-    </div>
-  );
-};
-
 export const Transformation = ({ changeOption, options, darkMode, queryId, renderCopilot }) => {
   const [lang, setLang] = useState(options?.transformationLanguage ?? 'javascript');
   const [enableTransformation, setEnableTransformation] = useState(options.enableTransformation);
   const prevQueryId = useRef(queryId);
+  // Last value this editor itself emitted — see the external-change remount effect below.
+  const lastLocalValueRef = useRef(options?.transformations?.[options?.transformationLanguage ?? 'javascript']);
   const selectedQueryId = useStore((state) => state.selectedQuery?.id);
   const [codeEditorKey, setCodeEditorKey] = useState(uuidv4());
   const [state, setState] = useState({
@@ -166,43 +156,62 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
     setCodeEditorKey(uuidv4());
   }, [lang, queryId]);
 
+  // CodeHinter reads `initialValue` at mount only, so a transformation written from outside the
+  // editor (AI "Write transformations") would land in the store but stay invisible here. Remount on
+  // an external change — `lastLocalValueRef` holds what this editor last emitted, so the user's own
+  // keystrokes never trigger a remount (which would drop their cursor).
+  useEffect(() => {
+    const activeLang = options?.transformationLanguage ?? 'javascript';
+    const incoming = options?.transformations?.[lang] ?? (lang === activeLang ? options?.transformation : undefined);
+
+    if (incoming === undefined || incoming === lastLocalValueRef.current) return;
+
+    lastLocalValueRef.current = incoming;
+    setState((prevState) => (prevState[lang] === incoming ? prevState : { ...prevState, [lang]: incoming }));
+    setCodeEditorKey(uuidv4());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options?.transformations?.[lang], options?.transformation, options?.transformationLanguage, lang]);
+
   return (
     <div className="field transformation-editor">
-      <div className="align-items-center gap-2 d-flex" style={{ position: 'relative', height: '20px' }}>
-        <div className="d-flex flex-column">
-          <div className="mb-0">
-            <span className="d-flex">
-              <CustomToggleSwitch
-                isChecked={enableTransformation}
-                toggleSwitchFunction={toggleEnableTransformation}
-                action="enableTransformation"
-                darkMode={darkMode}
-                dataCy="transformation"
-              />
-              <OverlayTrigger
-                trigger="click"
-                placement="bottom"
-                rootClose
-                overlay={labelPopoverContent(darkMode, t)}
-                container={document.getElementsByClassName('query-details')[0]}
+      <div className="tw-flex tw-items-start">
+        <CustomToggleSwitch
+          isChecked={enableTransformation}
+          toggleSwitchFunction={toggleEnableTransformation}
+          action="enableTransformation"
+          darkMode={darkMode}
+          dataCy="transformation"
+          classes={{ toggleSwitchContainer: 'tw-mt-0.5 tw-flex-grow-0' }}
+        />
+
+        <div>
+          <div className="tw-flex tw-items-center tw-gap-1">
+            <OverlayTrigger
+              trigger="click"
+              placement="bottom"
+              rootClose
+              overlay={labelPopoverContent(darkMode, t)}
+              container={document.getElementsByClassName('query-details')[0]}
+            >
+              <span
+                style={{ textDecoration: 'underline 2px dotted', textDecorationColor: 'var(--slate8)' }}
+                className="text-default"
+                data-cy="transformation-label"
               >
-                <span
-                  style={{ textDecoration: 'underline 2px dotted', textDecorationColor: 'var(--slate8)' }}
-                  className="ps-1 text-default"
-                  data-cy="transformation-label"
-                >
-                  {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
-                </span>
-              </OverlayTrigger>
-            </span>
+                {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
+              </span>
+            </OverlayTrigger>
+            {INLINE_AI_FEATURES_ENABLED && <WriteTransformationButton />}
           </div>
-          <div className="d-flex text-placeholder justify-content-end" data-cy="transformation-copilot-info">
-            <p>Powered by AI copilot</p>
-            <EducativeLabel darkMode={darkMode} />
-          </div>
+
+          <p className="tw-text-text-placeholder tw-mb-0" data-cy="transformation-info">
+            Run JavaScript or Python on the query result to reshape, filter, or reformat data.
+          </p>
         </div>
       </div>
+
       <br />
+
       <div className={`d-flex copilot-codehinter-wrap ${!enableTransformation && 'read-only-codehinter'}`}>
         <div className="col flex-grow-1">
           <div style={{ borderRadius: '6px', background: darkMode ? '#272822' : '#F8F9FA' }}>
@@ -253,6 +262,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
               height={400}
               className="query-hinter"
               onChange={(value) => {
+                lastLocalValueRef.current = value;
                 changeOption('transformations', { ...state, [lang]: value });
               }}
               renderCopilot={renderCopilot}

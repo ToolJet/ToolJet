@@ -1,7 +1,7 @@
 import { createReadStream } from 'fs';
 import readDir from 'recursive-readdir';
 import { resolve as _resolve } from 'path';
-import { S3Client } from '@aws-sdk/client-s3';
+import { S3Client, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { lookup } from 'mime-types';
 import chalk from 'chalk';
@@ -39,9 +39,23 @@ const generateFileKey = (fileName) => {
   return `marketplace-assets/${S3objectPath}`;
 };
 
+const getPluginName = (fileName) => generateFileKey(fileName).split('/')[1];
+
+const existsInBucket = async (Key) => {
+  try {
+    await s3.send(new HeadObjectCommand({ Bucket: process.env.AWS_BUCKET, Key }));
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
 const uploadToS3 = async () => {
   const start = Date.now();
   const errors = [];
+  const newFiles = [];
+  const newPlugins = new Set();
+  const existingPlugins = new Set();
   let successCount = 0;
 
   console.log(chalk.cyanBright('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
@@ -70,15 +84,18 @@ const uploadToS3 = async () => {
     console.log(`[${new Date().toLocaleTimeString()}] ℹ Target bucket: ${process.env.AWS_BUCKET}\n`);
 
     const uploadPromises = fileArray.map(async (file, index) => {
+      const Key = generateFileKey(file);
+      const plugin = getPluginName(file);
       const S3params = {
         Bucket: process.env.AWS_BUCKET,
         Body: createReadStream(file),
-        Key: generateFileKey(file),
+        Key,
         ContentType: lookup(file) || 'application/octet-stream',
         ContentEncoding: 'utf-8',
         CacheControl: 'immutable,max-age=31536000,public',
       };
 
+      const alreadyExisted = await existsInBucket(Key);
       const indexStr = `[${(index + 1).toString().padStart(2, '0')}/${fileArray.length}]`;
       try {
         const upload = new Upload({
@@ -86,7 +103,14 @@ const uploadToS3 = async () => {
           params: S3params,
         });
         const data = await upload.done();
-        console.log(chalk.greenBright(`${indexStr} ✅ Uploaded: ${file}`));
+        if (alreadyExisted) {
+          existingPlugins.add(plugin);
+          console.log(chalk.greenBright(`${indexStr} ✅ Uploaded (already existed): ${file}`));
+        } else {
+          newFiles.push(file);
+          newPlugins.add(plugin);
+          console.log(chalk.greenBright(`${indexStr} ✅ Uploaded ${chalk.bold('(new)')}: ${file}`));
+        }
         console.log(
           chalk.gray(
             JSON.stringify(
@@ -124,6 +148,29 @@ const uploadToS3 = async () => {
     );
     console.log(`[${new Date().toLocaleTimeString()}] ❌ Failed uploads: ${errors.length}/${fileArray.length} files`);
     console.log(`[${new Date().toLocaleTimeString()}] ℹ Total time: ${duration}s`);
+
+    const brandNewPlugins = [...newPlugins].filter((plugin) => !existingPlugins.has(plugin));
+
+    console.log(chalk.cyanBright(`\n🆕 New files pushed (${newFiles.length}):`));
+    if (newFiles.length > 0) {
+      newFiles.forEach((file) => console.log(chalk.green(`  + ${file}`)));
+    } else {
+      console.log(chalk.gray('  (none — every key already existed in the bucket)'));
+    }
+
+    console.log(chalk.cyanBright(`\n✨ New plugins pushed (${brandNewPlugins.length}):`));
+    if (brandNewPlugins.length > 0) {
+      brandNewPlugins.sort().forEach((plugin) => console.log(chalk.green(`  • ${plugin}`)));
+    } else {
+      console.log(chalk.gray('  (none — no brand-new plugin in this run)'));
+    }
+
+    console.log(chalk.cyanBright(`\n📁 Plugins already present in the bucket (${existingPlugins.size}):`));
+    if (existingPlugins.size > 0) {
+      [...existingPlugins].sort().forEach((plugin) => console.log(chalk.yellow(`  • ${plugin}`)));
+    } else {
+      console.log(chalk.gray('  (none — first deployment for every plugin)'));
+    }
 
     if (errors.length > 0) {
       console.log(chalk.cyanBright('\n━━━━━━━━━━━━━━━ ERROR DETAILS ━━━━━━━━━━━━━━━━━'));

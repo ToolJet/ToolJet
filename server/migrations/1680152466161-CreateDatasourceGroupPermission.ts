@@ -1,12 +1,7 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
-import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class CreateDatasourceGroupPermission1680152466161 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    if (getTooljetEdition() === TOOLJET_EDITIONS.CE) {
-      return;
-    }
     await queryRunner.createTable(
       new Table({
         name: 'data_source_group_permissions',
@@ -85,9 +80,6 @@ export class CreateDatasourceGroupPermission1680152466161 implements MigrationIn
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    if (getTooljetEdition() === TOOLJET_EDITIONS.CE) {
-      return;
-    }
     await queryRunner.dropTable('data_source_group_permissions');
   }
 }

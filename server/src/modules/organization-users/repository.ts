@@ -3,6 +3,7 @@ import { OrganizationUser } from '@entities/organization_user.entity';
 import {
   USER_STATUS,
   USER_TYPE,
+  WORKSPACE_STATUS,
   WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
@@ -28,11 +29,19 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
     isDefaultOrganization: boolean = false
   ): Promise<OrganizationUser> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const newInvitationToken = isInvite ? uuid.v4() : null;
+      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+      const newInvitationTokenExpiry =
+        isInvite && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+          ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+          : null;
+
       return await manager.save(
         manager.create(OrganizationUser, {
           userId: user.id,
           organization,
-          invitationToken: isInvite ? uuid.v4() : null,
+          invitationToken: newInvitationToken,
+          invitationTokenExpiry: newInvitationTokenExpiry,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
           source: isDefaultOrganization ? WORKSPACE_USER_SOURCE.SIGNUP : source,
           role: 'all-users',
@@ -166,6 +175,21 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
         status: WORKSPACE_USER_STATUS.ACTIVE,
       },
     });
+  }
+
+  async countActiveOrganizationsForUser(userId: string, manager?: EntityManager): Promise<number> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return manager.count(OrganizationUser, {
+        where: {
+          userId,
+          status: WORKSPACE_USER_STATUS.ACTIVE,
+          organization: {
+            status: WORKSPACE_STATUS.ACTIVE,
+          },
+        },
+        relations: ['organization'],
+      });
+    }, manager || this.manager);
   }
 
   async getOrganizationUser(organizationId: string, manager?: EntityManager) {

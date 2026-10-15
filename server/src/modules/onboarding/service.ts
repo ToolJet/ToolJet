@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ForbiddenException,
+  GoneException,
+  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -53,6 +55,7 @@ import { OnboardingUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { OrganizationUsersUtilService } from '../organization-users/util.service';
 import { OrganizationUsersRepository } from '../organization-users/repository';
+import { MAX_CLOUD_WORKSPACES_PER_USER } from '../organization-users/constants';
 import { LicenseUserService } from '../licensing/services/user.service';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { MetadataUtilService } from '@modules/meta/util.service';
@@ -152,7 +155,6 @@ export class OnboardingService implements IOnboardingService {
       // Find the default workspace
       const defaultWorkspace = await this.getDefaultOrOldestWorkspaceOfInstance(manager);
 
-
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
         return await this.onboardingUtilService.whatIfTheSignUpIsAtTheWorkspaceLevel(
@@ -206,6 +208,12 @@ export class OnboardingService implements IOnboardingService {
         manager
       );
 
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiry =
+        password && !isNaN(rawExpiryDays) && rawExpiryDays > 0
+          ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+          : null;
+
       const user = await this.onboardingUtilService.createUserWithRole(
         {
           email,
@@ -217,6 +225,7 @@ export class OnboardingService implements IOnboardingService {
           companySize,
           role,
           phoneNumber,
+          ...(passwordExpiry ? { passwordExpiry } : {}),
         },
         organization.id,
         USER_ROLE.ADMIN,
@@ -368,13 +377,21 @@ export class OnboardingService implements IOnboardingService {
             ? OnboardingStatus.ACCOUNT_CREATED
             : OnboardingStatus.NOT_STARTED;
 
+        const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+        const passwordExpiry =
+          password && isPasswordMandatory(user.source) && !isNaN(rawExpiryDays) && rawExpiryDays > 0
+            ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+            : null;
+
         await this.userRepository.updateOne(
           user.id,
           {
             companyName,
             onboardingStatus,
             invitationToken: null,
+            invitationTokenExpiry: null,
             ...(isPasswordMandatory(user.source) ? { password } : {}),
+            ...(passwordExpiry ? { passwordExpiry } : {}),
             ...lifecycleParams,
             updatedAt: new Date(),
           },
@@ -438,6 +455,17 @@ export class OnboardingService implements IOnboardingService {
       if (!organizationUser?.user) {
         throw new BadRequestException('Invalid invitation link');
       }
+
+      if (organizationUser.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
+        const activeWorkspacesCount = await this.organizationUsersRepository.getActiveWorkspacesCount(
+          organizationUser.user.id
+        );
+        throw new GoneException({
+          message: 'WORKSPACE_INVITE_LINK_EXPIRED',
+          ...(activeWorkspacesCount > 0 && { organizationSlug: organizationUser.organization?.slug }),
+        });
+      }
+
       const user: User = organizationUser.user;
 
       if (user.invitationToken) {
@@ -451,6 +479,7 @@ export class OnboardingService implements IOnboardingService {
             invitationtoken: user.invitationToken,
             organizationInvitationToken: `${organizationUser.invitationToken}`,
             organizationId: organizationUser?.organizationId,
+            invitationTokenExpiry: organizationUser.invitationTokenExpiry,
           },
         });
         throw new UnauthorizedException(
@@ -460,6 +489,20 @@ export class OnboardingService implements IOnboardingService {
       await this.userRepository.updateOne(user.id, { defaultOrganizationId: organizationUser.organizationId }, manager);
       const organization = await this.organizationRepository.get(organizationUser.organizationId);
       const activeWorkspacesCount = await this.organizationUsersRepository.getActiveWorkspacesCount(user.id);
+
+      if (getTooljetEdition() === 'cloud') {
+        const activeOrganizationsCount = await this.organizationUsersRepository.countActiveOrganizationsForUser(
+          user.id,
+          manager
+        );
+        if (activeOrganizationsCount >= MAX_CLOUD_WORKSPACES_PER_USER) {
+          throw new HttpException(
+            `You have reached the number of workspaces (${activeOrganizationsCount}/${MAX_CLOUD_WORKSPACES_PER_USER}) which can be created in ToolJet Cloud. Contact us at support@tooljet.com to increase this limit.`,
+            451
+          );
+        }
+      }
+
       await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
       const personalWorkspacesCount = await this.organizationUsersUtilService.personalWorkspaceCount(user.id);
       if (personalWorkspacesCount === 1 && activeWorkspacesCount === 0) {
@@ -499,10 +542,16 @@ export class OnboardingService implements IOnboardingService {
     if (organizationToken) {
       organizationUser = await this.organizationUsersRepository.findOne({
         where: { invitationToken: organizationToken },
-        relations: ['user'],
+        relations: ['user', 'organization'],
       });
 
       if (!user && organizationUser) {
+        if (organizationUser.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
+          throw new GoneException({
+            message: 'WORKSPACE_INVITE_LINK_EXPIRED',
+            organizationSlug: organizationUser.organization?.slug,
+          });
+        }
         return {
           redirect_url: generateOrgInviteURL(organizationToken, organizationUser.organizationId),
         };
@@ -511,10 +560,21 @@ export class OnboardingService implements IOnboardingService {
           redirect_url: generateInviteURL(token),
         };
       }
+
+      if (organizationUser?.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
+        throw new GoneException({
+          message: 'WORKSPACE_INVITE_LINK_EXPIRED',
+          organizationSlug: organizationUser.organization?.slug,
+        });
+      }
     }
 
     if (!user) {
       throw new BadRequestException('Invalid token');
+    }
+
+    if (user.invitationTokenExpiry && new Date() > user.invitationTokenExpiry) {
+      throw new GoneException('INVITATION_LINK_EXPIRED');
     }
 
     if (user.status === USER_STATUS.ARCHIVED) {
@@ -541,6 +601,22 @@ export class OnboardingService implements IOnboardingService {
     const { email, password, organizationToken } = activateAccountWithToken;
     const signupUser = await this.userRepository.findByEmail(email);
     const invitedUser = await this.organizationUsersUtilService.findByWorkspaceInviteToken(organizationToken);
+
+    // Re-verify expiry at submit time — the guard only checks at page load
+    if (invitedUser.orgUserInvitationTokenExpiry && new Date() > invitedUser.orgUserInvitationTokenExpiry) {
+      throw new GoneException({
+        message: 'WORKSPACE_INVITE_LINK_EXPIRED',
+        organizationSlug: invitedUser.invitedOrganizationId,
+      });
+    }
+    if (
+      getTooljetEdition() === 'cloud' &&
+      signupUser?.invitationTokenExpiry &&
+      new Date() > signupUser.invitationTokenExpiry
+    ) {
+      throw new GoneException('INVITATION_LINK_EXPIRED');
+    }
+
     if (password) {
       validatePasswordServer(password);
     }
@@ -584,14 +660,21 @@ export class OnboardingService implements IOnboardingService {
         );
       }
 
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiry = (password && !isNaN(rawExpiryDays) && rawExpiryDays > 0)
+        ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+        : null;
+
       await this.userRepository.updateOne(
         signupUser.id,
         {
           password,
           invitationToken: null,
+          invitationTokenExpiry: null,
           ...(password ? { password } : {}),
           ...lifecycleParams,
           updatedAt: new Date(),
+          ...(passwordExpiry ? { passwordExpiry } : {}),
         },
         manager
       );
@@ -661,7 +744,7 @@ export class OnboardingService implements IOnboardingService {
   }
 
   async resendEmail(body: ResendInviteDto) {
-    const { email, organizationId, redirectTo } = body;
+    const { email, organizationId, redirectTo, senderName } = body;
     if (!email) {
       throw new BadRequestException();
     }
@@ -690,23 +773,51 @@ export class OnboardingService implements IOnboardingService {
     }
 
     if (organizationUser) {
+      // Regenerate workspace invite token if it has expired
+      if (organizationUser.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
+        const newToken = uuid.v4();
+        const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+        const newExpiry =
+          !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+            ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+            : null;
+        await this.organizationUsersRepository.update(organizationUser.id, {
+          invitationToken: newToken,
+          invitationTokenExpiry: newExpiry,
+        });
+        organizationUser.invitationToken = newToken;
+        organizationUser.invitationTokenExpiry = newExpiry;
+      }
+
       const invitedOrganization = await this.organizationRepository.findOne({
         where: { id: organizationUser.organizationId },
         select: ['name', 'id'],
       });
       if (existingUser.invitationToken) {
-        /* Not activated. */
+        /* Not activated. Regenerate User-level token on re-invite. */
+        const isCloud = getTooljetEdition() === 'cloud';
+        const newUserToken = uuid.v4();
+        const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+        const newUserTokenExpiry =
+          isCloud && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+            ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+            : null;
+        await this.userRepository.updateOne(existingUser.id, {
+          invitationToken: newUserToken,
+          ...(isCloud && { invitationTokenExpiry: newUserTokenExpiry }),
+        });
         this.eventEmitter.emit('emailEvent', {
           type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
           payload: {
             to: existingUser.email,
             name: existingUser.firstName,
-            invitationtoken: existingUser.invitationToken,
+            invitationtoken: newUserToken,
             organizationInvitationToken: organizationUser.invitationToken,
             organizationId: organizationUser.organizationId,
             organizationName: invitedOrganization.name,
-            sender: null,
+            sender: senderName || null,
             redirectTo: redirectTo,
+            invitationTokenExpiry: isCloud ? newUserTokenExpiry : organizationUser.invitationTokenExpiry,
           },
         });
         return;
@@ -717,11 +828,12 @@ export class OnboardingService implements IOnboardingService {
           payload: {
             to: existingUser.email,
             name: existingUser.firstName,
-            sender: null,
+            sender: senderName || null,
             invitationtoken: organizationUser.invitationToken,
             organizationName: invitedOrganization.name,
             organizationId: organizationUser.organizationId,
             redirectTo: redirectTo,
+            invitationTokenExpiry: organizationUser.invitationTokenExpiry,
           },
         });
         return;
@@ -729,13 +841,24 @@ export class OnboardingService implements IOnboardingService {
     }
 
     if (existingUser?.invitationToken) {
+      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+      const newUserTokenExpiry =
+        !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+          ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+          : null;
+      const newUserToken = uuid.v4();
+      await this.userRepository.updateOne(existingUser.id, {
+        invitationToken: newUserToken,
+        invitationTokenExpiry: newUserTokenExpiry,
+      });
       this.eventEmitter.emit('emailEvent', {
         type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
         payload: {
           to: existingUser.email,
           name: existingUser.firstName,
-          invitationtoken: existingUser.invitationToken,
+          invitationtoken: newUserToken,
           organizationId: existingUser.defaultOrganizationId,
+          invitationTokenExpiry: newUserTokenExpiry,
         },
       });
       return;

@@ -1,6 +1,7 @@
 import React from 'react';
 import { renderElement } from '../../Utils';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 import { EventManager } from '../../EventManager';
 import { TreeSelectOptionsList } from './components';
 import { useTreeSelectItemsManager } from './hooks';
@@ -92,7 +93,8 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
   };
 
   // Helper function to create accordion items
-  const createAccordionItem = (title, children, isOpen = true) => ({
+  const createAccordionItem = (title, children, isOpen = true, id) => ({
+    id,
     title,
     isOpen,
     children,
@@ -146,6 +148,7 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
       ),
     },
     {
+      id: ADDITIONAL_ACTIONS_ACCORDION_ID,
       title: 'Additional Actions',
       type: 'properties',
       properties: additionalActions,
@@ -164,7 +167,7 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
   // Build accordion items
   const items = sections.map((section) => {
     if (section.custom) {
-      return createAccordionItem(section.title, section.custom(), section.isOpen);
+      return createAccordionItem(section.title, section.custom(), section.isOpen, section.id);
     }
 
     const children = section.properties.map((property) => {
@@ -172,7 +175,7 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
       return createRenderElement(property, section.type, extraProps);
     });
 
-    return createAccordionItem(section.title, children);
+    return createAccordionItem(section.title, children, section.isOpen, section.id);
   });
 
   return <Accordion items={items} />;

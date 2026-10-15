@@ -25,8 +25,7 @@ const SqlColumnRow = React.memo(function SqlColumnRow({
   columnSelectorDependsOn,
   selectedDataSource,
   currentAppEnvironmentId,
-  schema,
-  table,
+  queryOptions,
   darkMode,
   queryName,
 }) {
@@ -51,7 +50,7 @@ const SqlColumnRow = React.memo(function SqlColumnRow({
           dependsOn={columnSelectorDependsOn}
           selectedDataSource={selectedDataSource}
           currentAppEnvironmentId={currentAppEnvironmentId}
-          options={{ schema, table }}
+          options={queryOptions}
           value={typeof columnName === 'string' ? columnName : ''}
           propertyKey={columnEntryId}
           optionsChanged={(updatedOptions) => {
@@ -113,10 +112,6 @@ const SqlColumns = React.memo(function SqlColumns({
   currentAppEnvironmentId,
   queryName,
 }) {
-  const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
-  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
-  const table = depKeys.includes('table') ? options?.table ?? '' : '';
-
   const currentColumns = readValueMapFromOptions(options, getter, parseKey);
   const columnList = isEmpty(currentColumns) ? [] : Object.values(currentColumns);
 
@@ -189,8 +184,7 @@ const SqlColumns = React.memo(function SqlColumns({
           columnSelectorDependsOn={columnSelectorDependsOn}
           selectedDataSource={selectedDataSource}
           currentAppEnvironmentId={currentAppEnvironmentId}
-          schema={schema}
-          table={table}
+          queryOptions={options}
           queryName={queryName}
         />
       ))}

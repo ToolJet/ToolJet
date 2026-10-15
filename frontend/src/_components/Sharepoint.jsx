@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { datasourceService } from '@/_services';
+import { datasourceService, authenticationService } from '@/_services';
 import { getHostURL } from '@/_helpers/routes';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
@@ -30,12 +30,13 @@ const Sharepoint = ({
     const provider = 'sharepoint';
     const plugin_id = selectedDataSource?.plugin?.id;
     const source_options = options;
+    const organizationId = authenticationService.currentSessionValue?.current_organization_id;
     setAuthStatus('waiting_for_url');
 
     const scope = 'https://graph.microsoft.com/.default+offline_access';
 
     datasourceService
-      .fetchOauth2BaseUrl(provider, plugin_id, source_options)
+      .fetchOauth2BaseUrl(provider, plugin_id, source_options, currentAppEnvironmentId, organizationId)
       .then((data) => {
         const authUrl = `${data.url}&scope=${scope}&state=12345&response_mode=query`;
         localStorage.setItem('sourceWaitingForOAuth', 'newSource');

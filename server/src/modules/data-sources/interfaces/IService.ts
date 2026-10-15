@@ -48,6 +48,8 @@ export interface IDataSourcesService {
     dataSource: DataSource,
     methodName: string,
     user: User,
-    environmentId: string
+    environmentId: string,
+    args?: any,
+    resolvedOptions?: object
   ): Promise<QueryResult>;
 }

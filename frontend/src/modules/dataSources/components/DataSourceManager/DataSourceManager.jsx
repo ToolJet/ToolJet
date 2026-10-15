@@ -16,6 +16,7 @@ import {
   SourceComponent,
   SourceComponents,
   CloudStorageSources,
+  AiSources,
 } from '../../../common/components/DataSourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
@@ -42,7 +43,7 @@ import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import SampleDataSourceBody from './SampleDataSourceBody';
 
-class DataSourceManagerComponent extends React.Component {
+export class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -101,7 +102,8 @@ class DataSourceManagerComponent extends React.Component {
     pluginsService
       .findAll()
       .then(({ data = [] }) => {
-        this.setState({ plugins: data, pluginsLoaded: true });
+        const sortedPlugins = [...data].sort((a, b) => a.name.localeCompare(b.name));
+        this.setState({ plugins: sortedPlugins, pluginsLoaded: true });
       })
       .catch((error) => {
         this.setState({ pluginsLoaded: true });
@@ -185,7 +187,8 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   onExit = () => {
-    !this.state.selectedDataSource?.id && this.props.environmentChanged(returnDevelopmentEnv(this.props.environments));
+    !this.state.selectedDataSource?.id &&
+      this.props.environmentChanged?.(returnDevelopmentEnv(this.props.environments));
     this.setState({
       dataSourceMeta: {},
       selectedDataSource: null,
@@ -276,10 +279,11 @@ class DataSourceManagerComponent extends React.Component {
       'gmail',
       'googlesheetsv2',
       'xero',
+      'confluence',
     ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
-    const pluginId = selectedDataSourcePluginId;
+    const pluginId = selectedDataSource?.pluginId ?? selectedDataSourcePluginId;
     const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
     const currentAppEnvironmentId = this.props.currentAppEnvironmentId ?? this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
@@ -347,6 +351,7 @@ class DataSourceManagerComponent extends React.Component {
           });
       } else {
         this.setState({ isSaving: true, addingDataSource: true });
+        this.props.setGlobalDataSourceStatus({ isSaving: true, isEditing: false });
         service
           .create({
             plugin_id: pluginId,
@@ -371,10 +376,11 @@ class DataSourceManagerComponent extends React.Component {
             this.props.dataSourcesChanged(false, data);
             this.props.globalDataSourcesChanged && this.props.globalDataSourcesChanged();
             this.resetDataSourceConfirmModal();
+            this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: false });
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false, addingDataSource: false });
-            this.hideModal();
+            this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: true });
             error && toast.error(error, { position: 'top-center' });
             this.resetDataSourceConfirmModal();
           });
@@ -609,6 +615,7 @@ class DataSourceManagerComponent extends React.Component {
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
+      ais: AiSources,
       plugins: this.state.plugins,
       filteredDatasources: this.state.filteredDatasources,
     };
@@ -641,6 +648,12 @@ class DataSourceManagerComponent extends React.Component {
         key: '#cloudstorage',
         list: allDataSourcesList.cloudStorages,
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+      },
+      {
+        type: 'AI',
+        key: '#ai',
+        list: allDataSourcesList.ais,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.ais, 'AI'),
       },
       {
         type: 'Plugins',
@@ -1006,6 +1019,7 @@ class DataSourceManagerComponent extends React.Component {
       'xero',
       'hubspot',
       'gmail',
+      'confluence',
     ];
 
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
@@ -1105,17 +1119,6 @@ class DataSourceManagerComponent extends React.Component {
                       </span>
                     </ToolTip>
                   )}
-                  {this.props.tags &&
-                    this.props.tags.map((tag) => {
-                      if (tag === 'AI') {
-                        return (
-                          <div key={tag} className="tag-container">
-                            <SolidIcon name="AI-tag" />
-                            <span>{tag}</span>
-                          </div>
-                        );
-                      }
-                    })}
                 </div>
               </div>
               {!isSampleDb && (
@@ -1153,7 +1156,8 @@ class DataSourceManagerComponent extends React.Component {
                   shouldRenderFooterComponent &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
-                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
+                      options?.auth_type?.value === 'oauth2' &&
+                      ['authorization_code', 'authorization_code_pkce'].includes(options?.grant_type?.value)
                     )) && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
@@ -1284,7 +1288,8 @@ class DataSourceManagerComponent extends React.Component {
                   dataSourceMeta.customTesting &&
                   (!OAuthDs.includes(selectedDataSource?.kind) ||
                     !(
-                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
+                      options?.auth_type?.value === 'oauth2' &&
+                      ['authorization_code', 'authorization_code_pkce'].includes(options?.grant_type?.value)
                     )) && (
                     <Modal.Footer>
                       <div className="col">

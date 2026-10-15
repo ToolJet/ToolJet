@@ -13,6 +13,8 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SessionModule } from '@modules/session/module';
 import { SubModule } from '@modules/app/sub-module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { CustomDomainsModule } from '@modules/custom-domains/module';
 
 export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -30,6 +32,8 @@ export class DataSourcesModule extends SubModule {
       'services/sample-ds.service',
     ]);
 
+    const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
+
     return {
       module: DataSourcesModule,
       imports: [
@@ -40,6 +44,8 @@ export class DataSourcesModule extends SubModule {
         await TooljetDbModule.register(configs),
         await SessionModule.register(configs),
         await InMemoryCacheModule.register(configs),
+        await AppPermissionsModule.register(configs!),
+        await CustomDomainsModule.register(configs!),
       ],
       providers: [
         DataSourcesService,
@@ -47,6 +53,7 @@ export class DataSourcesModule extends SubModule {
         VersionRepository,
         AppsRepository,
         DataSourcesUtilService,
+        DataQueriesUtilService,
         PluginsServiceSelector,
         PluginsRepository,
         SampleDataSourceService,

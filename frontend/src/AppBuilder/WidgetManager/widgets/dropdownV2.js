@@ -87,6 +87,20 @@ export const dropdownV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+    serverSideSearch: {
+      type: 'clientServerSwitch',
+      displayName: 'Search type',
+      options: [
+        { displayName: 'Client side', value: 'clientSide' },
+        { displayName: 'Server side', value: 'serverSide' },
+      ],
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+      conditionallyRender: {
+        key: 'showSearchInput',
+        value: true,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -425,6 +439,7 @@ export const dropdownV2Config = {
       placeholder: { value: 'Select an option' },
       showClearBtn: { value: '{{true}}' },
       showSearchInput: { value: '{{true}}' },
+      serverSideSearch: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
 
       collapseWhenHidden: { value: '{{false}}' },

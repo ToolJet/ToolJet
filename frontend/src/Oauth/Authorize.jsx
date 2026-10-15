@@ -17,7 +17,28 @@ export function Authorize({ navigate }) {
   const router = useRouter();
   const organizationId = authenticationService.getLoginOrganizationId();
   const organizationSlug = authenticationService.getLoginOrganizationSlug();
-  const redirectUrl = getCookie('redirectPath');
+  // Prefer cookie (same-domain flow); fall back to state param encoded by SSO buttons
+  // for custom-domain flows where the cookie is inaccessible on the base-domain callback.
+  // Google (implicit/hash flow): state arrives in the URL hash fragment.
+  // GitHub (code flow): state arrives as a query param (?state=...).
+  let redirectUrl = getCookie('redirectPath');
+  if (!redirectUrl) {
+    let stateParam = null;
+    if (window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      stateParam = hashParams.get('state');
+    } else if (router.query.state) {
+      stateParam = router.query.state;
+    }
+    if (stateParam) {
+      try {
+        const stateObj = JSON.parse(decodeURIComponent(stateParam));
+        redirectUrl = stateObj?.redirectTo || null;
+      } catch {
+        // malformed state — ignore
+      }
+    }
+  }
   const signupOrganizationSlug = authenticationService.getSignupOrganizationSlug();
   const inviteFlowIdentifier = authenticationService.getInviteFlowIndetifier();
 
@@ -286,7 +307,7 @@ export function Authorize({ navigate }) {
         updateCurrentSession({
           isUserLoggingIn: true,
         });
-        onLoginSuccess(restResponse, navigate);
+        onLoginSuccess(restResponse, navigate, redirectUrl);
       }
       posthogHelper.initPosthog({ redirect_url, ...restResponse });
       posthogHelper.captureEvent(event, {
@@ -331,7 +352,11 @@ export function Authorize({ navigate }) {
       const isAiOnboarding =
         hashParams.get('state')?.includes('tj_api_source=ai_onboarding') ||
         router.query.state?.includes('tj_api_source=ai_onboarding');
-      const isNormalFlow = (organizationId || signupOrganizationSlug || inviteFlowIdentifier) && !isAiOnboarding;
+      // A workspace-level configId in the URL (set by the SSO button on a workspace/custom-domain
+      // login page) definitively identifies a workspace login — treat it as a normal flow even when
+      // organizationId is absent (e.g. cookie/localStorage inaccessible across custom-domain → base-domain).
+      const isNormalFlow =
+        (organizationId || signupOrganizationSlug || inviteFlowIdentifier || router.query.configId) && !isAiOnboarding;
       if (isNormalFlow) {
         /* For workspace signup and signin */
         authenticationService

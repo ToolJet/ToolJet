@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Mistral datasource",
   "description": "A schema defining Mistral datasource",
-  "type": "api",
+  "type": "ai",
   "source": {
     "name": "Mistral",
     "kind": "mistral_ai",

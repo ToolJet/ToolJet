@@ -308,7 +308,7 @@ export const buttonConfig = {
     styles: {
       textSize: { value: '{{14}}' },
       fontWeight: { value: 'normal' },
-      textColor: { value: '#FFFFFF' },
+      textColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-primary-brand)' },
       loaderColor: { value: 'var(--cc-surface1-surface)' },
       contentAlignment: { value: 'center' },
@@ -316,7 +316,7 @@ export const buttonConfig = {
       backgroundColor: { value: 'var(--cc-primary-brand)' },
       hoverBackgroundMode: { value: 'auto' },
       hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
-      iconColor: { value: 'var(--cc-default-icon)' },
+      iconColor: { value: 'var(--cc-surface1-surface)' },
       direction: { value: 'left' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },

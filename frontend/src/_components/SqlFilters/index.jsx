@@ -78,8 +78,7 @@ const SqlFilterRow = React.memo(function SqlFilterRow({
   columnSelectorDependsOn,
   selectedDataSource,
   currentAppEnvironmentId,
-  schema,
-  table,
+  queryOptions,
   queryName,
 }) {
   const selectedOperator = SQL_FILTER_OPERATORS.find((operator) => operator.value === operatorValue) ?? null;
@@ -129,7 +128,7 @@ const SqlFilterRow = React.memo(function SqlFilterRow({
           dependsOn={columnSelectorDependsOn}
           selectedDataSource={selectedDataSource}
           currentAppEnvironmentId={currentAppEnvironmentId}
-          options={{ schema, table }}
+          options={queryOptions}
           value={typeof columnValue === 'string' ? columnValue : ''}
           propertyKey={filterId}
           optionsChanged={(updatedOptions) => {
@@ -220,10 +219,6 @@ const SqlFilters = React.memo(function SqlFilters({
   currentAppEnvironmentId,
   queryName,
 }) {
-  const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
-  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
-  const table = depKeys.includes('table') ? options?.table ?? '' : '';
-
   const currentFilters = readFiltersFromOptions(options, getter, parseKey);
   const filterList = isEmpty(currentFilters) ? [] : Object.values(currentFilters);
 
@@ -308,8 +303,7 @@ const SqlFilters = React.memo(function SqlFilters({
           columnSelectorDependsOn={columnSelectorDependsOn}
           selectedDataSource={selectedDataSource}
           currentAppEnvironmentId={currentAppEnvironmentId}
-          schema={schema}
-          table={table}
+          queryOptions={options}
           queryName={queryName}
         />
       ))}

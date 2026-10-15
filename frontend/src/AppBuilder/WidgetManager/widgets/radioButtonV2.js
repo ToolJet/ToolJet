@@ -68,6 +68,12 @@ export const radiobuttonV2Config = {
       },
       accordian: 'Options',
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -224,9 +230,6 @@ export const radiobuttonV2Config = {
         schema: { type: 'string' },
       },
       accordian: 'switch',
-      tip: 'Checked background',
-      tooltipStyle: {},
-      tooltipPlacement: 'bottom',
     },
     switchOffBackgroundColor: {
       type: 'colorSwatches',
@@ -235,9 +238,6 @@ export const radiobuttonV2Config = {
         schema: { type: 'string' },
       },
       accordian: 'switch',
-      tip: 'Unchecked background',
-      tooltipStyle: {},
-      tooltipPlacement: 'bottom',
     },
     handleColor: {
       type: 'colorSwatches',
@@ -342,6 +342,7 @@ export const radiobuttonV2Config = {
       collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       layout: { value: 'row' },
       optionsLoadingState: { value: '{{false}}' },
       optionVisibility: { value: '{{[true, true, true]}}' },

@@ -624,7 +624,7 @@ const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
   return (
     <div className="page-events">
       <div className="section-header pb-2">{eventMapping[type].title}</div>
-      <div>
+      <div className="page-events-list">
         <EventManager
           component={{
             component: {

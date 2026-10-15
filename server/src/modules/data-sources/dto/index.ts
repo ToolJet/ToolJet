@@ -99,6 +99,9 @@ export class InvokeDataSourceMethodDto {
 
   @IsOptional()
   args?: any;
+
+  @IsOptional()
+  resolvedOptions?: object;
 }
 
 export type InvokeDataSourceMethodResponseDto = QueryResult;

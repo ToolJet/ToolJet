@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { datasourceService } from '@/_services';
+import { datasourceService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
@@ -21,6 +21,7 @@ const Googlesheets = ({
 
   function authGoogle() {
     const provider = 'googlesheets';
+    const organizationId = authenticationService.currentSessionValue?.current_organization_id;
     setAuthStatus('waiting_for_url');
 
     const scope =
@@ -29,7 +30,7 @@ const Googlesheets = ({
         : 'https://www.googleapis.com/auth/spreadsheets';
 
     datasourceService
-      .fetchOauth2BaseUrl(provider)
+      .fetchOauth2BaseUrl(provider, null, options, currentAppEnvironmentId, organizationId)
       .then((data) => {
         const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=consent`;
         localStorage.setItem('sourceWaitingForOAuth', 'newSource');

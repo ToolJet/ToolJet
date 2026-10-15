@@ -654,6 +654,16 @@ export const positionGroupGhostElement = (events, ghostElementId, gridWidth) => 
   ghostElement.style.transform = `translate(${boundingBox.left}px, ${boundingBox.top}px)`;
 };
 
+export const isPointerOverCanvasArea = (clientX, clientY) => {
+  const canvasArea = document.getElementsByClassName('tj-canvas-area')?.[0];
+  if (!canvasArea) return false;
+
+  // Hit-test instead of comparing against the canvas area's rect: when the canvas is scrolled
+  // under an open right sidebar, the rect extends beneath the sidebar even though it is hidden.
+  const hitElement = document.elementFromPoint(clientX, clientY);
+  return !!hitElement && canvasArea.contains(hitElement);
+};
+
 /**
  * Finds the new parent ID based on the current mouse position during drag operations
  * @param {number} clientX - The X coordinate of the mouse position
@@ -735,7 +745,9 @@ export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClas
 
 export const isDroppingRestrictedWidget = (target, dragged) => {
   const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
-  const restrictedWidgetsOnTargetSlot = RESTRICTED_WIDGET_SLOTS_CONFIG?.[target.slotType] || [];
+  const restrictedWidgetsOnTargetSlot = ['header', 'footer'].includes(target.slotType)
+    ? RESTRICTED_WIDGET_SLOTS_CONFIG
+    : [];
 
   const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
   return restrictedWidgets.includes(dragged.widgetType);

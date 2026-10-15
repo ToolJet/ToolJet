@@ -5,7 +5,7 @@ import moment from 'moment-timezone';
 import cx from 'classnames';
 import { isDateRangeValid, isDateValid } from './utils';
 import './styles.scss';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const DaterangePicker = ({
   height,
@@ -74,6 +74,19 @@ export const DaterangePicker = ({
 
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
+
+  const clearDateRangeValue = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setExposedVariables({
+      startDate: null,
+      startDateInUnix: null,
+      endDate: null,
+      endDateInUnix: null,
+      selectedDateRange: null,
+    });
+  };
+
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
 
@@ -123,17 +136,7 @@ export const DaterangePicker = ({
 
   useEffect(() => {
     const exposedVariables = {
-      clearDateRange: () => {
-        setStartDate(null);
-        setEndDate(null);
-        setExposedVariables({
-          startDate: null,
-          startDateInUnix: null,
-          endDate: null,
-          endDateInUnix: null,
-          selectedDateRange: null,
-        });
-      },
+      clearDateRange: clearDateRangeValue,
       setDateRange: (startDate, endDate, customFormat) => {
         const startDateObj = moment(startDate, customFormat || format);
         const endDateObj = moment(endDate, customFormat || format);
@@ -256,6 +259,8 @@ export const DaterangePicker = ({
     }
   }, [format]);
 
+  useFormClear(clearDateRangeValue);
+
   const componentProps = {
     className: 'input-field form-control validation-without-icon px-2',
     popperClassName: cx('tj-daterange-widget !tw-mt-0', {
@@ -279,7 +284,8 @@ export const DaterangePicker = ({
     endDate: endDate,
     selectsRange: true,
     monthsShown: 2,
-    excludeDates: excludedDates,
+    // Day-level exclusions must not disable whole year/month cells in year/month picker modes
+    excludeDates: datepickerMode === 'date' ? excludedDates : undefined,
     showMonthDropdown: datepickerMode === 'date',
     showYearDropdown: datepickerMode === 'date',
     showMonthYearPicker: datepickerMode === 'month',

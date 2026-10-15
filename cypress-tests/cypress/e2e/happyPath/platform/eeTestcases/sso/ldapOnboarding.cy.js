@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
-import { usersSelector } from "Selectors/manageUsers";
+import { commonEeSelectors, ssoEeSelector } from "Selectors/platform/eeCommon";
+import { usersSelector } from "Selectors/platform/manageUsers";
 import {
     logout,
     navigateToAppEditor,
@@ -14,12 +14,12 @@ import {
 import { setupAndUpdateRole } from "Support/utils/manageGroups";
 import { disableToggle, enableToggle } from "Support/utils/platform/eeCommon";
 import { ssoText } from "Texts/common";
-import { ssoEeText } from "Texts/eeCommon";
-import { usersText } from "Texts/manageUsers";
+import { ssoEeText } from "Texts/platform/eeCommon";
+import { usersText } from "Texts/platform/manageUsers";
 import { sanitize } from "Support/utils/common";
 import { setSignupStatus } from "Support/utils/manageSSO";
 import { apiRequest as baseApiRequest } from "Support/utils/externalApi";
-import { navigateAndVerifyInspector } from "Support/utils/inspector";
+import { navigateAndVerifyInspector } from "Support/utils/appBuilder/inspector";
 
 const apiBaseUrl = Cypress.env("API_URL");
 const authHeader = {
@@ -84,13 +84,16 @@ describe("LDAP SSO", () => {
             ssoEeSelector.hostInput,
             ssoEeSelector.portInput,
             ssoEeSelector.baseDnInput,
+            ssoEeSelector.addBaseDn,
+            ssoEeSelector.attributeCNRadio,
+            ssoEeSelector.attributeUPNRadio,
+            ssoEeSelector.groupsyncToggle,
             ssoEeSelector.sslToggleInput,
         ];
 
         formFields.forEach((field) => {
-            cy.get(field).should("be.visible");
+            cy.scrollToElement(field);
         });
-
         // Verify buttons using forEach
         const buttons = [
             { selector: commonSelectors.cancelButton, index: 1, text: "Cancel" },
@@ -114,6 +117,7 @@ describe("LDAP SSO", () => {
         // Step 2: Configure LDAP SSO successfully
 
         // Fill configuration
+        cy.scrollToElement(ssoEeSelector.nameInput);
         cy.clearAndType(ssoEeSelector.nameInput, "Tooljet LDAP Auth");
         cy.clearAndType(ssoEeSelector.hostInput, Cypress.env("ldap_host"));
         cy.clearAndType(ssoEeSelector.portInput, "10389");
@@ -135,7 +139,7 @@ describe("LDAP SSO", () => {
 
         cy.get(ssoEeSelector.ldapSSOText)
             .verifyVisibleElement("have.text", ssoEeText.ldapSSOText)
-            .click();
+            .click({force:true});
     });
 
     it("should show error when user does not exist in workspace", () => {

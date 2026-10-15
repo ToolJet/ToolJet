@@ -15,7 +15,6 @@ export const JSONExplorer = function JSONExplorer(props) {
     styles,
     setExposedVariable,
     setExposedVariables,
-    adjustComponentPositions,
     currentLayout,
     width,
     currentMode,
@@ -43,7 +42,6 @@ export const JSONExplorer = function JSONExplorer(props) {
     id,
     height,
     value: forceDynamicHeightUpdate,
-    adjustComponentPositions,
     currentLayout,
     width,
     visibility,
@@ -72,6 +70,7 @@ export const JSONExplorer = function JSONExplorer(props) {
 
   const containerComputedStyles = {
     height: isDynamicHeightEnabled ? '100%' : height,
+    ...(isDynamicHeightEnabled ? { minHeight: `${height}px` } : {}),
     backgroundColor,
     border: `1px solid ${borderColor}`,
     borderRadius: `${borderRadius}px`,

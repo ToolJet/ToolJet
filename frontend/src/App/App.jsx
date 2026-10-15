@@ -4,7 +4,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute } from '@/Routes';
+import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
 import { TooljetDatabase } from '@/TooljetDatabase';
 import { Authorize } from '@/Oauth2';
@@ -50,6 +50,7 @@ import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
+import UpgradePlanModal from '@/modules/common/components/UpgradePlanModal';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -198,7 +199,7 @@ class AppComponent extends React.Component {
     };
     let toastOptions = {
       style: {
-        wordBreak: 'break-all',
+        overflowWrap: 'break-word',
       },
     };
 
@@ -209,7 +210,7 @@ class AppComponent extends React.Component {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
-          wordBreak: 'break-all',
+          overflowWrap: 'break-word',
         },
       };
     }
@@ -396,9 +397,9 @@ class AppComponent extends React.Component {
                     exact
                     path="/integrations"
                     element={
-                      <AdminRoute {...this.props} darkMode={darkMode}>
+                      <MarketplaceRoute>
                         <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </AdminRoute>
+                      </MarketplaceRoute>
                     }
                   >
                     <Route path="installed" element={<InstalledPlugins />} />
@@ -487,6 +488,7 @@ class AppComponent extends React.Component {
               </Routes>
             </BreadCrumbContext.Provider>
             <div id="modal-div" />
+            <UpgradePlanModal />
           </div>
 
           <Toast toastOptions={toastOptions} />

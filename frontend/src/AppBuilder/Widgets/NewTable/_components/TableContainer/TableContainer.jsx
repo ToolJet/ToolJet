@@ -21,6 +21,7 @@ export const TableContainer = ({
   hasDataChanged,
   tableBodyRef,
   loadingState,
+  moduleId = 'canvas',
 }) => {
   const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
     useTableStore();
@@ -88,7 +89,8 @@ export const TableContainer = ({
       tableBodyRef,
       t,
       enableExpandableRows,
-      toggleRowExpansion
+      toggleRowExpansion,
+      moduleId
     );
   }, [
     actions,
@@ -105,6 +107,7 @@ export const TableContainer = ({
     serverSideSearch,
     enableExpandableRows,
     toggleRowExpansion,
+    moduleId,
   ]);
 
   const { table, pagination, setPagination, columnVisibility, setColumnFilters, columnOrder, setColumnOrder } =

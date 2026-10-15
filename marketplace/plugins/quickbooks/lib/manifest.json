@@ -9,7 +9,8 @@
     "exposedVariables": { "isLoading": false, "data": {}, "rawData": {} },
     "options": {
       "client_id": { "type": "string" },
-      "client_secret": { "type": "string", "encrypted": true }
+      "client_secret": { "type": "string", "encrypted": true },
+      "company_id": { "type": "string" }
     },
     "customTesting": false
   },
@@ -30,12 +31,12 @@
       "type": "react-component-oauth",
       "description": "OAuth 2.0 authentication for QuickBooks Online",
       "oauth_configs": {
-        "allowed_field_groups": { "authorization_code": ["client_id", "client_secret"] },
+        "allowed_field_groups": { "authorization_code": ["client_id", "client_secret", "company_id"] },
         "allowed_auth_types": ["oauth2"],
         "allowed_grant_types": ["authorization_code"],
         "allowed_scope_field": true
       }
     }
   },
-  "required": ["client_id", "client_secret", "scopes"]
+  "required": ["client_id", "client_secret", "scopes", "company_id"]
 }

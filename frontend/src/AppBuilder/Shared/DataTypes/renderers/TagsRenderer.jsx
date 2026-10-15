@@ -351,7 +351,6 @@ export const TagsRenderer = ({
     [isMulti, defaultOptionsList]
   );
 
-  console.log('defaultValue', defaultValue);
   const resolveSelectedOption = useCallback(
     (item) => {
       if (item == null || item === '') return null;
@@ -427,7 +426,7 @@ export const TagsRenderer = ({
     >
       <>
         <div
-          className="w-100 d-flex align-items-center"
+          className="w-100 h-100 d-flex align-items-center"
           ref={containerRef}
           onClick={() => {
             if (isNewRow && isEditable) {

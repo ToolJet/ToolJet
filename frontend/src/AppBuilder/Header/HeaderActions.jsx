@@ -24,8 +24,8 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
   } = useStore(
     (state) => ({
       currentLayout: state.currentLayout,
-      canUndo: state.canUndo && !(state.isEditorFreezed || state.isVersionReleased),
-      canRedo: state.canRedo && !(state.isEditorFreezed || state.isVersionReleased),
+      canUndo: state.canUndo && !(state.isEditorFreezed || state.isVersionReleased || state.isEditorReadOnly),
+      canRedo: state.canRedo && !(state.isEditorFreezed || state.isVersionReleased || state.isEditorReadOnly),
       toggleCurrentLayout: state.toggleCurrentLayout,
       showToggleLayoutBtn: state.showToggleLayoutBtn,
       showUndoRedoBtn: state.showUndoRedoBtn,

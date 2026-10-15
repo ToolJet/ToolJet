@@ -4,10 +4,10 @@
 }
 
 /* Dynamic-height mode (view-only): suppress the transient scrollbar that
- * flashes for a frame while the active tab's content grows ahead of the
- * Tabs reflow. The `dynamic-{id}` class is only applied to the active
- * .tab-pane when isDynamicHeightEnabled is true.
+ * flashes while the active tab's content grows ahead of the Tabs reflow.
+ * `>` scopes this to the tab pane's OWN canvas — a descendant selector also
+ * hit nested widgets' canvases (e.g. an embedded module), killing their scroll.
  */
-.tab-pane[class*="dynamic-"] .real-canvas {
+.tab-pane[class*="dynamic-"] > .real-canvas {
     overflow-y: hidden !important;
 }

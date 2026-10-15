@@ -11,6 +11,7 @@ import {
 import classNames from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const checkIfStarRatingLabelTypeIsDeprecated = (value) => {
   return value === 'legacy';
@@ -187,6 +188,11 @@ export const Rating = ({
     setExposedVariable('resetValue', resetValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultSelected]);
+
+  useFormClear(() => {
+    setRatingIndex(-1);
+    setExposedVariable('value', 0);
+  });
 
   const _renderRatingWidget = () => {
     return (

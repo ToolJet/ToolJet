@@ -17,3 +17,6 @@ export * from './helpers/api';
 
 // --- Workflows: workflow-specific factories (apps, queries, executions, bundles) ---
 export * from './helpers/workflows';
+
+// --- Custom Component Libraries: entity factories, PAT minting, upload fixtures ---
+export * from './helpers/custom-component-libraries';

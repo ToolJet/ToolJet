@@ -7,15 +7,20 @@ const universalProps = {
   },
   others: {},
   events: {},
-  styles: {},
+  styles: {
+    cssClass: { type: 'code', displayName: 'CSS class', accordian: 'Advanced' },
+  },
   validate: true,
   generalStyles: {
     boxShadow: { type: 'boxShadow', displayName: 'Box Shadow' },
   },
   definition: {
+    properties: {},
     others: {},
     events: [],
-    styles: {},
+    styles: {
+      cssClass: { value: '' },
+    },
     generalStyles: {
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
@@ -37,10 +42,15 @@ const combineProperties = (widget, universal, isArray = false) => {
 };
 
 export const componentTypes = widgets.map((widget) => {
-  return {
+  const combined = {
     ...combineProperties(widget, universalProps),
     definition: combineProperties(widget.definition, universalProps.definition, true),
   };
+  if (widget.component === 'LibraryComponent') {
+    delete combined.styles.cssClass;
+    delete combined.definition.styles.cssClass;
+  }
+  return combined;
 });
 
 export const componentTypeDefinitionMap = componentTypes.reduce((acc, component) => {

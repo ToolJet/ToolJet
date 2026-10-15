@@ -62,12 +62,17 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
         .then(({ ai_cookies }) => {
           // Update AI cookies in the session for cloud
           updateCurrentSession({ ai_cookies });
-          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {
-            updateCurrentSession({
-              isUserLoggingIn: false,
-            });
-            navigate(path);
-          });
+          authorizeUserAndHandleErrors(
+            current_organization_id,
+            current_organization_slug,
+            () => {
+              updateCurrentSession({
+                isUserLoggingIn: false,
+              });
+              navigate(path);
+            },
+            path
+          );
         });
     }
   }

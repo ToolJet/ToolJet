@@ -101,14 +101,10 @@
   background-color: inherit;
 }
 
-/* Dynamic-height mode (view-only): suppress the transient scrollbar that
- * flashes for a frame while child widgets grow ahead of the form's reflow.
- * `dynamic-{id}` class is only applied to .jet-form-body when
- * isDynamicHeightEnabled is true (properties.dynamicHeight && view mode).
- */
-.jet-form-body[class*="dynamic-"] .real-canvas {
-  overflow-y: hidden !important;
-}
+/* Dynamic-height flash suppression is applied inline to the form body's OWN
+ * canvas (overflowY in Form.jsx's SubContainer styles). No CSS rule here: a
+ * `.jet-form-body[class*="dynamic-"] .real-canvas` descendant selector also hit
+ * nested widgets' canvases (e.g. an embedded module) and killed their scroll. */
 
 .jet-form-footer {
   min-height: 10px;

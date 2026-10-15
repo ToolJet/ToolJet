@@ -5,15 +5,16 @@ import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { DROPPABLE_PARENTS } from '../appCanvasConstants';
+import { DROPPABLE_PARENTS, GRID_HEIGHT } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '../../../_components/ConfigHandleButton';
 import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash } from 'lucide-react';
 import Popover from '@/_ui/Popover';
-import DynamicHeightInfo from '@assets/images/dynamic-height-info.svg';
+import dynamicHeightSvg from '@assets/images/dynamic-height-info.svg?url';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import { getInvalidLicenseTooltip } from './utils';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const MentionComponentInChat = lazy(() => import('./MentionComponentInChat'));
@@ -36,8 +37,11 @@ export const ConfigHandle = ({
   subContainerIndex,
   isDynamicHeightEnabled,
 }) => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
+  const hasCustomComponentLibrariesAccess = useStore(
+    (state) => state.license?.featureAccess?.customComponentLibraries === true
+  );
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
@@ -56,7 +60,9 @@ export const ConfigHandle = ({
   );
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const timeoutRef = useRef(null);
-  const position = widgetTop < 15 ? 'bottom' : 'top';
+  // Flip handle above the widget only once there's a full 3 grid rows of space above it —
+  // 1-2 rows isn't enough headroom in a child canvas (Tabs/Form/Modal etc.), handle ends up clipped.
+  const position = widgetTop < GRID_HEIGHT * 3 ? 'bottom' : 'top';
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
@@ -115,6 +121,14 @@ export const ConfigHandle = ({
     return 'Access restricted';
   };
 
+  const invalidLicenseTooltip = getInvalidLicenseTooltip({
+    componentType,
+    componentName,
+    isModulesEnabled,
+    isModuleEditor,
+    hasCustomComponentLibrariesAccess,
+  });
+
   const isHiddenOrModalOpen = visibility === false || (componentType === 'Modal' && isModalOpen);
   const getConfigHandleButtonStyle = isHiddenOrModalOpen
     ? {
@@ -167,7 +181,7 @@ export const ConfigHandle = ({
   const popoverContent = (
     <div className="dynamic-height-info-wrapper" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="dynamic-height-info-image">
-        <DynamicHeightInfo />
+        <img src={dynamicHeightSvg} alt="Dynamic Height Info" />
       </div>
       <div className="dynamic-height-info-body">
         <p className="dynamic-height-info-text-title">Dynamic Height enabled</p>
@@ -225,9 +239,11 @@ export const ConfigHandle = ({
           }
         }
       }}
-      data-tooltip-id={`invalid-license-modules-${componentName?.toLowerCase()}`}
-      data-tooltip-html="Your plan is expired. <br/> Renew to use the modules."
-      data-tooltip-place="right"
+      {...(invalidLicenseTooltip && {
+        'data-tooltip-id': invalidLicenseTooltip.id,
+        'data-tooltip-html': invalidLicenseTooltip.html,
+        'data-tooltip-place': 'right',
+      })}
     >
       <ConfigHandleButton customStyles={getConfigHandleButtonStyle} className="no-hover component-name-btn">
         {isDynamicHeightEnabled && (
@@ -314,16 +330,24 @@ export const ConfigHandle = ({
       >
         <Trash size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
-      {/* Tooltip for invalid license on ModuleViewer */}
-      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
-        <Tooltip
-          delay={{ show: 500, hide: 50 }}
-          id={`invalid-license-modules-${componentName?.toLowerCase()}`}
-          className="tooltip"
-          isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
-          style={{ textAlign: 'center' }}
-        />
-      )}
+
+      {invalidLicenseTooltip && <InvalidLicenseTooltip id={invalidLicenseTooltip.id} isOpen={_showHandle} />}
     </div>
   );
 };
+
+// The react-tooltip element for whichever invalid-license case applies (module vs. library) --
+// same id getInvalidLicenseTooltip returned must be set as the trigger's data-tooltip-id, so
+// callers get both from one place instead of maintaining a separate near-duplicate <Tooltip/>
+// block per case.
+function InvalidLicenseTooltip({ id, isOpen }) {
+  return (
+    <Tooltip
+      id={id}
+      className="tooltip"
+      delay={{ show: 500, hide: 50 }}
+      isOpen={isOpen}
+      style={{ textAlign: 'center' }}
+    />
+  );
+}

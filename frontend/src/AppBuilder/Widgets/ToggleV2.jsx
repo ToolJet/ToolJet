@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const Switch = ({
@@ -21,6 +21,7 @@ const Switch = ({
   inputId,
 }) => {
   const handleToggleChange = () => {
+    if (disabledState) return;
     setOn(!on);
     fireEvent('onChange');
     setUserInteracted(true);
@@ -76,17 +77,23 @@ const Switch = ({
             marginLeft: alignment === 'left' && '-2rem',
             border: `1 px solid ${borderColor}`,
           }}
+          // native disabled: removes the (hidden, focusable) input from the tab
+          // order + blocks Space; the wrapper div's onClick is guarded separately
+          disabled={disabledState}
           aria-disabled={disabledState}
           aria-hidden={!visibility}
           aria-required={isMandatory}
           aria-invalid={!isValid}
-          className="form-check-input "
+          className="form-check-input tw-peer"
           checked={on}
           onChange={onChange}
           onClick={onClick}
         />
 
-        <span style={sliderStyle}>
+        <span
+          className="peer-focus-visible:tw-ring-2 peer-focus-visible:tw-ring-interactive-focus-outline peer-focus-visible:tw-ring-offset-1"
+          style={sliderStyle}
+        >
           <span style={circleStyle}></span>
         </span>
       </div>
@@ -243,6 +250,8 @@ export const ToggleSwitchV2 = ({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on]);
+
+  useFormClear(() => setInputValue(false));
 
   const renderInput = () => (
     <div

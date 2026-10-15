@@ -63,7 +63,10 @@ export async function listAllSheets(spreadsheet_id: string, authHeader: any): Pr
     const response = await makeRequestToListAllSheets(spreadsheet_id, authHeader);
     return { sheets: response.sheets };
   } catch (error) {
-    throw new QueryError(`Error fetching all sheets: ${error.response?.statusCode || ''} ${error.message}`,{},{error});
+    const rawError = error.response?.body ? JSON.parse(error.response.body) : null;
+    const statusCode = error.response?.statusCode || rawError?.error?.code || 500;
+    const message = rawError?.error?.message || error.message || 'Unknown error';
+    throw new QueryError(`Error fetching all sheets: ${message}`, { statusCode }, { rawError });
   }
 }
 

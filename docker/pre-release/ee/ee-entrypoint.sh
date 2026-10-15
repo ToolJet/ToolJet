@@ -3,6 +3,16 @@ set -e
 
 npm cache clean --force
 
+# ================== fetch AWS RDS global cert bundle at runtime ==================
+mkdir -p /home/appuser/certs
+if wget -q -O /home/appuser/certs/global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem; then
+  echo "RDS cert bundle downloaded successfully."
+else
+  echo "Error: Failed to download RDS cert bundle. Check network/internet access for this task."
+  exit 1
+fi
+export NODE_EXTRA_CA_CERTS=/home/appuser/certs/global-bundle.pem
+
 # Load environment variables from .env if the file exists
 if [ -f "./.env" ]; then
   export $(grep -v '^#' ./.env | xargs -d '\n') || true

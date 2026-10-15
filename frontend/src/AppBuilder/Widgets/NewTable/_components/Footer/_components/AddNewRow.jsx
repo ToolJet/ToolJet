@@ -1,21 +1,34 @@
 import React, { useEffect, useMemo, useCallback, useRef } from 'react';
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
+import { tabbable } from 'tabbable';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { IconPencil } from '@tabler/icons-react';
 import { Tooltip } from 'react-tooltip';
 import cx from 'classnames';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import generateColumnsData from '../../../_utils/generateColumnsData';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import useStore from '@/AppBuilder/_stores/store';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { determineJustifyContentValue } from '@/_helpers/utils';
 
 export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent, setExposedVariables }) {
+  const { moduleId } = useModuleContext();
   const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
   const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails, shallow);
   const updateShouldPersistAddNewRow = useTableStore((state) => state.updateShouldPersistAddNewRow, shallow);
+  const columnHeaderWrap = useTableStore((state) => state.getTableStyles(id)?.columnHeaderWrap, shallow);
+  const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
+  const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
+  const columnBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.columnBackgroundColor, shallow);
+  const getResolvedValue = useStore.getState().getResolvedValue;
+  // header overflow set to wrap: let the header grow with the text instead of overflowing the fixed 32px height
+  const isHeaderWrapped = getResolvedValue(columnHeaderWrap) === 'wrap';
 
   const addNewRowDetailsLength = addNewRowDetails.size;
 
@@ -56,6 +69,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   );
 
   const addRowTableRef = useRef();
+  const rowToFocusRef = useRef(null);
 
   const columns = useMemo(
     () =>
@@ -75,6 +89,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           handleCellValueChange,
           searchText: '',
           columnForAddNewRow: true,
+          moduleId,
         }).filter(Boolean),
       ].filter(Boolean),
     [
@@ -86,6 +101,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
       newEmptyRow,
       addNewRowDetails,
       addNewRowDetailsLength,
+      moduleId,
     ]
   );
 
@@ -96,8 +112,21 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   });
 
   const addNewRow = () => {
+    rowToFocusRef.current = addNewRowDetailsLength;
     updateAddNewRowDetails(id, addNewRowDetailsLength, newEmptyRow);
   };
+
+  useEffect(() => {
+    // Move focus into the new row's first cell when a new row is added
+    const rowIndex = rowToFocusRef.current;
+    if (rowIndex === null) return;
+    rowToFocusRef.current = null;
+    const row = addRowTableRef.current?.querySelectorAll('.table-row')?.[rowIndex];
+    if (!row) return;
+    // tabbable returns the row's controls in real tab order and already excludes disabled, hidden
+    // and tabindex="-1" nodes — which is how JSON columns keep opting themselves out.
+    tabbable(row)[0]?.focus();
+  }, [addNewRowDetailsLength]);
 
   const closeAddNewRowPopup = () => {
     hideAddNewRowPopup();
@@ -118,6 +147,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           </button>
         </div>
       </div>
+      {/* header styles mirror the main table header (bg, casing, color, pencil icon, wrap) */}
       <div className="table-responsive jet-data-table" ref={addRowTableRef}>
         <table
           className={`table table-vcenter table-nowrap ${darkMode && 'dark-theme table-dark'}`}
@@ -129,8 +159,14 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="th"
-                    style={{ width: header.column.getSize() }}
+                    className={cx('th tj-text-xsm font-weight-400', { 'header-wrap': isHeaderWrapped })}
+                    style={{
+                      width: header.column.getSize(),
+                      whiteSpace: isHeaderWrapped ? 'normal' : 'nowrap',
+                      backgroundColor: columnBackgroundColor,
+                      color: columnTitleColor,
+                      '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 6),
+                    }}
                     data-cy={`${generateCypressDataCy(
                       typeof header.column.columnDef?.header === 'string'
                         ? header.column.columnDef?.header
@@ -138,7 +174,9 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
                     )}-column-header`}
                   >
                     <div
-                      className="d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper"
+                      className={`d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper justify-content-${determineJustifyContentValue(
+                        header.column.columnDef.meta?.horizontalAlignment ?? ''
+                      )}`}
                       data-cy={`${generateCypressDataCy(
                         typeof header.column.columnDef?.header === 'string'
                           ? header.column.columnDef?.header
@@ -146,17 +184,20 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
                       )}-editable-icon`}
                     >
                       {header.column.columnDef.meta?.columnType !== 'image' && (
-                        <div>
-                          <SolidIcon
-                            name="editable"
-                            width="16px"
-                            height="16px"
-                            fill={darkMode ? '#4C5155' : '#C1C8CD'}
-                            vievBox="0 0 16 16"
-                          />
+                        <div className="d-flex align-items-center tw-flex-shrink-0">
+                          <IconPencil size="16px" color="var(--cc-secondary-icon, var(--icon-default))" />
                         </div>
                       )}
-                      <div className="tj-text-xsm header-text">
+                      <div
+                        className={cx('header-text', {
+                          'text-truncate': !isHeaderWrapped,
+                          'wrap-wrapper': isHeaderWrapped,
+                        })}
+                        style={{
+                          textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none',
+                          textAlign: header.column.columnDef.meta?.horizontalAlignment || 'left',
+                        }}
+                      >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                       </div>
                     </div>

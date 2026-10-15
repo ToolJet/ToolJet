@@ -33,6 +33,8 @@ const sectionConfig = {
       'RadioButtonV2',
       'Checkbox',
       'TreeSelect',
+      'Cascader',
+      'FileInput',
     ]),
   },
   dateTimeInputs: {
@@ -65,6 +67,9 @@ const sectionConfig = {
   },
   custom: {
     title: 'Custom',
+    // LibraryComponent (custom component host) is deliberately NOT listed: users
+    // discover custom components via the panel's Custom TAB, which drops
+    // pre-filled instances — a bare unconfigured card would be a dead end.
     valueSet: new Set(['CustomComponent', 'Html', 'IFrame']),
   },
   miscellaneous: {

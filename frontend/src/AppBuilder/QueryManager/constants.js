@@ -132,3 +132,33 @@ export const workflowDefaultSources = {
   Loop: { kind: 'loop', id: 'loop', name: 'Loop' },
   Agent: { kind: 'agent', id: 'agent', name: 'Agent' },
 };
+
+// Query kinds where abort is unavailable. These execute outside fetch() so AbortController
+// cannot cancel the underlying work — runjs/runpy run in-browser, workflows use SSE.
+// Used by AbortButton (to hide it) and QueryKeyHooks (to disable Cmd+. shortcut).
+export const ABORT_UNSUPPORTED_KINDS = new Set(['runjs', 'runpy', 'workflows']);
+
+// Datasource kinds the AI can write queries and transformations for. Kinds outside this list (e.g.
+// restapi, tooljetdb) are rejected by the agent, so every AI entry point must be gated on it —
+// otherwise the button is a guaranteed failure.
+// Kinds with no transformation layer at all — their query editor hides the Transformation tab, so
+// nothing (the "✨", the "@query.transformation" mention) may offer to write one for them.
+export const TRANSFORMATION_DISABLED_KINDS = new Set(['runjs', 'runpy', 'workflows']);
+
+export const AI_QUERY_SUPPORTED_KINDS = [
+  'postgresql',
+  'openapi',
+  'gmail',
+  'googlecalendar',
+  'mongodb',
+  'bigquery',
+  'mysql',
+  'mssql',
+  'snowflake',
+  'openai',
+  'runjs',
+  'databricks',
+  'servicenow',
+  'quickbooks',
+  'hubspot',
+];

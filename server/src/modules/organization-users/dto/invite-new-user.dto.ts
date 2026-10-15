@@ -10,6 +10,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  MaxLength,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { lowercaseString, sanitizeInput, areAllUnique } from '@helpers/utils.helper';
@@ -73,18 +74,22 @@ function IsUserMetadataValid(validationOptions?: ValidationOptions) {
 
 // DTO Class
 export class InviteNewUserDto {
+  // NOTE: MaxLength(99) below is precautionary against abuse, can be removed/adjusted later if it causes issues
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsOptional()
+  @MaxLength(99, { message: 'Invalid name' })
   firstName: string;
 
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsOptional()
+  @MaxLength(99, { message: 'Invalid name' })
   lastName: string;
 
   @IsEmail()
   @Transform(({ value }) => lowercaseString(value))
+  @MaxLength(99, { message: 'Invalid email' })
   email: string;
 
   @IsArray()

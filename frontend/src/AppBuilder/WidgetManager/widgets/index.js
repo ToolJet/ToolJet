@@ -39,6 +39,7 @@ import { tagsConfig } from './tags';
 import { paginationConfig } from './pagination';
 import { circularProgressbarConfig } from './circularProgressbar';
 import { spinnerConfig } from './spinner';
+import { libraryComponentConfig } from './libraryComponent';
 import { statisticsConfig } from './statistics';
 import { rangeSliderConfig } from './rangeslider';
 import { rangeSliderV2Config } from './rangesliderV2';
@@ -53,6 +54,7 @@ import { stepsConfig } from './steps';
 import { kanbanConfig } from './kanban';
 import { colorPickerConfig } from './colorPicker';
 import { treeSelectConfig } from './treeSelect';
+import { cascaderConfig } from './cascader';
 import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
@@ -79,6 +81,7 @@ import { progressbarConfig } from './progressbar';
 import { navigationConfig } from './navigation';
 import { fileButtonConfig } from './fileButton';
 import { buttonGroupV2Config } from './buttonGroupV2';
+import { flexContainerConfig } from './flexContainer';
 
 export {
   buttonConfig,
@@ -128,6 +131,7 @@ export {
   paginationConfig,
   circularProgressbarConfig,
   spinnerConfig,
+  libraryComponentConfig,
   statisticsConfig,
   rangeSliderConfig,
   timelineConfig,
@@ -143,6 +147,7 @@ export {
   kanbanBoardConfig, //!Depreciated
   colorPickerConfig,
   treeSelectConfig,
+  cascaderConfig,
   linkConfig,
   iconConfig,
   boundedBoxConfig,
@@ -162,4 +167,5 @@ export {
   progressbarConfig,
   navigationConfig,
   fileButtonConfig,
+  flexContainerConfig,
 };

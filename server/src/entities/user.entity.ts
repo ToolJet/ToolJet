@@ -1,3 +1,4 @@
+import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import {
   Entity,
   Column,
@@ -100,8 +101,20 @@ export class User extends BaseEntity {
   @Column({ name: 'invitation_token' })
   invitationToken: string;
 
+  @Column({ name: 'invitation_token_expiry', type: 'timestamptz', nullable: true, default: null })
+  invitationTokenExpiry: Date | null;
+
   @Column({ name: 'forgot_password_token' })
   forgotPasswordToken: string;
+
+  @Column({ name: 'forgot_password_token_expiry', type: 'timestamptz', nullable: true, default: null })
+  forgotPasswordTokenExpiry: Date;
+
+  @Column({ name: 'password_expiry', type: 'timestamptz', nullable: true, default: null })
+  passwordExpiry: Date;
+
+  @Column({ name: 'expired_password_token', nullable: true, default: null })
+  expiredPasswordToken: string;
 
   @Column({ name: 'password_digest' })
   password: string;
@@ -123,6 +136,15 @@ export class User extends BaseEntity {
 
   @Column({ name: 'password_retry_count' })
   passwordRetryCount: number;
+
+  @Column({ name: 'mfa_enabled', default: false })
+  mfaEnabled: boolean;
+
+  @Column({ name: 'mfa_setup_completed_at', type: 'timestamptz', nullable: true })
+  mfaSetupCompletedAt: Date | null;
+
+  @Column({ name: 'ai_build_notifications_enabled', default: true })
+  aiBuildNotificationsEnabled: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -207,4 +229,8 @@ export class User extends BaseEntity {
   sessionId: string;
   roleGroup: USER_ROLE;
   tjApiSource?: string;
+  // Session provenance, mirrored from the JWT. Session kinds: personal-access-tokens/AGENTS.md.
+  isPATLogin?: boolean;
+  patScope?: PersonalAccessTokenScope;
+  patAppId?: string;
 }

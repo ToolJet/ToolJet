@@ -110,6 +110,18 @@ export const tabsConfig = {
         defaultValue: false,
       },
     },
+    scrollToTopOnTabSwitch: {
+      type: 'toggle',
+      displayName: 'Scroll to top on tab switch',
+      section: 'additionalActions',
+      conditionallyRender: { key: 'renderOnlyActiveTab', value: false },
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
     dynamicHeight: {
       type: 'toggle',
       displayName: 'Dynamic height',
@@ -434,6 +446,7 @@ export const tabsConfig = {
       defaultTab: { value: '0' },
       hideTabs: { value: false },
       renderOnlyActiveTab: { value: false },
+      scrollToTopOnTabSwitch: { value: false },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
 

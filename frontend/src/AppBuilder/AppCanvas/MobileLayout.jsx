@@ -26,6 +26,7 @@ export const MobileLayout = ({
   mainCanvasContainer,
   gridContent,
   canvasHeaderHeight = PAGE_CANVAS_HEADER_HEIGHT,
+  pageLoader = false,
 }) => {
   const mobileCanvasFrameRef = useRef(null);
   const mobileNavSheetContainerRef = useRef(null);
@@ -44,7 +45,8 @@ export const MobileLayout = ({
       <div
         ref={mobileNavSheetContainerRef}
         data-cy="mobile-nav-sheet-container"
-        className={cx('tw-absolute tw-inset-0 tw-overflow-hidden tw-pointer-events-none')}
+        style={{ marginBottom: '-100dvh', zIndex: 1050 }}
+        className={cx('tw-sticky tw-top-0 tw-inset-x-0 tw-h-dvh tw-overflow-hidden tw-pointer-events-none')}
       />
       {/* Canvas header — sticky at top of scroll */}
       <Suspense fallback={null}>
@@ -74,7 +76,12 @@ export const MobileLayout = ({
           />
         </div>
       )}
-      <CanvasContentTail currentMode={currentMode} appType={appType} isAppDarkMode={isAppDarkMode}>
+      <CanvasContentTail
+        currentMode={currentMode}
+        appType={appType}
+        isAppDarkMode={isAppDarkMode}
+        pageLoader={pageLoader}
+      >
         {mainCanvasContainer}
       </CanvasContentTail>
       <Suspense fallback={null}>

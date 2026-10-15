@@ -1,5 +1,5 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
-import { ssoSelector } from "Selectors/manageSSO";
+import { ssoSelector } from "Selectors/platform/manageSSO";
 import * as common from "Support/utils/common";
 import {
   instanceSSOConfig,
@@ -8,7 +8,7 @@ import {
   verifyTooltipDisabled,
 } from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
-import { ssoText } from "Texts/manageSSO";
+import { ssoText } from "Texts/platform/manageSSO";
 
 export const verifyLoginSettings = (pageName) => {
   //Verify Password and SSO Domain section
@@ -519,11 +519,17 @@ export const ldapSSOPageElements = () => {
     ssoSelector.ldapSSOPageElements,
     ssoText.ldapSSOPageElements
   );
-  cy.get(ssoSelector.baseDnHelperText).should(
-    "have.text",
-    ssoText.ldapBaseDNHelperText
+  cy.get(ssoSelector.attributeCNRadio).should("be.visible").click();
+  verifyElementText(
+    ssoSelector.ldapSSOAttributeElements,
+    ssoText.ldapSSOAttributeElements
   );
-  cy.get(ssoSelector.sslToggle).should("be.visible");
+  cy.get(ssoSelector.attributeUPNRadio).should("be.visible").click();
+  cy.get(ssoSelector.ldapSSOAttributeElements.attributeHelperText)
+    .verifyVisibleElement("have.text", ssoText.attributeUPNHelperText);
+  cy.get(ssoSelector.attributeCNRadio).should("be.visible").click();
+
+  cy.scrollToElement(ssoSelector.sslToggle);
 
   cy.get(ssoSelector.cancelButton)
     .eq(1)

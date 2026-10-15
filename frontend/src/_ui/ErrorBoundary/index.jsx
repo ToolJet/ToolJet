@@ -1,26 +1,29 @@
 import React, { Component } from 'react';
 import { withTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
+import { recordWidgetError, recordJsError } from '@/_services/frontend-metrics.service';
 
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
-  }
-  // eslint-disable-next-line no-unused-vars
-  static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI.
-    return { hasError: true };
+    this._handleError = this._handleError.bind(this);
   }
 
-  componentDidCatch(error, errorInfo) {
-    // You can also log the error to an error reporting service
-    console.log(error, errorInfo);
+  _handleError(error, componentStack) {
+    if (this.props.widgetType) {
+      recordWidgetError(this.props.widgetType, error?.message);
+    } else {
+      recordJsError(error?.message, componentStack);
+    }
   }
 
   render() {
     return (
-      <Sentry.ErrorBoundary fallback={<h2>{this.props.t('errorBoundary', 'Something went wrong.')}</h2>}>
+      <Sentry.ErrorBoundary
+        fallback={<h2>{this.props.t('errorBoundary', 'Something went wrong.')}</h2>}
+        onError={this._handleError}
+      >
         {this.props.children}
       </Sentry.ErrorBoundary>
     );
