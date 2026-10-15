@@ -1068,6 +1068,90 @@ describe('RangeSliderV2', () => {
       expect(markTexts(container)[0]).toHaveStyle({ color: 'rgb(1, 2, 3)' });
     });
 
+    test('[RangeSliderV2-MARK-001] marks outside the range are dropped at BOTH ends', async () => {
+      // Break this catches: filtering only one end. The filter has always dropped
+      // marks above max but not below min, so a mark at 10 on a 20..100 slider
+      // rendered off the left of the track.
+      const { container } = widget.render({
+        properties: {
+          ...SINGLE,
+          min: binding('{{20}}'),
+          max: binding('{{100}}'),
+          value: binding('{{50}}'),
+          schema: binding("{{[{label:'TooLow',value:10},{label:'InRange',value:50},{label:'TooHigh',value:150}]}}"),
+        },
+      });
+      await waitFor(() => expect(markTexts(container).length).toBeGreaterThan(0));
+
+      expect(markTexts(container).map((el) => el.textContent)).toEqual(['InRange']);
+    });
+
+    test('[RangeSliderV2-MARK-001] a range slider drops out-of-range marks at both ends too', async () => {
+      // The mark-building code is duplicated per branch, which is how the
+      // one-sided filter survived in the first place.
+      const { container } = widget.render({
+        properties: {
+          ...RANGE,
+          min: binding('{{20}}'),
+          max: binding('{{100}}'),
+          startValue: binding('{{30}}'),
+          endValue: binding('{{70}}'),
+          schema: binding("{{[{label:'TooLow',value:5},{label:'InRange',value:60},{label:'TooHigh',value:400}]}}"),
+        },
+      });
+      await waitFor(() => expect(markTexts(container).length).toBeGreaterThan(0));
+
+      expect(markTexts(container).map((el) => el.textContent)).toEqual(['InRange']);
+    });
+
+    test('[RangeSliderV2-MARK-001] a min that cannot be read falls back to 0 and keeps the marks', async () => {
+      // The hazard is that filtering on a bound min silently empties the track
+      // while a binding has not resolved. It does not happen, but NOT because of
+      // the isNaN guard in the filter: the number schema rejects an unreadable
+      // min and falls it back to 0, so the widget never sees NaN. Asserted on
+      // aria-valuemin so the reason is visible rather than assumed.
+      const { container } = widget.render({
+        properties: {
+          ...SINGLE,
+          min: binding("{{'abc'}}"),
+          max: binding('{{100}}'),
+          value: binding('{{50}}'),
+          schema: binding("{{[{label:'Low',value:10},{label:'Mid',value:50}]}}"),
+        },
+      });
+      await waitFor(() => expect(widget.exposed().value).not.toBeUndefined());
+
+      expect(handle(container)).toHaveAttribute('aria-valuemin', '0');
+      expect(markTexts(container).map((el) => el.textContent)).toEqual(['Low', 'Mid']);
+    });
+
+    test.each([
+      ['a non-numeric binding', "{{'abc'}}"],
+      ['null', '{{null}}'],
+      ['undefined', '{{undefined}}'],
+    ])('[RangeSliderV2-MARK-001] a max of %s falls back to 0 rather than NaN', async (_l, maxBinding) => {
+      // Why this matters: the filter applies each bound only when it is readable,
+      // and the unreadable branch is UNREACHABLE because the number schema rejects
+      // these and substitutes 0. Pinned so the claim stays true — if a bound ever
+      // could arrive as NaN, the filter's behaviour for it would start mattering.
+      //
+      // CHARACTERIZATION of the consequence, which predates the both-ends filter:
+      // a max that falls back to 0 drops every mark above 0, emptying the track.
+      const { container } = widget.render({
+        properties: {
+          ...SINGLE,
+          min: binding('{{0}}'),
+          max: binding(maxBinding),
+          value: binding('{{50}}'),
+          schema: binding("{{[{label:'Low',value:10},{label:'Mid',value:50}]}}"),
+        },
+      });
+      await waitFor(() => expect(widget.exposed().value).not.toBeUndefined());
+
+      expect(handle(container)).toHaveAttribute('aria-valuemax', '0');
+      expect(markTexts(container)).toHaveLength(0);
+    });
+
     test('[RangeSliderV2-MARK-001] the first percent sign of every mark label is stripped', async () => {
       // CHARACTERIZATION (D-07). Undocumented, and the shipped default schema
       // labels 25%/50%/75% render as 25/50/75 — which is what makes it look
