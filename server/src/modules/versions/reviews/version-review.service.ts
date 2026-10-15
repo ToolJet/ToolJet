@@ -12,10 +12,16 @@ import { ReviewEvent, reviewState } from './review-state';
 // Which actions need an approved review. Off unless the instance opts in, so
 // existing workspaces keep releasing as before. A workspace setting would
 // replace this env var in the product.
+// Values: off (default), release, or release,promote (or all), where promote
+// means promoting into production.
 export const reviewPolicy = () => {
-  const value = (process.env.TOOLJET_VERSION_REVIEW_REQUIRED || 'off').toLowerCase();
+  const parts = (process.env.TOOLJET_VERSION_REVIEW_REQUIRED || 'off')
+    .toLowerCase()
+    .split(',')
+    .map((part) => part.trim());
   return {
-    release: value === 'release' || value === 'all',
+    release: parts.includes('release') || parts.includes('all'),
+    promote: parts.includes('promote') || parts.includes('all'),
     requiredApprovals: Number(process.env.TOOLJET_VERSION_REVIEW_APPROVALS || 1),
   };
 };
@@ -303,9 +309,10 @@ export class VersionReviewService {
   }
 
   // Whether a version may be released now, and why not.
-  async gate(manager: EntityManager, appId: string, versionId: string) {
+  async gate(manager: EntityManager, appId: string, versionId: string, action: 'release' | 'promote' = 'release') {
     const policy = reviewPolicy();
-    if (!policy.release) return { required: false, allowed: true, reason: null, reviewId: null };
+    if (!policy[action]) return { required: false, allowed: true, reason: null, reviewId: null };
+    const verb = action === 'promote' ? 'promoted to production' : 'released';
     const [row]: ReviewRowRaw[] = await manager.query(
       `SELECT ${REVIEW_COLUMNS} FROM app_version_reviews r WHERE r.version_id = $1 AND r.app_id = $2 AND r.status = 'open'
         ORDER BY r.created_at DESC LIMIT 1`,
@@ -315,7 +322,7 @@ export class VersionReviewService {
       return {
         required: true,
         allowed: false,
-        reason: 'This version needs an approved review before it can be released',
+        reason: `This version needs an approved review before it can be ${verb}`,
         reviewId: null,
       };
     const events = (await this.events(manager, [row.id]))[row.id] ?? [];
@@ -335,8 +342,13 @@ export class VersionReviewService {
   }
 
   // Called from the release path, inside its transaction.
-  async assertReleasable(manager: EntityManager, appId: string, versionId: string) {
-    const gate = await this.gate(manager, appId, versionId);
+  async assertReleasable(
+    manager: EntityManager,
+    appId: string,
+    versionId: string,
+    action: 'release' | 'promote' = 'release'
+  ) {
+    const gate = await this.gate(manager, appId, versionId, action);
     if (!gate.allowed) throw new ForbiddenException(gate.reason);
     return gate;
   }
