@@ -90,6 +90,29 @@ export function makeRewriter(refs: Map<string, string>) {
   return rewrite;
 }
 
+// ToolJet Database queries keep settings for every operation side by side
+// ({ operation: 'list_rows', list_rows: {...}, delete_rows: {...} }), and the
+// query editor fills defaults for operations the query does not run as soon
+// as it mounts. Only the selected operation's settings mean anything.
+const TJDB_OPERATIONS = [
+  'list_rows',
+  'create_row',
+  'update_rows',
+  'delete_rows',
+  'join_tables',
+  'join_table',
+  'bulk_update_with_primary_key',
+  'bulk_upsert_with_primary_key',
+  'bulk_insert',
+];
+export function normalizeQueryOptions(options: Record<string, any>): Record<string, any> {
+  const operation = options?.operation;
+  if (typeof operation !== 'string' || !TJDB_OPERATIONS.includes(operation)) return options;
+  return Object.fromEntries(
+    Object.entries(options).filter(([key]) => key === operation || !TJDB_OPERATIONS.includes(key))
+  );
+}
+
 const box = (row: VersionRows['layouts'][number]): LayoutBox => {
   const out: LayoutBox = { top: row.top, left: row.left, width: row.width, height: row.height };
   if (row.dimensionUnit && row.dimensionUnit !== 'count') out.dimensionUnit = row.dimensionUnit;
@@ -182,7 +205,7 @@ export function buildSnapshot(rows: VersionRows): VersionSnapshot {
     key: query.name,
     name: query.name,
     dataSource: query.dataSourceId ? (dataSourceLabel.get(query.dataSourceId) ?? query.dataSourceId) : 'none',
-    options: rewrite(asObject(query.options)),
+    options: normalizeQueryOptions(rewrite(asObject(query.options))),
   }));
 
   // Several handlers can share a source and an event (two actions on one

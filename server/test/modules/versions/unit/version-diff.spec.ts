@@ -295,3 +295,21 @@ describe('version diff', () => {
     expect(diff(base, target).settings[0].summary).toBe('Theme changed from "Luna Sales" to "Luna Sales Vivid"');
   });
 });
+
+describe('query option noise', () => {
+  it('ignores ToolJet Database settings for operations the query does not run', () => {
+    const base = baseSpec();
+    base.queries = [{ name: 'getDeals', source: 'tooljetdb', options: { operation: 'list_rows', list_rows: { limit: 50 } } }];
+    const target = baseSpec();
+    target.queries = [
+      {
+        name: 'getDeals',
+        source: 'tooljetdb',
+        options: { operation: 'list_rows', list_rows: { limit: 50 }, delete_rows: { limit: 1, order_column: 'id' } },
+      },
+    ];
+    expect(diff(base, target).identical).toBe(true);
+    target.queries[0].options.list_rows = { limit: 100 };
+    expect(diff(base, target).queries.map((query) => query.status)).toEqual(['changed']);
+  });
+});
