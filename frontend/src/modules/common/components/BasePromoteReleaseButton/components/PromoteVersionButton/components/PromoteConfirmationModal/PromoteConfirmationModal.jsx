@@ -10,6 +10,7 @@ import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { ChangeSummary, findBaseInEnvironment } from '@/AppBuilder/VersionDiff/ChangeSummary';
 
 const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
   const { moduleId } = useModuleContext();
@@ -20,8 +21,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   const { t } = useTranslation();
   const { current_organization_id } = authenticationService.currentSessionValue;
 
-  const { promoteAppVersionAction, selectedVersion, creationMode, versions } = useStore(
+  const { promoteAppVersionAction, selectedVersion, creationMode, versions, appId, releasedVersionId } = useStore(
     (state) => ({
+      appId: state.appStore.modules[moduleId].app.appId,
+      releasedVersionId: state.releasedVersionId,
       promoteAppVersionAction: state.promoteAppVersionAction,
       selectedVersion: state.selectedVersion,
       creationMode: state.appStore.modules[moduleId].app.creationMode,
@@ -39,6 +42,20 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   useEffect(() => {
     setShow(data);
   }, [data]);
+
+  // Review step: what this version changes for the people in the target
+  // environment, compared with the version they use there now.
+  const [baseInTarget, setBaseInTarget] = useState(null);
+  useEffect(() => {
+    if (!showModal || !appId || !data?.target) return;
+    let cancelled = false;
+    findBaseInEnvironment(appId, data.target, releasedVersionId, versionIdToPromote)
+      .then((version) => !cancelled && setBaseInTarget(version))
+      .catch(() => !cancelled && setBaseInTarget(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [showModal, appId, data?.target, releasedVersionId, versionIdToPromote]);
 
   const handleClose = useCallback(() => {
     if (promotingEnvironment) return;
@@ -173,6 +190,21 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
             {/* You won&apos;t be able to edit this version after promotion. Are you sure you want to continue? */}
             This version will be pushed to Staging. Are you sure you are done editing the current version?
           </div>
+        )}
+        {baseInTarget && (
+          <ChangeSummary
+            appId={appId}
+            baseVersion={baseInTarget.version}
+            targetVersionId={versionIdToPromote}
+            source="promote"
+            label={
+              baseInTarget.where === 'environment'
+                ? `Changes from ${baseInTarget.version.name}, now in ${capitalize(data?.target?.name)}`
+                : `Nothing is in ${capitalize(data?.target?.name)} yet. Changes from ${
+                    baseInTarget.version.name
+                  }, the released version`
+            }
+          />
         )}
       </Modal.Body>
       <Modal.Footer className="mt-3 env-modal-footer">

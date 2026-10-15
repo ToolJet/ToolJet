@@ -23,6 +23,7 @@ export type VersionRows = {
     icon: string | null;
     isPageGroup: boolean;
     pageGroupId: string | null;
+    pageGroupIndex?: number | null;
     autoComputeLayout: boolean;
     pageHeader: any;
     pageFooter: any;
@@ -177,7 +178,15 @@ export function buildSnapshot(rows: VersionRows): VersionSnapshot {
 
   const pages: SnapshotPage[] = rows.pages
     .slice()
-    .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+    // Many apps leave every page at index 999 and keep the real order in
+    // page_group_index, so ties must break on it (and then on the handle) or
+    // the order, and every "moved" line, is down to row order.
+    .sort(
+      (a, b) =>
+        (a.index ?? 0) - (b.index ?? 0) ||
+        (a.pageGroupIndex ?? 0) - (b.pageGroupIndex ?? 0) ||
+        String(a.handle).localeCompare(String(b.handle))
+    )
     .map((page) => ({
       id: page.id,
       key: pageKeyById.get(page.id),

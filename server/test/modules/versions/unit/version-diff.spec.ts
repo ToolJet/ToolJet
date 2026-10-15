@@ -299,6 +299,18 @@ describe('version diff', () => {
   });
 });
 
+describe('page order', () => {
+  it('breaks index ties on the page group index, so equal orders never read as moves', () => {
+    const spec = (order: string[]): Spec => ({ pages: order.map((handle) => ({ handle })), components: [] });
+    const base = rows(spec(['home', 'products', 'settings']), 'v1');
+    const target = rows(spec(['home', 'products', 'settings']), 'v2');
+    // Every page at 999, real order in pageGroupIndex, rows in a different order.
+    for (const r of [base, target]) r.pages.forEach((page, i) => Object.assign(page, { index: 999, pageGroupIndex: i + 1 }));
+    target.pages.reverse();
+    expect(diffVersions(buildSnapshot(base), buildSnapshot(target)).identical).toBe(true);
+  });
+});
+
 describe('editor write-back noise', () => {
   it('treats a widget default written into the row as unchanged', () => {
     const target = baseSpec();

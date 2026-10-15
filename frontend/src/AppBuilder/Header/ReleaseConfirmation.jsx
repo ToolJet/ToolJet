@@ -7,6 +7,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useVersionDiffStore } from '@/AppBuilder/VersionDiff/useVersionDiffStore';
 import { reviewService } from '@/AppBuilder/VersionDiff/reviewService';
+import { ChangeSummary } from '@/AppBuilder/VersionDiff/ChangeSummary';
 
 export default function ReleaseConfirmation(props) {
   const { onClose, onConfirm, show } = props;
@@ -101,17 +102,14 @@ export default function ReleaseConfirmation(props) {
             </button>
           </div>
         )}
-        {!locked && releasedVersionId && releasedVersionId !== selectedVersionId && (
-          <button
-            type="button"
-            className="release-review-changes"
-            data-cy="release-review-changes"
-            onClick={() =>
-              openCompare({ baseVersionId: releasedVersionId, targetVersionId: selectedVersionId, source: 'release' })
-            }
-          >
-            Review what changes from {releasedVersionName}
-          </button>
+        {releasedVersionId && releasedVersionId !== selectedVersionId && (
+          <ChangeSummary
+            appId={appId}
+            baseVersion={{ id: releasedVersionId, name: releasedVersionName }}
+            targetVersionId={selectedVersionId}
+            source="release"
+            label={`What changes for users, compared with ${releasedVersionName}`}
+          />
         )}
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">

@@ -37,7 +37,7 @@ export class VersionDiffService {
     const [pages, components, layouts, queries, dataSources, events] = await Promise.all([
       manager.query(
         `SELECT id, name, page_handle AS handle, index, disabled, hidden, icon, is_page_group AS "isPageGroup",
-                page_group_id AS "pageGroupId", auto_compute_layout AS "autoComputeLayout",
+                page_group_id AS "pageGroupId", page_group_index AS "pageGroupIndex", auto_compute_layout AS "autoComputeLayout",
                 page_header AS "pageHeader", page_footer AS "pageFooter", type, url
            FROM pages WHERE app_version_id = $1`,
         [versionId]

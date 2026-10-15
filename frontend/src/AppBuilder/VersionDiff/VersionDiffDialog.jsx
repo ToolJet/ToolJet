@@ -472,7 +472,33 @@ export const VersionDiffDialog = ({ darkMode }) => {
               hiddenKeys={hiddenKeys}
               commentCounts={commentCounts}
             />
-            <main className="vd-stage-wrap">
+            <main className={cx('vd-stage-wrap', { 'vd-stage-wrap--pages': diff.pages.length > 1 })}>
+              {diff.pages.length > 1 && (
+                <nav className="vd-pages" aria-label="Changed pages">
+                  {diff.pages.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      className={cx('vd-pages__tab', { 'vd-pages__tab--on': item.key === pageKey })}
+                      aria-current={item.key === pageKey ? 'page' : undefined}
+                      onClick={() => {
+                        setPageKey(item.key);
+                        setSelectedKey(null);
+                        setScroll(null);
+                      }}
+                    >
+                      <span>{item.name}</span>
+                      {item.status !== 'changed' ? (
+                        <span className={cx('vd-tag', `vd-tag--${item.status}`)}>{STATUS_WORD[item.status]}</span>
+                      ) : (
+                        <span className="vd-pages__n">
+                          {item.counts.added + item.counts.changed + item.counts.removed}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </nav>
+              )}
               {diff.identical ? (
                 <div className="vd-state vd-state--calm">
                   <p className="vd-state__big">No differences</p>
