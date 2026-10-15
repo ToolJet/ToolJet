@@ -7,6 +7,9 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.VERSION]: {
     [FEATURE_KEY.GET]: {},
     [FEATURE_KEY.GET_ONE]: {},
+    [FEATURE_KEY.COMPARE]: {
+      shouldNotSkipPublicApp: true,
+    },
     [FEATURE_KEY.CREATE]: {
       auditLogsKey: 'APP_UPDATE',
     },

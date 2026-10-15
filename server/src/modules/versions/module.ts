@@ -13,6 +13,8 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { VersionDiffController } from './controllers/diff.controller';
+import { VersionDiffService } from './diff/version-diff.service';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -54,7 +56,14 @@ export class VersionModule extends SubModule {
         await AppHistoryModule.register(configs),
       ],
       controllers: isMainImport
-        ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]
+        ? [
+            ComponentsController,
+            EventsController,
+            PagesController,
+            VersionDiffController,
+            VersionController,
+            VersionControllerV2,
+          ]
         : [],
       providers: [
         ComponentsService,
@@ -71,6 +80,7 @@ export class VersionModule extends SubModule {
         EventsService,
         VersionService,
         VersionUtilService,
+        VersionDiffService,
         FeatureAbilityFactory,
         GroupPermissionsRepository,
       ],
