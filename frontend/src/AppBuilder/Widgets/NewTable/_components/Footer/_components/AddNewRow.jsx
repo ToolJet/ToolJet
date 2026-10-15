@@ -209,11 +209,12 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              // Fixed height mirrors the main table body row. String cells only fill their row,
-              // so a row of empty string cells collapses to 0 without it;
+              // min-height matches the main table body row. String cells only fill their row,
+              // so a row of empty string cells collapses to 0 without it; a min rather than a fixed
+              // height lets the row grow for multi-line text cells.
               <tr
                 key={row.id}
-                style={{ display: 'flex', height: cellHeight === 'condensed' ? '39px' : '45px' }}
+                style={{ display: 'flex', minHeight: cellHeight === 'condensed' ? '39px' : '45px' }}
                 className="table-row"
                 data-cy={`add-new-row-${row.index}`}
               >
