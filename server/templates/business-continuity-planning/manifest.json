@@ -1,0 +1,21 @@
+{
+  "name": "Business continuity planning",
+  "description": "Keep continuity plans ready before a disruption. Link recovery targets, runbooks and evidence from real exercises to your critical services.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "business-continuity-planning",
+  "category": "risk-and-compliance"
+}

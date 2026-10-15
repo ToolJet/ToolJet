@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   GoneException,
+  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -54,6 +55,7 @@ import { OnboardingUtilService } from './util.service';
 import { SessionUtilService } from '../session/util.service';
 import { OrganizationUsersUtilService } from '../organization-users/util.service';
 import { OrganizationUsersRepository } from '../organization-users/repository';
+import { MAX_CLOUD_WORKSPACES_PER_USER } from '../organization-users/constants';
 import { LicenseUserService } from '../licensing/services/user.service';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { MetadataUtilService } from '@modules/meta/util.service';
@@ -487,6 +489,20 @@ export class OnboardingService implements IOnboardingService {
       await this.userRepository.updateOne(user.id, { defaultOrganizationId: organizationUser.organizationId }, manager);
       const organization = await this.organizationRepository.get(organizationUser.organizationId);
       const activeWorkspacesCount = await this.organizationUsersRepository.getActiveWorkspacesCount(user.id);
+
+      if (getTooljetEdition() === 'cloud') {
+        const activeOrganizationsCount = await this.organizationUsersRepository.countActiveOrganizationsForUser(
+          user.id,
+          manager
+        );
+        if (activeOrganizationsCount >= MAX_CLOUD_WORKSPACES_PER_USER) {
+          throw new HttpException(
+            `You have reached the number of workspaces (${activeOrganizationsCount}/${MAX_CLOUD_WORKSPACES_PER_USER}) which can be created in ToolJet Cloud. Contact us at support@tooljet.com to increase this limit.`,
+            451
+          );
+        }
+      }
+
       await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
       const personalWorkspacesCount = await this.organizationUsersUtilService.personalWorkspaceCount(user.id);
       if (personalWorkspacesCount === 1 && activeWorkspacesCount === 0) {
