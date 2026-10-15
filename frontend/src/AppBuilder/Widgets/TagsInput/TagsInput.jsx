@@ -19,6 +19,7 @@ import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 const TagsInput = ({
   id,
@@ -118,6 +119,8 @@ const TagsInput = ({
   }, [properties.visibility, tagsLoadingState, properties.disabledState]);
 
   // Build select options from schema or options
+  const stableOptions = useContentStable(options);
+  const stableSchema = useContentStable(schema);
   const selectOptions = useMemo(() => {
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
@@ -131,7 +134,7 @@ const TagsInput = ({
           }))
       : [];
     return sortArray(_selectOptions, sort);
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
+  }, [advanced, stableSchema, stableOptions, sort]);
 
   // Combine predefined options with session-created tags
   const allOptions = useMemo(() => {
@@ -191,13 +194,18 @@ const TagsInput = ({
       const foundItem = Array.isArray(schema) ? schema.filter((item) => item?.visible && item?.default) : [];
       return foundItem;
     }
+    // Sets of the wanted values: a lookup per option instead of a search of every value.
     if (isDefault) {
+      // A falsy value (0, '') never matched: the old `values.find(...)` returned the value itself as the condition.
+      const wanted = new Set(Array.isArray(values) ? values : []);
       return Array.isArray(allOptions)
-        ? allOptions.filter((item) => item?.default || values?.find((val) => val === item.value))
+        ? allOptions.filter((item) => item?.default || (item.value && wanted.has(item.value)))
         : [];
     } else {
+      // `item.value === item.value`: a NaN value never matched (===), and a Set would find it.
+      const wanted = new Set((selected ?? []).map((val) => val.value));
       return Array.isArray(allOptions)
-        ? allOptions.filter((item) => selected?.find((val) => val.value === item.value))
+        ? allOptions.filter((item) => item.value === item.value && wanted.has(item.value))
         : [];
     }
   }
@@ -483,10 +491,11 @@ const TagsInput = ({
   }, [selectOptions]);
 
   // Apply defaults when mode, values, or schema changes
+  const stableValues = useContentStable(properties?.values);
   useEffect(() => {
     let foundItem = findDefaultItem(properties?.values, advanced, true);
     setInputValues(foundItem);
-  }, [advanced, JSON.stringify(properties?.values), JSON.stringify(schema)]);
+  }, [advanced, stableValues, stableSchema]);
 
   // Exposed variable updates
   useEffect(() => {
@@ -781,8 +790,9 @@ const TagsInput = ({
   // In server-side search mode the backend owns filtering, so skip the
   // client-side input match and render all non-selected options as-is.
   const filteredOptions = useMemo(() => {
+    const selectedValues = new Set(selected.map((s) => s.value));
     return allOptions
-      .filter((opt) => !selected.some((s) => s.value === opt.value))
+      .filter((opt) => !(opt.value === opt.value && selectedValues.has(opt.value)))
       .filter((opt) => serverSideSearch === true || !inputValue || String(opt.label ?? '').includes(inputValue));
   }, [allOptions, selected, inputValue, serverSideSearch]);
 

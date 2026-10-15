@@ -55,6 +55,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Conditional Styling** | Dynamic styles applied to components based on runtime conditions | — |
 | **Custom CSS** | User-defined free-form CSS applied at component or app level | Custom Styling (related but different — see Flagged Ambiguities) |
 | **Theme** | A workspace-wide color and font scheme (EE feature) | — |
+| **Data engine** | The App-Builder's in-browser layer for data of any size: freezing, propagation in slices, change detection, template caching, copies for scripts, memory budget (`frontend/src/AppBuilder/_engines/data/`) | — |
 
 ## Events & Actions
 

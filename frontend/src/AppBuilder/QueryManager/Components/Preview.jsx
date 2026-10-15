@@ -5,8 +5,13 @@ import { getTheme, tabs } from '../constants';
 import ArrowDownTriangle from '@/_ui/Icon/solidIcons/ArrowDownTriangle';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
+import { previewOf, PREVIEW_TRUNCATED_LENGTH } from '../utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+
+// The JSON tab of a result too large to copy shows the result itself: hide the page's own objects there, as the copy
+// did. A copied result has none, so this changes nothing for it.
+const hideReservedObjects = (value) => reservedKeywordReplacer('', value);
 
 const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const [key, setKey] = useState('raw');
@@ -54,15 +59,8 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
     setIsJson(queryPreviewData !== null && typeof queryPreviewData === 'object');
   }, [queryPreviewData]);
 
-  const renderRawData = () => {
-    if (!queryPreviewData) {
-      return queryPreviewData === null ? '' : `${queryPreviewData}`;
-    } else {
-      return isJson
-        ? JSON.stringify(queryPreviewData, reservedKeywordReplacer).toString()
-        : queryPreviewData.toString();
-    }
-  };
+  // Written once per result, and only up to a limit: see previewOf.
+  const preview = useMemo(() => previewOf(queryPreviewData), [queryPreviewData]);
 
   useEffect(() => {
     // query panel collapse scenario
@@ -121,11 +119,6 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
 
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
-  const queryPreviewDataWithCircularDependenciesRemoved = useMemo(() => {
-    const stringifiedValue = JSON.stringify(queryPreviewData, reservedKeywordReplacer);
-
-    return stringifiedValue ? JSON.parse(stringifiedValue) : undefined;
-  }, [queryPreviewData]);
 
   return (
     <div
@@ -224,7 +217,8 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
                 <div className="w-100 preview-data-container" data-cy="preview-json-data-container">
                   <JSONTree
                     theme={theme}
-                    data={queryPreviewDataWithCircularDependenciesRemoved}
+                    data={preview.tree}
+                    postprocessValue={hideReservedObjects}
                     invertTheme={!darkMode}
                     collectionLimit={100}
                     hideRoot={true}
@@ -237,7 +231,13 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
                   className={`raw-container preview-data-container`}
                   data-cy="preview-raw-data-container"
                 >
-                  {renderRawData()}
+                  {preview.raw}
+                  {preview.truncated && (
+                    <div className="tw-mt-2 tw-text-text-placeholder" data-cy="preview-raw-truncated">
+                      Showing the first {PREVIEW_TRUNCATED_LENGTH.toLocaleString()} characters. Use the JSON tab to
+                      browse all of it.
+                    </div>
+                  )}
                 </div>
               </Tab.Pane>
             </Tab.Content>

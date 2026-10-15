@@ -5,9 +5,9 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import _, { debounce, omit } from 'lodash';
 import { generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-import { removeFunctionObjects } from '@/_helpers/appUtils';
+import { withoutFunctions } from '@/_helpers/appUtils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
-import { deepClone, deepCloneWithFunctions } from '@/_helpers/utilities/utils.helpers';
+
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
@@ -19,7 +19,7 @@ import {
 import { HorizontalSlot } from './Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { diff } from '@/AppBuilder/_engines/data/diff';
 import Spinner from '@/_ui/Spinner';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
@@ -27,6 +27,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import './form.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import FormSignalContext from './FormSignalContext';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 const FormComponent = (props) => {
   const {
@@ -302,13 +303,14 @@ const FormComponent = (props) => {
     return result;
   };
 
+  const stableJSONSchema = useContentStable(JSONSchema);
   useEffect(() => {
     if (mounted) {
       setSubmitAttemptCount(0);
       resetComponent();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(JSONSchema)]);
+  }, [stableJSONSchema]);
 
   useEffect(() => {
     advanced && setExposedVariable('children', []);
@@ -375,9 +377,11 @@ const FormComponent = (props) => {
       Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formKey from final exposed data
     );
 
+    // Children's values are frozen and never changed in place, so they're shared, not deep-copied (a Table in the form
+    // carries its whole dataset); `data` copies only what holds a function.
     const exposedVariables = {
-      ...(!advanced && { children: deepCloneWithFunctions(formattedChildData) }),
-      data: removeFunctionObjects(deepClone(formattedChildData)),
+      ...(!advanced && { children: formattedChildData }),
+      data: withoutFunctions(formattedChildData),
       isValid: childValidation,
       formData, // Expose formData
     };
@@ -386,11 +390,12 @@ const FormComponent = (props) => {
     setValidation(childValidation);
   }, [effectiveChildrenData, advanced]);
 
+  const stableUiComponents = useContentStable(uiComponents);
   useEffect(() => {
     document.addEventListener('submitForm', handleFormSubmission);
     return () => document.removeEventListener('submitForm', handleFormSubmission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), resetOnSubmit, validateOnSubmit]);
+  }, [buttonToSubmit, isValid, advanced, stableUiComponents, resetOnSubmit, validateOnSubmit]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -571,6 +576,8 @@ const FormComponent = (props) => {
 // Avoid rendering the Form component if there are no changes in properties or
 // changes are only in `generateFormFrom` as it is not required to re-render
 export const Form = React.memo(FormComponent, (prevProps, nextProps) => {
+  // Unchanged props first, cheaply: isEqual skips values that are the same object; the diff below walks everything.
+  if (_.isEqual(prevProps, nextProps)) return true;
   const diffInProps = diff(prevProps, nextProps) ?? {};
 
   if (Object.keys(diffInProps).length === 0) return true; // No changes detected, no need to re-render

@@ -9,6 +9,9 @@ import {
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { cloneDeep, merge, set as lodashSet, isEmpty } from 'lodash';
+import { deepFreeze } from '@/AppBuilder/_engines/data/freeze';
+import { isFeatureEnabled } from '@/AppBuilder/_engines/features';
+import { readsNothingRowScoped } from '@/AppBuilder/_engines/data/expressions';
 import {
   computeComponentName,
   getDropTargetLabel,
@@ -2297,11 +2300,15 @@ export const createComponentsSlice = (set, get) => ({
     const oldValue = component.definition[paramType][property];
     const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
-      const resolvedComponent = {
-        [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}),
-      };
       const nearestListviewId = findNearestSubcontainerAncestor(parentId, moduleId);
       const index = nearestListviewId ? 0 : null;
+      const current = getResolvedComponent(componentId, null, moduleId) ?? {};
+      // Only this property is rewritten (reset to a new array below), so only the objects on its path are copied:
+      // a deep copy took every other property along — a Table's whole dataset — and the store then walked it all to
+      // freeze it. Row-scoped children (index 0) are written into their existing row values, so they stay a deep copy.
+      const resolvedComponent = {
+        [componentId]: index === null ? { ...current, [paramType]: { ...current[paramType] } } : deepClone(current),
+      };
       if (index === null) {
         resolvedComponent[componentId][paramType][property] = [];
       }
@@ -2901,7 +2908,8 @@ export const createComponentsSlice = (set, get) => ({
     const key = keys.join('.');
     const unResolvedValue = getNodeData(dependency, moduleId);
     const exposedValues = preloadedExposedValues || getAllExposedValues(moduleId);
-    const resolvedValue = resolveDynamicValues(unResolvedValue, exposedValues, {}, false, []);
+    // Deep-frozen before it's written (instant when it's data already in the store, eg. `{{queries.q.data}}`).
+    const resolvedValue = deepFreeze(resolveDynamicValues(unResolvedValue, exposedValues, {}, false, []));
 
     if (type === undefined) {
       applyOrQueueMutation((state) => {
@@ -2912,9 +2920,9 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     const shouldValidate = entityType === 'components' && entityId;
-    const validatedValue = shouldValidate
-      ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
-      : resolvedValue;
+    const validatedValue = deepFreeze(
+      shouldValidate ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId) : resolvedValue
+    );
 
     // logic to handle the key like options[0].visible. It will resolve the visible directly and update the resolved store
     if (hasArrayNotation(key)) {
@@ -2924,7 +2932,7 @@ export const createComponentsSlice = (set, get) => ({
       // Need to find a better way to handle this
       if (getComponentTypeFromId(entityId, moduleId) === 'Table') {
         applyOrQueueMutation((state) => {
-          let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+          let entity = state.resolvedStore.modules[moduleId][entityType]?.[entityId];
           if (!entity) return;
           if (Array.isArray(entity)) {
             entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
@@ -2935,7 +2943,7 @@ export const createComponentsSlice = (set, get) => ({
         });
       } else {
         applyOrQueueMutation((state) => {
-          let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+          let entity = state.resolvedStore.modules[moduleId][entityType]?.[entityId];
           if (!entity) return;
           if (Array.isArray(entity)) {
             entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
@@ -2950,7 +2958,7 @@ export const createComponentsSlice = (set, get) => ({
       }
     } else {
       applyOrQueueMutation((state) => {
-        let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+        let entity = state.resolvedStore.modules[moduleId][entityType]?.[entityId];
         // Guard: stale dependency-graph entry referencing a component that no longer
         // exists in the current resolvedStore (e.g. right after a version/env switch,
         // before the graph is rebuilt) — nothing to update.
@@ -2967,46 +2975,28 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
-  updateDependencyValuesBatch: (paths = [], moduleId = 'canvas', parentIndices = []) => {
-    const { getDependencies, applyDependencyUpdate, getAllExposedValues } = get();
-    const uniqueDependencies = new Map();
-    const exposedValues = getAllExposedValues(moduleId);
-    const batchedStateMutations = [];
-
-    paths.forEach((path) => {
-      const dependencies = getDependencies(path, moduleId);
-      if (!dependencies?.length) return;
-
-      dependencies.forEach((dependency) => {
-        if (!uniqueDependencies.has(dependency)) {
-          uniqueDependencies.set(dependency, path);
-        }
-      });
-    });
-
-    uniqueDependencies.forEach((sourcePath, dependency) => {
-      applyDependencyUpdate(dependency, sourcePath, moduleId, parentIndices, exposedValues, batchedStateMutations);
-    });
-
-    if (batchedStateMutations.length > 0) {
-      set(
-        (state) => {
-          batchedStateMutations.forEach((mutator) => mutator(state));
-        },
-        false,
-        'updateDependencyValuesBatch'
-      );
-    }
-  },
-
+  // Re-resolves everything that depends on `path`, synchronously, with one store write (it was one per dependent, each
+  // re-rendering). As before, a dependent that throws stops it there: the ones resolved before it are written, and the
+  // error reaches the caller.
   updateDependencyValues: (path, moduleId = 'canvas', parentIndices = []) => {
     const { getDependencies, applyDependencyUpdate } = get();
     const dependencies = getDependencies(path, moduleId);
     if (!dependencies?.length) return;
 
-    dependencies.forEach((dependency) => {
-      applyDependencyUpdate(dependency, path, moduleId, parentIndices);
-    });
+    const mutations = [];
+    const commit = () => {
+      if (mutations.length)
+        set((state) => mutations.forEach((mutate) => mutate(state)), false, 'updateDependencyValues');
+    };
+    // Read once: dependents write resolved values only, never exposed ones. (A module not set up yet has none.)
+    const exposedValues = get().resolvedStore.modules[moduleId]?.exposedValues;
+    try {
+      dependencies.forEach((dependency) => {
+        applyDependencyUpdate(dependency, path, moduleId, parentIndices, exposedValues, mutations);
+      });
+    } finally {
+      commit();
+    }
   },
   computePageSettings: (currentPageSettings) => {
     try {
@@ -3080,16 +3070,29 @@ export const createComponentsSlice = (set, get) => ({
       : Array.from({ length }, (_, i) => i);
     if (indicesToResolve.length === 0) return;
 
-    const updates = [];
-    for (const i of indicesToResolve) {
+    const resolveRow = (i) => {
       const rowCustomResolvables = getCustomResolvables(resolvableParentId, i, moduleId, parentIndices);
       if (scopeCtx) updateRowScope(scopeCtx, i);
       const resolvedValue = resolveDynamicValues(unResolvedValue, scopedState, rowCustomResolvables, false, []);
-      const validatedValue = shouldValidate
+      return shouldValidate
         ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
         : resolvedValue;
-
-      updates.push({ index: i, value: validatedValue });
+    };
+    const updates = [];
+    if (
+      isFeatureEnabled('listview-store') &&
+      !isLazy &&
+      readsNothingRowScoped(
+        unResolvedValue,
+        Object.keys(getCustomResolvables(resolvableParentId, 0, moduleId, parentIndices) ?? {}),
+        scopeCtx?.descendantIds
+      )
+    ) {
+      // The same on every row (see readsNothingRowScoped): resolved and validated once, not once per row.
+      const value = resolveRow(indicesToResolve[0]);
+      for (const i of indicesToResolve) updates.push({ index: i, value });
+    } else {
+      for (const i of indicesToResolve) updates.push({ index: i, value: resolveRow(i) });
     }
 
     // Writes one row's resolved value, honouring array notation in the property path.

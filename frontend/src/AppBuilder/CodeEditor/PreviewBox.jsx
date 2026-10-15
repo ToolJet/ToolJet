@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { computeCoercion, getCurrentNodeType, hasDeepChildren, resolveReferences } from './utils';
 import CodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
@@ -22,49 +22,48 @@ import FixWithAi from './FixWithAi';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 
-const sanitizeLargeDataset = (data, callback) => {
+const sanitizeLargeDataset = (data) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
 
+  // Estimated bytes of an object (its keys and primitive values; an array value counts its elements' objects),
+  // counted only until it is past the limit: a dataset has millions of values.
   const estimateSizeOfObject = (object) => {
     const visited = new Set();
-
-    function sizeOf(obj) {
-      if (obj === null || typeof obj !== 'object') return 0;
-      if (visited.has(obj)) return 0;
+    let bytes = 0;
+    // Objects to count, and arrays whose elements are still to be visited ({ elements, next }).
+    const stack = [object];
+    while (stack.length && bytes <= SIZE_LIMIT_KB) {
+      const top = stack[stack.length - 1];
+      if (top && top.elements) {
+        if (top.next >= top.elements.length) stack.pop();
+        else stack.push(top.elements[top.next++]);
+        continue;
+      }
+      const obj = stack.pop();
+      if (obj === null || typeof obj !== 'object' || visited.has(obj)) continue;
       visited.add(obj);
-
-      let bytes = 0;
-
-      for (let key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          bytes += key.length * 2;
-
-          const value = obj[key];
-          switch (typeof value) {
-            case 'boolean':
-              bytes += 4;
-              break;
-            case 'number':
-              bytes += 8;
-              break;
-            case 'string':
-              bytes += value.length * 2;
-              break;
-            case 'object':
-              if (Array.isArray(value)) {
-                bytes += value.reduce((acc, el) => acc + sizeOf(el), 0);
-              } else {
-                bytes += sizeOf(value);
-              }
-              break;
-          }
+      for (const key in obj) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+        bytes += key.length * 2;
+        const value = obj[key];
+        switch (typeof value) {
+          case 'boolean':
+            bytes += 4;
+            break;
+          case 'number':
+            bytes += 8;
+            break;
+          case 'string':
+            bytes += value.length * 2;
+            break;
+          case 'object':
+            if (Array.isArray(value)) stack.push({ elements: value, next: 0 });
+            else stack.push(value);
+            break;
         }
       }
-
-      return bytes;
     }
-
-    return sizeOf(object);
+    return bytes;
   };
 
   function trimTo5KB(str) {
@@ -92,7 +91,6 @@ const sanitizeLargeDataset = (data, callback) => {
 
     if (Array.isArray(input)) {
       const size = estimateSizeOfObject(input);
-      callback(size > SIZE_LIMIT_KB);
 
       return data.length > 10 && size > SIZE_LIMIT_KB
         ? [input[0], `Too large to display: ${input.length - 1} more items`]
@@ -117,6 +115,22 @@ const sanitizeLargeDataset = (data, callback) => {
   return sanitize(data);
 };
 
+const previewText = (value, type) => {
+  try {
+    switch (type) {
+      case 'Object':
+      case 'Array':
+        return JSON.stringify(value);
+      case 'Boolean':
+        return value.toString();
+      default:
+        return value;
+    }
+  } catch {
+    return undefined;
+  }
+};
+
 export const PreviewBox = ({
   currentValue,
   validationSchema,
@@ -130,30 +144,11 @@ export const PreviewBox = ({
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
   const [coersionData, setCoersionData] = useState(null);
-  const [largeDataset, setLargeDataset] = useState(false);
   const globals = useStore((state) => state.getAllExposedValues(moduleId).constants || {}, shallow);
   const secrets = useStore((state) => state.getSecrets(), shallow);
   const globalServerConstantsRegex = /\{\{.*globals\.server.*\}\}/;
 
-  const getPreviewContent = (content, type) => {
-    if (content === undefined) return currentValue;
-    try {
-      switch (type) {
-        case 'Object':
-        case 'Array':
-          return JSON.stringify(content);
-        case 'Boolean':
-          return content.toString();
-        default:
-          return content;
-      }
-    } catch (e) {
-      return undefined;
-    }
-  };
-
-  let previewType = getCurrentNodeType(resolvedValue);
-  let previewContent = resolvedValue;
+  const previewType = getCurrentNodeType(resolvedValue);
   let isGlobalConstant = currentValue && currentValue.includes('{{constants.');
   let isSecretConstant = currentValue && currentValue.includes('{{secrets.');
   const isServerConstant = currentValue && currentValue.match(globalServerConstantsRegex);
@@ -173,7 +168,9 @@ export const PreviewBox = ({
     return value;
   };
 
-  const content = getPreviewContent(previewContent, previewType);
+  // Serialized once per resolved value: a keystroke re-renders before its value resolves, and the value may be a dataset.
+  const serialized = useMemo(() => previewText(resolvedValue, previewType), [resolvedValue, previewType]);
+  const content = resolvedValue === undefined ? currentValue : serialized;
 
   useEffect(() => {
     if (error) {
@@ -207,7 +204,7 @@ export const PreviewBox = ({
     }
 
     // we dont need to add or update the resolved value if the value has deep children
-    const _resolveValue = sanitizeLargeDataset(resolvedValue, setLargeDataset);
+    const _resolveValue = sanitizeLargeDataset(resolvedValue);
 
     if (valid && !isSecretError) {
       const [coercionPreview, typeAfterCoercion, typeBeforeCoercion] = computeCoercion(resolvedValue, newValue);
@@ -266,7 +263,6 @@ export const PreviewBox = ({
         withValidation={!isEmpty(validationSchema)}
         isWorkspaceVariable={isWorkspaceVariable}
         isSecretConstant={isSecretConstant || false}
-        isLargeDataset={largeDataset}
         isServerConstant={isServerConstant}
       />
       <CodeHinter.PopupIcon
@@ -287,7 +283,6 @@ const RenderResolvedValue = ({
   isWorkspaceVariable,
   isSecretConstant = false,
   isServerConstant = false,
-  isLargeDataset,
 }) => {
   const isServerSideGlobalResolveEnabled = useStore(
     (state) => !!state?.license?.featureAccess?.serverSideGlobalResolve,
@@ -334,7 +329,7 @@ const RenderResolvedValue = ({
         <span className={`badge text-capitalize font-500 ${cls}`}> {error ? error.type : previewValueType}</span>
       </div>
 
-      <PreviewBox.CodeBlock code={error ? error.value : previewContent} isLargeDataset={isLargeDataset} />
+      <PreviewBox.CodeBlock code={error ? error.value : previewContent} />
     </div>
   );
 };
@@ -721,7 +716,8 @@ const PreviewContainer = ({
   );
 };
 
-const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
+// What a preview shows: a JSON tree for an object or array, else the text (cut short when `isExpectValue`).
+const parsePreview = (code, isExpectValue) => {
   let preview;
   if (typeof code === 'string') {
     preview = code.trim();
@@ -731,35 +727,30 @@ const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
     preview = String(code);
   }
 
-  const shouldTrim = preview.length > 35;
-  let showJSONTree = false;
-
-  if (isExpectValue && shouldTrim) {
+  if (isExpectValue && preview.length > 35) {
     preview = preview.substring(0, 35) + '...' + preview.substring(preview.length - 2, preview.length);
   }
 
-  let prettyPrintedJson = preview;
-
   try {
-    prettyPrintedJson = JSON.parse(preview);
-
-    const typeOfValue = typeof prettyPrintedJson;
-
-    if (prettyPrintedJson !== null && (typeOfValue === 'object' || typeOfValue === 'array')) {
-      showJSONTree = true;
-    } else {
-      prettyPrintedJson = preview;
-      showJSONTree = false;
+    const parsed = JSON.parse(preview);
+    if (parsed !== null && typeof parsed === 'object') {
+      return { prettyPrintedJson: parsed, showJSONTree: true, hasDeepChild: hasDeepChildren(parsed) };
     }
-  } catch (e) {
-    prettyPrintedJson = preview;
-    showJSONTree = false;
+  } catch {
+    // Not JSON: shown as text.
   }
+  return { prettyPrintedJson: preview, showJSONTree: false };
+};
+
+const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
+  // Parsed once per code, not on every render: the code may be a dataset's JSON.
+  const { prettyPrintedJson, showJSONTree, hasDeepChild } = useMemo(
+    () => parsePreview(code, isExpectValue),
+    [code, isExpectValue]
+  );
 
   if (showJSONTree) {
     const darkMode = localStorage.getItem('darkMode') === 'true';
-
-    const hasDeepChild = hasDeepChildren(prettyPrintedJson);
 
     return (
       <div className="preview-json">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import DOMPurify from 'dompurify';
 // eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
@@ -57,6 +57,8 @@ export const Text = function Text({
   const isInitialRender = useRef(true);
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
+  // An object is shown as its JSON, built once per value rather than on every render.
+  const shownText = useMemo(() => (typeof text === 'object' ? JSON.stringify(text) : text), [text]);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
@@ -211,13 +213,11 @@ export const Text = function Text({
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && (
-            <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>
-          )}
+          {textFormat === 'plainText' && <div style={commonScrollStyle}>{shownText}</div>}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
               <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-                {typeof text === 'object' ? JSON.stringify(text) : text}
+                {shownText}
               </Markdown>
             </div>
           )}

@@ -5,6 +5,7 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
 import { useTranslation } from 'react-i18next';
 import './styles.scss';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 export default function Map({
   id,
@@ -53,9 +54,10 @@ export default function Map({
     height,
   };
 
+  const stableDefaultMarkers = useContentStable(defaultMarkers);
   useEffect(() => {
     setMarkers(defaultMarkers);
-  }, [JSON.stringify(defaultMarkers)]);
+  }, [stableDefaultMarkers]);
 
   useEffect(() => {
     if (isInitialRender.current) return;

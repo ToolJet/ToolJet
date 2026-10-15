@@ -13,6 +13,7 @@ import {
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 export const RadioButtonV2 = ({
   properties,
@@ -119,10 +120,12 @@ export const RadioButtonV2 = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   }
 
+  const stableOptions = useContentStable(options);
+  const stableSchema = useContentStable(schema);
   useEffect(() => {
     onSelect(findDefaultItem(advanced ? schema : options));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
+  }, [advanced, stableSchema, stableOptions]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -132,6 +135,7 @@ export const RadioButtonV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState]);
 
+  const stableSelectOptions = useContentStable(selectOptions);
   useEffect(() => {
     if (isInitialRender.current) return;
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
@@ -142,7 +146,7 @@ export const RadioButtonV2 = ({
       fireEvent('onSelectionChange');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(selectOptions)]);
+  }, [stableSelectOptions]);
 
   useEffect(() => {
     if (isInitialRender.current) return;

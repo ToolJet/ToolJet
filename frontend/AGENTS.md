@@ -75,7 +75,7 @@ No change may break existing saved applications. Always ask: would an app saved 
 
 ### Resolution system (`{{}}`)
 
-- Flow: unresolved value → `extractAndReplaceReferencesFromString` → `resolveDynamicValues` → `resolveCode` (via `new Function()`) → resolved value stored in `resolvedSlice`
+- Flow: unresolved value → `extractAndReplaceReferencesFromString` → `resolveDynamicValues` → `resolveCode` (via `new Function()`) → resolved value stored in `resolvedSlice`. The template functions live in the data engine (`_engines/data/expressions.js`, re-exported from `_stores/utils.js`): how a template is read and its compiled function are remembered per text, the evaluation runs every time
 - `{{...}}` references MUST be registered in the dependency graph via `addToDependencyGraph`. Missing this causes stale renders
 - After `setExposedValue`, call `updateDependencyValues` to propagate changes
 - Inside ListView/Kanban, `customResolvables` provide row-scoped context (`listItem` / `cardData`)
@@ -101,6 +101,20 @@ No change may break existing saved applications. Always ask: would an app saved 
 - Events: `fireEvent → handleEvent → executeActionsForEventId → executeAction`. Events support `runOnlyIf` and `debounce`
 - Queries: `runQuery` → resolve options → API call → update `exposedValues.queries[name]` → trigger dependency updates
 - Event definitions live in `eventsSlice`, not in component definitions
+
+### Data engine (`src/AppBuilder/_engines/data/`)
+
+How the App Builder handles data of any size without blocking the page or running the tab out of memory. Reuse it; don't hand-roll another version.
+
+- Everything in the store is deep-frozen, as Immer's auto-freeze always did, so no code but the store's setters can change a query's or component's data (`freeze.js`: `deepFreeze` at every store entry point; a query's result frozen in slices with `deepFreezeInSlices` before it's previewed or stored). A value already frozen is taken as frozen throughout: never freeze a stored value only at its top level
+- Dependents of a change re-resolve through the propagation scheduler (`propagation.js`): at once when small (≤ 64 dependents or within 8 ms), else in 8 ms slices, one store write per slice. `setResolvedQuery` returns a promise when it continues in slices; `processQueryResults` awaits it before `onDataQuerySuccess` and before `run()` resolves, and variable actions resolve on `propagationSettled()`. `updateDependencyValues` stays synchronous (one write). `flushImplicitBatchEntries` resolves everything pending
+- Work that grows with the data runs in slices (`slices.js`: `runSliced`, `forSliced`), never as one long task
+- Change detection: `sameValue` / `sameExposedValue` (`equality.js`, lodash `isEqual` semantics; frozen pairs remembered, arrays compared element by element by identity first) and `useContentStable` for hook dependencies — never `JSON.stringify` keys. `diff.js` is deep-object-diff's `diff`
+- Validation keeps a value that fits its schema as is (`shape.js`: `fitsDefinition`, also on page switch): superstruct's `create` copies every row. It answers only where `create` would return the same content
+- Scripts (RunJS, transformations, Python) get `lazyCopies` of the queries, `page` and `variables` (`clone.js`): a value is copied when first read. A copy that wouldn't fit in the tab's memory throws a `MemoryBudgetError` naming it (`memory.js`) instead of crashing the tab. A RunJS result is checked for cycles in slices (`cycles.js`)
+- A ListView/Kanban child property that reads nothing row-scoped (`readsNothingRowScoped`) resolves once, not once per row
+- Large query responses are parsed in a worker (`transport.js`); debugger logs keep the newest 1,000 entries and bounded snapshots of logged values (`bounded.js`)
+- Kill switches: `_engines/features.js` (`DISABLE_BACKGROUND_DATA`)
 
 ### Bundles and performance
 

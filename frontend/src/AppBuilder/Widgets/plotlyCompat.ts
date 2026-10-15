@@ -353,15 +353,19 @@ const FILTER_OPS: Record<string, (v: any, ref: any) => boolean> = {
   '}{': (v, r) => (Array.isArray(r) ? !r.includes(v) : v !== r),
 };
 
+// Math.min(...values) passes every value as an argument: past ~100k it overflows the stack.
+const minOf = (values: any[]) => values.reduce((min: number, value: any) => Math.min(min, Number(value)), Infinity);
+const maxOf = (values: any[]) => values.reduce((max: number, value: any) => Math.max(max, Number(value)), -Infinity);
+
 const AGG_FUNCS: Record<string, (vals: any[], agg?: Dict) => any> = {
   count: (v) => v.length,
   sum: (v) => v.reduce((a: number, b: any) => a + Number(b || 0), 0),
   avg: (v) => (v.length ? v.reduce((a: number, b: any) => a + Number(b || 0), 0) / v.length : null),
-  min: (v) => (v.length ? Math.min(...v.map(Number)) : null),
-  max: (v) => (v.length ? Math.max(...v.map(Number)) : null),
+  min: (v) => (v.length ? minOf(v) : null),
+  max: (v) => (v.length ? maxOf(v) : null),
   first: (v) => (v.length ? v[0] : null),
   last: (v) => (v.length ? v[v.length - 1] : null),
-  range: (v) => (v.length ? Math.max(...v.map(Number)) - Math.min(...v.map(Number)) : null),
+  range: (v) => (v.length ? maxOf(v) - minOf(v) : null),
   median: (v) => {
     if (!v.length) return null;
     const s = v.map(Number).sort((a, b) => a - b);

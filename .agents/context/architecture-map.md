@@ -33,6 +33,7 @@ graph LR
 | `frontend/src/App/App.jsx::AppComponent` | Dashboard/editor/settings router and instance/workspace initialization. |
 | `frontend/src/AppBuilder/` | Zustand-based visual editor and viewer runtime: canvas, component rendering, expression resolution, events, actions, and query state. |
 | `frontend/src/ViewerApp.jsx` | Lightweight released/embedded-app router and app-scoped authentication routes. |
+| `frontend/src/AppBuilder/_engines/data/` | App-Builder data engine: deep-frozen store values, dependency propagation in slices, template caching, copies for scripts and a memory budget. Large query responses are parsed in a blob Web Worker (`transport.js`), falling back to the main thread when no worker can start. |
 | `server/src/main.ts::bootstrap` | Nest application bootstrap, middleware, `/api` prefix, validation, security headers, observability, and HTTP/WebSocket listener. |
 | `server/src/modules/app/module.ts::AppModule.register` | Composes platform infrastructure and approximately 50 feature modules. |
 | `server/src/modules/app/sub-module.ts::SubModule` | Dynamically selects the CE or edition-specific provider tree and caches DynamicModules. |

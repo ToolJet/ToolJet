@@ -10,6 +10,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue, getModifiedColor, buildChartAxis, toPlotlyColor } from './utils';
 import { applyPlotlyCompat } from './plotlyCompat';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 var tinycolor = require('tinycolor2');
 
@@ -63,19 +64,16 @@ export default function Chart({
 
   const chartType = type;
 
-  const jsonData = typeof jsonDescription === 'object' ? JSON.stringify(jsonDescription) : jsonDescription;
-
-  let isDescriptionJson = false;
-  if (plotFromJson) {
-    isDescriptionJson = isStringValidJson(jsonData);
-    if (!isDescriptionJson) {
-      console.log('Throw error');
+  // Parsed once per description, not on every render: a new data array each time also defeated every memo below
+  // (the Plotly compat pass clones the whole data).
+  const { isDescriptionJson, jsonChartData, chartLayout } = useMemo(() => {
+    const jsonData = typeof jsonDescription === 'object' ? JSON.stringify(jsonDescription) : jsonDescription;
+    if (!plotFromJson || !isStringValidJson(jsonData)) {
+      return { isDescriptionJson: false, jsonChartData: [], chartLayout: {} };
     }
-  }
-
-  const jsonChartData = isDescriptionJson ? JSON.parse(jsonData).data : [];
-
-  const chartLayout = isDescriptionJson ? (JSON.parse(jsonData).layout ?? {}) : {};
+    const parsed = JSON.parse(jsonData);
+    return { isDescriptionJson: true, jsonChartData: parsed.data, chartLayout: parsed.layout ?? {} };
+  }, [jsonDescription, plotFromJson]);
 
   const updatedBgColor = ['#fff', '#ffffff'].includes(modifiedBackgroundColor)
     ? darkMode
@@ -167,6 +165,10 @@ export default function Chart({
     ...('dragmode' in chartLayout && { dragmode: chartLayout.dragmode }),
   };
 
+  // `layout` is rebuilt on every render; by content it changes only with its inputs (it re-ran the compat pass, which
+  // clones all the chart data, on every render).
+  const stableLayout = useContentStable(layout);
+
   const computeChartData = (data, dataString) => {
     let rawData = data;
     if (typeof rawData === 'string') {
@@ -220,10 +222,10 @@ export default function Chart({
     layout: plotLayout,
     unsupported,
   } = useMemo(() => {
-    if (!plotFromJson) return { data: memoizedChartData, layout, unsupported: [] };
-    return applyPlotlyCompat(jsonChartData, layout, tinycolor);
+    if (!plotFromJson) return { data: memoizedChartData, layout: stableLayout, unsupported: [] };
+    return applyPlotlyCompat(jsonChartData, stableLayout, tinycolor);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plotFromJson, memoizedChartData, jsonChartData, layout]);
+  }, [plotFromJson, memoizedChartData, jsonChartData, stableLayout]);
 
   const handleClick = useCallback((data) => {
     if (!disabledState && data.length > 0) {

@@ -4,6 +4,7 @@ import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
@@ -99,6 +100,7 @@ export const Tags = function Tags({
       }));
   }
 
+  const stableTags = useContentStable(parsedTags ?? []);
   useBatchedUpdateEffectArray([
     {
       dep: visibility,
@@ -122,7 +124,7 @@ export const Tags = function Tags({
       },
     },
     {
-      dep: JSON.stringify(parsedTags ?? []),
+      dep: stableTags,
       sideEffect: () => {
         const _tags = parsedTags?.map(({ title }) => title) || [];
         setExposedVariable('tags', _tags);

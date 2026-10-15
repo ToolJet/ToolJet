@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast';
 import { AsyncQueryHandler } from '@/AppBuilder/_utils/async-query-handler';
 import _, { isEmpty } from 'lodash';
-import { resolveReferences, loadPyodide, hasCircularDependency } from '@/_helpers/utils';
+import { resolveReferences, loadPyodide } from '@/_helpers/utils';
 import { fetchOAuthToken, fetchOauthTokenForSlackAndGSheet } from '@/AppBuilder/_utils/auth';
 import { dataqueryService, workflowExecutionsService } from '@/_services';
 import moment from 'moment';
@@ -11,7 +11,9 @@ import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel
 import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAbort';
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { deepFreeze, deepFreezeInSlices } from '@/AppBuilder/_engines/data/freeze';
+import { lazyCopies } from '@/AppBuilder/_engines/data/clone';
+import { hasCycleInSlices } from '@/AppBuilder/_engines/data/cycles';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -45,6 +47,8 @@ const initialState = {
   deletingQueryId: null,
   asyncQueryRuns: [],
 };
+
+let previewCalls = 0;
 
 export const createQueryPanelSlice = (set, get) => ({
   queryPanel: {
@@ -169,14 +173,23 @@ export const createQueryPanelSlice = (set, get) => ({
         false,
         'setPreviewLoading'
       ),
-    setPreviewData: (data) =>
-      set(
-        (state) => {
-          state.queryPanel.queryPreviewData = data;
-        },
-        false,
-        'setPreviewData'
-      ),
+    // A large preview shows once it's deep-frozen, in slices (see _engines/data/freeze.js); the latest call wins.
+    setPreviewData: (data) => {
+      const call = ++previewCalls;
+      const write = () => {
+        if (call !== previewCalls) return;
+        set(
+          (state) => {
+            state.queryPanel.queryPreviewData = deepFreeze(data);
+          },
+          false,
+          'setPreviewData'
+        );
+      };
+      const frozen = deepFreezeInSlices(data);
+      if (frozen) frozen.then(write);
+      else write();
+    },
     setShowCreateQuery: (showCreateQuery) =>
       set(
         (state) => {
@@ -548,6 +561,11 @@ export const createQueryPanelSlice = (set, get) => ({
           }
         }
 
+        // Deep-frozen before it's shown or stored, like everything in the store: in slices for a large result, so the
+        // page isn't blocked (see _engines/data/freeze.js).
+        const frozen = deepFreezeInSlices([finalData, rawData, data?.metadata]);
+        if (frozen) await frozen;
+
         if (shouldSetPreviewData) {
           setPreviewLoading(false);
           setPreviewData(finalData);
@@ -570,7 +588,7 @@ export const createQueryPanelSlice = (set, get) => ({
           errorTarget: 'Queries',
         });
 
-        setResolvedQuery(
+        const propagated = setResolvedQuery(
           queryId,
           {
             isLoading: false,
@@ -584,6 +602,9 @@ export const createQueryPanelSlice = (set, get) => ({
           },
           moduleId
         );
+        // Success handlers and `await queries.x.run()` see every dependent resolved, as they always have: a large
+        // result's dependents may still be resolving in slices.
+        if (propagated) await propagated;
         const successData = { status: 'ok', data: finalData };
         onEvent('onDataQuerySuccess', queryEvents, {}, mode, moduleId);
         if (callbackFns?.onSuccess) callbackFns.onSuccess(successData);
@@ -1306,14 +1327,17 @@ export const createQueryPanelSlice = (set, get) => ({
 
       try {
         const resolvedState = get().getResolvedState(moduleId);
-        const queriesInCurentState = deepClone(resolvedState.queries);
-        const appStateVars = deepClone(resolvedState.variables) ?? {};
+        // A query's data, the variables and the page are copied when the script first reads them, not all on every run.
+        const queriesInCurentState = {};
+        for (const key of Object.keys(resolvedState.queries ?? {})) {
+          queriesInCurentState[key] = lazyCopies(resolvedState.queries[key], `queries.${key}`);
+        }
+        const appStateVars = lazyCopies(resolvedState.variables, 'variables') ?? {};
         if (!isEmpty(query)) {
           const actions = generateAppActions(query.id, mode, isPreview, moduleId);
 
           for (const key of Object.keys(queriesInCurentState)) {
-            queriesInCurentState[key] = {
-              ...queriesInCurentState[key],
+            Object.assign(queriesInCurentState[key], {
               run: () => {
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
                 return actions.runQuery(query.name, undefined, moduleId);
@@ -1340,7 +1364,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 const resolvedState = get().getResolvedState(moduleId);
                 return resolvedState.queries[key].isLoading;
               },
-            };
+            });
           }
 
           await pyodide.globals.set('actions', actions);
@@ -1349,7 +1373,7 @@ export const createQueryPanelSlice = (set, get) => ({
         await pyodide.globals.set('queries', queriesInCurentState);
         await pyodide.globals.set('tj_globals', resolvedState['globals']);
         await pyodide.globals.set('constants', resolvedState['constants']);
-        await pyodide.globals.set('page', deepClone(resolvedState['page']));
+        await pyodide.globals.set('page', lazyCopies(resolvedState['page'], 'page'));
         await pyodide.globals.set('parameters', currentState['parameters']);
         await pyodide.globals.set('variables', appStateVars);
         if (appType === 'module') await pyodide.globals.set('input', resolvedState['input']);
@@ -1404,7 +1428,8 @@ export const createQueryPanelSlice = (set, get) => ({
         try {
           const { eventsSlice } = get();
           const { generateAppActions } = eventsSlice;
-          const queriesInResolvedState = deepClone(currentState.queries);
+          // Each query (and the page) is copied when the transformation first reads it, not all on every run.
+          const queriesInResolvedState = lazyCopies(currentState.queries, 'queries');
           const actions = generateAppActions(query?.id, mode);
 
           const proxiedComponents = currentState?.components;
@@ -1412,7 +1437,7 @@ export const createQueryPanelSlice = (set, get) => ({
           const proxiedConstants = currentState?.constants;
           const proxiedVariables = currentState?.variables;
           const proxiedInput = currentState?.input;
-          const proxiedPage = deepClone(currentState?.page);
+          const proxiedPage = lazyCopies(currentState?.page, 'page');
           const proxiedQueriesInResolvedState = queriesInResolvedState;
 
           const libraryRegistry = get().jsLibraryRegistry || {};
@@ -1802,9 +1827,9 @@ export const createQueryPanelSlice = (set, get) => ({
           componentsInResolvedState,
           queriesInResolvedState,
           resolvedState.globals,
-          deepClone(resolvedState.page),
+          lazyCopies(resolvedState.page, 'page'),
           axios,
-          deepClone(resolvedState.variables),
+          lazyCopies(resolvedState.variables, 'variables'),
           actions,
           resolvedState?.constants,
           timerRegistry.trackedSetTimeout.bind(timerRegistry),
@@ -1837,7 +1862,9 @@ export const createQueryPanelSlice = (set, get) => ({
         result = { status: 'failed', data: { message: error, description: error, lineNumber } };
       }
 
-      if (hasCircularDependency(result)) {
+      // Checked without blocking when the result is large: the answer at once for a usual result, else after slices.
+      const cyclic = hasCycleInSlices(result);
+      if (cyclic === true || (cyclic !== false && (await cyclic))) {
         return {
           status: 'failed',
           data: {

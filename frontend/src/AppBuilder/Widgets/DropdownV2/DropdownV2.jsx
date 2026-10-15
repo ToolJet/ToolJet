@@ -24,6 +24,7 @@ import {
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -234,10 +235,12 @@ export const DropdownV2 = ({
     };
   }, [isMenuOpen, componentName]);
 
+  const stableOptions = useContentStable(options);
+  const stableSchema = useContentStable(schema);
   useEffect(() => {
     setInputValue(findDefaultItem(advanced ? schema : options));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
+  }, [advanced, stableSchema, stableOptions]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -249,6 +252,7 @@ export const DropdownV2 = ({
 
   // Exposed variables
 
+  const stableSelectOptions = useContentStable(selectOptions);
   useEffect(() => {
     if (isInitialRender.current) return;
     const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
@@ -260,7 +264,7 @@ export const DropdownV2 = ({
       selectOption(_value);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue, JSON.stringify(selectOptions)]);
+  }, [currentValue, stableSelectOptions]);
 
   useEffect(() => {
     if (isInitialRender.current) return;

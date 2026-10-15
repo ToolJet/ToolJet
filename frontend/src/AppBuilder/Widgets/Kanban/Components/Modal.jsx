@@ -5,7 +5,7 @@ import '@/_styles/widgets/kanban.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { diff } from '@/AppBuilder/_engines/data/diff';
 import './modal.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';

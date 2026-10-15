@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -42,9 +42,14 @@ export default function Calendar({
 }) {
   const style = { height, borderRadius: `${styles.borderRadius}px`, overflow: 'hidden' };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
-  const events = Array.isArray(properties?.events)
-    ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
-    : [];
+  // Parsed once per change of the events or their format, not on every render (two date parses per event).
+  const events = useMemo(
+    () =>
+      Array.isArray(properties?.events)
+        ? properties.events.map((event) => prepareEvent(event, properties.dateFormat))
+        : [],
+    [properties?.events, properties.dateFormat]
+  );
 
   const [currentView, setCurrentView] = useState(properties.defaultView || 'month');
   const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);

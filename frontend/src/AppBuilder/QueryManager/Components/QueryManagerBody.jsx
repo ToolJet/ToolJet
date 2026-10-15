@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { diff } from '@/AppBuilder/_engines/data/diff';
 import { allSources, source } from '../QueryEditors';
 import { resolveQueryEditor } from '../utils';
 import DataSourcePicker from './DataSourcePicker';

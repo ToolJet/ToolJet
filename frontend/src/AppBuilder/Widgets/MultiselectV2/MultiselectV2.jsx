@@ -19,6 +19,7 @@ import {
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 export const MultiselectV2 = ({
   id,
@@ -78,6 +79,18 @@ export const MultiselectV2 = ({
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
   const selectRef = React.useRef(null);
+  // react-select's own check compares each option with every selected value (options × selected on every render):
+  // a Set per selected-value array answers the same question at once.
+  const selectedValueSets = useRef(new WeakMap());
+  const isOptionSelected = (option, selectValue) => {
+    if (!Array.isArray(selectValue)) return false;
+    let values = selectedValueSets.current.get(selectValue);
+    if (!values) {
+      values = new Set(selectValue.map((item) => item?.value));
+      selectedValueSets.current.set(selectValue, values);
+    }
+    return values.has(option?.value);
+  };
   const [validationStatus, setValidationStatus] = useState(
     validate(selected?.length ? selected?.map((option) => option.value) : null)
   );
@@ -106,6 +119,8 @@ export const MultiselectV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, multiSelectLoadingState, disabledState]);
 
+  const stableOptions = useContentStable(options);
+  const stableSchema = useContentStable(schema);
   const selectOptions = useMemo(() => {
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
@@ -121,12 +136,13 @@ export const MultiselectV2 = ({
       : [];
     return sortArray(_selectOptions, sort);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
+  }, [advanced, stableSchema, stableOptions, sort]);
 
   const hasMaxLimit = maxLimit !== '' && maxLimit !== null && maxLimit !== undefined && !Number.isNaN(Number(maxLimit));
   const maxSelectionLimit = hasMaxLimit ? Math.max(0, Math.floor(Number(maxLimit))) : null;
   const isLimitReached = maxSelectionLimit !== null && selected.length >= maxSelectionLimit;
 
+  const stableSelectOptions = useContentStable(selectOptions);
   const modifiedSelectOptions = useMemo(() => {
     const SELECT_ALL = 'multiselect-custom-menulist-select-all';
     // Adding select all option dynamically to the options
@@ -155,7 +171,7 @@ export const MultiselectV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     showAllOption,
-    JSON.stringify(selectOptions),
+    stableSelectOptions,
     optionsLoadingState,
     searchInputValue,
     maxSelectionLimit,
@@ -173,12 +189,17 @@ export const MultiselectV2 = ({
       // to a string or an object. Without this guard `.find` throws and the
       // platform error boundary replaces the whole field; a non-array `options`
       // already degrades to an empty list, so match it.
-      return Array.isArray(selectOptions) && Array.isArray(value)
-        ? selectOptions.filter((item) => value.find((val) => val === item.value))
+      // A Set, not a search of `value` per option: 10k options × 10k values was 10^8 comparisons. As before, an option
+      // whose value is falsy isn't picked (the search returned the matching value, used as the test).
+      const wanted = Array.isArray(value) ? new Set(value) : null;
+      return Array.isArray(selectOptions) && wanted
+        ? selectOptions.filter((item) => item.value && wanted.has(item.value))
         : [];
     } else {
+      // `item.value === item.value`: a NaN value never matched (===), and a Set would find it.
+      const wanted = new Set((selected ?? []).map((val) => val.value));
       return Array.isArray(selectOptions)
-        ? selectOptions.filter((item) => selected?.find((val) => val.value === item.value))
+        ? selectOptions.filter((item) => item.value === item.value && wanted.has(item.value))
         : [];
     }
   }
@@ -224,13 +245,14 @@ export const MultiselectV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectOptions]);
 
+  const stableValues = useContentStable(values);
   useEffect(() => {
     if (advanced) {
       let foundItem = findDefaultItem(values, advanced, true);
       setInputValue(foundItem);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(values), JSON.stringify(schema)]);
+  }, [advanced, stableValues, stableSchema]);
 
   useEffect(() => {
     if (!advanced) {
@@ -238,7 +260,7 @@ export const MultiselectV2 = ({
       setInputValue(foundItem);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(values)]);
+  }, [advanced, stableValues]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -323,19 +345,21 @@ export const MultiselectV2 = ({
     setExposedVariable('selectOptions', async function (value) {
       if (Array.isArray(value)) {
         const newSelected = [...selected];
+        // Options by value and the values already selected: a lookup per value instead of scans of every option.
+        const optionsByValue = new Map();
+        selectOptions.forEach((option) => {
+          if (optionsByValue.has(option.value)) optionsByValue.get(option.value).push(option);
+          else optionsByValue.set(option.value, [option]);
+        });
+        const selectedValues = new Set(selected.map((option) => option.value));
         value.forEach((val) => {
           // Check if array provided is a list of objects with value key
           if (isObject(val) && has(val, 'value')) {
             val = val.value;
           }
-          if (
-            selectOptions.some((option) => option.value === val) &&
-            !selected.some((option) => option.value === val)
-          ) {
-            const optionsToAdd = selectOptions.filter(
-              (option) => option.value === val && !selected.some((selectedOption) => selectedOption.value === val)
-            );
-            newSelected.push(...optionsToAdd);
+          // `val === val`: NaN never matched (===), and a Map/Set would find it.
+          if (val === val && optionsByValue.has(val) && !selectedValues.has(val)) {
+            newSelected.push(...optionsByValue.get(val));
           }
         });
         const limited = maxSelectionLimit !== null ? newSelected.slice(0, maxSelectionLimit) : newSelected;
@@ -347,8 +371,8 @@ export const MultiselectV2 = ({
     setExposedVariable('deselectOptions', async function (value) {
       if (Array.isArray(value)) {
         // Check if array provided is a list of objects with value key
-        const _value = value.map((val) => (isObject(val) && has(val, 'value') ? val.value : val));
-        const newSelected = selected.filter((option) => !_value.includes(option.value));
+        const _value = new Set(value.map((val) => (isObject(val) && has(val, 'value') ? val.value : val)));
+        const newSelected = selected.filter((option) => !_value.has(option.value));
         setInputValue(newSelected);
       }
     });
@@ -579,6 +603,7 @@ export const MultiselectV2 = ({
             value={selectOptions?.length === selected?.length ? modifiedSelectOptions : selected}
             onChange={onChangeHandler}
             options={modifiedSelectOptions}
+            isOptionSelected={isOptionSelected}
             filterOption={(option, input) => {
               if (serverSideSearch === true) return true; // server mode: render all options, no client-side filtering
               if (!input) return true;

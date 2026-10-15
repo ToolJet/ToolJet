@@ -12,6 +12,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -71,6 +72,7 @@ export const ButtonGroupV2 = (props) => {
   // ===== COMPUTED VALUES =====
   const transformedOptions = advanced ? schema : options;
 
+  const stableTransformedOptions = useContentStable(transformedOptions);
   const formattedOptions = useMemo(() => {
     return Array.isArray(transformedOptions)
       ? transformedOptions.map((option) => {
@@ -82,7 +84,7 @@ export const ButtonGroupV2 = (props) => {
           };
         })
       : [];
-  }, [JSON.stringify(transformedOptions)]);
+  }, [stableTransformedOptions]);
 
   const defaultOptionValues = (options) => {
     const defaultOptions = options.filter((option) => option?.default);
@@ -232,10 +234,12 @@ export const ButtonGroupV2 = (props) => {
     });
   }, [multiSelection, validOptionValues, updateExposedVariablesState, setExposedVariable]);
 
+  const stableSchema = useContentStable(schema);
+  const stableOptions = useContentStable(options);
   useEffect(() => {
     updateExposedVariablesState('selected', defaultOptionValues(formattedOptions));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(options), JSON.stringify(schema), multiSelection]);
+  }, [advanced, stableOptions, stableSchema, multiSelection]);
 
   const handleButtonClick = (value) => {
     const isSelected = exposedVariablesTemporaryState.selected.includes(value);
@@ -304,6 +308,7 @@ export const ButtonGroupV2 = (props) => {
   };
 
   // ===== ALIGNMENT FIX FOR 'ROW' LAYOUT =====
+  const stableFormattedOptions = useContentStable(formattedOptions);
   useEffect(() => {
     if (!groupWrapperRef.current || !groupRef.current) return;
 
@@ -327,7 +332,7 @@ export const ButtonGroupV2 = (props) => {
     };
 
     syncRowAlignmentAndScroll();
-  }, [layout, btnAlignment, justifyContentByAlignment, JSON.stringify(formattedOptions), width]);
+  }, [layout, btnAlignment, justifyContentByAlignment, stableFormattedOptions, width]);
 
   // ===== MAIN RENDER =====
   return (

@@ -1,5 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
+import { hasCycle } from '@/AppBuilder/_engines/data/cycles';
 import _, { isEmpty } from 'lodash';
 import JSON5 from 'json5';
 import { toast } from 'react-hot-toast';
@@ -643,28 +644,11 @@ export const handleCircularStructureToJSON = () => {
   };
 };
 
-export function hasCircularDependency(obj, stack = new Set()) {
-  if (typeof obj !== 'object' || obj === null) {
-    return false;
-  }
-
-  if (stack.has(obj)) {
-    return true;
-  }
-
-  stack.add(obj);
-
-  for (let key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      if (hasCircularDependency(obj[key], new Set(stack))) {
-        return true;
-      }
-    }
-  }
-
-  stack.delete(obj);
-  return false;
-}
+/**
+ * Does `obj` contain itself, at any depth? With `maxObjects`, only that many objects are looked at (see
+ * `hasCycle` in the data engine).
+ */
+export const hasCircularDependency = (obj, maxObjects = Infinity) => hasCycle(obj, maxObjects);
 
 export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;

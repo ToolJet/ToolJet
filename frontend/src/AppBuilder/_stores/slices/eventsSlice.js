@@ -818,7 +818,8 @@ export const createEventsSlice = (set, get) => ({
               const value = getResolvedValue(event.value, customVariables, moduleId);
 
               setVariable(key, value, moduleId);
-              return Promise.resolve();
+              // Resolves once the variable's dependents have: a large update resolves them in slices.
+              return get().propagationSettled();
               // customAppVariables[key] = value;
               // const resp = useCurrentStateStore.getState().actions.setCurrentState({
               //   variables: customAppVariables,
@@ -882,7 +883,7 @@ export const createEventsSlice = (set, get) => ({
               const key = getResolvedValue(event.key, customVariables, moduleId);
               const value = getResolvedValue(event.value, customVariables, moduleId);
               setPageVariable(key, value, moduleId);
-              return Promise.resolve();
+              return get().propagationSettled();
               // const customPageVariables = {
               //   ...getCurrentState().page.variables,
               //   [key]: value,

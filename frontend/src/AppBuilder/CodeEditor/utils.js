@@ -2,7 +2,12 @@ import moment from 'moment';
 import _, { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { any } from 'superstruct';
-import { generateSchemaFromValidationDefinition, validate } from '@/AppBuilder/_utils/component-properties-validation';
+import {
+  generateSchemaFromValidationDefinition,
+  validate,
+  fitsDefinition,
+} from '@/AppBuilder/_utils/component-properties-validation';
+import { stringifyBounded } from '@/AppBuilder/_engines/data/bounded';
 import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { removeNestedDoubleCurlyBraces } from '../_stores/utils';
@@ -255,6 +260,10 @@ const queryHasStringOtherThanVariable = (query) => {
   return false;
 };
 
+// Objects the editor looks at for a cycle as you type, a few ms: a cycle in a dataset bound here is found in its first
+// rows, and a value past this many objects is too large for the preview to show whole anyway.
+const CYCLE_CHECK_OBJECTS = 10000;
+
 export const resolveReferences = (query, validationSchema, customResolvers = {}, validationFn = undefined) => {
   if (typeof query === 'number') {
     return [true, null, query];
@@ -342,7 +351,7 @@ export const resolveReferences = (query, validationSchema, customResolvers = {},
     return [false, error, query, query];
   }
 
-  if (hasCircularDependency(resolvedValue)) {
+  if (hasCircularDependency(resolvedValue, CYCLE_CHECK_OBJECTS)) {
     return [false, `${resolvedValue} has circular dependency, unable to resolve`, query, query];
   }
 
@@ -386,16 +395,38 @@ export const FxParamTypeMapping = Object.freeze({
   query: 'Query',
 });
 
+// The coerced value shown after "→" is cut to this many characters.
+export const COERCION_PREVIEW_LIMIT = 1000;
+
+const coercedText = (value) => {
+  const { text, truncated } = stringifyBounded(value, COERCION_PREVIEW_LIMIT);
+  return ` → ${text}${truncated ? '…' : ''}`;
+};
+
+// Values are compared by their JSON up to this many characters; larger ones (a dataset: hundreds of MB of JSON, which
+// past ~500 MB can't be built at all) by their content.
+const COMPARE_AS_JSON_LIMIT = 100000;
+const isSameJSON = (a, b) => {
+  const x = stringifyBounded(a, COMPARE_AS_JSON_LIMIT);
+  const y = stringifyBounded(b, COMPARE_AS_JSON_LIMIT);
+  if (!x.truncated && !y.truncated) return x.text === y.text;
+  return x.truncated === y.truncated && _.isEqual(a, b);
+};
+
+/**
+ * Whether validation changed the resolved value, and the preview of what it became. The same object (validation keeps
+ * a value that fits as is) is unchanged without looking inside.
+ */
 export function computeCoercion(oldValue, newValue) {
   const oldValueType = Array.isArray(oldValue) ? 'array' : typeof oldValue;
   const newValueType = Array.isArray(newValue) ? 'array' : typeof newValue;
 
   if (oldValueType === newValueType) {
-    if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
-      return [` → ${JSON.stringify(newValue)}`, newValueType, oldValueType];
+    if (!Object.is(oldValue, newValue) && !isSameJSON(oldValue, newValue)) {
+      return [coercedText(newValue), newValueType, oldValueType];
     }
   } else {
-    return [` → ${JSON.stringify(newValue)}`, newValueType, oldValueType];
+    return [coercedText(newValue), newValueType, oldValueType];
   }
 
   return ['', newValueType, oldValueType];
@@ -403,6 +434,9 @@ export function computeCoercion(oldValue, newValue) {
 
 export const validateComponentProperty = (resolvedValue, validation) => {
   const validationDefinition = validation?.schema;
+
+  // A value that already fits is kept as is: validating copies every row of a dataset.
+  if (fitsDefinition(validationDefinition, resolvedValue) === true) return [true, [], resolvedValue];
 
   const defaultValue = validation?.defaultValue;
 
