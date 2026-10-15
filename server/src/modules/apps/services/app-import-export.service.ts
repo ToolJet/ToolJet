@@ -5,6 +5,7 @@ import { App } from 'src/entities/app.entity';
 import { AppBase } from 'src/entities/app_base.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from 'src/entities/app_version.entity';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
@@ -2951,12 +2952,14 @@ export class AppImportExportService {
     resourceMapping: AppResourceMappings
   ): Promise<void> {
     // Get the app versions with their definitions and associated apps
-    const appVersionsWithDefinitions = await manager
-      .createQueryBuilder(AppVersion, 'appVersion')
-      .leftJoinAndSelect('appVersion.app', 'app')
-      .where('appVersion.id IN(:...appVersionIds)', { appVersionIds })
-      .select(['appVersion.id', 'appVersion.definition', 'app.type'])
-      .getMany();
+    const appVersionsWithDefinitions = await skipAppEditingVersionHydration.run(true, () =>
+      manager
+        .createQueryBuilder(AppVersion, 'appVersion')
+        .leftJoinAndSelect('appVersion.app', 'app')
+        .where('appVersion.id IN(:...appVersionIds)', { appVersionIds })
+        .select(['appVersion.id', 'appVersion.definition', 'app.type'])
+        .getMany()
+    );
 
     const workflowAppVersions = appVersionsWithDefinitions.filter(
       (appVersion) => appVersion.app?.type === 'workflow' && appVersion.definition?.queries
