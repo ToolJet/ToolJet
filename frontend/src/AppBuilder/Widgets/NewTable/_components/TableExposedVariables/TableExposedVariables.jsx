@@ -11,6 +11,7 @@ import { usePrevious } from '@dnd-kit/utilities';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useTableRefresh } from '../../_hooks/useTableRefresh';
 import { isEditedFieldsMapValid } from '../../_utils/columnValidity';
+import { createTableRowEventOptions } from '../../_utils/tableEventUtils';
 // Component to expose variables & fire events from the table
 // It might miss some variables which are tightly coupled with the component state
 export const TableExposedVariables = ({
@@ -344,7 +345,7 @@ export const TableExposedVariables = ({
     // onRowClicked event will be fired when a row is clicked
     // it should be triggered even when allowSelection is false which is handled in the handleRowClick()
     if (allowSelection && Object.keys(lastClickedRow).length > 0) {
-      fireEvent('onRowClicked');
+      fireEvent('onRowClicked', createTableRowEventOptions(lastClickedRow.index));
     }
   }, [lastClickedRow, fireEvent, allowSelection]);
 
