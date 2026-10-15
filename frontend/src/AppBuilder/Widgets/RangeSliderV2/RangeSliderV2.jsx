@@ -65,14 +65,21 @@ export const RangeSliderV2 = ({
   const singleHandleValue = !enableTwoHandle ? (Array.isArray(value) ? value[0] : value) : 50;
   const twoHandlesArray = enableTwoHandle ? toArray(value) : [0, 100];
 
+  // Only clamp against bounds that actually bound something.
+  // min/max are usually bound expressions, and a transient non-number or inverted pair
+  // during load would otherwise collapse a live value to NaN or to a floor it never had
+  // and it would never come back once the binding resolved.
+  const hasUsableBounds = Number.isFinite(min) && Number.isFinite(max) && max > min;
+  const clampToBounds = (v) => (hasUsableBounds && typeof v === 'number' ? Math.min(Math.max(v, min), max) : v);
+
   const resetFn = async () => {
     let defaultValue;
     if (enableTwoHandle === 'slider') {
-      defaultValue = value ?? min;
+      defaultValue = clampToBounds(value ?? min);
       setDefaultSliderValue(defaultValue);
     } else {
-      const start = startValue ?? min;
-      const end = endValue ?? max;
+      const start = clampToBounds(startValue ?? min);
+      const end = clampToBounds(endValue ?? max);
       defaultValue = [start, end];
       setDefaultRangeValue(defaultValue);
     }
@@ -129,6 +136,29 @@ export const RangeSliderV2 = ({
   useEffect(() => {
     setExposedVariable('reset', resetFn);
   }, [enableTwoHandle, value, min, max, startValue, endValue]);
+
+  // When the bounds move, pull the LIVE value inside them.
+  // Deliberately not the reset effect: re-running that would republish the configured default
+  useEffect(() => {
+    if (enableTwoHandle === 'slider') {
+      if (!Number.isFinite(defaultSliderValue)) return;
+      const clamped = clampToBounds(defaultSliderValue);
+      if (clamped !== defaultSliderValue) {
+        setDefaultSliderValue(clamped);
+        setExposedVariable('value', clamped);
+      }
+    } else {
+      const [start, end] = toArray(defaultRangeValue);
+      if (!Number.isFinite(start) || !Number.isFinite(end)) return;
+      const clampedStart = clampToBounds(start);
+      const clampedEnd = clampToBounds(end);
+      if (clampedStart !== start || clampedEnd !== end) {
+        setDefaultRangeValue([clampedStart, clampedEnd]);
+        setExposedVariable('value', [clampedStart, clampedEnd]);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [min, max]);
 
   useEffect(() => {
     if (disabled !== properties.disabledState) setDisabled(properties.disabledState);

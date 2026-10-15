@@ -105,17 +105,25 @@ describe('StarRating', () => {
       expect(checkedCount(container)).toBe(0);
     });
 
-    test('[StarRating-DEF-003] a default above the star count is published unclamped', async () => {
-      // CHARACTERIZATION (D-05). Not endorsed: every icon draws lit while the
-      // published value exceeds the maximum, so a binding reads a rating the
-      // control cannot represent.
+    test('[StarRating-DEF-003] a default above the star count is clamped to it', async () => {
+      // D-05 reversed 2026-10-14, alongside the slider's D-02. Break this
+      // catches: publishing the configured default verbatim, so a binding reads
+      // a rating the control cannot represent while every icon draws lit.
       const { container } = widget.render({
         properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{8}}') },
       });
 
-      await waitFor(() => expect(widget.exposed().value).toBe(8));
+      await waitFor(() => expect(widget.exposed().value).toBe(5));
       expect(icons(container)).toHaveLength(5);
       expect(checkedCount(container)).toBe(5);
+    });
+
+    test('[StarRating-DEF-003] a negative default is clamped to zero', async () => {
+      widget.render({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{-2}}') },
+      });
+
+      await waitFor(() => expect(widget.exposed().value).toBe(0));
     });
 
     test('[StarRating-DEF-003] a half default is honoured even with half ratings off', async () => {
@@ -329,9 +337,25 @@ describe('StarRating', () => {
       expect(checkedCount(container)).toBe(4);
     });
 
-    test('[StarRating-BIND-003] lowering the star count leaves the published value stale', async () => {
-      // CHARACTERIZATION (D-05), the higher-risk half: maxRating is usually
-      // bound, so a query returning a smaller ceiling strands the value above it.
+    test('[StarRating-DEF-003] a default changed to an out-of-range value is clamped too', async () => {
+      // Covers the reset path specifically: the default moves while maxRating
+      // stays put, so the star-count effect never fires.
+      widget.render({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{2}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(2));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(SR, 'defaultSelected', '{{9}}', 'properties');
+      });
+
+      await waitFor(() => expect(widget.exposed().value).toBe(5));
+    });
+
+    test('[StarRating-BIND-003] lowering the star count pulls the rating down with it', async () => {
+      // D-05 reversed 2026-10-14, the half that bites hardest: maxRating is
+      // usually bound, so a query returning a smaller ceiling used to strand the
+      // rating above a maximum the control no longer offers.
       const { container } = widget.render({
         properties: { maxRating: binding('{{10}}'), defaultSelected: binding('{{8}}') },
       });
@@ -342,7 +366,65 @@ describe('StarRating', () => {
       });
 
       await waitFor(() => expect(icons(container)).toHaveLength(3));
+      await waitFor(() => expect(widget.exposed().value).toBe(3));
+    });
+
+    test('[StarRating-BIND-003] lowering the star count clamps what the USER set, not the default', async () => {
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{10}}'), defaultSelected: binding('{{2}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(2));
+
+      await widget.session.user.click(icons(container)[8]); // user picks 9
+      await waitFor(() => expect(widget.exposed().value).toBe(9));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(SR, 'maxRating', '{{4}}', 'properties');
+      });
+
+      // Clamped to the new ceiling — NOT reset to the configured default of 2.
+      await waitFor(() => expect(widget.exposed().value).toBe(4));
+    });
+
+    test.each([
+      ['a non-numeric binding', "{{'abc'}}"],
+      ['null', '{{null}}'],
+      ['undefined', '{{undefined}}'],
+      ['infinity', '{{1/0}}'],
+      ['zero', '{{0}}'],
+    ])('[StarRating-BIND-003] a star count of %s leaves the rating exactly as it was', async (_l, maxBinding) => {
+      widget.render({
+        properties: { maxRating: binding('{{10}}'), defaultSelected: binding('{{8}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(8));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(SR, 'maxRating', maxBinding, 'properties');
+      });
+      await drain();
+
       expect(widget.exposed().value).toBe(8);
+    });
+
+    test('[StarRating-BIND-003] a star count that has not resolved yet does not destroy the rating', async () => {
+      // maxRating is usually a binding; before a query returns it falls back to
+      // 0, which would otherwise wipe a live rating to 0 for good.
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{10}}'), defaultSelected: binding('{{8}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(8));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(SR, 'maxRating', '{{queries.notReady.data.count}}', 'properties');
+      });
+      await drain();
+      expect(widget.exposed().value).toBe(8);
+      expect(icons(container)).toHaveLength(0);
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(SR, 'maxRating', '{{4}}', 'properties');
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(4));
     });
 
     test.each([
