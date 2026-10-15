@@ -5,9 +5,11 @@
  * Every test title starts with its approved scenario ID.
  *
  * Two harnesses, because the rendered page window is a function of the widget's
- * `width` prop (`Math.floor(width / 28)` in Pagination.jsx) and `createWidgetHarness`
- * fixes that width per harness: `widget` is wide enough to show every page,
- * `narrow` is not, which is the only way to exercise the ellipsis branch.
+ * `width` prop and the measured item widths in Pagination.jsx (jsdom measures 0, so the
+ * CSS minimums apply: 28px per operator, 28px per page up to two digits, 32px for three).
+ * `createWidgetHarness` fixes the width per harness: `widget` is wide enough to show every
+ * page, `narrow` is not, which is the only way to exercise the ellipsis branch, and `tight`
+ * leaves room for nothing but the ellipsis and the last page.
  *
  * Three characterizations here pin behaviour that differs from the documentation,
  * each under an approved decision — the loader sits on the first item of the
@@ -48,10 +50,12 @@ const harnessArgs = {
   defaultStyles,
 };
 
-// 600 / 28 = 21 slots, so every page of a 5- or 20-page range is rendered.
+// (600 - 4 * 28) / 28 = 17 slots, so every page of a 5- or 20-page range is rendered.
 const widget = createWidgetHarness({ ...harnessArgs, widgetWidth: 600 });
-// 400 / 28 = 14 slots => 10 page numbers before the ellipsis trimming runs.
+// (400 - 4 * 28) / 28 = 10 page numbers before the ellipsis trimming runs.
 const narrow = createWidgetHarness({ ...harnessArgs, widgetWidth: 400 });
+// (200 - 4 * 28) / 32 = 2 slots for three-digit pages: the window is just "... 100".
+const tight = createWidgetHarness({ ...harnessArgs, widgetWidth: 200 });
 
 const root = (container, handle = HANDLE) => container.querySelector(`[data-cy="${handle}"]`);
 const canvasNode = (container, handle = HANDLE) => container.querySelector(`[data-cy="draggable-widget-${handle}"]`);
@@ -136,16 +140,16 @@ describe('Pagination widget', () => {
         await waitFor(() => expect(widget.variables().fired).toBe(2));
       });
 
-      test('[Pagination-DEF-003] a zero default page index is ignored (D-04)', async () => {
-        // Break this catches: replacing the truthiness guard with a null check, which would
-        // make a bound 0 navigate to page 0.
+      test('[Pagination-DEF-003] a zero default page index deselects every page (D-04)', async () => {
+        // Break this catches: a truthiness guard that swallows 0 and leaves the previous page
+        // highlighted, which makes 0 behave differently from every other out-of-range value.
         const { container } = widget.render({ properties: { defaultPageIndex: binding('{{2}}') } });
         await waitFor(() => expect(activePage(container)).toBe('2'));
 
         await setProperty(widget, 'defaultPageIndex', '{{0}}');
 
-        await waitFor(() => expect(widget.exposed().currentPageIndex).toBe(2));
-        expect(activePage(container)).toBe('2');
+        await waitFor(() => expect(widget.exposed().currentPageIndex).toBe(0));
+        expect(activePage(container)).toBeNull();
       });
 
       test('[Pagination-DEF-003] out-of-range default page indices are applied unclamped (D-04)', async () => {
@@ -698,6 +702,49 @@ describe('Pagination widget', () => {
 
       await waitFor(() => expect(narrow.exposed().currentPageIndex).toBe(1));
       expect(pageNumbers(container)).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '...', '20']);
+    });
+  });
+  describe('tight layout', () => {
+    beforeEach(() => tight.setup());
+    afterEach(() => tight.teardown());
+
+    test('[Pagination-PGL-003] the window budgets the operators and digit widths and clips any remainder', async () => {
+      // Break this catches: counting the four operators as page slots, or sizing three-digit pages
+      // at 28px, both of which emit more items than the box can hold and spill past its edge.
+      const { container } = tight.render({ properties: { numberOfPages: binding('{{100}}') } });
+
+      await waitFor(() => expect(within(pageList(container)).getByText('...')).toBeInTheDocument());
+      expect(pageNumbers(container)).toEqual(['...', '100']);
+      expect(pageList(container)).toHaveStyle({ overflowX: 'clip', alignItems: 'center' });
+    });
+  });
+
+  describe('measured layout', () => {
+    // jsdom lays nothing out, so stand in for the browser: operators 28px, page items 37px
+    // (three digits at the real font), which is wider than the 32px fallback estimate.
+    const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth');
+    beforeEach(() => {
+      narrow.setup();
+      Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+        configurable: true,
+        get() {
+          if (this.tagName !== 'LI') return 0;
+          return this.hasAttribute('aria-label') ? 28 : 37;
+        },
+      });
+    });
+    afterEach(() => {
+      Object.defineProperty(HTMLElement.prototype, 'offsetWidth', offsetWidth);
+      narrow.teardown();
+    });
+
+    test('[Pagination-PGL-003] measured item widths override the estimate so the operators stay inside the box', async () => {
+      // Break this catches: trusting a font-metric guess over the rendered width, which at real
+      // sizes pushed ">" and ">>" past the right edge of the widget.
+      const { container } = narrow.render({ properties: { numberOfPages: binding('{{150}}') } });
+
+      // (400 - 4 * 28) / 37 = 7 slots, not the 9 the 32px estimate would allow.
+      await waitFor(() => expect(pageNumbers(container)).toEqual(['1', '2', '3', '4', '5', '...', '150']));
     });
   });
 });
