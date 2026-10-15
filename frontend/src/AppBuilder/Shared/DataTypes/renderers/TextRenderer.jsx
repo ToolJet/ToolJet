@@ -1,8 +1,9 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isCellContentOverflowing } from '../utils';
+import useStore from '@/AppBuilder/_stores/store';
 
 /**
  * TextRenderer - Pure multiline text value renderer with editing support
@@ -23,6 +24,11 @@ import { isCellContentOverflowing } from '../utils';
  * @param {string} props.validationError - Validation error message
  * @param {string} props.searchText - Search text for highlighting
  * @param {React.Component} props.SearchHighlightComponent - Optional component for search highlighting
+ * @param {Object} props.validationConfig - Validation rule config (minLength/maxLength/customRule),
+ *                  used to validate the in-progress draft value while editing, ahead of the commit on blur.
+ * @param {Function} props.onValidationChange - Reports the effective ({isValid, validationError}) —
+ *                  draft-based while editing, prop-driven/committed otherwise — to a parent that
+ *                  displays its own validation UI (e.g. KeyValuePair's row-level error text).
  */
 export const TextRenderer = ({
   id,
@@ -41,15 +47,45 @@ export const TextRenderer = ({
   isEditing,
   setIsEditing,
   widgetType,
+  validationConfig,
+  onValidationChange,
 }) => {
   const [showOverlay, setShowOverlay] = useState(false);
   // const [isEditing, setIsEditing] = useState(false);
+  const [draftValidation, setDraftValidation] = useState(null);
   const containerRef = useRef(null);
   const cellRef = useRef(null);
   // Measured for overflow: the outer wrapper is always constrained to the fixed cell
   // height, unlike cellRef which collapses to content height in an editable-but-not-
   // editing cell (that collapse is why the tooltip never appeared for editable cells).
   const wrapperRef = useRef(null);
+
+  const effectiveIsValid = draftValidation ? draftValidation.isValid : isValid;
+  const effectiveValidationError = draftValidation ? draftValidation.validationError : validationError;
+
+  const validateDraft = useCallback(
+    (draftValue) => {
+      if (!validationConfig) return;
+      setDraftValidation(
+        useStore.getState().validateWidget({
+          validationObject: {
+            regex: { value: validationConfig?.regex },
+            minLength: { value: validationConfig?.minLength },
+            maxLength: { value: validationConfig?.maxLength },
+            customRule: { value: validationConfig?.customRule },
+          },
+          widgetValue: draftValue,
+          customResolveObjects: { cellValue: draftValue },
+        })
+      );
+    },
+    [validationConfig]
+  );
+
+  useEffect(() => {
+    onValidationChange?.({ isValid: effectiveIsValid, validationError: effectiveValidationError });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveIsValid, effectiveValidationError]);
 
   const handleContentChange = useCallback(
     (content) => {
@@ -113,7 +149,7 @@ export const TextRenderer = ({
         ref={cellRef}
         id={id}
         contentEditable="true"
-        className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
+        className={`${!effectiveIsValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
           darkMode ? 'textarea-dark-theme' : ''
         } justify-content-${determineJustifyContentValue(horizontalAlignment)} `}
         style={{
@@ -128,8 +164,10 @@ export const TextRenderer = ({
           display: 'flex',
           alignItems: 'center',
         }}
+        onInput={(e) => validateDraft(e.target.textContent)}
         onBlur={(e) => {
           setIsEditing(false);
+          setDraftValidation(null);
           if (value !== e.target.textContent) {
             handleContentChange(e.target.textContent);
           }
@@ -143,7 +181,7 @@ export const TextRenderer = ({
     );
   }, [
     isEditable,
-    isValid,
+    effectiveIsValid,
     darkMode,
     textColor,
     containerWidth,
@@ -154,6 +192,7 @@ export const TextRenderer = ({
     cellStyle,
     handleContentChange,
     SearchHighlightComponent,
+    validateDraft,
   ]);
 
   return (
@@ -189,13 +228,13 @@ export const TextRenderer = ({
           onMouseEnter={() => setShowOverlay(true)}
           onMouseLeave={() => setShowOverlay(false)}
           ref={containerRef}
-          className={`${!isValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
+          className={`${!effectiveIsValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''}`}
         >
           {renderContent()}
         </div>
-        {isEditable && !isValid && widgetType !== 'KeyValuePair' && (
+        {isEditable && !effectiveIsValid && widgetType !== 'KeyValuePair' && (
           <div className="invalid-feedback text-truncate" onClick={focusInput}>
-            {validationError}
+            {effectiveValidationError}
           </div>
         )}
       </div>
