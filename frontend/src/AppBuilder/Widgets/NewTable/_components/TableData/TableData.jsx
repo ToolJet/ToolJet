@@ -167,8 +167,10 @@ export const TableData = ({
       </div>
     );
   } else if (data.length === 0) {
+    // Room for the message: it is centred absolutely, so a table that fits its rows (dynamic height, the UI 2.0 look's
+    // default) collapsed to its header and an empty Documents table said nothing (claims desk, 2026-10-14).
     return (
-      <div className={'table-responsive jet-data-table overflow-hidden position-relative'}>
+      <div className={'table-responsive jet-data-table overflow-hidden position-relative'} style={{ minHeight: 160 }}>
         {renderTableHeader()}
         <EmptyState />
       </div>

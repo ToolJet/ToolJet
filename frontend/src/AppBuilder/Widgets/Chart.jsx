@@ -13,7 +13,7 @@ import { getCssVarValue, getModifiedColor } from './utils';
 var tinycolor = require('tinycolor2');
 
 export default function Chart({
-  width,
+  width: gridWidth,
   height,
   darkMode,
   properties,
@@ -24,6 +24,27 @@ export default function Chart({
   dataCy,
 }) {
   const isInitialRender = useRef(true);
+  // The box the chart is drawn in can be narrower than its grid width: in a flex container (a card in a row of two) the
+  // slot was 553px and the plot was drawn at 563, its right edge cut off by the card (2026-10-14). The chart follows the
+  // box it is given, never wider than its grid width.
+  const boxRef = useRef(null);
+  const [slotWidth, setSlotWidth] = useState(0);
+  useEffect(() => {
+    const slot = boxRef.current?.parentElement;
+    if (!slot || typeof ResizeObserver === 'undefined') return undefined;
+    // Narrowed only when the chart overflows its slot, and widened again as the slot grows: a slot that takes its
+    // content's width never overflows, so it is never narrowed.
+    const measure = () => {
+      const room = Math.round(slot.clientWidth);
+      const box = boxRef.current?.offsetWidth ?? 0;
+      setSlotWidth((limit) => (box > room + 1 ? room : limit && room > limit ? room : limit));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(slot);
+    return () => observer.disconnect();
+  }, []);
+  const width = slotWidth > 40 && slotWidth < gridWidth ? slotWidth : gridWidth;
   const [loadingState, setLoadingState] = useState(false);
   const themeChanged = useStore((state) => state.themeChanged);
 
@@ -294,7 +315,7 @@ export default function Chart({
   }, []);
 
   return (
-    <div class="widget-chart" data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
+    <div ref={boxRef} class="widget-chart" data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
       {loadingState === true ? (
         <div style={{ width }} className="p-2 loader-main-container">
           <center>

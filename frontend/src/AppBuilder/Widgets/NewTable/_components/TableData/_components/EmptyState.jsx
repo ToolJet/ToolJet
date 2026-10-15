@@ -7,7 +7,9 @@ export const EmptyState = memo(() => {
       className="d-flex flex-column align-items-center custom-gap-8 justify-content-center h-100"
       style={{
         position: 'absolute',
-        top: '50%',
+        // Centred in the body under the header row (about 40px), not in the whole table: in a short empty table the
+        // icon touched the header's rule.
+        top: 'calc(50% + 20px)',
         left: '50%',
         transform: 'translateY(-50%) translateX(-50%)',
       }}

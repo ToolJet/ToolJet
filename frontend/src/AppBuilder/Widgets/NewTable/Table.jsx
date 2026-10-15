@@ -16,6 +16,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './table.scss';
+import './shadcnLook.scss';
 
 const Table = memo(
   ({
@@ -48,6 +49,21 @@ const Table = memo(
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
     const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
     const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
+    // In the shadcn look, a table inside a card (a surfaced FlexContainer) drops its own frame and sits flush in the
+    // card: a framed table inside a framed card read as a double border.
+    // The card's own background, when it sets one, also fills the sticky header row (else the header shows the
+    // theme's surface as a band across a differently coloured card).
+    const surface = useStore((state) => {
+      if (styles?.tableLook !== 'shadcn') return '';
+      const parentId = state.getComponentDefinition?.(id, moduleId)?.component?.parent;
+      const parent = parentId ? state.getResolvedComponent?.(parentId) : null;
+      if (!parent) return '';
+      const card = parent.properties?.cardStyle;
+      const background = String(parent.styles?.backgroundColor ?? '').trim();
+      if (background !== '' && background !== 'transparent') return background;
+      return card === 'shadcnCard' ? 'card' : '';
+    });
+    const insideSurface = surface !== '';
     const tableBodyRef = useRef(null);
 
     // get table properties
@@ -342,13 +358,18 @@ const Table = memo(
         ref={tableRef}
         data-cy={`draggable-widget-${componentName}`}
         data-disabled={exposedVariablesTemporaryState.isDisabled}
-        className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
+        className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}${
+          styles?.tableLook === 'shadcn' ? ` tj-table-look-shadcn${insideSurface ? ' tj-table-look-flat' : ''}` : ''
+        }`}
         style={{
           height: isDynamicHeightEnabled ? (subContainerIndex != null ? 'auto' : '100%') : `${height}px`,
-          ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
+          // The shadcn look is as tall as its rows, like shadcn's data table: no floor at the drawn height, which left a
+          // band under the last row of a short page.
+          ...(isDynamicHeightEnabled && styles?.tableLook !== 'shadcn' && { minHeight: `${height}px` }),
           display: exposedVariablesTemporaryState.isVisible ? '' : 'none',
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,
+          ...(surface && surface !== 'card' ? { '--tj-table-surface': surface } : {}),
           borderColor,
           backgroundColor: containerBackgroundColor,
           '--cc-table-action-icon-color': iconColor,

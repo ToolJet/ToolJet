@@ -569,6 +569,23 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             allComponents
           )}
           {_renderTabOptions()}
+          {/* ToolJet UI 2.0 Tabs: its style, alignment and wizard options apply to static tabs as well. */}
+          {component?.component?.component === 'ShadTabs' &&
+            properties
+              .filter((property) => !['useDynamicOptions', 'tabs'].includes(property))
+              .map((property) =>
+                renderElement(
+                  component,
+                  componentMeta,
+                  paramUpdated,
+                  dataQueries,
+                  property,
+                  'properties',
+                  currentState,
+                  allComponents,
+                  darkMode
+                )
+              )}
         </>
       ),
     });
