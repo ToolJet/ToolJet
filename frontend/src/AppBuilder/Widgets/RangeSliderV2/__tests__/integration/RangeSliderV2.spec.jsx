@@ -357,6 +357,40 @@ describe('RangeSliderV2', () => {
     });
   });
 
+    test('[RangeSliderV2-INT-005] hovering a single slider handle shows its value', async () => {
+      // Break this catches: handing OverlayTrigger a defined `show`, which makes
+      // it controlled — hover then cannot open it and the value is only ever
+      // visible mid-drag. The range branch has always worked because it passes
+      // no `show` at all.
+      const { container } = widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{100}}'), value: binding('{{50}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(50));
+
+      await widget.session.user.hover(handle(container));
+
+      expect(await screen.findByRole('tooltip')).toHaveTextContent('50');
+    });
+
+    test('[RangeSliderV2-INT-005] hovering a range slider handle shows that handle value', async () => {
+      // The branch that was already correct — kept so a fix to the single
+      // slider cannot quietly regress the one that worked.
+      const { container } = widget.render({
+        properties: {
+          ...RANGE,
+          min: binding('{{0}}'),
+          max: binding('{{100}}'),
+          startValue: binding('{{20}}'),
+          endValue: binding('{{70}}'),
+        },
+      });
+      await waitFor(() => expect(widget.exposed().value).toEqual([20, 70]));
+
+      await widget.session.user.hover(handles(container)[1]);
+
+      expect(await screen.findByRole('tooltip')).toHaveTextContent('70');
+    });
+
   describe('bindings and property changes', () => {
     test('[RangeSliderV2-BIND-001] a bound label re-resolves and republishes', async () => {
       const { container } = widget.render({ properties: { ...SINGLE, label: binding('First') } });

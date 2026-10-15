@@ -369,7 +369,8 @@ export const RangeSliderV2 = ({
                 handleRender={(node, handleProps) => {
                   return (
                     <OverlayTrigger
-                      show={handleProps.dragging}
+                      // `undefined` leaves the overlay UNCONTROLLED so hover can open it;
+                      show={handleProps.dragging || undefined}
                       placement="top"
                       overlay={<Tooltip key={handleProps.value}>{handleProps.value}</Tooltip>}
                     >
