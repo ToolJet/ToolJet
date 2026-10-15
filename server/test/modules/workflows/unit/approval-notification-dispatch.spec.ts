@@ -13,7 +13,7 @@ describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
 
   afterEach(() => jest.restoreAllMocks());
 
-  it('POSTs the notification payload including the request token', async () => {
+  it('POSTs the default payload without the request id, token, deadline or resolve URL', async () => {
     const fetchMock = jest.fn().mockResolvedValue({ ok: true, status: 200 });
     (global as any).fetch = fetchMock;
     const svc = makeService();
@@ -34,7 +34,12 @@ describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe('https://hook.test/x');
-    expect(JSON.parse(options.body)).toMatchObject({ requestId: 'req-1', token: 'tok-1', nodeName: 'approval1' });
+    const body = JSON.parse(options.body);
+    expect(body).toMatchObject({ nodeName: 'approval1', outcomes: [{ key: 'approved' }], inputSchema: [] });
+    expect(body).not.toHaveProperty('requestId');
+    expect(body).not.toHaveProperty('token');
+    expect(body).not.toHaveProperty('expiresAt');
+    expect(body).not.toHaveProperty('resolveUrl');
   });
 
   it('sends a JSON body template as parsed JSON (not double-encoded) and replaces the default payload', async () => {
@@ -157,7 +162,7 @@ describe('WorkflowExecutionsService.dispatchApprovalNotification', () => {
       'development'
     );
     const [, options] = fetchMock.mock.calls[0];
-    expect(JSON.parse(options.body)).toMatchObject({ requestId: 'req-1', token: 'tok-1' });
+    expect(JSON.parse(options.body)).toMatchObject({ nodeName: 'approval1', outcomes: [], inputSchema: [] });
   });
 
   it('does not throw when delivery fails', async () => {
