@@ -13,11 +13,13 @@ import {
   Monitor,
   Smartphone,
   SquareSplitHorizontal,
+  Undo2,
   X,
 } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { appVersionService, authenticationService } from '@/_services';
+import { toast } from 'react-hot-toast';
 import { useVersionDiffStore } from './useVersionDiffStore';
 import { ChangeList, STATUS_WORD, typeLabel } from './ChangeList';
 import { VersionFrame } from './VersionFrame';
@@ -103,7 +105,7 @@ const SOURCE_COPY = {
 
 export const VersionDiffDialog = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
-  const { isOpen, baseVersionId, targetVersionId, source, reviewId, baseSnapshotId, closeCompare } =
+  const { isOpen, baseVersionId, targetVersionId, source, reviewId, baseSnapshotId, undo, closeCompare } =
     useVersionDiffStore();
   const { appId, slug, selectedVersion, releasedVersionId, environments } = useStore(
     (state) => ({
@@ -133,6 +135,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const [panel, setPanel] = useState(null);
   const [snapshotId, setSnapshotId] = useState(null);
   const [renderMode, setRenderMode] = useState('live');
+  const [undoState, setUndoState] = useState(null); // null | 'confirm' | 'working' | { error }
   const closeRef = useRef(null);
   const session = authenticationService.currentSessionValue;
   const currentUser = {
@@ -348,6 +351,19 @@ export const VersionDiffDialog = ({ darkMode }) => {
       base: prev.base === id ? defaultBase(target, versions, releasedVersionId) : prev.base,
     }));
   };
+  const runUndo = async () => {
+    setUndoState('working');
+    try {
+      await appVersionService.restoreSnapshot(appId, snapshotId, undo?.expectedFingerprint);
+      toast.success('Undid the AI edit. The state before the undo is kept, so it can be restored.');
+      setUndoState(null);
+      closeCompare();
+      useStore.getState().triggerHotReload?.();
+    } catch (err) {
+      setUndoState({ error: err?.error ?? err?.message ?? 'The edit could not be undone' });
+    }
+  };
+
   const swap = () => !snapshotId && setPair((prev) => ({ base: prev.target, target: prev.base }));
   const pickBase = (id) => {
     if (id === SNAPSHOT) return;
@@ -462,6 +478,45 @@ export const VersionDiffDialog = ({ darkMode }) => {
                 <span>Request review</span>
               </button>
             )
+          )}
+          {snapshotId && undo && diff && !diff.identical && (
+            <div className="vd-undo">
+              <button
+                type="button"
+                className="vd-review-toggle"
+                onClick={() => setUndoState(undoState ? null : 'confirm')}
+                aria-expanded={!!undoState}
+                title="Undo this edit"
+                data-cy="undo-ai-edit"
+              >
+                <Undo2 size={14} strokeWidth={1.75} aria-hidden="true" />
+                <span>Undo this edit</span>
+              </button>
+              {undoState && (
+                <div className="vd-undo__pop" role="dialog" aria-label="Undo the AI edit">
+                  <p className="vd-undo__title">Put {targetName} back to before the AI edit?</p>
+                  <p className="vd-undo__text">
+                    The changes listed here are reversed. The current state is kept, so you can restore it later.
+                  </p>
+                  {undoState?.error && <p className="rv-error">{String(undoState.error)}</p>}
+                  <div className="rv-composer__actions">
+                    <span className="rv-spacer" />
+                    <button type="button" className="rv-btn" onClick={() => setUndoState(null)}>
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="rv-btn rv-btn--danger"
+                      onClick={runUndo}
+                      disabled={undoState === 'working'}
+                      data-cy="confirm-undo-ai-edit"
+                    >
+                      Undo edit
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
           <Segmented
             label="Screen size"

@@ -151,6 +151,13 @@ describe('content fingerprint', () => {
     '20000000-0000-4000-8000-000000000003',
   ];
 
+  it('ignores empty values the editor writes into rows on open', () => {
+    const plain = rows(a, 'Save');
+    const touched = rows(b, 'Save');
+    touched.components[0].properties = { ...touched.components[0].properties, tooltip: { value: '' }, data: {} };
+    expect(contentFingerprint(buildSnapshot(touched))).toBe(contentFingerprint(buildSnapshot(plain)));
+  });
+
   it('is the same for a copied version and different after an edit', () => {
     const original = contentFingerprint(buildSnapshot(rows(a, 'Save')));
     expect(contentFingerprint(buildSnapshot(rows(b, 'Save')))).toBe(original);

@@ -305,7 +305,8 @@ describe('page order', () => {
     const base = rows(spec(['home', 'products', 'settings']), 'v1');
     const target = rows(spec(['home', 'products', 'settings']), 'v2');
     // Every page at 999, real order in pageGroupIndex, rows in a different order.
-    for (const r of [base, target]) r.pages.forEach((page, i) => Object.assign(page, { index: 999, pageGroupIndex: i + 1 }));
+    for (const r of [base, target])
+      r.pages.forEach((page, i) => Object.assign(page, { index: 999, pageGroupIndex: i + 1 }));
     target.pages.reverse();
     expect(diffVersions(buildSnapshot(base), buildSnapshot(target)).identical).toBe(true);
   });
@@ -315,7 +316,11 @@ describe('editor write-back noise', () => {
   it('treats a widget default written into the row as unchanged', () => {
     const target = baseSpec();
     // What the editor saves for a Button after opening it: its defaults, spelled out.
-    target.components[2].properties = { text: { value: 'Save' }, loadingState: { value: '{{false}}' }, visibility: { value: '{{true}}' } };
+    target.components[2].properties = {
+      text: { value: 'Save' },
+      loadingState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+    };
     target.components[2].display = { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } };
     expect(diff(baseSpec(), target).identical).toBe(true);
   });
@@ -324,7 +329,9 @@ describe('editor write-back noise', () => {
 describe('query option noise', () => {
   it('ignores ToolJet Database settings for operations the query does not run', () => {
     const base = baseSpec();
-    base.queries = [{ name: 'getDeals', source: 'tooljetdb', options: { operation: 'list_rows', list_rows: { limit: 50 } } }];
+    base.queries = [
+      { name: 'getDeals', source: 'tooljetdb', options: { operation: 'list_rows', list_rows: { limit: 50 } } },
+    ];
     const target = baseSpec();
     target.queries = [
       {

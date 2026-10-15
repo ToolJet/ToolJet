@@ -1846,3 +1846,35 @@
   background: var(--icon-accent);
   box-shadow: 0 0 0 3px var(--background-accent-weak);
 }
+
+// Undo this AI edit, with an inline confirmation.
+.vd-undo {
+  position: relative;
+}
+
+.vd-undo__pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 10;
+  display: grid;
+  gap: 8px;
+  width: 320px;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--background-surface-layer-01);
+  border: 1px solid var(--border-weak);
+  box-shadow: 0 16px 40px -12px rgba(16, 24, 40, 0.35);
+}
+
+.vd-undo__title {
+  margin: 0;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.vd-undo__text {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-medium);
+}

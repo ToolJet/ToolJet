@@ -92,7 +92,7 @@ describe('version snapshots', () => {
       refId: 'm-1',
     });
     expect(id).toBe('s-1');
-    expect(fingerprint).toMatch(/^f2:[0-9a-f]{64}$/);
+    expect(fingerprint).toMatch(/^f3:[0-9a-f]{64}$/);
     expect(load).toHaveBeenCalledWith(manager, 'a', 'v-1');
 
     const before = await store.snapshot(manager, 'a', 's-1');

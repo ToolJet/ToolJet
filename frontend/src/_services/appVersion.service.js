@@ -20,6 +20,7 @@ export const appVersionService = {
   createDraftVersion,
   getDiff,
   getLayout,
+  restoreSnapshot,
 };
 
 function getAll(appId) {
@@ -48,6 +49,19 @@ function getDiff(appId, versionId, baseVersionId, baseSnapshotId) {
     ? `baseSnapshot=${encodeURIComponent(baseSnapshotId)}`
     : `base=${encodeURIComponent(baseVersionId)}`;
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/diff?${query}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+// Undo this turn: put a draft back to a snapshot of itself, if it has not changed since expectedFingerprint.
+function restoreSnapshot(appId, snapshotId, expectedFingerprint) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ expectedFingerprint }),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/snapshots/${snapshotId}/restore`, requestOptions).then(
     handleResponse
   );
 }

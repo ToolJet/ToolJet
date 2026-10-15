@@ -18,7 +18,7 @@ const isPlainObject = (value: any) => !!value && typeof value === 'object' && !A
 // A key that is missing on one side and empty on the other is not a change:
 // ToolJet stores what the client sent and merges the widget's defaults on
 // read, so older rows often lack keys that newer rows carry as empty.
-const isEmpty = (value: any): boolean => {
+export const isEmpty = (value: any): boolean => {
   if (value === undefined || value === null || value === '') return true;
   if (Array.isArray(value)) return value.length === 0;
   if (isPlainObject(value)) {

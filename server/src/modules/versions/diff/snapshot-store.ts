@@ -103,8 +103,10 @@ export class VersionSnapshotStore {
         'This version is saved, so it cannot be changed. Create a draft from it to undo there.'
       );
 
+    // Fingerprint the snapshot with today's rules; the stored one may predate a rule change.
+    const wanted = contentFingerprint(buildSnapshot(rows));
     const current = await this.fingerprintOf(manager, input.appId, versionId);
-    if (current === stored.fingerprint) return { restored: false, versionId, reason: 'Already matches the snapshot' };
+    if (current === wanted) return { restored: false, versionId, reason: 'Already matches the snapshot' };
     if (input.expectedFingerprint && current !== input.expectedFingerprint)
       throw new ConflictException(
         'The version changed after this edit, so undoing it would also discard those changes.'
@@ -258,7 +260,7 @@ export class VersionSnapshotStore {
     }
 
     const after = await this.fingerprintOf(manager, input.appId, versionId);
-    if (after !== stored.fingerprint)
+    if (after !== wanted)
       throw new InternalServerErrorException('Undo could not put the version back exactly, so nothing was changed.');
     return { restored: true, versionId, backupSnapshotId: backup.id };
   }
