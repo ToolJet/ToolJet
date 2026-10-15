@@ -13,7 +13,8 @@ import { typeLabel } from './ChangeList';
 const GRID = 43;
 const PAD = 8;
 const GAP = 8;
-const MODAL_TYPES = /^(Modal|ModalV2|Drawer|PopoverMenu)$/;
+// Overlays (modals, dialogs, sheets, drawers, popovers) are not part of the page at rest.
+const MODAL_TYPES = /(Modal|Dialog|Sheet|Drawer|Popover)/i;
 const CONTAINER_TYPES = /(Container|Form|Tabs|Listview|ListView|Modal|Card|Kanban|Calendar)/;
 
 const boxOf = (component, viewport) => component.layouts?.[viewport] ?? component.layouts?.desktop ?? null;
@@ -54,38 +55,45 @@ function layoutPage(components, viewport, width) {
 
     if (parent?.flex) {
       const order = parent.flex.childOrder ?? [];
-      const sorted = [...list].sort(
-        (a, b) =>
-          (order.indexOf(a.component.name) + 1 || 1e6) - (order.indexOf(b.component.name) + 1 || 1e6) ||
-          (boxOf(a.component, viewport)?.left ?? 0) - (boxOf(b.component, viewport)?.left ?? 0)
-      );
+      const sorted = [...list]
+        .filter(({ component }) => boxOf(component, viewport) && !MODAL_TYPES.test(component.type))
+        .sort(
+          (a, b) =>
+            (order.indexOf(a.component.name) + 1 || 1e6) - (order.indexOf(b.component.name) + 1 || 1e6) ||
+            (boxOf(a.component, viewport)?.left ?? 0) - (boxOf(b.component, viewport)?.left ?? 0)
+        );
       const column = /column|vertical/i.test(String(parent.flex.direction));
-      let x = inner.x;
       let y = inner.y;
-      let rowHeight = 0;
-      for (const { component } of sorted) {
-        const box = boxOf(component, viewport);
-        if (!box) continue;
-        const w = column
-          ? inner.w
-          : box.fillWidth
-          ? inner.w
-          : box.widthPx ?? Math.max((box.width / GRID) * inner.w, 24);
-        const h = box.height;
-        if (!column && x > inner.x && x + w > inner.x + inner.w) {
-          x = inner.x;
-          y += rowHeight + GAP;
-          rowHeight = 0;
+      if (column) {
+        // A column stacks its children at full width; each child grows to fit its own children.
+        for (const { component } of sorted) {
+          const box = boxOf(component, viewport);
+          const r = { x: inner.x, y, w: inner.w, h: box.height };
+          placed.push({ component, rect: r, depth });
+          place(component.name, r, depth + 1);
+          y += r.h + GAP;
         }
-        const r = { x, y, w: Math.min(w, inner.w), h };
-        placed.push({ component, rect: r, depth });
-        place(component.name, r, depth + 1);
-        if (column) y += h + GAP;
-        else {
+      } else {
+        // A row gives fixed children their width and shares what is left among fill children.
+        const fixedWidth = (box) => box.widthPx ?? (box.fillWidth || box.grow ? null : (box.width / GRID) * inner.w);
+        const widths = sorted.map(({ component }) => fixedWidth(boxOf(component, viewport)));
+        const fillCount = widths.filter((w) => w == null).length;
+        const used = widths.reduce((sum, w) => sum + (w ?? 0), 0) + GAP * Math.max(sorted.length - 1, 0);
+        const share = fillCount ? Math.max((inner.w - used) / fillCount, 40) : 0;
+        let x = inner.x;
+        let rowHeight = 0;
+        sorted.forEach(({ component }, index) => {
+          const box = boxOf(component, viewport);
+          const r = { x, y, w: Math.min(widths[index] ?? share, inner.w), h: box.height };
+          placed.push({ component, rect: r, depth });
+          place(component.name, r, depth + 1);
           x += r.w + GAP;
-          rowHeight = Math.max(rowHeight, h);
-        }
+          rowHeight = Math.max(rowHeight, r.h);
+        });
+        y += rowHeight + GAP;
       }
+      // Flex containers size to their content (dynamic height).
+      if (rect.h != null) rect.h = Math.max(rect.h, y - rect.y - GAP + PAD);
       return;
     }
 
