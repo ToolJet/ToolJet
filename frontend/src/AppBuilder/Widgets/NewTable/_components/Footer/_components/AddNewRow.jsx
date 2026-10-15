@@ -27,6 +27,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
   const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
   const columnBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.columnBackgroundColor, shallow);
+  const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const getResolvedValue = useStore.getState().getResolvedValue;
   // header overflow set to wrap: let the header grow with the text instead of overflowing the fixed 32px height
   const isHeaderWrapped = getResolvedValue(columnHeaderWrap) === 'wrap';
@@ -239,7 +240,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                style={{ display: 'flex', minHeight: '32px' }}
+                style={{ display: 'flex', minHeight: cellHeight === 'condensed' ? '39px' : '45px' }}
                 className="table-row"
                 data-cy={`add-new-row-${row.index}`}
               >
