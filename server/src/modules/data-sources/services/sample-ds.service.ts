@@ -7,10 +7,34 @@ import { ConfigService } from '@nestjs/config';
 import { DataSourcesUtilService } from '../util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
-import { Injectable } from '@nestjs/common';
+import { Metadata } from '@entities/metadata.entity';
+import { Injectable, Logger } from '@nestjs/common';
+import { createHash } from 'crypto';
+import { ClientConfig } from 'pg';
+import {
+  assertSampleDbRoleNotElevated,
+  provisionSampleDbRole,
+  sampleDbAdminConfig,
+  sampleDbRole,
+} from '@helpers/sample-db-role.helper';
+import { SAMPLE_SQL_DISABLED_KEY } from '../constants';
+
+const SAMPLE_DB_NAME = 'sample_db';
+const FINGERPRINT_KEY = 'sampleDataSourceFingerprint';
+
+export type SampleDbCredentials = { host: string; port: string; user: string; password: string; disabled?: boolean };
+
+type SampleConnectionOption = { key: string; value: unknown; encrypted?: boolean };
+
+export function sampleDbFingerprint(options: SampleConnectionOption[]): string {
+  return createHash('sha256').update(JSON.stringify(options)).digest('hex');
+}
 
 @Injectable()
 export class SampleDataSourceService {
+  private readonly logger = new Logger(SampleDataSourceService.name);
+  private credentials?: Promise<SampleDbCredentials>;
+
   constructor(
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly configService: ConfigService,
@@ -28,40 +52,89 @@ export class SampleDataSourceService {
     }, manager);
   }
 
-  async updateSampleDs(manager?: EntityManager) {
-    const options = [
-      {
-        key: 'host',
-        value: this.configService.get<string>('SAMPLE_PG_DB_HOST') || this.configService.get<string>('PG_HOST'),
-        encrypted: true,
-      },
-      {
-        key: 'port',
-        value: this.configService.get<string>('SAMPLE_PG_DB_PORT') || this.configService.get<string>('PG_PORT'),
-        encrypted: true,
-      },
-      {
-        key: 'database',
-        value: 'sample_db',
-      },
-      {
-        key: 'username',
-        value: this.configService.get<string>('SAMPLE_PG_DB_USER') || this.configService.get<string>('PG_USER'),
-        encrypted: true,
-      },
-      {
-        key: 'password',
-        value: this.configService.get<string>('SAMPLE_PG_DB_PASS') || this.configService.get<string>('PG_PASS'),
-        encrypted: true,
-      },
-      {
-        key: 'ssl_enabled',
-        value: this.configService.get<string>('PGSSLMODE') === 'require' ? true : false,
-        encrypted: false,
-      },
+  sampleDbCredentials(): Promise<SampleDbCredentials> {
+    return (this.credentials ??= this.resolveCredentials());
+  }
+
+  // Never the application user: if the role can't be provisioned, sample SQL is disabled.
+  protected async resolveCredentials(): Promise<SampleDbCredentials> {
+    const get = (key: string) => this.configService.get<string>(key);
+    const host = get('SAMPLE_PG_DB_HOST') || get('PG_HOST');
+    const port = get('SAMPLE_PG_DB_PORT') || get('PG_PORT');
+
+    const admin = this.adminConfig(host, port);
+
+    const operatorUser = get('SAMPLE_PG_DB_USER');
+    const user = operatorUser || sampleDbRole(get('LOCKBOX_MASTER_KEY')).name;
+    try {
+      if (operatorUser) {
+        await assertSampleDbRoleNotElevated(admin, operatorUser);
+        return { host, port, user, password: get('SAMPLE_PG_DB_PASS') || get('PG_PASS') };
+      }
+      const role = sampleDbRole(get('LOCKBOX_MASTER_KEY'));
+      await provisionSampleDbRole(admin, role);
+      return { host, port, user, password: role.password };
+    } catch (error) {
+      this.logger.error(
+        `Sample data source disabled: ${user} is not a usable restricted role (${error?.message}). ` +
+          "Set SAMPLE_PG_DB_USER/SAMPLE_PG_DB_PASS to a restricted user, or allow ToolJet's database user to create roles, then restart."
+      );
+      // Empty password: Postgres rejects every login on every code path.
+      return { host, port, user, password: '', disabled: true };
+    }
+  }
+
+  // Same server and admin user populate-sample-db uses.
+  protected adminConfig(host: string, port: string): ClientConfig {
+    const get = (key: string) => this.configService.get<string>(key);
+    return sampleDbAdminConfig({
+      SAMPLE_PG_DB_HOST: host,
+      SAMPLE_PG_DB_PORT: port,
+      SAMPLE_PG_DB_USER: get('PG_USER'),
+      SAMPLE_PG_DB_PASS: get('PG_PASS'),
+      SAMPLE_DB: get('SAMPLE_DB') || SAMPLE_DB_NAME,
+      CA_CERT: get('CA_CERT'),
+    });
+  }
+
+  protected connectionOptions({
+    host,
+    port,
+    user,
+    password,
+    disabled = false,
+  }: SampleDbCredentials): SampleConnectionOption[] {
+    return [
+      { key: 'host', value: host, encrypted: true },
+      { key: 'port', value: port, encrypted: true },
+      { key: 'database', value: SAMPLE_DB_NAME },
+      { key: 'username', value: user, encrypted: true },
+      { key: 'password', value: password, encrypted: true },
+      { key: 'ssl_enabled', value: this.configService.get<string>('PGSSLMODE') === 'require', encrypted: false },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
       { key: 'connection_type', value: 'manual', encrypted: false },
+      { key: SAMPLE_SQL_DISABLED_KEY, value: disabled, encrypted: false },
     ];
+  }
+
+  // Boot: re-point sample data sources only when their options changed. Lock: replicas boot together.
+  async syncSampleDataSources(): Promise<boolean> {
+    const fingerprint = sampleDbFingerprint(this.connectionOptions(await this.sampleDbCredentials()));
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.query("SELECT pg_advisory_xact_lock(hashtext('tooljet_sample_data_source_sync'))");
+      const [metadata] = await manager.find(Metadata);
+      if (metadata?.data?.[FINGERPRINT_KEY] === fingerprint) return false;
+
+      await this.updateSampleDs(manager);
+      const data = { ...metadata?.data, [FINGERPRINT_KEY]: fingerprint };
+      if (metadata) await manager.update(Metadata, metadata.id, { data });
+      else await manager.save(manager.create(Metadata, { data }));
+      return true;
+    });
+  }
+
+  async updateSampleDs(manager?: EntityManager) {
+    const options = this.connectionOptions(await this.sampleDbCredentials());
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const allSampleDs = await this.getAllSampleDataSource(null, manager);
       if (!allSampleDs?.length) {
@@ -88,39 +161,7 @@ export class SampleDataSourceService {
       scope: DataSourceScopes.GLOBAL,
       organizationId,
     };
-    const options = [
-      {
-        key: 'host',
-        value: this.configService.get<string>('SAMPLE_PG_DB_HOST') || this.configService.get<string>('PG_HOST'),
-        encrypted: true,
-      },
-      {
-        key: 'port',
-        value: this.configService.get<string>('SAMPLE_PG_DB_PORT') || this.configService.get<string>('PG_PORT'),
-        encrypted: true,
-      },
-      {
-        key: 'database',
-        value: 'sample_db',
-      },
-      {
-        key: 'username',
-        value: this.configService.get<string>('SAMPLE_PG_DB_USER') || this.configService.get<string>('PG_USER'),
-        encrypted: true,
-      },
-      {
-        key: 'password',
-        value: this.configService.get<string>('SAMPLE_PG_DB_PASS') || this.configService.get<string>('PG_PASS'),
-        encrypted: true,
-      },
-      {
-        key: 'ssl_enabled',
-        value: this.configService.get<string>('PGSSLMODE') === 'require' ? true : false,
-        encrypted: false,
-      },
-      { key: 'ssl_certificate', value: 'none', encrypted: false },
-      { key: 'connection_type', value: 'manual', encrypted: false },
-    ];
+    const options = this.connectionOptions(await this.sampleDbCredentials());
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const dataSource = manager.create(DataSource, config);

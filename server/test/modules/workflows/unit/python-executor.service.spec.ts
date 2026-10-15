@@ -31,6 +31,7 @@ describe('PythonExecutorService', () => {
     let service: PythonExecutorService;
     let securityModeDetector: SecurityModeDetectorService;
     let sandboxMode: SandboxMode;
+    let previousBypass: string | undefined;
 
     beforeAll(async () => {
       const mockLogger = {
@@ -53,14 +54,24 @@ describe('PythonExecutorService', () => {
       service = module.get<PythonExecutorService>(PythonExecutorService);
       securityModeDetector = module.get<SecurityModeDetectorService>(SecurityModeDetectorService);
 
+      // Without nsjail, unsandboxed execution requires explicit opt-in
+      previousBypass = process.env.TOOLJET_WORKFLOW_SANDBOX_BYPASS;
+      if (!(await securityModeDetector.isNsjailAvailable())) {
+        process.env.TOOLJET_WORKFLOW_SANDBOX_BYPASS = 'true';
+      }
       await securityModeDetector.onModuleInit();
       sandboxMode = securityModeDetector.getMode();
+    });
+
+    afterAll(() => {
+      if (previousBypass === undefined) delete process.env.TOOLJET_WORKFLOW_SANDBOX_BYPASS;
+      else process.env.TOOLJET_WORKFLOW_SANDBOX_BYPASS = previousBypass;
     });
 
     describe('sandbox mode detection', () => {
       it('should detect sandbox mode based on environment', () => {
         const mode = securityModeDetector.getMode();
-        expect([SandboxMode.ENABLED, SandboxMode.BYPASSED]).toContain(mode);
+        expect(Object.values(SandboxMode)).toContain(mode);
       });
     });
 

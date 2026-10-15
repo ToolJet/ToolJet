@@ -40,7 +40,7 @@ async function createDatabase(): Promise<void> {
     await createDb(envVars, envVars.PG_DB);
     await createTooljetDb(envVars, envVars.TOOLJET_DB);
     createSampleDb(envVars, envVars.SAMPLE_DB);
-    populateSampleData(envVars);
+    await populateSampleData(envVars);
   }
 }
 
