@@ -8,7 +8,7 @@
  * schema default these are characterization tests of unmodified `lts-3.16` —
  * per the blanket decision in that contract's `## Decisions`.
  */
-import { cleanup, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { binding, drain, option } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { createMultiselectHarness, schemaOption } from './multiselectV2Harness';
 
@@ -376,5 +376,130 @@ describe('MultiselectV2: options, defaults, and the exposed option list', () => 
     // A rebind that drops the selected option empties the selection.
     await setProperty('options', [option('option4', '4'), option('option5', '5')]);
     await waitFor(() => expect(harness.exposed().values).toEqual([]));
+  });
+});
+
+/**
+ * Per-option leading icon and image (D-22 to D-24). Same persisted shape as
+ * DropdownV2: `icon: { value }` flattened by the resolver, plain
+ * `iconVisibility` boolean, plain `image` URL. Presentation only — the exposed
+ * option objects keep `{ label, value, caption }`.
+ */
+describe('MultiselectV2: per-option icon and image', () => {
+  beforeEach(harness.setup);
+  afterEach(harness.teardown);
+
+  const IMAGE = 'https://example.com/avatar.png';
+  const withIcon = (label, value, extra = {}) => ({
+    ...option(label, value),
+    icon: { value: 'IconUser' },
+    iconVisibility: true,
+    ...extra,
+  });
+  const rowIcon = (text) => row(text).querySelector('svg.tabler-icon');
+  const rowImage = (text) => row(text).querySelector('img');
+  const NONE = { values: binding('{{[]}}') };
+
+  test('[MultiselectV2-OPT-008] a per-option icon renders only behind its own visibility gate, never on the select-all row', async () => {
+    // Break this catches: ignoring the per-option eye toggle, losing the
+    // unknown-name fallback, or dropping the `!isSelectAll` guard so a user
+    // option that collides with the synthetic row (SEL-013) grows an icon.
+    harness.render({
+      properties: {
+        ...NONE,
+        showAllOption: binding('{{true}}'),
+        options: {
+          value: [
+            withIcon('Alpha', 'a'),
+            withIcon('Beta', 'b', { iconVisibility: false }),
+            withIcon('Gamma', 'c', { icon: { value: 'IconThatDoesNotExist' } }),
+            { ...withIcon('Select all of them', 's'), image: IMAGE },
+          ],
+        },
+      },
+    });
+    await drain();
+    await openMenu();
+
+    await waitFor(() => expect(rowIcon('Alpha')).toHaveClass('tabler-icon-user'));
+    expect(rowIcon('Beta')).toBeNull();
+    await waitFor(() => expect(rowIcon('Gamma')).toHaveClass('tabler-icon-home-2'));
+    // Both the synthetic row and a colliding user row stay bare.
+    expect(rowIcon('Select all')).toBeNull();
+    expect(rowImage('Select all')).toBeNull();
+    expect(screen.getAllByRole('option').filter((r) => r.querySelector('svg.tabler-icon'))).toHaveLength(2);
+  });
+
+  test('[MultiselectV2-OPT-009] a per-option image renders from its URL independently of the icon gate and collapses when it fails to load', async () => {
+    // Break this catches: tying the image to `iconVisibility`, treating an
+    // empty/null URL as an image, or dropping the onError collapse (D-23).
+    harness.render({
+      properties: {
+        ...NONE,
+        options: {
+          value: [
+            { ...option('Alpha', 'a'), image: IMAGE },
+            { ...withIcon('Beta', 'b'), image: IMAGE },
+            { ...option('Gamma', 'c'), image: null },
+            { ...option('Delta', 'd'), image: '' },
+          ],
+        },
+      },
+    });
+    await drain();
+    await openMenu();
+
+    expect(rowImage('Alpha')).toHaveAttribute('src', IMAGE);
+    expect(rowIcon('Alpha')).toBeNull();
+    expect(rowImage('Beta')).toHaveAttribute('src', IMAGE);
+    await waitFor(() => expect(rowIcon('Beta')).toHaveClass('tabler-icon-user'));
+    expect(rowImage('Gamma')).toBeNull();
+    expect(rowImage('Delta')).toBeNull();
+
+    fireEvent.error(rowImage('Alpha'));
+    expect(rowImage('Alpha')).toHaveStyle({ display: 'none' });
+    expect(row('Alpha').textContent).toBe('Alpha');
+  });
+
+  test('[MultiselectV2-OPT-010] options saved before the feature render as before, icon and image never reach the exposed objects, and the schema supplies them as plain fields', async () => {
+    // Break this catches: a stray icon/image node on a legacy option, widening
+    // the published option shape (D-24), or reading the inspector wrapper on the
+    // schema path so plain strings go unrendered.
+    harness.render({
+      properties: {
+        ...NONE,
+        options: { value: [option('Alpha', 'a'), { ...withIcon('Beta', 'b', { caption: 'second' }), image: IMAGE }] },
+      },
+    });
+    await drain();
+    await openMenu();
+
+    expect(row('Alpha').textContent).toBe('Alpha');
+    expect(rowIcon('Alpha')).toBeNull();
+    expect(rowImage('Alpha')).toBeNull();
+    await clickRow('Beta');
+    expect(harness.exposed().selectedOptions).toEqual([{ label: 'Beta', value: 'b', caption: 'second' }]);
+    expect(harness.exposed().options).toEqual([
+      { label: 'Alpha', value: 'a', caption: null },
+      { label: 'Beta', value: 'b', caption: 'second' },
+    ]);
+
+    remount();
+    harness.render({
+      properties: {
+        ...NONE,
+        advanced: binding('{{true}}'),
+        schema: binding(
+          `{{ [{ label: 'Ada', value: 1, visible: true, icon: 'IconUser', iconVisibility: true, image: '${IMAGE}' },` +
+            `{ label: 'Bob', value: 2, visible: true, icon: 'IconUser', iconVisibility: false, image: null }] }}`
+        ),
+      },
+    });
+    await drain();
+    await openMenu();
+    await waitFor(() => expect(rowIcon('Ada')).toHaveClass('tabler-icon-user'));
+    expect(rowImage('Ada')).toHaveAttribute('src', IMAGE);
+    expect(rowIcon('Bob')).toBeNull();
+    expect(rowImage('Bob')).toBeNull();
   });
 });
