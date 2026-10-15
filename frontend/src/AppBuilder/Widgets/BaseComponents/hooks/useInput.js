@@ -329,8 +329,8 @@ export const useInput = ({
       nextDisplay === ''
         ? null
         : numericValue != null && !Number.isNaN(numericValue)
-          ? numericValue
-          : parseValueToNumber(nextDisplay, numberFormat);
+        ? numericValue
+        : parseValueToNumber(nextDisplay, numberFormat);
     writeValue({
       state: nextDisplay,
       exposed: nextNumber,
