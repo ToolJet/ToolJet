@@ -252,6 +252,8 @@ export const DatePickerRenderer = ({
   const handleInputDateChange = useCallback(
     (value) => {
       const inputDate = moment(value, parseDateFormat).toDate();
+      // Unparseable text is discarded, so the input reverts to the previous value.
+      if (value && isNaN(inputDate)) return;
       if (excludedDates.some((excluded) => moment(excluded).isSame(inputDate, 'day'))) {
         toast.error(`${moment(inputDate).format(DISABLED_DATE_FORMAT)} is a disabled date. Please enter a valid date`);
         return;
