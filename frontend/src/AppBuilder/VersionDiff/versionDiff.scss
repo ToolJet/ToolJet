@@ -455,3 +455,9 @@
     text-decoration: underline;
   }
 }
+
+// Editor tooltips (react-bootstrap) sit above this dialog and would stay drawn over it
+// until the mouse moved; hide them while it is open.
+body:has(.vd-root) > .tooltip {
+  display: none;
+}

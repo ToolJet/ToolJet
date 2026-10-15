@@ -25,10 +25,14 @@ export const CompareVersionsButton = ({ darkMode }) => {
         .then(({ reviews = [] }) => !cancelled && setWaiting(reviews))
         .catch(() => {});
     load();
-    const timer = setInterval(load, 60000);
+    // Only a visible tab checks for waiting reviews; a hidden one catches up when shown.
+    const timer = setInterval(() => document.visibilityState === 'visible' && load(), 60000);
+    const onVisible = () => document.visibilityState === 'visible' && load();
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       cancelled = true;
       clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, [appId, isOpen]);
 

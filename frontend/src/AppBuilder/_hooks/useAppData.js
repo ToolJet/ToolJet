@@ -295,7 +295,7 @@ const useAppData = (
         appDataPromise = appService.fetchAppBySlug(slug);
       } else {
         appDataPromise =
-          isPreviewForVersion && queryParams.snapshot
+          isPreviewForVersion && queryParams.snapshot && mode !== 'edit'
             ? appVersionService.getSnapshotDefinition(appId, versionId, queryParams.snapshot)
             : isPreviewForVersion
             ? appVersionService.getAppVersionData(appId, versionId, mode)
@@ -588,7 +588,7 @@ const useAppData = (
 
         // A snapshot's queries come with its definition; the version's own are the edited ones.
         const queryData =
-          isPublicAccess || (mode !== 'edit' && appData.is_public) || queryParams.snapshot
+          isPublicAccess || (mode !== 'edit' && appData.is_public) || (mode !== 'edit' && queryParams.snapshot)
             ? appData
             : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
 

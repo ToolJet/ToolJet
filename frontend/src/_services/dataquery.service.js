@@ -98,7 +98,7 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
   };
   // Rendering an AI-turn snapshot: the server runs the query as the snapshot had it, without saving.
   const { snapshot } = getPreviewQueryParams();
-  if (snapshot) body.snapshotId = snapshot;
+  if (snapshot && window.location.pathname.includes('/applications/')) body.snapshotId = snapshot;
 
   let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${
     environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''

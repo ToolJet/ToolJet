@@ -53,6 +53,7 @@ export default function ReleaseConfirmation(props) {
       onHide={onClose}
       // The compare view opens on top of this dialog; its own fields need the focus.
       enforceFocus={!compareOpen}
+      keyboard={!compareOpen}
       size="sm"
       animation={false}
       centered={true}

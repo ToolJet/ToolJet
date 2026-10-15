@@ -290,7 +290,18 @@ export const RequestReviewForm = ({ appId, targetVersion, baseVersion, onCreated
   );
 };
 
-export const ReviewPanel = ({ appId, review, currentUser, anchor, onClearAnchor, onAnchor, onChange, onClose }) => {
+export const ReviewPanel = ({
+  appId,
+  review,
+  currentUser,
+  anchor,
+  reviewedFingerprint,
+  onStale,
+  onClearAnchor,
+  onAnchor,
+  onChange,
+  onClose,
+}) => {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -309,13 +320,15 @@ export const ReviewPanel = ({ appId, review, currentUser, anchor, onClearAnchor,
       setOverriding(false);
     } catch (err) {
       setError(err?.error ?? err?.message ?? 'That did not work');
+      // The version changed while it was on screen: show the reviewer the new changes.
+      if (err?.statusCode === 409) onStale?.();
     } finally {
       setBusy(false);
     }
   };
 
   const comment = () => run(() => reviewService.comment(appId, review.id, text, anchor?.key));
-  const decide = (decision) => run(() => reviewService.decide(appId, review.id, decision, text));
+  const decide = (decision) => run(() => reviewService.decide(appId, review.id, decision, text, reviewedFingerprint));
   const override = () => run(() => reviewService.override(appId, review.id, text));
 
   const composer = isLive ? (

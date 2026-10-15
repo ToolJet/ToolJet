@@ -19,6 +19,7 @@ import {
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { appVersionService, authenticationService } from '@/_services';
+import { getSubpath } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -153,7 +154,12 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const [snapshotId, setSnapshotId] = useState(null);
   const [renderMode, setRenderMode] = useState('live');
   const [undoState, setUndoState] = useState(null); // null | 'confirm' | 'working' | { error }
+  const [reloadKey, setReloadKey] = useState(0);
   const closeRef = useRef(null);
+  const pairTargetRef = useRef(null);
+  pairTargetRef.current = pair.target;
+  const undoStateRef = useRef(null);
+  undoStateRef.current = undoState;
   const session = authenticationService.currentSessionValue;
   const currentUser = {
     id: session?.current_user?.id,
@@ -172,6 +178,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
         if (reviewId) {
           const { review: opened } = await reviewService.get(appId, reviewId);
           if (cancelled) return;
+          setSnapshotId(null);
           setReview(opened);
           setPanel('review');
           setPair({
@@ -200,7 +207,13 @@ export const VersionDiffDialog = ({ darkMode }) => {
   }, [isOpen, appId, baseVersionId, targetVersionId, reviewId, baseSnapshotId, selectedVersion?.id, releasedVersionId]);
 
   useEffect(() => {
-    if (!isOpen || !pair.target || (!snapshotId && (!pair.base || pair.base === pair.target))) return;
+    if (!isOpen) return;
+    if (!pair.target || (!snapshotId && (!pair.base || pair.base === pair.target))) {
+      // Nothing to compare yet (or one version only): never leave an earlier comparison on screen.
+      setDiff(null);
+      setPageKey(null);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -212,15 +225,24 @@ export const VersionDiffDialog = ({ darkMode }) => {
         setSelectedKey(null);
         setFilter('all');
         setScroll(null);
+        setFound({ base: new Set(), target: new Set() });
         const firstPage = result.pages.find((page) => page.components.length) ?? result.pages[0];
         setPageKey(firstPage?.key ?? null);
       })
-      .catch((err) => !cancelled && setError(err?.error ?? err?.message ?? 'The comparison could not be loaded'))
+      .catch((err) => {
+        if (cancelled) return;
+        setDiff(null);
+        setError(
+          err?.statusCode === 410
+            ? err?.error ?? 'This edit is too old to compare.'
+            : err?.error ?? err?.message ?? 'The comparison could not be loaded'
+        );
+      })
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [isOpen, appId, pair.base, pair.target, snapshotId]);
+  }, [isOpen, appId, pair.base, pair.target, snapshotId, reloadKey]);
 
   // The review attached to the version being compared, if there is one.
   useEffect(() => {
@@ -236,7 +258,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
           reviews.find((item) => item.versionId === pair.target);
         if (!match || cancelled) return;
         const { review: full } = await reviewService.get(appId, match.id);
-        if (!cancelled) setReview(full);
+        if (!cancelled) acceptReview(full);
       })
       .catch(() => {});
     return () => {
@@ -244,22 +266,45 @@ export const VersionDiffDialog = ({ darkMode }) => {
     };
   }, [isOpen, appId, pair.target]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Each opening starts clean: no review, snapshot or comparison carried over from the last one.
   useEffect(() => {
-    if (!isOpen) {
-      setReview(null);
-      setPanel(null);
-      setUndoState(null);
-    }
+    if (isOpen) return;
+    setReview(null);
+    setPanel(null);
+    setUndoState(null);
+    setSnapshotId(null);
+    setDiff(null);
+    setError(null);
+    setPageKey(null);
+    setSelectedKey(null);
+    setPair({ base: null, target: null });
+    setFound({ base: new Set(), target: new Set() });
   }, [isOpen]);
+
+  // A review loaded for another pair (a late response) is dropped.
+  const acceptReview = useCallback(
+    (next) => setReview(next && pairTargetRef.current && next.versionId !== pairTargetRef.current ? null : next),
+    []
+  );
 
   useEffect(() => {
     if (!isOpen) return;
+    const opener = document.activeElement;
     const onKey = (event) => {
-      if (event.key === 'Escape') closeCompare();
+      if (event.key !== 'Escape') return;
+      // Escape in a field with text clears nothing and closes nothing: a half-written comment survives.
+      const field = event.target?.closest?.('textarea, input');
+      if (field && field.value) return;
+      if (undoStateRef.current) return setUndoState(null);
+      closeCompare();
     };
     window.addEventListener('keydown', onKey);
     closeRef.current?.focus();
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      // Back to whatever opened the compare view.
+      if (opener?.isConnected) opener.focus?.();
+    };
   }, [isOpen, closeCompare]);
 
   const versionById = useMemo(() => new Map(versions.map((version) => [version.id, version])), [versions]);
@@ -272,12 +317,17 @@ export const VersionDiffDialog = ({ darkMode }) => {
       const version = versionById.get(versionId);
       if (!version || !pageKey) return null;
       const env = environments?.find((item) => item.id === version.currentEnvironmentId)?.name;
-      const query = new URLSearchParams({
-        version: version.name,
-        ...(env ? { env } : {}),
-        ...(snapshot ? { snapshot } : {}),
-      });
-      return `/applications/${slug || appId}/${pageKey}?${query.toString()}`;
+      // encodeURIComponent, not URLSearchParams: the viewer decodes %20 but reads + literally.
+      const query = [
+        ['version', version.name],
+        ...(env ? [['env', env]] : []),
+        ...(snapshot ? [['snapshot', snapshot]] : []),
+      ]
+        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+        .join('&');
+      return `${getSubpath() ?? ''}/applications/${encodeURIComponent(slug || appId)}/${encodeURIComponent(
+        pageKey
+      )}?${query}`;
     },
     [versionById, environments, slug, appId, pageKey]
   );
@@ -365,9 +415,15 @@ export const VersionDiffDialog = ({ darkMode }) => {
 
   const pickTarget = (id) => {
     const target = versionById.get(id);
+    // A snapshot belongs to one version: picking another leaves the AI-edit comparison.
+    const leavingSnapshot = !!snapshotId && id !== pair.target;
+    if (leavingSnapshot) setSnapshotId(null);
     setPair((prev) => ({
       target: id,
-      base: prev.base === id ? defaultBase(target, versions, releasedVersionId) : prev.base,
+      base:
+        leavingSnapshot || !prev.base || prev.base === id
+          ? defaultBase(target, versions, releasedVersionId)
+          : prev.base,
     }));
   };
   const runUndo = async () => {
@@ -424,6 +480,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
         onHover,
         syncScroll: scroll,
         onScrollChange: setScroll,
+        onEscape: closeCompare,
       }}
     />
   );
@@ -501,7 +558,8 @@ export const VersionDiffDialog = ({ darkMode }) => {
                       Put {targetName} back to before the AI edit?
                     </p>
                     <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">
-                      The changes listed here are reversed. The current state is kept, so you can restore it later.
+                      Everything changed on {targetName} since this AI edit started is reversed, including edits made
+                      while it ran. The current state is kept, so you can restore it later.
                     </p>
                   </div>
                   {undoState?.error && (
@@ -673,12 +731,15 @@ export const VersionDiffDialog = ({ darkMode }) => {
                 anchor={selectedComponent ? { key: selectedComponent.key, name: selectedComponent.name } : null}
                 onClearAnchor={() => setSelectedKey(null)}
                 onAnchor={goToAnchor}
-                onChange={setReview}
+                onChange={acceptReview}
+                reviewedFingerprint={diff?.target?.fingerprint}
+                onStale={() => setReloadKey((n) => n + 1)}
                 onClose={() => setPanel(null)}
               />
             )}
             {panel === 'create' && !review && (
               <RequestReviewForm
+                key={pair.target}
                 appId={appId}
                 targetVersion={versionById.get(pair.target)}
                 baseVersion={versionById.get(pair.base)}

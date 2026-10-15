@@ -57,16 +57,19 @@ export const VersionFrame = ({
   onFound,
   syncScroll,
   onScrollChange,
+  onEscape,
   className,
 }) => {
   const wrapRef = useRef(null);
   const iframeRef = useRef(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [loaded, setLoaded] = useState(false);
+  // Counts documents loaded into the frame: the viewer can reload itself, and each new
+  // document needs the read-only listeners again.
+  const [loaded, setLoaded] = useState(0);
   const [settled, setSettled] = useState(false);
   const applyingScroll = useRef(false);
   const callbacks = useRef({});
-  callbacks.current = { onSelect, onHover, onFound, onScrollChange };
+  callbacks.current = { onSelect, onHover, onFound, onScrollChange, onEscape };
 
   // Desktop renders at least 1280 wide, and at the frame's own width when it is wider.
   const logicalWidth = viewport === 'mobile' ? 390 : Math.max(1280, Math.floor(size.width));
@@ -89,7 +92,7 @@ export const VersionFrame = ({
   // The viewer picks its desktop or mobile layout once, when it loads, so a
   // change of screen size reloads the frame (the iframe is keyed by it).
   useEffect(() => {
-    setLoaded(false);
+    setLoaded(0);
     setSettled(false);
   }, [src, viewport]);
 
@@ -136,12 +139,30 @@ export const VersionFrame = ({
     if (d.querySelector(PAGE_SCROLLER) || d.querySelector('[class*="ele-"]')) setSettled(true);
   }, [doc, highlights, selectedKey, hoveredKey]);
 
+  // Widgets mount lazily and re-mount as queries resolve, so marking follows the
+  // frame's DOM: it re-runs (at most every 150 ms) only when elements are added or
+  // removed, plus a slow sweep for anything that slips past. An idle frame costs nothing.
   useEffect(() => {
     if (!loaded) return;
     mark();
-    const timer = setInterval(mark, 700);
-    return () => clearInterval(timer);
-  }, [loaded, mark]);
+    const d = doc();
+    let pending = null;
+    const schedule = () => {
+      if (pending) return;
+      pending = setTimeout(() => {
+        pending = null;
+        mark();
+      }, 150);
+    };
+    const observer = d?.body ? new MutationObserver(schedule) : null;
+    observer?.observe(d.body, { childList: true, subtree: true });
+    const sweep = setInterval(mark, 5000);
+    return () => {
+      observer?.disconnect();
+      clearTimeout(pending);
+      clearInterval(sweep);
+    };
+  }, [loaded, mark, doc]);
 
   // Bring the selected component into view inside the frame.
   useEffect(() => {
@@ -179,14 +200,35 @@ export const VersionFrame = ({
       if (applyingScroll.current || !target?.matches?.(PAGE_SCROLLER)) return;
       callbacks.current.onScrollChange?.({ top: target.scrollTop, left: target.scrollLeft });
     };
-    const events = ['mousedown', 'mouseup', 'pointerdown', 'pointerup', 'dblclick', 'submit', 'dragstart'];
+    // Nothing reaches the app: no clicks, no typing into its fields, no form submits.
+    const events = [
+      'mousedown',
+      'mouseup',
+      'pointerdown',
+      'pointerup',
+      'dblclick',
+      'submit',
+      'dragstart',
+      'keyup',
+      'keypress',
+      'beforeinput',
+      'input',
+      'change',
+    ];
+    const key = (event) => {
+      block(event);
+      // Focus can land in the frame; Escape still closes the compare view.
+      if (event.key === 'Escape') callbacks.current.onEscape?.();
+    };
     events.forEach((name) => d.addEventListener(name, block, true));
+    d.addEventListener('keydown', key, true);
     d.addEventListener('click', click, true);
     d.addEventListener('mousemove', move, true);
     d.addEventListener('mouseleave', leave, true);
     d.addEventListener('scroll', scroll, true);
     return () => {
       events.forEach((name) => d.removeEventListener(name, block, true));
+      d.removeEventListener('keydown', key, true);
       d.removeEventListener('click', click, true);
       d.removeEventListener('mousemove', move, true);
       d.removeEventListener('mouseleave', leave, true);
@@ -224,7 +266,7 @@ export const VersionFrame = ({
             transform: `scale(${scale})`,
             left: isMobile ? Math.max(0, (size.width - logicalWidth * scale) / 2) : 0,
           }}
-          onLoad={() => setLoaded(true)}
+          onLoad={() => setLoaded((n) => n + 1)}
         />
       )}
       {!settled && (

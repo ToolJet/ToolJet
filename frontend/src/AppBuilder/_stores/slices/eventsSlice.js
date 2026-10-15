@@ -1083,7 +1083,8 @@ export const createEventsSlice = (set, get) => ({
                   });
                   const currentUrlParams = new URLSearchParams(window.location.search);
                   currentUrlParams.forEach((value, key) => {
-                    if (key === 'version' || key === 'env') {
+                    // snapshot: the compare view renders an AI-turn snapshot; switching page must keep it.
+                    if (key === 'version' || key === 'env' || key === 'snapshot') {
                       // if version or env is in current url query param but not in resolved params then add it to resolvedQueryParams
                       const exists = resolvedQueryParams.some(([resolvedKey]) => resolvedKey === key);
                       if (!exists) {

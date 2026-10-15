@@ -132,6 +132,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
       onHide={handleClose}
       // The compare view opens on top of this dialog; its own fields need the focus.
       enforceFocus={!compareOpen}
+      keyboard={!compareOpen}
       size="sm"
       animation={false}
       centered={true}

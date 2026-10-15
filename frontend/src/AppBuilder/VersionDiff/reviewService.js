@@ -16,8 +16,9 @@ export const reviewService = {
   open: (appId, versionId, body) => request('POST', `${appId}/versions/${versionId}/reviews`, body),
   comment: (appId, reviewId, body, anchor) =>
     request('POST', `${appId}/reviews/${reviewId}/comments`, { body, anchor }),
-  decide: (appId, reviewId, decision, body) =>
-    request('POST', `${appId}/reviews/${reviewId}/decision`, { decision, body }),
+  // fingerprint: the content the reviewer was shown; an approval of anything else is refused.
+  decide: (appId, reviewId, decision, body, fingerprint) =>
+    request('POST', `${appId}/reviews/${reviewId}/decision`, { decision, body, fingerprint }),
   override: (appId, reviewId, reason) => request('POST', `${appId}/reviews/${reviewId}/override`, { reason }),
   close: (appId, reviewId) => request('POST', `${appId}/reviews/${reviewId}/close`),
   reopen: (appId, reviewId) => request('POST', `${appId}/reviews/${reviewId}/reopen`),
