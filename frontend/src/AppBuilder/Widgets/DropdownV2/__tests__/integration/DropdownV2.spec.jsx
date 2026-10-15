@@ -1837,3 +1837,135 @@ describe('DropdownV2 styles, CSS class and Form lifecycle', () => {
     }, 30000);
   });
 });
+
+/**
+ * Per-option leading icon and image (D-19 to D-21). An option may carry
+ * `icon` + `iconVisibility` and/or an `image` URL; both are presentation only
+ * and never reach the exposed option objects. The inspector persists
+ * `icon: { value }` (flattened by the resolver, like `visible`) next to a plain
+ * `iconVisibility` boolean and a plain `image` string
+ * (RightSideBar/Inspector/Components/Select.jsx `handleIconChange`,
+ * `handleIconVisibilityChange`, `handleImageChange`), which is the shape
+ * `withIcon` builds here.
+ */
+describe('DropdownV2 per-option icon and image', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+
+  const IMAGE = 'https://example.com/avatar.png';
+  const withIcon = (label, value, extra = {}) => ({
+    ...option(label, value),
+    icon: { value: 'IconUser' },
+    iconVisibility: true,
+    ...extra,
+  });
+  const rowIcon = (row) => row.querySelector('svg.tabler-icon');
+  const rowImage = (row) => row.querySelector('img');
+  async function rows(count) {
+    await openMenu();
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(count));
+    return screen.getAllByRole('option');
+  }
+
+  test('[DropdownV2-OPT-010] a per-option icon renders only behind its own visibility gate, with the default glyph for an unknown name', async () => {
+    // Break this catches: rendering the icon whenever `icon` is set (ignoring
+    // the per-option eye toggle), or losing TablerIcon's fallback so a renamed
+    // icon leaves an empty slot.
+    widget.render({
+      properties: {
+        options: {
+          value: [
+            withIcon('Alpha', 'a'),
+            withIcon('Beta', 'b', { iconVisibility: false }),
+            withIcon('Gamma', 'c', { icon: { value: 'IconThatDoesNotExist' } }),
+            withIcon('Delta', 'd', { icon: { value: '' } }),
+          ],
+        },
+      },
+    });
+    const [alpha, beta, gamma, delta] = await rows(4);
+
+    await waitFor(() => expect(rowIcon(alpha)).toHaveClass('tabler-icon-user'));
+    expect(rowIcon(beta)).toBeNull();
+    await waitFor(() => expect(rowIcon(gamma)).toHaveClass('tabler-icon-home-2'));
+    expect(rowIcon(delta)).toBeNull();
+    // The icon is decoration: every row still reads exactly as its label.
+    expect(optionLabels()).toEqual(['Alpha', 'Beta', 'Gamma', 'Delta']);
+  });
+
+  test('[DropdownV2-OPT-011] a per-option image renders from its URL independently of the icon gate and collapses when it fails to load', async () => {
+    // Break this catches: tying the image to `iconVisibility`, treating an
+    // empty/null URL as an image, or dropping the onError collapse (D-20) so a
+    // dead URL leaves a broken-image box in the row.
+    widget.render({
+      properties: {
+        options: {
+          value: [
+            { ...option('Alpha', 'a'), image: IMAGE },
+            { ...withIcon('Beta', 'b'), image: IMAGE },
+            { ...option('Gamma', 'c'), image: null },
+            { ...option('Delta', 'd'), image: '' },
+          ],
+        },
+      },
+    });
+    const [alpha, beta, gamma, delta] = await rows(4);
+
+    expect(rowImage(alpha)).toHaveAttribute('src', IMAGE);
+    expect(rowIcon(alpha)).toBeNull();
+    expect(rowImage(beta)).toHaveAttribute('src', IMAGE);
+    await waitFor(() => expect(rowIcon(beta)).toHaveClass('tabler-icon-user'));
+    expect(rowImage(gamma)).toBeNull();
+    expect(rowImage(delta)).toBeNull();
+
+    fireEvent.error(rowImage(alpha));
+    expect(rowImage(alpha)).toHaveStyle({ display: 'none' });
+    expect(alpha.textContent).toBe('Alpha');
+  });
+
+  test('[DropdownV2-OPT-012] options saved before the feature render as before, and icon and image never reach the exposed objects', async () => {
+    // Break this catches: a stray icon/image node for an option that carries
+    // none of the new keys, or widening the published option shape (D-21).
+    widget.render({
+      properties: {
+        options: {
+          value: [option('Alpha', 'a'), { ...withIcon('Beta', 'b', { caption: 'second' }), image: IMAGE }],
+        },
+      },
+    });
+    const [alpha, beta] = await rows(2);
+
+    expect(alpha.textContent).toBe('Alpha');
+    expect(rowIcon(alpha)).toBeNull();
+    expect(rowImage(alpha)).toBeNull();
+
+    await widget.session.user.click(beta);
+    await waitFor(() => expect(widget.exposed().value).toBe('b'));
+    expect(widget.exposed().selectedOption).toEqual({ label: 'Beta', value: 'b', caption: 'second' });
+    expect(widget.exposed().options).toEqual([
+      { label: 'Alpha', value: 'a', caption: null },
+      { label: 'Beta', value: 'b', caption: 'second' },
+    ]);
+  });
+
+  test('[DropdownV2-OPT-012] advanced mode takes plain icon, iconVisibility and image fields from the schema', async () => {
+    // Break this catches: the static-options path reading the inspector's
+    // `{ value }` wrapper directly, which would leave schema-sourced plain
+    // strings unrendered.
+    widget.render({
+      properties: {
+        advanced: binding('{{true}}'),
+        schema: binding(
+          `{{ [{ label: 'Ada', value: 1, visible: true, icon: 'IconUser', iconVisibility: true, image: '${IMAGE}' },` +
+            `{ label: 'Bob', value: 2, visible: true, icon: 'IconUser', iconVisibility: false, image: null }] }}`
+        ),
+      },
+    });
+    const [ada, bob] = await rows(2);
+
+    await waitFor(() => expect(rowIcon(ada)).toHaveClass('tabler-icon-user'));
+    expect(rowImage(ada)).toHaveAttribute('src', IMAGE);
+    expect(rowIcon(bob)).toBeNull();
+    expect(rowImage(bob)).toBeNull();
+  });
+});
