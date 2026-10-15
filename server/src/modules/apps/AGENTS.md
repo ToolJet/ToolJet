@@ -12,7 +12,7 @@ Workspace is the user-facing term for the `Organization` entity (legacy name).
 
 - **Module (app type)** — reusable app embedded via moduleContainer/moduleViewer components; not a NestJS module.
 - **App metadata on versions** — for non-workflow apps, `appName`/`slug`/`icon`/`isPublic` live on `app_versions` rows (branch-aware); workflows keep `slug` on `apps` (see `subscribers/apps.subscriber.ts`).
-- **Editing version hydration** — TypeORM `afterLoad` hydrates `app.editingVersion` per entity; list endpoints opt out via `skipAppEditingVersionHydration` (AsyncLocalStorage in the subscriber) and bulk-hydrate instead.
+- **Editing version hydration** — TypeORM `afterLoad` hydrates `app.editingVersion` per entity; list endpoints opt out via `skipAppEditingVersionHydration` (AsyncLocalStorage in the subscriber) and bulk-hydrate instead. The hook runs per row on a connection outside the caller's transaction, so loading many `App` entities exhausts the DB pool. Never hydrate `App` rows just to count or read columns: use `manager.count`, `getRawMany` with named columns, or load `AppBase` (the subscriber skips non-`App` instances).
 
 ## Key files
 
