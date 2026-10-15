@@ -51,7 +51,7 @@ export const CompareVersionsButton = ({ darkMode }) => {
           data-cy="compare-versions-button"
         >
           <GitCompareArrows size={16} strokeWidth={1.75} />
-          {waiting.length > 0 && <span className="vd-header-button__dot">{waiting.length}</span>}
+          {waiting.length > 0 && <span className="vd-header-button__dot" aria-hidden="true" />}
         </button>
       </ToolTip>
       <VersionDiffDialog darkMode={darkMode} />

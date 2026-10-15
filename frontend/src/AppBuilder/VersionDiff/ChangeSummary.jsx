@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { GitCompareArrows } from 'lucide-react';
 import { appVersionService, appEnvironmentService } from '@/_services';
+import { Button } from '@/components/ui/Rocket';
 import { useVersionDiffStore } from './useVersionDiffStore';
+import { Counts } from './ui';
 import './versionDiff.scss';
 
 // One line for a confirmation dialog: what this version changes compared with
@@ -79,29 +81,29 @@ export const ChangeSummary = ({ appId, baseVersion, targetVersionId, source, lab
   const counts = diff?.summary?.components;
 
   return (
-    <div className="vd-dialog-summary" data-cy="dialog-change-summary">
-      <div className="vd-dialog-summary__text">
-        <span className="vd-dialog-summary__label">{label ?? `Changes from ${baseVersion.name}`}</span>
-        <span className="vd-dialog-summary__value">
+    <div
+      className="tw-flex tw-items-center tw-gap-3 tw-mt-3 tw-px-3 tw-py-2.5 tw-rounded-md tw-border tw-border-solid tw-border-border-weak tw-bg-background-surface-layer-01"
+      data-cy="dialog-change-summary"
+    >
+      <div className="tw-flex tw-flex-col tw-gap-0.5 tw-min-w-0 tw-flex-1">
+        <span className="tw-font-body-small tw-text-text-placeholder">
+          {label ?? `Changes from ${baseVersion.name}`}
+        </span>
+        <span className="tw-font-title-default tw-text-text-default">
           {failed ? 'The comparison could not be loaded' : diff ? summarise(diff) : 'Comparing…'}
         </span>
-        {counts && !diff.identical && (
-          <span className="vd-dialog-summary__counts">
-            {counts.added > 0 && <span className="vd-count vd-count--added">+{counts.added}</span>}
-            {counts.changed > 0 && <span className="vd-count vd-count--changed">~{counts.changed}</span>}
-            {counts.removed > 0 && <span className="vd-count vd-count--removed">−{counts.removed}</span>}
-          </span>
-        )}
+        {counts && !diff.identical && <Counts counts={counts} />}
       </div>
-      <button
-        type="button"
-        className="vd-dialog-summary__button"
+      <Button
+        variant="outline"
+        size="medium"
+        className="tw-shrink-0"
+        leadingVisual={<GitCompareArrows size={14} strokeWidth={1.75} />}
         onClick={() => openCompare({ baseVersionId: baseVersion.id, targetVersionId, source })}
         data-cy="review-changes-button"
       >
-        <GitCompareArrows size={14} strokeWidth={1.75} aria-hidden="true" />
         Review changes
-      </button>
+      </Button>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import cx from 'classnames';
+import { cn } from '@/lib/utils';
 import {
   Database,
   EyeOff,
@@ -12,6 +12,8 @@ import {
   Layers,
   MessageSquare,
 } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/Rocket';
+import { Counts, StatusDot, Tag, STATUS_TONE } from './ui';
 
 export const STATUS_WORD = { added: 'Added', changed: 'Changed', removed: 'Removed' };
 
@@ -37,32 +39,27 @@ const GROUP_ICON = {
   event: Zap,
 };
 
-const Glyph = ({ status }) => (
-  <span className={cx('vd-glyph', `vd-glyph--${status}`)} aria-label={STATUS_WORD[status]}>
-    <svg viewBox="0 0 12 12" aria-hidden="true">
-      {status !== 'changed' && <path d="M3 6h6" />}
-      {status === 'added' && <path d="M6 3v6" />}
-      {status === 'changed' && <circle cx="6" cy="6" r="2.2" />}
-    </svg>
-  </span>
-);
-
-const ChangeLines = ({ changes = [], events = [], note }) => (
-  <ul className="vd-lines">
-    {note && <li className="vd-line vd-line--note">{note}</li>}
+const ChangeLines = ({ changes = [], events = [], note, inset = true }) => (
+  <ul
+    className={cn(
+      'vd-lines tw-m-0 tw-list-none tw-flex tw-flex-col tw-gap-1.5 tw-pr-4 tw-pt-1 tw-pb-2',
+      inset ? 'tw-pl-[34px]' : 'tw-pl-4'
+    )}
+  >
+    {note && <li className="tw-font-body-small tw-text-text-placeholder">{note}</li>}
     {changes.map((change, index) => {
       const Icon = GROUP_ICON[change.group] ?? SlidersHorizontal;
       return (
-        <li key={`${change.path}-${index}`} className="vd-line">
-          <Icon size={13} strokeWidth={1.75} aria-hidden="true" />
-          <span>{change.summary}</span>
+        <li key={`${change.path}-${index}`} className="vd-line tw-flex tw-gap-2 tw-font-body-small tw-text-text-medium">
+          <Icon size={12} strokeWidth={1.75} className="tw-shrink-0 tw-mt-[3px] tw-text-icon-weak" aria-hidden="true" />
+          <span className="tw-min-w-0 tw-break-words">{change.summary}</span>
         </li>
       );
     })}
     {events.map((event) => (
-      <li key={event.key} className={cx('vd-line', `vd-line--${event.status}`)}>
-        <Zap size={13} strokeWidth={1.75} aria-hidden="true" />
-        <span>{event.summary}</span>
+      <li key={event.key} className="vd-line tw-flex tw-gap-2 tw-font-body-small tw-text-text-medium">
+        <Zap size={12} strokeWidth={1.75} className="tw-shrink-0 tw-mt-[3px] tw-text-icon-weak" aria-hidden="true" />
+        <span className="tw-min-w-0 tw-break-words">{event.summary}</span>
       </li>
     ))}
   </ul>
@@ -75,6 +72,45 @@ const componentNote = (component, versions) => {
     return `Only in ${versions.base}${component.parent.base ? `, was inside ${component.parent.base}` : ''}`;
   return null;
 };
+
+const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+const Row = ({ status, name, type, selected, hovered, comments, onClick, onMouseEnter, onMouseLeave }) => (
+  <button
+    type="button"
+    className={cn(
+      'vd-plain vd-row tw-flex tw-items-center tw-gap-2 tw-h-8 tw-mx-2 tw-px-2 tw-rounded-md tw-w-[calc(100%-16px)]',
+      'hover:tw-bg-interactive-hover',
+      {
+        'tw-bg-interactive-hover': hovered && !selected,
+        'tw-bg-interactive-selected hover:tw-bg-interactive-selected': selected,
+      }
+    )}
+    aria-expanded={selected}
+    onClick={onClick}
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
+  >
+    <StatusDot status={status} />
+    <span
+      className={cn('tw-min-w-0 tw-truncate tw-font-body-default tw-text-text-default', {
+        'tw-text-text-placeholder tw-line-through': status === 'removed',
+      })}
+    >
+      {name}
+    </span>
+    <span className="tw-ml-auto tw-shrink-0 tw-font-body-small tw-text-text-placeholder">{type}</span>
+    {comments > 0 && (
+      <span
+        className="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-0.5 tw-font-body-small tw-text-text-brand"
+        title={plural(comments, 'comment')}
+      >
+        <MessageSquare size={11} strokeWidth={2} aria-hidden="true" />
+        {comments}
+      </span>
+    )}
+  </button>
+);
 
 export const ChangeList = ({
   diff,
@@ -92,65 +128,67 @@ export const ChangeList = ({
   const versions = { base: diff.base.name, target: diff.target.name };
   const { components, queries, pages } = diff.summary;
   const totalComponents = components.added + components.changed + components.removed;
-  const pagesTouched = diff.pages.length;
+  const changedQueries = queries.added + queries.changed + queries.removed;
   const visible = (status) => filter === 'all' || filter === status;
 
   const headline = diff.identical
     ? `${versions.target} matches ${versions.base}`
     : totalComponents
-    ? `${totalComponents} component${totalComponents === 1 ? '' : 's'} changed on ${pagesTouched} page${
-        pagesTouched === 1 ? '' : 's'
-      }`
+    ? `${plural(totalComponents, 'component')} changed on ${plural(diff.pages.length, 'page')}`
     : 'No component changes';
 
   const extras = [
-    pages.added && `${pages.added} page${pages.added === 1 ? '' : 's'} added`,
-    pages.removed && `${pages.removed} page${pages.removed === 1 ? '' : 's'} removed`,
-    queries.added + queries.changed + queries.removed &&
-      `${queries.added + queries.changed + queries.removed} quer${
-        queries.added + queries.changed + queries.removed === 1 ? 'y' : 'ies'
-      } changed`,
-    diff.settings.length && `${diff.settings.length} app setting${diff.settings.length === 1 ? '' : 's'} changed`,
+    pages.added && `${plural(pages.added, 'page')} added`,
+    pages.removed && `${plural(pages.removed, 'page')} removed`,
+    changedQueries && `${plural(changedQueries, 'query', 'queries')} changed`,
+    diff.settings.length && `${plural(diff.settings.length, 'app setting')} changed`,
   ].filter(Boolean);
 
   return (
-    <aside className="vd-rail" aria-label="Changes">
-      <div className="vd-rail__summary">
-        <p className="vd-rail__headline">{headline}</p>
-        {extras.length > 0 && <p className="vd-rail__extras">{extras.join(', ')}</p>}
+    <aside
+      className="vd-rail tw-flex tw-flex-col tw-min-h-0 tw-bg-background-surface-layer-01 tw-border-0 tw-border-r tw-border-solid tw-border-border-weak"
+      aria-label="Changes"
+    >
+      <div className="vd-rail__summary tw-flex tw-flex-col tw-gap-3 tw-px-4 tw-py-3 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
+        <div className="tw-flex tw-flex-col tw-gap-0.5">
+          <p className="tw-m-0 tw-font-title-default tw-text-text-default">{headline}</p>
+          {extras.length > 0 && (
+            <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">Also {extras.join(', ')}</p>
+          )}
+        </div>
         {!diff.identical && (
-          <div className="vd-filters" role="radiogroup" aria-label="Filter changes">
+          <ToggleGroup
+            type="single"
+            size="medium"
+            value={filter}
+            onValueChange={(value) => value && onFilter(value)}
+            className="tw-w-full"
+            aria-label="Filter changes"
+          >
             {['all', 'added', 'changed', 'removed'].map((status) => {
               const n = status === 'all' ? totalComponents : components[status];
-              // The glyphs are the legend for every row below, so the segments carry the glyph and
-              // the count; the word is the accessible name and the tooltip.
-              const word = status === 'all' ? 'All changes' : STATUS_WORD[status];
               return (
-                <button
+                <ToggleGroupItem
                   key={status}
-                  type="button"
-                  role="radio"
-                  aria-checked={filter === status}
-                  aria-label={`${word}, ${n}`}
-                  title={word}
-                  className={cx('vd-filter', `vd-filter--${status}`, { 'vd-filter--on': filter === status })}
-                  onClick={() => onFilter(status)}
+                  value={status}
+                  className="vd-filter tw-flex-auto tw-gap-1 tw-px-2"
                   disabled={status !== 'all' && n === 0}
+                  aria-label={`${status === 'all' ? 'All' : STATUS_WORD[status]}, ${n}`}
                 >
-                  {status === 'all' ? <span className="vd-filter__all">All</span> : <Glyph status={status} />}
-                  <span className="vd-filter__n">{n}</span>
-                </button>
+                  {status === 'all' ? 'All' : STATUS_WORD[status]}
+                  <span className="tw-text-text-placeholder">{n}</span>
+                </ToggleGroupItem>
               );
             })}
-          </div>
+          </ToggleGroup>
         )}
       </div>
 
-      <div className="vd-rail__scroll">
+      <div className="tw-flex-1 tw-min-h-0 tw-overflow-y-auto tw-py-2">
         {diff.settings.length > 0 && filter === 'all' && (
-          <section className="vd-section">
-            <h3 className="vd-section__title">App</h3>
-            <ChangeLines changes={diff.settings} />
+          <section className="tw-pb-2">
+            <h3 className="tw-m-0 tw-px-4 tw-py-1.5 tw-font-title-small tw-text-text-placeholder">App</h3>
+            <ChangeLines changes={diff.settings} inset={false} />
           </section>
         )}
 
@@ -158,64 +196,42 @@ export const ChangeList = ({
           const rows = page.components.filter((component) => visible(component.status));
           const isCurrent = page.key === pageKey;
           return (
-            <section key={page.key} className={cx('vd-section', { 'vd-section--current': isCurrent })}>
+            <section key={page.key} className="tw-pb-2">
               <button
                 type="button"
-                className="vd-page"
+                className="vd-plain vd-page tw-flex tw-items-center tw-gap-2 tw-w-full tw-h-8 tw-px-4"
                 aria-current={isCurrent ? 'page' : undefined}
                 onClick={() => onPageSelect(page.key)}
               >
-                <FileText size={14} strokeWidth={1.75} aria-hidden="true" />
-                <span className="vd-page__name">{page.name}</span>
-                {page.status !== 'changed' && (
-                  <span className={cx('vd-tag', `vd-tag--${page.status}`)}>{STATUS_WORD[page.status]}</span>
-                )}
-                <span className="vd-page__counts">
-                  {page.counts.added > 0 && <span className="vd-count vd-count--added">+{page.counts.added}</span>}
-                  {page.counts.changed > 0 && (
-                    <span className="vd-count vd-count--changed">~{page.counts.changed}</span>
-                  )}
-                  {page.counts.removed > 0 && (
-                    <span className="vd-count vd-count--removed">−{page.counts.removed}</span>
-                  )}
-                </span>
+                <FileText
+                  size={14}
+                  strokeWidth={1.75}
+                  className={cn('tw-shrink-0', isCurrent ? 'tw-text-icon-brand' : 'tw-text-icon-weak')}
+                  aria-hidden="true"
+                />
+                <span className="tw-min-w-0 tw-truncate tw-font-title-default tw-text-text-default">{page.name}</span>
+                {page.status !== 'changed' && <Tag tone={STATUS_TONE[page.status]}>{STATUS_WORD[page.status]}</Tag>}
+                <Counts counts={page.counts} className="tw-ml-auto" />
               </button>
               {(page.changes.length > 0 || page.events.length > 0) && filter === 'all' && (
                 <ChangeLines changes={page.changes} events={page.events} />
               )}
-              <ul className="vd-rows">
+              <ul className="tw-m-0 tw-p-0 tw-list-none">
                 {rows.map((component) => {
                   const isSelected = component.key === selectedKey;
-                  const count = component.changes.length + component.events.length;
                   return (
                     <li key={component.key}>
-                      <button
-                        type="button"
-                        className={cx('vd-row', `vd-row--${component.status}`, {
-                          'vd-row--selected': isSelected,
-                          'vd-row--hovered': component.key === hoveredKey,
-                        })}
-                        aria-expanded={isSelected}
+                      <Row
+                        status={component.status}
+                        name={component.name}
+                        type={typeLabel(component.type)}
+                        selected={isSelected}
+                        hovered={component.key === hoveredKey}
+                        comments={commentCounts[component.key]}
                         onClick={() => onSelect(isSelected ? null : component.key, page.key)}
                         onMouseEnter={() => onHover(component.key)}
                         onMouseLeave={() => onHover(null)}
-                      >
-                        <Glyph status={component.status} />
-                        <span className="vd-row__name">{component.name}</span>
-                        <span className="vd-row__type">{typeLabel(component.type)}</span>
-                        {commentCounts[component.key] > 0 && (
-                          <span
-                            className="vd-row__comments"
-                            title={`${commentCounts[component.key]} comment${
-                              commentCounts[component.key] === 1 ? '' : 's'
-                            }`}
-                          >
-                            <MessageSquare size={11} strokeWidth={2} aria-hidden="true" />
-                            {commentCounts[component.key]}
-                          </span>
-                        )}
-                        {component.status === 'changed' && <span className="vd-row__n">{count}</span>}
-                      </button>
+                      />
                       {isSelected && (
                         <ChangeLines
                           changes={component.changes}
@@ -230,7 +246,9 @@ export const ChangeList = ({
                   );
                 })}
                 {rows.length === 0 && page.components.length > 0 && (
-                  <li className="vd-rows__empty">Nothing {filter} on this page</li>
+                  <li className="tw-px-4 tw-py-1.5 tw-font-body-small tw-text-text-placeholder">
+                    Nothing {filter} on this page
+                  </li>
                 )}
               </ul>
             </section>
@@ -238,9 +256,9 @@ export const ChangeList = ({
         })}
 
         {diff.queries.length > 0 && (
-          <section className="vd-section">
-            <h3 className="vd-section__title">Queries</h3>
-            <ul className="vd-rows">
+          <section className="tw-pb-2">
+            <h3 className="tw-m-0 tw-px-4 tw-py-1.5 tw-font-title-small tw-text-text-placeholder">Queries</h3>
+            <ul className="tw-m-0 tw-p-0 tw-list-none">
               {diff.queries
                 .filter((query) => visible(query.status))
                 .map((query) => {
@@ -248,16 +266,13 @@ export const ChangeList = ({
                   const isSelected = key === selectedKey;
                   return (
                     <li key={key}>
-                      <button
-                        type="button"
-                        className={cx('vd-row', `vd-row--${query.status}`, { 'vd-row--selected': isSelected })}
-                        aria-expanded={isSelected}
+                      <Row
+                        status={query.status}
+                        name={query.name}
+                        type={query.dataSource}
+                        selected={isSelected}
                         onClick={() => onSelect(isSelected ? null : key)}
-                      >
-                        <Glyph status={query.status} />
-                        <span className="vd-row__name">{query.name}</span>
-                        <span className="vd-row__type">{query.dataSource}</span>
-                      </button>
+                      />
                       {isSelected && (
                         <ChangeLines
                           changes={query.changes}

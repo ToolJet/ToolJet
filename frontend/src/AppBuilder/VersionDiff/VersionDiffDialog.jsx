@@ -20,45 +20,70 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { appVersionService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { cn } from '@/lib/utils';
+import {
+  Button,
+  ToggleGroup,
+  ToggleGroupItem,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  selectTriggerVariants,
+} from '@/components/ui/Rocket';
 import { useVersionDiffStore } from './useVersionDiffStore';
 import { ChangeList, STATUS_WORD, typeLabel } from './ChangeList';
 import { VersionFrame } from './VersionFrame';
 import { BlueprintFrame } from './BlueprintFrame';
-import { ReviewPanel, RequestReviewForm, StatusPill } from './ReviewPanel';
+import { ReviewPanel, RequestReviewForm, REVIEW_STATUS } from './ReviewPanel';
 import { reviewService } from './reviewService';
+import { Divider, StatusDot, STATUS_TONE, Tag } from './ui';
 import './versionDiff.scss';
-
-const STATUS_LABEL = { DRAFT: 'Draft', PUBLISHED: 'Saved' };
 
 const SNAPSHOT = '__snapshot__';
 
+// The version menu's own tags: Draft in amber, Released in green, nothing for a saved version.
+const versionTag = (version, releasedVersionId) =>
+  version?.id === releasedVersionId ? (
+    <Tag tone="success">Released</Tag>
+  ) : version?.status === 'DRAFT' ? (
+    <Tag tone="warning">Draft</Tag>
+  ) : null;
+
 const VersionSelect = ({ label, value, versions, onChange, releasedVersionId, disabledId, snapshotLabel }) => {
   const version = versions.find((item) => item.id === value);
-  const isReleased = version?.id === releasedVersionId;
   const isSnapshot = value === SNAPSHOT;
   return (
-    <label className="vd-picker">
-      <span className="vd-picker__label">{label}</span>
-      <span className="vd-picker__value">
-        <span
-          className={cx('vd-dot', {
-            'vd-dot--released': isReleased,
-            'vd-dot--saved': !isReleased && version?.status === 'PUBLISHED',
-            'vd-dot--snapshot': isSnapshot,
-          })}
-        />
-        <span className="vd-picker__name">{isSnapshot ? snapshotLabel : version?.name ?? 'Choose a version'}</span>
-        <span className="vd-picker__status">
-          {isSnapshot ? '' : isReleased ? 'Released' : STATUS_LABEL[version?.status] ?? ''}
+    <label className="vd-picker tw-relative tw-m-0 tw-flex tw-items-center tw-gap-2">
+      <span className="tw-font-body-default tw-text-text-placeholder">{label}</span>
+      <span
+        className={cn(
+          selectTriggerVariants({ size: 'default' }),
+          'vd-picker__trigger tw-flex tw-items-center tw-w-[184px] tw-gap-2 tw-rounded-md tw-border'
+        )}
+      >
+        <span className="tw-min-w-0 tw-truncate tw-font-title-default tw-text-text-default">
+          {isSnapshot ? snapshotLabel : version?.name ?? 'Choose a version'}
         </span>
-        <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" />
+        {!isSnapshot && versionTag(version, releasedVersionId)}
+        <ChevronDown
+          size={14}
+          strokeWidth={1.75}
+          className="tw-ml-auto tw-shrink-0 tw-text-icon-default"
+          aria-hidden="true"
+        />
       </span>
-      <select value={value ?? ''} onChange={(event) => onChange(event.target.value)} aria-label={label}>
+      {/* A native select over the trigger: the menu opens above the full-screen dialog and works with the keyboard. */}
+      <select
+        className="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-[184px] tw-opacity-0 tw-cursor-pointer"
+        value={value ?? ''}
+        onChange={(event) => onChange(event.target.value)}
+        aria-label={label}
+      >
         {snapshotLabel && <option value={SNAPSHOT}>{snapshotLabel}</option>}
         {versions.map((item) => (
           <option key={item.id} value={item.id} disabled={item.id === disabledId}>
             {item.name}
-            {item.id === releasedVersionId ? ' (released)' : ''}
+            {item.id === releasedVersionId ? ' (released)' : item.status === 'DRAFT' ? ' (draft)' : ''}
           </option>
         ))}
       </select>
@@ -66,23 +91,15 @@ const VersionSelect = ({ label, value, versions, onChange, releasedVersionId, di
   );
 };
 
-const Segmented = ({ value, onChange, options, label }) => (
-  <div className="vd-seg" role="radiogroup" aria-label={label}>
+// Icon-only choices, as in the editor header's desktop and mobile switch.
+const IconChoice = ({ label, value, onChange, options }) => (
+  <ToggleGroup type="single" value={value} onValueChange={(next) => next && onChange(next)} aria-label={label}>
     {options.map(({ id, text, Icon }) => (
-      <button
-        key={id}
-        type="button"
-        role="radio"
-        aria-checked={value === id}
-        className={cx('vd-seg__opt', { 'vd-seg__opt--on': value === id })}
-        onClick={() => onChange(id)}
-        title={text}
-      >
+      <ToggleGroupItem key={id} value={id} aria-label={text} data-tip={text} className="vd-seg__opt tw-w-7">
         <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
-        <span>{text}</span>
-      </button>
+      </ToggleGroupItem>
     ))}
-  </div>
+  </ToggleGroup>
 );
 
 // Picks the version most worth comparing against: the one this version was
@@ -99,7 +116,7 @@ const SOURCE_COPY = {
   header: 'Compare versions',
   release: 'Review before release',
   promote: 'Review before promoting',
-  ai: 'What the last AI edit changed',
+  ai: 'What the AI edit changed',
   review: 'Review changes',
 };
 
@@ -231,6 +248,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
     if (!isOpen) {
       setReview(null);
       setPanel(null);
+      setUndoState(null);
     }
   }, [isOpen]);
 
@@ -247,12 +265,18 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const versionById = useMemo(() => new Map(versions.map((version) => [version.id, version])), [versions]);
   const page = diff?.pages.find((item) => item.key === pageKey) ?? null;
 
+  // The viewer renders a version by name; with a snapshot id it renders the
+  // version as that snapshot had it, queries included, without changing anything.
   const frameSrc = useCallback(
-    (versionId) => {
+    (versionId, snapshot) => {
       const version = versionById.get(versionId);
       if (!version || !pageKey) return null;
       const env = environments?.find((item) => item.id === version.currentEnvironmentId)?.name;
-      const query = new URLSearchParams({ version: version.name, ...(env ? { env } : {}) });
+      const query = new URLSearchParams({
+        version: version.name,
+        ...(env ? { env } : {}),
+        ...(snapshot ? { snapshot } : {}),
+      });
       return `/applications/${slug || appId}/${pageKey}?${query.toString()}`;
     },
     [versionById, environments, slug, appId, pageKey]
@@ -260,7 +284,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
 
   const highlights = useMemo(() => {
     // A container whose only change is the order of its children would
-    // otherwise paint the whole page amber. It gets a light dashed outline.
+    // otherwise outline the whole page. It gets a light dashed outline.
     const components = (page?.components ?? []).map((component) => ({
       ...component,
       weak:
@@ -269,25 +293,20 @@ export const VersionDiffDialog = ({ darkMode }) => {
         component.changes.every((change) => change.path === 'properties.childOrder' || change.group === 'layout') &&
         page.components.some((child) => child.parent.target === component.name || child.parent.base === component.name),
     }));
+    const pick = (component, id) => ({
+      id,
+      key: component.key,
+      name: component.name,
+      status: component.status,
+      weak: component.weak,
+    });
     return {
       base: components
         .filter((component) => component.status !== 'added')
-        .map((component) => ({
-          id: component.baseId,
-          key: component.key,
-          name: component.name,
-          status: component.status,
-          weak: component.weak,
-        })),
+        .map((component) => pick(component, component.baseId)),
       target: components
         .filter((component) => component.status !== 'removed')
-        .map((component) => ({
-          id: component.targetId,
-          key: component.key,
-          name: component.name,
-          status: component.status,
-          weak: component.weak,
-        })),
+        .map((component) => pick(component, component.targetId)),
     };
   }, [page]);
 
@@ -372,38 +391,30 @@ export const VersionDiffDialog = ({ darkMode }) => {
   };
 
   const hovered = hover && page?.components.find((component) => component.key === hover.key);
-  const baseName = snapshotId ? snapshotLabel : diff?.base.name ?? versionById.get(pair.base)?.name;
   const targetName = diff?.target.name ?? versionById.get(pair.target)?.name;
+  const baseName = snapshotId ? targetName : diff?.base.name ?? versionById.get(pair.base)?.name;
+  const layoutOnly = renderMode === 'layout';
 
   const frames = page && (
     <Stage
       mode={mode}
-      viewport={viewport}
-      baseName={baseName}
-      targetName={targetName}
       base={{
-        src: page.status === 'added' ? null : snapshotId ? 'blueprint' : frameSrc(pair.base),
+        name: baseName,
+        tag: snapshotId ? 'Before the AI edit' : 'Before',
+        src: page.status === 'added' ? null : snapshotId ? frameSrc(pair.target, snapshotId) : frameSrc(pair.base),
         highlights: highlights.base,
         onFound: onFoundBase,
-        // A snapshot cannot run in the viewer, so it is drawn from its layout.
-        blueprint:
-          snapshotId || renderMode === 'layout'
-            ? {
-                appId,
-                pageKey,
-                source: snapshotId ? { snapshotId } : { versionId: pair.base },
-                note: snapshotId ? 'Layout of the page before the AI edit' : 'Layout only, no queries run',
-              }
-            : null,
+        blueprint: layoutOnly
+          ? { appId, pageKey, source: snapshotId ? { snapshotId } : { versionId: pair.base } }
+          : null,
       }}
       target={{
+        name: targetName,
+        tag: snapshotId ? 'Now' : 'After',
         src: page.status === 'removed' ? null : frameSrc(pair.target),
         highlights: highlights.target,
         onFound: onFoundTarget,
-        blueprint:
-          renderMode === 'layout'
-            ? { appId, pageKey, source: { versionId: pair.target }, note: 'Layout only, no queries run' }
-            : null,
+        blueprint: layoutOnly ? { appId, pageKey, source: { versionId: pair.target } } : null,
       }}
       shared={{
         viewport,
@@ -422,14 +433,20 @@ export const VersionDiffDialog = ({ darkMode }) => {
       className={cx('vd-root', { 'dark-theme theme-dark': darkMode })}
       role="dialog"
       aria-modal="true"
-      aria-label="Compare versions"
+      aria-label={title}
     >
-      <header className="vd-head">
-        <div className="vd-head__title">
-          <GitCompareArrows size={18} strokeWidth={1.75} aria-hidden="true" />
-          <h2>{title}</h2>
+      <header className="vd-head tw-flex tw-items-center tw-gap-4 tw-px-4 tw-bg-background-surface-layer-01 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
+        <div className="tw-flex tw-items-center tw-gap-2 tw-min-w-0 tw-flex-1">
+          <GitCompareArrows
+            size={16}
+            strokeWidth={1.75}
+            className="tw-shrink-0 tw-text-icon-default"
+            aria-hidden="true"
+          />
+          <h2 className="tw-m-0 tw-truncate tw-font-title-large tw-text-text-default">{title}</h2>
         </div>
-        <div className="vd-head__pair">
+
+        <div className="tw-flex tw-items-center tw-gap-2">
           <VersionSelect
             label="From"
             value={snapshotId ? SNAPSHOT : pair.base}
@@ -439,9 +456,17 @@ export const VersionDiffDialog = ({ darkMode }) => {
             releasedVersionId={releasedVersionId}
             disabledId={pair.target}
           />
-          <button type="button" className="vd-swap" onClick={swap} aria-label="Swap the two versions" title="Swap">
-            <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
-          </button>
+          <Button
+            variant="ghost"
+            size="default"
+            iconOnly
+            onClick={swap}
+            disabled={!!snapshotId}
+            aria-label="Swap the two versions"
+            data-tip={snapshotId ? undefined : 'Swap'}
+          >
+            <ArrowRight size={14} strokeWidth={1.75} className="tw-text-icon-default" />
+          </Button>
           <VersionSelect
             label="To"
             value={pair.target}
@@ -451,74 +476,87 @@ export const VersionDiffDialog = ({ darkMode }) => {
             disabledId={pair.base}
           />
         </div>
-        <div className="vd-head__tools">
-          {review ? (
-            <button
-              type="button"
-              className={cx('vd-review-toggle', { 'vd-review-toggle--on': panel === 'review' })}
-              onClick={() => setPanel(panel === 'review' ? null : 'review')}
-              title="Review"
-              aria-pressed={panel === 'review'}
-            >
-              <GitPullRequestArrow size={14} strokeWidth={1.75} aria-hidden="true" />
-              <span>Review</span>
-              <StatusPill status={review.state.status} />
-            </button>
-          ) : (
-            pair.target &&
-            pair.base &&
-            !snapshotId && (
-              <button
-                type="button"
-                className="vd-review-toggle"
-                onClick={() => setPanel('create')}
-                title="Request review"
-              >
-                <GitPullRequestArrow size={14} strokeWidth={1.75} aria-hidden="true" />
-                <span>Request review</span>
-              </button>
-            )
-          )}
+
+        <div className="tw-flex tw-items-center tw-justify-end tw-gap-2 tw-flex-1">
           {snapshotId && undo && diff && !diff.identical && (
-            <div className="vd-undo">
-              <button
-                type="button"
-                className="vd-review-toggle"
+            <div className="tw-relative">
+              <Button
+                variant="outline"
+                size="default"
+                leadingVisual={<Undo2 size={14} strokeWidth={1.75} />}
                 onClick={() => setUndoState(undoState ? null : 'confirm')}
                 aria-expanded={!!undoState}
-                title="Undo this edit"
                 data-cy="undo-ai-edit"
               >
-                <Undo2 size={14} strokeWidth={1.75} aria-hidden="true" />
-                <span>Undo this edit</span>
-              </button>
+                Undo this edit
+              </Button>
               {undoState && (
-                <div className="vd-undo__pop" role="dialog" aria-label="Undo the AI edit">
-                  <p className="vd-undo__title">Put {targetName} back to before the AI edit?</p>
-                  <p className="vd-undo__text">
-                    The changes listed here are reversed. The current state is kept, so you can restore it later.
-                  </p>
-                  {undoState?.error && <p className="rv-error">{String(undoState.error)}</p>}
-                  <div className="rv-composer__actions">
-                    <span className="rv-spacer" />
-                    <button type="button" className="rv-btn" onClick={() => setUndoState(null)}>
+                <div
+                  className="vd-undo__pop tw-absolute tw-right-0 tw-top-10 tw-z-10 tw-w-[300px] tw-p-4 tw-flex tw-flex-col tw-gap-3 tw-rounded-lg tw-bg-background-surface-layer-01 tw-border tw-border-solid tw-border-border-weak tw-shadow-elevation-400"
+                  role="dialog"
+                  aria-label="Undo the AI edit"
+                >
+                  <div className="tw-flex tw-flex-col tw-gap-1">
+                    <p className="tw-m-0 tw-font-title-default tw-text-text-default">
+                      Put {targetName} back to before the AI edit?
+                    </p>
+                    <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">
+                      The changes listed here are reversed. The current state is kept, so you can restore it later.
+                    </p>
+                  </div>
+                  {undoState?.error && (
+                    <p className="tw-m-0 tw-font-body-small tw-text-text-danger">{String(undoState.error)}</p>
+                  )}
+                  <div className="tw-flex tw-justify-end tw-gap-2">
+                    <Button variant="outline" size="medium" onClick={() => setUndoState(null)}>
                       Cancel
-                    </button>
-                    <button
-                      type="button"
-                      className="rv-btn rv-btn--danger"
+                    </Button>
+                    <Button
+                      variant="primary"
+                      danger
+                      size="medium"
                       onClick={runUndo}
-                      disabled={undoState === 'working'}
+                      loading={undoState === 'working'}
                       data-cy="confirm-undo-ai-edit"
                     >
                       Undo edit
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
             </div>
           )}
-          <Segmented
+          {review ? (
+            <Button
+              variant="outline"
+              size="default"
+              className={cn('vd-review-toggle', { 'tw-bg-interactive-selected': panel === 'review' })}
+              leadingVisual={<GitPullRequestArrow size={14} strokeWidth={1.75} />}
+              trailingVisual={
+                <Tag tone={REVIEW_STATUS[review.state.status]?.tone}>{REVIEW_STATUS[review.state.status]?.label}</Tag>
+              }
+              onClick={() => setPanel(panel === 'review' ? null : 'review')}
+              aria-pressed={panel === 'review'}
+            >
+              Review
+            </Button>
+          ) : (
+            pair.target &&
+            pair.base &&
+            !snapshotId && (
+              <Button
+                variant="outline"
+                size="default"
+                className="vd-review-toggle"
+                leadingVisual={<GitPullRequestArrow size={14} strokeWidth={1.75} />}
+                onClick={() => setPanel('create')}
+              >
+                Request review
+              </Button>
+            )
+          )}
+          <Divider />
+          <IconChoice
             label="Screen size"
             value={viewport}
             onChange={setViewport}
@@ -527,16 +565,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
               { id: 'mobile', text: 'Mobile', Icon: Smartphone },
             ]}
           />
-          <Segmented
-            label="Render"
-            value={renderMode}
-            onChange={setRenderMode}
-            options={[
-              { id: 'live', text: 'Live data', Icon: Database },
-              { id: 'layout', text: 'Layout only', Icon: LayoutTemplate },
-            ]}
-          />
-          <Segmented
+          <IconChoice
             label="Layout"
             value={mode}
             onChange={setMode}
@@ -545,16 +574,34 @@ export const VersionDiffDialog = ({ darkMode }) => {
               { id: 'swipe', text: 'Swipe', Icon: SquareSplitHorizontal },
             ]}
           />
-          <button ref={closeRef} type="button" className="vd-close" onClick={closeCompare} aria-label="Close compare">
-            <X size={18} strokeWidth={1.75} />
-          </button>
+          <IconChoice
+            label="Render"
+            value={renderMode}
+            onChange={setRenderMode}
+            options={[
+              { id: 'live', text: 'Live data', Icon: Database },
+              { id: 'layout', text: 'Layout only, runs no queries', Icon: LayoutTemplate },
+            ]}
+          />
+          <Divider />
+          <Button
+            ref={closeRef}
+            variant="ghost"
+            size="default"
+            iconOnly
+            className="vd-close"
+            onClick={closeCompare}
+            aria-label="Close"
+          >
+            <X size={16} strokeWidth={1.75} className="tw-text-icon-default" />
+          </Button>
         </div>
       </header>
 
       <div className={cx('vd-body', { 'vd-body--panel': showPanel })}>
-        {error && <div className="vd-state vd-state--error">{String(error)}</div>}
+        {error && <div className="vd-state tw-font-body-default tw-text-text-danger">{String(error)}</div>}
         {!error && (loading || !diff) && (
-          <div className="vd-state">
+          <div className="vd-state tw-font-body-default tw-text-text-placeholder">
             Comparing {baseName ?? '…'} with {targetName ?? '…'}
           </div>
         )}
@@ -577,48 +624,46 @@ export const VersionDiffDialog = ({ darkMode }) => {
               hiddenKeys={hiddenKeys}
               commentCounts={commentCounts}
             />
-            <main className={cx('vd-stage-wrap', { 'vd-stage-wrap--pages': diff.pages.length > 1 })}>
+            <main className="vd-stage-wrap tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-bg-page-weak">
               {diff.pages.length > 1 && (
-                <nav className="vd-pages" aria-label="Changed pages">
-                  {diff.pages.map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      className={cx('vd-pages__tab', { 'vd-pages__tab--on': item.key === pageKey })}
-                      aria-current={item.key === pageKey ? 'page' : undefined}
-                      onClick={() => {
-                        setPageKey(item.key);
-                        setSelectedKey(null);
-                        setScroll(null);
-                      }}
-                    >
-                      <span>{item.name}</span>
-                      {item.status !== 'changed' ? (
-                        <span className={cx('vd-tag', `vd-tag--${item.status}`)}>{STATUS_WORD[item.status]}</span>
-                      ) : (
-                        <span className="vd-pages__n">
-                          {item.counts.added + item.counts.changed + item.counts.removed}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </nav>
+                <Tabs
+                  value={pageKey ?? undefined}
+                  onValueChange={(key) => {
+                    setPageKey(key);
+                    setSelectedKey(null);
+                    setScroll(null);
+                  }}
+                  className="tw-shrink-0 tw-px-4 tw-bg-background-surface-layer-01 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak"
+                >
+                  <TabsList variant="underline" className="vd-pages tw-border-b-0" aria-label="Changed pages">
+                    {diff.pages.map((item) => (
+                      <TabsTrigger key={item.key} value={item.key} className="vd-pages__tab tw-px-2">
+                        {item.name}
+                        {item.status !== 'changed' ? (
+                          <Tag tone={STATUS_TONE[item.status]}>{STATUS_WORD[item.status]}</Tag>
+                        ) : (
+                          <span className="tw-font-body-small tw-text-text-placeholder">
+                            {item.counts.added + item.counts.changed + item.counts.removed}
+                          </span>
+                        )}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
               )}
-              {diff.identical ? (
-                <div className="vd-state vd-state--calm">
-                  <p className="vd-state__big">No differences</p>
-                  <p>
+              <div className="tw-flex-1 tw-min-h-0 tw-p-4">
+                {diff.identical ? (
+                  <Calm title="No differences">
                     {targetName} has the same pages, components, queries and settings as {baseName}.
-                  </p>
-                </div>
-              ) : page ? (
-                frames
-              ) : (
-                <div className="vd-state vd-state--calm">
-                  <p className="vd-state__big">No page changes</p>
-                  <p>The differences are in queries or app settings. They are listed on the left.</p>
-                </div>
-              )}
+                  </Calm>
+                ) : page ? (
+                  frames
+                ) : (
+                  <Calm title="No page changes">
+                    The differences are in queries or app settings. They are listed on the left.
+                  </Calm>
+                )}
+              </div>
             </main>
             {panel === 'review' && review && (
               <ReviewPanel
@@ -650,31 +695,37 @@ export const VersionDiffDialog = ({ darkMode }) => {
 
       {hovered && hover.x != null && (
         <div
-          className="vd-card"
+          className="vd-card tw-fixed tw-w-[300px] tw-p-3 tw-flex tw-flex-col tw-gap-2 tw-rounded-lg tw-bg-background-surface-layer-01 tw-border tw-border-solid tw-border-border-weak tw-shadow-elevation-400 tw-pointer-events-none"
           style={{
-            left: Math.min(hover.x + 16, window.innerWidth - 336),
-            top: Math.min(hover.y + 16, window.innerHeight - 200),
+            left: Math.min(hover.x + 16, window.innerWidth - 316),
+            top: Math.min(hover.y + 16, window.innerHeight - 180),
           }}
           role="tooltip"
         >
-          <div className="vd-card__head">
-            <span className={cx('vd-tag', `vd-tag--${hovered.status}`)}>{STATUS_WORD[hovered.status]}</span>
-            <span className="vd-card__name">{hovered.name}</span>
-            <span className="vd-card__type">{typeLabel(hovered.type)}</span>
+          <div className="tw-flex tw-items-center tw-gap-2 tw-min-w-0">
+            <StatusDot status={hovered.status} />
+            <span className="tw-min-w-0 tw-truncate tw-font-title-default tw-text-text-default">{hovered.name}</span>
+            <span className="tw-ml-auto tw-shrink-0 tw-font-body-small tw-text-text-placeholder">
+              {typeLabel(hovered.type)}
+            </span>
           </div>
           {hovered.status === 'changed' ? (
-            <ul className="vd-card__lines">
+            <ul className="tw-m-0 tw-p-0 tw-list-none tw-flex tw-flex-col tw-gap-1">
               {[...hovered.changes.map((change) => change.summary), ...hovered.events.map((event) => event.summary)]
                 .slice(0, 5)
                 .map((line, index) => (
-                  <li key={index}>{line}</li>
+                  <li key={index} className="tw-font-body-small tw-text-text-medium">
+                    {line}
+                  </li>
                 ))}
               {hovered.changes.length + hovered.events.length > 5 && (
-                <li className="vd-card__more">{hovered.changes.length + hovered.events.length - 5} more in the list</li>
+                <li className="tw-font-body-small tw-text-text-placeholder">
+                  {hovered.changes.length + hovered.events.length - 5} more in the list
+                </li>
               )}
             </ul>
           ) : (
-            <p className="vd-card__note">
+            <p className="tw-m-0 tw-font-body-small tw-text-text-medium">
               {hovered.status === 'added' ? `New in ${targetName}` : `Removed in ${targetName}`}
             </p>
           )}
@@ -686,6 +737,13 @@ export const VersionDiffDialog = ({ darkMode }) => {
 };
 
 const sameSet = (a, b) => a.size === b.size && [...a].every((key) => b.has(key));
+
+const Calm = ({ title, children }) => (
+  <div className="tw-h-full tw-grid tw-place-content-center tw-text-center tw-gap-1">
+    <p className="tw-m-0 tw-font-title-large tw-text-text-default">{title}</p>
+    <p className="tw-m-0 tw-font-body-default tw-text-text-placeholder tw-max-w-[360px]">{children}</p>
+  </div>
+);
 
 const SideFrame = ({ shared, side }) =>
   side.blueprint ? (
@@ -703,21 +761,30 @@ const SideFrame = ({ shared, side }) =>
     <VersionFrame {...shared} {...side} />
   );
 
-const FrameLabel = ({ side, name }) => (
-  <div className={cx('vd-label', `vd-label--${side}`)}>
-    <span className="vd-label__name">{name}</span>
-    <span className="vd-label__side">{side === 'base' ? 'before' : 'after'}</span>
+const FrameLabel = ({ side, floating }) => (
+  <div
+    className={cn('vd-label tw-flex tw-items-center tw-gap-2', {
+      'tw-absolute tw-top-3 tw-z-[3] tw-h-7 tw-px-2 tw-rounded-md tw-bg-background-surface-layer-01 tw-border tw-border-solid tw-border-border-weak tw-shadow-elevation-100 tw-pointer-events-none':
+        floating,
+      'vd-label--base tw-left-3': floating === 'base',
+      'vd-label--target tw-right-3': floating === 'target',
+    })}
+  >
+    <span className="tw-font-title-default tw-text-text-default">{side.name}</span>
+    <Tag>{side.tag}</Tag>
   </div>
 );
 
-const Missing = ({ name, side }) => (
-  <div className="vd-missing">
-    <p>{side === 'base' ? `This page is new in the later version` : `This page was removed`}</p>
-    <span>Not in {name}</span>
+const Missing = ({ side, isBase }) => (
+  <div className="tw-flex-1 tw-grid tw-place-content-center tw-gap-0.5 tw-text-center tw-rounded-lg tw-border tw-border-dashed tw-border-border-default">
+    <p className="tw-m-0 tw-font-title-default tw-text-text-default">
+      {isBase ? 'This page is new in the later version' : 'This page was removed'}
+    </p>
+    <span className="tw-font-body-small tw-text-text-placeholder">Not in {side.name}</span>
   </div>
 );
 
-const Stage = ({ mode, baseName, targetName, base, target, shared }) => {
+const Stage = ({ mode, base, target, shared }) => {
   const stageRef = useRef(null);
   const [split, setSplit] = useState(null);
   const [dragging, setDragging] = useState(false);
@@ -751,13 +818,13 @@ const Stage = ({ mode, baseName, targetName, base, target, shared }) => {
     return (
       <div className={cx('vd-swipe', { 'vd-swipe--dragging': dragging })} ref={stageRef}>
         <div className="vd-swipe__layer">
-          {base.src ? <SideFrame shared={shared} side={base} /> : <Missing name={baseName} side="base" />}
+          {base.src ? <SideFrame shared={shared} side={base} /> : <Missing side={base} isBase />}
         </div>
         <div className="vd-swipe__layer" style={{ clipPath: `inset(0 0 0 ${split ?? 0}px)` }}>
-          {target.src ? <SideFrame shared={shared} side={target} /> : <Missing name={targetName} side="target" />}
+          {target.src ? <SideFrame shared={shared} side={target} /> : <Missing side={target} />}
         </div>
-        <FrameLabel side="base" name={baseName} />
-        <FrameLabel side="target" name={targetName} />
+        <FrameLabel side={base} floating="base" />
+        <FrameLabel side={target} floating="target" />
         {split != null && (
           <div
             className="vd-swipe__handle"
@@ -785,12 +852,12 @@ const Stage = ({ mode, baseName, targetName, base, target, shared }) => {
   return (
     <div className="vd-split">
       <section className="vd-pane">
-        <FrameLabel side="base" name={baseName} />
-        {base.src ? <SideFrame shared={shared} side={base} /> : <Missing name={baseName} side="base" />}
+        <FrameLabel side={base} />
+        {base.src ? <SideFrame shared={shared} side={base} /> : <Missing side={base} isBase />}
       </section>
       <section className="vd-pane">
-        <FrameLabel side="target" name={targetName} />
-        {target.src ? <SideFrame shared={shared} side={target} /> : <Missing name={targetName} side="target" />}
+        <FrameLabel side={target} />
+        {target.src ? <SideFrame shared={shared} side={target} /> : <Missing side={target} />}
       </section>
     </div>
   );
