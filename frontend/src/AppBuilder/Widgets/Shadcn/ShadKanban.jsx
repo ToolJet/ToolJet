@@ -206,6 +206,8 @@ const KanbanCard = ({
       }}
       {...drag.attributes}
       {...drag.listeners}
+      // In the editor a drag that starts on a card moves the card, not the whole board (the canvas skips it).
+      data-tj-inner-drag=""
       onClick={() => onSelect(card)}
       // Enter activates the card as a click does (select it, onCardClicked, its details); Space picks it up to move
       // (KANBAN_KEYS). While a card is being moved, Enter drops it instead.
