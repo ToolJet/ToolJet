@@ -283,6 +283,11 @@ describe('seriesLabelMap', () => {
     // As ToolJet resolves a written list.
     expect(seriesLabelMap({ 0: 'Flight hours' }, ['hours'])).toEqual({ hours: 'Flight hours' });
   });
+  it('names a series by its field when its label is not text or a number', () => {
+    expect(seriesLabel('revenue', seriesLabelMap([{ month: 'Jan' }], ['revenue']))).toBe('Revenue');
+    expect(seriesLabel('revenue', { revenue: { a: 1 } })).toBe('Revenue');
+    expect(seriesLabel('revenue', { revenue: 7 })).toBe('7');
+  });
   it('keeps an object and ignores anything else', () => {
     expect(seriesLabelMap({ hours: 'Hours flown' }, ['hours'])).toEqual({ hours: 'Hours flown' });
     expect(seriesLabelMap('Hours', ['hours'])).toEqual({});
