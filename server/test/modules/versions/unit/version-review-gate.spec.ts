@@ -81,4 +81,18 @@ describe('review policy and gate', () => {
     fingerprint.mockResolvedValue('f3:b');
     await expect(service.gate(manager, 'app', 'v')).resolves.toMatchObject({ allowed: false, reviewId: null });
   });
+
+  it('never gates workflows or modules, which have no compare view to review in', async () => {
+    process.env.TOOLJET_VERSION_REVIEW_REQUIRED = 'all';
+    const manager: any = { query: async (sql: string) => (sql.includes('FROM apps') ? [{ type: 'workflow' }] : []) };
+    const service = new VersionReviewService();
+    await expect(service.gate(manager, 'app', 'v', 'release')).resolves.toMatchObject({
+      required: false,
+      allowed: true,
+    });
+    await expect(service.gate(manager, 'app', 'v', 'promote')).resolves.toMatchObject({
+      required: false,
+      allowed: true,
+    });
+  });
 });

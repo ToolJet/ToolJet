@@ -358,6 +358,10 @@ export class VersionReviewService {
   async gate(manager: EntityManager, appId: string, versionId: string, action: 'release' | 'promote' = 'release') {
     const policy = reviewPolicy();
     if (!policy[action]) return { required: false, allowed: true, reason: null, reviewId: null };
+    // Reviews exist for apps only: workflows and modules have no compare view to review in,
+    // so gating them would make them impossible to release.
+    const [app] = await manager.query(`SELECT type FROM apps WHERE id = $1`, [appId]);
+    if (app && app.type !== 'front-end') return { required: false, allowed: true, reason: null, reviewId: null };
     const verb = action === 'promote' ? 'promoted to production' : 'released';
     const [row]: ReviewRowRaw[] = await manager.query(
       `SELECT ${REVIEW_COLUMNS} FROM app_version_reviews r WHERE r.version_id = $1 AND r.app_id = $2 AND r.status = 'open'
