@@ -714,7 +714,7 @@ export class TooljetDbTableOperationsService {
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner, queryRunner.manager);
 
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
       if (!queryRunner?.transactionDepth || queryRunner.transactionDepth < 1) await queryRunner.release();
@@ -2306,11 +2306,19 @@ export class TooljetDbTableOperationsService {
     }
   ) {
     const normalized = await this.normalizeCreateForeignKey(organizationId, params, connectionManagers);
-    await this.migrationRecorderService.adjudicatePending(normalized.internalTable, normalized.relation);
+    // A caller-owned transaction (bulk import) holds the tables uncommitted: the recorder must write on
+    // that connection, or its inserts can't see them.
+    const sharedAppManager = connectionManagers.appManager?.queryRunner ? connectionManagers.appManager : undefined;
+    await this.migrationRecorderService.adjudicatePending(
+      normalized.internalTable,
+      normalized.relation,
+      sharedAppManager
+    );
     const migration = await this.migrationRecorderService.record(
       { action: 'create_foreign_key', request: params },
       normalized.internalTable,
-      normalized.relation
+      normalized.relation,
+      sharedAppManager
     );
     return this.applyCreateForeignKey(organizationId, normalized, connectionManagers, migration);
   }
@@ -2386,6 +2394,7 @@ export class TooljetDbTableOperationsService {
   ) {
     const { internalTable, relation, physicalName, shouldDestroyDbConnection, foreign_keys } = normalized;
     const { appManager, tjdbManager } = connectionManagers;
+    const sharedAppManager = appManager?.queryRunner ? appManager : undefined;
     const tenantSchema = findTenantSchema(organizationId);
 
     const referencedRelations = await this.resolveFkReferencedRelations(
@@ -2416,7 +2425,7 @@ export class TooljetDbTableOperationsService {
       // introspection sees the not-yet-committed DDL (same-connection visibility) and, if it loses
       // its race with a peer's adjudicatePending (see confirm()'s own comment), the catch below
       // rolls back a transaction that is genuinely still open - never a commit already durable.
-      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner, sharedAppManager);
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
@@ -2427,7 +2436,7 @@ export class TooljetDbTableOperationsService {
         message: 'Foreign key relation created successfully!',
       };
     } catch (err) {
-      await this.migrationRecorderService.discard(migration, relation);
+      await this.migrationRecorderService.discard(migration, relation, sharedAppManager);
       // Error code: 42710 - indicates FK constraint exists
       if (!shouldDestroyDbConnection && err.code === '42710') {
         await tjdbQueryRunner.rollbackTransaction();
