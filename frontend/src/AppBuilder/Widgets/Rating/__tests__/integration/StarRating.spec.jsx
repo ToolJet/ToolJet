@@ -654,10 +654,15 @@ describe('StarRating', () => {
       ['an unparseable string', 'abc'],
       ['an empty string', '   '],
       ['NaN', NaN],
+      ['Infinity', Infinity],
+      ['-Infinity', -Infinity],
     ])('[StarRating-ACT-003] setValue leaves the rating unchanged for %s', async (_label, input) => {
       // RED/GREEN (D-02) for the NaN case. Every other input here was already
       // rejected; a numeric NaN slipped through the type check and landed in
       // the store, where each binding read NaN with the icons simply drawn empty.
+      // The two infinities are GUARD cases, added on code review: the same
+      // `Number.isFinite` check already rejects them, but nothing pinned that,
+      // so narrowing it back to an isNaN test would have gone unnoticed.
       widget.render({
         properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{2}}') },
       });
