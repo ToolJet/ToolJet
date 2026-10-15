@@ -42,13 +42,27 @@
     }
   }
 
-  &[aria-disabled="true"] {
+  // A genuinely disabled star forbids interaction; a read-only one simply does
+  // not offer it. The :not() keeps this off read-only stars regardless of rule
+  // order — both carry aria-disabled, so equal specificity would be a trap.
+  &[aria-disabled='true']:not(.readonly) {
     cursor: not-allowed;
+  }
+
+  &.readonly {
+    cursor: default;
+  }
+
+  &[aria-disabled="true"] {
     opacity: 0.6;
 
     &:hover,
     &:focus-visible {
       transform: none !important; // Prevent scaling when disabled
+
+      .show-opacity-on-hover {
+        opacity: 1 !important;
+      }
     }
   }
 

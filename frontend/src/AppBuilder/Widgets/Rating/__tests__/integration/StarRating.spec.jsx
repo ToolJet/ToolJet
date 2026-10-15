@@ -310,6 +310,62 @@ describe('StarRating', () => {
     });
   });
 
+    test('[StarRating-INT-006] a read-only rating stays hoverable for its tooltip, and still does not preview', async () => {
+      // Break this catches: suppressing a read-only star wholesale with
+      // pointer-events, which also swallows its tooltip. Verified in Chrome:
+      // with pointer-events:none the browser hit-tests straight through the
+      // star (elementFromPoint returns BODY) so OverlayTrigger's hover never
+      // fires, and tabIndex -1 rules out its focus trigger too. jsdom does not
+      // load that stylesheet, so the class is the honest proxy for "the browser
+      // can still hit this element"; the tooltip actually appearing is BRW-005.
+      const { container } = widget.render({
+        properties: {
+          maxRating: binding('{{5}}'),
+          defaultSelected: binding('{{2}}'),
+          allowEditing: binding('{{false}}'),
+          disabledState: binding('{{false}}'),
+          tooltips: binding("{{['Poor','Fair','Good','Great','Best']}}"),
+        },
+        styles: { textColor: binding('rgb(1, 2, 3)'), unselectedBackground: binding('rgb(9, 8, 7)') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(2));
+
+      const star = icons(container)[4];
+      expect(star).not.toHaveClass('pointer-events-none');
+      expect(star).toHaveAttribute('aria-label', '5 out of 5 stars, Best');
+      // Marks the star as read-only rather than forbidden, so the stylesheet can
+      // drop the not-allowed cursor and the hover scale/fade that say "settable".
+      // aria-disabled alone cannot distinguish this from a disabled rating.
+      // Chrome-verified while genuinely hovered: cursor default, transform none,
+      // icon opacity 1 — against pointer/scale(1.2)/0.5 on an editable star.
+      expect(star).toHaveClass('readonly');
+
+      // ...but hovering must not light it up: a preview would imply the rating
+      // can be set, which is exactly what read-only denies.
+      const before = icons(container).map(iconFill);
+      await widget.session.user.hover(star);
+      await drain();
+      expect(icons(container).map(iconFill)).toEqual(before);
+      expect(widget.exposed().value).toBe(2);
+    });
+
+    test('[StarRating-INT-006] a disabled rating stays fully inert', async () => {
+      // The product call (D-13): read-only becomes informative, disabled does not.
+      const { container } = widget.render({
+        properties: {
+          maxRating: binding('{{5}}'),
+          defaultSelected: binding('{{2}}'),
+          disabledState: binding('{{true}}'),
+          tooltips: binding("{{['Poor','Fair','Good','Great','Best']}}"),
+        },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(2));
+
+      expect(icons(container)[4]).toHaveClass('pointer-events-none');
+      // Disabled keeps the not-allowed cursor, so it must NOT be marked read-only.
+      expect(icons(container)[4]).not.toHaveClass('readonly');
+    });
+
   describe('bindings and property changes', () => {
     test('[StarRating-BIND-001] a bound label re-resolves and republishes', async () => {
       const { container } = widget.render({ properties: { label: binding('First') } });
