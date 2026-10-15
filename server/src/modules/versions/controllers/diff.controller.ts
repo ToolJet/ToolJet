@@ -1,4 +1,6 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { User } from '@modules/app/decorators/user.decorator';
+import { User as UserEntity } from '@entities/user.entity';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
@@ -39,6 +41,19 @@ export class VersionDiffController {
   @Get(':id/versions/:versionId/layout')
   versionLayout(@App() app: AppEntity, @Param('versionId') versionId: string, @Query('page') page?: string) {
     return this.versionDiffService.layout(app, { versionId }, page);
+  }
+
+  // Undo this turn. Needs the right to edit the app's versions.
+  @InitFeature(FEATURE_KEY.APP_VERSION_UPDATE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Post(':id/snapshots/:snapshotId/restore')
+  restore(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Param('snapshotId') snapshotId: string,
+    @Body() body: { expectedFingerprint?: string }
+  ) {
+    return this.versionDiffService.restore(app, user, snapshotId, body?.expectedFingerprint);
   }
 
   @InitFeature(FEATURE_KEY.COMPARE)

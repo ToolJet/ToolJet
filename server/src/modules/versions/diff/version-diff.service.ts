@@ -41,6 +41,24 @@ export class VersionDiffService {
     });
   }
 
+  // Undo this turn: put the version back to a snapshot of itself (see VersionSnapshotStore.restore).
+  async restore(
+    app: App,
+    user: { id: string; organizationId: string },
+    snapshotId: string,
+    expectedFingerprint?: string
+  ) {
+    return dbTransactionWrap((manager: EntityManager) =>
+      new VersionSnapshotStore().restore(manager, {
+        appId: app.id,
+        snapshotId,
+        organizationId: user.organizationId,
+        userId: user.id,
+        expectedFingerprint,
+      })
+    );
+  }
+
   // What the blueprint renderer needs to draw a page without running it:
   // every component's box, parent, type and a short label.
   async layout(app: App, source: { versionId?: string; snapshotId?: string }, pageKey?: string) {
