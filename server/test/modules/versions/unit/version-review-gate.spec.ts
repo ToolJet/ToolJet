@@ -36,4 +36,49 @@ describe('review policy and gate', () => {
       allowed: true,
     });
   });
+
+  it('falls back to one approval when the approvals setting is not a number', () => {
+    const savedApprovals = process.env.TOOLJET_VERSION_REVIEW_APPROVALS;
+    process.env.TOOLJET_VERSION_REVIEW_APPROVALS = 'two';
+    expect(reviewPolicy().requiredApprovals).toBe(1);
+    process.env.TOOLJET_VERSION_REVIEW_APPROVALS = '0';
+    expect(reviewPolicy().requiredApprovals).toBe(1);
+    process.env.TOOLJET_VERSION_REVIEW_APPROVALS = '2';
+    expect(reviewPolicy().requiredApprovals).toBe(2);
+    process.env.TOOLJET_VERSION_REVIEW_APPROVALS = savedApprovals;
+  });
+
+  it('lets a version go out again while it is still exactly what was approved', async () => {
+    process.env.TOOLJET_VERSION_REVIEW_REQUIRED = 'release';
+    const released = {
+      id: 'r1',
+      appId: 'app',
+      versionId: 'v',
+      authorId: 'author',
+      requiredApprovals: 1,
+      status: 'released',
+    };
+    const events = [
+      { id: 'e1', reviewId: 'r1', actorId: 'author', kind: 'opened', fingerprint: 'f3:a', createdAt: '2026-10-01' },
+      { id: 'e2', reviewId: 'r1', actorId: 'reviewer', kind: 'approved', fingerprint: 'f3:a', createdAt: '2026-10-02' },
+      { id: 'e3', reviewId: 'r1', actorId: 'author', kind: 'released', fingerprint: 'f3:a', createdAt: '2026-10-03' },
+    ];
+    const manager: any = {
+      query: async (sql: string) =>
+        sql.includes("r.status = 'open'")
+          ? []
+          : sql.includes("r.status = 'released'")
+            ? [released]
+            : sql.includes('app_version_review_events')
+              ? events
+              : [],
+    };
+    const service = new VersionReviewService();
+    const fingerprint = jest.spyOn(service, 'fingerprint');
+    fingerprint.mockResolvedValue('f3:a');
+    await expect(service.gate(manager, 'app', 'v')).resolves.toMatchObject({ allowed: true, reviewId: 'r1' });
+    // Edited since the release: the old approval no longer covers it.
+    fingerprint.mockResolvedValue('f3:b');
+    await expect(service.gate(manager, 'app', 'v')).resolves.toMatchObject({ allowed: false, reviewId: null });
+  });
 });

@@ -40,6 +40,8 @@ import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { isUUID } from 'class-validator';
+import { VersionReviewService } from '@modules/versions/reviews/version-review.service';
+import { RequestContext } from '@modules/request-context/service';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -256,6 +258,13 @@ export class AppsUtilService implements IAppsUtilService {
     cleanObject(updatableParams);
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (updatableParams.currentVersionId) {
+        // Setting current_version_id is a release too, so it passes the same review gate.
+        const reviews = new VersionReviewService();
+        if (currentVersionId !== lastReleasedVersion) {
+          await reviews.assertReleasable(manager, appId, currentVersionId, 'release');
+          const actorId = (RequestContext.currentContext?.req as any)?.user?.id ?? app.userId;
+          await reviews.markReleased(manager, appId, currentVersionId, actorId);
+        }
         //check if the app version is eligible for release
         const currentEnvironment: AppEnvironment = await this.getEnvironmentOfVersion(currentVersionId, manager);
 

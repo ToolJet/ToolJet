@@ -47,8 +47,8 @@ export class VersionDiffController {
     return this.versionDiffService.layout(app, { versionId }, page);
   }
 
-  // Undo this turn. Needs the right to edit the app's versions.
-  @InitFeature(FEATURE_KEY.APP_VERSION_UPDATE)
+  // Undo this turn. Needs the right to edit this app.
+  @InitFeature(FEATURE_KEY.SNAPSHOT_RESTORE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Post(':id/snapshots/:snapshotId/restore')
   restore(

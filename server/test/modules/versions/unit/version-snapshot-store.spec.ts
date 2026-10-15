@@ -114,4 +114,69 @@ describe('version snapshots', () => {
     spy.mockResolvedValue(rows('Open deals'));
     expect(await store.fingerprintOf({} as any, 'a', 'v-1')).not.toBe(first);
   });
+
+  // A manager for restore: the stored snapshot, the version's freeze flags, and a log of every statement.
+  const restoreManager = (version: Record<string, any>) => {
+    const content = {
+      ...rows('Deals'),
+      permissions: [
+        {
+          kind: 'page',
+          id: 'pp-1',
+          ownerId: 'p-1',
+          type: 'GROUP',
+          users: [{ id: 'pu-1', userId: null, groupId: 'g-1' }],
+        },
+      ],
+      queryFolders: [],
+    };
+    const statements: Array<{ sql: string; params: any[] }> = [];
+    return {
+      statements,
+      query: async (sql: string, params: any[] = []) => {
+        statements.push({ sql, params });
+        if (sql.includes('FROM app_versions v JOIN apps')) return [version];
+        if (sql.includes('INSERT INTO app_version_snapshots')) return [{ id: 's-backup' }];
+        if (sql.includes('FROM app_version_snapshots'))
+          return [{ id: 's-1', versionId: 'v-1', reason: 'ai_turn', content: JSON.stringify(content) }];
+        return [];
+      },
+    };
+  };
+  const draft = { status: 'DRAFT', isReleased: false, priority: 1, gitAllowsEditing: null };
+
+  it('puts access rules back when Undo re-creates what a turn deleted', async () => {
+    jest
+      .spyOn(VersionDiffService.prototype, 'loadRows')
+      .mockResolvedValueOnce(rows('Open deals')) // the version now
+      .mockResolvedValueOnce(rows('Open deals')) // the backup taken first
+      .mockResolvedValueOnce(rows('Deals')); // after the restore
+    const manager: any = restoreManager(draft);
+    const result = await new VersionSnapshotStore().restore(manager, {
+      appId: 'a',
+      snapshotId: 's-1',
+      organizationId: 'o',
+    });
+    expect(result).toMatchObject({ restored: true, backupSnapshotId: 's-backup' });
+    const sql = manager.statements.map((statement) => statement.sql);
+    expect(sql.some((text) => text.includes('DELETE FROM page_permissions'))).toBe(true);
+    const rule = manager.statements.find((statement) => statement.sql.includes('INSERT INTO page_permissions'));
+    expect(rule.params).toEqual(['pp-1', 'p-1', 'GROUP']);
+    const user = manager.statements.find((statement) => statement.sql.includes('INSERT INTO page_users'));
+    expect(user.params).toEqual(['pu-1', 'pp-1', null, 'g-1']);
+  });
+
+  it.each([
+    [{ ...draft, status: 'PUBLISHED' }, 'saved'],
+    [{ ...draft, isReleased: true }, 'live'],
+    [{ ...draft, priority: 2 }, 'promoted'],
+    [{ ...draft, gitAllowsEditing: false }, 'Git sync'],
+  ])('refuses to undo on a version the editor would not let you edit (%#)', async (version, words) => {
+    const load = jest.spyOn(VersionDiffService.prototype, 'loadRows').mockResolvedValue(rows('Open deals'));
+    const manager: any = restoreManager(version);
+    await expect(
+      new VersionSnapshotStore().restore(manager, { appId: 'a', snapshotId: 's-1', organizationId: 'o' })
+    ).rejects.toThrow(words);
+    expect(load).not.toHaveBeenCalled();
+  });
 });

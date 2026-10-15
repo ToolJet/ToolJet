@@ -156,7 +156,8 @@ export type QueryDiff = {
 
 export type VersionDiff = {
   base: { id: string; name: string; status: string | null };
-  target: { id: string; name: string; status: string | null };
+  // fingerprint: the content shown, so an approval can name exactly what was reviewed.
+  target: { id: string; name: string; status: string | null; fingerprint?: string };
   identical: boolean;
   summary: {
     pages: { added: number; removed: number; changed: number };

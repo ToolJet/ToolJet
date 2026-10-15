@@ -242,12 +242,9 @@ export class DataQueriesService implements IDataQueriesService {
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
-    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
-      dataSource: true,
-    });
-
     // The compare view renders an AI-turn snapshot: run the query as the snapshot had it,
-    // on the same data source, and never write those options back.
+    // on the same data source, and never write those options back. The query may since have
+    // been deleted, in which case it is rebuilt from the snapshot.
     if (updateDataQueryDto.snapshotId) {
       if (!app) throw new NotFoundException();
       const stored = await dbTransactionWrap((manager: EntityManager) =>
@@ -255,10 +252,24 @@ export class DataQueriesService implements IDataQueriesService {
       );
       const row = stored.rows.queries.find((query) => query.id === dataQueryId);
       if (!row || row.dataSourceId !== dataSource.id) throw new NotFoundException('This query is not in the snapshot');
-      dataQuery.name = row.name;
-      dataQuery.options = row.options;
-      return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, 'view', app);
+      const existing = await this.dataQueryRepository.findOne({
+        where: { id: dataQueryId },
+        relations: { dataSource: true },
+      });
+      const snapshotQuery = Object.assign(existing ?? new DataQuery(), {
+        id: row.id,
+        name: row.name,
+        options: row.options,
+        dataSourceId: dataSource.id,
+        dataSource: existing?.dataSource ?? dataSource,
+        appVersionId: stored.versionId,
+      });
+      return this.runAndGetResult(user, snapshotQuery, resolvedOptions, response, environmentId, 'view', app);
     }
+
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
+      dataSource: true,
+    });
 
     // Persisting options on run is an EDITOR authoring convenience.
     // This endpoint is also hit by app preview, and there the user is consuming, not editing,

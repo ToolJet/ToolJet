@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  GoneException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,7 +13,10 @@ import { VersionSnapshot } from './types';
 
 // Stored snapshots keep the raw rows (VersionRows), not the built snapshot, so
 // a later change to the diff rules applies to old snapshots too.
-const KEEP_PER_VERSION = 30;
+// Kept per version and reason, so Undo backups never push out the snapshots that
+// older "See what changed" buttons point to. A missing snapshot reads as 410 Gone.
+const KEEP_PER_VERSION: Record<string, number> = { ai_turn: 100, before_restore: 20 };
+const KEEP_OTHER = 20;
 
 export type StoredSnapshot = {
   id: string;
@@ -49,9 +53,9 @@ export class VersionSnapshotStore {
     );
     // Bounded history per version; the newest ones are the ones people open.
     await manager.query(
-      `DELETE FROM app_version_snapshots WHERE version_id = $1 AND id NOT IN (
-         SELECT id FROM app_version_snapshots WHERE version_id = $1 ORDER BY created_at DESC LIMIT ${KEEP_PER_VERSION})`,
-      [input.versionId]
+      `DELETE FROM app_version_snapshots WHERE version_id = $1 AND reason = $2 AND id NOT IN (
+         SELECT id FROM app_version_snapshots WHERE version_id = $1 AND reason = $2 ORDER BY created_at DESC LIMIT $3)`,
+      [input.versionId, input.reason, KEEP_PER_VERSION[input.reason] ?? KEEP_OTHER]
     );
     return { id, fingerprint };
   }
@@ -62,7 +66,10 @@ export class VersionSnapshotStore {
          FROM app_version_snapshots WHERE id = $1 AND app_id = $2`,
       [snapshotId, appId]
     );
-    if (!row) throw new NotFoundException('Snapshot not found');
+    if (!row)
+      throw new GoneException(
+        'This edit is too old to compare: ToolJet keeps the last 100 AI edits of each version, and none of a deleted version.'
+      );
     const rows = typeof row.content === 'string' ? JSON.parse(row.content) : row.content;
     return { ...row, rows };
   }
@@ -93,15 +100,26 @@ export class VersionSnapshotStore {
   ) {
     const stored = await this.load(manager, input.appId, input.snapshotId);
     const { versionId, rows } = { versionId: stored.versionId, rows: stored.rows };
-    const [version] = await manager.query(`SELECT status FROM app_versions WHERE id = $1 AND app_id = $2`, [
-      versionId,
-      input.appId,
-    ]);
+    // Undo writes to the version, so it follows the editor's freeze rules: no saved, released or
+    // promoted version, and nothing that git sync has locked.
+    const [version] = await manager.query(
+      `SELECT v.status, a.current_version_id = v.id AS "isReleased", e.priority, g.allow_editing AS "gitAllowsEditing"
+         FROM app_versions v JOIN apps a ON a.id = v.app_id
+         LEFT JOIN app_environments e ON e.id = v.current_environment_id
+         LEFT JOIN app_git_sync g ON g.app_id = v.app_id
+        WHERE v.id = $1 AND v.app_id = $2`,
+      [versionId, input.appId]
+    );
     if (!version) throw new NotFoundException('The version this snapshot belongs to no longer exists');
     if (version.status === 'PUBLISHED')
       throw new BadRequestException(
         'This version is saved, so it cannot be changed. Create a draft from it to undo there.'
       );
+    if (version.isReleased) throw new BadRequestException('This version is live, so it cannot be changed here.');
+    if (version.priority > 1)
+      throw new BadRequestException('This version has been promoted, so it is locked. Undo it in a new draft.');
+    if (version.gitAllowsEditing === false)
+      throw new BadRequestException('Git sync locks this app for editing, so the edit cannot be undone here.');
 
     // Fingerprint the snapshot with today's rules; the stored one may predate a rule change.
     const wanted = contentFingerprint(buildSnapshot(rows));
@@ -139,18 +157,22 @@ export class VersionSnapshotStore {
     ]);
     for (const page of rows.pages) {
       await manager.query(
+        // app_id is the target of an "app" link page, not this app. Older snapshots did not keep it or
+        // open_in: a re-created page then takes the column defaults, an existing one keeps its own.
         `INSERT INTO pages (id, app_version_id, app_id, name, page_handle, index, disabled, hidden, icon, is_page_group,
-           page_group_id, page_group_index, auto_compute_layout, page_header, page_footer, type, url)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, COALESCE($16, 'default')::page_type_enum, $17)
+           page_group_id, page_group_index, auto_compute_layout, page_header, page_footer, type, url, open_in)
+         VALUES ($1, $2, COALESCE($3, ''), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
+           COALESCE($16, 'default')::page_type_enum, $17, COALESCE($18, 'new_tab')::page_open_in_enum)
          ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, page_handle = EXCLUDED.page_handle, index = EXCLUDED.index,
            disabled = EXCLUDED.disabled, hidden = EXCLUDED.hidden, icon = EXCLUDED.icon, is_page_group = EXCLUDED.is_page_group,
            page_group_id = EXCLUDED.page_group_id, page_group_index = EXCLUDED.page_group_index,
            auto_compute_layout = EXCLUDED.auto_compute_layout, page_header = EXCLUDED.page_header,
-           page_footer = EXCLUDED.page_footer, type = EXCLUDED.type, url = EXCLUDED.url, updated_at = now()`,
+           page_footer = EXCLUDED.page_footer, type = EXCLUDED.type, url = EXCLUDED.url,
+           app_id = COALESCE($3, pages.app_id), open_in = COALESCE($18::page_open_in_enum, pages.open_in), updated_at = now()`,
         [
           page.id,
           versionId,
-          input.appId,
+          page.linkAppId ?? null,
           page.name,
           page.handle,
           page.index,
@@ -165,6 +187,7 @@ export class VersionSnapshotStore {
           json(page.pageFooter),
           page.type,
           page.url,
+          page.openIn ?? null,
         ]
       );
     }
@@ -223,23 +246,31 @@ export class VersionSnapshotStore {
         layout.widthPx ?? null,
         layout.fillWidth ?? null,
         layout.grow ?? null,
+        // Older snapshots did not keep min widths; leave an existing value alone then.
+        'minWidthPx' in layout ? (layout.minWidthPx ?? null) : undefined,
       ];
+      const keepMin = params[10] === undefined;
       const updated = await manager.query(
         `UPDATE layouts SET top = $3, "left" = $4, width = $5, height = $6, dimension_unit = $7::dimension_unit,
-           width_px = $8, fill_width = $9, grow = $10, updated_at = now()
+           width_px = $8, fill_width = $9, grow = $10, ${keepMin ? '' : 'min_width_px = $11,'} updated_at = now()
          WHERE component_id = $1 AND type = $2::layout_type RETURNING id`,
-        params
+        keepMin ? params.slice(0, 10) : params
       );
       const count = Array.isArray(updated?.[0]) ? updated[0].length : updated.length;
       if (!count)
         await manager.query(
-          `INSERT INTO layouts (component_id, type, top, "left", width, height, dimension_unit, width_px, fill_width, grow)
-           VALUES ($1, $2::layout_type, $3, $4, $5, $6, $7::dimension_unit, $8, $9, $10)`,
-          params
+          `INSERT INTO layouts (component_id, type, top, "left", width, height, dimension_unit, width_px, fill_width, grow, min_width_px)
+           VALUES ($1, $2::layout_type, $3, $4, $5, $6, $7::dimension_unit, $8, $9, $10, $11)`,
+          keepMin ? [...params.slice(0, 10), null] : params
         );
     }
 
-    // Queries and events.
+    // Queries and events. Folder mappings do not cascade with their query, so they go first.
+    await manager.query(
+      `DELETE FROM data_query_folder_mappings WHERE child_type = 'query' AND child_id IN (
+         SELECT id FROM data_queries WHERE app_version_id = $1 AND NOT (id = ANY($2::uuid[])))`,
+      [versionId, ids(rows.queries)]
+    );
     await manager.query(`DELETE FROM data_queries WHERE app_version_id = $1 AND NOT (id = ANY($2::uuid[]))`, [
       versionId,
       ids(rows.queries),
@@ -259,6 +290,54 @@ export class VersionSnapshotStore {
          VALUES ($1, $2, $3, $4, $5, $6::event_handlers_target_enum, $7)`,
         [handler.id, handler.name, handler.index, json(handler.event), handler.sourceId, handler.target, versionId]
       );
+    }
+
+    if (rows.queryFolders) {
+      await manager.query(
+        `DELETE FROM data_query_folder_mappings WHERE child_type = 'query' AND child_id = ANY($1::uuid[])`,
+        [ids(rows.queries)]
+      );
+      for (const mapping of rows.queryFolders)
+        await manager.query(
+          `INSERT INTO data_query_folder_mappings (id, parent_id, child_id, child_type, index)
+           SELECT $1, $2, $3, 'query', $4 WHERE EXISTS (SELECT 1 FROM data_query_folders WHERE id = $2)`,
+          [mapping.id, mapping.parentId, mapping.childId, mapping.index]
+        );
+    }
+
+    // Access rules: put back exactly what the snapshot had on every page, component and query,
+    // so a row the turn deleted does not come back open to everyone.
+    if (rows.permissions) {
+      const tables = {
+        page: { rules: 'page_permissions', owner: 'page_id', users: 'page_users', link: 'page_permissions_id' },
+        component: {
+          rules: 'component_permissions',
+          owner: 'component_id',
+          users: 'component_users',
+          link: 'component_permissions_id',
+        },
+        query: { rules: 'query_permissions', owner: 'query_id', users: 'query_users', link: 'query_permissions_id' },
+      } as const;
+      const owners = { page: ids(rows.pages), component: ids(rows.components), query: ids(rows.queries) };
+      for (const kind of Object.keys(tables) as Array<keyof typeof tables>) {
+        const t = tables[kind];
+        await manager.query(`DELETE FROM ${t.rules} WHERE ${t.owner} = ANY($1::uuid[])`, [owners[kind]]);
+        for (const rule of rows.permissions.filter((item) => item.kind === kind)) {
+          await manager.query(
+            `INSERT INTO ${t.rules} (id, ${t.owner}, type) VALUES ($1, $2, $3::${t.rules}_type_enum)`,
+            [rule.id, rule.ownerId, rule.type]
+          );
+          for (const user of rule.users ?? [])
+            // A user or group removed since the snapshot is skipped rather than failing the undo.
+            await manager.query(
+              `INSERT INTO ${t.users} (id, ${t.link}, user_id, permission_groups_id)
+               SELECT $1, $2, $3, $4
+                WHERE ($3::uuid IS NULL OR EXISTS (SELECT 1 FROM users WHERE id = $3))
+                  AND ($4::uuid IS NULL OR EXISTS (SELECT 1 FROM permission_groups WHERE id = $4))`,
+              [user.id, rule.id, user.userId, user.groupId]
+            );
+        }
+      }
     }
 
     const after = await this.fingerprintOf(manager, input.appId, versionId);

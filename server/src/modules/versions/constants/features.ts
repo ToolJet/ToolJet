@@ -18,6 +18,11 @@ export const FEATURES: FeaturesConfig = {
       shouldNotSkipPublicApp: true,
       auditLogsKey: 'APP_UPDATE',
     },
+    // Undo an AI turn. A public app must not widen who can rewrite its draft.
+    [FEATURE_KEY.SNAPSHOT_RESTORE]: {
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
     [FEATURE_KEY.CREATE]: {
       auditLogsKey: 'APP_UPDATE',
     },

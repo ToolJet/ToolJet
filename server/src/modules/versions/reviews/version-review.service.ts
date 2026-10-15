@@ -1,4 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { App } from '@entities/app.entity';
@@ -22,7 +28,8 @@ export const reviewPolicy = () => {
   return {
     release: parts.includes('release') || parts.includes('all'),
     promote: parts.includes('promote') || parts.includes('all'),
-    requiredApprovals: Number(process.env.TOOLJET_VERSION_REVIEW_APPROVALS || 1),
+    // A typo here must not make reviews impossible to approve.
+    requiredApprovals: Math.max(1, Math.floor(Number(process.env.TOOLJET_VERSION_REVIEW_APPROVALS)) || 1),
   };
 };
 
@@ -39,6 +46,13 @@ type ReviewRowRaw = {
   createdAt: string;
   updatedAt: string;
 };
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Two requests racing past the "already open" check meet the partial unique index instead.
+const ONE_OPEN_INDEX = 'app_version_reviews_one_open';
+const isOneOpenViolation = (error: any) =>
+  error?.code === '23505' || error?.driverError?.code === '23505' || String(error?.message).includes(ONE_OPEN_INDEX);
 
 const REVIEW_COLUMNS = `r.id, r.app_id AS "appId", r.version_id AS "versionId", r.base_version_id AS "baseVersionId",
   r.author_id AS "authorId", r.title, r.description, r.status, r.required_approvals AS "requiredApprovals",
@@ -183,20 +197,36 @@ export class VersionReviewService {
         [app.id]
       );
       const baseVersionId = body.baseVersionId || (currentVersionId !== versionId ? currentVersionId : null);
-      const [{ id }] = await manager.query(
-        `INSERT INTO app_version_reviews (organization_id, app_id, version_id, base_version_id, author_id, title, description, required_approvals)
+      if (body.baseVersionId) {
+        // The base must be a version of this app; anything else would make the review unreadable for good.
+        const [base] = UUID.test(body.baseVersionId)
+          ? await manager.query(`SELECT id FROM app_versions WHERE id = $1 AND app_id = $2`, [
+              body.baseVersionId,
+              app.id,
+            ])
+          : [];
+        if (!base) throw new BadRequestException('Compare against a version of this app');
+        if (body.baseVersionId === versionId) throw new BadRequestException('Compare against another version');
+      }
+      const [{ id }] = await manager
+        .query(
+          `INSERT INTO app_version_reviews (organization_id, app_id, version_id, base_version_id, author_id, title, description, required_approvals)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
-        [
-          user.organizationId,
-          app.id,
-          versionId,
-          baseVersionId,
-          user.id,
-          (body.title || `Release ${version.name}`).slice(0, 200),
-          body.description || null,
-          reviewPolicy().requiredApprovals,
-        ]
-      );
+          [
+            user.organizationId,
+            app.id,
+            versionId,
+            baseVersionId,
+            user.id,
+            (body.title || `Release ${version.name}`).slice(0, 200),
+            body.description || null,
+            reviewPolicy().requiredApprovals,
+          ]
+        )
+        .catch((error) => {
+          if (isOneOpenViolation(error)) throw new BadRequestException(`${version.name} already has an open review`);
+          throw error;
+        });
       await this.addEvent(
         manager,
         id,
@@ -244,7 +274,15 @@ export class VersionReviewService {
     });
   }
 
-  async decide(app: App, user: User, reviewId: string, body: { decision?: string; body?: string }) {
+  // An approval names the exact content the reviewer looked at (the fingerprint the
+  // compare view showed). If the version changed in between, the approval is refused
+  // rather than attached to content nobody reviewed.
+  async decide(
+    app: App,
+    user: User,
+    reviewId: string,
+    body: { decision?: string; body?: string; fingerprint?: string }
+  ) {
     const kinds = { approve: 'approved', request_changes: 'changes_requested', dismiss: 'dismissed' } as const;
     const kind = kinds[body.decision];
     if (!kind) throw new BadRequestException('decision must be approve, request_changes or dismiss');
@@ -254,15 +292,16 @@ export class VersionReviewService {
       if (row.authorId === user.id && kind !== 'dismissed')
         throw new ForbiddenException('You opened this review, so someone else has to approve it');
       if (kind === 'changes_requested' && !body.body?.trim()) throw new BadRequestException('Say what needs to change');
-      await this.addEvent(
-        manager,
-        reviewId,
-        user.id,
-        kind,
-        body.body?.trim() || null,
-        null,
-        await this.fingerprint(manager, app.id, row.versionId)
-      );
+      const current = await this.fingerprint(manager, app.id, row.versionId);
+      if (kind === 'approved') {
+        if (!body.fingerprint)
+          throw new BadRequestException('Approve from the compare view, which says what you reviewed');
+        if (body.fingerprint !== current)
+          throw new ConflictException(
+            'The version changed after you opened it. Reload the changes and review them again.'
+          );
+      }
+      await this.addEvent(manager, reviewId, user.id, kind, body.body?.trim() || null, null, current);
       return this.getWith(manager, app, reviewId);
     });
   }
@@ -291,6 +330,13 @@ export class VersionReviewService {
       const row = await this.row(manager, app, reviewId);
       if (reopen ? row.status !== 'closed' : row.status !== 'open')
         throw new BadRequestException(`This review is ${row.status}`);
+      if (reopen) {
+        const [other] = await manager.query(
+          `SELECT id FROM app_version_reviews WHERE version_id = $1 AND status = 'open' AND id <> $2`,
+          [row.versionId, reviewId]
+        );
+        if (other) throw new BadRequestException('This version already has another open review');
+      }
       await manager.query(`UPDATE app_version_reviews SET status = $2 WHERE id = $1`, [
         reviewId,
         reopen ? 'open' : 'closed',
@@ -318,13 +364,27 @@ export class VersionReviewService {
         ORDER BY r.created_at DESC LIMIT 1`,
       [versionId, appId]
     );
-    if (!row)
+    if (!row) {
+      // Rolling back: a version whose last review was released can go out again
+      // as long as its content is still exactly what was approved.
+      const [released]: ReviewRowRaw[] = await manager.query(
+        `SELECT ${REVIEW_COLUMNS} FROM app_version_reviews r WHERE r.version_id = $1 AND r.app_id = $2 AND r.status = 'released'
+          ORDER BY r.updated_at DESC LIMIT 1`,
+        [versionId, appId]
+      );
+      if (released) {
+        const events = (await this.events(manager, [released.id]))[released.id] ?? [];
+        const current = await this.fingerprint(manager, appId, versionId);
+        const state = reviewState({ ...released, status: 'open' }, events, current);
+        if (state.canRelease) return { required: true, allowed: true, reason: null, reviewId: released.id, state };
+      }
       return {
         required: true,
         allowed: false,
         reason: `This version needs an approved review before it can be ${verb}`,
         reviewId: null,
       };
+    }
     const events = (await this.events(manager, [row.id]))[row.id] ?? [];
     const state = reviewState(row, events, await this.fingerprint(manager, appId, versionId));
     const reason = state.canRelease

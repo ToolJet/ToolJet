@@ -29,6 +29,9 @@ export type VersionRows = {
     pageFooter: any;
     type: string | null;
     url: string | null;
+    // Target app of an "app" link page, and how link pages open. Not compared.
+    linkAppId?: string | null;
+    openIn?: string | null;
   }>;
   components: Array<{
     id: string;
@@ -59,6 +62,15 @@ export type VersionRows = {
   queries: Array<{ id: string; name: string; dataSourceId: string | null; options: any }>;
   dataSources: Array<{ id: string; name: string; kind: string }>;
   events: Array<{ id: string; name: string; index: number; event: any; sourceId: string; target: string }>;
+  // Kept so Undo can put access rules back on rows it re-creates. Not compared. Older snapshots lack them.
+  permissions?: Array<{
+    kind: 'page' | 'component' | 'query';
+    id: string;
+    ownerId: string;
+    type: string;
+    users: Array<{ id: string; userId: string | null; groupId: string | null }>;
+  }>;
+  queryFolders?: Array<{ id: string; parentId: string; childId: string; index: number | null }>;
 };
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;

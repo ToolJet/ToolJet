@@ -6,6 +6,7 @@ import { buildSnapshot, VersionRows } from './snapshot';
 import { diffVersions } from './version-diff';
 import { VersionDiff, VersionSnapshot } from './types';
 import { VersionSnapshotStore } from './snapshot-store';
+import { contentFingerprint } from './fingerprint';
 import { overlaySnapshotDefinition } from './snapshot-definition';
 
 @Injectable()
@@ -27,7 +28,8 @@ export class VersionDiffService {
           : this.snapshot(manager, app.id, baseVersionId),
         this.snapshot(manager, app.id, targetVersionId),
       ]);
-      const result = diffVersions(base, target, { includeUnchanged });
+      const diffed = diffVersions(base, target, { includeUnchanged });
+      const result = { ...diffed, target: { ...diffed.target, fingerprint: contentFingerprint(target) } };
       if (baseSnapshotId) {
         const stored = await store.load(manager, app.id, baseSnapshotId);
         return {
@@ -140,11 +142,11 @@ export class VersionDiffService {
     );
     if (!version) throw new NotFoundException(`Version ${versionId} does not belong to this app`);
 
-    const [pages, components, layouts, queries, dataSources, events] = await Promise.all([
+    const [pages, components, layouts, queries, dataSources, events, permissions, queryFolders] = await Promise.all([
       manager.query(
         `SELECT id, name, page_handle AS handle, index, disabled, hidden, icon, is_page_group AS "isPageGroup",
                 page_group_id AS "pageGroupId", page_group_index AS "pageGroupIndex", auto_compute_layout AS "autoComputeLayout",
-                page_header AS "pageHeader", page_footer AS "pageFooter", type, url
+                page_header AS "pageHeader", page_footer AS "pageFooter", type, url, app_id AS "linkAppId", open_in::text AS "openIn"
            FROM pages WHERE app_version_id = $1`,
         [versionId]
       ),
@@ -176,8 +178,38 @@ export class VersionDiffService {
         `SELECT id, name, index, event, source_id AS "sourceId", target FROM event_handlers WHERE app_version_id = $1`,
         [versionId]
       ),
+      // Access rules on pages, components and queries, with the users and groups they name.
+      manager.query(
+        `SELECT 'page' AS kind, pp.id, pp.page_id AS "ownerId", pp.type::text AS type,
+                COALESCE(json_agg(json_build_object('id', pu.id, 'userId', pu.user_id, 'groupId', pu.permission_groups_id))
+                  FILTER (WHERE pu.id IS NOT NULL), '[]') AS users
+           FROM page_permissions pp JOIN pages p ON p.id = pp.page_id
+           LEFT JOIN page_users pu ON pu.page_permissions_id = pp.id
+          WHERE p.app_version_id = $1 GROUP BY pp.id
+         UNION ALL
+         SELECT 'component', cp.id, cp.component_id, cp.type::text,
+                COALESCE(json_agg(json_build_object('id', cu.id, 'userId', cu.user_id, 'groupId', cu.permission_groups_id))
+                  FILTER (WHERE cu.id IS NOT NULL), '[]')
+           FROM component_permissions cp JOIN components c ON c.id = cp.component_id JOIN pages p ON p.id = c.page_id
+           LEFT JOIN component_users cu ON cu.component_permissions_id = cp.id
+          WHERE p.app_version_id = $1 GROUP BY cp.id
+         UNION ALL
+         SELECT 'query', qp.id, qp.query_id, qp.type::text,
+                COALESCE(json_agg(json_build_object('id', qu.id, 'userId', qu.user_id, 'groupId', qu.permission_groups_id))
+                  FILTER (WHERE qu.id IS NOT NULL), '[]')
+           FROM query_permissions qp JOIN data_queries q ON q.id = qp.query_id
+           LEFT JOIN query_users qu ON qu.query_permissions_id = qp.id
+          WHERE q.app_version_id = $1 GROUP BY qp.id`,
+        [versionId]
+      ),
+      manager.query(
+        `SELECT m.id, m.parent_id AS "parentId", m.child_id AS "childId", m.index
+           FROM data_query_folder_mappings m JOIN data_queries q ON q.id = m.child_id
+          WHERE m.child_type = 'query' AND q.app_version_id = $1`,
+        [versionId]
+      ),
     ]);
 
-    return { version, pages, components, layouts, queries, dataSources, events };
+    return { version, pages, components, layouts, queries, dataSources, events, permissions, queryFolders };
   }
 }

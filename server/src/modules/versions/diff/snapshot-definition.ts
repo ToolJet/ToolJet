@@ -1,4 +1,4 @@
-import { VersionRows } from "./snapshot";
+import { VersionRows } from './snapshot';
 
 // Turns the definition the viewer loads for a version into the definition of an
 // AI-turn snapshot of that version, so the compare view can render the state
@@ -13,23 +13,14 @@ export function overlaySnapshotDefinition(
   live: any,
   rows: VersionRows,
   versionId: string,
-  withDefaults: (pages: any[]) => any[] = (pages) => pages,
+  withDefaults: (pages: any[]) => any[] = (pages) => pages
 ) {
-  const livePages = new Map<string, any>(
-    (live.pages ?? []).map((page: any) => [page.id, page]),
-  );
-  const liveQueries = new Map<string, any>(
-    (live.data_queries ?? []).map((query: any) => [query.id, query]),
-  );
+  const livePages = new Map<string, any>((live.pages ?? []).map((page: any) => [page.id, page]));
+  const liveQueries = new Map<string, any>((live.data_queries ?? []).map((query: any) => [query.id, query]));
   const liveQueryBySource = new Map<string, any>(
-    (live.data_queries ?? []).map((query: any) => [
-      query.data_source_id,
-      query,
-    ]),
+    (live.data_queries ?? []).map((query: any) => [query.data_source_id, query])
   );
-  const sourceKind = new Map(
-    rows.dataSources.map((source) => [source.id, source.kind]),
-  );
+  const sourceKind = new Map(rows.dataSources.map((source) => [source.id, source.kind]));
 
   // Snapshots taken before min_width_px was captured fall back to the live layout of the same component.
   const liveLayout = (componentId: string, type: string) => {
@@ -40,9 +31,9 @@ export function overlaySnapshotDefinition(
     return null;
   };
 
-  const layoutsByComponent = new Map<string, VersionRows["layouts"]>();
+  const layoutsByComponent = new Map<string, VersionRows['layouts']>();
   for (const layout of rows.layouts) {
-    if (layout.type !== "desktop" && layout.type !== "mobile") continue;
+    if (layout.type !== 'desktop' && layout.type !== 'mobile') continue;
     const list = layoutsByComponent.get(layout.componentId) ?? [];
     list.push(layout);
     layoutsByComponent.set(layout.componentId, list);
@@ -63,10 +54,7 @@ export function overlaySnapshotDefinition(
         ...(layout.fillWidth != null ? { fillWidth: layout.fillWidth } : {}),
         ...(layout.grow != null ? { grow: layout.grow } : {}),
       };
-      const minWidthPx =
-        "minWidthPx" in layout
-          ? layout.minWidthPx
-          : liveLayout(component.id, layout.type)?.minWidthPx;
+      const minWidthPx = 'minWidthPx' in layout ? layout.minWidthPx : liveLayout(component.id, layout.type)?.minWidthPx;
       if (minWidthPx != null) layouts[layout.type].minWidthPx = minWidthPx;
     }
     const page = componentsByPage.get(component.pageId) ?? {};
@@ -94,7 +82,10 @@ export function overlaySnapshotDefinition(
     .filter((page) => !page.isPageGroup)
     .sort((a, b) => a.index - b.index)
     .map((page) => ({
-      ...(livePages.get(page.id) ?? { openIn: "same_tab", appId: live.id }),
+      ...(livePages.get(page.id) ?? { openIn: 'same_tab', appId: '' }),
+      // appId on a page is the target of an "app" link page, not this app.
+      ...(page.openIn ? { openIn: page.openIn } : {}),
+      ...(page.linkAppId != null ? { appId: page.linkAppId } : {}),
       id: page.id,
       name: page.name,
       handle: page.handle,
@@ -133,8 +124,7 @@ export function overlaySnapshotDefinition(
       name: query.name,
       data_source_id: query.dataSourceId,
       app_version_id: versionId,
-      kind:
-        existing?.kind ?? sourceKind.get(query.dataSourceId) ?? sibling?.kind,
+      kind: existing?.kind ?? sourceKind.get(query.dataSourceId) ?? sibling?.kind,
       options: query.options,
       plugins: existing?.plugins ?? sibling?.plugins ?? [],
     };
@@ -151,8 +141,7 @@ export function overlaySnapshotDefinition(
     editing_version: {
       ...live.editing_version,
       globalSettings,
-      pageSettings:
-        rows.version.pageSettings ?? live.editing_version?.pageSettings,
+      pageSettings: rows.version.pageSettings ?? live.editing_version?.pageSettings,
       homePageId: rows.version.homePageId ?? live.editing_version?.homePageId,
       showViewerNavigation: rows.version.showViewerNavigation,
     },
