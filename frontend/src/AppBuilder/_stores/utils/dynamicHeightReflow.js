@@ -5,10 +5,13 @@ import {
   MODAL_CANVAS_PADDING,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
   TAB_CANVAS_PADDING,
+  isTabsType,
+  isModalType,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
+import { heightHeldInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
 const TABS_TAB_BAR_HEIGHT = 50;
@@ -322,6 +325,7 @@ const getExtraContainerHeight = ({
   getComponentDefinition,
   isAccordionExpanded,
   hideTabs,
+  tabsExtraChrome = 0,
 }) => {
   let extraHeight = 0;
   let nextCurrentMax = currentMax;
@@ -364,15 +368,15 @@ const getExtraContainerHeight = ({
         extraHeight += footerHeight + 14;
       }
     }
-  } else if (componentType === 'Tabs') {
+  } else if (isTabsType(componentType)) {
     // Tab pane chrome: TAB_CANVAS_PADDING (8) top + bottom around the
     // SubContainer canvas, plus the tab strip (50) unless `hideTabs` is on
     // (strip becomes `display:none`). +16 covers the .real-canvas
     // `calc(100% + 3.5px)` extension plus the ~7px scrollHeight overshoot
     // that growing leaf widgets (e.g. TextArea labels) report past their
     // moveable-box height.
-    extraHeight = TAB_CANVAS_PADDING * 2 + 16 + (hideTabs ? 0 : TABS_TAB_BAR_HEIGHT);
-  } else if (componentType === 'ModalV2') {
+    extraHeight = TAB_CANVAS_PADDING * 2 + 16 + (hideTabs ? 0 : TABS_TAB_BAR_HEIGHT) + tabsExtraChrome;
+  } else if (isModalType(componentType)) {
     // Modal body chrome: MODAL_CANVAS_PADDING (5) top + bottom around the
     // SubContainer canvas (stylesFactory.js modalBody) + safety for the
     // `.real-canvas` `calc(100% + 1px)` extension. Plus 12px per shown
@@ -521,7 +525,7 @@ export const resolveContainerHeight = ({
   // and the collapsed path (header height only) needs to run for siblings to
   // pull up.
   const gatedComponent = getResolvedComponent(componentId, context);
-  if (gatedComponent?.properties?.dynamicHeight === false && componentType !== 'Accordion') {
+  if (heightHeldInView(componentType, gatedComponent?.properties) && componentType !== 'Accordion') {
     return containerHeight;
   }
 
@@ -613,10 +617,9 @@ export const resolveContainerHeight = ({
 
   // ModalV2 uses a global class (modal is portal'd out), all others use a
   // scoped selector.
-  const dynamicSelector =
-    componentType === 'ModalV2'
-      ? `.dynamic-${componentId}`
-      : `${getDynamicElementSelector(componentId, context)} .dynamic-${componentId}`;
+  const dynamicSelector = isModalType(componentType)
+    ? `.dynamic-${componentId}`
+    : `${getDynamicElementSelector(componentId, context)} .dynamic-${componentId}`;
   const element = document.querySelector(dynamicSelector);
 
   let modifiedComponentId = componentId;
@@ -625,7 +628,7 @@ export const resolveContainerHeight = ({
   // Tabs: resolve active tab and pretend the container id is `<id>-<tabId>`
   // when looking up children. Fallback chain handles nested/inactive cases
   // where the DOM attribute isn't present.
-  if (componentType === 'Tabs') {
+  if (isTabsType(componentType)) {
     const activeTabFromElement = element?.getAttribute('activetab');
     const activeTabFromExposedState = getExposedPropertyForAdditionalActions(componentId, context, 'currentTab');
     const configuredTabs = component?.properties?.tabItems || component?.properties?.tabs;
@@ -718,7 +721,7 @@ export const resolveContainerHeight = ({
   } = getExtraContainerHeight({
     componentId: modifiedComponentId,
     componentType,
-    contextIndices: componentType === 'Tabs' ? null : context,
+    contextIndices: isTabsType(componentType) ? null : context,
     element,
     currentMax,
     getResolvedComponent,
@@ -726,6 +729,11 @@ export const resolveContainerHeight = ({
     getComponentDefinition,
     isAccordionExpanded,
     hideTabs: component?.properties?.hideTabs === true,
+    // ToolJet UI 2.0 Tabs: its 1px frame, and the wizard's Back/Next footer (ShadTabs STEP_NAV_HEIGHT).
+    tabsExtraChrome:
+      componentType === 'ShadTabs'
+        ? 2 + (component?.properties?.variant === 'steps' && component?.properties?.showStepNav !== false ? 56 : 0)
+        : 0,
   });
 
   currentMax = nextCurrentMax;

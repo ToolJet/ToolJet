@@ -17,6 +17,8 @@ export const WIDGETS_WITH_DEFAULT_CHILDREN = [
   'Kanban',
   'Container',
   'ModalV2',
+  'ShadDialog',
+  'ShadListView',
   'Accordion',
 ];
 
@@ -37,16 +39,43 @@ export const PAGES_SIDEBAR_WIDTH_EXPANDED = 256;
 
 export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 54;
 
-export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form', 'Accordion', 'FlexContainer'];
+// Widgets with the Tabs contract (tabItems, currentTab, per-tab canvases `<id>-<tabId>`): the native Tabs and the
+// ToolJet UI 2.0 pack's.
+export const TABS_TYPES = ['Tabs', 'ShadTabs'];
+export const isTabsType = (componentType) => TABS_TYPES.includes(componentType);
+// The modal containers: ModalV2 and the shadcn pack's Dialog, which is ModalV2 in the pack's look (same slots,
+// canvases, open/close and show), so every ModalV2 special case applies to both.
+export const MODAL_TYPES = ['ModalV2', 'ShadDialog'];
+export const isModalType = (componentType) => MODAL_TYPES.includes(componentType);
+
+export const SUBCONTAINER_WIDGETS = [
+  'Container',
+  'Tabs',
+  'Listview',
+  'Kanban',
+  'Form',
+  'Accordion',
+  'FlexContainer',
+  // ToolJet UI 2.0 pack Kanban: its custom card layout is a per-card canvas, as the native Kanban's.
+  'ShadKanban',
+  'ShadTabs',
+  'ShadListView',
+];
 
 // Subcontainer widget types that use per-row resolution (customResolvables)
-export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table'];
+export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table', 'ShadKanban', 'ShadListView'];
 
 // Maps per-row subcontainer type → custom resolvable key used inside {{ }} expressions
-export const ROW_SCOPED_RESOLVABLE_KEY_MAP = { Listview: 'listItem', Kanban: 'cardData', Table: 'rowData' };
+export const ROW_SCOPED_RESOLVABLE_KEY_MAP = {
+  Listview: 'listItem',
+  Kanban: 'cardData',
+  Table: 'rowData',
+  ShadKanban: 'cardData',
+  ShadListView: 'listItem',
+};
 
 // Max allowed nesting levels per widget type. Add a new entry to restrict any future widget.
-export const NESTING_LEVEL_LIMITS = { Listview: 2, Table: 3 };
+export const NESTING_LEVEL_LIMITS = { Listview: 2, Table: 3, ShadListView: 2 };
 
 export const CONTAINER_FORM_CANVAS_PADDING = 7;
 
@@ -59,10 +88,14 @@ export const BOX_PADDING = 2;
 export const DROPPABLE_PARENTS = new Set([
   'Calendar',
   'Kanban',
+  'ShadKanban',
+  'ShadTabs',
+  'ShadListView',
   'Form',
   'Tabs',
   'Modal',
   'ModalV2',
+  'ShadDialog',
   'Listview',
   'Container',
   'Accordion',

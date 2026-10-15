@@ -1,4 +1,4 @@
-import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { NO_OF_GRIDS, isModalType } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import {
   bindModuleAwareGetResolvedComponent,
@@ -13,6 +13,7 @@ import {
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
+import { heightHeldInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Grid slice — owns the mutable reflow state for dynamic-height layout.
@@ -320,7 +321,7 @@ export const createGridSlice = (set, get) => {
             calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
           });
 
-          if (componentType === 'ModalV2' && isContainer) {
+          if (isModalType(componentType) && isContainer) {
             mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '-body')] = {
               ...changedComponent.layouts[currentLayout],
               ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '-body')],
@@ -446,7 +447,8 @@ export const createGridSlice = (set, get) => {
           const nextBubbleResolved = nextBubbleTargetId
             ? boundGetResolvedComponent(nextBubbleTargetId, nextBubbleContext)
             : null;
-          const nextBubbleHasDynamicHeight = nextBubbleResolved?.properties?.dynamicHeight !== false;
+          const nextBubbleType = nextBubbleTargetId ? getComponentTypeFromId(nextBubbleTargetId, moduleId) : undefined;
+          const nextBubbleHasDynamicHeight = !heightHeldInView(nextBubbleType, nextBubbleResolved?.properties);
 
           if (
             nextBubbleHasDynamicHeight &&

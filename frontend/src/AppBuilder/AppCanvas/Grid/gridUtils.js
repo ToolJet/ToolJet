@@ -2,7 +2,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
-import { NO_OF_GRIDS } from '../appCanvasConstants';
+import { NO_OF_GRIDS, isTabsType } from '../appCanvasConstants';
 import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
@@ -482,14 +482,17 @@ export const handleActivateTargets = (parentId) => {
     'Form',
     'Listview',
     'Kanban',
+    'ShadKanban',
+    'ShadListView',
     'ModalV2',
+    'ShadDialog',
     'Accordion',
     'Table',
   ];
 
   const newParentType = document.getElementById('canvas-' + parentId)?.getAttribute('component-type');
   let _parentId = parentId;
-  if (newParentType === 'Tabs') {
+  if (isTabsType(newParentType)) {
     _parentId = getTabId(parentId);
   } else if (WIDGETS_WITH_CANVAS_OUTLINE.includes(newParentType)) {
     _parentId = getSubContainerIdWithSlots(parentId);
@@ -762,3 +765,25 @@ export function getCanvasBottomBound() {
   const realCanvasRect = realCanvas.getBoundingClientRect();
   return footerRect.top - realCanvasRect.top;
 }
+
+// Parts of a widget that handle a drag themselves (column resizing, card moves, map panning). A drag that starts on
+// one of them belongs to the widget, so the canvas moves the widget only by its handle. Any widget can mark such a
+// part with the data-tj-inner-drag attribute instead of adding an entry here.
+const INNER_DRAG_MARKER = '[data-tj-inner-drag]';
+const INNER_DRAG_SELECTORS = {
+  Table: '.jet-data-table',
+  Calendar: '.rbc-month-view',
+  Kanban: '.handle-container',
+  KanbanBoard: '.dnd-card',
+  ReorderableList: '.reorderable-list-items',
+  KeyValuePair: '.kv-editable',
+  // A map pans on a drag inside it (the ToolJet UI 2.0 Map, and the Google Map in its UI 2.0 look).
+  ShadMap: '.sc-map-canvas, .tj-map-look-shadcn',
+  Map: '.sc-map-canvas, .tj-map-look-shadcn',
+};
+
+export const isDragOnInnerElement = (componentType, widgetElement, target) => {
+  if (!widgetElement || !target) return false;
+  const selector = [INNER_DRAG_SELECTORS[componentType], INNER_DRAG_MARKER].filter(Boolean).join(', ');
+  return Array.from(widgetElement.querySelectorAll(selector)).some((part) => part.contains(target));
+};

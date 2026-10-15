@@ -5,6 +5,7 @@ import './selecto.scss';
 import { shallow } from 'zustand/shallow';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { isModalType } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const EditorSelecto = () => {
   const { moduleId } = useModuleContext();
@@ -90,7 +91,7 @@ const EditorSelecto = () => {
 
         const isCanvasModal =
           getComponentDefinition(canvasStartId.current, moduleId)?.component?.component === 'Modal' ||
-          getComponentDefinition(canvasStartId.current, moduleId)?.component?.component === 'ModalV2';
+          isModalType(getComponentDefinition(canvasStartId.current, moduleId)?.component?.component);
 
         const _selectedComponents = !isCanvasSelectStartEndSame
           ? newSelection

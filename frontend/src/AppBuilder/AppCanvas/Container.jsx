@@ -81,6 +81,15 @@ const Container = React.memo(
       shallow
     );
     const flexDirectionForFlex = isFlexContainer ? flexEffectiveDirection ?? flexDirection : flexDirection;
+    const flexAlignItems = useStore(
+      (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.alignItems : undefined),
+      shallow
+    );
+    // FlexContainer.jsx wraps a row unless flexWrap is false (the definition defaults it on).
+    const flexWraps = useStore(
+      (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.flexWrap !== false : true),
+      shallow
+    );
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
@@ -325,6 +334,8 @@ const Container = React.memo(
                 layoutMode="flex"
                 containerWidth={containerCanvasWidth}
                 flexDirection={flexDirectionForFlex}
+                flexAlignItems={flexAlignItems}
+                flexWraps={flexWraps}
                 flexShouldStack={flexShouldStack}
               />
             ))}
