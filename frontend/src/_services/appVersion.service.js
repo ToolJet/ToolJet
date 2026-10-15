@@ -2,6 +2,7 @@ import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 
 export const appVersionService = {
+  getSnapshotDefinition,
   getAll,
   getOne,
   getAppVersionData,
@@ -72,6 +73,16 @@ function getLayout(appId, { versionId, snapshotId }, pageKey) {
   const path = snapshotId ? `snapshots/${snapshotId}` : `versions/${versionId}`;
   const page = pageKey ? `?page=${encodeURIComponent(pageKey)}` : '';
   return fetch(`${config.apiUrl}/v2/apps/${appId}/${path}/layout${page}`, requestOptions).then(handleResponse);
+}
+
+// The definition of an AI-turn snapshot of a version, shaped like getAppVersionData's,
+// for rendering the state before the edit in the compare view.
+function getSnapshotDefinition(appId, versionId, snapshotId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/snapshots/${snapshotId}/definition`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getAppVersionData(appId, versionId, mode) {

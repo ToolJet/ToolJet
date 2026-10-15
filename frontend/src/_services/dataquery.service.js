@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { getPreviewQueryParams } from '@/_helpers/routes';
 
 export const dataqueryService = {
   create,
@@ -95,6 +96,9 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
     resolvedOptions: resolvedOptions,
     options: options,
   };
+  // Rendering an AI-turn snapshot: the server runs the query as the snapshot had it, without saving.
+  const { snapshot } = getPreviewQueryParams();
+  if (snapshot) body.snapshotId = snapshot;
 
   let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${
     environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''

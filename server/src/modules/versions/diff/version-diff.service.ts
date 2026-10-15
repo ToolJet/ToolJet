@@ -6,6 +6,7 @@ import { buildSnapshot, VersionRows } from './snapshot';
 import { diffVersions } from './version-diff';
 import { VersionDiff, VersionSnapshot } from './types';
 import { VersionSnapshotStore } from './snapshot-store';
+import { overlaySnapshotDefinition } from './snapshot-definition';
 
 @Injectable()
 export class VersionDiffService {
@@ -61,6 +62,22 @@ export class VersionDiffService {
 
   // What the blueprint renderer needs to draw a page without running it:
   // every component's box, parent, type and a short label.
+  // The viewer definition of a snapshot (see overlaySnapshotDefinition). `live`
+  // loads the normal definition of the version the snapshot was taken from.
+  async snapshotDefinition(
+    app: App,
+    versionId: string,
+    snapshotId: string,
+    live: () => Promise<any>,
+    withDefaults?: (pages: any[]) => any[]
+  ) {
+    const stored = await dbTransactionWrap((manager: EntityManager) =>
+      new VersionSnapshotStore().load(manager, app.id, snapshotId)
+    );
+    if (stored.versionId !== versionId) throw new BadRequestException('This snapshot belongs to another version');
+    return overlaySnapshotDefinition(await live(), stored.rows, versionId, withDefaults);
+  }
+
   async layout(app: App, source: { versionId?: string; snapshotId?: string }, pageKey?: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const snapshot = source.snapshotId
@@ -140,7 +157,8 @@ export class VersionDiffService {
       ),
       manager.query(
         `SELECT l.component_id AS "componentId", l.type, l.top, l.left, l.width, l.height,
-                l.dimension_unit AS "dimensionUnit", l.width_px AS "widthPx", l.fill_width AS "fillWidth", l.grow
+                l.dimension_unit AS "dimensionUnit", l.width_px AS "widthPx", l.fill_width AS "fillWidth", l.grow,
+                l.min_width_px AS "minWidthPx"
            FROM layouts l JOIN components c ON c.id = l.component_id JOIN pages p ON p.id = c.page_id
           WHERE p.app_version_id = $1`,
         [versionId]

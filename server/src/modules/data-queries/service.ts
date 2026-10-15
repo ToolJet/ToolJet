@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -17,6 +17,7 @@ import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDelet
 import { App } from '@entities/app.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
+import { VersionSnapshotStore } from '@modules/versions/diff/snapshot-store';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
@@ -244,6 +245,20 @@ export class DataQueriesService implements IDataQueriesService {
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
       dataSource: true,
     });
+
+    // The compare view renders an AI-turn snapshot: run the query as the snapshot had it,
+    // on the same data source, and never write those options back.
+    if (updateDataQueryDto.snapshotId) {
+      if (!app) throw new NotFoundException();
+      const stored = await dbTransactionWrap((manager: EntityManager) =>
+        new VersionSnapshotStore().load(manager, app.id, updateDataQueryDto.snapshotId)
+      );
+      const row = stored.rows.queries.find((query) => query.id === dataQueryId);
+      if (!row || row.dataSourceId !== dataSource.id) throw new NotFoundException('This query is not in the snapshot');
+      dataQuery.name = row.name;
+      dataQuery.options = row.options;
+      return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, 'view', app);
+    }
 
     // Persisting options on run is an EDITOR authoring convenience.
     // This endpoint is also hit by app preview, and there the user is consuming, not editing,

@@ -264,6 +264,8 @@ export const getPreviewQueryParams = () => {
   return {
     ...(queryParams['version'] && { version: queryParams.version }),
     ...(queryParams['env'] && { env: queryParams.env }),
+    // The compare view renders an AI-turn snapshot of the version (read-only).
+    ...(queryParams['snapshot'] && { snapshot: queryParams.snapshot }),
   };
 };
 

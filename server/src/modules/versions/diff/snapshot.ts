@@ -54,6 +54,7 @@ export type VersionRows = {
     widthPx?: number | null;
     fillWidth?: boolean | null;
     grow?: number | null;
+    minWidthPx?: number | null;
   }>;
   queries: Array<{ id: string; name: string; dataSourceId: string | null; options: any }>;
   dataSources: Array<{ id: string; name: string; kind: string }>;

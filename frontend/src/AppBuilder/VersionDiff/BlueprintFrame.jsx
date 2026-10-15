@@ -157,7 +157,7 @@ export const BlueprintFrame = ({
     };
   }, [appId, source?.versionId, source?.snapshotId, pageKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const logicalWidth = viewport === 'mobile' ? 390 : 1280;
+  const logicalWidth = viewport === 'mobile' ? 390 : Math.max(1280, Math.floor(size.width));
   const scale = size.width ? Math.min(1, (size.width - (viewport === 'mobile' ? 24 : 0)) / logicalWidth) : 1;
   const drawn = useMemo(
     () => (layout ? layoutPage(layout.components, viewport, logicalWidth) : null),

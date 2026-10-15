@@ -11,6 +11,7 @@ import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { FeatureAbilityGuard } from '../ability/guard';
 import { FEATURE_KEY } from '../constants';
 import { VersionDiffService } from '../diff/version-diff.service';
+import { VersionService } from '../service';
 
 @InitModule(MODULES.VERSION)
 @Controller({
@@ -18,7 +19,10 @@ import { VersionDiffService } from '../diff/version-diff.service';
   version: '2',
 })
 export class VersionDiffController {
-  constructor(protected readonly versionDiffService: VersionDiffService) {}
+  constructor(
+    protected readonly versionDiffService: VersionDiffService,
+    protected readonly versionService: VersionService
+  ) {}
 
   // What changed from ?base to :versionId, grouped by page. Builders only:
   // the result carries every query and binding of both versions.
@@ -54,6 +58,26 @@ export class VersionDiffController {
     @Body() body: { expectedFingerprint?: string }
   ) {
     return this.versionDiffService.restore(app, user, snapshotId, body?.expectedFingerprint);
+  }
+
+  // What the viewer loads to render a snapshot of :versionId (the compare view's
+  // "before the AI edit" side). Builders only, like the diff: it carries every query.
+  @InitFeature(FEATURE_KEY.COMPARE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Get(':id/versions/:versionId/snapshots/:snapshotId/definition')
+  snapshotDefinition(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Param('versionId') versionId: string,
+    @Param('snapshotId') snapshotId: string
+  ) {
+    return this.versionDiffService.snapshotDefinition(
+      app,
+      versionId,
+      snapshotId,
+      () => this.versionService.getVersion(app, user, 'view'),
+      (pages) => this.versionService.withComponentDefaults(pages)
+    );
   }
 
   @InitFeature(FEATURE_KEY.COMPARE)

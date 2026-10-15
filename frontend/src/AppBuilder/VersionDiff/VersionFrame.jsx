@@ -6,41 +6,43 @@ import cx from 'classnames';
 // is wrapped in `.ele-<componentId>`, so outlines follow the real render:
 // nested containers, flex rows, bindings and dynamic heights included.
 
-const FRAME_CSS = `
+// Outlines drawn inside the viewer. The colours are the editor's status tokens,
+// read from the dialog (the viewer document has its own theme).
+const frameCss = (colors) => `
   .viewer .header:has(.preview-chip) { display: none !important; }
-  [data-vd] { --vd-c: #e08a00; }
-  [data-vd="added"] { --vd-c: #12a150; }
-  [data-vd="removed"] { --vd-c: #e5484d; }
+  [data-vd] { --vd-c: ${colors.changed}; }
+  [data-vd="added"] { --vd-c: ${colors.added}; }
+  [data-vd="removed"] { --vd-c: ${colors.removed}; }
   [data-vd]::after {
     content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2147483000;
-    border: 2px solid var(--vd-c); border-radius: 6px;
-    background: color-mix(in srgb, var(--vd-c) 6%, transparent);
-    transition: box-shadow 160ms ease, border-width 160ms ease, background 160ms ease;
+    border: 1.5px solid var(--vd-c); border-radius: 4px;
+    transition: box-shadow 120ms ease, background 120ms ease;
   }
-  [data-vd="removed"]::after {
-    border-style: dashed;
-    background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--vd-c) 12%, transparent) 0 5px, transparent 5px 11px);
-  }
-  [data-vd-weak]::after { border-width: 1.5px; border-style: dashed; background: none; }
-  [data-vd-hover]::after { background: color-mix(in srgb, var(--vd-c) 12%, transparent); }
+  [data-vd="removed"]::after { border-style: dashed; }
+  [data-vd-weak]::after { border-width: 1px; border-style: dashed; }
+  [data-vd-hover]::after { background: color-mix(in srgb, var(--vd-c) 8%, transparent); }
   [data-vd-selected]::after {
-    border-width: 3px;
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--vd-c) 28%, transparent);
-    animation: vd-ping 1.4s cubic-bezier(.2,.7,.3,1) 2;
+    border-width: 2px;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--vd-c) 22%, transparent);
   }
   [data-vd-selected]::before {
-    content: attr(data-vd-name); position: absolute; left: 0; top: 0; z-index: 2147483001;
-    background: var(--vd-c); color: #fff; font: 600 11px/1 Inter, system-ui, sans-serif;
-    padding: 4px 7px 5px; border-radius: 5px 0 6px 0; white-space: nowrap; pointer-events: none;
+    content: attr(data-vd-name); position: absolute; left: -1px; top: -20px; z-index: 2147483001;
+    background: var(--vd-c); color: #fff; font: 500 11px/18px Inter, system-ui, sans-serif;
+    padding: 0 6px; border-radius: 4px; white-space: nowrap; pointer-events: none;
   }
-  @keyframes vd-ping {
-    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--vd-c) 55%, transparent); }
-    100% { box-shadow: 0 0 0 14px color-mix(in srgb, var(--vd-c) 0%, transparent); }
-  }
-  @media (prefers-reduced-motion: reduce) { [data-vd-selected]::after { animation: none; } }
   * { cursor: default !important; }
   [data-vd] { cursor: pointer !important; }
 `;
+
+const statusColors = (element) => {
+  const style = element ? getComputedStyle(element) : null;
+  const read = (name, fallback) => style?.getPropertyValue(name).trim() || fallback;
+  return {
+    added: read('--icon-success', '#1e823b'),
+    changed: read('--icon-warning', '#bf4f03'),
+    removed: read('--icon-danger', '#d72d39'),
+  };
+};
 
 const PAGE_SCROLLER = '[class*="_tooljet-page-"]';
 
@@ -66,7 +68,8 @@ export const VersionFrame = ({
   const callbacks = useRef({});
   callbacks.current = { onSelect, onHover, onFound, onScrollChange };
 
-  const logicalWidth = viewport === 'mobile' ? 390 : 1280;
+  // Desktop renders at least 1280 wide, and at the frame's own width when it is wider.
+  const logicalWidth = viewport === 'mobile' ? 390 : Math.max(1280, Math.floor(size.width));
   const PHONE_HEIGHT = 844;
   // Desktop fits the width; a phone fits whichever side runs out first.
   const scale = !size.width
@@ -83,10 +86,12 @@ export const VersionFrame = ({
     return () => observer.disconnect();
   }, []);
 
+  // The viewer picks its desktop or mobile layout once, when it loads, so a
+  // change of screen size reloads the frame (the iframe is keyed by it).
   useEffect(() => {
     setLoaded(false);
     setSettled(false);
-  }, [src]);
+  }, [src, viewport]);
 
   const doc = useCallback(() => {
     try {
@@ -104,7 +109,7 @@ export const VersionFrame = ({
     if (!d.getElementById('vd-style')) {
       const style = d.createElement('style');
       style.id = 'vd-style';
-      style.textContent = FRAME_CSS;
+      style.textContent = frameCss(statusColors(wrapRef.current));
       d.head.appendChild(style);
     }
     const found = new Set();
@@ -208,6 +213,7 @@ export const VersionFrame = ({
     >
       {src && size.width > 0 && (
         <iframe
+          key={viewport}
           ref={iframeRef}
           title="Version preview"
           src={src}

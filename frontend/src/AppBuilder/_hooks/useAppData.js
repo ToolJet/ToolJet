@@ -294,9 +294,12 @@ const useAppData = (
       if (isPublicAccess) {
         appDataPromise = appService.fetchAppBySlug(slug);
       } else {
-        appDataPromise = isPreviewForVersion
-          ? appVersionService.getAppVersionData(appId, versionId, mode)
-          : appService.fetchApp(appId);
+        appDataPromise =
+          isPreviewForVersion && queryParams.snapshot
+            ? appVersionService.getSnapshotDefinition(appId, versionId, queryParams.snapshot)
+            : isPreviewForVersion
+            ? appVersionService.getAppVersionData(appId, versionId, mode)
+            : appService.fetchApp(appId);
       }
     }
 
@@ -583,8 +586,9 @@ const useAppData = (
           setModuleDefinition(appData.modules);
         }
 
+        // A snapshot's queries come with its definition; the version's own are the edited ones.
         const queryData =
-          isPublicAccess || (mode !== 'edit' && appData.is_public)
+          isPublicAccess || (mode !== 'edit' && appData.is_public) || queryParams.snapshot
             ? appData
             : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
 

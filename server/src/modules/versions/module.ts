@@ -17,6 +17,7 @@ import { VersionDiffController } from './controllers/diff.controller';
 import { VersionDiffService } from './diff/version-diff.service';
 import { VersionReviewController } from './controllers/review.controller';
 import { VersionReviewService } from './reviews/version-review.service';
+import { VersionService as BaseVersionService } from './service';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -85,6 +86,8 @@ export class VersionModule extends SubModule {
         VersionUtilService,
         VersionDiffService,
         VersionReviewService,
+        // VersionDiffController is edition-agnostic and asks for the base class; hand it this edition's service.
+        ...(VersionService !== BaseVersionService ? [{ provide: BaseVersionService, useExisting: VersionService }] : []),
         FeatureAbilityFactory,
         GroupPermissionsRepository,
       ],
