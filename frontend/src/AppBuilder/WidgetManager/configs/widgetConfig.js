@@ -83,6 +83,7 @@ import {
   buttonGroupV2Config,
   flexContainerConfig,
 } from '../widgets';
+import { shadcnConfigs } from '../widgets/shadcn';
 
 export const widgets = [
   // Buttons
@@ -195,4 +196,7 @@ export const widgets = [
   //Module
   moduleContainerConfig,
   moduleViewerConfig,
+
+  // ToolJet UI 2.0: listed under its own library in the components panel
+  ...shadcnConfigs,
 ];

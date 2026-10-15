@@ -1,4 +1,5 @@
 import { App } from '@entities/app.entity';
+import { NEW_APP_COMPONENT_LIBRARY } from '@helpers/component_library.helper';
 import { Page } from '@entities/page.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -160,6 +161,8 @@ export class AppsUtilService implements IAppsUtilService {
         canvasBackgroundColor: 'var(--cc-appBackground-surface)',
         backgroundFxQuery: '',
         appMode: 'light',
+        // New apps are built in ToolJet UI 2.0 (component_library.helper.ts).
+        componentLibrary: NEW_APP_COMPONENT_LIBRARY,
       };
       await manager.save(appVersion);
       return app;
@@ -682,6 +685,10 @@ export class AppsUtilService implements IAppsUtilService {
       const componentMeta = cloneDeep(
         componentTypes.find((comp) => currentComponentData.component.component === comp.component)
       );
+
+      // A type the server has no widget config for (e.g. the frontend's component packs) is served as stored, as the
+      // EE override does; without this the app fails to load.
+      if (!componentMeta) continue;
 
       const mergedDefinition = {
         // ...componentMeta.definition,

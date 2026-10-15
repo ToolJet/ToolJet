@@ -1447,7 +1447,7 @@ export const createComponentsSlice = (set, get) => ({
 
         // For ListView, initialize customResolvables immediately after processing
         // so that child components processed later can access them
-        if (newComponent.component.component === 'Listview') {
+        if (['Listview', 'ShadListView'].includes(newComponent.component.component)) {
           const { getResolvedComponent, updateCustomResolvables, getBaseParentId, getComponentDefinition } = get();
           const resolvedComponent = getResolvedComponent(newComponent.id, null, moduleId);
           const data = resolvedComponent?.properties?.data;
@@ -2799,7 +2799,9 @@ export const createComponentsSlice = (set, get) => ({
         applyOrQueueMutation((state) => {
           let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
           if (Array.isArray(entity)) {
-            entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+            // Deep copies of the default throughout: a shallow { ...DEFAULT } shared its nested objects, which the store
+            // freezes, so a later write into a Kanban or List view card's component threw and crashed the board.
+            entity = entity[0] || cloneDeep(DEFAULT_COMPONENT_STRUCTURE);
             state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
           }
           const currentShouldRender = entity?.properties?.shouldRender ?? 0;
@@ -2809,7 +2811,7 @@ export const createComponentsSlice = (set, get) => ({
         applyOrQueueMutation((state) => {
           let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
           if (Array.isArray(entity)) {
-            entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+            entity = entity[0] || cloneDeep(DEFAULT_COMPONENT_STRUCTURE);
             state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
           }
           lodashSet(
@@ -2824,7 +2826,7 @@ export const createComponentsSlice = (set, get) => ({
         let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
         // Guard: stale array format from previous ListView/Kanban parent
         if (Array.isArray(entity)) {
-          entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+          entity = entity[0] || cloneDeep(DEFAULT_COMPONENT_STRUCTURE);
           state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
         }
         if (!entity[type]) {
@@ -2973,7 +2975,9 @@ export const createComponentsSlice = (set, get) => ({
       if (propertyPath) {
         typeValues[propertyPath[0]] = cloneDeep(typeValues[propertyPath[0]]);
       }
-      return { ...(template || DEFAULT_COMPONENT_STRUCTURE), [type]: typeValues };
+      // A fresh copy of the default, never the shared object: its nested objects would be frozen by the store on the
+      // first write and every later write into them would throw ("Cannot assign to read only property").
+      return { ...(template || cloneDeep(DEFAULT_COMPONENT_STRUCTURE)), [type]: typeValues };
     };
 
     // Single batched update instead of N individual set() calls
@@ -2984,7 +2988,7 @@ export const createComponentsSlice = (set, get) => ({
         if (!Array.isArray(state.resolvedStore.modules[moduleId][entityType][entityId])) {
           const existing = state.resolvedStore.modules[moduleId][entityType][entityId];
           state.resolvedStore.modules[moduleId][entityType][entityId] = [
-            existing || { ...DEFAULT_COMPONENT_STRUCTURE },
+            existing || cloneDeep(DEFAULT_COMPONENT_STRUCTURE),
           ];
         }
         const entityStore = state.resolvedStore.modules[moduleId][entityType][entityId];
@@ -2992,7 +2996,7 @@ export const createComponentsSlice = (set, get) => ({
           updates.forEach(({ index, value }) => {
             // Guard: if entityStore[index] is a stale nested array, unwrap to first element
             if (entityStore[index] && Array.isArray(entityStore[index])) {
-              entityStore[index] = entityStore[index][0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+              entityStore[index] = entityStore[index][0] || cloneDeep(DEFAULT_COMPONENT_STRUCTURE);
             }
             // Also guard entityStore[0] used as template
             const template = Array.isArray(entityStore[0]) ? entityStore[0][0] : entityStore[0];
@@ -3022,7 +3026,7 @@ export const createComponentsSlice = (set, get) => ({
             const lastIdx = indices[indices.length - 1];
             // Guard: if current[lastIdx] is a stale nested array, unwrap to first element
             if (current[lastIdx] && Array.isArray(current[lastIdx])) {
-              current[lastIdx] = current[lastIdx][0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+              current[lastIdx] = current[lastIdx][0] || cloneDeep(DEFAULT_COMPONENT_STRUCTURE);
             }
             if (!current[lastIdx]) {
               // Also guard source (current[0]) if it's an array
@@ -3613,7 +3617,7 @@ export const createComponentsSlice = (set, get) => ({
     // For ListView, we use the last index (immediate parent's row index)
     const lastIndex = Array.isArray(indices) ? indices[indices.length - 1] : indices;
 
-    if (parentType === 'Listview') {
+    if (parentType === 'Listview' || parentType === 'ShadListView') {
       let parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
       if (lastIndex == null) {
         return undefined;
@@ -3641,6 +3645,11 @@ export const createComponentsSlice = (set, get) => ({
       const parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
       const subcontainerParentComponent = parentComponent?.children?.[componentName];
       return subcontainerParentComponent?.[property];
+    } else if (parentType === 'ShadKanban') {
+      // A shadcn Kanban card's components keep one exposed value for every card (object values, not a List view's
+      // per-row arrays), so whichever card published last decided visible, disabled and loading for all of them.
+      // Each card's own resolved property (visibility from cardData) answers instead.
+      return undefined;
     } else {
       const componentExposedProperty = getExposedValueOfComponent(componentId, moduleId)?.[property];
       return componentExposedProperty;

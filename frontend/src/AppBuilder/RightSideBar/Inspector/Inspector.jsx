@@ -54,6 +54,7 @@ import { Cascader } from './Components/Cascader/Cascader';
 import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
+import { SAMPLE_ITEM_HEIGHT, sampleCardLayouts } from '@/AppBuilder/Widgets/Shadcn/listSampleCard';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -116,6 +117,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Divider',
   'VerticalDivider',
   'ModalV2',
+  'ShadDialog',
   'Tabs',
   'RangeSliderV2',
   'Link',
@@ -161,6 +163,8 @@ export const Inspector = ({
 }) => {
   const allComponents = useStore((state) => state.getCurrentPageComponents());
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
+  const currentLayout = useStore((state) => state.currentLayout);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
@@ -333,6 +337,32 @@ export const Inspector = ({
     newDefinition[paramType] = allParams;
     newComponent.component.definition = newDefinition;
 
+    // A List view switched between List and Grid moves its untouched sample card to suit (a row squashed into a
+    // narrow grid card), with the item height that arrangement needs. The height rides in the definition saved below
+    // (a save of its own, made while the layout was still the old one, could land last and undo the switch), and the
+    // children move after that save.
+    let sampleCard = null;
+    if (
+      component.component.component === 'ShadListView' &&
+      param.name === 'mode' &&
+      paramType === 'properties' &&
+      oldValue !== value
+    ) {
+      const toMode = value === 'grid' ? 'grid' : 'list';
+      const children = Object.entries(allComponents || {})
+        .filter(([, child]) => child?.component?.parent === selectedComponentId)
+        .map(([id, child]) => ({ id, type: child.component.component, layout: child.layouts?.[currentLayout] }));
+      sampleCard = sampleCardLayouts(children, toMode);
+      const fromHeight = SAMPLE_ITEM_HEIGHT[toMode === 'grid' ? 'list' : 'grid'];
+      if (sampleCard && Number(resolveReferences(newDefinition.properties?.rowHeight?.value)) === fromHeight) {
+        const rowHeight = `{{${SAMPLE_ITEM_HEIGHT[toMode]}}}`;
+        newDefinition.properties.rowHeight = { ...newDefinition.properties.rowHeight, value: rowHeight };
+        setComponentProperty(selectedComponentId, 'rowHeight', rowHeight, 'properties', 'value', false, 'canvas', {
+          saveAfterAction: false,
+        });
+      }
+    }
+
     if (oldValue !== value) {
       const skipResolve =
         component.component.component === 'CustomComponent' && param.name === 'code' && paramType === 'properties';
@@ -344,6 +374,7 @@ export const Inspector = ({
       isParamFromTableColumn: isParamFromTableColumn,
       ...props,
     });
+    if (sampleCard) setComponentLayout(sampleCard, selectedComponentId);
   }
 
   // use following function when more than one property needs to be updated
@@ -501,6 +532,8 @@ export const Inspector = ({
   };
 
   const renderDocumentationLink = () => {
+    // The UI 2.0 pack has no documentation pages yet, and its internal type name ("ShadLineChart") is not for users.
+    if (String(componentMeta?.component ?? '').startsWith('Shad')) return null;
     return (
       <span className="widget-documentation-link">
         <a
@@ -941,6 +974,7 @@ const GetAccordion = React.memo(
         return <Table {...restProps} />;
 
       case 'Tabs':
+      case 'ShadTabs':
         return <TabsLayout {...restProps} key={tabsPropertiesPanelKey} />;
 
       case 'Chart':
@@ -952,6 +986,7 @@ const GetAccordion = React.memo(
         return <FilePicker {...restProps} />;
 
       case 'ModalV2':
+      case 'ShadDialog':
         return <ModalV2 {...restProps} />;
 
       case 'Modal':
