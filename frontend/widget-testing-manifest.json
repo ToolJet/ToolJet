@@ -288,7 +288,8 @@
     },
     {
       "componentType": "JSONExplorer",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/JSONExplorer/TESTING.md"
     },
     {
       "componentType": "CustomComponent",
