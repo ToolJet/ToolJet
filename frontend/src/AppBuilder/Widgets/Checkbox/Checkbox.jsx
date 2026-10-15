@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
@@ -16,6 +18,10 @@ export const Checkbox = ({
   validate,
   width,
   id,
+  currentMode,
+  currentLayout,
+  subContainerIndex,
+  componentType,
 }) => {
   const isInitialRender = useRef(true);
   const reactId = useId();
@@ -40,16 +46,23 @@ export const Checkbox = ({
   const [validationStatus, setValidationStatus] = useState(validate(checked));
   const { isValid, validationError } = validationStatus;
 
-  const toggleValue = (e) => {
-    const isChecked = e.target.checked;
-    setInputValue(isChecked);
-    if (isChecked) {
-      fireEvent('onCheck');
-    } else {
-      fireEvent('onUnCheck');
-    }
-    setUserInteracted(true);
-  };
+  // The label wraps only once the row stops forcing a single line, so dynamic height drives both.
+  const rowRef = useRef(null);
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(rowRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    // The live state, not the property: setVisibility can hide the widget without the property changing.
+    visibility,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    subContainerIndex,
+    componentType,
+  });
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -191,6 +204,7 @@ export const Checkbox = ({
   const renderCheckBox = () => (
     <>
       <div
+        ref={rowRef}
         data-disabled={disable}
         className={`${alignment === 'left' ? 'flex-row-reverse' : 'flex-row'}`}
         style={{
@@ -199,8 +213,9 @@ export const Checkbox = ({
           alignItems: loading && 'center',
           gap: '6px',
           justifyContent: `${loading ? 'center' : alignment === 'left' ? 'space-between' : 'start'}`,
-          height,
-          whiteSpace: 'nowrap',
+          height: isDynamicHeightEnabled ? 'auto' : height,
+          ...(isDynamicHeightEnabled && { minHeight: typeof height === 'number' ? `${height}px` : height }),
+          whiteSpace: isDynamicHeightEnabled ? 'normal' : 'nowrap',
         }}
         data-cy={dataCy}
       >
@@ -220,7 +235,7 @@ export const Checkbox = ({
               <input
                 className="form-check-input tw-absolute tw-inset-0 tw-m-0 tw-opacity-0 tw-pointer-events-none"
                 type="checkbox"
-                onClick={toggleValue}
+                // No onClick: the box and the label already toggle, and both firing doubled each event (D-01).
                 onKeyDown={(e) => {
                   if (e.key === ' ' || e.key === 'Spacebar') {
                     e.preventDefault();
@@ -265,11 +280,20 @@ export const Checkbox = ({
                 color: textColor,
                 fontWeight: 400,
                 fontSize: '14px',
+                // white-space alone breaks at spaces only, so one long unbroken label never wraps.
+                ...(isDynamicHeightEnabled && { overflowWrap: 'anywhere' }),
               }}
               whiteSpace="normal"
               width={width - 20}
             >
-              <label htmlFor={inputId}>
+              {/* preventDefault: else the browser forwards a second click to the input, counted again by the row. */}
+              <label
+                htmlFor={inputId}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!disable && !loading) handleToggleChange();
+                }}
+              >
                 {label}
                 {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
               </label>
