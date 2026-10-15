@@ -38,6 +38,11 @@ export function serializePlugin(plugin: any): any {
       ? plugin.iconFile.data.toString('utf8')
       : plugin.iconFile.data;
   }
+  if (plugin.darkIconFile) {
+    out['dark_icon_file'].data = Buffer.isBuffer(plugin.darkIconFile.data)
+      ? plugin.darkIconFile.data.toString('utf8')
+      : plugin.darkIconFile.data;
+  }
 
   return out;
 }
