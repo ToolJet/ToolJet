@@ -8,7 +8,14 @@ export const useVersionDiffStore = create((set) => ({
   targetVersionId: null,
   source: 'header',
   reviewId: null,
-  openCompare: ({ baseVersionId = null, targetVersionId = null, source = 'header', reviewId = null } = {}) =>
-    set({ isOpen: true, baseVersionId, targetVersionId, source, reviewId }),
+  // A stored snapshot (the state before an AI turn) instead of a version.
+  baseSnapshotId: null,
+  openCompare: ({
+    baseVersionId = null,
+    targetVersionId = null,
+    source = 'header',
+    reviewId = null,
+    baseSnapshotId = null,
+  } = {}) => set({ isOpen: true, baseVersionId, targetVersionId, source, reviewId, baseSnapshotId }),
   closeCompare: () => set({ isOpen: false }),
 }));

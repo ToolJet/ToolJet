@@ -1697,3 +1697,152 @@
   color: var(--text-warning);
   background: var(--background-warning-weak);
 }
+
+// ── Blueprint (layout only) ─────────────────────────────────────────────────
+
+.vd-bp {
+  --vd-c: var(--vd-changed);
+  background:
+    linear-gradient(var(--background-surface-layer-01), var(--background-surface-layer-01)) padding-box;
+
+  &--mobile .vd-bp__canvas {
+    border-radius: 28px;
+    box-shadow: 0 0 0 10px #1d2129;
+    margin-top: 14px;
+  }
+}
+
+.vd-bp__note {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 5;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-medium);
+  background: color-mix(in srgb, var(--background-surface-layer-01) 90%, transparent);
+  box-shadow: 0 0 0 1px var(--border-weak);
+  pointer-events: none;
+}
+
+.vd-bp__scroll {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--border-default) 55%, transparent) 1px, transparent 1.3px);
+  background-size: 14px 14px;
+}
+
+.vd-bp__canvas {
+  position: relative;
+  transform-origin: top left;
+  background: color-mix(in srgb, var(--background-surface-layer-01) 82%, transparent);
+}
+
+.vd-bp__box {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid var(--border-default);
+  background: var(--background-surface-layer-02);
+  cursor: default;
+
+  &--container {
+    background: color-mix(in srgb, var(--background-surface-layer-02) 35%, transparent);
+    border-style: solid;
+    border-color: var(--border-weak);
+  }
+
+  &--hidden {
+    opacity: 0.5;
+    border-style: dashed;
+  }
+
+  &[data-vd] {
+    cursor: pointer;
+    border-color: transparent;
+  }
+
+  // Same language as the live frames: outline colour by status.
+  &[data-vd]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--vd-c);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--vd-c) 10%, transparent);
+    pointer-events: none;
+  }
+
+  &[data-vd='added'] {
+    --vd-c: var(--vd-added);
+  }
+
+  &[data-vd='changed'] {
+    --vd-c: var(--vd-changed);
+  }
+
+  &[data-vd='removed'] {
+    --vd-c: var(--vd-removed);
+
+    &::after {
+      border-style: dashed;
+    }
+  }
+
+  &[data-vd-weak]::after {
+    border-width: 1.5px;
+    border-style: dashed;
+    background: none;
+  }
+
+  &[data-vd-hover]::after {
+    background: color-mix(in srgb, var(--vd-c) 18%, transparent);
+  }
+
+  &[data-vd-selected]::after {
+    border-width: 3px;
+    box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--vd-c) 25%, transparent);
+  }
+}
+
+.vd-bp__name {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  right: 6px;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-medium);
+
+  em {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--text-placeholder);
+  }
+}
+
+.vd-bp__label {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 6px;
+  top: 22px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--text-default);
+}
+
+.vd-dot--snapshot {
+  background: var(--icon-accent);
+  box-shadow: 0 0 0 3px var(--background-accent-weak);
+}

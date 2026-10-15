@@ -6,6 +6,8 @@ import {
   ArrowRight,
   ChevronDown,
   Columns2,
+  Database,
+  LayoutTemplate,
   GitCompareArrows,
   GitPullRequestArrow,
   Monitor,
@@ -19,15 +21,19 @@ import { appVersionService, authenticationService } from '@/_services';
 import { useVersionDiffStore } from './useVersionDiffStore';
 import { ChangeList, STATUS_WORD, typeLabel } from './ChangeList';
 import { VersionFrame } from './VersionFrame';
+import { BlueprintFrame } from './BlueprintFrame';
 import { ReviewPanel, RequestReviewForm, StatusPill } from './ReviewPanel';
 import { reviewService } from './reviewService';
 import './versionDiff.scss';
 
 const STATUS_LABEL = { DRAFT: 'Draft', PUBLISHED: 'Saved' };
 
-const VersionSelect = ({ label, value, versions, onChange, releasedVersionId, disabledId }) => {
+const SNAPSHOT = '__snapshot__';
+
+const VersionSelect = ({ label, value, versions, onChange, releasedVersionId, disabledId, snapshotLabel }) => {
   const version = versions.find((item) => item.id === value);
   const isReleased = version?.id === releasedVersionId;
+  const isSnapshot = value === SNAPSHOT;
   return (
     <label className="vd-picker">
       <span className="vd-picker__label">{label}</span>
@@ -36,13 +42,17 @@ const VersionSelect = ({ label, value, versions, onChange, releasedVersionId, di
           className={cx('vd-dot', {
             'vd-dot--released': isReleased,
             'vd-dot--saved': !isReleased && version?.status === 'PUBLISHED',
+            'vd-dot--snapshot': isSnapshot,
           })}
         />
-        <span className="vd-picker__name">{version?.name ?? 'Choose a version'}</span>
-        <span className="vd-picker__status">{isReleased ? 'Released' : STATUS_LABEL[version?.status] ?? ''}</span>
+        <span className="vd-picker__name">{isSnapshot ? snapshotLabel : version?.name ?? 'Choose a version'}</span>
+        <span className="vd-picker__status">
+          {isSnapshot ? '' : isReleased ? 'Released' : STATUS_LABEL[version?.status] ?? ''}
+        </span>
         <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" />
       </span>
       <select value={value ?? ''} onChange={(event) => onChange(event.target.value)} aria-label={label}>
+        {snapshotLabel && <option value={SNAPSHOT}>{snapshotLabel}</option>}
         {versions.map((item) => (
           <option key={item.id} value={item.id} disabled={item.id === disabledId}>
             {item.name}
@@ -93,7 +103,8 @@ const SOURCE_COPY = {
 
 export const VersionDiffDialog = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
-  const { isOpen, baseVersionId, targetVersionId, source, reviewId, closeCompare } = useVersionDiffStore();
+  const { isOpen, baseVersionId, targetVersionId, source, reviewId, baseSnapshotId, closeCompare } =
+    useVersionDiffStore();
   const { appId, slug, selectedVersion, releasedVersionId, environments } = useStore(
     (state) => ({
       appId: state.appStore.modules[moduleId]?.app?.appId,
@@ -120,6 +131,8 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const [found, setFound] = useState({ base: new Set(), target: new Set() });
   const [review, setReview] = useState(null);
   const [panel, setPanel] = useState(null);
+  const [snapshotId, setSnapshotId] = useState(null);
+  const [renderMode, setRenderMode] = useState('live');
   const closeRef = useRef(null);
   const session = authenticationService.currentSessionValue;
   const currentUser = {
@@ -154,21 +167,25 @@ export const VersionDiffDialog = ({ darkMode }) => {
           return;
         }
         const target = sorted.find((version) => version.id === (targetVersionId ?? selectedVersion?.id)) ?? sorted[0];
-        setPair({ target: target?.id ?? null, base: baseVersionId ?? defaultBase(target, sorted, releasedVersionId) });
+        setSnapshotId(baseSnapshotId);
+        setPair({
+          target: target?.id ?? null,
+          base: baseSnapshotId ? null : baseVersionId ?? defaultBase(target, sorted, releasedVersionId),
+        });
       })
       .catch((err) => !cancelled && setError(err?.error ?? 'Versions could not be loaded'));
     return () => {
       cancelled = true;
     };
-  }, [isOpen, appId, baseVersionId, targetVersionId, reviewId, selectedVersion?.id, releasedVersionId]);
+  }, [isOpen, appId, baseVersionId, targetVersionId, reviewId, baseSnapshotId, selectedVersion?.id, releasedVersionId]);
 
   useEffect(() => {
-    if (!isOpen || !pair.base || !pair.target || pair.base === pair.target) return;
+    if (!isOpen || !pair.target || (!snapshotId && (!pair.base || pair.base === pair.target))) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
     appVersionService
-      .getDiff(appId, pair.target, pair.base)
+      .getDiff(appId, pair.target, pair.base, snapshotId)
       .then((result) => {
         if (cancelled) return;
         setDiff(result);
@@ -183,7 +200,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
     return () => {
       cancelled = true;
     };
-  }, [isOpen, appId, pair.base, pair.target]);
+  }, [isOpen, appId, pair.base, pair.target, snapshotId]);
 
   // The review attached to the version being compared, if there is one.
   useEffect(() => {
@@ -319,7 +336,10 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const showPanel = !!diff && ((panel === 'review' && !!review) || (panel === 'create' && !review));
   const title = review
     ? SOURCE_COPY.review
-    : SOURCE_COPY[source === 'review' ? 'header' : source] ?? SOURCE_COPY.header;
+    : snapshotId
+    ? SOURCE_COPY.ai
+    : SOURCE_COPY[source === 'review' || source === 'ai' ? 'header' : source] ?? SOURCE_COPY.header;
+  const snapshotLabel = snapshotId ? 'Before the AI edit' : null;
 
   const pickTarget = (id) => {
     const target = versionById.get(id);
@@ -328,10 +348,15 @@ export const VersionDiffDialog = ({ darkMode }) => {
       base: prev.base === id ? defaultBase(target, versions, releasedVersionId) : prev.base,
     }));
   };
-  const swap = () => setPair((prev) => ({ base: prev.target, target: prev.base }));
+  const swap = () => !snapshotId && setPair((prev) => ({ base: prev.target, target: prev.base }));
+  const pickBase = (id) => {
+    if (id === SNAPSHOT) return;
+    setSnapshotId(null);
+    setPair((prev) => ({ ...prev, base: id }));
+  };
 
   const hovered = hover && page?.components.find((component) => component.key === hover.key);
-  const baseName = diff?.base.name ?? versionById.get(pair.base)?.name;
+  const baseName = snapshotId ? snapshotLabel : diff?.base.name ?? versionById.get(pair.base)?.name;
   const targetName = diff?.target.name ?? versionById.get(pair.target)?.name;
 
   const frames = page && (
@@ -341,14 +366,28 @@ export const VersionDiffDialog = ({ darkMode }) => {
       baseName={baseName}
       targetName={targetName}
       base={{
-        src: page.status === 'added' ? null : frameSrc(pair.base),
+        src: page.status === 'added' ? null : snapshotId ? 'blueprint' : frameSrc(pair.base),
         highlights: highlights.base,
         onFound: onFoundBase,
+        // A snapshot cannot run in the viewer, so it is drawn from its layout.
+        blueprint:
+          snapshotId || renderMode === 'layout'
+            ? {
+                appId,
+                pageKey,
+                source: snapshotId ? { snapshotId } : { versionId: pair.base },
+                note: snapshotId ? 'Layout of the page before the AI edit' : 'Layout only, no queries run',
+              }
+            : null,
       }}
       target={{
         src: page.status === 'removed' ? null : frameSrc(pair.target),
         highlights: highlights.target,
         onFound: onFoundTarget,
+        blueprint:
+          renderMode === 'layout'
+            ? { appId, pageKey, source: { versionId: pair.target }, note: 'Layout only, no queries run' }
+            : null,
       }}
       shared={{
         viewport,
@@ -377,9 +416,10 @@ export const VersionDiffDialog = ({ darkMode }) => {
         <div className="vd-head__pair">
           <VersionSelect
             label="From"
-            value={pair.base}
+            value={snapshotId ? SNAPSHOT : pair.base}
             versions={versions}
-            onChange={(id) => setPair((prev) => ({ ...prev, base: id }))}
+            onChange={pickBase}
+            snapshotLabel={snapshotLabel}
             releasedVersionId={releasedVersionId}
             disabledId={pair.target}
           />
@@ -410,7 +450,8 @@ export const VersionDiffDialog = ({ darkMode }) => {
             </button>
           ) : (
             pair.target &&
-            pair.base && (
+            pair.base &&
+            !snapshotId && (
               <button
                 type="button"
                 className="vd-review-toggle"
@@ -429,6 +470,15 @@ export const VersionDiffDialog = ({ darkMode }) => {
             options={[
               { id: 'desktop', text: 'Desktop', Icon: Monitor },
               { id: 'mobile', text: 'Mobile', Icon: Smartphone },
+            ]}
+          />
+          <Segmented
+            label="Render"
+            value={renderMode}
+            onChange={setRenderMode}
+            options={[
+              { id: 'live', text: 'Live data', Icon: Database },
+              { id: 'layout', text: 'Layout only', Icon: LayoutTemplate },
             ]}
           />
           <Segmented
@@ -582,6 +632,22 @@ export const VersionDiffDialog = ({ darkMode }) => {
 
 const sameSet = (a, b) => a.size === b.size && [...a].every((key) => b.has(key));
 
+const SideFrame = ({ shared, side }) =>
+  side.blueprint ? (
+    <BlueprintFrame
+      {...side.blueprint}
+      viewport={shared.viewport}
+      highlights={side.highlights}
+      selectedKey={shared.selectedKey}
+      hoveredKey={shared.hoveredKey}
+      onSelect={shared.onSelect}
+      onHover={shared.onHover}
+      onFound={side.onFound}
+    />
+  ) : (
+    <VersionFrame {...shared} {...side} />
+  );
+
 const FrameLabel = ({ side, name }) => (
   <div className={cx('vd-label', `vd-label--${side}`)}>
     <span className="vd-label__name">{name}</span>
@@ -630,10 +696,10 @@ const Stage = ({ mode, baseName, targetName, base, target, shared }) => {
     return (
       <div className={cx('vd-swipe', { 'vd-swipe--dragging': dragging })} ref={stageRef}>
         <div className="vd-swipe__layer">
-          {base.src ? <VersionFrame {...shared} {...base} /> : <Missing name={baseName} side="base" />}
+          {base.src ? <SideFrame shared={shared} side={base} /> : <Missing name={baseName} side="base" />}
         </div>
         <div className="vd-swipe__layer" style={{ clipPath: `inset(0 0 0 ${split ?? 0}px)` }}>
-          {target.src ? <VersionFrame {...shared} {...target} /> : <Missing name={targetName} side="target" />}
+          {target.src ? <SideFrame shared={shared} side={target} /> : <Missing name={targetName} side="target" />}
         </div>
         <FrameLabel side="base" name={baseName} />
         <FrameLabel side="target" name={targetName} />
@@ -665,11 +731,11 @@ const Stage = ({ mode, baseName, targetName, base, target, shared }) => {
     <div className="vd-split">
       <section className="vd-pane">
         <FrameLabel side="base" name={baseName} />
-        {base.src ? <VersionFrame {...shared} {...base} /> : <Missing name={baseName} side="base" />}
+        {base.src ? <SideFrame shared={shared} side={base} /> : <Missing name={baseName} side="base" />}
       </section>
       <section className="vd-pane">
         <FrameLabel side="target" name={targetName} />
-        {target.src ? <VersionFrame {...shared} {...target} /> : <Missing name={targetName} side="target" />}
+        {target.src ? <SideFrame shared={shared} side={target} /> : <Missing name={targetName} side="target" />}
       </section>
     </div>
   );
