@@ -11,6 +11,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ChangeSummary, findBaseInEnvironment } from '@/AppBuilder/VersionDiff/ChangeSummary';
+import { useVersionDiffStore } from '@/AppBuilder/VersionDiff/useVersionDiffStore';
 
 const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
   const { moduleId } = useModuleContext();
@@ -46,6 +47,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   // Review step: what this version changes for the people in the target
   // environment, compared with the version they use there now.
   const [baseInTarget, setBaseInTarget] = useState(null);
+  const compareOpen = useVersionDiffStore((state) => state.isOpen);
   useEffect(() => {
     if (!showModal || !appId || !data?.target) return;
     let cancelled = false;
@@ -128,6 +130,8 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
     <Modal
       show={showModal}
       onHide={handleClose}
+      // The compare view opens on top of this dialog; its own fields need the focus.
+      enforceFocus={!compareOpen}
       size="sm"
       animation={false}
       centered={true}
