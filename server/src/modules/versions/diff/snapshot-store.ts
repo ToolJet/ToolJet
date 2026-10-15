@@ -125,9 +125,14 @@ export class VersionSnapshotStore {
     const wanted = contentFingerprint(buildSnapshot(rows));
     const current = await this.fingerprintOf(manager, input.appId, versionId);
     if (current === wanted) return { restored: false, versionId, reason: 'Already matches the snapshot' };
-    // A fingerprint recorded under older rules (another prefix) cannot be compared, so it does not block.
+    // A fingerprint recorded under older rules (another prefix) cannot be compared, so there is no
+    // way to know whether the version changed after the edit: refuse rather than risk losing work.
     const sameRules = input.expectedFingerprint?.split(':')[0] === current.split(':')[0];
-    if (input.expectedFingerprint && sameRules && current !== input.expectedFingerprint)
+    if (input.expectedFingerprint && !sameRules)
+      throw new ConflictException(
+        'This edit was recorded before an update to how ToolJet compares versions, so Undo cannot check that nothing changed since.'
+      );
+    if (input.expectedFingerprint && current !== input.expectedFingerprint)
       throw new ConflictException(
         'The version changed after this edit, so undoing it would also discard those changes.'
       );

@@ -179,4 +179,20 @@ describe('version snapshots', () => {
     ).rejects.toThrow(words);
     expect(load).not.toHaveBeenCalled();
   });
+
+  it('refuses an Undo it cannot check: the turn was recorded under older fingerprint rules', async () => {
+    jest.spyOn(VersionDiffService.prototype, 'loadRows').mockResolvedValue(rows('Open deals'));
+    const manager: any = restoreManager(draft);
+    await expect(
+      new VersionSnapshotStore().restore(manager, {
+        appId: 'a',
+        snapshotId: 's-1',
+        organizationId: 'o',
+        expectedFingerprint: 'f2:abc',
+      })
+    ).rejects.toThrow('recorded before an update');
+    expect(manager.statements.some((statement) => statement.sql.includes('INSERT INTO app_version_snapshots'))).toBe(
+      false
+    );
+  });
 });
