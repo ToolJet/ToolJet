@@ -73,3 +73,25 @@ export function clampResizeTranslate({ x, y, maxX, maxY }) {
     y: Math.max(0, Math.min(y, maxY)),
   };
 }
+
+/**
+ * Clamps a resized box to the canvas borders while keeping the opposite edge fixed: overshoot past the
+ * left/top border is removed from the width/height instead of only pinning x/y to 0, and a size that
+ * would cross the right/bottom border is capped. Omit `containerHeight` for canvases that grow downward.
+ */
+export function clampResizeToCanvas({ x, y, width, height, containerWidth, containerHeight = Infinity }) {
+  if (x < 0) {
+    width += x;
+    x = 0;
+  }
+  if (y < 0) {
+    height += y;
+    y = 0;
+  }
+  return {
+    x,
+    y,
+    width: Math.min(width, Math.max(0, containerWidth - x)),
+    height: Math.min(height, Math.max(0, containerHeight - y)),
+  };
+}

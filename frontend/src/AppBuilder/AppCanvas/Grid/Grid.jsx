@@ -46,6 +46,7 @@ import {
   computeFlexResizeEndPatch,
   computeResizeStopPosition,
   clampResizeTranslate,
+  clampResizeToCanvas,
 } from './helpers/gridResizeUtils';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { useFlexContainerDropTarget } from '@/AppBuilder/Widgets/FlexContainer/useFlexContainerDropTarget';
@@ -727,21 +728,30 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const maxY = containerHeight - e.target.clientHeight;
           const maxLeft = containerWidth - e.target.clientWidth;
 
+          // Main canvas grows downward, so only nested canvases have a hard bottom border.
+          const { width: resizeWidth, height: resizeHeight } = clampResizeToCanvas({
+            x: transformX,
+            y: transformY,
+            width: e.width,
+            height: e.height,
+            containerWidth,
+            containerHeight: currentWidget.component?.parent ? containerHeight : undefined,
+          });
           transformY = Math.max(0, Math.min(transformY, maxY));
           transformX = Math.max(0, Math.min(transformX, maxLeft));
 
           // Update element style
           const maxWidthHit = transformX < 0 || transformX >= maxLeft;
           const maxHeightHit = transformY < 0 || transformY >= maxY;
-          if (!maxWidthHit || e.width < e.target.clientWidth) {
-            e.target.style.width = `${e.width}px`;
+          if (!maxWidthHit || resizeWidth < e.target.clientWidth) {
+            e.target.style.width = `${resizeWidth}px`;
           }
-          if (!maxHeightHit || e.height < e.target.clientHeight) {
-            e.target.style.height = `${e.height}px`;
+          if (!maxHeightHit || resizeHeight < e.target.clientHeight) {
+            e.target.style.height = `${resizeHeight}px`;
           }
           e.target.style.transform = `translate(${transformX + scrollDelta.x}px, ${transformY + scrollDelta.y}px)`;
-          if (e.width > 0) e.target.style.width = `${e.width}px`;
-          if (e.height > 0) e.target.style.height = `${e.height}px`;
+          if (resizeWidth > 0) e.target.style.width = `${resizeWidth}px`;
+          if (resizeHeight > 0) e.target.style.height = `${resizeHeight}px`;
 
           positionGhostElement(e.target, 'moveable-ghost-widget');
         }}
@@ -795,7 +805,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             let topAlignmentAddedHeight =
               alignment === 'top' && directions[1] !== 0 && label?.length > 0 ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
 
-            const height = Math.max(
+            let height = Math.max(
               GRID_HEIGHT,
               Math.round((e?.lastEvent?.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT
             );
@@ -814,10 +824,24 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               transformY = currentWidget.top - diffHeight;
             }
 
-            width = adjustWidth(width, transformX, _gridWidth);
             const elemContainer = e.target.closest('.real-canvas');
             const containerHeight = elemContainer.clientHeight;
             const containerWidth = elemContainer.clientWidth;
+            // Main canvas grows downward, so only nested canvases have a hard bottom border.
+            const bounds = {
+              containerWidth,
+              containerHeight: currentWidget.component?.parent ? containerHeight : undefined,
+            };
+            const clampedSize = clampResizeToCanvas({ x: transformX, y: transformY, width, height, ...bounds });
+            const lastEventWidth = clampResizeToCanvas({
+              x: transformX,
+              y: transformY,
+              width: e.lastEvent.width,
+              height,
+              ...bounds,
+            }).width;
+            width = adjustWidth(clampedSize.width, Math.max(0, transformX), _gridWidth);
+            height = Math.max(GRID_HEIGHT, clampedSize.height);
             const maxY = containerHeight - e.target.clientHeight;
             const maxLeft = containerWidth - e.target.clientWidth;
 
@@ -837,7 +861,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
             }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
-              e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
+              e.target.style.width = `${Math.round(lastEventWidth / _gridWidth) * _gridWidth}px`;
             }
 
             // Added diffHeight !== 0 to prevent the height from being changed and messing up the top alignment.
