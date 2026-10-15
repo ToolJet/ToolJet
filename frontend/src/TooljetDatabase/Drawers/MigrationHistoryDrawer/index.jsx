@@ -188,6 +188,9 @@ const MigrationHistoryDrawer = ({
                     )}
                   </div>
                   {migration.name && <div className="migration-history-drawer__row-name">{migration.name}</div>}
+                  {migration.description && (
+                    <div className="migration-history-drawer__row-description">{migration.description}</div>
+                  )}
                   <div className="migration-history-drawer__row-timestamp">
                     {formatTimestamp(migration.createdAt ?? migration.created_at)}
                   </div>

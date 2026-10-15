@@ -93,6 +93,12 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   join and `resolveTable` all route through it.
 - The migration compiler's SQL (`compile()`) is display-only: history drawer, promote preview, raw-SQL
   response. Nothing executes it; replay re-runs the structured action instead.
+- Baseline rows have no name/description in the DB (Migration A and `repairBaseline` write none), so
+  `getTableMigrations` derives them on read (`baselineLabel`; a stored value wins) and compiles their
+  SQL from `resulting_schema`, not `payload.ddl` (replay DDL: `{{self}}` placeholders, sequence
+  statements). A foreign key's target is a physical relation id, resolved to a table name through the
+  relation with `withDeleted` (a table dropped after the baseline still appears in it). The SQL is
+  reconstructed: ON DELETE/ON UPDATE are not in the snapshot and are omitted.
 - Licence lapse fails closed for migration-B tables only: `resolve()` 403s when an unlicensed table
   resolves to development while its migration-B relation (`id === internal_table_id`, re-pointed
   above an empty development twin) sits at a higher priority. `getRelation()` goes through

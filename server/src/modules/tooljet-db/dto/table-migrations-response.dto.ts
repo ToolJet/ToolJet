@@ -31,6 +31,9 @@ export class TableMigrationChainEntryResponseDto {
   name: string | null;
 
   @Expose()
+  description: string | null;
+
+  @Expose()
   sequence: string;
 
   @Expose()
