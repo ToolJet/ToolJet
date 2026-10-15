@@ -38,7 +38,7 @@ export const CompareVersionsButton = ({ darkMode }) => {
 
   const label = waiting.length
     ? `${waiting.length} version${waiting.length === 1 ? '' : 's'} waiting for review`
-    : 'Compare versions';
+    : 'Compare versions (Beta)';
 
   return (
     <>

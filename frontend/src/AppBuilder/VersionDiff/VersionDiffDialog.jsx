@@ -569,6 +569,9 @@ export const VersionDiffDialog = ({ darkMode }) => {
             aria-hidden="true"
           />
           <h2 className="tw-m-0 tw-truncate tw-font-title-large tw-text-text-default">{title}</h2>
+          <Tag tone="accent" className="vd-beta">
+            Beta
+          </Tag>
         </div>
 
         <div className="tw-flex tw-items-center tw-gap-2">
