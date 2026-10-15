@@ -188,7 +188,7 @@ export const BlueprintFrame = ({
         </div>
       )}
       {drawn && (
-        <div ref={scrollRef} className="vd-bp__scroll" onMouseLeave={() => onHover?.(null)}>
+        <div ref={scrollRef} className="vd-bp__scroll vd-scroll" onMouseLeave={() => onHover?.(null)}>
           <div
             className="vd-bp__canvas"
             style={{

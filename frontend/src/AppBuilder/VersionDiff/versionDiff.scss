@@ -37,6 +37,46 @@
   cursor: pointer;
 }
 
+// Scroll areas: a slim thumb that shows only while the pointer is over the area.
+// Chrome ignores these pseudo-elements once scrollbar-color is set, so the
+// standard properties are for browsers without them.
+.vd-scroll {
+  --vd-thumb: transparent;
+
+  &:hover {
+    --vd-thumb: color-mix(in srgb, var(--text-default) 16%, transparent);
+  }
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 6px;
+    background: var(--vd-thumb) padding-box;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--text-default) 30%, transparent);
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--vd-thumb) transparent;
+  }
+}
+
 // Tooltips. Rocket's tooltip portals to the body, behind this dialog and
 // outside its dark-mode scope, so these draw its look in place.
 .vd-root [data-tip] {

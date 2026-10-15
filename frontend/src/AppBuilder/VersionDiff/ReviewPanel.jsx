@@ -207,7 +207,9 @@ const PanelShell = ({ label, head, children, foot, as: As = 'aside', ...props })
     <div className="tw-flex tw-items-center tw-gap-2 tw-h-12 tw-shrink-0 tw-px-4 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
       {head}
     </div>
-    <div className="tw-flex-1 tw-min-h-0 tw-overflow-y-auto tw-p-4 tw-flex tw-flex-col tw-gap-4">{children}</div>
+    <div className="vd-scroll tw-flex-1 tw-min-h-0 tw-overflow-y-auto tw-p-4 tw-flex tw-flex-col tw-gap-4">
+      {children}
+    </div>
     {foot && (
       <div className="tw-shrink-0 tw-p-4 tw-flex tw-flex-col tw-gap-2 tw-border-0 tw-border-t tw-border-solid tw-border-border-weak">
         {foot}

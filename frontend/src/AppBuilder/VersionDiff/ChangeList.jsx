@@ -193,7 +193,7 @@ export const ChangeList = ({
         )}
       </div>
 
-      <div className="tw-flex-1 tw-min-h-0 tw-overflow-y-auto tw-py-2">
+      <div className="vd-scroll tw-flex-1 tw-min-h-0 tw-overflow-y-auto tw-py-2">
         {diff.settings.length > 0 && filter === 'all' && (
           <section className="tw-pb-2">
             <h3 className="tw-m-0 tw-px-4 tw-py-1.5 tw-font-title-small tw-text-text-placeholder">App</h3>
