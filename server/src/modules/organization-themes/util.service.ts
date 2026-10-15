@@ -4,6 +4,7 @@ import { EntityManager } from 'typeorm';
 import { OrganizationThemes } from '@entities/organization_themes.entity';
 import { OrganizationThemesRepository } from '@modules/organization-themes/repository';
 import { TJDefaultTheme, defaultThemeName, THEME_UPDATE_TYPE } from '@modules/organization-themes/constants';
+import { shippedThemes } from '@modules/organization-themes/constants/shipped-themes';
 import { IOrganizationThemesUtilService } from './interfaces/IUtilService';
 import {
   UpdateThemeDefaultDto,
@@ -38,7 +39,20 @@ export class OrganizationThemesUtilService implements IOrganizationThemesUtilSer
         isBasic: true,
       });
 
-      return await manager.save(newTheme);
+      const saved = await manager.save(newTheme);
+      // The colour themes ToolJet ships (constants/shipped-themes.ts), beside the basic one.
+      for (const shipped of shippedThemes) {
+        await manager.save(
+          manager.create(OrganizationThemes, {
+            name: shipped.name,
+            organizationId,
+            definition: shipped.definition,
+            isDefault: false,
+            isBasic: false,
+          })
+        );
+      }
+      return saved;
     }, manager);
   }
 
