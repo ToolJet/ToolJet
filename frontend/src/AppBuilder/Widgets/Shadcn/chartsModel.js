@@ -282,7 +282,8 @@ export const seriesLabelMap = (labels, series) => {
 
 export const seriesLabel = (key, labels) => {
   const own = labels && typeof labels === 'object' && !Array.isArray(labels) ? labels[key] : undefined;
-  if (own !== undefined && own !== null && String(own).trim() !== '') return String(own);
+  // Text or a number only: a label bound to an object (a list of rows by mistake) read "[object Object]" in the legend.
+  if ((typeof own === 'string' || typeof own === 'number') && String(own).trim() !== '') return String(own);
   const words = String(key ?? '')
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
     .replace(/[_-]+/g, ' ')
