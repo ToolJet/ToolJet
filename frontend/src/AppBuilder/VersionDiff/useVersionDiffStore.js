@@ -7,7 +7,8 @@ export const useVersionDiffStore = create((set) => ({
   baseVersionId: null,
   targetVersionId: null,
   source: 'header',
-  openCompare: ({ baseVersionId = null, targetVersionId = null, source = 'header' } = {}) =>
-    set({ isOpen: true, baseVersionId, targetVersionId, source }),
+  reviewId: null,
+  openCompare: ({ baseVersionId = null, targetVersionId = null, source = 'header', reviewId = null } = {}) =>
+    set({ isOpen: true, baseVersionId, targetVersionId, source, reviewId }),
   closeCompare: () => set({ isOpen: false }),
 }));

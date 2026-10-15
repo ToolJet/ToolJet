@@ -1,6 +1,17 @@
 import React from 'react';
 import cx from 'classnames';
-import { Database, EyeOff, Move, Palette, Settings2, SlidersHorizontal, Zap, FileText, Layers } from 'lucide-react';
+import {
+  Database,
+  EyeOff,
+  Move,
+  Palette,
+  Settings2,
+  SlidersHorizontal,
+  Zap,
+  FileText,
+  Layers,
+  MessageSquare,
+} from 'lucide-react';
 
 export const STATUS_WORD = { added: 'Added', changed: 'Changed', removed: 'Removed' };
 
@@ -76,6 +87,7 @@ export const ChangeList = ({
   hoveredKey,
   onHover,
   hiddenKeys,
+  commentCounts = {},
 }) => {
   const versions = { base: diff.base.name, target: diff.target.name };
   const { components, queries, pages } = diff.summary;
@@ -187,6 +199,17 @@ export const ChangeList = ({
                         <Glyph status={component.status} />
                         <span className="vd-row__name">{component.name}</span>
                         <span className="vd-row__type">{typeLabel(component.type)}</span>
+                        {commentCounts[component.key] > 0 && (
+                          <span
+                            className="vd-row__comments"
+                            title={`${commentCounts[component.key]} comment${
+                              commentCounts[component.key] === 1 ? '' : 's'
+                            }`}
+                          >
+                            <MessageSquare size={11} strokeWidth={2} aria-hidden="true" />
+                            {commentCounts[component.key]}
+                          </span>
+                        )}
                         {component.status === 'changed' && <span className="vd-row__n">{count}</span>}
                       </button>
                       {isSelected && (

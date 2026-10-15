@@ -1,24 +1,57 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { GitCompareArrows } from 'lucide-react';
 import { ToolTip } from '@/_components/ToolTip';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useVersionDiffStore } from './useVersionDiffStore';
 import { VersionDiffDialog } from './VersionDiffDialog';
+import { reviewService } from './reviewService';
 
 // Header entry point. The dialog is mounted here once and opened through the
-// store, so the release dialog and the AI chat can open it too.
+// store, so the release dialog and the AI chat can open it too. A dot shows
+// when a version of this app is waiting for review; clicking opens it.
 export const CompareVersionsButton = ({ darkMode }) => {
-  const openCompare = useVersionDiffStore((state) => state.openCompare);
+  const { moduleId } = useModuleContext();
+  const appId = useStore((state) => state.appStore.modules[moduleId]?.app?.appId);
+  const { openCompare, isOpen } = useVersionDiffStore();
+  const [waiting, setWaiting] = useState([]);
+
+  useEffect(() => {
+    if (!appId || isOpen) return;
+    let cancelled = false;
+    const load = () =>
+      reviewService
+        .list(appId, 'open')
+        .then(({ reviews = [] }) => !cancelled && setWaiting(reviews))
+        .catch(() => {});
+    load();
+    const timer = setInterval(load, 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [appId, isOpen]);
+
+  const label = waiting.length
+    ? `${waiting.length} version${waiting.length === 1 ? '' : 's'} waiting for review`
+    : 'Compare versions';
+
   return (
     <>
-      <ToolTip message="Compare versions" placement="bottom">
+      <ToolTip message={label} placement="bottom">
         <button
           type="button"
           className="vd-header-button"
-          onClick={() => openCompare({ source: 'header' })}
-          aria-label="Compare versions"
+          onClick={() =>
+            waiting.length
+              ? openCompare({ source: 'review', reviewId: waiting[0].id })
+              : openCompare({ source: 'header' })
+          }
+          aria-label={label}
           data-cy="compare-versions-button"
         >
           <GitCompareArrows size={16} strokeWidth={1.75} />
+          {waiting.length > 0 && <span className="vd-header-button__dot">{waiting.length}</span>}
         </button>
       </ToolTip>
       <VersionDiffDialog darkMode={darkMode} />

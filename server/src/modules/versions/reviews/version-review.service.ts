@@ -104,9 +104,11 @@ export class VersionReviewService {
         ...(withTimeline
           ? {
               people,
-              timeline: events.map((event) => ({
+              timeline: events.map((event, index) => ({
                 ...event,
                 stale: !!event.fingerprint && event.fingerprint !== fingerprints.get(row.versionId),
+                // Decisions made before the latest reopen no longer count.
+                superseded: events.slice(index + 1).some((later) => later.kind === 'reopened'),
               })),
             }
           : {}),

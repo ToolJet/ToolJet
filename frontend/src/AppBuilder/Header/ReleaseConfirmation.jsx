@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -6,22 +6,41 @@ import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useVersionDiffStore } from '@/AppBuilder/VersionDiff/useVersionDiffStore';
+import { reviewService } from '@/AppBuilder/VersionDiff/reviewService';
 
 export default function ReleaseConfirmation(props) {
   const { onClose, onConfirm, show } = props;
   const { t } = useTranslation();
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const openCompare = useVersionDiffStore((state) => state.openCompare);
-  const { name, selectedVersionId, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } = useStore(
-    (state) => ({
-      name: state?.selectedVersion?.name,
-      selectedVersionId: state?.selectedVersion?.id,
-      releasedVersionId: state.releasedVersionId,
-      versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
-      developmentVersions: state.developmentVersions,
-    }),
-    shallow
-  );
+  const { name, selectedVersionId, appId, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } =
+    useStore(
+      (state) => ({
+        name: state?.selectedVersion?.name,
+        selectedVersionId: state?.selectedVersion?.id,
+        appId: state.appStore.modules.canvas?.app?.appId,
+        releasedVersionId: state.releasedVersionId,
+        versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
+        developmentVersions: state.developmentVersions,
+      }),
+      shallow
+    );
+  // When the workspace requires reviews, say why release is locked before the
+  // person clicks Yes (the server refuses it either way).
+  const [gate, setGate] = useState(null);
+  useEffect(() => {
+    if (!show || !appId || !selectedVersionId) return;
+    let cancelled = false;
+    reviewService
+      .gate(appId, selectedVersionId)
+      .then((result) => !cancelled && setGate(result))
+      .catch(() => !cancelled && setGate(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [show, appId, selectedVersionId]);
+  const locked = gate?.required && !gate?.allowed;
+
   const releasedVersionName =
     versionsPromotedToEnvironment.find((v) => v.id === releasedVersionId)?.name ||
     developmentVersions.find((v) => v.id === releasedVersionId)?.name;
@@ -61,7 +80,28 @@ export default function ReleaseConfirmation(props) {
             ? `Are you sure you want to release version ${name}?`
             : `Releasing version ${name} will override ${releasedVersionName}. Are you sure you want to continue?`}
         </div>
-        {releasedVersionId && releasedVersionId !== selectedVersionId && (
+        {locked && (
+          <div className="release-review-gate" data-cy="release-review-gate">
+            <strong>Needs an approved review</strong>
+            <span>{gate.reason}</span>
+            <button
+              type="button"
+              className="release-review-changes"
+              onClick={() =>
+                gate.reviewId
+                  ? openCompare({ reviewId: gate.reviewId, source: 'review' })
+                  : openCompare({
+                      baseVersionId: releasedVersionId,
+                      targetVersionId: selectedVersionId,
+                      source: 'release',
+                    })
+              }
+            >
+              {gate.reviewId ? 'Open the review' : 'Request a review'}
+            </button>
+          </div>
+        )}
+        {!locked && releasedVersionId && releasedVersionId !== selectedVersionId && (
           <button
             type="button"
             className="release-review-changes"
@@ -78,7 +118,7 @@ export default function ReleaseConfirmation(props) {
         <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
-        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button">
+        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button" disabled={locked}>
           Yes
         </ButtonSolid>
       </Modal.Footer>

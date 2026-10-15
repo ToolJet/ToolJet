@@ -7,6 +7,7 @@ import {
   ChevronDown,
   Columns2,
   GitCompareArrows,
+  GitPullRequestArrow,
   Monitor,
   Smartphone,
   SquareSplitHorizontal,
@@ -14,10 +15,12 @@ import {
 } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { appVersionService } from '@/_services';
+import { appVersionService, authenticationService } from '@/_services';
 import { useVersionDiffStore } from './useVersionDiffStore';
 import { ChangeList, STATUS_WORD, typeLabel } from './ChangeList';
 import { VersionFrame } from './VersionFrame';
+import { ReviewPanel, RequestReviewForm, StatusPill } from './ReviewPanel';
+import { reviewService } from './reviewService';
 import './versionDiff.scss';
 
 const STATUS_LABEL = { DRAFT: 'Draft', PUBLISHED: 'Saved' };
@@ -61,6 +64,7 @@ const Segmented = ({ value, onChange, options, label }) => (
         aria-checked={value === id}
         className={cx('vd-seg__opt', { 'vd-seg__opt--on': value === id })}
         onClick={() => onChange(id)}
+        title={text}
       >
         <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
         <span>{text}</span>
@@ -84,11 +88,12 @@ const SOURCE_COPY = {
   release: 'Review before release',
   promote: 'Review before promoting',
   ai: 'What the last AI edit changed',
+  review: 'Review changes',
 };
 
 export const VersionDiffDialog = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
-  const { isOpen, baseVersionId, targetVersionId, source, closeCompare } = useVersionDiffStore();
+  const { isOpen, baseVersionId, targetVersionId, source, reviewId, closeCompare } = useVersionDiffStore();
   const { appId, slug, selectedVersion, releasedVersionId, environments } = useStore(
     (state) => ({
       appId: state.appStore.modules[moduleId]?.app?.appId,
@@ -113,17 +118,41 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const [viewport, setViewport] = useState('desktop');
   const [scroll, setScroll] = useState(null);
   const [found, setFound] = useState({ base: new Set(), target: new Set() });
+  const [review, setReview] = useState(null);
+  const [panel, setPanel] = useState(null);
   const closeRef = useRef(null);
+  const session = authenticationService.currentSessionValue;
+  const currentUser = {
+    id: session?.current_user?.id,
+    isAdmin: !!(session?.admin || session?.super_admin || session?.role?.name === 'admin'),
+  };
 
   useEffect(() => {
     if (!isOpen || !appId) return;
     let cancelled = false;
     appVersionService
       .getAll(appId)
-      .then(({ versions: list = [] }) => {
+      .then(async ({ versions: list = [] }) => {
         if (cancelled) return;
         const sorted = [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setVersions(sorted);
+        if (reviewId) {
+          const { review: opened } = await reviewService.get(appId, reviewId);
+          if (cancelled) return;
+          setReview(opened);
+          setPanel('review');
+          setPair({
+            target: opened.versionId,
+            base:
+              opened.baseVersionId ??
+              defaultBase(
+                sorted.find((v) => v.id === opened.versionId),
+                sorted,
+                releasedVersionId
+              ),
+          });
+          return;
+        }
         const target = sorted.find((version) => version.id === (targetVersionId ?? selectedVersion?.id)) ?? sorted[0];
         setPair({ target: target?.id ?? null, base: baseVersionId ?? defaultBase(target, sorted, releasedVersionId) });
       })
@@ -131,7 +160,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
     return () => {
       cancelled = true;
     };
-  }, [isOpen, appId, baseVersionId, targetVersionId, selectedVersion?.id, releasedVersionId]);
+  }, [isOpen, appId, baseVersionId, targetVersionId, reviewId, selectedVersion?.id, releasedVersionId]);
 
   useEffect(() => {
     if (!isOpen || !pair.base || !pair.target || pair.base === pair.target) return;
@@ -155,6 +184,35 @@ export const VersionDiffDialog = ({ darkMode }) => {
       cancelled = true;
     };
   }, [isOpen, appId, pair.base, pair.target]);
+
+  // The review attached to the version being compared, if there is one.
+  useEffect(() => {
+    if (!isOpen || !appId || !pair.target) return;
+    if (review?.versionId === pair.target) return;
+    let cancelled = false;
+    setReview(null);
+    reviewService
+      .list(appId)
+      .then(async ({ reviews = [] }) => {
+        const match =
+          reviews.find((item) => item.versionId === pair.target && item.status === 'open') ??
+          reviews.find((item) => item.versionId === pair.target);
+        if (!match || cancelled) return;
+        const { review: full } = await reviewService.get(appId, match.id);
+        if (!cancelled) setReview(full);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, appId, pair.target]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!isOpen) {
+      setReview(null);
+      setPanel(null);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -222,6 +280,25 @@ export const VersionDiffDialog = ({ darkMode }) => {
     }
     return keys;
   }, [page, found]);
+
+  const commentCounts = useMemo(() => {
+    const counts = {};
+    for (const event of review?.timeline ?? [])
+      if (event.kind === 'comment' && event.anchor) counts[event.anchor] = (counts[event.anchor] ?? 0) + 1;
+    return counts;
+  }, [review]);
+
+  const selectedComponent = page?.components.find((component) => component.key === selectedKey) ?? null;
+
+  const goToAnchor = useCallback(
+    (anchor) => {
+      const pageKeyOfAnchor = anchor.split('/')[0];
+      if (diff?.pages.some((item) => item.key === pageKeyOfAnchor)) setPageKey(pageKeyOfAnchor);
+      setFilter('all');
+      setSelectedKey(anchor);
+    },
+    [diff]
+  );
 
   const onFoundBase = useCallback(
     (keys) => setFound((prev) => (sameSet(prev.base, keys) ? prev : { ...prev, base: keys })),
@@ -314,6 +391,26 @@ export const VersionDiffDialog = ({ darkMode }) => {
           />
         </div>
         <div className="vd-head__tools">
+          {review ? (
+            <button
+              type="button"
+              className={cx('vd-review-toggle', { 'vd-review-toggle--on': panel === 'review' })}
+              onClick={() => setPanel(panel === 'review' ? null : 'review')}
+              aria-pressed={panel === 'review'}
+            >
+              <GitPullRequestArrow size={14} strokeWidth={1.75} aria-hidden="true" />
+              <span>Review</span>
+              <StatusPill status={review.state.status} />
+            </button>
+          ) : (
+            pair.target &&
+            pair.base && (
+              <button type="button" className="vd-review-toggle" onClick={() => setPanel('create')}>
+                <GitPullRequestArrow size={14} strokeWidth={1.75} aria-hidden="true" />
+                <span>Request review</span>
+              </button>
+            )
+          )}
           <Segmented
             label="Screen size"
             value={viewport}
@@ -338,7 +435,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
         </div>
       </header>
 
-      <div className="vd-body">
+      <div className={cx('vd-body', { 'vd-body--panel': !!panel && !!diff })}>
         {error && <div className="vd-state vd-state--error">{String(error)}</div>}
         {!error && (loading || !diff) && (
           <div className="vd-state">
@@ -362,6 +459,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
               hoveredKey={hover?.key ?? null}
               onHover={(key) => setHover(key ? { key } : null)}
               hiddenKeys={hiddenKeys}
+              commentCounts={commentCounts}
             />
             <main className="vd-stage-wrap">
               {diff.identical ? (
@@ -380,6 +478,30 @@ export const VersionDiffDialog = ({ darkMode }) => {
                 </div>
               )}
             </main>
+            {panel === 'review' && review && (
+              <ReviewPanel
+                appId={appId}
+                review={review}
+                currentUser={currentUser}
+                anchor={selectedComponent ? { key: selectedComponent.key, name: selectedComponent.name } : null}
+                onClearAnchor={() => setSelectedKey(null)}
+                onAnchor={goToAnchor}
+                onChange={setReview}
+                onClose={() => setPanel(null)}
+              />
+            )}
+            {panel === 'create' && !review && (
+              <RequestReviewForm
+                appId={appId}
+                targetVersion={versionById.get(pair.target)}
+                baseVersion={versionById.get(pair.base)}
+                onCreated={(created) => {
+                  setReview(created);
+                  setPanel('review');
+                }}
+                onCancel={() => setPanel(null)}
+              />
+            )}
           </>
         )}
       </div>
