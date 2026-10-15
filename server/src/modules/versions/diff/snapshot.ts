@@ -1,3 +1,5 @@
+import { cloneDeep, mergeWith } from 'lodash';
+import { componentTypes } from '@modules/apps/services/widget-config';
 import { LayoutBox, SnapshotComponent, SnapshotEvent, SnapshotPage, SnapshotQuery, VersionSnapshot } from './types';
 
 // Raw rows as they come out of the database for one version.
@@ -113,6 +115,19 @@ export function normalizeQueryOptions(options: Record<string, any>): Record<stri
   );
 }
 
+// The editor writes a widget's full default definition back into its row as
+// soon as it is opened, while untouched rows only hold what was set. Both read
+// the same, so both sides are compared with the built-in widget defaults
+// merged underneath (as the editor's own read does). Arrays are replaced, not
+// merged. Widgets without a server-side config are compared as stored.
+const widgetDefaults = new Map<string, any>(componentTypes.map((widget: any) => [widget.component, widget.definition]));
+const withDefaults = (defaults: any, stored: Record<string, any>) =>
+  defaults
+    ? mergeWith(cloneDeep(defaults), stored, (_target: any, source: any) =>
+        Array.isArray(source) ? source : undefined
+      )
+    : stored;
+
 const box = (row: VersionRows['layouts'][number]): LayoutBox => {
   const out: LayoutBox = { top: row.top, left: row.left, width: row.width, height: row.height };
   if (row.dimensionUnit && row.dimensionUnit !== 'count') out.dimensionUnit = row.dimensionUnit;
@@ -183,6 +198,7 @@ export function buildSnapshot(rows: VersionRows): VersionSnapshot {
 
   const components: SnapshotComponent[] = rows.components.map((component) => {
     const pageKey = pageKeyById.get(component.pageId) ?? component.pageId;
+    const defaults = widgetDefaults.get(component.type);
     return {
       id: component.id,
       key: `${pageKey}/${component.name}`,
@@ -190,12 +206,12 @@ export function buildSnapshot(rows: VersionRows): VersionSnapshot {
       type: component.type,
       pageKey,
       parent: component.parent ? rewrite(component.parent).replace(/^@component:/, '') : null,
-      properties: rewrite(asObject(component.properties)),
-      styles: rewrite(asObject(component.styles)),
-      general: rewrite(asObject(component.general)),
-      generalStyles: rewrite(asObject(component.generalStyles)),
-      displayPreferences: rewrite(asObject(component.displayPreferences)),
-      validation: rewrite(asObject(component.validation)),
+      properties: rewrite(withDefaults(defaults?.properties, asObject(component.properties))),
+      styles: rewrite(withDefaults(defaults?.styles, asObject(component.styles))),
+      general: rewrite(withDefaults(defaults?.general, asObject(component.general))),
+      generalStyles: rewrite(withDefaults(defaults?.generalStyles, asObject(component.generalStyles))),
+      displayPreferences: rewrite(withDefaults(defaults?.others, asObject(component.displayPreferences))),
+      validation: rewrite(withDefaults(defaults?.validation, asObject(component.validation))),
       layouts: layoutsByComponent.get(component.id) ?? {},
     };
   });

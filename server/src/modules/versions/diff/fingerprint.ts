@@ -6,6 +6,11 @@ import { stable } from './version-diff';
 // version's own name and status. Two versions with the same pages,
 // components, queries, events and settings share a fingerprint, and any edit
 // (by a person or by the AI) changes it. Approvals are bound to it.
+//
+// The prefix names the algorithm. Changing what counts as content (for example
+// which widget defaults are merged in) must bump it, so approvals recorded
+// under the old rules can be told apart instead of silently going stale.
+export const FINGERPRINT_VERSION = 'f2';
 export function contentFingerprint(snapshot: VersionSnapshot): string {
   const strip = (value: any): any => {
     if (Array.isArray(value)) return value.map(strip);
@@ -18,7 +23,7 @@ export function contentFingerprint(snapshot: VersionSnapshot): string {
   };
   const { versionId, name, status, ...content } = snapshot;
   const sortByKey = (items: Array<{ key: string }>) => [...items].sort((a, b) => a.key.localeCompare(b.key));
-  return createHash('sha256')
+  const hash = createHash('sha256')
     .update(
       stable(
         strip({
@@ -30,4 +35,5 @@ export function contentFingerprint(snapshot: VersionSnapshot): string {
       )
     )
     .digest('hex');
+  return `${FINGERPRINT_VERSION}:${hash}`;
 }

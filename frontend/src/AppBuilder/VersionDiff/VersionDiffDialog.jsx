@@ -316,6 +316,11 @@ export const VersionDiffDialog = ({ darkMode }) => {
 
   if (!isOpen) return null;
 
+  const showPanel = !!diff && ((panel === 'review' && !!review) || (panel === 'create' && !review));
+  const title = review
+    ? SOURCE_COPY.review
+    : SOURCE_COPY[source === 'review' ? 'header' : source] ?? SOURCE_COPY.header;
+
   const pickTarget = (id) => {
     const target = versionById.get(id);
     setPair((prev) => ({
@@ -367,7 +372,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
       <header className="vd-head">
         <div className="vd-head__title">
           <GitCompareArrows size={18} strokeWidth={1.75} aria-hidden="true" />
-          <h2>{SOURCE_COPY[source] ?? SOURCE_COPY.header}</h2>
+          <h2>{title}</h2>
         </div>
         <div className="vd-head__pair">
           <VersionSelect
@@ -435,7 +440,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
         </div>
       </header>
 
-      <div className={cx('vd-body', { 'vd-body--panel': !!panel && !!diff })}>
+      <div className={cx('vd-body', { 'vd-body--panel': showPanel })}>
         {error && <div className="vd-state vd-state--error">{String(error)}</div>}
         {!error && (loading || !diff) && (
           <div className="vd-state">

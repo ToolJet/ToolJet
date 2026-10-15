@@ -33,7 +33,7 @@ export class CreateAppVersionReviews1791700000000 implements MigrationInterface 
         kind varchar(30) NOT NULL,
         body text NULL,
         anchor varchar(300) NULL,
-        fingerprint varchar(64) NULL,
+        fingerprint varchar(80) NULL,
         created_at timestamp NOT NULL DEFAULT now()
       )`);
     await queryRunner.query(

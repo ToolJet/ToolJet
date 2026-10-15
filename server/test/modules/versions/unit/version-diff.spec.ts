@@ -177,7 +177,8 @@ describe('version diff', () => {
       'Moved 3 columns right and 20px down',
       'Resized: wider by 4 columns',
       'Text changed from "Deals" to "Open deals"',
-      'Text colour set to "#393568"',
+      // The base never set a colour, so it had the widget default.
+      'Text colour changed from "var(--cc-primary-text)" to "#393568"',
     ]);
   });
 
@@ -231,9 +232,11 @@ describe('version diff', () => {
   });
 
   it('says when a component is hidden on mobile', () => {
+    const base = baseSpec();
+    base.components[2].display = { showOnMobile: { value: '{{true}}' } };
     const target = baseSpec();
     target.components[2].display = { showOnMobile: { value: '{{false}}' } };
-    const save = diff(baseSpec(), target).pages[0].components[0];
+    const save = diff(base, target).pages[0].components[0];
     expect(summaries(save)).toEqual(['Now hidden on mobile']);
   });
 
@@ -293,6 +296,16 @@ describe('version diff', () => {
     const target = baseSpec();
     target.globalSettings = { theme: { id: 't2', name: 'Luna Sales Vivid' } };
     expect(diff(base, target).settings[0].summary).toBe('Theme changed from "Luna Sales" to "Luna Sales Vivid"');
+  });
+});
+
+describe('editor write-back noise', () => {
+  it('treats a widget default written into the row as unchanged', () => {
+    const target = baseSpec();
+    // What the editor saves for a Button after opening it: its defaults, spelled out.
+    target.components[2].properties = { text: { value: 'Save' }, loadingState: { value: '{{false}}' }, visibility: { value: '{{true}}' } };
+    target.components[2].display = { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } };
+    expect(diff(baseSpec(), target).identical).toBe(true);
   });
 });
 
