@@ -1,3 +1,12 @@
+// Guards against non-primitive fx-resolved values crashing JSX rendering.
+export const toDisplayText = (value) => (typeof value === 'string' || typeof value === 'number' ? value : '');
+
+// parseInt(value) || fallback would replace an explicit 0 with the fallback, since 0 is falsy.
+export const parseStyleDimension = (value, fallback) => {
+  const parsed = parseInt(value, 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
 export const isItemVisible = (item) =>
   typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
 
@@ -5,6 +14,26 @@ export const isItemDisabled = (item) =>
   typeof item.disable === 'object'
     ? item.disable.value === '{{true}}' || item.disable.value === true
     : item.disable === true;
+
+// A group is only visible if it isn't hidden itself AND at least one of its children
+// is visible. A child being disabled doesn't count against the group — disabled just
+// means greyed-out/unclickable, not hidden, so it shouldn't hide the group.
+export const isGroupVisible = (group) => {
+  if (!isItemVisible(group)) return false;
+  return Array.isArray(group.children) && group.children.some((child) => isItemVisible(child));
+};
+
+export const isMenuItemVisible = (item) => (item.isGroup ? isGroupVisible(item) : isItemVisible(item));
+
+// Recursively replace an item (by id) anywhere in the tree, including inside group children
+export const updateItemById = (items, targetId, updater) =>
+  items.map((item) => {
+    if (item.id === targetId) return updater(item);
+    if (item.isGroup && item.children) {
+      return { ...item, children: updateItemById(item.children, targetId, updater) };
+    }
+    return item;
+  });
 
 // Helper to find item by ID (including nested items)
 export const findItemById = (items, targetId) => {

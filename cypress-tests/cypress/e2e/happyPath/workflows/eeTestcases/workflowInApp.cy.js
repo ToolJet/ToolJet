@@ -1,21 +1,19 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
-import { postgreSqlSelector } from "Selectors/postgreSql";
-import { postgreSqlText } from "Texts/postgreSql";
-import { deleteDatasource } from "Support/utils/dataSource";
-import { dataSourceSelector } from "Selectors/dataSource";
-import { workflowsText } from "Texts/workflows";
-import { workflowSelector } from "Selectors/workflows";
+import { workflowsText } from "Texts/platform/workflows";
 import {
-  enterJsonInputInStartNode,
-  verifyPreviewOutputText,
+  buildLinearWorkflow,
+  createPostgresDataSource,
   verifyTextInResponseOutputLimited,
-  navigateBackToWorkflowsDashboard,
-} from "Support/utils/workFlows";
+  previewWorkflowQueryInApp,
+  cleanupWorkflows,
+  cleanupApps,
+  cleanupDataSources,
+} from "Support/utils/workflows/workFlows";
+
 
 const data = {};
 
-describe("Workflows in apps", () => {
+describe("Workflows - running from an app", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
@@ -26,120 +24,71 @@ describe("Workflows in apps", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  it("Creating workflows with runjs and validating execution in apps", () => {
-    cy.createWorkflowApp(data.workflowName);
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName]);
+    cleanupApps([data.appName]);
+    cleanupDataSources([`cypress-${data.dataSourceName}-manual-pgsql`]);
+  });
 
-    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
-      force: true,
+  it("An app runs an API-built workflow and receives its result, and the run is logged", () => {
+    // start → runjs1 (returns the start params) → response, built over the API.
+    cy.apiCreateWorkflowApp(data.workflowName);
+    cy.apiFetchWorkflowContext();
+    cy.apiGetDataSourceId("runjs");
+    cy.apiCreateWorkflowNode("runjs", "runjs1", {
+      code: workflowsText.runjsNodeCode,
+      parameters: [],
+    });
+    cy.apiWireWorkflowDefinition({
+      processingNodeName: "runjs1",
+      processingKind: "runjs",
+      defaultParams: '{"dev":"your value"}',
+      responseCode: workflowsText.responseNodeQuery,
+      responseStatus: "200",
     });
 
-    cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
-      .click({ force: true })
-      .realType(workflowsText.runjsNodeCode, { delay: 50 });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.runjs,
-      workflowsText.responseNodeQuery
-    );
-    cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
+    cy.apiExecuteWorkflow(workflowsText.jsonValuePlaceholder);
+    cy.apiValidateLogs();
+    cy.apiValidateLogsWithData(workflowsText.jsonValuePlaceholder);
 
     cy.apiCreateApp(data.appName);
     cy.openApp();
-
     cy.addWorkflowInApp(data.workflowName);
 
-    cy.get(dataSourceSelector.queryPreviewButton).click();
-
-    // need to change after issue is fixed
-
-    // cy.verifyToastMessage(
-    //   commonSelectors.toastMessage,
-    //   `Query (${data.dataSourceName}) completed.`
-    // );
-    cy.apiDeleteApp();
-    cy.apiDeleteWorkflow(data.workflowName);
+    // The app passes no params, so the workflow runs on its default params.
+    previewWorkflowQueryInApp(workflowsText.jsonValuePlaceholder).then(
+      (result) => {
+        expect(result.executionStatus).to.equal("completed");
+        expect(result.data).to.deep.equal({
+          dev: workflowsText.jsonValuePlaceholder,
+        });
+      }
+    );
   });
 
-  it("Creating workflows with postgres and validating execution in apps", () => {
+  it("An app runs a Postgres-backed workflow and receives its rows", () => {
     const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
+    createPostgresDataSource(dataSourceName);
 
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.apiCreateDataSource(
-      `${Cypress.env("server_host")}/api/data-sources`,
-      dataSourceName,
-      "postgresql",
-      [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: Cypress.env("pg_host"), encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
-        { key: "ssl_enabled", value: false, encrypted: false },
-        { key: "database", value: "postgres", encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-        { key: "username", value: Cypress.env("pg_user"), encrypted: false },
-        {
-          key: "password",
-          value: Cypress.env("pg_password"),
-          encrypted: false,
-        },
-        { key: "ca_cert", value: null, encrypted: true },
-        { key: "client_key", value: null, encrypted: true },
-        { key: "client_cert", value: null, encrypted: true },
-        { key: "root_cert", value: null, encrypted: true },
-        { key: "connection_string", value: null, encrypted: true },
-      ]
-    );
-
-    cy.get(dataSourceSelector.dataSourceNameButton(dataSourceName))
-      .should("be.visible")
-      .click();
-    cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get(postgreSqlSelector.textConnectionVerified, {
-      timeout: 10000,
-    }).should("have.text", postgreSqlText.labelConnectionVerified);
-    cy.reload();
-
-    cy.apiCreateWorkflow(data.workflowName)
+    cy.apiCreateWorkflow(data.workflowName);
     cy.openWorkflow();
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(dataSourceName);
 
-    cy.get(workflowSelector.nodeName(workflowsText.postgresqlNodeName)).click({
-      force: true,
+    buildLinearWorkflow({
+      blockLabel: dataSourceName,
+      nodeName: workflowsText.postgresqlNodeName,
+      inputField: workflowsText.pgsqlQueryInputField,
+      query: workflowsText.postgresNodeQuery,
+      responseReturn: workflowsText.postgresResponseNodeQuery,
+      clearBeforeTyping: true,
     });
-    cy.get(workflowSelector.inputField(workflowsText.pgsqlQueryInputField))
-      .click({ force: true })
-      .clearAndTypeOnCodeMirror("")
-      .realType(workflowsText.postgresNodeQuery, { delay: 50 });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.postgresqlNodeName,
-      workflowsText.postgresResponseNodeQuery
-    );
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
     cy.apiCreateApp(data.appName);
     cy.openApp();
-
     cy.addWorkflowInApp(data.workflowName);
 
-    cy.get(dataSourceSelector.queryPreviewButton).click();
-
-    // need to change after issue is fixed
-
-    // cy.verifyToastMessage(
-    //   commonSelectors.toastMessage,
-    //   `Query (${data.dataSourceName}) completed.`
-    // );
-    cy.apiDeleteApp();
-    cy.apiDeleteWorkflow(data.workflowName);
-    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-manual-pgsql`);
+    previewWorkflowQueryInApp(workflowsText.postgresExpectedValue)
+      .its("executionStatus")
+      .should("equal", "completed");
   });
 });

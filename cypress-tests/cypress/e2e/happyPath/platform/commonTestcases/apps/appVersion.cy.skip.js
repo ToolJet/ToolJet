@@ -12,19 +12,19 @@ import {
   switchVersionAndVerify,
   openPreviewSettings,
 } from "Support/utils/version";
-import { appVersionSelectors } from "Selectors/exportImport";
-import { editVersionSelectors } from "Selectors/version";
-import { editVersionText } from "Texts/version";
+import { appVersionSelectors } from "Selectors/platform/exportImport";
+import { editVersionSelectors } from "Selectors/platform/version";
+import { editVersionText } from "Texts/platform/version";
 import { createNewVersion } from "Support/utils/exportImport";
 import { verifyModal, closeModal } from "Support/utils/common";
 import {
   verifyComponentinrightpannel,
   deleteComponentAndVerify,
-} from "Support/utils/basicComponents";
-import { createRestAPIQuery } from "Support/utils/dataSource";
+} from "Support/utils/appBuilder/components/basicComponents";
+import { createRestAPIQuery } from "Support/utils/appBuilder/querymanager/queries";
 import { selectEnv, appPromote } from "Support/utils/platform/multiEnv";
-import { performQueryAction } from "Support/utils/queries";
-import { multiEnvSelector } from "Selectors/eeCommon";
+import { performQueryAction } from "Support/utils/appBuilder/querymanager/queries";
+import { multiEnvSelector } from "Selectors/platform/eeCommon";
 
 describe("App Version", () => {
   const generateTestData = () => ({

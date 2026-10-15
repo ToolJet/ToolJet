@@ -21,7 +21,7 @@ const CustomOption = (props) => {
       <div className="cursor-pointer tw-flex tw-min-w-0 tw-w-full">
         {props.isSelected && (
           <span className="tw-shrink-0" style={{ maxHeight: '20px', marginRight: '8px', marginLeft: '-28px' }}>
-            <CheckMark width={'20'} fill={'var(--cc-primary-brand)'} />
+            <CheckMark width={'20'} fill={props.selectProps.accentColor || 'var(--cc-primary-brand)'} />
           </span>
         )}
         <div className="tw-min-w-0 tw-flex-1 tw-flex tw-flex-col">

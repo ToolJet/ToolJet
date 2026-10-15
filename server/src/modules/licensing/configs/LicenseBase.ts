@@ -8,6 +8,7 @@ import {
 export default class LicenseBase {
   private _appsCount: number | string;
   private _tablesCount: number | string;
+  private _rowsCount: number | string;
   private _usersCount: number | string;
   private _isAuditLogs: boolean;
   private _maxDurationForAuditLogs: number | string;
@@ -104,6 +105,7 @@ export default class LicenseBase {
     this._appsCount = licenseData?.apps;
     this._usersCount = licenseData?.users?.total;
     this._tablesCount = licenseData?.database?.table;
+    this._rowsCount = licenseData?.database?.row;
     this._editorUsersCount = licenseData?.users?.editor;
     this._viewerUsersCount = licenseData?.users?.viewer;
     this._superadminUsersCount = licenseData?.users?.superadmin;
@@ -318,6 +320,13 @@ export default class LicenseBase {
     return this._tablesCount || LICENSE_LIMIT.UNLIMITED;
   }
 
+  public get rows(): number | string {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.database?.row || this._rowsCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._rowsCount || LICENSE_LIMIT.UNLIMITED;
+  }
+
   public get maxDurationForAuditLogs(): number | string {
     if (this.IsBasicPlan) {
       return this.BASIC_PLAN_TERMS.auditLogs?.maximumDays || 0;
@@ -445,6 +454,17 @@ export default class LicenseBase {
       return false;
     }
     return !!this._features?.['queryFolders'];
+  }
+
+  public get customComponentLibraries(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.customComponentLibraries;
+    }
+
+    if (this._app?.features?.customComponentLibraries === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.customComponentLibraries;
   }
 
   public get saml(): boolean {
@@ -606,7 +626,9 @@ export default class LicenseBase {
       appHistory: this.appHistory,
       appJsLibraries: this.appJsLibraries,
       queryFolders: this.queryFolders,
+      customComponentLibraries: this.customComponentLibraries,
       aiPlan: this.aiPlan,
+      publicApp: this.publicApp,
     };
   }
 
@@ -622,6 +644,7 @@ export default class LicenseBase {
     return {
       appsCount: this.apps,
       tablesCount: this.tables,
+      rowsCount: this.rows,
       usersCount: this.users,
       auditLogsEnabled: this.auditLogs,
       maxDurationForAuditLogs: this.maxDurationForAuditLogs,
@@ -693,7 +716,7 @@ export default class LicenseBase {
   }
 
   public get appHistory(): boolean {
-    if (this.IsBasicPlan) {
+    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL || this.licenseType === LICENSE_TYPE.BUSINESS) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.history;
     }
 
@@ -712,5 +735,16 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.jsLibraries;
+  }
+
+  public get publicApp(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.publicApp;
+    }
+
+    if (this._app?.features?.publicApp === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.publicApp;
   }
 }

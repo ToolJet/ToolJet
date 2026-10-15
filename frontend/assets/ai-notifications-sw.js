@@ -2,7 +2,7 @@
 /**
  * Notification-only service worker for ToolJet AI build notifications.
  *
- * Why a service worker at all: notification action buttons ("Approve", "View details")
+ * Why a service worker at all: notification action buttons ("View output", "View details")
  * are only supported via ServiceWorkerRegistration.showNotification(). The plain
  * `new Notification()` constructor silently drops `actions`, and is unsupported outright
  * on Safari and Android Chrome.
@@ -45,29 +45,23 @@ self.addEventListener('message', (event) => {
   if (port) port.postMessage({ clientId: event.source ? event.source.id : null });
 });
 
-// Actions that carry out the step rather than take you somewhere to look at it. These are
-// dispatched to the page WITHOUT focusing the tab: the whole point of the feature is to let
-// someone keep working elsewhere, so approving a step should not drag them back to ToolJet.
-// Everything else ("View details", "View output", "View options", or a click on the
-// notification body) is a request to go and look, so it does focus the tab.
-const BACKGROUND_ACTIONS = new Set(['approve', 'run-query', 'preview-query']);
-
+// Every notification this app raises is about work that has already finished, so every button
+// on one ("View output", "View details") and the notification body itself mean the same thing:
+// take me to the tab so I can look. There is nothing to carry out from here — the agent does
+// not pause for input — so the worker focuses and gets out of the way.
 self.addEventListener('notificationclick', (event) => {
   const notification = event.notification;
   notification.close();
 
-  // `event.action` is '' when the body of the notification is clicked rather than one of
-  // its buttons — that case just focuses the tab without dispatching an action.
-  const action = event.action || null;
   const data = notification.data || {};
 
   event.waitUntil(
     (async () => {
       const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
 
-      // Find the tab this build is actually running in — its store holds the conversation
-      // the action applies to, and with several ToolJet tabs open the others cannot service
-      // it. Five matchers, weakest last:
+      // Find the tab this build actually ran in, so the user lands on the conversation they
+      // were notified about rather than whichever ToolJet tab happens to be topmost. Five
+      // matchers, weakest last:
       //
       //  1. client id — the only exact one, and the only one that can tell two tabs of the
       //     same app apart. Everything below is a fallback for when the id handshake did not
@@ -77,9 +71,9 @@ self.addEventListener('notificationclick', (event) => {
       //     of the app, but ties between two tabs on the same app;
       //  4. app id anywhere in the URL — a backstop for notifications raised before the page
       //     started sending appPath, since notifications outlive a reload;
-      //  5. any open tab — better than opening a duplicate window, but it may be the wrong
-      //     app, in which case triggerInteractiveCta no-ops on a message that tab does not
-      //     have. That is the existing stale-notification behaviour, not a new failure.
+      //  5. any open tab — better than opening a duplicate window, though it may be showing a
+      //     different app. Focusing the wrong ToolJet tab is a far smaller cost than spawning
+      //     a second window onto one the user already has open.
       const matchesApp = (client) => {
         if (!data.appPath) return false;
         try {
@@ -100,23 +94,13 @@ self.addEventListener('notificationclick', (event) => {
         clientList[0];
 
       if (target) {
-        // Focus first for "go and look" actions, so the page is already in front when the
-        // message lands. Background actions skip it entirely and stay out of the way.
-        if (!BACKGROUND_ACTIONS.has(action)) await target.focus();
-
-        target.postMessage({
-          type: 'TOOLJET_AI_NOTIFICATION_CLICK',
-          action,
-          messageId: data.messageId ?? null,
-          widgetName: data.widgetName ?? null,
-          conversationId: data.conversationId ?? null,
-        });
+        await target.focus();
         return;
       }
 
-      // Nothing open to act on. Only worth opening a window for the "go and look" cases —
-      // a background approve has no live build to resume into.
-      if (data.url && !BACKGROUND_ACTIONS.has(action)) await self.clients.openWindow(data.url);
+      // The tab that raised this is gone — every ToolJet tab is, in fact. Open the build's URL
+      // rather than doing nothing, so the click still lands somewhere useful.
+      if (data.url) await self.clients.openWindow(data.url);
     })()
   );
 });

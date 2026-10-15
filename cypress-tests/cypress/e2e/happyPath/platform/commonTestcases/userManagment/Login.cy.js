@@ -1,8 +1,8 @@
 import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { commonText, path } from "Texts/common";
-import { onboardingSelectors } from "Selectors/onboarding";
-import { dashboardSelector } from "Selectors/dashboard";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
+import { dashboardSelector } from "Selectors/platform/dashboard";
 import { logout } from "Support/utils/common";
 
 describe("Login functionality", () => {

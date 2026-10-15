@@ -3,8 +3,8 @@ import { render } from 'react-dom';
 
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
-import { appService } from '@/_services';
-// RootRouter now handles route splitting for viewer isolation
+import { appService, aiOnboardingService } from '@/_services';
+import { initFrontendMetrics } from '@/_services/frontend-metrics.service';
 import { RootRouter } from './RootRouter';
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
@@ -26,12 +26,46 @@ try {
 
 const AppWithProfiler = Sentry.withProfiler(RootRouter);
 
+// The website (a different site) cannot set cookies for this app, so it passes the template id
+// in the URL: ?tj_template_id=... on a direct redirect, or inside the OAuth state on SSO.
+// Set it as a first-party cookie before any route mounts, so the session payload carries it
+// through login and HomePage deploys the template.
+const TEMPLATE_ID_PARAM = 'tj_template_id';
+
+const readTemplateIdFromUrl = () => {
+  const query = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.substring(1));
+  const state = hash.get('state') || query.get('state');
+  return query.get(TEMPLATE_ID_PARAM) || (state && new URLSearchParams(state).get(TEMPLATE_ID_PARAM));
+};
+
+const persistTemplateIdFromUrl = async () => {
+  const templateId = readTemplateIdFromUrl();
+  if (!templateId || !/^[a-z0-9-]{1,100}$/.test(templateId)) return;
+
+  // Drop the param so a reload does not deploy the template a second time
+  const url = new URL(window.location.href);
+  if (url.searchParams.has(TEMPLATE_ID_PARAM)) {
+    url.searchParams.delete(TEMPLATE_ID_PARAM);
+    window.history.replaceState(window.history.state, '', url);
+  }
+
+  try {
+    await aiOnboardingService.setAiCookie({ [TEMPLATE_ID_PARAM]: templateId });
+  } catch (error) {
+    console.error('Failed to set template cookie:', error);
+  }
+};
+
 appService
   .getConfig()
   .then((config) => {
     console.log({ config });
 
     window.public_config = config;
+
+    initFrontendMetrics();
+
     const language = config.LANGUAGE || 'en';
     const path = config?.SUB_PATH || '/';
     i18n
@@ -76,6 +110,7 @@ appService
       });
     }
   })
+  .then(persistTemplateIdFromUrl)
   .then(() => {
     render(<AppWithProfiler />, document.getElementById('app'));
     // .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));

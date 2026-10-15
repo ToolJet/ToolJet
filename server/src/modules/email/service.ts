@@ -16,6 +16,7 @@ import {
   SendEmailOtpPayload,
   SendUserBannedEmailPayload,
   SendWorkspaceBannedEmailPayload,
+  SendAppBuildCompletedEmailPayload,
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
 import { IEmailService } from './interfaces/IService';
@@ -320,6 +321,43 @@ export class EmailService implements IEmailService {
     return await this.sendEmail(to, subject, {
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email because a workspace you administer has been suspended',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  /**
+   * "Your app is ready" — sent once, when an AI build finishes generating an app for the first
+   * time. Its whole reason for existing is the user who started a long build and went to look at
+   * something else, so the body is one line and the button goes straight into the app.
+   *
+   * The URL is assembled here rather than by the caller so it picks up custom domains and
+   * SUB_PATH the same way every other email does. It points at the EDITOR: an AI-generated app
+   * has never been released, so the public launch route would 404.
+   */
+  async sendAppBuildCompletedEmail(payload: SendAppBuildCompletedEmailPayload) {
+    const { to, name, appName, appSlug, workspaceSlug, organizationId } = payload;
+    await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
+    const effectiveHost = this.stripTrailingSlash(host);
+    const basePath = this.SUB_PATH ? this.SUB_PATH : '/';
+    const appUrl = `${effectiveHost}${basePath}${workspaceSlug}/apps/${appSlug}`;
+    const productName = this.WHITE_LABEL_TEXT || 'ToolJet';
+    const subject = `Your ${productName} app is ready!`;
+
+    const templateData = {
+      name: name || '',
+      appName,
+      appUrl,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
+    };
+    const htmlEmailContent = this.compileTemplate('ai_app_ready.hbs', templateData);
+
+    return await this.sendEmail(to, subject, {
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because you asked ToolJet to build an app',
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });

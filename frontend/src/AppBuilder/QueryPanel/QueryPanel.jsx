@@ -12,6 +12,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
@@ -25,6 +26,7 @@ export const QueryPanel = ({ darkMode }) => {
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
+  const selectedQueryId = useStore((state) => state.queryPanel?.selectedQuery?.id, shallow);
 
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -219,14 +221,25 @@ export const QueryPanel = ({ darkMode }) => {
         }}
       >
         {isQueryPaneExpanded && (
-          <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
-            <MemoizedQueryDataPane darkMode={darkMode} />
-            <div className="query-definition-pane-wrapper">
-              <div className="query-definition-pane">
-                <MemoizedQueryManager darkMode={darkMode} />
+          <FallbackBoundary label="Query panel" location="Query Panel" darkMode={darkMode}>
+            <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
+              <FallbackBoundary label="Query list" location="Query Panel Query list" darkMode={darkMode}>
+                <MemoizedQueryDataPane darkMode={darkMode} />
+              </FallbackBoundary>
+              <div className="query-definition-pane-wrapper">
+                <div className="query-definition-pane">
+                  <FallbackBoundary
+                    label="Query manager"
+                    location="Query Panel Query manager"
+                    darkMode={darkMode}
+                    resetKeys={[selectedQueryId]}
+                  >
+                    <MemoizedQueryManager darkMode={darkMode} />
+                  </FallbackBoundary>
+                </div>
               </div>
-            </div>
-          </QueryKeyHooks>
+            </QueryKeyHooks>
+          </FallbackBoundary>
         )}
       </div>
       <Tooltip id="tooltip-for-query-panel-footer-btn" className="tooltip" />

@@ -19,6 +19,9 @@ import { VersionRepository } from '@modules/versions/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { EncryptionModule } from '@modules/encryption/module';
+import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/module';
+import { AiAttachmentService } from './services/ai-attachment.service';
+import { AiAttachmentCleanupListener } from './services/ai-attachment-cleanup.listener';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -45,9 +48,15 @@ export class AiModule extends SubModule {
         await DataSourcesModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await EncryptionModule.register(configs),
+        // The app-builder hands the agent a session minted for the SIGNED-IN user, so its writes
+        // carry that user's identity into the audit log. Registered without isMainImport so the
+        // PAT controller is not mounted a second time.
+        await PersonalAccessTokensModule.register(configs),
       ],
       controllers: isMainImport ? [AiController] : [],
       providers: [
+        AiAttachmentService,
+        { provide: 'AI_ATTACHMENT_AGENT', useExisting: AiUtilService },
         AiUtilService,
         AgentsService,
         ComponentsService,
@@ -67,7 +76,7 @@ export class AiModule extends SubModule {
         PageHelperService,
         AppsUtilService,
         AiCacheService,
-        ...(isMainImport ? [AiService, AiCacheService] : []),
+        ...(isMainImport ? [AiService, AiCacheService, AiAttachmentCleanupListener] : []),
       ],
       exports: [AiUtilService],
     };

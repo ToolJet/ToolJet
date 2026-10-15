@@ -1,0 +1,16 @@
+{
+  "name": "Neighborhood marketplace",
+  "description": "A private neighborhood marketplace for posting, browsing and managing shared items.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "neighborhood-marketplace",
+  "category": "productivity-and-community"
+}
