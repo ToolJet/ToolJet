@@ -108,6 +108,28 @@ describe('Sample data source role', () => {
       await expect(asRole((c) => c.query(`CREATE DATABASE ${SPEC_DB}_child`))).rejects.toThrow(/permission denied/);
     });
 
+    it('should not hold server file or program privileges', async () => {
+      const { rows } = await asAdmin((c) =>
+        c.query(
+          `SELECT pg_has_role($1, 'pg_execute_server_program', 'MEMBER') AS program,
+                  pg_has_role($1, 'pg_read_server_files', 'MEMBER') AS read_files,
+                  pg_has_role($1, 'pg_write_server_files', 'MEMBER') AS write_files`,
+          [role.name]
+        )
+      );
+
+      expect(rows[0]).toMatchObject({ program: false, read_files: false, write_files: false });
+    });
+
+    it('should not read tables outside the sample schema grants', async () => {
+      await asAdmin(async (c) => {
+        await c.query('CREATE SCHEMA app_private');
+        await c.query('CREATE TABLE app_private.settings (key text)');
+      });
+
+      await expect(asRole((c) => c.query('SELECT * FROM app_private.settings'))).rejects.toThrow(/permission denied/);
+    });
+
     it('should be idempotent', async () => {
       await expect(provisionSampleDbRole(specAdmin, role)).resolves.toBeUndefined();
     });
