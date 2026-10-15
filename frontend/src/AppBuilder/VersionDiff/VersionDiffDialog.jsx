@@ -401,6 +401,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
               type="button"
               className={cx('vd-review-toggle', { 'vd-review-toggle--on': panel === 'review' })}
               onClick={() => setPanel(panel === 'review' ? null : 'review')}
+              title="Review"
               aria-pressed={panel === 'review'}
             >
               <GitPullRequestArrow size={14} strokeWidth={1.75} aria-hidden="true" />
@@ -410,7 +411,12 @@ export const VersionDiffDialog = ({ darkMode }) => {
           ) : (
             pair.target &&
             pair.base && (
-              <button type="button" className="vd-review-toggle" onClick={() => setPanel('create')}>
+              <button
+                type="button"
+                className="vd-review-toggle"
+                onClick={() => setPanel('create')}
+                title="Request review"
+              >
                 <GitPullRequestArrow size={14} strokeWidth={1.75} aria-hidden="true" />
                 <span>Request review</span>
               </button>
