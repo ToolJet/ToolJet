@@ -17,6 +17,13 @@ import { PluginsService } from '@modules/plugins/service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { defaultThemeName, TJDefaultTheme } from '@modules/organization-themes/constants';
+import { TemplateAppManifests } from 'src/../templates';
+import { AppVersion } from '@entities/app_version.entity';
+import { App } from '@entities/app.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { APP_TYPES } from '@modules/apps/constants';
+import { TemplateManifest } from './template-assets';
+import { escapeLike, nextTemplateAppName } from './default-app-name';
 
 type TemplateDefinitionWithTables = { tooljet_database?: Array<{ id?: string }> };
 
@@ -169,13 +176,55 @@ export class TemplatesService {
     }
   }
 
+  // Only known template ids reach the file system: the id becomes part of a file path
+  protected findManifest(identifier: string): TemplateManifest {
+    const manifest = (TemplateAppManifests as TemplateManifest[]).find((m) => m.id === identifier);
+    if (!manifest) throw new BadRequestException('App definition not found');
+    return manifest;
+  }
+
   findTemplateDefinition(identifier: string) {
+    this.findManifest(identifier);
     try {
       return this.readTemplateJson(`templates/${identifier}/definition.json`);
     } catch (err) {
       this.logger.error(err);
       throw new BadRequestException('App definition not found');
     }
+  }
+
+  // Names are unique per (branch, app type), so look on the branch the app will be created on. The workspace filter
+  // also keeps a branchId from another workspace from revealing that workspace's app names.
+  async getDefaultAppName(user: User, identifier: string, branchId?: string): Promise<string> {
+    const { name } = this.findManifest(identifier);
+    const manager = this.appsRepository.manager;
+    const targetBranchId =
+      branchId ??
+      (
+        await manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user.organizationId, isDefault: true },
+          select: ['id'],
+        })
+      )?.id;
+    if (!targetBranchId) return name;
+
+    const rows: Array<{ app_name: string }> = await manager
+      .createQueryBuilder(AppVersion, 'av')
+      .select('DISTINCT av.app_name', 'app_name')
+      .innerJoin(App, 'app', 'app.id = av.app_id')
+      .where('app.organization_id = :organizationId', { organizationId: user.organizationId })
+      .andWhere('app.type = :type', { type: APP_TYPES.FRONT_END })
+      .andWhere('av.branch_id = :branchId', { branchId: targetBranchId })
+      .andWhere("(av.app_name = :name OR av.app_name LIKE :pattern ESCAPE '\\')", {
+        name,
+        pattern: `${escapeLike(name)}\\_%`,
+      })
+      .getRawMany();
+
+    return nextTemplateAppName(
+      name,
+      rows.map((row) => row.app_name)
+    );
   }
 
   // Templates may be stored Brotli-compressed as `<file>.br`; fall back to the plain JSON file.
