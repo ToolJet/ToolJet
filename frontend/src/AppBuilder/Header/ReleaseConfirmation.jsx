@@ -5,14 +5,17 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { useVersionDiffStore } from '@/AppBuilder/VersionDiff/useVersionDiffStore';
 
 export default function ReleaseConfirmation(props) {
   const { onClose, onConfirm, show } = props;
   const { t } = useTranslation();
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
-  const { name, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } = useStore(
+  const openCompare = useVersionDiffStore((state) => state.openCompare);
+  const { name, selectedVersionId, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } = useStore(
     (state) => ({
       name: state?.selectedVersion?.name,
+      selectedVersionId: state?.selectedVersion?.id,
       releasedVersionId: state.releasedVersionId,
       versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
       developmentVersions: state.developmentVersions,
@@ -58,6 +61,18 @@ export default function ReleaseConfirmation(props) {
             ? `Are you sure you want to release version ${name}?`
             : `Releasing version ${name} will override ${releasedVersionName}. Are you sure you want to continue?`}
         </div>
+        {releasedVersionId && releasedVersionId !== selectedVersionId && (
+          <button
+            type="button"
+            className="release-review-changes"
+            data-cy="release-review-changes"
+            onClick={() =>
+              openCompare({ baseVersionId: releasedVersionId, targetVersionId: selectedVersionId, source: 'release' })
+            }
+          >
+            Review what changes from {releasedVersionName}
+          </button>
+        )}
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">

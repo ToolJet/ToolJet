@@ -7,6 +7,7 @@ import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
 import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
+import { CompareVersionsButton } from '@/AppBuilder/VersionDiff';
 
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -81,6 +82,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
                 <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                   {!isModuleEditor && (
                     <>
+                      <CompareVersionsButton darkMode={darkMode} />
                       <VersionManagerErrorBoundary>
                         <VersionManagerDropdown darkMode={darkMode} />
                       </VersionManagerErrorBoundary>
