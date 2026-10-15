@@ -29,12 +29,10 @@ export class AppCountGuard implements CanActivate {
       }
       whereCondition.organization.id = organizationId;
     }
-    const apps = await manager.find(App, {
+    return await manager.count(App, {
       where: whereCondition,
       relations: ['organization'],
     });
-
-    return apps.length;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
