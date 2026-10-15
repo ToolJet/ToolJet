@@ -28,6 +28,7 @@ import {
   updateDashedBordersOnDragResize,
   getCanvasBottomBound,
   findNewParentIdFromMousePosition,
+  isDragOnInnerElement as isDragOnInnerElementOf,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -1024,55 +1025,17 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             setCanvasBounds({ ...relativePosition });
           }
 
-          //  This flag indicates whether the drag event originated on a child element within a component
-          //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
-          //  When true, it prevents the parent component from being dragged, allowing the inner elements
-          //  to handle their own interactions like column resizing or card dragging
-          let isDragOnInnerElement = false;
-
           /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works.
             Also user dont need to drag an calender from using popup */
           if (hasParentWithClass(e.inputEvent.target, 'react-datepicker-popper')) {
             return false;
           }
 
-          /* Checking if the dragged elemenent is a table. If its a table drag is disabled since it will affect column resizing and reordering */
-          if (box?.component?.component === 'Table') {
-            const tableElem = e.target.querySelector('.jet-data-table');
-            isDragOnInnerElement = tableElem.contains(e.inputEvent.target);
-          }
-          if (box?.component?.component === 'Calendar') {
-            const calenderElem = e.target.querySelector('.rbc-month-view');
-            isDragOnInnerElement = calenderElem.contains(e.inputEvent.target);
-          }
-
-          if (box?.component?.component === 'Kanban') {
-            const handleContainers = e.target.querySelectorAll('.handle-container');
-            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
-              container.contains(e.inputEvent.target)
-            );
-          }
-
-          if (box?.component?.component === 'ReorderableList') {
-            const handleContainers = e.target.querySelectorAll('.reorderable-list-items');
-            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
-              container.contains(e.inputEvent.target)
-            );
-          }
-
-          if (box?.component?.component === 'KeyValuePair') {
-            const handleContainers = e.target.querySelectorAll('.kv-editable');
-            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
-              container.contains(e.inputEvent.target)
-            );
-          }
-
-          // A map pans on a drag inside it (the ToolJet UI 2.0 Map, and the Google Map in its UI 2.0 look); the
-          // widget moves by its handle.
-          if (['ShadMap', 'Map'].includes(box?.component?.component)) {
-            const mapElem = e.target.querySelector('.sc-map-canvas, .tj-map-look-shadcn');
-            isDragOnInnerElement = !!mapElem?.contains(e.inputEvent.target);
-          }
+          //  This flag indicates whether the drag event originated on a child element within a component
+          //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
+          //  When true, it prevents the parent component from being dragged, allowing the inner elements
+          //  to handle their own interactions like column resizing or card dragging
+          const isDragOnInnerElement = isDragOnInnerElementOf(box?.component?.component, e.target, e.inputEvent.target);
 
           if (
             ['RangeSlider', 'RangeSliderV2', 'BoundedBox'].includes(box?.component?.component) ||
