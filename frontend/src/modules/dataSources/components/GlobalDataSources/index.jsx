@@ -162,8 +162,8 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         }
       });
       datasourceGroup.list = [...arr];
-      (datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
-        (arr = []);
+      ((datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
+        (arr = []));
       return datasourceGroup;
     });
     const filteredDsList = filtered.reduce((acc, filteredGroup) => [...acc, ...filteredGroup.list], []);

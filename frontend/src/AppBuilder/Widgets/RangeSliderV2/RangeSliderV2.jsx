@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
@@ -24,6 +24,10 @@ export const RangeSliderV2 = ({
   id,
 }) => {
   const isInitialRender = useRef(true);
+  // Per mounted instance, not per component id: ListView gives every row the same component
+  // id, so an id derived from it alone collides across rows and names every handle after the first.
+  const reactId = useId();
+  const labelElementId = `${reactId}-label`;
   const labelRef = useRef(null);
   const { value, min, max, enableTwoHandle, label, schema, endValue, startValue, stepSize } = properties;
 
@@ -169,6 +173,8 @@ export const RangeSliderV2 = ({
     } else {
       onRangeChange([min, min]);
     }
+    // A Form clear changes the value, so it announces it like the input widgets already do.
+    fireEvent('onChange');
   });
 
   const rangeStyles = {
@@ -280,7 +286,7 @@ export const RangeSliderV2 = ({
             direction={direction}
             widthType={widthType}
             inputId={`component-${id}`}
-            id={`${id}-label`}
+            id={labelElementId}
             fontSize={labelFontSizeValue}
           />
 
@@ -293,11 +299,11 @@ export const RangeSliderV2 = ({
                 max={max}
                 defaultValue={defaultRangeValue}
                 onChange={onRangeChange}
-                onAfterChange={() => fireEvent('onChange')}
+                onChangeComplete={() => fireEvent('onChange')}
                 value={defaultRangeValue}
                 ref={sliderRef}
                 id={`component-${id}`}
-                ariaLabelledByForHandle={`${id}-label`}
+                ariaLabelledByForHandle={labelElementId}
                 ariaLabelForHandle={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
                 trackStyle={rangeStyles.trackStyle}
                 railStyle={rangeStyles.railStyle}
@@ -336,10 +342,10 @@ export const RangeSliderV2 = ({
                 value={defaultSliderValue}
                 ref={sliderRef}
                 id={`component-${id}`}
-                ariaLabelledByForHandle={`${id}-label`}
+                ariaLabelledByForHandle={labelElementId}
                 ariaLabelForHandle={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
                 onChange={onSliderChange}
-                onAfterChange={() => fireEvent('onChange')}
+                onChangeComplete={() => fireEvent('onChange')}
                 trackStyle={rangeStyles.trackStyle}
                 railStyle={rangeStyles.railStyle}
                 handleStyle={rangeStyles.handleStyle}
