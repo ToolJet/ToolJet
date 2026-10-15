@@ -20,17 +20,18 @@ const ParameterList = ({
 
   useEffect(() => {
     let totalWidth = 0;
-    const formattedParams = containerWidth
-      ? parameters.map((param, index) => {
-          const boxWidth = Math.min((param?.name || '').length * 6 + 63 + 8, 178);
-          totalWidth = Math.min(totalWidth + boxWidth, containerWidth);
-          return {
-            ...param,
-            isVisible: totalWidth < containerWidth - 178,
-            index,
-          };
-        })
-      : [];
+    const formattedParams =
+      containerWidth && Array.isArray(parameters)
+        ? parameters.map((param, index) => {
+            const boxWidth = Math.min((param?.name || '').length * 6 + 63 + 8, 178);
+            totalWidth = Math.min(totalWidth + boxWidth, containerWidth);
+            return {
+              ...param,
+              isVisible: totalWidth < containerWidth - 178,
+              index,
+            };
+          })
+        : [];
     setFormattedParameters(formattedParams);
     if (formattedParams.every((param) => param.isVisible)) {
       setShowMore(false);
@@ -53,6 +54,9 @@ const ParameterList = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showMore]);
+
+  // Marketplace plugins may use this option for JSON request parameters rather than named query inputs.
+  if (!Array.isArray(parameters)) return null;
 
   return (
     <div className="d-flex">

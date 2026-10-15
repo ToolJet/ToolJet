@@ -1288,6 +1288,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'bigquery',
         'databricks',
         'asana',
+        'gitlab',
         'confluence',
       ].includes(dataSource.kind)
     ) {

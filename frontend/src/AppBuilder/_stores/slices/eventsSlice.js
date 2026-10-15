@@ -1144,7 +1144,7 @@ export const createEventsSlice = (set, get) => ({
           return;
         }
 
-        if (!_.isEmpty(query?.options?.parameters)) {
+        if (Array.isArray(query?.options?.parameters)) {
           query.options.parameters?.forEach(
             (param) => parameters && (processedParams[param.name] = parameters?.[param.name])
           );

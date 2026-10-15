@@ -5,6 +5,7 @@ import QueryManagerBody from './Components/QueryManagerBody';
 import { CodeHinterContext } from '@/AppBuilder/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
+import { resolveNamedQueryParameters } from './utils';
 
 const QueryManager = ({ mode, darkMode }) => {
   // TODO to be moved into queryPanelStore and reimplemented
@@ -58,13 +59,7 @@ const QueryManager = ({ mode, darkMode }) => {
       <QueryManagerHeader darkMode={darkMode} setActiveTab={setActiveTab} activeTab={activeTab} />
       <CodeHinterContext.Provider
         value={{
-          parameters: selectedQuery?.options?.parameters?.reduce(
-            (parameters, parameter) => ({
-              ...parameters,
-              [parameter.name]: resolveReferences(parameter.defaultValue, undefined),
-            }),
-            {}
-          ),
+          parameters: resolveNamedQueryParameters(selectedQuery?.options?.parameters, resolveReferences),
         }}
       >
         <QueryManagerBody darkMode={darkMode} activeTab={activeTab} />
