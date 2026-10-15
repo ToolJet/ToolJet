@@ -106,11 +106,21 @@ export const Rating = ({
   function handleClick(idx) {
     // +1 cos code is considering index from 0,1,2.....
     const newValue = idx + 1;
+
+    const ratingText = `${newValue} out of ${_maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}`;
+
+    // On change reports a CHANGE of rating, not the click.
+    // but the activation is still confirmed to a screen reader, since silence there reads as "did that register?".
+
+    if (newValue === currentRatingIndex + 1) {
+      setAnnounceValue(ratingText);
+      return;
+    }
+
     setExposedVariable('value', newValue);
     fireEvent('onChange');
 
-    // Announce the new rating value for screen readers
-    const ratingText = `${newValue} out of ${_maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}`;
+    // Announced after the rating is registered, so the live region never describes a value that was not committed.
     setAnnounceValue(ratingText);
   }
 

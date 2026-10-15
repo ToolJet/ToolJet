@@ -530,9 +530,10 @@ describe('StarRating', () => {
   });
 
   describe('events', () => {
-    test('[StarRating-EVT-001] re-clicking the already-selected icon fires On change again', async () => {
-      // (D-11.) The event reports a user act, not a value comparison, so a
-      // confirm-by-tapping flow keeps working.
+    test('[StarRating-EVT-001] re-clicking the already-selected icon does not fire On change', async () => {
+      // D-11 reversed 2026-10-14: On change now reports a CHANGE of rating, not
+      // the click itself. Break this catches: dropping the equality guard, so a
+      // user tapping the same star twice re-runs every bound query for nothing.
       const { container } = widget.render({
         properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{1}}') },
         events: countInvocationsOn(SR, 'onChange'),
@@ -543,8 +544,31 @@ describe('StarRating', () => {
       await waitFor(() => expect(widget.variables().calls).toBe(1));
       expect(widget.exposed().value).toBe(3);
 
+      // Same star again: the rating is unchanged, so nothing is reported.
       await widget.session.user.click(icons(container)[2]);
+      await drain();
+      expect(widget.variables().calls).toBe(1);
+      expect(widget.exposed().value).toBe(3);
+
+      // A genuinely different star still reports.
+      await widget.session.user.click(icons(container)[4]);
       await waitFor(() => expect(widget.variables().calls).toBe(2));
+      expect(widget.exposed().value).toBe(5);
+    });
+
+    test('[StarRating-EVT-001] clicking the default-selected star on first interaction is still silent', async () => {
+      // The guard compares against the live rating, so the very first click on
+      // the star that the default already selected is a no-op too.
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{3}}') },
+        events: countInvocationsOn(SR, 'onChange'),
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(3));
+
+      await widget.session.user.click(icons(container)[2]);
+      await drain();
+
+      expect(widget.variables().calls ?? 0).toBe(0);
       expect(widget.exposed().value).toBe(3);
     });
 
@@ -1139,6 +1163,27 @@ describe('StarRating', () => {
       await widget.session.user.click(icons(container)[3]);
 
       await waitFor(() => expect(liveRegion(container)).toHaveTextContent('4 out of 5 stars'));
+    });
+
+    test('[StarRating-A11Y-002] activating a star announces the rating even when it did not change', async () => {
+      // Break this catches: letting the no-op guard (D-11 reversed) swallow the
+      // announcement too. Activating a control should confirm the result to a
+      // screen reader whether or not the value moved — silence reads as "did
+      // that register?". The event stays suppressed; only the announcement runs.
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{3}}'), iconType: binding('stars') },
+        events: countInvocationsOn(SR, 'onChange'),
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(3));
+      expect(liveRegion(container)).toHaveTextContent('');
+
+      // The star the default already selected: no change, so no event...
+      await widget.session.user.click(icons(container)[2]);
+      await drain();
+      expect(widget.variables().calls ?? 0).toBe(0);
+
+      // ...but the rating is still announced.
+      await waitFor(() => expect(liveRegion(container)).toHaveTextContent('3 out of 5 stars'));
     });
 
     test('[StarRating-A11Y-003] the rating group carries an accessible name in the standard arm', async () => {
