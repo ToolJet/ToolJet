@@ -39,11 +39,13 @@ export function shouldClearLegacyInvalidDates({ componentType, paramName, paramT
   );
 }
 
-// A date/time Format with no recognizable tokens (e.g. a {{42}} binding
-// resolving to "42") is a configuration error surfaced on the Format field in
-// the properties panel — the widget itself silently falls back to its shipped
-// default format. Returns the panel message, or null when the format is empty
-// (not set ≠ mis-set) or usable.
+// A date/time Format with no alphabetic characters (e.g. a {{42}} binding
+// resolving to "42" — no possible moment tokens) is a configuration error
+// surfaced on the Format field in the properties panel — the widget itself
+// silently falls back to its shipped default format. Returns the panel
+// message, or null when the format is empty (not set ≠ mis-set) or usable.
+// Letterful formats are never flagged: they are used as-is for backward
+// compatibility (see isUsableDateFormat).
 export function getFormatFallbackError(format, kind = 'date') {
   const usable = kind === 'date' ? isUsableDateFormat(format) : isUsableTimeFormat(format);
   if (!format || usable) return null;

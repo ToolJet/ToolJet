@@ -231,6 +231,15 @@ describe('getFormatFallbackError', () => {
     expect(getFormatFallbackError('hh:mm A', 'time')).toBeNull();
   });
 
+  // Backward compatibility: exotic-but-valid moment formats (letters without
+  // d/m/y or h/m) worked before the fallback existed and must not be flagged.
+  test('exotic old formats are never flagged (BC)', () => {
+    expect(getFormatFallbackError('X', 'date')).toBeNull();
+    expect(getFormatFallbackError('Q', 'date')).toBeNull();
+    expect(getFormatFallbackError('kk', 'time')).toBeNull();
+    expect(getFormatFallbackError('ss', 'time')).toBeNull();
+  });
+
   test('an empty/unset format is not an error (not set is not mis-set)', () => {
     expect(getFormatFallbackError('', 'date')).toBeNull();
     expect(getFormatFallbackError(undefined, 'date')).toBeNull();
