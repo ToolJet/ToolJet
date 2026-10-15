@@ -20,6 +20,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { appVersionService, authenticationService } from '@/_services';
 import { getSubpath } from '@/_helpers/routes';
+import { authHeader } from '@/_helpers';
+import config from 'config';
 import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -54,7 +56,10 @@ const VersionSelect = ({ label, value, versions, onChange, releasedVersionId, di
   const version = versions.find((item) => item.id === value);
   const isSnapshot = value === SNAPSHOT;
   return (
-    <label className="vd-picker tw-relative tw-m-0 tw-flex tw-items-center tw-gap-2">
+    <label
+      className="vd-picker tw-relative tw-m-0 tw-flex tw-items-center tw-gap-2"
+      title={isSnapshot ? snapshotLabel : version?.name}
+    >
       <span className="tw-font-body-default tw-text-text-placeholder">{label}</span>
       <span
         className={cn(
@@ -96,7 +101,13 @@ const VersionSelect = ({ label, value, versions, onChange, releasedVersionId, di
 const IconChoice = ({ label, value, onChange, options }) => (
   <ToggleGroup type="single" value={value} onValueChange={(next) => next && onChange(next)} aria-label={label}>
     {options.map(({ id, text, Icon }) => (
-      <ToggleGroupItem key={id} value={id} aria-label={text} data-tip={text} className="vd-seg__opt tw-w-7">
+      <ToggleGroupItem
+        key={id}
+        value={id}
+        aria-label={text}
+        data-tip={text}
+        className="vd-seg__opt tw-w-7 tw-text-icon-default [&_svg]:!tw-text-icon-default data-[state=on]:[&_svg]:!tw-text-icon-strong hover:[&_svg]:!tw-text-icon-strong"
+      >
         <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
       </ToggleGroupItem>
     ))}
@@ -155,7 +166,10 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const [renderMode, setRenderMode] = useState('live');
   const [undoState, setUndoState] = useState(null); // null | 'confirm' | 'working' | { error }
   const [reloadKey, setReloadKey] = useState(0);
+  const [errorStatus, setErrorStatus] = useState(null);
+  const [frameEnvs, setFrameEnvs] = useState({}); // versionId -> { env, own }
   const closeRef = useRef(null);
+  const loadedPairRef = useRef(null);
   const pairTargetRef = useRef(null);
   pairTargetRef.current = pair.target;
   const undoStateRef = useRef(null);
@@ -215,8 +229,14 @@ export const VersionDiffDialog = ({ darkMode }) => {
       return;
     }
     let cancelled = false;
+    // A new pair starts from a blank comparison; a refresh of the same pair (after a
+    // review conflict) keeps the current one on screen, review panel included.
+    const pairKey = `${pair.base}|${pair.target}|${snapshotId}`;
+    if (loadedPairRef.current !== pairKey) setDiff(null);
+    loadedPairRef.current = pairKey;
     setLoading(true);
     setError(null);
+    setErrorStatus(null);
     appVersionService
       .getDiff(appId, pair.target, pair.base, snapshotId)
       .then((result) => {
@@ -232,6 +252,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
       .catch((err) => {
         if (cancelled) return;
         setDiff(null);
+        setErrorStatus(err?.statusCode ?? null);
         setError(
           err?.statusCode === 410
             ? err?.error ?? 'This edit is too old to compare.'
@@ -269,6 +290,8 @@ export const VersionDiffDialog = ({ darkMode }) => {
   // Each opening starts clean: no review, snapshot or comparison carried over from the last one.
   useEffect(() => {
     if (isOpen) return;
+    loadedPairRef.current = null;
+    setFrameEnvs({});
     setReview(null);
     setPanel(null);
     setUndoState(null);
@@ -312,11 +335,44 @@ export const VersionDiffDialog = ({ darkMode }) => {
 
   // The viewer renders a version by name; with a snapshot id it renders the
   // version as that snapshot had it, queries included, without changing anything.
+  // Which environment each version renders in: its own when the user may preview it there,
+  // else the first one that lets them (builders cannot preview production). Asked once per
+  // version, with the same check the viewer runs, so a frame never sits on a refused page.
+  useEffect(() => {
+    if (!isOpen || !appId) return;
+    const ids = [pair.base, pair.target].filter((id) => id && !frameEnvs[id] && versionById.get(id));
+    if (!ids.length) return;
+    let cancelled = false;
+    const ordered = [...(environments ?? [])].sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
+    const canView = (versionName, environmentName) =>
+      fetch(
+        `${config.apiUrl}/apps/validate-private-app-access/${encodeURIComponent(slug || appId)}?access_type=view` +
+          `&environment_name=${encodeURIComponent(environmentName)}&version_name=${encodeURIComponent(versionName)}`,
+        { headers: authHeader(), credentials: 'include' }
+      )
+        .then((response) => response.ok)
+        .catch(() => false);
+    Promise.all(
+      ids.map(async (id) => {
+        const version = versionById.get(id);
+        const own = ordered.find((item) => item.id === version.currentEnvironmentId)?.name;
+        const candidates = [own, ...ordered.map((item) => item.name).filter((name) => name !== own)].filter(Boolean);
+        for (const name of candidates) if (await canView(version.name, name)) return [id, { env: name, own }];
+        return [id, { env: own, own }];
+      })
+    ).then((entries) => !cancelled && setFrameEnvs((prev) => ({ ...prev, ...Object.fromEntries(entries) })));
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, appId, slug, pair.base, pair.target, versionById, environments]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const frameSrc = useCallback(
     (versionId, snapshot) => {
       const version = versionById.get(versionId);
       if (!version || !pageKey) return null;
-      const env = environments?.find((item) => item.id === version.currentEnvironmentId)?.name;
+      // Without environments (no multi-environment license) the viewer picks its own.
+      if (environments?.length && !frameEnvs[versionId]) return null;
+      const env = frameEnvs[versionId]?.env;
       // encodeURIComponent, not URLSearchParams: the viewer decodes %20 but reads + literally.
       const query = [
         ['version', version.name],
@@ -329,8 +385,12 @@ export const VersionDiffDialog = ({ darkMode }) => {
         pageKey
       )}?${query}`;
     },
-    [versionById, environments, slug, appId, pageKey]
+    [versionById, environments, slug, appId, pageKey, frameEnvs]
   );
+  const fallbackEnv = (versionId) => {
+    const entry = frameEnvs[versionId];
+    return entry && entry.own && entry.env !== entry.own ? entry.env : null;
+  };
 
   const highlights = useMemo(() => {
     // A container whose only change is the order of its children would
@@ -450,6 +510,10 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const targetName = diff?.target.name ?? versionById.get(pair.target)?.name;
   const baseName = snapshotId ? targetName : diff?.base.name ?? versionById.get(pair.base)?.name;
   const layoutOnly = renderMode === 'layout';
+  // Undo checks the version against the fingerprint the turn ended on; one recorded under
+  // other rules cannot be checked, and the server would refuse.
+  const undoCheckable =
+    !!undo?.expectedFingerprint && undo.expectedFingerprint.split(':')[0] === diff?.target?.fingerprint?.split(':')[0];
 
   const frames = page && (
     <Stage
@@ -457,7 +521,9 @@ export const VersionDiffDialog = ({ darkMode }) => {
       base={{
         name: baseName,
         tag: snapshotId ? 'Before the AI edit' : 'Before',
-        src: page.status === 'added' ? null : snapshotId ? frameSrc(pair.target, snapshotId) : frameSrc(pair.base),
+        missing: page.status === 'added',
+        note: fallbackEnv(snapshotId ? pair.target : pair.base),
+        src: snapshotId ? frameSrc(pair.target, snapshotId) : frameSrc(pair.base),
         highlights: highlights.base,
         onFound: onFoundBase,
         blueprint: layoutOnly
@@ -467,7 +533,9 @@ export const VersionDiffDialog = ({ darkMode }) => {
       target={{
         name: targetName,
         tag: snapshotId ? 'Now' : 'After',
-        src: page.status === 'removed' ? null : frameSrc(pair.target),
+        missing: page.status === 'removed',
+        note: fallbackEnv(pair.target),
+        src: frameSrc(pair.target),
         highlights: highlights.target,
         onFound: onFoundTarget,
         blueprint: layoutOnly ? { appId, pageKey, source: { versionId: pair.target } } : null,
@@ -543,6 +611,8 @@ export const VersionDiffDialog = ({ darkMode }) => {
                 leadingVisual={<Undo2 size={14} strokeWidth={1.75} />}
                 onClick={() => setUndoState(undoState ? null : 'confirm')}
                 aria-expanded={!!undoState}
+                disabled={!undoCheckable}
+                data-tip={undoCheckable ? undefined : 'Recorded before an update, so it cannot be undone safely'}
                 data-cy="undo-ai-edit"
               >
                 Undo this edit
@@ -567,18 +637,20 @@ export const VersionDiffDialog = ({ darkMode }) => {
                   )}
                   <div className="tw-flex tw-justify-end tw-gap-2">
                     <Button variant="outline" size="medium" onClick={() => setUndoState(null)}>
-                      Cancel
+                      {undoState?.error ? 'Close' : 'Cancel'}
                     </Button>
-                    <Button
-                      variant="primary"
-                      danger
-                      size="medium"
-                      onClick={runUndo}
-                      loading={undoState === 'working'}
-                      data-cy="confirm-undo-ai-edit"
-                    >
-                      Undo edit
-                    </Button>
+                    {!undoState?.error && (
+                      <Button
+                        variant="primary"
+                        danger
+                        size="medium"
+                        onClick={runUndo}
+                        loading={undoState === 'working'}
+                        data-cy="confirm-undo-ai-edit"
+                      >
+                        Undo edit
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
@@ -657,13 +729,32 @@ export const VersionDiffDialog = ({ darkMode }) => {
       </header>
 
       <div className={cx('vd-body', { 'vd-body--panel': showPanel })}>
-        {error && <div className="vd-state tw-font-body-default tw-text-text-danger">{String(error)}</div>}
-        {!error && (loading || !diff) && (
+        {error && (
+          <div className="vd-state">
+            {errorStatus === 410 ? (
+              <Calm title="This edit is too old to compare">
+                ToolJet keeps the last 100 AI edits of each version, and none once a version is deleted. Compare two
+                versions instead.
+              </Calm>
+            ) : (
+              <Calm title="The comparison could not be loaded">
+                {String(error)}
+                <span className="tw-block tw-mt-3">
+                  <Button variant="outline" size="medium" onClick={() => setReloadKey((n) => n + 1)}>
+                    Try again
+                  </Button>
+                </span>
+              </Calm>
+            )}
+          </div>
+        )}
+        {loading && diff && <div className="vd-refreshing" aria-hidden="true" />}
+        {!error && !diff && (
           <div className="vd-state tw-font-body-default tw-text-text-placeholder">
             Comparing {baseName ?? '…'} with {targetName ?? '…'}
           </div>
         )}
-        {!error && !loading && diff && (
+        {!error && diff && (
           <>
             <ChangeList
               diff={diff}
@@ -833,6 +924,14 @@ const FrameLabel = ({ side, floating }) => (
   >
     <span className="tw-font-title-default tw-text-text-default">{side.name}</span>
     <Tag>{side.tag}</Tag>
+    {side.note && (
+      <span
+        className="tw-font-body-small tw-text-text-placeholder"
+        data-tip={`You cannot preview this version where it runs, so it is shown with ${side.note} data`}
+      >
+        With {side.note} data
+      </span>
+    )}
   </div>
 );
 
@@ -879,10 +978,10 @@ const Stage = ({ mode, base, target, shared }) => {
     return (
       <div className={cx('vd-swipe', { 'vd-swipe--dragging': dragging })} ref={stageRef}>
         <div className="vd-swipe__layer">
-          {base.src ? <SideFrame shared={shared} side={base} /> : <Missing side={base} isBase />}
+          {base.missing ? <Missing side={base} isBase /> : <SideFrame shared={shared} side={base} />}
         </div>
         <div className="vd-swipe__layer" style={{ clipPath: `inset(0 0 0 ${split ?? 0}px)` }}>
-          {target.src ? <SideFrame shared={shared} side={target} /> : <Missing side={target} />}
+          {target.missing ? <Missing side={target} /> : <SideFrame shared={shared} side={target} />}
         </div>
         <FrameLabel side={base} floating="base" />
         <FrameLabel side={target} floating="target" />
@@ -914,11 +1013,11 @@ const Stage = ({ mode, base, target, shared }) => {
     <div className="vd-split">
       <section className="vd-pane">
         <FrameLabel side={base} />
-        {base.src ? <SideFrame shared={shared} side={base} /> : <Missing side={base} isBase />}
+        {base.missing ? <Missing side={base} isBase /> : <SideFrame shared={shared} side={base} />}
       </section>
       <section className="vd-pane">
         <FrameLabel side={target} />
-        {target.src ? <SideFrame shared={shared} side={target} /> : <Missing side={target} />}
+        {target.missing ? <Missing side={target} /> : <SideFrame shared={shared} side={target} />}
       </section>
     </div>
   );

@@ -50,8 +50,9 @@
     z-index: 20;
     padding: 6px 8px;
     border-radius: 6px;
+    // Inverse pair: dark on a light page, light on a dark one.
     background: var(--background-inverse);
-    color: var(--text-on-solid);
+    color: var(--text-inverse);
     font: 500 11px/16px var(--font-family-inter, Inter, system-ui, sans-serif);
     white-space: nowrap;
     transform: translateX(-50%);
@@ -85,6 +86,41 @@
 
   &--panel {
     grid-template-columns: 300px minmax(0, 1fr) 368px;
+  }
+
+  // Laptops: give the two renders the room the side columns would take.
+  @media (max-width: 1500px) {
+    grid-template-columns: 260px minmax(0, 1fr);
+
+    &--panel {
+      grid-template-columns: 240px minmax(0, 1fr) 336px;
+    }
+  }
+}
+
+// The change filter: words when the rail is wide enough, status dots when it is not.
+.vd-rail {
+  container-type: inline-size;
+}
+
+.vd-filter__dot {
+  display: none !important;
+}
+
+@container (max-width: 279px) {
+  .vd-filter__word {
+    display: none;
+  }
+
+  .vd-filter__dot {
+    display: inline-block !important;
+  }
+}
+
+// No hover tip while the words are showing: it would only repeat them.
+@container (min-width: 280px) {
+  .vd-filter[data-tip]::after {
+    display: none;
   }
 }
 
@@ -439,6 +475,40 @@
 
   strong {
     font-weight: 500;
+  }
+
+  &--ok {
+    background: var(--background-success-weak);
+  }
+}
+
+// A refresh of the same comparison keeps it on screen with a thin bar along the top.
+.vd-refreshing {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 30%;
+    background: var(--border-accent-strong);
+    animation: vd-refresh 1s ease-in-out infinite;
+  }
+}
+
+@keyframes vd-refresh {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(340%);
   }
 }
 

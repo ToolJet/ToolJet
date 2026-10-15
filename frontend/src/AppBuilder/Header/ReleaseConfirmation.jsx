@@ -107,6 +107,19 @@ export default function ReleaseConfirmation(props) {
             </button>
           </div>
         )}
+        {gate?.required && gate?.allowed && gate?.reviewId && (
+          <div className="release-review-gate release-review-gate--ok" data-cy="release-review-approved">
+            <strong>Approved in review</strong>
+            <span>This exact version was approved, so it can be released.</span>
+            <button
+              type="button"
+              className="release-review-changes"
+              onClick={() => openCompare({ reviewId: gate.reviewId, source: 'review' })}
+            >
+              Open the review
+            </button>
+          </div>
+        )}
         {releasedVersionId && releasedVersionId !== selectedVersionId && (
           <ChangeSummary
             appId={appId}

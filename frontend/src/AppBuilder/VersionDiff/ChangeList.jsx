@@ -174,8 +174,17 @@ export const ChangeList = ({
                   className="vd-filter tw-flex-auto tw-gap-1 tw-px-2"
                   disabled={status !== 'all' && n === 0}
                   aria-label={`${status === 'all' ? 'All' : STATUS_WORD[status]}, ${n}`}
+                  data-tip={status === 'all' ? undefined : STATUS_WORD[status]}
                 >
-                  {status === 'all' ? 'All' : STATUS_WORD[status]}
+                  {status === 'all' ? (
+                    'All'
+                  ) : (
+                    <>
+                      {/* The word when the rail has room, the list's own dot when it does not. */}
+                      <StatusDot status={status} className="vd-filter__dot" />
+                      <span className="vd-filter__word">{STATUS_WORD[status]}</span>
+                    </>
+                  )}
                   <span className="tw-text-text-placeholder">{n}</span>
                 </ToggleGroupItem>
               );

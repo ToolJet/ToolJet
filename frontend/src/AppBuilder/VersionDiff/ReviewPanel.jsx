@@ -373,7 +373,7 @@ export const ReviewPanel = ({
           </Button>
         </div>
       ) : (
-        <div className="tw-flex tw-items-center tw-gap-2">
+        <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-2">
           <Button variant="outline" size="medium" disabled={busy || !text.trim()} onClick={comment}>
             Comment
           </Button>
