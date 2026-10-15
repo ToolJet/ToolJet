@@ -29,8 +29,8 @@ const sidebars = {
             'tooljet-api/users/update-user-role',
             'tooljet-api/users/replace-user-workspace',
             'tooljet-api/users/replace-user-workspaces',
-            { type: 'doc', id: 'tooljet-api/users/get-user-metadata', className: 'sidebar-badge-beta' },
-            { type: 'doc', id: 'tooljet-api/users/update-user-metadata', className: 'sidebar-badge-beta' },
+            'tooljet-api/users/get-user-metadata',
+            'tooljet-api/users/update-user-metadata',
           ],
         },
         {
