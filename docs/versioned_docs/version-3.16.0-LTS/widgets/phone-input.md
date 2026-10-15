@@ -11,7 +11,7 @@ The **Phone Input** component allows users to enter and validate phone numbers. 
 | :--------------------------------------------- | :------------------------------------------------ | :----------------------------------------------------|
 | Label | Text to display as the label for the field. | String (e.g., `Contact Number`). |
 | Placeholder | A hint displayed to guide the user on what to enter. | String (e.g., `Please enter your contact number`). |
-| Default Value | The default value that the component will hold when the app is loaded. | String (e.g., `(999) 999-9999`). |
+| Default Value | The default value that the component will hold when the app is loaded. A value without a leading `+` is treated as a national number for the **Default Country**. A value starting with `+` is read as an international number. | String (e.g., `(999) 999-9999` or `+19999999999`). |
 | Default Country | Sets the default country code to be used. | Select the default country from the dropdown or update it dynamically using **fx**.  |
 | Enable country change | Allows the user to select a different country code from the dropdown. If disabled, the user can enter only the default country code. | Enable or disable it using the toggle button or use **fx** to update it dynamically. |
 
@@ -34,7 +34,7 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"170px"}}> Description </div> | <div style={{width: "200px"}}> RunJS Query </div> |
 | :------------------------------------------- | :------------------------------------------------ | :------------------------------------------------ |
-| setValue( )                                  | Sets the value of the **Currency Input** field.   | `components.phoneinput1.setValue(value)`          |
+| setValue( )                                  | Sets the value of the **Phone Input** field.      | `components.phoneinput1.setValue(value)`          |
 | clear( )                                     | Clears the input field.                           | `components.phoneinput1.clear()`                  |
 | setFocus( )                                  | Sets the focus of the cursor on the input field.  | `components.phoneinput1.setFocus()`               |
 | setBlur( )                                   | Removes focus from the input field.               | `components.phoneinput1.setBlur()`                |
@@ -56,13 +56,14 @@ The following actions of the component can be controlled using the component-spe
 | isDisabled     | Indicates if the component is disabled.                   | `{{components.phoneinput1.isDisabled}}`     |
 | country        | Holds the selected country in the phone input component.  | `{{components.phoneinput1.country}}`        |
 | countryCode    | Holds the selected country’s dial code.                   | `{{components.phoneinput1.countryCode}}`    |
-| formattedValue | The value with the exact format shown in the phone input. | `{{components.phoneinput1.formattedValue}}` |
+| domesticNumber | Holds the national number without the dial code, as digits only (e.g., `9876543210`). Use it when you need the number independent of the selected country. Empty when the field is empty. | `{{components.phoneinput1.domesticNumber}}` |
+| formattedValue | The value with the exact format shown in the phone input. Empty when the field is empty. | `{{components.phoneinput1.formattedValue}}` |
 
 ## Validation
 
 | <div style={{ width:"200px"}}> Validation Option </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{width: "500px"}}> Expected Value </div> |
 | :------------------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
-| Make this field mandatory | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Make this field mandatory | Displays a 'Field cannot be empty' message if no value is entered. The message also appears as soon as the field is emptied with the clear button or the `clear()` action. Resetting a **Form** clears the field without showing the message. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Regex | Regular Expression to validate the input. | Regular Expression Pattern (e.g., `^\d{1,10}$` ). |
 | Min length | Sets the minimum number of characters allowed. | Integer (e.g., `10` for a minimum of 10 characters). |
 | Max length | Sets the maximum number of characters allowed. | Integer (e.g., `10` for a maximum of 10 characters). |
