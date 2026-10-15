@@ -10,6 +10,14 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.COMPARE]: {
       shouldNotSkipPublicApp: true,
     },
+    [FEATURE_KEY.REVIEW_APPROVE]: {
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
+    [FEATURE_KEY.REVIEW_OVERRIDE]: {
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
     [FEATURE_KEY.CREATE]: {
       auditLogsKey: 'APP_UPDATE',
     },

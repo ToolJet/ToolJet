@@ -15,6 +15,8 @@ import { SubModule } from '@modules/app/sub-module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { VersionDiffController } from './controllers/diff.controller';
 import { VersionDiffService } from './diff/version-diff.service';
+import { VersionReviewController } from './controllers/review.controller';
+import { VersionReviewService } from './reviews/version-review.service';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -61,6 +63,7 @@ export class VersionModule extends SubModule {
             EventsController,
             PagesController,
             VersionDiffController,
+            VersionReviewController,
             VersionController,
             VersionControllerV2,
           ]
@@ -81,6 +84,7 @@ export class VersionModule extends SubModule {
         VersionService,
         VersionUtilService,
         VersionDiffService,
+        VersionReviewService,
         FeatureAbilityFactory,
         GroupPermissionsRepository,
       ],

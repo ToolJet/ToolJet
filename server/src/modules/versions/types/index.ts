@@ -24,6 +24,8 @@ interface Features {
   [FEATURE_KEY.GET]: FeatureConfig;
   [FEATURE_KEY.GET_ONE]: FeatureConfig;
   [FEATURE_KEY.COMPARE]: FeatureConfig;
+  [FEATURE_KEY.REVIEW_APPROVE]: FeatureConfig;
+  [FEATURE_KEY.REVIEW_OVERRIDE]: FeatureConfig;
   [FEATURE_KEY.CREATE]: FeatureConfig;
   [FEATURE_KEY.DELETE]: FeatureConfig;
   [FEATURE_KEY.UPDATE]: FeatureConfig;

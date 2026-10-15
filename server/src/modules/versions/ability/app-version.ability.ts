@@ -28,6 +28,8 @@ export function defineAppVersionAbility(
         FEATURE_KEY.CREATE,
         FEATURE_KEY.GET_ONE,
         FEATURE_KEY.COMPARE,
+        FEATURE_KEY.REVIEW_APPROVE,
+        FEATURE_KEY.REVIEW_OVERRIDE,
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
         FEATURE_KEY.PROMOTE,
@@ -59,7 +61,8 @@ export function defineAppVersionAbility(
   const isAllEditable = !!userAppPermissions?.isAllEditable;
   const isAllViewable = !!userAppPermissions?.isAllViewable;
   if (userPermission.appPromote) {
-    can([FEATURE_KEY.PROMOTE], App);
+    // Whoever may promote a version may approve one for release.
+    can([FEATURE_KEY.PROMOTE, FEATURE_KEY.REVIEW_APPROVE], App);
   }
 
   if (isAllEditable) {
