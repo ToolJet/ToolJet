@@ -107,7 +107,9 @@ export class VersionSnapshotStore {
     const wanted = contentFingerprint(buildSnapshot(rows));
     const current = await this.fingerprintOf(manager, input.appId, versionId);
     if (current === wanted) return { restored: false, versionId, reason: 'Already matches the snapshot' };
-    if (input.expectedFingerprint && current !== input.expectedFingerprint)
+    // A fingerprint recorded under older rules (another prefix) cannot be compared, so it does not block.
+    const sameRules = input.expectedFingerprint?.split(':')[0] === current.split(':')[0];
+    if (input.expectedFingerprint && sameRules && current !== input.expectedFingerprint)
       throw new ConflictException(
         'The version changed after this edit, so undoing it would also discard those changes.'
       );
