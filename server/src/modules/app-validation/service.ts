@@ -52,33 +52,22 @@ export class AppValidationService {
 
     recordValidation(area, source, mode, result);
 
-    if (result.errors.length && mode === 'enforce') {
-      this.logger.warn(
-        {
-          appValidation: {
-            area,
-            source,
-            appVersionId: options.appVersionId,
-            rejected: result.errors.map(({ code, path }) => ({ code, path })),
-          },
-        },
-        `App validation (enforce mode): rejected a write with ${result.errors.length} problem(s)`
-      );
-      throw new AppValidationException(result.errors, result.warnings, area);
-    }
-
     if (result.errors.length) {
+      const enforced = mode === 'enforce';
       this.logger.warn(
         {
           appValidation: {
             area,
             source,
             appVersionId: options.appVersionId,
-            wouldBlock: result.errors.map(({ code, path }) => ({ code, path })),
+            [enforced ? 'rejected' : 'wouldBlock']: result.errors.map(({ code, path }) => ({ code, path })),
           },
         },
-        `App validation (report mode): ${result.errors.length} problem(s) would block this write`
+        enforced
+          ? `App validation (enforce mode): rejected a write with ${result.errors.length} problem(s)`
+          : `App validation (report mode): ${result.errors.length} problem(s) would block this write`
       );
+      if (enforced) throw new AppValidationException(result.errors, result.warnings, area);
     }
 
     this.recordWarnings(mode === 'report' ? [...result.errors, ...result.warnings] : result.warnings);

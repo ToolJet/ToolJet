@@ -15,7 +15,7 @@ const counter = (): Counter =>
     unit: '1',
   }));
 
-// Telemetry must never fail the write.
+// Telemetry must never break writes.
 const safely = (fn: () => void): void => {
   try {
     fn();
@@ -34,15 +34,13 @@ export function recordValidation(
   { errors, warnings }: ValidationResult
 ): void {
   if (!errors.length && !warnings.length) return;
+  const errorOutcome: Outcome = mode === 'enforce' ? 'blocked' : 'reported';
+  const outcomes: [Outcome, Issue[]][] = [
+    [errorOutcome, errors],
+    ['warned', warnings],
+  ];
   safely(() => {
-    const errorOutcome: Outcome = mode === 'enforce' ? 'blocked' : 'reported';
-    const outcomes: [Outcome, Issue[]][] = [
-      [errorOutcome, errors],
-      ['warned', warnings],
-    ];
-    const counts: Record<Outcome, number> = { blocked: 0, reported: 0, warned: 0 };
     for (const [outcome, issues] of outcomes) {
-      counts[outcome] += issues.length;
       for (const { code, severity } of issues) {
         counter().add(1, {
           [VALIDATION_ATTR.AREA]: area,
@@ -54,12 +52,16 @@ export function recordValidation(
         });
       }
     }
+  });
+  safely(() =>
     trace.getActiveSpan()?.addEvent('app_validation', {
       [VALIDATION_ATTR.AREA]: area,
       [VALIDATION_ATTR.SOURCE]: source,
       [VALIDATION_ATTR.MODE]: mode,
-      ...counts,
+      [VALIDATION_ATTR.BLOCKED]: errorOutcome === 'blocked' ? errors.length : 0,
+      [VALIDATION_ATTR.REPORTED]: errorOutcome === 'reported' ? errors.length : 0,
+      [VALIDATION_ATTR.WARNED]: warnings.length,
       [VALIDATION_ATTR.CODES]: [...new Set([...errors, ...warnings].map(({ code }) => code))],
-    });
-  });
+    })
+  );
 }

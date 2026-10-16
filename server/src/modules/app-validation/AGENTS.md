@@ -63,21 +63,14 @@ Adding an event action: follow `.github/instructions/event-action-remapping.inst
 
 ## Telemetry
 
-`core/telemetry.ts`, called from `check()`; no-op without the OTel SDK, never throws into the write.
+`core/telemetry.ts`, from `check()`; no-op without the OTel SDK, never throws into the write.
 
-- Request span attribute `tooljet.write_source` (server-resolved source, trusted), set on every
-  checked write, clean or not.
-- Counter `tooljet.app_validation.issues`, one per issue. Labels: `area`, `source`, `mode`,
-  `code`, `severity`, `outcome` = `blocked` (enforce rejection) | `reported` (report-mode
-  error: would block, returned as a warning) | `warned` (warning). Bounded values only: no
-  IDs, paths, names or messages in labels.
-- Span event `app_validation` on the active span when there are issues:
-  `{area, source, mode, blocked, reported, warned, codes}` (codes deduped).
-- Enforce rejections also log `warn` with the rejected codes and paths.
-
-Prometheus exports the counter as `tooljet_app_validation_issues_total` (dots to `_`, `_total`
-appended). Grafana: `sum by (code, source) (rate(tooljet_app_validation_issues_total[5m]))`;
-filter with label matchers, e.g. `{outcome="blocked", area="components"}`.
+- `tooljet.write_source` on the request span (server-resolved), every checked write.
+- Counter `tooljet.app_validation.issues` (Prometheus: `tooljet_app_validation_issues_total`),
+  one per issue, labels `area, source, mode, code, severity, outcome` (`blocked` | `reported`
+  = would block, returned as warning | `warned`). No IDs, paths, names or messages.
+- Span event `app_validation {area, source, mode, blocked, reported, warned, codes}`.
+- Errors log one `warn` (`rejected` in enforce, `wouldBlock` in report).
 
 ## Tests
 

@@ -1,9 +1,10 @@
 /** @group platform */
-import { context, metrics, propagation, trace } from '@opentelemetry/api';
+import { Counter, context, metrics, propagation, trace } from '@opentelemetry/api';
 import { RPCType, setRPCMetadata } from '@opentelemetry/core';
 import { DataPointType, MeterProvider, MetricReader } from '@opentelemetry/sdk-metrics';
 import { InMemorySpanExporter, NodeTracerProvider, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { Logger } from 'nestjs-pino';
+import * as requestSpan from '@otel/request-span';
 import { AppValidationService } from '@modules/app-validation/service';
 import { AppValidationException } from '@modules/app-validation/core/exception';
 import { Issue, Rule, ValidationMode, WriteSource } from '@modules/app-validation/types';
@@ -184,10 +185,19 @@ describe('AppValidationService telemetry', () => {
 
   it('a telemetry failure never breaks the write', async () => {
     setMode('report');
-    jest.spyOn(trace, 'getActiveSpan').mockImplementation(() => {
+    const broken = () => {
       throw new Error('broken exporter');
-    });
+    };
+    // SDK counter class is not exported; reach its prototype through a probe instance.
+    const counterPrototype = Object.getPrototypeOf(metrics.getMeter('probe').createCounter('probe')) as Counter;
+    jest.spyOn(counterPrototype, 'add').mockImplementation(broken);
+    jest.spyOn(requestSpan, 'setRequestSpanAttributes').mockImplementation(broken);
+    jest.spyOn(trace, 'getActiveSpan').mockImplementation(broken);
+
     const { outcome } = await inRequest(() => check([ruleReturning(issue('COMPONENT_UNKNOWN_TYPE'))]));
-    expect(outcome).toMatchObject({ errors: [issue('COMPONENT_UNKNOWN_TYPE')] });
+
+    expect(outcome).toEqual({ errors: [issue('COMPONENT_UNKNOWN_TYPE')], warnings: [] });
+    expect(counterPrototype.add).toHaveBeenCalled();
+    expect(requestSpan.setRequestSpanAttributes).toHaveBeenCalled();
   });
 });

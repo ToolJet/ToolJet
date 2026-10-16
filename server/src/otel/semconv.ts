@@ -83,6 +83,10 @@ export const VALIDATION_ATTR = {
   CODES: 'codes',
   SEVERITY: 'severity',
   OUTCOME: 'outcome',
+  // Event-only per-outcome counts.
+  BLOCKED: 'blocked',
+  REPORTED: 'reported',
+  WARNED: 'warned',
 } as const;
 
 export const FRONTEND_ERROR_TYPE = {
