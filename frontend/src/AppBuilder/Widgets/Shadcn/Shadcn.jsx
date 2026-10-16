@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon, ChevronRight, Inbox, TrendingDown, TrendingUp } from 'lucide-react';
 import { initials, list, toOptions, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -47,228 +47,47 @@ import { sliderBounds, sliderValues } from './sliderModel';
 import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { clampLines, fontStack, textCase, typeClasses } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 import { useSizedBox } from '@/AppBuilder/Widgets/Ui2/_shared/boxFit';
-import { GROUP_LOADING } from '@/AppBuilder/Widgets/Ui2/_shared/looks/groups';
-import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { progressPercent, sparkPaths, splitChange, statSize, statValue } from './statModel';
 import { compactFigure } from './chartsModel';
-import { textArg, truthy, useFocusEvents, useHasEvent, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { textArg, useFocusEvents, useHasEvent, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { LoadingBox, Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
-import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { joinStatRow } from './statRow';
+import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { CONTROL, Field, HELP, LABEL, fieldName, textAlign } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { avatarPeople } from '@/AppBuilder/Widgets/Ui2/_shared/people';
+import {
+  CheckedRow,
+  useChecked,
+  useTextBox,
+  useValidation,
+  useValue,
+} from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
+export { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+export {
+  CONTROL,
+  ERROR,
+  Field,
+  HELP,
+  INVALID_VARS,
+  LABEL,
+  fieldName,
+  textAlign,
+} from '@/AppBuilder/Widgets/Ui2/_shared/field';
+export {
+  CheckedRow,
+  useChecked,
+  useTextBox,
+  useValidation,
+  useValue,
+} from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+export { avatarPeople } from '@/AppBuilder/Widgets/Ui2/_shared/people';
 
 export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
-// shadcn/ui pack (experiment, exp/antd-pack): native ToolJet widgets rendering shadcn/ui components. Configs live in
-// WidgetManager/widgets/shad*.js.
-
-// ---- Loading ------------------------------------------------------------------------------------------------------
-
-// How each widget looks while loading (the loadingState property or the setLoading action). Controls stay in place,
-// non-interactive, with a spinner: 'field' inside the text box (Field draws it), 'inline' right after the control,
-// 'inline-top' after a multi-line control on its first line, 'wide' at the end of a control that spans the widget.
-// Text and media become skeletons in their own shape ('heading', 'text', 'line', 'pill', 'avatar', 'bar',
-// 'columns'); the rest a skeleton block at the widget's size ('block', the default). 'own': the widget draws its
-// loading state itself (or has none to draw). Groups in their own modules add theirs in looks/<group>.js (LOADING).
-const LOADING_LOOK = {
-  ShadButton: 'own',
-  ShadStat: 'own',
-  ShadSkeleton: 'own',
-  ShadSeparator: 'own',
-  ShadTable: 'own',
-  ShadTabs: 'own',
-  ShadListView: 'own',
-  ShadInput: 'field',
-  ShadTextarea: 'field',
-  ShadSelect: 'field',
-  ShadDatePicker: 'field',
-  ShadCheckbox: 'inline',
-  ShadSwitch: 'inline',
-  ShadRadioGroup: 'inline-top',
-  ShadSlider: 'wide',
-  ShadToggleGroup: 'inline',
-  ShadHeading: 'heading',
-  ShadText: 'text',
-  ShadBreadcrumb: 'line',
-  ShadBadge: 'pill',
-  ShadAvatar: 'avatar',
-  ShadProgress: 'bar',
-  ShadKanban: 'columns',
-};
-
-/** A control is non-interactive while it is disabled or loading. */
-export const busy = (properties) => !!properties.disabledState || !!properties.loadingState;
-
-// True for the 'field' loading look (text-box controls): Field then puts the spinner inside the box.
-const LoadingContext = createContext(false);
-
 export { Spinner, LoadingBox, wantsSkeleton };
-
-const loadingSkeleton = (look, { properties, height }) => {
-  const h = Number(height) || 40;
-  switch (look) {
-    case 'heading':
-      return <Skeleton className="h-8 w-1/2" />;
-    case 'text': {
-      const lines = Math.max(1, Math.min(8, Math.floor(h / 28)));
-      return (
-        <div className="flex flex-col gap-2 py-1">
-          {Array.from({ length: lines }, (_, i) => (
-            <Skeleton key={i} className={cn('h-4', i === lines - 1 && lines > 1 ? 'w-3/5' : 'w-full')} />
-          ))}
-        </div>
-      );
-    }
-    case 'line':
-      return <Skeleton className="h-4 w-48 max-w-full" />;
-    case 'pill':
-      return <Skeleton className="h-5 w-16 rounded-full" />;
-    case 'avatar': {
-      const size = Math.max(16, Math.min(256, Number(properties.size) || 32));
-      const count = avatarPeople(properties.names).length;
-      return (
-        <div className="flex -space-x-2">
-          {Array.from({ length: Math.max(1, Math.min(5, count)) }, (_, i) => (
-            <Skeleton
-              key={i}
-              className="rounded-full ring-2 ring-[color:var(--sc-background)]"
-              style={{ width: size, height: size }}
-            />
-          ))}
-        </div>
-      );
-    }
-    case 'bar':
-      return (
-        <div className="flex flex-col gap-2">
-          {properties.label || properties.showValue ? <Skeleton className="h-4 w-1/3" /> : null}
-          <Skeleton className="h-2 w-full rounded-full" />
-        </div>
-      );
-    case 'columns':
-      return (
-        <div className="grid grid-cols-3 gap-3" style={{ height: h }}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="flex flex-col gap-2 rounded-[var(--sc-radius)] bg-[color:var(--sc-muted)] p-3">
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-16 w-full" />
-              {i !== 2 ? <Skeleton className="h-16 w-full" /> : null}
-            </div>
-          ))}
-        </div>
-      );
-    default:
-      return <Skeleton className="w-full rounded-[var(--sc-radius)]" style={{ height: h }} />;
-  }
-};
-
-/** The widget's root: `.tj-shadcn` scopes the pack's Tailwind and maps shadcn's tokens to the app theme; the widget's
- *  set styles arrive as CSS variables its classes read (shadcnLook.js). While loading it shows the widget's loading
- *  look (LOADING_LOOK). */
-export const Shell = (props) => {
-  const { properties, styles, componentType, dataCy, children, innerRef, className } = props;
-  const loading = !!properties.loadingState;
-  const look = LOADING_LOOK[componentType] || GROUP_LOADING[componentType] || 'block';
-  let content = children;
-  if (loading && ['field', 'inline', 'inline-top', 'wide'].includes(look)) {
-    content = (
-      <LoadingContext.Provider value={look === 'field'}>
-        {look === 'field' ? (
-          children
-        ) : look === 'wide' ? (
-          <div className="flex items-center gap-3">
-            <div className="min-w-0 flex-1">{children}</div>
-            <Spinner />
-          </div>
-        ) : (
-          <div
-            className={cn(
-              'inline-flex max-w-full gap-3',
-              look === 'inline-top' ? 'items-start [&>[role=status]]:mt-0.5' : 'items-center'
-            )}
-          >
-            {children}
-            <Spinner />
-          </div>
-        )}
-      </LoadingContext.Provider>
-    );
-  } else if (loading && look !== 'own') {
-    content = wantsSkeleton(properties) ? loadingSkeleton(look, props) : <LoadingBox height={props.height} />;
-  }
-  return (
-    <div
-      ref={innerRef}
-      data-cy={dataCy}
-      aria-busy={loading || undefined}
-      className={cn('tj-shadcn', className)}
-      style={{
-        width: '100%',
-        display: properties.visibility === false ? 'none' : 'block',
-        boxShadow: styles?.boxShadow,
-        ...lookVars(componentType, styles),
-      }}
-    >
-      {content}
-    </div>
-  );
-};
-
-// Label and help text colours of form controls: the labelColor and helpTextColor styles, else the theme's.
-export const LABEL = 'text-[color:var(--lk-label,var(--sc-foreground))]';
-export const HELP = 'text-[color:var(--lk-help,var(--sc-muted-foreground))]';
-// A form control's box: the background, text, placeholder, border and radius styles, else shadcn's.
-export const CONTROL =
-  'bg-[color:var(--lk-bg,transparent)] text-[color:var(--lk-fg,var(--sc-foreground))] border-[color:var(--lk-invalid,var(--lk-border,var(--sc-input)))] rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] placeholder:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
-
-// A failed validation's colour: the errorColor style, else the theme's error colour.
-export const ERROR = 'text-[color:var(--lk-error,var(--sc-destructive))]';
-export const INVALID_VARS = { '--lk-invalid': 'var(--lk-error, var(--sc-destructive))' };
-
-/** shadcn's form field: label above (with a mark when mandatory), control, then the validation error or the help
- *  text below. While loading, a spinner sits inside the control. An error also turns the control's border to the
- *  error colour (CONTROL reads --lk-invalid). */
-export const Field = ({ id, label, description, error, required, children }) => {
-  const loading = useContext(LoadingContext);
-  return (
-    <div className="flex w-full flex-col gap-2" style={error ? INVALID_VARS : undefined}>
-      {label ? (
-        <Label htmlFor={id} className={LABEL}>
-          {String(label)}
-          {required ? <span className={cn('ml-0.5', ERROR)}>*</span> : null}
-        </Label>
-      ) : null}
-      {loading ? (
-        <div className="relative">
-          {children}
-          <Spinner className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
-        </div>
-      ) : (
-        children
-      )}
-      {error ? (
-        <p role="alert" className={cn('text-[0.8rem] font-medium', ERROR)}>
-          {String(error)}
-        </p>
-      ) : description ? (
-        <p className={cn('text-[0.8rem]', HELP)}>{String(description)}</p>
-      ) : null}
-    </div>
-  );
-};
-
-/** A field's accessible name when it has no visible label (which names it through <label for>): the placeholder,
- *  else the component's name, else `fallback`. Undefined when the label names it. */
-export const fieldName = (props, fallback = 'Text field') => {
-  const { properties = {}, componentName } = props;
-  if (typeof properties.label === 'string' && properties.label.trim()) return undefined;
-  const placeholder = typeof properties.placeholder === 'string' ? properties.placeholder.trim() : '';
-  return placeholder || (typeof componentName === 'string' && componentName) || fallback;
-};
-
-export const textAlign = (styles) =>
-  ['left', 'center', 'right'].includes(styles?.textAlign) ? styles.textAlign : undefined;
 
 // ---- Actions and feedback ------------------------------------------------------------------------------------------
 
@@ -801,27 +620,6 @@ export const ShadBadge = (props) => {
   );
 };
 
-/** An avatar group's people: one name, a comma-separated list, or an array of names or { name, src }. */
-export const avatarPeople = (names, src) => {
-  const people = (
-    Array.isArray(names)
-      ? names
-      : String(names ?? '')
-          .split(',')
-          .map((n) => n.trim())
-          .filter(Boolean)
-  ).flatMap((entry) => {
-    if (entry !== null && typeof entry === 'object' && !Array.isArray(entry)) {
-      const name = entry.name ?? entry.label ?? entry.title ?? '';
-      return [{ name: String(name), src: typeof entry.src === 'string' ? entry.src : entry.image ?? '' }];
-    }
-    return entry === null || entry === undefined || entry === '' ? [] : [{ name: String(entry), src: '' }];
-  });
-  // The single-avatar image property applies when there is one person without their own photo.
-  if (people.length === 1 && !people[0].src && src) people[0].src = String(src);
-  return people;
-};
-
 export const ShadAvatar = (props) => {
   const { properties, setExposedVariables } = props;
   useExposed(setExposedVariables, properties, {});
@@ -1030,75 +828,6 @@ export const ShadEmpty = (props) => {
   );
 };
 
-// ---- Inputs --------------------------------------------------------------------------------------------------------
-
-/** A single-value input: local state seeded from defaultValue, published as `value` (through `toExposed`, for
- *  controls that key options by string), plus actions built from the setter. */
-export const useValue = (props, initial, actions = () => ({}), toExposed = (v) => v) => {
-  const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
-  const [value, setValue] = useState(initial);
-  const key = stringify(initial ?? null);
-  useEffect(() => setValue(initial), [key]); // eslint-disable-line react-hooks/exhaustive-deps
-  useExposed(setExposedVariables, properties, { value: toExposed(value) ?? '', ...actions(setValue) });
-  const change = (v, event = 'onChange') => {
-    setValue(v);
-    setExposedVariable('value', toExposed(v) ?? '');
-    fireEvent(event);
-  };
-  return [value, change];
-};
-
-/** Validation the native way: validate(value) (the widget's Validation section) gives isValid and the message, both
- *  exposed with isMandatory; the message shows once the user has left the control (touch) or a form around it tried to
- *  submit. A form's clearForm calls `clear`. */
-export const useValidation = (props, value, clear) => {
-  const { validate, validation, setExposedVariable } = props;
-  const status = (typeof validate === 'function' ? validate(value) : null) || {};
-  const isValid = status.isValid !== false;
-  const isMandatory = validation?.mandatory === true;
-  const [touched, setTouched] = useState(false);
-  useShowValidationOnFormSubmit(setTouched);
-  useFormClear(() => {
-    clear?.();
-    setTouched(false);
-  });
-  useEffect(() => {
-    setExposedVariable('isValid', isValid);
-  }, [isValid]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    setExposedVariable('isMandatory', isMandatory);
-  }, [isMandatory]); // eslint-disable-line react-hooks/exhaustive-deps
-  return {
-    error: touched && !isValid ? status.validationError || 'Invalid value' : '',
-    required: isMandatory,
-    touch: () => setTouched(true),
-    untouch: () => setTouched(false),
-  };
-};
-
-/** Text box events and actions shared by Input and Textarea: focus and blur (events and actions), and blur marks
- *  the field touched for validation. */
-export const useTextBox = (props, touch) => {
-  const { fireEvent, setExposedVariables, properties } = props;
-  const ref = useRef(null);
-  // The native inputs expose their label.
-  useExposed(setExposedVariables, properties, { label: String(properties.label ?? '') });
-  useEffect(() => {
-    setExposedVariables({
-      setFocus: async () => ref.current?.focus(),
-      setBlur: async () => ref.current?.blur(),
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  return {
-    ref,
-    onFocus: () => setTimeout(() => fireEvent('onFocus'), 0),
-    onBlur: () => {
-      touch();
-      fireEvent('onBlur');
-    },
-  };
-};
-
 export const ShadInput = (props) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef(null);
@@ -1296,54 +1025,6 @@ export const ShadSelect = (props) => {
     </Shell>
   );
 };
-
-export const useChecked = (props) => {
-  const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
-  const [checked, setChecked] = useState(!!properties.defaultChecked);
-  useEffect(() => setChecked(!!properties.defaultChecked), [properties.defaultChecked]);
-  const checkedRef = useRef(checked);
-  checkedRef.current = checked;
-  const change = (v) => {
-    checkedRef.current = v === true;
-    setChecked(v === true);
-    setExposedVariable('value', v === true);
-    fireEvent('onChange');
-    if (props.componentType === 'ShadCheckbox') fireEvent(v === true ? 'onCheck' : 'onUnCheck');
-  };
-  // The native Checkbox and Toggle switch actions: toggle(), setValue(value) and the Checkbox's setChecked(status)
-  // change it as a click does, with its events (the native setValue fires onCheck or onUnCheck but not onChange, and
-  // toggle the reverse; here each fires what a click fires). Setting the value it already has fires nothing.
-  const set = (v) => {
-    const next = truthy(v);
-    if (next !== checkedRef.current) change(next);
-  };
-  useExposed(setExposedVariables, properties, {
-    value: checked,
-    label: String(properties.label ?? ''),
-    toggle: async () => change(!checkedRef.current),
-    setValue: async (v) => set(v),
-  });
-  return [checked, change];
-};
-
-export const CheckedRow = ({ id, control, label, description, error, required }) => (
-  <div className="flex items-start gap-3" style={error ? INVALID_VARS : undefined}>
-    {control}
-    <div className="grid gap-1.5 leading-none">
-      <Label htmlFor={id} className={LABEL}>
-        {String(label ?? '')}
-        {required ? <span className={cn('ml-0.5', ERROR)}>*</span> : null}
-      </Label>
-      {error ? (
-        <p role="alert" className={cn('text-sm font-medium', ERROR)}>
-          {String(error)}
-        </p>
-      ) : description ? (
-        <p className={cn('text-sm', HELP)}>{String(description)}</p>
-      ) : null}
-    </div>
-  </div>
-);
 
 export const ShadCheckbox = (props) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
