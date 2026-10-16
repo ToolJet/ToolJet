@@ -15608,6 +15608,7 @@ fieldset:disabled {
     }
 
     .time-col {
+      height: 200px;
       color: var(--cc-primary-text);
     }
 
@@ -15811,44 +15812,37 @@ fieldset:disabled {
   }
 
   .time-header {
-    width: 56px;
-    height: 32px;
+    width: 62px;
+    height: 35px;
+    padding: 8px 6px 7px 6px;
     justify-content: center;
     align-items: center;
     display: flex;
+    border-bottom: 1px solid #ccd1d5;
     font-weight: 500;
-    font-size: 13px;
     font-family: "IBM Plex Sans";
     color: var(--cc-placeholder-text);
+    background-color: var(--cc-surface1-surface);
   }
 
   .time-input-body {
-    padding: 0 12px;
+    padding-bottom: 12px;
   }
 
-  .time-col-group {
-    width: 92px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  // Each column reserves a 12px scrollbar slot on its right edge (68px wrap vs
-  // 56px items), so items stay left-aligned in every column — including AM/PM,
-  // which keeps the slot without a scrollbar.
+  // Wraps each scroll column so the custom scrollbar can overlay its right
+  // edge; sizing stays on .time-col (original design).
   .time-colwrap {
     position: relative;
-    width: 68px;
-    height: 216px;
+    width: 62px;
   }
 
   .time-col {
+    margin-top: 5px;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: none;
-    height: 216px;
-    width: 68px;
+    height: 265px;
+    width: 62px;
     color: var(--cc-primary-text) !important;
 
     &::-webkit-scrollbar {
@@ -15863,23 +15857,23 @@ fieldset:disabled {
   }
 
   .time-item {
-    width: 56px;
-    height: 36px;
+    width: 50px;
+    height: 22px;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 6px;
-    font-size: 12px;
-    font-variant-numeric: tabular-nums;
+    margin: 2px 6px;
+    font-size: 11px;
     cursor: pointer;
   }
 
-  // Custom scrollbar: 7px thumb left-aligned inside the 12px slot, no track.
-  // Hidden at rest; visible while scrolling (1s linger), while the mouse is
-  // over the column's right edge, and while dragging.
+  // Custom overlay scrollbar: 7px left-aligned thumb inside a 12px strip on
+  // the column's right edge (same placement in every column). Hidden at rest;
+  // visible while scrolling (1s linger), while the mouse is over the right
+  // edge, and while dragging.
   .time-scrollbar {
     position: absolute;
-    top: 0;
+    top: 5px; // below .time-col's top margin
     bottom: 0;
     right: 0;
     width: 12px;
@@ -16139,6 +16133,10 @@ section.ai-message-prompt-input-wrapper {
   .custom-time-input {
     border-left: none;
     border-radius: 10px;
+  }
+
+  .time-col {
+    height: 200px;
   }
 
   .react-datepicker__input-time-container {

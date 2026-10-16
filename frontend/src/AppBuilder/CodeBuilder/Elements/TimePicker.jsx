@@ -54,9 +54,12 @@ export const TimePicker = ({ value, onChange, meta }) => {
         ]}
         customTimeInput={
           <div className={cx('custom-time-input', { 'dark-time-input': darkMode })}>
-            <div className={cx('d-flex time-input-body')}>
-              <div className={cx('time-col-group')}>
-                <span className={cx('time-header')}>Hours</span>
+            <div className={cx('d-flex')}>
+              <span className={cx('time-header')}>Hours</span>
+              <span className={cx('time-header')}>Minutes</span>
+            </div>
+            <div className={cx('d-block')}>
+              <div className={cx('d-flex time-input-body')}>
                 <TimeScrollColumn>
                   {[...Array(24).keys()].map((hour) => (
                     <div
@@ -72,9 +75,6 @@ export const TimePicker = ({ value, onChange, meta }) => {
                     </div>
                   ))}
                 </TimeScrollColumn>
-              </div>
-              <div className={cx('time-col-group')}>
-                <span className={cx('time-header')}>Minutes</span>
                 <TimeScrollColumn>
                   {[...Array(60).keys()].map((minute) => (
                     <div

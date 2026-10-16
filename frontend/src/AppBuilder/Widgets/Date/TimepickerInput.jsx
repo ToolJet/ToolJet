@@ -6,13 +6,12 @@ const SCROLLBAR_PADDING = 2;
 const MIN_THUMB_HEIGHT = 32;
 const SCROLL_HIDE_DELAY_MS = 1000;
 
-// Figma "calendar + time / scrollbar" popup: each column hides the native
-// scrollbar and reserves a 12px slot on its right; a 7px thumb sits
-// left-aligned inside that slot. The thumb is hidden at rest and appears while
-// scrolling (lingers 1s), while the mouse is over the slot (the column's right
-// edge), and while dragging. Items stay left-aligned in every column —
-// including AM/PM, which reserves the slot but never scrolls — so all columns
-// share the same left edge.
+// Custom auto-hiding scrollbar overlaying each column's right edge (original
+// column sizing kept). The native scrollbar is hidden; a 7px thumb sits
+// left-aligned inside a 12px strip on the right. It is hidden at rest and
+// appears while scrolling (lingers 1s), while the mouse is over the right
+// edge, and while dragging — the same placement in every column; AM/PM uses
+// the same wrapper without a scrollbar.
 export const TimeScrollColumn = ({ withScrollbar = true, children }) => {
   const listRef = useRef(null);
   const barRef = useRef(null);
@@ -158,9 +157,13 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
 
   return (
     <div className={cx('custom-time-input ')}>
-      <div className={cx('d-flex time-input-body')}>
-        <div className={cx('time-col-group')}>
-          <span className={cx('time-header')}>Hours</span>
+      <div className={cx('d-flex')}>
+        <span className={cx('time-header')}>Hours</span>
+        <span className={cx('time-header')}>Minutes</span>
+        {!isTwentyFourHourMode && <span className={cx('time-header')}>am/pm</span>}
+      </div>
+      <div className={cx('d-block')}>
+        <div className={cx('d-flex time-input-body')}>
           <TimeScrollColumn>
             {isTwentyFourHourMode
               ? [...Array(24).keys()].map((hour) => (
@@ -195,9 +198,6 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
                   );
                 })}
           </TimeScrollColumn>
-        </div>
-        <div className={cx('time-col-group')}>
-          <span className={cx('time-header')}>Minutes</span>
           <TimeScrollColumn>
             {[...Array(60).keys()].map((minute) => (
               <div
@@ -216,10 +216,7 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
               </div>
             ))}
           </TimeScrollColumn>
-        </div>
-        {!isTwentyFourHourMode && (
-          <div className={cx('time-col-group')}>
-            <span className={cx('time-header')}>am/pm</span>
+          {!isTwentyFourHourMode && (
             <TimeScrollColumn withScrollbar={false}>
               <div
                 className={cx('time-item', {
@@ -250,8 +247,8 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
                 PM
               </div>
             </TimeScrollColumn>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
