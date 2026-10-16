@@ -423,7 +423,7 @@ JSDoc immediately before the outermost `describe`. Both e2e and unit tests use `
 
 - Seed data in `beforeAll`, per-test mocks and spies in `beforeEach` — the suite TX and SAVEPOINTs handle isolation
 - `beforeEach` builds on `beforeAll`; never duplicate seed that already exists there
-- Use `withRealTransactions()` only for tests that verify real rollback behavior
+- Use `withRealTransactions()` only for tests that verify real rollback behavior, or that need a write visible to a *different* physical connection (e.g. a Postgres role TJDB tests authenticate as directly) — not as a shortcut. Anything created inside it is a real, permanently-committed row that the suite-transaction rollback will never undo; the caller must delete it for real (itself wrapped in `withRealTransactions()`) in its own cleanup, or it leaks into every later file sharing the DB and corrupts instance-wide counts (e.g. `FirstUserSignupGuard`). Watch for `ON DELETE RESTRICT` FKs (e.g. `audit_logs` → `organizations`) blocking that cleanup delete — `ee/test/helpers/tooljet-db.ts`'s `cleanupTjdbWorkspace` is the worked example.
 - `closeTestApp(app)` in `afterAll` with a 60s timeout
 - Never abbreviate `data_source` as `ds`
 - Use seed helpers, not inline entity construction
