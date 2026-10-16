@@ -1,7 +1,7 @@
 /**
  * Backward compatibility, layer 2: apps saved under an earlier release still work after an upgrade.
  *
- * fixtures/<release>/<Type>.json is a saved page per widget and release (see scripts/ui2-compat-fixtures.js): the
+ * compat/fixtures/<release>/<Type>.json is a saved page per widget and release (see scripts/ui2-compat-fixtures.js): the
  * widget with non-default properties and styles, a handler on each of its events, control-component calls of each of
  * its actions, a text bound to each of its exposed values, and a RunJS query calling and reading it by name. Each runs
  * through import's rename and the data migrations (which must agree), loads into the real store, and renders. Then:
@@ -14,8 +14,9 @@
 import fs from 'fs';
 import path from 'path';
 import { loadCompatibilityFixture } from '@/test/app-builder';
-import { harnessFor, replay } from './savedAppReplay';
-import { importRename, migrate } from './migrationReplay';
+import { createWidgetHarness } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { harnessFor, replay } from '../compat/savedAppReplay';
+import { importRename, migrate } from '../compat/migrationReplay';
 
 jest.mock(
   '@helpers/migration.helper',
@@ -28,7 +29,7 @@ jest.mock(
   { virtual: true }
 );
 
-const ROOT = path.join(__dirname, 'fixtures');
+const ROOT = path.join(__dirname, '../compat/fixtures');
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
 const RECORD = process.env.UI2_COMPAT_RECORD === '1';
 // Saved apps meet dates through the widgets' own defaults (a calendar opens on today); pin today and the time zone.
@@ -81,7 +82,7 @@ describe('UI 2.0 saved-app fixtures', () => {
 
 describe.each(Object.keys(manifest.fixtures))('saved app %s', (name) => {
   const { payload, oracle: recorded, metadata } = loadCompatibilityFixture(name, { edition: 'ce', root: ROOT });
-  const harness = harnessFor(payload);
+  const harness = harnessFor(payload, createWidgetHarness);
   let consoleError;
 
   beforeEach(async () => {
