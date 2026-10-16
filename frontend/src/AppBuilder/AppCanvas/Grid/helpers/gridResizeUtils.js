@@ -66,8 +66,11 @@ export function computeResizeStopPosition({ x, y, gw, gridHeight }) {
  * straight to the DOM without waiting on a store round-trip to correct it. Needed
  * because a widget already sitting at a boundary produces an unchanged store value
  * (e.g. left: 0 -> 0), which skips the re-render that would otherwise fix the transform.
+ * Omit `maxY` for the main canvas, which grows downward; bounding y by the visible height would shift a
+ * widget stretched past the visible bottom upward. Nested widgets are returned unchanged.
  */
-export function clampResizeTranslate({ x, y, maxX, maxY }) {
+export function clampResizeTranslate({ x, y, maxX = Infinity, maxY = Infinity, isNested = false }) {
+  if (isNested) return { x, y };
   return {
     x: Math.max(0, Math.min(x, maxX)),
     y: Math.max(0, Math.min(y, maxY)),
@@ -78,8 +81,19 @@ export function clampResizeTranslate({ x, y, maxX, maxY }) {
  * Clamps a resized box to the canvas borders while keeping the opposite edge fixed: overshoot past the
  * left/top border is removed from the width/height instead of only pinning x/y to 0, and a size that
  * would cross the right/bottom border is capped. Omit `containerHeight` for canvases that grow downward.
+ * Widgets nested in a Container/Form keep their original resize behaviour: those canvases scroll and are
+ * padded, so their client box is not a reliable border and clamping against it crunches the widget.
  */
-export function clampResizeToCanvas({ x, y, width, height, containerWidth, containerHeight = Infinity }) {
+export function clampResizeToCanvas({
+  x,
+  y,
+  width,
+  height,
+  containerWidth,
+  containerHeight = Infinity,
+  isNested = false,
+}) {
+  if (isNested) return { x, y, width, height };
   if (x < 0) {
     width += x;
     x = 0;

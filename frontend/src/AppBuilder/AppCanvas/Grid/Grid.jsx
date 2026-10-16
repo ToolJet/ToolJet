@@ -728,14 +728,14 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const maxY = containerHeight - e.target.clientHeight;
           const maxLeft = containerWidth - e.target.clientWidth;
 
-          // Main canvas grows downward, so only nested canvases have a hard bottom border.
+          // Main canvas grows downward and has no bottom border; nested widgets keep their original behaviour.
           const { width: resizeWidth, height: resizeHeight } = clampResizeToCanvas({
             x: transformX,
             y: transformY,
             width: e.width,
             height: e.height,
             containerWidth,
-            containerHeight: currentWidget.component?.parent ? containerHeight : undefined,
+            isNested: Boolean(currentWidget.component?.parent),
           });
           transformY = Math.max(0, Math.min(transformY, maxY));
           transformX = Math.max(0, Math.min(transformX, maxLeft));
@@ -827,11 +827,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const elemContainer = e.target.closest('.real-canvas');
             const containerHeight = elemContainer.clientHeight;
             const containerWidth = elemContainer.clientWidth;
-            // Main canvas grows downward, so only nested canvases have a hard bottom border.
-            const bounds = {
-              containerWidth,
-              containerHeight: currentWidget.component?.parent ? containerHeight : undefined,
-            };
+            // Main canvas grows downward and has no bottom border; nested widgets keep their original behaviour.
+            const isNested = Boolean(currentWidget.component?.parent);
+            const bounds = { containerWidth, isNested };
             const clampedSize = clampResizeToCanvas({ x: transformX, y: transformY, width, height, ...bounds });
             const lastEventWidth = clampResizeToCanvas({
               x: transformX,
@@ -840,7 +838,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               height,
               ...bounds,
             }).width;
-            width = adjustWidth(clampedSize.width, Math.max(0, transformX), _gridWidth);
+            width = adjustWidth(clampedSize.width, isNested ? transformX : Math.max(0, transformX), _gridWidth);
             height = Math.max(GRID_HEIGHT, clampedSize.height);
             const maxY = containerHeight - e.target.clientHeight;
             const maxLeft = containerWidth - e.target.clientWidth;
@@ -849,7 +847,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               x: transformX,
               y: transformY,
               maxX: maxLeft,
-              maxY,
+              isNested,
             }));
 
             const maxWidthHit = transformX < 0 || transformX >= maxLeft;
