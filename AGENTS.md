@@ -104,6 +104,7 @@ tools/tj/bin/tj doctor                     # prerequisites + fix hints
 tools/tj/bin/tj wt add <branch> [--app]    # worktree with deps, isolated DBs (+ free ports with --app)
 tools/tj/bin/tj start | stop | status      # dev servers in the background, health-checked
 tools/tj/bin/tj db migrate [--test]        # migrations (test DB the way that works)
+tools/tj/bin/tj obs up [--wire]            # local OTel stack: Grafana :3900, OTLP :4318
 ```
 
 Underlying commands:
@@ -167,6 +168,7 @@ Context is layered — the closest file to the code you're changing wins:
 | `frontend/AGENTS.md`                    | Frontend conventions, App Builder architecture, glossary                               |
 | `marketplace/AGENTS.md`                 | Marketplace plugin layout, registration, build                                         |
 | `tools/tj/README.md`                    | Dev toolkit: worktrees, env files, DBs, dev servers, output contract                   |
+| `tools/observability/README.md`         | Local OTel stack, tracing an AI generation end to end                                  |
 | `server/docs/testing.md`                | Backend testing — what to test, then how to write it                                   |
 | `frontend/src/test/README.md`           | Frontend testing — Jest/RTL/MSW conventions; App Builder layer in `frontend/AGENTS.md` |
 

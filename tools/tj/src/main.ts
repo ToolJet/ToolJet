@@ -1,5 +1,6 @@
 import { type Command, globalOptions, type Opt, parse, resolve } from './args.ts';
 import { dbMigrate } from './commands/db.ts';
+import { obsDown, obsStatus, obsUp } from './commands/obs.ts';
 import { doctor, info } from './commands/info.ts';
 import { setupCmd } from './commands/setup.ts';
 import { logs, start, statusCmd, stop } from './commands/svc.ts';
@@ -17,7 +18,7 @@ const help: Command = {
   },
 };
 
-const commands: Command[] = [doctor, info, setupCmd, wtAdd, wtRm, wtLs, wtPath, start, stop, statusCmd, logs, dbMigrate, help];
+const commands: Command[] = [doctor, info, setupCmd, wtAdd, wtRm, wtLs, wtPath, start, stop, statusCmd, logs, dbMigrate, obsUp, obsDown, obsStatus, help];
 
 function describe(c: Command) {
   return { name: c.name, summary: c.summary, usage: c.usage, options: c.options ?? {} };

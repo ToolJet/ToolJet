@@ -1,4 +1,4 @@
-import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
+import { CompositePropagator, W3CTraceContextPropagator } from '@opentelemetry/core';
 import { getWorkspaceLabel, getWorkspaceNameLabel } from './org-plan-cache';
 import {
   Span,
@@ -13,12 +13,13 @@ import {
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
+import type { ClientRequest, IncomingMessage } from 'http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
-import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
+import { PgInstrumentation, PgInstrumentationConfig } from '@opentelemetry/instrumentation-pg';
 import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 import { RuntimeNodeInstrumentation } from '@opentelemetry/instrumentation-runtime-node';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
@@ -28,22 +29,44 @@ import { getTooljetEdition } from '../helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '../modules/app/constants';
 import { ATTR, ATTR_DEPLOYMENT_ENVIRONMENT_NAME, METRIC, deploymentEnvironmentName } from './semconv';
 import { shutdownOtelLogs } from './logs';
+import {
+  incomingHttpAttributes,
+  outgoingHttpAttributes,
+  requestSpanAttributes,
+  routeSpanName,
+  undiciRequestHook,
+} from './http-span';
+import { BaggageAttributesSpanProcessor, ExtractOnlyBaggagePropagator } from './baggage';
+import { UndiciInstrumentation } from '@opentelemetry/instrumentation-undici';
 
 // Set this up to see debug logs
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 }
 
-const sanitizeObject = (obj: any) => {
-  const sanitized: any = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'object' && value !== null) {
-      sanitized[key] = sanitizeObject(value);
-    } else if (typeof value !== 'function') {
-      sanitized[key] = value;
+export const PG_INSTRUMENTATION_CONFIG: PgInstrumentationConfig = {
+  // Bound values carry tokens, session ids and password hashes.
+  enhancedDatabaseReporting: false,
+  responseHook: (span: Span, responseInfo: any) => {
+    // Add more detailed DB query information
+    if (responseInfo?.data) {
+      span.setAttribute('db.rows_affected', responseInfo.data.rowCount || 0);
     }
-  }
-  return sanitized;
+  },
+  requestHook: (span: Span, requestInfo: any) => {
+    // Add query execution context
+    if (requestInfo?.query) {
+      // Truncate very long queries for better readability
+      const query = requestInfo.query.text || requestInfo.query;
+      const truncatedQuery = query.length > 500 ? query.substring(0, 500) + '...' : query;
+      span.setAttribute('db.statement', truncatedQuery);
+
+      // Add query parameter count if available
+      if (requestInfo.query.values) {
+        span.setAttribute('db.query_parameters_count', requestInfo.query.values.length);
+      }
+    }
+  },
 };
 
 // SDK instance - created lazily in startOpenTelemetry()
@@ -82,13 +105,12 @@ function createSDK(): NodeSDK {
 
   return new NodeSDK({
     resource: resource,
-    traceExporter: traceExporter,
-    spanProcessor: new BatchSpanProcessor(traceExporter),
+    spanProcessors: [new BaggageAttributesSpanProcessor(), new BatchSpanProcessor(traceExporter)],
     metricReader: new PeriodicExportingMetricReader({
       exporter: metricExporter,
     }),
     textMapPropagator: new CompositePropagator({
-      propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
+      propagators: [new W3CTraceContextPropagator(), new ExtractOnlyBaggagePropagator()],
     }),
     instrumentations: [
       new RuntimeNodeInstrumentation({ monitoringPrecision: 5000 }),
@@ -97,53 +119,29 @@ function createSDK(): NodeSDK {
           const url = request.url || '';
           return url.includes('/api/health') || url === '/api/health';
         },
+        requestHook: (span: Span, request) => {
+          const raw = (request as IncomingMessage).url;
+          if (typeof raw !== 'string') {
+            span.setAttributes(outgoingHttpAttributes(request as ClientRequest));
+            return;
+          }
+          span.setAttributes(incomingHttpAttributes(raw, (request as IncomingMessage).headers?.host ?? 'localhost'));
+        },
       }),
+      new UndiciInstrumentation({ requestHook: undiciRequestHook }),
       new ExpressInstrumentation({
         requestHook: (span: Span, { request }) => {
-          const path = request.route?.path || request.path || '';
-          if (path.startsWith('/api/') && path !== '/api/health') {
-            span.updateName(`${request.method} ${path}`);
-            span.setAttribute('http.route', path);
+          const named = routeSpanName(request);
+          if (named) {
+            span.updateName(named.name);
+            span.setAttribute('http.route', named.route);
             span.setAttribute('http.method', request.method);
-
-            if (request.params && Object.keys(request.params).length > 0) {
-              span.setAttribute('http.params', JSON.stringify(sanitizeObject(request.params)));
-            }
-
-            if (request.query && Object.keys(request.query).length > 0) {
-              span.setAttribute('http.query', JSON.stringify(sanitizeObject(request.query)));
-            }
-
-            if (request.body && Object.keys(request.body).length > 0) {
-              span.setAttribute('http.body', JSON.stringify(sanitizeObject(request.body)));
-            }
+            span.setAttributes(requestSpanAttributes(request));
           }
         },
       }),
       new NestInstrumentation(),
-      new PgInstrumentation({
-        enhancedDatabaseReporting: true,
-        responseHook: (span: Span, responseInfo: any) => {
-          // Add more detailed DB query information
-          if (responseInfo?.data) {
-            span.setAttribute('db.rows_affected', responseInfo.data.rowCount || 0);
-          }
-        },
-        requestHook: (span: Span, requestInfo: any) => {
-          // Add query execution context
-          if (requestInfo?.query) {
-            // Truncate very long queries for better readability
-            const query = requestInfo.query.text || requestInfo.query;
-            const truncatedQuery = query.length > 500 ? query.substring(0, 500) + '...' : query;
-            span.setAttribute('db.statement', truncatedQuery);
-
-            // Add query parameter count if available
-            if (requestInfo.query.values) {
-              span.setAttribute('db.query_parameters_count', requestInfo.query.values.length);
-            }
-          }
-        },
-      }),
+      new PgInstrumentation(PG_INSTRUMENTATION_CONFIG),
       new PinoInstrumentation(),
     ],
   });

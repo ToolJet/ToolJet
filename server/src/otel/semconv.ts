@@ -33,6 +33,10 @@ export const ATTR = {
   // Set only on failure — absence marks success, so no parallel `status` label.
   ERROR_TYPE: 'error.type',
 
+  // Set from W3C baggage. Untrusted: telemetry only, never auth or persisted state.
+  ORIGIN: 'tooljet.origin',
+  GEN_AI_CONVERSATION_ID: 'gen_ai.conversation.id',
+
   APP_ID: 'tooljet.app.id',
   APP_NAME: 'tooljet.app.name',
   APP_VERSION: 'tooljet.app.version',
