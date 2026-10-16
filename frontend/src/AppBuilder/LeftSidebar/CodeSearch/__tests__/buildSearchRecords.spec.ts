@@ -1,6 +1,6 @@
 /** @jest-environment node */
 import { buildSearchRecords, toPlainDefs, type SearchInput, type SearchRecord } from '../buildSearchRecords';
-import { createSearcher } from '../searchRecords';
+import { createSearcher, searchRecords } from '../searchRecords';
 
 type Predicate = (record: SearchRecord) => boolean;
 
@@ -219,6 +219,30 @@ describe('buildSearchRecords', () => {
     ]);
   });
 
+  test('a handler is one row titled by its trigger and action, found by either name', () => {
+    const records = build().filter((r) => r.eventId === 'ev1');
+    expect(find(records, (r) => r.fieldPath[0] === 'handler')).toMatchObject({
+      text: 'On row clicked → Run query',
+      shortLabel: '',
+    });
+    expect(records.some((r) => ['trigger', 'action'].includes(r.fieldPath[0]))).toBe(false);
+    expect(searchRecords(build(), 'show alert').total).toBe(2);
+  });
+
+  test("a handler's stored widget type has no control in its popover and is not indexed", () => {
+    const records = build({
+      events: [
+        {
+          id: 'ev9',
+          sourceId: TABLE_ID,
+          target: 'component',
+          event: { eventId: 'onClick', actionId: 'show-alert', message: 'Hi', component: 'Table' },
+        },
+      ],
+    }).filter((r) => r.eventId === 'ev9');
+    expect(records.some((r) => r.fieldPath.join('.') === 'event.component')).toBe(false);
+  });
+
   test('indexes the handler name but not its trigger and action keys', () => {
     const records = build().filter((r) => r.eventId === 'ev1');
     expect(records.some((r) => ['event.eventId', 'event.actionId'].includes(r.fieldPath.join('.')))).toBe(false);
@@ -300,6 +324,75 @@ describe('buildSearchRecords', () => {
     });
     expect(app.filter((r) => r.text === 'x()')).toHaveLength(1);
     expect(app.some((r) => r.fieldPath[0] === 'theme')).toBe(false);
+  });
+
+  describe('list widgets index only the side of the dynamic toggle the Inspector shows', () => {
+    const fieldsOf = (type: string, properties: Record<string, unknown>) =>
+      build({
+        pages: [
+          {
+            id: PAGE_ID,
+            name: 'Home',
+            components: { [TABLE_ID]: { component: { name: 'w1', component: type, definition: { properties } } } },
+          },
+        ],
+      })
+        .filter((r) => r.entityId === TABLE_ID && r.fieldPath[0] === 'properties')
+        .map((r) => r.fieldPath[1]);
+    const table = (useDynamicColumn?: unknown) => ({
+      ...(useDynamicColumn === undefined ? {} : { useDynamicColumn: { value: useDynamicColumn } }),
+      columns: { value: [{ name: 'email', key: 'email' }] },
+      columnData: { value: "{{[{name: 'email', key: 'email'}]}}" },
+    });
+
+    test('toggle off or unset: the column list, not the unused column data', () => {
+      expect(fieldsOf('Table', table('{{false}}'))).not.toContain('columnData');
+      expect(fieldsOf('Table', table())).not.toContain('columnData');
+      expect(fieldsOf('Table', table(false))).toContain('columns');
+    });
+
+    test('toggle on: the column data, not the hidden column list', () => {
+      const fields = fieldsOf('Table', table('{{true}}'));
+      expect(fields).toContain('columnData');
+      expect(fields).not.toContain('columns');
+    });
+
+    test('toggle bound to an expression: both stay indexed', () => {
+      expect(fieldsOf('Table', table('{{components.x.value}}'))).toEqual(
+        expect.arrayContaining(['columns', 'columnData'])
+      );
+    });
+
+    test.each([
+      ['Tags', 'data', 'options'],
+      ['DropdownV2', 'schema', 'options'],
+      ['MultiselectV2', 'schema', 'options'],
+      ['RadioButtonV2', 'schema', 'options'],
+      ['TagsInput', 'schema', 'options'],
+      ['ButtonGroupV2', 'schema', 'options'],
+      ['PopoverMenu', 'schema', 'options'],
+      ['ReorderableList', 'schema', 'options'],
+      ['Steps', 'schema', 'steps'],
+    ])('%s: the %s code when Dynamic options is on, the %s list otherwise', (type, dynamic, list) => {
+      const props = (on: string) => ({
+        advanced: { value: on },
+        [dynamic]: { value: "{{[{title: 'info'}]}}" },
+        [list]: { value: [{ title: 'info' }] },
+      });
+      expect(fieldsOf(type, props('{{false}}'))).not.toContain(dynamic);
+      expect(fieldsOf(type, props('{{false}}'))).toContain(list);
+      expect(fieldsOf(type, props('{{true}}'))).not.toContain(list);
+    });
+
+    test('Key Value Pair: field data when dynamic, the field list otherwise', () => {
+      const kvp = (on: string) => ({
+        useDynamicField: { value: on },
+        fields: { value: [{ name: 'Email', key: 'email' }] },
+        fieldDynamicData: { value: "{{[{name: 'Email', key: 'email'}]}}" },
+      });
+      expect(fieldsOf('KeyValuePair', kvp('{{false}}'))).not.toContain('fieldDynamicData');
+      expect(fieldsOf('KeyValuePair', kvp('{{true}}'))).not.toContain('fields');
+    });
   });
 
   test("indexes values left at the widget default, like a freshly dropped Table's columns", () => {

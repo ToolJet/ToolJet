@@ -1,5 +1,6 @@
 // Matches a term against the rows from buildSearchRecords and groups the hits for display:
-// group (page / Queries / App) → entity → one row per field, every occurrence in that row.
+// section (Components / Queries / Events / Pages & app) → entity → one row per field, every
+// occurrence in that row.
 // Pure, like buildSearchRecords; both run in the code-search worker (codeSearch.worker.ts).
 
 import {
@@ -50,14 +51,17 @@ export interface ResultEntity {
   entitySubtype?: string;
   componentType?: string;
   query?: SearchRecord['query'];
+  // The page a component (or an event's owner) is on; shown as a tag, since sections don't split by page.
+  pageId?: string | null;
   defined: boolean;
   count: number;
   rows: ResultRow[];
 }
 
+export type SectionKey = 'components' | 'queries' | 'events' | 'pages';
+
 export interface ResultGroup {
-  key: string;
-  pageId?: string | null;
+  key: SectionKey;
   count: number;
   entities: ResultEntity[];
 }
@@ -124,13 +128,24 @@ const findMatches = (matcher: RegExp, text: string) => {
   return matches;
 };
 
-// Text segments for one row: starts just before the first match, every match inside is marked.
+// Where the preview starts: after the last separator in the lead before the first match, so it opens
+// on the matched token (`email: 'olivia…`, not `…05/2022', email:`). No separator → a fixed lead,
+// cut mid-token, so only that start is marked with `…`.
+const PREVIEW_BREAK = /[\s,;{}()[\]]/;
+const previewStart = (text: string, matchStart: number) => {
+  const leadFrom = Math.max(0, matchStart - PREVIEW_LEAD);
+  for (let i = matchStart - 1; i >= leadFrom; i--) if (PREVIEW_BREAK.test(text[i])) return { from: i + 1, cut: false };
+  return { from: leadFrom, cut: leadFrom > 0 };
+};
+
+// Text segments for one row: starts on the first match's token, every match inside is marked.
 // Whitespace runs collapse to one space so multi-line code previews as one line.
-export const buildPreview = (text: string, matches: Match[]): PreviewSegment[] => {
-  const from = Math.max(0, matches[0].start - PREVIEW_LEAD);
+// A title (a row with no short label, e.g. `Row clicked → Show Alert`) is shown whole.
+export const buildPreview = (text: string, matches: Match[], { title = false } = {}): PreviewSegment[] => {
+  const { from, cut } = title ? { from: 0, cut: false } : previewStart(text, matches[0].start);
   const to = Math.min(text.length, from + PREVIEW_LENGTH);
   const clean = (value: string) => value.replace(/\s+/g, ' ');
-  const segments: PreviewSegment[] = from > 0 ? [{ text: '…', match: false }] : [];
+  const segments: PreviewSegment[] = cut ? [{ text: '…', match: false }] : [];
   let cursor = from;
   for (const { start, end, occurrence } of matches) {
     if (start >= to) break;
@@ -142,8 +157,15 @@ export const buildPreview = (text: string, matches: Match[]): PreviewSegment[] =
   return segments;
 };
 
-const groupKeyOf = (record: SearchRecord) =>
-  record.pageId ? `page:${record.pageId}` : record.entityType === 'app' ? 'app' : 'queries';
+// Fixed section order; pages and app-wide settings share the last one.
+const SECTION_ORDER: SectionKey[] = ['components', 'queries', 'events', 'pages'];
+export const SECTION_OF: Record<EntityType, SectionKey> = {
+  component: 'components',
+  query: 'queries',
+  event: 'events',
+  page: 'pages',
+  app: 'pages',
+};
 
 export const searchRecords = (
   records: SearchRecord[],
@@ -188,19 +210,19 @@ export const searchRecords = (
     if (type !== 'all' && record.entityType !== type) continue;
     total += matches.length;
     fieldCount++;
-    if (rows.length < MAX_RESULTS) rows.push({ record, matches, preview: buildPreview(record.text, matches) });
+    if (rows.length < MAX_RESULTS)
+      rows.push({ record, matches, preview: buildPreview(record.text, matches, { title: !record.shortLabel }) });
   }
 
   // Entities are keyed by id while grouping, then listed in display order.
   type GroupDraft = Omit<ResultGroup, 'entities'> & { entities: Map<string, ResultEntity> };
-  const groups = new Map<string, GroupDraft>();
+  const groups = new Map<SectionKey, GroupDraft>();
   for (const row of rows) {
     const { record } = row;
-    const groupKey = groupKeyOf(record);
-    if (!groups.has(groupKey))
-      groups.set(groupKey, { key: groupKey, pageId: record.pageId, count: 0, entities: new Map() });
+    const groupKey = SECTION_OF[record.entityType];
+    if (!groups.has(groupKey)) groups.set(groupKey, { key: groupKey, count: 0, entities: new Map() });
     const group = groups.get(groupKey) as GroupDraft;
-    // Events display under the component / query / page that owns them.
+    // In Events, handlers are listed under the component / query / page that owns them.
     const entityId = record.ownerId || record.entityId;
     if (!group.entities.has(entityId)) {
       group.entities.set(entityId, {
@@ -210,6 +232,7 @@ export const searchRecords = (
         entitySubtype: record.entitySubtype,
         componentType: record.componentType,
         query: record.query,
+        pageId: record.pageId,
         defined: false,
         count: 0,
         rows: [],
@@ -224,22 +247,22 @@ export const searchRecords = (
   const sameName = (name: string) =>
     caseSensitive ? name === term : String(name).toLowerCase() === term.toLowerCase();
   const pageOrder = new Map(pages.map((page, index) => [page.id, index]));
-  const groupRank = (group: ResultGroup) => {
-    if (group.entities[0]?.defined) return -2;
-    if (group.pageId === currentPageId) return -1;
-    if (group.pageId) return pageOrder.get(group.pageId) ?? pages.length;
-    return group.key === 'queries' ? pages.length + 1 : pages.length + 2;
+  // The entity the term names first ("defined here"; everything else references it), then the
+  // current page's, then by page order; app-wide entities (no page) last.
+  const entityRank = (entity: ResultEntity) => {
+    if (entity.defined) return -2;
+    if (entity.pageId && entity.pageId === currentPageId) return -1;
+    return entity.pageId ? pageOrder.get(entity.pageId) ?? pages.length : pages.length + 1;
   };
 
-  const sortedGroups: ResultGroup[] = [...groups.values()]
-    .map((group) => {
-      const entities = [...group.entities.values()];
-      for (const entity of entities) entity.defined = sameName(entity.entityName);
-      // The entity the term names is pinned first: "defined here", everything else references it.
-      entities.sort((a, b) => Number(b.defined) - Number(a.defined));
-      return { ...group, entities };
-    })
-    .sort((a, b) => groupRank(a) - groupRank(b));
+  const sortedGroups: ResultGroup[] = SECTION_ORDER.flatMap((key) => {
+    const group = groups.get(key);
+    if (!group) return [];
+    const entities = [...group.entities.values()];
+    for (const entity of entities) entity.defined = sameName(entity.entityName);
+    entities.sort((a, b) => entityRank(a) - entityRank(b));
+    return [{ ...group, entities }];
+  });
 
   // Rows in display order, for keyboard navigation and the flat list view.
   const orderedRows = sortedGroups.flatMap((group) => group.entities.flatMap((entity) => entity.rows));

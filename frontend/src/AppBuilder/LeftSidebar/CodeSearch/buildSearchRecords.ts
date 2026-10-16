@@ -114,8 +114,9 @@ const NON_WIDGET_EVENT_NAMES: Record<string, string> = {
   onDataQueryFailure: 'Query Failure',
   onPageLoad: 'On page load',
 };
-// Shown in the handler label instead of indexed as content.
-const EVENT_SKIP_KEYS = new Set(['eventId', 'actionId']);
+// Ids are indexed by their display names (Event, Action) below. `component` is the owner's widget
+// type, written at creation with no control in the popover.
+const EVENT_SKIP_KEYS = new Set(['eventId', 'actionId', 'component']);
 // Action params store ids under `queryId`, `componentId`, …; the card labels them `Query`, `Component`.
 const stripIdSuffix = (key: string) => String(key).replace(/(.)Id$/, '$1');
 
@@ -125,6 +126,36 @@ const stripValueKey = (path: string[]) =>
   path[path.length - 1] === 'value' && !/^\d+$/.test(path[path.length - 2]) ? path.slice(0, -1) : path;
 
 const STYLE_SECTIONS = new Set(['styles', 'generalStyles']);
+
+// Fields the Inspector swaps on a toggle: on → the dynamic code field, off → the static list. Only
+// the shown one is indexed, so a column never matches twice (as list rows and as default code).
+// Option widgets share one toggle (`advanced`, "Dynamic options").
+const dynamicOptions = { toggle: 'advanced', dynamic: 'schema', list: 'options' };
+const DYNAMIC_LIST_TOGGLES: Record<string, { toggle: string; dynamic: string; list: string }> = {
+  Table: { toggle: 'useDynamicColumn', dynamic: 'columnData', list: 'columns' },
+  KeyValuePair: { toggle: 'useDynamicField', dynamic: 'fieldDynamicData', list: 'fields' },
+  Tags: { ...dynamicOptions, dynamic: 'data' },
+  Steps: { ...dynamicOptions, list: 'steps' },
+  DropdownV2: dynamicOptions,
+  MultiselectV2: dynamicOptions,
+  RadioButtonV2: dynamicOptions,
+  TagsInput: dynamicOptions,
+  ButtonGroupV2: dynamicOptions,
+  PopoverMenu: dynamicOptions,
+  ReorderableList: dynamicOptions,
+};
+// A toggle bound to an expression can't be resolved here; both fields stay indexed then.
+const toggleState = (value: Saved): boolean | undefined => {
+  if (value === undefined || value === false || /^\{\{\s*false\s*\}\}$/.test(String(value))) return false;
+  if (value === true || /^\{\{\s*true\s*\}\}$/.test(String(value))) return true;
+  return undefined;
+};
+const hiddenPropertyOf = (type: string, properties: Saved): string | undefined => {
+  const swap = DYNAMIC_LIST_TOGGLES[type];
+  if (!swap) return undefined;
+  const on = toggleState(properties?.[swap.toggle]?.value);
+  return on === undefined ? undefined : on ? swap.list : swap.dynamic;
+};
 
 // Short name for a nested settings path: `Page header · Height` rather than five `Page header` rows.
 const pathShortLabel = (fieldPath: string[]) =>
@@ -420,11 +451,13 @@ export const buildSearchRecords = ({
         savedColumns.set(componentId, component.definition.properties.columns.value);
       }
       push(base, ['name'], 'Name', component.name);
+      const hiddenProperty = hiddenPropertyOf(type, component.definition?.properties);
       for (const section of COMPONENT_SECTIONS) {
         const saved = component.definition?.[section];
         walkLeaves(saved, [], (path, text) => {
           const fieldPath = stripValueKey(path);
           if (fieldPath.length === 0) return;
+          if (section === 'properties' && fieldPath[0] === hiddenProperty) return;
           const labels = componentFieldLabels(widgetDef, section, fieldPath, saved);
           const reveal = componentFieldReveal(componentId, type, section, fieldPath, labels.itemIds);
           push(reveal.length ? { ...base, reveal } : base, [section, ...fieldPath], labels.full, text, labels.short);
@@ -490,6 +523,9 @@ export const buildSearchRecords = ({
       reveal: eventReveal(event, columnsOf),
     };
     if (event.name) push(base, ['name'], `${fullPrefix} › Event name`, event.name, `${handler} › Event name`);
+    // The popover's Event and Action dropdowns, as one row titled like the handler card. No short
+    // label: the row's text is its title, so the match is marked in place.
+    push(base, ['handler'], fullPrefix, handler, '');
     walkLeaves(event.event, [], (path, text) => {
       if (EVENT_SKIP_KEYS.has(path[0])) return;
       // Event actions store bare ids (queryId, componentId): show the name, drop ids of deleted

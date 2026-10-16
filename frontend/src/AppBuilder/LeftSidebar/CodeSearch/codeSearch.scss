@@ -138,7 +138,7 @@
     align-items: center;
     gap: 6px;
     width: 100%;
-    height: 24px;
+    height: 28px;
     border: 0;
     background: transparent;
     text-align: left;
@@ -149,10 +149,17 @@
     }
   }
 
+  // Section header (Components / Queries / Events / Pages & app): the top level, so it reads largest.
   .code-search-group-header {
+    height: 32px;
     padding: 0 12px 0 8px;
-    font-size: 11px;
-    color: var(--text-placeholder);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-default);
+  }
+
+  .code-search-group + .code-search-group {
+    margin-top: 8px;
   }
 
   .code-search-group-title {
@@ -163,6 +170,11 @@
   .code-search-entity-header {
     padding: 0 12px 0 20px;
     color: var(--text-default);
+  }
+
+  // Air between components so each reads as its own block.
+  .code-search-entity + .code-search-entity {
+    margin-top: 4px;
   }
 
   .code-search-chevron {
@@ -180,6 +192,17 @@
     color: var(--text-placeholder);
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  // The page a component is on; the current page in accent so it's easy to spot.
+  .code-search-entity-page {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--text-placeholder);
+
+    &.current {
+      color: var(--text-accent);
+    }
   }
 
   .code-search-count {
@@ -207,9 +230,9 @@
   .code-search-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    height: 24px;
+    height: 28px;
     padding: 0 12px 0 40px;
     border: 0;
     background: transparent;
@@ -231,13 +254,40 @@
 
   .code-search-row-label {
     // Sized to the label (event and list-item labels run long); the preview keeps at least 40%.
+    display: flex;
     flex: 0 1 auto;
+    gap: 4px;
     max-width: 60%;
+    min-width: 0;
+    font-size: 12px;
+    color: var(--text-placeholder);
+  }
+
+  // The path gives up its width first and takes the ellipsis; the field name only shrinks once the
+  // path is gone (a lone label longer than the column).
+  .code-search-row-path,
+  .code-search-row-field {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 11px;
-    color: var(--text-placeholder);
+  }
+
+  .code-search-row-path {
+    flex-shrink: 1000;
+  }
+
+  .code-search-row-sep {
+    flex-shrink: 0;
+  }
+
+  .code-search-row-field {
+    color: var(--text-default);
+  }
+
+  .code-search-row-preview.code-search-row-title {
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-default);
   }
 
   .code-search-row-preview {
@@ -246,11 +296,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: var(--font-family-mono, monospace);
-    font-size: 11px;
+    font-size: 11.5px;
     color: var(--text-placeholder);
 
     mark {
-      padding: 0 1px;
+      padding: 0 2px;
       border-radius: 2px;
       color: var(--text-default);
       background: var(--background-warning-weak, #ffe9a8);

@@ -15,8 +15,11 @@ import {
   searchRecords,
   MIN_TERM_LENGTH,
   RESULT_TYPES,
+  SECTION_OF,
+  type ResultEntity,
   type ResultGroup,
   type ResultRow as ResultRowData,
+  type SectionKey,
   type SearchResult,
 } from './searchRecords';
 import { runSearch, disposeSearchWorker } from './searchWorker';
@@ -85,6 +88,15 @@ const IconButton = ({
     </button>
   </ToolTip>
 );
+const SECTION_TITLES: Record<SectionKey, string> = {
+  components: 'Components',
+  queries: 'Queries',
+  events: 'Events',
+  pages: 'Pages & app',
+};
+// Per section: a component with matching events is listed in both Components and Events.
+const entityKey = (group: ResultGroup, entity: ResultEntity) => `entity:${group.key}:${entity.entityId}`;
+
 const TYPE_LABELS: Record<'all' | EntityType, string> = {
   all: 'All',
   component: 'Components',
@@ -184,7 +196,7 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
       result.groups.flatMap((group) =>
         collapsed.has(`group:${group.key}`)
           ? []
-          : group.entities.flatMap((entity) => (collapsed.has(`entity:${entity.entityId}`) ? [] : entity.rows))
+          : group.entities.flatMap((entity) => (collapsed.has(entityKey(group, entity)) ? [] : entity.rows))
       ),
     [result, collapsed]
   );
@@ -200,9 +212,9 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
       return next;
     });
 
-  const entityKeys = result.groups.flatMap((group) => group.entities.map((entity) => `entity:${entity.entityId}`));
+  const entityKeys = result.groups.flatMap((group) => group.entities.map((entity) => entityKey(group, entity)));
   const allCollapsed = entityKeys.length > 0 && entityKeys.every((key) => collapsed.has(key));
-  // Like VS Code: collapse-all folds every entity and leaves page groups open.
+  // Like VS Code: collapse-all folds every entity and leaves sections open.
   const toggleAll = () => setCollapsed(allCollapsed ? new Set() : new Set(entityKeys));
 
   // Opening the same row again steps to its next occurrence; a clicked mark opens that one.
@@ -215,7 +227,8 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
     navigateToResult({ record: row.record, ...row.matches[next] }, moduleId);
   };
 
-  const entityKeyOf = (row: ResultRowData) => `entity:${row.record.ownerId || row.record.entityId}`;
+  const entityKeyOf = (row: ResultRowData) =>
+    `entity:${SECTION_OF[row.record.entityType]}:${row.record.ownerId || row.record.entityId}`;
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const activeRow = visibleRows[activeIndex];
@@ -245,8 +258,12 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
 
   const pageName = (pageId?: string | null) =>
     pages.find((page: { id: string; name: string }) => page.id === pageId)?.name || 'Page';
-  const groupTitle = (group: ResultGroup) =>
-    group.key === 'queries' ? 'Queries' : group.key === 'app' ? 'App' : pageName(group.pageId);
+  // Sections don't split by page, so components and event owners carry their page — when there is
+  // more than one to tell apart.
+  const pageTagOf = (group: ResultGroup, entity: ResultEntity) =>
+    pages.length > 1 && (group.key === 'components' || group.key === 'events') && entity.pageId
+      ? pageName(entity.pageId)
+      : null;
   const entityCount = result.groups.reduce((count, group) => count + group.entities.length, 0);
   const hasSearch = debouncedTerm.length >= MIN_TERM_LENGTH && !result.error;
 
@@ -270,24 +287,26 @@ const CodeSearch = ({ darkMode, onClose, moduleId = 'canvas' }: CodeSearchProps)
         <div key={group.key} className="code-search-group">
           <button type="button" className="code-search-group-header" onClick={() => toggle(`group:${group.key}`)}>
             <Chevron open={groupOpen} />
-            <span className="code-search-group-title">{groupTitle(group)}</span>
-            {group.pageId === currentPageId && <span className="code-search-tag">current page</span>}
+            <span className="code-search-group-title">{SECTION_TITLES[group.key]}</span>
             <CountBadge count={group.count} />
           </button>
           {groupOpen &&
             group.entities.map((entity) => {
-              const entityOpen = !collapsed.has(`entity:${entity.entityId}`);
+              const key = entityKey(group, entity);
+              const entityOpen = !collapsed.has(key);
+              const pageTag = pageTagOf(group, entity);
               return (
-                <div key={entity.entityId}>
-                  <button
-                    type="button"
-                    className="code-search-entity-header"
-                    onClick={() => toggle(`entity:${entity.entityId}`)}
-                  >
+                <div key={entity.entityId} className="code-search-entity">
+                  <button type="button" className="code-search-entity-header" onClick={() => toggle(key)}>
                     <Chevron open={entityOpen} />
                     <EntityIcon entity={entity} darkMode={darkMode} />
                     <span className="code-search-entity-name">{entity.entityName}</span>
                     {entity.entitySubtype && <span className="code-search-entity-type">{entity.entitySubtype}</span>}
+                    {pageTag && (
+                      <span className={cx('code-search-entity-page', { current: entity.pageId === currentPageId })}>
+                        {pageTag}
+                      </span>
+                    )}
                     {entity.defined && <span className="code-search-tag">Defined</span>}
                     <CountBadge count={entity.count} />
                   </button>

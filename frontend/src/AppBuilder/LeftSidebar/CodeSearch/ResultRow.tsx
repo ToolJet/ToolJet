@@ -39,11 +39,13 @@ export const Chevron = ({ open }: { open: boolean }) =>
 const Preview = ({
   segments,
   onOpenOccurrence,
+  title = false,
 }: {
   segments: PreviewSegment[];
   onOpenOccurrence: (occurrence?: number) => void;
+  title?: boolean;
 }) => (
-  <span className="code-search-row-preview">
+  <span className={cx('code-search-row-preview', { 'code-search-row-title': title })}>
     {segments.map((segment, index) =>
       segment.match ? (
         <mark
@@ -62,6 +64,20 @@ const Preview = ({
   </span>
 );
 
+// The field's own name stands out from the path to it (`Fields › Email ›` muted, `Name` not), so
+// it reads as where the snippet starts rather than one more crumb. A long path is cut, never the
+// field name: `On page load → Show Al… › Alert type`.
+const FieldLabel = ({ label }: { label: string }) => {
+  const at = label.lastIndexOf(' › ');
+  return (
+    <span className="code-search-row-label">
+      {at >= 0 && <span className="code-search-row-path">{label.slice(0, at)}</span>}
+      {at >= 0 && <span className="code-search-row-sep">›</span>}
+      <span className="code-search-row-field">{at >= 0 ? label.slice(at + 3) : label}</span>
+    </span>
+  );
+};
+
 // One field: short label, then the snippet with every occurrence marked; a badge when > 1.
 interface ResultRowProps {
   row: ResultRowData;
@@ -77,8 +93,13 @@ export const ResultRow = forwardRef<HTMLButtonElement, ResultRowProps>(({ row, a
     onClick={() => onOpen(row)}
     title={`${row.record.entityName} › ${row.record.fieldLabel}`}
   >
-    <span className="code-search-row-label">{row.record.shortLabel}</span>
-    <Preview segments={row.preview} onOpenOccurrence={(occurrence) => onOpen(row, occurrence)} />
+    {/* A row without a short label is its own title (an event handler: `Row clicked → Show Alert`). */}
+    {row.record.shortLabel && <FieldLabel label={row.record.shortLabel} />}
+    <Preview
+      segments={row.preview}
+      title={!row.record.shortLabel}
+      onOpenOccurrence={(occurrence) => onOpen(row, occurrence)}
+    />
     {row.matches.length > 1 && <CountBadge count={row.matches.length} />}
   </button>
 ));
