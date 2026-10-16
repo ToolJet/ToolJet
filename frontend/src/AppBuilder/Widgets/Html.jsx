@@ -28,6 +28,13 @@ export const Html = function ({
     backgroundColor: backgroundColor ? backgroundColor : darkMode ? '#47505D' : '#ffffff',
     color: darkMode ? 'white' : 'black',
     width: '100%',
+    // This element carries the background and is a flex item of a scrolling, fixed-height
+    // container, so the default `stretch` sizes it to the VISIBLE height — a taller document then
+    // scrolls out of the painted area. Flooring it at its own content height lets it grow past
+    // that, while stretch still fills a widget that is taller than its content (dynamic height
+    // with a short document), which a percentage min-height could not do: percentages resolve
+    // against an `auto` parent height as zero.
+    minHeight: 'max-content',
   };
 
   const isInitialRender = useRef(true);

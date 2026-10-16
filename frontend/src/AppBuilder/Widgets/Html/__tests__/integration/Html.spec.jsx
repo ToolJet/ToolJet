@@ -144,6 +144,20 @@ describe('Html widget', () => {
     expect(root(viewer.container)).toHaveStyle({ height: 'auto', minHeight: '76px' });
   });
 
+  test('[Html-STY-004] the background covers the whole document, not just the visible part', async () => {
+    // Break this catches: the content root is a flex item of a fixed-height, scrolling container,
+    // so the default `stretch` sizes it to the VISIBLE height. A document taller than the widget
+    // then overflows the painted box and scrolling reveals unpainted content. Flooring the item at
+    // its own content height lets it grow past the line while stretch still fills a widget that is
+    // taller than its content — measured in Chrome: 600px content painted 150px before, 600px
+    // after, and a short document in a 200px dynamic-height widget still paints the full 200px.
+    // The geometry itself is browser-owned; what is pinned here is the declaration that causes it.
+    const { container } = html.render({ styles: { backgroundColor: binding('#ff0000') } });
+    await waitFor(() => expect(root(container)).toBeInTheDocument());
+
+    expect(content(container)).toHaveStyle({ backgroundColor: '#ff0000', minHeight: 'max-content' });
+  });
+
   test('[Html-STY-001] box shadow survives loading and visibility transitions', async () => {
     // Break this catches: rebuilding state styles without the resolved boxShadow drops author styling during transitions.
     const shadow = '1px 2px 3px 4px rgba(0, 0, 0, 0.5)';
