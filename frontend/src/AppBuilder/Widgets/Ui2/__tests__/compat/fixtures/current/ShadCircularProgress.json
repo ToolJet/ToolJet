@@ -1,0 +1,359 @@
+{
+  "schemaVersion": 1,
+  "release": "current",
+  "widget": "ShadCircularProgress",
+  "pages": [
+    {
+      "id": "d6f6936a-5271-5b05-a8bc-4f12ae968f6d",
+      "appVersionId": "67c79ec4-8331-5b20-af08-48a5502d9876",
+      "name": "Home",
+      "handle": "home"
+    }
+  ],
+  "components": [
+    {
+      "id": "85b2b4fb-6f37-5231-a2f2-fe96c2e1373f",
+      "name": "circularProgress1",
+      "type": "ShadCircularProgress",
+      "pageId": "d6f6936a-5271-5b05-a8bc-4f12ae968f6d",
+      "parent": null,
+      "properties": {
+        "value": {
+          "value": "{{64}}"
+        },
+        "size": {
+          "value": "{{97}}"
+        },
+        "thickness": {
+          "value": "{{9}}"
+        },
+        "lineCap": {
+          "value": "flat"
+        },
+        "centerText": {
+          "value": "custom"
+        },
+        "text": {
+          "value": "Saved text"
+        },
+        "label": {
+          "value": "Complete (saved)"
+        },
+        "dynamicHeight": {
+          "value": "{{true}}"
+        },
+        "loadingState": {
+          "value": "{{false}}"
+        },
+        "loadingIndicator": {
+          "value": "spinner"
+        },
+        "visibility": {
+          "value": "{{true}}"
+        },
+        "collapseWhenHidden": {
+          "value": "{{false}}"
+        },
+        "disabledState": {
+          "value": "{{false}}"
+        },
+        "tooltipFormat": {
+          "value": "plainText"
+        },
+        "tooltip": {
+          "value": "Saved tooltip"
+        }
+      },
+      "general": {},
+      "styles": {
+        "boxShadow": {
+          "value": "0px 4px 12px 0px #0f172a1f"
+        },
+        "alignment": {
+          "value": "center"
+        },
+        "barColor": {
+          "value": "#b45309"
+        },
+        "trackColor": {
+          "value": "#be123c"
+        },
+        "textColor": {
+          "value": "#1d4ed8"
+        },
+        "labelColor": {
+          "value": "#4d7c0f"
+        }
+      },
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 0,
+          "left": 0,
+          "width": 20,
+          "height": 104
+        }
+      }
+    },
+    {
+      "id": "a56025f1-9176-55c9-ac53-f158dc3c4f36",
+      "name": "savedBindings",
+      "type": "ShadText",
+      "pageId": "d6f6936a-5271-5b05-a8bc-4f12ae968f6d",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "{{JSON.stringify({ byId: { \"isVisible\": components.85b2b4fb-6f37-5231-a2f2-fe96c2e1373f.isVisible, \"isLoading\": components.85b2b4fb-6f37-5231-a2f2-fe96c2e1373f.isLoading, \"isDisabled\": components.85b2b4fb-6f37-5231-a2f2-fe96c2e1373f.isDisabled, \"value\": components.85b2b4fb-6f37-5231-a2f2-fe96c2e1373f.value }, byName: { \"isVisible\": components.circularProgress1.isVisible, \"isLoading\": components.circularProgress1.isLoading, \"isDisabled\": components.circularProgress1.isDisabled, \"value\": components.circularProgress1.value } })}}"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 114,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "188369e4-b021-5793-aef6-0683dd7f3a95",
+      "name": "eventMarker",
+      "type": "ShadButton",
+      "pageId": "d6f6936a-5271-5b05-a8bc-4f12ae968f6d",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Marker"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 164,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "900075c6-b069-56be-aacb-e5b771d12bfc",
+      "name": "runActions",
+      "type": "ShadButton",
+      "pageId": "d6f6936a-5271-5b05-a8bc-4f12ae968f6d",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Run actions"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 214,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "8157d019-06cf-582b-a3ed-df706c57d82f",
+      "name": "onClick",
+      "index": 0,
+      "sourceId": "900075c6-b069-56be-aacb-e5b771d12bfc",
+      "target": "component",
+      "appVersionId": "67c79ec4-8331-5b20-af08-48a5502d9876",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "85b2b4fb-6f37-5231-a2f2-fe96c2e1373f",
+        "componentSpecificActionHandle": "setValue",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{50}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "8aaf575e-42fb-509f-ab0d-0541e062250c",
+      "name": "onClick",
+      "index": 1,
+      "sourceId": "900075c6-b069-56be-aacb-e5b771d12bfc",
+      "target": "component",
+      "appVersionId": "67c79ec4-8331-5b20-af08-48a5502d9876",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "85b2b4fb-6f37-5231-a2f2-fe96c2e1373f",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "d8469df1-5da3-5ce2-a768-069eb9bc54cb",
+      "name": "onClick",
+      "index": 2,
+      "sourceId": "900075c6-b069-56be-aacb-e5b771d12bfc",
+      "target": "component",
+      "appVersionId": "67c79ec4-8331-5b20-af08-48a5502d9876",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "85b2b4fb-6f37-5231-a2f2-fe96c2e1373f",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "41f389b8-1341-51b5-ad6a-7965fd275b37",
+      "name": "onClick",
+      "index": 3,
+      "sourceId": "900075c6-b069-56be-aacb-e5b771d12bfc",
+      "target": "component",
+      "appVersionId": "67c79ec4-8331-5b20-af08-48a5502d9876",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "85b2b4fb-6f37-5231-a2f2-fe96c2e1373f",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "5ad8fcbf-57b4-50de-af93-e7fa7d0bd800",
+      "name": "onClick",
+      "index": 4,
+      "sourceId": "900075c6-b069-56be-aacb-e5b771d12bfc",
+      "target": "component",
+      "appVersionId": "67c79ec4-8331-5b20-af08-48a5502d9876",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "85b2b4fb-6f37-5231-a2f2-fe96c2e1373f",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c584f39c-ad9b-54cb-afa3-5aea6662f4a2",
+      "name": "onClick",
+      "index": 5,
+      "sourceId": "900075c6-b069-56be-aacb-e5b771d12bfc",
+      "target": "component",
+      "appVersionId": "67c79ec4-8331-5b20-af08-48a5502d9876",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "85b2b4fb-6f37-5231-a2f2-fe96c2e1373f",
+        "componentSpecificActionHandle": "setVisibility",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "85f61517-1317-58a9-a563-71f96efde152",
+      "name": "onClick",
+      "index": 6,
+      "sourceId": "900075c6-b069-56be-aacb-e5b771d12bfc",
+      "target": "component",
+      "appVersionId": "67c79ec4-8331-5b20-af08-48a5502d9876",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "85b2b4fb-6f37-5231-a2f2-fe96c2e1373f",
+        "componentSpecificActionHandle": "setVisibility",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    }
+  ],
+  "dataQueries": [
+    {
+      "id": "40954d22-6ec8-56ce-aa5b-195dd433de5a",
+      "name": "callWidget",
+      "kind": "runjs",
+      "appVersionId": "67c79ec4-8331-5b20-af08-48a5502d9876",
+      "options": {
+        "code": "// Calls circularProgress1's actions and reads its values by name, as RunJS code in a saved app does.\nawait components.circularProgress1.setValue(50);\nawait components.circularProgress1.setLoading(true);\nawait components.circularProgress1.setLoading(false);\nawait components.circularProgress1.setDisable(true);\nawait components.circularProgress1.setDisable(false);\nawait components.circularProgress1.setVisibility(false);\nawait components.circularProgress1.setVisibility(true);\nreturn { \"isVisible\": components.circularProgress1.isVisible, \"isLoading\": components.circularProgress1.isLoading, \"isDisabled\": components.circularProgress1.isDisabled, \"value\": components.circularProgress1.value };",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    }
+  ]
+}

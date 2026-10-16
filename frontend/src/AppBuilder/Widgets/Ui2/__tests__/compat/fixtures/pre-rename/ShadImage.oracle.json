@@ -1,0 +1,74 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "hasError": false,
+    "imageURL": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800",
+    "alternativeText": "Mountain lake at sunrise (saved)",
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"hasError\":false,\"imageURL\":\"https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800\",\"alternativeText\":\"Mountain lake at sunrise (saved)\"},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"hasError\":false,\"imageURL\":\"https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800\",\"alternativeText\":\"Mountain lake at sunrise (saved)\"}}",
+  "steps": [
+    {
+      "call": "setImageURL",
+      "changed": {
+        "imageURL": "https://picsum.photos/seed/tj-saved/640/360"
+      }
+    },
+    {
+      "call": "clearImage",
+      "changed": {
+        "hasError": true,
+        "imageURL": ""
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "hasError": true,
+      "imageURL": "",
+      "alternativeText": "Mountain lake at sunrise (saved)"
+    },
+    "changed": {}
+  }
+}

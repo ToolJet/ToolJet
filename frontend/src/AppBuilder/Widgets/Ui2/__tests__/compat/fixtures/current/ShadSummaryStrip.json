@@ -1,0 +1,348 @@
+{
+  "schemaVersion": 1,
+  "release": "current",
+  "widget": "ShadSummaryStrip",
+  "pages": [
+    {
+      "id": "e30bebec-a157-507d-a528-3312187e3ecd",
+      "appVersionId": "f774c74b-1c7d-5996-a7d9-28756ad8f4b4",
+      "name": "Home",
+      "handle": "home"
+    }
+  ],
+  "components": [
+    {
+      "id": "28403d49-3718-50c1-a671-194ca9424ab6",
+      "name": "summaryStrip1",
+      "type": "ShadSummaryStrip",
+      "pageId": "e30bebec-a157-507d-a528-3312187e3ecd",
+      "parent": null,
+      "properties": {
+        "items": {
+          "value": "{{[{ label: 'Revenue', value: 48210, delta: 12.4, caption: 'vs last month' }, { label: 'Orders', value: 1284, format: 'number', delta: 5.1, caption: 'vs last month' }, { label: 'Average order', value: 37.55, delta: -2.3, caption: 'vs last month' }, { label: 'Refund rate', value: 2.1, format: 'percent', delta: -0.4, deltaFormat: 'number', lowerIsBetter: true, caption: 'points' }]}}"
+        },
+        "valueFormat": {
+          "value": "number"
+        },
+        "currency": {
+          "value": "USD"
+        },
+        "deltaFormat": {
+          "value": "number"
+        },
+        "appearance": {
+          "value": "plain"
+        },
+        "size": {
+          "value": "sm"
+        },
+        "align": {
+          "value": "center"
+        },
+        "dynamicHeight": {
+          "value": "{{true}}"
+        },
+        "loadingState": {
+          "value": "{{false}}"
+        },
+        "loadingIndicator": {
+          "value": "spinner"
+        },
+        "visibility": {
+          "value": "{{true}}"
+        },
+        "collapseWhenHidden": {
+          "value": "{{false}}"
+        },
+        "disabledState": {
+          "value": "{{false}}"
+        },
+        "tooltipFormat": {
+          "value": "plainText"
+        },
+        "tooltip": {
+          "value": "Saved tooltip"
+        }
+      },
+      "general": {},
+      "styles": {
+        "boxShadow": {
+          "value": "0px 4px 12px 0px #0f172a1f"
+        },
+        "valueFontFamily": {
+          "value": "sans"
+        },
+        "backgroundColor": {
+          "value": "#b45309"
+        },
+        "borderColor": {
+          "value": "#be123c"
+        },
+        "labelColor": {
+          "value": "#1d4ed8"
+        },
+        "valueColor": {
+          "value": "#4d7c0f"
+        },
+        "positiveColor": {
+          "value": "#a21caf"
+        },
+        "negativeColor": {
+          "value": "#0369a1"
+        },
+        "borderRadius": {
+          "value": "2"
+        }
+      },
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 0,
+          "left": 0,
+          "width": 20,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "1524c2bf-b026-5539-ae79-66c10950e55f",
+      "name": "savedBindings",
+      "type": "ShadText",
+      "pageId": "e30bebec-a157-507d-a528-3312187e3ecd",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "{{JSON.stringify({ byId: { \"isVisible\": components.28403d49-3718-50c1-a671-194ca9424ab6.isVisible, \"isLoading\": components.28403d49-3718-50c1-a671-194ca9424ab6.isLoading, \"isDisabled\": components.28403d49-3718-50c1-a671-194ca9424ab6.isDisabled }, byName: { \"isVisible\": components.summaryStrip1.isVisible, \"isLoading\": components.summaryStrip1.isLoading, \"isDisabled\": components.summaryStrip1.isDisabled } })}}"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 110,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "40d150d1-c1f7-59d6-abff-70a91f0bd2c2",
+      "name": "eventMarker",
+      "type": "ShadButton",
+      "pageId": "e30bebec-a157-507d-a528-3312187e3ecd",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Marker"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 160,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "71030620-f4b1-50cf-aa65-1f2709ec4812",
+      "name": "runActions",
+      "type": "ShadButton",
+      "pageId": "e30bebec-a157-507d-a528-3312187e3ecd",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Run actions"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 210,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "ba507377-d6f0-53f4-a9d6-25a0b883e5f3",
+      "name": "onClick",
+      "index": 0,
+      "sourceId": "71030620-f4b1-50cf-aa65-1f2709ec4812",
+      "target": "component",
+      "appVersionId": "f774c74b-1c7d-5996-a7d9-28756ad8f4b4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "28403d49-3718-50c1-a671-194ca9424ab6",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "83c78416-207a-52f6-aebb-847d58627c04",
+      "name": "onClick",
+      "index": 1,
+      "sourceId": "71030620-f4b1-50cf-aa65-1f2709ec4812",
+      "target": "component",
+      "appVersionId": "f774c74b-1c7d-5996-a7d9-28756ad8f4b4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "28403d49-3718-50c1-a671-194ca9424ab6",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ef6971ad-a719-5fe1-aa62-fcd2a031d0c5",
+      "name": "onClick",
+      "index": 2,
+      "sourceId": "71030620-f4b1-50cf-aa65-1f2709ec4812",
+      "target": "component",
+      "appVersionId": "f774c74b-1c7d-5996-a7d9-28756ad8f4b4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "28403d49-3718-50c1-a671-194ca9424ab6",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "8ca34445-2fad-5281-a830-aa1beeb6e7b5",
+      "name": "onClick",
+      "index": 3,
+      "sourceId": "71030620-f4b1-50cf-aa65-1f2709ec4812",
+      "target": "component",
+      "appVersionId": "f774c74b-1c7d-5996-a7d9-28756ad8f4b4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "28403d49-3718-50c1-a671-194ca9424ab6",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "db16dffd-e538-57bb-ac86-3b969fe269d7",
+      "name": "onClick",
+      "index": 4,
+      "sourceId": "71030620-f4b1-50cf-aa65-1f2709ec4812",
+      "target": "component",
+      "appVersionId": "f774c74b-1c7d-5996-a7d9-28756ad8f4b4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "28403d49-3718-50c1-a671-194ca9424ab6",
+        "componentSpecificActionHandle": "setVisibility",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "20ccfdb6-7587-573e-a5ef-541e47217c19",
+      "name": "onClick",
+      "index": 5,
+      "sourceId": "71030620-f4b1-50cf-aa65-1f2709ec4812",
+      "target": "component",
+      "appVersionId": "f774c74b-1c7d-5996-a7d9-28756ad8f4b4",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "28403d49-3718-50c1-a671-194ca9424ab6",
+        "componentSpecificActionHandle": "setVisibility",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    }
+  ],
+  "dataQueries": [
+    {
+      "id": "1ae3957c-1900-5327-a259-d674418845b8",
+      "name": "callWidget",
+      "kind": "runjs",
+      "appVersionId": "f774c74b-1c7d-5996-a7d9-28756ad8f4b4",
+      "options": {
+        "code": "// Calls summaryStrip1's actions and reads its values by name, as RunJS code in a saved app does.\nawait components.summaryStrip1.setLoading(true);\nawait components.summaryStrip1.setLoading(false);\nawait components.summaryStrip1.setDisable(true);\nawait components.summaryStrip1.setDisable(false);\nawait components.summaryStrip1.setVisibility(false);\nawait components.summaryStrip1.setVisibility(true);\nreturn { \"isVisible\": components.summaryStrip1.isVisible, \"isLoading\": components.summaryStrip1.isLoading, \"isDisabled\": components.summaryStrip1.isDisabled };",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    }
+  ]
+}

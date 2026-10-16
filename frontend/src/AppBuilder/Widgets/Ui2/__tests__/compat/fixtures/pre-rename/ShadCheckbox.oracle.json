@@ -1,0 +1,79 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "isValid": true,
+    "isMandatory": false,
+    "value": true,
+    "label": "Checkbox (saved)",
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"isValid\":true,\"isMandatory\":false,\"value\":true,\"label\":\"Checkbox (saved)\"},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"isValid\":true,\"isMandatory\":false,\"value\":true,\"label\":\"Checkbox (saved)\"}}",
+  "steps": [
+    {
+      "call": "toggle",
+      "changed": {
+        "value": false
+      }
+    },
+    {
+      "call": "setValue",
+      "changed": {
+        "value": true
+      }
+    },
+    {
+      "call": "setValue",
+      "changed": {}
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "isValid": true,
+      "isMandatory": false,
+      "value": true,
+      "label": "Checkbox (saved)"
+    },
+    "changed": {}
+  }
+}

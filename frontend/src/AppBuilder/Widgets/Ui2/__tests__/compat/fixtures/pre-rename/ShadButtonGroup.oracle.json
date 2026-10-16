@@ -1,0 +1,84 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "value": "week",
+    "selected": [
+      "week"
+    ],
+    "lastClicked": null,
+    "isValid": true,
+    "isMandatory": false,
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"value\":\"week\",\"values\":[\"week\"],\"selected\":[\"week\"],\"lastClicked\":null,\"isValid\":true,\"isMandatory\":false},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"value\":\"week\",\"values\":[\"week\"],\"selected\":[\"week\"],\"lastClicked\":null,\"isValid\":true,\"isMandatory\":false}}",
+  "steps": [
+    {
+      "call": "setSelected",
+      "changed": {
+        "value": "month",
+        "selected": [
+          "month"
+        ]
+      }
+    },
+    {
+      "call": "clear",
+      "changed": {
+        "value": "",
+        "selected": []
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "value": "",
+      "values": [],
+      "selected": [],
+      "lastClicked": null,
+      "isValid": true,
+      "isMandatory": false
+    },
+    "changed": {}
+  }
+}

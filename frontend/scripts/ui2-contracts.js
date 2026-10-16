@@ -7,25 +7,7 @@
 //   npm run ui2:contracts            update the contract files
 //   npm run ui2:contracts -- --check report only, exit 1 when anything is out of date
 const fs = require('fs');
-const path = require('path');
-const babel = require('@babel/core');
-
-const ROOT = path.resolve(__dirname, '..');
-const LOADABLE = [path.join(ROOT, 'src'), path.resolve(ROOT, '../server/src')];
-
-// The configs and legacyNames.ts are ES modules (one in TypeScript): compile them on require, as Jest does.
-for (const ext of ['.js', '.ts']) {
-  const fallback = require.extensions[ext] || require.extensions['.js'];
-  require.extensions[ext] = (module, filename) => {
-    if (!LOADABLE.some((dir) => filename.startsWith(dir))) return fallback(module, filename);
-    const { code } = babel.transformFileSync(filename, {
-      babelrc: false,
-      configFile: false,
-      presets: [['@babel/preset-env', { targets: { node: 'current' } }], '@babel/preset-typescript'],
-    });
-    return module._compile(code, filename);
-  };
-}
+require('./ui2-require-hook');
 
 const { shadcnConfigs } = require('../src/AppBuilder/WidgetManager/widgets/shadcn');
 const { renamesFor } = require('../src/AppBuilder/Widgets/Ui2/legacyNames');
