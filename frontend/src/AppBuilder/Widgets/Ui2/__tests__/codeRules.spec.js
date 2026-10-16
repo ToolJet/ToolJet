@@ -2,6 +2,9 @@
 // - Classes in class positions (className, cn, cva, clsx) are ToolJet's prefixed utilities (`tw-`): an unprefixed
 //   Tailwind class would silently do nothing, or pick up a Bootstrap class of the same name.
 // - No `!important` in the pack's styles, except the one documented rule in shadcn.scss (a global !important to undo).
+// - Widgets do not reach into the canvas's DOM (its wrappers and layout attributes) to size themselves: the canvas
+//   passes width, height and boxFit as props, and rows size through the reflow. One exception, an open question for
+//   the app builder team: Stat equalises a row of Stat cards by reading their FlexContainer wrapper (Stat/statRow.ts).
 // - No `react-hooks/exhaustive-deps` suppressions: dependencies are complete (useStable and useLatest in packHooks are
 //   the tools for bound data and latest-value reads).
 import fs from 'fs';
@@ -76,6 +79,12 @@ describe('UI 2.0 widget code rules', () => {
         .map(([line, n]) => `${rel(file)}:${n}: ${line.trim()}`)
     );
     expect(found).toEqual([expect.stringMatching(/shadcn\.scss:\d+: outline-color: transparent !important;/)]);
+  });
+
+  it("does not read the canvas's DOM to size a widget", () => {
+    const CANVAS = /flex-child-wrapper|canvas-component|draggable-widget|data-layout-context|['"`.]ele-/;
+    const found = sources.filter((file) => CANVAS.test(fs.readFileSync(file, 'utf8'))).map(rel);
+    expect(found).toEqual(['Stat/Stat.tsx']);
   });
 
   it('suppresses no react-hooks/exhaustive-deps warnings', () => {
