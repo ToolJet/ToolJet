@@ -246,6 +246,9 @@ const Container = React.memo(
 
     const renderEmptyContainer = () => {
       if (components && components?.length !== 0) return;
+      // Only the page canvas and a module container ever show the empty state; every other empty container (a tab, a
+      // list row, a dialog body) mounted a hidden copy of it, AI build panel and modal included.
+      if (id !== 'canvas' && componentType !== 'ModuleContainer') return null;
 
       const styles = {
         display: showEmptyContainer ? 'block' : 'none',
