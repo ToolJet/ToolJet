@@ -1671,6 +1671,15 @@ export const ShadDatePicker = (props) => {
       ? `${shown(selected.from)}${selected.to ? ` – ${shown(selected.to)}` : ''}`
       : ''
     : shown(selected);
+  // Every close (Escape, a click outside, a completed pick) goes through here, so a close after a pick also marks the
+  // field touched for validation and lets the focus tracking fire onBlur once focus leaves.
+  const rangeClicks = useRef(0);
+  const openChange = (next) => {
+    if (next) rangeClicks.current = 0;
+    setOpen(next);
+    focus.opened(next);
+    if (!next) check.touch();
+  };
   return (
     <Shell {...props} innerRef={fit}>
       <Field
@@ -1680,14 +1689,7 @@ export const ShadDatePicker = (props) => {
         error={check.error}
         required={check.required}
       >
-        <Popover
-          open={open}
-          onOpenChange={(next) => {
-            setOpen(next);
-            focus.opened(next);
-            if (!next) check.touch();
-          }}
-        >
+        <Popover open={open} onOpenChange={openChange}>
           <PopoverTrigger asChild>
             <Button
               ref={triggerRef}
@@ -1716,7 +1718,9 @@ export const ShadDatePicker = (props) => {
               disabled={disabledMatchers}
               onSelect={(next) => {
                 commit(next, true);
-                if (!range || (next?.from && next?.to)) setOpen(false);
+                // A range's first click already sets both ends to that day: it closes on the second click.
+                rangeClicks.current += 1;
+                if (!range || rangeClicks.current >= 2) openChange(false);
               }}
             />
           </PopoverContent>

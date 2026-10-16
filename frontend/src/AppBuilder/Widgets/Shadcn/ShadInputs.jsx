@@ -315,15 +315,18 @@ export const ShadCurrencyInput = (props) => {
   const { value, draft, setDraft } = box;
   const formatted = (n, code = currency) =>
     M.formatCurrency(n, { currency: code, locale, decimals: M.currencyDecimals(code, properties.decimalPlaces) });
-  const latest = useLatest({ round, locale });
+  const latest = useLatest({ locale, decimalPlaces: properties.decimalPlaces });
   useExposed(setExposedVariables, properties, {
     value,
     formattedValue: formatted(value),
     currency,
-    // setValue(value, currency): the native Currency input takes the currency with the value.
+    // setValue(value, currency): the native Currency input takes the currency with the value. The amount is rounded
+    // to the decimals of the currency it ends up in (setValue(12.345, 'JPY') is 12, not the old currency's 12.35).
     setValue: async (v, code) => {
-      if (code !== undefined && code !== null && code !== '') setCurrency(M.toCurrency(code, currencyRef.current));
-      box.set(latest.current.round(M.parseNumber(v, latest.current.locale)));
+      const next = code !== undefined && code !== null && code !== '' ? M.toCurrency(code, currencyRef.current) : null;
+      if (next) setCurrency(next);
+      const places = M.currencyDecimals(next ?? currencyRef.current, latest.current.decimalPlaces);
+      box.set(M.roundTo(M.parseNumber(v, latest.current.locale), places));
     },
     setCurrency: async (code) => setCurrency(M.toCurrency(code, currencyRef.current)),
     clear: async () => box.set(null),
@@ -998,7 +1001,7 @@ export const ShadTimePicker = (props) => {
     setBlur: async () => triggerRef.current?.blur(),
   });
   const pick = (m, close = false) => {
-    if (close) setOpen(false);
+    if (close) openChange(false);
     if (m === minutes) return;
     setMinutes(m);
     setExposedVariables(exposed(m));
@@ -1014,6 +1017,13 @@ export const ShadTimePicker = (props) => {
     M.toHHmm(minutes),
     () => pick(null)
   );
+  // Every close (Escape, a click outside, a pick from the list) goes through here, so a close after a pick also marks
+  // the field touched and lets the focus tracking fire onBlur once focus leaves.
+  const openChange = (next) => {
+    setOpen(next);
+    focus.opened(next);
+    if (!next) check.touch();
+  };
   const disabled = busy(properties);
   const shown = M.formatTime(minutes, use24);
   const listMode = properties.pickerStyle === 'list';
@@ -1026,14 +1036,7 @@ export const ShadTimePicker = (props) => {
         error={check.error}
         required={check.required}
       >
-        <Popover
-          open={open}
-          onOpenChange={(next) => {
-            setOpen(next);
-            focus.opened(next);
-            if (!next) check.touch();
-          }}
-        >
+        <Popover open={open} onOpenChange={openChange}>
           <PopoverTrigger asChild>
             <Button
               ref={triggerRef}

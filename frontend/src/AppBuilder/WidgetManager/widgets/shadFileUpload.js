@@ -212,6 +212,16 @@ export const shadFileUploadConfig = {
         },
         defaultValue: ',',
       },
+      conditionallyRender: [
+        {
+          key: 'parseContent',
+          value: true,
+        },
+        {
+          key: 'parseFileType',
+          value: 'csv',
+        },
+      ],
     },
     dynamicHeight: {
       type: 'toggle',

@@ -405,6 +405,7 @@ export const Progress = React.forwardRef(({ className, value, ...props }, ref) =
       'relative h-2 w-full overflow-hidden rounded-full bg-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_20%,transparent))]',
       className
     )}
+    value={value}
     {...props}
   >
     <ProgressPrimitive.Indicator

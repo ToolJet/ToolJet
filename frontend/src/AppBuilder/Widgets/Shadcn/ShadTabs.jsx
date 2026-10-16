@@ -11,7 +11,7 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { Button, Skeleton, cn } from './ui';
 import { tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
 import { stringify } from '../packJson';
-import { wantsSkeleton } from './loadingLook';
+import { Spinner, wantsSkeleton } from './loadingLook';
 import './shadcn.scss';
 
 // shadcn/ui pack Tabs (experiment). Same contract as the native Tabs (tabItems or dynamic tabs, defaultTab,
@@ -19,10 +19,6 @@ import './shadcn.scss';
 // MCP's tab slots work as for Tabs. The tab strip is 50px tall and a panel has TAB_CANVAS_PADDING around its canvas,
 // as dynamicHeightReflow expects; the wizard footer adds STEP_NAV_HEIGHT.
 export const STEP_NAV_HEIGHT = 56;
-
-const Spinner = () => (
-  <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-primary" />
-);
 
 const TabIcon = ({ tab }) =>
   tab?.iconVisibility && tab?.icon ? (
