@@ -3,7 +3,8 @@ import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/load
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { percentLabel, progressItems } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
+import { percentLabel } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
+import { progressItems } from '@/AppBuilder/Widgets/Ui2/_sections/progressModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import {
   Bar,

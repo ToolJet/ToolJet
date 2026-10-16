@@ -1,12 +1,11 @@
 // shadcn/ui pack: the pure logic of the page sections (ShadSections.jsx): the hero's facts, the card grid's cards and
-// columns, the record list's rows and the summary strip's figures. Every function takes whatever the author bound and
-// never throws.
-import { FORMATS, formatter, num } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import { chipTone } from '@/AppBuilder/Widgets/NewTable/_utils/chipTone';
+// columns, the record list's rows and the value formats (the summary strip's figures are in summaryModel.js, the
+// progress list's rows in progressModel.js). Every function takes whatever the author bound and never throws.
+import { FORMATS, formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 
-const isText = (v) => typeof v === 'string' && v.trim() !== '';
+export const isText = (v) => typeof v === 'string' && v.trim() !== '';
 const isImageUrl = (v) => isText(v) && /^(https?:\/\/|data:image\/|\/|\.\/)/i.test(v.trim());
-const shown = (v) => (v === null || v === undefined ? '' : typeof v === 'object' ? '' : String(v));
+export const shown = (v) => (v === null || v === undefined ? '' : typeof v === 'object' ? '' : String(v));
 
 /** The hero's facts beside the title: ['Sun, 11 Oct', '14 bookings'], [{ label, value }] or one string with ' · '
  *  between facts. Empty entries are dropped. */
@@ -48,12 +47,12 @@ const metaPart = (row, spec) => {
   return label.includes('{}') ? label.replace('{}', value) : `${label} ${value}`;
 };
 
-const firstTextField = (row) => Object.keys(row).find((k) => isText(row[k]));
+export const firstTextField = (row) => Object.keys(row).find((k) => isText(row[k]));
 
 /** Keys from ids, one of their own for every item: a repeated id (or a row without one, keyed by its position, where
  *  another row's id is that number) gets a suffix, so React keeps the rows apart and a click selects one row, not
  *  every row that shares the key. Rows with an id claim it first; the first of a repeated id keeps it. */
-const uniqueKeys = (items, fromId) => {
+export const uniqueKeys = (items, fromId) => {
   const seen = new Set();
   const keys = items.map(() => null);
   const claim = (i) => {
@@ -273,188 +272,6 @@ export const recordItems = (data, fields = {}) => {
         status: isText(f.statusField) ? shown(row[f.statusField]) : '',
         value: isText(f.valueField) ? formatValue(row[f.valueField], format, f.currency) : '',
         progress: isText(f.progressField) ? percentOf(row[f.progressField]) : null,
-        row,
-        index,
-      },
-    ];
-  });
-  return uniqueKeys(
-    items.map(({ keyFromId, ...item }) => item),
-    items.map((item) => item.keyFromId)
-  );
-};
-
-// ---- Summary strip ---------------------------------------------------------------------------------------------------
-
-export const MAX_FIGURES = 6;
-const DELTA_FORMATS = ['percent', 'number', 'currency'];
-const TONES = {
-  positive: 'positive',
-  good: 'positive',
-  success: 'positive',
-  negative: 'negative',
-  bad: 'negative',
-  danger: 'negative',
-  neutral: 'neutral',
-};
-
-/** A change: a number signed and formatted (12.5 shows +12.5% as a percent), or text as written ('+3 this week'). Its
- *  direction is its sign (a leading +, -, or an arrow for text). */
-const deltaOf = (delta, format, currency) => {
-  if (delta === null || delta === undefined || typeof delta === 'object' || delta === '') return null;
-  const n = typeof delta === 'number' ? (Number.isFinite(delta) ? delta : null) : num(delta);
-  if (typeof delta === 'number' || (n !== null && /^[+-]?[\d.,\s]+$/.test(String(delta).trim()))) {
-    if (n === null) return null;
-    const kind = DELTA_FORMATS.includes(format) ? format : 'percent';
-    const body = formatter({ format: kind, currency })(Math.abs(n));
-    return {
-      text: `${n > 0 ? '+' : n < 0 ? '−' : ''}${body}`,
-      direction: Math.sign(n),
-    };
-  }
-  const text = String(delta).trim();
-  const direction = /^[+↑▲]/.test(text) ? 1 : /^[-−↓▼]/.test(text) ? -1 : 0;
-  return { text, direction };
-};
-
-// valueFormat 'auto' reads a figure's label: money words show currency, anything else a grouped number (a rooms strip
-// whose format was 'currency' showed "$8" meeting rooms).
-const MONEY_LABEL =
-  /\b(revenue|spend|spent|cost|costs|amount|sales|budget|price|paid|income|profit|invoices?|balance|fees?|payouts?|takings|earnings|mrr|arr|ltv|aov|left to spend|refunds? (?:issued|total|value)|average (?:order|ticket|invoice|basket|sale|spend)|avg\.? (?:order|ticket|invoice|basket|sale|spend))\b/i;
-const NOT_MONEY_LABEL = /\b(rate|count|number of|percent|share|ratio)\b|%/i;
-// A money word beside a count or a change is not money ("Sales calls", "Paid users", "Invoices sent", "Revenue growth",
-// "Budget days left"), unless the label also names a sum ("Invoices total", "Orders value").
-const COUNT_OR_CHANGE_LABEL =
-  /\b(calls|users|customers|clients|accounts|people|members|seats|units|items|orders|invoices|sent|issued|emails|tickets|leads|deals|visits|sessions|days|hours|minutes|weeks|months|growth|margin|change|increase|decrease|trend|uplift)\b/i;
-const SUM_LABEL = /\b(total|totals|value|amount|sum|balance)\b/i;
-const autoFigureFormat = (label, value) =>
-  isText(label) &&
-  MONEY_LABEL.test(label) &&
-  !NOT_MONEY_LABEL.test(label) &&
-  (!COUNT_OR_CHANGE_LABEL.test(label) || SUM_LABEL.test(label)) &&
-  Number.isFinite(Number(value))
-    ? 'currency'
-    : 'auto';
-
-/** The figures of a summary strip, at most MAX_FIGURES: { label, value, delta: { text, tone }, caption } from
- *  [{ label, value, format, delta, deltaFormat, tone, lowerIsBetter, caption }]. value formats in the item's format,
- *  else the strip's valueFormat. A delta's tone is the item's tone ('positive', 'negative', 'neutral'), else its
- *  direction (up is positive, down negative; lowerIsBetter flips them). Plain values ('Revenue') are taken as figures
- *  without a label. Entries that are neither are dropped. */
-export const summaryFigures = (items, { valueFormat = 'auto', currency, deltaFormat = 'percent' } = {}) => {
-  if (!Array.isArray(items)) return [];
-  return items
-    .flatMap((item, index) => {
-      if (item === null || item === undefined || Array.isArray(item)) return [];
-      if (typeof item !== 'object') {
-        const value = shown(item);
-        return value ? [{ key: String(index), label: '', value, delta: null, caption: '' }] : [];
-      }
-      const format = VALUE_FORMATS.includes(item.format)
-        ? item.format
-        : valueFormat === 'auto'
-        ? autoFigureFormat(item.label, item.value)
-        : valueFormat;
-      const itemCurrency = isText(item.currency) ? item.currency : currency;
-      const delta = deltaOf(item.delta, isText(item.deltaFormat) ? item.deltaFormat : deltaFormat, itemCurrency);
-      let tone = TONES[isText(item.tone) ? item.tone.trim().toLowerCase() : ''];
-      if (delta && !tone) {
-        const dir = item.lowerIsBetter === true ? -delta.direction : delta.direction;
-        tone = dir > 0 ? 'positive' : dir < 0 ? 'negative' : 'neutral';
-      }
-      return [
-        {
-          key: String(index),
-          label: shown(item.label),
-          value: formatValue(item.value, format, itemCurrency),
-          delta: delta ? { ...delta, tone } : null,
-          caption: shown(item.caption),
-        },
-      ];
-    })
-    .slice(0, MAX_FIGURES);
-};
-
-/** Figures per row in a strip this wide: all of them when each gets minWidth, else as many as fit, at least one. */
-export const stripColumns = (count, width, minWidth = 140) => {
-  const n = Math.max(1, Math.floor(Number(count)) || 1);
-  const fit = Math.max(1, Math.floor((Number(width) || 0) / minWidth));
-  return Math.min(n, fit);
-};
-
-// ---- Progress list ---------------------------------------------------------------------------------------------------
-
-export const PROGRESS_TONES = ['success', 'warning', 'danger', 'info', 'neutral'];
-const TONE_NAMES = {
-  positive: 'success',
-  good: 'success',
-  negative: 'danger',
-  bad: 'danger',
-  error: 'danger',
-};
-// Words a goal or a budget is described with that a status chip does not know.
-const PROGRESS_WORDS = [
-  ['danger', /\b(over|over budget|over limit|overspent|exceeded|behind|off track)\b/],
-  ['success', /\b(ahead|achieved|met|hit|reached|under budget)\b/],
-];
-
-/** A row's tone from its status: a tone name ('success', 'warning', 'danger', 'info', 'neutral'), else the status's
- *  words ('On track' success, 'At risk' warning, 'Over budget' or 'Behind' danger). '' when it has none. */
-export const progressTone = (status) => {
-  if (typeof status !== 'string' || !status.trim()) return '';
-  const text = status.trim().toLowerCase();
-  if (PROGRESS_TONES.includes(text)) return text;
-  if (TONE_NAMES[text]) return TONE_NAMES[text];
-  const word = PROGRESS_WORDS.find(([, re]) => re.test(text.replace(/[_-]+/g, ' ')));
-  if (word && !/^not\b/.test(text)) return word[0];
-  const tone = chipTone(status);
-  return tone === 'neutral' ? '' : tone;
-};
-
-/** The tone a percentage gives under autoTone: 'goal' turns green at 100%; 'limit' (a budget, a quota) amber from
- *  80% and red over 100%. '' otherwise. */
-export const autoProgressTone = (pct, mode) => {
-  if (!Number.isFinite(pct)) return '';
-  if (mode === 'goal') return pct >= 100 ? 'success' : '';
-  if (mode === 'limit') return pct > 100 ? 'danger' : pct >= 80 ? 'warning' : '';
-  return '';
-};
-
-const PROGRESS_FORMATS = ['auto', ...FORMATS];
-
-/** Rows of a progress list: { key, label, value, target, pct, caption, status, tone, row, index }. pct is percentField
- *  when it holds a number, else value / target; a row with a value and no target reads its value as the percentage.
- *  value and target show in valueFormat. The status gives the tone (a status that only names a tone shows no chip),
- *  else autoTone does. Rows that are not objects are skipped. */
-export const progressItems = (data, fields = {}) => {
-  if (!Array.isArray(data)) return [];
-  const f = fields || {};
-  const format = PROGRESS_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
-  const numberOf = (v) => (typeof v === 'number' ? (Number.isFinite(v) ? v : null) : percentOf(v));
-  const items = data.flatMap((row, index) => {
-    if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
-    const labelKey = isText(f.labelField) && f.labelField in row ? f.labelField : firstTextField(row);
-    const id = isText(f.idField) ? row[f.idField] : row.id;
-    const rawValue = isText(f.valueField) ? row[f.valueField] : undefined;
-    const rawTarget = isText(f.targetField) ? row[f.targetField] : undefined;
-    const value = numberOf(rawValue);
-    const target = numberOf(rawTarget);
-    let pct = isText(f.percentField) ? numberOf(row[f.percentField]) : null;
-    if (pct === null && value !== null) pct = target !== null ? (target > 0 ? (value / target) * 100 : null) : value;
-    const status = isText(f.statusField) ? shown(row[f.statusField]).trim() : '';
-    const tone = progressTone(status) || autoProgressTone(pct, f.autoTone);
-    return [
-      {
-        key: shown(id) || String(index),
-        keyFromId: !!shown(id),
-        label: labelKey ? shown(row[labelKey]) : '',
-        value: value !== null ? formatValue(value, format, f.currency) : '',
-        target: target !== null ? formatValue(target, format, f.currency) : '',
-        pct,
-        caption: isText(f.captionField) ? shown(row[f.captionField]).trim() : '',
-        // A status that only names a tone colours the bar without a chip.
-        status: status && !PROGRESS_TONES.includes(status.toLowerCase()) ? status : '',
-        tone,
         row,
         index,
       },

@@ -3,7 +3,7 @@ import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/load
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { stripColumns, summaryFigures } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
+import { stripColumns, summaryFigures } from '@/AppBuilder/Widgets/Ui2/_sections/summaryModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { TITLE_FONT } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 

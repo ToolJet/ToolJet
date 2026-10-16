@@ -1,221 +1,24 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
-import { AlertCircle, ArrowDown, ArrowUp, Check, Copy, Download, MessageSquare, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Download, MessageSquare, Trash2 } from 'lucide-react';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { initials, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { truthy, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
-import {
-  ANCHOR_PEEK,
-  MESSAGES_PER_STEP,
-  anchorTarget,
-  buildMessage,
-  isNearBottom,
-  sender,
-  spacerHeight,
-  toRows,
-  withRuns,
-} from './chatModel';
-import {
-  formatTimestamp,
-  validateMessageHistory,
-  validateSingleMessageObject,
-} from '@/AppBuilder/Widgets/Chat/utils/helpers';
-
-// The sample history's timestamps are the literal text 'new Date().toISOString()'. The native Chat formats the current
-// time for them on every render, so a message's time changed as the clock passed a minute; here they read as the
-// moment the pack loaded and stay put.
-const NOW_LITERAL = 'new Date().toISOString()';
-const LOADED_AT = new Date().toISOString();
-import { avatarHue } from '@/AppBuilder/Widgets/NewTable/_utils/avatarHue';
+import { MESSAGES_PER_STEP, buildMessage, sender, toRows, withRuns } from './chatModel';
+import { HistorySkeleton, IconButton, MessageRow, Typing } from './ChatParts';
+import { useChatScroll } from './useChatScroll';
+import { validateMessageHistory, validateSingleMessageObject } from '@/AppBuilder/Widgets/Chat/utils/helpers';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-
 // ToolJet UI 2.0 Chat: the native Chat widget (Widgets/Chat) in the pack's look, with its properties, events, exposed
-// values and actions. Config in WidgetManager/widgets/shad*.js, message and scroll logic in chatModel.js,
-// style variables in looks/conversation.js. Scrolling follows shadcn's Message Scroller: the view follows new content
-// only while the reader is at the end; a new user turn moves near the top with its reply growing below it; scrolled
-// up, nothing moves the reader and a Jump to latest button brings them back.
-
-const ChatAvatar = ({ src, name, size = 32 }) => {
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [src]);
-  if (src && !failed) {
-    return (
-      <img
-        src={src}
-        alt=""
-        onError={() => setFailed(true)}
-        className="shrink-0 rounded-full object-cover"
-        style={{ width: size, height: size }}
-      />
-    );
-  }
-  const hue = avatarHue(name);
-  return (
-    <span
-      className="flex shrink-0 select-none items-center justify-center rounded-full text-xs font-semibold"
-      style={{
-        width: size,
-        height: size,
-        background: `color-mix(in srgb, hsl(${hue} 70% 55%) 16%, var(--sc-background))`,
-        color: `color-mix(in srgb, hsl(${hue} 65% 48%) 62%, var(--sc-foreground))`,
-      }}
-      aria-hidden="true"
-      data-fallback="initials"
-    >
-      {initials(name) || '?'}
-    </span>
-  );
-};
-
-// Markdown in replies (the native Chat's renderer: GitHub tables and lists, raw HTML), styled by .sc-markdown in
-// shadcn.scss. Code blocks keep their language as a label.
-const domProps = ({ node, ...rest }) => rest; // eslint-disable-line no-unused-vars
-const MD_COMPONENTS = {
-  a: (props) => <a {...domProps(props)} target="_blank" rel="noopener noreferrer" />,
-  pre: (props) => <pre {...domProps(props)} className="sc-md-pre" />,
-};
-const Markdown = React.memo(({ content }) => (
-  <div className="sc-markdown">
-    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={MD_COMPONENTS}>
-      {content}
-    </ReactMarkdown>
-  </div>
-));
-Markdown.displayName = 'Markdown';
-
-const CopyButton = ({ value, align }) => {
-  const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    if (!copied) return undefined;
-    const t = setTimeout(() => setCopied(false), 1500);
-    return () => clearTimeout(t);
-  }, [copied]);
-  return (
-    <button
-      type="button"
-      aria-label={copied ? 'Copied' : 'Copy message'}
-      title={copied ? 'Copied' : 'Copy'}
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(value);
-          setCopied(true);
-        } catch {
-          toast.error('Failed to copy message');
-        }
-      }}
-      className={cn(
-        'inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity duration-150 hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/msg:opacity-100 [&_svg]:size-3.5',
-        align === 'end' ? 'ml-auto' : ''
-      )}
-    >
-      {copied ? <Check /> : <Copy />}
-    </button>
-  );
-};
-
-const MessageRow = React.memo(({ row, showAvatars, showTimestamps }) => {
-  const mine = row.type === 'message';
-  const isError = row.type === 'error';
-  const align = mine ? 'end' : 'start';
-  return (
-    <div
-      className={cn(
-        'group/msg flex w-full items-end gap-2.5',
-        mine ? 'flex-row-reverse' : 'flex-row',
-        row.first ? 'mt-4' : 'mt-1'
-      )}
-      data-message-key={row.key}
-      data-type={row.type}
-      data-align={align}
-    >
-      {showAvatars ? (
-        <div className="mb-6 w-8 shrink-0">
-          {row.last ? <ChatAvatar src={row.who.avatar} name={row.who.name} /> : null}
-        </div>
-      ) : null}
-      <div className={cn('flex min-w-0 max-w-[82%] flex-col gap-1', mine ? 'items-end' : 'items-start')}>
-        {row.first ? (
-          <div className={cn('flex items-baseline gap-2 px-1 text-xs', mine ? 'flex-row-reverse' : '')}>
-            <span className="font-medium text-[color:var(--lk-name,var(--sc-foreground))]">{row.who.name}</span>
-            {showTimestamps ? (
-              <span className="tabular-nums text-[color:var(--lk-muted,var(--sc-muted-foreground))]">
-                {formatTimestamp(row.timestamp === NOW_LITERAL ? LOADED_AT : row.timestamp)}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-        <div
-          className={cn(
-            'min-w-0 max-w-full break-words rounded-2xl px-3.5 py-2 text-sm leading-relaxed',
-            mine &&
-              'whitespace-pre-wrap rounded-br-md bg-[color:var(--lk-accent,var(--sc-primary))] text-[color:var(--sc-primary-foreground)]',
-            !mine &&
-              !isError &&
-              'rounded-bl-md bg-[color:var(--lk-bubble,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-foreground))]',
-            isError &&
-              'flex items-start gap-2 rounded-bl-md border border-[color:color-mix(in_srgb,var(--sc-destructive)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--sc-destructive)_8%,transparent)] text-[color:var(--sc-destructive)]'
-          )}
-        >
-          {isError ? <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /> : null}
-          {mine || isError ? <span className="min-w-0">{row.text}</span> : <Markdown content={row.text} />}
-        </div>
-        <div className={cn('flex h-6 w-full px-0.5', mine ? 'justify-end' : 'justify-start')}>
-          {row.text ? <CopyButton value={row.text} align={align} /> : null}
-        </div>
-      </div>
-    </div>
-  );
-});
-MessageRow.displayName = 'MessageRow';
-
-const Typing = ({ name, avatar, showAvatars }) => (
-  <div className="mt-4 flex items-end gap-2.5" role="status" aria-label={`${name} is typing`}>
-    {showAvatars ? (
-      <div className="mb-1 w-8 shrink-0">
-        <ChatAvatar src={avatar} name={name} />
-      </div>
-    ) : null}
-    <div className="flex h-9 items-center gap-1 rounded-2xl rounded-bl-md bg-[color:var(--lk-bubble,var(--sc-muted))] px-4">
-      {[0, 1, 2].map((i) => (
-        <span key={i} className="sc-typing-dot" />
-      ))}
-    </div>
-  </div>
-);
-
-const HistorySkeleton = () => (
-  <div className="flex flex-col gap-5 pt-4" aria-busy="true" aria-label="Loading messages">
-    {[0, 1, 2].map((i) => (
-      <div key={i} className={cn('flex items-end gap-2.5', i === 1 ? 'flex-row-reverse' : '')}>
-        <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
-        <div className={cn('flex flex-col gap-1.5', i === 1 ? 'items-end' : '')} style={{ width: '60%' }}>
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className={cn('h-14 w-full rounded-2xl')} />
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
-const IconButton = ({ label, onClick, disabled, children }) => (
-  <button
-    type="button"
-    aria-label={label}
-    title={label}
-    onClick={onClick}
-    disabled={disabled}
-    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4"
-  >
-    {children}
-  </button>
-);
+// values and actions. Config in WidgetManager/widgets/shad*.js, message and scroll logic in chatModel.js, the message
+// rows in ChatParts.jsx, style variables in looks/conversation.js. Scrolling (useChatScroll.js) follows shadcn's
+// Message Scroller: the view follows new content only while the reader is at the end; a new user turn moves near the
+// top with its reply growing below it; scrolled up, nothing moves the reader and a Jump to latest button brings them
+// back.
 
 const MAX_INPUT_HEIGHT = 160;
 
@@ -389,107 +192,14 @@ export const ShadChat = (props) => {
 
   // ---- Scrolling -----------------------------------------------------------------------------------------------------
 
-  const viewportRef = useRef(null);
-  const contentRef = useRef(null);
-  const spacerRef = useRef(null);
-  const follow = useRef(true);
-  const programmaticUntil = useRef(0);
-  const anchorKey = useRef(null);
-  const previousKeys = useRef(null);
-  const [atEnd, setAtEnd] = useState(true);
-
-  const scrollTo = (top, smooth) => {
-    const el = viewportRef.current;
-    if (!el) return;
-    programmaticUntil.current = Date.now() + (smooth ? 600 : 80);
-    if (typeof el.scrollTo === 'function') el.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
-    else el.scrollTop = top;
-  };
-
-  const anchorElement = () =>
-    anchorKey.current && contentRef.current
-      ? Array.from(contentRef.current.querySelectorAll('[data-message-key]')).find(
-          (n) => n.getAttribute('data-message-key') === anchorKey.current
-        )
-      : null;
-
-  // The room under an anchored user turn: enough for the turn to sit near the top while its reply is shorter than
-  // the view. Set on the element directly, so it is in place before the scroll that needs it.
-  const updateSpacer = () => {
-    const el = viewportRef.current;
-    const content = contentRef.current;
-    const spacer = spacerRef.current;
-    if (!el || !content || !spacer) return;
-    const anchor = anchorElement();
-    const below = anchor ? content.offsetTop + content.offsetHeight - anchor.offsetTop : 0;
-    // The view's bottom padding scrolls too, so it counts as room already there.
-    const padding = parseFloat(window.getComputedStyle(el).paddingBottom) || 0;
-    spacer.style.height = `${anchor ? spacerHeight(el.clientHeight - padding, ANCHOR_PEEK, below) : 0}px`;
-  };
-
-  const toEnd = (smooth) => {
-    const el = viewportRef.current;
-    if (el) scrollTo(el.scrollHeight, smooth);
-  };
-
-  const rowKeys = rows.map((r) => r.key).join('\u0000');
-  useLayoutEffect(() => {
-    const keys = allRows.map((r) => r.key);
-    const target = appended.current ? anchorTarget(previousKeys.current, allRows) : null;
-    appended.current = false;
-    const replaced =
-      previousKeys.current !== null &&
-      !target &&
-      (keys.length < previousKeys.current.length || previousKeys.current.some((k, i) => keys[i] !== k));
-    previousKeys.current = keys;
-    if (target) {
-      anchorKey.current = target;
-      follow.current = true;
-      updateSpacer();
-      const anchor = anchorElement();
-      if (anchor) scrollTo(Math.max(0, anchor.offsetTop - ANCHOR_PEEK), true);
-      return;
-    }
-    if (replaced) {
-      anchorKey.current = null;
-      follow.current = true;
-    }
-    updateSpacer();
-    if (follow.current) toEnd(false);
-  }, [rowKeys, responseLoading, historyLoading, error]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Content that grows without a new row (a long reply rendering, an image loading) keeps the view at the end while
-  // the reader follows, and shrinks the room under an anchored turn.
-  useEffect(() => {
-    const content = contentRef.current;
-    if (!content || typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver(() => {
-      updateSpacer();
-      if (follow.current) toEnd(false);
-      setAtEnd(isNearBottom(viewportRef.current));
-    });
-    ro.observe(content);
-    if (viewportRef.current) ro.observe(viewportRef.current);
-    return () => ro.disconnect();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const onScroll = () => {
-    const el = viewportRef.current;
-    const near = isNearBottom(el);
-    setAtEnd(near);
-    if (near) follow.current = true;
-    else if (Date.now() > programmaticUntil.current) follow.current = false;
-  };
-  // Scrolling up by wheel or touch releases the view at once, even during a smooth scroll the widget started.
-  const release = (e) => {
-    if (e.type === 'wheel' && e.deltaY >= 0) return;
-    follow.current = false;
-    programmaticUntil.current = 0;
-  };
-  const jump = () => {
-    follow.current = true;
-    toEnd(true);
-  };
+  const { viewportRef, contentRef, spacerRef, atEnd, onScroll, release, jump } = useChatScroll({
+    rows,
+    allRows,
+    appended,
+    responseLoading,
+    historyLoading,
+    error,
+  });
 
   // ---- Input ---------------------------------------------------------------------------------------------------------
 

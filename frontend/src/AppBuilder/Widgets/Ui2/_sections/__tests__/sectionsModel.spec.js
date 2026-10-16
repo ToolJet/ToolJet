@@ -1,5 +1,4 @@
 import {
-  autoProgressTone,
   barWidth,
   cardItems,
   fieldList,
@@ -9,12 +8,10 @@ import {
   heroMeta,
   percentLabel,
   percentOf,
-  progressItems,
-  progressTone,
   recordItems,
-  stripColumns,
-  summaryFigures,
 } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
+import { stripColumns, summaryFigures } from '@/AppBuilder/Widgets/Ui2/_sections/summaryModel';
+import { autoProgressTone, progressItems, progressTone } from '@/AppBuilder/Widgets/Ui2/_sections/progressModel';
 
 describe('cardItems', () => {
   const rows = [

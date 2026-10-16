@@ -1,21 +1,10 @@
 import {
   FIT_MAX_ZOOM,
   NOMINATIM,
-  ROUTE_PALETTE,
   SATELLITE,
-  TONE_COLORS,
-  areaShapes,
-  colorOf,
   fillUrl,
   geocoderUrls,
-  heatPoints,
-  legendItems,
-  markerRoutes,
   parsePlaces,
-  routeRows,
-  safeColor,
-  statusFill,
-  toPath,
   OSM,
   clampZoom,
   fitView,
@@ -30,6 +19,19 @@ import {
   unproject,
   viewBounds,
 } from '@/AppBuilder/Widgets/Ui2/Map/mapModel';
+import {
+  ROUTE_PALETTE,
+  TONE_COLORS,
+  areaShapes,
+  colorOf,
+  heatPoints,
+  legendItems,
+  markerRoutes,
+  routeRows,
+  safeColor,
+  statusFill,
+  toPath,
+} from '@/AppBuilder/Widgets/Ui2/Map/mapShapes';
 
 describe('mapModel', () => {
   describe('coordinates', () => {
