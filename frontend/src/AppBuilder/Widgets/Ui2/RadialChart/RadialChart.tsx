@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Cell, PolarAngleAxis, RadialBar, RadialBarChart, Tooltip } from 'recharts';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { formatter, isSet, num, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { arcAngles, arcBox, radialRows } from './radialModel';
 import { LegendContent, SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
-import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 /** A drawn ring: its name, value and colour, the gauge's maximum in progress mode, and the row it came from. */
 interface Ring {
@@ -139,32 +139,48 @@ export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum 
 export const ShadRadialChart = (props: WidgetProps) => {
   const p = props.properties;
   const progress = p.mode !== 'categories';
-  const format = formatter({ prefix: p.valuePrefix, suffix: p.valueSuffix });
-  let rings: Ring[] = [];
-  let centre = { value: '', label: isSet(p.centerLabel) ? String(p.centerLabel) : '' };
-  if (progress) {
+  const bound = useStable(p.data);
+  const colors = useStable(p.colors);
+  // The rings and the centre text are worked out again only when what they read changes, not on every render.
+  const { rings, centre } = useMemo(() => {
+    const label = isSet(p.centerLabel) ? String(p.centerLabel) : '';
+    if (!progress) {
+      // The first row is the outer ring: concentric bars read from the outside in.
+      const rows: Ring[] = radialRows(bound, p.categoryField, p.valueField)
+        .map((g, i) => ({ ...g, fill: g.color ?? seriesColor(colors, i) }))
+        .reverse();
+      return { rings: rows, centre: { value: isSet(p.centerValue) ? String(p.centerValue) : '', label } };
+    }
     const value = num(p.value);
+    if (value === null) return { rings: [], centre: { value: '', label } };
     const maxValue = num(p.maxValue);
     const max = maxValue !== null && maxValue > 0 ? maxValue : 100;
-    if (value !== null) {
-      rings = [
+    const format = formatter({ prefix: p.valuePrefix, suffix: p.valueSuffix });
+    return {
+      rings: [
         {
-          name: centre.label || 'Value',
+          name: label || 'Value',
           value: Math.min(max, Math.max(0, value)),
           max,
-          fill: seriesColor(p.colors, 0),
+          fill: seriesColor(colors, 0),
           row: { value, maxValue: max },
         },
-      ];
-      centre.value = isSet(p.centerValue) ? String(p.centerValue) : format(value);
-    }
-  } else {
-    // The first row is the outer ring: concentric bars read from the outside in.
-    rings = radialRows(p.data, p.categoryField, p.valueField)
-      .map((g, i) => ({ ...g, fill: g.color ?? seriesColor(p.colors, i) }))
-      .reverse();
-    centre = { ...centre, value: isSet(p.centerValue) ? String(p.centerValue) : '' };
-  }
+      ],
+      centre: { value: isSet(p.centerValue) ? String(p.centerValue) : format(value), label },
+    };
+  }, [
+    progress,
+    bound,
+    colors,
+    p.categoryField,
+    p.valueField,
+    p.value,
+    p.maxValue,
+    p.centerLabel,
+    p.centerValue,
+    p.valuePrefix,
+    p.valueSuffix,
+  ]);
   return (
     <SafeFrame props={props} empty={!rings.length}>
       {(onDatum) => <RadialBody p={p} rings={rings} progress={progress} centre={centre} onDatum={onDatum} />}

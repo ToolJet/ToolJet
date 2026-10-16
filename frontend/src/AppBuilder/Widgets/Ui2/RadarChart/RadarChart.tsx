@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Legend, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, Tooltip } from 'recharts';
-import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { list, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import {
   clamp,
@@ -26,20 +26,34 @@ import {
 
 export const ShadRadarChart = (props: WidgetProps) => {
   const p = props.properties;
-  const { x: category, series } = resolveChartFields(
-    list(p.data),
-    isSet(p.categoryField) ? String(p.categoryField) : undefined,
-    fieldList(p.yFields)
-  );
-  const rows = seriesRows(p.data, category, series);
-  // A missing score sits at the centre rather than breaking the polygon.
-  const plotted = rows.map((r) => ({ ...r, ...Object.fromEntries(series.map((s) => [s, r[s] ?? 0])) }));
+  const bound = useStable(p.data);
+  const yFields = useStable(p.yFields);
+  const seriesLabels = useStable(p.seriesLabels);
+  const colors = useStable(p.colors);
+  // Rows, series and colours are worked out again only when what they read changes, not on every render.
+  const { category, series, plotted, empty, names, fills } = useMemo(() => {
+    const fields = resolveChartFields(
+      list(bound),
+      isSet(p.categoryField) ? String(p.categoryField) : undefined,
+      fieldList(yFields)
+    );
+    const rows = seriesRows(bound, fields.x, fields.series);
+    const labels = seriesLabelMap(seriesLabels, fields.series);
+    return {
+      category: fields.x,
+      series: fields.series,
+      // A missing score sits at the centre rather than breaking the polygon.
+      plotted: rows.map((r) => ({ ...r, ...Object.fromEntries(fields.series.map((s) => [s, r[s] ?? 0])) })),
+      empty: !fields.series.length || !hasValues(rows, fields.series),
+      names: fields.series.map((s) => seriesLabel(s, labels)),
+      fills: fields.series.map((_, i) => seriesColor(colors, i)),
+    };
+  }, [bound, p.categoryField, yFields, seriesLabels, colors]);
   const max = num(p.maxValue);
   const opacity = clamp(p.fillOpacity, 0, 1, 0.5);
   const full = formatter({ prefix: p.valuePrefix, suffix: p.valueSuffix });
-  const color = (i: number) => seriesColor(p.colors, i);
   return (
-    <SafeFrame props={props} empty={!series.length || !hasValues(rows, series)}>
+    <SafeFrame props={props} empty={empty}>
       {(onDatum) => (
         <RadarChart
           data={plotted}
@@ -63,12 +77,12 @@ export const ShadRadarChart = (props: WidgetProps) => {
             <Radar
               key={s}
               dataKey={s}
-              name={seriesLabel(s, seriesLabelMap(p.seriesLabels, series))}
-              stroke={color(i)}
+              name={names[i]}
+              stroke={fills[i]}
               strokeWidth={2}
-              fill={color(i)}
+              fill={fills[i]}
               fillOpacity={opacity}
-              dot={p.showDots === true ? { r: 3, fillOpacity: 1, fill: color(i) } : false}
+              dot={p.showDots === true ? { r: 3, fillOpacity: 1, fill: fills[i] } : false}
               isAnimationActive={animated(p)}
             />
           ))}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { CartesianGrid, Legend, ReferenceLine, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
@@ -16,7 +16,7 @@ import {
   full,
   isCompactChart,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
-import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // ---- Scatter -------------------------------------------------------------------------------------------------------
 
@@ -55,32 +55,54 @@ const ScatterTip = ({ active, payload, p, fx, fy }: ScatterTipProps) => {
 
 export const ShadScatterChart = (props: WidgetProps) => {
   const p = props.properties;
-  const groups = scatterGroups(p.data, {
-    xField: p.xField,
-    yField: p.yField,
-    sizeField: p.sizeField,
-    groupField: p.groupField,
-    nameField: p.nameField,
-  });
+  const bound = useStable(p.data);
+  const colors = useStable(p.colors);
+  // The groups, their colours, the formatters and the y axis width are worked out again only when what they read
+  // changes, not on every render.
+  const { groups, fills, fxTick, fyTick, fx, fy, yWidth } = useMemo(() => {
+    const points = scatterGroups(bound, {
+      xField: p.xField,
+      yField: p.yField,
+      sizeField: p.sizeField,
+      groupField: p.groupField,
+      nameField: p.nameField,
+    });
+    const xFormat = { format: p.xAxisFormat, currency: p.currency };
+    const yFormat = { format: p.yAxisFormat, currency: p.currency, prefix: p.valuePrefix, suffix: p.valueSuffix };
+    const yTick = formatter(yFormat, true);
+    return {
+      groups: points,
+      fills: points.map((_, i) => seriesColor(colors, i)),
+      fxTick: formatter(xFormat, true),
+      fyTick: yTick,
+      fx: formatter(xFormat, false),
+      fy: formatter(yFormat, false),
+      yWidth: axisWidthFor(
+        points.flatMap((g) => g.points.map((pt) => pt.y)),
+        yTick
+      ),
+    };
+  }, [
+    bound,
+    colors,
+    p.xField,
+    p.yField,
+    p.sizeField,
+    p.groupField,
+    p.nameField,
+    p.xAxisFormat,
+    p.yAxisFormat,
+    p.currency,
+    p.valuePrefix,
+    p.valueSuffix,
+  ]);
   const compact = isCompactChart(props.height);
-  const fxTick = formatter({ format: p.xAxisFormat, currency: p.currency }, true);
-  const fyTick = formatter(
-    { format: p.yAxisFormat, currency: p.currency, prefix: p.valuePrefix, suffix: p.valueSuffix },
-    true
-  );
-  const fx = formatter({ format: p.xAxisFormat, currency: p.currency }, false);
-  const fy = formatter(
-    { format: p.yAxisFormat, currency: p.currency, prefix: p.valuePrefix, suffix: p.valueSuffix },
-    false
-  );
-  const ys = groups.flatMap((g) => g.points.map((pt) => pt.y));
   const bubbles = isSet(p.sizeField);
   const size = clamp(p.pointSize, 2, 40, 6);
   const opacity = clamp(p.fillOpacity, 0.1, 1, bubbles ? 0.6 : 0.85);
   const refX = num(p.referenceX);
   const refY = num(p.referenceY);
   const refColor = 'var(--lk-ref, var(--sc-muted-foreground))';
-  const color = (i: number) => seriesColor(p.colors, i);
   const axisTitle = (text: unknown, axis: 'x' | 'y') =>
     isSet(text) && !compact
       ? {
@@ -115,7 +137,7 @@ export const ShadScatterChart = (props: WidgetProps) => {
             {...AXIS}
             hide={compact}
             domain={['auto', 'auto']}
-            width={axisWidthFor(ys, fyTick) + (isSet(p.yLabel) ? 18 : 0)}
+            width={yWidth + (isSet(p.yLabel) ? 18 : 0)}
             tickFormatter={fyTick}
             label={axisTitle(p.yLabel, 'y')}
           />
@@ -140,9 +162,9 @@ export const ShadScatterChart = (props: WidgetProps) => {
               key={g.name || 'points'}
               name={String(g.name || seriesLabel(p.yField))}
               data={g.points}
-              fill={color(i)}
+              fill={fills[i]}
               fillOpacity={opacity}
-              stroke={bubbles ? color(i) : 'none'}
+              stroke={bubbles ? fills[i] : 'none'}
               isAnimationActive={animated(p)}
               onClick={(pt) => onDatum(pt?.payload?.row ?? pt?.row)}
             />

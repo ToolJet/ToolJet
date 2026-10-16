@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { clamp, formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { heatmapGrid } from './heatmapModel';
-import { ChartBoundary, EmptyChart, useClickedDatum, valueFormat } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import {
+  ChartBoundary,
+  EmptyChart,
+  useClickedDatum,
+  useValueFormat,
+} from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 
 // ---- Heatmap -------------------------------------------------------------------------------------------------------
 
@@ -15,14 +20,16 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
   const { setExposedVariables, height } = props;
   const click = useClickedDatum(props);
   useExposed(setExposedVariables, p, click.exposed);
-  const grid = heatmapGrid(p.data, {
-    xField: p.xField,
-    yField: p.yField,
-    valueField: p.valueField,
-    xOrder: p.xOrder,
-    yOrder: p.yOrder,
-  });
-  const format = formatter(valueFormat(p), p.yAxisFormat === 'compact');
+  const bound = useStable(p.data);
+  const xOrder = useStable(p.xOrder);
+  const yOrder = useStable(p.yOrder);
+  const options = useValueFormat(p);
+  // The grid (a pass over every row) is worked out again only when the data, its fields or the orders change.
+  const grid = useMemo(
+    () => heatmapGrid(bound, { xField: p.xField, yField: p.yField, valueField: p.valueField, xOrder, yOrder }),
+    [bound, p.xField, p.yField, p.valueField, xOrder, yOrder]
+  );
+  const format = useMemo(() => formatter(options, options.format === 'compact'), [options]);
   const showValues = p.showValues === true;
   const gap = clamp(p.cellGap, 0, 12, 3);
   const empty = !grid.xs.length || !grid.ys.length;

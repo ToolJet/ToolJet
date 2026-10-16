@@ -1,7 +1,7 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { TrendingDown, TrendingUp } from 'lucide-react';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Badge, Card, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { badgeLook, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { fontStack, textCase } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
@@ -44,7 +44,9 @@ export const SPARK_W = 120;
 export const SPARK_H = 36;
 
 export const StatSparkline = ({ data, type, id }: { data: unknown; type: unknown; id: unknown }) => {
-  const paths = sparkPaths(data, SPARK_W, SPARK_H);
+  // The trend data (a list or '3,5,4' text) is parsed into paths again only when it changes, not on every render.
+  const points = useStable(data);
+  const paths = useMemo(() => sparkPaths(points, SPARK_W, SPARK_H), [points]);
   if (!paths) return null;
   const gradient = `stat-spark-${String(id ?? 'x').replace(/[^\w-]/g, '')}`;
   return (

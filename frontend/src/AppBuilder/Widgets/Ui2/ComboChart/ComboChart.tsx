@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, Tooltip, XAxis, YAxis } from 'recharts';
-import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { list, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import {
   clamp,
@@ -28,62 +28,117 @@ import {
   dateTicks,
   isCompactChart,
   scaled,
-  valueFormat,
+  useValueFormat,
   type TooltipContentProps,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 
 export const ShadComboChart = (props: WidgetProps) => {
   const p = props.properties;
-  const named = comboSeries(p.barFields, p.lineFields, p.rightAxisFields);
-  const { x: xField } = resolveChartFields(list(p.data), isSet(p.xField) ? String(p.xField) : undefined, []);
-  const series = named.filter((s) => list(p.data).some((row) => row && typeof row === 'object' && s.field in row));
-  const rows = seriesRows(
-    p.data,
-    xField,
-    series.map((s) => s.field)
-  ).slice(0, MAX_BARS);
-  const compact = isCompactChart(props.height);
-  // seriesRows makes every series value a number or null.
-  const valuesOn = (axis: 'left' | 'right') =>
-    rows
-      .flatMap((r) => series.filter((s) => s.axis === axis).map((s) => r[s.field]))
-      .filter((v): v is number => v !== null);
-  // A rate sent as a fraction (a 39% margin as 0.39) reads as a percent, not 0.4%.
-  const leftScale = percentScale(p.yAxisFormat, valuesOn('left'));
-  const rightScale = percentScale(p.rightAxisFormat, valuesOn('right'));
-  const left = scaled(formatter(valueFormat(p), true), leftScale);
-  const right = scaled(formatter({ format: p.rightAxisFormat, currency: p.currency }, true), rightScale);
-  const leftFull = scaled(formatter(valueFormat(p), false), leftScale);
-  const rightFull = scaled(formatter({ format: p.rightAxisFormat, currency: p.currency }, false), rightScale);
-  const rightKeys = new Set(series.filter((s) => s.axis === 'right').map((s) => s.field));
-  const leftFields = series.filter((s) => s.axis !== 'right').map((s) => s.field);
-  const hasRight = rightKeys.size > 0;
+  const bound = useStable(p.data);
+  const barFields = useStable(p.barFields);
+  const lineFields = useStable(p.lineFields);
+  const rightAxisFields = useStable(p.rightAxisFields);
+  const seriesLabels = useStable(p.seriesLabels);
+  const colors = useStable(p.colors);
+  const format = useValueFormat(p);
   const stackedBars = p.stackBars === true;
-  const leftValues = stackedBars
-    ? [
-        ...rows.map((r) =>
-          series
-            .filter((s) => s.kind === 'bar' && s.axis === 'left')
-            .reduce((sum, s) => sum + ((r[s.field] as number | null) ?? 0), 0)
-        ),
-        ...valuesOn('left'),
-      ]
-    : valuesOn('left');
-  const tipFormat = (v: unknown, key: unknown) =>
-    typeof key === 'string' && rightKeys.has(key) ? rightFull(v) : leftFull(v);
-  const color = (i: number) => seriesColor(p.colors, i);
-  const curve = curveOf(p.curve);
-  return (
-    <SafeFrame
-      props={props}
-      empty={
+  // Rows, series, colours and both value axes are worked out again only when what they read changes, not on every
+  // render of the widget (a hover, a sibling's exposed value).
+  const {
+    xField,
+    series,
+    rows,
+    empty,
+    names,
+    fills,
+    hasRight,
+    left,
+    right,
+    leftWidth,
+    rightWidth,
+    leftDecimals,
+    rightDecimals,
+    xTicks,
+    tipFormat,
+  } = useMemo(() => {
+    const named = comboSeries(barFields, lineFields, rightAxisFields);
+    const { x: xField } = resolveChartFields(list(bound), isSet(p.xField) ? String(p.xField) : undefined, []);
+    const series = named.filter((s) => list(bound).some((row) => row && typeof row === 'object' && s.field in row));
+    const rows = seriesRows(
+      bound,
+      xField,
+      series.map((s) => s.field)
+    ).slice(0, MAX_BARS);
+    // seriesRows makes every series value a number or null.
+    const valuesOn = (axis: 'left' | 'right') =>
+      rows
+        .flatMap((r) => series.filter((s) => s.axis === axis).map((s) => r[s.field]))
+        .filter((v): v is number => v !== null);
+    // A rate sent as a fraction (a 39% margin as 0.39) reads as a percent, not 0.4%.
+    const leftScale = percentScale(format.format, valuesOn('left'));
+    const rightScale = percentScale(p.rightAxisFormat, valuesOn('right'));
+    const rightFormat = { format: p.rightAxisFormat, currency: format.currency };
+    const left = scaled(formatter(format, true), leftScale);
+    const right = scaled(formatter(rightFormat, true), rightScale);
+    const leftFull = scaled(formatter(format, false), leftScale);
+    const rightFull = scaled(formatter(rightFormat, false), rightScale);
+    const rightKeys = new Set(series.filter((s) => s.axis === 'right').map((s) => s.field));
+    const leftValues = stackedBars
+      ? [
+          ...rows.map((r) =>
+            series
+              .filter((s) => s.kind === 'bar' && s.axis === 'left')
+              .reduce((sum, s) => sum + ((r[s.field] as number | null) ?? 0), 0)
+          ),
+          ...valuesOn('left'),
+        ]
+      : valuesOn('left');
+    const labels = seriesLabelMap(
+      seriesLabels,
+      named.map((n) => n.field)
+    );
+    return {
+      xField,
+      series,
+      rows,
+      empty:
         !series.length ||
         !hasValues(
           rows,
           series.map((s) => s.field)
-        )
-      }
-    >
+        ),
+      names: series.map((s) => seriesLabel(s.field, labels)),
+      fills: series.map((_, i) => seriesColor(colors, i)),
+      hasRight: rightKeys.size > 0,
+      left,
+      right,
+      leftWidth: axisWidthFor(leftValues, left),
+      rightWidth: axisWidthFor(valuesOn('right'), right),
+      leftDecimals: !wholeNumbers(
+        rows,
+        series.filter((s) => s.axis !== 'right').map((s) => s.field)
+      ),
+      rightDecimals: !wholeNumbers(rows, [...rightKeys]),
+      xTicks: dateTicks(rows, xField),
+      tipFormat: (v: unknown, key: unknown) =>
+        typeof key === 'string' && rightKeys.has(key) ? rightFull(v) : leftFull(v),
+    };
+  }, [
+    bound,
+    p.xField,
+    barFields,
+    lineFields,
+    rightAxisFields,
+    seriesLabels,
+    colors,
+    format,
+    p.rightAxisFormat,
+    stackedBars,
+  ]);
+  const compact = isCompactChart(props.height);
+  const curve = curveOf(p.curve);
+  return (
+    <SafeFrame props={props} empty={empty}>
       {(onDatum) => (
         <ComposedChart
           data={rows}
@@ -92,14 +147,14 @@ export const ShadComboChart = (props: WidgetProps) => {
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
           {p.showGrid !== false && !compact ? <CartesianGrid vertical={false} stroke={GRID} /> : null}
-          <XAxis dataKey={xField} {...AXIS} hide={compact} minTickGap={16} tickFormatter={dateTicks(rows, xField)} />
+          <XAxis dataKey={xField} {...AXIS} hide={compact} minTickGap={16} tickFormatter={xTicks} />
           <YAxis
             yAxisId="left"
             {...AXIS}
             hide={compact}
-            width={axisWidthFor(leftValues, left)}
+            width={leftWidth}
             tickFormatter={left}
-            allowDecimals={!wholeNumbers(rows, leftFields)}
+            allowDecimals={leftDecimals}
           />
           {hasRight ? (
             <YAxis
@@ -107,9 +162,9 @@ export const ShadComboChart = (props: WidgetProps) => {
               orientation="right"
               {...AXIS}
               hide={compact}
-              width={axisWidthFor(valuesOn('right'), right)}
+              width={rightWidth}
               tickFormatter={right}
-              allowDecimals={!wholeNumbers(rows, [...rightKeys])}
+              allowDecimals={rightDecimals}
             />
           ) : null}
           <Tooltip cursor={{ fill: 'var(--sc-muted)', fillOpacity: 0.6 }} content={<ComboTip format={tipFormat} />} />
@@ -120,14 +175,8 @@ export const ShadComboChart = (props: WidgetProps) => {
                 key={s.field}
                 yAxisId={s.axis}
                 dataKey={s.field}
-                name={seriesLabel(
-                  s.field,
-                  seriesLabelMap(
-                    p.seriesLabels,
-                    named.map((n) => n.field)
-                  )
-                )}
-                fill={color(i)}
+                name={names[i]}
+                fill={fills[i]}
                 radius={stackedBars ? 0 : [4, 4, 0, 0]}
                 stackId={stackedBars ? 'bars' : undefined}
                 maxBarSize={56}
@@ -138,17 +187,11 @@ export const ShadComboChart = (props: WidgetProps) => {
                 key={s.field}
                 yAxisId={s.axis}
                 dataKey={s.field}
-                name={seriesLabel(
-                  s.field,
-                  seriesLabelMap(
-                    p.seriesLabels,
-                    named.map((n) => n.field)
-                  )
-                )}
+                name={names[i]}
                 type={curve}
-                stroke={color(i)}
+                stroke={fills[i]}
                 strokeWidth={clamp(p.strokeWidth, 0.5, 12, 2)}
-                dot={p.showDots !== false ? { r: 3, fill: color(i), strokeWidth: 0 } : false}
+                dot={p.showDots !== false ? { r: 3, fill: fills[i], strokeWidth: 0 } : false}
                 activeDot={{ r: 5, strokeWidth: 0 }}
                 isAnimationActive={animated(p)}
               />

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Area, AreaChart, Line, LineChart, ReferenceArea, Tooltip, XAxis, YAxis, type AreaProps } from 'recharts';
 import { clamp, curveOf, formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
@@ -10,7 +10,7 @@ import {
   type SparkPoint,
 } from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';
 import { SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
-import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 interface SparkTipProps {
   active?: boolean;
@@ -33,16 +33,22 @@ export const SparkTip = ({ active, payload, format }: SparkTipProps) => {
 
 export const ShadSparkline = (props: WidgetProps) => {
   const p = props.properties;
-  const points = sparkPoints(p.data);
-  const last = lastPoint(points);
-  const trend = trendOf(points, p.lowerIsBetter === true);
+  // The points are parsed (from a list or '3,5,4' text) again only when the data changes, not on every render.
+  const bound = useStable(p.data);
+  const { points, last, trend } = useMemo(() => {
+    const parsed = sparkPoints(bound);
+    return { points: parsed, last: lastPoint(parsed), trend: trendOf(parsed, p.lowerIsBetter === true) };
+  }, [bound, p.lowerIsBetter]);
   const color =
     p.colorByTrend === true && trend !== 'flat'
       ? trend === 'up'
         ? 'var(--lk-up, var(--sc-success))'
         : 'var(--lk-down, var(--sc-destructive))'
       : 'var(--sc-chart-1)';
-  const band = p.showBand === true ? bandRange(points, p.bandMin, p.bandMax) : null;
+  const band = useMemo(
+    () => (p.showBand === true ? bandRange(points, p.bandMin, p.bandMax) : null),
+    [points, p.showBand, p.bandMin, p.bandMax]
+  );
   const strokeWidth = clamp(p.strokeWidth, 0.5, 6, 2);
   const endDot = p.showEndDot !== false && last;
   const dotRadius = Math.max(2.5, strokeWidth + 1);

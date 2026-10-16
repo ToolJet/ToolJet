@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Cell, Label as ChartLabel, Legend, Pie, PieChart, Tooltip } from 'recharts';
-import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { list, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { isSet, statusColors, centreValueFit } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { ChartFrame, ChartTooltip, LegendContent, fmt } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
@@ -12,9 +12,14 @@ export const MAX_SLICES = 100;
 
 export const ShadPieChart = (props: WidgetProps) => {
   const p = props.properties;
-  const slices = list(p.data).slice(0, MAX_SLICES);
-  const states = isSet(p.colors) ? null : statusColors(slices.map((d) => d?.[p.categoryField]));
-  const data = slices.map((d, i) => ({ ...d, fill: states?.[i] ?? seriesColor(p.colors, i) }));
+  const bound = useStable(p.data);
+  const colors = useStable(p.colors);
+  // The slices and their colours are worked out again only when the data, the category field or the colours change.
+  const data = useMemo(() => {
+    const slices = list(bound).slice(0, MAX_SLICES);
+    const states = isSet(colors) ? null : statusColors(slices.map((d) => d?.[p.categoryField]));
+    return slices.map((d, i) => ({ ...d, fill: states?.[i] ?? seriesColor(colors, i) }));
+  }, [bound, colors, p.categoryField]);
   const donut = p.donut !== false;
   const format = fmt(p, false);
   return (

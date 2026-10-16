@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { ResponsiveContainer } from 'recharts';
-import { list, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { list, useExposed, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -298,6 +298,12 @@ export const valueFormat = (p: Resolved): FormatOptions => ({
   prefix: p.valuePrefix,
   suffix: p.valueSuffix,
 });
+/** valueFormat as one reference while the format properties are unchanged, so axes memoised on it are not worked out
+ *  again on every render. */
+export const useValueFormat = (p: Resolved): FormatOptions => useStable(valueFormat(p));
+/** The value prefix and suffix fmt reads, as one reference while they are unchanged. */
+export const useAffixes = (p: Resolved): Resolved =>
+  useStable({ valuePrefix: p.valuePrefix, valueSuffix: p.valueSuffix });
 
 // ---- Combo ---------------------------------------------------------------------------------------------------------
 

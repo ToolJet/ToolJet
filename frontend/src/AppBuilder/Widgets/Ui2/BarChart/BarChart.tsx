@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Tooltip, XAxis, YAxis } from 'recharts';
-import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { list, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import {
+  isPlain,
   isSet,
   resolveChartFields,
   seriesLabel,
@@ -25,6 +26,7 @@ import {
   fmt,
   isCompactChart,
   seriesOf,
+  useAffixes,
   valueAxisWidth,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 
@@ -128,41 +130,83 @@ export const categoryAxisWidth = (data: unknown, key: string | undefined): numbe
   return Math.min(180, Math.max(48, longest * 7 + 16));
 };
 
-export const ShadBarChart = (props: WidgetProps) => {
-  const p = props.properties;
-  const data = list(p.data).slice(0, MAX_BARS);
-  const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
-  const horizontal = p.horizontal === true;
-  const compact = isCompactChart(props.height);
-  const states = isSet(p.colors)
-    ? null
-    : statusColors(series.map((s) => seriesLabel(s, seriesLabelMap(p.seriesLabels, series))));
-  const color = (i: number) => states?.[i] ?? seriesColor(p.colors, i);
-  // Highlight: the picked bars keep the series colour (or the Highlight color style), the rest draw muted (the Muted
-  // bar color style, else the series colour faded), so one month or one site stands out.
-  const picked = highlightIndexes(data, xField, series, p.highlight);
-  const highlightFill = isSet(props.styles?.highlightColor) ? 'var(--lk-highlight)' : null;
-  const mutedFill = isSet(props.styles?.mutedColor) ? 'var(--lk-muted-bar)' : null;
-  // A colour per category (categoryColors { Won: green, Lost: red }); categories it does not name keep the series'.
-  const own =
-    p.categoryColors && typeof p.categoryColors === 'object' && !Array.isArray(p.categoryColors)
-      ? p.categoryColors
-      : {};
-  const categoryColor = (row: unknown) => {
+/** A colour per category (categoryColors { Won: green, Lost: red }): the colour named for each row's category, or null
+ *  where it names none (the row keeps the series' colour). */
+export const categoryFills = (
+  data: unknown[],
+  xField: string | undefined,
+  categoryColors: unknown
+): (string | null)[] => {
+  const own: Row = isPlain(categoryColors) ? categoryColors : {};
+  return data.map((row) => {
     const key = row && typeof row === 'object' ? (row as Row)[String(xField)] : undefined;
     const v = typeof key === 'string' || typeof key === 'number' ? own[key] : undefined;
     return typeof v === 'string' && v.trim() ? v : null;
-  };
-  const colored = data.some((row) => categoryColor(row));
+  });
+};
+
+export const ShadBarChart = (props: WidgetProps) => {
+  const p = props.properties;
+  const bound = useStable(p.data);
+  const yFields = useStable(p.yFields);
+  const seriesLabels = useStable(p.seriesLabels);
+  const colors = useStable(p.colors);
+  const highlight = useStable(p.highlight);
+  const categoryColors = useStable(p.categoryColors);
+  const affixes = useAffixes(p);
+  const stacked = p.stack === true;
+  // Rows, series, colours and the value axis are worked out again only when what they read changes, not on every
+  // render of the widget (a hover, a sibling's exposed value).
+  const { data, xField, series, names, fills, picked, rowFills, tick, full, yWidth, allowDecimals, ticks } =
+    useMemo(() => {
+      const rows = list(bound).slice(0, MAX_BARS);
+      const fields = resolveChartFields(rows, p.xField, seriesOf({ yFields }));
+      const labels = seriesLabelMap(seriesLabels, fields.series);
+      const seriesNames = fields.series.map((s) => seriesLabel(s, labels));
+      const states = isSet(colors) ? null : statusColors(seriesNames);
+      const short = fmt(affixes, true);
+      return {
+        data: rows,
+        xField: fields.x,
+        series: fields.series,
+        names: seriesNames,
+        fills: fields.series.map((_, i) => states?.[i] ?? seriesColor(colors, i)),
+        picked: highlightIndexes(rows, fields.x, fields.series, highlight),
+        rowFills: categoryFills(rows, fields.x, categoryColors),
+        tick: short,
+        full: fmt(affixes, false),
+        yWidth: valueAxisWidth(rows, fields.series, short, stacked),
+        allowDecimals: !wholeNumbers(rows, fields.series),
+        ticks: wholeTicks(rows, fields.series, stacked),
+      };
+    }, [bound, p.xField, yFields, seriesLabels, colors, highlight, categoryColors, affixes, stacked]);
+  // The category axis: whether names are drawn at an angle depends on the widget's width as well.
+  const categoryAxis = useMemo(() => {
+    const angled = angledCategories(data, xField, props.width);
+    return {
+      angled,
+      everyName: keepsEveryCategory(data, xField),
+      height: categoryAxisHeight(data, xField, angled),
+      width: categoryAxisWidth(data, xField),
+      dates: dateTicks(data, xField),
+    };
+  }, [data, xField, props.width]);
+  const horizontal = p.horizontal === true;
+  const compact = isCompactChart(props.height);
+  // Highlight: the picked bars keep the series colour (or the Highlight color style), the rest draw muted (the Muted
+  // bar color style, else the series colour faded), so one month or one site stands out.
+  const highlightFill = isSet(props.styles?.highlightColor) ? 'var(--lk-highlight)' : null;
+  const mutedFill = isSet(props.styles?.mutedColor) ? 'var(--lk-muted-bar)' : null;
+  const colored = rowFills.some(Boolean);
   const cells = (i: number) =>
     !picked && colored
-      ? data.map((row, d) => <Cell key={d} fill={categoryColor(row) || color(i)} />)
+      ? rowFills.map((fill, d) => <Cell key={d} fill={fill || fills[i]} />)
       : picked
       ? data.map((_, d) =>
           picked.has(d) ? (
-            <Cell key={d} fill={highlightFill || color(i)} />
+            <Cell key={d} fill={highlightFill || fills[i]} />
           ) : (
-            <Cell key={d} fill={mutedFill || color(i)} fillOpacity={mutedFill ? 1 : 0.32} />
+            <Cell key={d} fill={mutedFill || fills[i]} fillOpacity={mutedFill ? 1 : 0.32} />
           )
         )
       : null;
@@ -173,7 +217,7 @@ export const ShadBarChart = (props: WidgetProps) => {
           data={data}
           layout={horizontal ? 'vertical' : 'horizontal'}
           // Names drawn at an angle reach left of their bar: the first one was cut ("me & Mystery", bookshop sales).
-          margin={{ left: !horizontal && angledCategories(data, xField, props.width) ? 28 : 4, right: 12, top: 12 }}
+          margin={{ left: !horizontal && categoryAxis.angled ? 28 : 4, right: 12, top: 12 }}
           onClick={(e) => onDatum(e?.activePayload?.[0]?.payload)}
         >
           {compact ? null : <CartesianGrid vertical={horizontal} horizontal={!horizontal} stroke={GRID} />}
@@ -183,16 +227,16 @@ export const ShadBarChart = (props: WidgetProps) => {
                 type="number"
                 {...AXIS}
                 hide={compact}
-                tickFormatter={fmt(p, true)}
-                allowDecimals={!wholeNumbers(data, series)}
-                {...wholeTicks(data, series, p.stack === true)}
+                tickFormatter={tick}
+                allowDecimals={allowDecimals}
+                {...ticks}
               />
               <YAxis
                 type="category"
                 dataKey={xField}
                 {...AXIS}
                 hide={compact}
-                width={categoryAxisWidth(data, xField)}
+                width={categoryAxis.width}
                 // Every bar keeps its name: Recharts thinned the labels of a 6-bar chart to every other one. Past a dozen
                 // bars the names can outnumber the lines the chart has room for (26 reps in 240px printed over each
                 // other), so every nth name shows, as many as fit.
@@ -206,44 +250,38 @@ export const ShadBarChart = (props: WidgetProps) => {
             </>
           ) : (
             <>
-              {keepsEveryCategory(data, xField) ? (
+              {categoryAxis.everyName ? (
                 <XAxis
                   dataKey={xField}
                   {...AXIS}
                   hide={compact}
                   interval={0}
-                  height={categoryAxisHeight(data, xField, angledCategories(data, xField, props.width))}
-                  tick={<CategoryTick angled={angledCategories(data, xField, props.width)} />}
+                  height={categoryAxis.height}
+                  tick={<CategoryTick angled={categoryAxis.angled} />}
                 />
               ) : (
-                <XAxis
-                  dataKey={xField}
-                  {...AXIS}
-                  hide={compact}
-                  minTickGap={16}
-                  tickFormatter={dateTicks(data, xField)}
-                />
+                <XAxis dataKey={xField} {...AXIS} hide={compact} minTickGap={16} tickFormatter={categoryAxis.dates} />
               )}
               <YAxis
                 {...AXIS}
                 hide={compact}
-                width={valueAxisWidth(data, series, fmt(p, true), p.stack === true)}
-                tickFormatter={fmt(p, true)}
-                allowDecimals={!wholeNumbers(data, series)}
-                {...wholeTicks(data, series, p.stack === true)}
+                width={yWidth}
+                tickFormatter={tick}
+                allowDecimals={allowDecimals}
+                {...ticks}
               />
             </>
           )}
-          <Tooltip cursor={{ fill: 'var(--sc-muted)' }} content={<ChartTooltip format={fmt(p, false)} />} />
+          <Tooltip cursor={{ fill: 'var(--sc-muted)' }} content={<ChartTooltip format={full} />} />
           {p.showLegend === true && series.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
           {series.map((s, i) => (
             <Bar
               key={s}
               dataKey={s}
-              name={seriesLabel(s, seriesLabelMap(p.seriesLabels, series))}
-              fill={color(i)}
-              radius={p.stack === true ? 0 : horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
-              stackId={p.stack === true ? 'a' : undefined}
+              name={names[i]}
+              fill={fills[i]}
+              radius={stacked ? 0 : horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
+              stackId={stacked ? 'a' : undefined}
             >
               {cells(i)}
             </Bar>

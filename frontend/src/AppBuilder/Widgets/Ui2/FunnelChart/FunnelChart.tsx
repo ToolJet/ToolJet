@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -11,7 +11,7 @@ import {
   EmptyChart,
   animated,
   useClickedDatum,
-  valueFormat,
+  useValueFormat,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 
 // ---- Funnel --------------------------------------------------------------------------------------------------------
@@ -23,18 +23,28 @@ export const ShadFunnelChart = (props: WidgetProps) => {
   const { setExposedVariables, height } = props;
   const click = useClickedDatum(props);
   useExposed(setExposedVariables, p, click.exposed);
-  const stages = funnelStages(p.data, p.stageField, p.valueField).slice(0, 24);
-  const format = formatter(valueFormat(p), p.yAxisFormat === 'compact');
+  const bound = useStable(p.data);
+  const options = useValueFormat(p);
+  const showConversion = p.showConversion !== false;
+  // The stages and the label and value column widths are worked out again only when what they read changes.
+  const stages = useMemo(
+    () => funnelStages(bound, p.stageField, p.valueField).slice(0, 24),
+    [bound, p.stageField, p.valueField]
+  );
+  const format = useMemo(() => formatter(options, options.format === 'compact'), [options]);
+  const [labelWidth, valueWidth] = useMemo(
+    () => [
+      Math.min(180, Math.max(56, Math.max(0, ...stages.map((s) => String(s.label).length)) * 7 + 12)),
+      Math.max(40, Math.max(0, ...stages.map((s) => String(format(s.value)).length)) * 7.5 + 4) +
+        (showConversion ? 52 : 0),
+    ],
+    [stages, format, showConversion]
+  );
   const base = p.conversionBase === 'first' ? 'ofFirst' : 'ofPrevious';
   const centred = p.align !== 'left';
-  const showConversion = p.showConversion !== false;
   const byStage = p.colorByStage === true;
   const fade = (i: number) => (stages.length > 1 ? 1 - (i / (stages.length - 1)) * 0.45 : 1);
   const onStage = (stage: FunnelStage) => click.pick(stage.row);
-  const labelWidth = Math.min(180, Math.max(56, Math.max(0, ...stages.map((s) => String(s.label).length)) * 7 + 12));
-  const valueWidth =
-    Math.max(40, Math.max(0, ...stages.map((s) => String(format(s.value)).length)) * 7.5 + 4) +
-    (showConversion ? 52 : 0);
   const empty = !stages.length || stages.every((s) => s.value === null);
   const emptyView = <EmptyChart text={String(p.emptyText || 'No data')} />;
   return (
