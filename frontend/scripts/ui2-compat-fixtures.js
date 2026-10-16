@@ -13,7 +13,7 @@
 //
 //   node scripts/ui2-compat-fixtures.js <release> [--configs-from <git ref>] [--provenance <text>] [--only ShadX,ShadY]
 //
-// Then record what the widgets expose: UI2_COMPAT_RECORD=1 npx jest Widgets/Ui2/__tests__/compat/savedApps
+// Then record what the widgets expose: UI2_COMPAT_RECORD=1 npx jest Widgets/Ui2/__tests__/integration/savedApps
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -383,4 +383,4 @@ for (const config of configs.filter((c) => !only || only.includes(c.name))) {
 const sorted = Object.fromEntries(Object.entries(manifest.fixtures).sort(([a], [b]) => a.localeCompare(b)));
 fs.writeFileSync(manifestFile, `${JSON.stringify({ ...manifest, fixtures: sorted }, null, 2)}\n`);
 console.log(`${written} fixture(s) written to ${path.relative(ROOT, dir)}. Record their oracles next:`);
-console.log('  UI2_COMPAT_RECORD=1 npx jest --maxWorkers=2 src/AppBuilder/Widgets/Ui2/__tests__/compat/savedApps');
+console.log('  UI2_COMPAT_RECORD=1 npx jest --maxWorkers=2 src/AppBuilder/Widgets/Ui2/__tests__/integration/savedApps');

@@ -2,7 +2,7 @@
 // harness, renders it, and drives it the way the saved app would: its events, its control-component actions, its RunJS
 // query and its bindings. Returns what a builder would see (exposed values after each step) and every problem found.
 import { act, screen, waitFor } from '@testing-library/react';
-import { createWidgetHarness, MODULE_ID, store, drain } from '@/AppBuilder/Widgets/widgetHarness';
+import { MODULE_ID, store, drain } from '@/AppBuilder/Widgets/widgetHarness';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager/componentTypes';
 
 const UUID = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
@@ -61,7 +61,8 @@ const allStrings = (value, out = []) => {
   return out;
 };
 
-export function harnessFor(fixture) {
+/** A harness for one fixture's widget, from the spec's createWidgetHarness. */
+export function harnessFor(fixture, createWidgetHarness) {
   const widget = fixture.components[0];
   return createWidgetHarness({
     componentType: widget.type,
