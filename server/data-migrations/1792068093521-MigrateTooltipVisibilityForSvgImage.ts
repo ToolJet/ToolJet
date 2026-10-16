@@ -1,14 +1,13 @@
 import { MigrationProgress, deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-const MIGRATION_NAME = 'MigrateVisibilityForSvgImage';
+const MIGRATION_NAME = 'MigrateTooltipVisibilityForSvgImage';
 const TYPE = 'SvgImage';
 
-export class MigrateVisibilityForSvgImage1791946693334 implements MigrationInterface {
+export class MigrateTooltipVisibilityForSvgImage1792068093521 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const batchSize = 100;
     let offset = 0;
-    let hasMoreData = true;
     let totalUpdated = 0;
 
     const countResult = await queryRunner.query(`SELECT COUNT(*) FROM components WHERE type = $1`, [TYPE]);
@@ -20,30 +19,27 @@ export class MigrateVisibilityForSvgImage1791946693334 implements MigrationInter
     }
 
     console.log(
-      `${MIGRATION_NAME}: [START] Move SvgImage visibility from styles to properties | Total: ${totalComponents}`
+      `${MIGRATION_NAME}: [START] Move SvgImage visibility/tooltip to properties + backfill tooltipFormat | Total: ${totalComponents}`
     );
     const migrationProgress = new MigrationProgress(MIGRATION_NAME, totalComponents);
-    while (hasMoreData) {
+
+    while (true) {
       const components = await queryRunner.query(
-        `SELECT id, properties, styles
+        `SELECT id, properties, styles, general_properties
            FROM components
            WHERE type = $1
            ORDER BY "created_at" ASC
            LIMIT $2 OFFSET $3`,
         [TYPE, batchSize, offset]
       );
-
-      if (components.length === 0) {
-        hasMoreData = false;
-        break;
-      }
+      if (components.length === 0) break;
 
       totalUpdated += await this.processUpdates(queryRunner, components, migrationProgress);
       offset += batchSize;
     }
 
-    // visibility changed bucket (styles → properties): invalidate app version history so stale
-    // undo/redo snapshots don't resurrect the old shape.
+    // visibility (styles → properties) and tooltip (general_properties → properties) changed
+    // buckets: invalidate app version history so stale undo/redo snapshots don't resurrect the old shape.
     const versions: { app_version_id: string }[] = await queryRunner.query(
       `SELECT DISTINCT p.app_version_id FROM components c
          INNER JOIN pages p ON c.page_id = p.id WHERE c.type = $1`,
@@ -55,7 +51,9 @@ export class MigrateVisibilityForSvgImage1791946693334 implements MigrationInter
       MIGRATION_NAME
     );
 
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Move SvgImage visibility finished. Updated ${totalUpdated} components.`);
+    console.log(
+      `${MIGRATION_NAME}: [SUCCESS] Move SvgImage visibility/tooltip finished. Updated ${totalUpdated} components.`
+    );
   }
 
   private async processUpdates(
@@ -68,23 +66,37 @@ export class MigrateVisibilityForSvgImage1791946693334 implements MigrationInter
     for (const component of components) {
       const properties = component.properties ? { ...component.properties } : {};
       const styles = component.styles ? { ...component.styles } : {};
+      const general = component.general_properties ? { ...component.general_properties } : {};
 
       // visibility: styles → properties. Fill the target only when unset so a value already on
       // properties is preserved; always drop the stale styles key.
-      if (styles.visibility === undefined) {
-        migrationProgress.show();
-        continue;
+      if (styles.visibility !== undefined) {
+        if (properties.visibility === undefined) {
+          properties.visibility = styles.visibility;
+        }
+        delete styles.visibility;
       }
-      if (properties.visibility === undefined) {
-        properties.visibility = styles.visibility;
-      }
-      delete styles.visibility;
 
-      await queryRunner.query(`UPDATE components SET properties = $1, styles = $2 WHERE id = $3`, [
-        JSON.stringify(properties),
-        JSON.stringify(styles),
-        component.id,
-      ]);
+      // tooltip: general_properties → properties (same preserve-then-delete rule).
+      if (general.tooltip !== undefined) {
+        if (properties.tooltip === undefined) {
+          properties.tooltip = general.tooltip;
+        }
+        delete general.tooltip;
+      }
+
+      // tooltipFormat pairs with the properties-based tooltip. BackfillTooltipFormat did not
+      // cover SvgImage, so default it here.
+      if (properties.tooltipFormat === undefined) {
+        properties.tooltipFormat = { value: 'plainText' };
+      }
+
+      await queryRunner.query(
+        `UPDATE components
+           SET properties = $1, styles = $2, general_properties = $3
+           WHERE id = $4`,
+        [JSON.stringify(properties), JSON.stringify(styles), JSON.stringify(general), component.id]
+      );
 
       updatedCount++;
       migrationProgress.show();
