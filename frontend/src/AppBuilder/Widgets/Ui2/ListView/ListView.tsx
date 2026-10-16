@@ -14,8 +14,8 @@ import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
 import { itemKey, listLook, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
-import { useCanvasFit } from '@/AppBuilder/Widgets/Ui2/_shared/canvasFit';
-import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
+import { fitsContentInView, listRowHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 type ListMode = 'list' | 'grid';
@@ -45,9 +45,11 @@ type ListStore = {
 interface RowProps {
   id: string;
   index: number;
+  item: unknown;
   parentPath: ContextSegment[];
   height: number;
   fit: boolean;
+  currentLayout?: string;
   width: number;
   onPick: (index: number) => void;
   selected: boolean;
@@ -67,9 +69,11 @@ interface RowProps {
 const Row = ({
   id,
   index,
+  item,
   parentPath,
   height: rowHeight,
   fit,
+  currentLayout,
   width,
   onPick,
   selected,
@@ -79,7 +83,7 @@ const Row = ({
   darkMode,
 }: RowProps) => {
   // With dynamic height on (in an app), a row grows with its components, as the native Listview's rows do.
-  const [rowRef, height] = useCanvasFit(fit, rowHeight, '[role=listitem]');
+  const height = useFittedRowHeight({ id, index, value: item, fit, height: rowHeight, currentLayout });
   const contextValue = useMemo(
     () => ({ contextPath: [...parentPath, { containerId: id, index }] }),
     [parentPath, id, index]
@@ -87,7 +91,6 @@ const Row = ({
   return (
     <SubcontainerContext.Provider value={contextValue}>
       <div
-        ref={rowRef}
         role="listitem"
         onClickCapture={() => onPick(index)}
         className={cn(
@@ -147,7 +150,7 @@ export const ShadListView = (props: WidgetProps) => {
 
   const mode: ListMode = properties.mode === 'grid' ? 'grid' : 'list';
   const columns = mode === 'grid' ? Math.min(24, Math.max(1, Math.floor(Number(properties.columns)) || 1)) : 1;
-  const rowHeight = Math.min(4000, Math.max(24, Number(properties.rowHeight) || 72));
+  const rowHeight = listRowHeight(properties);
   const gap = Math.min(200, Math.max(0, Number(properties.gap) || 0));
   // Text only: a list bound here would be turned into a huge key for every item.
   const idField = typeof properties.idField === 'string' && properties.idField.trim() ? properties.idField : 'id';
@@ -329,9 +332,11 @@ export const ShadListView = (props: WidgetProps) => {
               key={keys[index]}
               id={id}
               index={index}
+              item={item}
               parentPath={contextPath}
               height={rowHeight}
               fit={fitsContentInView(props.componentType ?? 'ShadListView', properties) && props.currentMode === 'view'}
+              currentLayout={props.currentLayout}
               width={itemWidth}
               onPick={(i) => !isDisabled && pick(i)}
               selected={properties.highlightSelectedRow !== false && index === selectedIndex}

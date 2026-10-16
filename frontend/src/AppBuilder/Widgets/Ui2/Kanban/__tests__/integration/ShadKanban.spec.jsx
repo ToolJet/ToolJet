@@ -16,6 +16,7 @@ import {
   countInvocationsOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { columnMinimum, kanbanCollision } from '@/AppBuilder/Widgets/Ui2/Kanban/Kanban';
+import useStore from '@/AppBuilder/_stores/store';
 import {
   addCard,
   boardCards,
@@ -431,6 +432,24 @@ describe('UI 2.0 Kanban', () => {
           })
         ).toEqual([true, false, true])
       );
+    });
+
+    // The card fits its components as a list row does (the reflow writes each card's height); a card with part of it
+    // hidden (a deal's notes on a closed deal) fits what is left, below cardHeight, rather than keeping an empty band.
+    test('[ShadKanban-PROP-015] with dynamic height in an app each custom card fits its components, each card on its own', async () => {
+      const data =
+        "{{[{ id: 1, title: 'Open deal', status: 'todo', open: true }, { id: 2, title: 'Shut deal', status: 'todo', open: false }]}}";
+      const notes = cardChild('cardMore', 'Deal notes', '{{cardData.open}}');
+      notes.layouts = { desktop: { top: 60, left: 0, width: 20, height: 80 } };
+      const title = cardChild('cardText', '{{cardData.title}}');
+      title.layouts = { desktop: { top: 0, left: 0, width: 20, height: 50 } };
+      render({ properties: custom(data), extraComponents: { cardText: title, cardMore: notes } });
+
+      const heights = () => [...document.querySelectorAll('[data-card-canvas]')].map((c) => c.style.height);
+      // Open: the notes end at 140px, plus 8px. Shut: the notes are left out, so the title's 50px plus 8px.
+      await waitFor(() => expect(heights()).toEqual(['148px', '58px']));
+      act(() => useStore.getState().setTemporaryLayouts({ [`${ID}-1`]: { height: 210 } }));
+      await waitFor(() => expect(heights()).toEqual(['148px', '210px']));
     });
   });
 

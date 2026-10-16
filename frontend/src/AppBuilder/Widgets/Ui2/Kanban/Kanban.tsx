@@ -26,7 +26,7 @@ import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { addCard, boardCards, boardColumns, deleteCard, moveCard, updateCard } from './kanbanBoard';
 import { KANBAN_INSTRUCTIONS, KANBAN_KEYS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
 import { SHADOWS, isSet, kanbanLook, px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
-import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { fitsContentInView, kanbanCardHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { BoardCard, BoardColumn, CardMove, CardRow } from './kanbanBoard';
 import { CardBody, CustomCardBody } from './KanbanCard';
@@ -200,7 +200,7 @@ export const ShadKanban = (props: WidgetProps) => {
   const updateCustomResolvables = useStore((state: KanbanStore) => state.updateCustomResolvables);
   const custom = properties.cardLayout === 'custom';
   const editing = props.currentMode === 'edit';
-  const cardHeight = Number(properties.cardHeight) || 96;
+  const cardHeight = kanbanCardHeight(properties);
   const order = useMemo(
     () => new Map(columns.flatMap((c) => c.cards).map((card, index) => [card.__key, index])),
     [columns]
@@ -227,10 +227,12 @@ export const ShadKanban = (props: WidgetProps) => {
         <CustomCardBody
           id={props.id}
           index={order.get(card.__key) ?? 0}
+          card={card}
           width={cardWidth}
           height={cardHeight}
           fit={fitCards}
           editing={editing}
+          currentLayout={props.currentLayout}
           darkMode={props.darkMode}
         />
       )

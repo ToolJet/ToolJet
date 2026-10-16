@@ -10,6 +10,7 @@
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
 import { createWidgetHarness, binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import useStore from '@/AppBuilder/_stores/store';
 
 const ID = 'lv1';
 const widget = createWidgetHarness({
@@ -115,6 +116,35 @@ describe('UI 2.0 List view', () => {
     await waitFor(() => expect(items()[0].style.height).toBe('90px'));
     expect(items()[0]).toHaveClass('tw-border-b');
     expect(list().style.gap).toBe('0');
+  });
+
+  // A row stayed at rowHeight while a component in it grew, cutting it off (a long bound note grew its Text to 116px in
+  // a 60px row, 2026-10-11). The reflow sizes each row from its components, as the native Listview's rows.
+  test('[ShadListView-PROP-008] with dynamicHeight in an app each row fits its components, each row on its own', async () => {
+    const tall = rowText();
+    tall.id = 'rowNote';
+    tall.name = 'rowNote';
+    tall.component.name = 'rowNote';
+    tall.layouts = { desktop: { top: 40, left: 0, width: 20, height: 110 } };
+    render({
+      properties: people({ rowHeight: binding('{{72}}') }),
+      extraComponents: { rowText: rowText(), rowNote: tall },
+    });
+
+    // Laid out to 150px: the row grows to it, plus 8px under it.
+    await waitFor(() => expect(items().map((row) => row.style.height)).toEqual(['158px', '158px', '158px']));
+    // A component grown in one row (the reflow writes that row's height) grows that row only.
+    act(() => useStore.getState().setTemporaryLayouts({ 'lv1-1': { height: 260 } }));
+    await waitFor(() => expect(items()[1].style.height).toBe('260px'));
+    expect(items()[0].style.height).toBe('158px');
+  });
+
+  test('[ShadListView-PROP-009] in the editor rows keep rowHeight whatever the reflow wrote', async () => {
+    render({ currentMode: 'edit', properties: people({ rowHeight: binding('{{72}}') }) });
+    await waitFor(() => expect(items()).toHaveLength(3));
+    act(() => useStore.getState().setTemporaryLayouts({ 'lv1-1': { height: 260 } }));
+    await settle();
+    expect(items()[1].style.height).toBe('72px');
   });
 
   test('[ShadListView-PROP-004] highlightSelectedRow off selects a row without marking it', async () => {

@@ -3,9 +3,9 @@ import type { ReactNode } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
+import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Avatar, AvatarFallback, Badge, Progress, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { useCanvasFit } from '@/AppBuilder/Widgets/Ui2/_shared/canvasFit';
 import { badgeLook, isSet, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { cardClamp, cardDateLabel, cardDetails } from './kanbanBoard';
 import type { BoardCard } from './kanbanBoard';
@@ -302,31 +302,31 @@ export const KanbanCard = ({
 interface CustomCardBodyProps {
   id: string;
   index: number;
+  card: BoardCard;
   width: number;
   height: number;
   fit: boolean;
   editing: boolean;
+  currentLayout?: string;
   darkMode?: boolean;
 }
 
 export const CustomCardBody = ({
   id,
   index,
+  card,
   width,
   height: cardHeight,
   fit,
   editing,
+  currentLayout,
   darkMode,
 }: CustomCardBodyProps) => {
-  const [ref, height] = useCanvasFit(fit, cardHeight, '[data-card-canvas]', { shrink: true });
+  // Sized by the reflow as a list row is; a card with something hidden on it may also go below cardHeight.
+  const height = useFittedRowHeight({ id, index, value: card, fit, height: cardHeight, currentLayout });
   return (
     // In the editor, a press inside the card edits its components instead of starting a card drag.
-    <div
-      ref={ref}
-      data-card-canvas=""
-      style={{ height }}
-      onPointerDown={editing ? (e) => e.stopPropagation() : undefined}
-    >
+    <div data-card-canvas="" style={{ height }} onPointerDown={editing ? (e) => e.stopPropagation() : undefined}>
       {width > 0 ? (
         <SubContainer
           id={id}

@@ -13,7 +13,7 @@ import {
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
-import { heightHeldInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { hasPerRowHeight, heightHeldInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Grid slice — owns the mutable reflow state for dynamic-height layout.
@@ -330,7 +330,9 @@ export const createGridSlice = (set, get) => {
             return;
           }
 
-          if (componentType === 'Listview' && contextIndices && isContainer) {
+          // A row (or card) of a per-row widget: write the row's height under the row's context, never sibling temps
+          // there (the widget's siblings are not in the row).
+          if (hasPerRowHeight(componentType) && contextIndices && isContainer) {
             const scopedElement = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
             if (!scopedElement) {
               mergedPatch[getDynamicLayoutKey(componentId, contextIndices)] = {
@@ -338,6 +340,9 @@ export const createGridSlice = (set, get) => {
                 ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices)],
                 height: newHeight,
               };
+              // The UI 2.0 lists stop here: they are leaves at widget level, measured by their own reflow
+              // (useAutoHeight) once React draws the taller row.
+              if (componentType !== 'Listview') return;
               const nextCtx = contextIndices.length > 1 ? contextIndices.slice(0, -1) : null;
               const selfKey = `${componentId}|${currentLayout}|${nextCtx ? nextCtx.join('.') : ''}`;
               nextBubbles.set(selfKey, { id: componentId, layout: currentLayout, contextIndices: nextCtx, moduleId });
@@ -409,7 +414,7 @@ export const createGridSlice = (set, get) => {
 
           if (Object.keys(temporaryLayoutPatch).length === 0) return;
 
-          if (isContainer && componentType !== 'Listview') {
+          if (isContainer && !hasPerRowHeight(componentType)) {
             const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
             if (element && visibility) element.style.height = `${newHeight}px`;
           }
