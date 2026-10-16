@@ -57,6 +57,13 @@ const REVIEW_COLUMNS = `r.id, r.app_id AS "appId", r.version_id AS "versionId", 
   r.author_id AS "authorId", r.title, r.description, r.status, r.required_approvals AS "requiredApprovals",
   r.created_at AS "createdAt", r.updated_at AS "updatedAt"`;
 
+// Review text is stored and drawn in every reviewer's panel, so each field has a size limit.
+const LIMITS = { Title: 200, Description: 10000, Comment: 10000, Anchor: 200, Note: 10000, Reason: 10000 };
+const limit = (field: keyof typeof LIMITS, value?: string | null) => {
+  if (typeof value === 'string' && value.length > LIMITS[field])
+    throw new BadRequestException(`${field} is too long (at most ${LIMITS[field]} characters)`);
+};
+
 const requireOpen = (row: ReviewRowRaw) => {
   if (row.status !== 'open') throw new BadRequestException(`This review is ${row.status}`);
 };
@@ -189,6 +196,8 @@ export class VersionReviewService {
     versionId: string,
     body: { title?: string; description?: string; baseVersionId?: string }
   ) {
+    limit('Title', body.title);
+    limit('Description', body.description);
     return dbTransactionWrap(async (manager: EntityManager) => {
       const [version] = await manager.query(`SELECT id, name FROM app_versions WHERE id = $1 AND app_id = $2`, [
         versionId,
@@ -298,6 +307,8 @@ export class VersionReviewService {
 
   async comment(app: App, user: User, reviewId: string, body: { body?: string; anchor?: string }) {
     if (!body.body?.trim()) throw new BadRequestException('Write a comment first');
+    limit('Comment', body.body);
+    limit('Anchor', body.anchor);
     return this.step(app, user, reviewId, async () => ({
       kind: 'comment',
       body: body.body.trim(),
@@ -317,6 +328,7 @@ export class VersionReviewService {
     const kinds = { approve: 'approved', request_changes: 'changes_requested', dismiss: 'dismissed' } as const;
     const kind = kinds[body.decision];
     if (!kind) throw new BadRequestException('decision must be approve, request_changes or dismiss');
+    limit('Note', body.body);
     return this.step(app, user, reviewId, async (manager, row, current) => {
       requireOpen(row);
       if (row.authorId === user.id && kind !== 'dismissed')
@@ -337,6 +349,7 @@ export class VersionReviewService {
   async override(app: App, user: User, reviewId: string, body: { reason?: string }) {
     if (!body.reason?.trim() || body.reason.trim().length < 10)
       throw new BadRequestException('Give a reason for releasing without approval (at least 10 characters)');
+    limit('Reason', body.reason);
     return this.step(app, user, reviewId, async (manager, row) => {
       requireOpen(row);
       return { kind: 'override', body: body.reason.trim() };

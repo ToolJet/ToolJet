@@ -139,6 +139,18 @@ export class VersionSnapshotStore {
     if (version.gitAllowsEditing === false)
       throw new BadRequestException('Git sync locks this app for editing, so the edit cannot be undone here.');
 
+    // Lock the version's content before checking it. A save already under way finishes first and
+    // the check below sees it (and refuses); a save that arrives now waits, then lands on top of
+    // the restored version. Without this, a save between the check and the write was overwritten
+    // while the editor was told it had saved.
+    const pageIds = `SELECT id FROM pages WHERE app_version_id = $1`;
+    const componentIds = `SELECT id FROM components WHERE page_id IN (${pageIds})`;
+    await manager.query(`SELECT 1 FROM pages WHERE app_version_id = $1 FOR UPDATE`, [versionId]);
+    await manager.query(`SELECT 1 FROM components WHERE page_id IN (${pageIds}) FOR UPDATE`, [versionId]);
+    await manager.query(`SELECT 1 FROM layouts WHERE component_id IN (${componentIds}) FOR UPDATE`, [versionId]);
+    await manager.query(`SELECT 1 FROM data_queries WHERE app_version_id = $1 FOR UPDATE`, [versionId]);
+    await manager.query(`SELECT 1 FROM event_handlers WHERE app_version_id = $1 FOR UPDATE`, [versionId]);
+
     // Fingerprint the snapshot with today's rules; the stored one may predate a rule change.
     const wanted = contentFingerprint(buildSnapshot(rows));
     const current = await this.fingerprintOf(manager, input.appId, versionId);

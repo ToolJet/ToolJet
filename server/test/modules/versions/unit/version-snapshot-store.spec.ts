@@ -115,7 +115,12 @@ describe('version snapshots', () => {
         return sql.includes('INSERT') ? [{ id: 's-9' }] : [];
       },
     };
-    await new VersionSnapshotStore().capture(manager, { organizationId: 'o', appId: 'a', versionId: 'v-1', reason: 'ai_turn' });
+    await new VersionSnapshotStore().capture(manager, {
+      organizationId: 'o',
+      appId: 'a',
+      versionId: 'v-1',
+      reason: 'ai_turn',
+    });
     const trims = statements.filter((statement) => statement.sql.includes('DELETE FROM app_version_snapshots'));
     expect(trims.map((trim) => trim.params)).toEqual([
       ['v-1', 'ai_turn', 100],
@@ -233,5 +238,26 @@ describe('version snapshots', () => {
     await new VersionSnapshotStore().restore(manager, { appId: 'a', snapshotId: 's-1', organizationId: 'o' });
     const lookup = manager.statements.find((statement) => statement.sql.includes('FROM app_versions v JOIN apps'));
     expect(lookup.sql).toMatch(/FOR UPDATE OF v/);
+  });
+
+  it("locks the version's content before checking it, so a save cannot land between the check and the write", async () => {
+    const load = jest.spyOn(VersionDiffService.prototype, 'loadRows').mockResolvedValue(rows('Open deals'));
+    const manager: any = restoreManager(draft);
+    let order: string[] = [];
+    load.mockImplementation(async () => {
+      order.push('read');
+      return rows('Open deals');
+    });
+    const query = manager.query;
+    manager.query = async (sql: string, params: any[]) => {
+      if (/FOR UPDATE/.test(sql)) order.push(sql.match(/FROM (\w+)/)[1]);
+      return query(sql, params);
+    };
+    // Only the order matters here (the stubbed reads never match the snapshot, so the final check fails).
+    await new VersionSnapshotStore()
+      .restore(manager, { appId: 'a', snapshotId: 's-1', organizationId: 'o' })
+      .catch(() => undefined);
+    order = order.slice(0, order.indexOf('read') + 1);
+    expect(order).toEqual(['app_versions', 'pages', 'components', 'layouts', 'data_queries', 'event_handlers', 'read']);
   });
 });

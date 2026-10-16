@@ -25,3 +25,28 @@ describe('listing reviews', () => {
     expect(load).not.toHaveBeenCalled();
   });
 });
+
+// Review text is stored and sent to every reviewer's panel: each field has a size limit.
+describe('review text limits', () => {
+  const service = new VersionReviewService();
+  const app = { id: 'a' } as any;
+  const user = { id: 'u-2', organizationId: 'o' } as any;
+  const long = (n: number) => 'x'.repeat(n);
+
+  it.each([
+    ['a title', () => service.open(app, user, 'v-9', { title: long(201) }), 'Title'],
+    ['a description', () => service.open(app, user, 'v-9', { title: 'Ok', description: long(10001) }), 'Description'],
+    ['a comment', () => service.comment(app, user, 'r-1', { body: long(10001) }), 'Comment'],
+    ['an anchor', () => service.comment(app, user, 'r-1', { body: 'Ok', anchor: long(201) }), 'Anchor'],
+    [
+      'a decision note',
+      () => service.decide(app, user, 'r-1', { decision: 'request_changes', body: long(10001) }),
+      'Note',
+    ],
+    ['an override reason', () => service.override(app, user, 'r-1', { reason: long(10001) }), 'Reason'],
+  ])('refuses %s over its limit, before touching the database', async (_what, call, field) => {
+    manager.query.mockClear();
+    await expect(call()).rejects.toThrow(`${field} is too long`);
+    expect(manager.query).not.toHaveBeenCalled();
+  });
+});

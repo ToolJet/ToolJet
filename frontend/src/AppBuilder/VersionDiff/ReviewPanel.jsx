@@ -285,6 +285,7 @@ export const RequestReviewForm = ({ appId, targetVersion, baseVersion, onCreated
           rows={5}
           value={description}
           onChange={(event) => setDescription(event.target.value)}
+          maxLength={10000}
           placeholder="Context for the reviewer: the request behind it, what to check, anything risky."
         />
       </label>
@@ -352,6 +353,7 @@ export const ReviewPanel = ({
         rows={3}
         value={text}
         onChange={(event) => setText(event.target.value)}
+        maxLength={10000}
         placeholder={
           overriding
             ? 'Why does this need to go out without approval? This stays on the record.'
