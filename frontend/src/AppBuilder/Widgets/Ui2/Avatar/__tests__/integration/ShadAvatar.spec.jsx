@@ -72,7 +72,7 @@ describe('UI 2.0 Avatar', () => {
     await waitFor(() => expect(group().style.getPropertyValue('--av-size')).toBe('64px'));
     expect(group().style.getPropertyValue('--av-font')).toBe('26px');
     expect(group().style.getPropertyValue('--av-overlap')).toBe('13px');
-    expect(avatars(container)[0].className).toContain('h-[var(--av-size)]');
+    expect(avatars(container)[0].className).toContain('tw-h-[var(--av-size)]');
 
     render({ properties: { size: binding('{{4000}}') } });
     await waitFor(() => expect(group().style.getPropertyValue('--av-size')).toBe('256px'));
@@ -134,6 +134,6 @@ describe('UI 2.0 Avatar', () => {
     expect(root.style.getPropertyValue('--lk-bg')).toBe('#e0e7ff');
     expect(root.style.getPropertyValue('--lk-fg')).toBe('#3730a3');
     expect(root.style.getPropertyValue('--lk-ring')).toBe('#ffffff');
-    expect(screen.getByText('AL').className).toContain('bg-[color:var(--lk-bg,var(--sc-muted))]');
+    expect(screen.getByText('AL').className).toContain('tw-bg-[color:var(--lk-bg,var(--sc-muted))]');
   });
 });

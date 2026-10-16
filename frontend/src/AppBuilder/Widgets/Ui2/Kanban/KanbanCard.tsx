@@ -38,7 +38,7 @@ const BADGE_BY_WORD: Record<string, BadgeVariant> = {
 };
 
 // A card's secondary text (description, meta, progress): the cardTextColor style, else the theme's muted text.
-export const SECONDARY_TEXT = 'text-[color:var(--kb-card-text,var(--sc-muted-foreground))]';
+export const SECONDARY_TEXT = 'tw-text-[color:var(--kb-card-text,var(--sc-muted-foreground))]';
 
 const asTags = (value: unknown): string[] =>
   (Array.isArray(value) ? value : isSet(value) ? String(value).split(',') : [])
@@ -71,59 +71,67 @@ export const CardBody = ({ card, fields, compact, badgeColors, progressStyle, ex
     <>
       <p
         className={cn(
-          'pr-5 font-medium leading-snug text-[color:var(--kb-card-title,var(--sc-card-foreground))]',
-          compact ? 'text-[13px]' : 'text-sm'
+          'tw-pr-5 tw-font-medium tw-leading-snug tw-text-[color:var(--kb-card-title,var(--sc-card-foreground))]',
+          compact ? 'tw-text-[13px]' : 'tw-text-ui2-sm'
         )}
       >
         {String(card[fields.title] ?? '')}
       </p>
       {fields.description && isSet(card[fields.description]) ? (
-        <p className={cn('line-clamp-2 text-xs', SECONDARY_TEXT, compact ? 'mt-0.5' : 'mt-1')}>
+        <p className={cn('tw-line-clamp-2 tw-text-xs', SECONDARY_TEXT, compact ? 'tw-mt-0.5' : 'tw-mt-1')}>
           {shown(card[fields.description])}
         </p>
       ) : null}
       {tags.length ? (
-        <div className={cn('flex flex-wrap gap-1', compact ? 'mt-1.5' : 'mt-2')}>
+        <div className={cn('tw-flex tw-flex-wrap tw-gap-1', compact ? 'tw-mt-1.5' : 'tw-mt-2')}>
           {tags.map((tag) => (
-            <Badge key={tag} variant="outline" className="px-1.5 py-0 text-[11px] font-normal">
+            <Badge key={tag} variant="outline" className="tw-px-1.5 tw-py-0 tw-text-[11px] tw-font-normal">
               {tag}
             </Badge>
           ))}
         </div>
       ) : null}
       {Number.isFinite(progress) ? (
-        <div style={progressStyle} className={cn('flex items-center gap-2', compact ? 'mt-1.5' : 'mt-2.5')}>
-          <Progress value={Math.max(0, Math.min(100, progress))} className="h-1.5" />
-          <span className={cn('text-[11px] tabular-nums', SECONDARY_TEXT)}>{Math.round(progress)}%</span>
+        <div
+          style={progressStyle}
+          className={cn('tw-flex tw-items-center tw-gap-2', compact ? 'tw-mt-1.5' : 'tw-mt-2.5')}
+        >
+          <Progress value={Math.max(0, Math.min(100, progress))} className="tw-h-1.5" />
+          <span className={cn('tw-text-[11px] tw-tabular-nums', SECONDARY_TEXT)}>{Math.round(progress)}%</span>
         </div>
       ) : null}
       {isSet(badge) || isSet(avatar) || isSet(meta) ? (
         // Wraps beside a wide badge, the meta moving whole to the next line, before the meta is cut ("28 Oct 2...").
-        <div className={cn('flex flex-wrap items-center gap-x-2 gap-y-1', compact ? 'mt-2' : 'mt-3')}>
+        <div
+          className={cn('tw-flex tw-flex-wrap tw-items-center tw-gap-x-2 tw-gap-y-1', compact ? 'tw-mt-2' : 'tw-mt-3')}
+        >
           {isSet(badge) ? (
             badgeLook(badge, badgeColors) ? (
               <Badge
                 variant="outline"
                 style={badgeLook(badge, badgeColors) ?? undefined}
-                className="shrink-0 border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]"
+                className="tw-shrink-0 tw-border-transparent tw-bg-[color:var(--kb-badge-bg)] tw-text-[color:var(--kb-badge-fg)]"
               >
                 {String(badge)}
               </Badge>
             ) : (
-              <Badge variant={BADGE_BY_WORD[String(badge).toLowerCase()] || 'outline'} className="shrink-0">
+              <Badge variant={BADGE_BY_WORD[String(badge).toLowerCase()] || 'outline'} className="tw-shrink-0">
                 {String(badge)}
               </Badge>
             )
           ) : null}
           {isSet(meta) ? (
             // One line: in a narrow column a date wrapped across lines; the whole text is in the tooltip.
-            <span title={String(meta)} className={cn('min-w-0 truncate whitespace-nowrap text-xs', SECONDARY_TEXT)}>
+            <span
+              title={String(meta)}
+              className={cn('tw-min-w-0 tw-truncate tw-whitespace-nowrap tw-text-xs', SECONDARY_TEXT)}
+            >
               {shown(meta)}
             </span>
           ) : null}
           {isSet(avatar) ? (
-            <Avatar className="ml-auto h-6 w-6">
-              <AvatarFallback className="text-[10px]">{initials(avatar)}</AvatarFallback>
+            <Avatar className="tw-ml-auto tw-h-6 tw-w-6">
+              <AvatarFallback className="tw-text-[10px]">{initials(avatar)}</AvatarFallback>
             </Avatar>
           ) : null}
         </div>
@@ -133,21 +141,24 @@ export const CardBody = ({ card, fields, compact, badgeColors, progressStyle, ex
         // mb-0 and font-normal: the app's global dl and dt styles (a bottom margin, bold terms) leak in otherwise.
         <dl
           className={cn(
-            'mb-0 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-[color:var(--sc-border)]',
-            compact ? 'mt-2 pt-2' : 'mt-3 pt-2.5'
+            'tw-mb-0 tw-grid tw-grid-cols-2 tw-gap-x-3 tw-gap-y-2 tw-border-t tw-border-[color:var(--sc-border)]',
+            compact ? 'tw-mt-2 tw-pt-2' : 'tw-mt-3 tw-pt-2.5'
           )}
         >
           {details.map((row, i) => (
-            <div key={`${row.label}-${i}`} className={cn('min-w-0', row.value.length > SHORT_DETAIL && 'col-span-2')}>
+            <div
+              key={`${row.label}-${i}`}
+              className={cn('tw-min-w-0', row.value.length > SHORT_DETAIL && 'tw-col-span-2')}
+            >
               {row.label ? (
-                <dt className={cn('text-[11px] font-normal leading-4', SECONDARY_TEXT)}>{row.label}</dt>
+                <dt className={cn('tw-text-[11px] tw-font-normal tw-leading-4', SECONDARY_TEXT)}>{row.label}</dt>
               ) : null}
               <dd
                 className={cn(
-                  'm-0 break-words text-[color:var(--kb-card-title,var(--sc-card-foreground))]',
+                  'tw-m-0 tw-break-words tw-text-[color:var(--kb-card-title,var(--sc-card-foreground))]',
                   row.value.length > SHORT_DETAIL
-                    ? 'whitespace-pre-line text-xs leading-relaxed'
-                    : 'text-[13px] font-medium tabular-nums'
+                    ? 'tw-whitespace-pre-line tw-text-xs tw-leading-relaxed'
+                    : 'tw-text-[13px] tw-font-medium tw-tabular-nums'
                 )}
               >
                 {row.value}
@@ -230,12 +241,12 @@ export const KanbanCard = ({
       }}
       style={look.card}
       className={cn(
-        'group/card relative overflow-hidden border text-card-foreground transition-colors hover:border-primary/40',
+        'group/card tw-relative tw-overflow-hidden tw-border tw-text-ui2-card-foreground tw-transition-colors hover:tw-border-ui2-primary/40',
         padding,
-        draggable && 'cursor-grab active:cursor-grabbing',
-        selected && 'border-primary ring-1 ring-primary',
-        drop.isOver && 'border-t-2 border-t-primary',
-        drag.isDragging && 'opacity-40'
+        draggable && 'tw-cursor-grab active:tw-cursor-grabbing',
+        selected && 'tw-border-ui2-primary tw-ring-1 tw-ring-ui2-primary',
+        drop.isOver && 'tw-border-t-2 tw-border-t-ui2-primary',
+        drag.isDragging && 'tw-opacity-40'
       )}
     >
       {onDelete ? (
@@ -248,20 +259,20 @@ export const KanbanCard = ({
             e.stopPropagation();
             onDelete(card);
           }}
-          className="absolute right-1.5 top-1.5 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/card:opacity-100"
+          className="tw-absolute tw-right-1.5 tw-top-1.5 tw-rounded-ui2-md tw-p-1 tw-text-ui2-muted-foreground tw-opacity-0 tw-transition-opacity hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 group-hover/card:tw-opacity-100"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="tw-h-3.5 tw-w-3.5" />
         </button>
       ) : null}
       <div
-        className="relative"
+        className="tw-relative"
         style={clamp.collapsible ? { maxHeight: clamp.maxHeight, overflow: 'hidden' } : undefined}
       >
         <div ref={contentRef}>{renderBody(card)}</div>
         {clamp.maxHeight ? (
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-8"
+            className="tw-pointer-events-none tw-absolute tw-inset-x-0 tw-bottom-0 tw-h-8"
             style={{ background: `linear-gradient(to bottom, transparent, ${look.card.background})` }}
           />
         ) : null}
@@ -276,9 +287,9 @@ export const KanbanCard = ({
             e.stopPropagation();
             collapse.onToggle(card.__key);
           }}
-          className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border bg-card px-2 py-0.5 text-[11px] text-muted-foreground opacity-0 shadow-sm transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover/card:opacity-100"
+          className="tw-absolute tw-bottom-1.5 tw-left-1/2 tw-flex -tw-translate-x-1/2 tw-items-center tw-gap-1 tw-rounded-full tw-border tw-bg-ui2-card tw-px-2 tw-py-0.5 tw-text-[11px] tw-text-ui2-muted-foreground tw-opacity-0 tw-shadow-sm tw-transition-opacity hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 group-hover/card:tw-opacity-100"
         >
-          {collapse.expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          {collapse.expanded ? <ChevronUp className="tw-h-3 tw-w-3" /> : <ChevronDown className="tw-h-3 tw-w-3" />}
           {collapse.expanded ? 'Show less' : 'Show more'}
         </button>
       ) : null}

@@ -12,10 +12,10 @@ import { useTextActions } from '@/AppBuilder/Widgets/Ui2/_shared/textActions';
 type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4';
 
 const HEADING: Record<string, string> = {
-  h1: 'scroll-m-20 text-4xl font-extrabold tracking-tight',
-  h2: 'scroll-m-20 text-3xl font-semibold tracking-tight',
-  h3: 'scroll-m-20 text-2xl font-semibold tracking-tight',
-  h4: 'scroll-m-20 text-xl font-semibold tracking-tight',
+  h1: 'tw-scroll-m-20 tw-text-4xl tw-font-extrabold tw-tracking-tight',
+  h2: 'tw-scroll-m-20 tw-text-3xl tw-font-semibold tw-tracking-tight',
+  h3: 'tw-scroll-m-20 tw-text-2xl tw-font-semibold tw-tracking-tight',
+  h4: 'tw-scroll-m-20 tw-text-ui2-xl tw-font-semibold tw-tracking-tight',
 };
 
 export const ShadHeading = (props: WidgetProps) => {
@@ -46,9 +46,9 @@ export const ShadHeading = (props: WidgetProps) => {
         title={lines ? text : undefined}
         className={cn(
           HEADING[level],
-          'text-[color:var(--lk-fg,var(--sc-foreground))]',
+          'tw-text-[color:var(--lk-fg,var(--sc-foreground))]',
           typeClasses(props.styles),
-          clickable && 'cursor-pointer'
+          clickable && 'tw-cursor-pointer'
         )}
         style={{ textAlign: textAlign(props.styles), ...clamped }}
       >

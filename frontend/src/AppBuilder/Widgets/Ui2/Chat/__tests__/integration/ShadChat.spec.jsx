@@ -92,7 +92,7 @@ describe('UI 2.0 Chat', () => {
 
     await waitFor(() => expect(rows()).toHaveLength(1));
     expect(rows()[0].querySelector('[data-fallback], img')).toBeNull();
-    expect(rows()[0].querySelector('.tabular-nums')).toBeNull();
+    expect(rows()[0].querySelector('.tw-tabular-nums')).toBeNull();
   });
 
   test('[ShadChat-EVT-001] Enter sends the draft, exposing lastMessage before onMessageSent runs', async () => {

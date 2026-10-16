@@ -37,7 +37,7 @@ describe('UI 2.0 Text', () => {
 
     expect(await screen.findByText('Charters leave at nine.')).toBeInTheDocument();
     expect(paragraph(container).tagName).toBe('P');
-    expect(paragraph(container)).toHaveClass('leading-7');
+    expect(paragraph(container)).toHaveClass('tw-leading-7');
     await waitFor(() => expect(exposed().text).toBe('Charters leave at nine.'));
   });
 
@@ -45,18 +45,18 @@ describe('UI 2.0 Text', () => {
     const { container } = render({ properties: { text: binding('{{"Line one\\nLine two"}}') } });
 
     await waitFor(() => expect(paragraph(container).textContent).toBe('Line one\nLine two'));
-    expect(paragraph(container)).toHaveClass('whitespace-pre-line');
+    expect(paragraph(container)).toHaveClass('tw-whitespace-pre-line');
   });
 
   test('[ShadText-PROP-002] tone sets the size and colour of the text', async () => {
     const { container } = render({ properties: { tone: binding('muted') } });
-    await waitFor(() => expect(paragraph(container)).toHaveClass('text-sm', 'text-muted-foreground'));
+    await waitFor(() => expect(paragraph(container)).toHaveClass('tw-text-ui2-sm', 'tw-text-ui2-muted-foreground'));
 
     render({ properties: { tone: binding('large') } });
-    await waitFor(() => expect(paragraph(container)).toHaveClass('text-lg', 'font-semibold'));
+    await waitFor(() => expect(paragraph(container)).toHaveClass('tw-text-ui2-lg', 'tw-font-semibold'));
 
     render({ properties: { tone: binding('lead') } });
-    await waitFor(() => expect(paragraph(container)).toHaveClass('text-xl'));
+    await waitFor(() => expect(paragraph(container)).toHaveClass('tw-text-ui2-xl'));
   });
 
   test('[ShadText-EVT-001] clicking the text fires onClick, and pointing at it fires onHover', async () => {
@@ -117,7 +117,7 @@ describe('UI 2.0 Text', () => {
     expect(root.style.getPropertyValue('--lk-case')).toBe('capitalize');
     expect(root.style.getPropertyValue('--lk-size')).toBe('11px');
     expect(paragraph(container)).toHaveClass('lk-font', 'lk-weight', 'lk-tracking', 'lk-case', 'lk-size');
-    expect(paragraph(container).className).toContain('text-[color:var(--lk-fg)]');
+    expect(paragraph(container).className).toContain('tw-text-[color:var(--lk-fg)]');
     expect(paragraph(container).style.textAlign).toBe('right');
   });
 

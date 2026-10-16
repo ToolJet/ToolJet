@@ -17,8 +17,8 @@ const widget = createWidgetHarness({
 });
 
 const render = (options = {}) => widget.render({ currentMode: 'view', ...options });
-const lines = (container) => [...container.querySelectorAll('.animate-pulse.h-4')];
-const circle = (container) => container.querySelector('.animate-pulse.rounded-full');
+const lines = (container) => [...container.querySelectorAll('.tw-animate-pulse.tw-h-4')];
+const circle = (container) => container.querySelector('.tw-animate-pulse.tw-rounded-full');
 
 describe('UI 2.0 Skeleton', () => {
   beforeEach(() => widget.setup());
@@ -28,8 +28,8 @@ describe('UI 2.0 Skeleton', () => {
     const { container } = render();
 
     await waitFor(() => expect(lines(container)).toHaveLength(3));
-    expect(lines(container)[2]).toHaveClass('w-3/5');
-    expect(lines(container)[0]).toHaveClass('w-full');
+    expect(lines(container)[2]).toHaveClass('tw-w-3/5');
+    expect(lines(container)[0]).toHaveClass('tw-w-full');
     expect(circle(container)).toBeNull();
   });
 
@@ -40,7 +40,7 @@ describe('UI 2.0 Skeleton', () => {
     render({ properties: { lines: binding('{{1}}') } });
     await waitFor(() => expect(lines(container)).toHaveLength(1));
     // A single line is full width.
-    expect(lines(container)[0]).toHaveClass('w-full');
+    expect(lines(container)[0]).toHaveClass('tw-w-full');
 
     render({ properties: { lines: binding('{{500}}') } });
     await waitFor(() => expect(lines(container)).toHaveLength(50));
@@ -53,7 +53,7 @@ describe('UI 2.0 Skeleton', () => {
     const { container } = render({ properties: { avatar: binding('{{true}}') } });
 
     await waitFor(() => expect(circle(container)).toBeInTheDocument());
-    expect(circle(container)).toHaveClass('h-12', 'w-12');
+    expect(circle(container)).toHaveClass('tw-h-12', 'tw-w-12');
   });
 
   test('[ShadSkeleton-STY-001] placeholderColor reaches the placeholders as a CSS variable they read', async () => {

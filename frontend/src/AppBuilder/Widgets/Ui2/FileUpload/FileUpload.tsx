@@ -110,7 +110,7 @@ export const exposedFile = (f: ReadFile) => ({
 });
 
 export const DROPZONE =
-  'flex cursor-pointer flex-col items-center justify-center gap-1 rounded-[var(--lk-radius,var(--sc-radius))] border-2 border-dashed border-[color:var(--lk-invalid,var(--lk-drop-border,var(--sc-input)))] bg-[color:var(--lk-drop-bg,transparent)] px-6 py-5 text-center outline-none transition-colors hover:bg-[color:color-mix(in_srgb,var(--sc-muted)_50%,transparent)] focus-visible:ring-1 focus-visible:ring-ring';
+  'tw-flex tw-cursor-pointer tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border-2 tw-border-dashed tw-border-[color:var(--lk-invalid,var(--lk-drop-border,var(--sc-input)))] tw-bg-[color:var(--lk-drop-bg,transparent)] tw-px-6 tw-py-5 tw-text-center tw-outline-none tw-transition-colors hover:tw-bg-[color:color-mix(in_srgb,var(--sc-muted)_50%,transparent)] focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring';
 
 export const ShadFileUpload = (props: WidgetProps) => {
   const { properties, setExposedVariables, fireEvent, id } = props;
@@ -261,7 +261,7 @@ export const ShadFileUpload = (props: WidgetProps) => {
         error={rejectError || check.error}
         required={check.required}
       >
-        <div className="flex flex-col gap-2">
+        <div className="tw-flex tw-flex-col tw-gap-2">
           <div
             {...getRootProps({
               'aria-label': title,
@@ -269,55 +269,59 @@ export const ShadFileUpload = (props: WidgetProps) => {
               className: cn(
                 DROPZONE,
                 isDragActive &&
-                  'border-[color:var(--sc-primary)] bg-[color:color-mix(in_srgb,var(--sc-primary)_6%,transparent)]',
-                isDragReject && 'border-[color:var(--lk-error,var(--sc-destructive))]',
-                (disabled || full) && 'cursor-not-allowed opacity-60 hover:bg-transparent'
+                  'tw-border-[color:var(--sc-primary)] tw-bg-[color:color-mix(in_srgb,var(--sc-primary)_6%,transparent)]',
+                isDragReject && 'tw-border-[color:var(--lk-error,var(--sc-destructive))]',
+                (disabled || full) && 'tw-cursor-not-allowed tw-opacity-60 hover:tw-bg-transparent'
               ),
             })}
           >
             <input {...getInputProps({ id: `shad-${id}` })} />
-            <div className="mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--lk-icon-bg,var(--sc-muted))]">
+            <div className="tw-mb-1 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-full tw-bg-[color:var(--lk-icon-bg,var(--sc-muted))]">
               {properties.loadingState || parsing ? (
                 <Spinner />
               ) : (
-                <Upload className="h-5 w-5 text-[color:var(--lk-icon,var(--sc-muted-foreground))]" />
+                <Upload className="tw-h-5 tw-w-5 tw-text-[color:var(--lk-icon,var(--sc-muted-foreground))]" />
               )}
             </div>
-            <p className="m-0 text-sm font-medium text-[color:var(--lk-title,var(--sc-foreground))]">{title}</p>
+            <p className="tw-m-0 tw-text-ui2-sm tw-font-medium tw-text-[color:var(--lk-title,var(--sc-foreground))]">
+              {title}
+            </p>
             {full ? null : (
-              <p className={cn('m-0 text-sm', MUTED)}>
+              <p className={cn('tw-m-0 tw-text-ui2-sm', MUTED)}>
                 or{' '}
-                <span className="font-medium text-[color:var(--sc-primary-ink)] underline-offset-4 hover:underline">
+                <span className="tw-font-medium tw-text-[color:var(--sc-primary-ink)] tw-underline-offset-4 hover:tw-underline">
                   click to browse
                 </span>
               </p>
             )}
-            <p className="m-0 text-xs text-[color:var(--lk-hint,var(--sc-muted-foreground))]">{hint}</p>
+            <p className="tw-m-0 tw-text-xs tw-text-[color:var(--lk-hint,var(--sc-muted-foreground))]">{hint}</p>
           </div>
           {files.length ? (
-            <ul className="m-0 flex list-none flex-col gap-2 p-0" aria-label="Selected files">
+            <ul className="tw-m-0 tw-flex tw-list-none tw-flex-col tw-gap-2 tw-p-0" aria-label="Selected files">
               {files.map((f, i) => {
                 const Kind = KIND_ICONS[M.fileKind(f.type, f.name)] || FileIcon;
                 const ext = (f.name.match(/\.([a-z0-9]+)$/i)?.[1] || '').toUpperCase();
                 return (
                   <li
                     key={f.handle}
-                    className="flex items-center gap-3 rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] border border-[color:var(--lk-item-border,var(--sc-border))] bg-[color:var(--lk-item-bg,var(--sc-card))] p-2 pr-1"
+                    className="tw-flex tw-items-center tw-gap-3 tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] tw-border tw-border-[color:var(--lk-item-border,var(--sc-border))] tw-bg-[color:var(--lk-item-bg,var(--sc-card))] tw-p-2 tw-pr-1"
                   >
                     {properties.showPreview !== false && f.preview ? (
                       <img
                         src={f.preview}
                         alt=""
-                        className="h-10 w-10 shrink-0 rounded-md border border-[color:var(--sc-border)] object-cover"
+                        className="tw-h-10 tw-w-10 tw-shrink-0 tw-rounded-ui2-md tw-border tw-border-[color:var(--sc-border)] tw-object-cover"
                       />
                     ) : (
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[color:var(--sc-muted)]">
-                        <Kind className={cn('h-5 w-5', MUTED)} />
+                      <span className="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-md tw-bg-[color:var(--sc-muted)]">
+                        <Kind className={cn('tw-h-5 tw-w-5', MUTED)} />
                       </span>
                     )}
-                    <div className="min-w-0 flex-1">
-                      <p className="m-0 truncate text-sm font-medium text-[color:var(--sc-foreground)]">{f.name}</p>
-                      <p className={cn('m-0 text-xs', MUTED)}>
+                    <div className="tw-min-w-0 tw-flex-1">
+                      <p className="tw-m-0 tw-truncate tw-text-ui2-sm tw-font-medium tw-text-[color:var(--sc-foreground)]">
+                        {f.name}
+                      </p>
+                      <p className={cn('tw-m-0 tw-text-xs', MUTED)}>
                         {M.formatBytes(f.size)}
                         {ext ? ` · ${ext}` : ''}
                       </p>
@@ -326,7 +330,7 @@ export const ShadFileUpload = (props: WidgetProps) => {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className={cn('h-8 w-8 shrink-0', MUTED)}
+                      className={cn('tw-h-8 tw-w-8 tw-shrink-0', MUTED)}
                       aria-label={`Remove ${f.name}`}
                       disabled={disabled}
                       onClick={() => remove(i)}

@@ -76,7 +76,7 @@ export const ShadProgressList = (props: WidgetProps) => {
   const card = p.listStyle !== 'plain';
   const showValues = p.showValues !== false;
   const showPercent = p.showPercent !== false;
-  const inset = card ? 'px-4' : 'px-0';
+  const inset = card ? 'tw-px-4' : 'tw-px-0';
 
   const click = (row: ProgressItem) => {
     if (busy(p)) return;
@@ -87,7 +87,7 @@ export const ShadProgressList = (props: WidgetProps) => {
 
   // Borders are classes (the pack's preflight zeroes inline border widths); the colour stays inline.
   const BORDER = 'var(--lk-border,var(--sc-border))';
-  const frameClass = card ? 'border' : '';
+  const frameClass = card ? 'tw-border' : '';
   const frame = card
     ? {
         borderColor: BORDER,
@@ -101,14 +101,14 @@ export const ShadProgressList = (props: WidgetProps) => {
     body = <LoadingBox height={props.height} />;
   } else if (p.loadingState) {
     body = (
-      <div className={cn('flex flex-col', frameClass, card && 'py-1')} style={frame}>
+      <div className={cn('tw-flex tw-flex-col', frameClass, card && 'tw-py-1')} style={frame}>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className={cn('flex flex-col gap-2 py-3', inset)}>
-            <div className="flex justify-between gap-4">
-              <Skeleton className="h-4 w-1/3" />
-              <Skeleton className="h-4 w-1/5" />
+          <div key={i} className={cn('tw-flex tw-flex-col tw-gap-2 tw-py-3', inset)}>
+            <div className="tw-flex tw-justify-between tw-gap-4">
+              <Skeleton className="tw-h-4 tw-w-1/3" />
+              <Skeleton className="tw-h-4 tw-w-1/5" />
             </div>
-            <Skeleton className="w-full rounded-full" style={{ height: barHeight }} />
+            <Skeleton className="tw-w-full tw-rounded-full" style={{ height: barHeight }} />
           </div>
         ))}
       </div>
@@ -116,15 +116,15 @@ export const ShadProgressList = (props: WidgetProps) => {
   } else if (!rows.length) {
     body = (
       <div className={frameClass} style={frame}>
-        <p className="m-0 py-10 text-center text-sm text-muted-foreground">
+        <p className="tw-m-0 tw-py-10 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
           {text(p.emptyText) || 'Nothing to track yet'}
         </p>
       </div>
     );
   } else {
     body = (
-      <div className={cn('overflow-hidden', frameClass, card && 'py-1')} style={frame}>
-        <ul className="m-0 list-none p-0" role="list">
+      <div className={cn('tw-overflow-hidden', frameClass, card && 'tw-py-1')} style={frame}>
+        <ul className="tw-m-0 tw-list-none tw-p-0" role="list">
           {rows.slice(0, shownCount).map((row) => {
             const figure = showValues && row.value ? (row.target ? `${row.value} of ${row.target}` : row.value) : '';
             const pct = Number.isFinite(row.pct) ? percentLabel(row.pct) : '';
@@ -140,16 +140,17 @@ export const ShadProgressList = (props: WidgetProps) => {
                     }
                   : { onClick: () => click(row) })}
                 className={cn(
-                  'flex min-w-0 flex-col gap-2 py-3 outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))]',
+                  'tw-flex tw-min-w-0 tw-flex-col tw-gap-2 tw-py-3 tw-outline-none tw-transition-colors tw-duration-150 focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))]',
                   inset,
-                  clickable && 'cursor-pointer hover:bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
+                  clickable &&
+                    'tw-cursor-pointer hover:tw-bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
                 )}
                 data-tone={row.tone || undefined}
               >
-                <div className="flex min-w-0 items-baseline justify-between gap-3">
-                  <span className="flex min-w-0 items-center gap-2">
+                <div className="tw-flex tw-min-w-0 tw-items-baseline tw-justify-between tw-gap-3">
+                  <span className="tw-flex tw-min-w-0 tw-items-center tw-gap-2">
                     <span
-                      className="truncate text-sm font-medium leading-snug"
+                      className="tw-truncate tw-text-ui2-sm tw-font-medium tw-leading-snug"
                       style={{
                         color: 'var(--lk-title,var(--sc-foreground))',
                         fontFamily: TITLE_FONT,
@@ -158,20 +159,20 @@ export const ShadProgressList = (props: WidgetProps) => {
                       {row.label}
                     </span>
                     {row.status ? (
-                      <span className="flex min-w-0 shrink">
+                      <span className="tw-flex tw-min-w-0 tw-shrink">
                         <Chip value={row.status} toneName={row.tone} />
                       </span>
                     ) : null}
                   </span>
                   {figure || (pct && showPercent && !row.caption) ? (
                     <span
-                      className="shrink-0 text-sm tabular-nums"
+                      className="tw-shrink-0 tw-text-ui2-sm tw-tabular-nums"
                       style={{ color: 'var(--lk-title,var(--sc-foreground))' }}
                     >
-                      {figure ? <span className="font-semibold">{figure}</span> : null}
+                      {figure ? <span className="tw-font-semibold">{figure}</span> : null}
                       {pct && showPercent && !row.caption ? (
                         <span
-                          className={cn(figure && 'ml-2')}
+                          className={cn(figure && 'tw-ml-2')}
                           style={{
                             color: 'var(--lk-fg,var(--sc-muted-foreground))',
                           }}
@@ -184,9 +185,9 @@ export const ShadProgressList = (props: WidgetProps) => {
                 </div>
                 <Bar pct={row.pct} tone={row.tone} height={barHeight} label={row.label} />
                 {row.caption ? (
-                  <div className="flex min-w-0 items-baseline justify-between gap-3 text-xs">
+                  <div className="tw-flex tw-min-w-0 tw-items-baseline tw-justify-between tw-gap-3 tw-text-xs">
                     <span
-                      className="truncate"
+                      className="tw-truncate"
                       style={{
                         color: 'var(--lk-fg,var(--sc-muted-foreground))',
                       }}
@@ -195,7 +196,7 @@ export const ShadProgressList = (props: WidgetProps) => {
                     </span>
                     {pct && showPercent ? (
                       <span
-                        className="shrink-0 font-medium tabular-nums"
+                        className="tw-shrink-0 tw-font-medium tw-tabular-nums"
                         style={{
                           color: row.tone ? TONE_INK[row.tone] : 'var(--lk-fg,var(--sc-muted-foreground))',
                         }}
@@ -210,11 +211,11 @@ export const ShadProgressList = (props: WidgetProps) => {
           })}
         </ul>
         {rows.length > shownCount ? (
-          <div className="flex justify-center border-t py-2" style={{ borderColor: BORDER }}>
+          <div className="tw-flex tw-justify-center tw-border-t tw-py-2" style={{ borderColor: BORDER }}>
             <button
               type="button"
               onClick={() => setShownCount((n) => n + PROGRESS_ROWS_PER_STEP)}
-              className="rounded-md px-3 py-1.5 text-sm text-[color:var(--sc-muted-foreground)] transition-colors hover:bg-[color:var(--sc-muted)] hover:text-[color:var(--sc-foreground)]"
+              className="tw-rounded-ui2-md tw-px-3 tw-py-1.5 tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)] tw-transition-colors hover:tw-bg-[color:var(--sc-muted)] hover:tw-text-[color:var(--sc-foreground)]"
             >
               {`Show ${Math.min(PROGRESS_ROWS_PER_STEP, rows.length - shownCount)} more of ${rows.length - shownCount}`}
             </button>

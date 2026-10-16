@@ -28,7 +28,7 @@ export const CommandSeparator = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>) => (
-  <CommandPrimitive.Separator className={cn('-mx-1 h-px bg-[color:var(--sc-border)]', className)} {...props} />
+  <CommandPrimitive.Separator className={cn('-tw-mx-1 tw-h-px tw-bg-[color:var(--sc-border)]', className)} {...props} />
 );
 
 // ---- Multiselect ---------------------------------------------------------------------------------------------------
@@ -171,14 +171,16 @@ export const ShadMultiselect = (props: WidgetProps) => {
                 }
               }}
               className={cn(
-                'flex min-h-9 w-full cursor-pointer items-center gap-2 border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                'tw-flex tw-min-h-9 tw-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-border tw-px-3 tw-py-1 tw-text-ui2-sm tw-shadow-sm tw-transition-colors focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring',
                 CONTROL,
-                disabled && 'cursor-not-allowed opacity-50'
+                disabled && 'tw-cursor-not-allowed tw-opacity-50'
               )}
             >
-              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
+              <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-1">
                 {selectedOptions.length === 0 ? (
-                  <span className={cn('truncate py-0.5', PLACEHOLDER)}>{String(properties.placeholder ?? '')}</span>
+                  <span className={cn('tw-truncate tw-py-0.5', PLACEHOLDER)}>
+                    {String(properties.placeholder ?? '')}
+                  </span>
                 ) : (
                   chips.map((o) => (
                     <Chip
@@ -192,9 +194,9 @@ export const ShadMultiselect = (props: WidgetProps) => {
                 {extra > 0 ? <Chip label={`+${extra} more`} /> : null}
               </div>
               {loading ? null : (
-                <span className="flex shrink-0 items-center gap-1">
+                <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-1">
                   {showClear ? <ClearButton onClear={() => commit([])} label="Clear selection" /> : null}
-                  <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                  <ChevronsUpDown className="tw-h-4 tw-w-4 tw-opacity-50" />
                 </span>
               )}
             </div>
@@ -205,7 +207,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
               sideOffset={4}
               {...menu.contentProps}
               className={cn(
-                'z-[1060] w-[var(--radix-popover-trigger-width)] min-w-[12rem] rounded-md border border-[color:var(--sc-border)] p-0 shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+                'tw-z-[1060] tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[12rem] tw-rounded-ui2-md tw-border tw-border-[color:var(--sc-border)] tw-p-0 tw-shadow-md tw-outline-none data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95',
                 MENU_SURFACE
               )}
               style={lookVars(componentType, styles)}
@@ -225,15 +227,15 @@ export const ShadMultiselect = (props: WidgetProps) => {
                       <CommandItem value="select-all" onSelect={toggleAll}>
                         <span
                           className={cn(
-                            'flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-[color:var(--sc-primary)]',
+                            'tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-sm tw-border tw-border-[color:var(--sc-primary)]',
                             allOn
-                              ? 'bg-[color:var(--sc-primary)] text-[color:var(--sc-primary-foreground)]'
-                              : 'opacity-50'
+                              ? 'tw-bg-[color:var(--sc-primary)] tw-text-[color:var(--sc-primary-foreground)]'
+                              : 'tw-opacity-50'
                           )}
                         >
-                          {allOn ? <Check className="h-3 w-3" /> : null}
+                          {allOn ? <Check className="tw-h-3 tw-w-3" /> : null}
                         </span>
-                        <span className="font-medium">Select all</span>
+                        <span className="tw-font-medium">Select all</span>
                       </CommandItem>
                     </CommandGroup>
                   ) : null
@@ -244,12 +246,16 @@ export const ShadMultiselect = (props: WidgetProps) => {
                       <CommandSeparator />
                       <CommandGroup>
                         {limit > 0 ? (
-                          <div className={cn('px-2 py-1 text-xs', MUTED)}>
+                          <div className={cn('tw-px-2 tw-py-1 tw-text-xs', MUTED)}>
                             {selectedOptions.length} of {limit} selected
                           </div>
                         ) : null}
                         {selectedOptions.length > 0 ? (
-                          <CommandItem value="clear-selection" onSelect={() => commit([])} className="justify-center">
+                          <CommandItem
+                            value="clear-selection"
+                            onSelect={() => commit([])}
+                            className="tw-justify-center"
+                          >
                             Clear selection
                           </CommandItem>
                         ) : null}

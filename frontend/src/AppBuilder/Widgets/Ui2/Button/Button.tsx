@@ -29,21 +29,21 @@ export const ShadButton = (props: WidgetProps) => {
   // Each variant has its own colours, so a style replaces them only when set. A set background darkens a little on
   // hover unless the hover background is set too.
   const hover = isSet(styles?.hoverBackgroundColor)
-    ? 'hover:bg-[color:var(--lk-hover)]'
-    : whenSet(styles, 'backgroundColor', 'hover:bg-[color:color-mix(in_srgb,var(--lk-bg)_88%,#000)]');
+    ? 'hover:tw-bg-[color:var(--lk-hover)]'
+    : whenSet(styles, 'backgroundColor', 'hover:tw-bg-[color:color-mix(in_srgb,var(--lk-bg)_88%,#000)]');
   return (
-    <Shell {...props} innerRef={boxRef} className="h-full">
+    <Shell {...props} innerRef={boxRef} className="tw-h-full">
       <Button
         variant={properties.variant || 'default'}
         size={properties.size || 'default'}
         className={cn(
-          'h-full',
-          (properties.fullWidth === true || fillsBox) && 'w-full',
-          whenSet(styles, 'backgroundColor', 'bg-[color:var(--lk-bg)]'),
+          'tw-h-full',
+          (properties.fullWidth === true || fillsBox) && 'tw-w-full',
+          whenSet(styles, 'backgroundColor', 'tw-bg-[color:var(--lk-bg)]'),
           hover,
-          whenSet(styles, 'textColor', 'text-[color:var(--lk-fg)] hover:text-[color:var(--lk-fg)]'),
-          whenSet(styles, 'borderColor', 'border border-[color:var(--lk-border)]'),
-          whenSet(styles, 'borderRadius', 'rounded-[var(--lk-radius)]')
+          whenSet(styles, 'textColor', 'tw-text-[color:var(--lk-fg)] hover:tw-text-[color:var(--lk-fg)]'),
+          whenSet(styles, 'borderColor', 'tw-border tw-border-[color:var(--lk-border)]'),
+          whenSet(styles, 'borderRadius', 'tw-rounded-[var(--lk-radius)]')
         )}
         // In a List view row its box fits its content (height auto), where h-full alone shrank the button to its
         // label's line (20px); it keeps the height it was drawn at.
@@ -53,7 +53,7 @@ export const ShadButton = (props: WidgetProps) => {
         onMouseEnter={() => fireEvent('onHover')}
       >
         {properties.loadingState ? (
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <span className="tw-h-4 tw-w-4 tw-animate-spin tw-rounded-full tw-border-2 tw-border-current tw-border-t-transparent" />
         ) : null}
         {String(properties.text ?? '')}
       </Button>

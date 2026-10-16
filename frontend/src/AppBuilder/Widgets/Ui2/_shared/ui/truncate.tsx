@@ -5,7 +5,7 @@ import { cn } from './cn';
  *  hover, and only when cut). A long label in a button, a badge or a picker ran past its widget's box. */
 export const Truncate = ({ children, className }: { children?: React.ReactNode; className?: string }) => (
   <span
-    className={cn('min-w-0 truncate', className)}
+    className={cn('tw-min-w-0 tw-truncate', className)}
     onPointerEnter={(e) => {
       const el = e.currentTarget;
       if (el.scrollWidth > el.clientWidth + 1) el.title = el.textContent;

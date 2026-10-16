@@ -42,13 +42,13 @@ export const TableHead = ({
 }: TableHeadProps) => (
   <thead
     className={cn(
-      'bg-[color:var(--lk-head-bg,var(--sc-background))]',
-      properties.stickyHeader !== false && fixedHeight && 'sticky top-0 z-10'
+      'tw-bg-[color:var(--lk-head-bg,var(--sc-background))]',
+      properties.stickyHeader !== false && fixedHeight && 'tw-sticky tw-top-0 tw-z-10'
     )}
   >
-    <tr className={cn('border-b', ROW_BORDER)}>
+    <tr className={cn('tw-border-b', ROW_BORDER)}>
       {bulk ? (
-        <th className="w-10 px-3">
+        <th className="tw-w-10 tw-px-3">
           <Checkbox
             aria-label="Select all on this page"
             checked={allOnPage ? true : someOnPage ? 'indeterminate' : false}
@@ -70,11 +70,11 @@ export const TableHead = ({
             className={cn(
               // Header labels wrap between words when the table is narrower than its headers (a narrow card
               // otherwise cut its last column); with room to spare they stay on one line.
-              'h-10 px-3 py-2 text-left align-middle text-xs font-medium leading-tight text-[color:var(--lk-head-fg,var(--sc-muted-foreground))]',
-              styles?.headerCasing === 'uppercase' && 'uppercase tracking-wide',
-              column.align === 'right' && 'text-right',
-              column.align === 'center' && 'text-center',
-              bordered && cn('border-r last:border-r-0', ROW_BORDER)
+              'tw-h-10 tw-px-3 tw-py-2 tw-text-left tw-align-middle tw-text-xs tw-font-medium tw-leading-tight tw-text-[color:var(--lk-head-fg,var(--sc-muted-foreground))]',
+              styles?.headerCasing === 'uppercase' && 'tw-uppercase tw-tracking-wide',
+              column.align === 'right' && 'tw-text-right',
+              column.align === 'center' && 'tw-text-center',
+              bordered && cn('tw-border-r last:tw-border-r-0', ROW_BORDER)
             )}
             style={{ width: fitWidths ? column.width : undefined, minWidth: column.minWidth }}
           >
@@ -83,12 +83,12 @@ export const TableHead = ({
                 type="button"
                 onClick={() => clickHeader(column)}
                 className={cn(
-                  'inline-flex items-center gap-1 rounded text-left hover:text-[color:var(--lk-fg,var(--sc-foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  column.align === 'right' && 'flex-row-reverse'
+                  'tw-inline-flex tw-items-center tw-gap-1 tw-rounded tw-text-left hover:tw-text-[color:var(--lk-fg,var(--sc-foreground))] focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring',
+                  column.align === 'right' && 'tw-flex-row-reverse'
                 )}
               >
                 <span>{column.name}</span>
-                <SortIcon className={cn('h-3 w-3 shrink-0', active ? 'opacity-90' : 'opacity-40')} />
+                <SortIcon className={cn('tw-h-3 tw-w-3 tw-shrink-0', active ? 'tw-opacity-90' : 'tw-opacity-40')} />
               </button>
             ) : (
               column.name

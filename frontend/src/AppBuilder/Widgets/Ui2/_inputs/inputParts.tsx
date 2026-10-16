@@ -34,21 +34,21 @@ export const withRule = <P extends Pick<WidgetProps, 'validate'>>(props: P, rule
 // A text box made of parts (sign, input, buttons) in one bordered box: ShadInput's size and focus ring, CONTROL's
 // colours (background, text, border, radius, error border).
 const GROUP =
-  'flex h-9 w-full items-stretch overflow-hidden border text-sm shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring';
+  'tw-flex tw-h-9 tw-w-full tw-items-stretch tw-overflow-hidden tw-border tw-text-ui2-sm tw-shadow-sm tw-transition-colors focus-within:tw-ring-1 focus-within:tw-ring-ui2-ring';
 export const INNER =
-  'h-full w-full min-w-0 flex-1 border-0 bg-transparent px-3 py-1 text-sm text-[color:var(--lk-fg,var(--sc-foreground))] shadow-none outline-none placeholder:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))] focus:outline-none focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed';
-export const EDGE = 'border-[color:var(--lk-invalid,var(--lk-border,var(--sc-input)))]';
+  'tw-h-full tw-w-full tw-min-w-0 tw-flex-1 tw-border-0 tw-bg-transparent tw-px-3 tw-py-1 tw-text-ui2-sm tw-text-[color:var(--lk-fg,var(--sc-foreground))] tw-shadow-none tw-outline-none placeholder:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))] focus:tw-outline-none focus-visible:tw-outline-none focus-visible:tw-ring-0 disabled:tw-cursor-not-allowed';
+export const EDGE = 'tw-border-[color:var(--lk-invalid,var(--lk-border,var(--sc-input)))]';
 // Text inside the box beside the value: a prefix, suffix or currency sign.
 // It takes at most 40% of the box and ends in an ellipsis: a long one kept its full width and pushed the stepper
 // button out of the box.
 export const AFFIX =
-  'flex min-w-0 max-w-[40%] select-none items-center whitespace-nowrap text-sm text-[color:var(--lk-affix,var(--sc-muted-foreground))]';
+  'tw-flex tw-min-w-0 tw-max-w-[40%] tw-select-none tw-items-center tw-whitespace-nowrap tw-text-ui2-sm tw-text-[color:var(--lk-affix,var(--sc-muted-foreground))]';
 
 // A segment at the start of the box (the country or currency picker).
 export const ADDON =
-  'flex shrink-0 items-center gap-1.5 border-0 border-r px-3 text-sm bg-[color:var(--lk-addon-bg,transparent)] text-[color:var(--lk-addon-fg,var(--lk-fg,var(--sc-foreground)))] shadow-none transition-colors focus:outline-none focus-visible:bg-[color:var(--lk-addon-hover,var(--sc-accent))] disabled:cursor-not-allowed';
-export const ADDON_HOVER = 'hover:bg-[color:var(--lk-addon-hover,var(--sc-accent))]';
-export const ICON = 'h-4 w-4 shrink-0 text-[color:var(--lk-icon,var(--sc-muted-foreground))]';
+  'tw-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-border-0 tw-border-r tw-px-3 tw-text-ui2-sm tw-bg-[color:var(--lk-addon-bg,transparent)] tw-text-[color:var(--lk-addon-fg,var(--lk-fg,var(--sc-foreground)))] tw-shadow-none tw-transition-colors focus:tw-outline-none focus-visible:tw-bg-[color:var(--lk-addon-hover,var(--sc-accent))] disabled:tw-cursor-not-allowed';
+export const ADDON_HOVER = 'hover:tw-bg-[color:var(--lk-addon-hover,var(--sc-accent))]';
+export const ICON = 'tw-h-4 tw-w-4 tw-shrink-0 tw-text-[color:var(--lk-icon,var(--sc-muted-foreground))]';
 
 export interface GroupProps {
   disabled?: boolean;
@@ -57,7 +57,7 @@ export interface GroupProps {
 }
 
 export const Group = ({ disabled, className, children }: GroupProps) => (
-  <div className={cn(GROUP, CONTROL, disabled && 'cursor-not-allowed opacity-50', className)}>{children}</div>
+  <div className={cn(GROUP, CONTROL, disabled && 'tw-cursor-not-allowed tw-opacity-50', className)}>{children}</div>
 );
 
 export const text = (v: unknown): string => (v === undefined || v === null || typeof v === 'object' ? '' : String(v));
@@ -107,6 +107,6 @@ export const useNumberBox = (
   return { value, valueRef, draft, setDraft, commit, set };
 };
 
-export const TRIGGER = 'w-full justify-start gap-2 px-3 text-left font-normal';
+export const TRIGGER = 'tw-w-full tw-justify-start tw-gap-2 tw-px-3 tw-text-left tw-font-normal';
 
 export const pad2 = (n: number): string => String(n).padStart(2, '0');

@@ -36,11 +36,11 @@ export const TableFooter = ({
 }: TableFooterProps) => (
   <>
     {pendingEdits > 0 && properties.showBulkUpdateActions !== false ? (
-      <div className="flex items-center justify-between gap-2 rounded-md border border-dashed px-3 py-2">
-        <span className={cn('text-sm', MUTED)}>
+      <div className="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-rounded-ui2-md tw-border tw-border-dashed tw-px-3 tw-py-2">
+        <span className={cn('tw-text-ui2-sm', MUTED)}>
           {pendingEdits} {pendingEdits === 1 ? 'row' : 'rows'} changed
         </span>
-        <div className="flex gap-2">
+        <div className="tw-flex tw-gap-2">
           <Button variant="outline" size="sm" onClick={() => discard()} disabled={isDisabled}>
             Discard
           </Button>
@@ -52,8 +52,8 @@ export const TableFooter = ({
     ) : null}
 
     {(properties.showRowCount !== false || properties.enablePagination !== false) && !isLoading ? (
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className={cn('text-xs tabular-nums', MUTED)}>
+      <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-2">
+        <span className={cn('tw-text-xs tw-tabular-nums', MUTED)}>
           {properties.showRowCount === false
             ? ''
             : bulk && selected.size

@@ -39,12 +39,12 @@ export const ShadFunnelChart = (props: WidgetProps) => {
   const emptyView = <EmptyChart text={String(p.emptyText || 'No data')} />;
   return (
     <Shell {...props}>
-      <div style={{ height }} className="w-full overflow-hidden text-xs" onDoubleClick={click.onDoubleClick}>
+      <div style={{ height }} className="tw-w-full tw-overflow-hidden tw-text-xs" onDoubleClick={click.onDoubleClick}>
         {empty ? (
           emptyView
         ) : (
           <ChartBoundary resetKey={p} fallback={emptyView}>
-            <div className="flex h-full flex-col justify-center gap-1.5 py-1">
+            <div className="tw-flex tw-h-full tw-flex-col tw-justify-center tw-gap-1.5 tw-py-1">
               {stages.map((stage, i) => {
                 const conversion = i > 0 ? stage[base] : null;
                 return (
@@ -52,11 +52,11 @@ export const ShadFunnelChart = (props: WidgetProps) => {
                     type="button"
                     key={`${stage.label}-${i}`}
                     onClick={() => onStage(stage)}
-                    className="group flex min-h-0 w-full flex-1 items-center gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--sc-ring)]"
+                    className="tw-group tw-flex tw-min-h-0 tw-w-full tw-flex-1 tw-items-center tw-gap-3 tw-rounded-ui2-md tw-text-left tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-[color:var(--sc-ring)]"
                     style={{ maxHeight: 52 }}
                   >
                     <span
-                      className="shrink-0 truncate text-[13px] text-[color:var(--lk-axis,var(--sc-muted-foreground))]"
+                      className="tw-shrink-0 tw-truncate tw-text-[13px] tw-text-[color:var(--lk-axis,var(--sc-muted-foreground))]"
                       style={{ width: labelWidth }}
                       title={String(stage.label)}
                     >
@@ -64,12 +64,12 @@ export const ShadFunnelChart = (props: WidgetProps) => {
                     </span>
                     <span
                       className={cn(
-                        'flex h-full min-w-0 flex-1 items-center',
-                        centred ? 'justify-center' : 'justify-start'
+                        'tw-flex tw-h-full tw-min-w-0 tw-flex-1 tw-items-center',
+                        centred ? 'tw-justify-center' : 'tw-justify-start'
                       )}
                     >
                       <span
-                        className="h-full min-h-[10px] rounded-[6px] transition-opacity group-hover:opacity-90"
+                        className="tw-h-full tw-min-h-[10px] tw-rounded-[6px] tw-transition-opacity group-hover:tw-opacity-90"
                         style={{
                           // A late stage of a steep funnel (764 of 16,100) still reads as a bar, not a hairline.
                           width: `${stage.value ? Math.max(6, stage.width * 100) : 0}%`,
@@ -86,14 +86,14 @@ export const ShadFunnelChart = (props: WidgetProps) => {
                       />
                     </span>
                     <span
-                      className="flex shrink-0 items-baseline justify-end gap-2 tabular-nums"
+                      className="tw-flex tw-shrink-0 tw-items-baseline tw-justify-end tw-gap-2 tw-tabular-nums"
                       style={{ width: valueWidth }}
                     >
-                      <span className="text-[13px] font-medium text-[color:var(--sc-foreground)]">
+                      <span className="tw-text-[13px] tw-font-medium tw-text-[color:var(--sc-foreground)]">
                         {format(stage.value)}
                       </span>
                       {showConversion ? (
-                        <span className="w-[44px] text-right text-[color:var(--sc-muted-foreground)]">
+                        <span className="tw-w-[44px] tw-text-right tw-text-[color:var(--sc-muted-foreground)]">
                           {conversion === null ? '' : `${conversion}%`}
                         </span>
                       ) : null}

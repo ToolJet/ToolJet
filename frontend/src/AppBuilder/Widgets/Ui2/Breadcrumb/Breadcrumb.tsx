@@ -34,9 +34,9 @@ export const ShadBreadcrumb = (props: WidgetProps) => {
   return (
     <Shell {...props}>
       <nav aria-label="breadcrumb">
-        <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
+        <ol className="tw-flex tw-flex-wrap tw-items-center tw-gap-1.5 tw-break-words tw-text-ui2-sm tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
           {items.map((item, i) => (
-            <li key={i} className="inline-flex items-center gap-1.5">
+            <li key={i} className="tw-inline-flex tw-items-center tw-gap-1.5">
               <span
                 onClick={() => clickItem(trail[i], indexes[i])}
                 role={clickable && item !== ELLIPSIS ? 'button' : undefined}
@@ -44,15 +44,15 @@ export const ShadBreadcrumb = (props: WidgetProps) => {
                 onKeyDown={(e) => clickable && e.key === 'Enter' && clickItem(trail[i], indexes[i])}
                 className={cn(
                   i === items.length - 1
-                    ? 'font-normal text-[color:var(--lk-current,var(--sc-foreground))]'
-                    : 'transition-colors',
-                  clickable && item !== ELLIPSIS && 'cursor-pointer hover:text-[color:var(--sc-foreground)]'
+                    ? 'tw-font-normal tw-text-[color:var(--lk-current,var(--sc-foreground))]'
+                    : 'tw-transition-colors',
+                  clickable && item !== ELLIPSIS && 'tw-cursor-pointer hover:tw-text-[color:var(--sc-foreground)]'
                 )}
               >
                 {item === ELLIPSIS ? '…' : String(item)}
               </span>
               {i < items.length - 1 ? (
-                <ChevronRight className="h-3.5 w-3.5 text-[color:var(--lk-sep,currentColor)]" />
+                <ChevronRight className="tw-h-3.5 tw-w-3.5 tw-text-[color:var(--lk-sep,currentColor)]" />
               ) : null}
             </li>
           ))}

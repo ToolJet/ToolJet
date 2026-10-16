@@ -154,19 +154,19 @@ export interface CheckedRowProps {
 }
 
 export const CheckedRow = ({ id, control, label, description, error, required }: CheckedRowProps) => (
-  <div className="flex items-start gap-3" style={error ? INVALID_VARS : undefined}>
+  <div className="tw-flex tw-items-start tw-gap-3" style={error ? INVALID_VARS : undefined}>
     {control}
-    <div className="grid gap-1.5 leading-none">
+    <div className="tw-grid tw-gap-1.5 tw-leading-none">
       <Label htmlFor={id} className={LABEL}>
         {String(label ?? '')}
-        {required ? <span className={cn('ml-0.5', ERROR)}>*</span> : null}
+        {required ? <span className={cn('tw-ml-0.5', ERROR)}>*</span> : null}
       </Label>
       {error ? (
-        <p role="alert" className={cn('text-sm font-medium', ERROR)}>
+        <p role="alert" className={cn('tw-text-ui2-sm tw-font-medium', ERROR)}>
           {String(error)}
         </p>
       ) : description ? (
-        <p className={cn('text-sm', HELP)}>{String(description)}</p>
+        <p className={cn('tw-text-ui2-sm', HELP)}>{String(description)}</p>
       ) : null}
     </div>
   </div>

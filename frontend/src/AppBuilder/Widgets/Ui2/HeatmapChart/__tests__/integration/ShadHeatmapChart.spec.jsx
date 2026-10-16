@@ -27,7 +27,7 @@ const render = (options = {}) => widget.render({ currentMode: 'view', ...options
 const exposed = () => widget.exposed() ?? {};
 const cells = () => screen.queryAllByRole('button');
 const drawn = (count) => waitFor(() => expect(cells()).toHaveLength(count));
-const legend = () => document.querySelector('.w-24')?.parentElement ?? null;
+const legend = () => document.querySelector('.tw-w-24')?.parentElement ?? null;
 const TWO = binding(
   "{{[{ day: 'Mon', hour: '09:00', tickets: 4 }, { day: 'Tue', hour: '09:00', tickets: 9 }, { day: 'Tue', hour: '10:00', tickets: 1200 }]}}"
 );

@@ -113,22 +113,24 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
                   ADDON,
                   ADDON_HOVER,
                   EDGE,
-                  'h-full w-auto justify-start rounded-none py-0 font-medium focus:ring-0'
+                  'tw-h-full tw-w-auto tw-justify-start tw-rounded-none tw-py-0 tw-font-medium focus:tw-ring-0'
                 )}
               >
                 <SelectValue>{currency}</SelectValue>
               </SelectTrigger>
-              <SelectContent style={vars} className="max-h-72">
+              <SelectContent style={vars} className="tw-max-h-72">
                 {choices.map((code) => (
                   <SelectItem key={code} value={code}>
-                    <span className="font-medium">{code}</span>
-                    <span className="ml-2 text-[color:var(--sc-muted-foreground)]">{currencyName(code, locale)}</span>
+                    <span className="tw-font-medium">{code}</span>
+                    <span className="tw-ml-2 tw-text-[color:var(--sc-muted-foreground)]">
+                      {currencyName(code, locale)}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           ) : null}
-          {showSign && !sign.after ? <span className={cn(AFFIX, 'pl-3')}>{sign.sign}</span> : null}
+          {showSign && !sign.after ? <span className={cn(AFFIX, 'tw-pl-3')}>{sign.sign}</span> : null}
           <input
             ref={textBox.ref}
             id={`shad-${id}`}
@@ -138,9 +140,9 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
             aria-invalid={!!check.error || undefined}
             className={cn(
               INNER,
-              'tabular-nums',
-              showSign && !sign.after && 'pl-1.5',
-              showSign && sign.after && 'pr-1.5'
+              'tw-tabular-nums',
+              showSign && !sign.after && 'tw-pl-1.5',
+              showSign && sign.after && 'tw-pr-1.5'
             )}
             value={shown}
             placeholder={text(properties.placeholder)}
@@ -160,7 +162,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
             }}
             onKeyDown={(e) => e.key === 'Enter' && fireEvent('onEnterPressed')}
           />
-          {showSign && sign.after ? <span className={cn(AFFIX, 'pr-3')}>{sign.sign}</span> : null}
+          {showSign && sign.after ? <span className={cn(AFFIX, 'tw-pr-3')}>{sign.sign}</span> : null}
         </Group>
       </Field>
     </Shell>

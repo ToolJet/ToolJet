@@ -27,10 +27,10 @@ export const RadialTip = ({ active, payload, format }: RadialTipProps) => {
   if (!item) return null;
   return (
     <div className="tj-shadcn">
-      <div className="flex items-center gap-2 rounded-lg border bg-background px-2.5 py-1.5 text-xs shadow-xl">
-        <span className="h-2.5 w-2.5 shrink-0 rounded-[2px]" style={{ background: item.fill }} />
-        <span className="text-muted-foreground">{String(item.name)}</span>
-        <span className="font-mono font-medium tabular-nums">{format(item.value)}</span>
+      <div className="tw-flex tw-items-center tw-gap-2 tw-rounded-ui2-lg tw-border tw-bg-ui2-background tw-px-2.5 tw-py-1.5 tw-text-xs tw-shadow-xl">
+        <span className="tw-h-2.5 tw-w-2.5 tw-shrink-0 tw-rounded-[2px]" style={{ background: item.fill }} />
+        <span className="tw-text-ui2-muted-foreground">{String(item.name)}</span>
+        <span className="tw-font-mono tw-font-medium tw-tabular-nums">{format(item.value)}</span>
       </div>
     </div>
   );
@@ -71,7 +71,7 @@ export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum 
   const format = formatter({ prefix: p.valuePrefix, suffix: p.valueSuffix });
   const fontSize = Math.max(14, Math.min(40, inner * 0.42));
   return (
-    <div className="relative" style={{ width: w, height }}>
+    <div className="tw-relative" style={{ width: w, height }}>
       <RadialBarChart
         width={w}
         height={chartHeight}
@@ -95,13 +95,13 @@ export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum 
           onClick={(entry) => onDatum(entry?.payload?.row ?? entry?.row)}
         >
           {rings.map((g, i) => (
-            <Cell key={i} fill={g.fill} className="cursor-pointer" />
+            <Cell key={i} fill={g.fill} className="tw-cursor-pointer" />
           ))}
         </RadialBar>
       </RadialBarChart>
       {centre.value !== '' || centre.label ? (
         <div
-          className="pointer-events-none absolute flex flex-col items-center text-center leading-none"
+          className="tw-pointer-events-none tw-absolute tw-flex tw-flex-col tw-items-center tw-text-center tw-leading-none"
           style={{
             left: box.cx,
             top: box.cy,
@@ -111,14 +111,14 @@ export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum 
         >
           {centre.value !== '' ? (
             <span
-              className="font-bold tabular-nums tracking-tight text-[color:var(--lk-center-value,var(--sc-foreground))]"
+              className="tw-font-bold tw-tabular-nums tw-tracking-tight tw-text-[color:var(--lk-center-value,var(--sc-foreground))]"
               style={{ fontSize }}
             >
               {centre.value}
             </span>
           ) : null}
           {centre.label ? (
-            <span className="mt-1.5 text-xs text-[color:var(--lk-center-label,var(--sc-muted-foreground))]">
+            <span className="tw-mt-1.5 tw-text-xs tw-text-[color:var(--lk-center-label,var(--sc-muted-foreground))]">
               {centre.label}
             </span>
           ) : null}

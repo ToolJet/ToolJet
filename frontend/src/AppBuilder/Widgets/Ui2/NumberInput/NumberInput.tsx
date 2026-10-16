@@ -11,7 +11,7 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // Stepper buttons attached to the box.
 export const STEP =
-  'flex shrink-0 items-center justify-center p-0 bg-[color:var(--lk-step-bg,transparent)] text-[color:var(--lk-step-fg,var(--sc-muted-foreground))] transition-colors hover:bg-[color:var(--lk-step-hover,var(--sc-accent))] hover:text-[color:var(--lk-step-fg,var(--sc-accent-foreground))] disabled:pointer-events-none disabled:opacity-50';
+  'tw-flex tw-shrink-0 tw-items-center tw-justify-center tw-p-0 tw-bg-[color:var(--lk-step-bg,transparent)] tw-text-[color:var(--lk-step-fg,var(--sc-muted-foreground))] tw-transition-colors hover:tw-bg-[color:var(--lk-step-hover,var(--sc-accent))] hover:tw-text-[color:var(--lk-step-fg,var(--sc-accent-foreground))] disabled:tw-pointer-events-none disabled:tw-opacity-50';
 
 // ---- Number input --------------------------------------------------------------------------------------------------
 
@@ -67,15 +67,15 @@ export const ShadNumberInput = (props: WidgetProps) => {
               type="button"
               tabIndex={-1}
               aria-label="Decrease"
-              className={cn(STEP, EDGE, 'w-9 border-r')}
+              className={cn(STEP, EDGE, 'tw-w-9 tw-border-r')}
               disabled={disabled || atMin}
               onClick={() => step(-1)}
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="tw-h-4 tw-w-4" />
             </button>
           ) : null}
           {prefix ? (
-            <span className={cn(AFFIX, 'pl-3')}>
+            <span className={cn(AFFIX, 'tw-pl-3')}>
               <Truncate>{prefix}</Truncate>
             </span>
           ) : null}
@@ -92,9 +92,9 @@ export const ShadNumberInput = (props: WidgetProps) => {
             aria-invalid={!!check.error || undefined}
             className={cn(
               INNER,
-              prefix && 'pl-1.5',
-              suffix && 'pr-1.5',
-              layout === 'split' && !prefix && !suffix && 'text-center'
+              prefix && 'tw-pl-1.5',
+              suffix && 'tw-pr-1.5',
+              layout === 'split' && !prefix && !suffix && 'tw-text-center'
             )}
             value={shown}
             placeholder={text(properties.placeholder)}
@@ -121,7 +121,7 @@ export const ShadNumberInput = (props: WidgetProps) => {
             }}
           />
           {suffix ? (
-            <span className={cn(AFFIX, 'pr-3')}>
+            <span className={cn(AFFIX, 'tw-pr-3')}>
               <Truncate>{suffix}</Truncate>
             </span>
           ) : null}
@@ -130,34 +130,34 @@ export const ShadNumberInput = (props: WidgetProps) => {
               type="button"
               tabIndex={-1}
               aria-label="Increase"
-              className={cn(STEP, EDGE, 'w-9 border-l')}
+              className={cn(STEP, EDGE, 'tw-w-9 tw-border-l')}
               disabled={disabled || atMax}
               onClick={() => step(1)}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="tw-h-4 tw-w-4" />
             </button>
           ) : null}
           {steppers && layout === 'stacked' ? (
-            <div className={cn('flex w-7 shrink-0 flex-col border-l', EDGE)}>
+            <div className={cn('tw-flex tw-w-7 tw-shrink-0 tw-flex-col tw-border-l', EDGE)}>
               <button
                 type="button"
                 tabIndex={-1}
                 aria-label="Increase"
-                className={cn(STEP, 'h-1/2 w-full')}
+                className={cn(STEP, 'tw-h-1/2 tw-w-full')}
                 disabled={disabled || atMax}
                 onClick={() => step(1)}
               >
-                <ChevronUp className="h-3.5 w-3.5" />
+                <ChevronUp className="tw-h-3.5 tw-w-3.5" />
               </button>
               <button
                 type="button"
                 tabIndex={-1}
                 aria-label="Decrease"
-                className={cn(STEP, EDGE, 'h-1/2 w-full border-t')}
+                className={cn(STEP, EDGE, 'tw-h-1/2 tw-w-full tw-border-t')}
                 disabled={disabled || atMin}
                 onClick={() => step(-1)}
               >
-                <ChevronDown className="h-3.5 w-3.5" />
+                <ChevronDown className="tw-h-3.5 tw-w-3.5" />
               </button>
             </div>
           ) : null}

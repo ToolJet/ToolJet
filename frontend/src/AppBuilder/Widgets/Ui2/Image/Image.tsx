@@ -25,19 +25,20 @@ export const ratioOf = (value: unknown): string | null => {
 
 export const ImageFallback = ({ kind, text }: { kind: unknown; text: unknown }) => {
   const name = String(text ?? '').trim();
-  const fg = 'text-[color:var(--lk-fg,var(--sc-muted-foreground))]';
+  const fg = 'tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]';
   if (kind === 'initials' && initials(name)) {
     return (
-      <span className={cn('select-none text-2xl font-semibold tracking-wide', fg)} aria-label={name}>
+      <span className={cn('tw-select-none tw-text-2xl tw-font-semibold tw-tracking-wide', fg)} aria-label={name}>
         {initials(name)}
       </span>
     );
   }
-  if (kind === 'icon' || kind === 'initials') return <ImageOff className={cn('h-8 w-8', fg)} aria-label="No image" />;
+  if (kind === 'icon' || kind === 'initials')
+    return <ImageOff className={cn('tw-h-8 tw-w-8', fg)} aria-label="No image" />;
   return (
-    <span className={cn('flex flex-col items-center gap-2 px-3 text-center', fg)}>
-      <ImageIcon className="h-7 w-7" aria-hidden="true" />
-      <span className="text-xs">{name || 'No image'}</span>
+    <span className={cn('tw-flex tw-flex-col tw-items-center tw-gap-2 tw-px-3 tw-text-center', fg)}>
+      <ImageIcon className="tw-h-7 tw-w-7" aria-hidden="true" />
+      <span className="tw-text-xs">{name || 'No image'}</span>
     </span>
   );
 };
@@ -81,7 +82,7 @@ export const ShadImage = (props: WidgetProps) => {
   };
   return (
     <Shell {...props} innerRef={ref}>
-      <figure className="m-0 flex w-full flex-col">
+      <figure className="tw-m-0 tw-flex tw-w-full tw-flex-col">
         <div
           role={clickable ? 'button' : undefined}
           tabIndex={clickable ? 0 : undefined}
@@ -89,11 +90,12 @@ export const ShadImage = (props: WidgetProps) => {
           onClick={click}
           onKeyDown={clickable ? onKeyActivate(click) : undefined}
           className={cn(
-            'relative flex w-full items-center justify-center overflow-hidden rounded-[var(--lk-radius,var(--sc-radius))] bg-[color:var(--lk-bg,transparent)]',
-            p.showBorder === true && 'border border-[color:var(--lk-border,var(--sc-border))]',
-            status === 'error' && 'bg-[color:var(--lk-bg,var(--sc-muted))]',
-            clickable && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            zoom && 'cursor-zoom-in'
+            'tw-relative tw-flex tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-bg-[color:var(--lk-bg,transparent)]',
+            p.showBorder === true && 'tw-border tw-border-[color:var(--lk-border,var(--sc-border))]',
+            status === 'error' && 'tw-bg-[color:var(--lk-bg,var(--sc-muted))]',
+            clickable &&
+              'tw-cursor-pointer focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring',
+            zoom && 'tw-cursor-zoom-in'
           )}
           style={ratio ? { aspectRatio: ratio } : { height: frameHeight }}
         >
@@ -106,18 +108,18 @@ export const ShadImage = (props: WidgetProps) => {
               onLoad={() => setStatus('loaded')}
               onError={() => setStatus('error')}
               className={cn(
-                'block h-full w-full transition-opacity duration-300',
-                status === 'loaded' ? 'opacity-100' : 'opacity-0'
+                'tw-block tw-h-full tw-w-full tw-transition-opacity tw-duration-300',
+                status === 'loaded' ? 'tw-opacity-100' : 'tw-opacity-0'
               )}
               style={{ objectFit: fit }}
             />
           ) : (
             <ImageFallback kind={p.fallback} text={isSet(p.fallbackText) ? p.fallbackText : alt} />
           )}
-          {status === 'loading' ? <Skeleton className="absolute inset-0 rounded-none" /> : null}
+          {status === 'loading' ? <Skeleton className="tw-absolute tw-inset-0 tw-rounded-none" /> : null}
         </div>
         {caption ? (
-          <figcaption className="mt-2 truncate text-center text-sm leading-5 text-[color:var(--lk-caption,var(--sc-muted-foreground))]">
+          <figcaption className="tw-mt-2 tw-truncate tw-text-center tw-text-ui2-sm tw-leading-5 tw-text-[color:var(--lk-caption,var(--sc-muted-foreground))]">
             {caption}
           </figcaption>
         ) : null}
@@ -125,23 +127,23 @@ export const ShadImage = (props: WidgetProps) => {
       {p.zoomOnClick === true ? (
         <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
           <DialogPrimitive.Portal container={getPortalRoot()}>
-            <DialogPrimitive.Overlay className="fixed inset-0 z-[1300] bg-black/80" />
+            <DialogPrimitive.Overlay className="tw-fixed tw-inset-0 tw-z-[1300] tw-bg-black/80" />
             <DialogPrimitive.Content
               aria-describedby={undefined}
-              className="fixed left-1/2 top-1/2 z-[1300] -translate-x-1/2 -translate-y-1/2 outline-none"
+              className="tw-fixed tw-left-1/2 tw-top-1/2 tw-z-[1300] -tw-translate-x-1/2 -tw-translate-y-1/2 tw-outline-none"
             >
-              <DialogPrimitive.Title className="sr-only">{alt || 'Image'}</DialogPrimitive.Title>
+              <DialogPrimitive.Title className="tw-sr-only">{alt || 'Image'}</DialogPrimitive.Title>
               <img
                 src={src}
                 alt={alt}
-                className="block max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-lg"
+                className="tw-block tw-max-h-[90vh] tw-max-w-[90vw] tw-rounded-ui2-lg tw-object-contain tw-shadow-lg"
                 draggable={false}
               />
               <DialogPrimitive.Close
                 aria-label="Close"
-                className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full border bg-background text-foreground shadow-md transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="tw-absolute -tw-right-3 -tw-top-3 tw-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-rounded-full tw-border tw-bg-ui2-background tw-text-ui2-foreground tw-shadow-md tw-transition-colors hover:tw-bg-ui2-accent focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring"
               >
-                <X className="h-4 w-4" />
+                <X className="tw-h-4 tw-w-4" />
               </DialogPrimitive.Close>
             </DialogPrimitive.Content>
           </DialogPrimitive.Portal>

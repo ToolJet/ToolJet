@@ -18,9 +18,9 @@ const stepState = (index: number, current: number): StepState =>
   index < current ? 'done' : index === current ? 'current' : 'upcoming';
 
 export const STEP_LABEL: Record<StepState, string> = {
-  done: 'text-[color:var(--lk-done-label,var(--sc-foreground))]',
-  current: 'text-[color:var(--lk-current-label,var(--sc-foreground))]',
-  upcoming: 'text-[color:var(--lk-idle-label,var(--sc-muted-foreground))]',
+  done: 'tw-text-[color:var(--lk-done-label,var(--sc-foreground))]',
+  current: 'tw-text-[color:var(--lk-current-label,var(--sc-foreground))]',
+  upcoming: 'tw-text-[color:var(--lk-idle-label,var(--sc-muted-foreground))]',
 };
 
 export const IDLE = 'var(--lk-idle,var(--sc-border))';
@@ -30,9 +30,9 @@ export const StepMarker = ({ state, number, dots }: { state: StepState; number: 
     return (
       <span
         className={cn(
-          'block h-3 w-3 shrink-0 rounded-full',
-          state === 'upcoming' ? 'bg-[color:var(--lk-idle,var(--sc-border))]' : 'bg-primary',
-          state === 'current' && 'ring-4 ring-[color:color-mix(in_srgb,var(--sc-primary)_18%,transparent)]'
+          'tw-block tw-h-3 tw-w-3 tw-shrink-0 tw-rounded-full',
+          state === 'upcoming' ? 'tw-bg-[color:var(--lk-idle,var(--sc-border))]' : 'tw-bg-ui2-primary',
+          state === 'current' && 'tw-ring-4 tw-ring-[color:color-mix(in_srgb,var(--sc-primary)_18%,transparent)]'
         )}
       />
     );
@@ -40,15 +40,15 @@ export const StepMarker = ({ state, number, dots }: { state: StepState; number: 
   return (
     <span
       className={cn(
-        'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium tabular-nums transition-colors',
-        state === 'done' && 'border-primary bg-primary text-primary-foreground',
+        'tw-flex tw-h-8 tw-w-8 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border-2 tw-text-ui2-sm tw-font-medium tw-tabular-nums tw-transition-colors',
+        state === 'done' && 'tw-border-ui2-primary tw-bg-ui2-primary tw-text-ui2-primary-foreground',
         state === 'current' &&
-          'border-primary bg-background text-primary ring-4 ring-[color:color-mix(in_srgb,var(--sc-primary)_15%,transparent)]',
+          'tw-border-ui2-primary tw-bg-ui2-background tw-text-ui2-primary tw-ring-4 tw-ring-[color:color-mix(in_srgb,var(--sc-primary)_15%,transparent)]',
         state === 'upcoming' &&
-          'border-[color:var(--lk-idle,var(--sc-border))] bg-background text-[color:var(--lk-idle-label,var(--sc-muted-foreground))]'
+          'tw-border-[color:var(--lk-idle,var(--sc-border))] tw-bg-ui2-background tw-text-[color:var(--lk-idle-label,var(--sc-muted-foreground))]'
       )}
     >
-      {state === 'done' ? <Check className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" /> : number}
+      {state === 'done' ? <Check className="tw-h-4 tw-w-4" strokeWidth={2.5} aria-hidden="true" /> : number}
     </span>
   );
 };
@@ -136,14 +136,17 @@ export const ShadSteps = (props: WidgetProps) => {
     const n = Math.max(2, Math.min(6, shown.length || 4));
     return (
       <Shell {...props} innerRef={ref}>
-        <div className={cn('flex', vertical ? 'flex-col gap-6' : 'flex-row items-start gap-4')}>
+        <div className={cn('tw-flex', vertical ? 'tw-flex-col tw-gap-6' : 'tw-flex-row tw-items-start tw-gap-4')}>
           {Array.from({ length: n }, (_, i) => (
             <div
               key={i}
-              className={cn('flex flex-1 gap-2', vertical ? 'flex-row items-center' : 'flex-col items-center')}
+              className={cn(
+                'tw-flex tw-flex-1 tw-gap-2',
+                vertical ? 'tw-flex-row tw-items-center' : 'tw-flex-col tw-items-center'
+              )}
             >
-              <Skeleton className="shrink-0 rounded-full" style={{ width: markerSize, height: markerSize }} />
-              <Skeleton className="h-4 w-20" />
+              <Skeleton className="tw-shrink-0 tw-rounded-full" style={{ width: markerSize, height: markerSize }} />
+              <Skeleton className="tw-h-4 tw-w-20" />
             </div>
           ))}
         </div>
@@ -160,10 +163,10 @@ export const ShadSteps = (props: WidgetProps) => {
         disabled={!interactive || !!p.loadingState}
         onClick={() => select(step)}
         className={cn(
-          'group flex bg-transparent p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default',
-          interactive && 'cursor-pointer',
-          step.disabled && 'opacity-50',
-          'rounded-md',
+          'tw-group tw-flex tw-bg-transparent tw-p-0 tw-text-left focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring disabled:tw-cursor-default',
+          interactive && 'tw-cursor-pointer',
+          step.disabled && 'tw-opacity-50',
+          'tw-rounded-ui2-md',
           className
         )}
       >
@@ -174,18 +177,18 @@ export const ShadSteps = (props: WidgetProps) => {
   return (
     <Shell {...props} innerRef={ref}>
       {!shown.length ? (
-        <p className="py-2 text-sm text-muted-foreground">No steps</p>
+        <p className="tw-py-2 tw-text-ui2-sm tw-text-ui2-muted-foreground">No steps</p>
       ) : vertical ? (
-        <ol className="m-0 flex list-none flex-col p-0" aria-label="Steps">
+        <ol className="tw-m-0 tw-flex tw-list-none tw-flex-col tw-p-0" aria-label="Steps">
           {shown.map((step, i) => {
             const state = stepState(i, index);
             const isLast = i === shown.length - 1;
             return (
-              <li key={String(step.id)} className={cn('relative', !isLast && 'pb-6')}>
+              <li key={String(step.id)} className={cn('tw-relative', !isLast && 'tw-pb-6')}>
                 {!isLast ? (
                   <span
                     aria-hidden="true"
-                    className="absolute w-0.5 rounded-full"
+                    className="tw-absolute tw-w-0.5 tw-rounded-full"
                     style={{
                       left: markerSize / 2 - 1,
                       top: markerSize + 4,
@@ -200,11 +203,11 @@ export const ShadSteps = (props: WidgetProps) => {
                   state,
                   <>
                     <StepMarker state={state} number={i + 1} dots={dots} />
-                    <span className="flex min-w-0 flex-col" style={{ paddingTop: dots ? 0 : 6 }}>
+                    <span className="tw-flex tw-min-w-0 tw-flex-col" style={{ paddingTop: dots ? 0 : 6 }}>
                       <span
                         className={cn(
-                          'text-sm leading-5',
-                          state === 'upcoming' ? 'font-medium' : 'font-semibold',
+                          'tw-text-ui2-sm tw-leading-5',
+                          state === 'upcoming' ? 'tw-font-medium' : 'tw-font-semibold',
                           STEP_LABEL[state]
                         )}
                         style={dots ? { marginTop: -4 } : undefined}
@@ -212,29 +215,32 @@ export const ShadSteps = (props: WidgetProps) => {
                         {step.name}
                       </span>
                       {step.description ? (
-                        <span className="text-xs text-[color:var(--lk-help,var(--sc-muted-foreground))]">
+                        <span className="tw-text-xs tw-text-[color:var(--lk-help,var(--sc-muted-foreground))]">
                           {step.description}
                         </span>
                       ) : null}
                     </span>
                   </>,
-                  'w-full items-start gap-3'
+                  'tw-w-full tw-items-start tw-gap-3'
                 )}
               </li>
             );
           })}
         </ol>
       ) : (
-        <ol className="m-0 flex w-full list-none items-start p-0" aria-label="Steps">
+        <ol className="tw-m-0 tw-flex tw-w-full tw-list-none tw-items-start tw-p-0" aria-label="Steps">
           {shown.map((step, i) => {
             const state = stepState(i, index);
             const isLast = i === shown.length - 1;
             return (
-              <li key={String(step.id)} className="relative flex min-w-0 flex-1 flex-col items-center">
+              <li
+                key={String(step.id)}
+                className="tw-relative tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-items-center"
+              >
                 {!isLast ? (
                   <span
                     aria-hidden="true"
-                    className="absolute h-0.5 rounded-full"
+                    className="tw-absolute tw-h-0.5 tw-rounded-full"
                     style={{
                       top: markerSize / 2 - 1,
                       left: `calc(50% + ${markerSize / 2 + 8}px)`,
@@ -251,20 +257,20 @@ export const ShadSteps = (props: WidgetProps) => {
                     <StepMarker state={state} number={i + 1} dots={dots} />
                     <span
                       className={cn(
-                        'mt-2 block max-w-full truncate text-sm leading-5',
-                        state === 'upcoming' ? 'font-medium' : 'font-semibold',
+                        'tw-mt-2 tw-block tw-max-w-full tw-truncate tw-text-ui2-sm tw-leading-5',
+                        state === 'upcoming' ? 'tw-font-medium' : 'tw-font-semibold',
                         STEP_LABEL[state]
                       )}
                     >
                       {step.name}
                     </span>
                     {step.description ? (
-                      <span className="line-clamp-2 block max-w-full text-xs text-[color:var(--lk-help,var(--sc-muted-foreground))]">
+                      <span className="tw-line-clamp-2 tw-block tw-max-w-full tw-text-xs tw-text-[color:var(--lk-help,var(--sc-muted-foreground))]">
                         {step.description}
                       </span>
                     ) : null}
                   </>,
-                  'max-w-full flex-col items-center px-1 text-center'
+                  'tw-max-w-full tw-flex-col tw-items-center tw-px-1 tw-text-center'
                 )}
               </li>
             );

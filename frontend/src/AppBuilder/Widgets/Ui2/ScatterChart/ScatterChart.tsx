@@ -34,8 +34,8 @@ const ScatterTip = ({ active, payload, p, fx, fy }: ScatterTipProps) => {
   const label = (key: string, fallback: string) => (isSet(p[key]) ? String(p[key]) : fallback);
   return (
     <div className="tj-shadcn">
-      <div className="grid min-w-[8rem] gap-1 rounded-lg border bg-background px-2.5 py-1.5 text-xs shadow-xl">
-        {point.label ? <div className="font-medium">{String(point.label)}</div> : null}
+      <div className="tw-grid tw-min-w-[8rem] tw-gap-1 tw-rounded-ui2-lg tw-border tw-bg-ui2-background tw-px-2.5 tw-py-1.5 tw-text-xs tw-shadow-xl">
+        {point.label ? <div className="tw-font-medium">{String(point.label)}</div> : null}
         {[
           [label('xLabel', seriesLabel(p.xField)), fx(point.x)],
           [label('yLabel', seriesLabel(p.yField)), fy(point.y)],
@@ -43,9 +43,9 @@ const ScatterTip = ({ active, payload, p, fx, fy }: ScatterTipProps) => {
             ? [[label('sizeLabel', seriesLabel(p.sizeField)), full.format(point.z)]]
             : []),
         ].map(([name, value]) => (
-          <div key={name} className="flex items-center gap-2">
-            <span className="flex-1 text-muted-foreground">{name}</span>
-            <span className="font-mono font-medium tabular-nums">{value}</span>
+          <div key={name} className="tw-flex tw-items-center tw-gap-2">
+            <span className="tw-flex-1 tw-text-ui2-muted-foreground">{name}</span>
+            <span className="tw-font-mono tw-font-medium tw-tabular-nums">{value}</span>
           </div>
         ))}
       </div>

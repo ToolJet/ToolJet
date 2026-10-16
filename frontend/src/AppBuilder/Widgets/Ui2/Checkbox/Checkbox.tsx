@@ -30,7 +30,7 @@ export const ShadCheckbox = (props: WidgetProps) => {
               check.touch();
             }}
             aria-invalid={!!check.error || undefined}
-            className="data-[state=unchecked]:border-[color:var(--lk-invalid,var(--lk-border,var(--sc-primary)))]"
+            className="data-[state=unchecked]:tw-border-[color:var(--lk-invalid,var(--lk-border,var(--sc-primary)))]"
           />
         }
       />

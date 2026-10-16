@@ -9,11 +9,11 @@ import { textAlign } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useTextActions } from '@/AppBuilder/Widgets/Ui2/_shared/textActions';
 
 export const TONE: Record<string, string> = {
-  paragraph: 'leading-7',
-  lead: 'text-xl text-muted-foreground',
-  muted: 'text-sm text-muted-foreground',
-  small: 'text-sm font-medium leading-none',
-  large: 'text-lg font-semibold',
+  paragraph: 'tw-leading-7',
+  lead: 'tw-text-ui2-xl tw-text-ui2-muted-foreground',
+  muted: 'tw-text-ui2-sm tw-text-ui2-muted-foreground',
+  small: 'tw-text-ui2-sm tw-font-medium tw-leading-none',
+  large: 'tw-text-ui2-lg tw-font-semibold',
 };
 
 export const ShadText = (props: WidgetProps) => {
@@ -26,10 +26,10 @@ export const ShadText = (props: WidgetProps) => {
         {...handlers}
         className={cn(
           TONE[properties.tone] || TONE.paragraph,
-          'whitespace-pre-line',
-          whenSet(props.styles, 'textColor', 'text-[color:var(--lk-fg)]'),
+          'tw-whitespace-pre-line',
+          whenSet(props.styles, 'textColor', 'tw-text-[color:var(--lk-fg)]'),
           typeClasses(props.styles),
-          clickable && 'cursor-pointer'
+          clickable && 'tw-cursor-pointer'
         )}
         style={{ textAlign: textAlign(props.styles) }}
       >

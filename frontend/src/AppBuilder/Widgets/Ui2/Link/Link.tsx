@@ -18,10 +18,10 @@ const UNDERLINE: Record<string, string> = {
 };
 
 export const WEIGHT: Record<string, string> = {
-  normal: 'font-normal',
-  medium: 'font-medium',
-  semibold: 'font-semibold',
-  bold: 'font-bold',
+  normal: 'tw-font-normal',
+  medium: 'tw-font-medium',
+  semibold: 'tw-font-semibold',
+  bold: 'tw-font-bold',
 };
 
 export const ShadLink = (props: WidgetProps) => {
@@ -49,25 +49,27 @@ export const ShadLink = (props: WidgetProps) => {
   const underline = own(UNDERLINE, p.underline) || (typeof p.underline === 'string' && p.underline) || 'on-hover';
   const disabled = busy(p);
   const className = cn(
-    'inline-flex max-w-full items-center gap-1 rounded-sm text-[color:var(--lk-fg,var(--sc-primary-ink))] underline-offset-4 transition-colors hover:text-[color:var(--lk-hover,var(--lk-fg,var(--sc-primary)))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-    underline === 'underline' && 'underline',
-    underline === 'on-hover' && 'no-underline hover:underline',
-    underline === 'no-underline' && 'no-underline hover:no-underline',
+    'tw-inline-flex tw-max-w-full tw-items-center tw-gap-1 tw-rounded-ui2-sm tw-text-[color:var(--lk-fg,var(--sc-primary-ink))] tw-underline-offset-4 tw-transition-colors hover:tw-text-[color:var(--lk-hover,var(--lk-fg,var(--sc-primary)))] focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring',
+    underline === 'underline' && 'tw-underline',
+    underline === 'on-hover' && 'tw-no-underline hover:tw-underline',
+    underline === 'no-underline' && 'tw-no-underline hover:tw-no-underline',
     own(WEIGHT, p.fontWeight) || WEIGHT.medium,
-    disabled && 'pointer-events-none opacity-50'
+    disabled && 'tw-pointer-events-none tw-opacity-50'
   );
   const style = { fontSize: clamp(p.fontSize, 8, 96, 14), lineHeight: 1.4 };
   const content = (
     <>
-      <span className="truncate">{String(p.linkText ?? '')}</span>
-      {p.showIcon === true ? <ExternalLink className="shrink-0" style={{ width: '0.85em', height: '0.85em' }} /> : null}
+      <span className="tw-truncate">{String(p.linkText ?? '')}</span>
+      {p.showIcon === true ? (
+        <ExternalLink className="tw-shrink-0" style={{ width: '0.85em', height: '0.85em' }} />
+      ) : null}
     </>
   );
   const onHover = () => fireEvent('onHover');
   return (
     <Shell {...props}>
       <div
-        className={cn('flex items-center', justify(props.styles))}
+        className={cn('tw-flex tw-items-center', justify(props.styles))}
         style={{ minHeight: Math.min(height || 0, 2000) }}
       >
         {href ? (
@@ -95,7 +97,7 @@ export const ShadLink = (props: WidgetProps) => {
           <button
             type="button"
             disabled={disabled}
-            className={cn(className, 'cursor-pointer bg-transparent p-0')}
+            className={cn(className, 'tw-cursor-pointer tw-bg-transparent tw-p-0')}
             style={style}
             onMouseEnter={onHover}
             onClick={() => fireEvent('onClick')}

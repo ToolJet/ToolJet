@@ -23,9 +23,9 @@ export const SparkTip = ({ active, payload, format }: SparkTipProps) => {
   if (!point) return null;
   return (
     <div className="tj-shadcn">
-      <div className="flex items-center gap-1.5 whitespace-nowrap rounded-md border bg-background px-2 py-1 text-xs shadow-md">
-        <span className="text-muted-foreground">{String(point.x)}</span>
-        <span className="font-mono font-medium tabular-nums">{format(point.y)}</span>
+      <div className="tw-flex tw-items-center tw-gap-1.5 tw-whitespace-nowrap tw-rounded-ui2-md tw-border tw-bg-ui2-background tw-px-2 tw-py-1 tw-text-xs tw-shadow-md">
+        <span className="tw-text-ui2-muted-foreground">{String(point.x)}</span>
+        <span className="tw-font-mono tw-font-medium tw-tabular-nums">{format(point.y)}</span>
       </div>
     </div>
   );

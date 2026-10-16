@@ -16,14 +16,14 @@ export const ShadProgress = (props: WidgetProps) => {
   });
   return (
     <Shell {...props}>
-      <div className="flex flex-col gap-2">
+      <div className="tw-flex tw-flex-col tw-gap-2">
         {properties.label || properties.showValue ? (
-          <div className="flex items-center justify-between text-sm">
-            <span className={cn('font-medium', LABEL)}>{String(properties.label ?? '')}</span>
-            {properties.showValue ? <span className={cn('tabular-nums', HELP)}>{Math.round(value)}%</span> : null}
+          <div className="tw-flex tw-items-center tw-justify-between tw-text-ui2-sm">
+            <span className={cn('tw-font-medium', LABEL)}>{String(properties.label ?? '')}</span>
+            {properties.showValue ? <span className={cn('tw-tabular-nums', HELP)}>{Math.round(value)}%</span> : null}
           </div>
         ) : null}
-        <Progress value={value} className="h-[var(--lk-height,0.5rem)]" />
+        <Progress value={value} className="tw-h-[var(--lk-height,0.5rem)]" />
       </div>
     </Shell>
   );

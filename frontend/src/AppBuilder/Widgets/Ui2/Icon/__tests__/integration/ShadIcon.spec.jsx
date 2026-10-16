@@ -39,7 +39,7 @@ describe('UI 2.0 Icon', () => {
     expect(glyph()).toHaveClass('lucide-users');
     expect(glyph()).toHaveAttribute('width', '20');
     expect(box().style.width).toBe('40px');
-    expect(box().className).toContain('rounded-[var(--lk-radius,var(--sc-radius))]');
+    expect(box().className).toContain('tw-rounded-[var(--lk-radius,var(--sc-radius))]');
     expect(box().style.getPropertyValue('--ic-tone')).toBe('var(--sc-primary)');
   });
 
@@ -74,7 +74,7 @@ describe('UI 2.0 Icon', () => {
 
   test('[ShadIcon-PROP-004] chip circle rounds the chip, none drops it, and chipSize sets its size', async () => {
     render({ properties: { chip: binding('circle'), chipSize: binding('{{72}}') } });
-    await waitFor(() => expect(box()).toHaveClass('rounded-full'));
+    await waitFor(() => expect(box()).toHaveClass('tw-rounded-full'));
     expect(box().style.width).toBe('72px');
 
     render({ properties: { chip: binding('none') } });
@@ -103,7 +103,7 @@ describe('UI 2.0 Icon', () => {
     await waitFor(() => expect(widget.variables().calls).toBe(1));
 
     await widget.act('setDisable', true);
-    await waitFor(() => expect(box()).toHaveClass('opacity-50'));
+    await waitFor(() => expect(box()).toHaveClass('tw-opacity-50'));
     await widget.act('click');
     await act(async () => fireEvent.click(box()));
     expect(widget.variables().calls).toBe(1);
@@ -124,6 +124,6 @@ describe('UI 2.0 Icon', () => {
     expect(root.style.getPropertyValue('--lk-icon')).toBe('#0891b2');
     expect(root.style.getPropertyValue('--lk-chip')).toBe('#cffafe');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('6px');
-    expect(box().parentElement).toHaveClass('justify-center');
+    expect(box().parentElement).toHaveClass('tw-justify-center');
   });
 });

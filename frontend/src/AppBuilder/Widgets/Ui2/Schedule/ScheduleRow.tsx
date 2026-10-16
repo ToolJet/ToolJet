@@ -42,13 +42,13 @@ const ResourceAvatar = ({ src, name }: { src: string; name: string }) => {
         alt=""
         loading="lazy"
         onError={() => setFailed(true)}
-        className="h-7 w-7 shrink-0 rounded-full object-cover"
+        className="tw-h-7 tw-w-7 tw-shrink-0 tw-rounded-full tw-object-cover"
       />
     );
   const hue = avatarHue(name);
   return (
     <span
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold"
+      className="tw-flex tw-h-7 tw-w-7 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-text-[11px] tw-font-semibold"
       style={{
         background: `color-mix(in srgb, hsl(${hue} 70% 55%) 16%, var(--sc-background))`,
         color: `color-mix(in srgb, hsl(${hue} 65% 48%) 62%, var(--sc-foreground))`,
@@ -100,25 +100,30 @@ export const ScheduleRow = ({
   const laneHeight = lanes === 1 ? Math.max(20, rowHeight - PAD * 2) : LANE;
   const rowH = lanes === 1 ? rowHeight : Math.max(rowHeight, lanes * LANE + (lanes - 1) * LANE_GAP + PAD * 2);
   return (
-    <div className={cn('flex', i > 0 && 'border-t')} style={{ borderColor: LINE }} data-resource={r.key}>
+    <div className={cn('tw-flex', i > 0 && 'tw-border-t')} style={{ borderColor: LINE }} data-resource={r.key}>
       <div
-        className="sticky left-0 z-10 flex shrink-0 items-center gap-2.5 border-r px-3"
+        className="tw-sticky tw-left-0 tw-z-10 tw-flex tw-shrink-0 tw-items-center tw-gap-2.5 tw-border-r tw-px-3"
         style={{ width: rw, height: rowH, background: SURFACE, borderColor: LINE }}
       >
         {r.avatar ? (
           <ResourceAvatar src={/^(https?:|data:image\/|\/)/.test(r.avatar) ? r.avatar : ''} name={r.name} />
         ) : null}
-        <span className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-medium leading-snug text-[color:var(--sc-foreground)]">{r.name}</span>
+        <span className="tw-flex tw-min-w-0 tw-flex-col">
+          <span className="tw-truncate tw-text-ui2-sm tw-font-medium tw-leading-snug tw-text-[color:var(--sc-foreground)]">
+            {r.name}
+          </span>
           {r.caption ? (
-            <span className="truncate text-xs leading-snug" style={{ color: LABEL }}>
+            <span className="tw-truncate tw-text-xs tw-leading-snug" style={{ color: LABEL }}>
               {r.caption}
             </span>
           ) : null}
         </span>
       </div>
-      <div className="relative min-w-0 flex-1" style={{ height: rowH }}>
-        <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${slotCount}, minmax(0, 1fr))` }}>
+      <div className="tw-relative tw-min-w-0 tw-flex-1" style={{ height: rowH }}>
+        <div
+          className="tw-absolute tw-inset-0 tw-grid"
+          style={{ gridTemplateColumns: `repeat(${slotCount}, minmax(0, 1fr))` }}
+        >
           {range.slots.map((slot, j) => {
             const isSelected =
               highlight && selected?.kind === 'slot' && selected.resource === r.key && selected.index === j;
@@ -131,12 +136,11 @@ export const ScheduleRow = ({
                 onClick={() => clickSlot(r, slot, j)}
                 aria-label={`${r.name}, ${slotValue(r, slot, hourFormat, range.scale).label}, free`}
                 className={cn(
-                  'sc-slot h-full min-w-0 outline-none transition-colors duration-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))] disabled:cursor-default',
-                  j > 0 && slot.edge && 'border-l',
-                  !disabled && (hasSlotClick || highlight) && 'sc-slot-live cursor-pointer'
+                  'sc-slot tw-h-full tw-min-w-0 tw-outline-none tw-transition-colors tw-duration-100 focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))] disabled:tw-cursor-default',
+                  j > 0 && slot.edge && 'tw-border-l',
+                  !disabled && (hasSlotClick || highlight) && 'sc-slot-live tw-cursor-pointer'
                 )}
-                // Fills and lines are rules in shadcn.scss: the pack's reset sets every button's
-                // background and border colour with !important, which an inline style cannot beat.
+                // Fills and lines are rules in shadcn.scss, keyed on the data attributes below.
                 data-selected={isSelected || undefined}
                 data-today={todayColumn || undefined}
               />
@@ -162,9 +166,9 @@ export const ScheduleRow = ({
               data-booking={b.key}
               data-tone={b.tone || undefined}
               className={cn(
-                'sc-booking absolute z-[1] flex min-w-0 flex-col justify-center overflow-hidden rounded-md border-l-[3px] px-2 text-left text-xs leading-tight outline-none transition-shadow duration-150 focus-visible:ring-2 focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))] disabled:cursor-default',
-                !disabled && 'cursor-pointer',
-                cancelled && 'opacity-70'
+                'sc-booking tw-absolute tw-z-[1] tw-flex tw-min-w-0 tw-flex-col tw-justify-center tw-overflow-hidden tw-rounded-ui2-md tw-border-l-[3px] tw-px-2 tw-text-left tw-text-xs tw-leading-tight tw-outline-none tw-transition-shadow tw-duration-150 focus-visible:tw-ring-2 focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))] disabled:tw-cursor-default',
+                !disabled && 'tw-cursor-pointer',
+                cancelled && 'tw-opacity-70'
               )}
               style={
                 {
@@ -179,15 +183,15 @@ export const ScheduleRow = ({
             >
               <span
                 className={cn(
-                  'font-semibold',
+                  'tw-font-semibold',
                   // Two lines break at spaces only: a name broken mid-word ("Juni / per") read worse than "Junip...".
-                  face.titleLines === 2 && /\s/.test(String(b.title || '').trim()) ? 'line-clamp-2' : 'truncate',
-                  cancelled && 'line-through'
+                  face.titleLines === 2 && /\s/.test(String(b.title || '').trim()) ? 'tw-line-clamp-2' : 'tw-truncate',
+                  cancelled && 'tw-line-through'
                 )}
               >
                 {b.title || 'Booking'}
               </span>
-              {face.showSecond ? <span className="truncate tabular-nums opacity-80">{second}</span> : null}
+              {face.showSecond ? <span className="tw-truncate tw-tabular-nums tw-opacity-80">{second}</span> : null}
             </button>
           );
         })}

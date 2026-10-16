@@ -218,7 +218,10 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   };
 
   const card = p.surface !== 'plain';
-  const frame = cn('flex flex-col', card ? 'border border-[color:var(--lk-border,var(--sc-border))] p-6' : 'p-1');
+  const frame = cn(
+    'tw-flex tw-flex-col',
+    card ? 'tw-border tw-border-[color:var(--lk-border,var(--sc-border))] tw-p-6' : 'tw-p-1'
+  );
   const frameStyle = card
     ? {
         borderRadius: 'var(--lk-radius,calc(var(--sc-radius) + 4px))',
@@ -231,21 +234,26 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
 
   let body;
   if (!count) {
-    body = <p className="m-0 py-8 text-center text-sm text-muted-foreground">No questions yet</p>;
+    body = (
+      <p className="tw-m-0 tw-py-8 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">No questions yet</p>
+    );
   } else if (complete) {
     body = (
-      <div className="flex flex-col items-center gap-3 py-8 text-center" data-complete="">
+      <div className="tw-flex tw-flex-col tw-items-center tw-gap-3 tw-py-8 tw-text-center" data-complete="">
         <span
-          className="flex h-12 w-12 items-center justify-center rounded-full [&_svg]:size-6"
+          className="tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-full [&_svg]:tw-size-6"
           style={{ background: `color-mix(in srgb, ${ACCENT} 12%, transparent)`, color: ACCENT }}
         >
           <CircleCheck />
         </span>
-        <h3 className="m-0 text-lg font-semibold text-[color:var(--lk-title,var(--sc-foreground))]" style={titleStyle}>
+        <h3
+          className="tw-m-0 tw-text-ui2-lg tw-font-semibold tw-text-[color:var(--lk-title,var(--sc-foreground))]"
+          style={titleStyle}
+        >
           {String(p.completeTitle ?? '') || 'Thanks for your answers'}
         </h3>
         {p.completeText ? (
-          <p className="m-0 max-w-sm text-sm text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
+          <p className="tw-m-0 tw-max-w-sm tw-text-ui2-sm tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
             {String(p.completeText)}
           </p>
         ) : null}
@@ -259,9 +267,9 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
     body = (
       <>
         {p.showProgress !== false ? (
-          <div className="mb-5 flex flex-col gap-2">
-            <div className="flex items-center justify-between text-xs text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
-              <span className="tabular-nums">{`Question ${at + 1} of ${count}`}</span>
+          <div className="tw-mb-5 tw-flex tw-flex-col tw-gap-2">
+            <div className="tw-flex tw-items-center tw-justify-between tw-text-xs tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
+              <span className="tw-tabular-nums">{`Question ${at + 1} of ${count}`}</span>
               {!item.required ? <span>Optional</span> : null}
             </div>
             <div
@@ -271,10 +279,10 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
               aria-valuemax={count}
               aria-valuenow={at + 1}
               aria-valuetext={`Question ${at + 1} of ${count}`}
-              className="h-1.5 w-full overflow-hidden rounded-full bg-[color:var(--sc-muted)]"
+              className="tw-h-1.5 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-[color:var(--sc-muted)]"
             >
               <div
-                className="h-full rounded-full transition-[width] duration-300 ease-out"
+                className="tw-h-full tw-rounded-full tw-transition-[width] tw-duration-300 tw-ease-out"
                 style={{ width: `${percent}%`, background: ACCENT }}
               />
             </div>
@@ -286,22 +294,22 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
           onKeyDown={onKeyDown}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
-          className="m-0 flex min-w-0 flex-col gap-4 border-0 p-0 duration-200 animate-in fade-in slide-in-from-right-2"
+          className="tw-m-0 tw-flex tw-min-w-0 tw-flex-col tw-gap-4 tw-border-0 tw-p-0 tw-duration-200 tw-animate-in tw-fade-in tw-slide-in-from-right-2"
         >
-          <legend id={promptId} className="float-left m-0 w-full p-0">
+          <legend id={promptId} className="tw-float-left tw-m-0 tw-w-full tw-p-0">
             <span
-              className="block text-lg font-semibold leading-snug text-[color:var(--lk-title,var(--sc-foreground))]"
+              className="tw-block tw-text-ui2-lg tw-font-semibold tw-leading-snug tw-text-[color:var(--lk-title,var(--sc-foreground))]"
               style={titleStyle}
             >
               {item.prompt}
               {item.required ? (
-                <span className="ml-1 text-[color:var(--sc-destructive)]" aria-hidden="true">
+                <span className="tw-ml-1 tw-text-[color:var(--sc-destructive)]" aria-hidden="true">
                   *
                 </span>
               ) : null}
             </span>
             {item.description ? (
-              <span className="mt-1 block text-sm text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
+              <span className="tw-mt-1 tw-block tw-text-ui2-sm tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
                 {item.description}
               </span>
             ) : null}
@@ -324,20 +332,20 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
             <p
               id={errorId}
               role="alert"
-              className="m-0 flex items-center gap-1.5 text-sm text-[color:var(--sc-destructive)]"
+              className="tw-m-0 tw-flex tw-items-center tw-gap-1.5 tw-text-ui2-sm tw-text-[color:var(--sc-destructive)]"
             >
-              <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <AlertCircle className="tw-h-4 tw-w-4 tw-shrink-0" aria-hidden="true" />
               {error}
             </p>
           ) : null}
         </fieldset>
-        <div className="mt-6 flex items-center gap-2">
+        <div className="tw-mt-6 tw-flex tw-items-center tw-gap-2">
           {at > 0 ? (
             <Button variant="outline" disabled={disabled} onClick={() => move(at - 1)}>
               Previous
             </Button>
           ) : null}
-          <div className="ml-auto flex items-center gap-2">
+          <div className="tw-ml-auto tw-flex tw-items-center tw-gap-2">
             {!item.required && !last ? (
               <Button variant="ghost" disabled={disabled} onClick={skip}>
                 Skip
@@ -347,7 +355,7 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
               <Button
                 disabled={disabled}
                 onClick={submit}
-                className="bg-[color:var(--lk-accent,var(--sc-primary))] hover:bg-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-primary))_90%,transparent)]"
+                className="tw-bg-[color:var(--lk-accent,var(--sc-primary))] hover:tw-bg-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-primary))_90%,transparent)]"
               >
                 {String(p.submitLabel ?? '') || 'Submit'}
               </Button>
@@ -355,7 +363,7 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
               <Button
                 disabled={disabled}
                 onClick={next}
-                className="bg-[color:var(--lk-accent,var(--sc-primary))] hover:bg-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-primary))_90%,transparent)]"
+                className="tw-bg-[color:var(--lk-accent,var(--sc-primary))] hover:tw-bg-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-primary))_90%,transparent)]"
               >
                 Next
               </Button>

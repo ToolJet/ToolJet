@@ -12,7 +12,7 @@ import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 export const Icon = ({ name, className, size = 16 }: { name: string; className?: string; size?: number }) =>
   name ? (
-    <span className={cn('inline-flex shrink-0 items-center justify-center', className)} aria-hidden="true">
+    <span className={cn('tw-inline-flex tw-shrink-0 tw-items-center tw-justify-center', className)} aria-hidden="true">
       <TablerIcon iconName={name} style={{ width: size, height: size }} stroke={1.75} />
     </span>
   ) : null;
@@ -27,7 +27,7 @@ export const useLive = <T,>(value: T): MutableRefObject<T> => {
 // ---- Dropdown menu primitives (shadcn new-york) --------------------------------------------------------------------
 
 const MENU_CONTENT =
-  'z-[1060] max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden border p-1 shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 rounded-[var(--lk-menu-radius,calc(var(--sc-radius)-2px))] border-[color:var(--lk-menu-border,var(--sc-border))] bg-[color:var(--lk-menu-bg,var(--sc-popover))] text-[color:var(--lk-item-fg,var(--sc-popover-foreground))]';
+  'tw-z-[1060] tw-max-h-[var(--radix-dropdown-menu-content-available-height)] tw-min-w-[8rem] tw-overflow-y-auto tw-overflow-x-hidden tw-border tw-p-1 tw-shadow-md tw-outline-none data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95 data-[side=bottom]:tw-slide-in-from-top-2 data-[side=left]:tw-slide-in-from-right-2 data-[side=right]:tw-slide-in-from-left-2 data-[side=top]:tw-slide-in-from-bottom-2 tw-rounded-[var(--lk-menu-radius,calc(var(--sc-radius)-2px))] tw-border-[color:var(--lk-menu-border,var(--sc-border))] tw-bg-[color:var(--lk-menu-bg,var(--sc-popover))] tw-text-[color:var(--lk-item-fg,var(--sc-popover-foreground))]';
 
 export const MenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
@@ -45,18 +45,18 @@ export const MenuContent = React.forwardRef<
 MenuContent.displayName = 'MenuContent';
 
 const MENU_ITEM =
-  'relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50';
+  'tw-relative tw-flex tw-cursor-default tw-select-none tw-items-center tw-gap-2 tw-rounded-ui2-sm tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-outline-none tw-transition-colors data-[disabled]:tw-pointer-events-none data-[disabled]:tw-opacity-50';
 const ITEM_HOVER =
-  'data-[highlighted]:bg-[color:var(--lk-item-hover,var(--sc-accent))] data-[highlighted]:text-[color:var(--lk-item-hover-fg,var(--sc-accent-foreground))]';
+  'data-[highlighted]:tw-bg-[color:var(--lk-item-hover,var(--sc-accent))] data-[highlighted]:tw-text-[color:var(--lk-item-hover-fg,var(--sc-accent-foreground))]';
 const ITEM_DESTRUCTIVE =
-  'text-[color:var(--lk-destructive,var(--sc-destructive))] data-[highlighted]:bg-[color:color-mix(in_srgb,var(--lk-destructive,var(--sc-destructive))_10%,transparent)] data-[highlighted]:text-[color:var(--lk-destructive,var(--sc-destructive))]';
-const MUTED = 'text-[color:var(--lk-desc,var(--sc-muted-foreground))]';
+  'tw-text-[color:var(--lk-destructive,var(--sc-destructive))] data-[highlighted]:tw-bg-[color:color-mix(in_srgb,var(--lk-destructive,var(--sc-destructive))_10%,transparent)] data-[highlighted]:tw-text-[color:var(--lk-destructive,var(--sc-destructive))]';
+const MUTED = 'tw-text-[color:var(--lk-desc,var(--sc-muted-foreground))]';
 
 export const MenuSeparator = () => (
-  <DropdownMenuPrimitive.Separator className="-mx-1 my-1 h-px bg-[color:var(--lk-menu-border,var(--sc-border))]" />
+  <DropdownMenuPrimitive.Separator className="-tw-mx-1 tw-my-1 tw-h-px tw-bg-[color:var(--lk-menu-border,var(--sc-border))]" />
 );
 export const MenuLabel = ({ children }: { children?: ReactNode }) => (
-  <DropdownMenuPrimitive.Label className="px-2 py-1.5 text-xs font-medium text-[color:var(--lk-desc,var(--sc-muted-foreground))]">
+  <DropdownMenuPrimitive.Label className="tw-px-2 tw-py-1.5 tw-text-xs tw-font-medium tw-text-[color:var(--lk-desc,var(--sc-muted-foreground))]">
     {children}
   </DropdownMenuPrimitive.Label>
 );
@@ -83,14 +83,14 @@ export interface MenuRowsProps<T extends MenuRowsItem> {
 export const MenuRows = <T extends MenuRowsItem>({ rows, loading, onPick, activeKey }: MenuRowsProps<T>) => {
   if (loading) {
     return (
-      <div className="flex flex-col gap-1 p-1" aria-busy="true">
+      <div className="tw-flex tw-flex-col tw-gap-1 tw-p-1" aria-busy="true">
         {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className={cn('h-6', i === 2 ? 'w-3/5' : 'w-full')} />
+          <Skeleton key={i} className={cn('tw-h-6', i === 2 ? 'tw-w-3/5' : 'tw-w-full')} />
         ))}
       </div>
     );
   }
-  if (!rows.length) return <div className={cn('px-2 py-1.5 text-sm', MUTED)}>No options</div>;
+  if (!rows.length) return <div className={cn('tw-px-2 tw-py-1.5 tw-text-ui2-sm', MUTED)}>No options</div>;
   return rows.map((row, i) => {
     if (row.kind === 'separator') return <MenuSeparator key={`s${i}`} />;
     if (row.kind === 'label') return <MenuLabel key={`l${i}`}>{row.label}</MenuLabel>;
@@ -102,28 +102,28 @@ export const MenuRows = <T extends MenuRowsItem>({ rows, loading, onPick, active
         onSelect={() => onPick(row)}
         className={cn(
           MENU_ITEM,
-          row.description && 'items-start',
+          row.description && 'tw-items-start',
           row.destructive ? ITEM_DESTRUCTIVE : ITEM_HOVER,
-          active && 'font-medium'
+          active && 'tw-font-medium'
         )}
       >
         {row.icon ? (
           <Icon
             name={row.icon}
             className={cn(
-              row.description && 'mt-0.5',
-              !row.destructive && 'text-[color:var(--lk-icon,var(--sc-muted-foreground))]'
+              row.description && 'tw-mt-0.5',
+              !row.destructive && 'tw-text-[color:var(--lk-icon,var(--sc-muted-foreground))]'
             )}
           />
         ) : null}
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate">{row.label}</span>
-          {row.description ? <span className={cn('text-xs', MUTED)}>{row.description}</span> : null}
+        <span className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col">
+          <span className="tw-truncate">{row.label}</span>
+          {row.description ? <span className={cn('tw-text-xs', MUTED)}>{row.description}</span> : null}
         </span>
         {row.shortcut ? (
-          <span className={cn('ml-auto pl-4 text-xs tracking-widest', MUTED)}>{row.shortcut}</span>
+          <span className={cn('tw-ml-auto tw-pl-4 tw-text-xs tw-tracking-widest', MUTED)}>{row.shortcut}</span>
         ) : null}
-        {active ? <Check className="ml-auto h-4 w-4" /> : null}
+        {active ? <Check className="tw-ml-auto tw-h-4 tw-w-4" /> : null}
       </DropdownMenuPrimitive.Item>
     );
   });

@@ -55,9 +55,9 @@ describe('UI 2.0 Toggle group', () => {
   test('[ShadToggleGroup-PROP-002] fullWidth stretches the group across the widget', async () => {
     render({ properties: { fullWidth: binding('{{true}}') } });
 
-    await waitFor(() => expect(screen.getByRole('group')).toHaveClass('w-full'));
+    await waitFor(() => expect(screen.getByRole('group')).toHaveClass('tw-w-full'));
     render({ properties: { fullWidth: binding('{{false}}') } });
-    await waitFor(() => expect(screen.getByRole('group')).not.toHaveClass('w-full'));
+    await waitFor(() => expect(screen.getByRole('group')).not.toHaveClass('tw-w-full'));
   });
 
   test('[ShadToggleGroup-DEF-002] a bound list of 10k options draws at most 100 buttons', async () => {

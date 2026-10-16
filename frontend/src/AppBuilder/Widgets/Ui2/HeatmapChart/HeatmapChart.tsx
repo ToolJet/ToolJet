@@ -43,18 +43,21 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
     <Shell {...props}>
       <div
         style={{ height }}
-        className="flex w-full flex-col overflow-hidden text-xs"
+        className="tw-flex tw-w-full tw-flex-col tw-overflow-hidden tw-text-xs"
         onDoubleClick={click.onDoubleClick}
       >
         {empty ? (
           emptyView
         ) : (
           <ChartBoundary resetKey={p} fallback={emptyView}>
-            <div className="grid min-h-0 flex-1" style={{ gridTemplateColumns: columns, gap, gridAutoRows: '1fr' }}>
+            <div
+              className="tw-grid tw-min-h-0 tw-flex-1"
+              style={{ gridTemplateColumns: columns, gap, gridAutoRows: '1fr' }}
+            >
               {grid.ys.map((y) => (
                 <React.Fragment key={y}>
                   <div
-                    className="flex items-center truncate pr-2 text-[color:var(--lk-axis,var(--sc-muted-foreground))]"
+                    className="tw-flex tw-items-center tw-truncate tw-pr-2 tw-text-[color:var(--lk-axis,var(--sc-muted-foreground))]"
                     title={y}
                   >
                     {y}
@@ -69,9 +72,8 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
                         title={`${y} · ${x}: ${value === null ? 'no data' : format(value)}`}
                         data-strength={strength === null ? '' : strength.toFixed(2)}
                         onClick={() => onCell(y, x, value)}
-                        // The shade goes through a utility class: the pack's button reset (made !important) beat an
-                        // inline background, and every cell drew transparent.
-                        className="flex min-h-0 min-w-0 items-center justify-center rounded-[4px] bg-[color:var(--heat)] text-[11px] tabular-nums text-[color:var(--heat-fg)] outline-none transition-[filter] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-[color:var(--sc-ring)]"
+                        // The shade arrives as --heat, which the cell's background class reads.
+                        className="tw-flex tw-min-h-0 tw-min-w-0 tw-items-center tw-justify-center tw-rounded-[4px] tw-bg-[color:var(--heat)] tw-text-[11px] tw-tabular-nums tw-text-[color:var(--heat-fg)] tw-outline-none tw-transition-[filter] hover:tw-brightness-95 focus-visible:tw-ring-2 focus-visible:tw-ring-[color:var(--sc-ring)]"
                         style={
                           {
                             '--heat': shade(strength),
@@ -89,24 +91,27 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
                 </React.Fragment>
               ))}
             </div>
-            <div className="grid pt-1.5" style={{ gridTemplateColumns: columns, columnGap: gap }}>
+            <div className="tw-grid tw-pt-1.5" style={{ gridTemplateColumns: columns, columnGap: gap }}>
               <div />
               {grid.xs.map((x, i) => (
-                <div key={x} className="truncate text-center text-[color:var(--lk-axis,var(--sc-muted-foreground))]">
+                <div
+                  key={x}
+                  className="tw-truncate tw-text-center tw-text-[color:var(--lk-axis,var(--sc-muted-foreground))]"
+                >
                   {i % labelEvery === 0 ? x : ''}
                 </div>
               ))}
             </div>
             {p.showLegend !== false ? (
-              <div className="flex items-center justify-end gap-2 pt-2 text-[color:var(--lk-legend,var(--sc-muted-foreground))]">
-                <span className="tabular-nums">{format(grid.min)}</span>
+              <div className="tw-flex tw-items-center tw-justify-end tw-gap-2 tw-pt-2 tw-text-[color:var(--lk-legend,var(--sc-muted-foreground))]">
+                <span className="tw-tabular-nums">{format(grid.min)}</span>
                 <span
-                  className="h-2 w-24 rounded-full"
+                  className="tw-h-2 tw-w-24 tw-rounded-full"
                   style={{
                     background: `linear-gradient(to right, ${shade(0)}, ${shade(1)})`,
                   }}
                 />
-                <span className="tabular-nums">{format(grid.max)}</span>
+                <span className="tw-tabular-nums">{format(grid.max)}</span>
               </div>
             ) : null}
           </ChartBoundary>

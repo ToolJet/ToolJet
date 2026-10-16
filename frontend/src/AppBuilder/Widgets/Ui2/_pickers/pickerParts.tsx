@@ -16,15 +16,15 @@ import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 // ---- Shared pieces -------------------------------------------------------------------------------------------------
 
-export const PLACEHOLDER = 'text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
-export const MUTED = 'text-[color:var(--sc-muted-foreground)]';
+export const PLACEHOLDER = 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
+export const MUTED = 'tw-text-[color:var(--sc-muted-foreground)]';
 export const MENU_SURFACE =
-  'bg-[color:var(--lk-menu-bg,var(--sc-popover))] text-[color:var(--lk-menu-fg,var(--sc-popover-foreground))]';
+  'tw-bg-[color:var(--lk-menu-bg,var(--sc-popover))] tw-text-[color:var(--lk-menu-fg,var(--sc-popover-foreground))]';
 const CHIP =
-  'bg-[color:var(--lk-chip-bg,var(--sc-secondary))] text-[color:var(--lk-chip-fg,var(--sc-secondary-foreground))]';
+  'tw-bg-[color:var(--lk-chip-bg,var(--sc-secondary))] tw-text-[color:var(--lk-chip-fg,var(--sc-secondary-foreground))]';
 // A small icon button inside a field (remove a chip, clear): p-0 and no border keep ToolJet's global button styles out.
 const ICON_BUTTON =
-  'inline-flex shrink-0 items-center justify-center rounded-sm border-0 bg-transparent p-0.5 opacity-60 outline-none transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-ring';
+  'tw-inline-flex tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-sm tw-border-0 tw-bg-transparent tw-p-0.5 tw-opacity-60 tw-outline-none tw-transition-opacity hover:tw-opacity-100 focus-visible:tw-opacity-100 focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring';
 
 export const isText = (v: unknown): v is string | number => typeof v === 'string' || typeof v === 'number';
 /** Keeps a pointer press on a control inside a trigger from opening or closing the trigger's menu. */
@@ -40,7 +40,10 @@ const Command = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive
     ref={ref}
-    className={cn('flex h-full w-full flex-col overflow-hidden rounded-md bg-transparent text-inherit', className)}
+    className={cn(
+      'tw-flex tw-h-full tw-w-full tw-flex-col tw-overflow-hidden tw-rounded-ui2-md tw-bg-transparent tw-text-inherit',
+      className
+    )}
     {...props}
   />
 ));
@@ -50,12 +53,12 @@ const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
-  <div className="flex items-center border-b border-[color:var(--sc-border)] px-3" cmdk-input-wrapper="">
-    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+  <div className="tw-flex tw-items-center tw-border-b tw-border-[color:var(--sc-border)] tw-px-3" cmdk-input-wrapper="">
+    <Search className="tw-mr-2 tw-h-4 tw-w-4 tw-shrink-0 tw-opacity-50" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        'flex h-10 w-full rounded-md border-0 bg-transparent px-0 py-3 text-sm text-inherit shadow-none outline-none placeholder:text-[color:var(--sc-muted-foreground)] focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50',
+        'tw-flex tw-h-10 tw-w-full tw-rounded-ui2-md tw-border-0 tw-bg-transparent tw-px-0 tw-py-3 tw-text-ui2-sm tw-text-inherit tw-shadow-none tw-outline-none placeholder:tw-text-[color:var(--sc-muted-foreground)] focus:tw-outline-none focus:tw-ring-0 disabled:tw-cursor-not-allowed disabled:tw-opacity-50',
         className
       )}
       {...props}
@@ -70,7 +73,7 @@ const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={cn('max-h-[300px] overflow-y-auto overflow-x-hidden', className)}
+    className={cn('tw-max-h-[300px] tw-overflow-y-auto tw-overflow-x-hidden', className)}
     {...props}
   />
 ));
@@ -83,7 +86,7 @@ export const CommandGroup = React.forwardRef<
   <CommandPrimitive.Group
     ref={ref}
     className={cn(
-      'overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-[color:var(--sc-muted-foreground)]',
+      'tw-overflow-hidden tw-p-1 [&_[cmdk-group-heading]]:tw-px-2 [&_[cmdk-group-heading]]:tw-py-1.5 [&_[cmdk-group-heading]]:tw-text-xs [&_[cmdk-group-heading]]:tw-font-medium [&_[cmdk-group-heading]]:tw-text-[color:var(--sc-muted-foreground)]',
       className
     )}
     {...props}
@@ -98,7 +101,7 @@ export const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[selected=true]:bg-[color:var(--lk-hl,var(--sc-accent))] data-[selected=true]:text-[color:var(--lk-menu-fg,var(--sc-accent-foreground))]',
+      'tw-relative tw-flex tw-cursor-default tw-select-none tw-items-center tw-gap-2 tw-rounded-ui2-sm tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-outline-none data-[disabled=true]:tw-pointer-events-none data-[disabled=true]:tw-opacity-50 data-[selected=true]:tw-bg-[color:var(--lk-hl,var(--sc-accent))] data-[selected=true]:tw-text-[color:var(--lk-menu-fg,var(--sc-accent-foreground))]',
       className
     )}
     {...props}
@@ -110,23 +113,23 @@ CommandItem.displayName = 'CommandItem';
 export const OptionIcon = ({ icon }: { icon: unknown }) => {
   if (typeof icon !== 'string' || !icon.trim()) return null;
   if (/^(https?:|data:image\/|\/)/.test(icon)) {
-    return <img src={icon} alt="" className="h-4 w-4 shrink-0 rounded-sm object-cover" />;
+    return <img src={icon} alt="" className="tw-h-4 tw-w-4 tw-shrink-0 tw-rounded-ui2-sm tw-object-cover" />;
   }
   if (/^Icon[A-Z0-9]/.test(icon)) {
     return <TablerIcon iconName={icon} style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.7 }} stroke={1.75} />;
   }
   return (
-    <span aria-hidden className="w-4 shrink-0 text-center leading-none">
+    <span aria-hidden className="tw-w-4 tw-shrink-0 tw-text-center tw-leading-none">
       {icon.slice(0, 4)}
     </span>
   );
 };
 
 const OptionText = ({ option }: { option: Option }) => (
-  <span className="flex min-w-0 flex-1 flex-col">
-    <span className="truncate">{option.label}</span>
+  <span className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col">
+    <span className="tw-truncate">{option.label}</span>
     {isText(option.description) && String(option.description) ? (
-      <span className={cn('truncate text-xs', MUTED)}>{String(option.description)}</span>
+      <span className={cn('tw-truncate tw-text-xs', MUTED)}>{String(option.description)}</span>
     ) : null}
   </span>
 );
@@ -190,11 +193,11 @@ export const OptionsMenu = ({
       ) : null}
       <CommandList>
         {properties.optionsLoadingState === true ? (
-          <div className="flex justify-center py-6">
+          <div className="tw-flex tw-justify-center tw-py-6">
             <Spinner />
           </div>
         ) : entries.length === 0 ? (
-          <div className={cn('py-6 text-center text-sm', MUTED)}>
+          <div className={cn('tw-py-6 tw-text-center tw-text-ui2-sm', MUTED)}>
             {String(properties.emptyText ?? 'No results found.')}
           </div>
         ) : (
@@ -215,17 +218,21 @@ export const OptionsMenu = ({
                       {multiple ? (
                         <span
                           className={cn(
-                            'flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-[color:var(--sc-primary)]',
-                            on ? 'bg-[color:var(--sc-primary)] text-[color:var(--sc-primary-foreground)]' : 'opacity-50'
+                            'tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-sm tw-border tw-border-[color:var(--sc-primary)]',
+                            on
+                              ? 'tw-bg-[color:var(--sc-primary)] tw-text-[color:var(--sc-primary-foreground)]'
+                              : 'tw-opacity-50'
                           )}
                         >
-                          {on ? <Check className="h-3 w-3" /> : null}
+                          {on ? <Check className="tw-h-3 tw-w-3" /> : null}
                         </span>
                       ) : null}
                       <OptionIcon icon={option.icon} />
                       <OptionText option={option} />
                       {!multiple ? (
-                        <Check className={cn('ml-auto h-4 w-4 shrink-0', on ? 'opacity-100' : 'opacity-0')} />
+                        <Check
+                          className={cn('tw-ml-auto tw-h-4 tw-w-4 tw-shrink-0', on ? 'tw-opacity-100' : 'tw-opacity-0')}
+                        />
                       ) : null}
                     </CommandItem>
                   );
@@ -233,7 +240,7 @@ export const OptionsMenu = ({
               </CommandGroup>
             ))}
             {more > 0 ? (
-              <div className={cn('px-2 py-1.5 text-center text-xs', MUTED)}>
+              <div className={cn('tw-px-2 tw-py-1.5 tw-text-center tw-text-xs', MUTED)}>
                 {`${more} more. Type to narrow the list.`}
               </div>
             ) : null}
@@ -256,7 +263,7 @@ export const ClearButton = ({ onClear, label = 'Clear' }: { onClear: () => void;
       onClear();
     }}
   >
-    <X className="h-3.5 w-3.5" />
+    <X className="tw-h-3.5 tw-w-3.5" />
   </button>
 );
 
@@ -267,8 +274,8 @@ export interface ChipProps {
 }
 
 export const Chip = ({ label, onRemove, removeLabel }: ChipProps) => (
-  <Badge variant="secondary" className={cn('max-w-full gap-1 font-normal', onRemove && 'pr-1', CHIP)}>
-    <span className="max-w-[12rem] truncate">{label}</span>
+  <Badge variant="secondary" className={cn('tw-max-w-full tw-gap-1 tw-font-normal', onRemove && 'tw-pr-1', CHIP)}>
+    <span className="tw-max-w-[12rem] tw-truncate">{label}</span>
     {onRemove ? (
       <button
         type="button"
@@ -280,7 +287,7 @@ export const Chip = ({ label, onRemove, removeLabel }: ChipProps) => (
           onRemove();
         }}
       >
-        <X className="h-3 w-3" />
+        <X className="tw-h-3 tw-w-3" />
       </button>
     ) : null}
   </Badge>

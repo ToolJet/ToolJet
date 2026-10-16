@@ -28,7 +28,7 @@ const ChatAvatar = ({ src, name, size = 32 }: { src: string; name: string; size?
         src={src}
         alt=""
         onError={() => setFailed(true)}
-        className="shrink-0 rounded-full object-cover"
+        className="tw-shrink-0 tw-rounded-full tw-object-cover"
         style={{ width: size, height: size }}
       />
     );
@@ -36,7 +36,7 @@ const ChatAvatar = ({ src, name, size = 32 }: { src: string; name: string; size?
   const hue = avatarHue(name);
   return (
     <span
-      className="flex shrink-0 select-none items-center justify-center rounded-full text-xs font-semibold"
+      className="tw-flex tw-shrink-0 tw-select-none tw-items-center tw-justify-center tw-rounded-full tw-text-xs tw-font-semibold"
       style={{
         width: size,
         height: size,
@@ -88,8 +88,8 @@ const CopyButton = ({ value, align }: { value: string; align: 'start' | 'end' })
         }
       }}
       className={cn(
-        'inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity duration-150 hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/msg:opacity-100 [&_svg]:size-3.5',
-        align === 'end' ? 'ml-auto' : ''
+        'tw-inline-flex tw-h-6 tw-w-6 tw-items-center tw-justify-center tw-rounded-ui2-md tw-text-ui2-muted-foreground tw-opacity-0 tw-transition-opacity tw-duration-150 hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 group-hover/msg:tw-opacity-100 [&_svg]:tw-size-3.5',
+        align === 'end' ? 'tw-ml-auto' : ''
       )}
     >
       {copied ? <Check /> : <Copy />}
@@ -110,25 +110,32 @@ export const MessageRow = React.memo(({ row, showAvatars, showTimestamps }: Mess
   return (
     <div
       className={cn(
-        'group/msg flex w-full items-end gap-2.5',
-        mine ? 'flex-row-reverse' : 'flex-row',
-        row.first ? 'mt-4' : 'mt-1'
+        'group/msg tw-flex tw-w-full tw-items-end tw-gap-2.5',
+        mine ? 'tw-flex-row-reverse' : 'tw-flex-row',
+        row.first ? 'tw-mt-4' : 'tw-mt-1'
       )}
       data-message-key={row.key}
       data-type={row.type}
       data-align={align}
     >
       {showAvatars ? (
-        <div className="mb-6 w-8 shrink-0">
+        <div className="tw-mb-6 tw-w-8 tw-shrink-0">
           {row.last ? <ChatAvatar src={row.who.avatar} name={row.who.name} /> : null}
         </div>
       ) : null}
-      <div className={cn('flex min-w-0 max-w-[82%] flex-col gap-1', mine ? 'items-end' : 'items-start')}>
+      <div
+        className={cn(
+          'tw-flex tw-min-w-0 tw-max-w-[82%] tw-flex-col tw-gap-1',
+          mine ? 'tw-items-end' : 'tw-items-start'
+        )}
+      >
         {row.first ? (
-          <div className={cn('flex items-baseline gap-2 px-1 text-xs', mine ? 'flex-row-reverse' : '')}>
-            <span className="font-medium text-[color:var(--lk-name,var(--sc-foreground))]">{row.who.name}</span>
+          <div
+            className={cn('tw-flex tw-items-baseline tw-gap-2 tw-px-1 tw-text-xs', mine ? 'tw-flex-row-reverse' : '')}
+          >
+            <span className="tw-font-medium tw-text-[color:var(--lk-name,var(--sc-foreground))]">{row.who.name}</span>
             {showTimestamps ? (
-              <span className="tabular-nums text-[color:var(--lk-muted,var(--sc-muted-foreground))]">
+              <span className="tw-tabular-nums tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))]">
                 {formatTimestamp(row.timestamp === NOW_LITERAL ? LOADED_AT : row.timestamp)}
               </span>
             ) : null}
@@ -136,20 +143,20 @@ export const MessageRow = React.memo(({ row, showAvatars, showTimestamps }: Mess
         ) : null}
         <div
           className={cn(
-            'min-w-0 max-w-full break-words rounded-2xl px-3.5 py-2 text-sm leading-relaxed',
+            'tw-min-w-0 tw-max-w-full tw-break-words tw-rounded-2xl tw-px-3.5 tw-py-2 tw-text-ui2-sm tw-leading-relaxed',
             mine &&
-              'whitespace-pre-wrap rounded-br-md bg-[color:var(--lk-accent,var(--sc-primary))] text-[color:var(--sc-primary-foreground)]',
+              'tw-whitespace-pre-wrap tw-rounded-br-ui2-md tw-bg-[color:var(--lk-accent,var(--sc-primary))] tw-text-[color:var(--sc-primary-foreground)]',
             !mine &&
               !isError &&
-              'rounded-bl-md bg-[color:var(--lk-bubble,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-foreground))]',
+              'tw-rounded-bl-ui2-md tw-bg-[color:var(--lk-bubble,var(--sc-muted))] tw-text-[color:var(--lk-fg,var(--sc-foreground))]',
             isError &&
-              'flex items-start gap-2 rounded-bl-md border border-[color:color-mix(in_srgb,var(--sc-destructive)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--sc-destructive)_8%,transparent)] text-[color:var(--sc-destructive)]'
+              'tw-flex tw-items-start tw-gap-2 tw-rounded-bl-ui2-md tw-border tw-border-[color:color-mix(in_srgb,var(--sc-destructive)_35%,transparent)] tw-bg-[color:color-mix(in_srgb,var(--sc-destructive)_8%,transparent)] tw-text-[color:var(--sc-destructive)]'
           )}
         >
-          {isError ? <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /> : null}
-          {mine || isError ? <span className="min-w-0">{row.text}</span> : <Markdown content={row.text} />}
+          {isError ? <AlertCircle className="tw-mt-0.5 tw-h-4 tw-w-4 tw-shrink-0" aria-hidden="true" /> : null}
+          {mine || isError ? <span className="tw-min-w-0">{row.text}</span> : <Markdown content={row.text} />}
         </div>
-        <div className={cn('flex h-6 w-full px-0.5', mine ? 'justify-end' : 'justify-start')}>
+        <div className={cn('tw-flex tw-h-6 tw-w-full tw-px-0.5', mine ? 'tw-justify-end' : 'tw-justify-start')}>
           {row.text ? <CopyButton value={row.text} align={align} /> : null}
         </div>
       </div>
@@ -159,13 +166,13 @@ export const MessageRow = React.memo(({ row, showAvatars, showTimestamps }: Mess
 MessageRow.displayName = 'MessageRow';
 
 export const Typing = ({ name, avatar, showAvatars }: { name: string; avatar: string; showAvatars: boolean }) => (
-  <div className="mt-4 flex items-end gap-2.5" role="status" aria-label={`${name} is typing`}>
+  <div className="tw-mt-4 tw-flex tw-items-end tw-gap-2.5" role="status" aria-label={`${name} is typing`}>
     {showAvatars ? (
-      <div className="mb-1 w-8 shrink-0">
+      <div className="tw-mb-1 tw-w-8 tw-shrink-0">
         <ChatAvatar src={avatar} name={name} />
       </div>
     ) : null}
-    <div className="flex h-9 items-center gap-1 rounded-2xl rounded-bl-md bg-[color:var(--lk-bubble,var(--sc-muted))] px-4">
+    <div className="tw-flex tw-h-9 tw-items-center tw-gap-1 tw-rounded-2xl tw-rounded-bl-ui2-md tw-bg-[color:var(--lk-bubble,var(--sc-muted))] tw-px-4">
       {[0, 1, 2].map((i) => (
         <span key={i} className="sc-typing-dot" />
       ))}
@@ -174,13 +181,13 @@ export const Typing = ({ name, avatar, showAvatars }: { name: string; avatar: st
 );
 
 export const HistorySkeleton = () => (
-  <div className="flex flex-col gap-5 pt-4" aria-busy="true" aria-label="Loading messages">
+  <div className="tw-flex tw-flex-col tw-gap-5 tw-pt-4" aria-busy="true" aria-label="Loading messages">
     {[0, 1, 2].map((i) => (
-      <div key={i} className={cn('flex items-end gap-2.5', i === 1 ? 'flex-row-reverse' : '')}>
-        <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
-        <div className={cn('flex flex-col gap-1.5', i === 1 ? 'items-end' : '')} style={{ width: '60%' }}>
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className={cn('h-14 w-full rounded-2xl')} />
+      <div key={i} className={cn('tw-flex tw-items-end tw-gap-2.5', i === 1 ? 'tw-flex-row-reverse' : '')}>
+        <Skeleton className="tw-h-8 tw-w-8 tw-shrink-0 tw-rounded-full" />
+        <div className={cn('tw-flex tw-flex-col tw-gap-1.5', i === 1 ? 'tw-items-end' : '')} style={{ width: '60%' }}>
+          <Skeleton className="tw-h-3 tw-w-20" />
+          <Skeleton className={cn('tw-h-14 tw-w-full tw-rounded-2xl')} />
         </div>
       </div>
     ))}
@@ -204,7 +211,7 @@ export const IconButton = ({
     title={label}
     onClick={onClick}
     disabled={disabled}
-    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4"
+    className="tw-inline-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-rounded-ui2-md tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring disabled:tw-pointer-events-none disabled:tw-opacity-50 [&_svg]:tw-size-4"
   >
     {children}
   </button>

@@ -118,7 +118,7 @@ export const MapSearch = ({
           if (e.key === 'Escape') setResults([]);
         }}
       />
-      {searching ? <Spinner className="sc-map-search-spin h-3.5 w-3.5" /> : null}
+      {searching ? <Spinner className="sc-map-search-spin tw-h-3.5 tw-w-3.5" /> : null}
       {results.length ? (
         <ul className="sc-map-search-results" role="listbox">
           {results.map((r, i) => (

@@ -22,18 +22,22 @@ import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/typ
 
 const VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'];
 
-export const ICON_SIZE: Record<string, string> = { sm: 'h-8 w-8', default: 'h-9 w-9', lg: 'h-10 w-10' };
+export const ICON_SIZE: Record<string, string> = {
+  sm: 'tw-h-8 tw-w-8',
+  default: 'tw-h-9 tw-w-9',
+  lg: 'tw-h-10 tw-w-10',
+};
 
 /** Trigger colours: each variant has its own, so a style replaces them only when set (as ShadButton). */
 export const triggerLook = (styles: Resolved | undefined) =>
   cn(
-    whenSet(styles, 'backgroundColor', 'bg-[color:var(--lk-bg)]'),
+    whenSet(styles, 'backgroundColor', 'tw-bg-[color:var(--lk-bg)]'),
     isSet(styles?.hoverBackgroundColor)
-      ? 'hover:bg-[color:var(--lk-hover)]'
-      : whenSet(styles, 'backgroundColor', 'hover:bg-[color:color-mix(in_srgb,var(--lk-bg)_88%,#000)]'),
-    whenSet(styles, 'textColor', 'text-[color:var(--lk-fg)] hover:text-[color:var(--lk-fg)]'),
-    whenSet(styles, 'borderColor', 'border border-[color:var(--lk-border)]'),
-    whenSet(styles, 'borderRadius', 'rounded-[var(--lk-radius)]')
+      ? 'hover:tw-bg-[color:var(--lk-hover)]'
+      : whenSet(styles, 'backgroundColor', 'hover:tw-bg-[color:color-mix(in_srgb,var(--lk-bg)_88%,#000)]'),
+    whenSet(styles, 'textColor', 'tw-text-[color:var(--lk-fg)] hover:tw-text-[color:var(--lk-fg)]'),
+    whenSet(styles, 'borderColor', 'tw-border tw-border-[color:var(--lk-border)]'),
+    whenSet(styles, 'borderRadius', 'tw-rounded-[var(--lk-radius)]')
   );
 
 export const ShadDropdownMenu = (props: WidgetProps) => {
@@ -69,7 +73,9 @@ export const ShadDropdownMenu = (props: WidgetProps) => {
     setExposedVariable('lastClickedOption', option);
     fireEvent('onSelect');
   };
-  const spinner = <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />;
+  const spinner = (
+    <span className="tw-h-4 tw-w-4 tw-animate-spin tw-rounded-full tw-border-2 tw-border-current tw-border-t-transparent" />
+  );
   return (
     <Shell {...props}>
       <DropdownMenuPrimitive.Root open={open} onOpenChange={changeOpen} modal={false}>
@@ -81,9 +87,9 @@ export const ShadDropdownMenu = (props: WidgetProps) => {
             title={iconOnly && label ? label : undefined}
             className={cn(
               iconOnly && ICON_SIZE[size],
-              !iconOnly && properties.fullWidth === true && 'w-full justify-between',
+              !iconOnly && properties.fullWidth === true && 'tw-w-full tw-justify-between',
               ['outline', 'ghost', 'secondary'].includes(variant) &&
-                'data-[state=open]:bg-[color:var(--lk-hover,var(--sc-accent))]',
+                'data-[state=open]:tw-bg-[color:var(--lk-hover,var(--sc-accent))]',
               triggerLook(styles)
             )}
           >
@@ -97,11 +103,11 @@ export const ShadDropdownMenu = (props: WidgetProps) => {
               )
             ) : (
               <>
-                <span className="inline-flex min-w-0 items-center gap-2">
+                <span className="tw-inline-flex tw-min-w-0 tw-items-center tw-gap-2">
                   {properties.loadingState ? spinner : <Icon name={triggerIcon} />}
-                  <span className="truncate">{label}</span>
+                  <span className="tw-truncate">{label}</span>
                 </span>
-                {properties.showChevron !== false ? <ChevronDown className="opacity-60" /> : null}
+                {properties.showChevron !== false ? <ChevronDown className="tw-opacity-60" /> : null}
               </>
             )}
           </Button>
@@ -110,12 +116,12 @@ export const ShadDropdownMenu = (props: WidgetProps) => {
         <MenuContent
           align={['start', 'center', 'end'].includes(properties.align) ? properties.align : 'start'}
           side={['bottom', 'top', 'right', 'left'].includes(properties.side) ? properties.side : 'bottom'}
-          className="w-[var(--lk-menu-width,auto)] min-w-[max(8rem,var(--radix-dropdown-menu-trigger-width))]"
+          className="tw-w-[var(--lk-menu-width,auto)] tw-min-w-[max(8rem,var(--radix-dropdown-menu-trigger-width))]"
           style={lookVars(componentType, styles)}
         >
           {properties.menuLabel ? (
             <>
-              <DropdownMenuPrimitive.Label className="px-2 py-1.5 text-sm font-semibold">
+              <DropdownMenuPrimitive.Label className="tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-font-semibold">
                 {String(properties.menuLabel)}
               </DropdownMenuPrimitive.Label>
               <MenuSeparator />

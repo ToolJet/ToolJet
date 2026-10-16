@@ -38,8 +38,8 @@ export const ShadToggleGroup = (props: WidgetProps) => {
         value={key}
         disabled={busy(properties)}
         className={cn(
-          'rounded-[var(--lk-radius,var(--sc-radius))] bg-[color:var(--lk-bg,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
-          properties.fullWidth === true && 'flex w-full'
+          'tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-bg-[color:var(--lk-bg,var(--sc-muted))] tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
+          properties.fullWidth === true && 'tw-flex tw-w-full'
         )}
         onValueChange={(next) => next && change(next)}
       >
@@ -47,7 +47,7 @@ export const ShadToggleGroup = (props: WidgetProps) => {
           <ToggleGroupItem
             key={String(o.value)}
             value={String(o.value)}
-            className="rounded-[calc(var(--lk-radius,var(--sc-radius))*0.8)] data-[state=on]:bg-[color:var(--lk-on-bg,var(--sc-background))] data-[state=on]:text-[color:var(--lk-on-fg,var(--sc-foreground))]"
+            className="tw-rounded-[calc(var(--lk-radius,var(--sc-radius))*0.8)] data-[state=on]:tw-bg-[color:var(--lk-on-bg,var(--sc-background))] data-[state=on]:tw-text-[color:var(--lk-on-fg,var(--sc-foreground))]"
           >
             {o.label}
           </ToggleGroupItem>

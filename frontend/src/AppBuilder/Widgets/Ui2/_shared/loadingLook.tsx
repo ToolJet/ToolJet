@@ -11,7 +11,7 @@ export const Spinner = ({ className }: { className?: string }) => (
     role="status"
     aria-label="Loading"
     className={cn(
-      'inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[color:var(--sc-muted-foreground)] border-t-transparent',
+      'tw-inline-block tw-h-4 tw-w-4 tw-shrink-0 tw-animate-spin tw-rounded-full tw-border-2 tw-border-[color:var(--sc-muted-foreground)] tw-border-t-transparent',
       className
     )}
   />
@@ -24,8 +24,8 @@ export const wantsSkeleton = (properties: Resolved | undefined): boolean => prop
 export const LoadingBox = ({ height, className }: { height?: number; className?: string }) => {
   const h = Math.max(24, Math.min(4000, Number(height) || 40));
   return (
-    <div className={cn('flex w-full items-center justify-center', className)} style={{ height: h }}>
-      <Spinner className={h >= 80 ? 'h-6 w-6' : undefined} />
+    <div className={cn('tw-flex tw-w-full tw-items-center tw-justify-center', className)} style={{ height: h }}>
+      <Spinner className={h >= 80 ? 'tw-h-6 tw-w-6' : undefined} />
     </div>
   );
 };

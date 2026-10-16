@@ -77,7 +77,10 @@ export const ShadSelect = (props: WidgetProps) => {
             ref={triggerRef}
             id={`shad-${id}`}
             {...focus.handlers}
-            className={cn(CONTROL, 'data-[placeholder]:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]')}
+            className={cn(
+              CONTROL,
+              'data-[placeholder]:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
+            )}
           >
             <SelectValue placeholder={String(properties.placeholder ?? '')} />
           </SelectTrigger>
@@ -89,7 +92,7 @@ export const ShadSelect = (props: WidgetProps) => {
               </SelectItem>
             ))}
             {options.length > shown.length ? (
-              <div className={cn('px-2 py-1.5 text-xs', HELP)}>
+              <div className={cn('tw-px-2 tw-py-1.5 tw-text-xs', HELP)}>
                 {`Showing ${MAX_SELECT_OPTIONS} of ${options.length} options. A Combobox searches them all.`}
               </div>
             ) : null}

@@ -87,7 +87,7 @@ describe('UI 2.0 Navigation', () => {
     await act(async () => fireEvent.click(screen.getByRole('menuitem', { name: /Traffic/ })));
 
     await waitFor(() => expect(exposed().selectedItem).toMatchObject({ value: 'traffic', parentLabel: 'Reports' }));
-    expect(screen.getByRole('navigation')).not.toHaveClass('flex-col');
+    expect(screen.getByRole('navigation')).not.toHaveClass('tw-flex-col');
   });
 
   test('[ShadNavigation-PROP-004] variant, size and align shape the items and the bar', async () => {
@@ -96,15 +96,15 @@ describe('UI 2.0 Navigation', () => {
     });
 
     await waitFor(() => expect(active()).toHaveTextContent('Dashboard'));
-    expect(active()).toHaveClass('border-b-2');
-    expect(screen.getByRole('navigation')).toHaveClass('justify-center');
+    expect(active()).toHaveClass('tw-border-b-2');
+    expect(screen.getByRole('navigation')).toHaveClass('tw-justify-center');
 
     // (An underline top bar keeps its 40px tabs whatever the size; pills follow it.)
     await act(async () => render({ properties: { orientation: binding('horizontal'), size: binding('sm') } }));
-    expect(item('Orders')).toHaveClass('h-8');
+    expect(item('Orders')).toHaveClass('tw-h-8');
 
     await act(async () => render({ properties: { orientation: binding('horizontal'), align: binding('stretch') } }));
-    expect(item('Orders')).toHaveClass('flex-1');
+    expect(item('Orders')).toHaveClass('tw-flex-1');
   });
 
   test('[ShadNavigation-PROP-005] collapsed draws an icon rail: labels hidden but still naming the items', async () => {
@@ -112,7 +112,7 @@ describe('UI 2.0 Navigation', () => {
 
     await waitFor(() => expect(exposed().isCollapsed).toBe(true));
     expect(item('Orders')).toHaveAttribute('title', 'Orders');
-    expect(screen.getByText('Orders')).toHaveClass('sr-only');
+    expect(screen.getByText('Orders')).toHaveClass('tw-sr-only');
     expect(screen.queryByText('Workspace')).not.toBeInTheDocument();
   });
 
@@ -162,11 +162,11 @@ describe('UI 2.0 Navigation', () => {
 
     await widget.act('setCollapsed', true);
     await waitFor(() => expect(exposed().isCollapsed).toBe(true));
-    expect(screen.getByText('Orders')).toHaveClass('sr-only');
+    expect(screen.getByText('Orders')).toHaveClass('tw-sr-only');
 
     await widget.act('setCollapsed', false);
     await waitFor(() => expect(exposed().isCollapsed).toBe(false));
-    expect(screen.getByText('Orders')).not.toHaveClass('sr-only');
+    expect(screen.getByText('Orders')).not.toHaveClass('tw-sr-only');
   });
 
   test('[ShadNavigation-STY-001] colour and radius styles reach the menu as CSS variables', async () => {

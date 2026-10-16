@@ -52,8 +52,8 @@ const SKELETON_CAPABLE = new Set([
 
 // Nothing to show while loading (a line), the skeleton itself, and the Dialog (ModalV2's own loading, closed here).
 const NO_LOOK = new Set(['ShadSeparator', 'ShadSkeleton', 'ShadDialog']);
-const spinners = () => document.querySelectorAll('[role=status], .animate-spin').length;
-const skeletons = () => document.querySelectorAll('.animate-pulse').length;
+const spinners = () => document.querySelectorAll('[role=status], .tw-animate-spin').length;
+const skeletons = () => document.querySelectorAll('.tw-animate-pulse').length;
 
 const loading = async (name, extra = {}) => {
   const { stats, unmount } = await mountCase({

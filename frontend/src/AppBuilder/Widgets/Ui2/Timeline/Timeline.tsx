@@ -46,23 +46,23 @@ export const ShadTimeline = (props: WidgetProps) => {
     body = <LoadingBox height={props.height} />;
   } else if (p.loadingState) {
     body = (
-      <div className="flex flex-col gap-5">
+      <div className="tw-flex tw-flex-col tw-gap-5">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="flex gap-3">
-            <Skeleton className="h-3 w-3 shrink-0 rounded-full" />
-            <div className="flex flex-1 flex-col gap-2">
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-3 w-3/4" />
+          <div key={i} className="tw-flex tw-gap-3">
+            <Skeleton className="tw-h-3 tw-w-3 tw-shrink-0 tw-rounded-full" />
+            <div className="tw-flex tw-flex-1 tw-flex-col tw-gap-2">
+              <Skeleton className="tw-h-4 tw-w-1/2" />
+              <Skeleton className="tw-h-3 tw-w-3/4" />
             </div>
           </div>
         ))}
       </div>
     );
   } else if (!items.length) {
-    body = <p className="py-4 text-center text-sm text-muted-foreground">No activity yet</p>;
+    body = <p className="tw-py-4 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">No activity yet</p>;
   } else {
     body = (
-      <ol className="m-0 flex list-none flex-col p-0">
+      <ol className="tw-m-0 tw-flex tw-list-none tw-flex-col tw-p-0">
         {items.map((item, index) => {
           const colour = (isSet(item.color) ? item.color : statusColor(item.status, p.statusColors)) || null;
           const markerVars: StyleWithVars = { '--tl-c': colour || 'var(--lk-marker,var(--sc-primary))' };
@@ -70,7 +70,7 @@ export const ShadTimeline = (props: WidgetProps) => {
           const time = formatTime(item.time, p.dateFormat);
           const isLast = index === items.length - 1;
           const timeNode = time ? (
-            <span className="whitespace-nowrap text-xs tabular-nums text-[color:var(--lk-time,var(--sc-muted-foreground))]">
+            <span className="tw-whitespace-nowrap tw-text-xs tw-tabular-nums tw-text-[color:var(--lk-time,var(--sc-muted-foreground))]">
               {time}
             </span>
           ) : null;
@@ -78,9 +78,9 @@ export const ShadTimeline = (props: WidgetProps) => {
             <li
               key={`${item.key}-${index}`}
               className={cn(
-                'relative flex gap-3',
-                !isLast && (compact ? 'pb-3' : 'pb-6'),
-                hasClick && !busy(p) && 'cursor-pointer'
+                'tw-relative tw-flex tw-gap-3',
+                !isLast && (compact ? 'tw-pb-3' : 'tw-pb-6'),
+                hasClick && !busy(p) && 'tw-cursor-pointer'
               )}
               style={markerVars}
               onClick={() => click(item)}
@@ -88,35 +88,35 @@ export const ShadTimeline = (props: WidgetProps) => {
               {!isLast ? (
                 <span
                   aria-hidden="true"
-                  className="absolute w-px bg-[color:var(--lk-line,var(--sc-border))]"
+                  className="tw-absolute tw-w-px tw-bg-[color:var(--lk-line,var(--sc-border))]"
                   style={{ left: column / 2 - 0.5, top: markerTop + marker + 4, bottom: 4 - markerTop }}
                 />
               ) : null}
-              <span className="flex shrink-0 justify-center" style={{ width: column, paddingTop: markerTop }}>
+              <span className="tw-flex tw-shrink-0 tw-justify-center" style={{ width: column, paddingTop: markerTop }}>
                 {icons ? (
                   <span
-                    className="flex items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--tl-c)_14%,var(--sc-background))] text-[color:var(--tl-c)]"
+                    className="tw-flex tw-items-center tw-justify-center tw-rounded-full tw-bg-[color:color-mix(in_srgb,var(--tl-c)_14%,var(--sc-background))] tw-text-[color:var(--tl-c)]"
                     style={{ width: marker, height: marker }}
                   >
                     {Icon ? (
                       <Icon size={compact ? 12 : 14} strokeWidth={2.25} aria-hidden="true" />
                     ) : (
-                      <span className="h-2 w-2 rounded-full bg-[color:var(--tl-c)]" />
+                      <span className="tw-h-2 tw-w-2 tw-rounded-full tw-bg-[color:var(--tl-c)]" />
                     )}
                   </span>
                 ) : (
                   <span
-                    className="rounded-full bg-[color:var(--tl-c)] ring-4 ring-[color:color-mix(in_srgb,var(--tl-c)_16%,transparent)]"
+                    className="tw-rounded-full tw-bg-[color:var(--tl-c)] tw-ring-4 tw-ring-[color:color-mix(in_srgb,var(--tl-c)_16%,transparent)]"
                     style={{ width: marker, height: marker }}
                   />
                 )}
               </span>
-              <div className="flex min-w-0 flex-1 flex-col" style={{ paddingTop: contentTop }}>
-                {p.timePosition === 'top' ? <div className="mb-0.5">{timeNode}</div> : null}
-                <div className="flex items-baseline justify-between gap-3">
+              <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col" style={{ paddingTop: contentTop }}>
+                {p.timePosition === 'top' ? <div className="tw-mb-0.5">{timeNode}</div> : null}
+                <div className="tw-flex tw-items-baseline tw-justify-between tw-gap-3">
                   <span
                     className={cn(
-                      'min-w-0 break-words text-sm font-medium leading-5 text-[color:var(--lk-title,var(--sc-foreground))]'
+                      'tw-min-w-0 tw-break-words tw-text-ui2-sm tw-font-medium tw-leading-5 tw-text-[color:var(--lk-title,var(--sc-foreground))]'
                     )}
                   >
                     {item.title}
@@ -126,8 +126,8 @@ export const ShadTimeline = (props: WidgetProps) => {
                 {item.description ? (
                   <p
                     className={cn(
-                      'm-0 mt-0.5 break-words text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
-                      compact ? 'text-xs' : 'text-sm'
+                      'tw-m-0 tw-mt-0.5 tw-break-words tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
+                      compact ? 'tw-text-xs' : 'tw-text-ui2-sm'
                     )}
                   >
                     {item.description}

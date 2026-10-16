@@ -53,30 +53,30 @@ export const loadingSkeleton = (
   const h = Number(height) || 40;
   switch (look) {
     case 'heading':
-      return <Skeleton className="h-8 w-1/2" />;
+      return <Skeleton className="tw-h-8 tw-w-1/2" />;
     case 'text': {
       const lines = Math.max(1, Math.min(8, Math.floor(h / 28)));
       return (
-        <div className="flex flex-col gap-2 py-1">
+        <div className="tw-flex tw-flex-col tw-gap-2 tw-py-1">
           {Array.from({ length: lines }, (_, i) => (
-            <Skeleton key={i} className={cn('h-4', i === lines - 1 && lines > 1 ? 'w-3/5' : 'w-full')} />
+            <Skeleton key={i} className={cn('tw-h-4', i === lines - 1 && lines > 1 ? 'tw-w-3/5' : 'tw-w-full')} />
           ))}
         </div>
       );
     }
     case 'line':
-      return <Skeleton className="h-4 w-48 max-w-full" />;
+      return <Skeleton className="tw-h-4 tw-w-48 tw-max-w-full" />;
     case 'pill':
-      return <Skeleton className="h-5 w-16 rounded-full" />;
+      return <Skeleton className="tw-h-5 tw-w-16 tw-rounded-full" />;
     case 'avatar': {
       const size = Math.max(16, Math.min(256, Number(properties.size) || 32));
       const count = avatarPeople(properties.names).length;
       return (
-        <div className="flex -space-x-2">
+        <div className="tw-flex -tw-space-x-2">
           {Array.from({ length: Math.max(1, Math.min(5, count)) }, (_, i) => (
             <Skeleton
               key={i}
-              className="rounded-full ring-2 ring-[color:var(--sc-background)]"
+              className="tw-rounded-full tw-ring-2 tw-ring-[color:var(--sc-background)]"
               style={{ width: size, height: size }}
             />
           ))}
@@ -85,25 +85,28 @@ export const loadingSkeleton = (
     }
     case 'bar':
       return (
-        <div className="flex flex-col gap-2">
-          {properties.label || properties.showValue ? <Skeleton className="h-4 w-1/3" /> : null}
-          <Skeleton className="h-2 w-full rounded-full" />
+        <div className="tw-flex tw-flex-col tw-gap-2">
+          {properties.label || properties.showValue ? <Skeleton className="tw-h-4 tw-w-1/3" /> : null}
+          <Skeleton className="tw-h-2 tw-w-full tw-rounded-full" />
         </div>
       );
     case 'columns':
       return (
-        <div className="grid grid-cols-3 gap-3" style={{ height: h }}>
+        <div className="tw-grid tw-grid-cols-3 tw-gap-3" style={{ height: h }}>
           {[0, 1, 2].map((i) => (
-            <div key={i} className="flex flex-col gap-2 rounded-[var(--sc-radius)] bg-[color:var(--sc-muted)] p-3">
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-16 w-full" />
-              {i !== 2 ? <Skeleton className="h-16 w-full" /> : null}
+            <div
+              key={i}
+              className="tw-flex tw-flex-col tw-gap-2 tw-rounded-[var(--sc-radius)] tw-bg-[color:var(--sc-muted)] tw-p-3"
+            >
+              <Skeleton className="tw-h-4 tw-w-1/2" />
+              <Skeleton className="tw-h-16 tw-w-full" />
+              {i !== 2 ? <Skeleton className="tw-h-16 tw-w-full" /> : null}
             </div>
           ))}
         </div>
       );
     default:
-      return <Skeleton className="w-full rounded-[var(--sc-radius)]" style={{ height: h }} />;
+      return <Skeleton className="tw-w-full tw-rounded-[var(--sc-radius)]" style={{ height: h }} />;
   }
 };
 
@@ -134,15 +137,15 @@ export const Shell = (props: ShellProps) => {
         {look === 'field' ? (
           children
         ) : look === 'wide' ? (
-          <div className="flex items-center gap-3">
-            <div className="min-w-0 flex-1">{children}</div>
+          <div className="tw-flex tw-items-center tw-gap-3">
+            <div className="tw-min-w-0 tw-flex-1">{children}</div>
             <Spinner />
           </div>
         ) : (
           <div
             className={cn(
-              'inline-flex max-w-full gap-3',
-              look === 'inline-top' ? 'items-start [&>[role=status]]:mt-0.5' : 'items-center'
+              'tw-inline-flex tw-max-w-full tw-gap-3',
+              look === 'inline-top' ? 'tw-items-start [&>[role=status]]:tw-mt-0.5' : 'tw-items-center'
             )}
           >
             {children}

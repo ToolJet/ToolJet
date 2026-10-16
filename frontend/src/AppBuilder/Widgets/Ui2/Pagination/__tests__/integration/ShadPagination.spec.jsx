@@ -126,9 +126,9 @@ describe('UI 2.0 Pagination', () => {
   test('[ShadPagination-PROP-006] size sm draws the smaller buttons', async () => {
     render({ properties: { size: binding('sm') } });
 
-    expect(await screen.findByLabelText('Page 1')).toHaveClass('h-8');
+    expect(await screen.findByLabelText('Page 1')).toHaveClass('tw-h-8');
     await act(async () => render({ properties: { size: binding('default') } }));
-    expect(screen.getByLabelText('Page 1')).toHaveClass('h-9');
+    expect(screen.getByLabelText('Page 1')).toHaveClass('tw-h-9');
   });
 
   // A ten-page pager at 445px put Next on a second line, below the widget's box. jsdom has no layout, so every list
@@ -210,6 +210,6 @@ describe('UI 2.0 Pagination', () => {
     expect(root.style.getPropertyValue('--lk-on-fg')).toBe('#ffffff');
     expect(root.style.getPropertyValue('--lk-on-border')).toBe('#be123c');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('12px');
-    expect(pager()).toHaveClass('justify-end');
+    expect(pager()).toHaveClass('tw-justify-end');
   });
 });

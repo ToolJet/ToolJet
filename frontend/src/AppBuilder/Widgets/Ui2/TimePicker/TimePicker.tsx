@@ -16,11 +16,11 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 // ---- Time picker ---------------------------------------------------------------------------------------------------
 
 const OPTION =
-  'flex h-8 w-full shrink-0 items-center justify-center rounded-md border-0 p-0 text-sm tabular-nums transition-colors disabled:pointer-events-none disabled:opacity-40';
+  'tw-flex tw-h-8 tw-w-full tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-md tw-border-0 tw-p-0 tw-text-ui2-sm tw-tabular-nums tw-transition-colors disabled:tw-pointer-events-none disabled:tw-opacity-40';
 
-export const OPTION_IDLE = 'hover:bg-accent hover:text-accent-foreground';
+export const OPTION_IDLE = 'hover:tw-bg-ui2-accent hover:tw-text-ui2-accent-foreground';
 
-export const OPTION_ON = 'bg-primary text-primary-foreground hover:bg-primary';
+export const OPTION_ON = 'tw-bg-ui2-primary tw-text-ui2-primary-foreground hover:tw-bg-ui2-primary';
 
 /** A scrolling column of options (hours, minutes, AM/PM) that opens scrolled to its selected option. */
 /** One option of an OptionColumn. */
@@ -50,7 +50,7 @@ export const OptionColumn = ({ label, options, className }: OptionColumnProps) =
       ref={ref}
       role="listbox"
       aria-label={label}
-      className={cn('relative flex h-56 w-16 flex-col gap-1 overflow-y-auto p-1', className)}
+      className={cn('tw-relative tw-flex tw-h-56 tw-w-16 tw-flex-col tw-gap-1 tw-overflow-y-auto tw-p-1', className)}
     >
       {options.map((o) => (
         <button
@@ -225,8 +225,8 @@ export const ShadTimePicker = (props: WidgetProps) => {
               className={cn(
                 TRIGGER,
                 CONTROL,
-                'tabular-nums',
-                !shown && 'text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
+                'tw-tabular-nums',
+                !shown && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
               )}
             >
               <Clock className={ICON} />
@@ -236,12 +236,14 @@ export const ShadTimePicker = (props: WidgetProps) => {
           <PopoverContent
             align="start"
             style={lookVars(componentType, styles)}
-            className={listMode ? 'w-[var(--radix-popover-trigger-width)] min-w-[9rem] p-0' : 'w-auto p-0'}
+            className={
+              listMode ? 'tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[9rem] tw-p-0' : 'tw-w-auto tw-p-0'
+            }
           >
             {listMode ? (
               <OptionColumn
                 label="Times"
-                className="h-auto max-h-64 w-full"
+                className="tw-h-auto tw-max-h-64 tw-w-full"
                 options={M.timeSlots(step, properties.minTime, properties.maxTime).map((t) => ({
                   key: t,
                   label: M.formatTime(t, use24),
@@ -250,7 +252,7 @@ export const ShadTimePicker = (props: WidgetProps) => {
                 }))}
               />
             ) : (
-              <div className="flex divide-x divide-[color:var(--sc-border)]">
+              <div className="tw-flex tw-divide-x tw-divide-[color:var(--sc-border)]">
                 {timeColumns({ minutes, use24, step, bounds, onPick: (m) => pick(m) }).map((col) => (
                   <OptionColumn key={col.label} label={col.label} options={col.options} />
                 ))}

@@ -13,12 +13,12 @@ import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_share
 
 // ---- Hero ------------------------------------------------------------------------------------------------------------
 
-const ASIDE_FIGURE: Record<string, string> = { compact: 'text-2xl', large: 'text-4xl' };
+const ASIDE_FIGURE: Record<string, string> = { compact: 'tw-text-2xl', large: 'tw-text-4xl' };
 
 export const HERO_SIZE: Record<string, { pad: string; title: string; gap: string }> = {
-  compact: { pad: 'px-6 py-5', title: 'text-2xl', gap: 'gap-1.5' },
-  default: { pad: 'px-8 py-7', title: 'text-3xl', gap: 'gap-2' },
-  large: { pad: 'px-10 py-12', title: 'text-4xl md:text-5xl', gap: 'gap-3' },
+  compact: { pad: 'tw-px-6 tw-py-5', title: 'tw-text-2xl', gap: 'tw-gap-1.5' },
+  default: { pad: 'tw-px-8 tw-py-7', title: 'tw-text-3xl', gap: 'tw-gap-2' },
+  large: { pad: 'tw-px-10 tw-py-12', title: 'tw-text-4xl md:tw-text-5xl', gap: 'tw-gap-3' },
 };
 
 /** The panel behind the hero for its background style: plain draws none; tint, gradient and dark derive from the
@@ -84,18 +84,20 @@ export const ShadHero = (props: WidgetProps) => {
   // The tint and gradient panels' hairline: the pack's border reset beats an inline border, so it never drew.
   const panel = cn(
     background !== 'plain' && size.pad,
-    style['--hero-border'] && 'border border-[color:var(--hero-border)]'
+    style['--hero-border'] && 'tw-border tw-border-[color:var(--hero-border)]'
   );
 
   const actions =
     primary || secondary ? (
-      <div className={cn('flex min-w-0 max-w-full flex-wrap gap-2', center && 'justify-center')}>
+      <div className={cn('tw-flex tw-min-w-0 tw-max-w-full tw-flex-wrap tw-gap-2', center && 'tw-justify-center')}>
         {secondary ? (
           <Button
             variant="outline"
             disabled={busy(p)}
             onClick={() => fireEvent('onSecondaryActionClicked')}
-            className={cn(onDark && 'border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white')}
+            className={cn(
+              onDark && 'tw-border-white/40 tw-bg-transparent tw-text-white hover:tw-bg-white/10 hover:tw-text-white'
+            )}
           >
             {secondary}
           </Button>
@@ -107,8 +109,8 @@ export const ShadHero = (props: WidgetProps) => {
             className={cn(
               onDark
                 ? // A fixed dark ink: the theme foreground is near-white in a dark app, which drew a blank white button.
-                  'bg-white text-[#0f172a] hover:bg-white/90'
-                : 'bg-[color:var(--lk-accent,var(--sc-primary))] text-[color:var(--sc-primary-foreground)] hover:opacity-90'
+                  'tw-bg-white tw-text-[#0f172a] hover:tw-bg-white/90'
+                : 'tw-bg-[color:var(--lk-accent,var(--sc-primary))] tw-text-[color:var(--sc-primary-foreground)] hover:tw-opacity-90'
             )}
           >
             {primary}
@@ -123,8 +125,8 @@ export const ShadHero = (props: WidgetProps) => {
   const asideBlock = aside ? (
     <div
       className={cn(
-        'sc-hero-aside flex shrink-0 flex-col gap-1',
-        center ? 'mt-5 items-center' : 'min-w-[150px] items-end border-l pl-6 text-right'
+        'sc-hero-aside tw-flex tw-shrink-0 tw-flex-col tw-gap-1',
+        center ? 'tw-mt-5 tw-items-center' : 'tw-min-w-[150px] tw-items-end tw-border-l tw-pl-6 tw-text-right'
       )}
       style={{
         borderColor: onDark ? 'rgba(255,255,255,0.22)' : 'var(--lk-border,var(--sc-border))',
@@ -132,25 +134,28 @@ export const ShadHero = (props: WidgetProps) => {
       data-aside={aside.kind}
     >
       {aside.label ? (
-        <span className="text-xs font-medium uppercase tracking-[0.08em]" style={{ color: muted }}>
+        <span className="tw-text-xs tw-font-medium tw-uppercase tw-tracking-[0.08em]" style={{ color: muted }}>
           {aside.label}
         </span>
       ) : null}
       {aside.kind === 'figure' ? (
         <span
-          className={cn('font-semibold leading-none tracking-tight tabular-nums', ASIDE_FIGURE[p.size] || 'text-3xl')}
+          className={cn(
+            'tw-font-semibold tw-leading-none tw-tracking-tight tw-tabular-nums',
+            ASIDE_FIGURE[p.size] || 'tw-text-3xl'
+          )}
           style={{ color: fg, fontFamily: TITLE_FONT }}
         >
           {aside.value}
         </span>
       ) : (
-        <dl className="m-0 flex flex-col gap-1.5" style={{ minWidth: 170 }}>
+        <dl className="tw-m-0 tw-flex tw-flex-col tw-gap-1.5" style={{ minWidth: 170 }}>
           {aside.facts.map((fact, i) => (
-            <div key={i} className="flex items-baseline justify-between gap-6 text-sm">
-              <dt className="m-0" style={{ color: muted }}>
+            <div key={i} className="tw-flex tw-items-baseline tw-justify-between tw-gap-6 tw-text-ui2-sm">
+              <dt className="tw-m-0" style={{ color: muted }}>
                 {fact.label || ''}
               </dt>
-              <dd className="m-0 font-semibold tabular-nums" style={{ color: fg }}>
+              <dd className="tw-m-0 tw-font-semibold tw-tabular-nums" style={{ color: fg }}>
                 {fact.value}
               </dd>
             </div>
@@ -165,38 +170,46 @@ export const ShadHero = (props: WidgetProps) => {
     body = <LoadingBox height={props.height} />;
   } else if (p.loadingState) {
     body = (
-      <div className={cn('flex flex-col', size.gap, panel)} style={style}>
-        <Skeleton className="h-3 w-24" />
-        <Skeleton className="h-8 w-2/3" />
-        <Skeleton className="h-4 w-1/2" />
+      <div className={cn('tw-flex tw-flex-col', size.gap, panel)} style={style}>
+        <Skeleton className="tw-h-3 tw-w-24" />
+        <Skeleton className="tw-h-8 tw-w-2/3" />
+        <Skeleton className="tw-h-4 tw-w-1/2" />
       </div>
     );
   } else {
     body = (
-      <div className={cn('sc-hero-box', fixed && 'h-full')}>
+      <div className={cn('sc-hero-box', fixed && 'tw-h-full')}>
         <section
           className={cn(
-            'sc-hero w-full',
+            'sc-hero tw-w-full',
             panel,
-            fixed && 'max-h-full overflow-y-auto',
+            fixed && 'tw-max-h-full tw-overflow-y-auto',
             // With an aside, a grid: text and actions on the left, the aside right of both; in a narrow hero, text,
             // aside, actions (shadcn.scss).
             grid
               ? 'sc-hero-grid'
-              : cn('flex', center ? 'flex-col items-center text-center' : 'flex-wrap items-center gap-x-6 gap-y-4')
+              : cn(
+                  'tw-flex',
+                  center
+                    ? 'tw-flex-col tw-items-center tw-text-center'
+                    : 'tw-flex-wrap tw-items-center tw-gap-x-6 tw-gap-y-4'
+                )
           )}
           style={style}
           data-background={background}
         >
           <div
             className={cn(
-              'sc-hero-text flex min-w-0',
-              center ? 'flex-col items-center' : 'flex-[1_1_20rem] items-start gap-4'
+              'sc-hero-text tw-flex tw-min-w-0',
+              center ? 'tw-flex-col tw-items-center' : 'tw-flex-[1_1_20rem] tw-items-start tw-gap-4'
             )}
           >
             {Icon ? (
               <span
-                className={cn('flex shrink-0 items-center justify-center rounded-xl', center ? 'mb-3' : 'mt-1')}
+                className={cn(
+                  'tw-flex tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-xl',
+                  center ? 'tw-mb-3' : 'tw-mt-1'
+                )}
                 style={{
                   width: 48,
                   height: 48,
@@ -210,10 +223,10 @@ export const ShadHero = (props: WidgetProps) => {
                 <Icon size={24} strokeWidth={2} />
               </span>
             ) : null}
-            <div className={cn('flex min-w-0 flex-col', size.gap, center && 'items-center')}>
+            <div className={cn('tw-flex tw-min-w-0 tw-flex-col', size.gap, center && 'tw-items-center')}>
               {text(p.eyebrow) ? (
                 <span
-                  className="text-xs font-semibold uppercase tracking-[0.14em]"
+                  className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-[0.14em]"
                   style={{
                     color: onDark ? 'rgba(255,255,255,0.85)' : ACCENT_INK,
                   }}
@@ -222,7 +235,7 @@ export const ShadHero = (props: WidgetProps) => {
                 </span>
               ) : null}
               <h1
-                className={cn('m-0 font-semibold leading-tight tracking-tight', size.title)}
+                className={cn('tw-m-0 tw-font-semibold tw-leading-tight tw-tracking-tight', size.title)}
                 style={{
                   color: fg,
                   fontFamily: TITLE_FONT,
@@ -232,16 +245,21 @@ export const ShadHero = (props: WidgetProps) => {
                 {text(p.title)}
               </h1>
               {text(p.subtitle) ? (
-                <p className="m-0 max-w-[68ch] text-base leading-relaxed" style={{ color: muted }}>
+                <p className="tw-m-0 tw-max-w-[68ch] tw-text-ui2-base tw-leading-relaxed" style={{ color: muted }}>
                   {text(p.subtitle)}
                 </p>
               ) : null}
               {meta.length ? (
-                <ul className={cn('m-0 mt-1 flex list-none flex-wrap gap-2 p-0', center && 'justify-center')}>
+                <ul
+                  className={cn(
+                    'tw-m-0 tw-mt-1 tw-flex tw-list-none tw-flex-wrap tw-gap-2 tw-p-0',
+                    center && 'tw-justify-center'
+                  )}
+                >
                   {meta.map((fact, i) => (
                     <li
                       key={i}
-                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tabular-nums"
+                      className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-px-3 tw-py-1 tw-text-xs tw-font-medium tw-tabular-nums"
                       style={{
                         background: onDark
                           ? 'rgba(255,255,255,0.14)'
@@ -259,14 +277,16 @@ export const ShadHero = (props: WidgetProps) => {
           </div>
           {asideBlock}
           {actions ? (
-            <div className={cn('min-w-0 max-w-full', grid ? 'sc-hero-actions' : center && 'mt-5')}>{actions}</div>
+            <div className={cn('tw-min-w-0 tw-max-w-full', grid ? 'sc-hero-actions' : center && 'tw-mt-5')}>
+              {actions}
+            </div>
           ) : null}
         </section>
       </div>
     );
   }
   return (
-    <Shell {...props} innerRef={ref} className={cn(fixed && 'h-full overflow-y-auto')}>
+    <Shell {...props} innerRef={ref} className={cn(fixed && 'tw-h-full tw-overflow-y-auto')}>
       {body}
     </Shell>
   );

@@ -47,40 +47,42 @@ const AnswerCard = ({
     onClick={onSelect}
     onKeyDown={onKeyDown}
     className={cn(
-      'group/answer flex w-full items-center gap-3 rounded-[var(--lk-radius,var(--sc-radius))] border px-3.5 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-ring))_50%,transparent)] disabled:cursor-not-allowed disabled:opacity-60',
+      'group/answer tw-flex tw-w-full tw-items-center tw-gap-3 tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border tw-px-3.5 tw-py-3 tw-text-left tw-transition-colors tw-duration-150 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-ring))_50%,transparent)] disabled:tw-cursor-not-allowed disabled:tw-opacity-60',
       checked
-        ? 'border-[color:var(--lk-accent,var(--sc-primary))] bg-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-primary))_7%,transparent)]'
-        : 'border-[color:var(--lk-border,var(--sc-border))] bg-transparent hover:bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
+        ? 'tw-border-[color:var(--lk-accent,var(--sc-primary))] tw-bg-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-primary))_7%,transparent)]'
+        : 'tw-border-[color:var(--lk-border,var(--sc-border))] tw-bg-transparent hover:tw-bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
     )}
   >
     {shortcut ? (
       <kbd
         className={cn(
-          'flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border px-1.5 font-sans text-xs font-medium transition-colors',
+          'tw-flex tw-h-6 tw-min-w-6 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-md tw-border tw-px-1.5 tw-font-sans tw-text-xs tw-font-medium tw-transition-colors',
           checked
-            ? 'border-transparent bg-[color:var(--lk-accent,var(--sc-primary))] text-[color:var(--sc-primary-foreground)]'
-            : 'border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--sc-background)] text-[color:var(--lk-fg,var(--sc-muted-foreground))]'
+            ? 'tw-border-transparent tw-bg-[color:var(--lk-accent,var(--sc-primary))] tw-text-[color:var(--sc-primary-foreground)]'
+            : 'tw-border-[color:var(--lk-border,var(--sc-border))] tw-bg-[color:var(--sc-background)] tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]'
         )}
         aria-hidden="true"
       >
         {shortcut}
       </kbd>
     ) : null}
-    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-      <span className="text-sm font-medium leading-snug text-[color:var(--lk-title,var(--sc-foreground))]">
+    <span className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-0.5">
+      <span className="tw-text-ui2-sm tw-font-medium tw-leading-snug tw-text-[color:var(--lk-title,var(--sc-foreground))]">
         {label}
       </span>
       {description ? (
-        <span className="text-xs leading-snug text-[color:var(--lk-fg,var(--sc-muted-foreground))]">{description}</span>
+        <span className="tw-text-xs tw-leading-snug tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
+          {description}
+        </span>
       ) : null}
     </span>
     <span
       className={cn(
-        'flex h-5 w-5 shrink-0 items-center justify-center border transition-colors [&_svg]:size-3.5',
-        role === 'radio' ? 'rounded-full' : 'rounded-[5px]',
+        'tw-flex tw-h-5 tw-w-5 tw-shrink-0 tw-items-center tw-justify-center tw-border tw-transition-colors [&_svg]:tw-size-3.5',
+        role === 'radio' ? 'tw-rounded-full' : 'tw-rounded-[5px]',
         checked
-          ? 'border-transparent bg-[color:var(--lk-accent,var(--sc-primary))] text-[color:var(--sc-primary-foreground)]'
-          : 'border-[color:var(--lk-border,var(--sc-input))] bg-transparent text-transparent'
+          ? 'tw-border-transparent tw-bg-[color:var(--lk-accent,var(--sc-primary))] tw-text-[color:var(--sc-primary-foreground)]'
+          : 'tw-border-[color:var(--lk-border,var(--sc-input))] tw-bg-transparent tw-text-transparent'
       )}
       aria-hidden="true"
     >
@@ -124,7 +126,7 @@ export const QuestionAnswer = ({
       placeholder={item.placeholder || 'Type your answer'}
       disabled={disabled}
       onChange={(e) => update({ ...answer, text: e.target.value })}
-      className="rounded-[var(--lk-radius,var(--sc-radius))] border-[color:var(--lk-border,var(--sc-input))]"
+      className="tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border-[color:var(--lk-border,var(--sc-input))]"
     />
   ) : item.type === 'text' ? (
     <Textarea
@@ -134,14 +136,14 @@ export const QuestionAnswer = ({
       placeholder={item.placeholder || 'Type your answer'}
       disabled={disabled}
       onChange={(e) => update({ ...answer, text: e.target.value })}
-      className="min-h-[96px] rounded-[var(--lk-radius,var(--sc-radius))] border-[color:var(--lk-border,var(--sc-input))]"
+      className="tw-min-h-[96px] tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border-[color:var(--lk-border,var(--sc-input))]"
     />
   ) : (
     <div
       role={item.type === 'single' ? 'radiogroup' : 'group'}
       aria-labelledby={promptId}
       aria-required={item.required || undefined}
-      className="flex flex-col gap-2"
+      className="tw-flex tw-flex-col tw-gap-2"
     >
       {options.map((option, i) => {
         const checked = option.kind === 'other' ? !!answer.otherOn : isPicked(item, answer, option.value);
@@ -168,7 +170,7 @@ export const QuestionAnswer = ({
           placeholder={item.other.placeholder}
           disabled={disabled}
           onChange={(e) => update({ ...answer, other: e.target.value })}
-          className="mt-1 rounded-[var(--lk-radius,var(--sc-radius))] border-[color:var(--lk-border,var(--sc-input))]"
+          className="tw-mt-1 tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border-[color:var(--lk-border,var(--sc-input))]"
         />
       ) : null}
     </div>

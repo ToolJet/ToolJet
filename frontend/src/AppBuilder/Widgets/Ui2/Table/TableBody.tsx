@@ -86,7 +86,7 @@ export const TableBody = ({
   };
 
   return (
-    <tbody className="text-[color:var(--lk-fg,var(--sc-foreground))]">
+    <tbody className="tw-text-[color:var(--lk-fg,var(--sc-foreground))]">
       {isLoading && !wantsSkeleton(properties) ? (
         <tr>
           <td colSpan={colCount} style={{ padding: 0 }}>
@@ -95,10 +95,10 @@ export const TableBody = ({
         </tr>
       ) : isLoading ? (
         Array.from({ length: Math.min(5, Number(properties.rowsPerPage) || 5) }, (_, i) => (
-          <tr key={i} className={cn('border-b', ROW_BORDER)}>
+          <tr key={i} className={cn('tw-border-b', ROW_BORDER)}>
             {Array.from({ length: colCount }, (__, j) => (
-              <td key={j} className="px-3" style={{ height: rowHeight }}>
-                <Skeleton className="h-4 w-full max-w-[160px]" />
+              <td key={j} className="tw-px-3" style={{ height: rowHeight }}>
+                <Skeleton className="tw-h-4 tw-w-full tw-max-w-[160px]" />
               </td>
             ))}
           </tr>
@@ -125,18 +125,18 @@ export const TableBody = ({
                   hoveredRef.current = null;
                 }}
                 className={cn(
-                  'border-b transition-colors last:border-b-0',
+                  'tw-border-b tw-transition-colors last:tw-border-b-0',
                   ROW_BORDER,
-                  allowSelection && 'cursor-pointer',
-                  'hover:bg-[color:var(--lk-hover,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
+                  allowSelection && 'tw-cursor-pointer',
+                  'hover:tw-bg-[color:var(--lk-hover,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
                   striped &&
                     position % 2 === 1 &&
-                    'bg-[color:var(--lk-striped,color-mix(in_srgb,var(--sc-muted)_35%,transparent))]',
-                  'data-[state=selected]:bg-[color:var(--lk-selected,var(--sc-muted))]'
+                    'tw-bg-[color:var(--lk-striped,color-mix(in_srgb,var(--sc-muted)_35%,transparent))]',
+                  'data-[state=selected]:tw-bg-[color:var(--lk-selected,var(--sc-muted))]'
                 )}
               >
                 {bulk ? (
-                  <td className="w-10 px-3" onClick={(e) => e.stopPropagation()}>
+                  <td className="tw-w-10 tw-px-3" onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       aria-label="Select row"
                       checked={isSelected}
@@ -161,13 +161,13 @@ export const TableBody = ({
                           : undefined
                       }
                       className={cn(
-                        'px-3 align-middle',
-                        column.wrap ? 'whitespace-normal' : 'max-w-[360px] truncate whitespace-nowrap',
-                        column.align === 'right' && 'text-right tabular-nums',
-                        column.align === 'center' && 'text-center',
-                        column.editable && 'cursor-text',
-                        edited && 'bg-[color:color-mix(in_srgb,var(--sc-warning,#f59e0b)_10%,transparent)]',
-                        bordered && cn('border-r last:border-r-0', ROW_BORDER)
+                        'tw-px-3 tw-align-middle',
+                        column.wrap ? 'tw-whitespace-normal' : 'tw-max-w-[360px] tw-truncate tw-whitespace-nowrap',
+                        column.align === 'right' && 'tw-text-right tw-tabular-nums',
+                        column.align === 'center' && 'tw-text-center',
+                        column.editable && 'tw-cursor-text',
+                        edited && 'tw-bg-[color:color-mix(in_srgb,var(--sc-warning,#f59e0b)_10%,transparent)]',
+                        bordered && cn('tw-border-r last:tw-border-r-0', ROW_BORDER)
                       )}
                       style={{ height: rowHeight, ...cellStyle(column, row, value) }}
                     >
@@ -205,14 +205,14 @@ export const TableBody = ({
         </>
       ) : (
         <tr>
-          <td colSpan={colCount} className="px-3 py-10 text-center">
-            <div className="flex flex-col items-center gap-1.5">
-              <Inbox className={cn('h-6 w-6', MUTED)} />
-              <p className="text-sm font-medium">
+          <td colSpan={colCount} className="tw-px-3 tw-py-10 tw-text-center">
+            <div className="tw-flex tw-flex-col tw-items-center tw-gap-1.5">
+              <Inbox className={cn('tw-h-6 tw-w-6', MUTED)} />
+              <p className="tw-text-ui2-sm tw-font-medium">
                 {searchText || filters.length ? 'No matching rows.' : String(properties.emptyText || 'No results.')}
               </p>
               {properties.emptyDescription && !searchText && !filters.length ? (
-                <p className={cn('text-xs', MUTED)}>{String(properties.emptyDescription)}</p>
+                <p className={cn('tw-text-xs', MUTED)}>{String(properties.emptyDescription)}</p>
               ) : null}
             </div>
           </td>

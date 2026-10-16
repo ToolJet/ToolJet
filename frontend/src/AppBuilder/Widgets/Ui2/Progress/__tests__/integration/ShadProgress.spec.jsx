@@ -95,6 +95,6 @@ describe('UI 2.0 Progress', () => {
     expect(root.style.getPropertyValue('--lk-label')).toBe('#14532d');
     expect(root.style.getPropertyValue('--lk-help')).toBe('#166534');
     expect(root.style.getPropertyValue('--lk-height')).toBe('12px');
-    expect(bar().className).toContain('h-[var(--lk-height,0.5rem)]');
+    expect(bar().className).toContain('tw-h-[var(--lk-height,0.5rem)]');
   });
 });

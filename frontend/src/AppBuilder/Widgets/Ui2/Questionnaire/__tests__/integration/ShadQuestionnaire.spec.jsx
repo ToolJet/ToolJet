@@ -190,11 +190,11 @@ describe('UI 2.0 Questionnaire', () => {
     await screen.findByRole('radiogroup');
     expect(screen.queryByText('Question 1 of 3')).toBeNull();
     expect(screen.queryByRole('progressbar')).toBeNull();
-    expect(container.querySelector('.tj-shadcn .p-6.border')).toBeNull();
+    expect(container.querySelector('.tj-shadcn .tw-p-6.tw-border')).toBeNull();
 
     const framed = render();
     await screen.findByText('Question 1 of 3');
-    expect(framed.container.querySelector('.tj-shadcn .p-6.border')).toBeTruthy();
+    expect(framed.container.querySelector('.tj-shadcn .tw-p-6.tw-border')).toBeTruthy();
   });
 
   test('[ShadQuestionnaire-PROP-005] new items start over, and junk items draw as no questions', async () => {
@@ -233,9 +233,9 @@ describe('UI 2.0 Questionnaire', () => {
 
     const finance = await screen.findByRole('radio', { name: /Finance/ });
     expect(finance.style.borderColor).toBe('');
-    expect(finance.className).toContain('border-[color:var(--lk-border,var(--sc-border))]');
+    expect(finance.className).toContain('tw-border-[color:var(--lk-border,var(--sc-border))]');
     fireEvent.click(finance);
-    expect(finance.className).toContain('border-[color:var(--lk-accent,var(--sc-primary))]');
+    expect(finance.className).toContain('tw-border-[color:var(--lk-accent,var(--sc-primary))]');
     const root = container.querySelector('.tj-shadcn');
     expect(root.style.getPropertyValue('--lk-accent')).toBe('#9333ea');
     expect(root.style.getPropertyValue('--lk-bg')).toBe('#faf5ff');

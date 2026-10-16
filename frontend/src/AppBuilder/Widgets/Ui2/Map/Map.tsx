@@ -373,7 +373,7 @@ export const ShadMap = (props: WidgetProps) => {
         ) : null}
         {p.loadingState ? (
           <div className="sc-map-veil">
-            <Spinner className="h-5 w-5" />
+            <Spinner className="tw-h-5 tw-w-5" />
           </div>
         ) : null}
       </div>

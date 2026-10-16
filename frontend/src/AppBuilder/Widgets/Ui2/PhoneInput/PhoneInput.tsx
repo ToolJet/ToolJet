@@ -33,15 +33,15 @@ BareInput.displayName = 'BareInput';
 
 // ---- Phone input ---------------------------------------------------------------------------------------------------
 
-const POPOVER_LIST = 'max-h-[300px] overflow-y-auto overflow-x-hidden';
+const POPOVER_LIST = 'tw-max-h-[300px] tw-overflow-y-auto tw-overflow-x-hidden';
 
 export const COMMAND_ITEM =
-  'relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50';
+  'tw-relative tw-flex tw-cursor-default tw-select-none tw-items-center tw-gap-2 tw-rounded-ui2-sm tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-outline-none data-[disabled=true]:tw-pointer-events-none data-[selected=true]:tw-bg-ui2-accent data-[selected=true]:tw-text-ui2-accent-foreground data-[disabled=true]:tw-opacity-50';
 
 export const FlagIcon = ({ country, title }: { country: Country; title: string }) => {
   const Flag = flags[country];
   return (
-    <span className="flex h-4 w-6 shrink-0 overflow-hidden rounded-sm bg-[color:var(--sc-muted)] [&_svg]:h-full [&_svg]:w-full">
+    <span className="tw-flex tw-h-4 tw-w-6 tw-shrink-0 tw-overflow-hidden tw-rounded-ui2-sm tw-bg-[color:var(--sc-muted)] [&_svg]:tw-h-full [&_svg]:tw-w-full">
       {Flag ? <Flag title={title} /> : null}
     </span>
   );
@@ -113,7 +113,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
   const current = (
     <>
       {showFlag ? <FlagIcon country={state.country} title={name} /> : null}
-      <span className="tabular-nums">+{code}</span>
+      <span className="tw-tabular-nums">+{code}</span>
     </>
   );
   return (
@@ -136,11 +136,11 @@ export const ShadPhoneInput = (props: WidgetProps) => {
                   className={cn(ADDON, ADDON_HOVER, EDGE)}
                 >
                   {current}
-                  <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+                  <ChevronsUpDown className="tw-h-3.5 tw-w-3.5 tw-opacity-50" />
                 </button>
               </PopoverTrigger>
               <PopoverContent
-                className="w-[300px] p-0"
+                className="tw-w-[300px] tw-p-0"
                 align="start"
                 style={vars}
                 onCloseAutoFocus={(e) => {
@@ -148,19 +148,19 @@ export const ShadPhoneInput = (props: WidgetProps) => {
                   textBox.ref.current?.focus();
                 }}
               >
-                <Command className="flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground">
-                  <div className="flex items-center border-b px-3">
-                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                <Command className="tw-flex tw-h-full tw-w-full tw-flex-col tw-overflow-hidden tw-rounded-ui2-md tw-bg-ui2-popover tw-text-ui2-popover-foreground">
+                  <div className="tw-flex tw-items-center tw-border-b tw-px-3">
+                    <Search className="tw-mr-2 tw-h-4 tw-w-4 tw-shrink-0 tw-opacity-50" />
                     <Command.Input
                       placeholder="Search country..."
-                      className="flex h-10 w-full rounded-md border-0 bg-transparent py-3 text-sm text-[color:inherit] shadow-none outline-none placeholder:text-muted-foreground focus:outline-none"
+                      className="tw-flex tw-h-10 tw-w-full tw-rounded-ui2-md tw-border-0 tw-bg-transparent tw-py-3 tw-text-ui2-sm tw-text-[color:inherit] tw-shadow-none tw-outline-none placeholder:tw-text-ui2-muted-foreground focus:tw-outline-none"
                     />
                   </div>
                   <Command.List className={POPOVER_LIST}>
-                    <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
+                    <Command.Empty className="tw-py-6 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
                       No country found.
                     </Command.Empty>
-                    <Command.Group className="overflow-hidden p-1">
+                    <Command.Group className="tw-overflow-hidden tw-p-1">
                       {countries.map((c) => {
                         const label = M.countryName(c);
                         return (
@@ -174,9 +174,13 @@ export const ShadPhoneInput = (props: WidgetProps) => {
                             }}
                           >
                             {showFlag ? <FlagIcon country={c} title={label} /> : null}
-                            <span className="flex-1 truncate">{label}</span>
-                            <span className="text-xs tabular-nums text-muted-foreground">+{M.callingCode(c)}</span>
-                            <Check className={cn('h-4 w-4', c === state.country ? 'opacity-100' : 'opacity-0')} />
+                            <span className="tw-flex-1 tw-truncate">{label}</span>
+                            <span className="tw-text-xs tw-tabular-nums tw-text-ui2-muted-foreground">
+                              +{M.callingCode(c)}
+                            </span>
+                            <Check
+                              className={cn('tw-h-4 tw-w-4', c === state.country ? 'tw-opacity-100' : 'tw-opacity-0')}
+                            />
                           </Command.Item>
                         );
                       })}
@@ -186,7 +190,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
               </PopoverContent>
             </Popover>
           ) : (
-            <span className={cn(ADDON, EDGE, 'cursor-default')} aria-label={`Country: ${name}`}>
+            <span className={cn(ADDON, EDGE, 'tw-cursor-default')} aria-label={`Country: ${name}`}>
               {current}
             </span>
           )}

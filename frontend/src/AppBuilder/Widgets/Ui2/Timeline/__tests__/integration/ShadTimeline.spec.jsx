@@ -22,8 +22,8 @@ const widget = createWidgetHarness({
 
 const render = (options = {}) => widget.render({ currentMode: 'view', ...options });
 const items = () => screen.getAllByRole('listitem');
-const titles = () => items().map((li) => li.querySelector('.font-medium').textContent);
-const marker = (li) => li.querySelector('.rounded-full');
+const titles = () => items().map((li) => li.querySelector('.tw-font-medium').textContent);
+const marker = (li) => li.querySelector('.tw-rounded-full');
 const exposed = () => widget.exposed() ?? {};
 
 describe('UI 2.0 Timeline', () => {
@@ -37,7 +37,7 @@ describe('UI 2.0 Timeline', () => {
     expect(screen.getByText('Order #1024')).toBeInTheDocument();
     expect(screen.getByText('11:30')).toBeInTheDocument();
     expect(marker(items()[0]).style.width).toBe('10px');
-    expect(items()[0]).toHaveClass('pb-6');
+    expect(items()[0]).toHaveClass('tw-pb-6');
     // The time shares the title's line.
     expect(screen.getByText('11:30').parentElement).toHaveTextContent('Packed');
     expect(exposed().lastClickedItem).toEqual({});
@@ -63,7 +63,7 @@ describe('UI 2.0 Timeline', () => {
   test('[ShadTimeline-PROP-003] density compact tightens the gaps and markers', async () => {
     render({ properties: { density: binding('compact') } });
 
-    await waitFor(() => expect(items()[0]).toHaveClass('pb-3'));
+    await waitFor(() => expect(items()[0]).toHaveClass('tw-pb-3'));
     expect(marker(items()[0]).style.width).toBe('8px');
   });
 
@@ -76,7 +76,7 @@ describe('UI 2.0 Timeline', () => {
   test('[ShadTimeline-PROP-005] timePosition top puts the time above the title', async () => {
     render({ properties: { timePosition: binding('top') } });
 
-    await waitFor(() => expect(screen.getByText('11:30').parentElement).toHaveClass('mb-0.5'));
+    await waitFor(() => expect(screen.getByText('11:30').parentElement).toHaveClass('tw-mb-0.5'));
     expect(screen.getByText('11:30').parentElement).not.toHaveTextContent('Packed');
   });
 
@@ -101,7 +101,7 @@ describe('UI 2.0 Timeline', () => {
     render();
     widget.setEvents(setVariableOn(ID, 'onItemClicked', { value: '{{components.timeline1.lastClickedItem.title}}' }));
 
-    await waitFor(() => expect(items()[1]).toHaveClass('cursor-pointer'));
+    await waitFor(() => expect(items()[1]).toHaveClass('tw-cursor-pointer'));
     await act(async () => fireEvent.click(screen.getByText('Packed')));
 
     await waitFor(() => expect(widget.variables().seen).toBe('Packed'));

@@ -19,13 +19,13 @@ export const RATING_ICONS: Record<string, LucideIcon> = { star: Star, heart: Hea
 
 // Filled icons: the filledColor style, else a colour that suits the icon (amber stars, red hearts, primary dots).
 export const FILLED: Record<string, string> = {
-  star: 'fill-[color:var(--lk-on,var(--sc-warning))] text-[color:var(--lk-on,var(--sc-warning))]',
-  heart: 'fill-[color:var(--lk-on,var(--sc-destructive))] text-[color:var(--lk-on,var(--sc-destructive))]',
-  circle: 'fill-[color:var(--lk-on,var(--sc-primary))] text-[color:var(--lk-on,var(--sc-primary-ink))]',
+  star: 'tw-fill-[color:var(--lk-on,var(--sc-warning))] tw-text-[color:var(--lk-on,var(--sc-warning))]',
+  heart: 'tw-fill-[color:var(--lk-on,var(--sc-destructive))] tw-text-[color:var(--lk-on,var(--sc-destructive))]',
+  circle: 'tw-fill-[color:var(--lk-on,var(--sc-primary))] tw-text-[color:var(--lk-on,var(--sc-primary-ink))]',
 };
 
 export const EMPTY =
-  'fill-[color:var(--lk-off,color-mix(in_srgb,var(--sc-muted-foreground)_22%,transparent))] text-[color:var(--lk-off,color-mix(in_srgb,var(--sc-muted-foreground)_22%,transparent))]';
+  'tw-fill-[color:var(--lk-off,color-mix(in_srgb,var(--sc-muted-foreground)_22%,transparent))] tw-text-[color:var(--lk-off,color-mix(in_srgb,var(--sc-muted-foreground)_22%,transparent))]';
 
 export const ShadRating = (props: WidgetProps) => {
   const { properties, id } = props;
@@ -87,14 +87,14 @@ export const ShadRating = (props: WidgetProps) => {
         error={check.error}
         required={check.required}
       >
-        <div className="flex items-center gap-2">
+        <div className="tw-flex tw-items-center tw-gap-2">
           <div
             id={`shad-${id}`}
             role="radiogroup"
             aria-label={isText(properties.label) && properties.label ? String(properties.label) : 'Rating'}
             aria-readonly={readOnly || undefined}
             aria-disabled={busy(properties) || undefined}
-            className={cn('inline-flex items-center', size >= 28 ? 'gap-1.5' : 'gap-1')}
+            className={cn('tw-inline-flex tw-items-center', size >= 28 ? 'tw-gap-1.5' : 'tw-gap-1')}
             onMouseLeave={() => setHover(null)}
           >
             {Array.from({ length: max }, (_, i) => {
@@ -120,20 +120,20 @@ export const ShadRating = (props: WidgetProps) => {
                       : undefined
                   }
                   className={cn(
-                    'relative inline-flex shrink-0 rounded-sm outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                    interactive && 'cursor-pointer hover:scale-110'
+                    'tw-relative tw-inline-flex tw-shrink-0 tw-rounded-ui2-sm tw-outline-none tw-transition-transform focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring focus-visible:tw-ring-offset-2',
+                    interactive && 'tw-cursor-pointer hover:tw-scale-110'
                   )}
                   style={{ width: size, height: size }}
                 >
                   <Icon
-                    className={cn('absolute inset-0', fill === 'full' ? FILLED[kind] : EMPTY)}
+                    className={cn('tw-absolute tw-inset-0', fill === 'full' ? FILLED[kind] : EMPTY)}
                     style={{ width: size, height: size }}
                     strokeWidth={1.5}
                   />
                   {fill === 'half' ? (
-                    <span className="absolute inset-y-0 left-0 w-1/2 overflow-hidden">
+                    <span className="tw-absolute tw-inset-y-0 tw-left-0 tw-w-1/2 tw-overflow-hidden">
                       <Icon
-                        className={cn('absolute left-0 top-0', FILLED[kind])}
+                        className={cn('tw-absolute tw-left-0 tw-top-0', FILLED[kind])}
                         style={{ width: size, height: size }}
                         strokeWidth={1.5}
                       />
@@ -144,7 +144,7 @@ export const ShadRating = (props: WidgetProps) => {
             })}
           </div>
           {properties.showValue === true && valueText ? (
-            <span className="text-sm tabular-nums text-[color:var(--lk-value,var(--sc-muted-foreground))]">
+            <span className="tw-text-ui2-sm tw-tabular-nums tw-text-[color:var(--lk-value,var(--sc-muted-foreground))]">
               {valueText}
             </span>
           ) : null}

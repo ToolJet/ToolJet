@@ -28,7 +28,7 @@ const render = (options = {}) => widget.render({ currentMode: 'view', ...options
 const exposed = () => widget.exposed() ?? {};
 const stages = () => screen.queryAllByRole('button');
 const drawn = (count = 5) => waitFor(() => expect(stages()).toHaveLength(count));
-const barOf = (stage) => stage.querySelector('.rounded-\\[6px\\]');
+const barOf = (stage) => stage.querySelector('.tw-rounded-\\[6px\\]');
 
 describe('UI 2.0 Funnel chart', () => {
   beforeEach(() => widget.setup());
@@ -73,11 +73,11 @@ describe('UI 2.0 Funnel chart', () => {
   test('[ShadFunnelChart-PROP-003] align left anchors the bars at the left; by default they are centred', async () => {
     render();
     await drawn(5);
-    expect(barOf(stages()[1]).parentElement).toHaveClass('justify-center');
+    expect(barOf(stages()[1]).parentElement).toHaveClass('tw-justify-center');
 
     render({ properties: { align: binding('left') } });
     await drawn(5);
-    expect(barOf(stages()[1]).parentElement).toHaveClass('justify-start');
+    expect(barOf(stages()[1]).parentElement).toHaveClass('tw-justify-start');
   });
 
   test('[ShadFunnelChart-PROP-004] colors sets the bar colour, fading stage by stage; colorByStage gives each stage its own', async () => {

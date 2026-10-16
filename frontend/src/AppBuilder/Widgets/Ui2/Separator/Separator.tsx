@@ -10,12 +10,12 @@ export const ShadSeparator = (props: WidgetProps) => {
   const vertical = properties.orientation === 'vertical';
   return (
     <Shell {...props}>
-      <div className="flex items-center justify-center" style={{ height }}>
+      <div className="tw-flex tw-items-center tw-justify-center" style={{ height }}>
         <Separator
           orientation={vertical ? 'vertical' : 'horizontal'}
           className={cn(
-            'bg-[color:var(--lk-line,var(--sc-border))]',
-            vertical ? 'w-[var(--lk-thick,1px)]' : 'h-[var(--lk-thick,1px)]'
+            'tw-bg-[color:var(--lk-line,var(--sc-border))]',
+            vertical ? 'tw-w-[var(--lk-thick,1px)]' : 'tw-h-[var(--lk-thick,1px)]'
           )}
         />
       </div>

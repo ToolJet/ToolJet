@@ -57,7 +57,7 @@ const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, backg
       // activetab is ToolJet's own attribute on a tab pane (as on the native Tabs), not one React's types know.
       {...{ activetab: tab.id }}
       data-disabled={tab.disable}
-      className={cn('tab-pane h-full w-full', dynamic && active && `dynamic-${id}`)}
+      className={cn('tab-pane tw-h-full tw-w-full', dynamic && active && `dynamic-${id}`)}
       style={{
         display: active ? 'block' : 'none',
         padding: `${TAB_CANVAS_PADDING}px`,
@@ -67,7 +67,7 @@ const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, backg
       }}
     >
       {tab.loading ? (
-        <div className="flex h-full items-center justify-center">
+        <div className="tw-flex tw-h-full tw-items-center tw-justify-center">
           <Spinner />
         </div>
       ) : (
@@ -257,10 +257,10 @@ export const ShadTabs = (props: WidgetProps) => {
       }}
     >
       {isLoading && wantsSkeleton(properties) ? (
-        <div className="flex h-[50px] items-center gap-2 px-3">
-          <Skeleton className="h-7 w-24" />
-          <Skeleton className="h-7 w-20" />
-          <Skeleton className="h-7 w-24" />
+        <div className="tw-flex tw-h-[50px] tw-items-center tw-gap-2 tw-px-3">
+          <Skeleton className="tw-h-7 tw-w-24" />
+          <Skeleton className="tw-h-7 tw-w-20" />
+          <Skeleton className="tw-h-7 tw-w-24" />
         </div>
       ) : properties.hideTabs ? null : (
         <TabStrip
@@ -274,9 +274,9 @@ export const ShadTabs = (props: WidgetProps) => {
           onPick={isLoading ? () => {} : onPick}
         />
       )}
-      <div className="relative min-h-0 w-full flex-1" style={{ background: look.panelBackground }}>
+      <div className="tw-relative tw-min-h-0 tw-w-full tw-flex-1" style={{ background: look.panelBackground }}>
         {isLoading ? (
-          <div className="flex h-full items-center justify-center">
+          <div className="tw-flex tw-h-full tw-items-center tw-justify-center">
             <Spinner />
           </div>
         ) : (
@@ -297,7 +297,7 @@ export const ShadTabs = (props: WidgetProps) => {
       </div>
       {showNav && !isLoading ? (
         <div
-          className="flex shrink-0 items-center justify-between gap-2 border-t px-3"
+          className="tw-flex tw-shrink-0 tw-items-center tw-justify-between tw-gap-2 tw-border-t tw-px-3"
           style={{ height: STEP_NAV_HEIGHT, borderColor: 'var(--tb-border, var(--sc-border))' }}
         >
           <Button
@@ -309,10 +309,10 @@ export const ShadTabs = (props: WidgetProps) => {
               if (previous) switchTo(previous.id);
             }}
           >
-            <ChevronLeft className="mr-1 h-4 w-4" />
+            <ChevronLeft className="tw-mr-1 tw-h-4 tw-w-4" />
             {String(properties.backLabel || 'Back')}
           </Button>
-          <span className="text-xs tabular-nums text-muted-foreground">
+          <span className="tw-text-xs tw-tabular-nums tw-text-ui2-muted-foreground">
             {shown.length ? `${stepIndex + 1} / ${shown.length}` : ''}
           </span>
           <Button
@@ -328,7 +328,7 @@ export const ShadTabs = (props: WidgetProps) => {
             }}
           >
             {isLastStep ? String(properties.finishLabel || 'Finish') : String(properties.nextLabel || 'Next')}
-            {isLastStep ? null : <ChevronRight className="ml-1 h-4 w-4" />}
+            {isLastStep ? null : <ChevronRight className="tw-ml-1 tw-h-4 tw-w-4" />}
           </Button>
         </div>
       ) : null}

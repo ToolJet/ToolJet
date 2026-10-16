@@ -33,8 +33,8 @@ describe('UI 2.0 Stat', () => {
     const { container } = render();
 
     expect(await screen.findByText('$12,400')).toBeInTheDocument();
-    expect(figure()).toHaveClass('text-2xl');
-    expect(root(container).firstChild).toHaveClass('px-6', 'py-5');
+    expect(figure()).toHaveClass('tw-text-2xl');
+    expect(root(container).firstChild).toHaveClass('tw-px-6', 'tw-py-5');
     // A plain figure: no chip, trend line or progress bar.
     expect(container.querySelector('svg')).toBeNull();
     expect(exposed()).toMatchObject({
@@ -98,7 +98,7 @@ describe('UI 2.0 Stat', () => {
     render({ properties: { footnote: binding('Includes refunds issued this month') } });
 
     const note = await screen.findByText('Includes refunds issued this month');
-    expect(note).not.toHaveClass('line-clamp-2');
+    expect(note).not.toHaveClass('tw-line-clamp-2');
   });
 
   // A footnote that wrapped past a fixed box cut the card's bottom edge off: with dynamic height off the card fills the
@@ -113,9 +113,9 @@ describe('UI 2.0 Stat', () => {
     });
 
     const note = await screen.findByText('Includes refunds issued this month');
-    expect(note).toHaveClass('line-clamp-2');
+    expect(note).toHaveClass('tw-line-clamp-2');
     expect(note).toHaveAttribute('title', 'Includes refunds issued this month');
-    expect(screen.getByText('vs last week')).toHaveClass('line-clamp-1');
+    expect(screen.getByText('vs last week')).toHaveClass('tw-line-clamp-1');
     // The height RenderWidget gives it: the widget's 160px less the wrapper's 2px padding on each side.
     expect(root(container).firstChild.style.height).toBe('156px');
   });
@@ -126,7 +126,7 @@ describe('UI 2.0 Stat', () => {
     await waitFor(() => expect(container.querySelector('.lucide-wallet')).toBeInTheDocument());
     const tile = container.querySelector('.lucide-wallet').parentElement;
     expect(tile.parentElement).toBe(screen.getByText('Revenue').parentElement);
-    expect(tile.className).toContain('rounded-[calc(var(--sc-radius)-2px)]');
+    expect(tile.className).toContain('tw-rounded-[calc(var(--sc-radius)-2px)]');
   });
 
   test('[ShadStat-PROP-007] with the icon at the right the change chip moves beside the figure', async () => {
@@ -142,11 +142,11 @@ describe('UI 2.0 Stat', () => {
     });
     await waitFor(() => expect(container.querySelector('.lucide-wallet')).toBeInTheDocument());
     const tile = () => container.querySelector('.lucide-wallet').parentElement;
-    expect(tile()).toHaveClass('rounded-full');
-    expect(tile().parentElement).toHaveClass('mb-1');
+    expect(tile()).toHaveClass('tw-rounded-full');
+    expect(tile().parentElement).toHaveClass('tw-mb-1');
 
     render({ properties: { icon: binding('wallet'), iconPosition: binding('left'), iconStyle: binding('none') } });
-    await waitFor(() => expect(tile().parentElement).toHaveClass('items-start', 'gap-3'));
+    await waitFor(() => expect(tile().parentElement).toHaveClass('tw-items-start', 'tw-gap-3'));
     expect(tile().className).not.toContain('var(--lk-chip');
   });
 
@@ -175,11 +175,11 @@ describe('UI 2.0 Stat', () => {
 
   test('[ShadStat-PROP-011] size sm and lg shrink and grow the figure; card off drops the card', async () => {
     const { container } = render({ properties: { size: binding('lg') } });
-    await waitFor(() => expect(figure()).toHaveClass('text-4xl'));
+    await waitFor(() => expect(figure()).toHaveClass('tw-text-4xl'));
 
     render({ properties: { size: binding('sm'), card: binding('{{false}}') } });
-    await waitFor(() => expect(figure()).toHaveClass('text-xl'));
-    expect(root(container).querySelector('.px-6')).toBeNull();
+    await waitFor(() => expect(figure()).toHaveClass('tw-text-ui2-xl'));
+    expect(root(container).querySelector('.tw-px-6')).toBeNull();
   });
 
   test('[ShadStat-ACT-001] setPrimaryValue and setSecondaryValue change the figure and the chip until those properties change', async () => {

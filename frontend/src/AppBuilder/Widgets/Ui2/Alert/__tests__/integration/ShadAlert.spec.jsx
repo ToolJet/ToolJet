@@ -41,10 +41,10 @@ describe('UI 2.0 Alert', () => {
   test('[ShadAlert-PROP-002] the destructive variant draws the alert in the error colour', async () => {
     render({ properties: { variant: binding('destructive') } });
 
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveClass('text-destructive'));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveClass('tw-text-ui2-destructive'));
 
     render({ properties: { variant: binding('default') } });
-    await waitFor(() => expect(screen.getByRole('alert')).not.toHaveClass('text-destructive'));
+    await waitFor(() => expect(screen.getByRole('alert')).not.toHaveClass('tw-text-ui2-destructive'));
   });
 
   test('[ShadAlert-STY-001] colour and radius styles reach the alert as CSS variables it reads', async () => {
@@ -66,8 +66,8 @@ describe('UI 2.0 Alert', () => {
     expect(root.style.getPropertyValue('--lk-title')).toBe('#991b1b');
     expect(root.style.getPropertyValue('--lk-fg')).toBe('#7f1d1d');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('10px');
-    expect(alert.className).toContain('bg-[color:var(--lk-bg)]');
-    expect(screen.getByText('Payment overdue').className).toContain('text-[color:var(--lk-title)]');
-    expect(screen.getByText('Details').className).toContain('text-[color:var(--lk-fg)]');
+    expect(alert.className).toContain('tw-bg-[color:var(--lk-bg)]');
+    expect(screen.getByText('Payment overdue').className).toContain('tw-text-[color:var(--lk-title)]');
+    expect(screen.getByText('Details').className).toContain('tw-text-[color:var(--lk-fg)]');
   });
 });

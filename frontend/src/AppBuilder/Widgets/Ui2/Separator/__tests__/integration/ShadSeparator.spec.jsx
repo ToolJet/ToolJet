@@ -29,7 +29,7 @@ describe('UI 2.0 Separator', () => {
     await waitFor(() => expect(rule(container)).toHaveAttribute('data-orientation', 'horizontal'));
     // Decorative: a screen reader skips it.
     expect(rule(container)).toHaveAttribute('role', 'none');
-    expect(rule(container).className).toContain('h-[var(--lk-thick,1px)]');
+    expect(rule(container).className).toContain('tw-h-[var(--lk-thick,1px)]');
     // Centred in the height RenderWidget gives it: the widget's 24px less the wrapper's 2px padding on each side.
     expect(rule(container).parentElement.style.height).toBe('20px');
   });
@@ -38,7 +38,7 @@ describe('UI 2.0 Separator', () => {
     const { container } = render({ properties: { orientation: binding('vertical') } });
 
     await waitFor(() => expect(rule(container)).toHaveAttribute('data-orientation', 'vertical'));
-    expect(rule(container).className).toContain('w-[var(--lk-thick,1px)]');
+    expect(rule(container).className).toContain('tw-w-[var(--lk-thick,1px)]');
   });
 
   test('[ShadSeparator-STY-001] lineColor and thickness reach the rule as CSS variables it reads', async () => {
@@ -48,6 +48,6 @@ describe('UI 2.0 Separator', () => {
     const root = container.querySelector('.tj-shadcn');
     expect(root.style.getPropertyValue('--lk-line')).toBe('#94a3b8');
     expect(root.style.getPropertyValue('--lk-thick')).toBe('3px');
-    expect(rule(container).className).toContain('bg-[color:var(--lk-line,var(--sc-border))]');
+    expect(rule(container).className).toContain('tw-bg-[color:var(--lk-line,var(--sc-border))]');
   });
 });

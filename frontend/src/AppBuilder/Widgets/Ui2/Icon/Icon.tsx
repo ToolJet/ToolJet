@@ -32,22 +32,22 @@ export const ShadIcon = (props: WidgetProps) => {
   const chipSize = chip === 'none' ? size : clamp(p.chipSize, size, 1024, Math.round(size * 2));
   const clickable = hasClick && !busy(p);
   const click = () => !busy(p) && fireEvent('onClick');
-  const shape = chip === 'circle' ? 'rounded-full' : 'rounded-[var(--lk-radius,var(--sc-radius))]';
+  const shape = chip === 'circle' ? 'tw-rounded-full' : 'tw-rounded-[var(--lk-radius,var(--sc-radius))]';
   return (
     <Shell {...props}>
       <div
-        className={cn('flex items-center', justify(props.styles))}
+        className={cn('tw-flex tw-items-center', justify(props.styles))}
         style={{ minHeight: Math.min(height || 0, 2000) }}
       >
         {p.loadingState ? (
           wantsSkeleton(p) ? (
             <Skeleton
-              className={cn('shrink-0', chip === 'none' ? 'rounded-md' : shape)}
+              className={cn('tw-shrink-0', chip === 'none' ? 'tw-rounded-ui2-md' : shape)}
               style={{ width: chipSize, height: chipSize }}
             />
           ) : (
             <span
-              className="inline-flex shrink-0 items-center justify-center"
+              className="tw-inline-flex tw-shrink-0 tw-items-center tw-justify-center"
               style={{ width: chipSize, height: chipSize }}
             >
               <Spinner />
@@ -62,12 +62,15 @@ export const ShadIcon = (props: WidgetProps) => {
             onMouseEnter={() => fireEvent('onHover')}
             onKeyDown={clickable ? onKeyActivate(click) : undefined}
             className={cn(
-              'inline-flex shrink-0 items-center justify-center text-[color:var(--lk-icon,var(--ic-tone))]',
+              'tw-inline-flex tw-shrink-0 tw-items-center tw-justify-center tw-text-[color:var(--lk-icon,var(--ic-tone))]',
               chip !== 'none' &&
-                cn(shape, 'bg-[color:var(--lk-chip,color-mix(in_srgb,var(--lk-icon,var(--ic-tone))_12%,transparent))]'),
+                cn(
+                  shape,
+                  'tw-bg-[color:var(--lk-chip,color-mix(in_srgb,var(--lk-icon,var(--ic-tone))_12%,transparent))]'
+                ),
               clickable &&
-                'cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              p.disabledState && 'opacity-50'
+                'tw-cursor-pointer tw-transition-opacity hover:tw-opacity-80 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring',
+              p.disabledState && 'tw-opacity-50'
             )}
             style={
               {

@@ -13,10 +13,10 @@ export const ShadBadge = (props: WidgetProps) => {
       <Badge
         variant={properties.variant || 'default'}
         className={cn(
-          whenSet(props.styles, 'backgroundColor', 'bg-[color:var(--lk-bg)]'),
-          whenSet(props.styles, 'textColor', 'text-[color:var(--lk-fg)]'),
-          whenSet(props.styles, 'borderColor', 'border-[color:var(--lk-border)]'),
-          whenSet(props.styles, 'borderRadius', 'rounded-[var(--lk-radius)]')
+          whenSet(props.styles, 'backgroundColor', 'tw-bg-[color:var(--lk-bg)]'),
+          whenSet(props.styles, 'textColor', 'tw-text-[color:var(--lk-fg)]'),
+          whenSet(props.styles, 'borderColor', 'tw-border-[color:var(--lk-border)]'),
+          whenSet(props.styles, 'borderRadius', 'tw-rounded-[var(--lk-radius)]')
         )}
       >
         {String(properties.text ?? '')}

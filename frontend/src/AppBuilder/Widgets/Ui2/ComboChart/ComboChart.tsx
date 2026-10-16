@@ -169,13 +169,13 @@ export const ComboTip = ({
   if (!active || !payload?.length) return null;
   return (
     <div className="tj-shadcn">
-      <div className="grid min-w-[8rem] gap-1.5 rounded-lg border bg-background px-2.5 py-1.5 text-xs shadow-xl">
-        {label !== undefined ? <div className="font-medium">{String(label)}</div> : null}
+      <div className="tw-grid tw-min-w-[8rem] tw-gap-1.5 tw-rounded-ui2-lg tw-border tw-bg-ui2-background tw-px-2.5 tw-py-1.5 tw-text-xs tw-shadow-xl">
+        {label !== undefined ? <div className="tw-font-medium">{String(label)}</div> : null}
         {payload.map((item) => (
-          <div key={item.dataKey ?? item.name} className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 shrink-0 rounded-[2px]" style={{ background: item.color }} />
-            <span className="flex-1 text-muted-foreground">{String(item.name)}</span>
-            <span className="font-mono font-medium tabular-nums">{format(item.value, item.dataKey)}</span>
+          <div key={item.dataKey ?? item.name} className="tw-flex tw-items-center tw-gap-2">
+            <span className="tw-h-2.5 tw-w-2.5 tw-shrink-0 tw-rounded-[2px]" style={{ background: item.color }} />
+            <span className="tw-flex-1 tw-text-ui2-muted-foreground">{String(item.name)}</span>
+            <span className="tw-font-mono tw-font-medium tw-tabular-nums">{format(item.value, item.dataKey)}</span>
           </div>
         ))}
       </div>

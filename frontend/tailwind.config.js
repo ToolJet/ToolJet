@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 const plugin = require('tailwindcss/plugin');
+// The UI 2.0 widgets' theme keys, all under a `ui2` name (see that file).
+const ui2 = require('./src/AppBuilder/Widgets/Ui2/_shared/styles/ui2.tailwind');
 
 module.exports = {
   darkMode: ['class', '[class~="dark-theme"]'],
@@ -9,6 +11,7 @@ module.exports = {
     './app/**/*.{js,jsx}',
     './src/**/*.{js,jsx}',
     './ee/**/*.{js,jsx}',
+    './src/AppBuilder/Widgets/Ui2/**/*.{ts,tsx}',
   ],
   prefix: 'tw-',
   corePlugins: {
@@ -17,6 +20,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        ...ui2.colors,
         'page-default': 'var(--page-default)',
         'page-weak': 'var(--page-weak)',
         'background-surface-layer-01': 'var(--background-surface-layer-01)',
@@ -126,12 +130,17 @@ module.exports = {
         lg: 'var(--radius-lg)',
         xl: 'var(--radius-xl)',
         full: 'var(--radius-full)',
+        ...ui2.borderRadius,
       },
+      textColor: ui2.textColor,
+      keyframes: ui2.keyframes,
+      animation: ui2.animation,
       fontSize: {
         sm: ['11px', '16px'],
         base: ['12px', '18px'],
         lg: ['14px', '20px'],
         xl: ['16px', '24px'],
+        ...ui2.fontSize,
       },
       fontWeight: {
         thin: '100',

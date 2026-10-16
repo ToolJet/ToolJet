@@ -32,15 +32,15 @@ const FilterPanel = ({ columns, filters, onApply }: FilterPanelProps) => {
   const update = (index: number, patch: Partial<TableFilter>) =>
     setRows((all) => all.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   return (
-    <div className="flex w-[420px] max-w-[90vw] flex-col gap-2">
-      <p className="text-sm font-medium">Filters</p>
+    <div className="tw-flex tw-w-[420px] tw-max-w-[90vw] tw-flex-col tw-gap-2">
+      <p className="tw-text-ui2-sm tw-font-medium">Filters</p>
       {rows.map((row, index) => (
-        <div key={index} className="flex items-center gap-1.5">
+        <div key={index} className="tw-flex tw-items-center tw-gap-1.5">
           <select
             aria-label="Column"
             value={row.column}
             onChange={(e) => update(index, { column: e.target.value })}
-            className="h-8 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm"
+            className="tw-h-8 tw-min-w-0 tw-flex-1 tw-rounded-ui2-md tw-border tw-border-ui2-input tw-bg-ui2-background tw-px-2 tw-text-ui2-sm"
           >
             {filterable.map((c) => (
               <option key={c.id} value={c.key}>
@@ -52,7 +52,7 @@ const FilterPanel = ({ columns, filters, onApply }: FilterPanelProps) => {
             aria-label="Condition"
             value={row.condition}
             onChange={(e) => update(index, { condition: e.target.value })}
-            className="h-8 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm"
+            className="tw-h-8 tw-min-w-0 tw-flex-1 tw-rounded-ui2-md tw-border tw-border-ui2-input tw-bg-ui2-background tw-px-2 tw-text-ui2-sm"
           >
             {FILTER_CONDITIONS.map(([value, label]) => (
               <option key={value} value={value}>
@@ -61,11 +61,11 @@ const FilterPanel = ({ columns, filters, onApply }: FilterPanelProps) => {
             ))}
           </select>
           {['isEmpty', 'isNotEmpty'].includes(row.condition) ? (
-            <span className="flex-1" />
+            <span className="tw-flex-1" />
           ) : (
             <Input
               aria-label="Value"
-              className="h-8 min-w-0 flex-1 px-2"
+              className="tw-h-8 tw-min-w-0 tw-flex-1 tw-px-2"
               value={String(row.value ?? '')}
               onChange={(e) => update(index, { value: e.target.value })}
             />
@@ -73,15 +73,15 @@ const FilterPanel = ({ columns, filters, onApply }: FilterPanelProps) => {
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 shrink-0 p-0"
+            className="tw-h-8 tw-w-8 tw-shrink-0 tw-p-0"
             aria-label="Remove filter"
             onClick={() => setRows((all) => all.filter((_, i) => i !== index))}
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="tw-h-3.5 tw-w-3.5" />
           </Button>
         </div>
       ))}
-      <div className="flex items-center justify-between pt-1">
+      <div className="tw-flex tw-items-center tw-justify-between tw-pt-1">
         <Button
           variant="ghost"
           size="sm"
@@ -89,10 +89,10 @@ const FilterPanel = ({ columns, filters, onApply }: FilterPanelProps) => {
             setRows((all) => [...all, { column: filterable[0]?.key ?? '', condition: 'contains', value: '' }])
           }
         >
-          <Plus className="mr-1 h-3.5 w-3.5" />
+          <Plus className="tw-mr-1 tw-h-3.5 tw-w-3.5" />
           Add filter
         </Button>
-        <div className="flex gap-1.5">
+        <div className="tw-flex tw-gap-1.5">
           <Button variant="outline" size="sm" onClick={() => onApply([])}>
             Clear
           </Button>
@@ -135,13 +135,18 @@ export const TableToolbar = ({
   runDownload,
   fireEvent,
 }: TableToolbarProps) => (
-  <div className="flex flex-wrap items-center gap-2">
+  <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-2">
     {properties.displaySearchBox !== false ? (
-      <div className="relative min-w-[180px] max-w-sm flex-1">
-        <Search className={cn('pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2', MUTED)} />
+      <div className="tw-relative tw-min-w-[180px] tw-max-w-sm tw-flex-1">
+        <Search
+          className={cn(
+            'tw-pointer-events-none tw-absolute tw-left-2.5 tw-top-1/2 tw-h-4 tw-w-4 -tw-translate-y-1/2',
+            MUTED
+          )}
+        />
         <Input
           aria-label="Search"
-          className="h-9 pl-8 pr-8"
+          className="tw-h-9 tw-pl-8 tw-pr-8"
           placeholder={String(properties.searchPlaceholder ?? 'Search…')}
           value={searchInput}
           disabled={isDisabled}
@@ -151,31 +156,34 @@ export const TableToolbar = ({
           <button
             type="button"
             aria-label="Clear search"
-            className={cn('absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 hover:bg-muted', MUTED)}
+            className={cn(
+              'tw-absolute tw-right-2 tw-top-1/2 -tw-translate-y-1/2 tw-rounded tw-p-0.5 hover:tw-bg-ui2-muted',
+              MUTED
+            )}
             onClick={() => setSearchInput('')}
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="tw-h-3.5 tw-w-3.5" />
           </button>
         ) : null}
       </div>
     ) : (
-      <span className="flex-1" />
+      <span className="tw-flex-1" />
     )}
-    <div className="ml-auto flex items-center gap-2">
+    <div className="tw-ml-auto tw-flex tw-items-center tw-gap-2">
       {properties.showFilterButton !== false ? (
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9" disabled={isDisabled}>
-              <Filter className="mr-1.5 h-3.5 w-3.5" />
+            <Button variant="outline" size="sm" className="tw-h-9" disabled={isDisabled}>
+              <Filter className="tw-mr-1.5 tw-h-3.5 tw-w-3.5" />
               Filter
               {filters.length ? (
-                <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 tabular-nums">
+                <Badge variant="secondary" className="tw-ml-1.5 tw-h-5 tw-px-1.5 tw-tabular-nums">
                   {filters.length}
                 </Badge>
               ) : null}
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="w-auto" style={lookVars('ShadTable', styles)}>
+          <PopoverContent align="end" className="tw-w-auto" style={lookVars('ShadTable', styles)}>
             <FilterPanel columns={columns} filters={filters} onApply={(list) => applyFilterList(list)} />
           </PopoverContent>
         </Popover>
@@ -183,18 +191,18 @@ export const TableToolbar = ({
       {properties.hideColumnSelectorButton !== true ? (
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9" disabled={isDisabled}>
-              <Columns3 className="mr-1.5 h-3.5 w-3.5" />
+            <Button variant="outline" size="sm" className="tw-h-9" disabled={isDisabled}>
+              <Columns3 className="tw-mr-1.5 tw-h-3.5 tw-w-3.5" />
               Columns
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="w-52 p-2" style={lookVars('ShadTable', styles)}>
+          <PopoverContent align="end" className="tw-w-52 tw-p-2" style={lookVars('ShadTable', styles)}>
             {columns
               .filter((c) => c.visible)
               .map((c) => (
                 <label
                   key={c.id}
-                  className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
+                  className="tw-flex tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded-ui2-md tw-px-2 tw-py-1.5 tw-text-ui2-sm hover:tw-bg-ui2-muted"
                 >
                   <Checkbox
                     checked={!hiddenIds.has(c.id)}
@@ -207,7 +215,7 @@ export const TableToolbar = ({
                       })
                     }
                   />
-                  <span className="truncate">{c.name}</span>
+                  <span className="tw-truncate">{c.name}</span>
                 </label>
               ))}
           </PopoverContent>
@@ -216,11 +224,11 @@ export const TableToolbar = ({
       {properties.showDownloadButton === true ? (
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9" aria-label="Download" disabled={isDisabled}>
-              <Download className="h-3.5 w-3.5" />
+            <Button variant="outline" size="sm" className="tw-h-9" aria-label="Download" disabled={isDisabled}>
+              <Download className="tw-h-3.5 tw-w-3.5" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="w-40 p-1" style={lookVars('ShadTable', styles)}>
+          <PopoverContent align="end" className="tw-w-40 tw-p-1" style={lookVars('ShadTable', styles)}>
             {(
               [
                 ['csv', 'Download CSV'],
@@ -230,7 +238,7 @@ export const TableToolbar = ({
               <button
                 key={type}
                 type="button"
-                className="w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
+                className="tw-w-full tw-rounded-ui2-md tw-px-2 tw-py-1.5 tw-text-left tw-text-ui2-sm hover:tw-bg-ui2-muted"
                 onClick={() => {
                   runDownload(type);
                   // The native Table's event for a download from its toolbar.
@@ -247,12 +255,12 @@ export const TableToolbar = ({
         <Button
           variant="outline"
           size="sm"
-          className="h-9"
+          className="tw-h-9"
           aria-label="Refresh"
           disabled={isDisabled}
           onClick={() => fireEvent('onRefresh')}
         >
-          <RefreshCw className="h-3.5 w-3.5" />
+          <RefreshCw className="tw-h-3.5 tw-w-3.5" />
         </Button>
       ) : null}
     </div>

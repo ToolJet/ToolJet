@@ -324,7 +324,7 @@ describe('Kanban', () => {
       metaField: 'when',
     });
     const meta = [...document.querySelectorAll('span')].find((s) => s.textContent === 'Follow-up Oct 14, 2026');
-    expect(meta.className).toContain('truncate');
+    expect(meta.className).toContain('tw-truncate');
     expect(meta.getAttribute('title')).toBe('Follow-up Oct 14, 2026');
     // Beside a wide badge the line wraps, the meta moving whole under it, before the meta is cut ("28 Oct 2...", a
     // grants board, 2026-10-14).
@@ -459,9 +459,9 @@ describe('Button focus ring', () => {
   it('stays within the 2px the widget box leaves around a button (a 2px ring 2px out was cut off at the sides)', async () => {
     const { problems, unmount } = await mount('ShadButton', { text: 'Novo Agendamento' });
     const cls = document.querySelector('button').className;
-    expect(cls).toContain('focus-visible:ring-1');
-    expect(cls).toContain('focus-visible:ring-offset-1');
-    expect(cls).not.toContain('focus-visible:ring-offset-2');
+    expect(cls).toContain('focus-visible:tw-ring-1');
+    expect(cls).toContain('focus-visible:tw-ring-offset-1');
+    expect(cls).not.toContain('focus-visible:tw-ring-offset-2');
     unmount();
     expect(problems()).toEqual([]);
   });
@@ -475,9 +475,9 @@ describe('Hero', () => {
       background: 'dark',
     });
     const btn = [...document.querySelectorAll('button')].find((b) => b.textContent === 'New booking');
-    expect(btn.className).toContain('bg-white');
+    expect(btn.className).toContain('tw-bg-white');
     expect(btn.className).not.toContain('var(--sc-foreground)');
-    expect(btn.className).toContain('text-[#0f172a]');
+    expect(btn.className).toContain('tw-text-[#0f172a]');
     unmount();
     expect(problems()).toEqual([]);
   });
@@ -492,7 +492,7 @@ describe('long text in buttons, badges, pickers, fields and sections', () => {
   const truncated = (text) => {
     const el = [...document.querySelectorAll('span')].find((n) => n.textContent === text && !n.children.length);
     // The text ellipsizes, and the button or badge around it is capped at its box.
-    return !!el && /\btruncate\b/.test(el.className) && !!el.parentElement.closest('.max-w-full');
+    return !!el && /\btruncate\b/.test(el.className) && !!el.parentElement.closest('.tw-max-w-full');
   };
   it.each([
     ['ShadButton', { text: LONG }],
@@ -642,7 +642,7 @@ describe('Card grid', () => {
     // An ellipsis needs a block box: a flex container clips its text without one.
     expect(chip.className).not.toMatch(/\binline-flex\b/);
     expect(chip.className).toMatch(/\btruncate\b/);
-    const row = chip.closest('.flex-wrap');
+    const row = chip.closest('.tw-flex-wrap');
     expect(row).toBeTruthy();
     expect(row.textContent).toContain('Revenue');
     unmount();
@@ -702,7 +702,7 @@ describe('Record list and summary strip', () => {
       styles: styleDefaultsOf('ShadKanban'),
       height: 420,
     });
-    const list = [...document.querySelectorAll('div')].find((el) => el.className.includes('overflow-y-auto'));
+    const list = [...document.querySelectorAll('div')].find((el) => el.className.includes('tw-overflow-y-auto'));
     expect(list).toBeTruthy();
     const column = list.parentElement;
     expect(column.style.maxHeight).toBe('420px');

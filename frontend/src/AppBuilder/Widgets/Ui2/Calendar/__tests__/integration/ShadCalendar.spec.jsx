@@ -180,12 +180,12 @@ describe('UI 2.0 Calendar', () => {
 
   test('[ShadCalendar-PROP-009] fullWidth stretches the calendar across the widget; showBorder off drops its border', async () => {
     const { container } = render();
-    const calendar = () => container.querySelector('.tj-shadcn [data-mode]') || grid().closest('div.p-3');
-    expect(calendar()).toHaveClass('w-fit', 'border');
+    const calendar = () => container.querySelector('.tj-shadcn [data-mode]') || grid().closest('div.tw-p-3');
+    expect(calendar()).toHaveClass('tw-w-fit', 'tw-border');
 
     render({ properties: { fullWidth: binding('{{true}}'), showBorder: binding('{{false}}') } });
-    await waitFor(() => expect(calendar()).toHaveClass('w-full'));
-    expect(calendar()).not.toHaveClass('border');
+    await waitFor(() => expect(calendar()).toHaveClass('tw-w-full'));
+    expect(calendar()).not.toHaveClass('tw-border');
   });
 
   test('[ShadCalendar-ACT-001] selectDate picks a date and shows its month; in range mode it takes both ends', async () => {

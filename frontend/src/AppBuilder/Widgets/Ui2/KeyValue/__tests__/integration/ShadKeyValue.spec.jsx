@@ -41,7 +41,7 @@ describe('UI 2.0 Key value', () => {
     expect(valueOf('Renews')).toHaveTextContent('14 Nov 2026');
     expect(valueOf('Notes')).toHaveTextContent('—');
     expect(valueOf('Autopay')).toHaveTextContent('Yes');
-    expect(rows(container)[0]).toHaveClass('flex-row');
+    expect(rows(container)[0]).toHaveClass('tw-flex-row');
     expect(exposed().data[0]).toEqual({ label: 'Customer', value: 'Ada Lovelace' });
     expect(exposed().data).toHaveLength(7);
     expect(exposed().lastClickedField).toEqual({});
@@ -73,17 +73,17 @@ describe('UI 2.0 Key value', () => {
     await waitFor(() => expect(screen.getByText('Customer', { selector: 'dt' }).style.width).toBe('120px'));
 
     render({ properties: { layout: binding('stacked'), labelWidth: binding('120px') } });
-    await waitFor(() => expect(rows(container)[0]).toHaveClass('flex-col'));
+    await waitFor(() => expect(rows(container)[0]).toHaveClass('tw-flex-col'));
     expect(screen.getByText('Customer', { selector: 'dt' }).style.width).toBe('');
   });
 
   test('[ShadKeyValue-PROP-004] dividers rule off every row but the last, and can be turned off', async () => {
     const { container } = render();
-    await waitFor(() => expect(rows(container)[0]).toHaveClass('border-b'));
-    expect(rows(container)[6]).not.toHaveClass('border-b');
+    await waitFor(() => expect(rows(container)[0]).toHaveClass('tw-border-b'));
+    expect(rows(container)[6]).not.toHaveClass('tw-border-b');
 
     render({ properties: { dividers: binding('{{false}}') } });
-    await waitFor(() => expect(rows(container)[0]).not.toHaveClass('border-b'));
+    await waitFor(() => expect(rows(container)[0]).not.toHaveClass('tw-border-b'));
   });
 
   test('[ShadKeyValue-PROP-005] emptyText replaces the dash shown for an empty value', async () => {

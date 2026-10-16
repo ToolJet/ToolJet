@@ -24,10 +24,10 @@ export const StatIcon = ({ name, shape, size }: { name: string; shape: string; s
     <span
       aria-hidden="true"
       className={cn(
-        'inline-flex shrink-0 items-center justify-center text-[color:var(--lk-icon,var(--sc-primary-ink))]',
+        'tw-inline-flex tw-shrink-0 tw-items-center tw-justify-center tw-text-[color:var(--lk-icon,var(--sc-primary-ink))]',
         shape !== 'none' &&
-          'bg-[color:var(--lk-chip,color-mix(in_srgb,var(--lk-icon,var(--sc-primary))_12%,transparent))]',
-        shape === 'circle' ? 'rounded-full' : 'rounded-[calc(var(--sc-radius)-2px)]'
+          'tw-bg-[color:var(--lk-chip,color-mix(in_srgb,var(--lk-icon,var(--sc-primary))_12%,transparent))]',
+        shape === 'circle' ? 'tw-rounded-full' : 'tw-rounded-[calc(var(--sc-radius)-2px)]'
       )}
       style={{ width: box, height: box }}
     >
@@ -51,7 +51,7 @@ export const StatSparkline = ({ data, type, id }: { data: unknown; type: unknown
     <svg
       viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
       preserveAspectRatio="none"
-      className="mt-1 h-9 w-full text-[color:var(--lk-spark,var(--sc-chart-1))]"
+      className="tw-mt-1 tw-h-9 tw-w-full tw-text-[color:var(--lk-spark,var(--sc-chart-1))]"
       aria-hidden="true"
     >
       {type === 'line' ? null : (
@@ -155,18 +155,18 @@ export const ShadStat = (props: WidgetProps) => {
       // kept its full width and was cut off at the card's edge.
       title={String(properties.change)}
       className={cn(
-        'min-w-0 max-w-[60%] gap-1',
-        figureChip && 'shrink-0',
-        isSet(trendColor) && 'border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]'
+        'tw-min-w-0 tw-max-w-[60%] tw-gap-1',
+        figureChip && 'tw-shrink-0',
+        isSet(trendColor) && 'tw-border-transparent tw-bg-[color:var(--kb-badge-bg)] tw-text-[color:var(--kb-badge-fg)]'
       )}
     >
-      {trend !== 'neutral' ? <TrendIcon className="h-3 w-3 shrink-0" /> : null}
+      {trend !== 'neutral' ? <TrendIcon className="tw-h-3 tw-w-3 tw-shrink-0" /> : null}
       {/* Words without a leading figure wrap rather than being cut; a figure stays on one line, a long one shortened
           ("+$190,800.00" broke as "+$190,800.0 / 0" and squeezed the label to two lines, 2026-10-14). */}
       {figureChip ? (
-        <span className="whitespace-nowrap">{compactFigure(change.chip)}</span>
+        <span className="tw-whitespace-nowrap">{compactFigure(change.chip)}</span>
       ) : (
-        <span className="min-w-0 whitespace-normal break-words">{change.chip}</span>
+        <span className="tw-min-w-0 tw-whitespace-normal tw-break-words">{change.chip}</span>
       )}
     </Badge>
   ) : null;
@@ -175,19 +175,21 @@ export const ShadStat = (props: WidgetProps) => {
   const changeLabel = context ? (
     // In a fixed box the context line keeps to one line: wrapping to two, it pushed the title out of a KPI tile.
     <span
-      className={cn('text-xs text-[color:var(--lk-help,var(--sc-muted-foreground))]', fixed && 'line-clamp-1')}
+      className={cn('tw-text-xs tw-text-[color:var(--lk-help,var(--sc-muted-foreground))]', fixed && 'tw-line-clamp-1')}
       title={fixed ? context : undefined}
     >
       {context}
     </span>
   ) : null;
   const content = (
-    <div className={cn('flex min-w-0 flex-1 flex-col gap-1.5', fixed && 'min-h-0 overflow-hidden')}>
-      {icon && iconPosition === 'top' ? <div className="mb-1">{iconNode}</div> : null}
-      <div className="flex min-w-0 items-start justify-between gap-2">
+    <div
+      className={cn('tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1.5', fixed && 'tw-min-h-0 tw-overflow-hidden')}
+    >
+      {icon && iconPosition === 'top' ? <div className="tw-mb-1">{iconNode}</div> : null}
+      <div className="tw-flex tw-min-w-0 tw-items-start tw-justify-between tw-gap-2">
         <span
           className={cn(
-            'min-w-0 text-sm text-[color:var(--lk-label,var(--sc-muted-foreground))]',
+            'tw-min-w-0 tw-text-ui2-sm tw-text-[color:var(--lk-label,var(--sc-muted-foreground))]',
             textCase(props.styles?.labelTextTransform) && 'lk-label-case',
             isSet(props.styles?.labelLetterSpacing) && 'lk-label-tracking'
           )}
@@ -197,19 +199,19 @@ export const ShadStat = (props: WidgetProps) => {
         {badgeInHeader ? changeBadge : null}
         {icon && iconPosition === 'right' ? iconNode : null}
       </div>
-      <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+      <div className="tw-flex tw-min-w-0 tw-flex-wrap tw-items-baseline tw-gap-x-2 tw-gap-y-1">
         <span
           className={cn(
             statSize(size),
-            'font-semibold tabular-nums tracking-tight text-[color:var(--lk-value,var(--sc-foreground))]',
+            'tw-font-semibold tw-tabular-nums tw-tracking-tight tw-text-[color:var(--lk-value,var(--sc-foreground))]',
             fontStack(props.styles?.valueFontFamily) && 'lk-value-font'
           )}
         >
           {properties.loadingState ? (
             wantsSkeleton(properties) ? (
-              <Skeleton className="h-8 w-24" />
+              <Skeleton className="tw-h-8 tw-w-24" />
             ) : (
-              <span className="flex h-8 items-center">
+              <span className="tw-flex tw-h-8 tw-items-center">
                 <Spinner />
               </span>
             )
@@ -223,22 +225,25 @@ export const ShadStat = (props: WidgetProps) => {
       </div>
       {properties.footnote ? (
         <span
-          className={cn('text-sm text-[color:var(--lk-help,var(--sc-muted-foreground))]', fixed && 'line-clamp-2')}
+          className={cn(
+            'tw-text-ui2-sm tw-text-[color:var(--lk-help,var(--sc-muted-foreground))]',
+            fixed && 'tw-line-clamp-2'
+          )}
           title={fixed ? String(properties.footnote) : undefined}
         >
           {String(properties.footnote)}
         </span>
       ) : null}
       {progress !== null ? (
-        <div className="mt-1 flex flex-col gap-1">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-[color:var(--sc-muted)]">
+        <div className="tw-mt-1 tw-flex tw-flex-col tw-gap-1">
+          <div className="tw-h-1.5 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-[color:var(--sc-muted)]">
             <div
-              className="h-full rounded-full bg-[color:var(--lk-progress,var(--sc-primary))] transition-[width]"
+              className="tw-h-full tw-rounded-full tw-bg-[color:var(--lk-progress,var(--sc-primary))] tw-transition-[width]"
               style={{ width: `${progress}%` }}
             />
           </div>
           {properties.progressLabel ? (
-            <span className="text-xs text-[color:var(--lk-help,var(--sc-muted-foreground))]">
+            <span className="tw-text-xs tw-text-[color:var(--lk-help,var(--sc-muted-foreground))]">
               {String(properties.progressLabel)}
             </span>
           ) : null}
@@ -251,7 +256,7 @@ export const ShadStat = (props: WidgetProps) => {
   );
   const body =
     icon && iconPosition === 'left' ? (
-      <div className="flex items-start gap-3">
+      <div className="tw-flex tw-items-start tw-gap-3">
         {iconNode}
         {content}
       </div>
@@ -266,8 +271,8 @@ export const ShadStat = (props: WidgetProps) => {
         <Card
           ref={cardRef}
           className={cn(
-            'rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--lk-bg,var(--sc-card))] px-6 py-5',
-            fixed && 'flex flex-col overflow-hidden'
+            'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))] tw-border-[color:var(--lk-border,var(--sc-border))] tw-bg-[color:var(--lk-bg,var(--sc-card))] tw-px-6 tw-py-5',
+            fixed && 'tw-flex tw-flex-col tw-overflow-hidden'
           )}
           style={
             fixed && Number(props.height) > 0

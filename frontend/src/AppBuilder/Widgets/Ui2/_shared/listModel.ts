@@ -109,8 +109,7 @@ export const listLook = (styles: Resolved = {}): ListLook => ({
     ...(isSet(styles.itemBorderRadius) ? { borderRadius: px(styles.itemBorderRadius) } : {}),
     boxShadow: SHADOWS[styles.itemShadow] ?? (isSet(styles.itemShadow) ? styles.itemShadow : 'none'),
   },
-  // The pack's base styles zero every border with !important, so an inline border never drew: a framed item takes
-  // the border class instead, coloured by --lv-item-border (Item border color) or the theme border.
+  // A framed item takes the border class, coloured by --lv-item-border (Item border color) or the theme border.
   framed: styles.itemVariant === 'outline' || isSet(styles.itemBorderColor),
   background: isSet(styles.backgroundColor) ? styles.backgroundColor : 'transparent',
   padding: isSet(styles.padding) ? px(styles.padding) : '0px',

@@ -37,7 +37,11 @@ export const IconGlyph = ({
 /** A map entry for a property value, never an inherited key (a "constructor" from junk data). */
 export const own = <T,>(map: Record<string, T>, key: unknown): T | undefined =>
   typeof key === 'string' && Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
-const JUSTIFY: Record<string, string> = { left: 'justify-start', center: 'justify-center', right: 'justify-end' };
+const JUSTIFY: Record<string, string> = {
+  left: 'tw-justify-start',
+  center: 'tw-justify-center',
+  right: 'tw-justify-end',
+};
 export const justify = (styles: Resolved | undefined, fallback = 'left'): string | undefined =>
   own(JUSTIFY, styles?.alignment) || JUSTIFY[fallback];
 

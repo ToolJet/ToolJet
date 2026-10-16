@@ -40,8 +40,8 @@ export const CardImage = ({
   return (
     <div
       className={cn(
-        'relative overflow-hidden',
-        fill ? 'w-[38%] min-w-[96px] max-w-[200px] shrink-0 self-stretch' : 'w-full'
+        'tw-relative tw-overflow-hidden',
+        fill ? 'tw-w-[38%] tw-min-w-[96px] tw-max-w-[200px] tw-shrink-0 tw-self-stretch' : 'tw-w-full'
       )}
       style={fill ? { minHeight: 120 } : { aspectRatio: aspect }}
       data-image-layout={fill ? 'side' : 'top'}
@@ -52,18 +52,18 @@ export const CardImage = ({
           alt={title}
           loading="lazy"
           onError={() => setFailed(true)}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="tw-absolute tw-inset-0 tw-h-full tw-w-full tw-object-cover"
         />
       ) : (
         <div
-          className="absolute inset-0 flex items-center justify-center"
+          className="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center"
           style={{
             background: `linear-gradient(135deg, hsl(${hue} 70% 92%) 0%, hsl(${(hue + 40) % 360} 65% 84%) 100%)`,
           }}
           data-fallback="initials"
         >
           <span
-            className="text-3xl font-semibold tracking-tight"
+            className="tw-text-3xl tw-font-semibold tw-tracking-tight"
             style={{ color: `hsl(${hue} 45% 32%)`, fontFamily: TITLE_FONT }}
           >
             {initials(title)}
@@ -71,7 +71,7 @@ export const CardImage = ({
         </div>
       )}
       {badges.length ? (
-        <span className="absolute left-3 top-3 flex max-w-[80%] flex-wrap gap-1">
+        <span className="tw-absolute tw-left-3 tw-top-3 tw-flex tw-max-w-[80%] tw-flex-wrap tw-gap-1">
           {badges.map((badge, i) => (
             <Chip key={i} value={badge} onImage />
           ))}
@@ -82,9 +82,9 @@ export const CardImage = ({
 };
 
 export const CARD_STYLE: Record<string, string> = {
-  elevated: 'border shadow-sm hover:shadow-md hover:-translate-y-0.5',
-  outline: 'border',
-  flat: 'border-0',
+  elevated: 'tw-border tw-shadow-sm hover:tw-shadow-md hover:-tw-translate-y-0.5',
+  outline: 'tw-border',
+  flat: 'tw-border-0',
 };
 
 export const CARDS_PER_STEP = 48;
@@ -164,18 +164,21 @@ export const ShadCardGrid = (props: WidgetProps) => {
     body = <LoadingBox height={props.height} />;
   } else if (p.loadingState) {
     body = (
-      <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+      <div className="tw-grid tw-gap-4" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
         {Array.from({ length: columns }).map((_, i) => (
-          <div key={i} className={cn('flex gap-3 rounded-xl border p-0', row ? 'flex-row' : 'flex-col')}>
+          <div
+            key={i}
+            className={cn('tw-flex tw-gap-3 tw-rounded-ui2-xl tw-border tw-p-0', row ? 'tw-flex-row' : 'tw-flex-col')}
+          >
             {showImage ? (
               <Skeleton
-                className={cn('rounded-none', row ? 'w-[38%] max-w-[200px]' : 'w-full')}
+                className={cn('tw-rounded-none', row ? 'tw-w-[38%] tw-max-w-[200px]' : 'tw-w-full')}
                 style={row ? { minHeight: 120 } : { aspectRatio: aspect }}
               />
             ) : null}
-            <div className="flex flex-col gap-2 p-4">
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-3 w-1/2" />
+            <div className="tw-flex tw-flex-col tw-gap-2 tw-p-4">
+              <Skeleton className="tw-h-4 tw-w-2/3" />
+              <Skeleton className="tw-h-3 tw-w-1/2" />
             </div>
           </div>
         ))}
@@ -183,11 +186,13 @@ export const ShadCardGrid = (props: WidgetProps) => {
     );
   } else if (!cards.length) {
     body = (
-      <p className="m-0 py-10 text-center text-sm text-muted-foreground">{text(p.emptyText) || 'Nothing here yet'}</p>
+      <p className="tw-m-0 tw-py-10 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
+        {text(p.emptyText) || 'Nothing here yet'}
+      </p>
     );
   } else {
     body = (
-      <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+      <div className="tw-grid tw-gap-4" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
         {cards.slice(0, shownCount).map((card) => {
           const isSelected = p.highlightSelected !== false && selected?.key === card.key;
           // With a picture on top, the badges sit on it; otherwise one badge goes beside the title and several in a
@@ -204,13 +209,13 @@ export const ShadCardGrid = (props: WidgetProps) => {
               onKeyDown={onKeyActivate(() => click(card))}
               data-layout={row ? 'row' : 'stacked'}
               className={cn(
-                'group flex min-w-0 overflow-hidden text-left outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))]',
-                row ? 'flex-row' : 'flex-col',
+                'tw-group tw-flex tw-min-w-0 tw-overflow-hidden tw-text-left tw-outline-none tw-transition-all tw-duration-200 focus-visible:tw-ring-2 focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))]',
+                row ? 'tw-flex-row' : 'tw-flex-col',
                 CARD_STYLE[style],
                 // The pack's border reset beats an inline border colour, so Card border color and the selected card's
                 // accent edge never showed; the colour goes through a variable the border class reads.
-                'border-[color:var(--cg-border)]',
-                (hasClick || p.highlightSelected !== false) && !busy(p) && 'cursor-pointer'
+                'tw-border-[color:var(--cg-border)]',
+                (hasClick || p.highlightSelected !== false) && !busy(p) && 'tw-cursor-pointer'
               )}
               style={
                 {
@@ -231,25 +236,25 @@ export const ShadCardGrid = (props: WidgetProps) => {
                   fill={row}
                 />
               ) : null}
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-4">
+              <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1.5 tw-p-4">
                 {card.eyebrow ? (
                   <span
-                    className="truncate text-[11px] font-semibold uppercase tracking-[0.12em]"
+                    className="tw-truncate tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.12em]"
                     style={{ color: ACCENT_INK }}
                     data-part="eyebrow"
                   >
                     {card.eyebrow}
                   </span>
                 ) : null}
-                <div className="flex min-w-0 items-start gap-3">
+                <div className="tw-flex tw-min-w-0 tw-items-start tw-gap-3">
                   {card.avatar ? <RecordAvatar src={card.avatar.image} name={card.avatar.name} size={36} /> : null}
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1">
                     {/* The title takes 60% of the row; a badge wider than the room left wraps under it, and one wider
                         than the card ends in an ellipsis. A long badge beside the title ("-$19,305.50 vs last week")
                         was cut off. */}
-                    <div className="flex min-w-0 flex-wrap items-start justify-between gap-x-2 gap-y-1.5">
+                    <div className="tw-flex tw-min-w-0 tw-flex-wrap tw-items-start tw-justify-between tw-gap-x-2 tw-gap-y-1.5">
                       <span
-                        className="line-clamp-2 min-w-0 flex-[1_1_60%] text-base font-semibold leading-snug"
+                        className="tw-line-clamp-2 tw-min-w-0 tw-flex-[1_1_60%] tw-text-ui2-base tw-font-semibold tw-leading-snug"
                         style={{
                           color: 'var(--lk-title,var(--sc-foreground))',
                           fontFamily: TITLE_FONT,
@@ -258,14 +263,14 @@ export const ShadCardGrid = (props: WidgetProps) => {
                         {card.title}
                       </span>
                       {badgeBeside ? (
-                        <span className="flex min-w-0 max-w-full">
+                        <span className="tw-flex tw-min-w-0 tw-max-w-full">
                           <Chip value={card.badges[0]} />
                         </span>
                       ) : null}
                     </div>
                     {card.subtitle ? (
                       <span
-                        className="truncate text-sm"
+                        className="tw-truncate tw-text-ui2-sm"
                         style={{
                           color: 'var(--lk-fg,var(--sc-muted-foreground))',
                         }}
@@ -276,23 +281,23 @@ export const ShadCardGrid = (props: WidgetProps) => {
                   </div>
                 </div>
                 {badgeRow ? (
-                  <span className="flex min-w-0 flex-wrap gap-1.5">
+                  <span className="tw-flex tw-min-w-0 tw-flex-wrap tw-gap-1.5">
                     {card.badges.map((badge, i) => (
                       <Chip key={i} value={badge} />
                     ))}
                   </span>
                 ) : null}
                 {card.description ? (
-                  <p className="m-0 line-clamp-2 text-sm leading-relaxed text-[color:var(--sc-foreground)] opacity-80">
+                  <p className="tw-m-0 tw-line-clamp-2 tw-text-ui2-sm tw-leading-relaxed tw-text-[color:var(--sc-foreground)] tw-opacity-80">
                     {card.description}
                   </p>
                 ) : null}
-                {card.progress !== null ? <InlineProgress pct={card.progress} className="mt-auto pt-2" /> : null}
+                {card.progress !== null ? <InlineProgress pct={card.progress} className="tw-mt-auto tw-pt-2" /> : null}
                 {card.meta ? (
                   <span
                     className={cn(
-                      'pt-2 text-xs font-medium tabular-nums',
-                      card.progress === null ? 'mt-auto' : 'pt-0.5'
+                      'tw-pt-2 tw-text-xs tw-font-medium tw-tabular-nums',
+                      card.progress === null ? 'tw-mt-auto' : 'tw-pt-0.5'
                     )}
                     style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}
                   >
@@ -304,11 +309,11 @@ export const ShadCardGrid = (props: WidgetProps) => {
           );
         })}
         {cards.length > shownCount ? (
-          <div className="col-span-full flex justify-center pt-1">
+          <div className="tw-col-span-full tw-flex tw-justify-center tw-pt-1">
             <button
               type="button"
               onClick={() => setShownCount((n) => n + CARDS_PER_STEP)}
-              className="rounded-md border border-[color:var(--lk-border,var(--sc-border))] px-3 py-1.5 text-sm text-[color:var(--sc-muted-foreground)] transition-colors hover:bg-[color:var(--sc-muted)] hover:text-[color:var(--sc-foreground)]"
+              className="tw-rounded-ui2-md tw-border tw-border-[color:var(--lk-border,var(--sc-border))] tw-px-3 tw-py-1.5 tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)] tw-transition-colors hover:tw-bg-[color:var(--sc-muted)] hover:tw-text-[color:var(--sc-foreground)]"
             >
               {`Show ${Math.min(CARDS_PER_STEP, cards.length - shownCount)} more of ${cards.length - shownCount}`}
             </button>

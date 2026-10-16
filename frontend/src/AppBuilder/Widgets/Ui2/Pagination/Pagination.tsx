@@ -11,13 +11,13 @@ import { justify } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
 // ---- Pagination ------------------------------------------------------------------------------------------------------
 
-const PAGE_RADIUS = 'rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
+const PAGE_RADIUS = 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
 
 export const PAGE_IDLE =
-  'border border-transparent text-[color:var(--lk-fg,var(--sc-foreground))] hover:bg-[color:var(--lk-hover,var(--sc-accent))] hover:text-[color:var(--lk-fg,var(--sc-accent-foreground))]';
+  'tw-border tw-border-transparent tw-text-[color:var(--lk-fg,var(--sc-foreground))] hover:tw-bg-[color:var(--lk-hover,var(--sc-accent))] hover:tw-text-[color:var(--lk-fg,var(--sc-accent-foreground))]';
 
 export const PAGE_ACTIVE =
-  'border border-[color:var(--lk-on-border,var(--sc-input))] bg-[color:var(--lk-on-bg,var(--sc-background))] text-[color:var(--lk-on-fg,var(--sc-foreground))] shadow-sm hover:bg-[color:var(--lk-on-bg,var(--sc-accent))]';
+  'tw-border tw-border-[color:var(--lk-on-border,var(--sc-input))] tw-bg-[color:var(--lk-on-bg,var(--sc-background))] tw-text-[color:var(--lk-on-fg,var(--sc-foreground))] tw-shadow-sm hover:tw-bg-[color:var(--lk-on-bg,var(--sc-accent))]';
 
 interface PageButton {
   label: string;
@@ -67,7 +67,7 @@ export const ShadPagination = (props: WidgetProps) => {
   });
   const disabled = busy(p);
   const small = p.size === 'sm';
-  const square = small ? 'h-8 min-w-8 px-2 text-xs' : 'h-9 min-w-9 px-2.5 text-sm';
+  const square = small ? 'tw-h-8 tw-min-w-8 tw-px-2 tw-text-xs' : 'tw-h-9 tw-min-w-9 tw-px-2.5 tw-text-ui2-sm';
   // Too narrow for the whole pager, it drops the Previous and Next words, then the pages beside the current one, before
   // it would wrap: at 445px a ten-page pager put Next on a second line, below the widget's box. Decided before paint;
   // a new width or page count starts again from the whole pager.
@@ -103,9 +103,9 @@ export const ShadPagination = (props: WidgetProps) => {
         className={cn(
           PAGE_RADIUS,
           square,
-          'tabular-nums shadow-none',
+          'tw-tabular-nums tw-shadow-none',
           active ? PAGE_ACTIVE : PAGE_IDLE,
-          wide && (small ? 'gap-1 px-2.5' : 'gap-1 px-3')
+          wide && (small ? 'tw-gap-1 tw-px-2.5' : 'tw-gap-1 tw-px-3')
         )}
       >
         {children}
@@ -119,15 +119,15 @@ export const ShadPagination = (props: WidgetProps) => {
         ref={navRef}
         role="navigation"
         aria-label="pagination"
-        className={cn('flex w-full items-center gap-3', justify(props.styles))}
+        className={cn('tw-flex tw-w-full tw-items-center tw-gap-3', justify(props.styles))}
       >
-        <ul className="m-0 flex list-none flex-row flex-wrap items-center gap-1 p-0">
+        <ul className="tw-m-0 tw-flex tw-list-none tw-flex-row tw-flex-wrap tw-items-center tw-gap-1 tw-p-0">
           {p.showFirstLast === true
             ? button('first', {
                 label: 'Go to first page',
                 onClick: () => go(1),
                 isDisabled: shownPage <= 1,
-                children: <ChevronsLeft className="h-4 w-4" />,
+                children: <ChevronsLeft className="tw-h-4 tw-w-4" />,
               })
             : null}
           {button('prev', {
@@ -137,7 +137,7 @@ export const ShadPagination = (props: WidgetProps) => {
             wide: labelled,
             children: (
               <>
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="tw-h-4 tw-w-4" />
                 {labelled ? <span>Previous</span> : null}
               </>
             ),
@@ -147,11 +147,11 @@ export const ShadPagination = (props: WidgetProps) => {
               <li key={item} aria-hidden="true">
                 <span
                   className={cn(
-                    'flex items-center justify-center text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
-                    small ? 'h-8 w-8' : 'h-9 w-9'
+                    'tw-flex tw-items-center tw-justify-center tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]',
+                    small ? 'tw-h-8 tw-w-8' : 'tw-h-9 tw-w-9'
                   )}
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="tw-h-4 tw-w-4" />
                 </span>
               </li>
             ) : (
@@ -171,7 +171,7 @@ export const ShadPagination = (props: WidgetProps) => {
             children: (
               <>
                 {labelled ? <span>Next</span> : null}
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="tw-h-4 tw-w-4" />
               </>
             ),
           })}
@@ -180,7 +180,7 @@ export const ShadPagination = (props: WidgetProps) => {
                 label: 'Go to last page',
                 onClick: () => go(count),
                 isDisabled: shownPage >= count,
-                children: <ChevronsRight className="h-4 w-4" />,
+                children: <ChevronsRight className="tw-h-4 tw-w-4" />,
               })
             : null}
         </ul>

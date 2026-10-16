@@ -16,9 +16,9 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 // ---- Carousel ----------------------------------------------------------------------------------------------------
 
 const ARROW =
-  'absolute top-1/2 z-10 h-8 w-8 -translate-y-1/2 rounded-full border border-solid border-[color:var(--sc-border)] p-0 shadow-sm backdrop-blur bg-[color:var(--lk-arrow-bg,color-mix(in_srgb,var(--sc-background)_85%,transparent))] text-[color:var(--lk-arrow-fg,var(--sc-foreground))] hover:bg-[color:var(--lk-arrow-bg,var(--sc-background))] hover:text-[color:var(--lk-arrow-fg,var(--sc-foreground))] disabled:opacity-40';
+  'tw-absolute tw-top-1/2 tw-z-10 tw-h-8 tw-w-8 -tw-translate-y-1/2 tw-rounded-full tw-border tw-border-solid tw-border-[color:var(--sc-border)] tw-p-0 tw-shadow-sm tw-backdrop-blur tw-bg-[color:var(--lk-arrow-bg,color-mix(in_srgb,var(--sc-background)_85%,transparent))] tw-text-[color:var(--lk-arrow-fg,var(--sc-foreground))] hover:tw-bg-[color:var(--lk-arrow-bg,var(--sc-background))] hover:tw-text-[color:var(--lk-arrow-fg,var(--sc-foreground))] disabled:tw-opacity-40';
 
-export const SLIDE_RADIUS = 'rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))]';
+export const SLIDE_RADIUS = 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))]';
 
 export const ShadCarousel = (props: WidgetProps) => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent, height, currentMode } = props;
@@ -76,7 +76,7 @@ export const ShadCarousel = (props: WidgetProps) => {
   const caption = ['overlay', 'below', 'none'].includes(properties.captionPosition)
     ? properties.captionPosition
     : 'overlay';
-  const fit = properties.imageFit === 'contain' ? 'object-contain' : 'object-cover';
+  const fit = properties.imageFit === 'contain' ? 'tw-object-contain' : 'tw-object-cover';
   const gap = perView > 1 ? 'var(--lk-gap, 16px)' : 'var(--lk-gap, 0px)';
   const step = `((100% - (${perView} - 1) * ${gap}) / ${perView} + ${gap})`;
   const canPrev = positions > 1 && (loop || index > 0);
@@ -97,12 +97,12 @@ export const ShadCarousel = (props: WidgetProps) => {
       <Shell {...props} innerRef={ref}>
         <div
           className={cn(
-            'flex flex-col items-center justify-center gap-2 border border-dashed border-[color:var(--sc-border)] text-sm text-[color:var(--sc-muted-foreground)]',
+            'tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-border tw-border-dashed tw-border-[color:var(--sc-border)] tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)]',
             SLIDE_RADIUS
           )}
           style={fill ? { height } : { aspectRatio: ratio }}
         >
-          <ImageOff className="h-5 w-5" />
+          <ImageOff className="tw-h-5 tw-w-5" />
           No slides
         </div>
       </Shell>
@@ -117,7 +117,7 @@ export const ShadCarousel = (props: WidgetProps) => {
         aria-label="Carousel"
         tabIndex={0}
         className={cn(
-          'relative flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--sc-ring)]',
+          'tw-relative tw-flex tw-flex-col tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-[color:var(--sc-ring)]',
           SLIDE_RADIUS
         )}
         style={fill ? { height } : undefined}
@@ -147,9 +147,9 @@ export const ShadCarousel = (props: WidgetProps) => {
           drag.current.x = null;
         }}
       >
-        <div className={cn('relative overflow-hidden', SLIDE_RADIUS, fill && 'min-h-0 flex-1')}>
+        <div className={cn('tw-relative tw-overflow-hidden', SLIDE_RADIUS, fill && 'tw-min-h-0 tw-flex-1')}>
           <div
-            className="flex h-full touch-pan-y transition-transform duration-500 ease-out motion-reduce:transition-none"
+            className="tw-flex tw-h-full tw-touch-pan-y tw-transition-transform tw-duration-500 tw-ease-out motion-reduce:tw-transition-none"
             style={{ columnGap: gap, transform: `translateX(calc(-1 * ${index} * ${step}))` }}
           >
             {slides.map((slide, i) => {
@@ -162,15 +162,15 @@ export const ShadCarousel = (props: WidgetProps) => {
                   aria-roledescription="slide"
                   aria-label={`${i + 1} of ${slides.length}`}
                   aria-hidden={visible ? undefined : true}
-                  className={cn('flex min-w-0 shrink-0 grow-0 flex-col', fill && 'h-full')}
+                  className={cn('tw-flex tw-min-w-0 tw-shrink-0 tw-grow-0 tw-flex-col', fill && 'tw-h-full')}
                   style={{ flexBasis: `calc((100% - (${perView} - 1) * ${gap}) / ${perView})` }}
                 >
                   <div
                     className={cn(
-                      'relative overflow-hidden bg-[color:var(--lk-slide-bg,var(--sc-muted))]',
+                      'tw-relative tw-overflow-hidden tw-bg-[color:var(--lk-slide-bg,var(--sc-muted))]',
                       SLIDE_RADIUS,
-                      fill && 'min-h-0 flex-1',
-                      'cursor-pointer'
+                      fill && 'tw-min-h-0 tw-flex-1',
+                      'tw-cursor-pointer'
                     )}
                     style={fill ? undefined : { aspectRatio: ratio }}
                     onClick={() => clickSlide(i)}
@@ -182,19 +182,19 @@ export const ShadCarousel = (props: WidgetProps) => {
                         loading={i <= index + perView ? 'eager' : 'lazy'}
                         draggable={false}
                         onError={() => setFailed((f) => ({ ...f, [i]: true }))}
-                        className={cn('absolute inset-0 h-full w-full select-none', fit)}
+                        className={cn('tw-absolute tw-inset-0 tw-h-full tw-w-full tw-select-none', fit)}
                       />
                     ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 p-6 text-center">
+                      <div className="tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-p-6 tw-text-center">
                         {slide.image ? (
-                          <ImageOff className="h-6 w-6 text-[color:var(--sc-muted-foreground)]" />
+                          <ImageOff className="tw-h-6 tw-w-6 tw-text-[color:var(--sc-muted-foreground)]" />
                         ) : (
                           <>
-                            <span className="text-lg font-semibold text-[color:var(--lk-title,var(--sc-foreground))]">
+                            <span className="tw-text-ui2-lg tw-font-semibold tw-text-[color:var(--lk-title,var(--sc-foreground))]">
                               {slide.title}
                             </span>
                             {slide.description ? (
-                              <span className="max-w-md text-sm text-[color:var(--lk-desc,var(--sc-muted-foreground))]">
+                              <span className="tw-max-w-md tw-text-ui2-sm tw-text-[color:var(--lk-desc,var(--sc-muted-foreground))]">
                                 {slide.description}
                               </span>
                             ) : null}
@@ -203,23 +203,25 @@ export const ShadCarousel = (props: WidgetProps) => {
                       </div>
                     )}
                     {caption === 'overlay' && showImage && (slide.title || slide.description) ? (
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-0.5 px-4 pb-3 pt-10 text-[color:var(--lk-caption-fg,#fff)] [background:var(--lk-caption-bg,linear-gradient(to_top,rgb(0_0_0/0.68),rgb(0_0_0/0)))]">
-                        {slide.title ? <span className="truncate text-sm font-semibold">{slide.title}</span> : null}
+                      <div className="tw-pointer-events-none tw-absolute tw-inset-x-0 tw-bottom-0 tw-flex tw-flex-col tw-gap-0.5 tw-px-4 tw-pb-3 tw-pt-10 tw-text-[color:var(--lk-caption-fg,#fff)] [background:var(--lk-caption-bg,linear-gradient(to_top,rgb(0_0_0/0.68),rgb(0_0_0/0)))]">
+                        {slide.title ? (
+                          <span className="tw-truncate tw-text-ui2-sm tw-font-semibold">{slide.title}</span>
+                        ) : null}
                         {slide.description ? (
-                          <span className="line-clamp-2 text-xs opacity-90">{slide.description}</span>
+                          <span className="tw-line-clamp-2 tw-text-xs tw-opacity-90">{slide.description}</span>
                         ) : null}
                       </div>
                     ) : null}
                   </div>
                   {caption === 'below' && (slide.title || slide.description) && showImage ? (
-                    <div className="flex shrink-0 flex-col gap-0.5 pt-3">
+                    <div className="tw-flex tw-shrink-0 tw-flex-col tw-gap-0.5 tw-pt-3">
                       {slide.title ? (
-                        <span className="truncate text-sm font-medium text-[color:var(--lk-title,var(--sc-foreground))]">
+                        <span className="tw-truncate tw-text-ui2-sm tw-font-medium tw-text-[color:var(--lk-title,var(--sc-foreground))]">
                           {slide.title}
                         </span>
                       ) : null}
                       {slide.description ? (
-                        <span className="line-clamp-2 text-sm text-[color:var(--lk-desc,var(--sc-muted-foreground))]">
+                        <span className="tw-line-clamp-2 tw-text-ui2-sm tw-text-[color:var(--lk-desc,var(--sc-muted-foreground))]">
                           {slide.description}
                         </span>
                       ) : null}
@@ -236,7 +238,7 @@ export const ShadCarousel = (props: WidgetProps) => {
                 size="icon"
                 aria-label="Previous slide"
                 disabled={disabled || !canPrev}
-                className={cn(ARROW, 'left-3')}
+                className={cn(ARROW, 'tw-left-3')}
                 onClick={() => go(indexRef.current - 1)}
               >
                 <ChevronLeft />
@@ -246,7 +248,7 @@ export const ShadCarousel = (props: WidgetProps) => {
                 size="icon"
                 aria-label="Next slide"
                 disabled={disabled || !canNext}
-                className={cn(ARROW, 'right-3')}
+                className={cn(ARROW, 'tw-right-3')}
                 onClick={() => go(indexRef.current + 1)}
               >
                 <ChevronRight />
@@ -255,7 +257,7 @@ export const ShadCarousel = (props: WidgetProps) => {
           ) : null}
         </div>
         {properties.showDots !== false && positions > 1 ? (
-          <div className="flex h-7 shrink-0 items-center justify-center gap-1.5">
+          <div className="tw-flex tw-h-7 tw-shrink-0 tw-items-center tw-justify-center tw-gap-1.5">
             {Array.from({ length: Math.min(positions, 30) }, (_, i) => (
               <button
                 key={i}
@@ -265,10 +267,10 @@ export const ShadCarousel = (props: WidgetProps) => {
                 disabled={disabled}
                 onClick={() => go(i)}
                 className={cn(
-                  'h-1.5 rounded-full border-0 p-0 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  'tw-h-1.5 tw-rounded-full tw-border-0 tw-p-0 tw-transition-all focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring focus-visible:tw-ring-offset-2',
                   i === index
-                    ? 'w-4 bg-[color:var(--lk-dot-active,var(--sc-primary))]'
-                    : 'w-1.5 bg-[color:var(--lk-dot,color-mix(in_srgb,var(--sc-foreground)_20%,transparent))] hover:bg-[color:var(--lk-dot-active,color-mix(in_srgb,var(--sc-foreground)_40%,transparent))]'
+                    ? 'tw-w-4 tw-bg-[color:var(--lk-dot-active,var(--sc-primary))]'
+                    : 'tw-w-1.5 tw-bg-[color:var(--lk-dot,color-mix(in_srgb,var(--sc-foreground)_20%,transparent))] hover:tw-bg-[color:var(--lk-dot-active,color-mix(in_srgb,var(--sc-foreground)_40%,transparent))]'
                 )}
               />
             ))}

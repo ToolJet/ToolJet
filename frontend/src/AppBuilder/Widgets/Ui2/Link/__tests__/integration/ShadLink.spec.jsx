@@ -38,7 +38,7 @@ describe('UI 2.0 Link', () => {
     expect(link()).toHaveTextContent('View order');
     expect(link()).toHaveAttribute('target', '_blank');
     expect(link()).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(link()).toHaveClass('no-underline', 'hover:underline', 'font-medium');
+    expect(link()).toHaveClass('tw-no-underline', 'hover:tw-underline', 'tw-font-medium');
     expect(link().style.fontSize).toBe('14px');
     expect(exposed()).toMatchObject({ linkText: 'View order', linkTarget: 'https://example.com/orders/1' });
   });
@@ -62,11 +62,11 @@ describe('UI 2.0 Link', () => {
 
   test('[ShadLink-PROP-003] underline always underlines, no-underline never does', async () => {
     render({ properties: { underline: binding('underline') } });
-    await waitFor(() => expect(link()).toHaveClass('underline'));
+    await waitFor(() => expect(link()).toHaveClass('tw-underline'));
 
     render({ properties: { underline: binding('no-underline') } });
-    await waitFor(() => expect(link()).toHaveClass('hover:no-underline'));
-    expect(link()).not.toHaveClass('underline');
+    await waitFor(() => expect(link()).toHaveClass('hover:tw-no-underline'));
+    expect(link()).not.toHaveClass('tw-underline');
   });
 
   test('[ShadLink-PROP-004] showIcon adds an external-link icon after the text', async () => {
@@ -79,7 +79,7 @@ describe('UI 2.0 Link', () => {
     render({ properties: { fontSize: binding('{{18}}'), fontWeight: binding('bold') } });
 
     await waitFor(() => expect(link().style.fontSize).toBe('18px'));
-    expect(link()).toHaveClass('font-bold');
+    expect(link()).toHaveClass('tw-font-bold');
   });
 
   test('[ShadLink-EVT-001] clicking the link fires onClick, and pointing at it fires onHover', async () => {
@@ -136,6 +136,6 @@ describe('UI 2.0 Link', () => {
     const root = container.querySelector('.tj-shadcn');
     expect(root.style.getPropertyValue('--lk-fg')).toBe('#1d4ed8');
     expect(root.style.getPropertyValue('--lk-hover')).toBe('#1e40af');
-    expect(link().parentElement).toHaveClass('justify-end');
+    expect(link().parentElement).toHaveClass('tw-justify-end');
   });
 });

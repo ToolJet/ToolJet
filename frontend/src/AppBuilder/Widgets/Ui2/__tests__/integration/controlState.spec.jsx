@@ -89,7 +89,7 @@ describe.each(SKELETON_TYPES)('%s loading look', (type) => {
       },
     });
 
-    await waitFor(() => expect(container.querySelector('.animate-pulse')).toBeInTheDocument());
+    await waitFor(() => expect(container.querySelector('.tw-animate-pulse')).toBeInTheDocument());
   });
 });
 

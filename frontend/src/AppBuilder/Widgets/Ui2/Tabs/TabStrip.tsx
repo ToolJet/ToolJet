@@ -44,7 +44,7 @@ const tabKeys =
     );
   };
 
-const TAB_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+const TAB_RING = 'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring';
 
 /** The tab strip in one of the three styles. Stays 50px tall (the reflow's TABS_TAB_BAR_HEIGHT). */
 interface TabStripProps {
@@ -58,13 +58,17 @@ interface TabStripProps {
 }
 
 export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, onPick }: TabStripProps) => {
-  const justify = align === 'center' ? 'justify-center' : 'justify-start';
+  const justify = align === 'center' ? 'tw-justify-center' : 'tw-justify-start';
   const stretch = align === 'stretch';
   const canPick = (tab: Tab) => !tab.disable && (variant !== 'steps' || !linear || tabs.indexOf(tab) <= stepIndex);
   const onKeyDown = tabKeys(tabs, currentTab, onPick, canPick);
   if (variant === 'steps') {
     return (
-      <div role="tablist" onKeyDown={onKeyDown} className={cn('flex h-[50px] items-center gap-2 px-3', justify)}>
+      <div
+        role="tablist"
+        onKeyDown={onKeyDown}
+        className={cn('tw-flex tw-h-[50px] tw-items-center tw-gap-2 tw-px-3', justify)}
+      >
         {tabs.map((tab, index) => {
           const done = index < stepIndex;
           const active = tab.id == currentTab;
@@ -74,7 +78,10 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
               {index > 0 ? (
                 <div
                   aria-hidden="true"
-                  className={cn('h-px min-w-[16px] flex-1', done || active ? 'bg-primary' : 'bg-border')}
+                  className={cn(
+                    'tw-h-px tw-min-w-[16px] tw-flex-1',
+                    done || active ? 'tw-bg-ui2-primary' : 'tw-bg-ui2-border'
+                  )}
                 />
               ) : null}
               <button
@@ -86,25 +93,25 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
                 disabled={!!tab.disable || !reachable}
                 onClick={() => onPick(tab)}
                 className={cn(
-                  'flex shrink-0 items-center gap-2 rounded-md px-1.5 py-1 text-sm transition-colors disabled:cursor-not-allowed',
+                  'tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-ui2-md tw-px-1.5 tw-py-1 tw-text-ui2-sm tw-transition-colors disabled:tw-cursor-not-allowed',
                   TAB_RING,
                   active
-                    ? 'font-semibold text-[color:var(--tb-active-text,var(--sc-foreground))]'
-                    : 'text-[color:var(--tb-text,var(--sc-muted-foreground))]',
-                  tab.disable && 'opacity-50'
+                    ? 'tw-font-semibold tw-text-[color:var(--tb-active-text,var(--sc-foreground))]'
+                    : 'tw-text-[color:var(--tb-text,var(--sc-muted-foreground))]',
+                  tab.disable && 'tw-opacity-50'
                 )}
               >
                 <span
                   className={cn(
-                    'flex h-6 w-6 items-center justify-center rounded-full border text-xs font-semibold tabular-nums',
-                    active && 'border-primary bg-primary text-primary-foreground',
-                    done && 'border-primary bg-primary/10 text-primary',
-                    !active && !done && 'border-border bg-background'
+                    'tw-flex tw-h-6 tw-w-6 tw-items-center tw-justify-center tw-rounded-full tw-border tw-text-xs tw-font-semibold tw-tabular-nums',
+                    active && 'tw-border-ui2-primary tw-bg-ui2-primary tw-text-ui2-primary-foreground',
+                    done && 'tw-border-ui2-primary tw-bg-ui2-primary/10 tw-text-ui2-primary',
+                    !active && !done && 'tw-border-ui2-border tw-bg-ui2-background'
                   )}
                 >
-                  {done ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                  {done ? <Check className="tw-h-3.5 tw-w-3.5" /> : index + 1}
                 </span>
-                <span className="max-w-[160px] truncate">{String(tab.title ?? '')}</span>
+                <span className="tw-max-w-[160px] tw-truncate">{String(tab.title ?? '')}</span>
               </button>
             </React.Fragment>
           );
@@ -117,7 +124,10 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
       <div
         role="tablist"
         onKeyDown={onKeyDown}
-        className={cn('flex h-[50px] items-end gap-1 overflow-x-auto overflow-y-hidden border-b px-3', justify)}
+        className={cn(
+          'tw-flex tw-h-[50px] tw-items-end tw-gap-1 tw-overflow-x-auto tw-overflow-y-hidden tw-border-b tw-px-3',
+          justify
+        )}
         style={{ borderColor: 'var(--tb-border, var(--sc-border))' }}
       >
         {tabs.map((tab) => {
@@ -133,12 +143,12 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
               disabled={!!tab.disable}
               onClick={() => onPick(tab)}
               className={cn(
-                '-mb-px flex h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-t-sm border-b-2 px-3 text-[length:var(--tb-font,0.875rem)] font-medium transition-colors disabled:pointer-events-none disabled:opacity-50',
+                '-tw-mb-px tw-flex tw-h-10 tw-items-center tw-justify-center tw-gap-1.5 tw-whitespace-nowrap tw-rounded-t-ui2-sm tw-border-b-2 tw-px-3 tw-text-[length:var(--tb-font,0.875rem)] tw-font-medium tw-transition-colors disabled:tw-pointer-events-none disabled:tw-opacity-50',
                 TAB_RING,
-                stretch && 'flex-1',
+                stretch && 'tw-flex-1',
                 active
-                  ? 'border-[color:var(--tb-indicator,var(--sc-primary))] text-[color:var(--tb-active-text,var(--sc-foreground))]'
-                  : 'border-transparent text-[color:var(--tb-text,var(--sc-muted-foreground))] hover:text-[color:var(--tb-active-text,var(--sc-foreground))]'
+                  ? 'tw-border-[color:var(--tb-indicator,var(--sc-primary))] tw-text-[color:var(--tb-active-text,var(--sc-foreground))]'
+                  : 'tw-border-transparent tw-text-[color:var(--tb-text,var(--sc-muted-foreground))] hover:tw-text-[color:var(--tb-active-text,var(--sc-foreground))]'
               )}
             >
               <TabIcon tab={tab} />
@@ -150,13 +160,13 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
     );
   }
   return (
-    <div className={cn('flex h-[50px] items-center overflow-x-auto overflow-y-hidden px-3', justify)}>
+    <div className={cn('tw-flex tw-h-[50px] tw-items-center tw-overflow-x-auto tw-overflow-y-hidden tw-px-3', justify)}>
       <div
         role="tablist"
         onKeyDown={onKeyDown}
         className={cn(
-          'inline-flex h-9 items-center rounded-lg bg-[color:var(--tb-list-bg,var(--sc-muted))] p-1 text-[color:var(--tb-text,var(--sc-muted-foreground))]',
-          stretch && 'flex w-full'
+          'tw-inline-flex tw-h-9 tw-items-center tw-rounded-ui2-lg tw-bg-[color:var(--tb-list-bg,var(--sc-muted))] tw-p-1 tw-text-[color:var(--tb-text,var(--sc-muted-foreground))]',
+          stretch && 'tw-flex tw-w-full'
         )}
       >
         {tabs.map((tab) => {
@@ -172,10 +182,10 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
               disabled={!!tab.disable}
               onClick={() => onPick(tab)}
               className={cn(
-                'inline-flex h-7 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 text-[length:var(--tb-font,0.875rem)] font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
-                stretch && 'flex-1',
+                'tw-inline-flex tw-h-7 tw-items-center tw-justify-center tw-gap-1.5 tw-whitespace-nowrap tw-rounded-ui2-md tw-px-3 tw-text-[length:var(--tb-font,0.875rem)] tw-font-medium tw-transition-all focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring disabled:tw-pointer-events-none disabled:tw-opacity-50',
+                stretch && 'tw-flex-1',
                 active &&
-                  'bg-[color:var(--tb-active-bg,var(--sc-background))] text-[color:var(--tb-active-text,var(--sc-foreground))] shadow-sm'
+                  'tw-bg-[color:var(--tb-active-bg,var(--sc-background))] tw-text-[color:var(--tb-active-text,var(--sc-foreground))] tw-shadow-sm'
               )}
             >
               <TabIcon tab={tab} />

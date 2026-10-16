@@ -30,13 +30,13 @@ export const ShadCircularProgress = (props: WidgetProps) => {
   const c = g.size / 2;
   return (
     <Shell {...props} innerRef={ref}>
-      <div className={cn('flex', justify(props.styles, 'center'))}>
+      <div className={cn('tw-flex', justify(props.styles, 'center'))}>
         {p.loadingState ? (
           wantsSkeleton(p) ? (
-            <Skeleton className="rounded-full" style={{ width: g.size, height: g.size }} />
+            <Skeleton className="tw-rounded-full" style={{ width: g.size, height: g.size }} />
           ) : (
-            <span className="flex items-center justify-center" style={{ width: g.size, height: g.size }}>
-              <Spinner className={g.size >= 48 ? 'h-6 w-6' : undefined} />
+            <span className="tw-flex tw-items-center tw-justify-center" style={{ width: g.size, height: g.size }}>
+              <Spinner className={g.size >= 48 ? 'tw-h-6 tw-w-6' : undefined} />
             </span>
           )
         ) : (
@@ -46,17 +46,17 @@ export const ShadCircularProgress = (props: WidgetProps) => {
             aria-valuemax={100}
             aria-valuenow={Math.round(g.percent)}
             aria-label={label || 'Progress'}
-            className="relative shrink-0"
+            className="tw-relative tw-shrink-0"
             style={{ width: g.size, height: g.size }}
           >
-            <svg width={g.size} height={g.size} viewBox={`0 0 ${g.size} ${g.size}`} className="-rotate-90">
+            <svg width={g.size} height={g.size} viewBox={`0 0 ${g.size} ${g.size}`} className="-tw-rotate-90">
               <circle
                 cx={c}
                 cy={c}
                 r={g.radius}
                 fill="none"
                 strokeWidth={g.thickness}
-                className="stroke-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_15%,transparent))]"
+                className="tw-stroke-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_15%,transparent))]"
               />
               {g.percent > 0 ? (
                 <circle
@@ -68,15 +68,15 @@ export const ShadCircularProgress = (props: WidgetProps) => {
                   strokeLinecap={p.lineCap === 'flat' ? 'butt' : 'round'}
                   strokeDasharray={g.circumference}
                   strokeDashoffset={g.offset}
-                  className="stroke-[color:var(--sc-primary)] transition-[stroke-dashoffset] duration-500 ease-out"
+                  className="tw-stroke-[color:var(--sc-primary)] tw-transition-[stroke-dashoffset] tw-duration-500 tw-ease-out"
                 />
               ) : null}
             </svg>
             {centre || label ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center px-2 text-center leading-tight">
+              <div className="tw-absolute tw-inset-0 tw-flex tw-flex-col tw-items-center tw-justify-center tw-px-2 tw-text-center tw-leading-tight">
                 {centre ? (
                   <span
-                    className="max-w-full truncate font-semibold tabular-nums tracking-tight text-[color:var(--lk-fg,var(--sc-foreground))]"
+                    className="tw-max-w-full tw-truncate tw-font-semibold tw-tabular-nums tw-tracking-tight tw-text-[color:var(--lk-fg,var(--sc-foreground))]"
                     style={{ fontSize: centreSize }}
                   >
                     {centre}
@@ -84,7 +84,7 @@ export const ShadCircularProgress = (props: WidgetProps) => {
                 ) : null}
                 {label ? (
                   <span
-                    className="max-w-full truncate text-[color:var(--lk-label,var(--sc-muted-foreground))]"
+                    className="tw-max-w-full tw-truncate tw-text-[color:var(--lk-label,var(--sc-muted-foreground))]"
                     style={{ fontSize: labelSize }}
                   >
                     {label}

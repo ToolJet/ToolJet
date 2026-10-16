@@ -40,12 +40,12 @@ describe('UI 2.0 Image', () => {
 
     await waitFor(() => expect(img(container)).toHaveAttribute('src', SRC));
     expect(img(container)).toHaveAttribute('alt', 'Mountain lake');
-    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
+    expect(container.querySelector('.tw-animate-pulse')).toBeInTheDocument();
     expect(exposed()).toMatchObject({ imageURL: SRC, alternativeText: 'Mountain lake', hasError: false });
 
     await load(container);
-    expect(container.querySelector('.animate-pulse')).toBeNull();
-    expect(img(container)).toHaveClass('opacity-100');
+    expect(container.querySelector('.tw-animate-pulse')).toBeNull();
+    expect(img(container)).toHaveClass('tw-opacity-100');
     expect(img(container).style.objectFit).toBe('cover');
   });
 
@@ -104,9 +104,9 @@ describe('UI 2.0 Image', () => {
   test('[ShadImage-PROP-007] showBorder draws a border round the frame', async () => {
     const { container } = render({ properties: { showBorder: binding('{{true}}') } });
 
-    await waitFor(() => expect(frame(container)).toHaveClass('border'));
+    await waitFor(() => expect(frame(container)).toHaveClass('tw-border'));
     render({ properties: { showBorder: binding('{{false}}') } });
-    await waitFor(() => expect(frame(container)).not.toHaveClass('border'));
+    await waitFor(() => expect(frame(container)).not.toHaveClass('tw-border'));
   });
 
   test('[ShadImage-PROP-008] zoomOnClick opens the loaded image full size in a dialog, and Close shuts it', async () => {
@@ -114,7 +114,7 @@ describe('UI 2.0 Image', () => {
     await load(container);
 
     const zoomable = screen.getByRole('button', { name: 'Mountain lake' });
-    expect(zoomable).toHaveClass('cursor-zoom-in');
+    expect(zoomable).toHaveClass('tw-cursor-zoom-in');
     await act(async () => fireEvent.click(zoomable));
 
     const dialog = await screen.findByRole('dialog');

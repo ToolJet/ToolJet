@@ -66,7 +66,7 @@ export const Chip = ({ value, onImage, toneName }: { value: unknown; onImage?: b
     // A block box, so a chip too long for its room ends in an ellipsis (a flex box clips its text without one); the
     // full text is its tooltip.
     <span
-      className="inline-block max-w-full truncate whitespace-nowrap rounded-full px-2.5 py-0.5 align-middle text-xs font-semibold"
+      className="tw-inline-block tw-max-w-full tw-truncate tw-whitespace-nowrap tw-rounded-full tw-px-2.5 tw-py-0.5 tw-align-middle tw-text-xs tw-font-semibold"
       title={String(value)}
       style={
         onImage
@@ -104,14 +104,14 @@ export const Bar = ({
     aria-valuemin={0}
     aria-valuemax={100}
     aria-valuenow={Math.round(barWidth(pct))}
-    className="relative w-full min-w-0 overflow-hidden rounded-full"
+    className="tw-relative tw-w-full tw-min-w-0 tw-overflow-hidden tw-rounded-full"
     style={{
       height,
       background: 'var(--lk-track,color-mix(in srgb, var(--sc-foreground) 9%, transparent))',
     }}
   >
     <div
-      className="h-full rounded-full transition-[width] duration-500 ease-out"
+      className="tw-h-full tw-rounded-full tw-transition-[width] tw-duration-500 tw-ease-out"
       style={{
         width: `${barWidth(pct)}%`,
         background: tone ? TONE_VAR[tone] || ACCENT : ACCENT,
@@ -122,10 +122,13 @@ export const Bar = ({
 
 /** A bar with its percentage after it, for a card or a record row. */
 export const InlineProgress = ({ pct, className }: { pct: number | null; className?: string }) => (
-  <div className={cn('flex min-w-0 items-center gap-2', className)} data-progress={Math.round(barWidth(pct))}>
+  <div
+    className={cn('tw-flex tw-min-w-0 tw-items-center tw-gap-2', className)}
+    data-progress={Math.round(barWidth(pct))}
+  >
     <Bar pct={pct} height={6} />
     <span
-      className="shrink-0 text-xs font-medium tabular-nums"
+      className="tw-shrink-0 tw-text-xs tw-font-medium tw-tabular-nums"
       style={{
         color: 'var(--lk-fg,var(--sc-muted-foreground))',
         // Room for "100.0%", so every bar in a list is the same length: at 2.5rem a "10.2%" row's bar came out shorter
@@ -154,7 +157,7 @@ export const RecordAvatar = ({
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
   const hue = avatarHue(name);
-  const radius = shape === 'rounded' ? 'rounded-lg' : 'rounded-full';
+  const radius = shape === 'rounded' ? 'tw-rounded-ui2-lg' : 'tw-rounded-full';
   if (src && !failed) {
     return (
       <img
@@ -162,14 +165,14 @@ export const RecordAvatar = ({
         alt=""
         loading="lazy"
         onError={() => setFailed(true)}
-        className={cn('shrink-0 object-cover', radius)}
+        className={cn('tw-shrink-0 tw-object-cover', radius)}
         style={{ width: size, height: size }}
       />
     );
   }
   return (
     <span
-      className={cn('tj-record-avatar flex shrink-0 items-center justify-center font-semibold', radius)}
+      className={cn('tj-record-avatar tw-flex tw-shrink-0 tw-items-center tw-justify-center tw-font-semibold', radius)}
       style={{
         width: size,
         height: size,

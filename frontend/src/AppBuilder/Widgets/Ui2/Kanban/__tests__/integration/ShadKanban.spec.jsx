@@ -120,9 +120,9 @@ describe('UI 2.0 Kanban', () => {
     expect(card('Northstar')).toHaveTextContent('MC');
     // The meta stays on one line with its full text as a tooltip; beside a wide badge the line wraps first.
     const meta = screen.getByText('Follow-up Oct 14, 2026');
-    expect(meta).toHaveClass('truncate');
+    expect(meta).toHaveClass('tw-truncate');
     expect(meta).toHaveAttribute('title', 'Follow-up Oct 14, 2026');
-    expect(meta.parentElement).toHaveClass('flex-wrap');
+    expect(meta.parentElement).toHaveClass('tw-flex-wrap');
   });
 
   test('[ShadKanban-PROP-003] stored ISO dates on a card show as short dates', async () => {
@@ -184,14 +184,14 @@ describe('UI 2.0 Kanban', () => {
     await waitFor(() => expect(text()).toContain('$24,000'));
     await act(async () => fireEvent.keyDown(northstar, { key: 'Enter', code: 'Enter' }));
     await waitFor(() => expect(text()).not.toContain('$24,000'));
-    expect(northstar.className.includes('cursor-grab')).toBe(!extra.allowDrag);
+    expect(northstar.className.includes('tw-cursor-grab')).toBe(!extra.allowDrag);
   });
 
   test('[ShadKanban-PROP-005] density compact tightens cards; showCount off drops the counts', async () => {
     render({ properties: deals({ density: binding('compact'), showCount: binding('{{false}}') }) });
 
-    await waitFor(() => expect(card('Northstar')).toHaveClass('p-2.5'));
-    expect(columns()[0].querySelector('.tabular-nums')).toBeNull();
+    await waitFor(() => expect(card('Northstar')).toHaveClass('tw-p-2.5'));
+    expect(columns()[0].querySelector('.tw-tabular-nums')).toBeNull();
   });
 
   // A folded column was a 44px sliver of vertical text, read as broken in reviews.
@@ -371,7 +371,7 @@ describe('UI 2.0 Kanban', () => {
 
     // RenderWidget draws the widget 4px shorter than its 500px box.
     await waitFor(() => expect(columns()[0].style.maxHeight).toBe('496px'));
-    expect(columns()[0].querySelector('.overflow-y-auto')).toBeTruthy();
+    expect(columns()[0].querySelector('.tw-overflow-y-auto')).toBeTruthy();
   });
 
   describe('custom card content', () => {
@@ -550,7 +550,7 @@ describe('UI 2.0 Kanban', () => {
     ).toEqual(['#1e1b4b', '#e0e7ff', '#3730a3', '#111827', '#6b7280', '24px']);
     expect(columns()[0].style.background).toBe('rgb(245, 245, 244)');
     expect(columns()[0].style.borderRadius).toBe('6px');
-    expect(columns()[0]).toHaveClass('border');
+    expect(columns()[0]).toHaveClass('tw-border');
     expect(columns()[0].style.getPropertyValue('--kb-column-border')).toBe('#d6d3d1');
     const northstar = card('Northstar');
     expect(northstar.style.background).toBe('rgb(255, 255, 255)');

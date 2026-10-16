@@ -95,11 +95,11 @@ describe('UI 2.0 OTP input', () => {
 
   test('[ShadOtpInput-PROP-004] slotStyle separate draws each box with its own border; joined draws them as one strip', async () => {
     const { container } = render({ properties: { slotStyle: binding('separate') } });
-    await waitFor(() => expect(slots(container)[1]).toHaveClass('border'));
-    expect(slots(container)[1]).not.toHaveClass('border-y');
+    await waitFor(() => expect(slots(container)[1]).toHaveClass('tw-border'));
+    expect(slots(container)[1]).not.toHaveClass('tw-border-y');
 
     render({ properties: { slotStyle: binding('joined') } });
-    await waitFor(() => expect(slots(container)[1]).toHaveClass('border-y'));
+    await waitFor(() => expect(slots(container)[1]).toHaveClass('tw-border-y'));
   });
 
   test('[ShadOtpInput-PROP-005] placeholder shows its first character in each empty box', async () => {

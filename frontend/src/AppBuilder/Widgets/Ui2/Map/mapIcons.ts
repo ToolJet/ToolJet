@@ -21,7 +21,7 @@ const PIN_BODY = '<path class="sc-map-pin-body" d="M14 35s11-11.3 11-21.2A11 11 
 const PIN_DOT = '<circle class="sc-map-pin-dot" cx="14" cy="13.8" r="4.4"/>';
 
 /** A pin: the teardrop with a dot, a short label (a stop number) or an icon in it; a longer label is a pill (a price)
- *  with a pointer. Colours arrive as the --pin variable, so the pack's !important rules colour it. */
+ *  with a pointer. Colours arrive as the --pin variable, which shadcn.scss's pin rules read. */
 export const pinIcon = (point: MapPoint, selected: boolean, color: string | null): Icon => {
   const style = color ? ` style="--pin:${color}"` : '';
   const attrs = `data-marker="${escapeHtml(point.key)}"${point.tone ? ` data-tone="${point.tone}"` : ''}${

@@ -38,7 +38,7 @@ import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_share
 // ---- Date and time picker ------------------------------------------------------------------------------------------
 
 const SMALL_SELECT =
-  'h-8 w-[4.25rem] gap-1 px-2 tabular-nums text-[color:var(--sc-popover-foreground)] border-[color:var(--sc-input)]';
+  'tw-h-8 tw-w-[4.25rem] tw-gap-1 tw-px-2 tw-tabular-nums tw-text-[color:var(--sc-popover-foreground)] tw-border-[color:var(--sc-input)]';
 
 export interface TimeSelectProps {
   label: string;
@@ -54,7 +54,7 @@ export const TimeSelect = ({ label, value, options, onChange, disabled, style }:
     <SelectTrigger aria-label={label} className={SMALL_SELECT}>
       <SelectValue placeholder="--" />
     </SelectTrigger>
-    <SelectContent className="max-h-60" style={style}>
+    <SelectContent className="tw-max-h-60" style={style}>
       {options.map((o) => (
         <SelectItem key={o.value} value={o.value} disabled={o.disabled}>
           {o.label}
@@ -204,14 +204,14 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
               className={cn(
                 TRIGGER,
                 CONTROL,
-                !shown && 'text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
+                !shown && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
               )}
             >
               <CalendarIcon className={ICON} />
-              <span className="truncate">{shown || text(properties.placeholder)}</span>
+              <span className="tw-truncate">{shown || text(properties.placeholder)}</span>
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start" style={vars}>
+          <PopoverContent className="tw-w-auto tw-p-0" align="start" style={vars}>
             <Calendar
               mode="single"
               selected={date ? date.toDate() : undefined}
@@ -226,9 +226,9 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
                 commit(M.atTime(dayjs(day), timeOf(date)).valueOf());
               }}
             />
-            <div className="flex items-center gap-2 border-t px-3 py-2.5">
-              <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span className="mr-auto text-sm text-muted-foreground">Time</span>
+            <div className="tw-flex tw-items-center tw-gap-2 tw-border-t tw-px-3 tw-py-2.5">
+              <Clock className="tw-h-4 tw-w-4 tw-shrink-0 tw-text-ui2-muted-foreground" />
+              <span className="tw-mr-auto tw-text-ui2-sm tw-text-ui2-muted-foreground">Time</span>
               <TimeSelect
                 label="Hour"
                 style={vars}
@@ -236,7 +236,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
                 options={hourOptions}
                 onChange={(h) => setTime(((Number(h) % 24) + (!use24 && pm ? 12 : 0)) * 60 + (minute ?? 0))}
               />
-              <span className="text-sm text-muted-foreground">:</span>
+              <span className="tw-text-ui2-sm tw-text-ui2-muted-foreground">:</span>
               <TimeSelect
                 label="Minute"
                 style={vars}
@@ -246,7 +246,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
               />
               {!use24 ? (
                 <div
-                  className="ml-1 flex rounded-md border border-[color:var(--sc-input)] p-0.5"
+                  className="tw-ml-1 tw-flex tw-rounded-ui2-md tw-border tw-border-[color:var(--sc-input)] tw-p-0.5"
                   role="group"
                   aria-label="AM or PM"
                 >
@@ -258,8 +258,10 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
                         type="button"
                         aria-pressed={on}
                         className={cn(
-                          'h-6 rounded-sm border-0 px-1.5 text-xs font-medium transition-colors',
-                          on ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
+                          'tw-h-6 tw-rounded-ui2-sm tw-border-0 tw-px-1.5 tw-text-xs tw-font-medium tw-transition-colors',
+                          on
+                            ? 'tw-bg-ui2-primary tw-text-ui2-primary-foreground'
+                            : 'tw-text-ui2-muted-foreground hover:tw-bg-ui2-accent'
                         )}
                         onClick={() => {
                           const base = minutes ?? nowMinutes;

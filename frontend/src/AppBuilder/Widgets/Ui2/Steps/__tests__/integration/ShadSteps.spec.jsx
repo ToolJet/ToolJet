@@ -110,7 +110,7 @@ describe('UI 2.0 Steps', () => {
 
     await screen.findByText('Billing');
     const list = screen.getByRole('list', { name: 'Steps' });
-    expect(list.className).toContain('flex-col');
+    expect(list.className).toContain('tw-flex-col');
     expect(step('Billing')).not.toHaveTextContent('3');
     expect(step('Account').querySelector('svg')).not.toBeInTheDocument();
   });

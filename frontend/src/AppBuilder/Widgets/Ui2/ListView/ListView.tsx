@@ -92,13 +92,13 @@ const Row = ({
         role="listitem"
         onClickCapture={() => onPick(index)}
         className={cn(
-          'relative overflow-hidden transition-colors hover:bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
+          'tw-relative tw-overflow-hidden tw-transition-colors hover:tw-bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
           selected &&
-            'bg-[color:var(--lv-selected-bg,color-mix(in_srgb,var(--sc-primary)_8%,transparent))] ring-1 ring-inset ring-primary',
-          look.framed && 'border border-[color:var(--lv-item-border,var(--sc-border))]',
+            'tw-bg-[color:var(--lv-selected-bg,color-mix(in_srgb,var(--sc-primary)_8%,transparent))] tw-ring-1 tw-ring-inset tw-ring-ui2-primary',
+          look.framed && 'tw-border tw-border-[color:var(--lv-item-border,var(--sc-border))]',
           mode === 'list' &&
             showBorder &&
-            'border-b border-b-[color:var(--lv-divider,var(--sc-border))] last:border-b-0'
+            'tw-border-b tw-border-b-[color:var(--lv-divider,var(--sc-border))] last:tw-border-b-0'
         )}
         style={{ height, ...look.item }}
       >
@@ -297,13 +297,13 @@ export const ShadListView = (props: WidgetProps) => {
       {isLoading && !wantsSkeleton(properties) ? (
         <LoadingBox height={props.height} />
       ) : isLoading ? (
-        <div className="flex flex-col" style={{ gap }}>
+        <div className="tw-flex tw-flex-col" style={{ gap }}>
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} style={{ height: rowHeight }} className="w-full rounded-lg" />
+            <Skeleton key={i} style={{ height: rowHeight }} className="tw-w-full tw-rounded-ui2-lg" />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="flex min-h-[96px] items-center justify-center rounded-lg border border-dashed text-sm text-[color:var(--lv-empty,var(--sc-muted-foreground))]">
+        <div className="tw-flex tw-min-h-[96px] tw-items-center tw-justify-center tw-rounded-ui2-lg tw-border tw-border-dashed tw-text-ui2-sm tw-text-[color:var(--lv-empty,var(--sc-muted-foreground))]">
           {String(properties.emptyText ?? 'No items')}
         </div>
       ) : (
@@ -339,14 +339,14 @@ export const ShadListView = (props: WidgetProps) => {
         <button
           type="button"
           onClick={() => setShownRows((n) => n + ROWS_PER_STEP)}
-          className="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="tw-rounded-ui2-md tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground"
         >
           {`Show ${Math.min(hiddenRows, ROWS_PER_STEP)} more of ${hiddenRows}`}
         </button>
       ) : null}
       {showPager ? (
-        <nav aria-label="Pagination" className="flex items-center justify-between gap-2 pt-1">
-          <span className="text-xs tabular-nums text-muted-foreground">
+        <nav aria-label="Pagination" className="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-pt-1">
+          <span className="tw-text-xs tw-tabular-nums tw-text-ui2-muted-foreground">
             {paged.pageCount ? `Page ${paged.page} of ${paged.pageCount}` : `Page ${paged.page}`}
           </span>
           <Pager

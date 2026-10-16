@@ -79,21 +79,21 @@ describe('UI 2.0 Summary strip', () => {
 
   test('[ShadSummaryStrip-PROP-004] appearance panel frames the strip; plain drops the frame', async () => {
     render();
-    await waitFor(() => expect(document.querySelector('dl')).toHaveClass('border'));
+    await waitFor(() => expect(document.querySelector('dl')).toHaveClass('tw-border'));
 
     render({ properties: { appearance: binding('plain') } });
-    await waitFor(() => expect(document.querySelector('dl')).not.toHaveClass('border'));
-    expect(cells()[0]).toHaveClass('pl-0');
+    await waitFor(() => expect(document.querySelector('dl')).not.toHaveClass('tw-border'));
+    expect(cells()[0]).toHaveClass('tw-pl-0');
   });
 
   test('[ShadSummaryStrip-PROP-005] size sets the figure scale; align center centres each figure', async () => {
     render({ properties: { size: binding('lg'), align: binding('center') } });
-    await waitFor(() => expect(value('Revenue')).toHaveClass('text-3xl'));
-    expect(cell('Revenue')).toHaveClass('items-center', 'text-center');
+    await waitFor(() => expect(value('Revenue')).toHaveClass('tw-text-3xl'));
+    expect(cell('Revenue')).toHaveClass('tw-items-center', 'tw-text-center');
 
     render({ properties: { size: binding('sm') } });
-    await waitFor(() => expect(value('Revenue')).toHaveClass('text-lg'));
-    expect(cell('Revenue')).not.toHaveClass('text-center');
+    await waitFor(() => expect(value('Revenue')).toHaveClass('tw-text-ui2-lg'));
+    expect(cell('Revenue')).not.toHaveClass('tw-text-center');
   });
 
   test('[ShadSummaryStrip-DEF-002] lays the figures out in as many columns as fit, a hairline between them', async () => {
@@ -103,7 +103,7 @@ describe('UI 2.0 Summary strip', () => {
     );
     // The pack's preflight zeroes inline border widths, so separators are border classes.
     expect(cells()[0].className).not.toMatch(/border-l/);
-    expect(cells()[1]).toHaveClass('border-l');
+    expect(cells()[1]).toHaveClass('tw-border-l');
     expect(document.querySelector('[style*="border-left"]')).toBeNull();
   });
 
@@ -120,10 +120,10 @@ describe('UI 2.0 Summary strip', () => {
 
     await waitFor(() => expect(document.querySelectorAll('dt')).toHaveLength(2));
     for (const dt of document.querySelectorAll('dt')) {
-      expect(dt).not.toHaveClass('truncate');
-      expect(dt).toHaveClass('flex-1');
+      expect(dt).not.toHaveClass('tw-truncate');
+      expect(dt).toHaveClass('tw-flex-1');
     }
-    expect(screen.getByText(/two more/)).not.toHaveClass('truncate');
+    expect(screen.getByText(/two more/)).not.toHaveClass('tw-truncate');
     // A figure without a caption holds a blank line, so it stays level with its neighbour's.
     expect(cell('Jobs this week').querySelector('dd[aria-hidden="true"]')).toBeTruthy();
   });

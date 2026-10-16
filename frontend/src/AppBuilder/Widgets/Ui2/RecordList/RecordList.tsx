@@ -22,9 +22,9 @@ import {
 const ROWS_PER_STEP = 100;
 
 export const DENSITY: Record<string, { pad: string; avatar: number; title: string; meta: string }> = {
-  compact: { pad: 'py-2', avatar: 28, title: 'text-sm', meta: 'text-xs' },
-  default: { pad: 'py-3', avatar: 36, title: 'text-sm', meta: 'text-xs' },
-  comfortable: { pad: 'py-4', avatar: 40, title: 'text-base', meta: 'text-sm' },
+  compact: { pad: 'tw-py-2', avatar: 28, title: 'tw-text-ui2-sm', meta: 'tw-text-xs' },
+  default: { pad: 'tw-py-3', avatar: 36, title: 'tw-text-ui2-sm', meta: 'tw-text-xs' },
+  comfortable: { pad: 'tw-py-4', avatar: 40, title: 'tw-text-ui2-base', meta: 'tw-text-ui2-sm' },
 };
 
 export const ShadRecordList = (props: WidgetProps) => {
@@ -78,7 +78,7 @@ export const ShadRecordList = (props: WidgetProps) => {
   const clickable = (hasClick || p.highlightSelected !== false) && !busy(p);
   // A selected row draws a 3px accent bar and a tint: a plain list that can show it pads its rows 12px, or the bar sat
   // against the title (a field service app, 2026-10-13).
-  const inset = card ? 'px-4' : p.highlightSelected !== false ? 'px-3' : 'px-1';
+  const inset = card ? 'tw-px-4' : p.highlightSelected !== false ? 'tw-px-3' : 'tw-px-1';
 
   const click = (row: RecordItem) => {
     if (busy(p)) return;
@@ -87,10 +87,9 @@ export const ShadRecordList = (props: WidgetProps) => {
     fireEvent('onItemClicked');
   };
 
-  // Borders are classes: the pack's preflight sets every border width to 0 with !important, so an inline border
-  // never shows. The colour stays inline.
+  // Borders are classes (the width); the colour stays inline.
   const BORDER = 'var(--lk-border,var(--sc-border))';
-  const frameClass = card ? 'border' : '';
+  const frameClass = card ? 'tw-border' : '';
   const frame = card
     ? {
         borderColor: BORDER,
@@ -98,31 +97,31 @@ export const ShadRecordList = (props: WidgetProps) => {
         background: 'var(--lk-bg,var(--sc-card))',
       }
     : { background: 'var(--lk-bg,transparent)' };
-  const divided = (i: number) => (dividers && i > 0 ? 'border-t' : '');
+  const divided = (i: number) => (dividers && i > 0 ? 'tw-border-t' : '');
 
   let body;
   if (p.loadingState && !wantsSkeleton(p)) {
     body = <LoadingBox height={props.height} />;
   } else if (p.loadingState) {
     body = (
-      <div className={cn('overflow-hidden', frameClass)} style={frame}>
+      <div className={cn('tw-overflow-hidden', frameClass)} style={frame}>
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className={cn('flex items-center gap-3', inset, density.pad, divided(i))}
+            className={cn('tw-flex tw-items-center tw-gap-3', inset, density.pad, divided(i))}
             style={{ borderColor: BORDER }}
           >
             {showAvatar ? (
               <Skeleton
-                className={cn('shrink-0', p.avatarShape === 'rounded' ? 'rounded-lg' : 'rounded-full')}
+                className={cn('tw-shrink-0', p.avatarShape === 'rounded' ? 'tw-rounded-ui2-lg' : 'tw-rounded-full')}
                 style={{ width: density.avatar, height: density.avatar }}
               />
             ) : null}
-            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <Skeleton className="h-4 w-2/5" />
-              <Skeleton className="h-3 w-3/5" />
+            <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1.5">
+              <Skeleton className="tw-h-4 tw-w-2/5" />
+              <Skeleton className="tw-h-3 tw-w-3/5" />
             </div>
-            <Skeleton className="h-5 w-16 rounded-full" />
+            <Skeleton className="tw-h-5 tw-w-16 tw-rounded-full" />
           </div>
         ))}
       </div>
@@ -130,13 +129,15 @@ export const ShadRecordList = (props: WidgetProps) => {
   } else if (!rows.length) {
     body = (
       <div className={frameClass} style={frame}>
-        <p className="m-0 py-10 text-center text-sm text-muted-foreground">{text(p.emptyText) || 'Nothing here yet'}</p>
+        <p className="tw-m-0 tw-py-10 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
+          {text(p.emptyText) || 'Nothing here yet'}
+        </p>
       </div>
     );
   } else {
     body = (
-      <div className={cn('overflow-hidden', frameClass)} style={frame}>
-        <ul className="m-0 list-none p-0" role="list">
+      <div className={cn('tw-overflow-hidden', frameClass)} style={frame}>
+        <ul className="tw-m-0 tw-list-none tw-p-0" role="list">
           {rows.slice(0, shownCount).map((row, i) => {
             const isSelected = p.highlightSelected !== false && selected?.key === row.key;
             return (
@@ -147,11 +148,12 @@ export const ShadRecordList = (props: WidgetProps) => {
                 onClick={() => click(row)}
                 onKeyDown={onKeyActivate(() => click(row))}
                 className={cn(
-                  'flex min-w-0 items-center gap-3 outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--lk-accent,var(--sc-ring))]',
+                  'tw-flex tw-min-w-0 tw-items-center tw-gap-3 tw-outline-none tw-transition-colors tw-duration-150 focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))]',
                   inset,
                   density.pad,
                   divided(i),
-                  clickable && 'cursor-pointer hover:bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
+                  clickable &&
+                    'tw-cursor-pointer hover:tw-bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
                 )}
                 style={{
                   borderColor: BORDER,
@@ -163,11 +165,11 @@ export const ShadRecordList = (props: WidgetProps) => {
                 {showAvatar ? (
                   <RecordAvatar src={row.image} name={row.avatarName} size={density.avatar} shape={p.avatarShape} />
                 ) : null}
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-0.5">
                   {/* Two lines before it clips: in a narrow column beside a chip and a time, one line left titles such as
                       "Workspace setti…" that said nothing (a content calendar's drafts list, 2026-10-14). */}
                   <span
-                    className={cn('line-clamp-2 break-words font-medium leading-snug', density.title)}
+                    className={cn('tw-line-clamp-2 tw-break-words tw-font-medium tw-leading-snug', density.title)}
                     title={typeof row.title === 'string' ? row.title : undefined}
                     style={{
                       color: 'var(--lk-title,var(--sc-foreground))',
@@ -178,7 +180,7 @@ export const ShadRecordList = (props: WidgetProps) => {
                   </span>
                   {row.meta ? (
                     <span
-                      className={cn('truncate tabular-nums leading-snug', density.meta)}
+                      className={cn('tw-truncate tw-tabular-nums tw-leading-snug', density.meta)}
                       style={{
                         color: 'var(--lk-fg,var(--sc-muted-foreground))',
                       }}
@@ -186,16 +188,18 @@ export const ShadRecordList = (props: WidgetProps) => {
                       {row.meta}
                     </span>
                   ) : null}
-                  {row.progress !== null ? <InlineProgress pct={row.progress} className="mt-1 max-w-[240px]" /> : null}
+                  {row.progress !== null ? (
+                    <InlineProgress pct={row.progress} className="tw-mt-1 tw-max-w-[240px]" />
+                  ) : null}
                 </div>
                 {row.status ? (
-                  <span className="flex min-w-0 max-w-[40%] shrink-0 justify-end">
+                  <span className="tw-flex tw-min-w-0 tw-max-w-[40%] tw-shrink-0 tw-justify-end">
                     <Chip value={row.status} />
                   </span>
                 ) : null}
                 {row.value ? (
                   <span
-                    className={cn('shrink-0 text-right font-semibold tabular-nums', density.title)}
+                    className={cn('tw-shrink-0 tw-text-right tw-font-semibold tw-tabular-nums', density.title)}
                     style={{
                       color: 'var(--lk-title,var(--sc-foreground))',
                       minWidth: '4.5rem',
@@ -209,11 +213,11 @@ export const ShadRecordList = (props: WidgetProps) => {
           })}
         </ul>
         {rows.length > shownCount ? (
-          <div className="flex justify-center border-t py-2" style={{ borderColor: BORDER }}>
+          <div className="tw-flex tw-justify-center tw-border-t tw-py-2" style={{ borderColor: BORDER }}>
             <button
               type="button"
               onClick={() => setShownCount((n) => n + ROWS_PER_STEP)}
-              className="rounded-md px-3 py-1.5 text-sm text-[color:var(--sc-muted-foreground)] transition-colors hover:bg-[color:var(--sc-muted)] hover:text-[color:var(--sc-foreground)]"
+              className="tw-rounded-ui2-md tw-px-3 tw-py-1.5 tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)] tw-transition-colors hover:tw-bg-[color:var(--sc-muted)] hover:tw-text-[color:var(--sc-foreground)]"
             >
               {`Show ${Math.min(ROWS_PER_STEP, rows.length - shownCount)} more of ${rows.length - shownCount}`}
             </button>

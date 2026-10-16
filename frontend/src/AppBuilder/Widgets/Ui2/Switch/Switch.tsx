@@ -23,7 +23,7 @@ export const ShadSwitch = (props: WidgetProps) => {
             checked={checked}
             disabled={busy(props.properties)}
             onCheckedChange={change}
-            className="data-[state=unchecked]:bg-[color:var(--lk-off,var(--sc-input))]"
+            className="data-[state=unchecked]:tw-bg-[color:var(--lk-off,var(--sc-input))]"
           />
         }
       />

@@ -15,16 +15,16 @@ export const ShadAlert = (props: WidgetProps) => {
       <Alert
         variant={properties.variant === 'destructive' ? 'destructive' : 'default'}
         className={cn(
-          whenSet(styles, 'backgroundColor', 'bg-[color:var(--lk-bg)]'),
-          whenSet(styles, 'borderColor', 'border-[color:var(--lk-border)]'),
-          whenSet(styles, 'borderRadius', 'rounded-[var(--lk-radius)]')
+          whenSet(styles, 'backgroundColor', 'tw-bg-[color:var(--lk-bg)]'),
+          whenSet(styles, 'borderColor', 'tw-border-[color:var(--lk-border)]'),
+          whenSet(styles, 'borderRadius', 'tw-rounded-[var(--lk-radius)]')
         )}
       >
-        <AlertTitle className={whenSet(styles, 'titleColor', 'text-[color:var(--lk-title)]')}>
+        <AlertTitle className={whenSet(styles, 'titleColor', 'tw-text-[color:var(--lk-title)]')}>
           {String(properties.title ?? '')}
         </AlertTitle>
         {properties.description ? (
-          <AlertDescription className={whenSet(styles, 'textColor', 'text-[color:var(--lk-fg)] opacity-100')}>
+          <AlertDescription className={whenSet(styles, 'textColor', 'tw-text-[color:var(--lk-fg)] tw-opacity-100')}>
             {String(properties.description)}
           </AlertDescription>
         ) : null}

@@ -150,9 +150,9 @@ export const ShadTagsInput = (props: WidgetProps) => {
               ref={anchorRef}
               onClick={() => inputRef.current?.focus()}
               className={cn(
-                'flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 border px-2 py-1 text-sm shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring',
+                'tw-flex tw-min-h-9 tw-w-full tw-cursor-text tw-flex-wrap tw-items-center tw-gap-1.5 tw-border tw-px-2 tw-py-1 tw-text-ui2-sm tw-shadow-sm tw-transition-colors focus-within:tw-ring-1 focus-within:tw-ring-ui2-ring',
                 CONTROL,
-                disabled && 'cursor-not-allowed opacity-50'
+                disabled && 'tw-cursor-not-allowed tw-opacity-50'
               )}
             >
               {tags.map((tag, i) => (
@@ -190,8 +190,8 @@ export const ShadTagsInput = (props: WidgetProps) => {
                   fireEvent('onBlur');
                 }}
                 className={cn(
-                  'h-7 min-w-[6rem] flex-1 border-0 bg-transparent px-1 py-0 text-sm text-[color:var(--lk-fg,var(--sc-foreground))] shadow-none outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed',
-                  'placeholder:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
+                  'tw-h-7 tw-min-w-[6rem] tw-flex-1 tw-border-0 tw-bg-transparent tw-px-1 tw-py-0 tw-text-ui2-sm tw-text-[color:var(--lk-fg,var(--sc-foreground))] tw-shadow-none tw-outline-none focus:tw-outline-none focus:tw-ring-0 disabled:tw-cursor-not-allowed',
+                  'placeholder:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
                 )}
               />
               {properties.showClearBtn === true && tags.length && !disabled && !properties.loadingState ? (
@@ -217,7 +217,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
               }}
               onEscapeKeyDown={() => setDismissed(true)}
               className={cn(
-                'z-[1060] max-h-60 w-[var(--radix-popover-trigger-width)] min-w-[10rem] overflow-y-auto rounded-md border border-[color:var(--sc-border)] p-1 shadow-md outline-none',
+                'tw-z-[1060] tw-max-h-60 tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[10rem] tw-overflow-y-auto tw-rounded-ui2-md tw-border tw-border-[color:var(--sc-border)] tw-p-1 tw-shadow-md tw-outline-none',
                 MENU_SURFACE
               )}
               style={lookVars(componentType, styles)}
@@ -235,7 +235,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
                       if (add([s.tag])) setText('');
                       inputRef.current?.focus();
                     }}
-                    className="flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[selected]:bg-[color:var(--lk-hl,var(--sc-accent))] data-[selected]:text-[color:var(--lk-menu-fg,var(--sc-accent-foreground))]"
+                    className="tw-flex tw-cursor-default tw-select-none tw-items-center tw-rounded-ui2-sm tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-outline-none data-[selected]:tw-bg-[color:var(--lk-hl,var(--sc-accent))] data-[selected]:tw-text-[color:var(--lk-menu-fg,var(--sc-accent-foreground))]"
                   >
                     {s.label}
                   </div>

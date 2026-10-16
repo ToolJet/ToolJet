@@ -72,7 +72,7 @@ describe('UI 2.0 Schedule', () => {
     expect(booking('1').style.left).toBe('calc(10% + 2px)');
     expect(booking('2').style.left).toBe('calc(30% + 2px)');
     expect(booking('1')).toHaveAttribute('data-tone', 'success');
-    expect(booking('6').querySelector('.line-through')).toHaveTextContent('Interview');
+    expect(booking('6').querySelector('.tw-line-through')).toHaveTextContent('Interview');
     expect(exposed()).toMatchObject({ selectedBooking: {}, selectedBookingId: null, selectedSlot: {} });
   });
 
@@ -84,7 +84,7 @@ describe('UI 2.0 Schedule', () => {
     expect(booking('J-1')).toHaveTextContent('Boiler service');
     expect(booking('J-1').getAttribute('title')).toMatch(/^Boiler service · 9 AM.*11 AM · Confirmed$/);
     expect(booking('J-1').style.left).toBe('calc(10% + 2px)');
-    expect(booking('J-2').className).toContain('opacity-70');
+    expect(booking('J-2').className).toContain('tw-opacity-70');
   });
 
   test('[ShadSchedule-PROP-002] subtitleField adds a second line to the booking', async () => {

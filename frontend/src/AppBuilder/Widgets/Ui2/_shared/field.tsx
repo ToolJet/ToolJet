@@ -6,16 +6,16 @@ import { LoadingContext } from './Shell';
 import type { CssVars, Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // Label and help text colours of form controls: the labelColor and helpTextColor styles, else the theme's.
-export const LABEL = 'text-[color:var(--lk-label,var(--sc-foreground))]';
+export const LABEL = 'tw-text-[color:var(--lk-label,var(--sc-foreground))]';
 
-export const HELP = 'text-[color:var(--lk-help,var(--sc-muted-foreground))]';
+export const HELP = 'tw-text-[color:var(--lk-help,var(--sc-muted-foreground))]';
 
 // A form control's box: the background, text, placeholder, border and radius styles, else shadcn's.
 export const CONTROL =
-  'bg-[color:var(--lk-bg,transparent)] text-[color:var(--lk-fg,var(--sc-foreground))] border-[color:var(--lk-invalid,var(--lk-border,var(--sc-input)))] rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] placeholder:text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
+  'tw-bg-[color:var(--lk-bg,transparent)] tw-text-[color:var(--lk-fg,var(--sc-foreground))] tw-border-[color:var(--lk-invalid,var(--lk-border,var(--sc-input)))] tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] placeholder:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
 
 // A failed validation's colour: the errorColor style, else the theme's error colour.
-export const ERROR = 'text-[color:var(--lk-error,var(--sc-destructive))]';
+export const ERROR = 'tw-text-[color:var(--lk-error,var(--sc-destructive))]';
 
 export const INVALID_VARS: CssVars = { '--lk-invalid': 'var(--lk-error, var(--sc-destructive))' };
 
@@ -37,27 +37,27 @@ export interface FieldProps {
 export const Field = ({ id, label, description, error, required, children }: FieldProps) => {
   const loading = useContext(LoadingContext);
   return (
-    <div className="flex w-full flex-col gap-2" style={error ? INVALID_VARS : undefined}>
+    <div className="tw-flex tw-w-full tw-flex-col tw-gap-2" style={error ? INVALID_VARS : undefined}>
       {label ? (
         <Label htmlFor={id} className={LABEL}>
           {String(label)}
-          {required ? <span className={cn('ml-0.5', ERROR)}>*</span> : null}
+          {required ? <span className={cn('tw-ml-0.5', ERROR)}>*</span> : null}
         </Label>
       ) : null}
       {loading ? (
-        <div className="relative">
+        <div className="tw-relative">
           {children}
-          <Spinner className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+          <Spinner className="tw-pointer-events-none tw-absolute tw-right-3 tw-top-1/2 -tw-translate-y-1/2" />
         </div>
       ) : (
         children
       )}
       {error ? (
-        <p role="alert" className={cn('text-[0.8rem] font-medium', ERROR)}>
+        <p role="alert" className={cn('tw-text-[0.8rem] tw-font-medium', ERROR)}>
           {String(error)}
         </p>
       ) : description ? (
-        <p className={cn('text-[0.8rem]', HELP)}>{String(description)}</p>
+        <p className={cn('tw-text-[0.8rem]', HELP)}>{String(description)}</p>
       ) : null}
     </div>
   );

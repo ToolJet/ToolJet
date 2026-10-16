@@ -21,11 +21,11 @@ export const ShadSpinner = (props: WidgetProps) => {
   const r = (size - stroke) / 2;
   const indicator =
     p.variant === 'dots' ? (
-      <span className="inline-flex shrink-0 items-center" style={{ height: size, gap: Math.max(2, size / 8) }}>
+      <span className="tw-inline-flex tw-shrink-0 tw-items-center" style={{ height: size, gap: Math.max(2, size / 8) }}>
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="animate-bounce rounded-full bg-[color:var(--sc-primary)]"
+            className="tw-animate-bounce tw-rounded-full tw-bg-[color:var(--sc-primary)]"
             style={{ width: size / 4, height: size / 4, animationDelay: `${i * 0.15}s` }}
           />
         ))}
@@ -35,7 +35,7 @@ export const ShadSpinner = (props: WidgetProps) => {
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="shrink-0 animate-spin"
+        className="tw-shrink-0 tw-animate-spin"
         aria-hidden="true"
       >
         <circle
@@ -44,7 +44,7 @@ export const ShadSpinner = (props: WidgetProps) => {
           r={r}
           fill="none"
           strokeWidth={stroke}
-          className="stroke-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_18%,transparent))]"
+          className="tw-stroke-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_18%,transparent))]"
         />
         <circle
           cx={size / 2}
@@ -54,21 +54,21 @@ export const ShadSpinner = (props: WidgetProps) => {
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={`${Math.PI * r * 0.5} ${Math.PI * r * 2}`}
-          className="stroke-[color:var(--sc-primary)]"
+          className="tw-stroke-[color:var(--sc-primary)]"
         />
       </svg>
     );
   return (
     <Shell {...props}>
-      <div className={cn('flex', justify(props.styles))}>
+      <div className={cn('tw-flex', justify(props.styles))}>
         <div
           role="status"
           aria-label={label || 'Loading'}
-          className={cn('inline-flex items-center', below ? 'flex-col gap-2' : 'flex-row gap-2')}
+          className={cn('tw-inline-flex tw-items-center', below ? 'tw-flex-col tw-gap-2' : 'tw-flex-row tw-gap-2')}
         >
           {indicator}
           {label ? (
-            <span className="text-sm text-[color:var(--lk-label,var(--sc-muted-foreground))]">{label}</span>
+            <span className="tw-text-ui2-sm tw-text-[color:var(--lk-label,var(--sc-muted-foreground))]">{label}</span>
           ) : null}
         </div>
       </div>

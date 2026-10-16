@@ -31,9 +31,9 @@ describe('UI 2.0 Tags', () => {
     render();
 
     await waitFor(() => expect(chipNames()).toEqual(['Design', 'Frontend', 'Urgent']));
-    expect(screen.getByRole('list', { name: 'Tags' })).toHaveClass('flex-wrap');
-    expect(chip('Design').className).toContain('bg-[color:var(--lk-bg,var(--sc-secondary))]');
-    expect(chip('Design')).toHaveClass('h-6');
+    expect(screen.getByRole('list', { name: 'Tags' })).toHaveClass('tw-flex-wrap');
+    expect(chip('Design').className).toContain('tw-bg-[color:var(--lk-bg,var(--sc-secondary))]');
+    expect(chip('Design')).toHaveClass('tw-h-6');
     expect(exposed().tags).toEqual(['Design', 'Frontend', 'Urgent']);
     expect(exposed().lastClickedTag).toBe('');
   });
@@ -62,13 +62,15 @@ describe('UI 2.0 Tags', () => {
 
   test('[ShadTags-PROP-004] variant solid and outline, size and pill change the chips', async () => {
     render({ properties: { variant: binding('solid'), size: binding('lg'), pill: binding('{{true}}') } });
-    await waitFor(() => expect(chip('Design').className).toContain('bg-[color:var(--lk-bg,var(--sc-primary))]'));
-    expect(chip('Design')).toHaveClass('h-7', 'rounded-full');
+    await waitFor(() => expect(chip('Design').className).toContain('tw-bg-[color:var(--lk-bg,var(--sc-primary))]'));
+    expect(chip('Design')).toHaveClass('tw-h-7', 'tw-rounded-full');
 
     render({ properties: { variant: binding('outline'), size: binding('sm') } });
-    await waitFor(() => expect(chip('Design').className).toContain('border-[color:var(--lk-border,var(--sc-border))]'));
-    expect(chip('Design')).toHaveClass('h-5');
-    expect(chip('Design')).not.toHaveClass('rounded-full');
+    await waitFor(() =>
+      expect(chip('Design').className).toContain('tw-border-[color:var(--lk-border,var(--sc-border))]')
+    );
+    expect(chip('Design')).toHaveClass('tw-h-5');
+    expect(chip('Design')).not.toHaveClass('tw-rounded-full');
   });
 
   describe('on one line', () => {
@@ -90,7 +92,7 @@ describe('UI 2.0 Tags', () => {
       render({ properties: { tags: binding('A, B, C, D, E'), overflow: binding('single') } });
 
       await waitFor(() => expect(chipNames()).toEqual(['A', 'B']));
-      expect(screen.getByRole('list', { name: 'Tags' })).toHaveClass('flex-nowrap');
+      expect(screen.getByRole('list', { name: 'Tags' })).toHaveClass('tw-flex-nowrap');
       expect(screen.getByTitle('C, D, E')).toHaveTextContent('+3');
     });
   });
@@ -103,7 +105,7 @@ describe('UI 2.0 Tags', () => {
 
     await waitFor(() => expect(widget.variables().seen).toBe('Frontend'));
     expect(exposed().lastClickedTag).toBe('Frontend');
-    expect(chip('Frontend')).toHaveClass('cursor-pointer');
+    expect(chip('Frontend')).toHaveClass('tw-cursor-pointer');
   });
 
   test('[ShadTags-EVT-002] disabled tags cannot be clicked', async () => {
@@ -132,6 +134,6 @@ describe('UI 2.0 Tags', () => {
     expect(root.style.getPropertyValue('--lk-fg')).toBe('#92400e');
     expect(root.style.getPropertyValue('--lk-border')).toBe('#fcd34d');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('4px');
-    expect(chip('Design').className).toContain('rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]');
+    expect(chip('Design').className).toContain('tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]');
   });
 });

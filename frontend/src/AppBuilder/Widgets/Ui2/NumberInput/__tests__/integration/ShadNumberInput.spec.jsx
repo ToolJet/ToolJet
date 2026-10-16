@@ -103,9 +103,9 @@ describe('UI 2.0 Number input', () => {
     render({ properties: { prefix: binding(long) } });
 
     const text = await screen.findByText(long);
-    expect(text).toHaveClass('truncate');
+    expect(text).toHaveClass('tw-truncate');
     expect(text.parentElement.className).toMatch(/max-w-\[40%\]/);
-    expect(text.parentElement).not.toHaveClass('shrink-0');
+    expect(text.parentElement).not.toHaveClass('tw-shrink-0');
     expect(button('Increase')).toBeInTheDocument();
   });
 

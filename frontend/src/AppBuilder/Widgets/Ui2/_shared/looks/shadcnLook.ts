@@ -1,6 +1,6 @@
 // ToolJet UI 2.0: every pack widget's styles as CSS variables, set on the widget's root (Shell) and read
-// by its classes with the app theme as the fallback, e.g. `text-[color:var(--lk-label,var(--sc-foreground))]`. The
-// pack's utilities are !important, so inline colours would lose to them; variables do not. Accent-like styles override
+// by its classes with the app theme as the fallback, e.g. `tw-text-[color:var(--lk-label,var(--sc-foreground))]`, so one
+// style reaches every part that draws it. Accent-like styles override
 // shadcn's own tokens for the widget (`--sc-primary`, `--sc-ring`, `--sc-chart-1`), so everything drawn in them
 // (checked states, focus rings, the progress bar, the chart palette) follows at once. Kanban keeps its own module
 // (kanbanLook.ts). Style keys match the configs in WidgetManager/widgets/shad*.js.

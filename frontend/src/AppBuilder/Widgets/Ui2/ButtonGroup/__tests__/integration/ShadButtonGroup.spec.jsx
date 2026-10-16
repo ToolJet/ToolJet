@@ -122,11 +122,11 @@ describe('UI 2.0 Button group', () => {
     });
 
     const group = await screen.findByRole('group');
-    expect(group).toHaveClass('flex-col');
-    expect(group).toHaveClass('w-full');
-    expect(button('Day')).toHaveClass('bg-secondary');
-    expect(button('Day')).toHaveClass('h-10');
-    expect(button('Day')).toHaveClass('flex-1');
+    expect(group).toHaveClass('tw-flex-col');
+    expect(group).toHaveClass('tw-w-full');
+    expect(button('Day')).toHaveClass('tw-bg-ui2-secondary');
+    expect(button('Day')).toHaveClass('tw-h-10');
+    expect(button('Day')).toHaveClass('tw-flex-1');
   });
 
   test('[ShadButtonGroup-EVT-001] clicking another button fires onClick then onChange, whose handlers read the new values', async () => {
@@ -241,6 +241,6 @@ describe('UI 2.0 Button group', () => {
       '--lk-radius': '4px',
     };
     Object.entries(vars).forEach(([name, value]) => expect(root.style.getPropertyValue(name)).toBe(value));
-    expect(button('Day').className).toContain('bg-[color:var(--lk-bg)]');
+    expect(button('Day').className).toContain('tw-bg-[color:var(--lk-bg)]');
   });
 });

@@ -80,8 +80,7 @@ const VARIABLES: [string, string, ((value: unknown) => string)?][] = [
   ['tabFontSize', '--tb-font', px],
 ];
 
-/** Styles as CSS: colours as variables the tab classes read (the pack's utilities are !important), the frame
- *  inline. Each falls back to the app theme. */
+/** Styles as CSS: colours as variables the tab classes read, the frame inline. Each falls back to the app theme. */
 export const tabsLook = (styles: Resolved = {}) => {
   const border = isSet(styles.borderColor) ? styles.borderColor : 'var(--sc-border)';
   return {
@@ -89,8 +88,8 @@ export const tabsLook = (styles: Resolved = {}) => {
       VARIABLES.filter(([key]) => isSet(styles[key])).map(([key, name, toCss = String]) => [name, toCss(styles[key])])
     ),
     container: {
-      // The frame is the widget's root, whose border the pack's reset zeroes (!important) and its border classes do
-      // not reach (they style descendants), so it never drew: an outline inset by its width draws it instead.
+      // The frame is the widget's root, which its border classes do not reach (they style descendants): an outline
+      // inset by its width draws it.
       outline: styles.showBorder === false ? 'none' : `1px solid ${border}`,
       outlineOffset: '-1px',
       borderRadius: isSet(styles.borderRadius) ? px(styles.borderRadius) : 'calc(var(--sc-radius) + 4px)',

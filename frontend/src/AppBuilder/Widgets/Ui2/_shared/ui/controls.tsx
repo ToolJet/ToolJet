@@ -13,22 +13,24 @@ import { cn } from './cn';
 import { truncateText } from './truncate';
 
 export const buttonVariants = cva(
-  'inline-flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'tw-inline-flex tw-min-w-0 tw-max-w-full tw-items-center tw-justify-center tw-gap-2 tw-whitespace-nowrap tw-rounded-ui2-md tw-text-ui2-sm tw-font-medium tw-transition-colors focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring focus-visible:tw-ring-offset-1 disabled:tw-pointer-events-none disabled:tw-opacity-50 [&_svg]:tw-pointer-events-none [&_svg]:tw-size-4 [&_svg]:tw-shrink-0',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
-        destructive: 'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
-        outline: 'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
-        secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'text-primary underline-offset-4 hover:underline',
+        default: 'tw-bg-ui2-primary tw-text-ui2-primary-foreground tw-shadow-sm hover:tw-bg-ui2-primary/90',
+        destructive:
+          'tw-bg-ui2-destructive tw-text-ui2-destructive-foreground tw-shadow-sm hover:tw-bg-ui2-destructive/90',
+        outline:
+          'tw-border tw-border-ui2-input tw-bg-ui2-background tw-shadow-sm hover:tw-bg-ui2-accent hover:tw-text-ui2-accent-foreground',
+        secondary: 'tw-bg-ui2-secondary tw-text-ui2-secondary-foreground tw-shadow-sm hover:tw-bg-ui2-secondary/80',
+        ghost: 'hover:tw-bg-ui2-accent hover:tw-text-ui2-accent-foreground',
+        link: 'tw-text-ui2-primary tw-underline-offset-4 hover:tw-underline',
       },
       size: {
-        default: 'h-9 px-4 py-2',
-        sm: 'h-8 rounded-md px-3 text-xs',
-        lg: 'h-10 rounded-md px-8',
-        icon: 'h-9 w-9',
+        default: 'tw-h-9 tw-px-4 tw-py-2',
+        sm: 'tw-h-8 tw-rounded-ui2-md tw-px-3 tw-text-xs',
+        lg: 'tw-h-10 tw-rounded-ui2-md tw-px-8',
+        icon: 'tw-h-9 tw-w-9',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },
@@ -58,7 +60,7 @@ export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttribute
     <input
       type={type}
       className={cn(
-        'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+        'tw-flex tw-h-9 tw-w-full tw-rounded-ui2-md tw-border tw-border-ui2-input tw-bg-transparent tw-px-3 tw-py-1 tw-text-ui2-sm tw-shadow-sm tw-transition-colors placeholder:tw-text-ui2-muted-foreground focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring disabled:tw-cursor-not-allowed disabled:tw-opacity-50',
         className
       )}
       ref={ref}
@@ -72,7 +74,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTML
   ({ className, ...props }, ref) => (
     <textarea
       className={cn(
-        'flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+        'tw-flex tw-min-h-[60px] tw-w-full tw-rounded-ui2-md tw-border tw-border-ui2-input tw-bg-transparent tw-px-3 tw-py-2 tw-text-ui2-sm tw-shadow-sm placeholder:tw-text-ui2-muted-foreground focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring disabled:tw-cursor-not-allowed disabled:tw-opacity-50',
         className
       )}
       ref={ref}
@@ -89,7 +91,7 @@ export const Label = React.forwardRef<
   <LabelPrimitive.Root
     ref={ref}
     className={cn(
-      'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+      'tw-text-ui2-sm tw-font-medium tw-leading-none peer-disabled:tw-cursor-not-allowed peer-disabled:tw-opacity-70',
       className
     )}
     {...props}
@@ -105,13 +107,13 @@ export const Checkbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      'peer h-4 w-4 shrink-0 rounded-sm border border-primary p-0 shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
+      'tw-peer tw-h-4 tw-w-4 tw-shrink-0 tw-rounded-ui2-sm tw-border tw-border-ui2-primary tw-p-0 tw-shadow focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring disabled:tw-cursor-not-allowed disabled:tw-opacity-50 data-[state=checked]:tw-bg-ui2-primary data-[state=checked]:tw-text-ui2-primary-foreground',
       className
     )}
     {...props}
   >
-    <CheckboxPrimitive.Indicator className="flex items-center justify-center text-current">
-      <Check className="h-4 w-4" />
+    <CheckboxPrimitive.Indicator className="tw-flex tw-items-center tw-justify-center tw-text-current">
+      <Check className="tw-h-4 tw-w-4" />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ));
@@ -123,13 +125,13 @@ export const Switch = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SwitchPrimitive.Root
     className={cn(
-      'peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input',
+      'tw-peer tw-inline-flex tw-h-5 tw-w-9 tw-shrink-0 tw-cursor-pointer tw-items-center tw-rounded-full tw-border-2 tw-border-transparent tw-shadow-sm tw-transition-colors focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring disabled:tw-cursor-not-allowed disabled:tw-opacity-50 data-[state=checked]:tw-bg-ui2-primary data-[state=unchecked]:tw-bg-ui2-input',
       className
     )}
     {...props}
     ref={ref}
   >
-    <SwitchPrimitive.Thumb className="pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0" />
+    <SwitchPrimitive.Thumb className="tw-pointer-events-none tw-block tw-h-4 tw-w-4 tw-rounded-full tw-bg-ui2-background tw-shadow-lg tw-ring-0 tw-transition-transform data-[state=checked]:tw-translate-x-4 data-[state=unchecked]:tw-translate-x-0" />
   </SwitchPrimitive.Root>
 ));
 Switch.displayName = 'Switch';
@@ -138,7 +140,7 @@ export const RadioGroup = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
 >(({ className, ...props }, ref) => (
-  <RadioGroupPrimitive.Root className={cn('grid gap-2', className)} {...props} ref={ref} />
+  <RadioGroupPrimitive.Root className={cn('tw-grid tw-gap-2', className)} {...props} ref={ref} />
 ));
 RadioGroup.displayName = 'RadioGroup';
 
@@ -149,13 +151,13 @@ export const RadioGroupItem = React.forwardRef<
   <RadioGroupPrimitive.Item
     ref={ref}
     className={cn(
-      'aspect-square h-4 w-4 rounded-full border border-primary p-0 text-primary shadow focus:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+      'tw-aspect-square tw-h-4 tw-w-4 tw-rounded-full tw-border tw-border-ui2-primary tw-p-0 tw-text-ui2-primary tw-shadow focus:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring disabled:tw-cursor-not-allowed disabled:tw-opacity-50',
       className
     )}
     {...props}
   >
-    <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-      <Circle className="h-2.5 w-2.5 fill-primary" />
+    <RadioGroupPrimitive.Indicator className="tw-flex tw-items-center tw-justify-center">
+      <Circle className="tw-h-2.5 tw-w-2.5 tw-fill-ui2-primary" />
     </RadioGroupPrimitive.Indicator>
   </RadioGroupPrimitive.Item>
 ));
@@ -168,17 +170,17 @@ export const Slider = React.forwardRef<
 >(({ className, thumbLabel, ...props }, ref) => (
   <SliderPrimitive.Root
     ref={ref}
-    className={cn('relative flex w-full touch-none select-none items-center', className)}
+    className={cn('tw-relative tw-flex tw-w-full tw-touch-none tw-select-none tw-items-center', className)}
     {...props}
   >
-    <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_20%,transparent))]">
-      <SliderPrimitive.Range className="absolute h-full bg-primary" />
+    <SliderPrimitive.Track className="tw-relative tw-h-1.5 tw-w-full tw-grow tw-overflow-hidden tw-rounded-full tw-bg-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_20%,transparent))]">
+      <SliderPrimitive.Range className="tw-absolute tw-h-full tw-bg-ui2-primary" />
     </SliderPrimitive.Track>
     {(props.value ?? props.defaultValue ?? [0]).map((_, i) => (
       <SliderPrimitive.Thumb
         key={i}
         aria-label={thumbLabel}
-        className="block h-4 w-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+        className="tw-block tw-h-4 tw-w-4 tw-rounded-full tw-border tw-border-ui2-primary/50 tw-bg-ui2-background tw-shadow tw-transition-colors focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring disabled:tw-pointer-events-none disabled:tw-opacity-50"
       />
     ))}
   </SliderPrimitive.Root>
@@ -191,7 +193,10 @@ export const ToggleGroup = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToggleGroupPrimitive.Root
     ref={ref}
-    className={cn('inline-flex items-center rounded-lg bg-muted p-[3px] text-muted-foreground', className)}
+    className={cn(
+      'tw-inline-flex tw-items-center tw-rounded-ui2-lg tw-bg-ui2-muted tw-p-[3px] tw-text-ui2-muted-foreground',
+      className
+    )}
     {...props}
   />
 ));
@@ -203,7 +208,7 @@ export const ToggleGroupItem = React.forwardRef<
   <ToggleGroupPrimitive.Item
     ref={ref}
     className={cn(
-      'inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm',
+      'tw-inline-flex tw-h-[calc(100%-1px)] tw-flex-1 tw-items-center tw-justify-center tw-whitespace-nowrap tw-rounded-ui2-md tw-px-3 tw-py-1 tw-text-ui2-sm tw-font-medium tw-transition-all focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring disabled:tw-pointer-events-none disabled:tw-opacity-50 data-[state=on]:tw-bg-ui2-background data-[state=on]:tw-text-ui2-foreground data-[state=on]:tw-shadow-sm',
       className
     )}
     {...props}

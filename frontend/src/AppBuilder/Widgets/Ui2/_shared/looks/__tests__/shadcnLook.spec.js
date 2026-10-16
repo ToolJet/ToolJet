@@ -79,9 +79,9 @@ describe('primary-coloured text', () => {
     const raw = source.match(/text-\[color:var\((?:--lk-[a-z-]+,)?var\(--sc-primary\)\)?\]/g) || [];
     expect(raw).toEqual([]);
   });
-  it('maps the text-primary utility to the ink', () => {
-    const config = require('@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.tailwind.config');
-    expect(config.theme.extend.textColor.primary.DEFAULT({})).toBe('var(--sc-primary-ink)');
+  it('maps the text-ui2-primary utility to the ink', () => {
+    const theme = require('@/AppBuilder/Widgets/Ui2/_shared/styles/ui2.tailwind');
+    expect(theme.textColor.ui2.primary.DEFAULT({})).toBe('var(--sc-primary-ink)');
   });
 });
 

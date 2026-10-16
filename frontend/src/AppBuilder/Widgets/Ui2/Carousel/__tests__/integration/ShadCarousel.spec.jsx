@@ -78,18 +78,18 @@ describe('UI 2.0 Carousel', () => {
 
     // (The widget's height less the box's padding.)
     await waitFor(() => expect(region().style.height).toBe('296px'));
-    expect(within(slides()[0]).getByRole('img')).toHaveClass('object-contain');
+    expect(within(slides()[0]).getByRole('img')).toHaveClass('tw-object-contain');
 
     await act(async () => render({ properties: { aspectRatio: binding('1/1') } }));
     expect(region().style.height).toBe('');
-    expect(slides()[0].querySelector('.cursor-pointer').style.aspectRatio).toBe('1');
-    expect(within(slides()[0]).getByRole('img')).toHaveClass('object-cover');
+    expect(slides()[0].querySelector('.tw-cursor-pointer').style.aspectRatio).toBe('1');
+    expect(within(slides()[0]).getByRole('img')).toHaveClass('tw-object-cover');
   });
 
   test('[ShadCarousel-PROP-003] captionPosition below puts the caption under the image, none leaves it out', async () => {
     render({ properties: { captionPosition: binding('below') } });
     const caption = await within(slides()[0]).findByText('Along the shore');
-    expect(caption.closest('.cursor-pointer')).toBeNull();
+    expect(caption.closest('.tw-cursor-pointer')).toBeNull();
 
     await act(async () => render({ properties: { captionPosition: binding('none') } }));
     expect(within(slides()[0]).queryByText('Along the shore')).not.toBeInTheDocument();
@@ -162,7 +162,7 @@ describe('UI 2.0 Carousel', () => {
       await handle(setVariableOn(ID, 'onSlideClicked', { value: '{{components.carousel1.clickedSlide.index}}' }));
 
       await waitFor(() => expect(shown()).toEqual(['2 of 3']));
-      await act(async () => fireEvent.click(slides()[1].querySelector('.cursor-pointer')));
+      await act(async () => fireEvent.click(slides()[1].querySelector('.tw-cursor-pointer')));
 
       await waitFor(() => expect(widget.variables().seen).toBe(1));
       expect(exposed().clickedSlide).toMatchObject({ title: 'City hubs', index: 1 });
@@ -180,7 +180,7 @@ describe('UI 2.0 Carousel', () => {
     await act(async () => {
       fireEvent.pointerDown(region(), { clientX: 300 });
       fireEvent.pointerUp(region(), { clientX: 200 });
-      fireEvent.click(slides()[0].querySelector('.cursor-pointer'));
+      fireEvent.click(slides()[0].querySelector('.tw-cursor-pointer'));
     });
 
     await waitFor(() => expect(exposed().currentIndex).toBe(1));

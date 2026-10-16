@@ -130,7 +130,7 @@ describe('UI 2.0 Card grid', () => {
     });
 
     await waitFor(() => expect(cards()[0]).toHaveAttribute('data-layout', 'row'));
-    expect(cards()[0]).toHaveClass('flex-row');
+    expect(cards()[0]).toHaveClass('tw-flex-row');
     expect(cards()[0].querySelector('[data-image-layout="side"]')).toBeTruthy();
   });
 
@@ -163,7 +163,7 @@ describe('UI 2.0 Card grid', () => {
   });
 
   test('[ShadCardGrid-PROP-008] columns caps the grid; minCardWidth narrows it to what fits', async () => {
-    const template = () => document.querySelector('.grid').style.gridTemplateColumns;
+    const template = () => document.querySelector('.tw-grid').style.gridTemplateColumns;
     render();
     await waitFor(() => expect(template()).toBe('repeat(3, minmax(0, 1fr))'));
 
@@ -177,14 +177,14 @@ describe('UI 2.0 Card grid', () => {
 
   test('[ShadCardGrid-PROP-009] cardStyle draws elevated, outlined or flat cards', async () => {
     render();
-    await waitFor(() => expect(cards()[0]).toHaveClass('shadow-sm', 'border'));
+    await waitFor(() => expect(cards()[0]).toHaveClass('tw-shadow-sm', 'tw-border'));
 
     render({ properties: { cardStyle: binding('outline') } });
-    await waitFor(() => expect(cards()[0]).not.toHaveClass('shadow-sm'));
-    expect(cards()[0]).toHaveClass('border');
+    await waitFor(() => expect(cards()[0]).not.toHaveClass('tw-shadow-sm'));
+    expect(cards()[0]).toHaveClass('tw-border');
 
     render({ properties: { cardStyle: binding('flat') } });
-    await waitFor(() => expect(cards()[0]).toHaveClass('border-0'));
+    await waitFor(() => expect(cards()[0]).toHaveClass('tw-border-0'));
   });
 
   test('[ShadCardGrid-EVT-001] clicking a card fires onCardClicked with selectedItem and selectedItemId already set', async () => {
@@ -259,9 +259,9 @@ describe('UI 2.0 Card grid', () => {
 
     const chip = await screen.findByText(badge);
     expect(chip).toHaveAttribute('title', badge);
-    expect(chip).toHaveClass('truncate');
-    expect(chip).not.toHaveClass('inline-flex');
-    expect(chip.closest('.flex-wrap')).toHaveTextContent('Revenue');
+    expect(chip).toHaveClass('tw-truncate');
+    expect(chip).not.toHaveClass('tw-inline-flex');
+    expect(chip.closest('.tw-flex-wrap')).toHaveTextContent('Revenue');
   });
 
   test('[ShadCardGrid-STY-001] card colours, accent, radius and title typeface reach the grid as CSS variables', async () => {

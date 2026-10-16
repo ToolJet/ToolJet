@@ -1,6 +1,5 @@
-// shadcn/ui pack (experiment): its own Tailwind build, scoped to `.tj-shadcn` (see shadcn.tailwind.config.js).
-@config "./shadcn.tailwind.config.js";
-@tailwind utilities;
+// The UI 2.0 widgets' styles beside their Tailwind classes (ToolJet's Tailwind build, `tw-` prefix; the `ui2` theme
+// keys are in ui2.tailwind.js): the theme tokens every widget reads, and the rules a class cannot express.
 
 // shadcn's tokens, taken from the app theme so a pack widget follows whatever theme the user or the model chose.
 // Values without a theme counterpart use shadcn's neutral defaults. tj-shad-tokens gives a surface outside the pack's
@@ -118,51 +117,41 @@
   }
 }
 
-// Tailwind's preflight is off in ToolJet; shadcn relies on its box model and border reset, so restore just those
-// inside the pack.
-.tj-shadcn,
-.tj-shadcn *,
-.tj-shadcn ::before,
-.tj-shadcn ::after {
+// The reset: Tailwind's preflight is off in ToolJet, and shadcn relies on its box model, border and form-control
+// resets, so the pack restores those for its own elements. `:where()` keeps it at element specificity, like preflight:
+// it wins over the global stylesheet's element rules (it loads later) and loses to every utility class.
+:where(.tj-shadcn),
+:where(.tj-shadcn) *,
+:where(.tj-shadcn) ::before,
+:where(.tj-shadcn) ::after {
   box-sizing: border-box;
   border-width: 0;
   border-style: solid;
   border-color: var(--sc-border);
 }
-.tj-shadcn button,
-.tj-shadcn input,
-.tj-shadcn textarea,
-.tj-shadcn select {
+:where(.tj-shadcn) :is(button, input, textarea, select) {
   font: inherit;
   color: inherit;
   margin: 0;
 }
-.tj-shadcn button {
+:where(.tj-shadcn) button {
   background-color: transparent;
   cursor: pointer;
 }
-.tj-shadcn p,
-.tj-shadcn h1,
-.tj-shadcn h2,
-.tj-shadcn h3,
-.tj-shadcn h4,
-.tj-shadcn table {
+:where(.tj-shadcn) :is(p, h1, h2, h3, h4, table) {
   margin: 0;
 }
-.tj-shadcn table {
+:where(.tj-shadcn) table {
   border-collapse: collapse;
 }
-
-// ToolJet's global stylesheet has `.text-center { display: flex }`, which turns any pack element using Tailwind's
-// text-center into a flex box (a table's empty-state cell stopped spanning its columns and sat in the first one).
-// Give the element its own display back, unless a display utility on it sets one (this file's rules are made
-// !important by the pack's PostCSS step, so the utility would otherwise lose).
-.tj-shadcn
-  .text-center:not(.flex):not(.inline-flex):not(.grid):not(.inline-grid):not(.block):not(.inline-block):not(.inline):not(.hidden):not(.table-cell) {
-  display: revert;
+// The one !important in the pack: ToolJet's global stylesheet sets `input[type='text'] { outline-color: ... !important }`,
+// which turns a widget's `tw-outline-none` (a transparent outline) into a visible frame inside the field. Only another
+// !important undoes it; the widgets draw their focus with a ring (box-shadow), never an outline.
+.tj-shadcn input[type='text'] {
+  outline-color: transparent !important;
 }
 
-// Typeface styles (typeLook.js) on Heading, Text and Stat: each class reads the variable its style sets. These rules
+// Typeface styles (typeLook.ts) on Heading, Text and Stat: each class reads the variable its style sets. These rules
 // come after the utilities at the same specificity, so a chosen weight or size wins over the tone's own.
 .tj-shadcn {
   .lk-font {
@@ -210,7 +199,7 @@
   border-radius: 4px;
 }
 
-// ToolJet UI 2.0 Chat (ShadChat.jsx): markdown in replies, sized for a message bubble. ToolJet's global styles give
+// ToolJet UI 2.0 Chat (Chat/Chat.tsx): markdown in replies, sized for a message bubble. ToolJet's global styles give
 // paragraphs and lists page margins, so each block is reset here.
 .tj-shadcn .sc-markdown {
   // Rules drawn on the reply bubble: the theme's border colour is the bubble's own muted colour in most themes.
@@ -321,7 +310,7 @@
   background: var(--sc-muted-foreground);
   animation: sc-typing 1.2s ease-in-out infinite;
 }
-// Delays as rules, not inline: the pack's rules are !important, so the animation shorthand would override them.
+// Each dot starts a little later than the one before.
 .tj-shadcn .sc-typing-dot:nth-child(2) {
   animation-delay: 160ms;
 }
@@ -346,7 +335,7 @@
   }
 }
 
-// ---- Map (ShadMap.jsx) ---------------------------------------------------------------------------------------------
+// ---- Map (Map/Map.tsx) ---------------------------------------------------------------------------------------------
 // Leaflet's map in the pack's frame. Its panes, controls and popups are restyled from the tokens, so they follow light,
 // dark and brand themes. Pins are toned by status (info is a fixed blue: on a map the four states must stay apart
 // whatever the brand colour; pins with no status take the accent). Leaflet positions markers with inline transforms,
@@ -701,8 +690,8 @@
   }
 }
 
-// The schedule's bookings and empty slots are buttons, whose background, colour and border colour the pack's reset
-// sets with !important: their fills are rules here. A booking's tone arrives as --bk-tone (ShadSchedule.jsx).
+// The schedule's bookings and empty slots: their fills are rules here. A booking's tone arrives as --bk-tone
+// (Schedule/ScheduleRow.tsx).
 .tj-shadcn .sc-schedule .sc-booking {
   background-color: color-mix(in srgb, var(--bk-tone) 14%, var(--sc-background));
   border-color: var(--bk-tone);

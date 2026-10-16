@@ -43,7 +43,7 @@ export const ShadRadioGroup = (props: WidgetProps) => {
         <RadioGroup
           value={key}
           disabled={busy(properties)}
-          className={properties.horizontal === true ? 'flex flex-wrap gap-4' : undefined}
+          className={properties.horizontal === true ? 'tw-flex tw-flex-wrap tw-gap-4' : undefined}
           onValueChange={(next) => {
             change(next, 'onSelectionChange');
             check.touch();
@@ -52,13 +52,13 @@ export const ShadRadioGroup = (props: WidgetProps) => {
           {shownOptions(options, byKey.get(key), MAX_CHOICES).map((o) => {
             const itemId = `shad-${id}-${String(o.value)}`;
             return (
-              <div key={String(o.value)} className="flex items-center gap-2">
+              <div key={String(o.value)} className="tw-flex tw-items-center tw-gap-2">
                 <RadioGroupItem
                   value={String(o.value)}
                   id={itemId}
-                  className="border-[color:var(--lk-invalid,var(--sc-primary))]"
+                  className="tw-border-[color:var(--lk-invalid,var(--sc-primary))]"
                 />
-                <Label htmlFor={itemId} className="font-normal text-[color:var(--lk-fg,var(--sc-foreground))]">
+                <Label htmlFor={itemId} className="tw-font-normal tw-text-[color:var(--lk-fg,var(--sc-foreground))]">
                   {o.label}
                 </Label>
               </div>

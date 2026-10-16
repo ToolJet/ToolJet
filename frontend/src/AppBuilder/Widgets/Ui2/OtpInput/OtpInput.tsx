@@ -11,15 +11,15 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- OTP input -----------------------------------------------------------------------------------------------------
 
-const SLOT_SIZE = 'h-[var(--lk-slot,2.25rem)] w-[var(--lk-slot,2.25rem)]';
+const SLOT_SIZE = 'tw-h-[var(--lk-slot,2.25rem)] tw-w-[var(--lk-slot,2.25rem)]';
 
 export const SLOT =
-  'relative flex items-center justify-center text-[length:calc(var(--lk-slot,2.25rem)*0.42)] bg-[color:var(--lk-bg,transparent)] text-[color:var(--lk-fg,var(--sc-foreground))] shadow-sm transition-all';
+  'tw-relative tw-flex tw-items-center tw-justify-center tw-text-[length:calc(var(--lk-slot,2.25rem)*0.42)] tw-bg-[color:var(--lk-bg,transparent)] tw-text-[color:var(--lk-fg,var(--sc-foreground))] tw-shadow-sm tw-transition-all';
 
-export const SLOT_RADIUS = 'rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
+export const SLOT_RADIUS = 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
 
 export const SLOT_JOINED =
-  'border-y border-r first:border-l first:rounded-l-[var(--lk-radius,calc(var(--sc-radius)-2px))] last:rounded-r-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
+  'tw-border-y tw-border-r first:tw-border-l first:tw-rounded-l-[var(--lk-radius,calc(var(--sc-radius)-2px))] last:tw-rounded-r-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
 
 export const ShadOtpInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
@@ -83,8 +83,8 @@ export const ShadOtpInput = (props: WidgetProps) => {
           SLOT,
           SLOT_SIZE,
           EDGE,
-          joined ? SLOT_JOINED : cn('border', SLOT_RADIUS),
-          i === active && 'z-10 ring-1 ring-ring'
+          joined ? SLOT_JOINED : cn('tw-border', SLOT_RADIUS),
+          i === active && 'tw-z-10 tw-ring-1 tw-ring-ui2-ring'
         )}
       >
         {char ? (
@@ -94,11 +94,11 @@ export const ShadOtpInput = (props: WidgetProps) => {
             char
           )
         ) : placeholder ? (
-          <span className="text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]">{placeholder}</span>
+          <span className="tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]">{placeholder}</span>
         ) : null}
         {i === active && !char ? (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="h-4 w-px animate-pulse bg-[color:var(--lk-fg,var(--sc-foreground))]" />
+          <div className="tw-pointer-events-none tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center">
+            <div className="tw-h-4 tw-w-px tw-animate-pulse tw-bg-[color:var(--lk-fg,var(--sc-foreground))]" />
           </div>
         ) : null}
       </div>
@@ -115,8 +115,8 @@ export const ShadOtpInput = (props: WidgetProps) => {
       >
         <div
           className={cn(
-            'relative flex w-fit max-w-full items-center gap-2',
-            disabled && 'cursor-not-allowed opacity-50'
+            'tw-relative tw-flex tw-w-fit tw-max-w-full tw-items-center tw-gap-2',
+            disabled && 'tw-cursor-not-allowed tw-opacity-50'
           )}
         >
           {groups.map(([from, to], g) => (
@@ -124,12 +124,12 @@ export const ShadOtpInput = (props: WidgetProps) => {
               {g > 0 ? (
                 <div
                   role="separator"
-                  className="flex items-center text-[color:var(--lk-sep,var(--sc-muted-foreground))]"
+                  className="tw-flex tw-items-center tw-text-[color:var(--lk-sep,var(--sc-muted-foreground))]"
                 >
-                  <Minus className="h-4 w-4" />
+                  <Minus className="tw-h-4 tw-w-4" />
                 </div>
               ) : null}
-              <div className={cn('flex items-center', !joined && 'gap-2')}>
+              <div className={cn('tw-flex tw-items-center', !joined && 'tw-gap-2')}>
                 {Array.from({ length: to - from }, (_, k) => slot(from + k))}
               </div>
             </React.Fragment>
@@ -143,7 +143,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
             autoComplete="one-time-code"
             autoCapitalize="characters"
             spellCheck={false}
-            className="absolute inset-0 h-full w-full cursor-text border-0 bg-transparent p-0 text-transparent caret-transparent opacity-0 outline-none disabled:cursor-not-allowed"
+            className="tw-absolute tw-inset-0 tw-h-full tw-w-full tw-cursor-text tw-border-0 tw-bg-transparent tw-p-0 tw-text-transparent tw-caret-transparent tw-opacity-0 tw-outline-none disabled:tw-cursor-not-allowed"
             value={code}
             disabled={disabled}
             onChange={(e) => change(e.target.value)}

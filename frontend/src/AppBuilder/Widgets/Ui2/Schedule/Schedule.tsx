@@ -182,15 +182,18 @@ export const ShadSchedule = (props: WidgetProps) => {
   };
   const timeLabel = (c: ScheduleColumn) => (
     <>
-      <span className="font-medium" style={{ color: c.today ? 'var(--lk-accent,var(--sc-primary-ink))' : undefined }}>
+      <span
+        className="tw-font-medium"
+        style={{ color: c.today ? 'var(--lk-accent,var(--sc-primary-ink))' : undefined }}
+      >
         {c.label}
       </span>
       {c.sub ? (
         <span
           className={cn(
-            'ml-1 tabular-nums',
+            'tw-ml-1 tw-tabular-nums',
             c.today &&
-              'rounded-full bg-[color:var(--lk-accent,var(--sc-primary))] px-1.5 py-px text-[color:var(--sc-primary-foreground)]'
+              'tw-rounded-full tw-bg-[color:var(--lk-accent,var(--sc-primary))] tw-px-1.5 tw-py-px tw-text-[color:var(--sc-primary-foreground)]'
           )}
         >
           {c.sub}
@@ -204,27 +207,30 @@ export const ShadSchedule = (props: WidgetProps) => {
     body = <LoadingBox height={props.height} />;
   } else if (p.loadingState) {
     body = (
-      <div className="overflow-hidden border" style={frame}>
-        <div className="flex gap-4 border-b px-3 py-3" style={{ borderColor: LINE }}>
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className="h-3 flex-1" />
+      <div className="tw-overflow-hidden tw-border" style={frame}>
+        <div className="tw-flex tw-gap-4 tw-border-b tw-px-3 tw-py-3" style={{ borderColor: LINE }}>
+          <Skeleton className="tw-h-3 tw-w-20" />
+          <Skeleton className="tw-h-3 tw-flex-1" />
         </div>
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className={cn('flex items-center gap-4 px-3', i > 0 && 'border-t')}
+            className={cn('tw-flex tw-items-center tw-gap-4 tw-px-3', i > 0 && 'tw-border-t')}
             style={{ height: rowHeight, borderColor: LINE }}
           >
-            <Skeleton className="h-4 shrink-0" style={{ width: rw - 40 }} />
-            <Skeleton className="h-7 rounded-md" style={{ marginLeft: `${10 + ((i * 23) % 40)}%`, width: '18%' }} />
+            <Skeleton className="tw-h-4 tw-shrink-0" style={{ width: rw - 40 }} />
+            <Skeleton
+              className="tw-h-7 tw-rounded-ui2-md"
+              style={{ marginLeft: `${10 + ((i * 23) % 40)}%`, width: '18%' }}
+            />
           </div>
         ))}
       </div>
     );
   } else if (!resources.length) {
     body = (
-      <div className="border" style={frame}>
-        <p className="m-0 py-10 text-center text-sm text-muted-foreground">
+      <div className="tw-border" style={frame}>
+        <p className="tw-m-0 tw-py-10 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
           {text(p.emptyText) || 'No resources to schedule'}
         </p>
       </div>
@@ -233,25 +239,28 @@ export const ShadSchedule = (props: WidgetProps) => {
     const shown = resources.slice(0, shownCount);
     const slotCount = range.slots.length;
     body = (
-      <div className="sc-schedule overflow-hidden border" style={frame} data-scale={range.scale}>
-        <div className="overflow-x-auto">
+      <div className="sc-schedule tw-overflow-hidden tw-border" style={frame} data-scale={range.scale}>
+        <div className="tw-overflow-x-auto">
           <div
-            className="relative"
+            className="tw-relative"
             style={{ minWidth: rw + range.columns.length * columnMin, '--rw': `${rw}px` } as StyleWithVars}
           >
-            <div className="flex border-b" style={{ borderColor: LINE }}>
+            <div className="tw-flex tw-border-b" style={{ borderColor: LINE }}>
               <div
-                className="sticky left-0 z-20 flex shrink-0 items-end px-3 pb-2 pt-3 text-xs font-medium"
+                className="tw-sticky tw-left-0 tw-z-20 tw-flex tw-shrink-0 tw-items-end tw-px-3 tw-pb-2 tw-pt-3 tw-text-xs tw-font-medium"
                 style={{ width: rw, background: SURFACE, color: LABEL }}
               >
                 {/* A header written in lowercase ("name", a field name) reads as a label: "Name". */}
-                <span className="truncate">{resourceHeading(text(p.resourceTitle))}</span>
+                <span className="tw-truncate">{resourceHeading(text(p.resourceTitle))}</span>
               </div>
-              <div className="flex min-w-0 flex-1">
+              <div className="tw-flex tw-min-w-0 tw-flex-1">
                 {range.columns.map((c, i) => (
                   <div
                     key={c.key}
-                    className={cn('min-w-0 flex-1 truncate px-2 pb-2 pt-3 text-xs tabular-nums', i > 0 && 'border-l')}
+                    className={cn(
+                      'tw-min-w-0 tw-flex-1 tw-truncate tw-px-2 tw-pb-2 tw-pt-3 tw-text-xs tw-tabular-nums',
+                      i > 0 && 'tw-border-l'
+                    )}
                     style={{ borderColor: LINE, color: LABEL }}
                     data-today={c.today || undefined}
                   >
@@ -261,7 +270,7 @@ export const ShadSchedule = (props: WidgetProps) => {
               </div>
             </div>
             {/* The rows, with the now-line over them (under the header, so it never covers today's date). */}
-            <div className="relative">
+            <div className="tw-relative">
               {shown.map((r, i) => (
                 <ScheduleRow
                   key={r.key}
@@ -285,17 +294,17 @@ export const ShadSchedule = (props: WidgetProps) => {
               {showNow ? (
                 <div
                   ref={nowLineRef}
-                  className="pointer-events-none absolute bottom-0 top-0 z-[5] w-0"
+                  className="tw-pointer-events-none tw-absolute tw-bottom-0 tw-top-0 tw-z-[5] tw-w-0"
                   style={{ left: 'calc(var(--rw) + (100% - var(--rw)) * var(--now, 0))' }}
                   aria-hidden="true"
                   data-now-line=""
                 >
                   <span
-                    className="absolute bottom-0 top-0 -translate-x-1/2"
+                    className="tw-absolute tw-bottom-0 tw-top-0 -tw-translate-x-1/2"
                     style={{ width: 2, background: 'var(--lk-now,var(--sc-destructive))' }}
                   />
                   <span
-                    className="absolute -top-1 h-2 w-2 -translate-x-1/2 rounded-full"
+                    className="tw-absolute -tw-top-1 tw-h-2 tw-w-2 -tw-translate-x-1/2 tw-rounded-full"
                     style={{ background: 'var(--lk-now,var(--sc-destructive))' }}
                   />
                 </div>
@@ -304,11 +313,11 @@ export const ShadSchedule = (props: WidgetProps) => {
           </div>
         </div>
         {resources.length > shownCount ? (
-          <div className="flex justify-center border-t py-2" style={{ borderColor: LINE }}>
+          <div className="tw-flex tw-justify-center tw-border-t tw-py-2" style={{ borderColor: LINE }}>
             <button
               type="button"
               onClick={() => setShownCount((n) => n + RESOURCES_PER_STEP)}
-              className="rounded-md px-3 py-1.5 text-sm text-[color:var(--sc-muted-foreground)] transition-colors hover:bg-[color:var(--sc-muted)] hover:text-[color:var(--sc-foreground)]"
+              className="tw-rounded-ui2-md tw-px-3 tw-py-1.5 tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)] tw-transition-colors hover:tw-bg-[color:var(--sc-muted)] hover:tw-text-[color:var(--sc-foreground)]"
             >
               {`Show ${Math.min(RESOURCES_PER_STEP, resources.length - shownCount)} more of ${
                 resources.length - shownCount

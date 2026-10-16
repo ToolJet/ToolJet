@@ -286,7 +286,7 @@ export const ShadTable = (props: WidgetProps) => {
 
   return (
     <Shell {...props} properties={{ ...properties, visibility: isVisible }} innerRef={ref}>
-      <div className="flex flex-col gap-3" style={{ fontSize }}>
+      <div className="tw-flex tw-flex-col tw-gap-3" style={{ fontSize }}>
         {toolbar ? (
           <TableToolbar
             properties={properties}
@@ -307,8 +307,8 @@ export const ShadTable = (props: WidgetProps) => {
         <div
           ref={scrollRef}
           className={cn(
-            'relative w-full overflow-auto bg-[color:var(--lk-bg,transparent)]',
-            styles?.showBorder !== false && 'rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] border',
+            'tw-relative tw-w-full tw-overflow-auto tw-bg-[color:var(--lk-bg,transparent)]',
+            styles?.showBorder !== false && 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] tw-border',
             ROW_BORDER
           )}
           style={{
@@ -316,7 +316,7 @@ export const ShadTable = (props: WidgetProps) => {
             ...(moreRight ? RIGHT_FADE : {}),
           }}
         >
-          <table className="w-full caption-bottom border-collapse text-[length:inherit]">
+          <table className="tw-w-full tw-caption-bottom tw-border-collapse tw-text-[length:inherit]">
             <TableHead
               properties={properties}
               styles={styles}
@@ -369,7 +369,7 @@ export const ShadTable = (props: WidgetProps) => {
           {moreBelow ? (
             <div
               aria-hidden="true"
-              className="pointer-events-none sticky bottom-0 -mt-8 h-8 w-full bg-gradient-to-t from-[color:var(--lk-bg,var(--sc-background))] to-transparent"
+              className="tw-pointer-events-none tw-sticky tw-bottom-0 -tw-mt-8 tw-h-8 tw-w-full tw-bg-gradient-to-t tw-from-[color:var(--lk-bg,var(--sc-background))] tw-to-transparent"
             />
           ) : null}
         </div>

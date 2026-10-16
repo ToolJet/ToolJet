@@ -8,9 +8,9 @@ import type { KanbanLook } from './KanbanCard';
 import type { BoardCard, BoardColumn } from './kanbanBoard';
 
 // Column title and count colours: the columnTitleColor and count styles, else the theme's.
-const COLUMN_TITLE = 'text-[color:var(--kb-col-title,var(--sc-foreground))]';
+const COLUMN_TITLE = 'tw-text-[color:var(--kb-col-title,var(--sc-foreground))]';
 const COUNT_BADGE =
-  'bg-[color:var(--kb-count-bg,var(--sc-secondary))] text-[color:var(--kb-count-fg,var(--sc-secondary-foreground))]';
+  'tw-bg-[color:var(--kb-count-bg,var(--sc-secondary))] tw-text-[color:var(--kb-count-fg,var(--sc-secondary-foreground))]';
 
 // A board draws this many cards a column at first, then this many more per "Show more" click (10k cards froze the
 // page); and at most MAX_BOARD_COLUMNS columns (a 10k-item list bound as the columns).
@@ -110,23 +110,28 @@ export const KanbanColumn = ({
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onCollapse?.(column.id)}
         style={{ ...look.column, width: 152, flex: '0 0 152px' }}
         className={cn(
-          'group/col relative flex cursor-pointer flex-col gap-2 p-3 transition-shadow hover:ring-1 hover:ring-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          look.columnFramed && 'border border-[color:var(--kb-column-border)]',
-          isOver && 'ring-1 ring-primary'
+          'group/col tw-relative tw-flex tw-cursor-pointer tw-flex-col tw-gap-2 tw-p-3 tw-transition-shadow hover:tw-ring-1 hover:tw-ring-ui2-border focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring',
+          look.columnFramed && 'tw-border tw-border-[color:var(--kb-column-border)]',
+          isOver && 'tw-ring-1 tw-ring-ui2-primary'
         )}
       >
         {/* A folded lane keeps its title across, with the count on the open columns' header line: a 44px sliver of
             vertical text read as a broken column in reviews. */}
-        <div className="flex items-center justify-between gap-2">
-          <span className={cn('truncate text-sm font-semibold', COLUMN_TITLE)}>{column.title}</span>
+        <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
+          <span className={cn('tw-truncate tw-text-ui2-sm tw-font-semibold', COLUMN_TITLE)}>{column.title}</span>
           {showCount ? (
-            <Badge variant="secondary" className={cn('shrink-0 px-1.5 tabular-nums', COUNT_BADGE)}>
+            <Badge variant="secondary" className={cn('tw-shrink-0 tw-px-1.5 tw-tabular-nums', COUNT_BADGE)}>
               {column.cards.length}
             </Badge>
           ) : null}
         </div>
-        <span className={cn('flex items-center gap-1 text-xs group-hover/col:text-foreground', SECONDARY_TEXT)}>
-          <ChevronRight className="h-3.5 w-3.5" />
+        <span
+          className={cn(
+            'tw-flex tw-items-center tw-gap-1 tw-text-xs group-hover/col:tw-text-ui2-foreground',
+            SECONDARY_TEXT
+          )}
+        >
+          <ChevronRight className="tw-h-3.5 tw-w-3.5" />
           Show cards
         </span>
       </div>
@@ -148,19 +153,19 @@ export const KanbanColumn = ({
         ...(!fixed && maxHeight ? { maxHeight: `${maxHeight}px` } : {}),
       }}
       className={cn(
-        'group/col flex flex-col p-3 transition-shadow',
-        look.columnFramed && 'border border-[color:var(--kb-column-border)]',
-        scrolls && 'min-h-0 overflow-hidden',
-        !width && 'flex-1',
-        compact ? 'gap-1.5' : 'gap-2',
-        isOver && 'ring-1 ring-border'
+        'group/col tw-flex tw-flex-col tw-p-3 tw-transition-shadow',
+        look.columnFramed && 'tw-border tw-border-[color:var(--kb-column-border)]',
+        scrolls && 'tw-min-h-0 tw-overflow-hidden',
+        !width && 'tw-flex-1',
+        compact ? 'tw-gap-1.5' : 'tw-gap-2',
+        isOver && 'tw-ring-1 tw-ring-ui2-border'
       )}
     >
-      <div className="mb-1 flex items-center justify-between gap-2 px-1">
-        <span className={cn('truncate text-sm font-semibold', COLUMN_TITLE)}>{column.title}</span>
-        <div className="flex shrink-0 items-center gap-1">
+      <div className="tw-mb-1 tw-flex tw-items-center tw-justify-between tw-gap-2 tw-px-1">
+        <span className={cn('tw-truncate tw-text-ui2-sm tw-font-semibold', COLUMN_TITLE)}>{column.title}</span>
+        <div className="tw-flex tw-shrink-0 tw-items-center tw-gap-1">
           {showCount ? (
-            <Badge variant="secondary" className={cn('tabular-nums', COUNT_BADGE)}>
+            <Badge variant="secondary" className={cn('tw-tabular-nums', COUNT_BADGE)}>
               {column.cards.length}
             </Badge>
           ) : null}
@@ -171,9 +176,9 @@ export const KanbanColumn = ({
               aria-label={`Collapse ${column.title}`}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => onCollapse(column.id)}
-              className="rounded-md p-0.5 text-muted-foreground opacity-0 transition hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/col:opacity-100"
+              className="tw-rounded-ui2-md tw-p-0.5 tw-text-ui2-muted-foreground tw-opacity-0 tw-transition hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground focus-visible:tw-opacity-100 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring group-hover/col:tw-opacity-100"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="tw-h-4 tw-w-4" />
             </button>
           ) : null}
         </div>
@@ -182,9 +187,9 @@ export const KanbanColumn = ({
         ref={listRef}
         style={scrolls && moreBelow ? BOTTOM_FADE : undefined}
         className={cn(
-          'flex flex-col',
-          compact ? 'gap-1.5' : 'gap-2',
-          scrolls && '-mx-1 min-h-0 flex-1 overflow-y-auto px-1 [&>*]:shrink-0'
+          'tw-flex tw-flex-col',
+          compact ? 'tw-gap-1.5' : 'tw-gap-2',
+          scrolls && '-tw-mx-1 tw-min-h-0 tw-flex-1 tw-overflow-y-auto tw-px-1 [&>*]:tw-shrink-0'
         )}
       >
         {column.cards.length ? (
@@ -206,7 +211,7 @@ export const KanbanColumn = ({
               />
             ))
         ) : (
-          <div className="rounded-lg border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">
+          <div className="tw-rounded-ui2-lg tw-border tw-border-dashed tw-px-3 tw-py-6 tw-text-center tw-text-xs tw-text-ui2-muted-foreground">
             {emptyText}
           </div>
         )}
@@ -215,7 +220,7 @@ export const KanbanColumn = ({
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => setShownCards((n) => n + CARDS_PER_STEP)}
-            className="rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="tw-rounded-ui2-md tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground"
           >
             {`Show ${Math.min(hiddenCards, CARDS_PER_STEP)} more of ${hiddenCards}`}
           </button>
@@ -224,9 +229,9 @@ export const KanbanColumn = ({
           <button
             type="button"
             onClick={() => onAdd(column)}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="tw-flex tw-items-center tw-gap-1.5 tw-rounded-ui2-md tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="tw-h-4 tw-w-4" />
             Add card
           </button>
         ) : null}

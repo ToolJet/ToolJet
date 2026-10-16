@@ -69,7 +69,7 @@ describe('UI 2.0 Heading', () => {
     widget.setEvents(countInvocationsOn(ID, 'onClick'));
     const button = await screen.findByRole('button', { name: 'Booking desk' });
     expect(button).toHaveAttribute('tabindex', '0');
-    expect(button).toHaveClass('cursor-pointer');
+    expect(button).toHaveClass('tw-cursor-pointer');
 
     await act(async () => fireEvent.keyDown(button, { key: 'Enter' }));
     await waitFor(() => expect(widget.variables().calls).toBe(1));

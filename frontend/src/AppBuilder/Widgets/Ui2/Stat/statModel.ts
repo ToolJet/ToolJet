@@ -5,9 +5,9 @@ import { sparkPoints, type SparkPoint } from '@/AppBuilder/Widgets/Ui2/_charts/s
 
 /** Value text classes by size: a small figure for dense rows of KPIs, the default, and a large hero number. */
 export const STAT_SIZES: Record<string, string> = {
-  sm: 'text-xl',
-  default: 'text-2xl',
-  lg: 'text-4xl',
+  sm: 'tw-text-ui2-xl',
+  default: 'tw-text-2xl',
+  lg: 'tw-text-4xl',
 };
 
 export const statSize = (size: string): string => STAT_SIZES[size] || STAT_SIZES.default;

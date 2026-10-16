@@ -28,7 +28,7 @@ describe('UI 2.0 Badge', () => {
     render();
 
     expect(await screen.findByText('Paid')).toBeInTheDocument();
-    expect(badge()).toHaveClass('bg-primary');
+    expect(badge()).toHaveClass('tw-bg-ui2-primary');
   });
 
   test('[ShadBadge-PROP-001] text follows its binding', async () => {
@@ -39,14 +39,14 @@ describe('UI 2.0 Badge', () => {
 
   test('[ShadBadge-PROP-002] each variant has its own colours', async () => {
     render({ properties: { variant: binding('success') } });
-    await waitFor(() => expect(badge()).toHaveClass('text-success'));
+    await waitFor(() => expect(badge()).toHaveClass('tw-text-ui2-success'));
 
     render({ properties: { variant: binding('destructive') } });
-    await waitFor(() => expect(badge()).toHaveClass('text-destructive'));
+    await waitFor(() => expect(badge()).toHaveClass('tw-text-ui2-destructive'));
 
     render({ properties: { variant: binding('outline') } });
-    await waitFor(() => expect(badge()).toHaveClass('text-foreground'));
-    expect(badge()).not.toHaveClass('bg-primary');
+    await waitFor(() => expect(badge()).toHaveClass('tw-text-ui2-foreground'));
+    expect(badge()).not.toHaveClass('tw-bg-ui2-primary');
   });
 
   test('[ShadBadge-STY-001] colour and radius styles reach the badge as CSS variables it reads', async () => {
@@ -65,7 +65,7 @@ describe('UI 2.0 Badge', () => {
     expect(root.style.getPropertyValue('--lk-fg')).toBe('#166534');
     expect(root.style.getPropertyValue('--lk-border')).toBe('#86efac');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('999px');
-    expect(badge().className).toContain('bg-[color:var(--lk-bg)]');
-    expect(badge().className).toContain('text-[color:var(--lk-fg)]');
+    expect(badge().className).toContain('tw-bg-[color:var(--lk-bg)]');
+    expect(badge().className).toContain('tw-text-[color:var(--lk-fg)]');
   });
 });

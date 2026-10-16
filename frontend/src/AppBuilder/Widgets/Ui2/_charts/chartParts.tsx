@@ -60,16 +60,16 @@ export const ChartTooltip = ({
   if (!active || !payload?.length) return null;
   return (
     <div className="tj-shadcn">
-      <div className="grid min-w-[8rem] gap-1.5 rounded-lg border bg-background px-2.5 py-1.5 text-xs shadow-xl">
-        {label !== undefined ? <div className="font-medium">{String(label)}</div> : null}
+      <div className="tw-grid tw-min-w-[8rem] tw-gap-1.5 tw-rounded-ui2-lg tw-border tw-bg-ui2-background tw-px-2.5 tw-py-1.5 tw-text-xs tw-shadow-xl">
+        {label !== undefined ? <div className="tw-font-medium">{String(label)}</div> : null}
         {payload.map((item) => (
-          <div key={item.dataKey ?? item.name} className="flex items-center gap-2">
+          <div key={item.dataKey ?? item.name} className="tw-flex tw-items-center tw-gap-2">
             <span
-              className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+              className="tw-h-2.5 tw-w-2.5 tw-shrink-0 tw-rounded-[2px]"
               style={{ background: item.color || item.payload?.fill }}
             />
-            <span className="flex-1 text-muted-foreground">{String(item.name)}</span>
-            <span className="font-mono font-medium tabular-nums">{format(item.value)}</span>
+            <span className="tw-flex-1 tw-text-ui2-muted-foreground">{String(item.name)}</span>
+            <span className="tw-font-mono tw-font-medium tw-tabular-nums">{format(item.value)}</span>
           </div>
         ))}
       </div>
@@ -83,11 +83,11 @@ export interface LegendItem {
 }
 
 export const LegendContent = ({ payload }: { payload?: LegendItem[] }) => (
-  <div className="flex flex-wrap items-center justify-center gap-4 pt-3 text-xs">
+  <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-4 tw-pt-3 tw-text-xs">
     {(payload || []).map((item) => (
-      <div key={item.value} className="flex items-center gap-1.5">
-        <span className="h-2 w-2 shrink-0 rounded-[2px]" style={{ background: item.color }} />
-        <span className="text-[color:var(--lk-legend,var(--sc-muted-foreground))]">{String(item.value)}</span>
+      <div key={item.value} className="tw-flex tw-items-center tw-gap-1.5">
+        <span className="tw-h-2 tw-w-2 tw-shrink-0 tw-rounded-[2px]" style={{ background: item.color }} />
+        <span className="tw-text-[color:var(--lk-legend,var(--sc-muted-foreground))]">{String(item.value)}</span>
       </div>
     ))}
   </div>
@@ -131,9 +131,9 @@ export const ChartFrame = ({
   };
   return (
     <Shell {...props}>
-      <div style={{ height }} className="w-full text-xs" onDoubleClick={click.onDoubleClick}>
+      <div style={{ height }} className="tw-w-full tw-text-xs" onDoubleClick={click.onDoubleClick}>
         {empty ? (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+          <div className="tw-flex tw-h-full tw-items-center tw-justify-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
             {String(properties.emptyText || 'No data')}
           </div>
         ) : (
@@ -232,8 +232,8 @@ export class ChartBoundary extends React.Component<ChartBoundaryProps, { failed:
 export const EmptyChart = ({ text, small }: { text: string; small?: boolean }) => (
   <div
     className={cn(
-      'flex h-full w-full items-center justify-center text-[color:var(--sc-muted-foreground)]',
-      small ? 'text-xs' : 'text-sm'
+      'tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-text-[color:var(--sc-muted-foreground)]',
+      small ? 'tw-text-xs' : 'tw-text-ui2-sm'
     )}
   >
     {text}
@@ -264,7 +264,7 @@ export const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true,
     <Shell {...props}>
       <div
         style={{ height }}
-        className="w-full text-xs"
+        className="tw-w-full tw-text-xs"
         onClick={clickable ? undefined : () => props.fireEvent?.('onClick')}
         onDoubleClick={click.onDoubleClick}
       >

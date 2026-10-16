@@ -23,33 +23,39 @@ const GROUP_MODES = ['actions', 'single', 'multiple'];
 
 export const GROUP_VARIANTS = ['outline', 'secondary', 'default', 'ghost'];
 
-export const SQUARE: Record<string, string> = { sm: 'w-8 px-0', default: 'w-9 px-0', lg: 'w-10 px-0' };
+export const SQUARE: Record<string, string> = {
+  sm: 'tw-w-8 tw-px-0',
+  default: 'tw-w-9 tw-px-0',
+  lg: 'tw-w-10 tw-px-0',
+};
 
 // Attached buttons: inner corners squared, one border between neighbours (outline) or a hairline divider (filled).
 export const ATTACHED = {
-  horizontal: '[&>*:not(:first-child)]:rounded-l-none [&>*:not(:last-child)]:rounded-r-none [&>*:focus-visible]:z-10',
-  vertical: '[&>*:not(:first-child)]:rounded-t-none [&>*:not(:last-child)]:rounded-b-none [&>*:focus-visible]:z-10',
+  horizontal:
+    '[&>*:not(:first-child)]:tw-rounded-l-none [&>*:not(:last-child)]:tw-rounded-r-none [&>*:focus-visible]:tw-z-10',
+  vertical:
+    '[&>*:not(:first-child)]:tw-rounded-t-none [&>*:not(:last-child)]:tw-rounded-b-none [&>*:focus-visible]:tw-z-10',
 };
 
 export const JOIN: Record<'horizontal' | 'vertical', Record<string, string>> = {
   horizontal: {
-    outline: '[&>*:not(:first-child)]:border-l-0',
+    outline: '[&>*:not(:first-child)]:tw-border-l-0',
     filled:
-      '[&>*:not(:first-child)]:border-l [&>*:not(:first-child)]:border-solid [&>*:not(:first-child)]:border-l-[color:var(--lk-border,color-mix(in_srgb,currentColor_16%,transparent))]',
+      '[&>*:not(:first-child)]:tw-border-l [&>*:not(:first-child)]:tw-border-solid [&>*:not(:first-child)]:tw-border-l-[color:var(--lk-border,color-mix(in_srgb,currentColor_16%,transparent))]',
   },
   vertical: {
-    outline: '[&>*:not(:first-child)]:border-t-0',
+    outline: '[&>*:not(:first-child)]:tw-border-t-0',
     filled:
-      '[&>*:not(:first-child)]:border-t [&>*:not(:first-child)]:border-solid [&>*:not(:first-child)]:border-t-[color:var(--lk-border,color-mix(in_srgb,currentColor_16%,transparent))]',
+      '[&>*:not(:first-child)]:tw-border-t [&>*:not(:first-child)]:tw-border-solid [&>*:not(:first-child)]:tw-border-t-[color:var(--lk-border,color-mix(in_srgb,currentColor_16%,transparent))]',
   },
 };
 
 export const SELECTED =
-  'data-[state=on]:bg-[color:var(--lk-on-bg,var(--sc-primary))] data-[state=on]:text-[color:var(--lk-on-fg,var(--sc-primary-foreground))] data-[state=on]:hover:bg-[color:var(--lk-on-bg,var(--sc-primary))] data-[state=on]:hover:text-[color:var(--lk-on-fg,var(--sc-primary-foreground))] data-[state=on]:border-[color:var(--lk-on-bg,var(--sc-primary))]';
+  'data-[state=on]:tw-bg-[color:var(--lk-on-bg,var(--sc-primary))] data-[state=on]:tw-text-[color:var(--lk-on-fg,var(--sc-primary-foreground))] data-[state=on]:hover:tw-bg-[color:var(--lk-on-bg,var(--sc-primary))] data-[state=on]:hover:tw-text-[color:var(--lk-on-fg,var(--sc-primary-foreground))] data-[state=on]:tw-border-[color:var(--lk-on-bg,var(--sc-primary))]';
 
 // A primary-filled group marks its selection a shade darker.
 export const SELECTED_ON_PRIMARY =
-  'data-[state=on]:bg-[color:var(--lk-on-bg,color-mix(in_srgb,var(--sc-primary)_75%,#000))] data-[state=on]:text-[color:var(--lk-on-fg,var(--sc-primary-foreground))] data-[state=on]:hover:bg-[color:var(--lk-on-bg,color-mix(in_srgb,var(--sc-primary)_75%,#000))]';
+  'data-[state=on]:tw-bg-[color:var(--lk-on-bg,color-mix(in_srgb,var(--sc-primary)_75%,#000))] data-[state=on]:tw-text-[color:var(--lk-on-fg,var(--sc-primary-foreground))] data-[state=on]:hover:tw-bg-[color:var(--lk-on-bg,color-mix(in_srgb,var(--sc-primary)_75%,#000))]';
 
 export const ShadButtonGroup = (props: WidgetProps) => {
   const { properties, styles, setExposedVariable, setExposedVariables, fireEvent } = props;
@@ -102,15 +108,15 @@ export const ShadButtonGroup = (props: WidgetProps) => {
         required={check.required}
       >
         {buttons.length ? (
-          <div className={cn('flex items-center gap-3', fullWidth && 'w-full')}>
+          <div className={cn('tw-flex tw-items-center tw-gap-3', fullWidth && 'tw-w-full')}>
             <div
               role="group"
               aria-label={properties.label ? String(properties.label) : 'Button group'}
               className={cn(
-                'inline-flex w-fit items-stretch',
-                orientation === 'vertical' ? 'flex-col' : 'flex-row',
-                fullWidth && 'flex w-full',
-                variant === 'outline' && 'rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] shadow-sm',
+                'tw-inline-flex tw-w-fit tw-items-stretch',
+                orientation === 'vertical' ? 'tw-flex-col' : 'tw-flex-row',
+                fullWidth && 'tw-flex tw-w-full',
+                variant === 'outline' && 'tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] tw-shadow-sm',
                 ATTACHED[orientation],
                 JOIN[orientation][variant === 'outline' ? 'outline' : variant === 'ghost' ? 'ghost' : 'filled']
               )}
@@ -130,25 +136,25 @@ export const ShadButtonGroup = (props: WidgetProps) => {
                     onClick={() => click(button)}
                     className={cn(
                       buttonVariants({ variant: own, size }),
-                      'shadow-none rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]',
+                      'tw-shadow-none tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]',
                       !button.label && button.icon && SQUARE[size],
-                      fullWidth && 'flex-1',
-                      orientation === 'vertical' && 'justify-start',
-                      whenSet(styles, 'backgroundColor', 'bg-[color:var(--lk-bg)]'),
-                      whenSet(styles, 'textColor', 'text-[color:var(--lk-fg)]'),
-                      own === 'outline' && whenSet(styles, 'borderColor', 'border-[color:var(--lk-border)]'),
-                      whenSet(styles, 'hoverBackgroundColor', 'hover:bg-[color:var(--lk-hover)]'),
+                      fullWidth && 'tw-flex-1',
+                      orientation === 'vertical' && 'tw-justify-start',
+                      whenSet(styles, 'backgroundColor', 'tw-bg-[color:var(--lk-bg)]'),
+                      whenSet(styles, 'textColor', 'tw-text-[color:var(--lk-fg)]'),
+                      own === 'outline' && whenSet(styles, 'borderColor', 'tw-border-[color:var(--lk-border)]'),
+                      whenSet(styles, 'hoverBackgroundColor', 'hover:tw-bg-[color:var(--lk-hover)]'),
                       own === 'default' ? SELECTED_ON_PRIMARY : SELECTED,
-                      isOn && 'font-semibold'
+                      isOn && 'tw-font-semibold'
                     )}
                   >
                     {button.icon ? (
                       <Icon
                         name={button.icon}
-                        className={isOn ? undefined : 'text-[color:var(--lk-icon,currentColor)]'}
+                        className={isOn ? undefined : 'tw-text-[color:var(--lk-icon,currentColor)]'}
                       />
                     ) : null}
-                    {button.label ? <span className="truncate">{button.label}</span> : null}
+                    {button.label ? <span className="tw-truncate">{button.label}</span> : null}
                   </button>
                 );
               })}
@@ -156,7 +162,7 @@ export const ShadButtonGroup = (props: WidgetProps) => {
             {properties.loadingState ? <Spinner /> : null}
           </div>
         ) : (
-          <p className="text-sm text-[color:var(--sc-muted-foreground)]">No buttons</p>
+          <p className="tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)]">No buttons</p>
         )}
       </Field>
     </Shell>

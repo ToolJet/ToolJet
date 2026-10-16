@@ -85,8 +85,8 @@ export const ShadNavigation = (props: WidgetProps) => {
       ITEM_BASE,
       NAV_HEIGHT[size],
       look[isActive ? 1 : 0],
-      iconRail && cn(NAV_SQUARE[size], 'justify-center px-0'),
-      stretch && 'flex-1 justify-center',
+      iconRail && cn(NAV_SQUARE[size], 'tw-justify-center tw-px-0'),
+      stretch && 'tw-flex-1 tw-justify-center',
       extra
     );
 
@@ -101,11 +101,14 @@ export const ShadNavigation = (props: WidgetProps) => {
     return (
       <Shell {...props}>
         <div
-          className={cn('flex gap-2', vertical ? 'flex-col' : 'items-center')}
+          className={cn('tw-flex tw-gap-2', vertical ? 'tw-flex-col' : 'tw-items-center')}
           style={vertical ? { height } : undefined}
         >
           {[0, 1, 2, 3, 4].slice(0, vertical ? 5 : 4).map((i) => (
-            <Skeleton key={i} className={cn(vertical ? 'h-8 w-full' : 'h-8 w-20', vertical && i === 4 && 'w-3/5')} />
+            <Skeleton
+              key={i}
+              className={cn(vertical ? 'tw-h-8 tw-w-full' : 'tw-h-8 tw-w-20', vertical && i === 4 && 'tw-w-3/5')}
+            />
           ))}
         </div>
       </Shell>
@@ -126,7 +129,7 @@ export const ShadNavigation = (props: WidgetProps) => {
             item={item}
             active={isActive}
             collapsed={iconRail}
-            chevron={iconRail ? null : <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />}
+            chevron={iconRail ? null : <ChevronDown className="tw-h-3.5 tw-w-3.5 tw-shrink-0 tw-opacity-60" />}
           />
         </button>
       </DropdownMenuPrimitive.Trigger>
@@ -154,7 +157,10 @@ export const ShadNavigation = (props: WidgetProps) => {
         <div
           key={`sep-${index}`}
           role="separator"
-          className={cn(SEPARATOR_LINE, vertical ? 'my-2 h-px w-full shrink-0' : 'mx-1 h-5 w-px shrink-0')}
+          className={cn(
+            SEPARATOR_LINE,
+            vertical ? 'tw-my-2 tw-h-px tw-w-full tw-shrink-0' : 'tw-mx-1 tw-h-5 tw-w-px tw-shrink-0'
+          )}
         />
       );
       return;
@@ -165,7 +171,7 @@ export const ShadNavigation = (props: WidgetProps) => {
         rows.push(
           <div
             key={`group-${index}`}
-            className="flex h-8 shrink-0 items-center px-2 pt-2 text-xs font-medium text-[color:var(--lk-group,var(--sc-muted-foreground))]"
+            className="tw-flex tw-h-8 tw-shrink-0 tw-items-center tw-px-2 tw-pt-2 tw-text-xs tw-font-medium tw-text-[color:var(--lk-group,var(--sc-muted-foreground))]"
           >
             {group}
           </div>
@@ -175,7 +181,10 @@ export const ShadNavigation = (props: WidgetProps) => {
           <div
             key={`group-${index}`}
             role="separator"
-            className={cn(SEPARATOR_LINE, vertical ? 'my-2 h-px w-full shrink-0' : 'mx-1 h-5 w-px shrink-0')}
+            className={cn(
+              SEPARATOR_LINE,
+              vertical ? 'tw-my-2 tw-h-px tw-w-full tw-shrink-0' : 'tw-mx-1 tw-h-5 tw-w-px tw-shrink-0'
+            )}
           />
         );
       }
@@ -189,7 +198,7 @@ export const ShadNavigation = (props: WidgetProps) => {
       const open = !!expanded[item.key];
       const childActive = found?.parent?.key === item.key;
       rows.push(
-        <div key={item.key} className="flex w-full shrink-0 flex-col">
+        <div key={item.key} className="tw-flex tw-w-full tw-shrink-0 tw-flex-col">
           <button
             type="button"
             aria-expanded={open}
@@ -197,7 +206,7 @@ export const ShadNavigation = (props: WidgetProps) => {
             onClick={() => setExpanded((e) => ({ ...e, [item.key]: !open }))}
             className={itemClass(
               false,
-              childActive && 'font-medium text-[color:var(--lk-active-fg,var(--sc-foreground))]'
+              childActive && 'tw-font-medium tw-text-[color:var(--lk-active-fg,var(--sc-foreground))]'
             )}
           >
             <NavFace
@@ -206,13 +215,16 @@ export const ShadNavigation = (props: WidgetProps) => {
               collapsed={false}
               chevron={
                 <ChevronRight
-                  className={cn('h-4 w-4 shrink-0 opacity-60 transition-transform duration-200', open && 'rotate-90')}
+                  className={cn(
+                    'tw-h-4 tw-w-4 tw-shrink-0 tw-opacity-60 tw-transition-transform tw-duration-200',
+                    open && 'tw-rotate-90'
+                  )}
                 />
               }
             />
           </button>
           {open ? (
-            <ul className="m-0 ml-3.5 mt-1 flex list-none flex-col gap-0.5 border-0 border-l border-solid border-[color:var(--lk-sep,var(--sc-border))] py-0.5 pl-2.5 pr-0">
+            <ul className="tw-m-0 tw-ml-3.5 tw-mt-1 tw-flex tw-list-none tw-flex-col tw-gap-0.5 tw-border-0 tw-border-l tw-border-solid tw-border-[color:var(--lk-sep,var(--sc-border))] tw-py-0.5 tw-pl-2.5 tw-pr-0">
               {item.children.map((child) => {
                 const on = found?.item.key === child.key;
                 return (
@@ -224,7 +236,7 @@ export const ShadNavigation = (props: WidgetProps) => {
                       onClick={() => pick(child, item)}
                       className={cn(
                         ITEM_BASE,
-                        'h-8 w-full',
+                        'tw-h-8 tw-w-full',
                         NAV_LOOK.vertical[variant === 'underline' ? 'pills' : variant][on ? 1 : 0]
                       )}
                     >
@@ -247,7 +259,7 @@ export const ShadNavigation = (props: WidgetProps) => {
         disabled={disabled || item.disabled}
         title={iconRail ? item.label : undefined}
         onClick={() => pick(item)}
-        className={itemClass(isActive, vertical && !iconRail && 'w-full')}
+        className={itemClass(isActive, vertical && !iconRail && 'tw-w-full')}
       >
         <NavFace item={item} active={isActive} collapsed={iconRail} />
       </button>
@@ -259,15 +271,15 @@ export const ShadNavigation = (props: WidgetProps) => {
       <nav
         aria-label="Navigation"
         className={cn(
-          'flex bg-[color:var(--lk-bg,transparent)]',
-          whenSet(styles, 'backgroundColor', vertical ? 'p-2' : 'px-2'),
+          'tw-flex tw-bg-[color:var(--lk-bg,transparent)]',
+          whenSet(styles, 'backgroundColor', vertical ? 'tw-p-2' : 'tw-px-2'),
           vertical
-            ? cn('flex-col gap-1 overflow-y-auto overflow-x-hidden', iconRail && 'items-center')
+            ? cn('tw-flex-col tw-gap-1 tw-overflow-y-auto tw-overflow-x-hidden', iconRail && 'tw-items-center')
             : cn(
-                'w-full items-center gap-1 overflow-x-auto overflow-y-hidden',
+                'tw-w-full tw-items-center tw-gap-1 tw-overflow-x-auto tw-overflow-y-hidden',
                 variant === 'underline' &&
-                  'border-0 border-b border-solid border-[color:var(--lk-sep,var(--sc-border))]',
-                ({ center: 'justify-center', end: 'justify-end' } as Record<string, string>)[properties.align]
+                  'tw-border-0 tw-border-b tw-border-solid tw-border-[color:var(--lk-sep,var(--sc-border))]',
+                ({ center: 'tw-justify-center', end: 'tw-justify-end' } as Record<string, string>)[properties.align]
               )
         )}
         style={vertical ? { height } : undefined}
@@ -275,7 +287,7 @@ export const ShadNavigation = (props: WidgetProps) => {
         {items.length ? (
           rows
         ) : (
-          <span className="px-2 text-sm text-[color:var(--sc-muted-foreground)]">No navigation items</span>
+          <span className="tw-px-2 tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)]">No navigation items</span>
         )}
       </nav>
     </Shell>

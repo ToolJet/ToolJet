@@ -57,7 +57,7 @@ export const ShadSlider = (props: WidgetProps) => {
         label={properties.label ? `${properties.label}${live.length ? `: ${live.join(' to ')}` : ''}` : ''}
         description={properties.description}
       >
-        <div className="flex h-5 items-center">
+        <div className="tw-flex tw-h-5 tw-items-center">
           <Slider
             min={bounds.min}
             max={bounds.max}

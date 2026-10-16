@@ -11,9 +11,9 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 // ---- Summary strip ---------------------------------------------------------------------------------------------------
 
 const STRIP_SIZE: Record<string, { value: string; pad: string; min: number }> = {
-  sm: { value: 'text-lg', pad: 'px-4 py-3', min: 120 },
-  default: { value: 'text-2xl', pad: 'px-5 py-4', min: 140 },
-  lg: { value: 'text-3xl', pad: 'px-6 py-5', min: 170 },
+  sm: { value: 'tw-text-ui2-lg', pad: 'tw-px-4 tw-py-3', min: 120 },
+  default: { value: 'tw-text-2xl', pad: 'tw-px-5 tw-py-4', min: 140 },
+  lg: { value: 'tw-text-3xl', pad: 'tw-px-6 tw-py-5', min: 170 },
 };
 
 export const DELTA_TONE: Record<string, string> = {
@@ -61,7 +61,7 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
   // A hairline before every figure but the first of its row, and above every row but the first.
   // Without a panel, the first figure of each row starts at the strip's edge.
   const cellBorders = (i: number) =>
-    cn(i % columns && 'border-l', i >= columns && 'border-t', !panel && !(i % columns) && 'pl-0');
+    cn(i % columns && 'tw-border-l', i >= columns && 'tw-border-t', !panel && !(i % columns) && 'tw-pl-0');
   const pad = size.pad;
 
   let body;
@@ -69,14 +69,14 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
     body = <LoadingBox height={props.height} />;
   } else if (!figures.length && !p.loadingState) {
     body = (
-      <div className={panel ? 'border' : ''} style={frame}>
-        <p className="m-0 py-6 text-center text-sm text-muted-foreground">No figures yet</p>
+      <div className={panel ? 'tw-border' : ''} style={frame}>
+        <p className="tw-m-0 tw-py-6 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">No figures yet</p>
       </div>
     );
   } else {
     body = (
       <dl
-        className={cn('m-0 grid overflow-hidden', panel && 'border')}
+        className={cn('tw-m-0 tw-grid tw-overflow-hidden', panel && 'tw-border')}
         style={{
           ...frame,
           gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
@@ -86,24 +86,29 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
           ? Array.from({ length: count }).map((_, i) => (
               <div
                 key={i}
-                className={cn('flex flex-col gap-2', pad, center && 'items-center', cellBorders(i))}
+                className={cn('tw-flex tw-flex-col tw-gap-2', pad, center && 'tw-items-center', cellBorders(i))}
                 style={{ borderColor: hairline }}
               >
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-7 w-24" />
+                <Skeleton className="tw-h-3 tw-w-20" />
+                <Skeleton className="tw-h-7 tw-w-24" />
               </div>
             ))
           : figures.map((f, i) => (
               <div
                 key={f.key}
-                className={cn('flex min-w-0 flex-col gap-1', pad, center && 'items-center text-center', cellBorders(i))}
+                className={cn(
+                  'tw-flex tw-min-w-0 tw-flex-col tw-gap-1',
+                  pad,
+                  center && 'tw-items-center tw-text-center',
+                  cellBorders(i)
+                )}
                 style={{ borderColor: hairline }}
               >
                 {f.label ? (
                   // A long label wraps rather than being cut ("Technicians on the...", 2026-10-13); it takes the cell's
                   // spare height, so the figures in a row of the grid stay level whatever their labels' lengths.
                   <dt
-                    className="flex-1 break-words text-xs font-medium"
+                    className="tw-flex-1 tw-break-words tw-text-xs tw-font-medium"
                     style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}
                   >
                     {f.label}
@@ -111,12 +116,15 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
                 ) : null}
                 <dd
                   className={cn(
-                    'm-0 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5',
-                    center && 'justify-center'
+                    'tw-m-0 tw-flex tw-min-w-0 tw-flex-wrap tw-items-baseline tw-gap-x-2 tw-gap-y-0.5',
+                    center && 'tw-justify-center'
                   )}
                 >
                   <span
-                    className={cn('truncate font-semibold leading-tight tracking-tight tabular-nums', size.value)}
+                    className={cn(
+                      'tw-truncate tw-font-semibold tw-leading-tight tw-tracking-tight tw-tabular-nums',
+                      size.value
+                    )}
                     style={{
                       color: 'var(--lk-title,var(--sc-foreground))',
                       fontFamily: TITLE_FONT,
@@ -126,7 +134,7 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
                   </span>
                   {f.delta ? (
                     <span
-                      className="text-xs font-semibold tabular-nums"
+                      className="tw-text-xs tw-font-semibold tw-tabular-nums"
                       style={{
                         color: DELTA_TONE[f.delta.tone] || DELTA_TONE.neutral,
                       }}
@@ -137,13 +145,16 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
                   ) : null}
                 </dd>
                 {f.caption ? (
-                  <dd className="m-0 break-words text-xs" style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}>
+                  <dd
+                    className="tw-m-0 tw-break-words tw-text-xs"
+                    style={{ color: 'var(--lk-fg,var(--sc-muted-foreground))' }}
+                  >
                     {f.caption}
                   </dd>
                 ) : figures.some((other) => other.caption) ? (
                   // A line held where a neighbour has a caption, so the figure stays level with theirs: "28" and "433"
                   // sat a line lower than "11" and "£6,467.11" (bookshop stock strip, 2026-10-14).
-                  <dd aria-hidden="true" className="invisible m-0 text-xs">
+                  <dd aria-hidden="true" className="tw-invisible tw-m-0 tw-text-xs">
                     &nbsp;
                   </dd>
                 ) : null}

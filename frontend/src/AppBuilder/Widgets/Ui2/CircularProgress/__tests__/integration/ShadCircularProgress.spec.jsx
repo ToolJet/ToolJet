@@ -105,6 +105,6 @@ describe('UI 2.0 Circular progress', () => {
     expect(root.style.getPropertyValue('--lk-track')).toBe('#ffedd5');
     expect(root.style.getPropertyValue('--lk-fg')).toBe('#7c2d12');
     expect(root.style.getPropertyValue('--lk-label')).toBe('#9a3412');
-    expect(ring().parentElement).toHaveClass('justify-end');
+    expect(ring().parentElement).toHaveClass('tw-justify-end');
   });
 });

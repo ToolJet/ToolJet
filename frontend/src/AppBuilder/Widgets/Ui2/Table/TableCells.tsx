@@ -49,8 +49,8 @@ const BADGE_BY_STATUS: Record<string, BadgeVariant> = {
   blocked: 'destructive',
 };
 
-export const ROW_BORDER = 'border-[color:var(--lk-border,var(--sc-border))]';
-export const MUTED = 'text-[color:var(--lk-muted,var(--sc-muted-foreground))]';
+export const ROW_BORDER = 'tw-border-[color:var(--lk-border,var(--sc-border))]';
+export const MUTED = 'tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))]';
 
 interface CellBoundaryProps {
   resetKey: unknown;
@@ -99,7 +99,7 @@ const BadgeCell = ({ value, column, badgeColors }: { value: unknown; column: Tab
     <Badge
       variant="outline"
       style={own}
-      className="border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]"
+      className="tw-border-transparent tw-bg-[color:var(--kb-badge-bg)] tw-text-[color:var(--kb-badge-fg)]"
     >
       {label}
     </Badge>
@@ -142,9 +142,9 @@ export const renderCell = ({
         .map((t) => String(t?.label ?? t).trim())
         .filter(Boolean);
       return (
-        <div className="flex flex-wrap gap-1">
+        <div className="tw-flex tw-flex-wrap tw-gap-1">
           {tags.map((tag) => (
-            <Badge key={tag} variant="outline" className="px-1.5 py-0 text-[11px] font-normal">
+            <Badge key={tag} variant="outline" className="tw-px-1.5 tw-py-0 tw-text-[11px] tw-font-normal">
               {tag}
             </Badge>
           ))}
@@ -153,7 +153,7 @@ export const renderCell = ({
     }
     case 'boolean':
       return shown === true || shown === 'true' ? (
-        <Check className="h-4 w-4 text-[color:var(--sc-primary-ink)]" aria-label="Yes" />
+        <Check className="tw-h-4 tw-w-4 tw-text-[color:var(--sc-primary-ink)]" aria-label="Yes" />
       ) : (
         <span className={MUTED} aria-label="No">
           —
@@ -168,7 +168,7 @@ export const renderCell = ({
           target={column.openInNewTab ? '_blank' : '_self'}
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="font-medium text-[color:var(--sc-primary-ink)] underline-offset-4 hover:underline"
+          className="tw-font-medium tw-text-[color:var(--sc-primary-ink)] tw-underline-offset-4 hover:tw-underline"
         >
           {String(isSet(text) ? text : shown)}
         </a>
@@ -180,21 +180,24 @@ export const renderCell = ({
           src={String(shown)}
           alt=""
           loading="lazy"
-          className={cn('h-8 w-8 object-cover', column.imageShape === 'square' ? 'rounded-md' : 'rounded-full')}
+          className={cn(
+            'tw-h-8 tw-w-8 tw-object-cover',
+            column.imageShape === 'square' ? 'tw-rounded-ui2-md' : 'tw-rounded-full'
+          )}
         />
       ) : null;
     case 'avatar': {
       // A person ({ src, name }) or a name.
       const person = typeof shown === 'object' ? (shown as Resolved | null) : null;
       return isSet(shown) ? (
-        <span className="flex items-center gap-2">
-          <Avatar className="h-7 w-7">
+        <span className="tw-flex tw-items-center tw-gap-2">
+          <Avatar className="tw-h-7 tw-w-7">
             {typeof shown === 'object' && person?.src ? <AvatarImage src={person.src} alt="" /> : null}
-            <AvatarFallback className="text-[11px]">
+            <AvatarFallback className="tw-text-[11px]">
               {initials(typeof shown === 'object' ? person?.name : shown)}
             </AvatarFallback>
           </Avatar>
-          <span className="truncate">{String(typeof shown === 'object' ? person?.name ?? '' : shown)}</span>
+          <span className="tw-truncate">{String(typeof shown === 'object' ? person?.name ?? '' : shown)}</span>
         </span>
       ) : null;
     }
@@ -203,15 +206,15 @@ export const renderCell = ({
       if (!Number.isFinite(n)) return null;
       const pct = Math.max(0, Math.min(100, (n / (column.maxValue || 100)) * 100));
       return (
-        <span className="flex min-w-[96px] items-center gap-2">
-          <Progress value={pct} className="h-1.5" />
-          <span className={cn('w-9 text-right text-xs tabular-nums', MUTED)}>{Math.round(pct)}%</span>
+        <span className="tw-flex tw-min-w-[96px] tw-items-center tw-gap-2">
+          <Progress value={pct} className="tw-h-1.5" />
+          <span className={cn('tw-w-9 tw-text-right tw-text-xs tw-tabular-nums', MUTED)}>{Math.round(pct)}%</span>
         </span>
       );
     }
     case 'button':
       return (
-        <span className="flex items-center justify-end gap-1.5">
+        <span className="tw-flex tw-items-center tw-justify-end tw-gap-1.5">
           {(column.buttons ?? []).map((button, i) => {
             const id = String(button.id ?? button.buttonId ?? `button${i + 1}`);
             // Rules are data ({ key, condition, value }); a binding inside the columns binding would end it early.
@@ -233,7 +236,7 @@ export const renderCell = ({
                     ? variant
                     : 'outline'
                 }
-                className="h-7 px-2.5 text-xs"
+                className="tw-h-7 tw-px-2.5 tw-text-xs"
                 disabled={disabled}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -250,7 +253,7 @@ export const renderCell = ({
       return isSet(shown) ? <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(shown)) }} /> : null;
     case 'json':
       return isSet(shown) ? (
-        <code className="block max-w-[320px] truncate rounded bg-muted px-1.5 py-0.5 text-xs">
+        <code className="tw-block tw-max-w-[320px] tw-truncate tw-rounded tw-bg-ui2-muted tw-px-1.5 tw-py-0.5 tw-text-xs">
           {typeof shown === 'object' ? stringify(shown) : String(shown)}
         </code>
       ) : null;
@@ -289,7 +292,7 @@ export const CellEditor = ({ column, value, onCommit, onCancel }: CellEditorProp
         onClick={(e) => e.stopPropagation()}
         onChange={(e) => commit(e.target.value)}
         onBlur={() => onCancel()}
-        className="h-8 w-full rounded-md border border-input bg-background px-2 text-sm"
+        className="tw-h-8 tw-w-full tw-rounded-ui2-md tw-border tw-border-ui2-input tw-bg-ui2-background tw-px-2 tw-text-ui2-sm"
       >
         {column.options.map((o) => (
           <option key={String(o?.value ?? o)} value={String(o?.value ?? o)}>
@@ -302,7 +305,7 @@ export const CellEditor = ({ column, value, onCommit, onCancel }: CellEditorProp
   return (
     <Input
       autoFocus
-      className="h-8 px-2"
+      className="tw-h-8 tw-px-2"
       type={
         column.type === 'number' || column.type === 'currency' ? 'number' : column.type === 'date' ? 'date' : 'text'
       }

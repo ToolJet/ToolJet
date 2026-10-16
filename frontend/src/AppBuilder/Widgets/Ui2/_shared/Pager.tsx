@@ -29,20 +29,20 @@ export interface PagerProps {
 }
 
 export const Pager = ({ page, pageCount, hasPrevious, hasNext, disabled, onPage }: PagerProps) => (
-  <div className="flex items-center gap-1">
+  <div className="tw-flex tw-items-center tw-gap-1">
     <Button
       variant="outline"
       size="sm"
-      className="h-8 w-8 p-0"
+      className="tw-h-8 tw-w-8 tw-p-0"
       aria-label="Previous page"
       disabled={!hasPrevious || disabled}
       onClick={() => onPage(page - 1)}
     >
-      <ChevronLeft className="h-4 w-4" />
+      <ChevronLeft className="tw-h-4 tw-w-4" />
     </Button>
     {pageWindow(page, pageCount).map((p) =>
       typeof p === 'string' ? (
-        <span key={p} className="px-1 text-xs text-muted-foreground">
+        <span key={p} className="tw-px-1 tw-text-xs tw-text-ui2-muted-foreground">
           …
         </span>
       ) : (
@@ -50,7 +50,7 @@ export const Pager = ({ page, pageCount, hasPrevious, hasNext, disabled, onPage 
           key={p}
           variant={p === page ? 'outline' : 'ghost'}
           size="sm"
-          className="h-8 min-w-8 px-2 tabular-nums"
+          className="tw-h-8 tw-min-w-8 tw-px-2 tw-tabular-nums"
           aria-current={p === page ? 'page' : undefined}
           disabled={disabled}
           onClick={() => p !== page && onPage(p)}
@@ -62,12 +62,12 @@ export const Pager = ({ page, pageCount, hasPrevious, hasNext, disabled, onPage 
     <Button
       variant="outline"
       size="sm"
-      className="h-8 w-8 p-0"
+      className="tw-h-8 tw-w-8 tw-p-0"
       aria-label="Next page"
       disabled={!hasNext || disabled}
       onClick={() => onPage(page + 1)}
     >
-      <ChevronRight className="h-4 w-4" />
+      <ChevronRight className="tw-h-4 tw-w-4" />
     </Button>
   </div>
 );

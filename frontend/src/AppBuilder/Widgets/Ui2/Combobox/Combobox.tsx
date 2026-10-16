@@ -84,7 +84,7 @@ export const ShadCombobox = (props: WidgetProps) => {
         required={check.required}
       >
         <Popover open={open} onOpenChange={openChange}>
-          <div className="relative">
+          <div className="tw-relative">
             <PopoverTrigger asChild>
               <Button
                 ref={triggerRef}
@@ -96,29 +96,31 @@ export const ShadCombobox = (props: WidgetProps) => {
                 aria-invalid={!!check.error || undefined}
                 disabled={disabled}
                 {...focus.handlers}
-                className={cn('w-full justify-between gap-2 px-3 font-normal', CONTROL)}
+                className={cn('tw-w-full tw-justify-between tw-gap-2 tw-px-3 tw-font-normal', CONTROL)}
               >
-                <span className={cn('flex min-w-0 items-center gap-2', !selected && PLACEHOLDER)}>
+                <span className={cn('tw-flex tw-min-w-0 tw-items-center tw-gap-2', !selected && PLACEHOLDER)}>
                   {selected ? <OptionIcon icon={selected.icon} /> : null}
-                  <span className="truncate">{selected ? selected.label : String(properties.placeholder ?? '')}</span>
+                  <span className="tw-truncate">
+                    {selected ? selected.label : String(properties.placeholder ?? '')}
+                  </span>
                 </span>
                 {loading ? null : (
-                  <span className="flex shrink-0 items-center gap-1">
-                    {showClear ? <span className="w-5" /> : null}
-                    <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                  <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-1">
+                    {showClear ? <span className="tw-w-5" /> : null}
+                    <ChevronsUpDown className="tw-h-4 tw-w-4 tw-opacity-50" />
                   </span>
                 )}
               </Button>
             </PopoverTrigger>
             {showClear && !loading ? (
-              <span className="absolute right-8 top-1/2 flex -translate-y-1/2">
+              <span className="tw-absolute tw-right-8 tw-top-1/2 tw-flex -tw-translate-y-1/2">
                 <ClearButton onClear={clear} label="Clear selection" />
               </span>
             ) : null}
           </div>
           <PopoverContent
             align="start"
-            className={cn('w-[var(--radix-popover-trigger-width)] min-w-[12rem] p-0', MENU_SURFACE)}
+            className={cn('tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[12rem] tw-p-0', MENU_SURFACE)}
             style={lookVars(componentType, styles)}
           >
             <OptionsMenu

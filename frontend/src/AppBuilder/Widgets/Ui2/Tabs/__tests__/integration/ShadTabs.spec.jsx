@@ -135,10 +135,10 @@ describe('UI 2.0 Tabs', () => {
   test('[ShadTabs-PROP-003] variant underline marks the tab with an indicator; tabsAlign centres or stretches the tabs', async () => {
     render({ properties: { variant: binding('underline'), tabsAlign: binding('center') } });
     await waitFor(() => expect(selected().className).toContain('var(--tb-indicator'));
-    expect(screen.getByRole('tablist')).toHaveClass('justify-center');
+    expect(screen.getByRole('tablist')).toHaveClass('tw-justify-center');
 
     await rerender({ properties: { tabsAlign: binding('stretch') } });
-    expect(tab('Activity')).toHaveClass('flex-1');
+    expect(tab('Activity')).toHaveClass('tw-flex-1');
   });
 
   test('[ShadTabs-PROP-004] hideTabs hides the strip; renderOnlyActiveTab mounts only the current tab', async () => {

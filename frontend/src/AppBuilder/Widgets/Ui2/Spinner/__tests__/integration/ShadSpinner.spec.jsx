@@ -29,15 +29,15 @@ describe('UI 2.0 Spinner', () => {
 
     await waitFor(() => expect(status()).toHaveAttribute('aria-label', 'Loading…'));
     expect(screen.getByText('Loading…')).toBeInTheDocument();
-    expect(ring()).toHaveClass('animate-spin');
+    expect(ring()).toHaveClass('tw-animate-spin');
     expect(ring()).toHaveAttribute('width', '24');
-    expect(status()).toHaveClass('flex-row');
+    expect(status()).toHaveClass('tw-flex-row');
   });
 
   test('[ShadSpinner-PROP-001] variant dots draws three bouncing dots instead of the ring', async () => {
     render({ properties: { variant: binding('dots') } });
 
-    await waitFor(() => expect(status().querySelectorAll('.animate-bounce')).toHaveLength(3));
+    await waitFor(() => expect(status().querySelectorAll('.tw-animate-bounce')).toHaveLength(3));
     expect(ring()).toBeNull();
   });
 
@@ -65,7 +65,7 @@ describe('UI 2.0 Spinner', () => {
   test('[ShadSpinner-PROP-004] labelPosition bottom puts the label under the indicator', async () => {
     render({ properties: { labelPosition: binding('bottom') } });
 
-    await waitFor(() => expect(status()).toHaveClass('flex-col'));
+    await waitFor(() => expect(status()).toHaveClass('tw-flex-col'));
   });
 
   test('[ShadSpinner-STY-001] spinner, track and label colours and the alignment reach the spinner', async () => {
@@ -83,6 +83,6 @@ describe('UI 2.0 Spinner', () => {
     expect(root.style.getPropertyValue('--sc-primary')).toBe('#7c3aed');
     expect(root.style.getPropertyValue('--lk-track')).toBe('#ede9fe');
     expect(root.style.getPropertyValue('--lk-label')).toBe('#4c1d95');
-    expect(status().parentElement).toHaveClass('justify-center');
+    expect(status().parentElement).toHaveClass('tw-justify-center');
   });
 });

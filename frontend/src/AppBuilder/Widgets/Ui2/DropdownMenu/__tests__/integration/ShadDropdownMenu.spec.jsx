@@ -100,9 +100,9 @@ describe('UI 2.0 Dropdown menu', () => {
   test('[ShadDropdownMenu-PROP-006] variant, size and fullWidth shape the button', async () => {
     render({ properties: { variant: binding('destructive'), size: binding('sm'), fullWidth: binding('{{true}}') } });
 
-    await waitFor(() => expect(trigger()).toHaveClass('bg-destructive'));
-    expect(trigger()).toHaveClass('h-8');
-    expect(trigger()).toHaveClass('w-full');
+    await waitFor(() => expect(trigger()).toHaveClass('tw-bg-ui2-destructive'));
+    expect(trigger()).toHaveClass('tw-h-8');
+    expect(trigger()).toHaveClass('tw-w-full');
   });
 
   // A long label ran past the widget's box (a long-text sweep in a browser): it now ends in an ellipsis inside it.
@@ -111,8 +111,8 @@ describe('UI 2.0 Dropdown menu', () => {
     render({ properties: { label: binding(long) } });
 
     const text = await screen.findByText(long);
-    expect(text).toHaveClass('truncate');
-    expect(trigger()).toHaveClass('max-w-full');
+    expect(text).toHaveClass('tw-truncate');
+    expect(trigger()).toHaveClass('tw-max-w-full');
   });
 
   test('[ShadDropdownMenu-EVT-001] opening the menu fires onOpen, whose handler reads isOpen', async () => {
@@ -208,7 +208,7 @@ describe('UI 2.0 Dropdown menu', () => {
     expect(root.style.getPropertyValue('--lk-border')).toBe('#334155');
     expect(root.style.getPropertyValue('--lk-hover')).toBe('#1e293b');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('10px');
-    expect(trigger().className).toContain('bg-[color:var(--lk-bg)]');
+    expect(trigger().className).toContain('tw-bg-[color:var(--lk-bg)]');
 
     const menu = await openMenu();
     const vars = {

@@ -73,13 +73,13 @@ describe('UI 2.0 Record list', () => {
 
     await waitFor(() => expect(row('Union Square Hotel').querySelector('img')).toBeTruthy());
     expect(row('Union Square Hotel').querySelector('img')).toHaveAttribute('src', 'https://example.com/maya.png');
-    expect(row('Union Square Hotel').querySelector('img')).toHaveClass('rounded-lg');
+    expect(row('Union Square Hotel').querySelector('img')).toHaveClass('tw-rounded-ui2-lg');
     // An empty avatar value falls back to the title's initials.
     expect(row('Oakland Ice Rink').querySelector('[data-fallback="initials"]')).toHaveTextContent('OR');
 
     render({ properties: people({ avatarField: binding('owner') }) });
     await waitFor(() => expect(row('Union Square Hotel').querySelector('[data-fallback]')).toHaveTextContent('MC'));
-    expect(row('Union Square Hotel').querySelector('[data-fallback]')).toHaveClass('rounded-full');
+    expect(row('Union Square Hotel').querySelector('[data-fallback]')).toHaveClass('tw-rounded-full');
 
     render({ properties: people({ showAvatar: binding('{{false}}') }) });
     await waitFor(() => expect(rows()).toHaveLength(2));
@@ -95,16 +95,16 @@ describe('UI 2.0 Record list', () => {
 
   test('[ShadRecordList-PROP-005] density sets the row padding and avatar size; showDividers draws lines between rows', async () => {
     render({ properties: people({ density: binding('compact') }) });
-    await waitFor(() => expect(rows()[0]).toHaveClass('py-2'));
+    await waitFor(() => expect(rows()[0]).toHaveClass('tw-py-2'));
     expect(rows()[0].querySelector('[data-fallback]').style.width).toBe('28px');
 
     render({ properties: people({ density: binding('comfortable') }) });
-    await waitFor(() => expect(rows()[0]).toHaveClass('py-4'));
-    expect(rows()[1]).toHaveClass('border-t');
+    await waitFor(() => expect(rows()[0]).toHaveClass('tw-py-4'));
+    expect(rows()[1]).toHaveClass('tw-border-t');
 
     render({ properties: people({ showDividers: binding('{{false}}') }) });
     await waitFor(() => expect(rows()).toHaveLength(2));
-    expect(rows()[1]).not.toHaveClass('border-t');
+    expect(rows()[1]).not.toHaveClass('tw-border-t');
   });
 
   // The pack's preflight sets every border width to 0 with !important: an inline border drew nothing in a browser.
@@ -112,21 +112,21 @@ describe('UI 2.0 Record list', () => {
     render({ properties: people() });
     await waitFor(() => expect(rows()).toHaveLength(2));
     expect(rows()[0].className).not.toMatch(/border-t/);
-    expect(rows()[1]).toHaveClass('border-t');
-    expect(rows()[1].closest('ul').parentElement).toHaveClass('border');
+    expect(rows()[1]).toHaveClass('tw-border-t');
+    expect(rows()[1].closest('ul').parentElement).toHaveClass('tw-border');
     expect(document.querySelector('[style*="border-top"]')).toBeNull();
 
     render({ properties: people({ listStyle: binding('plain') }) });
-    await waitFor(() => expect(rows()[1].closest('ul').parentElement).not.toHaveClass('border'));
+    await waitFor(() => expect(rows()[1].closest('ul').parentElement).not.toHaveClass('tw-border'));
   });
 
   // A plain list's selected row drew its 3px accent bar against the title: rows had 4px of side padding (2026-10-13).
   test('[ShadRecordList-PROP-007] a selectable plain list pads rows 12px for the selection bar; highlightSelected off 4px', async () => {
     render({ properties: people({ listStyle: binding('plain') }) });
-    await waitFor(() => expect(rows()[0]).toHaveClass('px-3'));
+    await waitFor(() => expect(rows()[0]).toHaveClass('tw-px-3'));
 
     render({ properties: people({ listStyle: binding('plain'), highlightSelected: binding('{{false}}') }) });
-    await waitFor(() => expect(rows()[0]).toHaveClass('px-1'));
+    await waitFor(() => expect(rows()[0]).toHaveClass('tw-px-1'));
     fireEvent.click(rows()[0]);
     await waitFor(() => expect(exposed().selectedItemId).toBe('A-1'));
     expect(rows()[0]).not.toHaveAttribute('data-selected');

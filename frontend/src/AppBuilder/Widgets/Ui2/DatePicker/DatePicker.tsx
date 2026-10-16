@@ -210,16 +210,20 @@ export const ShadDatePicker = (props: WidgetProps) => {
               disabled={busy(properties)}
               {...focus.handlers}
               className={cn(
-                'w-full justify-start text-left font-normal',
+                'tw-w-full tw-justify-start tw-text-left tw-font-normal',
                 CONTROL,
-                !text && 'text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
+                !text && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
               )}
             >
-              <CalendarIcon className="h-4 w-4" />
+              <CalendarIcon className="tw-h-4 tw-w-4" />
               {text || String(properties.placeholder ?? '')}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start" style={lookVars(props.componentType, props.styles)}>
+          <PopoverContent
+            className="tw-w-auto tw-p-0"
+            align="start"
+            style={lookVars(props.componentType, props.styles)}
+          >
             {range ? (
               <Calendar {...calendar} mode="range" selected={{ from, to }} onSelect={pick} />
             ) : (

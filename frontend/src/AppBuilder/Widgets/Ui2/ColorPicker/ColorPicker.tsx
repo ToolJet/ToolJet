@@ -40,9 +40,10 @@ export const toHsva = (hex: unknown, keepHue?: number): Hsva => {
 export const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
 export const THUMB =
-  'pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.25),0_1px_3px_rgba(0,0,0,0.3)]';
+  'tw-pointer-events-none tw-absolute tw-h-4 tw-w-4 -tw-translate-x-1/2 -tw-translate-y-1/2 tw-rounded-full tw-border-2 tw-border-white tw-shadow-[0_0_0_1px_rgba(0,0,0,0.25),0_1px_3px_rgba(0,0,0,0.3)]';
 
-export const SLIDER_FOCUS = 'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+export const SLIDER_FOCUS =
+  'tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring focus-visible:tw-ring-offset-1';
 
 /** Pointer dragging over an element: onMove({ x, y }) with both from 0 to 1, onEnd when released. */
 export const useDrag = (onMove: (point: { x: number; y: number }) => void, onEnd: () => void) => {
@@ -192,22 +193,22 @@ export const ShadColorPicker = (props: WidgetProps) => {
               {...focus.handlers}
               aria-label={swatchOnly ? `Color ${value || 'not set'}` : undefined}
               className={cn(
-                'font-normal',
+                'tw-font-normal',
                 CONTROL,
-                swatchOnly ? 'h-9 w-9 p-1.5' : 'w-full justify-start gap-2 px-3',
-                swatchOnly && 'shrink-0'
+                swatchOnly ? 'tw-h-9 tw-w-9 tw-p-1.5' : 'tw-w-full tw-justify-start tw-gap-2 tw-px-3',
+                swatchOnly && 'tw-shrink-0'
               )}
             >
               <span
                 className={cn(
-                  'shrink-0 rounded-[calc(var(--sc-radius)-4px)] border border-[color:var(--sc-border)] shadow-sm',
-                  swatchOnly ? 'h-full w-full' : 'h-5 w-5',
-                  !live && 'border-dashed'
+                  'tw-shrink-0 tw-rounded-[calc(var(--sc-radius)-4px)] tw-border tw-border-[color:var(--sc-border)] tw-shadow-sm',
+                  swatchOnly ? 'tw-h-full tw-w-full' : 'tw-h-5 tw-w-5',
+                  !live && 'tw-border-dashed'
                 )}
                 style={swatchStyle(live)}
               />
               {swatchOnly ? null : (
-                <span className={cn('truncate', live ? 'uppercase tabular-nums' : PLACEHOLDER)}>
+                <span className={cn('tw-truncate', live ? 'tw-uppercase tw-tabular-nums' : PLACEHOLDER)}>
                   {live || String(properties.placeholder ?? '')}
                 </span>
               )}
@@ -215,7 +216,7 @@ export const ShadColorPicker = (props: WidgetProps) => {
           </PopoverTrigger>
           <PopoverContent
             align="start"
-            className={cn('flex w-64 flex-col gap-3 p-3', MENU_SURFACE)}
+            className={cn('tw-flex tw-w-64 tw-flex-col tw-gap-3 tw-p-3', MENU_SURFACE)}
             style={lookVars(componentType, styles)}
           >
             {properties.showPicker !== false ? (
@@ -228,7 +229,7 @@ export const ShadColorPicker = (props: WidgetProps) => {
                   aria-valuetext={`Saturation ${Math.round(hsva.s * 100)}%, brightness ${Math.round(hsva.v * 100)}%`}
                   onKeyDown={areaKeys}
                   className={cn(
-                    'relative h-36 w-full cursor-crosshair touch-none rounded-[calc(var(--sc-radius)-2px)]',
+                    'tw-relative tw-h-36 tw-w-full tw-cursor-crosshair tw-touch-none tw-rounded-[calc(var(--sc-radius)-2px)]',
                     SLIDER_FOCUS
                   )}
                   style={{
@@ -251,13 +252,16 @@ export const ShadColorPicker = (props: WidgetProps) => {
                   aria-valuemax={360}
                   aria-valuenow={Math.round(hsva.h)}
                   onKeyDown={keys('h', 1, 0, 360)}
-                  className={cn('relative h-3 w-full cursor-pointer touch-none rounded-full', SLIDER_FOCUS)}
+                  className={cn(
+                    'tw-relative tw-h-3 tw-w-full tw-cursor-pointer tw-touch-none tw-rounded-full',
+                    SLIDER_FOCUS
+                  )}
                   style={{
                     background: 'linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)',
                   }}
                 >
                   <span
-                    className={cn(THUMB, 'top-1/2')}
+                    className={cn(THUMB, 'tw-top-1/2')}
                     style={{ left: `${(hsva.h / 360) * 100}%`, background: `hsl(${Math.round(hsva.h)} 100% 50%)` }}
                   />
                 </div>
@@ -271,17 +275,23 @@ export const ShadColorPicker = (props: WidgetProps) => {
                     aria-valuemax={100}
                     aria-valuenow={Math.round(hsva.a * 100)}
                     onKeyDown={keys('a', 0.01, 0, 1)}
-                    className={cn('relative h-3 w-full cursor-pointer touch-none rounded-full', SLIDER_FOCUS)}
+                    className={cn(
+                      'tw-relative tw-h-3 tw-w-full tw-cursor-pointer tw-touch-none tw-rounded-full',
+                      SLIDER_FOCUS
+                    )}
                     style={{ background: `linear-gradient(to right, transparent, ${opaque}), ${CHECKERBOARD}` }}
                   >
-                    <span className={cn(THUMB, 'top-1/2')} style={{ left: `${hsva.a * 100}%`, background: opaque }} />
+                    <span
+                      className={cn(THUMB, 'tw-top-1/2')}
+                      style={{ left: `${hsva.a * 100}%`, background: opaque }}
+                    />
                   </div>
                 ) : null}
               </>
             ) : null}
-            <div className="flex items-center gap-2">
+            <div className="tw-flex tw-items-center tw-gap-2">
               <span
-                className="h-8 w-8 shrink-0 rounded-[calc(var(--sc-radius)-2px)] border border-[color:var(--sc-border)] shadow-sm"
+                className="tw-h-8 tw-w-8 tw-shrink-0 tw-rounded-[calc(var(--sc-radius)-2px)] tw-border tw-border-[color:var(--sc-border)] tw-shadow-sm"
                 style={swatchStyle(live)}
               />
               <Input
@@ -291,14 +301,14 @@ export const ShadColorPicker = (props: WidgetProps) => {
                 onChange={(e) => setDraft(e.target.value)}
                 onBlur={applyDraft}
                 onKeyDown={(e) => e.key === 'Enter' && applyDraft()}
-                className="h-8 border-[color:var(--sc-input)] font-mono text-xs uppercase"
+                className="tw-h-8 tw-border-[color:var(--sc-input)] tw-font-mono tw-text-xs tw-uppercase"
               />
               {canEyeDrop ? (
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 shrink-0"
+                  className="tw-h-8 tw-w-8 tw-shrink-0"
                   aria-label="Pick a color from the screen"
                   onClick={eyeDrop}
                 >
@@ -307,7 +317,7 @@ export const ShadColorPicker = (props: WidgetProps) => {
               ) : null}
             </div>
             {properties.showSwatches !== false && swatches.length ? (
-              <div className="grid grid-cols-8 gap-1.5">
+              <div className="tw-grid tw-grid-cols-8 tw-gap-1.5">
                 {swatches.map((c) => (
                   <button
                     key={c}
@@ -316,11 +326,14 @@ export const ShadColorPicker = (props: WidgetProps) => {
                     aria-label={c}
                     aria-pressed={c === value}
                     onClick={() => pickHex(M.normalizeHex(c, alpha) ?? c)}
-                    className="relative aspect-square w-full rounded-[calc(var(--sc-radius)-4px)] border border-[color:var(--sc-border)] p-0 shadow-sm outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                    className="tw-relative tw-aspect-square tw-w-full tw-rounded-[calc(var(--sc-radius)-4px)] tw-border tw-border-[color:var(--sc-border)] tw-p-0 tw-shadow-sm tw-outline-none tw-transition-transform hover:tw-scale-110 focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring focus-visible:tw-ring-offset-1"
                     style={swatchStyle(c)}
                   >
                     {c === value ? (
-                      <Check className="absolute inset-0 m-auto h-3.5 w-3.5" style={{ color: M.contrastOn(c) }} />
+                      <Check
+                        className="tw-absolute tw-inset-0 tw-m-auto tw-h-3.5 tw-w-3.5"
+                        style={{ color: M.contrastOn(c) }}
+                      />
                     ) : null}
                   </button>
                 ))}

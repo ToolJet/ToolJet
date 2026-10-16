@@ -238,18 +238,20 @@ export const ShadChat = (props: WidgetProps) => {
   const empty = !historyLoading && !rows.length && !error && !responseLoading;
 
   return (
-    <Shell {...props} properties={p} className="h-full">
+    <Shell {...props} properties={p} className="tw-h-full">
       <div
         id={id}
-        className="relative flex h-full flex-col overflow-hidden border border-[color:var(--lk-border,var(--sc-border))] bg-[color:var(--lk-bg,var(--sc-card))] text-[color:var(--lk-fg,var(--sc-foreground))]"
+        className="tw-relative tw-flex tw-h-full tw-flex-col tw-overflow-hidden tw-border tw-border-[color:var(--lk-border,var(--sc-border))] tw-bg-[color:var(--lk-bg,var(--sc-card))] tw-text-[color:var(--lk-fg,var(--sc-foreground))]"
         style={{
           height: props.height ? Number(props.height) : '100%',
           borderRadius: 'var(--lk-radius,calc(var(--sc-radius) + 4px))',
         }}
       >
         {showHeader ? (
-          <div className="flex h-12 shrink-0 items-center gap-2 border-b border-[color:var(--lk-border,var(--sc-border))] px-4">
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold">{String(p.chatTitle ?? '')}</span>
+          <div className="tw-flex tw-h-12 tw-shrink-0 tw-items-center tw-gap-2 tw-border-b tw-border-[color:var(--lk-border,var(--sc-border))] tw-px-4">
+            <span className="tw-min-w-0 tw-flex-1 tw-truncate tw-text-ui2-sm tw-font-semibold">
+              {String(p.chatTitle ?? '')}
+            </span>
             {p.enableDownloadHistoryButton ? (
               <IconButton label="Download chat history" onClick={download} disabled={busy(p)}>
                 <Download />
@@ -263,7 +265,7 @@ export const ShadChat = (props: WidgetProps) => {
           </div>
         ) : null}
 
-        <div className="relative min-h-0 flex-1">
+        <div className="tw-relative tw-min-h-0 tw-flex-1">
           <div
             ref={viewportRef}
             role="region"
@@ -272,7 +274,7 @@ export const ShadChat = (props: WidgetProps) => {
             onScroll={onScroll}
             onWheel={release}
             onTouchMove={release}
-            className="relative h-full overflow-y-auto overscroll-contain px-4 pb-2 outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring"
+            className="tw-relative tw-h-full tw-overflow-y-auto tw-overscroll-contain tw-px-4 tw-pb-2 tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-inset focus-visible:tw-ring-ui2-ring"
           >
             <div
               ref={contentRef}
@@ -282,11 +284,11 @@ export const ShadChat = (props: WidgetProps) => {
               aria-busy={responseLoading || undefined}
             >
               {hidden > 0 && !historyLoading ? (
-                <div className="flex justify-center pt-3">
+                <div className="tw-flex tw-justify-center tw-pt-3">
                   <button
                     type="button"
                     onClick={() => setShown((n) => n + MESSAGES_PER_STEP)}
-                    className="rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    className="tw-rounded-ui2-md tw-px-3 tw-py-1.5 tw-text-xs tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground"
                   >
                     {`Show ${Math.min(MESSAGES_PER_STEP, hidden)} earlier messages`}
                   </button>
@@ -306,8 +308,8 @@ export const ShadChat = (props: WidgetProps) => {
                 <Typing name={respondent.name} avatar={respondent.avatar} showAvatars={showAvatars} />
               ) : null}
               {empty ? (
-                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center text-sm text-muted-foreground">
-                  <MessageSquare className="h-6 w-6 opacity-60" aria-hidden="true" />
+                <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-py-12 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
+                  <MessageSquare className="tw-h-6 tw-w-6 tw-opacity-60" aria-hidden="true" />
                   <span>{String(p.emptyText ?? '') || 'Start the conversation'}</span>
                 </div>
               ) : null}
@@ -322,19 +324,19 @@ export const ShadChat = (props: WidgetProps) => {
             tabIndex={atEnd ? -1 : 0}
             data-active={!atEnd}
             className={cn(
-              'absolute bottom-3 left-1/2 inline-flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border border-[color:var(--lk-border,var(--sc-border))] bg-background text-foreground shadow-md transition-all duration-200 hover:bg-muted [&_svg]:size-4',
-              atEnd ? 'pointer-events-none translate-y-2 opacity-0' : 'translate-y-0 opacity-100'
+              'tw-absolute tw-bottom-3 tw-left-1/2 tw-inline-flex tw-h-8 tw-w-8 -tw-translate-x-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-[color:var(--lk-border,var(--sc-border))] tw-bg-ui2-background tw-text-ui2-foreground tw-shadow-md tw-transition-all tw-duration-200 hover:tw-bg-ui2-muted [&_svg]:tw-size-4',
+              atEnd ? 'tw-pointer-events-none tw-translate-y-2 tw-opacity-0' : 'tw-translate-y-0 tw-opacity-100'
             )}
           >
             <ArrowDown />
           </button>
         </div>
 
-        <div className="shrink-0 px-3 pb-3 pt-1">
+        <div className="tw-shrink-0 tw-px-3 tw-pb-3 tw-pt-1">
           <div
             className={cn(
-              'flex items-end gap-2 rounded-xl border border-[color:var(--lk-field-border,var(--sc-input))] bg-[color:var(--lk-field-bg,var(--sc-background))] p-1.5 shadow-sm transition-shadow focus-within:ring-2 focus-within:ring-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-ring))_45%,transparent)]',
-              locked && 'opacity-60'
+              'tw-flex tw-items-end tw-gap-2 tw-rounded-ui2-xl tw-border tw-border-[color:var(--lk-field-border,var(--sc-input))] tw-bg-[color:var(--lk-field-bg,var(--sc-background))] tw-p-1.5 tw-shadow-sm tw-transition-shadow focus-within:tw-ring-2 focus-within:tw-ring-[color:color-mix(in_srgb,var(--lk-accent,var(--sc-ring))_45%,transparent)]',
+              locked && 'tw-opacity-60'
             )}
           >
             <textarea
@@ -354,7 +356,7 @@ export const ShadChat = (props: WidgetProps) => {
                   submit();
                 }
               }}
-              className="min-h-[24px] flex-1 resize-none border-0 bg-transparent px-2 py-1.5 text-sm leading-6 text-[color:var(--lk-field-fg,var(--sc-foreground))] shadow-none outline-none placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed"
+              className="tw-min-h-[24px] tw-flex-1 tw-resize-none tw-border-0 tw-bg-transparent tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-leading-6 tw-text-[color:var(--lk-field-fg,var(--sc-foreground))] tw-shadow-none tw-outline-none placeholder:tw-text-ui2-muted-foreground focus:tw-outline-none disabled:tw-cursor-not-allowed"
               style={{ maxHeight: MAX_INPUT_HEIGHT }}
             />
             <button
@@ -363,7 +365,7 @@ export const ShadChat = (props: WidgetProps) => {
               title="Send"
               onClick={submit}
               disabled={!canSend}
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color:var(--lk-accent,var(--sc-primary))] text-[color:var(--lk-send,var(--sc-primary-foreground))] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 [&_svg]:size-4"
+              className="tw-inline-flex tw-h-8 tw-w-8 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-lg tw-bg-[color:var(--lk-accent,var(--sc-primary))] tw-text-[color:var(--lk-send,var(--sc-primary-foreground))] tw-transition-opacity hover:tw-opacity-90 disabled:tw-cursor-not-allowed disabled:tw-opacity-40 [&_svg]:tw-size-4"
             >
               <ArrowUp />
             </button>

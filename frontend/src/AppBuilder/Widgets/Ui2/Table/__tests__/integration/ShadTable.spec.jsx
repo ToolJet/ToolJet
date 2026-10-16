@@ -522,12 +522,12 @@ describe('UI 2.0 Table', () => {
       },
     });
     await waitFor(() => expect(rows()[0].querySelector('td').style.height).toBe('56px'));
-    expect(rows()[0].querySelector('td')).toHaveClass('border-r');
-    expect(document.querySelector('thead')).toHaveClass('sticky');
+    expect(rows()[0].querySelector('td')).toHaveClass('tw-border-r');
+    expect(document.querySelector('thead')).toHaveClass('tw-sticky');
 
     render({ properties: { stickyHeader: binding('{{false}}'), dynamicHeight: binding('{{false}}') } });
     await waitFor(() => expect(rows()).toHaveLength(3));
-    expect(document.querySelector('thead')).not.toHaveClass('sticky');
+    expect(document.querySelector('thead')).not.toHaveClass('tw-sticky');
   });
 
   test('[ShadTable-PROP-010] emptyText and emptyDescription show for no rows; a search with no match says so', async () => {
@@ -593,8 +593,8 @@ describe('UI 2.0 Table', () => {
       '#fafafa',
       '10px',
     ]);
-    expect(document.querySelector('thead th')).toHaveClass('uppercase');
-    expect(document.querySelector('table').parentElement).not.toHaveClass('border');
-    expect(document.querySelector('table').closest('.gap-3').style.fontSize).toBe('13px');
+    expect(document.querySelector('thead th')).toHaveClass('tw-uppercase');
+    expect(document.querySelector('table').parentElement).not.toHaveClass('tw-border');
+    expect(document.querySelector('table').closest('.tw-gap-3').style.fontSize).toBe('13px');
   });
 });

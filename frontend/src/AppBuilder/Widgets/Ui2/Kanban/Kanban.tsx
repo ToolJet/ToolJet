@@ -238,7 +238,7 @@ export const ShadKanban = (props: WidgetProps) => {
           expanded={!custom && card.__key === openKey}
         />
       );
-  const padding = custom ? 'p-0' : compact ? 'p-2.5' : 'p-3';
+  const padding = custom ? 'tw-p-0' : compact ? 'tw-p-2.5' : 'tw-p-3';
 
   const enabled = !properties.disabledState;
   // Custom cards don't drag in the editor, where a press edits the card's components.
@@ -293,15 +293,15 @@ export const ShadKanban = (props: WidgetProps) => {
   const shellProps = reloading ? { ...props, properties: { ...properties, loadingState: false } } : props;
   const portalRoot = getPortalRoot();
   return (
-    <Shell {...shellProps} innerRef={ref} className={cn(fixed && 'h-full', reloading && 'relative')}>
+    <Shell {...shellProps} innerRef={ref} className={cn(fixed && 'tw-h-full', reloading && 'tw-relative')}>
       {reloading ? (
         <div
           aria-busy="true"
           // A firmer scrim, and the spinner on a chip of its own: bare over a 45% scrim it sat on a card's title.
-          className="absolute inset-0 z-10 flex items-center justify-center rounded-[var(--sc-radius)] bg-[color:color-mix(in_srgb,var(--sc-background)_65%,transparent)]"
+          className="tw-absolute tw-inset-0 tw-z-10 tw-flex tw-items-center tw-justify-center tw-rounded-[var(--sc-radius)] tw-bg-[color:color-mix(in_srgb,var(--sc-background)_65%,transparent)]"
         >
-          <span className="flex items-center justify-center rounded-full border border-[color:var(--sc-border)] bg-[color:var(--sc-background)] p-2 shadow-sm">
-            <Spinner className="h-5 w-5" />
+          <span className="tw-flex tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-[color:var(--sc-border)] tw-bg-[color:var(--sc-background)] tw-p-2 tw-shadow-sm">
+            <Spinner className="tw-h-5 tw-w-5" />
           </span>
         </div>
       ) : null}
@@ -317,9 +317,9 @@ export const ShadKanban = (props: WidgetProps) => {
           ref={boardNode}
           style={{ ...look.vars, ...(moreRight ? RIGHT_FADE : {}) }}
           className={cn(
-            'flex gap-[var(--kb-col-gap,1rem)] overflow-x-auto pb-1',
-            fixed && 'h-full items-stretch',
-            reloading && 'pointer-events-none'
+            'tw-flex tw-gap-[var(--kb-col-gap,1rem)] tw-overflow-x-auto tw-pb-1',
+            fixed && 'tw-h-full tw-items-stretch',
+            reloading && 'tw-pointer-events-none'
           )}
         >
           {columns.slice(0, MAX_BOARD_COLUMNS).map((column) => (
@@ -358,7 +358,10 @@ export const ShadKanban = (props: WidgetProps) => {
                 {activeCard ? (
                   <div
                     style={{ ...look.vars, ...look.card, boxShadow: SHADOWS.lg }}
-                    className={cn('h-full w-full rotate-1 overflow-hidden border text-card-foreground', padding)}
+                    className={cn(
+                      'tw-h-full tw-w-full tw-rotate-1 tw-overflow-hidden tw-border tw-text-ui2-card-foreground',
+                      padding
+                    )}
                   >
                     {renderBody(activeCard)}
                   </div>

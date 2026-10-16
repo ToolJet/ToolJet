@@ -44,9 +44,9 @@ describe('UI 2.0 Button', () => {
   test('[ShadButton-PROP-001] variant and size choose the shadcn look of the button', async () => {
     render({ properties: { variant: binding('destructive'), size: binding('sm') } });
 
-    await waitFor(() => expect(button()).toHaveClass('bg-destructive'));
-    expect(button()).toHaveClass('px-3', 'text-xs');
-    expect(button()).not.toHaveClass('bg-primary');
+    await waitFor(() => expect(button()).toHaveClass('tw-bg-ui2-destructive'));
+    expect(button()).toHaveClass('tw-px-3', 'tw-text-xs');
+    expect(button()).not.toHaveClass('tw-bg-ui2-primary');
   });
 
   // On the grid a button fills the box drawn for it either way (boxFit.js). As a fill child of a flex row it keeps
@@ -65,10 +65,10 @@ describe('UI 2.0 Button', () => {
 
     inFlexRow(false);
     await waitFor(() => expect(button()).toHaveTextContent('Save'));
-    expect(button()).not.toHaveClass('w-full');
+    expect(button()).not.toHaveClass('tw-w-full');
 
     inFlexRow(true);
-    await waitFor(() => expect(button()).toHaveClass('w-full'));
+    await waitFor(() => expect(button()).toHaveClass('tw-w-full'));
   });
 
   test('[ShadButton-EVT-001] pressing the button fires onClick once', async () => {
@@ -150,7 +150,7 @@ describe('UI 2.0 Button', () => {
     expect(root.style.getPropertyValue('--lk-fg')).toBe('#ffffff');
     expect(root.style.getPropertyValue('--lk-border')).toBe('#134e4a');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('12px');
-    expect(button().className).toContain('bg-[color:var(--lk-bg)]');
-    expect(button().className).toContain('hover:bg-[color:var(--lk-hover)]');
+    expect(button().className).toContain('tw-bg-[color:var(--lk-bg)]');
+    expect(button().className).toContain('hover:tw-bg-[color:var(--lk-hover)]');
   });
 });

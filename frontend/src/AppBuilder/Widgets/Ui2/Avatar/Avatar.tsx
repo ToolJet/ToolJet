@@ -13,13 +13,11 @@ export const ShadAvatar = (props: WidgetProps) => {
   const max = Math.max(1, Math.min(50, Math.floor(Number(properties.maxVisible)) || 5));
   const shown = people.slice(0, max);
   const extra = people.length - shown.length;
-  // The pack's utilities are !important, so an inline width lost to the Avatar's h-8 w-8 and every avatar drew at
-  // 32px. The size, the initials' font and the overlap of a group are variables the classes read, all scaled to the
-  // size (a fixed 12px font and 8px overlap hid the second letter of small avatars).
-  const ring = 'ring-2 ring-[color:var(--lk-ring,var(--sc-background))]';
-  const box = 'h-[var(--av-size)] w-[var(--av-size)]';
+  // The size, the initials' font and the overlap of a group are variables the classes read, all scaled to the size (a fixed 12px font and 8px overlap hid the second letter of small avatars).
+  const ring = 'tw-ring-2 tw-ring-[color:var(--lk-ring,var(--sc-background))]';
+  const box = 'tw-h-[var(--av-size)] tw-w-[var(--av-size)]';
   const fill =
-    'bg-[color:var(--lk-bg,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-foreground))] text-[length:var(--av-font)] leading-none';
+    'tw-bg-[color:var(--lk-bg,var(--sc-muted))] tw-text-[color:var(--lk-fg,var(--sc-foreground))] tw-text-[length:var(--av-font)] tw-leading-none';
   const vars: StyleWithVars = {
     '--av-size': `${size}px`,
     '--av-font': `${Math.max(9, Math.round(size * 0.4))}px`,
@@ -27,7 +25,7 @@ export const ShadAvatar = (props: WidgetProps) => {
   };
   return (
     <Shell {...props}>
-      <div className="flex [&>*+*]:ml-[calc(var(--av-overlap)*-1)]" style={vars}>
+      <div className="tw-flex [&>*+*]:tw-ml-[calc(var(--av-overlap)*-1)]" style={vars}>
         {shown.map((person, i) => (
           <Avatar key={`${person.name}-${i}`} className={cn(ring, box)} title={person.name}>
             {person.src ? <AvatarImage src={person.src} alt={person.name} /> : null}
@@ -36,7 +34,7 @@ export const ShadAvatar = (props: WidgetProps) => {
         ))}
         {extra > 0 ? (
           <Avatar className={cn(ring, box)} title={`${extra} more`}>
-            <AvatarFallback className={cn(fill, 'font-medium')}>+{extra}</AvatarFallback>
+            <AvatarFallback className={cn(fill, 'tw-font-medium')}>+{extra}</AvatarFallback>
           </Avatar>
         ) : null}
       </div>

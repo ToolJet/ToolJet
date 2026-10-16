@@ -105,12 +105,12 @@ describe('UI 2.0 Progress list', () => {
   test('[ShadProgressList-PROP-006] barSize sets the bar height; listStyle plain drops the frame', async () => {
     render({ properties: goals({ barSize: binding('thick') }) });
     await waitFor(() => expect(bar('Onboarding').style.height).toBe('12px'));
-    expect(items()[0].closest('ul').parentElement).toHaveClass('border');
+    expect(items()[0].closest('ul').parentElement).toHaveClass('tw-border');
 
     render({ properties: goals({ barSize: binding('thin'), listStyle: binding('plain') }) });
     await waitFor(() => expect(bar('Onboarding').style.height).toBe('4px'));
-    expect(items()[0].closest('ul').parentElement).not.toHaveClass('border');
-    expect(items()[0]).toHaveClass('px-0');
+    expect(items()[0].closest('ul').parentElement).not.toHaveClass('tw-border');
+    expect(items()[0]).toHaveClass('tw-px-0');
   });
 
   test('[ShadProgressList-EVT-001] with onItemClicked wired, rows are buttons and a click exposes the row first', async () => {

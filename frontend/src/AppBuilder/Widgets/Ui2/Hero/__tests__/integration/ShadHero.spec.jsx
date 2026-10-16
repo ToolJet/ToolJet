@@ -118,8 +118,8 @@ describe('UI 2.0 Hero', () => {
     render({ properties: { background: binding('dark'), title: binding('Riviera') } });
     await waitFor(() => expect(panel()).toHaveAttribute('data-background', 'dark'));
     const action = screen.getByRole('button', { name: 'New booking' });
-    expect(action.className).toContain('bg-white');
-    expect(action.className).toContain('text-[#0f172a]');
+    expect(action.className).toContain('tw-bg-white');
+    expect(action.className).toContain('tw-text-[#0f172a]');
     expect(title().style.color).toBe('rgb(255, 255, 255)');
 
     render({ properties: { background: binding('nonsense') } });
@@ -144,12 +144,12 @@ describe('UI 2.0 Hero', () => {
   test('[ShadHero-PROP-008] align center stacks the text centred; size sets the title scale', async () => {
     render({ properties: { align: binding('center'), size: binding('large') } });
 
-    await waitFor(() => expect(panel()).toHaveClass('flex-col', 'items-center', 'text-center'));
-    expect(title()).toHaveClass('text-4xl');
+    await waitFor(() => expect(panel()).toHaveClass('tw-flex-col', 'tw-items-center', 'tw-text-center'));
+    expect(title()).toHaveClass('tw-text-4xl');
 
     render({ properties: { size: binding('compact') } });
-    await waitFor(() => expect(title()).toHaveClass('text-2xl'));
-    expect(panel()).toHaveClass('px-6', 'py-5');
+    await waitFor(() => expect(title()).toHaveClass('tw-text-2xl'));
+    expect(panel()).toHaveClass('tw-px-6', 'tw-py-5');
   });
 
   test('[ShadHero-EVT-001] the two actions fire onActionClicked and onSecondaryActionClicked', async () => {
@@ -181,10 +181,10 @@ describe('UI 2.0 Hero', () => {
     render({ properties: { title: binding('Good morning'), actionLabel: binding(LONG) } });
 
     await waitFor(() => expect(screen.getByText(LONG)).toBeInTheDocument());
-    expect(panel()).toHaveClass('flex-wrap');
+    expect(panel()).toHaveClass('tw-flex-wrap');
     const label = screen.getByText(LONG);
-    expect(label).toHaveClass('truncate');
-    expect(label.parentElement.closest('.max-w-full')).toBeTruthy();
+    expect(label).toHaveClass('tw-truncate');
+    expect(label.parentElement.closest('.tw-max-w-full')).toBeTruthy();
   });
 
   // A hero taller than its saved box drew past its bottom edge over the widget under it (Daymark, 2026-10-15). The
@@ -192,10 +192,10 @@ describe('UI 2.0 Hero', () => {
   // at its box and its content scrolls inside it.
   test('[ShadHero-DEF-003] grows with its content in the viewer, and stays inside its box in the editor', async () => {
     const contained = (shell) =>
-      classes(shell).includes('h-full') &&
-      classes(panel()).includes('max-h-full') &&
-      classes(panel()).includes('overflow-y-auto') &&
-      classes(panel().parentElement).includes('h-full');
+      classes(shell).includes('tw-h-full') &&
+      classes(panel()).includes('tw-max-h-full') &&
+      classes(panel()).includes('tw-overflow-y-auto') &&
+      classes(panel().parentElement).includes('tw-h-full');
 
     const view = render({ properties: { asideValue: binding('{{19}}') } });
     await waitFor(() => expect(panel()).toBeInTheDocument());
@@ -215,8 +215,8 @@ describe('UI 2.0 Hero', () => {
       properties: { loadingState: binding('{{true}}'), loadingIndicator: binding('skeleton') },
     });
 
-    await waitFor(() => expect(container.querySelector('.animate-pulse')).toBeTruthy());
-    expect(classes(root(container))).toEqual(expect.arrayContaining(['h-full', 'overflow-y-auto']));
+    await waitFor(() => expect(container.querySelector('.tw-animate-pulse')).toBeTruthy());
+    expect(classes(root(container))).toEqual(expect.arrayContaining(['tw-h-full', 'tw-overflow-y-auto']));
   });
 
   test('[ShadHero-STY-001] accent, panel, title and text colours, radius and title typeface reach the hero', async () => {

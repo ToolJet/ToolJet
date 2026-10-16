@@ -66,13 +66,13 @@ export const ShadAccordion = (props: WidgetProps) => {
     : { type: 'single' as const, collapsible: true, value: open[0] ?? '', onValueChange: change };
   return (
     <Shell {...props} innerRef={ref}>
-      <Accordion {...rootProps} className="w-full">
+      <Accordion {...rootProps} className="tw-w-full">
         {items.map((item, i) => (
-          <AccordionItem key={i} value={String(i)} className="border-[color:var(--lk-border,var(--sc-border))]">
-            <AccordionTrigger className="text-[color:var(--lk-title,var(--sc-foreground))] [&>svg]:text-[color:var(--lk-icon,var(--sc-muted-foreground))]">
+          <AccordionItem key={i} value={String(i)} className="tw-border-[color:var(--lk-border,var(--sc-border))]">
+            <AccordionTrigger className="tw-text-[color:var(--lk-title,var(--sc-foreground))] [&>svg]:tw-text-[color:var(--lk-icon,var(--sc-muted-foreground))]">
               {String(item?.title ?? item?.label ?? '')}
             </AccordionTrigger>
-            <AccordionContent className="whitespace-pre-line text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
+            <AccordionContent className="tw-whitespace-pre-line tw-text-[color:var(--lk-fg,var(--sc-muted-foreground))]">
               {String(item?.content ?? item?.children ?? '')}
             </AccordionContent>
           </AccordionItem>

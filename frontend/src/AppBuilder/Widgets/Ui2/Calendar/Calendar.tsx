@@ -24,12 +24,12 @@ import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_share
 const MarkerContext = createContext(new Map<string, Marker[]>());
 
 export const DAY_SELECTED =
-  'bg-primary text-primary-foreground opacity-100 hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground';
+  'tw-bg-ui2-primary tw-text-ui2-primary-foreground tw-opacity-100 hover:tw-bg-ui2-primary hover:tw-text-ui2-primary-foreground focus:tw-bg-ui2-primary focus:tw-text-ui2-primary-foreground';
 
 export const DAY_RANGE_MIDDLE =
-  'rounded-none bg-transparent text-[color:var(--lk-fg,var(--sc-accent-foreground))] hover:bg-transparent';
+  'tw-rounded-none tw-bg-transparent tw-text-[color:var(--lk-fg,var(--sc-accent-foreground))] hover:tw-bg-transparent';
 
-export const DAY_TODAY = 'bg-[color:var(--lk-today,var(--sc-accent))] text-[color:var(--sc-accent-foreground)]';
+export const DAY_TODAY = 'tw-bg-[color:var(--lk-today,var(--sc-accent))] tw-text-[color:var(--sc-accent-foreground)]';
 
 /** A day: shadcn's ghost button in the state's colours, with dots for the day's markers (labels on hover). */
 export const MarkedDayButton = ({ day, modifiers, className, children, ...rest }: DayButtonProps) => {
@@ -51,8 +51,8 @@ export const MarkedDayButton = ({ day, modifiers, className, children, ...rest }
       aria-label={title ? `${rest['aria-label'] ?? ''}, ${title}` : rest['aria-label']}
       className={cn(
         className,
-        modifiers.outside && 'text-[color:var(--lk-muted,var(--sc-muted-foreground))] opacity-50',
-        modifiers.disabled && 'text-[color:var(--lk-muted,var(--sc-muted-foreground))] opacity-50',
+        modifiers.outside && 'tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))] tw-opacity-50',
+        modifiers.disabled && 'tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))] tw-opacity-50',
         !selected && !modifiers.range_middle && modifiers.today && DAY_TODAY,
         modifiers.range_middle && DAY_RANGE_MIDDLE,
         selected && DAY_SELECTED
@@ -62,16 +62,16 @@ export const MarkedDayButton = ({ day, modifiers, className, children, ...rest }
       {markers.length ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-[3px] left-1/2 flex -translate-x-1/2 gap-0.5"
+          className="tw-pointer-events-none tw-absolute tw-bottom-[3px] tw-left-1/2 tw-flex -tw-translate-x-1/2 tw-gap-0.5"
         >
           {markers.slice(0, 3).map((m, i) => (
             <span
               key={i}
               className={cn(
-                'h-1 w-1 rounded-full',
+                'tw-h-1 tw-w-1 tw-rounded-full',
                 selected && !m.color
-                  ? 'bg-[color:var(--sc-primary-foreground)]'
-                  : 'bg-[color:var(--lk-dot,var(--lk-marker,var(--sc-primary)))]'
+                  ? 'tw-bg-[color:var(--sc-primary-foreground)]'
+                  : 'tw-bg-[color:var(--lk-dot,var(--lk-marker,var(--sc-primary)))]'
               )}
               style={isSet(m.color) ? ({ '--lk-dot': m.color } as StyleWithVars) : undefined}
             />
@@ -86,7 +86,7 @@ export const CALENDAR_MODES = ['single', 'multiple', 'range'];
 
 export const NAV_BUTTON = cn(
   buttonVariants({ variant: 'outline' }),
-  'z-10 h-7 w-7 bg-transparent p-0 opacity-60 hover:opacity-100 text-[color:var(--lk-title,var(--sc-foreground))] border-[color:var(--lk-border,var(--sc-input))]'
+  'tw-z-10 tw-h-7 tw-w-7 tw-bg-transparent tw-p-0 tw-opacity-60 hover:tw-opacity-100 tw-text-[color:var(--lk-title,var(--sc-foreground))] tw-border-[color:var(--lk-border,var(--sc-input))]'
 );
 
 export const ShadCalendar = (props: WidgetProps) => {
@@ -147,7 +147,7 @@ export const ShadCalendar = (props: WidgetProps) => {
   const fullWidth = properties.fullWidth === true;
   const disabled = busy(properties);
   const matchers = disabledMatchers(properties);
-  const cell = 'h-[var(--lk-cell,2rem)] w-[var(--lk-cell,2rem)]';
+  const cell = 'tw-h-[var(--lk-cell,2rem)] tw-w-[var(--lk-cell,2rem)]';
   // react-day-picker types its selection props per mode; this widget's selection follows its mode.
   const selection = {
     mode,
@@ -174,30 +174,33 @@ export const ShadCalendar = (props: WidgetProps) => {
           endMonth={toDate(properties.maxDate)}
           components={{ DayButton: MarkedDayButton }}
           className={cn(
-            'p-3 bg-[color:var(--lk-bg,transparent)] text-[color:var(--lk-fg,var(--sc-foreground))]',
-            fullWidth ? 'w-full' : 'w-fit',
+            'tw-p-3 tw-bg-[color:var(--lk-bg,transparent)] tw-text-[color:var(--lk-fg,var(--sc-foreground))]',
+            fullWidth ? 'tw-w-full' : 'tw-w-fit',
             properties.showBorder !== false &&
-              'rounded-[var(--lk-radius,var(--sc-radius))] border border-solid border-[color:var(--lk-border,var(--sc-border))]',
-            disabled && 'opacity-60'
+              'tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border tw-border-solid tw-border-[color:var(--lk-border,var(--sc-border))]',
+            disabled && 'tw-opacity-60'
           )}
           classNames={{
-            months: cn('relative flex flex-col gap-4 sm:flex-row', fullWidth && 'w-full'),
-            month: 'flex w-full flex-col gap-4',
-            caption_label: 'text-sm font-medium text-[color:var(--lk-title,var(--sc-foreground))]',
+            months: cn('tw-relative tw-flex tw-flex-col tw-gap-4 sm:tw-flex-row', fullWidth && 'tw-w-full'),
+            month: 'tw-flex tw-w-full tw-flex-col tw-gap-4',
+            caption_label: 'tw-text-ui2-sm tw-font-medium tw-text-[color:var(--lk-title,var(--sc-foreground))]',
             button_previous: NAV_BUTTON,
             button_next: NAV_BUTTON,
             weekday: cn(
-              'rounded-md text-[0.8rem] font-normal text-[color:var(--lk-muted,var(--sc-muted-foreground))]',
-              fullWidth ? 'flex-1' : 'w-[var(--lk-cell,2rem)]'
+              'tw-rounded-ui2-md tw-text-[0.8rem] tw-font-normal tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))]',
+              fullWidth ? 'tw-flex-1' : 'tw-w-[var(--lk-cell,2rem)]'
             ),
-            day: cn('relative p-0 text-center text-sm', fullWidth ? 'h-[var(--lk-cell,2.25rem)] flex-1' : cell),
+            day: cn(
+              'tw-relative tw-p-0 tw-text-center tw-text-ui2-sm',
+              fullWidth ? 'tw-h-[var(--lk-cell,2.25rem)] tw-flex-1' : cell
+            ),
             day_button: cn(
               buttonVariants({ variant: 'ghost' }),
-              'relative h-full w-full rounded-md p-0 font-normal text-[color:var(--lk-fg,var(--sc-foreground))] hover:bg-[color:var(--lk-hover,var(--sc-accent))] hover:text-[color:var(--lk-fg,var(--sc-accent-foreground))]'
+              'tw-relative tw-h-full tw-w-full tw-rounded-ui2-md tw-p-0 tw-font-normal tw-text-[color:var(--lk-fg,var(--sc-foreground))] hover:tw-bg-[color:var(--lk-hover,var(--sc-accent))] hover:tw-text-[color:var(--lk-fg,var(--sc-accent-foreground))]'
             ),
-            range_start: 'rounded-l-md bg-[color:var(--lk-range,var(--sc-accent))]',
-            range_middle: 'bg-[color:var(--lk-range,var(--sc-accent))]',
-            range_end: 'rounded-r-md bg-[color:var(--lk-range,var(--sc-accent))]',
+            range_start: 'tw-rounded-l-ui2-md tw-bg-[color:var(--lk-range,var(--sc-accent))]',
+            range_middle: 'tw-bg-[color:var(--lk-range,var(--sc-accent))]',
+            range_end: 'tw-rounded-r-ui2-md tw-bg-[color:var(--lk-range,var(--sc-accent))]',
             selected: '',
             today: '',
             outside: '',

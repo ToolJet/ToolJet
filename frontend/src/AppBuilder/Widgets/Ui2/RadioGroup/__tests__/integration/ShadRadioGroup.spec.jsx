@@ -73,9 +73,9 @@ describe('UI 2.0 Radio group', () => {
   test('[ShadRadioGroup-PROP-003] horizontal lays the options out in a row', async () => {
     render({ properties: { horizontal: binding('{{true}}') } });
 
-    await waitFor(() => expect(screen.getByRole('radiogroup')).toHaveClass('flex', 'flex-wrap'));
+    await waitFor(() => expect(screen.getByRole('radiogroup')).toHaveClass('tw-flex', 'tw-flex-wrap'));
     render({ properties: { horizontal: binding('{{false}}') } });
-    await waitFor(() => expect(screen.getByRole('radiogroup')).not.toHaveClass('flex-wrap'));
+    await waitFor(() => expect(screen.getByRole('radiogroup')).not.toHaveClass('tw-flex-wrap'));
   });
 
   test('[ShadRadioGroup-DEF-002] a bound list of 10k options draws at most 100 radios', async () => {

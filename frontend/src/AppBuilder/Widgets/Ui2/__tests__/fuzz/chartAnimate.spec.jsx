@@ -53,7 +53,7 @@ it('ShadFunnelChart bars grow in with Animate on, and are drawn at once with it 
       properties: { ...defaultsOf('ShadFunnelChart'), animate },
       styles: styleDefaultsOf('ShadFunnelChart'),
     });
-    const found = [...document.querySelectorAll('.rounded-\\[6px\\]')].map((el) => el.style.animation || '');
+    const found = [...document.querySelectorAll('.tw-rounded-\\[6px\\]')].map((el) => el.style.animation || '');
     unmount();
     expect(problemsOf(stats)).toEqual([]);
     return found;
