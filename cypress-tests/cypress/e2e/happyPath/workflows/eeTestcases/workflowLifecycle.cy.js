@@ -116,11 +116,16 @@ describe("Workflows - dashboard CRUD", () => {
     cy.get(workflowSelector.createWorkFlowsButton).should("be.disabled");
 
     // Duplicate name must be refused rather than creating a second workflow
-    // sharing the name.
+    // sharing the name. The name pre-check answers 400 "This app name is
+    // already taken." (shown as a toast); a DB-constraint clash answers 409,
+    // shown inline as "Workflow name already exists".
+    cy.intercept("POST", "/api/workflows").as("createWorkflow");
     cy.get(workflowSelector.workFlowNameInputField).type(data.workflowName);
     cy.get(workflowSelector.createWorkFlowsButton).click();
-    cy.wait(2000);
-    cy.get("body").should("contain.text", "already exists");
+    cy.wait("@createWorkflow")
+      .its("response.statusCode")
+      .should("be.oneOf", [400, 409]);
+    cy.contains(/already (taken|exists)/).should("be.visible");
   });
 
   it("Deleting a workflow from the dashboard removes its card after confirmation", () => {
