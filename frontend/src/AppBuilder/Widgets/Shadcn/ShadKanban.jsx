@@ -16,8 +16,8 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Plus, X } from 'luci
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
-import { initials, list, useAutoHeight, useExposed } from '../packHooks';
-import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from './ui';
+import { initials, list, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { Avatar, AvatarFallback, Badge, Progress, cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, Spinner } from './Shadcn';
 import {
   addCard,
@@ -31,12 +31,12 @@ import {
   updateCard,
 } from './kanbanBoard';
 import { KANBAN_INSTRUCTIONS, KANBAN_KEYS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
-import { useCanvasFit } from './canvasFit';
-import { SHADOWS, badgeLook, isSet, kanbanLook, px } from './kanbanLook';
-import { stringify } from '../packJson';
+import { useCanvasFit } from '@/AppBuilder/Widgets/Ui2/_shared/canvasFit';
+import { SHADOWS, badgeLook, isSet, kanbanLook, px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // shadcn/ui pack Kanban (experiment): a data-driven board. Columns are values of a status field and cards are rows
 // of data shown by the fields the author maps (title, description, badge, tags, progress, meta, avatar), so an agent

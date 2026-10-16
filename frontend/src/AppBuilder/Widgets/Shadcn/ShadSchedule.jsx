@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { LoadingBox, Shell, busy, wantsSkeleton } from './Shadcn';
-import { initials, useAutoHeight, useExposed } from '../packHooks';
-import { Skeleton, cn } from './ui';
+import { initials, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import {
   bookingFace,
   resourceHeading,
@@ -14,10 +14,10 @@ import {
   slotValue,
 } from './scheduleModel';
 import { avatarHue } from '../NewTable/_utils/avatarHue';
-import { stringify } from '../packJson';
-import './shadcn.scss';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // ToolJet UI 2.0 Schedule: resources down the side, time across (the hours of a day, or days), bookings as blocks,
 // a now-line, and clicks on a booking or an empty slot. Config in WidgetManager/widgets/shad*.js, logic in

@@ -7,15 +7,15 @@ import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_conte
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
-import { useAutoHeight } from '../packHooks';
-import { Skeleton, cn } from './ui';
-import { Pager } from './Pager';
+import { useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
 import { itemKey, listLook, pageOf } from './listModel';
-import { stringify } from '../packJson';
-import { LoadingBox, wantsSkeleton } from './loadingLook';
-import { useCanvasFit } from './canvasFit';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import { useCanvasFit } from '@/AppBuilder/Widgets/Ui2/_shared/canvasFit';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
-import './shadcn.scss';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 // shadcn/ui pack List view (experiment). Row-scoped like the native Listview: one canvas (the components parented to
 // the list) repeated per item, each row reading its item as {{listItem}}, and the rows' component values exposed as

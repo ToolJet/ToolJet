@@ -1,5 +1,5 @@
 import tinycolor from 'tinycolor2';
-import { badgeLook, kanbanLook } from '../kanbanLook';
+import { badgeLook, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 
 describe('kanbanLook', () => {
   it('falls back to the app theme when nothing is set', () => {

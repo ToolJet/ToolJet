@@ -1,4 +1,4 @@
-import { isSizedBox } from '../boxFit';
+import { isSizedBox } from '@/AppBuilder/Widgets/Ui2/_shared/boxFit';
 
 const inWrapper = (style) => {
   const wrapper = document.createElement('div');

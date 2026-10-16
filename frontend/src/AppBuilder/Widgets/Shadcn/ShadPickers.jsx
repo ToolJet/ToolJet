@@ -23,14 +23,14 @@ import {
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { createFileFieldRef, registerFileHandle, releaseFileHandle } from '@/AppBuilder/_utils/fileHandleRegistry';
 import { CONTROL, Field, Shell, Spinner, busy, useValidation, useValue } from './Shadcn';
-import { list, toOptions, useAutoHeight, useExposed } from '../packHooks';
-import { Badge, Button, Input, Popover, PopoverContent, PopoverTrigger, cn, getPortalRoot } from './ui';
-import { lookVars } from './shadcnLook';
+import { list, toOptions, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { Badge, Button, Input, Popover, PopoverContent, PopoverTrigger, cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from './pickersModel';
-import { useFocusEvents } from './parity';
-import './shadcn.scss';
+import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // shadcn/ui pack (experiment): the pickers widgets. Combobox and Multiselect are shadcn's Popover + Command (cmdk)
 // recipe; Tags input, Color picker and Rating follow shadcn's field look; File upload is react-dropzone in shadcn

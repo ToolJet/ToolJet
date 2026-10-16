@@ -6,9 +6,9 @@ import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { AlertCircle, ArrowDown, ArrowUp, Check, Copy, Download, MessageSquare, Trash2 } from 'lucide-react';
 import { Shell, busy } from './Shadcn';
-import { initials, useExposed } from '../packHooks';
-import { Skeleton, cn } from './ui';
-import { truthy, useOverrides } from './parity';
+import { initials, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { truthy, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import {
   ANCHOR_PEEK,
   MESSAGES_PER_STEP,
@@ -28,10 +28,10 @@ import { formatTimestamp, validateMessageHistory, validateSingleMessageObject } 
 const NOW_LITERAL = 'new Date().toISOString()';
 const LOADED_AT = new Date().toISOString();
 import { avatarHue } from '../NewTable/_utils/avatarHue';
-import { stringify } from '../packJson';
-import './shadcn.scss';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // ToolJet UI 2.0 Chat: the native Chat widget (Widgets/Chat) in the pack's look, with its properties, events, exposed
 // values and actions. Config in WidgetManager/widgets/shad*.js, message and scroll logic in chatModel.js,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from './ui';
+import { Button } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 
 // shadcn/ui pack (experiment): the pager the List view and Table share. Page numbers around the current one (1 … 4 5 6
 // … 20) when the page count is known, else previous / next only.

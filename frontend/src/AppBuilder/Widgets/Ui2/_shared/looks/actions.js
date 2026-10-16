@@ -1,6 +1,6 @@
 // shadcn/ui pack (experiment): style variables and loading looks of the actions widgets (see shadcnLook.js and
 // Shell's LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js; ShadActions.jsx reads the variables.
-import { px } from '../kanbanLook';
+import { px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 
 export const LOOKS = {
   ShadDropdownMenu: [

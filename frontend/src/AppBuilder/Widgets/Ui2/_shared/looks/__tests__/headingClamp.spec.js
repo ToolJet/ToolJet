@@ -1,4 +1,4 @@
-import { clampLines } from '../typeLook';
+import { clampLines } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 
 describe('clampLines', () => {
   // Recipe sheet (2026-10-12): "Brown Butter Banana Bread" in a 44px h2 heading wrapped to a second line that covered

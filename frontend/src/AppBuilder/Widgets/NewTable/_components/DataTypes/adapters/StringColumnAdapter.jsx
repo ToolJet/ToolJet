@@ -11,7 +11,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { chipLabel, chipTone } from '../../../_utils/chipTone';
 import { avatarHue, isNobody } from '../../../_utils/avatarHue';
-import { initials } from '@/AppBuilder/Widgets/packHooks';
+import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 /**
  * StringColumnAdapter - Table adapter for StringRenderer

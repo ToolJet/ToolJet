@@ -6,7 +6,7 @@ import path from 'path';
 import { parse } from '@babel/parser';
 import { shadcnConfigs, SHADCN_COMPONENTS } from '../../../WidgetManager/widgets/shadcn';
 import { widgets as allConfigs } from '../../../WidgetManager/configs/widgetConfig';
-import { renamesFor } from '../legacyNames';
+import { renamesFor } from '@/AppBuilder/Widgets/Ui2/legacyNames';
 
 const DIR = path.resolve(__dirname, '../../../WidgetManager/widgets');
 const files = fs.readdirSync(DIR).filter((f) => /^shad[A-Z]\w*\.(js|ts)$/.test(f));

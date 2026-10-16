@@ -2,7 +2,7 @@
 // Every function takes whatever the author bound (null, strings, mixed arrays, objects with missing keys) and returns
 // clean values: numbers or null, plain rows, text labels. Nothing here throws.
 
-import { stringify } from '../packJson';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { chipTone } from '../NewTable/_utils/chipTone';
 
 export const MAX_ROWS = 2000;

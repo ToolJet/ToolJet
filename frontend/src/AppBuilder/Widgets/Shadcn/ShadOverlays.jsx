@@ -4,8 +4,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { openerOf, trapTab, watchOpeners } from './dialogFocus';
 import { shadDialogConfig } from '@/AppBuilder/WidgetManager/widgets/shadDialog';
-import './shadcn.scss';
-import './shadDialog.scss';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadDialog.scss';
 
 // shadcn/ui pack (experiment): the Dialog is ToolJet's ModalV2 drawn in the pack's look. ModalV2 reads the skin from
 // the component type and adds the classes styled in shadDialog.scss; it keeps its own control state, open/close

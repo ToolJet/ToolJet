@@ -2,9 +2,9 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import * as Lucide from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { LoadingBox, Shell, busy, wantsSkeleton } from './Shadcn';
-import { initials, useAutoHeight, useExposed } from '../packHooks';
+import { initials, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
-import { Button, Skeleton, cn } from './ui';
+import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { resolveIcon } from './displayModel';
 import {
   barWidth,
@@ -20,10 +20,10 @@ import {
 } from './sectionsModel';
 import { chipLabel, chipTone } from '../NewTable/_utils/chipTone';
 import { avatarHue } from '../NewTable/_utils/avatarHue';
-import { stringify } from '../packJson';
-import './shadcn.scss';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // shadcn/ui pack: page sections (a hero, a card grid, a record list, a progress list and a summary strip). Configs in WidgetManager/widgets/shad*.js, style variables and loading looks
 // in looks/sections.js, data logic in sectionsModel.js. A section draws a designed layout from properties only, so it

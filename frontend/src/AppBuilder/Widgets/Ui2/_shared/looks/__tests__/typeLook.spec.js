@@ -1,5 +1,5 @@
-import { FONT_STACKS, fontStack, typeClasses } from '../typeLook';
-import { lookVars } from '../shadcnLook';
+import { FONT_STACKS, fontStack, typeClasses } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
+import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 
 describe('fontStack', () => {
   it('leaves the theme font alone when unset or "theme"', () => {

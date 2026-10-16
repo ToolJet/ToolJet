@@ -7,7 +7,7 @@
  */
 import { screen, waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { FONT_STACKS } from '@/AppBuilder/Widgets/Shadcn/typeLook';
+import { FONT_STACKS } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 
 const widget = createWidgetHarness({
   componentType: 'ShadStat',

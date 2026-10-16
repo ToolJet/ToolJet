@@ -1,7 +1,7 @@
 // shadcn/ui pack: typeface styles for text widgets (Heading, Text, Stat). Each set style becomes a CSS variable on the
 // widget's root (see LOOKS in shadcnLook.js) and a class from shadcn.scss that reads it; an unset style adds neither,
 // so the theme's font and the tone's own weight and size apply.
-import { isSet } from './kanbanLook';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 
 /** Named stacks that need no download: system and ToolJet-bundled faces (Inter, IBM Plex Mono). */
 export const FONT_STACKS = {

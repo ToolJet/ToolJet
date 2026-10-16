@@ -1,4 +1,4 @@
-import { toOptions } from '../../packHooks';
+import { toOptions } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 describe('toOptions', () => {
   it('accepts plain values and option objects', () => {

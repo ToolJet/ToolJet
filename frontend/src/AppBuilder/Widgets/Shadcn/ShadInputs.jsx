@@ -20,7 +20,7 @@ import {
   Search,
 } from 'lucide-react';
 import { CONTROL, Field, HELP, Shell, busy, useTextBox, useValidation, useValue } from './Shadcn';
-import { useExposed, useAutoHeight } from '../packHooks';
+import { useExposed, useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import {
   Button,
   Calendar,
@@ -34,14 +34,14 @@ import {
   SelectValue,
   Truncate,
   cn,
-} from './ui';
-import { lookVars } from './shadcnLook';
+} from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from './inputsModel';
-import { useFocusEvents, useOverrides } from './parity';
-import { stringify } from '../packJson';
-import './shadcn.scss';
+import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // shadcn/ui pack (experiment): inputs widgets: number, password, phone, currency, OTP, time and date-time. Pure logic
 // lives in inputsModel.js; configs in WidgetManager/widgets/shad*.js; style variables in looks/inputs.js.

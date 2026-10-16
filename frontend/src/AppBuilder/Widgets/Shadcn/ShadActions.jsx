@@ -2,11 +2,11 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronDown, ChevronLeft, ChevronRight, Ellipsis, ImageOff } from 'lucide-react';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
-import { useAutoHeight, useExposed } from '../packHooks';
+import { useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Field, LoadingBox, Shell, Spinner, busy, useValidation, wantsSkeleton } from './Shadcn';
-import { Button, Calendar, Skeleton, buttonVariants, cn, getPortalRoot } from './ui';
-import { lookVars, whenSet } from './shadcnLook';
-import { isSet } from './kanbanLook';
+import { Button, Calendar, Skeleton, buttonVariants, cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import {
   activeItemExposed,
   aspectRatio,
@@ -31,10 +31,10 @@ import {
   visiblePeriod,
   ymd,
 } from './actionsModel';
-import { stringify } from '../packJson';
-import './shadcn.scss';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // shadcn/ui pack (experiment): the actions widgets. Configs in WidgetManager/widgets/shad*.js, style variables
 // in looks/actions.js, pure logic in actionsModel.js.

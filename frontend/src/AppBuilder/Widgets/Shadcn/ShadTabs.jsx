@@ -8,11 +8,11 @@ import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
-import { Button, Skeleton, cn } from './ui';
+import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
-import { stringify } from '../packJson';
-import { Spinner, wantsSkeleton } from './loadingLook';
-import './shadcn.scss';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 // shadcn/ui pack Tabs (experiment). Same contract as the native Tabs (tabItems or dynamic tabs, defaultTab,
 // currentTab, setTab and the per-tab canvases `<id>-<tabId>`), so the editor, copy and paste, dynamic height and the

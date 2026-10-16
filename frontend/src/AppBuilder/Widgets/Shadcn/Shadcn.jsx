@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon, ChevronRight, Inbox, TrendingDown, TrendingUp } from 'lucide-react';
-import { initials, list, toOptions, useAutoHeight, useExposed } from '../packHooks';
+import { initials, list, toOptions, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import {
   Accordion,
   AccordionContent,
@@ -39,26 +39,26 @@ import {
   ToggleGroup,
   ToggleGroupItem,
   cn,
-} from './ui';
-import { badgeLook, isSet } from './kanbanLook';
+} from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { badgeLook, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { toDate, ymd } from './actionsModel';
 import { dateProblem, dateRules, parseDateTime, toDayjsFormat } from './inputsModel';
 import { sliderBounds, sliderValues } from './sliderModel';
-import { lookVars, whenSet } from './shadcnLook';
-import { clampLines, fontStack, textCase, typeClasses } from './typeLook';
-import { useSizedBox } from './boxFit';
-import { GROUP_LOADING } from './looks';
+import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
+import { clampLines, fontStack, textCase, typeClasses } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
+import { useSizedBox } from '@/AppBuilder/Widgets/Ui2/_shared/boxFit';
+import { GROUP_LOADING } from '@/AppBuilder/Widgets/Ui2/_shared/looks/groups';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
-import { stringify } from '../packJson';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { progressPercent, sparkPaths, splitChange, statSize, statValue } from './statModel';
 import { compactFigure } from './chartsModel';
-import { textArg, truthy, useFocusEvents, useHasEvent, useOverrides } from './parity';
-import { LoadingBox, Spinner, wantsSkeleton } from './loadingLook';
-import './shadcn.scss';
+import { textArg, truthy, useFocusEvents, useHasEvent, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { LoadingBox, Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { joinStatRow } from './statRow';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // shadcn/ui pack (experiment, exp/antd-pack): native ToolJet widgets rendering shadcn/ui components. Configs live in
 // WidgetManager/widgets/shad*.js.

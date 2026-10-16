@@ -1,7 +1,7 @@
 // shadcn/ui pack Tabs (experiment): the tab list and the look, kept apart from the component so they are tested on
 // their own.
 
-import { stringify } from '../packJson';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 
 const isSet = (value) => value !== undefined && value !== null && String(value).trim() !== '';
 const px = (value) => (/^\d+(\.\d+)?$/.test(String(value).trim()) ? `${value}px` : String(value));

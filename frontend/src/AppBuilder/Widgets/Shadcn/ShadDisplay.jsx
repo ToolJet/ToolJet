@@ -1,11 +1,11 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as Lucide from 'lucide-react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { useHasEvent, useOverrides, textArg } from './parity';
+import { useHasEvent, useOverrides, textArg } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { LoadingBox, Shell, Spinner, busy, wantsSkeleton } from './Shadcn';
-import { initials, useAutoHeight, useExposed } from '../packHooks';
-import { Button, Skeleton, cn, getPortalRoot } from './ui';
-import { isSet } from './kanbanLook';
+import { initials, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { Button, Skeleton, cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import {
   clamp,
   clampPage,
@@ -24,10 +24,10 @@ import {
   timelineItems,
   toTags,
 } from './displayModel';
-import { stringify } from '../packJson';
-import './shadcn.scss';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // shadcn/ui pack (experiment): display widgets. Configs in WidgetManager/widgets/shad*.js, style variables and
 // loading looks in looks/display.js, data logic in displayModel.js. Colours come from the theme (shadcn tokens) and

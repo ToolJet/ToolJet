@@ -2,7 +2,7 @@
 // is tested on its own. Every function accepts junk (null, wrong types, huge numbers, mixed arrays) without throwing.
 import dayjs from 'dayjs';
 import { formatCell } from './tableModel';
-import { stringify } from '../packJson';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 
 const isSet = (value) => value !== undefined && value !== null && String(value).trim() !== '';
 const isText = (v) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';

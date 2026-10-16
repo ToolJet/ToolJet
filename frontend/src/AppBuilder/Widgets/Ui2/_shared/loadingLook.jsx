@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from './ui';
+import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 
 // shadcn/ui pack (experiment): the loading look a widget picks with its "Loading look" property. Spinner (the
 // default) shows the circle in the widget's own box, so the layout does not move; Skeleton draws the widget's

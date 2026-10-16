@@ -3,7 +3,7 @@
 // crash and correctness bugs are not repeated: search text is never a regex, numbers filter as numbers, export applies
 // filters, sort and edits.
 import dayjs from 'dayjs';
-import { stringify } from '../packJson';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 
 const isSet = (value) => value !== undefined && value !== null && String(value).trim() !== '';
 const isEmptyValue = (value) =>

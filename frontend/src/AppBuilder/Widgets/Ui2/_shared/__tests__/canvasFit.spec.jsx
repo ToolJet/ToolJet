@@ -1,6 +1,6 @@
 import React from 'react';
 import { act, render } from '@testing-library/react';
-import { useCanvasFit } from '../canvasFit';
+import { useCanvasFit } from '@/AppBuilder/Widgets/Ui2/_shared/canvasFit';
 
 // A shadcn List view row (and a custom Kanban card) stayed at rowHeight while a child grew, cutting it off: a long
 // bound note grew its Text to 116px in a 60px row (headless browser, 2026-10-11). The row now fits its components.

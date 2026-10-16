@@ -1,7 +1,7 @@
 // shadcn/ui pack: style variables and loading looks of the page sections (see shadcnLook.js and Shell's LOADING_LOOK).
 // Style keys match WidgetManager/widgets/shad*.js; ShadSections.jsx reads the variables.
-import { px } from '../kanbanLook';
-import { fontStack } from '../typeLook';
+import { px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+import { fontStack } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 
 export const LOOKS = {
   ShadHero: [

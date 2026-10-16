@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
-import { stringify } from '../packJson';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 
 // shadcn/ui pack (experiment): what the pack widgets share to match the native widgets' events and actions (the
 // parity table is in Widgets/Shadcn/EVENT_PARITY.md).

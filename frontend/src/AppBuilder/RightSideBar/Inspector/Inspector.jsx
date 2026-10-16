@@ -54,7 +54,7 @@ import { Cascader } from './Components/Cascader/Cascader';
 import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
-import { SAMPLE_ITEM_HEIGHT, sampleCardLayouts } from '@/AppBuilder/Widgets/Shadcn/listSampleCard';
+import { SAMPLE_ITEM_HEIGHT, sampleCardLayouts } from '@/AppBuilder/Widgets/Ui2/ListView/listSampleCard';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {

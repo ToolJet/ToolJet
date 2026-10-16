@@ -1,6 +1,6 @@
 import { act, fireEvent, screen } from '@testing-library/react';
 import { ROWS_10K, defaultsOf, installGuards, mountCase, problemsOf, styleDefaultsOf } from './harness';
-import { stringify } from '../../../packJson';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { MAX_THUMBS, sliderBounds, sliderValues } from '../../sliderModel';
 import { curveOf } from '../../chartsModel';
 import { MAX_SHOWN_OPTIONS, MAX_TAGS, addTags, safeRegex } from '../../pickersModel';

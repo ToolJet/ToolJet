@@ -12,7 +12,7 @@ import {
   setVariableOn,
   countInvocationsOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { FONT_STACKS } from '@/AppBuilder/Widgets/Shadcn/typeLook';
+import { FONT_STACKS } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 
 const ID = 'head1';
 const widget = createWidgetHarness({

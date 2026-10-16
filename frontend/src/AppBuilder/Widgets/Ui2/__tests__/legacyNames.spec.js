@@ -1,6 +1,6 @@
 // The retired UI 2.0 names (NAMING.md) live in two copies: this one, and the server's, which rewrites imported apps.
 // They must agree, and no current name may also be a retired name of the same widget (a second rewrite would move it).
-import { UI2_COMMON_RENAMES, UI2_RENAMES, renamesFor } from '../legacyNames';
+import { UI2_COMMON_RENAMES, UI2_RENAMES, renamesFor } from '@/AppBuilder/Widgets/Ui2/legacyNames';
 import * as server from '../../../../../../server/src/modules/apps/services/ui2-legacy-names';
 
 describe('retired UI 2.0 names', () => {

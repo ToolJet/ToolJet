@@ -4,10 +4,10 @@ import Supercluster from 'supercluster';
 import DOMPurify from 'dompurify';
 import 'leaflet/dist/leaflet.css';
 import { Shell, busy } from './Shadcn';
-import { Spinner } from './loadingLook';
-import { useHasEvent } from './parity';
-import { useExposed } from '../packHooks';
-import { stringify } from '../packJson';
+import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import {
   areaShapes,
   clampZoom,
@@ -29,9 +29,9 @@ import {
   viewKey,
 } from './mapModel';
 import { HeatLayer, geocode, iconSvg, loadIcons } from './mapLayers';
-import './shadcn.scss';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // ToolJet UI 2.0 Map: markers from rows on open raster tiles (Leaflet, no API key), toned by status, grouped into
 // counts when they crowd (supercluster), with route lines, areas, a heat layer, a popup, a selection, a picked spot

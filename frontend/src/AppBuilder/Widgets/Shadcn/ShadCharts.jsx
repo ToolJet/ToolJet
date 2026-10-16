@@ -31,10 +31,10 @@ import {
   YAxis,
   ZAxis,
 } from 'recharts';
-import { list, useExposed } from '../packHooks';
+import { list, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from './Shadcn';
-import { seriesColor } from './shadcnLook';
-import { cn } from './ui';
+import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
+import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import {
   arcAngles,
   arcBox,
@@ -68,7 +68,7 @@ import {
   seriesLabelMap,
 } from './chartsModel';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // shadcn/ui pack charts (experiment): Recharts styled the way shadcn/ui's chart component styles it (no axis lines,
 // horizontal grid only, a card tooltip, series colours from --sc-chart-1..5, which follow the app theme, or from the

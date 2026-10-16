@@ -19,7 +19,7 @@ import {
 import useStore from '@/AppBuilder/_stores/store';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
-import { initials, useAutoHeight } from '../packHooks';
+import { initials, useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import {
   Avatar,
   AvatarFallback,
@@ -34,11 +34,11 @@ import {
   Progress,
   Skeleton,
   cn,
-} from './ui';
+} from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from './Shadcn';
-import { Pager } from './Pager';
-import { badgeLook, isSet } from './kanbanLook';
-import { lookVars } from './shadcnLook';
+import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
+import { badgeLook, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { pageOf } from './listModel';
 import {
   FILTER_CONDITIONS,
@@ -53,8 +53,8 @@ import {
   sortRows,
   toCsv,
 } from './tableModel';
-import { stringify } from '../packJson';
-import { LoadingBox, wantsSkeleton } from './loadingLook';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 
 // shadcn/ui pack Table (experiment). Native Table conventions (property, event, exposed and action names; server-side
 // pagination, search, sort and filters), the shadcn data-table look, and none of the native table's known failure

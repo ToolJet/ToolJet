@@ -1,6 +1,6 @@
 import React from 'react';
 import { act, render } from '@testing-library/react';
-import { withControlState } from '../../packHooks';
+import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 const seen = [];
 const Probe = ({ properties }) => {

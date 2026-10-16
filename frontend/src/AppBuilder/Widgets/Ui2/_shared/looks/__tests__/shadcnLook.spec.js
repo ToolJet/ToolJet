@@ -1,5 +1,5 @@
-import { LOOKS, lookVars, seriesColor, whenSet } from '../shadcnLook';
-import { shadcnConfigs } from '../../../WidgetManager/widgets/shadcn';
+import { LOOKS, lookVars, seriesColor, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
+import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 
 describe('lookVars', () => {
   it('adds nothing for unset styles, so the theme applies', () => {
@@ -62,15 +62,25 @@ describe('whenSet', () => {
 describe('primary-coloured text', () => {
   const fs = require('fs');
   const path = require('path');
-  const dir = path.join(__dirname, '..');
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.jsx'));
+  // Every widget source file of the pack (outside tests).
+  const widgets = path.resolve(__dirname, '../../../..');
+  const walk = (dir) =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) return e.name === '__tests__' ? [] : walk(p);
+      return /\.(jsx|tsx)$/.test(e.name) ? [p] : [];
+    });
+  const files = ['Ui2', 'Shadcn']
+    .filter((d) => fs.existsSync(path.join(widgets, d)))
+    .flatMap((d) => walk(path.join(widgets, d)))
+    .map((p) => path.relative(widgets, p));
   it.each(files)('%s draws no text in the raw primary', (file) => {
-    const source = fs.readFileSync(path.join(dir, file), 'utf8');
+    const source = fs.readFileSync(path.join(widgets, file), 'utf8');
     const raw = source.match(/text-\[color:var\((?:--lk-[a-z-]+,)?var\(--sc-primary\)\)?\]/g) || [];
     expect(raw).toEqual([]);
   });
   it('maps the text-primary utility to the ink', () => {
-    const config = require('../shadcn.tailwind.config.js');
+    const config = require('@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.tailwind.config');
     expect(config.theme.extend.textColor.primary.DEFAULT({})).toBe('var(--sc-primary-ink)');
   });
 });
@@ -80,7 +90,7 @@ describe('primary-coloured text', () => {
 describe('hairlines in dark themes', () => {
   const fs = require('fs');
   const path = require('path');
-  const scss = fs.readFileSync(path.join(__dirname, '..', 'shadcn.scss'), 'utf8');
+  const scss = fs.readFileSync(path.join(__dirname, '..', '..', 'styles', 'shadcn.scss'), 'utf8');
   it('maps the border to the theme default border under the dark theme classes', () => {
     const darkBlocks = [...scss.matchAll(/\.dark-theme \.tj-shadcn,[^{]*\{([^}]*)\}/g)].map((m) => m[1]);
     expect(darkBlocks.some((body) => /--sc-border:\s*var\(--cc-default-border/.test(body))).toBe(true);
@@ -96,7 +106,7 @@ describe('hairlines in dark themes', () => {
 describe('chart series on dark and mid-tone primaries', () => {
   const fs = require('fs');
   const path = require('path');
-  const scss = fs.readFileSync(path.join(__dirname, '..', 'shadcn.scss'), 'utf8');
+  const scss = fs.readFileSync(path.join(__dirname, '..', '..', 'styles', 'shadcn.scss'), 'utf8');
   // The light-mode rules come first in the file (the dark-mode ones follow, scoped to .dark-theme), so the first
   // relative-colour formula for each series is the light one. SCSS #{...} holds braces, so blocks are not split on them.
   const lightBlock = scss;

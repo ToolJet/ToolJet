@@ -4,9 +4,9 @@
 // shadcn's own tokens for the widget (`--sc-primary`, `--sc-ring`, `--sc-chart-1`), so everything drawn in them
 // (checked states, focus rings, the progress bar, the chart palette) follows at once. Kanban keeps its own module
 // (kanbanLook.js). Style keys match the configs in WidgetManager/widgets/shad*.js.
-import { isSet, px } from './kanbanLook';
-import { GROUP_LOOKS } from './looks';
-import { fontStack, fontWeight, textCase } from './typeLook';
+import { isSet, px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+import { GROUP_LOOKS } from '@/AppBuilder/Widgets/Ui2/_shared/looks/groups';
+import { fontStack, fontWeight, textCase } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 
 const ACCENT = ['--sc-primary', '--sc-ring'];
 

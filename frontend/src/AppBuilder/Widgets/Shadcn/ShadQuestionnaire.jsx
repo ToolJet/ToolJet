@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertCircle, Check, CircleCheck } from 'lucide-react';
 import { Shell, busy } from './Shadcn';
-import { useAutoHeight, useExposed } from '../packHooks';
-import { Button, Input, Textarea, cn } from './ui';
+import { useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { Button, Input, Textarea, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import {
   answersOf,
   emptyAnswer,
@@ -17,10 +17,10 @@ import {
   resolveIndex,
   shortcutKey,
 } from './questionnaireModel';
-import { stringify } from '../packJson';
-import './shadcn.scss';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-export { withControlState } from '../packHooks';
+export { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // ToolJet UI 2.0 Questionnaire: a data-driven multi-step form after shadcn's Questionnaire, one question at a time
 // with progress, answer cards with shortcuts, Previous / Skip / Next / Submit and required-answer validation. Config in

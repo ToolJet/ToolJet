@@ -1,5 +1,5 @@
 /**
- * Tailwind for the shadcn/ui pack (experiment, exp/antd-pack). Compiled only into Widgets/Shadcn/shadcn.scss
+ * Tailwind for the shadcn/ui pack (experiment, exp/antd-pack). Compiled only into Widgets/Ui2/_shared/styles/shadcn.scss
  * (`@config`), separate from ToolJet's own Tailwind (prefix `tw-`, no preflight), so the pack's components keep
  * shadcn's unprefixed classes unchanged:
  * - `important: '.tj-shadcn'` scopes every utility to a pack widget (or the pack's portal root), so nothing applies
@@ -15,7 +15,7 @@ const token =
       : `color-mix(in srgb, var(--sc-${name}) calc(${opacityValue} * 100%), transparent)`;
 
 module.exports = {
-  content: ['./src/AppBuilder/Widgets/Shadcn/**/*.{js,jsx}'],
+  content: ['./src/AppBuilder/Widgets/Shadcn/**/*.{js,jsx}', './src/AppBuilder/Widgets/Ui2/**/*.{js,jsx,ts,tsx}'],
   important: '.tj-shadcn',
   corePlugins: { preflight: false },
   theme: {

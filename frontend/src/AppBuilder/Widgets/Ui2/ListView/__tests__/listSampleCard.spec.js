@@ -1,5 +1,5 @@
-import { SAMPLE_CARD, sampleCardLayouts } from '../listSampleCard';
-import { shadcnConfigs } from '../../../WidgetManager/widgets/shadcn';
+import { SAMPLE_CARD, sampleCardLayouts } from '@/AppBuilder/Widgets/Ui2/ListView/listSampleCard';
+import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 
 const listView = shadcnConfigs.find((config) => config.name === 'ShadListView');
 const children = (mode) => SAMPLE_CARD[mode].map(({ type, layout }, i) => ({ id: `c${i}`, type, layout: { ...layout } }));
