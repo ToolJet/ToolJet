@@ -265,6 +265,18 @@ describe('version diff', () => {
     expect(query.changes[0].summary).toBe('Code edited (2 lines added, 1 removed)');
   });
 
+  it('carries a new or removed query\'s options, so its code can be shown', () => {
+    const target = baseSpec();
+    target.queries.push({ name: 'pipelineStats', options: { code: 'return 1;' } } as any);
+    const added = diff(baseSpec(), target).queries.find((query) => query.name === 'pipelineStats');
+    expect(added.status).toBe('added');
+    expect(added.options).toEqual({ code: 'return 1;' });
+    const removed = diff(target, baseSpec()).queries.find((query) => query.name === 'pipelineStats');
+    expect(removed.status).toBe('removed');
+    expect(removed.options).toEqual({ code: 'return 1;' });
+    expect(diff(baseSpec(), baseSpec()).queries.every((query) => !('options' in query))).toBe(true);
+  });
+
   it('reports pages added, removed, renamed and reordered, and the home page', () => {
     const base: Spec = {
       pages: [{ handle: 'home' }, { handle: 'deals' }, { handle: 'old' }],

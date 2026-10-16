@@ -1,4 +1,5 @@
 import React from 'react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/Rocket';
 import { cn } from '@/lib/utils';
 
 // Small pieces the compare view shares, drawn the way the version menu draws
@@ -61,3 +62,20 @@ export const Counts = ({ counts, className }) => {
 };
 
 export const Divider = () => <span className="tw-w-px tw-h-5 tw-bg-border-weak tw-shrink-0" aria-hidden="true" />;
+
+// Icon-only choices, as in the editor header's desktop and mobile switch.
+export const IconChoice = ({ label, value, onChange, options }) => (
+  <ToggleGroup type="single" value={value} onValueChange={(next) => next && onChange(next)} aria-label={label}>
+    {options.map(({ id, text, Icon }) => (
+      <ToggleGroupItem
+        key={id}
+        value={id}
+        aria-label={text}
+        data-tip={text}
+        className="vd-seg__opt tw-w-7 tw-text-icon-default [&_svg]:!tw-text-icon-default data-[state=on]:[&_svg]:!tw-text-icon-strong hover:[&_svg]:!tw-text-icon-strong"
+      >
+        <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
+      </ToggleGroupItem>
+    ))}
+  </ToggleGroup>
+);

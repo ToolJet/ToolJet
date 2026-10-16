@@ -399,7 +399,9 @@ export function diffVersions(
         });
       if (a && b) changes.push(...queryOptionChanges(a.options, b.options));
       const status = !a ? 'added' : !b ? 'removed' : changes.length || events.length ? 'changed' : 'unchanged';
-      return { key, name: subject.name, status, dataSource: subject.dataSource, changes, events } as
+      // A new or removed query has no field-by-field changes; its options let the compare view show its code.
+      const options = status === 'added' || status === 'removed' ? { options: subject.options } : {};
+      return { key, name: subject.name, status, dataSource: subject.dataSource, changes, events, ...options } as
         | QueryDiff
         | { status: 'unchanged' };
     })

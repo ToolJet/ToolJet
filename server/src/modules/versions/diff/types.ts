@@ -152,6 +152,8 @@ export type QueryDiff = {
   dataSource: string;
   changes: Change[];
   events: EventDiff[];
+  // Only for added and removed queries: everything they hold, for the code view.
+  options?: Record<string, any>;
 };
 
 export type VersionDiff = {

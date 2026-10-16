@@ -571,3 +571,39 @@
 body:has(.vd-root) > .tooltip {
   display: none;
 }
+
+// Line diff of a code change (CodePane). Colours for added and removed lines come
+// from @codemirror/merge's light and dark base themes, matched to the editor themes.
+.vd-code {
+  font-size: 12px;
+
+  .cm-editor {
+    background: transparent;
+  }
+
+  .cm-editor.cm-focused {
+    outline: none;
+  }
+
+  .cm-scroller {
+    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    line-height: 1.6;
+  }
+
+  .cm-gutters {
+    border-right: 1px solid var(--border-weak);
+  }
+
+  // Wrap long lines at spaces and punctuation, not mid-word. The editor's code fields
+  // force break-all with !important on every .cm-content (CodeEditor/styles.scss).
+  .cm-editor .cm-content.cm-lineWrapping {
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .cm-collapsedLines {
+    font-family: var(--font-family-inter, Inter, system-ui, sans-serif);
+    font-size: 11px;
+    cursor: pointer;
+  }
+}
