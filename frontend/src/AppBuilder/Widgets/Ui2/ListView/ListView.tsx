@@ -3,7 +3,7 @@ import { shallow } from 'zustand/shallow';
 import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { SubcontainerContext, useSubcontainerContext } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
+import { SubcontainerContext, useOwnContextPath } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 import type { ContextSegment } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
@@ -83,7 +83,15 @@ const Row = ({
   darkMode,
 }: RowProps) => {
   // With dynamic height on (in an app), a row grows with its components, as the native Listview's rows do.
-  const height = useFittedRowHeight({ id, index, value: item, fit, height: rowHeight, currentLayout });
+  const height = useFittedRowHeight({
+    id,
+    path: parentPath,
+    index,
+    value: item,
+    fit,
+    height: rowHeight,
+    currentLayout,
+  });
   const contextValue = useMemo(
     () => ({ contextPath: [...parentPath, { containerId: id, index }] }),
     [parentPath, id, index]
@@ -134,7 +142,8 @@ export const ShadListView = (props: WidgetProps) => {
     setExposedVariable
   );
   const { moduleId } = useModuleContext();
-  const { contextPath } = useSubcontainerContext();
+  // Rows, their values and their heights hang off the list's own path (in a native Kanban card, that card's index).
+  const contextPath = useOwnContextPath(props.subContainerIndex, props.parentId);
   const parentIndices = useStable(useMemo(() => contextPath.map((segment) => segment.index), [contextPath]));
   const updateCustomResolvables = useStore((state: ListStore) => state.updateCustomResolvables, shallow);
   const initExposedValueArrayForChildren = useStore(

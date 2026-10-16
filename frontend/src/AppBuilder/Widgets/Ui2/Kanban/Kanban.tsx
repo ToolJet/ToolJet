@@ -20,6 +20,7 @@ import {
   useStable,
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useOwnContextPath } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
@@ -221,7 +222,12 @@ export const ShadKanban = (props: WidgetProps) => {
     );
   }, [custom, columns, props.id, moduleId, updateCustomResolvables]);
   const { boardNode, moreRight, boardWidth, cardWidth } = useBoardSize(custom, columns.length, collapsedColumns);
-  const fitCards = custom && !editing && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
+  // Cards fit their components only on a top-level board: inside another row-scoped widget (a native Kanban card, a
+  // List view row) the card canvas has no context of its own yet, so a card's height would share the board's layout
+  // key and grow with it. There a card keeps its set height.
+  const ownPath = useOwnContextPath(props.subContainerIndex, props.parentId);
+  const fitCards =
+    custom && !editing && ownPath.length === 0 && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
   const renderBody = custom
     ? (card: BoardCard) => (
         <CustomCardBody

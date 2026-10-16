@@ -311,6 +311,9 @@ interface CustomCardBodyProps {
   darkMode?: boolean;
 }
 
+// Custom cards fit only on a top-level board (Kanban.tsx), so their path is always empty.
+const TOP_LEVEL: [] = [];
+
 export const CustomCardBody = ({
   id,
   index,
@@ -323,7 +326,15 @@ export const CustomCardBody = ({
   darkMode,
 }: CustomCardBodyProps) => {
   // Sized by the reflow as a list row is; a card with something hidden on it may also go below cardHeight.
-  const height = useFittedRowHeight({ id, index, value: card, fit, height: cardHeight, currentLayout });
+  const height = useFittedRowHeight({
+    id,
+    path: TOP_LEVEL,
+    index,
+    value: card,
+    fit,
+    height: cardHeight,
+    currentLayout,
+  });
   return (
     // In the editor, a press inside the card edits its components instead of starting a card drag.
     <div data-card-canvas="" style={{ height }} onPointerDown={editing ? (e) => e.stopPropagation() : undefined}>

@@ -139,6 +139,17 @@ describe('UI 2.0 List view', () => {
     expect(items()[0].style.height).toBe('158px');
   });
 
+  // Inside a container that gives its children no path of its own (a native Kanban card), the list is reflowed at
+  // [card] and its rows at [card, row]. Keyed [row] alone, row 0 read the list's own height in card 0 and the two grew
+  // each other without end.
+  test('[ShadListView-PROP-010] in a card of another container its rows never read the height of the list itself', async () => {
+    render({ subContainerIndex: 0, properties: people({ rowHeight: binding('{{72}}') }) });
+    await waitFor(() => expect(items()).toHaveLength(3));
+    act(() => useStore.getState().setTemporaryLayouts({ 'lv1-0': { height: 5000 }, 'lv1-0.1': { height: 260 } }));
+    await waitFor(() => expect(items()[1].style.height).toBe('260px'));
+    expect(items()[0].style.height).not.toBe('5000px');
+  });
+
   test('[ShadListView-PROP-009] in the editor rows keep rowHeight whatever the reflow wrote', async () => {
     render({ currentMode: 'edit', properties: people({ rowHeight: binding('{{72}}') }) });
     await waitFor(() => expect(items()).toHaveLength(3));
