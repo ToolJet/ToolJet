@@ -1226,6 +1226,166 @@ describe('Table: row selection', () => {
       await waitFor(() => expect(exposed('selectedRow')).toEqual(ROWS[1]));
     }
   );
+
+  describe('onRowSelectionChanged', () => {
+    const selectionEvent = (extra = {}) => ({
+      id: 'evt-selection-changed',
+      name: 'onRowSelectionChanged',
+      index: 0,
+      sourceId: ID,
+      target: 'component',
+      event: {
+        eventId: 'onRowSelectionChanged',
+        actionId: 'set-custom-variable',
+        key: 'selectionChangedCount',
+        value: '{{(variables.selectionChangedCount ?? 0) + 1}}',
+        ...extra,
+      },
+    });
+    const changeCount = () => store().getVariable('selectionChangedCount', MODULE_ID) ?? 0;
+
+    test('[Table-SEL-007] selecting a row, switching to a different row, and deselecting each fire the event once', async () => {
+      widget.render({ events: [selectionEvent()] });
+      await waitFor(() => expect(table()).toBeInTheDocument());
+
+      rtlFireEvent.click(cell('email', 0));
+      await waitFor(() => expect(changeCount()).toBe(1));
+
+      rtlFireEvent.click(cell('email', 1));
+      await waitFor(() => expect(exposed('selectedRow')).toEqual(ROWS[1]));
+      await waitFor(() => expect(changeCount()).toBe(2));
+
+      rtlFireEvent.click(cell('email', 1));
+      await waitFor(() => expect(exposed('selectedRow')).toEqual({}));
+      await waitFor(() => expect(changeCount()).toBe(3));
+    });
+
+    test('[Table-SEL-008] the handler reads the newly selected row, not the previous one', async () => {
+      widget.render({
+        events: [
+          selectionEvent({
+            key: 'selectedNameInHandler',
+            value: '{{components.table1.selectedRow.name}}',
+          }),
+        ],
+      });
+      await waitFor(() => expect(table()).toBeInTheDocument());
+
+      rtlFireEvent.click(cell('email', 0));
+      await waitFor(() => expect(store().getVariable('selectedNameInHandler', MODULE_ID)).toBe(ROWS[0].name));
+
+      rtlFireEvent.click(cell('email', 2));
+      await waitFor(() => expect(store().getVariable('selectedNameInHandler', MODULE_ID)).toBe(ROWS[2].name));
+    });
+
+    test('[Table-SEL-009] selectRow and deselectRow CSAs fire the event only when the selection actually changes', async () => {
+      widget.render({ events: [selectionEvent()] });
+      await waitFor(() => expect(table()).toBeInTheDocument());
+
+      // Nothing selected -> row 2: the selection changed.
+      await widget.act('selectRow', 'id', ROWS[1].id);
+      await waitFor(() => expect(changeCount()).toBe(1));
+
+      // Same row again: the selection is identical, so nothing fires.
+      await widget.act('selectRow', 'id', ROWS[1].id);
+      // A key/value matching no row leaves the selection untouched, so nothing fires.
+      await widget.act('selectRow', 'id', 999);
+      await drain();
+      expect(changeCount()).toBe(1);
+
+      await widget.act('selectRow', 'id', ROWS[2].id);
+      await waitFor(() => expect(changeCount()).toBe(2));
+
+      await widget.act('deselectRow');
+      await waitFor(() => expect(changeCount()).toBe(3));
+    });
+
+    test('[Table-SEL-010] selectRows, deselectRows and deselectAllRows fire the event once per effective change', async () => {
+      widget.render({ properties: { showBulkSelector: binding('{{true}}') }, events: [selectionEvent()] });
+      await waitFor(() => expect(checkboxIn(row(0))).toBeInTheDocument());
+
+      await widget.act('selectRows', 'id', [ROWS[0].id, ROWS[1].id]);
+      await waitFor(() => expect(changeCount()).toBe(1));
+
+      // Already selected, and a key matching no row: the selected set is unchanged.
+      await widget.act('selectRows', 'id', [ROWS[0].id, 999]);
+      await drain();
+      expect(changeCount()).toBe(1);
+
+      await widget.act('deselectRows', 'id', [ROWS[0].id]);
+      await waitFor(() => expect(changeCount()).toBe(2));
+
+      await widget.act('deselectAllRows');
+      await waitFor(() => expect(changeCount()).toBe(3));
+
+      // Nothing is selected, so clearing again changes nothing.
+      await widget.act('deselectAllRows');
+      await drain();
+      expect(changeCount()).toBe(3);
+    });
+
+    test('[Table-SEL-011] checkbox selection in bulk mode fires the event, including the header select-all', async () => {
+      widget.render({ properties: { showBulkSelector: binding('{{true}}') }, events: [selectionEvent()] });
+      await waitFor(() => expect(checkboxIn(row(0))).toBeInTheDocument());
+
+      rtlFireEvent.click(checkboxIn(row(0)));
+      await waitFor(() => expect(changeCount()).toBe(1));
+
+      rtlFireEvent.click(headerCheckbox());
+      await waitFor(() => expect(exposed('selectedRows')).toEqual(expect.arrayContaining(ROWS)));
+      await waitFor(() => expect(changeCount()).toBe(2));
+    });
+
+    test('[Table-SEL-012] a click that leaves the selection unchanged does not fire the event', async () => {
+      widget.render({
+        properties: { highlightSelectedRow: binding('{{true}}'), disableRowDeselection: binding('{{true}}') },
+        events: [selectionEvent()],
+      });
+      await waitFor(() => expect(table()).toBeInTheDocument());
+
+      rtlFireEvent.click(cell('email', 0));
+      await waitFor(() => expect(changeCount()).toBe(1));
+
+      rtlFireEvent.click(cell('email', 0));
+      await drain();
+      expect(row(0).className).toContain('selected');
+      expect(changeCount()).toBe(1);
+    });
+
+    test('[Table-SEL-013] the event does not fire on mount, nor when a data change resets the selection', async () => {
+      widget.render({ events: [selectionEvent()] });
+      await waitFor(() => expect(table()).toBeInTheDocument());
+      await drain();
+      expect(changeCount()).toBe(0);
+
+      rtlFireEvent.click(cell('email', 0));
+      await waitFor(() => expect(changeCount()).toBe(1));
+
+      widget.setComponentProperty(ID, 'data', `{{${JSON.stringify(ROWS.slice(1))}}}`, 'properties');
+      await waitFor(() => expect(exposed('selectedRow')).toEqual({}));
+      await drain();
+      expect(changeCount()).toBe(1);
+    });
+
+    test('[Table-SEL-014] a data change that re-applies defaultSelectedRow to a different row does not fire the event', async () => {
+      widget.render({
+        properties: { defaultSelectedRow: binding(`{{{"id":${ROWS[2].id}}}}`) },
+        events: [selectionEvent()],
+      });
+      await waitFor(() => expect(table()).toBeInTheDocument());
+
+      rtlFireEvent.click(cell('email', 1));
+      await waitFor(() => expect(exposed('selectedRow')).toEqual(ROWS[1]));
+      await drain();
+      const countBeforeDataChange = changeCount();
+
+      // Reversed rows: the default row (id 3) now sits at index 0, so the selection moves from row index 1 to 0.
+      widget.setComponentProperty(ID, 'data', `{{${JSON.stringify([...ROWS].reverse())}}}`, 'properties');
+      await waitFor(() => expect(exposed('selectedRow')).toEqual(ROWS[2]));
+      await drain();
+      expect(changeCount()).toBe(countBeforeDataChange);
+    });
+  });
 });
 
 describe('Table: expandable rows', () => {
