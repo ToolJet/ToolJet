@@ -1,4 +1,4 @@
-// shadcn/ui pack: the pure logic of the Heatmap chart. Every function takes whatever the author bound and never throws.
+// ToolJet UI 2.0: the pure logic of the Heatmap chart. Every function takes whatever the author bound and never throws.
 import { axisLabel, isPlain, isText, MAX_ROWS, num } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 
 // A heatmap past this many cells is unreadable and slow to draw.

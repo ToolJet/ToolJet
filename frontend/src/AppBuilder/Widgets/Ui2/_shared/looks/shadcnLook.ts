@@ -1,9 +1,9 @@
-// shadcn/ui pack (experiment): every pack widget's styles as CSS variables, set on the widget's root (Shell) and read
+// ToolJet UI 2.0: every pack widget's styles as CSS variables, set on the widget's root (Shell) and read
 // by its classes with the app theme as the fallback, e.g. `text-[color:var(--lk-label,var(--sc-foreground))]`. The
 // pack's utilities are !important, so inline colours would lose to them; variables do not. Accent-like styles override
 // shadcn's own tokens for the widget (`--sc-primary`, `--sc-ring`, `--sc-chart-1`), so everything drawn in them
 // (checked states, focus rings, the progress bar, the chart palette) follows at once. Kanban keeps its own module
-// (kanbanLook.js). Style keys match the configs in WidgetManager/widgets/shad*.js.
+// (kanbanLook.ts). Style keys match the configs in WidgetManager/widgets/shad*.js.
 import { isSet, px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { GROUP_LOOKS } from '@/AppBuilder/Widgets/Ui2/_shared/looks/groups';
 import { fontStack, fontWeight, textCase } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
@@ -29,7 +29,7 @@ const CHOICE: LookEntry[] = [
   ['labelColor', '--lk-label'],
   ['helpTextColor', '--lk-help'],
 ];
-// Typeface styles of the text widgets (typeLook.js); shadcn.scss classes read these variables.
+// Typeface styles of the text widgets (typeLook.ts); shadcn.scss classes read these variables.
 const TYPE: LookEntry[] = [
   ['fontFamily', '--lk-font', fontStack],
   ['fontWeight', '--lk-weight', fontWeight],

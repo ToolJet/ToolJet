@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
-// shadcn/ui pack (experiment): a repeated canvas (a List view row, a custom Kanban card) that fits its components.
+// ToolJet UI 2.0: a repeated canvas (a List view row, a custom Kanban card) that fits its components.
 // The native Listview grows its rows through the core reflow, which special-cases its own type; the pack's rows stayed
 // at rowHeight (cardHeight), so a child that grew (a long text, an opened accordion, a carousel) was cut off.
 

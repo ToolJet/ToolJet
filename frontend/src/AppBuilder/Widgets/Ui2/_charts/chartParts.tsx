@@ -7,10 +7,10 @@ import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { num, MAX_SERIES, type FormatOptions } from './chartsModel';
 
-// shadcn/ui pack charts (experiment): Recharts styled the way shadcn/ui's chart component styles it (no axis lines,
+// ToolJet UI 2.0 charts: Recharts styled the way shadcn/ui's chart component styles it (no axis lines,
 // horizontal grid only, a card tooltip, series colours from --sc-chart-1..5, which follow the app theme, or from the
 // Chart color style, or from the Series colors list). Grid, axis and legend colours come from the widget's styles
-// as variables (shadcnLook.js), else the theme's. Own lazy chunk, so Recharts loads only for apps with a chart.
+// as variables (shadcnLook.ts), else the theme's. Own lazy chunk, so Recharts loads only for apps with a chart.
 
 export const compact = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
 export const full = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
@@ -203,7 +203,7 @@ export const dateTicks = (data: unknown, key: string | undefined): DateTick | un
  *  without its category names meant nothing). */
 export const isCompactChart = (height: unknown): boolean => (Number(height) || 300) < 100;
 
-// ---- Line, Radar, Radial and Sparkline (logic in chartsModel.js) ----------------------------------------------------
+// ---- Line, Radar, Radial and Sparkline (logic in chartsModel.ts) ----------------------------------------------------
 
 // A chart that fails to draw (data no normaliser foresaw) shows the empty state instead of taking the app down; it
 // retries when the properties change.

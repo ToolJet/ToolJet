@@ -1,4 +1,4 @@
-// shadcn/ui pack: the pure logic of the Stat (Stat.tsx): its inline trend line, its progress bar and its
+// ToolJet UI 2.0: the pure logic of the Stat (Stat.tsx): its inline trend line, its progress bar and its
 // sizes. Every function takes whatever the author bound and never throws.
 import { FORMATS, formatter, num } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { sparkPoints, type SparkPoint } from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';

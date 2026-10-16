@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): the pure logic of the actions widgets (dropdown menu, button group, navigation,
+// ToolJet UI 2.0: the pure logic of the actions widgets (dropdown menu, button group, navigation,
 // carousel; the calendar's is in calendarModel). Everything here takes author data as it comes (null, wrong
 // types, huge lists, ToolJet's `{ value }` wrappers from the inspector's option lists) and never throws.
 

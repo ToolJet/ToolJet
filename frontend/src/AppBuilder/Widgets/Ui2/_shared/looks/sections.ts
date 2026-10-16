@@ -1,5 +1,5 @@
-// shadcn/ui pack: style variables and loading looks of the page sections (see shadcnLook.js and Shell's LOADING_LOOK).
-// Style keys match WidgetManager/widgets/shad*.js; ShadSections.jsx reads the variables.
+// ToolJet UI 2.0: style variables and loading looks of the page sections (see shadcnLook.ts and Shell's LOADING_LOOK).
+// Style keys match WidgetManager/widgets/shad*.js; the section widgets read the variables.
 import { px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { fontStack } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 import type { LoadingMap, LookMap } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -54,7 +54,7 @@ export const LOOKS: LookMap = {
 };
 
 // The hero draws a skeleton of its title and lines; the grid, the lists and the strip skeleton their cards, rows and
-// figures (ShadSections.jsx).
+// figures (the section widgets).
 export const LOADING: LoadingMap = {
   ShadHero: 'own',
   ShadCardGrid: 'own',

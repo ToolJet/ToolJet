@@ -1,4 +1,4 @@
-// shadcn/ui pack: the pure logic of the Combo chart. Every function takes whatever the author bound and never throws.
+// ToolJet UI 2.0: the pure logic of the Combo chart. Every function takes whatever the author bound and never throws.
 import { fieldList, MAX_SERIES } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 
 /** The series a combo chart draws: the bar fields, then the line fields not already drawn as bars, each on the left

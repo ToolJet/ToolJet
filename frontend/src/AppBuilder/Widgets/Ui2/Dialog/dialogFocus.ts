@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): keyboard focus for the Dialog. ToolJet's ModalV2 turns react-bootstrap's focus
+// ToolJet UI 2.0: keyboard focus for the Dialog. ToolJet's ModalV2 turns react-bootstrap's focus
 // enforcement off (enforceFocus, restoreFocus), so Tab walked out of an open dialog into the page behind it, and
 // closing it left focus nowhere. A strict trap would also steal focus from the pack's popovers (a select list, a
 // calendar), which render outside the dialog; this one only wraps Tab at the dialog's ends.

@@ -1,4 +1,4 @@
-// shadcn/ui pack: the pure logic of the Radial chart. Every function takes whatever the author bound and never throws.
+// ToolJet UI 2.0: the pure logic of the Radial chart. Every function takes whatever the author bound and never throws.
 import { axisLabel, isPlain, isSet, isText, num, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 
 export const MAX_RINGS = 12;

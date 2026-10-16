@@ -1,4 +1,4 @@
-// shadcn/ui pack: the pure logic of the Funnel chart. Every function takes whatever the author bound and never throws.
+// ToolJet UI 2.0: the pure logic of the Funnel chart. Every function takes whatever the author bound and never throws.
 import {
   axisLabel,
   fieldList,

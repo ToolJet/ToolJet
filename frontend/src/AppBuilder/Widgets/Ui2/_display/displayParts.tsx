@@ -6,8 +6,8 @@ import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { resolveIcon } from './iconModel';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-// shadcn/ui pack (experiment): display widgets. Configs in WidgetManager/widgets/shad*.js, style variables and
-// loading looks in looks/display.js, data logic in displayModel.js. Colours come from the theme (shadcn tokens) and
+// ToolJet UI 2.0: display widgets. Configs in WidgetManager/widgets/shad*.js, style variables and
+// loading looks in looks/display.ts, data logic in displayModel.ts. Colours come from the theme (shadcn tokens) and
 // each is overridable by a style through a CSS variable.
 
 const { Circle, CircleDashed } = Lucide;

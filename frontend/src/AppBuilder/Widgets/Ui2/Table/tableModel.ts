@@ -1,4 +1,4 @@
-// shadcn/ui pack Table (experiment): the table's data logic, kept apart from the component so it is tested on its own
+// ToolJet UI 2.0 Table: the table's data logic, kept apart from the component so it is tested on its own
 // and stays cheap per row. Conventions follow the native Table (column keys, filter conditions, sortApplied); its known
 // crash and correctness bugs are not repeated: search text is never a regex, numbers filter as numbers, export applies
 // filters, sort and edits.

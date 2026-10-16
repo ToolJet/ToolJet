@@ -7,7 +7,7 @@ import type { MutableRefObject, ReactNode } from 'react';
 import type { MenuEntry } from './actionsModel';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-// shadcn/ui pack (experiment): the actions widgets. Configs in WidgetManager/widgets/shad*.js, style variables
+// ToolJet UI 2.0: the actions widgets. Configs in WidgetManager/widgets/shad*.js, style variables
 // in looks/actions, pure logic in actionsModel and calendarModel.
 
 export const Icon = ({ name, className, size = 16 }: { name: string; className?: string; size?: number }) =>

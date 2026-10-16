@@ -1,4 +1,4 @@
-// shadcn/ui pack charts (experiment): the logic the charts share, and that of the Line and Sparkline charts.
+// ToolJet UI 2.0 charts: the logic the charts share, and that of the Line and Sparkline charts.
 // Every function takes whatever the author bound (null, strings, mixed arrays, objects with missing keys) and returns
 // clean values: numbers or null, plain rows, text labels. Nothing here throws.
 

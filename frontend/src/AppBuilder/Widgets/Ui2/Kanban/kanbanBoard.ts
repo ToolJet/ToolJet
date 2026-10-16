@@ -1,4 +1,4 @@
-// shadcn/ui pack Kanban (experiment): the board's data logic, kept apart from the drag-and-drop UI so it is tested on
+// ToolJet UI 2.0 Kanban: the board's data logic, kept apart from the drag-and-drop UI so it is tested on
 // its own. Cards are rows of data; a column is a value of the status field.
 
 /** A row of the board's data. */

@@ -8,9 +8,9 @@ import type { MutableRefObject, ReactNode } from 'react';
 import type { Exposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-// shadcn/ui pack (experiment): inputs widgets: number, password, phone, currency, OTP, time and date-time. Pure logic
+// ToolJet UI 2.0: inputs widgets: number, password, phone, currency, OTP, time and date-time. Pure logic
 // lives in inputsModel.ts, phoneModel.ts and dateModel.ts; configs in WidgetManager/widgets/shad*.js; style variables
-// in looks/inputs.js.
+// in looks/inputs.ts.
 
 // ---- Building blocks -----------------------------------------------------------------------------------------------
 

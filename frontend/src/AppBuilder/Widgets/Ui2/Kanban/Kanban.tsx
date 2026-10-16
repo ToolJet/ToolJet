@@ -43,7 +43,7 @@ type KanbanStore = {
   updateCustomResolvables: (id: string, values: Record<string, unknown>[], key: string, moduleId: string) => void;
 };
 
-// shadcn/ui pack Kanban (experiment): a data-driven board. Columns are values of a status field and cards are rows
+// ToolJet UI 2.0 Kanban: a data-driven board. Columns are values of a status field and cards are rows
 // of data shown by the fields the author maps (title, description, badge, tags, progress, meta, avatar), so an agent
 // builds it from a query alone and a card shows more or less by mapping more or fewer fields. Dragging, the add and
 // delete buttons and the actions change the board at once and publish the change (cards, the last added, moved,

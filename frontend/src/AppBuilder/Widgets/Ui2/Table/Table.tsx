@@ -19,7 +19,7 @@ import { useTableEdits } from './useTableEdits';
 import { useTableSelection } from './useTableSelection';
 import { useTableScroll } from './useTableScroll';
 
-// shadcn/ui pack Table (experiment). Native Table conventions (property, event, exposed and action names; server-side
+// ToolJet UI 2.0 Table. Native Table conventions (property, event, exposed and action names; server-side
 // pagination, search, sort and filters), the shadcn data-table look, and none of the native table's known failure
 // modes: rows have a stable identity (idField), search text is never a regex, a cell that fails renders a dash instead
 // of taking the app down, large data is virtualised, and each user action publishes its state once and then fires its

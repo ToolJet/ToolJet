@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): the display widgets' data logic (ShadDisplay.jsx), kept apart from the components so it
+// ToolJet UI 2.0: the display widgets' data logic, kept apart from the components so it
 // is tested on its own. Every function accepts junk (null, wrong types, huge numbers, mixed arrays) without throwing.
 import dayjs from 'dayjs';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/Table/tableModel';

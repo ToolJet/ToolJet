@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-// shadcn/ui pack (experiment): the loading look a widget picks with its "Loading look" property. Spinner (the
+// ToolJet UI 2.0: the loading look a widget picks with its "Loading look" property. Spinner (the
 // default) shows the circle in the widget's own box, so the layout does not move; Skeleton draws the widget's
 // shape in grey blocks. Controls (inputs, pickers, buttons) always show a spinner in place and have no choice.
 

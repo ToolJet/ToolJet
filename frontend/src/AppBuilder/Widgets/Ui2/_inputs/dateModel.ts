@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): pure logic of the time, date and date-time widgets. Every function takes junk (null,
+// ToolJet UI 2.0: pure logic of the time, date and date-time widgets. Every function takes junk (null,
 // objects, NaN, huge numbers) without throwing.
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';

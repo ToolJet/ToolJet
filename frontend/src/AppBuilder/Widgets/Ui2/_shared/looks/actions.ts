@@ -1,5 +1,5 @@
-// shadcn/ui pack (experiment): style variables and loading looks of the actions widgets (see shadcnLook.js and
-// Shell's LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js; ShadActions.jsx reads the variables.
+// ToolJet UI 2.0: style variables and loading looks of the actions widgets (see shadcnLook.ts and
+// Shell's LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js; the action widgets read the variables.
 import { px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import type { LoadingMap, LookMap } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 

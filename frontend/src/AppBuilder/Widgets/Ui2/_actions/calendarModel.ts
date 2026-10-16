@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): the pure date logic of the Calendar widget (also used by the Date picker). It takes
+// ToolJet UI 2.0: the pure date logic of the Calendar widget (also used by the Date picker). It takes
 // author data as it comes and never throws.
 import dayjs from 'dayjs';
 import { arr, isObject, text, unwrap } from './actionsModel';

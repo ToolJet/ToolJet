@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): pure logic of the Slider. Takes junk (NaN, strings, objects, 10k-item arrays, min above
+// ToolJet UI 2.0: pure logic of the Slider. Takes junk (NaN, strings, objects, 10k-item arrays, min above
 // max, a zero or negative step) without throwing, and never asks Radix for more thumbs than a slider can show.
 
 // A range slider draws one thumb per value; past this, the rest of a bound list is ignored.

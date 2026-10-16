@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): pure logic of the inputs widgets (number, password, currency and OTP); the phone widget's
+// ToolJet UI 2.0: pure logic of the inputs widgets (number, password, currency and OTP); the phone widget's
 // is in phoneModel.ts, the time and date widgets' in dateModel.ts. Every function takes junk (null, objects, NaN, huge
 // numbers) without throwing.
 

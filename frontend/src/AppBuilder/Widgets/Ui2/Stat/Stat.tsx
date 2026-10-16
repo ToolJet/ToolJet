@@ -103,7 +103,7 @@ export const ShadStat = (props: WidgetProps) => {
   // auto-height box keeps fitting the content (the card is not stretched there, or the height could only grow).
   const fixed = !(fitsContentInView(props.componentType, properties) && props.currentMode === 'view');
   // Stats side by side in a row share one height: each reports its content's natural height (the content plus the
-  // card's padding and border, never the stretched card) and takes the row's tallest as its minimum (statRow.js).
+  // card's padding and border, never the stretched card) and takes the row's tallest as its minimum (statRow.ts).
   const evenRow = !fixed && properties.card !== false;
   const cardRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);

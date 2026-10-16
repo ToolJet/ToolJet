@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): pure logic of the File upload widget. No React here: every function takes junk
+// ToolJet UI 2.0: pure logic of the File upload widget. No React here: every function takes junk
 // (null, wrong types, huge numbers) without throwing.
 
 import { asList, clampInt, isText } from './pickersModel';

@@ -1,5 +1,5 @@
-// shadcn/ui pack (experiment): style variables and loading looks of the Line, Radar, Radial and Sparkline charts
-// (see shadcnLook.js and Shell's LOADING_LOOK). Chart color overrides --sc-chart-1, from which the theme derives the
+// ToolJet UI 2.0: style variables and loading looks of the Line, Radar, Radial and Sparkline charts
+// (see shadcnLook.ts and Shell's LOADING_LOOK). Chart color overrides --sc-chart-1, from which the theme derives the
 // rest of the series palette (--sc-chart-2..5), so every series follows it.
 import type { LoadingMap, LookEntry, LookMap } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 

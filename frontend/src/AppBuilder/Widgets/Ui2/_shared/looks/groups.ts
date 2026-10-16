@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): style-variable maps and loading looks of the widget groups kept in their own modules.
+// ToolJet UI 2.0: style-variable maps and loading looks of the widget groups kept in their own modules.
 import * as actions from '@/AppBuilder/Widgets/Ui2/_shared/looks/actions';
 import * as charts from '@/AppBuilder/Widgets/Ui2/_shared/looks/charts';
 import * as conversation from '@/AppBuilder/Widgets/Ui2/_shared/looks/conversation';

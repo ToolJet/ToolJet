@@ -13,7 +13,7 @@ import './styles/shadcn.scss';
 // 'inline-top' after a multi-line control on its first line, 'wide' at the end of a control that spans the widget.
 // Text and media become skeletons in their own shape ('heading', 'text', 'line', 'pill', 'avatar', 'bar',
 // 'columns'); the rest a skeleton block at the widget's size ('block', the default). 'own': the widget draws its
-// loading state itself (or has none to draw). Groups in their own modules add theirs in looks/<group>.js (LOADING).
+// loading state itself (or has none to draw). Groups in their own modules add theirs in looks/<group>.ts (LOADING).
 const LOADING_LOOK: LoadingMap = {
   ShadButton: 'own',
   ShadStat: 'own',
@@ -108,7 +108,7 @@ export const loadingSkeleton = (
 };
 
 /** The widget's root: `.tj-shadcn` scopes the pack's Tailwind and maps shadcn's tokens to the app theme; the widget's
- *  set styles arrive as CSS variables its classes read (shadcnLook.js). While loading it shows the widget's loading
+ *  set styles arrive as CSS variables its classes read (shadcnLook.ts). While loading it shows the widget's loading
  *  look (LOADING_LOOK). */
 /** What Shell reads; widgets pass their own props (`<Shell {...props}>`), with any of these replaced. */
 export interface ShellProps {

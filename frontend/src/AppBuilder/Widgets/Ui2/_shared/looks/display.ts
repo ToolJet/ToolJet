@@ -1,5 +1,5 @@
-// shadcn/ui pack (experiment): style variables and loading looks of the display widgets (see shadcnLook.js and
-// Shell's LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js; ShadDisplay.jsx reads the variables.
+// ToolJet UI 2.0: style variables and loading looks of the display widgets (see shadcnLook.ts and
+// Shell's LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js; the display widgets read the variables.
 import { px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import type { LoadingMap, LookMap } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -70,7 +70,7 @@ export const LOOKS: LookMap = {
   ],
 };
 
-// Loading looks: media and lists become skeletons in their own shape ('own': ShadDisplay.jsx draws it); the pager
+// Loading looks: media and lists become skeletons in their own shape ('own': the widget draws it); the pager
 // stays in place, disabled, with a spinner; a spinner is its own loading state.
 export const LOADING: LoadingMap = {
   ShadImage: 'block',

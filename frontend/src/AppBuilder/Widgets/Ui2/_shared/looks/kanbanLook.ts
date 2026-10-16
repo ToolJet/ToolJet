@@ -1,7 +1,7 @@
 import tinycolor from 'tinycolor2';
 import type { CSSProperties } from 'react';
 import type { CssVars, Resolved, StyleWithVars } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-// shadcn/ui pack Kanban (experiment): its styles as CSS. Each style falls back to the app theme when unset.
+// ToolJet UI 2.0 Kanban: its styles as CSS. Each style falls back to the app theme when unset.
 // Background, border, radius and shadow go inline on the column or card. Colours of text, the count badge and the
 // accent go in CSS variables the board's utility classes read (the pack's utilities are !important, so inline colours
 // would lose to them); the accent overrides the pack's primary colour for the board, so the selection outline,

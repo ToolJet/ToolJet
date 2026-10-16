@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): pure logic of the phone widget. Every function takes junk (null, objects, NaN, huge
+// ToolJet UI 2.0: pure logic of the phone widget. Every function takes junk (null, objects, NaN, huge
 // numbers) without throwing.
 import {
   formatPhoneNumberIntl,

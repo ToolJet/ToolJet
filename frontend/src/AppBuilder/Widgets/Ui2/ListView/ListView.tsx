@@ -58,7 +58,7 @@ interface RowProps {
   darkMode?: boolean;
 }
 
-// shadcn/ui pack List view (experiment). Row-scoped like the native Listview: one canvas (the components parented to
+// ToolJet UI 2.0 List view. Row-scoped like the native Listview: one canvas (the components parented to
 // the list) repeated per item, each row reading its item as {{listItem}}, and the rows' component values exposed as
 // children by the store (deriveListviewExposedData, generic over the row-scoped types); data is the list's records,
 // which the store leaves alone for this widget. Rows have a fixed height

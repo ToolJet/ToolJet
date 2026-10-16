@@ -1,4 +1,4 @@
-// shadcn/ui pack Tabs (experiment): the tab list and the look, kept apart from the component so they are tested on
+// ToolJet UI 2.0 Tabs: the tab list and the look, kept apart from the component so they are tested on
 // their own.
 
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';

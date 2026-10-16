@@ -9,8 +9,7 @@ import type { Bound, Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_sha
 
 export { stringify };
 
-// Shared by the component packs (experiment): the ToolJet side of a pack widget, independent of the UI library, so a
-// pack's chunk does not pull in another pack's library.
+// The ToolJet side of a UI 2.0 widget (exposed values, actions, auto height, bound lists), with no UI library in it.
 
 /** A bound list as it is (its items are bound values, untyped like Resolved); anything else (unset, an object, a
  *  string) as an empty list. */

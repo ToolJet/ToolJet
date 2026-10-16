@@ -1,4 +1,4 @@
-// shadcn/ui pack: whether a widget's box was sized for it. A grid-placed widget, or a fixed-width child of a flex
+// ToolJet UI 2.0: whether a widget's box was sized for it. A grid-placed widget, or a fixed-width child of a flex
 // container, sits in a box the author (or the model) sized on purpose, so a content-sized control such as a button
 // fills it, the way ToolJet's own Button does: a Refresh button at the end of a row then ends where the row ends. A
 // fill child of a flex container gets a share of the line instead, so there the control keeps its own width.

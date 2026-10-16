@@ -1,4 +1,4 @@
-// shadcn/ui pack List view (experiment): paging and the look, kept apart from the component so they are tested on
+// ToolJet UI 2.0 List view: paging and the look, kept apart from the component so they are tested on
 // their own.
 import type { CSSProperties } from 'react';
 import type { CssVars, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';

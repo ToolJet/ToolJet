@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): pure colour logic of the Color picker widget. No React here: every function takes
+// ToolJet UI 2.0: pure colour logic of the Color picker widget. No React here: every function takes
 // junk (null, wrong types, huge numbers) without throwing.
 
 import { asList, isText } from './pickersModel';

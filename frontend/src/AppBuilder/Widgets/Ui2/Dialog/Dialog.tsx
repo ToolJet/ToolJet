@@ -8,7 +8,7 @@ import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/typ
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadDialog.scss';
 
-// shadcn/ui pack (experiment): the Dialog is ToolJet's ModalV2 drawn in the pack's look. ModalV2 reads the skin from
+// ToolJet UI 2.0: the Dialog is ToolJet's ModalV2 drawn in the pack's look. ModalV2 reads the skin from
 // the component type and adds the classes styled in shadDialog.scss; it keeps its own control state, open/close
 // actions and canvases.
 
@@ -58,7 +58,7 @@ export const sanitizeDialog = (values: unknown, section: DialogSection): Resolve
   return out;
 };
 
-/** While the dialog is open in an app (not the editor), Tab stays inside it (dialogFocus.js), and on close focus goes
+/** While the dialog is open in an app (not the editor), Tab stays inside it (dialogFocus.ts), and on close focus goes
  *  back to what opened it (a row's button, a trigger), as a dialog should for keyboard and screen reader users. */
 /** What the dialog reads from the app store: whether it is open. */
 type DialogStore = {

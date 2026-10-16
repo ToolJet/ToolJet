@@ -4,7 +4,7 @@ import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import type { FocusEvent } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-// shadcn/ui pack (experiment): what the pack widgets share to match the native widgets' events and actions (the
+// ToolJet UI 2.0: what the pack widgets share to match the native widgets' events and actions (the
 // parity table is in Widgets/Shadcn/EVENT_PARITY.md).
 
 /** Properties an action can change at run time (setText, setImageURL, setMinDate): the action's value holds until the

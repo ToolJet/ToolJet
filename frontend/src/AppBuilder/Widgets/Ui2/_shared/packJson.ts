@@ -1,4 +1,4 @@
-// Shared by the component packs (experiment), with no React or store imports so pure models can use it.
+// JSON helpers for the UI 2.0 widgets, with no React or store imports so pure models can use it.
 
 /** JSON.stringify that never throws: a value bound to a property can be circular (a JS query's result) or hold a
  *  BigInt. A repeated object becomes '[Circular]' and a BigInt its digits; undefined stays undefined, as in JSON. */

@@ -1,5 +1,5 @@
-// shadcn/ui pack (experiment): pure logic of the pickers widgets (Combobox, Multiselect, Tags input, Rating; the
-// Color picker's is in colorModel.js, File upload's in fileModel.js). No React here: every function takes junk (null,
+// ToolJet UI 2.0: pure logic of the pickers widgets (Combobox, Multiselect, Tags input, Rating; the
+// Color picker's is in colorModel.ts, File upload's in fileModel.ts). No React here: every function takes junk (null,
 // wrong types, huge numbers) without throwing.
 
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';

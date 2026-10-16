@@ -1,4 +1,4 @@
-// shadcn/ui pack: the pure logic of the Scatter chart. Every function takes whatever the author bound and never throws.
+// ToolJet UI 2.0: the pure logic of the Scatter chart. Every function takes whatever the author bound and never throws.
 import { axisLabel, isPlain, isSet, MAX_SERIES, num, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 
 /** A scatter's points, one group per groupField value (one group without it) in order of first appearance: x and y

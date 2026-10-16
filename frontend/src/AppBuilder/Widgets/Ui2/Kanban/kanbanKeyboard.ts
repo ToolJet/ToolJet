@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): moving a Kanban card with the keyboard (dnd-kit's KeyboardSensor). Its default moves
+// ToolJet UI 2.0: moving a Kanban card with the keyboard (dnd-kit's KeyboardSensor). Its default moves
 // the card 25px per arrow press, so reaching the next column took about a dozen presses; here Left and Right jump to
 // the previous or next column, Up and Down move past one card.
 

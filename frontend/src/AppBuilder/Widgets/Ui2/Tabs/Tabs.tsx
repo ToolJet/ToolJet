@@ -41,7 +41,7 @@ interface TabPanelProps {
   background: string;
 }
 
-// shadcn/ui pack Tabs (experiment). Same contract as the native Tabs (tabItems or dynamic tabs, defaultTab,
+// ToolJet UI 2.0 Tabs. Same contract as the native Tabs (tabItems or dynamic tabs, defaultTab,
 // currentTab, setTab and the per-tab canvases `<id>-<tabId>`), so the editor, copy and paste, dynamic height and the
 // MCP's tab slots work as for Tabs. The tab strip is 50px tall and a panel has TAB_CANVAS_PADDING around its canvas,
 // as dynamicHeightReflow expects; the wizard footer adds STEP_NAV_HEIGHT.

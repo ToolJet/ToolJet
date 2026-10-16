@@ -10,7 +10,7 @@ import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
-// shadcn/ui pack (experiment): the pickers widgets. Combobox and Multiselect are shadcn's Popover + Command (cmdk)
+// ToolJet UI 2.0: the pickers widgets. Combobox and Multiselect are shadcn's Popover + Command (cmdk)
 // recipe; Tags input, Color picker and Rating follow shadcn's field look; File upload is react-dropzone in shadcn
 // styling. Pure logic lives in pickersModel, colorModel and fileModel, style variables in looks/pickers.
 

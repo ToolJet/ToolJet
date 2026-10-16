@@ -1,4 +1,4 @@
-// shadcn/ui pack (experiment): icon lookup for the display widgets (moved out of displayModel.js), kept apart from
+// ToolJet UI 2.0: icon lookup for the display widgets (kept out of displayModel.ts), kept apart from
 // the components so it is tested on its own. Every function accepts junk without throwing.
 import type { LucideIcon } from 'lucide-react';
 import { isObject, isText } from './displayModel';
