@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@ant-design/plots": "2.6.8",
     "@apidevtools/json-schema-ref-parser": "^11.7.3",
     "@base-ui/react": "^1.3.0",
     "@codemirror/autocomplete": "^6.12.0",
@@ -61,7 +60,6 @@
     "@y-presence/react": "^2.0.1",
     "acorn": "^8.11.3",
     "acorn-walk": "^8.3.4",
-    "antd": "^5.21.6",
     "axios": "^1.3.3",
     "bootstrap": "^5.2.3",
     "buffer": "^6.0.3",
