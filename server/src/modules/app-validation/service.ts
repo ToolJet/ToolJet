@@ -9,6 +9,7 @@ import { AppValidationException } from './core/exception';
 import { getMode, resolveSource } from './core/mode';
 import { rulesFor } from './rules';
 import { runRules } from './core/runner';
+import { recordValidation, recordWriteSource } from './core/telemetry';
 import { Issue, Rule, RuleContext, ValidationArea, ValidationMode, ValidationResult, WriteSource } from './types';
 import { IndexedComponent, VersionIndex } from './version-index';
 
@@ -37,6 +38,7 @@ export class AppValidationService {
   async check<T>(area: ValidationArea, inputs: T | T[], options: CheckOptions): Promise<ValidationResult> {
     const source = options.source ?? resolveSource();
     const mode = this.modeFor(source);
+    recordWriteSource(source);
     const list = Array.isArray(inputs) ? inputs : [inputs];
     const rules = options.rules ?? this.rulesFor(area);
     if (mode === 'off' || !list.length || !rules.length) return { errors: [], warnings: [] };
@@ -48,7 +50,20 @@ export class AppValidationService {
       )
     );
 
+    recordValidation(area, source, mode, result);
+
     if (result.errors.length && mode === 'enforce') {
+      this.logger.warn(
+        {
+          appValidation: {
+            area,
+            source,
+            appVersionId: options.appVersionId,
+            rejected: result.errors.map(({ code, path }) => ({ code, path })),
+          },
+        },
+        `App validation (enforce mode): rejected a write with ${result.errors.length} problem(s)`
+      );
       throw new AppValidationException(result.errors, result.warnings, area);
     }
 
