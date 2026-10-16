@@ -2,26 +2,9 @@ import {
   computeFlexResizeEndPatch,
   computeFlexResizeStyles,
   computeResizeStopPosition,
-  clampResizeTranslate,
   clampResizeToCanvas,
+  computeResizeEndRect,
 } from '../gridResizeUtils';
-
-describe('resize live-drag translate clamping', () => {
-  it('clamps a translate that overshoots the left/top canvas edge back to the boundary', () => {
-    // Break this catches: writing an unclamped resize-end transform straight to the DOM lets a
-    // widget already sitting at left:0 escape past the left edge again, because the store value
-    // (0 -> 0) doesn't change and so never triggers a corrective re-render.
-    expect(clampResizeTranslate({ x: -42, y: -8, maxX: 500, maxY: 300 })).toEqual({ x: 0, y: 0 });
-  });
-
-  it('clamps a translate that overshoots the right/bottom canvas edge back to the boundary', () => {
-    expect(clampResizeTranslate({ x: 600, y: 400, maxX: 500, maxY: 300 })).toEqual({ x: 500, y: 300 });
-  });
-
-  it('preserves an in-bounds translate unchanged', () => {
-    expect(clampResizeTranslate({ x: 120, y: 40, maxX: 500, maxY: 300 })).toEqual({ x: 120, y: 40 });
-  });
-});
 
 describe('resize clamping to the canvas borders', () => {
   const canvas = { containerWidth: 600, containerHeight: 400 };
@@ -84,30 +67,12 @@ describe('resize clamping to the canvas borders', () => {
 });
 
 describe('resize clamping scope', () => {
-  // Break this catches: stretching the bottom handle past the visible bottom of the main canvas clamps y
-  // against the visible canvas height minus the grown widget height, which goes negative and shifts the
-  // widget upward instead of letting it extend (the main canvas grows downward and has no bottom border).
-  it('does not bound y when no bottom limit is given, so a main-canvas widget can extend downward', () => {
-    expect(clampResizeTranslate({ x: 50, y: 900, maxX: 500 })).toEqual({ x: 50, y: 900 });
-  });
-
-  it('still pins a negative y to the top border when no bottom limit is given', () => {
-    expect(clampResizeTranslate({ x: 50, y: -20, maxX: 500 })).toEqual({ x: 50, y: 0 });
-  });
-
   // Break these catch: applying the border clamps to widgets inside a Container/Form snaps and crunches
   // them on a minor resize, because those canvases are scrollable/padded and their client box is not the
   // widget's true bound. Nested widgets must keep their pre-fix behaviour.
   it('leaves the resized box of a nested widget untouched', () => {
     const box = { x: -60, y: -30, width: 900, height: 700 };
     expect(clampResizeToCanvas({ ...box, containerWidth: 600, containerHeight: 400, isNested: true })).toEqual(box);
-  });
-
-  it('leaves the translate of a nested widget untouched', () => {
-    expect(clampResizeTranslate({ x: -42, y: 800, maxX: 500, maxY: 300, isNested: true })).toEqual({
-      x: -42,
-      y: 800,
-    });
   });
 });
 
@@ -134,6 +99,46 @@ describe('resize clamping for top-aligned label widgets', () => {
       width: 300,
       height: 490,
     });
+  });
+});
+
+describe('resize-end rectangle', () => {
+  const grid = { gridWidth: 10, gridHeight: 10 };
+
+  // Break this catches: clamping a width that was already rounded to the grid in one place and the raw
+  // event width in another lets the DOM preview and the saved layout disagree for the same resize (the
+  // left-edge case previewed 150px but saved 160px). One clamp on the raw rectangle, snapped once, keeps them equal.
+  it('clamps the raw left-edge overshoot and snaps the width once', () => {
+    expect(computeResizeEndRect({ x: -12, y: 50, width: 165, height: 100, containerWidth: 430, ...grid })).toEqual({
+      x: 0,
+      y: 50,
+      width: 150,
+      height: 100,
+    });
+  });
+
+  it('caps the width at the right border before snapping', () => {
+    expect(computeResizeEndRect({ x: 400, y: 50, width: 94, height: 100, containerWidth: 430, ...grid })).toEqual({
+      x: 400,
+      y: 50,
+      width: 30,
+      height: 100,
+    });
+  });
+
+  it('caps the width at the 43-column grid', () => {
+    expect(computeResizeEndRect({ x: 400, y: 0, width: 60, height: 100, containerWidth: 1000, ...grid })).toEqual({
+      x: 400,
+      y: 0,
+      width: 30,
+      height: 100,
+    });
+  });
+
+  it('does not clamp a nested widget, only snaps its width', () => {
+    expect(
+      computeResizeEndRect({ x: -12, y: -30, width: 165, height: 100, containerWidth: 430, isNested: true, ...grid })
+    ).toEqual({ x: -12, y: -30, width: 170, height: 100 });
   });
 });
 
