@@ -1,8 +1,15 @@
 import { QueryError, SupabaseClient } from '@supabase/supabase-js';
 
+export type ConnectionType = 'secret_key' | 'publishable_key' | 'connection_string';
+
 export type SourceOptions = {
-  project_url: string;
-  service_role_secret: string;
+  // Missing value (data sources created before connection modes existed) is treated as 'secret_key'
+  connection_type?: ConnectionType;
+  project_url?: string;
+  service_role_secret?: string;
+  publishable_key?: string;
+  connection_string?: string;
+  ca_cert?: string;
 };
 export type QueryOptions = {
   operation: string;
@@ -27,6 +34,8 @@ export type QueryOptions = {
   get_limit: number;
   create_body: string;
   update_column_fields: object;
+  query: string;
+  query_params: string[][];
 };
 
 export type Column = {
