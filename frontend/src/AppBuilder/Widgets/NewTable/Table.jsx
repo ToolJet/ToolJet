@@ -61,7 +61,7 @@ const Table = memo(
       const card = parent.properties?.cardStyle;
       const background = String(parent.styles?.backgroundColor ?? '').trim();
       if (background !== '' && background !== 'transparent') return background;
-      return card === 'shadcnCard' || card === 'antCard' ? 'card' : '';
+      return card === 'shadcnCard' ? 'card' : '';
     });
     const insideSurface = surface !== '';
     const tableBodyRef = useRef(null);

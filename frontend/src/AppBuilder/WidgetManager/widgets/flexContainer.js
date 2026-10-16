@@ -12,7 +12,7 @@ export const flexContainerConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
-    // Component packs (experiment): draw this container as an Ant Design or shadcn/ui card with a header above the flex body.
+    // ToolJet UI 2.0: draw this container as a card with a header above the flex body.
     cardStyle: {
       type: 'switch',
       displayName: 'Surface',
@@ -20,7 +20,6 @@ export const flexContainerConfig = {
       fullWidth: true,
       options: [
         { displayName: 'Plain', value: 'none' },
-        { displayName: 'Ant card', value: 'antCard' },
         { displayName: 'Card', value: 'shadcnCard' },
       ],
       validation: { schema: { type: 'string' }, defaultValue: 'none' },

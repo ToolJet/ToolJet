@@ -478,11 +478,6 @@ export const createEventsSlice = (set, get) => ({
           'onStepChange',
           'onTagClick',
           'onTagRemoved',
-          // The Ant Design pack's.
-          'onActionClicked',
-          'onButtonClick',
-          'onEntryClicked',
-          'onItemClicked',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);

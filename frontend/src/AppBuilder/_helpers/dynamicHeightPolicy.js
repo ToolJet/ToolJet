@@ -1,8 +1,8 @@
 // Which widgets size to their content in the viewer. One rule, read by the canvas wrapper (which slot height to use),
 // the FlexContainer (whether it grows) and the component packs (whether they measure themselves), so the three agree.
 
-const CARD_SURFACES = ['antCard', 'shadcnCard'];
-const isPackWidget = (componentType) => /^(Shad|Ant)[A-Z]/.test(componentType ?? '');
+const CARD_SURFACES = ['shadcnCard'];
+const isPackWidget = (componentType) => /^Shad[A-Z]/.test(componentType ?? '');
 
 /**
  * - A native widget follows its Dynamic height property.

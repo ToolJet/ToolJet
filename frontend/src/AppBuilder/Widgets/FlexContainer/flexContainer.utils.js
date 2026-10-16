@@ -163,13 +163,11 @@ export const computeFlexChildFlexStyle = ({
 /** Width a child takes on a wrapping line, as the browser packs it: a fill child its minimum, a fixed child its width. */
 export const flexChildLineWidth = ({ fillWidth, minWidthPx = 0, width }) => (fillWidth ? minWidthPx || 0 : width);
 
-/** Height of the card header a FlexContainer draws above its body (component packs): an Ant card's 56px bar with
- *  title and extra, or a shadcn card's title with an optional description beneath it. */
-export const FLEX_CARD_HEADER_PX = 56;
+/** Height of the card header a FlexContainer draws above its body (ToolJet UI 2.0): the card's title with an
+ *  optional description beneath it. */
 export const SHADCN_CARD_HEADER_PX = { title: 48, withDescription: 70 };
 export const flexCardHeaderPx = (properties = {}) => {
   const { cardStyle, cardTitle, cardExtra } = properties;
-  if (cardStyle === 'antCard') return cardTitle || cardExtra ? FLEX_CARD_HEADER_PX : 0;
   if (cardStyle === 'shadcnCard') {
     if (!cardTitle && !cardExtra) return 0;
     return cardExtra ? SHADCN_CARD_HEADER_PX.withDescription : SHADCN_CARD_HEADER_PX.title;

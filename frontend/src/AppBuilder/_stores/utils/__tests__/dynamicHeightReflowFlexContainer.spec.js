@@ -73,16 +73,16 @@ describe('FlexContainer dynamic height', () => {
     expect(height).toBe(50 + 8 + 50 + chrome(12));
   });
 
-  it('counts the Ant card header', () => {
+  it('counts the card header', () => {
     const plain = resolve({
       properties: { direction: 'column', gap: 8, padding: 16 },
       children: cards(2, { height: 40 }),
     });
     const titled = resolve({
-      properties: { direction: 'column', gap: 8, padding: 16, cardStyle: 'antCard', cardTitle: 'Fleet' },
+      properties: { direction: 'column', gap: 8, padding: 16, cardStyle: 'shadcnCard', cardTitle: 'Fleet' },
       children: cards(2, { height: 40 }),
     });
-    expect(titled - plain).toBe(56);
+    expect(titled - plain).toBe(48);
   });
 
   it('fits a card to its content, below its authored height too', () => {

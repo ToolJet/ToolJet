@@ -83,7 +83,6 @@ import {
   buttonGroupV2Config,
   flexContainerConfig,
 } from '../widgets';
-import { antDesignConfigs } from '../widgets/antDesign';
 import { shadcnConfigs } from '../widgets/shadcn';
 
 export const widgets = [
@@ -198,7 +197,6 @@ export const widgets = [
   moduleContainerConfig,
   moduleViewerConfig,
 
-  // Ant Design pack (experiment): listed in the components panel's own Ant Design tab
-  ...antDesignConfigs,
+  // ToolJet UI 2.0 widgets, listed in the components panel under their own library
   ...shadcnConfigs,
 ];

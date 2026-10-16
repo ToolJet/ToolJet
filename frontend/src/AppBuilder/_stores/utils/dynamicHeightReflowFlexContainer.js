@@ -118,12 +118,12 @@ export const resolveFlexContainerHeight = ({
     // The same holds for a FlexContainer drawn as a card or a row (a row of cards kept its drawn 430px).
     const childType = childDefinition?.component?.component ?? '';
     const fitsContent =
-      /^(Shad|Ant)[A-Z]/.test(childType) ||
+      /^Shad[A-Z]/.test(childType) ||
       // A shadcn-look Table is as tall as its rows (Table.jsx drops its floor), so its drawn height is no floor either:
       // a churn card kept 140px under its table.
       (childType === 'Table' && childResolved?.styles?.tableLook === 'shadcn') ||
       (childType === 'FlexContainer' &&
-        (['antCard', 'shadcnCard'].includes(childResolved?.properties?.cardStyle) ||
+        (childResolved?.properties?.cardStyle === 'shadcnCard' ||
           childResolved?.properties?.direction === 'row'));
     if (typeof calculateMoveableBoxHeightWithId === 'function' && !fitsContent) {
       const childStylesDefinition = childDefinition?.component?.definition?.styles;
@@ -210,7 +210,7 @@ export const resolveFlexContainerHeight = ({
   // whose content is shorter than drawn leaves no empty band under it.
   if (
     flexCardHeaderPx(properties) ||
-    ['antCard', 'shadcnCard'].includes(properties.cardStyle) ||
+    properties.cardStyle === 'shadcnCard' ||
     properties.direction === 'row'
   ) {
     return heightWithChrome;

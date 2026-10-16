@@ -10,7 +10,6 @@ import { CustomComponentsTab } from './CustomComponentsTab';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
-import { ANT_DESIGN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/antDesign';
 import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 import { UI1, UI2, resolveComponentLibrary } from './componentLibrary';
 
@@ -142,9 +141,8 @@ const COMPONENT_LIBRARIES = [
     components: [...SHADCN_COMPONENTS.filter((name) => name !== 'ShadTable'), SHADCN_TABLE, SHADCN_GOOGLE_MAP],
   },
 ];
-// Pack widgets never appear in the ToolJet list. The Ant Design pack is parked: still registered, so apps that use it
-// render, but listed in no library.
-const PACK_COMPONENTS = new Set([...SHADCN_COMPONENTS, ...ANT_DESIGN_COMPONENTS]);
+// UI 2.0 widgets never appear in the ToolJet list.
+const PACK_COMPONENTS = new Set(SHADCN_COMPONENTS);
 const libraryComponentNames = (library) =>
   library.components ? new Set(['FlexContainer', ...library.components]) : null;
 import { Button } from '@/components/ui/Button/Button';

@@ -93,9 +93,9 @@ describe('line packing width', () => {
 });
 
 describe('card header height', () => {
-  it('reserves the Ant header only when it has text', () => {
-    expect(flexCardHeaderPx({ cardStyle: 'antCard', cardTitle: 'Fleet' })).toBe(56);
-    expect(flexCardHeaderPx({ cardStyle: 'antCard' })).toBe(0);
+  it('reserves the card header only when it has text', () => {
+    expect(flexCardHeaderPx({ cardStyle: 'shadcnCard', cardTitle: 'Fleet' })).toBe(48);
+    expect(flexCardHeaderPx({ cardStyle: 'shadcnCard' })).toBe(0);
   });
 
   it('reserves a shadcn header for a title, taller with a description', () => {

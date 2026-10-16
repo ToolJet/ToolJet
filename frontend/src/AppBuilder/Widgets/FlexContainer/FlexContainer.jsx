@@ -52,11 +52,10 @@ export const FlexContainer = ({
     cardTitle = '',
     cardExtra = '',
   } = properties;
-  // Component packs (experiment): an Ant Design or shadcn/ui card, with its header above the flex body. The body
+  // ToolJet UI 2.0: a card, with its header above the flex body. The body
   // stays the same flex canvas, so nesting, child order and dynamic height are unchanged.
-  const isAntCard = cardStyle === 'antCard';
   const isShadcnCard = cardStyle === 'shadcnCard';
-  const isCard = isAntCard || isShadcnCard;
+  const isCard = isShadcnCard;
   const CARD_HEADER_PX = flexCardHeaderPx(properties);
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
@@ -66,7 +65,7 @@ export const FlexContainer = ({
   const isRow = effectiveDirection === 'row';
   // A card (component packs) always fits its content in the viewer: it never scrolls inside or leaves a band. A row
   // is never a scroll area either: it grows to its tallest child (a fixed-height column may still scroll).
-  const isCardSurface = ['antCard', 'shadcnCard'].includes(cardStyle);
+  const isCardSurface = cardStyle === 'shadcnCard';
   const isDynamicHeightEnabled =
     fitsContentInView('FlexContainer', { ...properties, direction: effectiveDirection }) && currentMode === 'view';
 
@@ -130,7 +129,7 @@ export const FlexContainer = ({
     display: isVisible ? 'flex' : 'none',
     flexDirection: isCard ? 'column' : effectiveDirection,
     backgroundColor: isCard ? 'var(--cc-surface1-surface)' : backgroundColor,
-    borderRadius: isAntCard ? 8 : isShadcnCard ? 14 : borderRadius ? parseFloat(borderRadius) : 0,
+    borderRadius: isShadcnCard ? 14 : borderRadius ? parseFloat(borderRadius) : 0,
     border: isCard ? '1px solid var(--cc-weak-border)' : `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     boxShadow:
       isShadcnCard && (!boxShadow || /^0px 0px 0px 0px/.test(boxShadow)) ? '0 1px 2px 0 rgb(0 0 0 / 0.05)' : boxShadow,
@@ -201,35 +200,7 @@ export const FlexContainer = ({
       ) : null}
     </div>
   ) : null;
-  const cardHeader =
-    isShadcnCard && CARD_HEADER_PX ? (
-      shadcnHeader
-    ) : CARD_HEADER_PX ? (
-      <div
-        style={{
-          minHeight: CARD_HEADER_PX,
-          padding: '0 24px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          borderBottom: '1px solid var(--cc-weak-border)',
-          fontWeight: 600,
-          fontSize: 16,
-          color: 'var(--cc-primary-text)',
-          flex: '0 0 auto',
-        }}
-      >
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {String(cardTitle ?? '')}
-        </span>
-        {cardExtra ? (
-          <span style={{ fontWeight: 400, fontSize: 14, color: 'var(--cc-placeholder-text)' }}>
-            {String(cardExtra)}
-          </span>
-        ) : null}
-      </div>
-    ) : null;
+  const cardHeader = isShadcnCard && CARD_HEADER_PX ? shadcnHeader : null;
 
   return (
     <div
