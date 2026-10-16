@@ -71,6 +71,8 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Component } from '@entities/component.entity';
 import { Page } from '@entities/page.entity';
 import { FolderApp } from '@entities/folder_app.entity';
+import { ATTR } from '@otel/semconv';
+import { setRequestSpanAttributes } from '@otel/request-span';
 
 // App type → the UserPermissions bucket holding its folder's resolved access.
 // Add an entry here (not another ternary arm) when a new folder-owning app type is introduced.
@@ -149,6 +151,8 @@ export class AppsService implements IAppsService {
       app.name = name;
       app.icon = icon ?? null;
       app.isPublic = false;
+
+      setRequestSpanAttributes({ [ATTR.APP_ID]: app.id, [ATTR.ORGANIZATION_ID]: user.organizationId });
 
       //APP_CREATE audit.
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
