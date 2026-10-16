@@ -11,7 +11,12 @@ import {
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
-import { hasPerRowHeight, heightHeldInView, rowChromeOf, rowFloorOf } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import {
+  heightHeldInView,
+  isUi2PerRowType,
+  UI2_ROW_CHROME,
+  ui2RowFloor,
+} from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
 const TABS_TAB_BAR_HEIGHT = 50;
@@ -316,13 +321,14 @@ export const resolveWidgetVisibility = ({
 //   - Form: either measured from the last fieldset (jsonSchema mode) or sum
 //     of header/footer + 20px gutter.
 //   - Tabs: flat 40px for the tab bar.
-//   - A row of a per-row widget (Listview, UI 2.0 List view and Kanban card):
-//     the row's own chrome (rowChromeOf).
+//   - Listview row context: subtract 40 to normalize against the widget-level
+//     allowance added elsewhere.
+//   - A UI 2.0 List view row or Kanban card: UI2_ROW_CHROME.
 const getExtraContainerHeight = ({
   componentId,
   componentType,
   contextIndices,
-  isRowContext = false,
+  isUi2RowContext = false,
   element,
   currentMax,
   getResolvedComponent,
@@ -399,14 +405,16 @@ const getExtraContainerHeight = ({
     // `calc(100% + 1px)` extension. Without this the canvas content box lands
     // exactly `childMax` minus chrome and the last widget clips/scrolls.
     extraHeight = BOX_PADDING * 2 + 2;
-  } else if (hasPerRowHeight(componentType) && isRowContext) {
+  } else if (componentType === 'Listview' && normalizeLayoutContext(contextIndices)) {
     // Listview row context: previously `-= 40` to cancel the historical +50
     // buffer (net +10 chrome per row). Buffer is gone, so set the row's
     // chrome directly: +15 covers each row's small internal padding plus
     // a sub-pixel/safety margin against children that report `scrollHeight`
     // a few px past their `offsetHeight` (e.g. label-bumped TextArea).
-    // A UI 2.0 row or card keeps 8px under its lowest component.
-    extraHeight = rowChromeOf(componentType);
+    extraHeight = 15;
+  } else if (isUi2RowContext) {
+    // A UI 2.0 List view row or Kanban card keeps a little space under its lowest component.
+    extraHeight = UI2_ROW_CHROME;
   }
 
   return { extraHeight, currentMax: nextCurrentMax, skipContentHeightCalculation };
@@ -508,16 +516,20 @@ export const resolveContainerHeight = ({
   const context = normalizeLayoutContext(contextIndices);
   const scopedWrapperElement = document.querySelector(getDynamicElementSelector(componentId, context));
   const isScopedContextRenderable = !!scopedWrapperElement;
-  // A per-row widget asked at a context it is not itself drawn at is being
-  // asked for one of its rows (or cards).
-  const isRowContext = hasPerRowHeight(componentType) && !!context && !isScopedContextRenderable;
+  // A UI 2.0 List view or Kanban asked at a context it is not itself drawn at
+  // is being asked for one of its rows (or cards).
+  const isUi2RowContext = isUi2PerRowType(componentType) && !!context && !isScopedContextRenderable;
 
   // A Listview inside a context whose DOM isn't available (e.g., inactive tab)
-  // falls back to the configured row height. The UI 2.0 lists floor a row at
-  // their row (card) height the same way.
-  if (isRowContext) {
+  // falls back to the configured row height.
+  if (componentType === 'Listview' && context && !isScopedContextRenderable) {
     const component = getResolvedComponent(componentId, context);
-    containerHeight = rowFloorOf(componentType, component?.properties) ?? containerHeight;
+    containerHeight = component?.properties?.rowHeight ?? containerHeight;
+  }
+  // A UI 2.0 row or card is floored at its row (card) height the same way.
+  if (isUi2RowContext) {
+    const component = getResolvedComponent(componentId, context);
+    containerHeight = ui2RowFloor(componentType, component?.properties);
   }
 
   // Explicit dynamic-height opt-out: the container stays at its authored
@@ -695,7 +707,7 @@ export const resolveContainerHeight = ({
 
   // A UI 2.0 Kanban card leaves out what is hidden on it, slot and all: whether a card shows a component is decided
   // per card (from cardData), while collapseWhenHidden is one setting for every card.
-  const isShrinkingCard = componentType === 'ShadKanban' && isRowContext;
+  const isShrinkingCard = componentType === 'ShadKanban' && isUi2RowContext;
   const anyChildHidden = Object.values(componentLayouts).some((entry) => !entry.visible);
 
   // Floor each child's flow height at `calculateMoveableBoxHeightWithId` —
@@ -738,7 +750,7 @@ export const resolveContainerHeight = ({
     componentId: modifiedComponentId,
     componentType,
     contextIndices: isTabsType(componentType) ? null : context,
-    isRowContext,
+    isUi2RowContext,
     element,
     currentMax,
     getResolvedComponent,

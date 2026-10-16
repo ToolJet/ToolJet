@@ -28,17 +28,17 @@ export const heightHeldInView = (componentType, properties = {}) => {
   return properties.dynamicHeight === false;
 };
 
-// Widgets whose rows (or cards) each take their own height in the reflow: a child growing in row r writes the row's
-// height under the widget's id at that row's context. Not ROW_SCOPED_WIDGET_TYPES: Table and the native Kanban scope
-// their rows' values but do not size rows from their children.
-const PER_ROW_HEIGHT_TYPES = ['Listview', 'ShadListView', 'ShadKanban'];
+// UI 2.0 widgets whose rows (or cards) each take their own height in the reflow, the way the native Listview's rows
+// do: a child growing in row r writes the row's height under the widget's id at that row's context. The native
+// Listview keeps its own branches in the reflow; these names are only ever true for UI 2.0 types.
+const UI2_PER_ROW_TYPES = ['ShadListView', 'ShadKanban'];
 
 /**
- * Whether a widget's rows or cards are sized from the components on them, each on its own.
+ * Whether a widget is a UI 2.0 List view or Kanban, whose rows or cards are sized from the components on them.
  * @param {string | undefined} componentType
  * @returns {boolean}
  */
-export const hasPerRowHeight = (componentType) => PER_ROW_HEIGHT_TYPES.includes(componentType);
+export const isUi2PerRowType = (componentType) => UI2_PER_ROW_TYPES.includes(componentType);
 
 /**
  * The UI 2.0 List view's row height: its rowHeight property, 72 when unset, kept between 24 and 4000.
@@ -55,21 +55,13 @@ export const listRowHeight = (properties) => Math.min(4000, Math.max(24, Number(
 export const kanbanCardHeight = (properties) => Number(properties?.cardHeight) || 96;
 
 /**
- * The height a row or card never goes below when it fits its components (the author's row or card height). The
- * native Listview's is its rowHeight as resolved (undefined when unset, so the caller keeps its own fallback).
+ * The height a UI 2.0 row or card never goes below when it fits its components: the author's row or card height.
  * @param {string} componentType
  * @param {Record<string, unknown>} [properties]
- * @returns {number | undefined}
- */
-export const rowFloorOf = (componentType, properties) => {
-  if (componentType === 'ShadListView') return listRowHeight(properties);
-  if (componentType === 'ShadKanban') return kanbanCardHeight(properties);
-  return properties?.rowHeight;
-};
-
-/**
- * Space a row keeps under its lowest component: the native row's padding and safety margin, a UI 2.0 row's 8px.
- * @param {string} componentType
  * @returns {number}
  */
-export const rowChromeOf = (componentType) => (componentType === 'Listview' ? 15 : 8);
+export const ui2RowFloor = (componentType, properties) =>
+  componentType === 'ShadKanban' ? kanbanCardHeight(properties) : listRowHeight(properties);
+
+/** Space a UI 2.0 row or card keeps under its lowest component. */
+export const UI2_ROW_CHROME = 8;

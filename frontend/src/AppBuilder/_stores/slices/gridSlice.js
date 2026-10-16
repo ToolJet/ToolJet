@@ -13,7 +13,7 @@ import {
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
-import { hasPerRowHeight, heightHeldInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { heightHeldInView, isUi2PerRowType } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Grid slice — owns the mutable reflow state for dynamic-height layout.
@@ -330,9 +330,7 @@ export const createGridSlice = (set, get) => {
             return;
           }
 
-          // A row (or card) of a per-row widget: write the row's height under the row's context, never sibling temps
-          // there (the widget's siblings are not in the row).
-          if (hasPerRowHeight(componentType) && contextIndices && isContainer) {
+          if (componentType === 'Listview' && contextIndices && isContainer) {
             const scopedElement = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
             if (!scopedElement) {
               mergedPatch[getDynamicLayoutKey(componentId, contextIndices)] = {
@@ -340,12 +338,24 @@ export const createGridSlice = (set, get) => {
                 ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices)],
                 height: newHeight,
               };
-              // The UI 2.0 lists stop here: they are leaves at widget level, measured by their own reflow
-              // (useAutoHeight) once React draws the taller row.
-              if (componentType !== 'Listview') return;
               const nextCtx = contextIndices.length > 1 ? contextIndices.slice(0, -1) : null;
               const selfKey = `${componentId}|${currentLayout}|${nextCtx ? nextCtx.join('.') : ''}`;
               nextBubbles.set(selfKey, { id: componentId, layout: currentLayout, contextIndices: nextCtx, moduleId });
+              return;
+            }
+          }
+
+          // A UI 2.0 List view row or Kanban card: write the row's height under the row's context and stop there (no
+          // sibling temps in the row; the list's own height is its leaf reflow, useAutoHeight, once React draws the
+          // taller row).
+          if (isUi2PerRowType(componentType) && contextIndices && isContainer) {
+            const scopedElement = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
+            if (!scopedElement) {
+              mergedPatch[getDynamicLayoutKey(componentId, contextIndices)] = {
+                ...changedComponent.layouts[currentLayout],
+                ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices)],
+                height: newHeight,
+              };
               return;
             }
           }
@@ -414,7 +424,7 @@ export const createGridSlice = (set, get) => {
 
           if (Object.keys(temporaryLayoutPatch).length === 0) return;
 
-          if (isContainer && !hasPerRowHeight(componentType)) {
+          if (isContainer && componentType !== 'Listview' && !isUi2PerRowType(componentType)) {
             const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
             if (element && visibility) element.style.height = `${newHeight}px`;
           }

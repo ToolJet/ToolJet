@@ -51,7 +51,7 @@ Each widget loads in its own chunk, the first time a page shows it.
 - A widget's box comes as props: `width` and `height` from the grid or its FlexContainer, and `boxFit` (`grid`,
   `fixed` or `fill`) for whether a flex child fills its share of the line.
 - Content-fitted height goes through the core reflow: `useAutoHeight` for a widget, and `useFittedRowHeight` for a
-  List view row or a Kanban custom card (the same path as the native List view's rows; see `hasPerRowHeight` in
+  List view row or a Kanban custom card (the same path as the native List view's rows; see `isUi2PerRowType` in
   `_helpers/dynamicHeightPolicy.js`).
 - Widgets do not read the canvas's DOM (its wrappers or layout attributes). Observing a widget's own content (whether
   chips fit, a scroll position) is fine.
