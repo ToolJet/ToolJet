@@ -11,11 +11,11 @@ import {
   seriesRows,
   resolveChartFields,
   seriesLabel,
-  comboSeries,
   percentScale,
   wholeNumbers,
   seriesLabelMap,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { comboSeries } from './comboModel';
 import {
   AXIS,
   GRID,

@@ -5,8 +5,6 @@ import {
   compactFigure,
   centreValueFit,
   wholeNumbers,
-  arcAngles,
-  arcBox,
   axisLabel,
   bandRange,
   clamp,
@@ -16,11 +14,11 @@ import {
   hasValues,
   lastPoint,
   num,
-  radialRows,
   seriesRows,
   sparkPoints,
   trendOf,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { arcAngles, arcBox, radialRows } from '@/AppBuilder/Widgets/Ui2/RadialChart/radialModel';
 
 describe('num and clamp', () => {
   it('reads numbers and numeric text, and nothing else', () => {

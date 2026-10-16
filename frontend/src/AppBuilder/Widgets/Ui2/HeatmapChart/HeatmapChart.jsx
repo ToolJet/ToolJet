@@ -1,7 +1,8 @@
 import React from 'react';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { clamp, formatter, heatmapGrid } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { clamp, formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { heatmapGrid } from './heatmapModel';
 import { ChartBoundary, EmptyChart, useClickedDatum, valueFormat } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 
 // ---- Heatmap -------------------------------------------------------------------------------------------------------

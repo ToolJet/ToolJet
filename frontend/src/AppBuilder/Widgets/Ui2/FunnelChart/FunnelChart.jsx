@@ -3,7 +3,8 @@ import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/p
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { formatter, funnelStages } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { funnelStages } from './funnelModel';
 import {
   ChartBoundary,
   EmptyChart,

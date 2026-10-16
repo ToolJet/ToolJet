@@ -1,7 +1,8 @@
 import React from 'react';
 import { CartesianGrid, Legend, ReferenceLine, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { clamp, formatter, isSet, num, seriesLabel, scatterGroups } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { clamp, formatter, isSet, num, seriesLabel } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { scatterGroups } from './scatterModel';
 import {
   AXIS,
   AXIS_FILL,

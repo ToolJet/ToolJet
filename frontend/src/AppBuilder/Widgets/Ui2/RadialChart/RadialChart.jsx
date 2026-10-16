@@ -1,7 +1,8 @@
 import React from 'react';
 import { Cell, PolarAngleAxis, RadialBar, RadialBarChart, Tooltip } from 'recharts';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { arcAngles, arcBox, formatter, isSet, num, radialRows } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { formatter, isSet, num } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { arcAngles, arcBox, radialRows } from './radialModel';
 import { LegendContent, SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 

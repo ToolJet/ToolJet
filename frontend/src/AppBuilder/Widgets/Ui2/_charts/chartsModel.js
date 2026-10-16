@@ -7,10 +7,9 @@ import { chipTone } from '@/AppBuilder/Widgets/NewTable/_utils/chipTone';
 
 export const MAX_ROWS = 2000;
 export const MAX_SERIES = 12;
-export const MAX_RINGS = 12;
 
-const isText = (v) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
-const isPlain = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+export const isText = (v) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
+export const isPlain = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 export const isSet = (v) => v !== undefined && v !== null && String(v).trim() !== '';
 
 /** A finite number, or null: numbers, numeric strings ("1,200", " 42 "); never booleans, objects or NaN. */
@@ -184,61 +183,6 @@ export const bandRange = (points, bandMin, bandMax) => {
   return lo <= hi ? { y1: lo, y2: hi } : { y1: hi, y2: lo };
 };
 
-// ---- Radial --------------------------------------------------------------------------------------------------------
-
-/** Concentric bars: { name, value (>= 0), color (the row's own fill or color, else null), row }, at most MAX_RINGS. */
-export const radialRows = (data, categoryField, valueField) =>
-  (Array.isArray(data) ? data : [])
-    .filter(isPlain)
-    .slice(0, MAX_RINGS)
-    .map((row, i) => {
-      const own =
-        isSet(row.fill) && isText(row.fill) ? row.fill : isSet(row.color) && isText(row.color) ? row.color : null;
-      const name = isSet(categoryField) ? axisLabel(row[categoryField]) : '';
-      return {
-        name: name === '' ? `Item ${i + 1}` : String(name),
-        value: Math.max(0, num(row[valueField]) ?? 0),
-        color: own === null ? null : String(own),
-        row,
-      };
-    });
-
-/** The arc's start and end angles (Recharts: degrees, counter-clockwise from 3 o'clock). Equal or junk angles give a
- *  full circle from the top, clockwise; the sweep is capped at one turn. */
-export const arcAngles = (startAngle, endAngle) => {
-  const s = num(startAngle) ?? 90;
-  let e = num(endAngle) ?? -270;
-  if (e === s) e = s - 360;
-  if (Math.abs(e - s) > 360) e = s + Math.sign(e - s) * 360;
-  return { startAngle: s, endAngle: e };
-};
-
-/** Where to put an arc in a width x height box so it fills it: centre and outer radius in px, and whether the centre
- *  text should sit above the centre (a gauge whose arc has little below its centre). */
-export const arcBox = (startAngle, endAngle, width, height, pad = 0.92) => {
-  const w = Math.max(0, num(width) ?? 0);
-  const h = Math.max(0, num(height) ?? 0);
-  const { startAngle: s, endAngle: e } = arcAngles(startAngle, endAngle);
-  const lo = Math.min(s, e);
-  const hi = Math.max(s, e);
-  const pts = [[0, 0]];
-  const at = (a) => [Math.cos((a * Math.PI) / 180), Math.sin((a * Math.PI) / 180)];
-  pts.push(at(s), at(e));
-  for (let a = Math.ceil(lo / 90) * 90; a <= hi; a += 90) pts.push(at(a));
-  const xs = pts.map((p) => p[0]);
-  const ys = pts.map((p) => p[1]);
-  const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
-  const bw = Math.max(maxX - minX, 0.2);
-  const bh = Math.max(maxY - minY, 0.2);
-  const r = Math.max(0, Math.min(w / bw, h / bh) * pad);
-  return {
-    cx: w / 2 - (r * (minX + maxX)) / 2,
-    cy: h / 2 + (r * (minY + maxY)) / 2,
-    outerRadius: r,
-    textAbove: minY > -0.35,
-  };
-};
-
 /** The x field and series a chart plots. A field the data does not have falls back to the data's own: the first text
  *  field for x, the numeric fields for the series (a Luna build kept the catalog's default "revenue" against data with
  *  "amount", and drew an empty chart). Fields the data has are kept as they are. */
@@ -359,137 +303,6 @@ export const highlightIndexes = (data, xField, series, highlight) => {
     }
   }
   return picked.size ? picked : null;
-};
-
-// ---- Combo, scatter and funnel -------------------------------------------------------------------------------------
-
-/** The series a combo chart draws: the bar fields, then the line fields not already drawn as bars, each on the left
- *  value axis or, when listed in rightFields, the right one (a margin % line over revenue bars). */
-export const comboSeries = (barFields, lineFields, rightFields) => {
-  const bars = fieldList(barFields);
-  const right = fieldList(rightFields);
-  const lines = fieldList(lineFields).filter((f) => !bars.includes(f));
-  return [
-    ...bars.map((field) => ({ field, kind: 'bar', axis: right.includes(field) ? 'right' : 'left' })),
-    ...lines.map((field) => ({ field, kind: 'line', axis: right.includes(field) ? 'right' : 'left' })),
-  ].slice(0, MAX_SERIES);
-};
-
-const round1 = (v) => Math.round(v * 10) / 10;
-
-/** A funnel's stages in data order: label, value (negative reads as 0, a non-number as null), width (share of the
- *  widest stage, 0 to 1), ofFirst and ofPrevious (percent of the first stage and of the stage before, null when that
- *  stage is empty) and the source row. A stage or value field the data lacks falls back to the data's own. */
-export const funnelStages = (data, stageField, valueField) => {
-  const rows = (Array.isArray(data) ? data : []).filter(isPlain).slice(0, MAX_ROWS);
-  if (!rows.length) return [];
-  const { x, series } = resolveChartFields(
-    rows,
-    isSet(stageField) ? String(stageField) : undefined,
-    fieldList(valueField)
-  );
-  const field = series[0];
-  const values = rows.map((row) => {
-    const n = num(row[field]);
-    return n === null ? null : Math.max(0, n);
-  });
-  const max = Math.max(0, ...values.filter((v) => v !== null));
-  const first = values[0];
-  return rows.map((row, i) => {
-    const value = values[i];
-    const prev = i > 0 ? values[i - 1] : null;
-    return {
-      label: axisLabel(row[x]),
-      value,
-      width: max > 0 && value !== null ? value / max : 0,
-      ofFirst: first > 0 && value !== null ? round1((value / first) * 100) : null,
-      ofPrevious: prev > 0 && value !== null ? round1((value / prev) * 100) : null,
-      row,
-    };
-  });
-};
-
-/** A scatter's points, one group per groupField value (one group without it) in order of first appearance: x and y
- *  (rows without both numbers are left out), z from sizeField for bubbles, label from nameField, and the row. When the
- *  data has neither named axis field, its first two numeric fields are used. */
-// A point is an SVG symbol with its own handlers: past this many the chart is a blot and slow to draw.
-export const MAX_POINTS = 1000;
-
-export const scatterGroups = (data, { xField, yField, sizeField, groupField, nameField } = {}) => {
-  const rows = (Array.isArray(data) ? data : []).filter(isPlain).slice(0, MAX_POINTS);
-  if (!rows.length) return [];
-  let xKey = isSet(xField) ? String(xField) : undefined;
-  let yKey = isSet(yField) ? String(yField) : undefined;
-  const present = (key) => key !== undefined && rows.some((row) => num(row[key]) !== null);
-  if (!present(xKey) && !present(yKey)) {
-    const keys = [...new Set(rows.slice(0, 50).flatMap((row) => Object.keys(row)))].filter(present);
-    [xKey, yKey] = keys;
-  }
-  const groups = new Map();
-  rows.forEach((row) => {
-    const x = num(row[xKey]);
-    const y = num(row[yKey]);
-    if (x === null || y === null) return;
-    const name = isSet(groupField) ? axisLabel(row[groupField]) || 'Other' : '';
-    if (!groups.has(name)) groups.set(name, []);
-    groups.get(name).push({
-      x,
-      y,
-      z: isSet(sizeField) ? num(row[sizeField]) ?? 0 : null,
-      label: isSet(nameField) ? axisLabel(row[nameField]) : '',
-      row,
-    });
-  });
-  return [...groups.entries()].slice(0, MAX_SERIES).map(([name, points]) => ({ name, points }));
-};
-
-// A heatmap past this many cells is unreadable and slow to draw.
-export const MAX_HEAT_COLUMNS = 60;
-export const MAX_HEAT_ROWS = 40;
-
-/** A heatmap's grid: column labels (xs) and row labels (ys) in order of first appearance, or in xOrder / yOrder when
- *  given (missing labels added after them); value(y, x), the sum of the rows that land in a cell or null; the smallest
- *  and largest cell; and strength(v), a value's place between them from 0 to 1 (null for an empty cell). */
-export const heatmapGrid = (data, { xField: xf, yField: yf, valueField: vf, xOrder, yOrder } = {}) => {
-  // A field name is text: an array bound there (10k rows) became a huge string key on every row.
-  const field = (f) => (isText(f) ? String(f) : undefined);
-  const [xField, yField, valueField] = [field(xf), field(yf), field(vf)];
-  const rows = (Array.isArray(data) ? data : []).filter(isPlain).slice(0, MAX_ROWS * 5);
-  const label = (v) => (v === null || v === undefined ? '' : String(axisLabel(v)));
-  // Sets keep a 10k-row bind linear; labels past the drawable grid are not collected.
-  const ordered = (preset, cap) =>
-    new Set((Array.isArray(preset) ? preset.slice(0, cap) : []).filter(isText).map((v) => String(v)));
-  const xs = ordered(xOrder, MAX_HEAT_COLUMNS);
-  const ys = ordered(yOrder, MAX_HEAT_ROWS);
-  const cells = new Map();
-  rows.forEach((row) => {
-    const x = label(row[xField]);
-    const y = label(row[yField]);
-    const v = num(row[valueField]);
-    if (x === '' || y === '') return;
-    if (!xs.has(x) && xs.size < MAX_HEAT_COLUMNS) xs.add(x);
-    if (!ys.has(y) && ys.size < MAX_HEAT_ROWS) ys.add(y);
-    if (!xs.has(x) || !ys.has(y) || v === null) return;
-    const key = `${y}\u0000${x}`;
-    cells.set(key, (cells.get(key) ?? 0) + v);
-  });
-  const values = [...cells.values()];
-  const min = values.length ? Math.min(...values) : 0;
-  const max = values.length ? Math.max(...values) : 0;
-  return {
-    xs: [...xs],
-    ys: [...ys],
-    min,
-    max,
-    value: (y, x) => {
-      const v = cells.get(`${y}\u0000${x}`);
-      return v === undefined ? null : v;
-    },
-    strength: (v) => {
-      if (v === null || v === undefined) return null;
-      return max > min ? (v - min) / (max - min) : 1;
-    },
-  };
 };
 
 /** How much a percent axis multiplies its values: 100 when every value is a fraction (a 39% margin sent as 0.39, which

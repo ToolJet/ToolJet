@@ -1,10 +1,8 @@
-import {
-  comboSeries,
-  funnelStages,
-  heatmapGrid,
-  percentScale,
-  scatterGroups,
-} from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { percentScale } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { comboSeries } from '@/AppBuilder/Widgets/Ui2/ComboChart/comboModel';
+import { funnelStages } from '@/AppBuilder/Widgets/Ui2/FunnelChart/funnelModel';
+import { heatmapGrid } from '@/AppBuilder/Widgets/Ui2/HeatmapChart/heatmapModel';
+import { scatterGroups } from '@/AppBuilder/Widgets/Ui2/ScatterChart/scatterModel';
 
 describe('funnelStages', () => {
   const data = [
