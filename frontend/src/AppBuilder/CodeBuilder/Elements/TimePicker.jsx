@@ -3,10 +3,10 @@ import { getDate } from './utils';
 import moment from 'moment';
 import ReactDatePicker from 'react-datepicker';
 import cx from 'classnames';
+import { TimeScrollColumn } from '@/AppBuilder/Widgets/Date/TimepickerInput';
 
 export const TimePicker = ({ value, onChange, meta }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const headers = ['Hours', 'Minutes'];
 
   const onTimeChange = (time, type) => {
     let date = moment(value, 'HH:mm');
@@ -54,16 +54,10 @@ export const TimePicker = ({ value, onChange, meta }) => {
         ]}
         customTimeInput={
           <div className={cx('custom-time-input', { 'dark-time-input': darkMode })}>
-            <div className={cx('d-flex')}>
-              {headers.map((header) => (
-                <span key={header} className={cx('time-header')}>
-                  {header}
-                </span>
-              ))}
-            </div>
-            <div className={cx('d-block')}>
-              <div className={cx('d-flex time-input-body')}>
-                <div className={cx('time-col')}>
+            <div className={cx('d-flex time-input-body')}>
+              <div className={cx('time-col-group')}>
+                <span className={cx('time-header')}>Hours</span>
+                <TimeScrollColumn>
                   {[...Array(24).keys()].map((hour) => (
                     <div
                       key={hour}
@@ -77,8 +71,11 @@ export const TimePicker = ({ value, onChange, meta }) => {
                       {String(hour).padStart(2, '0')}
                     </div>
                   ))}
-                </div>
-                <div className={cx('time-col')}>
+                </TimeScrollColumn>
+              </div>
+              <div className={cx('time-col-group')}>
+                <span className={cx('time-header')}>Minutes</span>
+                <TimeScrollColumn>
                   {[...Array(60).keys()].map((minute) => (
                     <div
                       key={minute}
@@ -90,7 +87,7 @@ export const TimePicker = ({ value, onChange, meta }) => {
                       {String(minute).padStart(2, '0')}
                     </div>
                   ))}
-                </div>
+                </TimeScrollColumn>
               </div>
             </div>
           </div>

@@ -15608,7 +15608,6 @@ fieldset:disabled {
     }
 
     .time-col {
-      height: 200px;
       color: var(--cc-primary-text);
     }
 
@@ -15799,32 +15798,62 @@ fieldset:disabled {
     border-bottom-right-radius: 10px;
   }
 
+  // When the time panel sits beside a (taller) calendar, stretch the wrapper
+  // chain so the divider border-left spans the popup's full height instead of
+  // stopping at the time columns.
+  .react-datepicker-time__input-container,
+  .react-datepicker-time__input {
+    height: 100%;
+  }
+
+  .react-datepicker__input-time-container .custom-time-input {
+    height: 100%;
+  }
+
   .time-header {
-    width: 62px;
-    height: 35px;
-    padding: 8px 6px 7px 6px;
+    width: 56px;
+    height: 32px;
     justify-content: center;
     align-items: center;
     display: flex;
-    border-bottom: 1px solid #ccd1d5;
     font-weight: 500;
+    font-size: 13px;
     font-family: "IBM Plex Sans";
     color: var(--cc-placeholder-text);
-    background-color: var(--cc-surface1-surface);
   }
 
   .time-input-body {
-    padding-bottom: 12px;
+    padding: 0 12px;
+  }
+
+  .time-col-group {
+    width: 92px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  // Each column reserves a 12px scrollbar slot on its right edge (68px wrap vs
+  // 56px items), so items stay left-aligned in every column — including AM/PM,
+  // which keeps the slot without a scrollbar.
+  .time-colwrap {
+    position: relative;
+    width: 68px;
+    height: 216px;
   }
 
   .time-col {
-    margin-top: 5px;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: none;
-    height: 265px;
-    width: 62px;
+    height: 216px;
+    width: 68px;
     color: var(--cc-primary-text) !important;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   .selected-time {
@@ -15834,14 +15863,49 @@ fieldset:disabled {
   }
 
   .time-item {
-    width: 50px;
-    height: 22px;
+    width: 56px;
+    height: 36px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 2px 6px;
-    font-size: 11px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
     cursor: pointer;
+  }
+
+  // Custom scrollbar: 7px thumb left-aligned inside the 12px slot, no track.
+  // Hidden at rest; visible while scrolling (1s linger), while the mouse is
+  // over the column's right edge, and while dragging.
+  .time-scrollbar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+  }
+
+  .time-scrollbar-thumb {
+    position: absolute;
+    left: 2px;
+    width: 7px;
+    border-radius: 999px;
+    background: var(--cc-default-border);
+    opacity: 0;
+    transition: opacity 0.25s;
+    touch-action: none;
+  }
+
+  .time-scrollbar.scrolling .time-scrollbar-thumb,
+  .time-scrollbar.dragging .time-scrollbar-thumb,
+  .time-scrollbar:hover .time-scrollbar-thumb {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    .time-scrollbar-thumb {
+      opacity: 1;
+    }
   }
 
   .time-item:hover {
@@ -16075,10 +16139,6 @@ section.ai-message-prompt-input-wrapper {
   .custom-time-input {
     border-left: none;
     border-radius: 10px;
-  }
-
-  .time-col {
-    height: 200px;
   }
 
   .react-datepicker__input-time-container {
