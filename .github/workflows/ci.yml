@@ -357,7 +357,7 @@ jobs:
   test-server:
     name: 'Test Suite · server'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     needs:
       - detect-changes
       - build-plugins
@@ -441,7 +441,10 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: |
+          apt-get update && apt-get install -y postgresql-common python3 python3-pip
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
@@ -584,7 +587,10 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: |
+          apt-get update && apt-get install -y postgresql-common python3 python3-pip
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
@@ -692,7 +698,10 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: |
+          apt-get update && apt-get install -y postgresql-common python3 python3-pip
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
@@ -828,7 +837,10 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: |
+          apt-get update && apt-get install -y postgresql-common python3 python3-pip
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create

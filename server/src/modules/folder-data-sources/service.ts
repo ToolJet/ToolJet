@@ -1,7 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
+import { In } from 'typeorm';
 import { FolderDataSource } from '@entities/folder_data_source.entity';
 import { Folder } from '@entities/folder.entity';
+import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { User } from '@entities/user.entity';
 import { FolderDataSourcesUtilService } from './util.service';
 import { IFolderDataSourcesService } from './interfaces/IService';
@@ -124,6 +127,7 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
     organizationId?: string
   ): Promise<FolderDataSource> {
     const resolvedBranchId = await this.resolveEffectiveBranchId(branchId, organizationId);
+    await this.verifyOrganizationScope(folderId, [dataSourceId], resolvedBranchId, organizationId);
     return this.folderDataSourcesUtilService.create(folderId, dataSourceId, resolvedBranchId);
   }
 
@@ -134,12 +138,48 @@ export class FolderDataSourcesService implements IFolderDataSourcesService {
     organizationId?: string
   ): Promise<FolderDataSource[]> {
     const resolvedBranchId = await this.resolveEffectiveBranchId(branchId, organizationId);
+    await this.verifyOrganizationScope(folderId, dataSourceIds, resolvedBranchId, organizationId);
     return this.folderDataSourcesUtilService.bulkCreate(folderId, dataSourceIds, resolvedBranchId);
   }
 
   async remove(folderId: string, dataSourceId: string, branchId?: string, organizationId?: string): Promise<void> {
     const resolvedBranchId = await this.resolveEffectiveBranchId(branchId, organizationId);
+    await this.verifyOrganizationScope(folderId, [dataSourceId], resolvedBranchId, organizationId);
     return this.folderDataSourcesUtilService.remove(folderId, dataSourceId, resolvedBranchId);
+  }
+
+  // The ability guard only checks folder ownership (for the owner-grant route) and never looks at
+  // data_source_id or branch_id at all — an admin, a coarse dataSourceFolderCreate-flag holder, or
+  // a granular per-folder grant can otherwise pass any other workspace's folder/data-source/branch
+  // id straight through to the util service. Re-validate all three against the caller's
+  // organizationId here so every grant route (including the admin bypass) is covered.
+  private async verifyOrganizationScope(
+    folderId: string,
+    dataSourceIds: string[],
+    branchId: string,
+    organizationId?: string
+  ): Promise<void> {
+    if (!folderId) throw new BadRequestException('folder_id is required');
+    const uniqueDataSourceIds = [...new Set(dataSourceIds.filter(Boolean))];
+    if (uniqueDataSourceIds.length === 0) throw new BadRequestException('data_source_id is required');
+    if (!organizationId) {
+      throw new BadRequestException('Cannot verify folder data source scope: organizationId required');
+    }
+
+    const manager = getConnectionInstance().manager;
+
+    const folder = await manager.findOne(Folder, {
+      where: { id: folderId, organizationId, type: DATA_SOURCE_FOLDER_TYPE },
+    });
+    if (!folder) throw new NotFoundException('Folder not found');
+
+    const dataSourceCount = await manager.count(DataSourceEntity, {
+      where: { id: In(uniqueDataSourceIds), organizationId },
+    });
+    if (dataSourceCount !== uniqueDataSourceIds.length) throw new NotFoundException('Data source not found');
+
+    const branch = await manager.findOne(WorkspaceBranch, { where: { id: branchId, organizationId } });
+    if (!branch) throw new NotFoundException('Branch not found');
   }
 
   // folder_data_sources.branch_id is NOT NULL, so every write needs a branch. When the caller

@@ -173,10 +173,12 @@ function ownSequenceSuffix(schema: string, tableId: string, columnDefault: strin
 }
 
 /**
- * Every row this migration baselines still satisfies relation.id === internal_table.id (true for
- * every row that predates this migration), including whatever a foreign key references - so a
- * referenced relation id is looked up as an internal_tables id directly. This shortcut is only
- * safe here; normal perform()/replay code must go through the relation resolver instead.
+ * A foreign key names its target by physical relation id. For a table created after environments
+ * existed that id differs from the table's internal_tables id, so it is mapped through
+ * internal_table_relations first. Migration A bakes tables that predate relations: a target it has
+ * not reached yet has no relation row, and for every row it does insert relation.id ===
+ * internal_table.id, so the relation id is then read as an internal_tables id directly. Normal
+ * perform()/replay code resolves through the relation resolver instead.
  */
 export async function buildForeignKeyDdl(
   queryRunner: QueryRunner,
@@ -190,9 +192,11 @@ export async function buildForeignKeyDdl(
   for (const fk of foreignKeys) {
     let placeholder = placeholderByRelationId.get(fk.referenced_table);
     if (!placeholder) {
-      const [row] = await queryRunner.query(`SELECT co_relation_id FROM internal_tables WHERE id = $1`, [
-        fk.referenced_table,
-      ]);
+      const [row] = await queryRunner.query(
+        `SELECT co_relation_id FROM internal_tables
+         WHERE id = COALESCE((SELECT internal_table_id FROM internal_table_relations WHERE id = $1), $1)`,
+        [fk.referenced_table]
+      );
       if (!row) throw new Error(`foreign key "${fk.name}" references unknown internal table "${fk.referenced_table}"`);
       placeholder = `ref_${placeholderByRelationId.size}`;
       placeholderByRelationId.set(fk.referenced_table, placeholder);

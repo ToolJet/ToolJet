@@ -228,9 +228,13 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     const { resourcesToAdd, canEditFolder, canEditApps, canViewApps, canRunQuery } = createFolderPermissionsObj;
     // Module folders are never end-user-assignable — reject for view too, unlike plain/workflow
     // folders where end-users can be granted view-only access.
-    const isBuilderOnlyFolder =
-      granularPermissions.type === ResourceType.MODULE_FOLDER ||
-      granularPermissions.type === ResourceType.DATA_SOURCE_FOLDER;
+    const isModuleFolder = granularPermissions.type === ResourceType.MODULE_FOLDER;
+    // Data-source folders cascade configure/build-with onto the folder's data sources, so (unlike
+    // plain/workflow folders, where view-only stays end-user-safe) canViewApps is builder-level
+    // too. canRunQuery ("Restrict query run") is deliberately excluded — it's the one flag meant
+    // to apply TO end users, matching checkIfGroupHasBuilderGranularPermissions.
+    const isDataSourceFolder = granularPermissions.type === ResourceType.DATA_SOURCE_FOLDER;
+    const isBuilderLevelGrant = isModuleFolder || canEditFolder || canEditApps || (isDataSourceFolder && canViewApps);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Validate end-user constraints: can only have canViewApps (module folders: none at all)
@@ -238,10 +242,10 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         {
           groupId: granularPermissions.groupId,
           organizationId,
-          isBuilderPermissions: canEditFolder || canEditApps || isBuilderOnlyFolder,
+          isBuilderPermissions: isBuilderLevelGrant,
         },
         manager,
-        isBuilderOnlyFolder
+        granularPermissions.type
       );
       const foldersGroupPermissions = await manager.save(
         manager.create(FoldersGroupPermissions, {
@@ -269,7 +273,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
   protected async validateFolderResourceCreation(
     params: ResourceCreateValidation,
     manager: EntityManager,
-    isBuilderOnlyFolder = false
+    folderResourceType?: ResourceType
   ): Promise<void> {
     const { groupId, organizationId, isBuilderPermissions } = params;
     if (!isBuilderPermissions) {
@@ -290,11 +294,15 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     );
 
     if (endUsers.length) {
+      const permissionLabel =
+        folderResourceType === ResourceType.MODULE_FOLDER
+          ? 'Module folder permissions'
+          : folderResourceType === ResourceType.DATA_SOURCE_FOLDER
+            ? 'Data source folder permissions'
+            : 'Edit Folder or Edit Apps permissions';
       throw new BadRequestException({
         message: {
-          error: isBuilderOnlyFolder
-            ? 'End-users cannot have Module folder permissions. If you wish to add this permission, kindly change the following users role from end-user to builder.'
-            : 'End-users cannot have Edit Folder or Edit Apps permissions. If you wish to add this permission, kindly change the following users role from end-user to builder.',
+          error: `End-users cannot have ${permissionLabel}. If you wish to add this permission, kindly change the following users role from end-user to builder.`,
           data: endUsers.map((user) => user.email),
           title: 'Cannot add this permission to the group',
           type: 'USER_ROLE_CHANGE_ADD_PERMISSIONS',
@@ -617,13 +625,28 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
   ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { granularPermissions, actions, resourcesToDelete, resourcesToAdd } = updateResourceGroupPermissionsObject;
+      const foldersGroupPermissions = granularPermissions.foldersGroupPermissions;
+
       // Module folders are never end-user-assignable — reject for view too.
-      const isBuilderOnlyFolder =
-        granularPermissions.type === ResourceType.MODULE_FOLDER ||
-        granularPermissions.type === ResourceType.DATA_SOURCE_FOLDER;
+      const isModuleFolder = granularPermissions.type === ResourceType.MODULE_FOLDER;
+      // Data-source folders cascade configure/build-with onto the folder's data sources, so (unlike
+      // plain/workflow folders, where view-only stays end-user-safe) canViewApps is builder-level
+      // too. canRunQuery ("Restrict query run") is deliberately excluded — it's the one flag meant
+      // to apply TO end users, matching checkIfGroupHasBuilderGranularPermissions. Resulting
+      // (post-update) values, not just the raw patch, so an unrelated field left untouched by
+      // this update still counts if it was already builder-level.
+      const isDataSourceFolder = granularPermissions.type === ResourceType.DATA_SOURCE_FOLDER;
+      const resultingCanEditFolder = actions?.canEditFolder ?? foldersGroupPermissions?.canEditFolder;
+      const resultingCanEditApps = actions?.canEditApps ?? foldersGroupPermissions?.canEditApps;
+      const resultingCanViewApps = actions?.canViewApps ?? foldersGroupPermissions?.canViewApps;
+      const isBuilderLevelGrant =
+        isModuleFolder ||
+        resultingCanEditFolder ||
+        resultingCanEditApps ||
+        (isDataSourceFolder && resultingCanViewApps);
 
       // Validate end-user constraints
-      if (actions && (actions.canEditFolder || actions.canEditApps || isBuilderOnlyFolder)) {
+      if (actions && isBuilderLevelGrant) {
         await this.validateFolderResourceCreation(
           {
             groupId: granularPermissions.groupId,
@@ -631,11 +654,9 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
             isBuilderPermissions: true,
           },
           manager,
-          isBuilderOnlyFolder
+          granularPermissions.type
         );
       }
-
-      const foldersGroupPermissions = granularPermissions.foldersGroupPermissions;
 
       // Update permission flags
       if (actions) {

@@ -176,9 +176,10 @@ export class TooljetDatabaseError extends QueryFailedError {
     context: { origin: TooljetDbActions; internalTables: InternalTable[] | { id: string; tableName: string }[] },
     errorObj: QueryFailedError
   ) {
-    super(message, errorObj.parameters, errorObj.driverError);
+    // Not every failure inside a table op comes from the driver (e.g. a TypeError); wrapping it must not throw.
+    super(message, errorObj.parameters, errorObj.driverError ?? errorObj);
     this.context = context;
-    this.code = errorObj.driverError['code'];
+    this.code = (errorObj.driverError ?? errorObj)['code'];
     this.queryError = errorObj;
   }
 
