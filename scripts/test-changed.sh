@@ -2,6 +2,7 @@
 # Detects changed server modules and runs their Jest tests (unit + e2e).
 # Usage: scripts/test-changed.sh
 # PRE_PUSH=true (set by .husky/pre-push): lint + typecheck only, in parallel — no tests.
+# SKIP_STATIC=true (set by ci.yml): skip lint + typecheck; the build-server job already ran both.
 #
 # Fallback: cross-cutting changes (helpers/entities/dto/lib, jest config/setup) → run
 # all tests. Tooling-only changes (scripts, package.json) don't affect test selection
@@ -126,11 +127,13 @@ if [[ "${CI:-}" == "true" ]]; then
 fi
 
 # ${arr[@]+...} guard: empty-array expansion breaks under set -u on bash 3.2 (macOS)
-echo "--- Lint ---"
-npm run lint
+if [[ "${SKIP_STATIC:-}" != "true" ]]; then
+  echo "--- Lint ---"
+  npm run lint
 
-echo "--- Typecheck ---"
-npx tsc --noEmit -p tsconfig.build.json
+  echo "--- Typecheck ---"
+  npx tsc --noEmit -p tsconfig.build.json
+fi
 
 echo "--- Unit tests ---"
 npm run test -- ${unit_args[@]+"${unit_args[@]}"}
