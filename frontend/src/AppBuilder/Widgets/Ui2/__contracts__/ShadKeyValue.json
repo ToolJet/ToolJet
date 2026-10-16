@@ -1,0 +1,140 @@
+{
+  "type": "ShadKeyValue",
+  "properties": {
+    "allowCopy": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "badgeColors": {
+      "type": "object",
+      "default": {},
+      "initial": "{{{ Active: '#16a34a' }}}"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "columns": {
+      "type": "string",
+      "default": "1",
+      "initial": "1"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "initial": "USD"
+    },
+    "data": {
+      "type": "union<array|object>",
+      "default": {},
+      "initial": "{{[{ label: 'Customer', value: 'Ada Lovelace' }, { label: 'Email', value: 'ada@example.com', type: 'link' }, { label: 'Status', value: 'Active', type: 'badge' }, { label: 'Plan', value: 'Pro' }, { label: 'Amount', value: 1250, type: 'currency' }, { label: 'Renews', value: '2026-11-14', type: 'date' }]}}"
+    },
+    "dateFormat": {
+      "type": "string",
+      "default": "DD MMM YYYY",
+      "initial": "DD MMM YYYY"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dividers": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "—",
+      "initial": "—"
+    },
+    "labelWidth": {
+      "type": "union<string|number>",
+      "default": "40%",
+      "initial": "40%"
+    },
+    "layout": {
+      "type": "string",
+      "default": "inline",
+      "initial": "inline"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "locale": {
+      "type": "string",
+      "default": "en-US",
+      "initial": "en-US"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "dividerColor": {
+      "type": "string"
+    },
+    "labelColor": {
+      "type": "string"
+    },
+    "linkColor": {
+      "type": "string"
+    },
+    "valueColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onFieldClick"
+  ],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "data",
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "lastClickedField"
+  ]
+}

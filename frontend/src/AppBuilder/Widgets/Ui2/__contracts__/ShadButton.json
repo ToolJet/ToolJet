@@ -1,0 +1,102 @@
+{
+  "type": "ShadButton",
+  "properties": {
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "fullWidth": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "size": {
+      "type": "string",
+      "default": "default",
+      "initial": "default"
+    },
+    "text": {
+      "type": "string",
+      "default": "Button",
+      "initial": "Button"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "variant": {
+      "type": "string",
+      "default": "default",
+      "initial": "default"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "backgroundColor": {
+      "type": "string"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "hoverBackgroundColor": {
+      "type": "string"
+    },
+    "textColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClick",
+    "onHover"
+  ],
+  "actions": {
+    "click": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setText": [
+      "text"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "buttonText",
+    "isDisabled",
+    "isLoading",
+    "isVisible"
+  ]
+}

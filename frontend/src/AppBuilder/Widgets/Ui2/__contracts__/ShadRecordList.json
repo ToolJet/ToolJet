@@ -1,0 +1,181 @@
+{
+  "type": "ShadRecordList",
+  "properties": {
+    "avatarField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "avatarShape": {
+      "type": "string",
+      "default": "circle",
+      "initial": "circle"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "initial": "USD"
+    },
+    "data": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ id: 1, customer: 'Harbor Bistro', contact: 'Maya Chen', due: '2026-10-14', status: 'Paid', total: 1240 }, { id: 2, customer: 'Northwind Florists', contact: 'Owen Hart', due: '2026-10-16', status: 'Pending', total: 386.5 }, { id: 3, customer: 'Juniper Dental', contact: 'Priya Nair', due: '2026-10-09', status: 'Overdue', total: 2915 }, { id: 4, customer: 'Copper Kettle Cafe', contact: 'Leo Martins', due: '2026-10-21', status: 'Draft', total: 742 }]}}"
+    },
+    "density": {
+      "type": "string",
+      "default": "default",
+      "initial": "default"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "Nothing here yet",
+      "initial": "Nothing here yet"
+    },
+    "highlightSelected": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "idField": {
+      "type": "string",
+      "default": "id",
+      "initial": "id"
+    },
+    "listStyle": {
+      "type": "string",
+      "default": "card",
+      "initial": "card"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "metaFields": {
+      "type": "union<array|string>",
+      "default": "",
+      "initial": "contact, due|date:Due {}"
+    },
+    "progressField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "showAvatar": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showDividers": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "statusField": {
+      "type": "string",
+      "default": "",
+      "initial": "status"
+    },
+    "titleField": {
+      "type": "string",
+      "default": "customer",
+      "initial": "customer"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "valueField": {
+      "type": "string",
+      "default": "",
+      "initial": "total"
+    },
+    "valueFormat": {
+      "type": "string",
+      "default": "currency",
+      "initial": "currency"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColor": {
+      "type": "string"
+    },
+    "backgroundColor": {
+      "type": "string"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "textColor": {
+      "type": "string"
+    },
+    "titleColor": {
+      "type": "string"
+    },
+    "titleFontFamily": {
+      "type": "string",
+      "default": "theme",
+      "initial": "theme"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onItemClicked"
+  ],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "selectedItem",
+    "selectedItemId"
+  ]
+}

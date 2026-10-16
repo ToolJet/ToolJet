@@ -1,0 +1,179 @@
+{
+  "type": "ShadLineChart",
+  "properties": {
+    "animate": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "colors": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[]}}"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "initial": "USD"
+    },
+    "curve": {
+      "type": "string",
+      "default": "monotone",
+      "initial": "monotone"
+    },
+    "dashedFields": {
+      "type": "union<string|array>",
+      "default": "",
+      "initial": ""
+    },
+    "data": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ month: 'Jan', revenue: 18600, expenses: 8000 }, { month: 'Feb', revenue: 30500, expenses: 20000 }, { month: 'Mar', revenue: 23700, expenses: 12000 }, { month: 'Apr', revenue: 7300, expenses: 19000 }, { month: 'May', revenue: 20900, expenses: 13000 }, { month: 'Jun', revenue: 21400, expenses: 14000 }]}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "No data",
+      "initial": "No data"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "referenceLabel": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "referenceValue": {
+      "type": "union<string|number>",
+      "default": "",
+      "initial": ""
+    },
+    "seriesLabels": {
+      "type": "union<object|array>",
+      "default": {},
+      "initial": "{{{} }}"
+    },
+    "showDots": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showGrid": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showLegend": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "strokeWidth": {
+      "type": "union<string|number>",
+      "default": 2,
+      "initial": "{{2}}"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "valuePrefix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "valueSuffix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "xField": {
+      "type": "string",
+      "default": "month",
+      "initial": "month"
+    },
+    "yAxisFormat": {
+      "type": "string",
+      "default": "number",
+      "initial": "number"
+    },
+    "yFields": {
+      "type": "union<string|array>",
+      "default": "revenue",
+      "initial": "{{['revenue', 'expenses']}}"
+    }
+  },
+  "styles": {
+    "axisTextColor": {
+      "type": "string"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "chartColor": {
+      "type": "string"
+    },
+    "gridColor": {
+      "type": "string"
+    },
+    "legendTextColor": {
+      "type": "string"
+    },
+    "referenceLineColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClick",
+    "onDoubleClick"
+  ],
+  "actions": {
+    "clearClickedPoint": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "clickedDataPoint",
+    "isDisabled",
+    "isLoading",
+    "isVisible"
+  ]
+}

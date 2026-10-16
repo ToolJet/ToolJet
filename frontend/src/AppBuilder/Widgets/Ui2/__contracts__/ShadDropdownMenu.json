@@ -1,0 +1,172 @@
+{
+  "type": "ShadDropdownMenu",
+  "properties": {
+    "align": {
+      "type": "string",
+      "default": "start",
+      "initial": "start"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "fullWidth": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "items": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ label: 'Edit', value: 'edit', icon: 'IconPencil', shortcut: '⌘E' }, { label: 'Duplicate', value: 'duplicate', icon: 'IconCopy', shortcut: '⌘D' }, { label: 'Archive', value: 'archive', icon: 'IconArchive' }, { label: 'Delete', value: 'delete', icon: 'IconTrash', destructive: true, separator: true }]}}"
+    },
+    "label": {
+      "type": "string",
+      "default": "Actions",
+      "initial": "Actions"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "menuLabel": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "optionsLoadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showChevron": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "side": {
+      "type": "string",
+      "default": "bottom",
+      "initial": "bottom"
+    },
+    "size": {
+      "type": "string",
+      "default": "default",
+      "initial": "default"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "triggerIcon": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "triggerType": {
+      "type": "string",
+      "default": "button",
+      "initial": "button"
+    },
+    "variant": {
+      "type": "string",
+      "default": "outline",
+      "initial": "outline"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "backgroundColor": {
+      "type": "string"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "descriptionColor": {
+      "type": "string"
+    },
+    "destructiveColor": {
+      "type": "string"
+    },
+    "hoverBackgroundColor": {
+      "type": "string"
+    },
+    "iconColor": {
+      "type": "string"
+    },
+    "itemHoverBackgroundColor": {
+      "type": "string"
+    },
+    "itemHoverTextColor": {
+      "type": "string"
+    },
+    "itemTextColor": {
+      "type": "string"
+    },
+    "menuBackgroundColor": {
+      "type": "string"
+    },
+    "menuBorderColor": {
+      "type": "string"
+    },
+    "menuRadius": {
+      "type": "union<string|number>"
+    },
+    "menuWidth": {
+      "type": "union<string|number>"
+    },
+    "textColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClose",
+    "onOpen",
+    "onSelect"
+  ],
+  "actions": {
+    "close": [],
+    "open": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isOpen",
+    "isVisible",
+    "lastClickedOption"
+  ]
+}

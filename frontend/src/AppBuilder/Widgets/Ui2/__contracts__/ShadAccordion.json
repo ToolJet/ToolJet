@@ -1,0 +1,108 @@
+{
+  "type": "ShadAccordion",
+  "properties": {
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "defaultOpen": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[]}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "items": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ title: 'Inclusions', content: 'Crew, fuel and linen' }, { title: 'Cancellation', content: 'Free until 30 days before departure' }]}}"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "multiple": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "dividerColor": {
+      "type": "string"
+    },
+    "iconColor": {
+      "type": "string"
+    },
+    "textColor": {
+      "type": "string"
+    },
+    "titleColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onChange",
+    "onCollapse",
+    "onExpand"
+  ],
+  "actions": {
+    "collapse": [
+      "index"
+    ],
+    "expand": [
+      "index"
+    ],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isExpanded",
+    "isLoading",
+    "isVisible",
+    "openIndexes"
+  ]
+}

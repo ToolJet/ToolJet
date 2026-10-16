@@ -1,0 +1,194 @@
+{
+  "type": "ShadScatterChart",
+  "properties": {
+    "animate": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "colors": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[]}}"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "initial": "USD"
+    },
+    "data": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ account: 'Northwind', spend: 12, revenue: 48, seats: 40, segment: 'Mid-market' }, { account: 'Globex', spend: 30, revenue: 95, seats: 120, segment: 'Enterprise' }, { account: 'Initech', spend: 8, revenue: 21, seats: 15, segment: 'SMB' }, { account: 'Umbrella', spend: 26, revenue: 61, seats: 90, segment: 'Enterprise' }, { account: 'Hooli', spend: 18, revenue: 70, seats: 55, segment: 'Mid-market' }, { account: 'Vandelay', spend: 5, revenue: 14, seats: 10, segment: 'SMB' }, { account: 'Stark', spend: 34, revenue: 128, seats: 150, segment: 'Enterprise' }, { account: 'Wonka', spend: 14, revenue: 33, seats: 30, segment: 'SMB' }]}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "No data",
+      "initial": "No data"
+    },
+    "fillOpacity": {
+      "type": "union<string|number>",
+      "default": "",
+      "initial": ""
+    },
+    "groupField": {
+      "type": "string",
+      "default": "",
+      "initial": "segment"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "nameField": {
+      "type": "string",
+      "default": "",
+      "initial": "account"
+    },
+    "pointSize": {
+      "type": "union<string|number>",
+      "default": 6,
+      "initial": "{{6}}"
+    },
+    "referenceX": {
+      "type": "union<string|number>",
+      "default": "",
+      "initial": ""
+    },
+    "referenceY": {
+      "type": "union<string|number>",
+      "default": "",
+      "initial": ""
+    },
+    "showGrid": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showLegend": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "sizeField": {
+      "type": "string",
+      "default": "",
+      "initial": "seats"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "valuePrefix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "valueSuffix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "xAxisFormat": {
+      "type": "string",
+      "default": "number",
+      "initial": "number"
+    },
+    "xField": {
+      "type": "string",
+      "default": "spend",
+      "initial": "spend"
+    },
+    "xLabel": {
+      "type": "string",
+      "default": "",
+      "initial": "Marketing spend ($k)"
+    },
+    "yAxisFormat": {
+      "type": "string",
+      "default": "number",
+      "initial": "number"
+    },
+    "yField": {
+      "type": "string",
+      "default": "revenue",
+      "initial": "revenue"
+    },
+    "yLabel": {
+      "type": "string",
+      "default": "",
+      "initial": "Revenue ($k)"
+    }
+  },
+  "styles": {
+    "axisTextColor": {
+      "type": "string"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "chartColor": {
+      "type": "string"
+    },
+    "gridColor": {
+      "type": "string"
+    },
+    "legendTextColor": {
+      "type": "string"
+    },
+    "referenceLineColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClick",
+    "onDoubleClick"
+  ],
+  "actions": {
+    "clearClickedPoint": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "clickedDataPoint",
+    "isDisabled",
+    "isLoading",
+    "isVisible"
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "type": "ShadFunnelChart",
+  "properties": {
+    "align": {
+      "type": "string",
+      "default": "center",
+      "initial": "center"
+    },
+    "animate": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "colorByStage": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "colors": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[]}}"
+    },
+    "conversionBase": {
+      "type": "string",
+      "default": "previous",
+      "initial": "previous"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "initial": "USD"
+    },
+    "data": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ stage: 'Visited', count: 12480 }, { stage: 'Signed up', count: 3920 }, { stage: 'Activated', count: 2210 }, { stage: 'Trial', count: 1180 }, { stage: 'Paid', count: 412 }]}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "No data",
+      "initial": "No data"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showConversion": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "stageField": {
+      "type": "string",
+      "default": "stage",
+      "initial": "stage"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "valueField": {
+      "type": "string",
+      "default": "count",
+      "initial": "count"
+    },
+    "valuePrefix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "valueSuffix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "yAxisFormat": {
+      "type": "string",
+      "default": "number",
+      "initial": "number"
+    }
+  },
+  "styles": {
+    "axisTextColor": {
+      "type": "string"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "chartColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClick",
+    "onDoubleClick"
+  ],
+  "actions": {
+    "clearClickedPoint": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "clickedDataPoint",
+    "isDisabled",
+    "isLoading",
+    "isVisible"
+  ]
+}

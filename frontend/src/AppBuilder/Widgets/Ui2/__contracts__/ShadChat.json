@@ -1,0 +1,208 @@
+{
+  "type": "ShadChat",
+  "properties": {
+    "chatTitle": {
+      "type": "string",
+      "default": "Chat",
+      "initial": "Chat"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disableInput": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "Start the conversation",
+      "initial": "Start the conversation"
+    },
+    "enableClearHistoryButton": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "enableDownloadHistoryButton": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "initialChat": {
+      "type": "array<object>",
+      "default": [],
+      "initial": "{{[{ message: 'Hi! Ask me anything about your orders, invoices or deliveries.', messageId: 'welcome-1', timestamp: 'new Date().toISOString()', name: 'Assistant', avatar: '', type: 'response' }]}}"
+    },
+    "loadingHistory": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "loadingResponse": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "placeholder": {
+      "type": "string",
+      "default": "Ask me anything!",
+      "initial": "Ask me anything!"
+    },
+    "respondentAvatar": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "respondentName": {
+      "type": "string",
+      "default": "Assistant",
+      "initial": "Assistant"
+    },
+    "showAvatars": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showTimestamps": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "userAvatar": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "userName": {
+      "type": "string",
+      "default": "{{globals.currentUser.firstName}}",
+      "initial": "{{globals.currentUser.firstName}}"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColorField": {
+      "type": "string"
+    },
+    "backgroundColorField": {
+      "type": "string"
+    },
+    "borderColorContainer": {
+      "type": "string"
+    },
+    "borderColorField": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "containerBackgroundColor": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "responseBubbleColor": {
+      "type": "string"
+    },
+    "sendIconColorField": {
+      "type": "string"
+    },
+    "textColorField": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClearHistory",
+    "onMessageSent"
+  ],
+  "actions": {
+    "appendHistory": [
+      "message"
+    ],
+    "clearHistory": [],
+    "downloadChat": [],
+    "sendMessage": [
+      "message"
+    ],
+    "setDisable": [
+      "value"
+    ],
+    "setError": [
+      "error"
+    ],
+    "setHistory": [
+      "history"
+    ],
+    "setHistoryLoading": [
+      "loading"
+    ],
+    "setInputDisable": [
+      "disabled"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setResponderAvatar": [
+      "avatar"
+    ],
+    "setResponseLoading": [
+      "loading"
+    ],
+    "setUserAvatar": [
+      "avatar"
+    ],
+    "setVisibility": [
+      "visible"
+    ]
+  },
+  "exposed": [
+    "history",
+    "isDisabled",
+    "isHistoryLoading",
+    "isInputDisabled",
+    "isLoading",
+    "isResponseLoading",
+    "isVisible",
+    "lastMessage",
+    "lastResponse"
+  ]
+}

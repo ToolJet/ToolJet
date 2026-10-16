@@ -1,0 +1,294 @@
+// The public contract of a UI 2.0 widget: every name and default an app saved under an earlier release can rely on.
+// A saved app names property, style and validation keys, event ids, action handles (with their parameters, passed by
+// position) and exposed value keys; and an app that never set a property (AI-built apps save only what they set) gets
+// its default. `npm run ui2:contracts` freezes this per widget in Ui2/__contracts__/<Type>.json, and
+// contracts.spec.js fails when a config drifts from it in a way saved apps would notice.
+//
+// Plain module with relative imports only: scripts/ui2-contracts.js loads it under Node as well as Jest.
+
+const AREAS = ['property', 'style', 'validation', 'event', 'action', 'exposed'];
+
+/** The legacyNames.ts table a rename in this area is recorded in. Styles and validation keys have none. */
+export const RENAME_TABLE = { property: 'properties', event: 'events', action: 'actions', exposed: 'exposed' };
+
+const schemaType = (schema) => {
+  if (!schema || !schema.type) return 'any';
+  if (schema.type === 'union') return `union<${(schema.schemas || []).map(schemaType).join('|')}>`;
+  if (schema.type === 'array' && schema.element) return `array<${schemaType(schema.element)}>`;
+  return schema.type;
+};
+
+/** A default as the resolver sees it: a switch's `{ value }` default is its value. */
+const defaultOf = (def) => {
+  const value = def?.validation?.defaultValue ?? def?.defaultValue;
+  return value !== null && typeof value === 'object' && !Array.isArray(value) && 'value' in value ? value.value : value;
+};
+
+const keyed = (defs, created) =>
+  Object.fromEntries(
+    Object.keys(defs || {})
+      .sort()
+      .map((key) => {
+        const entry = { type: schemaType(defs[key]?.validation?.schema) };
+        const fallback = defaultOf(defs[key]);
+        if (fallback !== undefined) entry.default = fallback;
+        if (created?.[key]?.value !== undefined) entry.initial = created[key].value;
+        return [key, entry];
+      })
+  );
+
+/** The contract of one widget config, in the shape written to __contracts__/<Type>.json. */
+export function contractOf(config) {
+  const definition = config.definition || {};
+  return {
+    type: config.name,
+    properties: keyed(config.properties, definition.properties),
+    styles: keyed(config.styles, definition.styles),
+    validation: Object.fromEntries(
+      Object.keys(config.validation || {})
+        .sort()
+        .map((key) => [
+          key,
+          definition.validation?.[key]?.value !== undefined ? { initial: definition.validation[key].value } : {},
+        ])
+    ),
+    events: Object.keys(config.events || {}).sort(),
+    actions: Object.fromEntries(
+      (config.actions || [])
+        .map((a) => [a.handle, (a.params || []).map((p) => p.handle)])
+        .sort(([a], [b]) => a.localeCompare(b))
+    ),
+    exposed: Object.keys(config.exposedVariables || {}).sort(),
+  };
+}
+
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const AREA_KEY = {
+  property: 'properties',
+  style: 'styles',
+  validation: 'validation',
+  event: 'events',
+  action: 'actions',
+  exposed: 'exposed',
+};
+const namesIn = (contract, area) => {
+  const value = contract[AREA_KEY[area]];
+  return Array.isArray(value) ? value : Object.keys(value || {});
+};
+
+/**
+ * Every difference between a frozen contract and the live one, as
+ * `{ type, area, key, change, from, to }` with change one of: added, removed, default, initial, valueType, params.
+ * A whole widget appearing or disappearing is area 'widget'.
+ */
+export function diffContract(frozen, live) {
+  const type = (frozen || live).type;
+  if (!frozen) return [{ type, area: 'widget', key: type, change: 'added' }];
+  if (!live) return [{ type, area: 'widget', key: type, change: 'removed' }];
+  const changes = [];
+  for (const area of AREAS) {
+    const before = namesIn(frozen, area);
+    const after = namesIn(live, area);
+    for (const key of before.filter((k) => !after.includes(k))) changes.push({ type, area, key, change: 'removed' });
+    for (const key of after.filter((k) => !before.includes(k))) changes.push({ type, area, key, change: 'added' });
+    for (const key of before.filter((k) => after.includes(k))) {
+      const was = frozen[AREA_KEY[area]][key];
+      const now = live[AREA_KEY[area]][key];
+      if (area === 'action' && !same(was, now)) changes.push({ type, area, key, change: 'params', from: was, to: now });
+      if (!['property', 'style', 'validation'].includes(area)) continue;
+      for (const [field, change] of [
+        ['default', 'default'],
+        ['initial', 'initial'],
+        ['type', 'valueType'],
+      ]) {
+        if (!same(was[field], now[field])) changes.push({ type, area, key, change, from: was[field], to: now[field] });
+      }
+    }
+  }
+  return changes;
+}
+
+const matchesAccepted = (change, accepted) =>
+  accepted.find(
+    (a) => a.type === change.type && a.area === change.area && a.key === change.key && a.change === change.change
+  );
+
+/** Whether `text` (a migration's source) rewrites `from` to `to`, as the rename tables are written: `from: 'to'`. */
+const migrationRewrites = (texts, from, to) => {
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(?:^|[\\s{,'"])${esc(from)}['"]?\\s*:\\s*['"\`]${esc(to)}['"\`]`);
+  return texts.some((text) => re.test(text));
+};
+
+/**
+ * Sorts each change into what the contract allows:
+ *  - addition: new names, safe; the contract file only needs `npm run ui2:contracts`.
+ *  - renamed: a removed name that legacyNames.ts maps to a live name and a data migration rewrites.
+ *  - accepted: listed in __contracts__/acceptedBreaks.json with a reason.
+ *  - break: anything else; saved apps would notice.
+ * `renamesFor` is legacyNames.ts's; `migrationTexts` the sources of server/data-migrations/*.ts.
+ */
+export function classify(changes, { renamesFor, migrationTexts, acceptedBreaks, liveContracts }) {
+  return changes.map((change) => {
+    if (change.change === 'added') return { ...change, verdict: 'addition' };
+    const accepted = matchesAccepted(change, acceptedBreaks);
+    if (accepted) return { ...change, verdict: 'accepted', reason: accepted.reason };
+    if (change.change === 'removed' && RENAME_TABLE[change.area]) {
+      const target = renamesFor(change.type)?.[RENAME_TABLE[change.area]]?.[change.key];
+      const live = liveContracts[change.type];
+      const targetLive = target && live && namesIn(live, change.area).includes(target.split('.')[0]);
+      const migrated = target && migrationRewrites(migrationTexts, change.key, target);
+      if (targetLive && migrated) return { ...change, verdict: 'renamed', to: target };
+      return { ...change, verdict: 'break', renamedTo: target, targetLive, migrated };
+    }
+    return { ...change, verdict: 'break' };
+  });
+}
+
+const AREA_WORDS = {
+  property: 'property',
+  style: 'style',
+  validation: 'validation rule',
+  event: 'event',
+  action: 'action',
+  exposed: 'exposed value',
+  widget: 'widget',
+};
+
+const IMPACT = {
+  property: 'Saved apps keep the value under the old key; the widget would no longer read it.',
+  style: 'Saved apps keep the style under the old key; the widget would no longer read it.',
+  validation: 'Saved apps keep the rule under the old key; it would stop validating.',
+  event: 'Saved handlers on this event would stop running, with no error (the dispatcher drops unknown events).',
+  action:
+    'Saved event handlers (control component) and RunJS code calling it would do nothing, with no error: the ' +
+    'dispatcher skips an action the widget does not have.',
+  exposed: 'Bindings like {{components.x.KEY}} in saved apps would resolve to undefined.',
+  widget: 'Saved apps with this widget would show "This widget is not available".',
+};
+
+const show = (v) => (v === undefined ? 'nothing' : JSON.stringify(v));
+const entry = (c) => JSON.stringify({ type: c.type, area: c.area, key: c.key, change: c.change, reason: '<why>' });
+
+/** What a developer reads when the contract spec fails on a break: what changed, who it breaks, and the two ways out. */
+export function explainBreak(c) {
+  const what = `${c.type} ${AREA_WORDS[c.area]} "${c.key}"`;
+  const lines = [];
+  if (c.change === 'removed') {
+    lines.push(`${what} was removed or renamed.`, `  ${IMPACT[c.area].replace('KEY', c.key)}`);
+    if (RENAME_TABLE[c.area]) {
+      const table = `UI2_RENAMES.${c.type}.${RENAME_TABLE[c.area]}`;
+      if (!c.renamedTo) {
+        lines.push(
+          `  If it was renamed: map "${c.key}" to the new name in ${table} in Widgets/Ui2/legacyNames.ts and in the`,
+          `  server copy (server/src/modules/apps/services/ui2-legacy-names.ts, used on import), and add a data`,
+          `  migration in server/data-migrations that rewrites saved apps (start from *-RenameUi2PackNames.ts).`
+        );
+      } else {
+        if (!c.targetLive)
+          lines.push(`  legacyNames.ts maps it to "${c.renamedTo}", but the live config has no "${c.renamedTo}".`);
+        if (!c.migrated)
+          lines.push(
+            `  legacyNames.ts maps it to "${c.renamedTo}", but no migration in server/data-migrations rewrites`,
+            `  "${c.key}: '${c.renamedTo}'". Add one (start from *-RenameUi2PackNames.ts; never edit a shipped one).`
+          );
+      }
+    }
+  } else if (c.change === 'params') {
+    lines.push(
+      `${what} changed its parameters from ${show(c.from)} to ${show(c.to)}.`,
+      '  Saved control-component handlers pass parameters by position, so every saved call would now pass its',
+      '  arguments to the wrong parameter. Keep the order and add new parameters at the end.'
+    );
+  } else if (c.change === 'valueType') {
+    lines.push(
+      `${what} changed its value type from ${show(c.from)} to ${show(c.to)}.`,
+      '  A saved value that no longer validates falls back to the default, so saved apps would lose it.'
+    );
+  } else {
+    const which = c.change === 'default' ? 'default' : 'value a new widget is created with';
+    lines.push(
+      `${what} changed its ${which} from ${show(c.from)} to ${show(c.to)}.`,
+      c.change === 'default'
+        ? '  Saved apps that never set it (AI-built apps save only what they set) would change how they look or behave.'
+        : '  New widgets would start differently from the ones already in saved apps, and the inspector default would disagree.'
+    );
+  }
+  lines.push(
+    '  If the break is intended, add this entry, with the reason, to Widgets/Ui2/__contracts__/acceptedBreaks.json:',
+    `    ${entry(c)}`,
+    '  Then run `npm run ui2:contracts` (in frontend). Otherwise put the old name or value back.'
+  );
+  return lines.join('\n');
+}
+
+export function explainAll(classified) {
+  const breaks = classified.filter((c) => c.verdict === 'break');
+  const pending = classified.filter((c) => c.verdict !== 'break');
+  const parts = [];
+  if (breaks.length)
+    parts.push(
+      `UI 2.0 widget contract: ${breaks.length} change(s) would break apps saved under an earlier release.\n\n` +
+        breaks.map(explainBreak).join('\n\n')
+    );
+  if (pending.length)
+    parts.push(
+      'UI 2.0 widget contract files are out of date. Run `npm run ui2:contracts` in frontend and commit ' +
+        'Widgets/Ui2/__contracts__:\n' +
+        pending
+          .map(
+            (c) =>
+              `  ${c.type} ${AREA_WORDS[c.area]} "${c.key}": ${c.verdict === 'addition' ? 'added' : c.verdict}` +
+              (c.to ? ` to "${c.to}"` : '') +
+              (c.reason ? ` (${c.reason})` : '')
+          )
+          .join('\n')
+    );
+  return parts.join('\n\n');
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// The files: where the frozen contracts, accepted breaks and migrations live, shared by the spec and the script.
+// ---------------------------------------------------------------------------------------------------------------
+const fs = require('fs');
+const path = require('path');
+
+const UI2 = path.resolve(__dirname, '../..');
+export const CONTRACTS_DIR = path.join(UI2, '__contracts__');
+export const ACCEPTED_BREAKS = path.join(CONTRACTS_DIR, 'acceptedBreaks.json');
+const MIGRATIONS_DIR = path.resolve(UI2, '../../../../../server/data-migrations');
+
+export const readFrozenContracts = () =>
+  Object.fromEntries(
+    (fs.existsSync(CONTRACTS_DIR) ? fs.readdirSync(CONTRACTS_DIR) : [])
+      .filter((f) => /^Shad\w+\.json$/.test(f))
+      .map((f) => [f.replace(/\.json$/, ''), JSON.parse(fs.readFileSync(path.join(CONTRACTS_DIR, f), 'utf8'))])
+  );
+
+export const readAcceptedBreaks = () =>
+  fs.existsSync(ACCEPTED_BREAKS) ? JSON.parse(fs.readFileSync(ACCEPTED_BREAKS, 'utf8')).breaks || [] : [];
+
+const readMigrationTexts = () =>
+  fs.existsSync(MIGRATIONS_DIR)
+    ? fs
+        .readdirSync(MIGRATIONS_DIR)
+        .filter((f) => f.endsWith('.ts'))
+        .map((f) => fs.readFileSync(path.join(MIGRATIONS_DIR, f), 'utf8'))
+    : [];
+
+/** Compares the live configs with the frozen contracts. */
+export function compareWithFrozen({ configs, renamesFor, frozen = readFrozenContracts(), acceptedBreaks }) {
+  const liveContracts = Object.fromEntries(configs.map((c) => [c.name, contractOf(c)]));
+  const types = [...new Set([...Object.keys(frozen), ...Object.keys(liveContracts)])].sort();
+  const changes = types.flatMap((type) => diffContract(frozen[type], liveContracts[type]));
+  const classified = classify(changes, {
+    renamesFor,
+    migrationTexts: readMigrationTexts(),
+    acceptedBreaks: acceptedBreaks ?? readAcceptedBreaks(),
+    liveContracts,
+  });
+  return { liveContracts, classified };
+}
+
+export const contractFile = (type) => path.join(CONTRACTS_DIR, `${type}.json`);
+export const serialize = (contract) => `${JSON.stringify(contract, null, 2)}\n`;
