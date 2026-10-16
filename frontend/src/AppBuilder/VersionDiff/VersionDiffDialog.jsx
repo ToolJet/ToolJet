@@ -20,6 +20,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { appVersionService, authenticationService } from '@/_services';
 import { getSubpath } from '@/_helpers/routes';
+import { previewFrameUrl } from './frameUrl';
 import { authHeader } from '@/_helpers';
 import config from 'config';
 import { toast } from 'react-hot-toast';
@@ -372,18 +373,14 @@ export const VersionDiffDialog = ({ darkMode }) => {
       if (!version || !pageKey) return null;
       // Without environments (no multi-environment license) the viewer picks its own.
       if (environments?.length && !frameEnvs[versionId]) return null;
-      const env = frameEnvs[versionId]?.env;
-      // encodeURIComponent, not URLSearchParams: the viewer decodes %20 but reads + literally.
-      const query = [
-        ['version', version.name],
-        ...(env ? [['env', env]] : []),
-        ...(snapshot ? [['snapshot', snapshot]] : []),
-      ]
-        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-        .join('&');
-      return `${getSubpath() ?? ''}/applications/${encodeURIComponent(slug || appId)}/${encodeURIComponent(
-        pageKey
-      )}?${query}`;
+      return previewFrameUrl({
+        subpath: getSubpath(),
+        app: slug || appId,
+        pageKey,
+        version: version.name,
+        env: frameEnvs[versionId]?.env,
+        snapshot,
+      });
     },
     [versionById, environments, slug, appId, pageKey, frameEnvs]
   );
