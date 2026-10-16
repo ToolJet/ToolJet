@@ -139,12 +139,13 @@ export const Listview = function Listview({
   const pageChanged = (page) => {
     setCurrentPage(page);
   };
-  // A page number outlives the records it pointed at, so a new data set would open mid-list.
+  // A delete or add must not lose the reader's place; only a page past the new end moves, to the last one.
   const prevRecordCount = useRef(_.isArray(data) ? data.length : 0);
   const recordCount = _.isArray(data) ? data.length : 0;
   if (prevRecordCount.current !== recordCount) {
     prevRecordCount.current = recordCount;
-    if (currentPage !== 1) setCurrentPage(1);
+    const lastPage = Math.max(1, Math.ceil(recordCount / rowPerPageValue));
+    if (currentPage > lastPage) setCurrentPage(lastPage);
     // A selection outlives its record otherwise, and a handler acts on a row the data no longer has.
     if (selectedRowIndex !== undefined && selectedRowIndex >= recordCount) {
       setSelectedRowIndex(undefined);

@@ -1402,6 +1402,26 @@ describe('Listview: the pager is operable without a mouse', () => {
 
     await waitFor(() => expect(rowTexts()).toEqual(['Gamma']));
   });
+
+  test('[Listview-BUG-037] Enter on a greyed-out arrow leaves the page where it is', async () => {
+    // Break this catches: the keyboard path skipping the disabled check the mouse gets from CSS, so
+    // Previous on page one or Next on the last page walks off the end of the list.
+    await mount({ properties: { enablePagination: binding('{{true}}'), rowsPerPage: binding('{{2}}') } });
+    await waitFor(() => expect(rowTexts()).toEqual(['Alpha', 'Beta']));
+    const footer = () => document.querySelector('[data-cy="container-pagination"] p').textContent;
+
+    arrows().previous.focus();
+    await user().keyboard('{Enter}');
+    expect(rowTexts()).toEqual(['Alpha', 'Beta']);
+    expect(footer()).toBe('Showing 1 to 2 of 3');
+
+    await user().click(arrows().next);
+    await waitFor(() => expect(rowTexts()).toEqual(['Gamma']));
+    arrows().next.focus();
+    await user().keyboard('{Enter}');
+    expect(rowTexts()).toEqual(['Gamma']);
+    expect(footer()).toBe('Showing 3 to 3 of 3');
+  });
 });
 
 /**
@@ -1499,9 +1519,9 @@ describe('Listview: the pager follows the data', () => {
 
   const activePage = () => document.querySelector('.page-item.active')?.textContent;
 
-  test('[Listview-BUG-020] changing the data sends the pager back to page one', async () => {
-    // Break this catches: the page number living on after the records it pointed at are gone, so a
-    // fresh data set opens somewhere in the middle, or past its own end.
+  test('[Listview-BUG-020] a new data set that still reaches the page opens on that page', async () => {
+    // Break this catches: reading the page against the old records, so the new set shows stale rows
+    // or a page past its own end. D-07 keeps the page number while the page exists.
     await mount(paged(manyRecords(30, 'a'), binding('{{10}}')));
     await waitFor(() => expect(rowTexts()[0]).toBe('a0'));
 
@@ -1513,8 +1533,41 @@ describe('Listview: the pager follows the data', () => {
       widget.setComponentProperty(ID, 'data', manyRecords(25, 'b').value, 'properties');
     });
 
-    await waitFor(() => expect(rowTexts()[0]).toBe('b0'));
-    expect(activePage()).toBe('1');
+    await waitFor(() => expect(rowTexts()[0]).toBe('b20'));
+    expect(activePage()).toBe('3');
+  });
+
+  test('[Listview-BUG-038] a record deleted on page three keeps the reader on page three', async () => {
+    // Break this catches: resetting to page one on any change in record count, so every delete,
+    // add or count-changing search throws the reader back to the start.
+    await mount(paged(manyRecords(50, 'o'), binding('{{10}}')));
+    await waitFor(() => expect(rowTexts()[0]).toBe('o0'));
+    await user().click(document.querySelector('[data-cy="next-page-link"]'));
+    await user().click(document.querySelector('[data-cy="next-page-link"]'));
+    await waitFor(() => expect(rowTexts()[0]).toBe('o20'));
+
+    await widget.session.store.act(() => {
+      widget.setComponentProperty(ID, 'data', manyRecords(49, 'o').value, 'properties');
+    });
+
+    await waitFor(() => expect(document.querySelector('[data-cy="total-count"]').textContent).toBe('49'));
+    expect(rowTexts()[0]).toBe('o20');
+    expect(activePage()).toBe('3');
+  });
+
+  test('[Listview-BUG-038] a data set that no longer reaches the page lands on its last page', async () => {
+    // Break this catches: keeping a page number past the new end, which renders an empty page.
+    await mount(paged(manyRecords(50, 'p'), binding('{{10}}')));
+    await waitFor(() => expect(rowTexts()[0]).toBe('p0'));
+    await user().click(document.querySelector('[data-cy="last-page-link"]'));
+    await waitFor(() => expect(rowTexts()[0]).toBe('p40'));
+
+    await widget.session.store.act(() => {
+      widget.setComponentProperty(ID, 'data', manyRecords(15, 'p').value, 'properties');
+    });
+
+    await waitFor(() => expect(rowTexts()).toEqual(['p10', 'p11', 'p12', 'p13', 'p14']));
+    expect(activePage()).toBe('2');
   });
 
   test('[Listview-BUG-021] a negative rows-per-page falls back to ten', async () => {

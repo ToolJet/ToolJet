@@ -63,17 +63,19 @@ export const Pagination = function Pagination({
   }
 
   // These arrows are anchors without an href, so the browser gives them neither focus nor a name.
-  const arrowProps = (label, onActivate) => ({
+  // A greyed-out arrow stops the mouse through CSS only, so the keyboard needs its own guard.
+  const arrowProps = (label, onActivate, disabled) => ({
     role: 'button',
     tabIndex: 0,
     'aria-label': label,
+    'aria-disabled': disabled,
     style: { cursor: 'pointer' },
     className: 'page-link',
     onClick: onActivate,
     onKeyDown: (event) => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
       event.preventDefault();
-      onActivate(event);
+      if (!disabled) onActivate(event);
     },
   });
 
@@ -90,7 +92,7 @@ export const Pagination = function Pagination({
       </p>
       <ul className="pagination m-0 ms-auto">
         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-          <a {...arrowProps('First page', gotoFirstPage)} data-cy="first-page-link">
+          <a {...arrowProps('First page', gotoFirstPage, currentPage === 1)} data-cy="first-page-link">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -110,7 +112,11 @@ export const Pagination = function Pagination({
           </a>
         </li>
         <li data-testid="previous-0" className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-          <a data-testid="previous" {...arrowProps('Previous page', gotoPreviousPage)} data-cy="previous-page-link">
+          <a
+            data-testid="previous"
+            {...arrowProps('Previous page', gotoPreviousPage, currentPage === 1)}
+            data-cy="previous-page-link"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -132,7 +138,11 @@ export const Pagination = function Pagination({
         {getPageLinks(currentPage)}
         {getPageLinks(currentPage + 1)}
         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-          <a data-testid="next" {...arrowProps('Next page', gotoNextPage)} data-cy="next-page-link">
+          <a
+            data-testid="next"
+            {...arrowProps('Next page', gotoNextPage, currentPage === totalPages)}
+            data-cy="next-page-link"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -151,7 +161,7 @@ export const Pagination = function Pagination({
           </a>
         </li>
         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-          <a {...arrowProps('Last page', gotoLastPage)} data-cy="last-page-link">
+          <a {...arrowProps('Last page', gotoLastPage, currentPage === totalPages)} data-cy="last-page-link">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
