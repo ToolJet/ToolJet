@@ -31,9 +31,19 @@ If your instance runs behind a firewall, proxy, or restricted egress policy, all
 | Domain | Purpose |
 |---|---|
 | `https://api-gateway.tooljet.ai` | Routes AI requests to the configured LLM provider |
-| `https://python-server.tooljet.ai` | Backs AI operations that require the Python execution service |
+| `https://ai-server.tooljet.ai` | Backs the App Builder and other AI operations |
+
+No inbound rules are required. All AI traffic is initiated by your ToolJet server.
 
 If your instance uses an [HTTP proxy](/docs/setup/http-proxy), make sure these domains are reachable through it.
+
+:::info
+Instances running a version earlier than v3.20.220-lts use `https://python-server.tooljet.ai` in place of `https://ai-server.tooljet.ai`. Keep that rule in place until the instance is upgraded.
+:::
+
+:::tip
+Using ToolJet [MCP](/docs/build-with-ai/mcp/overview) through a coding agent requires no additional network rules on self-hosted instances running v3.20.220-lts or later.
+:::
 
 ## Setup
 
