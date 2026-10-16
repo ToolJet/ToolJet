@@ -57,6 +57,13 @@ describe('pickers model: options', () => {
     expect(M.clampLimit(-3)).toBe(0);
     expect(M.clampLimit('4')).toBe(4);
   });
+
+  it('builds stable keys without throwing on circular data', () => {
+    const loop = {};
+    loop.self = loop;
+    expect(typeof M.stableKey(loop)).toBe('string');
+    expect(M.stableKey([1])).toBe('[1]');
+  });
 });
 
 describe('pickers model: tags', () => {
@@ -92,38 +99,6 @@ describe('pickers model: tags', () => {
   });
 });
 
-describe('pickers model: colour', () => {
-  it('normalises hex and rgb text, with alpha only when allowed', () => {
-    expect(M.normalizeHex('#ABC')).toBe('#aabbcc');
-    expect(M.normalizeHex('6366F1')).toBe('#6366f1');
-    expect(M.normalizeHex('#6366f180')).toBe('#6366f1');
-    expect(M.normalizeHex('#6366f180', true)).toBe('#6366f180');
-    expect(M.normalizeHex('#6366f1ff', true)).toBe('#6366f1');
-    expect(M.normalizeHex('rgb(255, 0, 0)')).toBe('#ff0000');
-    expect(M.normalizeHex('rgba(0,0,0,0.5)', true)).toBe('#00000080');
-    expect(M.normalizeHex('rgb(300,0,0)')).toBeNull();
-    expect(M.normalizeHex('red')).toBeNull();
-    expect(M.normalizeHex(null)).toBeNull();
-  });
-
-  it('gives the rgb forms and round-trips through HSV', () => {
-    expect(M.colorForms('#6366f1')).toEqual({ rgb: 'rgb(99, 102, 241)', rgba: 'rgba(99, 102, 241, 1)' });
-    expect(M.colorForms('')).toEqual({ rgb: '', rgba: '' });
-    for (const hex of ['#6366f1', '#000000', '#ffffff', '#22c55e', '#ef4444']) {
-      const rgb = M.hexToRgba(hex);
-      expect(M.rgbaToHex(M.hsvToRgb(M.rgbToHsv(rgb)))).toBe(hex);
-    }
-    expect(M.rgbaToHex({ r: 999, g: -4, b: NaN })).toBe('#ff0000');
-  });
-
-  it('keeps valid, distinct swatches and picks a readable check colour', () => {
-    expect(M.toSwatches(['#fff', '#FFFFFF', 'nope', null, '#000'])).toEqual(['#ffffff', '#000000']);
-    expect(M.toSwatches('junk')).toEqual([]);
-    expect(M.contrastOn('#ffffff')).toBe('#000000');
-    expect(M.contrastOn('#0f172a')).toBe('#ffffff');
-  });
-});
-
 describe('pickers model: rating', () => {
   it('clamps the icon count and the value', () => {
     expect(M.clampMax(50)).toBe(10);
@@ -143,57 +118,5 @@ describe('pickers model: rating', () => {
     expect(M.stepRating(5, 1, 5)).toBe(5);
     expect(M.stepRating(0, -1, 5)).toBe(1);
     expect(M.stepRating(2, -1, 5, true)).toBe(1.5);
-  });
-});
-
-describe('pickers model: files', () => {
-  it('formats sizes', () => {
-    expect(M.formatBytes(0)).toBe('0 B');
-    expect(M.formatBytes(512)).toBe('512 B');
-    expect(M.formatBytes(1536)).toBe('1.5 KB');
-    expect(M.formatBytes(5242880)).toBe('5 MB');
-    expect(M.formatBytes('junk')).toBe('0 B');
-  });
-
-  it('turns accept lists into react-dropzone maps and words', () => {
-    expect(M.toDropzoneAccept('')).toBeUndefined();
-    expect(M.toDropzoneAccept(12)).toBeUndefined();
-    expect(M.toDropzoneAccept('image/*, .pdf, .weird, nonsense')).toEqual({
-      'image/*': [],
-      'application/pdf': ['.pdf'],
-      'application/octet-stream': ['.weird'],
-    });
-    expect(M.acceptHint(['image/*', 'application/pdf', '.csv', 'text/csv'])).toBe('Images, PDF, CSV');
-    expect(M.acceptHint(undefined)).toBe('');
-  });
-
-  it('knows file kinds and limits', () => {
-    expect(M.fileKind('image/png', 'a.png')).toBe('image');
-    expect(M.fileKind('', 'report.PDF')).toBe('pdf');
-    expect(M.fileKind('text/csv', 'a.csv')).toBe('sheet');
-    expect(M.fileKind('application/zip', 'a.zip')).toBe('archive');
-    expect(M.fileKind(undefined, undefined)).toBe('other');
-    expect(M.clampFiles('x')).toBe(10);
-    expect(M.clampFiles(1000)).toBe(100);
-    expect(M.clampBytes(-5)).toBe(0);
-  });
-
-  it('names the first rejection', () => {
-    const big = [{ file: { name: 'big.png' }, errors: [{ code: 'file-too-large' }] }];
-    expect(M.rejectionMessage(big, { maxSize: 1048576 })).toBe('"big.png" is larger than 1 MB');
-    expect(M.rejectionMessage([{ file: { name: 'a.txt' }, errors: [{ code: 'file-invalid-type' }] }])).toBe(
-      '"a.txt" is not an accepted file type'
-    );
-    expect(M.rejectionMessage([{ errors: [{ code: 'too-many-files' }] }], { maxFiles: 3 })).toBe(
-      'You can upload up to 3 files'
-    );
-    expect(M.rejectionMessage(null)).toBe('');
-  });
-
-  it('builds stable keys without throwing on circular data', () => {
-    const loop = {};
-    loop.self = loop;
-    expect(typeof M.stableKey(loop)).toBe('string');
-    expect(M.stableKey([1])).toBe('[1]');
   });
 });

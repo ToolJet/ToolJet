@@ -1,28 +1,30 @@
 import {
   activeItemExposed,
   aspectRatio,
-  calendarExposed,
-  calendarSelection,
   carouselPositions,
   carouselSlides,
   clampInt,
   clickedOption,
-  disabledMatchers,
   findNav,
   groupButtons,
   iconName,
   initialSelection,
-  markersByDay,
   menuRows,
   moveIndex,
   navItems,
   selectionExposed,
-  toDate,
   toggleSelection,
   unwrap,
+} from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
+import {
+  calendarExposed,
+  calendarSelection,
+  disabledMatchers,
+  markersByDay,
+  toDate,
   visiblePeriod,
   ymd,
-} from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
+} from '@/AppBuilder/Widgets/Ui2/_actions/calendarModel';
 
 const JUNK = [null, undefined, 42, 'text', true, {}, [], [null, 3, { label: {} }, [1]], { value: { a: 1 } }];
 

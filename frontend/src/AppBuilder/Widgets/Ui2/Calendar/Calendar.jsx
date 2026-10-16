@@ -3,17 +3,16 @@ import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widget
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Calendar, buttonVariants, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+import { clampInt, unwrap } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import {
   calendarExposed,
   calendarSelection,
-  clampInt,
   disabledMatchers,
   markersByDay,
   toDate,
-  unwrap,
   visiblePeriod,
   ymd,
-} from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
+} from '@/AppBuilder/Widgets/Ui2/_actions/calendarModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { useLive } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 

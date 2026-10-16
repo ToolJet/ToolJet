@@ -5,7 +5,7 @@ import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Input, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
+import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
 import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { MENU_SURFACE, PLACEHOLDER } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 

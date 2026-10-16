@@ -18,7 +18,7 @@ import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
+import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/fileModel';
 import { MUTED, isText } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 
 // ---- File upload ---------------------------------------------------------------------------------------------------
