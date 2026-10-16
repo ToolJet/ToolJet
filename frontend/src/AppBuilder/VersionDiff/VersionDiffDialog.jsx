@@ -25,22 +25,16 @@ import { authHeader } from '@/_helpers';
 import config from 'config';
 import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
-import {
-  Button,
-  ToggleGroup,
-  ToggleGroupItem,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  selectTriggerVariants,
-} from '@/components/ui/Rocket';
+import { Button, Tabs, TabsList, TabsTrigger, selectTriggerVariants } from '@/components/ui/Rocket';
 import { useVersionDiffStore } from './useVersionDiffStore';
 import { ChangeList, STATUS_WORD, typeLabel } from './ChangeList';
+import { CodePane } from './CodePane';
+import { autoOpenCode, codeEntries, codeForSelection } from './codeChanges';
 import { VersionFrame } from './VersionFrame';
 import { BlueprintFrame } from './BlueprintFrame';
 import { ReviewPanel, RequestReviewForm, REVIEW_STATUS } from './ReviewPanel';
 import { reviewService } from './reviewService';
-import { Divider, StatusDot, STATUS_TONE, Tag } from './ui';
+import { Divider, IconChoice, StatusDot, STATUS_TONE, Tag } from './ui';
 import './versionDiff.scss';
 
 const SNAPSHOT = '__snapshot__';
@@ -98,23 +92,6 @@ const VersionSelect = ({ label, value, versions, onChange, releasedVersionId, di
   );
 };
 
-// Icon-only choices, as in the editor header's desktop and mobile switch.
-const IconChoice = ({ label, value, onChange, options }) => (
-  <ToggleGroup type="single" value={value} onValueChange={(next) => next && onChange(next)} aria-label={label}>
-    {options.map(({ id, text, Icon }) => (
-      <ToggleGroupItem
-        key={id}
-        value={id}
-        aria-label={text}
-        data-tip={text}
-        className="vd-seg__opt tw-w-7 tw-text-icon-default [&_svg]:!tw-text-icon-default data-[state=on]:[&_svg]:!tw-text-icon-strong hover:[&_svg]:!tw-text-icon-strong"
-      >
-        <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
-      </ToggleGroupItem>
-    ))}
-  </ToggleGroup>
-);
-
 // Picks the version most worth comparing against: the one this version was
 // copied from, else the released one, else the newest other version.
 const defaultBase = (target, versions, releasedVersionId) => {
@@ -168,6 +145,15 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const [undoState, setUndoState] = useState(null); // null | 'confirm' | 'working' | { error }
   const [reloadKey, setReloadKey] = useState(0);
   const [errorStatus, setErrorStatus] = useState(null);
+  // The code change open in the right pane, by its codeEntries id.
+  const [codeId, setCodeId] = useState(null);
+  const [codeMode, setCodeMode] = useState(() => {
+    try {
+      return window.localStorage.getItem('vd-code-mode') === 'unified' ? 'unified' : 'split';
+    } catch {
+      return 'split';
+    }
+  });
   const [frameEnvs, setFrameEnvs] = useState({}); // versionId -> { env, own }
   const closeRef = useRef(null);
   const loadedPairRef = useRef(null);
@@ -243,7 +229,11 @@ export const VersionDiffDialog = ({ darkMode }) => {
       .then((result) => {
         if (cancelled) return;
         setDiff(result);
-        setSelectedKey(null);
+        // With no page to preview, the first code change opens, with its row expanded on the left.
+        const entries = codeEntries(result);
+        const autoCode = autoOpenCode(result, entries);
+        setSelectedKey(autoCode ? entries.find((entry) => entry.id === autoCode).owner : null);
+        setCodeId(autoCode);
         setFilter('all');
         setScroll(null);
         setFound({ base: new Set(), target: new Set() });
@@ -333,6 +323,19 @@ export const VersionDiffDialog = ({ darkMode }) => {
 
   const versionById = useMemo(() => new Map(versions.map((version) => [version.id, version])), [versions]);
   const page = diff?.pages.find((item) => item.key === pageKey) ?? null;
+  const codeList = useMemo(() => codeEntries(diff), [diff]);
+  const codeIds = useMemo(() => new Set(codeList.map((entry) => entry.id)), [codeList]);
+  const codeEntry = codeList.find((entry) => entry.id === codeId) ?? null;
+  const codeListRef = useRef(codeList);
+  codeListRef.current = codeList;
+  const chooseCodeMode = useCallback((value) => {
+    setCodeMode(value);
+    try {
+      window.localStorage.setItem('vd-code-mode', value);
+    } catch {
+      // Remembering the layout is a convenience.
+    }
+  }, []);
 
   // The viewer renders a version by name; with a snapshot id it renders the
   // version as that snapshot had it, queries included, without changing anything.
@@ -458,6 +461,8 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const onSelect = useCallback((key, inPage) => {
     setSelectedKey(key);
     if (inPage) setPageKey(inPage);
+    // A query has no place on the canvas: picking it opens its code. A component shows the preview.
+    setCodeId(codeForSelection(key, codeListRef.current));
   }, []);
 
   if (!isOpen) return null;
@@ -765,6 +770,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
                 setPageKey(key);
                 setSelectedKey(null);
                 setScroll(null);
+                setCodeId(null);
               }}
               selectedKey={selectedKey}
               onSelect={onSelect}
@@ -772,6 +778,9 @@ export const VersionDiffDialog = ({ darkMode }) => {
               onHover={(key) => setHover(key ? { key } : null)}
               hiddenKeys={hiddenKeys}
               commentCounts={commentCounts}
+              codeIds={codeIds}
+              activeCodeId={codeId}
+              onOpenCode={setCodeId}
             />
             <main className="vd-stage-wrap tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-bg-page-weak">
               {diff.pages.length > 1 && (
@@ -781,6 +790,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
                     setPageKey(key);
                     setSelectedKey(null);
                     setScroll(null);
+                    setCodeId(null);
                   }}
                   className="tw-shrink-0 tw-px-4 tw-bg-background-surface-layer-01 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak"
                 >
@@ -800,14 +810,28 @@ export const VersionDiffDialog = ({ darkMode }) => {
                   </TabsList>
                 </Tabs>
               )}
-              <div className="tw-flex-1 tw-min-h-0 tw-p-4">
+              <div className="tw-relative tw-flex-1 tw-min-h-0 tw-p-4">
+                {codeEntry && (
+                  // Laid over the frames rather than in their place, so they keep their render.
+                  <div className="tw-absolute tw-inset-4 tw-z-[4]">
+                    <CodePane
+                      entry={codeEntry}
+                      mode={codeMode}
+                      onMode={chooseCodeMode}
+                      baseName={snapshotLabel ?? baseName}
+                      targetName={targetName}
+                      darkMode={darkMode}
+                      onClose={page ? () => setCodeId(null) : null}
+                    />
+                  </div>
+                )}
                 {diff.identical ? (
                   <Calm title="No differences">
                     {targetName} has the same pages, components, queries and settings as {baseName}.
                   </Calm>
                 ) : page ? (
                   frames
-                ) : (
+                ) : codeEntry ? null : (
                   <Calm title="No page changes">
                     The differences are in queries or app settings. They are listed on the left.
                   </Calm>

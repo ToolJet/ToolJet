@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createContext, useContext } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Database,
@@ -11,6 +11,7 @@ import {
   FileText,
   Layers,
   MessageSquare,
+  Code2,
 } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/Rocket';
 import { Counts, StatusDot, Tag, STATUS_TONE } from './ui';
@@ -39,7 +40,47 @@ const GROUP_ICON = {
   event: Zap,
 };
 
-const ChangeLines = ({ changes = [], events = [], note, inset = true }) => (
+// Which changes have code the right pane can show line by line, and which one it shows.
+const CodeContext = createContext({ codeIds: null, activeCodeId: null, onOpenCode: null });
+
+const Line = ({ id, icon: Icon, summary }) => {
+  const { codeIds, activeCodeId, onOpenCode } = useContext(CodeContext);
+  const iconEl = (
+    <Icon size={12} strokeWidth={1.75} className="tw-shrink-0 tw-mt-[3px] tw-text-icon-weak" aria-hidden="true" />
+  );
+  if (!onOpenCode || !codeIds?.has(id)) {
+    return (
+      <li className="vd-line tw-flex tw-gap-2 tw-font-body-small tw-text-text-medium">
+        {iconEl}
+        <span className="tw-min-w-0 tw-break-words">{summary}</span>
+      </li>
+    );
+  }
+  const active = id === activeCodeId;
+  return (
+    <li className="vd-line tw-flex">
+      <button
+        type="button"
+        className={cn(
+          'vd-plain vd-code-line tw-flex tw-gap-2 tw-w-full tw-rounded tw-px-1 tw--mx-1 tw-font-body-small tw-text-text-medium',
+          'hover:tw-bg-interactive-hover',
+          { 'tw-bg-interactive-selected hover:tw-bg-interactive-selected tw-text-text-default': active }
+        )}
+        aria-pressed={active}
+        onClick={() => onOpenCode(id)}
+      >
+        {iconEl}
+        <span className="tw-min-w-0 tw-break-words tw-text-left">{summary}</span>
+        <span className="vd-code-line__cue tw-ml-auto tw-shrink-0 tw-inline-flex tw-items-center tw-gap-1 tw-text-text-brand">
+          <Code2 size={12} strokeWidth={2} aria-hidden="true" />
+          Code
+        </span>
+      </button>
+    </li>
+  );
+};
+
+const ChangeLines = ({ owner, changes = [], events = [], note, inset = true }) => (
   <ul
     className={cn(
       'vd-lines tw-m-0 tw-list-none tw-flex tw-flex-col tw-gap-1.5 tw-pr-4 tw-pt-1 tw-pb-2',
@@ -47,20 +88,16 @@ const ChangeLines = ({ changes = [], events = [], note, inset = true }) => (
     )}
   >
     {note && <li className="tw-font-body-small tw-text-text-placeholder">{note}</li>}
-    {changes.map((change, index) => {
-      const Icon = GROUP_ICON[change.group] ?? SlidersHorizontal;
-      return (
-        <li key={`${change.path}-${index}`} className="vd-line tw-flex tw-gap-2 tw-font-body-small tw-text-text-medium">
-          <Icon size={12} strokeWidth={1.75} className="tw-shrink-0 tw-mt-[3px] tw-text-icon-weak" aria-hidden="true" />
-          <span className="tw-min-w-0 tw-break-words">{change.summary}</span>
-        </li>
-      );
-    })}
+    {changes.map((change, index) => (
+      <Line
+        key={`${change.path}-${index}`}
+        id={`${owner}|${change.path}`}
+        icon={GROUP_ICON[change.group] ?? SlidersHorizontal}
+        summary={change.summary}
+      />
+    ))}
     {events.map((event) => (
-      <li key={event.key} className="vd-line tw-flex tw-gap-2 tw-font-body-small tw-text-text-medium">
-        <Zap size={12} strokeWidth={1.75} className="tw-shrink-0 tw-mt-[3px] tw-text-icon-weak" aria-hidden="true" />
-        <span className="tw-min-w-0 tw-break-words">{event.summary}</span>
-      </li>
+      <Line key={event.key} id={`${owner}|event:${event.key}`} icon={Zap} summary={event.summary} />
     ))}
   </ul>
 );
@@ -124,6 +161,9 @@ export const ChangeList = ({
   onHover,
   hiddenKeys,
   commentCounts = {},
+  codeIds = null,
+  activeCodeId = null,
+  onOpenCode = null,
 }) => {
   const versions = { base: diff.base.name, target: diff.target.name };
   const { components, queries, pages } = diff.summary;
@@ -145,164 +185,168 @@ export const ChangeList = ({
   ].filter(Boolean);
 
   return (
-    <aside
-      className="vd-rail tw-flex tw-flex-col tw-min-h-0 tw-bg-background-surface-layer-01 tw-border-0 tw-border-r tw-border-solid tw-border-border-weak"
-      aria-label="Changes"
-    >
-      <div className="vd-rail__summary tw-flex tw-flex-col tw-gap-3 tw-px-4 tw-py-3 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
-        <div className="tw-flex tw-flex-col tw-gap-0.5">
-          <p className="tw-m-0 tw-font-title-default tw-text-text-default">{headline}</p>
-          {extras.length > 0 && (
-            <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">Also {extras.join(', ')}</p>
+    <CodeContext.Provider value={{ codeIds, activeCodeId, onOpenCode }}>
+      <aside
+        className="vd-rail tw-flex tw-flex-col tw-min-h-0 tw-bg-background-surface-layer-01 tw-border-0 tw-border-r tw-border-solid tw-border-border-weak"
+        aria-label="Changes"
+      >
+        <div className="vd-rail__summary tw-flex tw-flex-col tw-gap-3 tw-px-4 tw-py-3 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
+          <div className="tw-flex tw-flex-col tw-gap-0.5">
+            <p className="tw-m-0 tw-font-title-default tw-text-text-default">{headline}</p>
+            {extras.length > 0 && (
+              <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder">Also {extras.join(', ')}</p>
+            )}
+          </div>
+          {!diff.identical && (
+            <ToggleGroup
+              type="single"
+              size="medium"
+              value={filter}
+              onValueChange={(value) => value && onFilter(value)}
+              className="tw-w-full"
+              aria-label="Filter changes"
+            >
+              {['all', 'added', 'changed', 'removed'].map((status) => {
+                const n = status === 'all' ? totalComponents : components[status];
+                return (
+                  <ToggleGroupItem
+                    key={status}
+                    value={status}
+                    className="vd-filter tw-flex-auto tw-gap-1 tw-px-2"
+                    disabled={status !== 'all' && n === 0}
+                    aria-label={`${status === 'all' ? 'All' : STATUS_WORD[status]}, ${n}`}
+                    data-tip={status === 'all' ? undefined : STATUS_WORD[status]}
+                  >
+                    {status === 'all' ? (
+                      'All'
+                    ) : (
+                      <>
+                        {/* The word when the rail has room, the list's own dot when it does not. */}
+                        <StatusDot status={status} className="vd-filter__dot" />
+                        <span className="vd-filter__word">{STATUS_WORD[status]}</span>
+                      </>
+                    )}
+                    <span className="tw-text-text-placeholder">{n}</span>
+                  </ToggleGroupItem>
+                );
+              })}
+            </ToggleGroup>
           )}
         </div>
-        {!diff.identical && (
-          <ToggleGroup
-            type="single"
-            size="medium"
-            value={filter}
-            onValueChange={(value) => value && onFilter(value)}
-            className="tw-w-full"
-            aria-label="Filter changes"
-          >
-            {['all', 'added', 'changed', 'removed'].map((status) => {
-              const n = status === 'all' ? totalComponents : components[status];
-              return (
-                <ToggleGroupItem
-                  key={status}
-                  value={status}
-                  className="vd-filter tw-flex-auto tw-gap-1 tw-px-2"
-                  disabled={status !== 'all' && n === 0}
-                  aria-label={`${status === 'all' ? 'All' : STATUS_WORD[status]}, ${n}`}
-                  data-tip={status === 'all' ? undefined : STATUS_WORD[status]}
+
+        <div className="vd-scroll tw-flex-1 tw-min-h-0 tw-overflow-y-auto tw-py-2">
+          {diff.settings.length > 0 && filter === 'all' && (
+            <section className="tw-pb-2">
+              <h3 className="tw-m-0 tw-px-4 tw-py-1.5 tw-font-title-small tw-text-text-placeholder">App</h3>
+              <ChangeLines owner="settings" changes={diff.settings} inset={false} />
+            </section>
+          )}
+
+          {diff.pages.map((page) => {
+            const rows = page.components.filter((component) => visible(component.status));
+            const isCurrent = page.key === pageKey;
+            return (
+              <section key={page.key} className="tw-pb-2">
+                <button
+                  type="button"
+                  className="vd-plain vd-page tw-flex tw-items-center tw-gap-2 tw-w-full tw-h-8 tw-px-4"
+                  aria-current={isCurrent ? 'page' : undefined}
+                  onClick={() => onPageSelect(page.key)}
                 >
-                  {status === 'all' ? (
-                    'All'
-                  ) : (
-                    <>
-                      {/* The word when the rail has room, the list's own dot when it does not. */}
-                      <StatusDot status={status} className="vd-filter__dot" />
-                      <span className="vd-filter__word">{STATUS_WORD[status]}</span>
-                    </>
-                  )}
-                  <span className="tw-text-text-placeholder">{n}</span>
-                </ToggleGroupItem>
-              );
-            })}
-          </ToggleGroup>
-        )}
-      </div>
-
-      <div className="vd-scroll tw-flex-1 tw-min-h-0 tw-overflow-y-auto tw-py-2">
-        {diff.settings.length > 0 && filter === 'all' && (
-          <section className="tw-pb-2">
-            <h3 className="tw-m-0 tw-px-4 tw-py-1.5 tw-font-title-small tw-text-text-placeholder">App</h3>
-            <ChangeLines changes={diff.settings} inset={false} />
-          </section>
-        )}
-
-        {diff.pages.map((page) => {
-          const rows = page.components.filter((component) => visible(component.status));
-          const isCurrent = page.key === pageKey;
-          return (
-            <section key={page.key} className="tw-pb-2">
-              <button
-                type="button"
-                className="vd-plain vd-page tw-flex tw-items-center tw-gap-2 tw-w-full tw-h-8 tw-px-4"
-                aria-current={isCurrent ? 'page' : undefined}
-                onClick={() => onPageSelect(page.key)}
-              >
-                <FileText
-                  size={14}
-                  strokeWidth={1.75}
-                  className={cn('tw-shrink-0', isCurrent ? 'tw-text-icon-brand' : 'tw-text-icon-weak')}
-                  aria-hidden="true"
-                />
-                <span className="tw-min-w-0 tw-truncate tw-font-title-default tw-text-text-default">{page.name}</span>
-                {page.status !== 'changed' && <Tag tone={STATUS_TONE[page.status]}>{STATUS_WORD[page.status]}</Tag>}
-                <Counts counts={page.counts} className="tw-ml-auto" />
-              </button>
-              {(page.changes.length > 0 || page.events.length > 0) && filter === 'all' && (
-                <ChangeLines changes={page.changes} events={page.events} />
-              )}
-              <ul className="tw-m-0 tw-p-0 tw-list-none">
-                {rows.map((component) => {
-                  const isSelected = component.key === selectedKey;
-                  return (
-                    <li key={component.key}>
-                      <Row
-                        status={component.status}
-                        name={component.name}
-                        type={typeLabel(component.type)}
-                        selected={isSelected}
-                        hovered={component.key === hoveredKey}
-                        comments={commentCounts[component.key]}
-                        onClick={() => onSelect(isSelected ? null : component.key, page.key)}
-                        onMouseEnter={() => onHover(component.key)}
-                        onMouseLeave={() => onHover(null)}
-                      />
-                      {isSelected && (
-                        <ChangeLines
-                          changes={component.changes}
-                          events={component.events}
-                          note={
-                            componentNote(component, versions) ??
-                            (hiddenKeys?.has(component.key) ? 'Not visible in this render' : null)
-                          }
-                        />
-                      )}
-                    </li>
-                  );
-                })}
-                {rows.length === 0 && page.components.length > 0 && (
-                  <li className="tw-px-4 tw-py-1.5 tw-font-body-small tw-text-text-placeholder">
-                    Nothing {filter} on this page
-                  </li>
+                  <FileText
+                    size={14}
+                    strokeWidth={1.75}
+                    className={cn('tw-shrink-0', isCurrent ? 'tw-text-icon-brand' : 'tw-text-icon-weak')}
+                    aria-hidden="true"
+                  />
+                  <span className="tw-min-w-0 tw-truncate tw-font-title-default tw-text-text-default">{page.name}</span>
+                  {page.status !== 'changed' && <Tag tone={STATUS_TONE[page.status]}>{STATUS_WORD[page.status]}</Tag>}
+                  <Counts counts={page.counts} className="tw-ml-auto" />
+                </button>
+                {(page.changes.length > 0 || page.events.length > 0) && filter === 'all' && (
+                  <ChangeLines owner={`page:${page.key}`} changes={page.changes} events={page.events} />
                 )}
+                <ul className="tw-m-0 tw-p-0 tw-list-none">
+                  {rows.map((component) => {
+                    const isSelected = component.key === selectedKey;
+                    return (
+                      <li key={component.key}>
+                        <Row
+                          status={component.status}
+                          name={component.name}
+                          type={typeLabel(component.type)}
+                          selected={isSelected}
+                          hovered={component.key === hoveredKey}
+                          comments={commentCounts[component.key]}
+                          onClick={() => onSelect(isSelected ? null : component.key, page.key)}
+                          onMouseEnter={() => onHover(component.key)}
+                          onMouseLeave={() => onHover(null)}
+                        />
+                        {isSelected && (
+                          <ChangeLines
+                            owner={component.key}
+                            changes={component.changes}
+                            events={component.events}
+                            note={
+                              componentNote(component, versions) ??
+                              (hiddenKeys?.has(component.key) ? 'Not visible in this render' : null)
+                            }
+                          />
+                        )}
+                      </li>
+                    );
+                  })}
+                  {rows.length === 0 && page.components.length > 0 && (
+                    <li className="tw-px-4 tw-py-1.5 tw-font-body-small tw-text-text-placeholder">
+                      Nothing {filter} on this page
+                    </li>
+                  )}
+                </ul>
+              </section>
+            );
+          })}
+
+          {diff.queries.length > 0 && (
+            <section className="tw-pb-2">
+              <h3 className="tw-m-0 tw-px-4 tw-py-1.5 tw-font-title-small tw-text-text-placeholder">Queries</h3>
+              <ul className="tw-m-0 tw-p-0 tw-list-none">
+                {diff.queries
+                  .filter((query) => visible(query.status))
+                  .map((query) => {
+                    const key = `query:${query.key}`;
+                    const isSelected = key === selectedKey;
+                    return (
+                      <li key={key}>
+                        <Row
+                          status={query.status}
+                          name={query.name}
+                          type={query.dataSource}
+                          selected={isSelected}
+                          onClick={() => onSelect(isSelected ? null : key)}
+                        />
+                        {isSelected && (
+                          <ChangeLines
+                            owner={key}
+                            changes={query.changes}
+                            events={query.events}
+                            note={
+                              query.status === 'added'
+                                ? `New in ${versions.target}`
+                                : query.status === 'removed'
+                                ? `Only in ${versions.base}`
+                                : null
+                            }
+                          />
+                        )}
+                      </li>
+                    );
+                  })}
               </ul>
             </section>
-          );
-        })}
-
-        {diff.queries.length > 0 && (
-          <section className="tw-pb-2">
-            <h3 className="tw-m-0 tw-px-4 tw-py-1.5 tw-font-title-small tw-text-text-placeholder">Queries</h3>
-            <ul className="tw-m-0 tw-p-0 tw-list-none">
-              {diff.queries
-                .filter((query) => visible(query.status))
-                .map((query) => {
-                  const key = `query:${query.key}`;
-                  const isSelected = key === selectedKey;
-                  return (
-                    <li key={key}>
-                      <Row
-                        status={query.status}
-                        name={query.name}
-                        type={query.dataSource}
-                        selected={isSelected}
-                        onClick={() => onSelect(isSelected ? null : key)}
-                      />
-                      {isSelected && (
-                        <ChangeLines
-                          changes={query.changes}
-                          events={query.events}
-                          note={
-                            query.status === 'added'
-                              ? `New in ${versions.target}`
-                              : query.status === 'removed'
-                              ? `Only in ${versions.base}`
-                              : null
-                          }
-                        />
-                      )}
-                    </li>
-                  );
-                })}
-            </ul>
-          </section>
-        )}
-      </div>
-    </aside>
+          )}
+        </div>
+      </aside>
+    </CodeContext.Provider>
   );
 };
 
