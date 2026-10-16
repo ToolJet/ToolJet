@@ -19,7 +19,20 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "links": [],
+  "links": [
+    {
+      "title": "Tooljet Monitoring",
+      "type": "link",
+      "url": "/d/afvguxbe2lszkd",
+      "icon": "dashboard",
+      "keepTime": true,
+      "targetBlank": false,
+      "tooltip": "ToolJet server, app experience, app validation",
+      "asDropdown": false,
+      "includeVars": false,
+      "tags": []
+    }
+  ],
   "panels": [
     {
       "collapsed": false,
@@ -2850,6 +2863,12 @@
           "limit": 50,
           "tableType": "spans",
           "query": "{ resource.service.name = \"tooljet\" && span.tooljet.origin = \"ai\" && (span.http.response.status_code >= 400 || span.http.status_code >= 400) } | select(span.http.route, span.http.response.status_code, span.http.status_code, span.gen_ai.conversation.id)"
+        }
+      ],
+      "links": [
+        {
+          "title": "Open in Tooljet Monitoring (origin = ai)",
+          "url": "/d/afvguxbe2lszkd?var-origin=ai&${__url_time_range}"
         }
       ]
     },
