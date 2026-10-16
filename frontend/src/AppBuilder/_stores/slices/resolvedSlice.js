@@ -374,22 +374,6 @@ export const createResolvedSlice = (set, get) => {
       return validatedComponents;
     },
 
-    // Sets already-validated component values directly, skipping validateComponents (and the
-    // debugger logs it produces). Used only to hydrate from the dependency-graph cache — the
-    // debugger's log panel is editor-only UI (LeftSidebar/Debugger.jsx), never rendered in the
-    // viewer where this cache applies, so re-deriving those logs on every cached load is wasted
-    // work. Property coercion is preserved because the cached values are the validateComponents
-    // *output* from the original build, not the raw pre-validation input.
-    hydrateResolvedComponents: (validatedComponents, moduleId = 'canvas') => {
-      set(
-        (state) => {
-          state.resolvedStore.modules[moduleId].components = validatedComponents;
-        },
-        false,
-        'hydrateResolvedComponents'
-      );
-    },
-
     /*
     index - If index is passed, then the component is a child of a listview or kanban
     The structure will be - 

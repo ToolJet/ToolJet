@@ -41,7 +41,6 @@ import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
-import { getCachedDependencyGraph, setCachedDependencyGraph } from '@/AppBuilder/_helpers/dependencyGraphCache';
 import { getCachedAppDefinition, setCachedAppDefinition } from '@/AppBuilder/_helpers/appDefinitionCache';
 
 const useAppData = (
@@ -549,8 +548,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                ? result.isMaintenanceOn
-                : false,
+                  ? result.isMaintenanceOn
+                  : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -853,20 +852,8 @@ const useAppData = (
           // for this flow, but this is the one actually confirmed PUBLISHED).
           setCachedAppDefinition(appId, versionIdToInit, appDataRevision, result);
         }
-        const cachedDependencyGraph = isCacheableView
-          ? await getCachedDependencyGraph(versionIdToInit, appDataRevision, startingPage.id)
-          : undefined;
-        const freshDependencyGraphSnapshot = initDependencyGraph(moduleId, cachedDependencyGraph);
-        if (isCacheableView && freshDependencyGraphSnapshot) {
-          // Fire-and-forget — persisting the snapshot must not delay render.
-          setCachedDependencyGraph(
-            appId,
-            versionIdToInit,
-            appDataRevision,
-            startingPage.id,
-            freshDependencyGraphSnapshot
-          );
-        }
+        // Never cache the resolved graph: {{}} values depend on the current visitor, URL and time.
+        initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
@@ -1103,8 +1090,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-              ? appData.isMaintenanceOn
-              : false,
+                ? appData.isMaintenanceOn
+                : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,

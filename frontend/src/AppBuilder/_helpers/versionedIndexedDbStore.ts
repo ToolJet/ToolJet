@@ -3,7 +3,7 @@ import { get as idbGet, set as idbSet, del as idbDel, keys as idbKeys, createSto
 // Shared IndexedDB store for the viewer caches. Keeps the last N versions per app (all pages of
 // a version are evicted together) and evicts when storage is nearly full.
 
-// Bump to reset both caches when widget defaults/config or dependency-graph building change.
+// Bump to reset the cache when widget defaults/config change.
 const VIEWER_CACHE_VERSION = 1;
 
 const MAX_VERSIONS_PER_APP = 2;
