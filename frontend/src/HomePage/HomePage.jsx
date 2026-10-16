@@ -236,6 +236,7 @@ class HomePageComponent extends React.Component {
     // Gate the first apps/folders fetch on branch resolution so they carry the right branch_id
     // after a hard reload on a feature branch (no-op when the URL has no `branch` param).
     whenBranchResolved().then(() => {
+      this._initialFetchBranchId = useWorkspaceBranchesStore.getState().activeBranchId;
       if (!urlFolderSlug) {
         this.fetchApps(1, this.state.currentFolder.id);
       }
@@ -253,9 +254,14 @@ class HomePageComponent extends React.Component {
     // Check module access permission
     this.props.checkModuleAccess();
 
-    // Refetch on real branch switch only (skip the initial null→<id> hydration).
+    // Refetch on a real branch switch, and on the initial null→<id> hydration only if it
+    // resolved to a different branch than the one the initial fetch above already used.
     this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
-      if (state.activeBranchId && prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
+      const isRealSwitch =
+        state.activeBranchId && prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId;
+      const isFirstResolveMismatch =
+        !prevState.activeBranchId && state.activeBranchId && state.activeBranchId !== this._initialFetchBranchId;
+      if (isRealSwitch || isFirstResolveMismatch) {
         this.fetchApps(1, this.state.currentFolder.id);
         this.fetchFolders();
       }
