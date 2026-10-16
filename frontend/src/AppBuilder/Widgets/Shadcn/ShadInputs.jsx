@@ -145,8 +145,6 @@ export const ShadNumberInput = (props) => {
   const latest = useLatest({ round });
   useExposed(setExposedVariables, properties, {
     value,
-    setValue: async (v) => box.set(latest.current.round(M.parseNumber(v))),
-    // The native Number input's name for it.
     setText: async (v) => box.set(latest.current.round(M.parseNumber(v))),
     clear: async () => box.set(null),
   });
@@ -193,9 +191,11 @@ export const ShadNumberInput = (props) => {
               <Minus className="h-4 w-4" />
             </button>
           ) : null}
-          {prefix ? <span className={cn(AFFIX, 'pl-3')}>
+          {prefix ? (
+            <span className={cn(AFFIX, 'pl-3')}>
               <Truncate>{prefix}</Truncate>
-            </span> : null}
+            </span>
+          ) : null}
           <input
             ref={textBox.ref}
             id={`shad-${id}`}
@@ -237,9 +237,11 @@ export const ShadNumberInput = (props) => {
               }
             }}
           />
-          {suffix ? <span className={cn(AFFIX, 'pr-3')}>
+          {suffix ? (
+            <span className={cn(AFFIX, 'pr-3')}>
               <Truncate>{suffix}</Truncate>
-            </span> : null}
+            </span>
+          ) : null}
           {steppers && layout === 'split' ? (
             <button
               type="button"
@@ -579,11 +581,6 @@ export const ShadPhoneInput = (props) => {
       const detected = M.phoneCountry(value, countries);
       update({ value, country: detected || prev.country }, false);
     },
-    setCountry: async (c) => {
-      const country = M.countryFromInput(c, countries);
-      if (country) update(toCountry(country), false);
-    },
-    // The native Phone input's name for it.
     setCountryCode: async (c) => {
       const country = M.countryFromInput(c, countries);
       if (country) update(toCountry(country), false);
@@ -993,10 +990,7 @@ export const ShadTimePicker = (props) => {
     timeFormat: use24 ? '24h' : '12h',
     minTime: M.toHHmm(bounds.lo),
     maxTime: M.toHHmm(bounds.hi),
-    setTime: async (t, format) => setTime(t, format),
-    // The native Time picker's names: setValue(value, format), clearValue(), setMinTime(), setMaxTime().
     setValue: async (t, format) => setTime(t, format),
-    clear: async () => setMinutes(null),
     clearValue: async () => setMinutes(null),
     setMinTime: async (t) => override('minTime', text(t)),
     setMaxTime: async (t) => override('maxTime', text(t)),
@@ -1008,7 +1002,6 @@ export const ShadTimePicker = (props) => {
     if (m === minutes) return;
     setMinutes(m);
     setExposedVariables(exposed(m));
-    fireEvent('onChange');
     fireEvent('onSelect');
   };
   const check = useValidation(
@@ -1162,8 +1155,6 @@ export const ShadDateTimePicker = (props) => {
     timeFormat: use24 ? '24h' : '12h',
     minDate: rules.min ? rules.min.format('YYYY-MM-DD') : '',
     maxDate: rules.max ? rules.max.format('YYYY-MM-DD') : '',
-    setDate: async (v, format) => setDate(v, format),
-    // The native Date and time picker's names.
     setValue: async (v, format) => setDate(v, format),
     setValueInTimestamp: async (v) => {
       const n = Number(v);
@@ -1176,7 +1167,6 @@ export const ShadDateTimePicker = (props) => {
       const day = tsRef.current === null ? dayjs().startOf('day') : dayjs(tsRef.current);
       setTs(M.atTime(day, m).valueOf());
     },
-    clear: async () => setTs(null),
     clearValue: async () => setTs(null),
     setMinDate: async (v) => override('minDate', text(v)),
     setMaxDate: async (v) => override('maxDate', text(v)),
@@ -1189,7 +1179,6 @@ export const ShadDateTimePicker = (props) => {
     if (next === ts) return;
     setTs(next);
     setExposedVariables(M.dateTimeExposed(next === null ? null : dayjs(next), displayFormat));
-    fireEvent('onChange');
     fireEvent('onSelect');
   };
   const check = useValidation(

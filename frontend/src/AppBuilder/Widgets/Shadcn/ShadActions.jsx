@@ -512,12 +512,9 @@ export const ShadNavigation = (props) => {
   };
   useExposed(setExposedVariables, properties, {
     value: found ? found.item.value : '',
-    activeItem: activeItemExposed(found),
-    // The native Navigation's names: selectedItem and previousSelectedItem.
     selectedItem: activeItemExposed(found),
     previousSelectedItem: previousRef.current,
     isCollapsed: collapsed,
-    setActive: async (v) => activate(v),
     selectItem: async (v) => activate(v),
     setItemVisibility: async (id, v) => changeItem(id, { visible: !(v === false || v === 'false') }),
     setItemDisable: async (id, v) => changeItem(id, { disabled: !(v === false || v === 'false') }),
@@ -540,12 +537,9 @@ export const ShadNavigation = (props) => {
     const picked = activeItemExposed({ item, parent });
     setExposedVariables({
       value: item.value,
-      activeItem: picked,
       selectedItem: picked,
       previousSelectedItem: previousRef.current,
     });
-    fireEvent('onSelect');
-    // The native Navigation's event name.
     fireEvent('onClick');
   };
   const itemClass = (isActive, extra) =>
@@ -842,7 +836,7 @@ export const ShadCalendar = (props) => {
     if (!date) return;
     setMonth(date);
     setExposedVariables(visiblePeriod(date, live.current.months));
-    if (fire) fireEvent('onMonthChange');
+    if (fire) fireEvent('onMonthChanged');
   };
   useExposed(setExposedVariables, properties, {
     ...calendarExposed(selected, mode),
@@ -960,7 +954,7 @@ export const ShadCarousel = (props) => {
     indexRef.current = next;
     setIndex(next);
     setExposedVariables({ currentIndex: next, currentSlide: list[next] || {} });
-    fireEvent('onSlideChange');
+    fireEvent('onSlideChanged');
   };
   useExposed(setExposedVariables, properties, {
     currentIndex: index,
@@ -999,7 +993,7 @@ export const ShadCarousel = (props) => {
     if (drag.current.swiped) return;
     const slide = slides[i];
     setExposedVariable('clickedSlide', { ...slide, index: i });
-    fireEvent('onSlideClick');
+    fireEvent('onSlideClicked');
     if (slide?.link && currentMode !== 'edit' && typeof window !== 'undefined') {
       window.open(slide.link, '_blank', 'noopener,noreferrer');
     }

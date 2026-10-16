@@ -140,7 +140,7 @@ describe('ShadLineChart', () => {
     expect(container.textContent).not.toContain('$');
   });
 
-  it('sets clickedDatum and fires onClick for the clicked point', () => {
+  it('sets clickedDataPoint and fires onClick for the clicked point', () => {
     const { container, exposed, events } = mount(ShadLineChart, shadLineChartConfig);
     const wrapper = container.querySelector('.recharts-wrapper');
     // jsdom's mouse events have no page coordinates, which Recharts reads.
@@ -148,7 +148,7 @@ describe('ShadLineChart', () => {
     Object.defineProperties(click, { pageX: { value: 250 }, pageY: { value: 120 } });
     fireEvent(wrapper, click);
     expect(events).toEqual(['onClick']);
-    expect(exposed.clickedDatum).toMatchObject({ month: expect.any(String), revenue: expect.any(Number) });
+    expect(exposed.clickedDataPoint).toMatchObject({ month: expect.any(String), revenue: expect.any(Number) });
   });
 });
 
@@ -179,7 +179,7 @@ describe('ShadRadialChart', () => {
     expect(container.textContent).toContain('Direct');
     fireEvent.click(bars[3]);
     expect(events).toEqual(['onClick']);
-    expect(exposed.clickedDatum).toEqual({ channel: 'Direct', visitors: 275 });
+    expect(exposed.clickedDataPoint).toEqual({ channel: 'Direct', visitors: 275 });
   });
 });
 
@@ -257,10 +257,10 @@ describe('ShadFunnelChart', () => {
     expect(container.querySelectorAll('button')[4].textContent).toContain('3.3%');
   });
 
-  it('sets clickedDatum to the clicked stage row and fires onClick', () => {
+  it('sets clickedDataPoint to the clicked stage row and fires onClick', () => {
     const { container, exposed, events } = mount(ShadFunnelChart, shadFunnelChartConfig);
     fireEvent.click(container.querySelectorAll('button')[2]);
-    expect(exposed.clickedDatum).toEqual({ stage: 'Activated', count: 2210 });
+    expect(exposed.clickedDataPoint).toEqual({ stage: 'Activated', count: 2210 });
     expect(events).toEqual(['onClick']);
   });
 
@@ -284,7 +284,7 @@ describe('ShadHeatmapChart', () => {
     expect([...cells].some((c) => c.dataset.strength === '0.00')).toBe(true);
   });
 
-  it('prints values when asked and sets clickedDatum to the clicked cell', () => {
+  it('prints values when asked and sets clickedDataPoint to the clicked cell', () => {
     const data = [
       { day: 'Mon', hour: '09:00', tickets: 4 },
       { day: 'Tue', hour: '09:00', tickets: 9 },
@@ -292,7 +292,7 @@ describe('ShadHeatmapChart', () => {
     const { container, exposed, events } = mount(ShadHeatmapChart, shadHeatmapChartConfig, { data, showValues: true });
     expect(container.textContent).toContain('9');
     fireEvent.click(container.querySelectorAll('button')[1]);
-    expect(exposed.clickedDatum).toEqual({ day: 'Tue', hour: '09:00', tickets: 9 });
+    expect(exposed.clickedDataPoint).toEqual({ day: 'Tue', hour: '09:00', tickets: 9 });
     expect(events).toEqual(['onClick']);
   });
 

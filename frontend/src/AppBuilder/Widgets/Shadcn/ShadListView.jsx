@@ -22,7 +22,7 @@ import './shadcn.scss';
 // children by the store (deriveListviewExposedData, generic over the row-scoped types); data is the list's records,
 // which the store leaves alone for this widget. Rows have a fixed height
 // (rowHeight); the list itself fits its content in view. Selection keeps the native names (selectedRecord is the row's
-// component values, selectedRecordId/selectedRowId its index) and adds selectedItem, the clicked data item.
+// component values, selectedRecordId its index) and adds selectedItem, the clicked data item.
 
 const Row = ({
   id,
@@ -179,12 +179,9 @@ export const ShadListView = (props) => {
       selectedItemId: now[index] && typeof now[index] === 'object' ? now[index][live.current.idField] ?? null : null,
       selectedRecord: record,
       selectedRecordId: index,
-      selectedRow: record,
-      selectedRowId: index,
     });
     if (fire) {
       fireNow('onRecordClicked');
-      fireNow('onRowClicked');
     }
   };
   const clearSelection = () => {
@@ -194,8 +191,6 @@ export const ShadListView = (props) => {
       selectedItemId: null,
       selectedRecord: {},
       selectedRecordId: null,
-      selectedRow: {},
-      selectedRowId: null,
     });
   };
 

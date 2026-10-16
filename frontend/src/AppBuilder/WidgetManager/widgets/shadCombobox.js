@@ -272,9 +272,6 @@ export const shadComboboxConfig = {
     onSelect: {
       displayName: 'On select',
     },
-    onChange: {
-      displayName: 'On change',
-    },
     onSearchTextChanged: {
       displayName: 'On search text changed',
     },

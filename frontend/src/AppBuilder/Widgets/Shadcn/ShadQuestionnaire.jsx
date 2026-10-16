@@ -138,7 +138,7 @@ export const ShadQuestionnaire = (props) => {
         ...extra,
       })
     );
-    if (moved) fireEvent('onStepChange');
+    if (moved) fireEvent('onStepChanged');
   };
 
   const latest = useRef({});

@@ -42,22 +42,13 @@ export const useExposed = (setExposedVariables, properties, values) => {
 export const withControlState = (Widget) => {
   const Controlled = (props) => {
     const { properties, setExposedVariables, setExposedVariable } = props;
-    const { isVisible, isLoading, isDisabled, setVisibility, setDisable, setLoading } = useExposeState(
+    const { isVisible, isLoading, isDisabled } = useExposeState(
       properties.loadingState === true,
       properties.visibility !== false,
       properties.disabledState === true,
       setExposedVariables,
       setExposedVariable
     );
-    // The older action names the native Button, Text input and Text area still answer to (visibility, disable,
-    // loading), so an app moved to a pack widget keeps working.
-    useEffect(() => {
-      setExposedVariables({
-        visibility: async (value) => setVisibility(value),
-        disable: async (value) => setDisable(value),
-        loading: async (value) => setLoading(value),
-      });
-    }, [setExposedVariables]); // eslint-disable-line react-hooks/exhaustive-deps
     const effective = useMemo(
       () => ({
         ...properties,
@@ -67,9 +58,7 @@ export const withControlState = (Widget) => {
       }),
       [properties, isVisible, isLoading, isDisabled]
     );
-    // The setters, for a widget whose native counterpart names one differently (Steps' setDisabled).
-    const control = useMemo(() => ({ setVisibility, setDisable, setLoading }), []); // eslint-disable-line react-hooks/exhaustive-deps
-    return React.createElement(Widget, { ...props, properties: effective, control });
+    return React.createElement(Widget, { ...props, properties: effective });
   };
   Controlled.displayName = `Controlled(${Widget.displayName || Widget.name || 'Widget'})`;
   return Controlled;

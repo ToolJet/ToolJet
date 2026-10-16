@@ -2,7 +2,7 @@ export const shadProgressListConfig = {
   name: 'ShadProgressList',
   displayName: 'Progress list',
   description:
-    "List of progress rows from data, for goals, budgets, quotas, onboarding steps and capacity: each row has a label (labelField), its value against a target ('$18,400 of $25,000': valueField, targetField, in valueFormat: auto, number, currency in currency, percent, compact), a progress bar, an optional status (statusField: a chip toned by its words, On track green, At risk amber, Over budget or Behind red; a status that only names a tone, success, warning, danger, info or neutral, colours the bar without a chip) and an optional trailing caption under the bar ('12 days left': captionField). The percentage is percentField when the data has one (0 to 100), else value / target; a row with a value and no target reads the value as the percentage. autoTone colours bars from their percentage when the row has no status: 'goal' green at 100%, 'limit' (budgets, quotas, storage) amber from 80% and red over 100%. showValues and showPercent pick the figures shown; barSize thin, default or thick; listStyle 'card' (bordered panel) or 'plain'. A click on a row exposes selectedItem and selectedItemId and fires onItemClick (rows look clickable only when it is handled). Use a Stat or a Summary strip for one headline figure, a Progress for a single bar. Height: grows with its rows (about 64px a row, 76px with captions)",
+    "List of progress rows from data, for goals, budgets, quotas, onboarding steps and capacity: each row has a label (labelField), its value against a target ('$18,400 of $25,000': valueField, targetField, in valueFormat: auto, number, currency in currency, percent, compact), a progress bar, an optional status (statusField: a chip toned by its words, On track green, At risk amber, Over budget or Behind red; a status that only names a tone, success, warning, danger, info or neutral, colours the bar without a chip) and an optional trailing caption under the bar ('12 days left': captionField). The percentage is percentField when the data has one (0 to 100), else value / target; a row with a value and no target reads the value as the percentage. autoTone colours bars from their percentage when the row has no status: 'goal' green at 100%, 'limit' (budgets, quotas, storage) amber from 80% and red over 100%. showValues and showPercent pick the figures shown; barSize thin, default or thick; listStyle 'card' (bordered panel) or 'plain'. A click on a row exposes selectedItem and selectedItemId and fires onItemClicked (rows look clickable only when it is handled). Use a Stat or a Summary strip for one headline figure, a Progress for a single bar. Height: grows with its rows (about 64px a row, 76px with captions)",
   component: 'ShadProgressList',
   defaultSize: {
     width: 20,
@@ -386,8 +386,8 @@ export const shadProgressListConfig = {
     },
   },
   events: {
-    onItemClick: {
-      displayName: 'On item click',
+    onItemClicked: {
+      displayName: 'On item clicked',
     },
   },
   styles: {

@@ -259,18 +259,6 @@ export const shadCheckboxConfig = {
       ],
     },
     {
-      handle: 'setChecked',
-      displayName: 'Set checked',
-      params: [
-        {
-          handle: 'status',
-          displayName: 'Checked',
-          defaultValue: '{{true}}',
-          type: 'toggle',
-        },
-      ],
-    },
-    {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [

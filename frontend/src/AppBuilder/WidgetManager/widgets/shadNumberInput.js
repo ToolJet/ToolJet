@@ -446,17 +446,6 @@ export const shadNumberInputConfig = {
   },
   actions: [
     {
-      handle: 'setValue',
-      displayName: 'Set value',
-      params: [
-        {
-          handle: 'value',
-          displayName: 'Value',
-          defaultValue: '',
-        },
-      ],
-    },
-    {
       handle: 'setText',
       displayName: 'Set text',
       params: [

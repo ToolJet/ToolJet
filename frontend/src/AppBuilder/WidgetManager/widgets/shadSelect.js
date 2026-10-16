@@ -190,9 +190,6 @@ export const shadSelectConfig = {
     },
   },
   events: {
-    onChange: {
-      displayName: 'On change',
-    },
     onSelect: {
       displayName: 'On select',
     },

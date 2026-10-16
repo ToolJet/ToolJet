@@ -16,10 +16,6 @@ const TEXT_ACTIONS = {
   clear: { args: [], context: { defaultValue: 'Some text' } },
   ...FOCUS_PAIR,
 };
-const LEGACY = {
-  disable: { args: [true] },
-  visibility: { args: [false] },
-};
 const DATE = '2026-10-21';
 
 export const ACTION_ARGS = {
@@ -46,8 +42,6 @@ export const ACTION_ARGS = {
   ShadButton: {
     click: { args: [], fires: 'onClick' },
     setText: { args: ['Save draft'] },
-    ...LEGACY,
-    loading: { args: [true] },
   },
   ShadButtonGroup: { setSelected: { args: ['month'] }, clear: { args: [] } },
   ShadCalendar: {
@@ -60,7 +54,7 @@ export const ACTION_ARGS = {
     previous: { args: [], before: [['action', 'next']] },
     goTo: { args: [2] },
   },
-  ShadCheckbox: { toggle: { args: [] }, setValue: { args: [true] }, setChecked: { args: [true] } },
+  ShadCheckbox: { toggle: { args: [] }, setValue: { args: [true] } },
   ShadSwitch: { toggle: { args: [] }, setValue: { args: [true] } },
   ShadCircularProgress: { setValue: { args: [12] } },
   ShadProgress: { setValue: { args: [12] } },
@@ -82,13 +76,12 @@ export const ACTION_ARGS = {
     clear: { args: [] },
     ...FOCUS_PAIR,
   },
-  ShadNumberInput: { setValue: { args: [77] }, setText: { args: ['78'] }, clear: { args: [] }, ...FOCUS_PAIR },
+  ShadNumberInput: { setText: { args: ['78'] }, clear: { args: [] }, ...FOCUS_PAIR },
   ShadPasswordInput: { ...TEXT_ACTIONS },
-  ShadInput: { ...TEXT_ACTIONS, ...LEGACY },
-  ShadTextarea: { ...TEXT_ACTIONS, ...LEGACY },
+  ShadInput: { ...TEXT_ACTIONS },
+  ShadTextarea: { ...TEXT_ACTIONS },
   ShadPhoneInput: {
     setValue: { args: ['4155550123', 'US'] },
-    setCountry: { args: ['GB'] },
     setCountryCode: { args: ['FR'] },
     clear: { args: [], context: { defaultValue: '+14155550123' } },
     ...FOCUS_PAIR,
@@ -99,10 +92,8 @@ export const ACTION_ARGS = {
     ...FOCUS_PAIR,
   },
   ShadDatePicker: {
-    clear: { args: [], context: { defaultValue: DATE } },
     clearValue: { args: [], context: { defaultValue: DATE } },
     setValue: { args: ['21/10/2026', 'DD/MM/YYYY'] },
-    setDate: { args: [DATE] },
     setValueInTimestamp: { args: [new Date(2026, 9, 21).getTime()] },
     setStartDate: { args: [DATE], context: { mode: 'range' } },
     setEndDate: { args: ['2026-10-25'], context: { mode: 'range' } },
@@ -118,11 +109,9 @@ export const ACTION_ARGS = {
     ...FOCUS_PAIR,
   },
   ShadDateTimePicker: {
-    setDate: { args: ['2026-10-21 09:30'] },
     setValue: { args: ['21/10/2026 09:30', 'DD/MM/YYYY HH:mm'] },
     setValueInTimestamp: { args: [new Date(2026, 9, 21, 9, 30).getTime()] },
     setTime: { args: ['14:45'] },
-    clear: { args: [], context: { defaultValue: '2026-10-21 09:30' } },
     clearValue: { args: [], context: { defaultValue: '2026-10-21 09:30' } },
     setMinDate: { args: ['2026-11-01'], context: { defaultValue: '2026-10-21 09:30' } },
     setMaxDate: { args: ['2026-10-01'], context: { defaultValue: '2026-10-21 09:30' } },
@@ -134,9 +123,7 @@ export const ACTION_ARGS = {
     ...FOCUS_PAIR,
   },
   ShadTimePicker: {
-    setTime: { args: ['14:45'] },
     setValue: { args: ['02:45 PM', 'hh:mm A'] },
-    clear: { args: [], context: { defaultValue: '10:30' } },
     clearValue: { args: [], context: { defaultValue: '10:30' } },
     setMinTime: { args: ['11:00'], context: { defaultValue: '10:30' } },
     setMaxTime: { args: ['10:00'], context: { defaultValue: '10:30' } },
@@ -151,7 +138,6 @@ export const ACTION_ARGS = {
   ShadDropdownMenu: { open: { args: [] }, close: { args: [], before: [['action', 'open']] } },
   ShadFileUpload: {
     clearFiles: { args: [], context: { accept: '' }, before: [['upload', [['notes.txt', 'text/plain', 'hello']]]] },
-    clear: { args: [], context: { accept: '' }, before: [['upload', [['notes.txt', 'text/plain', 'hello']]]] },
     setFileName: {
       args: [0, 'renamed'],
       context: { accept: '' },
@@ -197,7 +183,6 @@ export const ACTION_ARGS = {
   },
   ShadKanban: {
     addCard: { args: [{ title: 'Fresh card' }] },
-    updateCard: { args: [1, { title: 'Renamed' }] },
     updateCardData: { args: [1, { title: 'Renamed' }] },
     moveCard: { args: [1, 'done'] },
     deleteCard: { args: [1] },
@@ -213,7 +198,6 @@ export const ACTION_ARGS = {
     setPage: { args: [2], context: { enablePagination: '{{true}}', rowsPerPage: '{{1}}' } },
   },
   ShadNavigation: {
-    setActive: { args: ['orders'] },
     selectItem: { args: ['customers'] },
     setItemVisibility: { args: ['orders', false] },
     setItemDisable: { args: ['orders', true] },
@@ -244,7 +228,6 @@ export const ACTION_ARGS = {
     resetSteps: { args: [], before: [['action', 'nextStep']] },
     setStepVisible: { args: [3, false] },
     setStepDisable: { args: [3, true] },
-    setDisabled: { args: [true] },
   },
   ShadTable: {
     setPage: { args: [2], context: { rowsPerPage: '{{1}}' } },

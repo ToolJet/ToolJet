@@ -246,7 +246,6 @@ export const shadToggleGroupConfig = {
     isLoading: false,
     isDisabled: false,
     value: '',
-    selected: '',
   },
   actions: [
     {

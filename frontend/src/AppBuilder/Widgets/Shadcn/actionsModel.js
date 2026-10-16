@@ -165,12 +165,12 @@ export const toggleSelection = (selected, key, mode, allowDeselect = false) => {
   return selected;
 };
 
-/** The exposed values for a selection: value (single: the value or ''; multiple: the list), values and the native
+/** The exposed values for a selection: value (single: the value or ''; multiple: the list) and the native
  *  ButtonGroup's selected (always a list). */
 export const selectionExposed = (selected, mode, buttons) => {
   const byKey = new Map(buttons.map((b) => [String(b.value), b.value]));
   const values = selected.filter((k) => byKey.has(k)).map((k) => byKey.get(k));
-  return { value: mode === 'multiple' ? values : values[0] ?? '', values, selected: values };
+  return { value: mode === 'multiple' ? values : values[0] ?? '', selected: values };
 };
 
 // ---- Navigation ------------------------------------------------------------------------------------------------

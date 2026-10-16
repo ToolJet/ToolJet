@@ -361,12 +361,12 @@ export const ShadBreadcrumb = (props) => {
   useExposed(setExposedVariables, properties, {});
   const all = list(properties.items);
   // onItemClick (with lastClickedItem: the item, its title and index) for navigating back up the trail.
-  const clickable = useHasEvent(id, 'onItemClick') && !busy(properties);
+  const clickable = useHasEvent(id, 'onItemClicked') && !busy(properties);
   const clickItem = (item, index) => {
     if (busy(properties) || item === ELLIPSIS) return;
     const entry = item && typeof item === 'object' ? item : { title: String(item ?? '') };
     setExposedVariable('lastClickedItem', { ...entry, title: String(entry.title ?? ''), index });
-    fireEvent('onItemClick');
+    fireEvent('onItemClicked');
   };
   // A long trail keeps its first item and its last ones, with an ellipsis between (shadcn's collapsed breadcrumb), so
   // a list bound by mistake (10k items) draws a handful.
@@ -1021,7 +1021,7 @@ export const ShadEmpty = (props) => {
           </p>
         ) : null}
         {properties.actionLabel ? (
-          <Button size="sm" variant="outline" className="mt-2" onClick={() => fireEvent('onAction')}>
+          <Button size="sm" variant="outline" className="mt-2" onClick={() => fireEvent('onActionClicked')}>
             {String(properties.actionLabel)}
           </Button>
         ) : null}
@@ -1267,7 +1267,6 @@ export const ShadSelect = (props) => {
             setKey(next);
             setExposedVariable('value', byKey.get(next)?.value ?? '');
             setExposedVariable('selectedOption', byKey.get(next) || {});
-            fireEvent('onChange');
             fireEvent('onSelect');
           }}
         >
@@ -1323,7 +1322,6 @@ export const useChecked = (props) => {
     label: String(properties.label ?? ''),
     toggle: async () => change(!checkedRef.current),
     setValue: async (v) => set(v),
-    ...(props.componentType === 'ShadCheckbox' ? { setChecked: async (v) => set(v) } : {}),
   });
   return [checked, change];
 };
@@ -1444,9 +1442,7 @@ export const ShadRadioGroup = (props) => {
           disabled={busy(properties)}
           className={properties.horizontal === true ? 'flex flex-wrap gap-4' : undefined}
           onValueChange={(next) => {
-            change(next);
-            // The native Radio button's event name.
-            props.fireEvent('onSelectionChange');
+            change(next, 'onSelectionChange');
             check.touch();
           }}
         >
@@ -1569,8 +1565,8 @@ export const ShadDatePicker = (props) => {
   const focus = useFocusEvents(fireEvent);
   const shown = (d) => (d ? dayjs(d).format(format) : '');
   const unix = (d) => (d ? dayjs(d).valueOf() : null);
-  // What the widget exposes for a selection: the pack's names (value, startDate, endDate) and the native date
-  // pickers' (selectedDate, unixTimestamp, displayValue; a range's startDateInUnix, endDateInUnix, selectedDateRange).
+  // What the widget exposes for a selection: value, plus the native date pickers' unixTimestamp and displayValue, or a
+  // range's startDate, endDate, startDateInUnix, endDateInUnix and selectedDateRange.
   const exposedOf = (sel) =>
     range
       ? {
@@ -1585,7 +1581,6 @@ export const ShadDatePicker = (props) => {
           value: ymd(sel),
           startDate: '',
           endDate: '',
-          selectedDate: ymd(sel),
           unixTimestamp: unix(sel),
           displayValue: shown(sel),
         };
@@ -1593,10 +1588,7 @@ export const ShadDatePicker = (props) => {
     selectedRef.current = next;
     setSelected(next);
     setExposedVariables(exposedOf(next));
-    if (fire) {
-      fireEvent('onChange');
-      fireEvent('onSelect');
-    }
+    if (fire) fireEvent('onSelect');
   };
   // A date from an action's argument, read with the format given (the native setters take one), else the display
   // format, else ISO; undefined when it is not a date.
@@ -1624,10 +1616,8 @@ export const ShadDatePicker = (props) => {
     dateFormat: format,
     minDate: rules.min ? rules.min.format('YYYY-MM-DD') : '',
     maxDate: rules.max ? rules.max.format('YYYY-MM-DD') : '',
-    clear: async () => commit(latest.current.range ? {} : undefined),
     clearValue: async () => commit(latest.current.range ? {} : undefined),
     setValue: async (v, fmt) => setSingle(v, fmt),
-    setDate: async (v, fmt) => setSingle(v, fmt),
     setValueInTimestamp: async (ts) => {
       const n = Number(ts);
       if (!latest.current.range && ts !== '' && ts !== null && Number.isFinite(n)) commit(toDate(new Date(n)));
@@ -1746,7 +1736,7 @@ export const ShadToggleGroup = (props) => {
   const initial =
     properties.defaultValue === '' || properties.defaultValue === undefined ? '' : String(properties.defaultValue);
   // The native Button group's actions: setSelected(value) picks an option (a value no option has changes nothing),
-  // clear() leaves none picked. `selected` is the native name of the picked value.
+  // clear() leaves none picked.
   const keysRef = useRef(byKey);
   keysRef.current = byKey;
   const [key, change] = useValue(
@@ -1761,7 +1751,6 @@ export const ShadToggleGroup = (props) => {
     }),
     (k) => byKey.get(k)?.value ?? ''
   );
-  useExposed(props.setExposedVariables, properties, { selected: byKey.get(key)?.value ?? '' });
   return (
     <Shell {...props} innerRef={fit}>
       <ToggleGroup

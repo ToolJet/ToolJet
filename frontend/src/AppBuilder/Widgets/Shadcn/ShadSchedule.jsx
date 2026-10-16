@@ -153,8 +153,8 @@ export const ShadSchedule = (props) => {
     selectedSlot: next?.kind === 'slot' ? next.value : {},
   });
   useExposed(setExposedVariables, p, selection(selected));
-  const hasBookingClick = useHasEvent(id, 'onBookingClick');
-  const hasSlotClick = useHasEvent(id, 'onSlotClick');
+  const hasBookingClick = useHasEvent(id, 'onBookingClicked');
+  const hasSlotClick = useHasEvent(id, 'onSlotClicked');
   const disabled = busy(p);
   const highlight = p.highlightSelected !== false;
 
@@ -163,7 +163,7 @@ export const ShadSchedule = (props) => {
     const next = { kind: 'booking', key: item.key, item };
     setSelected(next);
     setExposedVariables(selection(next));
-    fireEvent('onBookingClick');
+    fireEvent('onBookingClicked');
   };
   const clickSlot = (resource, slot, index) => {
     if (disabled) return;
@@ -175,7 +175,7 @@ export const ShadSchedule = (props) => {
     };
     setSelected(next);
     setExposedVariables(selection(next));
-    fireEvent('onSlotClick');
+    fireEvent('onSlotClicked');
   };
 
   // The now-line moves with the clock without drawing the schedule again: its position is a CSS variable set here.

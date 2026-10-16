@@ -115,10 +115,10 @@ describe('button group selection', () => {
     expect(toggleSelection(['day', 'week'], 'day', 'multiple')).toEqual(['week']);
   });
 
-  it('exposes value, values and the native selected', () => {
+  it('exposes value and the native selected', () => {
     const numbered = groupButtons([1, 2]);
-    expect(selectionExposed(['2'], 'single', numbered)).toEqual({ value: 2, values: [2], selected: [2] });
-    expect(selectionExposed([], 'multiple', numbered)).toEqual({ value: [], values: [], selected: [] });
+    expect(selectionExposed(['2'], 'single', numbered)).toEqual({ value: 2, selected: [2] });
+    expect(selectionExposed([], 'multiple', numbered)).toEqual({ value: [], selected: [] });
   });
 });
 

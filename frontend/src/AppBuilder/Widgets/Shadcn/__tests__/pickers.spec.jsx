@@ -122,7 +122,7 @@ describe('ShadCombobox', () => {
     fireEvent.click(screen.getByText('Germany'));
     expect(exposed.value).toBe('de');
     expect(exposed.selectedOption).toMatchObject({ label: 'Germany', group: 'Europe' });
-    expect(events.slice(-2)).toEqual(['onSelect', 'onChange']);
+    expect(events.slice(-1)).toEqual(['onSelect']);
     expect(screen.getByRole('combobox').textContent).toContain('Germany');
   });
 
@@ -166,7 +166,7 @@ describe('ShadMultiselect', () => {
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByText('Marketing'));
     expect(exposed.values).toEqual(['design', 'engineering', 'marketing']);
-    expect(events.slice(-2)).toEqual(['onSelect', 'onChange']);
+    expect(events.slice(-1)).toEqual(['onSelect']);
     fireEvent.click(screen.getByLabelText('Remove Design'));
     expect(exposed.values).toEqual(['engineering', 'marketing']);
     expect(exposed.selectedOptions.map((o) => o.label)).toEqual(['Engineering', 'Marketing']);
@@ -218,27 +218,26 @@ describe('ShadTagsInput', () => {
 
   it('adds on Enter and comma, refuses duplicates and removes the last on Backspace', () => {
     const { exposed, events } = mount(ShadTagsInput, 'ShadTagsInput', configs.shadTagsInputConfig);
-    expect(exposed.tags).toEqual(['react', 'typescript']);
+    expect(exposed.values).toEqual(['react', 'typescript']);
     fireEvent.change(input(), { target: { value: 'vue' } });
     fireEvent.keyDown(input(), { key: 'Enter' });
-    expect(exposed.tags).toEqual(['react', 'typescript', 'vue']);
-    expect(exposed.value).toEqual(exposed.tags);
+    expect(exposed.values).toEqual(['react', 'typescript', 'vue']);
     expect(exposed.lastAddedTag).toBe('vue');
     expect(events.slice(-2)).toEqual(['onTagAdded', 'onChange']);
     fireEvent.change(input(), { target: { value: 'go,rust,' } });
-    expect(exposed.tags.slice(-2)).toEqual(['go', 'rust']);
+    expect(exposed.values.slice(-2)).toEqual(['go', 'rust']);
     fireEvent.change(input(), { target: { value: 'React' } });
     fireEvent.keyDown(input(), { key: 'Enter' });
     expect(screen.getByRole('alert').textContent).toBe('"React" is already added');
-    expect(exposed.tags).toHaveLength(5);
+    expect(exposed.values).toHaveLength(5);
     fireEvent.change(input(), { target: { value: '' } });
     fireEvent.keyDown(input(), { key: 'Backspace' });
-    expect(exposed.tags).toEqual(['react', 'typescript', 'vue', 'go']);
+    expect(exposed.values).toEqual(['react', 'typescript', 'vue', 'go']);
     expect(exposed.lastRemovedTag).toBe('rust');
     // onTagDeleted is the native Tags input's name for the removal.
-    expect(events.slice(-3)).toEqual(['onTagRemoved', 'onTagDeleted', 'onChange']);
+    expect(events.slice(-2)).toEqual(['onTagDeleted', 'onChange']);
     fireEvent.click(screen.getByLabelText('Remove react'));
-    expect(exposed.tags[0]).toBe('typescript');
+    expect(exposed.values[0]).toBe('typescript');
   });
 
   it('picks suggestions, applies the pattern and maxTags, and offers setTags and clear', async () => {
@@ -251,25 +250,29 @@ describe('ShadTagsInput', () => {
     fireEvent.focus(input());
     fireEvent.change(input(), { target: { value: 'pyt' } });
     fireEvent.click(screen.getByRole('option', { name: 'python' }));
-    expect(exposed.tags).toEqual(['python']);
+    expect(exposed.values).toEqual(['python']);
     fireEvent.change(input(), { target: { value: 'Bad1' } });
     fireEvent.keyDown(input(), { key: 'Enter' });
     expect(screen.getByRole('alert').textContent).toBe('Lowercase letters only');
     await act(() => exposed.setTags(['a', 'b', 'c', 'a']));
-    expect(exposed.tags).toEqual(['a', 'b']);
+    expect(exposed.values).toEqual(['a', 'b']);
     await act(() => exposed.clear());
-    expect(exposed.tags).toEqual([]);
+    expect(exposed.values).toEqual([]);
   });
 });
 
 describe('ShadColorPicker', () => {
   it('exposes hex and rgb, picks swatches and typed hex, and fires onChange', async () => {
     const { exposed, events } = mount(ShadColorPicker, 'ShadColorPicker', configs.shadColorPickerConfig);
-    expect(exposed).toMatchObject({ value: '#6366f1', rgb: 'rgb(99, 102, 241)', rgba: 'rgba(99, 102, 241, 1)' });
+    expect(exposed).toMatchObject({
+      value: '#6366f1',
+      selectedColorRGB: 'rgb(99, 102, 241)',
+      selectedColorRGBA: 'rgba(99, 102, 241, 1)',
+    });
     fireEvent.click(screen.getByText('#6366f1'));
     fireEvent.click(screen.getByRole('button', { name: '#22c55e' }));
     expect(exposed.value).toBe('#22c55e');
-    expect(exposed.rgb).toBe('rgb(34, 197, 94)');
+    expect(exposed.selectedColorRGB).toBe('rgb(34, 197, 94)');
     expect(events).toEqual(['onChange']);
     const hex = screen.getByLabelText('Hex color');
     fireEvent.change(hex, { target: { value: 'abc' } });
@@ -289,7 +292,7 @@ describe('ShadColorPicker', () => {
       defaultValue: '#ff000080',
     });
     expect(exposed.value).toBe('#ff000080');
-    expect(exposed.rgba).toBe('rgba(255, 0, 0, 0.5)');
+    expect(exposed.selectedColorRGBA).toBe('rgba(255, 0, 0, 0.5)');
   });
 });
 
@@ -340,11 +343,11 @@ describe('ShadFileUpload', () => {
     const { exposed, events, view } = mount(ShadFileUpload, 'ShadFileUpload', configs.shadFileUploadConfig, {
       accept: '',
     });
-    expect(exposed.files).toEqual([]);
+    expect(exposed.file).toEqual([]);
     const file = new File(['hello world'], 'notes.txt', { type: 'text/plain' });
     fireEvent.change(fileInput(view), { target: { files: [file] } });
-    await waitFor(() => expect(exposed.files).toHaveLength(1));
-    const [exposedFile] = exposed.files;
+    await waitFor(() => expect(exposed.file).toHaveLength(1));
+    const [exposedFile] = exposed.file;
     expect(exposedFile).toMatchObject({ name: 'notes.txt', type: 'text/plain', size: 11 });
     expect(String(exposedFile.content)).toBe('hello world');
     expect(String(exposedFile.base64Data)).toBe(btoa('hello world'));
@@ -353,7 +356,7 @@ describe('ShadFileUpload', () => {
     expect(events).toEqual(['onFileSelected', 'onFileLoaded']);
     expect(screen.getByText('notes.txt')).toBeTruthy();
     fireEvent.click(screen.getByLabelText('Remove notes.txt'));
-    expect(exposed.files).toEqual([]);
+    expect(exposed.file).toEqual([]);
     expect(events).toEqual(['onFileSelected', 'onFileLoaded', 'onFileDeselected']);
   });
 
@@ -363,7 +366,7 @@ describe('ShadFileUpload', () => {
     });
     fireEvent.change(fileInput(view), { target: { files: [new File(['x'], 'a.txt', { type: 'text/plain' })] } });
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('"a.txt" is not an accepted file type'));
-    expect(exposed.files).toEqual([]);
+    expect(exposed.file).toEqual([]);
     view.unmount();
 
     const parsed = mount(ShadFileUpload, 'ShadFileUpload', configs.shadFileUploadConfig, {
@@ -372,10 +375,10 @@ describe('ShadFileUpload', () => {
     });
     const csv = new File(['name,qty\nTea,2'], 'items.csv', { type: 'text/csv' });
     fireEvent.change(fileInput(parsed.view), { target: { files: [csv] } });
-    await waitFor(() => expect(parsed.exposed.files).toHaveLength(1));
-    expect(parsed.exposed.files[0].parsedData).toEqual([{ name: 'Tea', qty: '2' }]);
+    await waitFor(() => expect(parsed.exposed.file).toHaveLength(1));
+    expect(parsed.exposed.file[0].parsedData).toEqual([{ name: 'Tea', qty: '2' }]);
     await act(() => parsed.exposed.clearFiles());
-    expect(parsed.exposed.files).toEqual([]);
+    expect(parsed.exposed.file).toEqual([]);
   });
 
   it('keeps to maxFiles and validates a mandatory upload', async () => {
@@ -389,7 +392,7 @@ describe('ShadFileUpload', () => {
     expect(exposed.isValid).toBe(false);
     const files = [new File(['a'], 'a.txt', { type: 'text/plain' }), new File(['b'], 'b.txt', { type: 'text/plain' })];
     fireEvent.change(fileInput(view), { target: { files } });
-    await waitFor(() => expect(exposed.files).toHaveLength(1));
+    await waitFor(() => expect(exposed.file).toHaveLength(1));
     expect(exposed.isValid).toBe(true);
     expect(within(view.container).getByRole('alert').textContent).toBe('You can upload up to 1 file');
   });

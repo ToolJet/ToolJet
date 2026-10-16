@@ -241,9 +241,6 @@ export const shadTimePickerConfig = {
     },
   },
   events: {
-    onChange: {
-      displayName: 'On change',
-    },
     onSelect: {
       displayName: 'On select',
     },
@@ -439,17 +436,6 @@ export const shadTimePickerConfig = {
   },
   actions: [
     {
-      handle: 'setTime',
-      displayName: 'Set time',
-      params: [
-        {
-          handle: 'value',
-          displayName: 'Time (HH:mm)',
-          defaultValue: '',
-        },
-      ],
-    },
-    {
       handle: 'setValue',
       displayName: 'Set value',
       params: [
@@ -464,10 +450,6 @@ export const shadTimePickerConfig = {
           defaultValue: 'HH:mm',
         },
       ],
-    },
-    {
-      handle: 'clear',
-      displayName: 'Clear',
     },
     {
       handle: 'clearValue',

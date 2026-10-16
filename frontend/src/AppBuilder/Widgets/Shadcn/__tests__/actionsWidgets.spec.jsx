@@ -131,11 +131,11 @@ describe('ShadDropdownMenu', () => {
 describe('ShadButtonGroup', () => {
   it('selects one in single mode and fires onClick then onChange', () => {
     const { exposed, events } = mount(ShadButtonGroup, 'ShadButtonGroup', defaultsOf(shadButtonGroupConfig));
-    expect(exposed).toMatchObject({ value: 'week', values: ['week'], selected: ['week'] });
+    expect(exposed).toMatchObject({ value: 'week', selected: ['week'] });
     fireEvent.click(screen.getByRole('button', { name: 'Month' }));
     expect(exposed).toMatchObject({
       value: 'month',
-      values: ['month'],
+      selected: ['month'],
       lastClicked: { label: 'Month', value: 'month' },
     });
     expect(events).toEqual(['onClick', 'onChange']);
@@ -153,9 +153,9 @@ describe('ShadButtonGroup', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Week' }));
     expect(exposed.value).toEqual(['day', 'week']);
     await act(() => exposed.setSelected(['month', 'nope']));
-    expect(exposed.values).toEqual(['month']);
+    expect(exposed.selected).toEqual(['month']);
     await act(() => exposed.clear());
-    expect(exposed.values).toEqual([]);
+    expect(exposed.selected).toEqual([]);
   });
 
   it('only reports clicks in actions mode', () => {
@@ -177,15 +177,14 @@ describe('ShadNavigation', () => {
     expect(screen.getByRole('button', { name: /Dashboard/ }).getAttribute('aria-current')).toBe('page');
     fireEvent.click(screen.getByRole('button', { name: /Orders/ }));
     expect(exposed.value).toBe('orders');
-    expect(exposed.activeItem).toEqual({ label: 'Orders', value: 'orders', parentLabel: null, parentValue: null });
-    // onClick is the native Navigation's name for the same press.
-    expect(events).toEqual(['onSelect', 'onClick']);
+    expect(exposed.selectedItem).toEqual({ label: 'Orders', value: 'orders', parentLabel: null, parentValue: null });
+    expect(events).toEqual(['onClick']);
     fireEvent.click(screen.getByRole('button', { name: /Reports/ }));
     fireEvent.click(screen.getByRole('button', { name: /Sales/ }));
-    expect(exposed.activeItem).toMatchObject({ value: 'sales', parentValue: 'reports' });
-    await act(() => exposed.setActive('settings'));
+    expect(exposed.selectedItem).toMatchObject({ value: 'sales', parentValue: 'reports' });
+    await act(() => exposed.selectItem('settings'));
     expect(exposed.value).toBe('settings');
-    expect(events).toEqual(['onSelect', 'onClick', 'onSelect', 'onClick']);
+    expect(events).toEqual(['onClick', 'onClick']);
     expect(screen.getByText('Workspace')).toBeTruthy();
   });
 
@@ -198,7 +197,7 @@ describe('ShadNavigation', () => {
     const reports = screen.getByRole('button', { name: /Reports/ });
     fireEvent.keyDown(reports, { key: 'Enter' });
     fireEvent.click(await screen.findByRole('menuitem', { name: /Traffic/ }));
-    expect(exposed.activeItem).toMatchObject({ value: 'traffic', parentLabel: 'Reports' });
+    expect(exposed.selectedItem).toMatchObject({ value: 'traffic', parentLabel: 'Reports' });
     await act(() => exposed.setCollapsed(true));
     expect(exposed.isCollapsed).toBe(true);
   });
@@ -233,7 +232,7 @@ describe('ShadCalendar', () => {
     const { exposed, events } = mount(ShadCalendar, 'ShadCalendar', { ...props, mode: 'range', defaultValue: [] });
     fireEvent.click(screen.getByRole('button', { name: /next month/i }));
     expect(exposed.visibleMonth).toBe(dayjs().add(1, 'month').format('YYYY-MM'));
-    expect(events).toEqual(['onMonthChange']);
+    expect(events).toEqual(['onMonthChanged']);
     await act(() => exposed.selectDate('2026-03-02', '2026-03-05'));
     expect(exposed).toMatchObject({ startDate: '2026-03-02', endDate: '2026-03-05', visibleMonth: '2026-03' });
     await act(() => exposed.setMonth('2027-01-15'));
@@ -246,7 +245,7 @@ describe('ShadCalendar', () => {
 describe('ShadCarousel', () => {
   const props = defaultsOf(shadCarouselConfig);
 
-  it('moves with arrows, dots and keys, firing onSlideChange', async () => {
+  it('moves with arrows, dots and keys, firing onSlideChanged', async () => {
     const { exposed, events } = mount(ShadCarousel, 'ShadCarousel', props);
     expect(exposed.currentIndex).toBe(0);
     fireEvent.click(screen.getByRole('button', { name: 'Next slide' }));
@@ -256,7 +255,7 @@ describe('ShadCarousel', () => {
     expect(exposed.currentIndex).toBe(2);
     fireEvent.keyDown(screen.getByRole('region'), { key: 'ArrowRight' });
     expect(exposed.currentIndex).toBe(0);
-    expect(events).toEqual(['onSlideChange', 'onSlideChange', 'onSlideChange']);
+    expect(events).toEqual(['onSlideChanged', 'onSlideChanged', 'onSlideChanged']);
     await act(() => exposed.goTo(1));
     expect(exposed.currentIndex).toBe(1);
     await act(() => exposed.previous());
@@ -268,7 +267,7 @@ describe('ShadCarousel', () => {
     expect(screen.getByRole('button', { name: 'Previous slide' }).disabled).toBe(true);
     const slide = within(screen.getAllByRole('group')[0]).getByRole('img');
     fireEvent.click(slide);
-    expect(events).toEqual(['onSlideClick']);
+    expect(events).toEqual(['onSlideClicked']);
     expect(exposed.clickedSlide).toMatchObject({ title: 'Coastal routes', index: 0 });
   });
 

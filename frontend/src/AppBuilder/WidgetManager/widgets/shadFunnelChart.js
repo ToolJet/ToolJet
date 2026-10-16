@@ -2,7 +2,7 @@ export const shadFunnelChartConfig = {
   name: 'ShadFunnelChart',
   displayName: 'Funnel chart',
   description:
-    "Funnel of stages in order: data [{ stage: 'Visited', count: 12480 }, { stage: 'Paid', count: 412 }], stageField 'stage', valueField 'count'; one bar per stage sized to the widest, its value, and its conversion % from the stage before (conversionBase 'previous') or from the first ('first'); align center/left, colorByStage (palette per stage, else one colour fading down), yAxisFormat for values. About 44 px per stage; clicking a stage sets clickedDatum to its row and fires onClick.",
+    "Funnel of stages in order: data [{ stage: 'Visited', count: 12480 }, { stage: 'Paid', count: 412 }], stageField 'stage', valueField 'count'; one bar per stage sized to the widest, its value, and its conversion % from the stage before (conversionBase 'previous') or from the first ('first'); align center/left, colorByStage (palette per stage, else one colour fading down), yAxisFormat for values. About 44 px per stage; clicking a stage sets clickedDataPoint to its row and fires onClick.",
   component: 'ShadFunnelChart',
   defaultSize: {
     width: 16,
@@ -384,7 +384,6 @@ export const shadFunnelChartConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
-    clickedDatum: {},
     clickedDataPoint: {},
   },
   actions: [

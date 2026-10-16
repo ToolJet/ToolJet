@@ -250,9 +250,6 @@ export const shadDateTimePickerConfig = {
     },
   },
   events: {
-    onChange: {
-      displayName: 'On change',
-    },
     onSelect: {
       displayName: 'On select',
     },
@@ -452,22 +449,6 @@ export const shadDateTimePickerConfig = {
   },
   actions: [
     {
-      handle: 'setDate',
-      displayName: 'Set date and time',
-      params: [
-        {
-          handle: 'value',
-          displayName: 'Date and time (YYYY-MM-DD HH:mm)',
-          defaultValue: '',
-        },
-        {
-          handle: 'format',
-          displayName: 'Format (optional)',
-          defaultValue: '',
-        },
-      ],
-    },
-    {
       handle: 'setValue',
       displayName: 'Set value',
       params: [
@@ -509,10 +490,6 @@ export const shadDateTimePickerConfig = {
           defaultValue: '',
         },
       ],
-    },
-    {
-      handle: 'clear',
-      displayName: 'Clear',
     },
     {
       handle: 'clearValue',

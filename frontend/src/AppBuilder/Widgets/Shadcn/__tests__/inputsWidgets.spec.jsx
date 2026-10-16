@@ -97,7 +97,7 @@ describe('ShadNumberInput', () => {
     fireEvent.blur(input);
     expect(input.value).toBe('1,234.57');
     expect(events).toContain('onBlur');
-    await act(() => exposed.setValue(4));
+    await act(() => exposed.setText(4));
     fireEvent.click(screen.getByRole('button', { name: 'Increase' }));
     expect(exposed.value).toBe(5);
     expect(screen.getByRole('button', { name: 'Increase' }).disabled).toBe(true);
@@ -152,7 +152,7 @@ describe('ShadPhoneInput', () => {
     fireEvent.change(search, { target: { value: 'germ' } });
     fireEvent.click(screen.getByRole('option', { name: /Germany/ }));
     expect(exposed).toMatchObject({ country: 'DE', countryCode: '+49', value: '+494155550123' });
-    await act(() => exposed.setCountry('+44'));
+    await act(() => exposed.setCountryCode('+44'));
     expect(exposed.country).toBe('GB');
   });
 });
@@ -212,9 +212,8 @@ describe('ShadTimePicker', () => {
     fireEvent.click(screen.getByRole('option', { name: 'PM' }));
     fireEvent.click(screen.getByRole('option', { name: '30' }));
     expect(exposed).toMatchObject({ value: '21:30', formattedValue: '9:30 PM' });
-    // onSelect is the native Time picker's name, fired with each onChange.
-    expect(events).toEqual(['onChange', 'onSelect', 'onChange', 'onSelect', 'onChange', 'onSelect']);
-    await act(() => exposed.setTime('14:15'));
+    expect(events).toEqual(['onSelect', 'onSelect', 'onSelect']);
+    await act(() => exposed.setValue('14:15'));
     expect(exposed.value).toBe('14:15');
   });
 
@@ -246,12 +245,12 @@ describe('ShadDateTimePicker', () => {
     fireEvent.click(screen.getByText('20'));
     expect(exposed).toMatchObject({ value: '2026-10-20T09:30', displayValue: '20 Oct 2026 9:30 AM' });
     expect(exposed.unixTimestamp).toBe(new Date(2026, 9, 20, 9, 30).getTime());
-    expect(events).toEqual(['onChange', 'onSelect']);
+    expect(events).toEqual(['onSelect']);
     fireEvent.click(screen.getByRole('button', { name: 'PM' }));
     expect(exposed.selectedTime).toBe('21:30');
-    await act(() => exposed.setDate('2027-01-02T08:00'));
+    await act(() => exposed.setValue('2027-01-02T08:00'));
     expect(exposed.value).toBe('2027-01-02T08:00');
-    await act(() => exposed.clear());
+    await act(() => exposed.clearValue());
     expect(exposed.value).toBe('');
   });
 

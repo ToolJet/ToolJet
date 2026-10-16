@@ -247,9 +247,6 @@ export const shadDatePickerConfig = {
     },
   },
   events: {
-    onChange: {
-      displayName: 'On change',
-    },
     onSelect: {
       displayName: 'On select',
     },
@@ -389,7 +386,6 @@ export const shadDatePickerConfig = {
     value: '',
     startDate: '',
     endDate: '',
-    selectedDate: '',
     unixTimestamp: null,
     displayValue: '',
     startDateInUnix: null,
@@ -402,31 +398,11 @@ export const shadDatePickerConfig = {
   },
   actions: [
     {
-      handle: 'clear',
-      displayName: 'Clear',
-    },
-    {
       handle: 'setValue',
       displayName: 'Set value',
       params: [
         {
           handle: 'value',
-          displayName: 'Date',
-          defaultValue: '',
-        },
-        {
-          handle: 'format',
-          displayName: 'Format',
-          defaultValue: 'YYYY-MM-DD',
-        },
-      ],
-    },
-    {
-      handle: 'setDate',
-      displayName: 'Set date',
-      params: [
-        {
-          handle: 'date',
           displayName: 'Date',
           defaultValue: '',
         },

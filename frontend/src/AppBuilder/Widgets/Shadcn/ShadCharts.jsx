@@ -131,19 +131,19 @@ const LegendContent = ({ payload }) => (
   </div>
 );
 
-/** The clicked datum and the native Chart's events and actions: a click on a datum exposes it (clickedDatum, and
- *  clickedDataPoint, the native name) and fires onClick; a double click fires onDoubleClick (the datum is the one its
+/** The clicked datum and the native Chart's events and actions: a click on a datum exposes it (clickedDataPoint) and
+ *  fires onClick; a double click fires onDoubleClick (the datum is the one its
  *  first click picked); clearClickedPoint() empties it. */
 const useClickedDatum = (props) => {
   const [clicked, setClicked] = useState({});
   const pick = (datum) => {
     setClicked(datum);
-    props.setExposedVariables?.({ clickedDatum: datum, clickedDataPoint: datum });
+    props.setExposedVariables?.({ clickedDataPoint: datum });
     props.fireEvent?.('onClick');
   };
   return {
     pick,
-    exposed: { clickedDatum: clicked, clickedDataPoint: clicked, clearClickedPoint: async () => setClicked({}) },
+    exposed: { clickedDataPoint: clicked, clearClickedPoint: async () => setClicked({}) },
     onDoubleClick: () => props.fireEvent?.('onDoubleClick'),
   };
 };
@@ -600,7 +600,7 @@ const EmptyChart = ({ text, small }) => (
 );
 
 /** ChartFrame with an empty state, an error boundary and the widget's own exposed values. `clickable`: clicking a
- *  datum sets clickedDatum and fires onClick; otherwise a click anywhere fires onClick. */
+ *  datum sets clickedDataPoint and fires onClick; otherwise a click anywhere fires onClick. */
 const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true, children }) => {
   const { properties, setExposedVariables, height } = props;
   const click = useClickedDatum(props);

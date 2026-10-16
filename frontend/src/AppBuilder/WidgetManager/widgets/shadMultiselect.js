@@ -304,9 +304,6 @@ export const shadMultiselectConfig = {
     onSelect: {
       displayName: 'On select',
     },
-    onChange: {
-      displayName: 'On change',
-    },
     onSearchTextChanged: {
       displayName: 'On search text changed',
     },

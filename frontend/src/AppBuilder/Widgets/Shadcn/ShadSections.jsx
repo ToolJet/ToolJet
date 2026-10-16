@@ -136,7 +136,7 @@ export const ShadHero = (props) => {
           <Button
             variant="outline"
             disabled={busy(p)}
-            onClick={() => fireEvent('onSecondaryActionClick')}
+            onClick={() => fireEvent('onSecondaryActionClicked')}
             className={cn(onDark && 'border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white')}
           >
             {secondary}
@@ -145,7 +145,7 @@ export const ShadHero = (props) => {
         {primary ? (
           <Button
             disabled={busy(p)}
-            onClick={() => fireEvent('onActionClick')}
+            onClick={() => fireEvent('onActionClicked')}
             className={cn(
               onDark
                 ? // A fixed dark ink: the theme foreground is near-white in a dark app, which drew a blank white button.
@@ -513,7 +513,7 @@ export const ShadCardGrid = (props) => {
     selectedItem: selected?.row ?? {},
     selectedItemId: selected ? selected.row?.[text(p.idField) || 'id'] ?? null : null,
   });
-  const hasClick = useHasEvent(id, 'onCardClick');
+  const hasClick = useHasEvent(id, 'onCardClicked');
   const columns = gridColumns(p.columns, width || Number(props.width) || 960, p.minCardWidth);
   const aspect = ['16/9', '4/3', '1/1'].includes(p.imageAspect) ? p.imageAspect.replace('/', ' / ') : '4 / 3';
   // The picture area only when an image field is mapped: without one every card got a large initials panel, which
@@ -527,7 +527,7 @@ export const ShadCardGrid = (props) => {
     setSelected(card);
     setExposedVariable('selectedItem', card.row);
     setExposedVariable('selectedItemId', card.row?.[text(p.idField) || 'id'] ?? null);
-    fireEvent('onCardClick');
+    fireEvent('onCardClicked');
   };
 
   let body;
@@ -777,18 +777,13 @@ export const ShadRecordList = (props) => {
   useEffect(() => setShownCount(ROWS_PER_STEP), [rows]);
   const [selected, setSelected] = useState(null);
   const idKey = text(p.idField) || 'id';
-  // The pack's names and the native List view's: selectedRecord and selectedRow are the row's data, selectedRecordId and
-  // selectedRowId its position in data.
+  // selectedItem is the row's data, selectedItemId its idField value.
   const selection = (row) => ({
     selectedItem: row?.row ?? {},
     selectedItemId: row ? row.row?.[idKey] ?? null : null,
-    selectedRecord: row?.row ?? {},
-    selectedRecordId: row ? row.index : null,
-    selectedRow: row?.row ?? {},
-    selectedRowId: row ? row.index : null,
   });
   useExposed(setExposedVariables, p, selection(selected));
-  const hasClick = useHasEvent(id, 'onRowClicked');
+  const hasClick = useHasEvent(id, 'onItemClicked');
   const density = DENSITY[p.density] || DENSITY.default;
   const showAvatar = p.showAvatar !== false;
   const dividers = p.showDividers !== false;
@@ -802,8 +797,7 @@ export const ShadRecordList = (props) => {
     if (busy(p)) return;
     setSelected(row);
     setExposedVariables(selection(row));
-    fireEvent('onRowClicked');
-    fireEvent('onRecordClicked');
+    fireEvent('onItemClicked');
   };
 
   // Borders are classes: the pack's preflight sets every border width to 0 with !important, so an inline border
@@ -996,7 +990,7 @@ export const ShadProgressList = (props) => {
     selectedItemId: row ? row.row?.[idKey] ?? null : null,
   });
   useExposed(setExposedVariables, p, selection(selected));
-  const clickable = useHasEvent(id, 'onItemClick') && !busy(p);
+  const clickable = useHasEvent(id, 'onItemClicked') && !busy(p);
   const barHeight = BAR_HEIGHT[p.barSize] || BAR_HEIGHT.default;
   const card = p.listStyle !== 'plain';
   const showValues = p.showValues !== false;
@@ -1007,7 +1001,7 @@ export const ShadProgressList = (props) => {
     if (busy(p)) return;
     setSelected(row);
     setExposedVariables(selection(row));
-    fireEvent('onItemClick');
+    fireEvent('onItemClicked');
   };
 
   // Borders are classes (the pack's preflight zeroes inline border widths); the colour stays inline.

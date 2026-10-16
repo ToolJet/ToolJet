@@ -302,13 +302,12 @@ export const ShadCombobox = (props) => {
     setExposedVariables({ value: option.value, selectedOption: option });
     openChange(false);
     fireEvent('onSelect');
-    fireEvent('onChange');
   };
   const clear = () => {
     setKey(null);
     setExposedVariables({ value: '', selectedOption: {} });
     check.touch();
-    fireEvent('onChange');
+    fireEvent('onSelect');
   };
   const showClear = properties.showClearBtn !== false && !!selected && !disabled;
   return (
@@ -482,7 +481,6 @@ export const ShadMultiselect = (props) => {
     setKeys(next);
     publish(next);
     fireEvent('onSelect');
-    fireEvent('onChange');
   };
   const selectedKeys = new Set(selectedOptions.map((o) => M.keyOf(o.value)));
   const isOn = (o) => selectedKeys.has(M.keyOf(o.value));
@@ -656,13 +654,10 @@ export const ShadTagsInput = (props) => {
   const rulesRef = useRef(rules);
   rulesRef.current = rules;
   const suggestions = toOptions(properties.suggestions).map((o) => ({ label: o.label, tag: String(o.value) }));
-  // The native Tags input's names: values and selectedTags (the tags), newTagsAdded (those not among the suggestions).
+  // The native Tags input's names: values (the tags), newTagsAdded (those not among the suggestions).
   const known = new Set(suggestions.map((sg) => (rules.caseSensitive ? sg.tag : sg.tag.toLowerCase())));
   const tagNames = (next) => ({
-    tags: next,
-    value: next,
     values: next,
-    selectedTags: next,
     newTagsAdded: next.filter((t) => !known.has(rules.caseSensitive ? t : String(t).toLowerCase())),
   });
   useExposed(setExposedVariables, properties, {
@@ -701,8 +696,6 @@ export const ShadTagsInput = (props) => {
       ...(event === 'onTagAdded' ? { lastAddedTag: tag } : { lastRemovedTag: tag }),
     });
     fireEvent(event);
-    // The native Tags input's name for a removal.
-    if (event === 'onTagRemoved') fireEvent('onTagDeleted');
     fireEvent('onChange');
   };
   /** Adds typed or picked tags; true when at least one was added. */
@@ -728,7 +721,7 @@ export const ShadTagsInput = (props) => {
     setTagError('');
     commit(
       tags.filter((_, i) => i !== index),
-      'onTagRemoved',
+      'onTagDeleted',
       tag
     );
   };
@@ -823,7 +816,7 @@ export const ShadTagsInput = (props) => {
                   label="Clear tags"
                   onClear={() => {
                     setTagError('');
-                    commit([], 'onTagRemoved', tags[tags.length - 1]);
+                    commit([], 'onTagDeleted', tags[tags.length - 1]);
                   }}
                 />
               ) : null}
@@ -937,15 +930,13 @@ export const ShadColorPicker = (props) => {
   alphaRef.current = alpha;
   const triggerRef = useRef(null);
   const focus = useFocusEvents(fireEvent);
-  // The native Color picker's names beside the pack's: selectedColorHex, selectedColorRGB, selectedColorRGBA.
-  const nativeForms = (hex) => {
+  // value is the hex (what a Form collects); the other forms keep the native Color picker's names.
+  const colorExposed = (hex) => {
     const forms = M.colorForms(hex);
-    return { selectedColorHex: hex, selectedColorRGB: forms.rgb, selectedColorRGBA: forms.rgba };
+    return { value: hex, selectedColorRGB: forms.rgb, selectedColorRGBA: forms.rgba };
   };
   useExposed(setExposedVariables, properties, {
-    value,
-    ...M.colorForms(value),
-    ...nativeForms(value),
+    ...colorExposed(value),
     colorFormat: 'hex',
     allowOpacity: alpha,
     isValid: true,
@@ -968,7 +959,7 @@ export const ShadColorPicker = (props) => {
   const commit = (hex) => {
     if (!hex || hex === value) return;
     setValue(hex);
-    setExposedVariables({ value: hex, ...M.colorForms(hex), ...nativeForms(hex) });
+    setExposedVariables(colorExposed(hex));
     fireEvent('onChange');
   };
   const pickHex = (hex) => {
@@ -1410,7 +1401,7 @@ export const ShadFileUpload = (props) => {
     setFiles(next);
     const exposed = next.map(exposedFile);
     // `file` is the native File picker's name for the list.
-    setExposedVariables({ files: exposed, file: exposed, fileSize: next.reduce((sum, f) => sum + (f.size || 0), 0) });
+    setExposedVariables({ file: exposed, fileSize: next.reduce((sum, f) => sum + (f.size || 0), 0) });
   };
   // The native File picker's setFileName(index, name) or setFileName([{ index, newFileName }]): renames files and
   // keeps each one's extension.
@@ -1446,12 +1437,11 @@ export const ShadFileUpload = (props) => {
     isParsing: parsing,
     label: String(properties.label ?? ''),
     clearFiles: async () => clearRef.current(),
-    clear: async () => clearRef.current(),
     setFileName: async (indexOrUpdates, name) => renameRef.current(indexOrUpdates, name),
   });
   useEffect(() => {
     mounted.current = true;
-    setExposedVariables({ files: [], file: [], fileSize: 0 });
+    setExposedVariables({ file: [], fileSize: 0 });
     return () => {
       mounted.current = false;
       filesRef.current.forEach((f) => releaseFileHandle(f.handle));

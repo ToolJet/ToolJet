@@ -2,7 +2,7 @@ export const shadScatterChartConfig = {
   name: 'ShadScatterChart',
   displayName: 'Scatter chart',
   description:
-    "Scatter or bubble chart relating two measures: data [{ account: 'Globex', spend: 30, revenue: 95, seats: 120, segment: 'Enterprise' }], xField 'spend', yField 'revenue', optional sizeField (bubbles), groupField (one colour and legend entry per value), nameField (tooltip title), xLabel/yLabel axis titles, referenceX/referenceY dashed quadrant lines, x and y formats. Height 260-360 px; clicking a point sets clickedDatum to its row and fires onClick.",
+    "Scatter or bubble chart relating two measures: data [{ account: 'Globex', spend: 30, revenue: 95, seats: 120, segment: 'Enterprise' }], xField 'spend', yField 'revenue', optional sizeField (bubbles), groupField (one colour and legend entry per value), nameField (tooltip title), xLabel/yLabel axis titles, referenceX/referenceY dashed quadrant lines, x and y formats. Height 260-360 px; clicking a point sets clickedDataPoint to its row and fires onClick.",
   component: 'ShadScatterChart',
   defaultSize: {
     width: 16,
@@ -536,7 +536,6 @@ export const shadScatterChartConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
-    clickedDatum: {},
     clickedDataPoint: {},
   },
   actions: [

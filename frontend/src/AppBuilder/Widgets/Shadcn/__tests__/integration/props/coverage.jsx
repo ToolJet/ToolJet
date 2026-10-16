@@ -53,7 +53,7 @@ export const PROBES = [
     widget: 'ShadImage',
     key: 'fallbackText',
     value: 'Ada Lovelace',
-    context: { properties: { src: 'https://example.invalid/x.png', fallback: 'initials' } },
+    context: { properties: { source: 'https://example.invalid/x.png', fallback: 'initials' } },
     steps: [['error']],
   },
   // Stat
@@ -533,7 +533,7 @@ export const PROBES = [
     widget: 'ShadKanban',
     key: 'idField',
     value: 'title',
-    steps: [['action', 'updateCard', 'Draft the brief', { owner: 'Grace Hopper' }]],
+    steps: [['action', 'updateCardData', 'Draft the brief', { owner: 'Grace Hopper' }]],
   },
   { widget: 'ShadKanban', key: 'cardHeight', value: '{{140}}', context: { properties: { cardLayout: 'custom' } } },
   {

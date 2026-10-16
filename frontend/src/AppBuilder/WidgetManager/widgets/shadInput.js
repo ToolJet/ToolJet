@@ -379,30 +379,6 @@ export const shadInputConfig = {
       displayName: 'Set blur',
     },
     {
-      handle: 'disable',
-      displayName: 'Disable',
-      params: [
-        {
-          handle: 'disable',
-          displayName: 'Value',
-          defaultValue: '{{false}}',
-          type: 'toggle',
-        },
-      ],
-    },
-    {
-      handle: 'visibility',
-      displayName: 'Visibility',
-      params: [
-        {
-          handle: 'visible',
-          displayName: 'Value',
-          defaultValue: '{{true}}',
-          type: 'toggle',
-        },
-      ],
-    },
-    {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [

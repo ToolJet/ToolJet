@@ -97,7 +97,7 @@ describe('ShadMap', () => {
     act(() => {
       fireEvent.click(m.view.container.querySelector('.sc-map-canvas'));
     });
-    expect(m.fired.map(([name]) => name)).toEqual(['onMarkerClick', 'onMapClick']);
+    expect(m.fired.map(([name]) => name)).toEqual(['onMarkerClick', 'onMapClicked']);
     expect(m.fired[1][1].selectedMarkerId).toBeNull();
     expect(m.fired[1][1].clickedLocation).toEqual({ lat: expect.any(Number), lng: expect.any(Number) });
     expect(m.view.container.querySelector('.sc-map-popup-body')).toBeNull();
@@ -258,7 +258,7 @@ describe('ShadMap', () => {
     expect(m.view.container.querySelector('.sc-map-legend').textContent).toContain('Maya Chen');
   });
 
-  it('selects a route or an area from the list, firing onShapeClick with the shape exposed', () => {
+  it('selects a route or an area from the list, firing onShapeClicked with the shape exposed', () => {
     const m = harness({
       clusterMarkers: false,
       routes: [
@@ -287,7 +287,7 @@ describe('ShadMap', () => {
     act(() => {
       fireEvent.click(area);
     });
-    expect(m.fired.map(([n]) => n)).toEqual(['onShapeClick']);
+    expect(m.fired.map(([n]) => n)).toEqual(['onShapeClicked']);
     expect(m.fired[0][1]).toMatchObject({ selectedShapeType: 'area', selectedShape: { name: 'North' } });
     act(() => {
       fireEvent.click(route);
@@ -305,13 +305,13 @@ describe('ShadMap', () => {
     expect(m.view.container.querySelector('.sc-map-empty')).toBeNull();
   });
 
-  it('lets the user pick a location by a click, exposing it before onLocationPick fires', async () => {
+  it('lets the user pick a location by a click, exposing it before onLocationPicked fires', async () => {
     const m = harness({ clusterMarkers: false, pickLocation: true });
     expect(m.view.container.querySelector('.sc-map-pick-hint')).not.toBeNull();
     act(() => {
       fireEvent.click(m.view.container.querySelector('.sc-map-canvas'));
     });
-    expect(m.fired.map(([n]) => n)).toEqual(['onLocationPick', 'onMapClick']);
+    expect(m.fired.map(([n]) => n)).toEqual(['onLocationPicked', 'onMapClicked']);
     expect(m.fired[0][1].pickedLocation).toEqual({ lat: expect.any(Number), lng: expect.any(Number) });
     expect(m.view.container.querySelector('[data-picked]')).not.toBeNull();
     await m.call('clearPickedLocation');

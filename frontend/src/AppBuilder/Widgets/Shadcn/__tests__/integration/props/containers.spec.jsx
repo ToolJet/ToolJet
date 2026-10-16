@@ -127,7 +127,9 @@ describe('Kanban with custom card content', () => {
         for (let n = el; n && n !== card; n = n.parentElement) if (n.style?.display === 'none') return true;
         return false;
       };
-      const label = [...wrapper.querySelectorAll('*')].find((n) => n.textContent === 'Deal notes' && !n.children.length);
+      const label = [...wrapper.querySelectorAll('*')].find(
+        (n) => n.textContent === 'Deal notes' && !n.children.length
+      );
       return !!label && !hidden(label);
     });
     expect(shown).toEqual([true, false, true]);
@@ -152,7 +154,7 @@ describe('Kanban with custom card content', () => {
     expect(k.text()).toContain('Delta task');
     await k.action('moveCard', 1, 'done');
     await k.action('addCard', { title: 'Added task', status: 'todo' });
-    await k.action('updateCard', 2, { title: 'Renamed task' });
+    await k.action('updateCardData', 2, { title: 'Renamed task' });
     await k.action('deleteCard', 3);
     healthy();
     expect(k.text()).toContain('Added task');

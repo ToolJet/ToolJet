@@ -314,7 +314,6 @@ export const shadPieChartConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
-    clickedDatum: {},
     clickedDataPoint: {},
   },
   actions: [

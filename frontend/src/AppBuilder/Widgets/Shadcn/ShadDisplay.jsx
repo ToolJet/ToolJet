@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as Lucide from 'lucide-react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { useHasEvent, useOverrides, truthy, textArg } from './parity';
+import { useHasEvent, useOverrides, textArg } from './parity';
 import { LoadingBox, Shell, Spinner, busy, wantsSkeleton } from './Shadcn';
 import { initials, useAutoHeight, useExposed } from '../packHooks';
 import { Button, Skeleton, cn, getPortalRoot } from './ui';
@@ -114,8 +114,8 @@ export const ShadImage = (props) => {
   // With a ratio the image sizes itself from the width and the widget fits it; "auto" fills the drawn height instead.
   const ratio = ratioOf(p.aspectRatio);
   useAutoHeight({ ...props, properties: { ...p, dynamicHeight: ratio ? p.dynamicHeight : false } }, ref);
-  const src = String(p.source ?? p.src ?? '').trim();
-  const alt = String(p.alternativeText ?? p.alt ?? '');
+  const src = String(p.source ?? '').trim();
+  const alt = String(p.alternativeText ?? '');
   const [status, setStatus] = useState(src ? 'loading' : 'error');
   const [open, setOpen] = useState(false);
   useEffect(() => setStatus(src ? 'loading' : 'error'), [src]);
@@ -135,7 +135,7 @@ export const ShadImage = (props) => {
   const zoom = p.zoomOnClick === true && status === 'loaded';
   const clickable = !busy(p) && (hasClick || zoom);
   const caption = isSet(p.caption) ? String(p.caption) : '';
-  const fit = FIT.has(p.imageFit ?? p.fit) ? p.imageFit ?? p.fit : 'cover';
+  const fit = FIT.has(p.imageFit) ? p.imageFit : 'cover';
   const frameHeight = Math.max(24, (Number(height) || 200) - (caption ? 28 : 0));
   const click = () => {
     if (busy(p)) return;
@@ -294,13 +294,13 @@ export const ShadLink = (props) => {
   const { setExposedVariables, fireEvent, height } = props;
   // setLinkTarget and setLinkText hold until the Link target and Text properties themselves change.
   const [p, override] = useOverrides(props.properties);
-  const href = String(p.linkTarget ?? p.href ?? '').trim();
+  const href = String(p.linkTarget ?? '').trim();
   const anchorRef = useRef(null);
   const latest = useRef(p);
   latest.current = p;
   useExposed(setExposedVariables, p, {
     linkTarget: href,
-    linkText: String(p.linkText ?? p.text ?? ''),
+    linkText: String(p.linkText ?? ''),
     setLinkTarget: async (v) => override('linkTarget', textArg(v)),
     setLinkText: async (v) => override('linkText', textArg(v)),
     // click() follows the link as a click does (onClick fires, the target opens).
@@ -310,7 +310,8 @@ export const ShadLink = (props) => {
       else fireEvent('onClick');
     },
   });
-  const sameTab = p.targetType === 'same' || p.target === '_self' || p.target === 'same';
+  // A migrated target of '_self' reads as the same tab.
+  const sameTab = p.targetType === 'same' || p.targetType === '_self';
   const underline = own(UNDERLINE, p.underline) || (typeof p.underline === 'string' && p.underline) || 'on-hover';
   const disabled = busy(p);
   const className = cn(
@@ -324,7 +325,7 @@ export const ShadLink = (props) => {
   const style = { fontSize: clamp(p.fontSize, 8, 96, 14), lineHeight: 1.4 };
   const content = (
     <>
-      <span className="truncate">{String(p.linkText ?? p.text ?? '')}</span>
+      <span className="truncate">{String(p.linkText ?? '')}</span>
       {p.showIcon === true ? <ExternalLink className="shrink-0" style={{ width: '0.85em', height: '0.85em' }} /> : null}
     </>
   );
@@ -441,7 +442,7 @@ export const ShadTags = (props) => {
   const tags = useMemo(() => toTags(p.tags), [stringify(p.tags ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
   const [last, setLast] = useState('');
   useExposed(setExposedVariables, p, { lastClickedTag: last, tags });
-  const hasClick = useHasEvent(id, 'onTagClick');
+  const hasClick = useHasEvent(id, 'onTagClicked');
   const single = p.overflow === 'single';
   const shown = useFit(single, tags, rowRef, measureRef);
   const variant = ['soft', 'outline', 'solid'].includes(p.variant) ? p.variant : 'soft';
@@ -479,7 +480,7 @@ export const ShadTags = (props) => {
           if (busy(p)) return;
           setLast(tag);
           setExposedVariable('lastClickedTag', tag);
-          fireEvent('onTagClick');
+          fireEvent('onTagClicked');
         }}
       >
         {tag}
@@ -890,7 +891,7 @@ export const ShadTimeline = (props) => {
   );
   const [last, setLast] = useState({});
   useExposed(setExposedVariables, p, { lastClickedItem: last });
-  const hasClick = useHasEvent(id, 'onItemClick');
+  const hasClick = useHasEvent(id, 'onItemClicked');
   const compact = p.density === 'compact';
   const icons = p.marker === 'icon';
   const marker = icons ? (compact ? 24 : 28) : compact ? 8 : 10;
@@ -902,7 +903,7 @@ export const ShadTimeline = (props) => {
     const { key, ...rest } = item; // eslint-disable-line no-unused-vars
     setLast(rest);
     setExposedVariable('lastClickedItem', rest);
-    fireEvent('onItemClick');
+    fireEvent('onItemClicked');
   };
   let body;
   if (p.loadingState && !wantsSkeleton(p)) {
@@ -1052,7 +1053,7 @@ export const ShadSteps = (props) => {
   const { properties: p, setExposedVariables, fireEvent } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
-  const source = p.steps ?? p.schema;
+  const source = p.steps;
   const base = useMemo(() => normalizeSteps(source), [stringify(source ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
   const [overrides, setOverrides] = useState({});
   useEffect(() => setOverrides({}), [base]);
@@ -1100,8 +1101,6 @@ export const ShadSteps = (props) => {
     },
     setStepVisible: async (id, visibility) => override(id, { visible: visibility !== false && visibility !== 'false' }),
     setStepDisable: async (id, disabled) => override(id, { disabled: disabled !== false && disabled !== 'false' }),
-    // The native Steps' name for disabling the whole widget.
-    setDisabled: async (v) => props.control?.setDisable(truthy(v)),
   });
   const selectable = p.stepsSelectable !== false;
   const select = (step) => {

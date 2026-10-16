@@ -2,7 +2,7 @@ export const shadCalendarConfig = {
   name: 'ShadCalendar',
   displayName: 'Calendar',
   description:
-    "Inline month calendar. mode single, multiple or range; defaultValue 'YYYY-MM-DD' (a list for multiple, [start, end] for range); markers [{ date, label?, color? }] draw dots under days (label on hover); minDate, maxDate, disabledDates, disabledDays ([0, 6] = weekends). Exposed value, selectedDate, selectedDates, startDate, endDate, visibleMonth ('YYYY-MM'), visibleStart, visibleEnd; events onSelect, onMonthChange. One month is about 300px tall and 250px wide (fullWidth stretches the days)",
+    "Inline month calendar. mode single, multiple or range; defaultValue 'YYYY-MM-DD' (a list for multiple, [start, end] for range); markers [{ date, label?, color? }] draw dots under days (label on hover); minDate, maxDate, disabledDates, disabledDays ([0, 6] = weekends). Exposed value, selectedDate, selectedDates, startDate, endDate, visibleMonth ('YYYY-MM'), visibleStart, visibleEnd; events onSelect, onMonthChanged. One month is about 300px tall and 250px wide (fullWidth stretches the days)",
   component: 'ShadCalendar',
   defaultSize: {
     width: 10,
@@ -348,8 +348,8 @@ export const shadCalendarConfig = {
     onSelect: {
       displayName: 'On select',
     },
-    onMonthChange: {
-      displayName: 'On month change',
+    onMonthChanged: {
+      displayName: 'On month changed',
     },
   },
   styles: {

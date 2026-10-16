@@ -163,8 +163,8 @@ export const shadEmptyConfig = {
     },
   },
   events: {
-    onAction: {
-      displayName: 'On action',
+    onActionClicked: {
+      displayName: 'On action clicked',
     },
   },
   styles: {

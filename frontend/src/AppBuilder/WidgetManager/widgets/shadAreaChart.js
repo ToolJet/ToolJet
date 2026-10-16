@@ -374,7 +374,6 @@ export const shadAreaChartConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
-    clickedDatum: {},
     clickedDataPoint: {},
   },
   actions: [

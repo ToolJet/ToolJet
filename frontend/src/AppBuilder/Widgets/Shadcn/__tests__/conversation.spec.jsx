@@ -303,7 +303,7 @@ describe('ShadQuestionnaire', () => {
     click('Next');
     expect(screen.getByText('Question 2 of 3')).toBeTruthy();
     const [name, seen] = q.fired.at(-1);
-    expect(name).toBe('onStepChange');
+    expect(name).toBe('onStepChanged');
     expect(seen).toMatchObject({ currentIndex: 1, answers: { role: 'Finance' }, currentItem: { name: 'goals' } });
   });
 
@@ -357,7 +357,7 @@ describe('ShadQuestionnaire', () => {
     const q = mountQ({ defaultAnswers: { role: 'Finance' } });
     await q.call('goTo', 2);
     expect(q.exposed.currentIndex).toBe(2);
-    expect(q.fired.at(-1)[0]).toBe('onStepChange');
+    expect(q.fired.at(-1)[0]).toBe('onStepChanged');
     await q.call('goTo', 'nope');
     expect(q.exposed.currentIndex).toBe(2);
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Note' } });

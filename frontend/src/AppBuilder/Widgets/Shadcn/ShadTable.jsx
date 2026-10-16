@@ -503,7 +503,7 @@ export const ShadTable = (props) => {
   const paged = pageOf(processed, {
     enablePagination: properties.enablePagination !== false,
     serverSidePagination: serverPaging,
-    rowsPerPage: properties.rowsPerPage ?? properties.pageSize,
+    rowsPerPage: properties.rowsPerPage,
     totalRecords: properties.totalRecords,
     page,
   });

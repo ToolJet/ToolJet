@@ -446,17 +446,6 @@ export const shadPhoneInputConfig = {
       ],
     },
     {
-      handle: 'setCountry',
-      displayName: 'Set country',
-      params: [
-        {
-          handle: 'country',
-          displayName: 'Country (ISO code or +calling code)',
-          defaultValue: 'US',
-        },
-      ],
-    },
-    {
       handle: 'setCountryCode',
       displayName: 'Set country code',
       params: [

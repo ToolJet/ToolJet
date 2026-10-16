@@ -2,7 +2,7 @@ export const shadRadarChartConfig = {
   name: 'ShadRadarChart',
   displayName: 'Radar chart',
   description:
-    "Radar (spider) chart comparing scores across categories: data [{ skill: 'Speed', alex: 86, jordan: 65 }], categoryField 'skill' (one spoke per row), yFields 'alex,jordan' (one filled polygon each); fillOpacity, gridShape polygon/circle, dots, legend, maxValue (blank = auto). Best square, 240-320 px; clicking sets clickedDatum and fires onClick.",
+    "Radar (spider) chart comparing scores across categories: data [{ skill: 'Speed', alex: 86, jordan: 65 }], categoryField 'skill' (one spoke per row), yFields 'alex,jordan' (one filled polygon each); fillOpacity, gridShape polygon/circle, dots, legend, maxValue (blank = auto). Best square, 240-320 px; clicking sets clickedDataPoint and fires onClick.",
   component: 'ShadRadarChart',
   defaultSize: {
     width: 12,
@@ -417,7 +417,6 @@ export const shadRadarChartConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
-    clickedDatum: {},
     clickedDataPoint: {},
   },
   actions: [

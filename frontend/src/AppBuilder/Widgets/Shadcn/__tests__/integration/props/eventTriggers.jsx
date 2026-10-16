@@ -73,7 +73,7 @@ export const TRIGGERS = {
     onClick: { steps: [['click', 'svg', 0]] },
     onDoubleClick: { steps: [['dblclick', 'svg', 0]] },
   },
-  ShadBreadcrumb: { onItemClick: { steps: [['click', 'li span', 0]], reads: 'lastClickedItem' } },
+  ShadBreadcrumb: { onItemClicked: { steps: [['click', 'li span', 0]], reads: 'lastClickedItem' } },
   ShadButton: {
     onClick: { steps: [['click', 'button', 0]] },
     onHover: { steps: [['mouseEnter', 'button', 0]] },
@@ -84,32 +84,32 @@ export const TRIGGERS = {
   },
   ShadCalendar: {
     onSelect: { steps: [['click', 'td button', 10]], reads: 'value' },
-    onMonthChange: { steps: [['click', 'button[aria-label*="next" i]', 0]], reads: 'visibleMonth' },
+    onMonthChanged: { steps: [['click', 'button[aria-label*="next" i]', 0]], reads: 'visibleMonth' },
   },
-  ShadCardGrid: { onCardClick: { steps: [['click', '[role=button], button', 0]], reads: 'selectedItem' } },
+  ShadCardGrid: { onCardClicked: { steps: [['click', '[role=button], button', 0]], reads: 'selectedItem' } },
   // Map: pins one by one (no groups), a click on the map itself, and the zoom-in button (a move the user makes).
   ShadMap: {
     context: { clusterMarkers: '{{false}}' },
     onMarkerClick: { steps: [['click', '[data-marker]', 0]], reads: 'selectedMarker' },
-    onMapClick: { steps: [['click', '.sc-map-canvas', 0]], reads: 'clickedLocation' },
+    onMapClicked: { steps: [['click', '.sc-map-canvas', 0]], reads: 'clickedLocation' },
     onBoundsChange: { steps: [['click', 'a.leaflet-control-zoom-in', 0]], reads: 'zoom' },
     // A route from rows, chosen in the routes and areas list (the keyboard's way to the lines on the map).
-    onShapeClick: {
+    onShapeClicked: {
       context: { routes: "{{[{ name: 'Van 1', path: [[37.79, -122.39], [37.76, -122.42]] }]}}" },
       steps: [['click', '[data-shape]', 0]],
       reads: 'selectedShape',
     },
-    onLocationPick: {
+    onLocationPicked: {
       context: { pickLocation: '{{true}}' },
       steps: [['click', '.sc-map-canvas', 0]],
       reads: 'pickedLocation',
     },
   },
   ShadSchedule: {
-    onBookingClick: { steps: [['click', '[data-booking]', 0]], reads: 'selectedBooking' },
-    onSlotClick: { steps: [['click', '[data-resource] button[aria-label$="free"]', 0]], reads: 'selectedSlot' },
+    onBookingClicked: { steps: [['click', '[data-booking]', 0]], reads: 'selectedBooking' },
+    onSlotClicked: { steps: [['click', '[data-resource] button[aria-label$="free"]', 0]], reads: 'selectedSlot' },
   },
-  ShadProgressList: { onItemClick: { steps: [['click', 'li', 1]], reads: 'selectedItem' } },
+  ShadProgressList: { onItemClicked: { steps: [['click', 'li', 1]], reads: 'selectedItem' } },
   ShadChat: {
     onMessageSent: {
       steps: [
@@ -121,7 +121,7 @@ export const TRIGGERS = {
     onClearHistory: { steps: [['click', 'button[aria-label="Clear history"]', 0]] },
   },
   ShadQuestionnaire: {
-    onStepChange: {
+    onStepChanged: {
       steps: [
         ['click', '[role=radio]', 1],
         ['clickText', 'Next'],
@@ -135,13 +135,11 @@ export const TRIGGERS = {
     },
   },
   ShadRecordList: {
-    onRowClicked: { steps: [['click', 'li[role=button]', 0]], reads: 'selectedItem' },
-    // The native List view's names: the clicked record and its position.
-    onRecordClicked: { steps: [['click', 'li[role=button]', 1]], reads: 'selectedRecordId' },
+    onItemClicked: { steps: [['click', 'li[role=button]', 0]], reads: 'selectedItem' },
   },
   ShadCarousel: {
-    onSlideChange: { steps: [['click', 'button[aria-label*="next" i]', 0]], reads: 'currentIndex' },
-    onSlideClick: { steps: [['click', '[aria-roledescription=slide] .cursor-pointer', 0]], reads: 'clickedSlide' },
+    onSlideChanged: { steps: [['click', 'button[aria-label*="next" i]', 0]], reads: 'currentIndex' },
+    onSlideClicked: { steps: [['click', '[aria-roledescription=slide] .cursor-pointer', 0]], reads: 'clickedSlide' },
   },
   ShadCheckbox: {
     onChange: { steps: [['click', '[role=checkbox]', 0]], reads: 'value' },
@@ -155,24 +153,16 @@ export const TRIGGERS = {
   },
   ShadColorPicker: {
     context: { showSwatches: '{{true}}' },
-    onChange: { steps: [OPEN, ['click', 'button[aria-label^="#"], button[title^="#"]', 0]], reads: 'selectedColorHex' },
+    onChange: { steps: [OPEN, ['click', 'button[aria-label^="#"], button[title^="#"]', 0]], reads: 'value' },
     ...popoverFocus,
   },
   ShadCombobox: {
     onSelect: { steps: [OPEN, ['click', '[cmdk-item]', 1]], reads: 'value' },
-    onChange: { steps: [OPEN, ['click', '[cmdk-item]', 1]], reads: 'value' },
     onSearchTextChanged: { steps: [OPEN, ['type', 'wa', '[cmdk-input]']], reads: 'searchText' },
     ...popoverFocus,
   },
   ShadMultiselect: {
     onSelect: {
-      steps: [
-        ['click', '[role=combobox]', 0],
-        ['click', '[cmdk-item]', 3],
-      ],
-      reads: 'values',
-    },
-    onChange: {
       steps: [
         ['click', '[role=combobox]', 0],
         ['click', '[cmdk-item]', 3],
@@ -202,23 +192,19 @@ export const TRIGGERS = {
     onBlur: { steps: BLUR },
   },
   ShadDatePicker: {
-    onChange: { steps: [OPEN, ['click', 'td button', 10]], reads: 'value' },
-    onSelect: { steps: [OPEN, ['click', 'td button', 10]], reads: 'selectedDate' },
+    onSelect: { steps: [OPEN, ['click', 'td button', 10]], reads: 'value' },
     ...popoverFocus,
   },
   ShadDateTimePicker: {
-    onChange: { steps: [OPEN, ['click', 'td button', 10]], reads: 'value' },
     onSelect: { steps: [OPEN, ['click', 'td button', 10]], reads: 'selectedDate' },
     ...popoverFocus,
   },
   ShadTimePicker: {
-    onChange: { steps: [OPEN, ['click', '[role=option]', 3]], reads: 'value' },
     onSelect: { steps: [OPEN, ['click', '[role=option]', 3]], reads: 'value' },
     ...popoverFocus,
   },
   ShadSelect: {
     // Radix ignores a pointer release this close to where the list opened, so the option is picked by keyboard.
-    onChange: { steps: [OPEN, ['keyOn', '[role=option]', 1, 'Enter']], reads: 'value' },
     onSelect: { steps: [OPEN, ['keyOn', '[role=option]', 1, 'Enter']], reads: 'selectedOption' },
     ...popoverFocus,
   },
@@ -231,10 +217,10 @@ export const TRIGGERS = {
     onSelect: { steps: [OPEN, ['click', '[role=menuitem]', 0]], reads: 'lastClickedOption' },
     onClose: { steps: [OPEN, ['escape']] },
   },
-  ShadEmpty: { context: { actionLabel: 'Retry' }, onAction: { steps: [['click', 'button', 0]] } },
+  ShadEmpty: { context: { actionLabel: 'Retry' }, onActionClicked: { steps: [['click', 'button', 0]] } },
   ShadFileUpload: {
     context: { accept: '' },
-    onFileSelected: { steps: [['upload', [['notes.txt', 'text/plain', 'hello world']]]], reads: 'files' },
+    onFileSelected: { steps: [['upload', [['notes.txt', 'text/plain', 'hello world']]]], reads: 'fileSize' },
     onFileLoaded: { steps: [['upload', [['notes.txt', 'text/plain', 'hello world']]]], reads: 'file' },
     onFileDeselected: {
       steps: [
@@ -247,8 +233,8 @@ export const TRIGGERS = {
   ShadText: { onClick: { steps: [['click', 'p', 0]] }, onHover: { steps: [['mouseEnter', 'p', 0]] } },
   ShadHero: {
     context: { actionLabel: 'Book now', secondaryActionLabel: 'Learn more' },
-    onActionClick: { steps: [['clickText', 'Book now']] },
-    onSecondaryActionClick: { steps: [['clickText', 'Learn more']] },
+    onActionClicked: { steps: [['clickText', 'Book now']] },
+    onSecondaryActionClicked: { steps: [['clickText', 'Learn more']] },
   },
   ShadIcon: {
     onClick: { steps: [['click', '[role=button]', 0]] },
@@ -257,15 +243,14 @@ export const TRIGGERS = {
   ShadImage: { onClick: { steps: [['click', '[role=button]', 0]] } },
   ShadKanban: {
     context: { allowAdd: '{{true}}' },
-    onCardClicked: { steps: [['click', '[aria-roledescription=draggable]', 0]], reads: 'selectedCard' },
     onCardSelected: { steps: [['click', '[aria-roledescription=draggable]', 0]], reads: 'lastSelectedCard' },
     onAddCardClick: { steps: [['clickText', 'Add card']], reads: 'addCardColumn' },
     // Fired by the actions (and by a drag, which the board model's fuzz covers: jsdom has no layout to drag in).
     onCardAdded: { steps: [['action', 'addCard', { title: 'New' }]], reads: 'lastAddedCard' },
-    onCardUpdated: { steps: [['action', 'updateCard', 1, { title: 'Renamed' }]], reads: 'lastUpdatedCard' },
+    onCardUpdated: { steps: [['action', 'updateCardData', 1, { title: 'Renamed' }]], reads: 'lastUpdatedCard' },
     onCardRemoved: { steps: [['action', 'deleteCard', 1]], reads: 'lastRemovedCard' },
     onCardMoved: { steps: [['action', 'moveCard', 1, 'done']], reads: 'lastCardMovement' },
-    onUpdate: { steps: [['action', 'updateCard', 1, { title: 'Renamed' }]], reads: 'updatedCardData' },
+    onUpdate: { steps: [['action', 'updateCardData', 1, { title: 'Renamed' }]], reads: 'updatedCardData' },
   },
   ShadKeyValue: { onFieldClick: { steps: [['click', '[role=button]', 0]], reads: 'lastClickedField' } },
   ShadLink: {
@@ -274,18 +259,15 @@ export const TRIGGERS = {
   },
   ShadListView: {
     context: { enablePagination: '{{true}}', rowsPerPage: '{{1}}' },
-    // selectedRow and selectedRecord hold the row's child components' values (none here), as on the native List view.
-    onRowClicked: { steps: [['click', '[data-row], [role=listitem], [role=button]', 0]], reads: 'selectedItem' },
+    // selectedRecord holds the row's child components' values (none here), as on the native List view.
     onRecordClicked: { steps: [['click', '[data-row], [role=listitem], [role=button]', 0]], reads: 'selectedRecordId' },
     onPageChanged: { steps: [['click', 'button[aria-label*="next" i]', 0]], reads: 'pageIndex' },
   },
   ShadNavigation: {
-    onSelect: { steps: [['clickText', 'Orders']], reads: 'value' },
     onClick: { steps: [['clickText', 'Orders']], reads: 'selectedItem' },
   },
   ShadPagination: { onPageChange: { steps: [['clickText', '2']], reads: 'currentPageIndex' } },
   ShadRadioGroup: {
-    onChange: { steps: [['click', '[role=radio]', 1]], reads: 'value' },
     onSelectionChange: { steps: [['click', '[role=radio]', 1]], reads: 'value' },
   },
   ShadRating: { onChange: { steps: [['click', '[role=radio]', 3]], reads: 'value' } },
@@ -352,15 +334,14 @@ export const TRIGGERS = {
       reads: 'isLastStep',
     },
   },
-  ShadTags: { onTagClick: { steps: [['click', 'button, [role=button]', 0]], reads: 'lastClickedTag' } },
+  ShadTags: { onTagClicked: { steps: [['click', 'button, [role=button]', 0]], reads: 'lastClickedTag' } },
   ShadTagsInput: {
-    onChange: { steps: [['type', 'gamma,']], reads: 'tags' },
+    onChange: { steps: [['type', 'gamma,']], reads: 'values' },
     onTagAdded: { steps: [['type', 'gamma,']], reads: 'lastAddedTag' },
-    onTagRemoved: { steps: [['click', 'button[aria-label^="Remove"]', 0]], reads: 'lastRemovedTag' },
-    onTagDeleted: { steps: [['click', 'button[aria-label^="Remove"]', 0]], reads: 'tags' },
+    onTagDeleted: { steps: [['click', 'button[aria-label^="Remove"]', 0]], reads: 'lastRemovedTag' },
     onFocus: { steps: [FOCUS] },
     onBlur: { steps: BLUR },
   },
-  ShadTimeline: { onItemClick: { steps: [['click', 'li', 0]], reads: 'lastClickedItem' } },
+  ShadTimeline: { onItemClicked: { steps: [['click', 'li', 0]], reads: 'lastClickedItem' } },
   ShadToggleGroup: { onChange: { steps: [['click', '[role=radio]', 1]], reads: 'value' } },
 };

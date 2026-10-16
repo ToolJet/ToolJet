@@ -142,8 +142,8 @@ export const shadBreadcrumbConfig = {
     },
   },
   events: {
-    onItemClick: {
-      displayName: 'On item click',
+    onItemClicked: {
+      displayName: 'On item clicked',
     },
   },
   styles: {

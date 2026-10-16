@@ -2,7 +2,7 @@ export const shadCardGridConfig = {
   name: 'ShadCardGrid',
   displayName: 'Card grid',
   description:
-    "Grid of cards from data, for things with a face (recipes, products, listings, people, rooms, projects): each card shows an image when imageField is mapped (a row without a picture gets a tinted panel with the title's initials; no imageField, no picture area), an eyebrow (eyebrowField: a small caps line above the title, such as a category or a code), an avatar beside the title (avatarField: an image URL, else the initials of that field's text; for people and owners), title, subtitle, badges (badgeField, plus badgeFields for more: 'cuisine, diet', at most 4; each toned by its words: Available green, Low stock amber, Sold out red), a description (two lines), a progress bar (progressField: a percentage 0 to 100, as 42 or '42%') and a meta line (metaFields, a comma list; 'prep:{} min' puts the value in a label, 'serves:Serves' puts the label first). layout 'stacked' (image on top) or 'row' (image left, text right: listings, people, a compact catalogue). columns (a number, or 'auto' to fit cards of minCardWidth), imageAspect ('16/9', '4/3', '1/1'; stacked only), cardStyle 'elevated', 'outline' or 'flat'. A click selects the card (selectedItem, selectedItemId; onCardClick). Height: grows with its rows (about 300px per row stacked with an image, 150px without or in rows)",
+    "Grid of cards from data, for things with a face (recipes, products, listings, people, rooms, projects): each card shows an image when imageField is mapped (a row without a picture gets a tinted panel with the title's initials; no imageField, no picture area), an eyebrow (eyebrowField: a small caps line above the title, such as a category or a code), an avatar beside the title (avatarField: an image URL, else the initials of that field's text; for people and owners), title, subtitle, badges (badgeField, plus badgeFields for more: 'cuisine, diet', at most 4; each toned by its words: Available green, Low stock amber, Sold out red), a description (two lines), a progress bar (progressField: a percentage 0 to 100, as 42 or '42%') and a meta line (metaFields, a comma list; 'prep:{} min' puts the value in a label, 'serves:Serves' puts the label first). layout 'stacked' (image on top) or 'row' (image left, text right: listings, people, a compact catalogue). columns (a number, or 'auto' to fit cards of minCardWidth), imageAspect ('16/9', '4/3', '1/1'; stacked only), cardStyle 'elevated', 'outline' or 'flat'. A click selects the card (selectedItem, selectedItemId; onCardClicked). Height: grows with its rows (about 300px per row stacked with an image, 150px without or in rows)",
   component: 'ShadCardGrid',
   defaultSize: {
     width: 43,
@@ -440,8 +440,8 @@ export const shadCardGridConfig = {
     },
   },
   events: {
-    onCardClick: {
-      displayName: 'On card click',
+    onCardClicked: {
+      displayName: 'On card clicked',
     },
   },
   styles: {

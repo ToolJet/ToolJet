@@ -2,7 +2,7 @@ export const shadFileUploadConfig = {
   name: 'ShadFileUpload',
   displayName: 'File upload',
   description:
-    "File upload: a dashed dropzone (drag and drop or click to browse) with a file list. accept is a MIME or extension list like 'image/*,.pdf'; maxSize and minSize in bytes. Exposes files [{ name, type, size, content (text), base64Data, dataURL, parsedData }] like the native File picker. Height: about 160px for the dropzone, 180px with a label; the list adds about 66px per file (dynamic height)",
+    "File upload: a dashed dropzone (drag and drop or click to browse) with a file list. accept is a MIME or extension list like 'image/*,.pdf'; maxSize and minSize in bytes. Exposes file [{ name, type, size, content (text), base64Data, dataURL, parsedData }] like the native File picker. Height: about 160px for the dropzone, 180px with a label; the list adds about 66px per file (dynamic height)",
   component: 'ShadFileUpload',
   defaultSize: {
     width: 12,
@@ -500,7 +500,6 @@ export const shadFileUploadConfig = {
     isDisabled: false,
     isValid: true,
     isMandatory: false,
-    files: [],
     file: [],
     fileSize: 0,
     isParsing: false,
@@ -510,10 +509,6 @@ export const shadFileUploadConfig = {
     {
       handle: 'clearFiles',
       displayName: 'Clear files',
-    },
-    {
-      handle: 'clear',
-      displayName: 'Clear',
     },
     {
       handle: 'setFileName',

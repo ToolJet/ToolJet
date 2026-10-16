@@ -190,9 +190,6 @@ export const shadRadioGroupConfig = {
     },
   },
   events: {
-    onChange: {
-      displayName: 'On change',
-    },
     onSelectionChange: {
       displayName: 'On selection change',
     },

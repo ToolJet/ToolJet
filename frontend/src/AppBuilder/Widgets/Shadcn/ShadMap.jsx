@@ -633,7 +633,7 @@ export const ShadMap = (props) => {
     live.current.shape = s;
     live.current.setExposedVariables(shapeSelection(s));
     drawShapes();
-    live.current.fireEvent('onShapeClick');
+    live.current.fireEvent('onShapeClicked');
   };
 
   // ---- The picked location ----
@@ -644,7 +644,7 @@ export const ShadMap = (props) => {
     live.current.picked = next;
     live.current.setExposedVariables({ pickedLocation: pickedValue(next) });
     drawPicked();
-    if (!quiet && next) live.current.fireEvent('onLocationPick');
+    if (!quiet && next) live.current.fireEvent('onLocationPicked');
     if (next && !address) lookUpAddress(next);
   };
   const lookUpAddress = (at) => {
@@ -830,7 +830,7 @@ export const ShadMap = (props) => {
       draw();
       if (hadShape) drawShapes();
       if (live.current.pickLocation) pick(at);
-      live.current.fireEvent('onMapClick');
+      live.current.fireEvent('onMapClicked');
     });
     // The popup's close button (or Escape) ends the selection, as a click on the map does.
     map.on('popupclose', (e) => {

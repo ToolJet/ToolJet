@@ -2,7 +2,7 @@ export const shadLineChartConfig = {
   name: 'ShadLineChart',
   displayName: 'Line chart',
   description:
-    "Line chart for trends: data [{ month: 'Jan', revenue: 18600, expenses: 8000 }], xField 'month', yFields 'revenue,expenses' (one line each); curve monotone/linear/step, dots, strokeWidth, dashedFields, an optional target line (referenceValue, referenceLabel) and yAxisFormat number/currency/percent/compact. Height 200-320 px; clicking a point sets clickedDatum and fires onClick.",
+    "Line chart for trends: data [{ month: 'Jan', revenue: 18600, expenses: 8000 }], xField 'month', yFields 'revenue,expenses' (one line each); curve monotone/linear/step, dots, strokeWidth, dashedFields, an optional target line (referenceValue, referenceLabel) and yAxisFormat number/currency/percent/compact. Height 200-320 px; clicking a point sets clickedDataPoint and fires onClick.",
   component: 'ShadLineChart',
   defaultSize: {
     width: 20,
@@ -504,7 +504,6 @@ export const shadLineChartConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
-    clickedDatum: {},
     clickedDataPoint: {},
   },
   actions: [

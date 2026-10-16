@@ -119,14 +119,14 @@ describe('ShadLink', () => {
 });
 
 describe('ShadTags', () => {
-  it('shows tags from a comma string, exposes the clicked tag and fires onTagClick', () => {
+  it('shows tags from a comma string, exposes the clicked tag and fires onTagClicked', () => {
     const { exposed, events } = mount('ShadTags', { tags: 'Paid, Urgent', tagColors: { paid: '#16a34a' } });
     expect(exposed.tags).toEqual(['Paid', 'Urgent']);
     const paid = screen.getByText('Paid');
     expect(paid.getAttribute('style')).toContain('--tg: #16a34a');
     fireEvent.click(screen.getByText('Urgent'));
     expect(exposed.lastClickedTag).toBe('Urgent');
-    expect(events).toEqual(['onTagClick']);
+    expect(events).toEqual(['onTagClicked']);
   });
 });
 
@@ -188,7 +188,7 @@ describe('ShadTimeline', () => {
     expect(titles[0]).toContain('Second');
     fireEvent.click(screen.getByText('First'));
     expect(exposed.lastClickedItem).toMatchObject({ title: 'First' });
-    expect(events).toEqual(['onItemClick']);
+    expect(events).toEqual(['onItemClicked']);
   });
 });
 
