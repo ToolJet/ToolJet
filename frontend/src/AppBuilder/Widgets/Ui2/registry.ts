@@ -1,8 +1,9 @@
 // Every ToolJet UI 2.0 widget, by component type. Each is its own lazy chunk, so an app downloads only the widgets it
 // uses; a widget's default export is what renders (with the standard control state where it does not keep its own).
-import { lazy } from 'react';
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
+import type { WidgetProps } from './_shared/types';
 
-export const UI2_WIDGETS = {
+export const UI2_WIDGETS: Record<string, LazyExoticComponent<ComponentType<WidgetProps>>> = {
   ShadButton: lazy(() => import('./Button/Button')),
   ShadAlert: lazy(() => import('./Alert/Alert')),
   ShadBreadcrumb: lazy(() => import('./Breadcrumb/Breadcrumb')),
