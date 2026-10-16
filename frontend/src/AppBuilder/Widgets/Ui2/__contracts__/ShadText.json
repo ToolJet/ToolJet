@@ -1,0 +1,116 @@
+{
+  "type": "ShadText",
+  "properties": {
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "text": {
+      "type": "string",
+      "default": "Text",
+      "initial": "Text"
+    },
+    "tone": {
+      "type": "string",
+      "default": "paragraph",
+      "initial": "paragraph"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "fontFamily": {
+      "type": "string",
+      "default": "theme",
+      "initial": "theme"
+    },
+    "fontSize": {
+      "type": "union<string|number>"
+    },
+    "fontWeight": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "letterSpacing": {
+      "type": "union<string|number>"
+    },
+    "textAlign": {
+      "type": "string",
+      "default": "left",
+      "initial": "left"
+    },
+    "textColor": {
+      "type": "string"
+    },
+    "textTransform": {
+      "type": "string",
+      "default": "none",
+      "initial": "none"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClick",
+    "onHover"
+  ],
+  "actions": {
+    "clear": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setText": [
+      "text"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "text"
+  ]
+}

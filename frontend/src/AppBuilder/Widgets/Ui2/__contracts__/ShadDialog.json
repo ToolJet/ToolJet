@@ -1,0 +1,195 @@
+{
+  "type": "ShadDialog",
+  "properties": {
+    "closeOnClickingOutside": {
+      "type": "any",
+      "initial": "{{false}}"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledModal": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledTrigger": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "hideCloseButton": {
+      "type": "any",
+      "initial": "{{false}}"
+    },
+    "hideOnEsc": {
+      "type": "any",
+      "initial": "{{true}}"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "modalHeight": {
+      "type": "union<string|number>",
+      "default": 400,
+      "initial": "{{400}}"
+    },
+    "showFooter": {
+      "type": "any",
+      "initial": "{{true}}"
+    },
+    "showHeader": {
+      "type": "any",
+      "initial": "{{true}}"
+    },
+    "side": {
+      "type": "string",
+      "default": "right",
+      "initial": "right"
+    },
+    "size": {
+      "type": "string",
+      "default": "lg",
+      "initial": "lg"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "triggerButtonLabel": {
+      "type": "string",
+      "default": "Launch Modal",
+      "initial": "Open dialog"
+    },
+    "useDefaultButton": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "variant": {
+      "type": "string",
+      "default": "dialog",
+      "initial": "dialog"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "bodyBackgroundColor": {
+      "type": "string",
+      "default": "var(--cc-surface1-surface)",
+      "initial": "var(--cc-surface1-surface)"
+    },
+    "direction": {
+      "type": "string",
+      "initial": "left"
+    },
+    "footerBackgroundColor": {
+      "type": "string",
+      "default": "var(--cc-surface1-surface)",
+      "initial": "var(--cc-surface1-surface)"
+    },
+    "footerDividerColor": {
+      "type": "string",
+      "default": "var(--cc-default-border)",
+      "initial": "#00000000"
+    },
+    "headerBackgroundColor": {
+      "type": "string",
+      "default": "var(--cc-surface1-surface)",
+      "initial": "var(--cc-surface1-surface)"
+    },
+    "headerDividerColor": {
+      "type": "string",
+      "default": "var(--cc-default-border)",
+      "initial": "#00000000"
+    },
+    "icon": {
+      "type": "string",
+      "initial": "IconAlignBoxBottomLeft"
+    },
+    "iconColor": {
+      "type": "string",
+      "initial": "var(--cc-surface1-surface)"
+    },
+    "triggerButtonBackgroundColor": {
+      "type": "string",
+      "default": "var(--cc-primary-brand)",
+      "initial": "var(--cc-primary-brand)"
+    },
+    "triggerButtonContentAlignment": {
+      "type": "string",
+      "default": "center",
+      "initial": "center"
+    },
+    "triggerButtonFontWeight": {
+      "type": "any",
+      "initial": "normal"
+    },
+    "triggerButtonHoverBackgroundColor": {
+      "type": "string",
+      "default": "var(--cc-primary-brand)",
+      "initial": "var(--cc-primary-brand)"
+    },
+    "triggerButtonHoverBackgroundMode": {
+      "type": "string",
+      "default": "auto",
+      "initial": "auto"
+    },
+    "triggerButtonTextColor": {
+      "type": "string",
+      "default": "var(--cc-surface1-surface)",
+      "initial": "var(--cc-surface1-surface)"
+    },
+    "triggerButtonTextSize": {
+      "type": "union<string|number>",
+      "default": 14,
+      "initial": "{{14}}"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClose",
+    "onOpen"
+  ],
+  "actions": {
+    "close": [],
+    "open": [],
+    "setDisableModal": [
+      "setDisableModal"
+    ],
+    "setDisableTrigger": [
+      "setDisableTrigger"
+    ],
+    "setLoading": [
+      "setLoading"
+    ],
+    "setVisibility": [
+      "setVisibility"
+    ]
+  },
+  "exposed": [
+    "isDisabledModal",
+    "isDisabledTrigger",
+    "isLoading",
+    "isVisible",
+    "show"
+  ]
+}

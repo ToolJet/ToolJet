@@ -1,0 +1,204 @@
+{
+  "type": "ShadMultiselect",
+  "properties": {
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "defaultValue": {
+      "type": "array",
+      "default": [],
+      "initial": "{{['design', 'engineering']}}"
+    },
+    "description": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "No results found.",
+      "initial": "No team found."
+    },
+    "label": {
+      "type": "string",
+      "default": "",
+      "initial": "Teams"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "maxSelections": {
+      "type": "union<string|number>",
+      "default": 0,
+      "initial": "{{0}}"
+    },
+    "maxVisibleChips": {
+      "type": "union<string|number>",
+      "default": 3,
+      "initial": "{{3}}"
+    },
+    "options": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ label: 'Design', value: 'design' }, { label: 'Engineering', value: 'engineering' }, { label: 'Marketing', value: 'marketing' }, { label: 'Sales', value: 'sales' }, { label: 'Support', value: 'support' }]}}"
+    },
+    "optionsLoadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "placeholder": {
+      "type": "string",
+      "default": "Select",
+      "initial": "Select teams..."
+    },
+    "searchPlaceholder": {
+      "type": "string",
+      "default": "Search...",
+      "initial": "Search teams..."
+    },
+    "serverSideSearch": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showClearBtn": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showSearch": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showSelectAll": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColor": {
+      "type": "string"
+    },
+    "backgroundColor": {
+      "type": "string"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "chipBackgroundColor": {
+      "type": "string"
+    },
+    "chipTextColor": {
+      "type": "string"
+    },
+    "errorColor": {
+      "type": "string"
+    },
+    "helpTextColor": {
+      "type": "string"
+    },
+    "labelColor": {
+      "type": "string"
+    },
+    "menuBackgroundColor": {
+      "type": "string"
+    },
+    "menuTextColor": {
+      "type": "string"
+    },
+    "optionHoverColor": {
+      "type": "string"
+    },
+    "placeholderColor": {
+      "type": "string"
+    },
+    "textColor": {
+      "type": "string"
+    }
+  },
+  "validation": {
+    "customRule": {
+      "initial": ""
+    },
+    "mandatory": {
+      "initial": "{{false}}"
+    }
+  },
+  "events": [
+    "onBlur",
+    "onFocus",
+    "onSearchTextChanged",
+    "onSelect"
+  ],
+  "actions": {
+    "clear": [],
+    "deselectOptions": [
+      "values"
+    ],
+    "selectOptions": [
+      "values"
+    ],
+    "setBlur": [],
+    "setDisable": [
+      "value"
+    ],
+    "setFocus": [],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isMandatory",
+    "isValid",
+    "isVisible",
+    "label",
+    "options",
+    "searchText",
+    "selectedOptions",
+    "values"
+  ]
+}

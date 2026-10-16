@@ -1,0 +1,179 @@
+{
+  "type": "ShadRadialChart",
+  "properties": {
+    "animate": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "categoryField": {
+      "type": "string",
+      "default": "channel",
+      "initial": "channel"
+    },
+    "centerLabel": {
+      "type": "string",
+      "default": "",
+      "initial": "Completed"
+    },
+    "centerValue": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "colors": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[]}}"
+    },
+    "data": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ channel: 'Direct', visitors: 275 }, { channel: 'Search', visitors: 200 }, { channel: 'Social', visitors: 187 }, { channel: 'Email', visitors: 120 }]}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "No data",
+      "initial": "No data"
+    },
+    "endAngle": {
+      "type": "union<string|number>",
+      "default": -270,
+      "initial": "{{-270}}"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "maxValue": {
+      "type": "union<string|number>",
+      "default": 100,
+      "initial": "{{100}}"
+    },
+    "mode": {
+      "type": "string",
+      "default": "progress",
+      "initial": "progress"
+    },
+    "rounded": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showLegend": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showTrack": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "startAngle": {
+      "type": "union<string|number>",
+      "default": 90,
+      "initial": "{{90}}"
+    },
+    "thickness": {
+      "type": "union<string|number>",
+      "default": "",
+      "initial": ""
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "value": {
+      "type": "union<string|number>",
+      "default": 72,
+      "initial": "{{72}}"
+    },
+    "valueField": {
+      "type": "string",
+      "default": "visitors",
+      "initial": "visitors"
+    },
+    "valuePrefix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "valueSuffix": {
+      "type": "string",
+      "default": "",
+      "initial": "%"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "centerLabelColor": {
+      "type": "string"
+    },
+    "centerValueColor": {
+      "type": "string"
+    },
+    "chartColor": {
+      "type": "string"
+    },
+    "legendTextColor": {
+      "type": "string"
+    },
+    "trackColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClick",
+    "onDoubleClick"
+  ],
+  "actions": {
+    "clearClickedPoint": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "clickedDataPoint",
+    "isDisabled",
+    "isLoading",
+    "isVisible"
+  ]
+}

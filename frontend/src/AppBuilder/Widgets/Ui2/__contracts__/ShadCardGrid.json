@@ -1,0 +1,196 @@
+{
+  "type": "ShadCardGrid",
+  "properties": {
+    "avatarField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "badgeField": {
+      "type": "string",
+      "default": "",
+      "initial": "cuisine"
+    },
+    "badgeFields": {
+      "type": "union<array|string>",
+      "default": "",
+      "initial": ""
+    },
+    "cardStyle": {
+      "type": "string",
+      "default": "elevated",
+      "initial": "elevated"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "columns": {
+      "type": "union<string|number>",
+      "default": 3,
+      "initial": "{{3}}"
+    },
+    "data": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ id: 1, name: 'Lemon herb roast chicken', cuisine: 'Dinner', prep: 20, serves: 4, note: 'Crisp skin, bright pan sauce' }, { id: 2, name: 'Miso glazed salmon', cuisine: 'Dinner', prep: 15, serves: 2, note: 'Sweet, salty, ten minutes under the grill' }, { id: 3, name: 'Blueberry oat pancakes', cuisine: 'Breakfast', prep: 10, serves: 3, note: 'Fluffy, no buttermilk needed' }]}}"
+    },
+    "descriptionField": {
+      "type": "string",
+      "default": "",
+      "initial": "note"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "Nothing here yet",
+      "initial": "Nothing here yet"
+    },
+    "eyebrowField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "highlightSelected": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "idField": {
+      "type": "string",
+      "default": "id",
+      "initial": "id"
+    },
+    "imageAspect": {
+      "type": "string",
+      "default": "4/3",
+      "initial": "4/3"
+    },
+    "imageField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "layout": {
+      "type": "string",
+      "default": "stacked",
+      "initial": "stacked"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "metaFields": {
+      "type": "union<array|string>",
+      "default": "",
+      "initial": "prep:{} min, serves:Serves"
+    },
+    "minCardWidth": {
+      "type": "union<string|number>",
+      "default": 240,
+      "initial": "{{240}}"
+    },
+    "progressField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "showImage": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "subtitleField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "titleField": {
+      "type": "string",
+      "default": "name",
+      "initial": "name"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColor": {
+      "type": "string"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "cardBackground": {
+      "type": "string"
+    },
+    "textColor": {
+      "type": "string"
+    },
+    "titleColor": {
+      "type": "string"
+    },
+    "titleFontFamily": {
+      "type": "string",
+      "default": "theme",
+      "initial": "theme"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onCardClicked"
+  ],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "selectedItem",
+    "selectedItemId"
+  ]
+}

@@ -1,0 +1,203 @@
+{
+  "type": "ShadSchedule",
+  "properties": {
+    "bookings": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ id: 1, room: 'atlas', title: 'Design review', start: '09:00', end: '10:30', status: 'Confirmed', host: 'Maya Chen' }, { id: 2, room: 'atlas', title: '1:1 with Owen', start: '11:00', end: '11:30', status: 'Tentative', host: 'Owen Hart' }, { id: 3, room: 'borealis', title: 'Sprint planning', start: '10:00', end: '12:00', status: 'Confirmed', host: 'Priya Nair' }, { id: 4, room: 'cove', title: 'All hands', start: '13:00', end: '14:00', status: 'Confirmed', host: 'Leo Martins' }, { id: 5, room: 'cove', title: 'Customer call', start: '15:30', end: '16:30', status: 'Pending', host: 'Maya Chen' }, { id: 6, room: 'dune', title: 'Interview', start: '14:00', end: '15:00', status: 'Cancelled', host: 'Grace Ho' }]}}"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "date": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "dayEnd": {
+      "type": "union<number|string>",
+      "default": 18,
+      "initial": "{{18}}"
+    },
+    "dayStart": {
+      "type": "union<number|string>",
+      "default": 8,
+      "initial": "{{8}}"
+    },
+    "days": {
+      "type": "number",
+      "default": 7,
+      "initial": "{{7}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "No resources to schedule",
+      "initial": "No resources to schedule"
+    },
+    "endField": {
+      "type": "string",
+      "default": "end",
+      "initial": "end"
+    },
+    "highlightSelected": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "hourFormat": {
+      "type": "string",
+      "default": "12h",
+      "initial": "12h"
+    },
+    "idField": {
+      "type": "string",
+      "default": "id",
+      "initial": "id"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "resourceField": {
+      "type": "string",
+      "default": "resource",
+      "initial": "room"
+    },
+    "resourceTitle": {
+      "type": "string",
+      "default": "",
+      "initial": "Room"
+    },
+    "resourceWidth": {
+      "type": "number",
+      "default": 168,
+      "initial": "{{168}}"
+    },
+    "resources": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ id: 'atlas', name: 'Atlas', caption: '8 seats' }, { id: 'borealis', name: 'Borealis', caption: '4 seats' }, { id: 'cove', name: 'Cove', caption: '12 seats, screen' }, { id: 'dune', name: 'Dune', caption: '2 seats' }]}}"
+    },
+    "rowHeight": {
+      "type": "number",
+      "default": 56,
+      "initial": "{{56}}"
+    },
+    "scale": {
+      "type": "string",
+      "default": "hours",
+      "initial": "hours"
+    },
+    "showNowLine": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "slotMinutes": {
+      "type": "number",
+      "default": 30,
+      "initial": "{{30}}"
+    },
+    "startField": {
+      "type": "string",
+      "default": "start",
+      "initial": "start"
+    },
+    "statusField": {
+      "type": "string",
+      "default": "status",
+      "initial": "status"
+    },
+    "subtitleField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "titleField": {
+      "type": "string",
+      "default": "title",
+      "initial": "title"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColor": {
+      "type": "string"
+    },
+    "backgroundColor": {
+      "type": "string"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "nowColor": {
+      "type": "string"
+    },
+    "textColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onBookingClicked",
+    "onSlotClicked"
+  ],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "selectedBooking",
+    "selectedBookingId",
+    "selectedSlot"
+  ]
+}

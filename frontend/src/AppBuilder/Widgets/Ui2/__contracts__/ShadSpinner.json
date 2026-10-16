@@ -1,0 +1,93 @@
+{
+  "type": "ShadSpinner",
+  "properties": {
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "label": {
+      "type": "string",
+      "default": "",
+      "initial": "Loading…"
+    },
+    "labelPosition": {
+      "type": "string",
+      "default": "right",
+      "initial": "right"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "size": {
+      "type": "union<string|number>",
+      "default": "default",
+      "initial": "default"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "variant": {
+      "type": "string",
+      "default": "ring",
+      "initial": "ring"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "alignment": {
+      "type": "string",
+      "default": "left",
+      "initial": "left"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "labelColor": {
+      "type": "string"
+    },
+    "spinnerColor": {
+      "type": "string"
+    },
+    "trackColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible"
+  ]
+}

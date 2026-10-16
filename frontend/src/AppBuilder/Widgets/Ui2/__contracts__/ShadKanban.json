@@ -1,0 +1,270 @@
+{
+  "type": "ShadKanban",
+  "properties": {
+    "allowAdd": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "allowDelete": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "allowDrag": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "avatarField": {
+      "type": "string",
+      "default": "",
+      "initial": "owner"
+    },
+    "badgeColors": {
+      "type": "object",
+      "default": {},
+      "initial": "{{{}}}"
+    },
+    "badgeField": {
+      "type": "string",
+      "default": "",
+      "initial": "priority"
+    },
+    "cardHeight": {
+      "type": "number",
+      "default": 96,
+      "initial": "{{96}}"
+    },
+    "cardLayout": {
+      "type": "string",
+      "default": "fields",
+      "initial": "fields"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "collapsedColumns": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[]}}"
+    },
+    "collapsedHeight": {
+      "type": "union<number|string>",
+      "initial": ""
+    },
+    "collapsibleColumns": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "columnWidth": {
+      "type": "union<number|string>",
+      "initial": ""
+    },
+    "columns": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ id: 'todo', title: 'To do' }, { id: 'doing', title: 'In progress' }, { id: 'done', title: 'Done' }]}}"
+    },
+    "data": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ id: 1, title: 'Draft the brief', status: 'todo', priority: 'High', owner: 'Ada Lovelace' }, { id: 2, title: 'Review designs', status: 'doing', priority: 'Medium', owner: 'Alan Turing' }, { id: 3, title: 'Ship v1', status: 'done', priority: 'Low', owner: 'Grace Hopper' }]}}"
+    },
+    "density": {
+      "type": "string",
+      "default": "comfortable",
+      "initial": "comfortable"
+    },
+    "descriptionField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "detailsField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "No cards",
+      "initial": "No cards"
+    },
+    "idField": {
+      "type": "string",
+      "default": "id",
+      "initial": "id"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "metaField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "progressField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "showCount": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "statusField": {
+      "type": "string",
+      "default": "status",
+      "initial": "status"
+    },
+    "tagsField": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "titleField": {
+      "type": "string",
+      "default": "title",
+      "initial": "title"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColor": {
+      "type": "string"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "cardBackgroundColor": {
+      "type": "string"
+    },
+    "cardBorderColor": {
+      "type": "string"
+    },
+    "cardBorderRadius": {
+      "type": "union<string|number>"
+    },
+    "cardShadow": {
+      "type": "string",
+      "default": "sm",
+      "initial": "sm"
+    },
+    "cardTextColor": {
+      "type": "string"
+    },
+    "cardTitleColor": {
+      "type": "string"
+    },
+    "columnBackgroundColor": {
+      "type": "string"
+    },
+    "columnBorderColor": {
+      "type": "string"
+    },
+    "columnBorderRadius": {
+      "type": "union<string|number>"
+    },
+    "columnCountBackgroundColor": {
+      "type": "string"
+    },
+    "columnCountTextColor": {
+      "type": "string"
+    },
+    "columnGap": {
+      "type": "union<string|number>"
+    },
+    "columnTitleColor": {
+      "type": "string"
+    },
+    "progressColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onAddCardClick",
+    "onCardAdded",
+    "onCardMoved",
+    "onCardRemoved",
+    "onCardSelected",
+    "onCardUpdated",
+    "onUpdate"
+  ],
+  "actions": {
+    "addCard": [
+      "card",
+      "columnId"
+    ],
+    "deleteCard": [
+      "id"
+    ],
+    "moveCard": [
+      "id",
+      "columnId"
+    ],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ],
+    "updateCardData": [
+      "id",
+      "value"
+    ]
+  },
+  "exposed": [
+    "addCardColumn",
+    "collapsedColumns",
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "lastAddedCard",
+    "lastCardMovement",
+    "lastRemovedCard",
+    "lastSelectedCard",
+    "lastUpdatedCard",
+    "updatedCardData"
+  ]
+}

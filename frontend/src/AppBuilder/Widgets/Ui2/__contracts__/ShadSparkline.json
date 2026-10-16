@@ -1,0 +1,156 @@
+{
+  "type": "ShadSparkline",
+  "properties": {
+    "animate": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "bandMax": {
+      "type": "union<string|number>",
+      "default": "",
+      "initial": ""
+    },
+    "bandMin": {
+      "type": "union<string|number>",
+      "default": "",
+      "initial": ""
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "colorByTrend": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "curve": {
+      "type": "string",
+      "default": "monotone",
+      "initial": "monotone"
+    },
+    "data": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[12, 18, 15, 22, 19, 26, 24, 31]}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "No data",
+      "initial": "No data"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "lowerIsBetter": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showBand": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showEndDot": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showTooltip": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "strokeWidth": {
+      "type": "union<string|number>",
+      "default": 2,
+      "initial": "{{2}}"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "type": {
+      "type": "string",
+      "default": "area",
+      "initial": "area"
+    },
+    "valuePrefix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "valueSuffix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "bandColor": {
+      "type": "string"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "chartColor": {
+      "type": "string"
+    },
+    "negativeColor": {
+      "type": "string"
+    },
+    "positiveColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClick",
+    "onDoubleClick"
+  ],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "lastValue",
+    "trend"
+  ]
+}

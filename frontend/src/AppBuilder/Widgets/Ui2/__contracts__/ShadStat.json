@@ -1,0 +1,213 @@
+{
+  "type": "ShadStat",
+  "properties": {
+    "card": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "change": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "changeLabel": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "initial": "USD"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "footnote": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "icon": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "iconPosition": {
+      "type": "string",
+      "default": "right",
+      "initial": "right"
+    },
+    "iconStyle": {
+      "type": "string",
+      "default": "square",
+      "initial": "square"
+    },
+    "label": {
+      "type": "string",
+      "default": "Total revenue",
+      "initial": "Total revenue"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "progress": {
+      "type": "union<number|string>",
+      "default": "",
+      "initial": ""
+    },
+    "progressLabel": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "size": {
+      "type": "string",
+      "default": "default",
+      "initial": "default"
+    },
+    "sparklineType": {
+      "type": "string",
+      "default": "area",
+      "initial": "area"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "trend": {
+      "type": "string",
+      "default": "up",
+      "initial": "up"
+    },
+    "trendData": {
+      "type": "union<array|string>",
+      "default": "",
+      "initial": ""
+    },
+    "value": {
+      "type": "union<number|string>",
+      "default": "$1,250.00",
+      "initial": "$1,250.00"
+    },
+    "valueFormat": {
+      "type": "string",
+      "default": "auto",
+      "initial": "auto"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "backgroundColor": {
+      "type": "string"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "chipColor": {
+      "type": "string"
+    },
+    "footnoteColor": {
+      "type": "string"
+    },
+    "iconColor": {
+      "type": "string"
+    },
+    "labelColor": {
+      "type": "string"
+    },
+    "labelLetterSpacing": {
+      "type": "union<string|number>"
+    },
+    "labelTextTransform": {
+      "type": "string",
+      "default": "none",
+      "initial": "none"
+    },
+    "negativeColor": {
+      "type": "string"
+    },
+    "positiveColor": {
+      "type": "string"
+    },
+    "progressColor": {
+      "type": "string"
+    },
+    "sparklineColor": {
+      "type": "string"
+    },
+    "valueColor": {
+      "type": "string"
+    },
+    "valueFontFamily": {
+      "type": "string",
+      "default": "theme",
+      "initial": "theme"
+    }
+  },
+  "validation": {},
+  "events": [],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setPrimaryValue": [
+      "text"
+    ],
+    "setSecondaryValue": [
+      "text"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "primaryLabel",
+    "primaryValue",
+    "secondaryLabel",
+    "secondaryValue"
+  ]
+}

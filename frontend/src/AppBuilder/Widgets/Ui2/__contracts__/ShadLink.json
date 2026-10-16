@@ -1,0 +1,122 @@
+{
+  "type": "ShadLink",
+  "properties": {
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "fontSize": {
+      "type": "number",
+      "default": 14,
+      "initial": "{{14}}"
+    },
+    "fontWeight": {
+      "type": "string",
+      "default": "medium",
+      "initial": "medium"
+    },
+    "linkTarget": {
+      "type": "string",
+      "default": "",
+      "initial": "https://tooljet.com"
+    },
+    "linkText": {
+      "type": "string",
+      "default": "View details",
+      "initial": "View details"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showIcon": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "targetType": {
+      "type": "string",
+      "default": "new",
+      "initial": "new"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "underline": {
+      "type": "string",
+      "default": "on-hover",
+      "initial": "on-hover"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "alignment": {
+      "type": "string",
+      "default": "left",
+      "initial": "left"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "hoverColor": {
+      "type": "string"
+    },
+    "textColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClick",
+    "onHover"
+  ],
+  "actions": {
+    "click": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLinkTarget": [
+      "linkTarget"
+    ],
+    "setLinkText": [
+      "linkText"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "linkTarget",
+    "linkText"
+  ]
+}

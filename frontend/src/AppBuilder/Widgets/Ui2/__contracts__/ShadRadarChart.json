@@ -1,0 +1,156 @@
+{
+  "type": "ShadRadarChart",
+  "properties": {
+    "animate": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "categoryField": {
+      "type": "string",
+      "default": "skill",
+      "initial": "skill"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "colors": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[]}}"
+    },
+    "data": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ skill: 'Speed', alex: 86, jordan: 65 }, { skill: 'Quality', alex: 72, jordan: 90 }, { skill: 'Support', alex: 64, jordan: 78 }, { skill: 'Pricing', alex: 90, jordan: 58 }, { skill: 'Reach', alex: 58, jordan: 84 }, { skill: 'Design', alex: 75, jordan: 70 }]}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "emptyText": {
+      "type": "string",
+      "default": "No data",
+      "initial": "No data"
+    },
+    "fillOpacity": {
+      "type": "union<string|number>",
+      "default": 0.5,
+      "initial": "{{0.5}}"
+    },
+    "gridShape": {
+      "type": "string",
+      "default": "polygon",
+      "initial": "polygon"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "maxValue": {
+      "type": "union<string|number>",
+      "default": "",
+      "initial": "{{100}}"
+    },
+    "seriesLabels": {
+      "type": "union<object|array>",
+      "default": {},
+      "initial": "{{{} }}"
+    },
+    "showDots": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showGrid": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showLegend": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "valuePrefix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "valueSuffix": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "yFields": {
+      "type": "union<string|array>",
+      "default": "alex",
+      "initial": "{{['alex', 'jordan']}}"
+    }
+  },
+  "styles": {
+    "axisTextColor": {
+      "type": "string"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "chartColor": {
+      "type": "string"
+    },
+    "gridColor": {
+      "type": "string"
+    },
+    "legendTextColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onClick",
+    "onDoubleClick"
+  ],
+  "actions": {
+    "clearClickedPoint": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "clickedDataPoint",
+    "isDisabled",
+    "isLoading",
+    "isVisible"
+  ]
+}

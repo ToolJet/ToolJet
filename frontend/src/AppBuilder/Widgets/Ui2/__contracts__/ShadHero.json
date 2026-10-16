@@ -1,0 +1,157 @@
+{
+  "type": "ShadHero",
+  "properties": {
+    "actionLabel": {
+      "type": "string",
+      "default": "",
+      "initial": "New booking"
+    },
+    "align": {
+      "type": "string",
+      "default": "left",
+      "initial": "left"
+    },
+    "asideLabel": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "asideValue": {
+      "type": "union<string|number|array>",
+      "default": "",
+      "initial": ""
+    },
+    "background": {
+      "type": "string",
+      "default": "tint",
+      "initial": "tint"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "eyebrow": {
+      "type": "string",
+      "default": "Operations",
+      "initial": "Operations"
+    },
+    "icon": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "imageUrl": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "meta": {
+      "type": "union<array|string>",
+      "default": [],
+      "initial": "{{['Sun, 11 Oct', '14 bookings', '3 need a reply']}}"
+    },
+    "secondaryActionLabel": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "size": {
+      "type": "string",
+      "default": "default",
+      "initial": "default"
+    },
+    "subtitle": {
+      "type": "string",
+      "default": "",
+      "initial": "Here is what needs you today."
+    },
+    "title": {
+      "type": "string",
+      "default": "Good morning, Ada",
+      "initial": "Good morning, Ada"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColor": {
+      "type": "string"
+    },
+    "backgroundColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "textColor": {
+      "type": "string"
+    },
+    "titleColor": {
+      "type": "string"
+    },
+    "titleFontFamily": {
+      "type": "string",
+      "default": "theme",
+      "initial": "theme"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onActionClicked",
+    "onSecondaryActionClicked"
+  ],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible"
+  ]
+}

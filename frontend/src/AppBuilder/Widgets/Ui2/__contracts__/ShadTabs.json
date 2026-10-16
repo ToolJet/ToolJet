@@ -1,0 +1,194 @@
+{
+  "type": "ShadTabs",
+  "properties": {
+    "backLabel": {
+      "type": "string",
+      "default": "Back",
+      "initial": "Back"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "defaultTab": {
+      "type": "union<string|number>",
+      "default": "t0",
+      "initial": "t0"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "finishLabel": {
+      "type": "string",
+      "default": "Finish",
+      "initial": "Finish"
+    },
+    "hideTabs": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "linearSteps": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "nextLabel": {
+      "type": "string",
+      "default": "Next",
+      "initial": "Next"
+    },
+    "renderOnlyActiveTab": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "scrollToTopOnTabSwitch": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showStepNav": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "tabs": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ id: 't0', title: 'Overview' }, { id: 't1', title: 'Activity' }, { id: 't2', title: 'Settings' }]}}"
+    },
+    "tabsAlign": {
+      "type": "string",
+      "default": "start",
+      "initial": "start"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "useDynamicOptions": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "variant": {
+      "type": "string",
+      "default": "pills",
+      "initial": "pills"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColor": {
+      "type": "string"
+    },
+    "activeTabBackground": {
+      "type": "string"
+    },
+    "activeTabTextColor": {
+      "type": "string"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "indicatorColor": {
+      "type": "string"
+    },
+    "panelBackground": {
+      "type": "string"
+    },
+    "showBorder": {
+      "type": "boolean",
+      "default": true,
+      "initial": true
+    },
+    "tabFontSize": {
+      "type": "union<string|number>"
+    },
+    "tabListBackground": {
+      "type": "string"
+    },
+    "tabTextColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onFinish",
+    "onTabSwitch"
+  ],
+  "actions": {
+    "nextTab": [],
+    "previousTab": [],
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setTab": [
+      "id"
+    ],
+    "setTabDisable": [
+      "tabId",
+      "value"
+    ],
+    "setTabLoading": [
+      "tabId",
+      "value"
+    ],
+    "setTabVisibility": [
+      "tabId",
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "currentStepIndex",
+    "currentTab",
+    "currentTabTitle",
+    "isDisabled",
+    "isFirstStep",
+    "isLastStep",
+    "isLoading",
+    "isVisible"
+  ]
+}

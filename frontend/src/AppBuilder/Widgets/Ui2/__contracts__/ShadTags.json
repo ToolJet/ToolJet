@@ -1,0 +1,115 @@
+{
+  "type": "ShadTags",
+  "properties": {
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "overflow": {
+      "type": "string",
+      "default": "wrap",
+      "initial": "wrap"
+    },
+    "pill": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "size": {
+      "type": "string",
+      "default": "default",
+      "initial": "default"
+    },
+    "tagColors": {
+      "type": "object",
+      "default": {},
+      "initial": "{{{ Urgent: '#dc2626' }}}"
+    },
+    "tags": {
+      "type": "union<array|string>",
+      "default": [],
+      "initial": "{{['Design', 'Frontend', 'Urgent']}}"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "variant": {
+      "type": "string",
+      "default": "soft",
+      "initial": "soft"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "backgroundColor": {
+      "type": "string"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "union<string|number>"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "textColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onTagClicked"
+  ],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "lastClickedTag",
+    "tags"
+  ]
+}

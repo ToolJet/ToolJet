@@ -1,0 +1,125 @@
+{
+  "type": "ShadCircularProgress",
+  "properties": {
+    "centerText": {
+      "type": "string",
+      "default": "value",
+      "initial": "value"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "label": {
+      "type": "string",
+      "default": "",
+      "initial": "Complete"
+    },
+    "lineCap": {
+      "type": "string",
+      "default": "round",
+      "initial": "round"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "size": {
+      "type": "number",
+      "default": 96,
+      "initial": "{{96}}"
+    },
+    "text": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "thickness": {
+      "type": "number",
+      "default": 8,
+      "initial": "{{8}}"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "value": {
+      "type": "number",
+      "default": 63,
+      "initial": "{{63}}"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "alignment": {
+      "type": "string",
+      "default": "left",
+      "initial": "center"
+    },
+    "barColor": {
+      "type": "string"
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "labelColor": {
+      "type": "string"
+    },
+    "textColor": {
+      "type": "string"
+    },
+    "trackColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setValue": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "value"
+  ]
+}

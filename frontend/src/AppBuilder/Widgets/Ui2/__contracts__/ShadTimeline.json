@@ -1,0 +1,122 @@
+{
+  "type": "ShadTimeline",
+  "properties": {
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dateFormat": {
+      "type": "string",
+      "default": "",
+      "initial": ""
+    },
+    "density": {
+      "type": "string",
+      "default": "comfortable",
+      "initial": "comfortable"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "items": {
+      "type": "array",
+      "default": [],
+      "initial": "{{[{ title: 'Order placed', description: 'Ada Lovelace placed order #1024', time: '09:12', status: 'done', icon: 'shopping-cart' }, { title: 'Payment confirmed', description: '$1,250.00 by card', time: '09:14', status: 'done', icon: 'credit-card' }, { title: 'Packed', description: 'Warehouse A, bay 4', time: '11:30', status: 'active', icon: 'package' }, { title: 'Out for delivery', time: 'Pending', status: 'pending', icon: 'truck' }]}}"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "marker": {
+      "type": "string",
+      "default": "dot",
+      "initial": "dot"
+    },
+    "newestFirst": {
+      "type": "boolean",
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "statusColors": {
+      "type": "object",
+      "default": {},
+      "initial": "{{{}}}"
+    },
+    "timePosition": {
+      "type": "string",
+      "default": "right",
+      "initial": "right"
+    },
+    "tooltip": {
+      "type": "string",
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "visibility": {
+      "type": "boolean",
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "boxShadow": {
+      "type": "union<string|number>",
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "descriptionColor": {
+      "type": "string"
+    },
+    "lineColor": {
+      "type": "string"
+    },
+    "markerColor": {
+      "type": "string"
+    },
+    "timeColor": {
+      "type": "string"
+    },
+    "titleColor": {
+      "type": "string"
+    }
+  },
+  "validation": {},
+  "events": [
+    "onItemClicked"
+  ],
+  "actions": {
+    "setDisable": [
+      "value"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "lastClickedItem"
+  ]
+}
