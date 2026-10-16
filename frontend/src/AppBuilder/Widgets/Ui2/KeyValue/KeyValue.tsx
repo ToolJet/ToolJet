@@ -4,12 +4,11 @@ import { Check, Copy, X } from 'lucide-react';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { clamp, colorFor, formatValue, keyValueItems, linkHref } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import type { KeyValueRow } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
 // ---- Key-value list --------------------------------------------------------------------------------------------------
@@ -115,7 +114,8 @@ export const ShadKeyValue = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
-  const rows = useMemo(() => keyValueItems(p.data), [stringify(p.data ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const data = useStable(p.data);
+  const rows = useMemo(() => keyValueItems(data), [data]);
   // The native Key value pair's data and onFieldClick (with lastClickedField: the row's label and value).
   useExposed(setExposedVariables, p, { data: rows.map(({ label, value }) => ({ label, value })) });
   const clickable = useHasEvent(id, 'onFieldClick') && !busy(p);

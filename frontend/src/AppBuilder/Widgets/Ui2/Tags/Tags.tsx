@@ -4,10 +4,9 @@ import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_share
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { colorFor, toTags } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { own } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
 // ---- Tags ------------------------------------------------------------------------------------------------------------
@@ -18,7 +17,9 @@ const TAG_SIZE: Record<string, string> = {
   lg: 'tw-h-7 tw-px-2.5 tw-text-ui2-sm',
 };
 
+// The space between chips: the rows take it from here, so the fit measurement and the layout cannot drift.
 export const TAG_GAP = 6;
+const GAP_STYLE = { gap: TAG_GAP };
 
 export const tagClasses = (variant: unknown, mapped: boolean): string => {
   if (mapped) {
@@ -35,7 +36,8 @@ export const tagClasses = (variant: unknown, mapped: boolean): string => {
   return 'tw-border-[color:var(--lk-border,transparent)] tw-bg-[color:var(--lk-bg,var(--sc-secondary))] tw-text-[color:var(--lk-fg,var(--sc-secondary-foreground))]';
 };
 
-/** How many tags fit on one line, leaving room for the +N chip when some do not (all when nothing is measured). */
+/** How many tags fit on one line, leaving room for the +N chip when some do not (all when nothing is measured). The
+ *  tags list is expected to keep its reference while unchanged: a new list measures again. */
 export const useFit = (
   enabled: boolean,
   tags: string[],
@@ -43,7 +45,6 @@ export const useFit = (
   measureRef: RefObject<HTMLDivElement>
 ): number => {
   const [fit, setFit] = useState(tags.length);
-  const key = tags.join('\u0000');
   useLayoutEffect(() => {
     if (!enabled) return undefined;
     const measure = () => {
@@ -73,7 +74,7 @@ export const useFit = (
     const observer = new ResizeObserver(measure);
     observer.observe(rowRef.current);
     return () => observer.disconnect();
-  }, [enabled, key]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [enabled, tags, rowRef, measureRef]);
   return enabled ? Math.min(fit, tags.length) : tags.length;
 };
 
@@ -83,7 +84,8 @@ export const ShadTags = (props: WidgetProps) => {
   const rowRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
-  const tags = useMemo(() => toTags(p.tags), [stringify(p.tags ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const source = useStable(p.tags);
+  const tags = useMemo(() => toTags(source), [source]);
   const [last, setLast] = useState('');
   useExposed(setExposedVariables, p, { lastClickedTag: last, tags });
   const hasClick = useHasEvent(id, 'onTagClicked');
@@ -137,7 +139,7 @@ export const ShadTags = (props: WidgetProps) => {
     body = <LoadingBox height={props.height} />;
   } else if (p.loadingState) {
     body = (
-      <div className="tw-flex tw-flex-wrap tw-gap-1.5">
+      <div className="tw-flex tw-flex-wrap" style={GAP_STYLE}>
         {[56, 72, 48].map((w) => (
           <Skeleton key={w} className={cn('tw-h-6', radius)} style={{ width: w }} />
         ))}
@@ -150,7 +152,8 @@ export const ShadTags = (props: WidgetProps) => {
       <div className="tw-relative">
         <div
           ref={rowRef}
-          className={cn('tw-flex tw-gap-1.5', single ? 'tw-flex-nowrap tw-overflow-hidden' : 'tw-flex-wrap')}
+          className={cn('tw-flex', single ? 'tw-flex-nowrap tw-overflow-hidden' : 'tw-flex-wrap')}
+          style={GAP_STYLE}
           aria-label="Tags"
           role="list"
         >
@@ -173,7 +176,8 @@ export const ShadTags = (props: WidgetProps) => {
           <div
             ref={measureRef}
             aria-hidden="true"
-            className="tw-pointer-events-none tw-invisible tw-absolute tw-left-0 tw-top-0 tw-flex tw-gap-1.5 tw-whitespace-nowrap"
+            className="tw-pointer-events-none tw-invisible tw-absolute tw-left-0 tw-top-0 tw-flex tw-whitespace-nowrap"
+            style={GAP_STYLE}
           >
             {tags.map((tag, i) => chip(tag, i, false))}
             <span className={cn(base, tagClasses('outline', false))}>+{tags.length}</span>

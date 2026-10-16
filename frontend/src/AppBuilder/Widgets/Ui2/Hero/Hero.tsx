@@ -2,12 +2,11 @@ import React, { useMemo, useRef } from 'react';
 import * as Lucide from 'lucide-react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { resolveIcon } from '@/AppBuilder/Widgets/Ui2/_display/iconModel';
 import { heroAside, heroMeta } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { ACCENT, ACCENT_INK, TITLE_FONT, text } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -69,8 +68,11 @@ export const ShadHero = (props: WidgetProps) => {
   const onDark = background === 'dark' || background === 'image';
   const size = HERO_SIZE[p.size] || HERO_SIZE.default;
   const center = p.align === 'center';
-  const meta = useMemo(() => heroMeta(p.meta), [stringify(p.meta ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
-  const aside = useMemo(() => heroAside(p.asideValue, p.asideLabel), [stringify(p.asideValue ?? null), p.asideLabel]); // eslint-disable-line react-hooks/exhaustive-deps
+  const metaSource = useStable(p.meta);
+  const asideValue = useStable(p.asideValue);
+  const asideLabel = p.asideLabel;
+  const meta = useMemo(() => heroMeta(metaSource), [metaSource]);
+  const aside = useMemo(() => heroAside(asideValue, asideLabel), [asideValue, asideLabel]);
   const Icon = text(p.icon) ? resolveIcon(p.icon, [Lucide.icons, Lucide], null) : null;
   const primary = text(p.actionLabel);
   const secondary = text(p.secondaryActionLabel);

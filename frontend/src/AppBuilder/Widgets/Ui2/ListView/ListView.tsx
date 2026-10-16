@@ -9,11 +9,10 @@ import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/typ
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
-import { useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
 import { itemKey, listLook, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useCanvasFit } from '@/AppBuilder/Widgets/Ui2/_shared/canvasFit';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
@@ -133,7 +132,7 @@ export const ShadListView = (props: WidgetProps) => {
   );
   const { moduleId } = useModuleContext();
   const { contextPath } = useSubcontainerContext();
-  const parentIndices = useMemo(() => contextPath.map((segment) => segment.index), [contextPath]);
+  const parentIndices = useStable(useMemo(() => contextPath.map((segment) => segment.index), [contextPath]));
   const updateCustomResolvables = useStore((state: ListStore) => state.updateCustomResolvables, shallow);
   const initExposedValueArrayForChildren = useStore(
     (state: ListStore) => state.initExposedValueArrayForChildren,
@@ -154,40 +153,44 @@ export const ShadListView = (props: WidgetProps) => {
   const idField = typeof properties.idField === 'string' && properties.idField.trim() ? properties.idField : 'id';
   const server = !!properties.serverSidePagination;
 
+  const data = useStable(properties.data);
   const [page, setPage] = useState(1);
-  const paged = pageOf(properties.data, {
-    enablePagination: !!properties.enablePagination,
-    serverSidePagination: server,
-    rowsPerPage: properties.rowsPerPage,
-    totalRecords: properties.totalRecords,
-    page,
-  });
+  const { enablePagination, rowsPerPage, totalRecords } = properties;
+  const paged = useMemo(
+    () =>
+      pageOf(data, {
+        enablePagination: !!enablePagination,
+        serverSidePagination: server,
+        rowsPerPage,
+        totalRecords,
+        page,
+      }),
+    [data, enablePagination, server, rowsPerPage, totalRecords, page]
+  );
   // Every row is a canvas of components: past ROWS_PER_STEP rows on a page (no paging, or a huge page size), the rest
   // wait behind "Show more" (10k rows froze the page).
   const [shownRows, setShownRows] = useState(ROWS_PER_STEP);
   useEffect(() => setShownRows(ROWS_PER_STEP), [paged.page]);
-  const items = paged.items.slice(0, shownRows);
+  // Kept by content: the rows' {{listItem}} are rewritten only when the shown items change.
+  const items = useStable(useMemo(() => paged.items.slice(0, shownRows), [paged.items, shownRows]));
   // data is the list's records, as the catalog says: its initial {} made (components.list.data || []).length read
   // "undefined" in a page's "N service jobs" line.
+  const exposeOne = useLatest(setExposedVariable);
   useEffect(() => {
-    setExposedVariable('data', Array.isArray(properties.data) ? properties.data : []);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.data]);
+    exposeOne.current('data', Array.isArray(data) ? data : []);
+  }, [data, exposeOne]);
   const hiddenRows = paged.items.length - items.length;
   // Client-side data shorter than the current page: follow the clamp.
   useEffect(() => {
     if (paged.page !== page) setPage(paged.page);
-  }, [paged.page]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [paged.page, page]);
 
   // Each row reads its item as {{listItem}}, written when the page's items, the row template or the nesting changes.
   // Written in a layout effect, not during render (the native Listview's way), which updated the store, and so other
   // components, while this one rendered: React warned, and it risked a render loop. The layout effect runs before
   // paint and before the rows' mount effects; the rows wait for the first write, and after a change they re-render
   // with the new items before the page paints.
-  const itemsKey = stringify(items);
-  const parentKey = parentIndices.join(',');
-  const signature = `${itemsKey}|${childCount}|${parentKey}`;
-  const [published, setPublished] = useState<string | null>(null);
+  const [published, setPublished] = useState(false);
   useLayoutEffect(() => {
     if (items.length) {
       updateCustomResolvables(
@@ -199,8 +202,9 @@ export const ShadListView = (props: WidgetProps) => {
       );
       initExposedValueArrayForChildren(id, items.length, moduleId, parentIndices);
     }
-    setPublished(signature);
-  }, [signature]); // eslint-disable-line react-hooks/exhaustive-deps
+    setPublished(true);
+    // childCount: a component added to the row template needs its per-row values too.
+  }, [items, childCount, parentIndices, id, moduleId, updateCustomResolvables, initExposedValueArrayForChildren]);
   useExposedValueBatch(items.length);
 
   // Selection by item key, so it survives a refetch that reorders or reloads the data.
@@ -246,25 +250,29 @@ export const ShadListView = (props: WidgetProps) => {
     if (fire) fireEvent('onPageChanged');
   };
 
+  // Published once; each action calls the latest handlers.
+  const handlers = useLatest({ pick, clearSelection, goTo });
   useEffect(() => {
-    setExposedVariables({
+    live.current.setExposedVariables({
       selectItem: async (itemId: unknown) => {
         const index = live.current.items.findIndex(
           (item) =>
             item && typeof item === 'object' && String((item as Resolved)[live.current.idField]) === String(itemId)
         );
-        if (index >= 0) pick(index, { fire: false });
+        if (index >= 0) handlers.current.pick(index, { fire: false });
       },
-      clearSelection: async () => clearSelection(),
+      clearSelection: async () => handlers.current.clearSelection(),
       // As on the native Table, setPage does not fire onPageChanged.
-      setPage: async (target: unknown) => goTo(target, { fire: false }),
+      setPage: async (target: unknown) => handlers.current.goTo(target, { fire: false }),
       pageIndex: 1,
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [handlers]);
 
   // Measure the width a row's canvas lays its components out at.
   const gridRef = useRef<HTMLDivElement>(null);
   const [itemWidth, setItemWidth] = useState(0);
+  // The grid element exists only while the list shows items, so loading and the first items re-attach the observer.
+  const hasItems = items.length > 0;
   useLayoutEffect(() => {
     const el = gridRef.current;
     if (!el) return undefined;
@@ -273,7 +281,7 @@ export const ShadListView = (props: WidgetProps) => {
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [columns, gap, isLoading, items.length > 0]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [columns, gap, isLoading, hasItems]);
 
   const showPager = properties.enablePagination && !isLoading && (items.length > 0 || paged.page > 1);
 
@@ -316,7 +324,7 @@ export const ShadListView = (props: WidgetProps) => {
             gap: mode === 'list' && properties.showBorder ? 0 : gap,
           }}
         >
-          {(published === null ? [] : items).map((item, index) => (
+          {(published ? items : []).map((item, index) => (
             <Row
               key={keys[index]}
               id={id}

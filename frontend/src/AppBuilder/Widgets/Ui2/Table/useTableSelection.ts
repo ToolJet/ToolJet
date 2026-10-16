@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell } from './tableModel';
 import type { Entry, LiveRef, Paged, WithEdits } from './types';
@@ -47,13 +48,15 @@ export const useTableSelection = ({
     exposeSelection(keys, focus);
   };
 
-  // Default selected row, and keeping the selection on the same records across a reload.
+  // Default selected row, and keeping the selection on the same records across a reload. It runs for new rows only:
+  // the default and the publisher are read at that moment, so a re-evaluated default does not reselect a row.
+  const latest = useLatest({ wanted: properties.defaultSelectedRow, allowSelection, exposeSelection });
   useEffect(() => {
+    const { wanted, allowSelection: selectable, exposeSelection: expose } = latest.current;
     const keys = new Set(entries.map((entry) => entry.key));
     const kept = new Set([...live.current.selected].filter((key) => keys.has(key)));
     let focus = live.current.focusKey !== null && keys.has(live.current.focusKey) ? live.current.focusKey : null;
-    const wanted = properties.defaultSelectedRow;
-    if (!kept.size && wanted && typeof wanted === 'object' && Object.keys(wanted).length && allowSelection) {
+    if (!kept.size && wanted && typeof wanted === 'object' && Object.keys(wanted).length && selectable) {
       const [k, v] = Object.entries(wanted)[0];
       const match = entries.find((entry) => readCell(entry.row, k) == v); // eslint-disable-line eqeqeq
       if (match) {
@@ -63,8 +66,8 @@ export const useTableSelection = ({
     }
     setSelected(kept);
     setFocusKey(focus);
-    exposeSelection(kept, focus);
-  }, [entries]); // eslint-disable-line react-hooks/exhaustive-deps
+    expose(kept, focus);
+  }, [entries, live, latest]);
 
   const clickRow = (entry: Entry) => {
     if (isDisabled) return;

@@ -3,28 +3,25 @@ import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_share
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { formatTime, statusColor, timelineItems } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import type { Entry, TimelineItem } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { iconFor } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
 // ---- Timeline --------------------------------------------------------------------------------------------------------
 
+// The title's line height, which the marker centres on; the title takes it from here, so the two cannot drift.
 const LINE_HEIGHT = 20;
-
-// the title's line, which the marker centres on
 
 export const ShadTimeline = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
-  const items = useMemo(
-    () => timelineItems(p.items, p.newestFirst === true),
-    [stringify(p.items ?? null), p.newestFirst] // eslint-disable-line react-hooks/exhaustive-deps
-  );
+  const source = useStable(p.items);
+  const newestFirst = p.newestFirst === true;
+  const items = useMemo(() => timelineItems(source, newestFirst), [source, newestFirst]);
   const [last, setLast] = useState<Entry>({});
   useExposed(setExposedVariables, p, { lastClickedItem: last });
   const hasClick = useHasEvent(id, 'onItemClicked');
@@ -115,9 +112,8 @@ export const ShadTimeline = (props: WidgetProps) => {
                 {p.timePosition === 'top' ? <div className="tw-mb-0.5">{timeNode}</div> : null}
                 <div className="tw-flex tw-items-baseline tw-justify-between tw-gap-3">
                   <span
-                    className={cn(
-                      'tw-min-w-0 tw-break-words tw-text-ui2-sm tw-font-medium tw-leading-5 tw-text-[color:var(--lk-title,var(--sc-foreground))]'
-                    )}
+                    className="tw-min-w-0 tw-break-words tw-text-ui2-sm tw-font-medium tw-text-[color:var(--lk-title,var(--sc-foreground))]"
+                    style={{ lineHeight: `${LINE_HEIGHT}px` }}
                   >
                     {item.title}
                   </span>

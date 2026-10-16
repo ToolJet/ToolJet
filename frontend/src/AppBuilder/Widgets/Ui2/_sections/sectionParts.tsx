@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import useStore from '@/AppBuilder/_stores/store';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { barWidth, percentLabel } from './sectionsModel';
@@ -16,24 +15,6 @@ export const ACCENT = 'var(--lk-accent,var(--sc-primary))';
 // The accent as text (the eyebrow, an icon on its tint): the theme primary kept readable on the background.
 export const ACCENT_INK = 'var(--lk-accent,var(--sc-primary-ink))';
 export const TITLE_FONT = 'var(--lk-title-font,inherit)';
-
-/** The part of the store's events slice useHasEvent reads. */
-interface EventsState {
-  eventsSlice?: {
-    module?: Record<string, { events?: { sourceId?: string; event?: { eventId?: string; disabled?: boolean } }[] }>;
-  };
-}
-
-export const useHasEvent = (id: string | undefined, eventId: string): boolean =>
-  useStore((state: EventsState) => {
-    const modules = state?.eventsSlice?.module;
-    if (!modules || !id) return false;
-    return Object.values(modules).some((m) =>
-      (Array.isArray(m?.events) ? m.events : []).some(
-        (e) => e?.sourceId === id && e?.event?.eventId === eventId && !e?.event?.disabled
-      )
-    );
-  });
 
 export const onKeyActivate =
   <E extends HTMLElement>(handler: (e: KeyboardEvent<E>) => void) =>

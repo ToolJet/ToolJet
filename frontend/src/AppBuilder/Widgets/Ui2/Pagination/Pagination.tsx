@@ -4,7 +4,7 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal } from 'lucide-react';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
-import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { clampPage, pageCountOf, pageItems } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import { justify } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
@@ -44,21 +44,24 @@ export const ShadPagination = (props: WidgetProps) => {
     fireEvent('onPageChange');
   };
   // A changed default page moves the pager (and fires onPageChange), as the native Pagination does.
+  // Only the default page triggers it; the page count and the handlers are read from refs.
   const mounted = useRef(false);
+  const goToDefault = useLatest(() => go(clampPage(p.defaultPageIndex, count)));
   useEffect(() => {
     if (!mounted.current) {
       mounted.current = true;
       return;
     }
-    go(clampPage(p.defaultPageIndex, count));
-  }, [p.defaultPageIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+    goToDefault.current();
+  }, [p.defaultPageIndex, goToDefault]);
   // Fewer pages than the current one: stay on the last page.
+  const exposeOne = useLatest(setExposedVariable);
   useEffect(() => {
     if (page > count) {
       setPage(count);
-      setExposedVariable('currentPageIndex', count);
+      exposeOne.current('currentPageIndex', count);
     }
-  }, [count]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [count, page, exposeOne]);
   const shownPage = Math.min(page, count);
   useExposed(setExposedVariables, p, {
     totalPages: count,
@@ -84,12 +87,14 @@ export const ShadPagination = (props: WidgetProps) => {
     return () => observer.disconnect();
   }, []);
   useLayoutEffect(() => setFit((f) => (f.level ? { ...f, level: 0 } : f)), [count]);
+  // Checked again whenever something that changes the pager's width renders: the step, the page, the buttons, the size.
+  const { siblingCount, showFirstLast, showLabels, loadingState } = p;
   useLayoutEffect(() => {
     const list = navRef.current?.querySelector('ul');
     const first = list?.firstElementChild;
     if (!list || !(first instanceof HTMLElement) || fit.level >= 2) return;
     if (list.offsetHeight > first.offsetHeight * 1.5) setFit((f) => ({ ...f, level: f.level + 1 }));
-  });
+  }, [fit, shownPage, count, siblingCount, showFirstLast, showLabels, small, loadingState, props.styles]);
   const labelled = p.showLabels !== false && fit.level < 1;
   const button = (key: string, { label, onClick, active, isDisabled, children, wide }: PageButton) => (
     <li key={key}>

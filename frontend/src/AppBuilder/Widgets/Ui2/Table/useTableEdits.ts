@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell } from './tableModel';
 import type { Editing, Edits, Entry, FireOption, LiveRef, Row, TableColumn } from './types';
@@ -14,8 +14,21 @@ interface UseTableEditsArgs {
 export const useTableEdits = ({ data, live, setExposedVariables, fireEvent }: UseTableEditsArgs) => {
   const [edits, setEdits] = useState<Edits>(() => new Map());
   useEffect(() => setEdits(new Map()), [data]);
-  const withEdits = (entry: Entry): Row =>
-    edits.has(entry.key) ? { ...entry.row, ...edits.get(entry.key) } : entry.row;
+  // One merged row per entry for a set of edits: search, filter and sort match rows by reference, so an edited row
+  // must be the same object on every call (a fresh merge dropped it from the filter and sorted it as NaN).
+  const withEdits = useMemo(() => {
+    const merged = new WeakMap<Entry, Row>();
+    return (entry: Entry): Row => {
+      const patch = edits.get(entry.key);
+      if (!patch) return entry.row;
+      let row = merged.get(entry);
+      if (!row) {
+        row = { ...entry.row, ...patch };
+        merged.set(entry, row);
+      }
+      return row;
+    };
+  }, [edits]);
 
   const [editing, setEditing] = useState<Editing | null>(null);
   const exposeEdits = (next: Edits) => {

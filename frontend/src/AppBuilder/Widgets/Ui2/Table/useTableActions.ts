@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell, toCsv } from './tableModel';
 import type { Entry, FireOption, LiveRef, Sort, WithEdits } from './types';
@@ -53,7 +54,11 @@ export const useTableActions = ({
     else download(`${base}.csv`, toCsv(exportRows(), live.current.columns), 'text/csv;charset=utf-8');
   };
 
+  // The actions are published once and call the latest handlers, so they never act on an earlier render's columns.
+  const handlers = useLatest({ goTo, select, applyFilterList, applySort, setSearchInput, discard, runDownload });
+  const publish = useLatest(setExposedVariables);
   useEffect(() => {
+    const act = () => handlers.current;
     // A column key is text or a number; anything else (an action called with a list as the key) matches nothing.
     const isKey = (key: unknown): key is string | number =>
       (typeof key === 'string' && key !== '') || typeof key === 'number';
@@ -73,7 +78,7 @@ export const useTableActions = ({
         return cell !== null && cell !== undefined && typeof cell !== 'object' && wanted.has(String(cell));
       });
     };
-    setExposedVariables({
+    publish.current({
       pageIndex: 1,
       searchText: '',
       sortApplied: [],
@@ -82,37 +87,37 @@ export const useTableActions = ({
       dataUpdates: [],
       lastActionClicked: {},
       // As on the native Table, setPage does not fire onPageChanged.
-      setPage: async (target: unknown) => goTo(target, { fire: false }),
+      setPage: async (target: unknown) => act().goTo(target, { fire: false }),
       selectRow: async (key: unknown, value: unknown) => {
         const [match] = byKeyValue(key, value);
-        if (match) select(new Set([match.key]), match.key);
+        if (match) act().select(new Set([match.key]), match.key);
       },
-      deselectRow: async () => select(new Set(), null),
+      deselectRow: async () => act().select(new Set(), null),
       selectRows: async (key: unknown, values: unknown) => {
         const keys = new Set(live.current.selected);
         byKeyValues(key, values).forEach((entry) => keys.add(entry.key));
-        select(keys, live.current.focusKey);
+        act().select(keys, live.current.focusKey);
       },
       deselectRows: async (key: unknown, values: unknown) => {
         const keys = new Set(live.current.selected);
         byKeyValues(key, values).forEach((entry) => keys.delete(entry.key));
-        select(keys, live.current.focusKey);
+        act().select(keys, live.current.focusKey);
       },
       selectAllRows: async () =>
-        select(new Set(live.current.processed.map((entry) => entry.key)), live.current.focusKey),
-      deselectAllRows: async () => select(new Set(), null),
-      setFilters: async (list: unknown) => applyFilterList(list),
-      clearFilters: async () => applyFilterList([]),
+        act().select(new Set(live.current.processed.map((entry) => entry.key)), live.current.focusKey),
+      deselectAllRows: async () => act().select(new Set(), null),
+      setFilters: async (list: unknown) => act().applyFilterList(list),
+      clearFilters: async () => act().applyFilterList([]),
       setSort: async (columnKey: unknown, direction: unknown) =>
-        applySort(
+        act().applySort(
           isSet(columnKey) && (direction === 'asc' || direction === 'desc')
             ? { key: String(columnKey), direction }
             : null
         ),
-      setSearchText: async (text: unknown) => setSearchInput(String(text ?? '')),
-      discardChanges: async () => discard({ fire: false }),
+      setSearchText: async (text: unknown) => act().setSearchInput(String(text ?? '')),
+      discardChanges: async () => act().discard({ fire: false }),
       downloadTableData: async (type: unknown) =>
-        runDownload(
+        act().runDownload(
           String(type ?? 'csv')
             .toLowerCase()
             .includes('json')
@@ -120,7 +125,7 @@ export const useTableActions = ({
             : 'csv'
         ),
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [live, handlers, publish]);
 
   return runDownload;
 };

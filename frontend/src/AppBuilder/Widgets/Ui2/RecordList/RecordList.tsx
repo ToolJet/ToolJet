@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { recordItems, type RecordItem } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import {
   ACCENT,
   Chip,
@@ -14,8 +13,8 @@ import {
   TITLE_FONT,
   onKeyActivate,
   text,
-  useHasEvent,
 } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
+import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 
 // ---- Record list -----------------------------------------------------------------------------------------------------
 
@@ -31,32 +30,23 @@ export const ShadRecordList = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, fireEvent, id } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
+  const data = useStable(p.data);
+  const metaFields = useStable(p.metaFields);
+  const { titleField, avatarField, statusField, progressField, valueField, valueFormat, currency, idField } = p;
   const rows = useMemo(
     () =>
-      recordItems(p.data, {
-        titleField: p.titleField,
-        avatarField: p.avatarField,
-        metaFields: p.metaFields,
-        statusField: p.statusField,
-        progressField: p.progressField,
-        valueField: p.valueField,
-        valueFormat: p.valueFormat,
-        currency: p.currency,
-        idField: p.idField,
+      recordItems(data, {
+        titleField,
+        avatarField,
+        metaFields,
+        statusField,
+        progressField,
+        valueField,
+        valueFormat,
+        currency,
+        idField,
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      stringify(p.data ?? null),
-      p.titleField,
-      p.avatarField,
-      p.metaFields,
-      p.statusField,
-      p.progressField,
-      p.valueField,
-      p.valueFormat,
-      p.currency,
-      p.idField,
-    ]
+    [data, titleField, avatarField, metaFields, statusField, progressField, valueField, valueFormat, currency, idField]
   );
   // The first ROWS_PER_STEP rows and a button for the next ones, as the card grid does: a 10,000-row binding froze the
   // page. A new data binding starts again from the first step.

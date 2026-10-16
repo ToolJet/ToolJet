@@ -1,12 +1,18 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { initials, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  initials,
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { cardItems, gridColumns, type CardItem } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import {
   ACCENT,
   ACCENT_INK,
@@ -16,8 +22,8 @@ import {
   TITLE_FONT,
   onKeyActivate,
   text,
-  useHasEvent,
 } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
+import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 
 /** The picture of a card: its image, or (none, or one that fails to load) a tinted panel with the title's initials.
  *  Its badges sit over its top left corner. `fill` makes it a side panel as tall as the card (the row layout). */
@@ -94,43 +100,49 @@ export const ShadCardGrid = (props: WidgetProps) => {
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const [width, setWidth] = useState(Number(props.width) || 0);
+  // The layout width is only the fallback before the first measurement: it does not restart the observer.
+  const layoutWidth = useLatest(props.width);
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const ro = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
     ro.observe(el);
-    setWidth(el.getBoundingClientRect().width || Number(props.width) || 0);
+    setWidth(el.getBoundingClientRect().width || Number(layoutWidth.current) || 0);
     return () => ro.disconnect();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [layoutWidth]);
+  const data = useStable(p.data);
+  const badgeFields = useStable(p.badgeFields);
+  const metaFields = useStable(p.metaFields);
+  const { titleField, subtitleField, imageField, badgeField, eyebrowField, avatarField, descriptionField } = p;
+  const { progressField, idField } = p;
   const cards = useMemo(
     () =>
-      cardItems(p.data, {
-        titleField: p.titleField,
-        subtitleField: p.subtitleField,
-        imageField: p.imageField,
-        badgeField: p.badgeField,
-        badgeFields: p.badgeFields,
-        eyebrowField: p.eyebrowField,
-        avatarField: p.avatarField,
-        descriptionField: p.descriptionField,
-        progressField: p.progressField,
-        metaFields: p.metaFields,
-        idField: p.idField,
+      cardItems(data, {
+        titleField,
+        subtitleField,
+        imageField,
+        badgeField,
+        badgeFields,
+        eyebrowField,
+        avatarField,
+        descriptionField,
+        progressField,
+        metaFields,
+        idField,
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      stringify(p.data ?? null),
-      p.titleField,
-      p.subtitleField,
-      p.imageField,
-      p.badgeField,
-      stringify(p.badgeFields ?? null),
-      p.eyebrowField,
-      p.avatarField,
-      p.descriptionField,
-      p.progressField,
-      p.metaFields,
-      p.idField,
+      data,
+      titleField,
+      subtitleField,
+      imageField,
+      badgeField,
+      badgeFields,
+      eyebrowField,
+      avatarField,
+      descriptionField,
+      progressField,
+      metaFields,
+      idField,
     ]
   );
   // A grid draws its first CARDS_PER_STEP cards and a button for the next ones: a 10,000-row binding drew every card

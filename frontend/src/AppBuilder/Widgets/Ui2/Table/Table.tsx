@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
-import { useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
@@ -37,8 +37,7 @@ const RIGHT_FADE = {
 const MAX_FILTERS = 50;
 
 export const ShadTable = (props: WidgetProps) => {
-  const { id, height, properties, styles, setExposedVariable, setExposedVariables, fireEvent, componentName, dataCy } =
-    props;
+  const { height, properties, styles, setExposedVariable, setExposedVariables, fireEvent, componentName } = props;
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState === true,
     properties.visibility !== false,
@@ -58,19 +57,17 @@ export const ShadTable = (props: WidgetProps) => {
   );
   const idField = isSet(properties.idField) ? String(properties.idField) : 'id';
   const autogen = !(Array.isArray(properties.columns) && properties.columns.length);
-  const columns = useMemo(
-    () => normalizeColumns(properties.columns, data),
-    [properties.columns, autogen ? data : null] // eslint-disable-line react-hooks/exhaustive-deps
-  );
+  // The data shapes the columns only when none are set, so new data does not rebuild set columns.
+  const columnSample = autogen ? data : null;
+  const columns = useMemo(() => normalizeColumns(properties.columns, columnSample), [properties.columns, columnSample]);
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
-  const shownColumns = columns.filter((c) => c.visible && !hiddenIds.has(c.id));
+  const shownColumns = useMemo(() => columns.filter((c) => c.visible && !hiddenIds.has(c.id)), [columns, hiddenIds]);
   const entries = useMemo<Entry[]>(
     () => data.map((row, index) => ({ row, index, key: rowKey(row, idField, index) })),
     [data, idField]
   );
 
-  // ---- edits (overlay on the data until it changes) -------------------------------------------------------------------
-  // Everything the actions and handlers read later, without going stale.
+  // ---- edits (overlay on the data until it changes); live holds what actions and handlers read later -----------------
   const live = useRef<Live>({} as Live);
   const { edits, withEdits, editing, setEditing, commitEdit, discard } = useTableEdits({
     data,
@@ -109,30 +106,33 @@ export const ShadTable = (props: WidgetProps) => {
     searchText,
     filters,
     sort,
-    edits,
+    withEdits,
     columns,
-    hiddenIds,
+    shownColumns,
     properties.serverSideSearch,
     properties.serverSideFilter,
     properties.serverSideSort,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+  ]);
 
-  const paged: Paged = pageOf(processed, {
-    enablePagination: properties.enablePagination !== false,
-    serverSidePagination: serverPaging,
-    rowsPerPage: properties.rowsPerPage,
-    totalRecords: properties.totalRecords,
-    page,
-  });
-  if (serverPaging && properties.enablePagination !== false) {
-    paged.hasNext = paged.pageCount
-      ? paged.hasNext && properties.enableNextButton !== false
-      : properties.enableNextButton !== false;
-    paged.hasPrevious = paged.hasPrevious && properties.enablePrevButton !== false;
-  }
+  const { enablePagination, rowsPerPage, totalRecords, enableNextButton, enablePrevButton } = properties;
+  const paged = useMemo<Paged>(() => {
+    const result: Paged = pageOf(processed, {
+      enablePagination: enablePagination !== false,
+      serverSidePagination: serverPaging,
+      rowsPerPage,
+      totalRecords,
+      page,
+    });
+    if (serverPaging && enablePagination !== false) {
+      result.hasNext = result.pageCount ? result.hasNext && enableNextButton !== false : enableNextButton !== false;
+      result.hasPrevious = result.hasPrevious && enablePrevButton !== false;
+    }
+    return result;
+  }, [processed, enablePagination, serverPaging, rowsPerPage, totalRecords, page, enableNextButton, enablePrevButton]);
+  // A page past the end (fewer rows after a filter) moves back to the last page.
   useEffect(() => {
     if (!serverPaging && paged.page !== page) setPage(paged.page);
-  }, [paged.page]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [serverPaging, paged.page, page]);
 
   // ---- selection ------------------------------------------------------------------------------------------------------
   const {
@@ -151,16 +151,19 @@ export const ShadTable = (props: WidgetProps) => {
   live.current = { entries, processed, paged, selected, edits, columns, filters, sort, searchText, data, focusKey };
 
   // ---- user actions that publish state, then fire their event ----------------------------------------------------------
+  // Read through refs: a new callback from RenderWidget must not restart the search pause or republish the data.
+  const publish = useLatest(setExposedVariables);
+  const fire = useLatest(fireEvent);
   useEffect(() => {
     if (searchInput === searchText) return undefined;
     const timer = setTimeout(() => {
       setSearchText(searchInput);
       setPage(1);
-      setExposedVariables({ searchText: searchInput, pageIndex: 1 });
-      fireEvent('onSearch');
+      publish.current({ searchText: searchInput, pageIndex: 1 });
+      fire.current('onSearch');
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchInput, searchText, publish, fire]);
 
   const sortApplied = (next: Sort | null) => {
     if (!next) return [];
@@ -236,12 +239,12 @@ export const ShadTable = (props: WidgetProps) => {
 
   // ---- exported data and actions --------------------------------------------------------------------------------------
   useEffect(() => {
-    setExposedVariables({
+    publish.current({
       currentData: data,
       filteredData: processed.map(withEdits),
       currentPageData: paged.items.map(withEdits),
     });
-  }, [data, processed, paged.page, paged.items.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [data, processed, paged.items, withEdits, publish]);
 
   const runDownload = useTableActions({
     live,

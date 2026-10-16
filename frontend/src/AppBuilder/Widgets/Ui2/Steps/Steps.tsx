@@ -4,11 +4,10 @@ import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/typ
 import { Check } from 'lucide-react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { normalizeSteps, stepIndexOf } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import type { Step, StepId } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 
 // ---- Steps -----------------------------------------------------------------------------------------------------------
 
@@ -65,12 +64,12 @@ export const ShadSteps = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, fireEvent } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
-  const source = p.steps;
-  const base = useMemo(() => normalizeSteps(source), [stringify(source ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const source = useStable(p.steps);
+  const base = useMemo(() => normalizeSteps(source), [source]);
   const [overrides, setOverrides] = useState<Record<string, Partial<Step>>>({});
   useEffect(() => setOverrides({}), [base]);
-  const all = base.map((s) => ({ ...s, ...(overrides[String(s.id)] || {}) }));
-  const shown = all.filter((s) => s.visible);
+  const all = useMemo(() => base.map((s) => ({ ...s, ...(overrides[String(s.id)] || {}) })), [base, overrides]);
+  const shown = useMemo(() => all.filter((s) => s.visible), [all]);
   const [current, setCurrent] = useState<unknown>(p.currentStep);
   useEffect(() => setCurrent(p.currentStep), [p.currentStep]);
   const index = stepIndexOf(shown, current);

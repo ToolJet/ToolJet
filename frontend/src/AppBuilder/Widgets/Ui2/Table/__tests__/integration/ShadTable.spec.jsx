@@ -362,6 +362,21 @@ describe('UI 2.0 Table', () => {
     expect(screen.getByText('1 row changed')).toBeInTheDocument();
   });
 
+  test('[ShadTable-EVT-011] an edited row is filtered and sorted by its edited values', async () => {
+    render({ properties: { columns: binding(EDITABLE) } });
+
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    await editFirstName('Zed');
+    await waitFor(() => expect(names()[0]).toBe('Zed'));
+    await widget.act('setFilters', [{ column: 'name', condition: 'contains', value: 'Zed' }]);
+    await waitFor(() => expect(names()).toEqual(['Zed']));
+    await widget.act('clearFilters');
+    await widget.act('setSort', 'name', 'asc');
+    await waitFor(() => expect(names()).toEqual(['Alan Turing', 'Grace Hopper', 'Zed']));
+    await widget.act('setSort', 'name', 'desc');
+    await waitFor(() => expect(names()).toEqual(['Zed', 'Grace Hopper', 'Alan Turing']));
+  });
+
   test('[ShadTable-EVT-008] Save changes fires onBulkUpdate; Discard fires onCancelChanges and drops the edits', async () => {
     render({ properties: { columns: binding(EDITABLE) } });
     widget.setEvents([

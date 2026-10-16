@@ -9,7 +9,7 @@ import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useDynamicHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import { useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { TabStrip } from './TabStrip';
@@ -123,21 +123,23 @@ export const ShadTabs = (props: WidgetProps) => {
 
   // Tabs from the static list or the dynamic option; a tab without an id gets its index. Kept in state so the
   // per-tab actions can change disable, loading and visibility at run time.
-  const fromProps = useMemo(
-    () => tabsFromProperties(properties),
-    [properties.useDynamicOptions, properties.tabs, properties.tabItems]
-  ); // eslint-disable-line react-hooks/exhaustive-deps
-  const fromPropsKey = stringify(fromProps);
+  const { useDynamicOptions, tabs: dynamicTabs, tabItems, defaultTab } = properties;
+  const fromProps = useStable(
+    useMemo(
+      () => tabsFromProperties({ useDynamicOptions, tabs: dynamicTabs, tabItems }),
+      [useDynamicOptions, dynamicTabs, tabItems]
+    )
+  );
   const [tabs, setTabs] = useState<Tab[]>(fromProps);
-  useEffect(() => setTabs(fromProps), [fromPropsKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  const shown = visibleTabs(tabs);
+  useEffect(() => setTabs(fromProps), [fromProps]);
+  const shown = useMemo(() => visibleTabs(tabs), [tabs]);
 
-  const pickDefault = (): TabId | undefined => {
-    const wanted = properties.defaultTab;
-    return shown.some((tab) => tab.id == wanted) ? wanted : shown[0]?.id;
-  };
-  const [currentTab, setCurrentTab] = useState<TabId | undefined>(pickDefault);
-  useEffect(() => setCurrentTab(pickDefault()), [properties.defaultTab]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pickDefault = (visible: Tab[]): TabId | undefined =>
+    visible.some((tab) => tab.id == defaultTab) ? defaultTab : visible[0]?.id;
+  const [currentTab, setCurrentTab] = useState<TabId | undefined>(() => pickDefault(shown));
+  // Only a new defaultTab moves the tab; the tabs shown then are read from a ref.
+  const latestPick = useLatest(() => pickDefault(shown));
+  useEffect(() => setCurrentTab(latestPick.current()), [defaultTab, latestPick]);
   // Scroll to top on tab switch: the new tab's canvas starts at its top, as the native Tabs does.
   useEffect(() => {
     if (properties.scrollToTopOnTabSwitch !== true) return undefined;
@@ -146,11 +148,11 @@ export const ShadTabs = (props: WidgetProps) => {
       if (canvas) canvas.scrollTop = 0;
     });
     return () => cancelAnimationFrame(frame);
-  }, [currentTab, properties.scrollToTopOnTabSwitch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, currentTab, properties.scrollToTopOnTabSwitch]);
   // A hidden or removed current tab falls back to the first visible one.
   useEffect(() => {
     if (shown.length && !shown.some((tab) => tab.id == currentTab)) setCurrentTab(shown[0].id);
-  }, [fromPropsKey, tabs]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [shown, currentTab]);
 
   const stepIndex = Math.max(
     0,
@@ -186,32 +188,36 @@ export const ShadTabs = (props: WidgetProps) => {
   const patchTab = (tabId: unknown, patch: Partial<Tab>) =>
     setTabs((all) => all.map((tab) => (tab.id == tabId ? { ...tab, ...patch } : tab)));
 
+  // Published once; each action calls the latest handlers.
+  const handlers = useLatest({ switchTo, patchTab });
   useEffect(() => {
-    setExposedVariables({
-      setTab: async (tabId: unknown) => switchTo(tabId),
+    const act = () => handlers.current;
+    live.current.setExposedVariables({
+      setTab: async (tabId: unknown) => act().switchTo(tabId),
       nextTab: async () => {
         const next = neighbourTab(live.current.tabs, live.current.currentTab, 1);
-        if (next) switchTo(next.id);
+        if (next) act().switchTo(next.id);
       },
       previousTab: async () => {
         const previous = neighbourTab(live.current.tabs, live.current.currentTab, -1);
-        if (previous) switchTo(previous.id);
+        if (previous) act().switchTo(previous.id);
       },
-      setTabDisable: async (tabId: unknown, value: unknown) => patchTab(tabId, { disable: !!value }),
-      setTabLoading: async (tabId: unknown, value: unknown) => patchTab(tabId, { loading: !!value }),
-      setTabVisibility: async (tabId: unknown, value: unknown) => patchTab(tabId, { visible: value !== false }),
+      setTabDisable: async (tabId: unknown, value: unknown) => act().patchTab(tabId, { disable: !!value }),
+      setTabLoading: async (tabId: unknown, value: unknown) => act().patchTab(tabId, { loading: !!value }),
+      setTabVisibility: async (tabId: unknown, value: unknown) => act().patchTab(tabId, { visible: value !== false }),
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [handlers]);
 
+  const currentTitle = current?.title ?? '';
   useEffect(() => {
-    setExposedVariables({
+    live.current.setExposedVariables({
       currentTab,
-      currentTabTitle: current?.title ?? '',
+      currentTabTitle: currentTitle,
       currentStepIndex: stepIndex,
       isFirstStep,
       isLastStep,
     });
-  }, [currentTab, current?.title, stepIndex, isFirstStep, isLastStep]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentTab, currentTitle, stepIndex, isFirstStep, isLastStep]);
 
   const componentCount = useStore(
     (state: TabsStore) => state.getContainerChildrenMapping(`${id}-${currentTab}`)?.length || 0,

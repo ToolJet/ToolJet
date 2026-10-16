@@ -13,14 +13,19 @@ import {
 import type { CollisionDetection, DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  list,
+  useAutoHeight,
+  useExposed,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { addCard, boardCards, boardColumns, deleteCard, moveCard, updateCard } from './kanbanBoard';
 import { KANBAN_INSTRUCTIONS, KANBAN_KEYS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
 import { SHADOWS, isSet, kanbanLook, px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { BoardCard, BoardColumn, CardMove, CardRow } from './kanbanBoard';
@@ -125,9 +130,11 @@ export const ShadKanban = (props: WidgetProps) => {
       return next;
     });
   // Folded columns: those listed in collapsedColumns at start (again whenever that list changes), then the user's.
-  const startCollapsed = stringify(list(properties.collapsedColumns).map(String));
-  const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(() => new Set(JSON.parse(startCollapsed)));
-  useEffect(() => setCollapsedColumns(new Set(JSON.parse(startCollapsed))), [startCollapsed]);
+  const startCollapsed = useStable(
+    useMemo(() => list(properties.collapsedColumns).map(String), [properties.collapsedColumns])
+  );
+  const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(() => new Set(startCollapsed));
+  useEffect(() => setCollapsedColumns(new Set(startCollapsed)), [startCollapsed]);
   const toggleColumn = (columnId: string) =>
     setCollapsedColumns((current) => {
       const next = new Set(current);
@@ -212,8 +219,7 @@ export const ShadKanban = (props: WidgetProps) => {
       'cardData',
       moduleId
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [custom, columns, props.id, moduleId]);
+  }, [custom, columns, props.id, moduleId, updateCustomResolvables]);
   const { boardNode, moreRight, boardWidth, cardWidth } = useBoardSize(custom, columns.length, collapsedColumns);
   const fitCards = custom && !editing && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
   const renderBody = custom

@@ -1,21 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { percentLabel } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
 import { progressItems, type ProgressItem } from '@/AppBuilder/Widgets/Ui2/_sections/progressModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
-import {
-  Bar,
-  Chip,
-  TITLE_FONT,
-  TONE_VAR,
-  onKeyActivate,
-  text,
-  useHasEvent,
-} from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
+import { Bar, Chip, TITLE_FONT, TONE_VAR, onKeyActivate, text } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
+import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 
 // A tone as text: deep enough to read on the background.
 export const TONE_INK = Object.fromEntries(
@@ -32,33 +24,35 @@ export const ShadProgressList = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, fireEvent, id } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
+  const data = useStable(p.data);
+  const { labelField, valueField, targetField, percentField, captionField, statusField } = p;
+  const { valueFormat, currency, idField, autoTone } = p;
   const rows = useMemo(
     () =>
-      progressItems(p.data, {
-        labelField: p.labelField,
-        valueField: p.valueField,
-        targetField: p.targetField,
-        percentField: p.percentField,
-        captionField: p.captionField,
-        statusField: p.statusField,
-        valueFormat: p.valueFormat,
-        currency: p.currency,
-        idField: p.idField,
-        autoTone: p.autoTone,
+      progressItems(data, {
+        labelField,
+        valueField,
+        targetField,
+        percentField,
+        captionField,
+        statusField,
+        valueFormat,
+        currency,
+        idField,
+        autoTone,
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      stringify(p.data ?? null),
-      p.labelField,
-      p.valueField,
-      p.targetField,
-      p.percentField,
-      p.captionField,
-      p.statusField,
-      p.valueFormat,
-      p.currency,
-      p.idField,
-      p.autoTone,
+      data,
+      labelField,
+      valueField,
+      targetField,
+      percentField,
+      captionField,
+      statusField,
+      valueFormat,
+      currency,
+      idField,
+      autoTone,
     ]
   );
   // The first rows and a button for the next ones: a 10,000-row binding froze the page in the other lists.
