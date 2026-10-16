@@ -112,6 +112,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Button',
   'Icon',
   'Image',
+  'SvgImage',
   'Container',
   'Divider',
   'VerticalDivider',

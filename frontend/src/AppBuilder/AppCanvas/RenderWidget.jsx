@@ -30,6 +30,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'RadioButtonV2',
   'Icon',
   'Image',
+  'SvgImage',
   'DatetimePickerV2',
   'DaterangePicker',
   'DatePickerV2',
