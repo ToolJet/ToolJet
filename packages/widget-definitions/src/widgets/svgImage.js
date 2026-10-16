@@ -85,6 +85,16 @@ export const svgImageConfig = {
         schema: { type: 'string' },
         defaultValue: 'left',
       },
+      accordian: 'Svg image',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
     },
   },
   exposedVariables: {},
@@ -126,6 +136,7 @@ export const svgImageConfig = {
     events: [],
     styles: {
       alignment: { value: 'left' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

@@ -1,10 +1,10 @@
 import { MigrationProgress, deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-const MIGRATION_NAME = 'MigrateTooltipVisibilityForSvgImage';
+const MIGRATION_NAME = 'MigrateVisibilityTooltipBoxShadowForSvgImage';
 const TYPE = 'SvgImage';
 
-export class MigrateTooltipVisibilityForSvgImage1792068093521 implements MigrationInterface {
+export class MigrateVisibilityTooltipBoxShadowForSvgImage1792139820443 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const batchSize = 100;
     let offset = 0;
@@ -19,13 +19,13 @@ export class MigrateTooltipVisibilityForSvgImage1792068093521 implements Migrati
     }
 
     console.log(
-      `${MIGRATION_NAME}: [START] Move SvgImage visibility/tooltip to properties + backfill tooltipFormat | Total: ${totalComponents}`
+      `${MIGRATION_NAME}: [START] Move SvgImage visibility/tooltip/boxShadow to their new buckets + backfill tooltipFormat | Total: ${totalComponents}`
     );
     const migrationProgress = new MigrationProgress(MIGRATION_NAME, totalComponents);
 
     while (true) {
       const components = await queryRunner.query(
-        `SELECT id, properties, styles, general_properties
+        `SELECT id, properties, styles, general_properties, general_styles
            FROM components
            WHERE type = $1
            ORDER BY "created_at" ASC
@@ -38,8 +38,9 @@ export class MigrateTooltipVisibilityForSvgImage1792068093521 implements Migrati
       offset += batchSize;
     }
 
-    // visibility (styles → properties) and tooltip (general_properties → properties) changed
-    // buckets: invalidate app version history so stale undo/redo snapshots don't resurrect the old shape.
+    // visibility (styles → properties), tooltip (general_properties → properties) and boxShadow
+    // (general_styles → styles) changed buckets: invalidate app version history so stale undo/redo
+    // snapshots don't resurrect the old shape.
     const versions: { app_version_id: string }[] = await queryRunner.query(
       `SELECT DISTINCT p.app_version_id FROM components c
          INNER JOIN pages p ON c.page_id = p.id WHERE c.type = $1`,
@@ -52,7 +53,7 @@ export class MigrateTooltipVisibilityForSvgImage1792068093521 implements Migrati
     );
 
     console.log(
-      `${MIGRATION_NAME}: [SUCCESS] Move SvgImage visibility/tooltip finished. Updated ${totalUpdated} components.`
+      `${MIGRATION_NAME}: [SUCCESS] Move SvgImage visibility/tooltip/boxShadow finished. Updated ${totalUpdated} components.`
     );
   }
 
@@ -67,6 +68,7 @@ export class MigrateTooltipVisibilityForSvgImage1792068093521 implements Migrati
       const properties = component.properties ? { ...component.properties } : {};
       const styles = component.styles ? { ...component.styles } : {};
       const general = component.general_properties ? { ...component.general_properties } : {};
+      const generalStyles = component.general_styles ? { ...component.general_styles } : {};
 
       // visibility: styles → properties. Fill the target only when unset so a value already on
       // properties is preserved; always drop the stale styles key.
@@ -91,11 +93,26 @@ export class MigrateTooltipVisibilityForSvgImage1792068093521 implements Migrati
         properties.tooltipFormat = { value: 'plainText' };
       }
 
+      // boxShadow: general_styles → styles (same preserve-then-delete rule). The widget now owns
+      // the style under its "Svg image" accordion instead of the universal General group.
+      if (generalStyles.boxShadow !== undefined) {
+        if (styles.boxShadow === undefined) {
+          styles.boxShadow = generalStyles.boxShadow;
+        }
+        delete generalStyles.boxShadow;
+      }
+
       await queryRunner.query(
         `UPDATE components
-           SET properties = $1, styles = $2, general_properties = $3
-           WHERE id = $4`,
-        [JSON.stringify(properties), JSON.stringify(styles), JSON.stringify(general), component.id]
+           SET properties = $1, styles = $2, general_properties = $3, general_styles = $4
+           WHERE id = $5`,
+        [
+          JSON.stringify(properties),
+          JSON.stringify(styles),
+          JSON.stringify(general),
+          JSON.stringify(generalStyles),
+          component.id,
+        ]
       );
 
       updatedCount++;
