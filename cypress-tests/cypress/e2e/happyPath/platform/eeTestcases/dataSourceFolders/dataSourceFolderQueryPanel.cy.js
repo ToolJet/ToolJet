@@ -1,12 +1,6 @@
 import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
 
-/**
- * Folder grouping inside the app builder. Two pickers group connected data
- * sources by folder:
- *   - the "+" add-query popover (DataSourceSelect)   → ds-folder-* / ds-<name>
- *   - the empty query panel picker (DataSourcePicker) → ds-folder-* / <name>-add-query-card
- * Both are virtualized lists; the fixture stays small so every row renders.
- */
+/** Folder grouping inside the app builder. */
 describe('Data Source Folders — Query Panel Grouping', () => {
   let workspaceId, wsName, wsSlug, testId, names;
 
@@ -83,21 +77,19 @@ describe('Data Source Folders — Query Panel Grouping', () => {
     cy.get(search).clear();
   };
 
-  it('the add-query popover groups data sources by folder and searches across folders', () => {
+  it('both data source pickers group by folder, search across folders, and reflect a folder change after reload', () => {
     cy.openApp('', workspaceId, Cypress.env('appId'));
+
+    // The empty query panel picker (DataSourcePicker) — the landing state.
+    verifyFolderGrouping(dsFolder.pickerDataSourceCard, dsFolder.emptyPickerSearch);
+
+    // The "+" add-query popover (DataSourceSelect) — same contract, different list.
     cy.get(dsFolder.addQueryPopoverButton).click();
     verifyFolderGrouping(dsFolder.selectDataSourceOption, dsFolder.addQueryPopoverSearch);
-  });
+    cy.get('body').type('{esc}');
 
-  it('the empty query panel picker groups data sources by folder and searches across folders', () => {
-    cy.openApp('', workspaceId, Cypress.env('appId'));
-    verifyFolderGrouping(dsFolder.pickerDataSourceCard, dsFolder.emptyPickerSearch);
-  });
-
-  it('a folder change made outside the builder shows in the picker after a reload', () => {
-    cy.openApp('', workspaceId, Cypress.env('appId'));
+    // A folder change made outside the builder shows up after a reload, and the data source moves rather.
     cy.get(dsFolder.pickerDataSourceCard(names.stray)).should('be.visible');
-
     cy.then(() => cy.apiAddDataSourceToFolder(Cypress.env('strayId'), Cypress.env('folderAId')));
     cy.reload();
 

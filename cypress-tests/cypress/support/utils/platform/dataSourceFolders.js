@@ -5,16 +5,11 @@ import {
 } from "Selectors/platform/dataSourceFolders";
 import { groupsSelector } from "Selectors/platform/manageGroups";
 
-/**
- * Opens the global data sources page, where data source folders live.
- * Mirrors openModulesList() in Support/utils/platform/modules.
- */
+/** Opens the global data sources page, where data source folders live. */
 export const openDataSourcesList = () => {
   cy.intercept("GET", "/api/folder-data-sources*").as("dataSourceFolders");
   cy.visit(`/${Cypress.env("workspaceSlug")}`);
-  // Navigate via the sidebar icon rather than a hardcoded route — this is how
-  // every existing data source spec gets here, and it doubles as the permission
-  // signal (the icon is hidden entirely from users without data source access).
+  // Navigate via the sidebar icon rather than a hardcoded route — this is how every existing data.
   cy.get(commonSelectors.globalDataSourceIcon, { timeout: 50000 }).click();
   cy.wait("@dataSourceFolders");
   cy.get(dsFolder.sidebarContainer, { timeout: 50000 }).should("be.visible");
@@ -30,16 +25,7 @@ export const uiCreateDataSourceFolder = (folderName) => {
   );
 };
 
-/**
- * Opens a folder row's ⋮ menu.
- *
- * `.datasource-folder-menu-trigger` is `display: none` and only revealed by a
- * hover on the folder row — exactly like the data source row's trigger. A plain
- * .click() fails actionability with "this element is not visible", so force it.
- * (The button is in the DOM the whole time; it is only hidden. When the viewer
- * lacks both rename and delete rights the menu is not rendered at all, which is
- * what uiVerifyFolderMenuAbsent asserts.)
- */
+/** Opens a folder row's ⋮ menu. */
 export const uiOpenFolderMenu = (folderId) =>
   cy.get(dsFolder.folderMenuButton(folderId)).click({ force: true });
 
@@ -57,6 +43,16 @@ export const uiRenameDataSourceFolder = (folderId, newName) => {
 export const uiDeleteDataSourceFolder = (folderId) => {
   uiOpenFolderMenu(folderId);
   cy.get(dsFolder.folderDeleteOption(folderId)).click();
+  /** The copy is what stops a user thinking the data sources go with the folder. */
+  cy.get(commonSelectors.modalMessage).should(
+    "have.text",
+    "Deleting this folder will only delete the folder and not the data sources in it. This action is irreversible. Are you sure you want to continue?"
+  );
+  // The copy is what stops a user thinking the data sources go with the folder, so assert it.
+  cy.get(commonSelectors.modalMessage).should(
+    "have.text",
+    "Deleting this folder will only delete the folder and not the data sources in it. This action is irreversible. Are you sure you want to continue?"
+  );
   // ConfirmDialog's confirm control is data-cy="yes-button" regardless of its label.
   cy.get(dsFolder.confirmDialogYesButton).click();
   cy.verifyToastMessage(
@@ -70,34 +66,16 @@ export const uiVerifyDataSourceFolderExists = (folderName, shouldExist = true) =
     .get(dsFolder.folderRow(folderName))
     .should(shouldExist ? "exist" : "not.exist");
 
-/**
- * Asserts the folder's ⋮ menu is not reachable — the menu button only renders
- * when the viewer can rename OR delete, so its absence is the permission signal.
- */
+/** Asserts the folder's ⋮ menu is absent — it only renders when the viewer can rename or delete. */
 export const uiVerifyFolderMenuAbsent = (folderId) =>
   cy.get(dsFolder.folderMenuButton(folderId)).should("not.exist");
 
-/**
- * Drags a data source onto a folder row.
- *
- * DO NOT reach for cy.realDragAndDrop / cy.realDrag here. Those come from
- * cypress-real-dnd, which drives real HTML5 drag via CDP; its README lists
- * "dnd-kit with the default PointerSensor / MouseSensor" under the libraries it
- * explicitly does NOT support. This sidebar uses exactly that (a CustomPointerSensor
- * with an 8px activation distance), so those commands fail silently — the drop
- * never fires and the assertion fails with no clue why.
- *
- * cy.trigger('dragstart') is equally useless for the same reason. What works is a
- * real pointer sequence via cypress-real-events (wired in support/e2e.js), with the
- * first move clearing the 8px threshold before dnd-kit will start tracking a drag.
- */
-export const dragDataSourceToFolder = (dataSourceName, folderName) => {
+/** Drags a data source onto a folder row. */
+export const dragDataSourceToFolder = (dataSourceName, folderName, { expectDragLabel } = {}) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({
     position: "center",
   });
-  // Clear the 8px activation threshold, then step onto the target. A single jump
-  // is not always tracked when the page is busy, which is what made this flake in
-  // a full-suite run while passing in isolation.
+  // Clear the 8px activation threshold, then step onto the target.
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseMove(0, 20);
   cy.get(dsFolder.folderRow(folderName)).realMouseMove(5, 5, {
     position: "center",
@@ -106,46 +84,40 @@ export const dragDataSourceToFolder = (dataSourceName, folderName) => {
     position: "center",
   });
 
-  // Release only once dnd-kit reports the folder as the active droppable. The
-  // wrapper (.datasource-folder) carries is-drop-over, not the row that holds the
-  // data-cy — without this gate the mouseup can land before the drop registers.
+  // Release only once dnd-kit reports the folder as the active droppable.
   cy.get(dsFolder.folderRow(folderName))
     .closest(".datasource-folder")
     .should("have.class", "is-drop-over");
 
-  // Wait for the membership call itself: a read straight after the drop can
-  // otherwise race the write. Resolves on any status, so refused drops work too.
+  // Assert the overlay label only after is-drop-over confirms the drag is active.
+  if (expectDragLabel) {
+    cy.get(dsFolder.dragOverlay).should("be.visible").and("have.text", expectDragLabel);
+  }
+
+  // Wait for the membership call so a later read cannot race the write.
   cy.intercept("POST", "/api/folder-data-sources*").as("dropIntoFolder");
   cy.get(dsFolder.folderRow(folderName)).realMouseUp({ position: "center" });
-  cy.wait("@dropIntoFolder");
+  // Returned so a caller can assert on this drop's request.
+  return cy.wait("@dropIntoFolder");
 };
 
-/**
- * Drags a data source out of its folder and onto the un-foldered ("stray") drop
- * zone, which is how the UI removes folder membership by gesture.
- * Same pointer-event requirement as dragDataSourceToFolder — see that comment.
- * The zone has no data-cy, so this is class-coupled.
- */
+/** Drags a data source out of its folder onto the un-foldered drop zone, the gesture that removes membership. */
 export const dragDataSourceToStrayList = (dataSourceName) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({ position: "center" });
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseMove(0, 20);
   cy.get(dsFolder.strayDropZone).realMouseMove(5, 5, { position: "center" });
   cy.get(dsFolder.strayDropZone).realMouseMove(0, 2, { position: "center" });
 
-  // Same release gate as dragDataSourceToFolder — DroppableZone puts is-drop-over
-  // straight onto the zone element here.
+  // Same release gate as dragDataSourceToFolder — DroppableZone puts is-drop-over straight onto the.
   cy.get(dsFolder.strayDropZone).should("have.class", "is-drop-over");
 
   cy.intercept("PUT", "/api/folder-data-sources/*").as("dropOutOfFolder");
   cy.get(dsFolder.strayDropZone).realMouseUp({ position: "center" });
-  cy.wait("@dropOutOfFolder");
+  // Returned for the same reason as dragDataSourceToFolder.
+  return cy.wait("@dropOutOfFolder");
 };
 
-/**
- * Builds a multi-selection. EVERY click must carry a modifier: the row handler is
- * `if (e.shiftKey || e.metaKey || e.ctrlKey) toggle() else clearSelection()`, so a
- * plain click on the first row clears the selection instead of starting one.
- */
+/** Builds a multi-selection. */
 export const multiSelectDataSources = (dataSourceNames = []) => {
   dataSourceNames.forEach((name) => {
     cy.get(dsFolder.dataSourceRow(name)).click({ shiftKey: true });
@@ -155,17 +127,7 @@ export const multiSelectDataSources = (dataSourceNames = []) => {
   });
 };
 
-/**
- * Opens the "Update folder" modal from a data source row's ⋮ menu.
- *
- * Two non-obvious constraints, both learned the hard way:
- *  1. ONLY data sources inside a folder have this menu. List/index.jsx never passes
- *     `menuOptions`, so `hasMenu` is false for stray rows and they render a plain
- *     delete button instead. Expand the folder first (uiEnsureFolderExpanded).
- *  2. The trigger is `.datasource-row-menu-trigger { display: none }`, revealed only
- *     by `.datasources-list:hover`. Without a real hover it is not clickable, so
- *     hover first and force the click.
- */
+/** Opens the "Update folder" modal from a data source row's ⋮ menu. */
 export const uiOpenMoveDataSourceModal = (dataSourceName) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realHover();
   cy.get(dsFolder.dataSourceMenuButton(dataSourceName)).click({ force: true });
@@ -174,11 +136,7 @@ export const uiOpenMoveDataSourceModal = (dataSourceName) => {
   });
 };
 
-/**
- * Expands a folder only if it is not already showing the given data source.
- * The folder row is a TOGGLE — blindly clicking an already-expanded folder
- * collapses it and every row inside disappears.
- */
+/** Expands a folder only if it is not already showing the given data source. */
 export const uiEnsureFolderExpanded = (folderName, dataSourceName) => {
   cy.get(dsFolder.folderRow(folderName)).should("exist");
   return cy.get("body").then(($body) => {
@@ -188,15 +146,11 @@ export const uiEnsureFolderExpanded = (folderName, dataSourceName) => {
   });
 };
 
-/** Raw toggle. Prefer uiEnsureFolderExpanded when you need it open. */
+/** Raw toggle. */
 export const uiExpandDataSourceFolder = (folderName) =>
   cy.get(dsFolder.folderRow(folderName)).click();
 
-/**
- * Starts a drag on a row, asserts the DragOverlay label, then cancels with Escape
- * so no membership request is sent. Same real-pointer requirement as
- * dragDataSourceToFolder.
- */
+/** Starts a drag, asserts the DragOverlay label, then cancels with Escape so no membership request is sent. */
 export const uiVerifyDragPreview = (dataSourceName, expectedLabel) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({ position: "center" });
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseMove(0, 20);
@@ -207,24 +161,18 @@ export const uiVerifyDragPreview = (dataSourceName, expectedLabel) => {
   cy.get(dsFolder.dragOverlay).should("not.exist");
 };
 
-// ---------------------------------------------------------------------------
-// Query run restriction
-// ---------------------------------------------------------------------------
+// --------------------------------------------------------------------------- Query run restriction.
 
 export const QUERY_RUN_BLOCKED_MESSAGE =
   "You do not have permission to run queries on this data source";
 
-/**
- * A blocked run is NOT an HTTP error: the run endpoint answers 201 and carries the
- * refusal in the body (status "failed" + nested 403). Assert on the body.
- */
+/** A blocked run is NOT an HTTP error: */
 export const verifyQueryRunBlocked = (body) => {
   expect(body.status, "query run status").to.equal("failed");
   expect(body.data?.responseObject?.responseBody).to.equal(QUERY_RUN_BLOCKED_MESSAGE);
 };
 
-// Only the permission gate is under test — the dummy URL's own reachability is
-// not, so "allowed" means "not refused by the restriction".
+// Only the permission gate is under test — the dummy URL's own reachability is not, so "allowed".
 export const verifyQueryRunAllowed = (body) => {
   const refusal = body.data?.responseObject?.responseBody;
   expect(refusal, "query run is not refused by the restriction").to.not.equal(
@@ -244,10 +192,7 @@ const restApiQueryOptions = (runOnPageLoad = false) => ({
   runOnPageLoad,
 });
 
-/**
- * App with one REST API query on the given data source, left in the editor.
- * Yields { appId, versionId }.
- */
+/** App with one REST API query on the given data source, left in the editor. */
 export const apiCreateAppWithQuery = (appName, dataSourceId, queryName, runOnPageLoad = false) => {
   let appId, versionId;
   return cy
@@ -265,11 +210,7 @@ export const apiCreateAppWithQuery = (appName, dataSourceId, queryName, runOnPag
     .then(() => ({ appId, versionId }));
 };
 
-/**
- * Same app, saved → promoted to production → released under `slug`, with the
- * query set to run on page load so opening the released app fires it.
- * Release requires a saved (non-draft) version promoted to production.
- */
+/** Same app, saved then promoted to production and released under `slug`, with its query set to run on page load. */
 export const apiCreateReleasedAppWithQuery = (appName, slug, dataSourceId, queryName) =>
   apiCreateAppWithQuery(appName, dataSourceId, queryName, true).then(({ appId, versionId }) => {
     cy.apiSaveAppVersion(appId, versionId, "v1");
@@ -295,9 +236,7 @@ export const visitReleasedAppAndCaptureQueryRun = (slug) => {
   return cy.wait("@releasedQueryRun").its("response.body");
 };
 
-// ---------------------------------------------------------------------------
-// Groups → Granular access → Data source folders
-// ---------------------------------------------------------------------------
+// --------------------------------------------------------------------------- Groups → Granular.
 
 export const openGroupGranularAccess = (groupName) => {
   cy.visit(`/${Cypress.env("workspaceSlug")}/workspace-settings/groups`);
@@ -323,10 +262,7 @@ export const uiSelectGrantFolders = (folderNames = []) => {
   cy.get(dsFolderPerm.sharedModalPermissionNameInput).click();
 };
 
-/**
- * Adds a user to a group from its Users tab. The option row's text is not
- * clickable — MultiSelectUser only reacts to the (visually hidden) checkbox.
- */
+/** Adds a user to a group from its Users tab. */
 export const uiAddUserToGroup = (email) => {
   cy.get(groupsSelector.usersLink).click();
   cy.clearAndType(groupsSelector.multiSelectSearchInput, email);

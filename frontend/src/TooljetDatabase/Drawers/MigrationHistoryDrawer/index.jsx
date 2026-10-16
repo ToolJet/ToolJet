@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { capitalize } from 'lodash';
 import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
 import { tooljetDatabaseService } from '@/_services';
@@ -12,8 +13,14 @@ import SqlEditor from '../../_components/SqlEditor';
 import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
 import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
-import { isMultiEnvLicenseInvalid } from '@/_helpers/multiEnvLicense';
-import { envHasRelation, findHeadMigrationId, formatMigrationNumber, TABLE_ABSENT_TOOLTIP } from '../../constants';
+import { isMultiEnvLicenseInvalid, getMultiEnvLicenseLockMessage } from '@/_helpers/multiEnvLicense';
+import {
+  envHasRelation,
+  findHeadMigrationId,
+  formatMigrationNumber,
+  isEnvironmentLocked,
+  TABLE_ABSENT_TOOLTIP,
+} from '../../constants';
 import './styles.scss';
 
 const TAB_LABELS = ['Development', 'Staging', 'Production'];
@@ -94,7 +101,7 @@ const MigrationHistoryDrawer = ({
   // Promote replays migrations through the sibling relation in the target environment;
   // without a multi-environment license the backend rejects it (403), so pre-gate here
   // instead of surfacing an error toast after the click.
-  const canPromote = activeTab < allEnvironments.length - 1 && nextEnv && nextEnvBehind && !multiEnvLocked;
+  const canPromote = nextEnv && nextEnvBehind && !isEnvironmentLocked(nextEnv, multiEnvLocked);
 
   const handleClose = () => {
     setExpandedMigrationId(null);
@@ -131,12 +138,12 @@ const MigrationHistoryDrawer = ({
 
         <div className="migration-history-drawer__tabs">
           {TAB_LABELS.map((label, index) => {
-            // licensed folds the environment list (license-filtered server-side when fresh)
-            // with the live license verdict, so a stale list after expiry/downgrade still
-            // renders the plan tooltip instead of a misleading "table does not exist".
-            const licensed = index < allEnvironments.length && !multiEnvLocked;
-            const hasRelation = licensed && envHasRelation(relationsByEnvironment, allEnvironments[index].id);
-            const available = licensed && hasRelation;
+            // locked folds the list's `enabled` flag with the live license verdict, so a stale list
+            // after expiry/downgrade still renders the plan tooltip instead of a misleading "table
+            // does not exist". Development is never locked.
+            const environment = allEnvironments[index];
+            const locked = !environment || isEnvironmentLocked(environment, multiEnvLocked);
+            const available = !locked && envHasRelation(relationsByEnvironment, environment.id);
             const tab = (
               <button
                 key={label}
@@ -145,10 +152,11 @@ const MigrationHistoryDrawer = ({
                 onClick={() => available && setActiveTab(index)}
               >
                 {label}
+                {locked && <SolidIcon className="migration-history-drawer__tab-upgrade-icon" name="enterprisesmall" />}
               </button>
             );
             if (available) return tab;
-            const tooltipMessage = licensed ? TABLE_ABSENT_TOOLTIP : "Your plan doesn't support multiple environments";
+            const tooltipMessage = locked ? getMultiEnvLicenseLockMessage(featureAccess) : TABLE_ABSENT_TOOLTIP;
             return (
               <ToolTip key={label} message={tooltipMessage} placement="top">
                 <div>{tab}</div>
@@ -180,6 +188,9 @@ const MigrationHistoryDrawer = ({
                     )}
                   </div>
                   {migration.name && <div className="migration-history-drawer__row-name">{migration.name}</div>}
+                  {migration.description && (
+                    <div className="migration-history-drawer__row-description">{migration.description}</div>
+                  )}
                   <div className="migration-history-drawer__row-timestamp">
                     {formatTimestamp(migration.createdAt ?? migration.created_at)}
                   </div>
@@ -281,6 +292,8 @@ const PromotePreviewView = ({
       setIsRunning(false);
       if (error) {
         toast.error(error?.message || `Could not run migrations in ${environment.name}`, { position: 'top-center' });
+        refetchMigrations();
+        refetchTables?.();
         return;
       }
       toast.success(`Migrations applied to ${environment.name}`, { position: 'top-center' });

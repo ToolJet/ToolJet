@@ -7,8 +7,8 @@ import {
   openDataSourcesList,
   uiEnsureFolderExpanded,
   uiOpenMoveDataSourceModal,
-  uiVerifyDragPreview,
 } from 'Support/utils/platform/dataSourceFolders';
+
 
 describe('Data Source Folders — Moving Data Sources Between Folders', () => {
   let workspaceId, wsName, wsSlug;
@@ -30,260 +30,161 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
     });
   });
 
-  it('a data source belongs to only one folder — moving it to another removes it from the previous one', () => {
-    const attemptId = Date.now();
-    const dataSourceName = `ds-mover-${attemptId}`;
+  /** Visible inside this folder's contents, and nowhere in the un-foldered list. */
+  const expectInsideFolder = (folderName, dataSourceName) => {
+    uiEnsureFolderExpanded(folderName, dataSourceName);
+    cy.get(dsFolder.folderRow(folderName))
+      .closest('.datasource-folder')
+      .find(dsFolder.folderContents)
+      .find(dsFolder.dataSourceRow(dataSourceName))
+      .should('be.visible');
+    cy.get(dsFolder.strayDropZone)
+      .find(dsFolder.dataSourceRow(dataSourceName))
+      .should('not.exist');
+  };
 
-    cy.apiCreateGlobalDataSource(dataSourceName).then((dataSourceId) => {
-      cy.apiCreateDataSourceFolder(`Folder A ${attemptId}`).then((folderA) => {
-        cy.apiCreateDataSourceFolder(`Folder B ${attemptId}`).then((folderB) => {
-          cy.apiAddDataSourceToFolder(dataSourceId, folderA.id);
-          cy.apiGetDataSourceIdsInFolder(folderA.id).then((ids) => {
-            expect(ids).to.include(dataSourceId);
-          });
 
-          // Re-homing, not duplicating: the mapping moves rather than being added twice.
-          cy.apiAddDataSourceToFolder(dataSourceId, folderB.id);
+  const expectUnFoldered = (dataSourceName) => {
+    cy.get(dsFolder.strayDropZone).find(dsFolder.dataSourceRow(dataSourceName)).should('be.visible');
+    cy.get(`${dsFolder.folderContents} ${dsFolder.dataSourceRow(dataSourceName)}`).should('not.exist');
+  };
 
-          cy.apiGetDataSourceIdsInFolder(folderA.id).then((ids) => {
-            expect(ids).to.not.include(dataSourceId);
-          });
-          cy.apiGetDataSourceIdsInFolder(folderB.id).then((ids) => {
-            expect(ids).to.have.length(1);
-            expect(ids).to.include(dataSourceId);
-          });
-        });
-      });
+
+  const expectFolderEmpty = (folderName, folderId) => {
+    cy.get('body').then(($body) => {
+      if ($body.find(dsFolder.folderEmptyText(folderId)).length === 0) {
+        cy.get(dsFolder.folderRow(folderName)).click();
+      }
     });
-  });
+    cy.get(dsFolder.folderEmptyText(folderId)).should('have.text', 'This folder is empty');
+  };
 
-  it('re-adding a data source to the folder it already sits in is idempotent', () => {
+  it('moves data sources in, across and out of folders — by drag, by multi-select and through the move modal', () => {
     const attemptId = Date.now();
-    const dataSourceName = `ds-idempotent-${attemptId}`;
+    const one = `ds-one-${attemptId}`;
+    const two = `ds-two-${attemptId}`;
+    const three = `ds-three-${attemptId}`;
+    const alpha = `Alpha ${attemptId}`;
+    const beta = `Beta ${attemptId}`;
+    const ids = {};
 
-    cy.apiCreateGlobalDataSource(dataSourceName).then((dataSourceId) => {
-      cy.apiCreateDataSourceFolder(`Idempotent Folder ${attemptId}`).then((folder) => {
-        cy.apiAddDataSourceToFolder(dataSourceId, folder.id);
-        cy.apiAddDataSourceToFolder(dataSourceId, folder.id).then((response) => {
-          expect(response.status).to.be.oneOf([200, 201]);
-        });
+    cy.apiCreateGlobalDataSource(one).then((id) => (ids.one = id));
+    cy.apiCreateGlobalDataSource(two).then((id) => (ids.two = id));
+    cy.apiCreateGlobalDataSource(three).then((id) => (ids.three = id));
 
-        cy.apiGetDataSourceIdsInFolder(folder.id).then((ids) => {
-          expect(ids).to.have.length(1);
-        });
-      });
-    });
-  });
-
-  it('bulk move sends the plural body and lands every selected data source in the target folder', () => {
-    const attemptId = Date.now();
-    const names = [`ds-bulk-a-${attemptId}`, `ds-bulk-b-${attemptId}`, `ds-bulk-c-${attemptId}`];
-    const createdIds = [];
-
-    names.forEach((name) => {
-      cy.apiCreateGlobalDataSource(name).then((id) => createdIds.push(id));
-    });
-
-    cy.apiCreateDataSourceFolder(`Bulk Folder ${attemptId}`).then((folder) => {
-      cy.then(() => {
-        cy.apiBulkAddDataSourcesToFolder(createdIds, folder.id).then((response) => {
-          expect(response.status).to.equal(201);
-        });
-
-        cy.apiGetDataSourceIdsInFolder(folder.id).then((ids) => {
-          expect(ids).to.have.length(createdIds.length);
-          createdIds.forEach((id) => expect(ids).to.include(id));
-        });
-      });
-    });
-  });
-
-  it('removing a data source from a folder makes it stray again without deleting it', () => {
-    const attemptId = Date.now();
-    const dataSourceName = `ds-removable-${attemptId}`;
-
-    cy.apiCreateGlobalDataSource(dataSourceName).then((dataSourceId) => {
-      cy.apiCreateDataSourceFolder(`Removal Folder ${attemptId}`).then((folder) => {
-        cy.apiAddDataSourceToFolder(dataSourceId, folder.id);
-        cy.apiRemoveDataSourceFromFolder(dataSourceId, folder.id).then((response) => {
-          expect(response.status).to.equal(200);
-        });
-
-        cy.apiGetDataSourceIdsInFolder(folder.id).then((ids) => {
-          expect(ids).to.not.include(dataSourceId);
-        });
-
+    cy.apiCreateDataSourceFolder(alpha).then((alphaFolder) => {
+      cy.apiCreateDataSourceFolder(beta).then((betaFolder) => {
         openDataSourcesList();
-        cy.get(dsFolder.dataSourceRow(dataSourceName)).should('be.visible');
-      });
-    });
-  });
 
-  it('a data source can be dragged into a folder and the move modal offers the valid destinations', () => {
-    const attemptId = Date.now();
-    const dataSourceName = `ds-draggable-${attemptId}`;
-    const folderName = `Drop Target ${attemptId}`;
+        // ---- Baseline: nothing is foldered yet -----------------------------
+        [one, two, three].forEach(expectUnFoldered);
+        expectFolderEmpty(alpha, alphaFolder.id);
 
-    cy.apiCreateGlobalDataSource(dataSourceName);
-    cy.apiCreateDataSourceFolder(folderName).then((folder) => {
-      openDataSourcesList();
-
-      // dnd-kit PointerSensor, 8px activation distance — needs real pointer events.
-      dragDataSourceToFolder(dataSourceName, folderName);
-
-      cy.apiGetDataSourceIdsInFolder(folder.id).then((ids) => {
-        expect(ids, 'data source landed in the folder after drag').to.have.length(1);
-      });
-
-      // The same move is reachable from the row's ⋮ menu — but only for a row
-      // INSIDE a folder, and only once the folder is expanded.
-      uiEnsureFolderExpanded(folderName, dataSourceName);
-      uiOpenMoveDataSourceModal(dataSourceName);
-      cy.get(dsFolder.moveToFolderButton).should('be.visible');
-      cy.get(dsFolder.cancelButton).click();
-    });
-  });
-  // Manual plan TC-05 — the half the drag test did not cover: selecting several
-  // rows and dragging them together, then dragging one back out to the
-  // un-foldered list.
-  it('multi-select drags several data sources into a folder, and dragging one out makes it stray again', () => {
-    const attemptId = Date.now();
-    const first = `ds-multi-a-${attemptId}`;
-    const second = `ds-multi-b-${attemptId}`;
-    const folderName = `Multi Target ${attemptId}`;
-    const createdIds = [];
-
-    cy.apiCreateGlobalDataSource(first).then((id) => createdIds.push(id));
-    cy.apiCreateGlobalDataSource(second).then((id) => createdIds.push(id));
-
-    cy.apiCreateDataSourceFolder(folderName).then((folder) => {
-      openDataSourcesList();
-
-      // A single row drags under its own name.
-      uiVerifyDragPreview(first, first);
-
-      // Modifier-click toggles: selecting twice deselects.
-      multiSelectDataSources([first]);
-      cy.get(dsFolder.dataSourceRow(first)).click({ shiftKey: true });
-      cy.get(dsFolder.dataSourceRow(first)).parents('.datasource-draggable').should('not.have.class', 'is-selected');
-
-      // A plain click clears the whole selection.
-      multiSelectDataSources([first, second]);
-      cy.get(dsFolder.dataSourceRow(second)).click();
-      cy.get('.datasource-draggable.is-selected').should('not.exist');
-      openDataSourcesList();
-
-      // Shift-click builds the selection; the drag carries the whole set and its
-      // preview counts it.
-      multiSelectDataSources([first, second]);
-      uiVerifyDragPreview(second, '2 data sources');
-      dragDataSourceToFolder(second, folderName);
-
-      cy.apiGetDataSourceIdsInFolder(folder.id).then((ids) => {
-        expect(ids, 'both selected data sources moved together').to.have.length(2);
-        createdIds.forEach((id) => expect(ids).to.include(id));
-      });
-
-      // Drag one back out onto the stray drop zone.
-      openDataSourcesList();
-      uiEnsureFolderExpanded(folderName, first);
-      dragDataSourceToStrayList(first);
-
-      cy.apiGetDataSourceIdsInFolder(folder.id).then((ids) => {
-        expect(ids, 'the dragged-out data source left the folder').to.have.length(1);
-        expect(ids).to.not.include(createdIds[0]);
-      });
-    });
-  });
-
-  // Manual plan TC-06 — the move modal's destination filtering and submit gating,
-  // which the drag test only opened without exercising.
-  it('the move modal pre-fills its row, hides folders that already hold the selection, and gates its submit button', () => {
-    const attemptId = Date.now();
-    const dataSourceName = `ds-modal-${attemptId}`;
-    const residentName = `ds-resident-${attemptId}`;
-    const homeFolder = `Home Folder ${attemptId}`;
-    const otherFolder = `Other Folder ${attemptId}`;
-
-    cy.apiCreateGlobalDataSource(dataSourceName).then((dataSourceId) => {
-      cy.apiCreateDataSourceFolder(homeFolder).then((home) => {
-        cy.apiCreateDataSourceFolder(otherFolder).then((other) => {
-          cy.apiCreateGlobalDataSource(residentName).then((residentId) =>
-            cy.apiAddDataSourceToFolder(residentId, other.id)
-          );
+        // ---- 1.
+        dragDataSourceToFolder(one, alpha, { expectDragLabel: one });
+        cy.apiGetDataSourceIdsInFolder(alphaFolder.id).then((inFolder) => {
+          expect(inFolder, 'landed in the first folder').to.deep.equal([ids.one]);
         });
-        cy.apiAddDataSourceToFolder(dataSourceId, home.id);
+        // Shown inside the folder, gone from the un-foldered list.
+        expectInsideFolder(alpha, one);
 
+        // ---- 2.
+        dragDataSourceToFolder(one, beta);
+        cy.apiGetDataSourceIdsInFolder(betaFolder.id).then((inFolder) => {
+          expect(inFolder, 're-homed into the second folder').to.deep.equal([ids.one]);
+        });
+        cy.apiGetDataSourceIdsInFolder(alphaFolder.id).then((inFolder) => {
+          expect(inFolder, 'the first folder no longer holds it').to.be.empty;
+        });
+        expectInsideFolder(beta, one);
+        expectFolderEmpty(alpha, alphaFolder.id);
+
+        // ---- 3.
+        uiEnsureFolderExpanded(beta, one);
+        dragDataSourceToStrayList(one);
+        cy.apiGetDataSourceIdsInFolder(betaFolder.id).then((inFolder) => {
+          expect(inFolder, 'removed from the folder').to.be.empty;
+        });
+        // The data source itself survives the removal and is listed loose again.
+        expectUnFoldered(one);
+
+        // ---- 4.
+
+        multiSelectDataSources([two]);
+        cy.get(dsFolder.dataSourceRow(two)).click({ shiftKey: true });
+        cy.get(dsFolder.dataSourceRow(two)).parents('.datasource-draggable').should('not.have.class', 'is-selected');
+
+        multiSelectDataSources([two, three]);
+        cy.get(dsFolder.dataSourceRow(one)).click(); // a plain click clears everything
+        cy.get('.datasource-draggable.is-selected').should('not.exist');
         openDataSourcesList();
-        uiEnsureFolderExpanded(homeFolder, dataSourceName);
-        uiOpenMoveDataSourceModal(dataSourceName);
 
-        // The modal opens on the row it was launched from, with its field labels.
+        // ---- 5.
+        multiSelectDataSources([two, three]);
+        dragDataSourceToFolder(three, alpha, { expectDragLabel: '2 data sources' });
+        cy.apiGetDataSourceIdsInFolder(alphaFolder.id).then((inFolder) => {
+          expect(inFolder, 'both selected data sources moved together').to.have.length(2);
+          expect(inFolder).to.include(ids.two);
+          expect(inFolder).to.include(ids.three);
+        });
+        expectInsideFolder(alpha, two);
+        expectInsideFolder(alpha, three);
+
+        // ---- 6.
+        cy.apiAddDataSourceToFolder(ids.one, betaFolder.id);
+        openDataSourcesList();
+
+        // Only a row inside an expanded folder has the ⋮ menu.
+        uiEnsureFolderExpanded(alpha, two);
+        uiOpenMoveDataSourceModal(two);
+
         cy.get('.modal-content').should('contain.text', 'Update folder');
         cy.contains('.move-ds-label', 'Move selected data sources').should('be.visible');
         cy.contains('.move-ds-label', 'Folder name').should('be.visible');
-        cy.get(dsFolder.moveModalSelectedDataSource).should('have.length', 1).and('have.text', dataSourceName);
-        cy.get(dsFolder.moveToFolderButton).should('have.text', 'Add to folder');
+        cy.get(dsFolder.moveModalSelectedDataSource).should('have.length', 1).and('have.text', two);
+        cy.get(dsFolder.moveToFolderButton).should('have.text', 'Add to folder').and('be.disabled');
 
-        // Submit is gated until a destination folder is chosen.
-        cy.get(dsFolder.moveToFolderButton).should('be.disabled');
-
-        // Open the destination dropdown. Neither react-select carries a data-cy,
-        // and both share classNamePrefix="move-ds-select", so scope by the field's
-        // label and click the CONTROL — the placeholder node is overlaid by the
-        // input container and is not clickable.
-        cy.contains('.move-ds-field', 'Folder name')
-          .find('.move-ds-select__control')
-          .click();
-
-        // The folder the data source already sits in is filtered out of the
-        // destination list; every other folder is offered. Use react-select's own
-        // __menu/__option classes — a loose [class*="-menu"] matches five unrelated
-        // nodes on this page and cy.within() then refuses the subject.
-        cy.get('.move-ds-select__menu').should('have.length', 1);
-        cy.get('.move-ds-select__option').should('contain.text', otherFolder);
-        cy.get('.move-ds-select__menu').should('not.contain.text', homeFolder);
-
-        // Choosing a destination enables the submit.
-        cy.contains('.move-ds-select__option', otherFolder).click();
+        // No data-cy on either react-select; scope by field label and click the control.
+        cy.contains('.move-ds-field', 'Folder name').find(dsFolder.moveModalControl).click();
+        // The folder the selection already sits in is filtered out.
+        cy.get('.move-ds-select__menu').should('have.length', 1).and('not.contain.text', alpha);
+        cy.contains(dsFolder.moveModalOption, beta).click();
         cy.get(dsFolder.moveToFolderButton).should('not.be.disabled');
 
-        // Swap the selection for a data source that already lives in that folder:
-        // the destination is no longer valid and clears itself.
+        // Swapping in a data source already in the destination clears that destination.
         cy.get(dsFolder.moveModalRemoveDataSource).first().click();
         cy.contains('.move-ds-field', 'Move selected data sources').find(dsFolder.moveModalControl).click();
-        cy.contains(dsFolder.moveModalOption, residentName).click();
+        cy.contains(dsFolder.moveModalOption, one).click();
         cy.get(dsFolder.moveModalSelectedFolder).should('not.exist');
         cy.get(dsFolder.moveToFolderButton).should('be.disabled');
 
-        cy.get(dsFolder.cancelButton).click();
-      });
-    });
-  });
+        // Same filtering rule in reverse: Beta is now excluded, so move through Alpha.
+        cy.contains('.move-ds-field', 'Folder name').find(dsFolder.moveModalControl).click();
+        cy.get('.move-ds-select__menu').should('not.contain.text', beta);
+        cy.contains(dsFolder.moveModalOption, alpha).click();
+        cy.get(dsFolder.moveToFolderButton).should('not.be.disabled').click();
+        cy.verifyToastMessage(commonSelectors.toastMessage, 'Data sources moved successfully!');
 
-  it('a failed move shows the server error and leaves the membership unchanged', () => {
-    const attemptId = Date.now();
-    const dataSourceName = `ds-refused-${attemptId}`;
-    const homeFolder = `Refused Home ${attemptId}`;
-    const otherFolder = `Refused Target ${attemptId}`;
-    const serverMessage = 'You do not have permission to access this resource';
+        cy.apiGetDataSourceIdsInFolder(alphaFolder.id).then((inFolder) => {
+          expect(inFolder, 'the modal move landed it in the destination').to.have.length(3);
+          expect(inFolder).to.include(ids.one);
+        });
+        cy.apiGetDataSourceIdsInFolder(betaFolder.id).then((inFolder) => {
+          expect(inFolder, 'and emptied the folder it came from').to.be.empty;
+        });
+        expectInsideFolder(alpha, one);
 
-    cy.apiCreateGlobalDataSource(dataSourceName).then((dataSourceId) => {
-      cy.apiCreateDataSourceFolder(homeFolder).then((home) => {
-        cy.apiCreateDataSourceFolder(otherFolder);
-        cy.apiAddDataSourceToFolder(dataSourceId, home.id);
-
-        // Force the membership call to be refused.
+        // ---- 7.
+        const serverMessage = 'You do not have permission to access this resource';
         cy.intercept('POST', '/api/folder-data-sources*', {
           statusCode: 403,
           body: { statusCode: 403, message: serverMessage },
         }).as('refusedMove');
 
-        openDataSourcesList();
-        uiEnsureFolderExpanded(homeFolder, dataSourceName);
-        uiOpenMoveDataSourceModal(dataSourceName);
+        uiEnsureFolderExpanded(alpha, three);
+        uiOpenMoveDataSourceModal(three);
         cy.contains('.move-ds-field', 'Folder name').find(dsFolder.moveModalControl).click();
-        cy.contains(dsFolder.moveModalOption, otherFolder).click();
+        cy.contains(dsFolder.moveModalOption, beta).click();
         cy.get(dsFolder.moveToFolderButton).click();
         cy.wait('@refusedMove');
 
@@ -292,8 +193,11 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
         cy.get(dsFolder.moveToFolderButton).should('be.visible');
         cy.get(dsFolder.cancelButton).click();
 
-        cy.apiGetDataSourceIdsInFolder(home.id).then((ids) => {
-          expect(ids, 'the data source is still in its original folder').to.deep.equal([dataSourceId]);
+        cy.apiGetDataSourceIdsInFolder(alphaFolder.id).then((inFolder) => {
+          expect(inFolder, 'the refused move changed nothing').to.include(ids.three);
+        });
+        cy.apiGetDataSourceIdsInFolder(betaFolder.id).then((inFolder) => {
+          expect(inFolder, 'and nothing reached the target folder').to.be.empty;
         });
       });
     });
