@@ -1,0 +1,1378 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Anakin datasource",
+  "description": "A schema defining Anakin operations",
+  "type": "api",
+  "defaults": {
+    "operation": "scrape_url"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "scrape_url",
+          "name": "Extract Website Data"
+        },
+        {
+          "value": "get_scrape_result",
+          "name": "Get Scrape Result"
+        },
+        {
+          "value": "map",
+          "name": "Map a Site"
+        },
+        {
+          "value": "get_map_result",
+          "name": "Get Map Result"
+        },
+        {
+          "value": "crawl",
+          "name": "Crawl a Site"
+        },
+        {
+          "value": "get_crawl_result",
+          "name": "Get Crawl Result"
+        },
+        {
+          "value": "search",
+          "name": "Perform AI Search"
+        },
+        {
+          "value": "agentic_search",
+          "name": "Start Agentic Search"
+        },
+        {
+          "value": "get_agentic_search_result",
+          "name": "Get Agentic Search Result"
+        },
+        {
+          "value": "wire_discover",
+          "name": "Discover Wire Actions"
+        },
+        {
+          "value": "wire_catalog",
+          "name": "Browse Wire Catalog"
+        },
+        {
+          "value": "wire_read_action",
+          "name": "Run Wire Read Action"
+        },
+        {
+          "value": "wire_write_action",
+          "name": "Run Wire Write Action"
+        },
+        {
+          "value": "get_wire_job_result",
+          "name": "Get Wire Job Result"
+        },
+        {
+          "value": "wire_identities",
+          "name": "List Wire Identities"
+        },
+        {
+          "value": "wire_login",
+          "name": "Sign In To Wire Site"
+        },
+        {
+          "value": "wire_build",
+          "name": "Build A New Wire Action"
+        },
+        {
+          "value": "wire_build_status",
+          "name": "Check Wire Build Status"
+        },
+        {
+          "value": "monitor_create",
+          "name": "Create Website Monitor"
+        },
+        {
+          "value": "monitor_list",
+          "name": "List Website Monitors"
+        },
+        {
+          "value": "monitor_changes",
+          "name": "Get Monitor Changes"
+        },
+        {
+          "value": "monitor_control",
+          "name": "Control Website Monitor"
+        },
+        {
+          "value": "ai_visibility_search",
+          "name": "Start AI Visibility Search"
+        },
+        {
+          "value": "get_ai_visibility_result",
+          "name": "Get AI Visibility Result"
+        },
+        {
+          "value": "ai_visibility_sources",
+          "name": "List AI Visibility Sources"
+        },
+        {
+          "value": "session_list",
+          "name": "List Browser Sessions"
+        },
+        {
+          "value": "session_delete",
+          "name": "Delete Browser Session"
+        },
+        {
+          "value": "browser_task",
+          "name": "Run Browser Task"
+        },
+        {
+          "value": "get_browser_task_result",
+          "name": "Get Browser Task Result"
+        }
+      ]
+    },
+    "scrape_url": {
+      "url": {
+        "label": "URL",
+        "key": "url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The full URL of the website to extract data from",
+        "placeholder": "{{'https://example.com'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "generate_json": {
+        "label": "Generate JSON",
+        "key": "generate_json",
+        "type": "toggle",
+        "description": "AI-extract structured JSON from the page content"
+      },
+      "country": {
+        "label": "Country",
+        "key": "country",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Proxy country code, e.g. us, gb, de",
+        "placeholder": "{{'us'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "use_browser": {
+        "label": "Use Browser",
+        "key": "use_browser",
+        "type": "toggle",
+        "description": "Use a headless browser — best for JS-heavy sites"
+      },
+      "force_fresh": {
+        "label": "Force Fresh",
+        "key": "force_fresh",
+        "type": "toggle",
+        "description": "Bypass the cache and force a fresh extraction"
+      },
+      "session_id": {
+        "label": "Session ID",
+        "key": "session_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Saved browser session ID for login-protected pages. Pair with Use Browser.",
+        "placeholder": "{{'sess_123'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "session_name": {
+        "label": "Session Name",
+        "key": "session_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Saved browser session name (alternative to Session ID)",
+        "placeholder": "{{'my-login'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "get_scrape_result": {
+      "job_id": {
+        "label": "Job ID",
+        "key": "job_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The jobId returned by Extract Website Data",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "map": {
+      "url": {
+        "label": "URL",
+        "key": "url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The starting URL for discovery (typically a homepage or section root)",
+        "placeholder": "{{'https://example.com'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Maximum number of URLs to return overall (default 100, max 1000)",
+        "placeholder": "100",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "depth": {
+        "label": "Depth",
+        "key": "depth",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "How many link-hops from the starting URL to follow (default 2, max 5)",
+        "placeholder": "2",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "limit_per_level": {
+        "label": "Limit Per Level",
+        "key": "limit_per_level",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Maximum URLs collected per depth level (default 100)",
+        "placeholder": "100",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "include_subdomains": {
+        "label": "Include Subdomains",
+        "key": "include_subdomains",
+        "type": "toggle",
+        "description": "Include URLs on subdomains of the starting host"
+      },
+      "include_external_links": {
+        "label": "Include External Links",
+        "key": "include_external_links",
+        "type": "toggle",
+        "description": "Also collect (but do not follow) external links"
+      },
+      "use_browser": {
+        "label": "Use Browser",
+        "key": "use_browser",
+        "type": "toggle",
+        "description": "Render with a headless browser (for SPAs)"
+      },
+      "search": {
+        "label": "Search Filter",
+        "key": "search",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional keyword filter — only return URLs whose path/title matches",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "get_map_result": {
+      "job_id": {
+        "label": "Job ID",
+        "key": "job_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The jobId returned by Map a Site",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "crawl": {
+      "url": {
+        "label": "URL",
+        "key": "url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Starting URL",
+        "placeholder": "{{'https://example.com'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "max_pages": {
+        "label": "Max Pages",
+        "key": "max_pages",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Hard cap on pages fetched (default 10, max 500)",
+        "placeholder": "10",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "depth": {
+        "label": "Depth",
+        "key": "depth",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Link-hops from the starting URL to follow (default 1, max 5)",
+        "placeholder": "1",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "country": {
+        "label": "Country",
+        "key": "country",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Two-letter proxy egress country code",
+        "placeholder": "{{'us'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "use_browser": {
+        "label": "Use Browser",
+        "key": "use_browser",
+        "type": "toggle",
+        "description": "Render each page in a headless browser (for SPAs)"
+      },
+      "include_patterns": {
+        "label": "Include Patterns",
+        "key": "include_patterns",
+        "type": "codehinter",
+        "description": "Glob/regex patterns — only URLs matching at least one pattern are fetched",
+        "placeholder": "{{['/blog/*']}}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "exclude_patterns": {
+        "label": "Exclude Patterns",
+        "key": "exclude_patterns",
+        "type": "codehinter",
+        "description": "Glob/regex patterns — URLs matching any pattern are skipped",
+        "placeholder": "{{['/admin/*']}}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "session_id": {
+        "label": "Session ID",
+        "key": "session_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional saved-browser-session ID for login-protected sites",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "session_name": {
+        "label": "Session Name",
+        "key": "session_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional saved-browser-session name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "get_crawl_result": {
+      "job_id": {
+        "label": "Job ID",
+        "key": "job_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The jobId returned by Crawl a Site",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "search": {
+      "prompt": {
+        "label": "Search query",
+        "key": "prompt",
+        "type": "codehinter",
+        "description": "The search query or question",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "limit": {
+        "label": "Max results",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Maximum number of results to return (default 5, max 20)",
+        "placeholder": "5",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "agentic_search": {
+      "prompt": {
+        "label": "Research prompt",
+        "key": "prompt",
+        "type": "codehinter",
+        "description": "The research question or topic (max 8KB)",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "use_browser": {
+        "label": "Use Browser",
+        "key": "use_browser",
+        "type": "toggle",
+        "description": "Use a headless browser for citation scraping — matches the API default"
+      },
+      "schema": {
+        "label": "Result schema (JSON)",
+        "key": "schema",
+        "type": "codehinter",
+        "description": "Optional JSON Schema (max 50KB) for the structured output",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "get_agentic_search_result": {
+      "job_id": {
+        "label": "Job ID",
+        "key": "job_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The job_id returned by Start Agentic Search",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "wire_discover": {
+      "q": {
+        "label": "Intent",
+        "key": "q",
+        "type": "codehinter",
+        "description": "The intent in natural language, e.g. \"top phones on walmart\", \"search airbnb listings in Lisbon\"",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Maximum number of candidate actions to return (default 5)",
+        "placeholder": "5",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "wire_catalog": {
+      "slug": {
+        "label": "Catalog Slug",
+        "key": "slug",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Catalog slug to inspect (e.g. \"walmart\"). Omit to list all catalogs",
+        "placeholder": "{{'walmart'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "wire_read_action": {
+      "action_id": {
+        "label": "Action ID",
+        "key": "action_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The Wire action to run (from Discover Wire Actions / Browse Wire Catalog), e.g. \"walmart.search_products\"",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "params": {
+        "label": "Params",
+        "key": "params",
+        "type": "codehinter",
+        "description": "The action's input parameters — shape depends on the action, see its schema from discovery. Omit for actions that take none",
+        "placeholder": "{{ { query: 'wireless headphones' } }}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "credential_id": {
+        "label": "Credential ID",
+        "key": "credential_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Required when the action's auth_mode is \"required\"; honored when \"optional\". Get one from List Wire Identities or Sign In To Wire Site",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "identity_id": {
+        "label": "Identity ID",
+        "key": "identity_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional identity selector — the server resolves a credential from it (alternative to Credential ID)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "wire_write_action": {
+      "action_id": {
+        "label": "Action ID",
+        "key": "action_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The Wire action to run (from Discover Wire Actions / Browse Wire Catalog), e.g. \"amazon.add_to_cart\". Never a payment/checkout action — Anakin's API and this plugin both refuse those",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "params": {
+        "label": "Params",
+        "key": "params",
+        "type": "codehinter",
+        "description": "The action's input parameters — shape depends on the action, see its schema from discovery. Omit for actions that take none",
+        "placeholder": "{{ { product_id: '12345', quantity: 1 } }}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "credential_id": {
+        "label": "Credential ID",
+        "key": "credential_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Required when the action's auth_mode is \"required\"; honored when \"optional\". Get one from List Wire Identities or Sign In To Wire Site",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "identity_id": {
+        "label": "Identity ID",
+        "key": "identity_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional identity selector — the server resolves a credential from it (alternative to Credential ID)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "get_wire_job_result": {
+      "job_id": {
+        "label": "Job ID",
+        "key": "job_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The job_id returned by Run Wire Read Action / Run Wire Write Action (only present when the action ran asynchronously)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "wire_identities": {
+      "catalog_id": {
+        "label": "Catalog ID",
+        "key": "catalog_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional — restrict to identities for a single catalog",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "wire_login": {
+      "catalog_slug": {
+        "label": "Catalog Slug",
+        "key": "catalog_slug",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The catalog to sign in to (e.g. \"neb\")",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "params": {
+        "label": "Login Params",
+        "key": "params",
+        "type": "codehinter",
+        "description": "Login fields defined by the catalog (e.g. email/password). Use Browse Wire Catalog's login_input_schema to learn the field names",
+        "placeholder": "{{ { email: 'you@example.com', password: 'secret' } }}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "identity_name": {
+        "label": "Identity Name",
+        "key": "identity_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional name for the identity. Derived from params in password mode; required when using a 1Password locator",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "source_id": {
+        "label": "Source ID",
+        "key": "source_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional 1Password identity-source ID (alternative to Login Params)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "source_ref": {
+        "label": "Source Ref",
+        "key": "source_ref",
+        "type": "codehinter",
+        "description": "Optional 1Password item locator { vault_id, item_id, fields } (use with Source ID instead of Login Params)",
+        "placeholder": "{{ { vault_id: '...', item_id: '...' } }}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "wire_build": {
+      "website_url": {
+        "label": "Website URL",
+        "key": "website_url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The site to build an action for. The domain is extracted automatically",
+        "placeholder": "{{'https://example.com'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "goal": {
+        "label": "Goal",
+        "key": "goal",
+        "type": "codehinter",
+        "description": "Natural-language description of what the action should do or extract. Be specific — the builder synthesizes the scraper from this",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "catalog_id": {
+        "label": "Catalog ID",
+        "key": "catalog_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional — attach to an existing catalog instead of creating one",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "visibility": {
+        "label": "Visibility",
+        "key": "visibility",
+        "type": "dropdown",
+        "description": "Action visibility. Defaults to private",
+        "list": [
+          {
+            "value": "private",
+            "name": "Private"
+          },
+          {
+            "value": "public",
+            "name": "Public"
+          }
+        ]
+      },
+      "force": {
+        "label": "Force",
+        "key": "force",
+        "type": "toggle",
+        "description": "Build even if similar actions already exist for the domain (otherwise rejected with ACTION_EXISTS)"
+      },
+      "actions": {
+        "label": "Actions",
+        "key": "actions",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional list of discrete capabilities to build, each as its own action. Omit to let the builder infer them from the goal.",
+        "placeholder": "{{['search products', 'get product details']}}",
+        "width": "320px",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "country": {
+        "label": "Country",
+        "key": "country",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional 2-letter country code; the action is built and tested through an exit IP in that country",
+        "placeholder": "{{'US'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "wire_build_status": {
+      "id": {
+        "label": "Build Request ID",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Build request id from Build A New Wire Action's response. Leave empty to list your recent builds.",
+        "placeholder": "{{'br_123'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "status": {
+        "label": "Status Filter",
+        "key": "status",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "List mode only: filter by status, e.g. pending, processing, success, failed",
+        "placeholder": "{{'pending'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "List mode only: builds per page (1-100). Defaults to 10",
+        "placeholder": "10",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "page": {
+        "label": "Page",
+        "key": "page",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "List mode only: 1-based page number. Defaults to 1",
+        "placeholder": "1",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "include_events": {
+        "label": "Include Events",
+        "key": "include_events",
+        "type": "toggle",
+        "description": "Detail mode only: include the build's step-by-step event log"
+      }
+    },
+    "monitor_create": {
+      "url": {
+        "label": "URL",
+        "key": "url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The URL to watch (root URL for site scope; the Wire site's URL for wire scope)",
+        "placeholder": "{{'https://example.com'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "interval_minutes": {
+        "label": "Interval (minutes)",
+        "key": "interval_minutes",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Check frequency in minutes. Minimum 15",
+        "placeholder": "60",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "scope": {
+        "label": "Scope",
+        "key": "scope",
+        "type": "dropdown",
+        "description": "What to monitor: one page (default), a whole site, or a Wire action",
+        "list": [
+          {
+            "value": "page",
+            "name": "Page"
+          },
+          {
+            "value": "site",
+            "name": "Site"
+          },
+          {
+            "value": "wire",
+            "name": "Wire"
+          }
+        ]
+      },
+      "watch_mode": {
+        "label": "Watch Mode",
+        "key": "watch_mode",
+        "type": "dropdown",
+        "description": "Compare the whole page (default, 2 credits/check) or only the fields in Output Schema, extracted with AI (3 credits/check)",
+        "list": [
+          {
+            "value": "full_page",
+            "name": "Full Page"
+          },
+          {
+            "value": "specific_data",
+            "name": "Specific Data"
+          }
+        ]
+      },
+      "watch_format": {
+        "label": "Watch Format",
+        "key": "watch_format",
+        "type": "dropdown",
+        "description": "Format compared in full_page mode. Defaults to markdown",
+        "list": [
+          {
+            "value": "markdown",
+            "name": "Markdown"
+          },
+          {
+            "value": "html",
+            "name": "HTML"
+          },
+          {
+            "value": "cleaned_html",
+            "name": "Cleaned HTML"
+          }
+        ]
+      },
+      "output_schema": {
+        "label": "Output Schema",
+        "key": "output_schema",
+        "type": "codehinter",
+        "description": "JSON Schema of the fields to track. Required when Watch Mode is \"specific_data\"",
+        "placeholder": "{{ { type: 'object', properties: { price: { type: 'number' } } } }}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "ai_mode": {
+        "label": "AI Mode",
+        "key": "ai_mode",
+        "type": "toggle",
+        "description": "AI meaningful-change filtering: ignores trivial noise and summarizes real changes. +1 credit per check"
+      },
+      "ai_goal": {
+        "label": "AI Goal",
+        "key": "ai_goal",
+        "type": "codehinter",
+        "description": "Natural-language description of which changes count as meaningful (used with AI Mode), e.g. \"only when the price drops or it goes out of stock\"",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "use_browser": {
+        "label": "Use Browser",
+        "key": "use_browser",
+        "type": "toggle",
+        "description": "Render checks with a stealth headless browser (needed for JS-heavy pages). Forced true when Session ID is set"
+      },
+      "country": {
+        "label": "Country",
+        "key": "country",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Two-letter proxy country code. Defaults to \"us\"",
+        "placeholder": "{{'us'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "session_id": {
+        "label": "Session ID",
+        "key": "session_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Saved browser-session ID for monitoring login-protected pages (see List Browser Sessions)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "is_active": {
+        "label": "Active",
+        "key": "is_active",
+        "type": "toggle",
+        "description": "Start running immediately. Defaults to true"
+      },
+      "expires_at": {
+        "label": "Expires At",
+        "key": "expires_at",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional end date (ISO 8601 timestamp or YYYY-MM-DD); the monitor auto-pauses when it passes",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "alert_webhook_url": {
+        "label": "Alert Webhook URL",
+        "key": "alert_webhook_url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Webhook URL that receives signed change alerts",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "alert_emails": {
+        "label": "Alert Emails",
+        "key": "alert_emails",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Comma-separated email recipients for change alerts",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "max_pages": {
+        "label": "Max Pages",
+        "key": "max_pages",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Site scope: max pages crawled per run",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "max_depth": {
+        "label": "Max Depth",
+        "key": "max_depth",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Site scope: crawl depth (1–5). Defaults to 2",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "include_patterns": {
+        "label": "Include Patterns",
+        "key": "include_patterns",
+        "type": "codehinter",
+        "description": "Site scope: glob patterns or hand-picked same-site URLs to track",
+        "placeholder": "{{['/products/*']}}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "exclude_patterns": {
+        "label": "Exclude Patterns",
+        "key": "exclude_patterns",
+        "type": "codehinter",
+        "description": "Site scope: glob patterns to skip",
+        "placeholder": "{{['/admin/*']}}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "wire_action_id": {
+        "label": "Wire Action ID",
+        "key": "wire_action_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Wire scope (required there): the Wire action run each check, e.g. \"amazon.search_products\" (see Discover Wire Actions)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "wire_catalog_slug": {
+        "label": "Wire Catalog Slug",
+        "key": "wire_catalog_slug",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Wire scope: catalog slug of the Wire site",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "wire_credential_id": {
+        "label": "Wire Credential ID",
+        "key": "wire_credential_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Wire scope: credential ID when the action needs auth (see List Wire Identities)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "wire_params": {
+        "label": "Wire Params",
+        "key": "wire_params",
+        "type": "codehinter",
+        "description": "Wire scope: parameters passed to the action each check",
+        "placeholder": "{{ { query: 'wireless headphones' } }}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "wire_watch_paths": {
+        "label": "Wire Watch Paths",
+        "key": "wire_watch_paths",
+        "type": "codehinter",
+        "description": "Wire scope: JSON paths to diff instead of the whole response",
+        "placeholder": "{{['data.price']}}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "monitor_list": {
+      "id": {
+        "label": "Monitor ID",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional — fetch just this monitor instead of the full list",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "monitor_changes": {
+      "id": {
+        "label": "Monitor ID",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The monitor ID (from List Website Monitors or Create Website Monitor)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "monitor_control": {
+      "id": {
+        "label": "Monitor ID",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The monitor ID (from List Website Monitors or Create Website Monitor)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "action": {
+        "label": "Action",
+        "key": "action",
+        "type": "dropdown",
+        "description": "pause stops scheduled checks; resume restarts them; run_now triggers an immediate billed check; delete permanently removes the monitor and its history",
+        "list": [
+          {
+            "value": "pause",
+            "name": "Pause"
+          },
+          {
+            "value": "resume",
+            "name": "Resume"
+          },
+          {
+            "value": "run_now",
+            "name": "Run Now"
+          },
+          {
+            "value": "delete",
+            "name": "Delete"
+          }
+        ],
+        "mandatory": true
+      }
+    },
+    "ai_visibility_search": {
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "The question to ask every engine (max 2000 characters)",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "sources": {
+        "label": "Sources",
+        "key": "sources",
+        "type": "codehinter",
+        "description": "Engine slugs to query (see List AI Visibility Sources). Omit to query all enabled engines",
+        "placeholder": "{{['chatgpt', 'gemini']}}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      },
+      "country": {
+        "label": "Country",
+        "key": "country",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Two-letter ISO country for the search geography (proxy exit). Defaults to \"us\"",
+        "placeholder": "{{'us'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "get_ai_visibility_result": {
+      "search_id": {
+        "label": "Search ID",
+        "key": "search_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The search_id returned by Start AI Visibility Search",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "ai_visibility_sources": {},
+    "session_list": {
+      "domain": {
+        "label": "Domain",
+        "key": "domain",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Filter to sessions for one website domain, e.g. \"amazon.com\"",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "session_delete": {
+      "id": {
+        "label": "Session ID",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The session ID to delete (from List Browser Sessions)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "browser_task": {
+      "prompt": {
+        "label": "Task Prompt",
+        "key": "prompt",
+        "type": "codehinter",
+        "description": "The task in natural language. Never include passwords or secrets — use Session ID for authenticated sites",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      },
+      "url": {
+        "label": "URL",
+        "key": "url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Navigate here before starting. Omit to let the agent follow URLs named in the prompt",
+        "placeholder": "{{'https://example.com'}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "session_id": {
+        "label": "Session ID",
+        "key": "session_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Saved browser-session ID (from List Browser Sessions) so the task runs logged in",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "max_steps": {
+        "label": "Max Steps",
+        "key": "max_steps",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Cap on agent steps (navigation/click/type actions)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "timeout_ms": {
+        "label": "Timeout (ms)",
+        "key": "timeout_ms",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Task timeout in milliseconds (server caps runs at ~330s regardless)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "editorType": "extendedSingleLine"
+      },
+      "output_schema": {
+        "label": "Output Schema",
+        "key": "output_schema",
+        "type": "codehinter",
+        "description": "JSON Schema for the result — the agent returns structured data conforming to it",
+        "placeholder": "{{ { type: 'object', properties: { title: { type: 'string' } } } }}",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "width": "320px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "get_browser_task_result": {
+      "job_id": {
+        "label": "Job ID",
+        "key": "job_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The workflow_id returned by Run Browser Task",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "mandatory": true,
+        "editorType": "extendedSingleLine"
+      }
+    }
+  }
+}
