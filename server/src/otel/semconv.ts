@@ -11,6 +11,8 @@ export const METRIC = {
   QUERY_EXECUTIONS: 'tooljet.query.executions',
   QUERY_DURATION: 'tooljet.query.duration',
 
+  APP_VALIDATION_ISSUES: 'tooljet.app_validation.issues',
+
   ORGANIZATION_SEATS: 'tooljet.organization.seats',
   APP_ACTIVE_USERS: 'tooljet.app.active_users',
 } as const;
@@ -44,6 +46,9 @@ export const ATTR = {
   ORGANIZATION_ID: 'tooljet.organization.id',
   ORGANIZATION_NAME: 'tooljet.organization.name',
 
+  // ui | pat | ext_api | import | git | ai | copy | restore — server-resolved, not client baggage.
+  WRITE_SOURCE: 'tooljet.write_source',
+
   QUERY_ID: 'tooljet.query.id',
   QUERY_NAME: 'tooljet.query.name',
   QUERY_TYPE: 'tooljet.query.type',
@@ -67,6 +72,21 @@ export const ATTR = {
   EVENT_COUNT: 'event.count',
   ERROR_FINGERPRINT: 'error.fingerprint',
   USER_ID: 'user.id',
+} as const;
+
+// app_validation span event + issues counter. Bounded values only.
+export const VALIDATION_ATTR = {
+  AREA: 'area',
+  SOURCE: 'source',
+  MODE: 'mode',
+  CODE: 'code',
+  CODES: 'codes',
+  SEVERITY: 'severity',
+  OUTCOME: 'outcome',
+  // Event-only per-outcome counts.
+  BLOCKED: 'blocked',
+  REPORTED: 'reported',
+  WARNED: 'warned',
 } as const;
 
 export const FRONTEND_ERROR_TYPE = {

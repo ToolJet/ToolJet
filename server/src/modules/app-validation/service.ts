@@ -9,6 +9,7 @@ import { AppValidationException } from './core/exception';
 import { getMode, resolveSource } from './core/mode';
 import { rulesFor } from './rules';
 import { runRules } from './core/runner';
+import { recordValidation, recordWriteSource } from './core/telemetry';
 import { Issue, Rule, RuleContext, ValidationArea, ValidationMode, ValidationResult, WriteSource } from './types';
 import { IndexedComponent, VersionIndex } from './version-index';
 
@@ -37,6 +38,7 @@ export class AppValidationService {
   async check<T>(area: ValidationArea, inputs: T | T[], options: CheckOptions): Promise<ValidationResult> {
     const source = options.source ?? resolveSource();
     const mode = this.modeFor(source);
+    recordWriteSource(source);
     const list = Array.isArray(inputs) ? inputs : [inputs];
     const rules = options.rules ?? this.rulesFor(area);
     if (mode === 'off' || !list.length || !rules.length) return { errors: [], warnings: [] };
@@ -48,22 +50,24 @@ export class AppValidationService {
       )
     );
 
-    if (result.errors.length && mode === 'enforce') {
-      throw new AppValidationException(result.errors, result.warnings, area);
-    }
+    recordValidation(area, source, mode, result);
 
     if (result.errors.length) {
+      const enforced = mode === 'enforce';
       this.logger.warn(
         {
           appValidation: {
             area,
             source,
             appVersionId: options.appVersionId,
-            wouldBlock: result.errors.map(({ code, path }) => ({ code, path })),
+            [enforced ? 'rejected' : 'wouldBlock']: result.errors.map(({ code, path }) => ({ code, path })),
           },
         },
-        `App validation (report mode): ${result.errors.length} problem(s) would block this write`
+        enforced
+          ? `App validation (enforce mode): rejected a write with ${result.errors.length} problem(s)`
+          : `App validation (report mode): ${result.errors.length} problem(s) would block this write`
       );
+      if (enforced) throw new AppValidationException(result.errors, result.warnings, area);
     }
 
     this.recordWarnings(mode === 'report' ? [...result.errors, ...result.warnings] : result.warnings);
