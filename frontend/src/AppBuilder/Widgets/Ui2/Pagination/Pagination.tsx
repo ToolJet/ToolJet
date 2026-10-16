@@ -1,4 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal } from 'lucide-react';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
@@ -17,13 +19,22 @@ export const PAGE_IDLE =
 export const PAGE_ACTIVE =
   'border border-[color:var(--lk-on-border,var(--sc-input))] bg-[color:var(--lk-on-bg,var(--sc-background))] text-[color:var(--lk-on-fg,var(--sc-foreground))] shadow-sm hover:bg-[color:var(--lk-on-bg,var(--sc-accent))]';
 
-export const ShadPagination = (props) => {
+interface PageButton {
+  label: string;
+  onClick: () => void;
+  active?: boolean;
+  isDisabled?: boolean;
+  children: ReactNode;
+  wide?: boolean;
+}
+
+export const ShadPagination = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, setExposedVariable, fireEvent } = props;
   const count = pageCountOf(p);
   const [page, setPage] = useState(() => clampPage(p.defaultPageIndex, count));
-  const live = useRef({});
+  const live = useRef({ page, count });
   live.current = { page, count };
-  const go = (target) => {
+  const go = (target: unknown) => {
     const { page: now, count: total } = live.current;
     const next = clampPage(target, total, now);
     if (next === now) return;
@@ -52,7 +63,7 @@ export const ShadPagination = (props) => {
   useExposed(setExposedVariables, p, {
     totalPages: count,
     currentPageIndex: shownPage,
-    setPage: async (n) => go(n),
+    setPage: async (n: unknown) => go(n),
   });
   const disabled = busy(p);
   const small = p.size === 'sm';
@@ -60,7 +71,7 @@ export const ShadPagination = (props) => {
   // Too narrow for the whole pager, it drops the Previous and Next words, then the pages beside the current one, before
   // it would wrap: at 445px a ten-page pager put Next on a second line, below the widget's box. Decided before paint;
   // a new width or page count starts again from the whole pager.
-  const navRef = useRef(null);
+  const navRef = useRef<HTMLElement>(null);
   const [fit, setFit] = useState({ level: 0, width: 0 });
   useLayoutEffect(() => {
     const nav = navRef.current;
@@ -76,11 +87,11 @@ export const ShadPagination = (props) => {
   useLayoutEffect(() => {
     const list = navRef.current?.querySelector('ul');
     const first = list?.firstElementChild;
-    if (!list || !first || fit.level >= 2) return;
+    if (!list || !(first instanceof HTMLElement) || fit.level >= 2) return;
     if (list.offsetHeight > first.offsetHeight * 1.5) setFit((f) => ({ ...f, level: f.level + 1 }));
   });
   const labelled = p.showLabels !== false && fit.level < 1;
-  const button = (key, { label, onClick, active, isDisabled, children, wide }) => (
+  const button = (key: string, { label, onClick, active, isDisabled, children, wide }: PageButton) => (
     <li key={key}>
       <Button
         type="button"

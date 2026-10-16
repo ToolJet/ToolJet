@@ -1,17 +1,23 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Check } from 'lucide-react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { normalizeSteps, stepIndexOf } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import type { Step, StepId } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 
 // ---- Steps -----------------------------------------------------------------------------------------------------------
 
-const stepState = (index, current) => (index < current ? 'done' : index === current ? 'current' : 'upcoming');
+type StepState = 'done' | 'current' | 'upcoming';
 
-export const STEP_LABEL = {
+const stepState = (index: number, current: number): StepState =>
+  index < current ? 'done' : index === current ? 'current' : 'upcoming';
+
+export const STEP_LABEL: Record<StepState, string> = {
   done: 'text-[color:var(--lk-done-label,var(--sc-foreground))]',
   current: 'text-[color:var(--lk-current-label,var(--sc-foreground))]',
   upcoming: 'text-[color:var(--lk-idle-label,var(--sc-muted-foreground))]',
@@ -19,7 +25,7 @@ export const STEP_LABEL = {
 
 export const IDLE = 'var(--lk-idle,var(--sc-border))';
 
-export const StepMarker = ({ state, number, dots }) => {
+export const StepMarker = ({ state, number, dots }: { state: StepState; number: number; dots: boolean }) => {
   if (dots) {
     return (
       <span
@@ -47,20 +53,28 @@ export const StepMarker = ({ state, number, dots }) => {
   );
 };
 
-export const ShadSteps = (props) => {
+/** What the exposed actions read: the latest render's steps, current index and properties. */
+interface StepsLive {
+  all: Step[];
+  shown: Step[];
+  index: number;
+  properties: Resolved;
+}
+
+export const ShadSteps = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, fireEvent } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const source = p.steps;
   const base = useMemo(() => normalizeSteps(source), [stringify(source ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [overrides, setOverrides] = useState({});
+  const [overrides, setOverrides] = useState<Record<string, Partial<Step>>>({});
   useEffect(() => setOverrides({}), [base]);
   const all = base.map((s) => ({ ...s, ...(overrides[String(s.id)] || {}) }));
   const shown = all.filter((s) => s.visible);
-  const [current, setCurrent] = useState(p.currentStep);
+  const [current, setCurrent] = useState<unknown>(p.currentStep);
   useEffect(() => setCurrent(p.currentStep), [p.currentStep]);
   const index = stepIndexOf(shown, current);
-  const live = useRef({});
+  const live = useRef<StepsLive>({ all, shown, index, properties: p });
   live.current = { all, shown, index, properties: p };
   const exposedSteps = all.map(({ id, name, description, visible, disabled }) => ({
     id,
@@ -69,18 +83,18 @@ export const ShadSteps = (props) => {
     visible,
     disabled,
   }));
-  const moveTo = (id) => {
+  const moveTo = (id: StepId) => {
     setCurrent(id);
     const i = stepIndexOf(live.current.shown, id);
     setExposedVariables({ currentStepId: id, currentStepIndex: i });
   };
-  const override = (id, patch) =>
+  const override = (id: unknown, patch: Partial<Step>) =>
     setOverrides((prev) => ({ ...prev, [String(id)]: { ...(prev[String(id)] || {}), ...patch } }));
   useExposed(setExposedVariables, p, {
     currentStepId: current ?? null,
     currentStepIndex: index,
     steps: exposedSteps,
-    setStep: async (id) => {
+    setStep: async (id: unknown) => {
       if (live.current.properties.disabledState) return;
       const i = stepIndexOf(live.current.all, id);
       if (i !== -1) moveTo(live.current.all[i].id);
@@ -97,11 +111,13 @@ export const ShadSteps = (props) => {
       const first = live.current.shown[0];
       if (first) moveTo(first.id);
     },
-    setStepVisible: async (id, visibility) => override(id, { visible: visibility !== false && visibility !== 'false' }),
-    setStepDisable: async (id, disabled) => override(id, { disabled: disabled !== false && disabled !== 'false' }),
+    setStepVisible: async (id: unknown, visibility: unknown) =>
+      override(id, { visible: visibility !== false && visibility !== 'false' }),
+    setStepDisable: async (id: unknown, disabled: unknown) =>
+      override(id, { disabled: disabled !== false && disabled !== 'false' }),
   });
   const selectable = p.stepsSelectable !== false;
-  const select = (step) => {
+  const select = (step: Step) => {
     if (!selectable || busy(p) || step.disabled) return;
     moveTo(step.id);
     fireEvent('onSelect');
@@ -134,7 +150,7 @@ export const ShadSteps = (props) => {
       </Shell>
     );
   }
-  const stepButton = (step, i, state, children, className) => {
+  const stepButton = (step: Step, i: number, state: StepState, children: ReactNode, className: string) => {
     const interactive = selectable && !step.disabled && !p.disabledState;
     return (
       <button

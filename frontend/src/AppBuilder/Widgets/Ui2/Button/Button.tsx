@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
@@ -7,7 +8,7 @@ import { useSizedBox } from '@/AppBuilder/Widgets/Ui2/_shared/boxFit';
 import { textArg, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
-export const ShadButton = (props) => {
+export const ShadButton = (props: WidgetProps) => {
   const { styles, setExposedVariables, fireEvent } = props;
   // setText changes the label until the Label property itself changes, like the native Button's.
   const [properties, override] = useOverrides(props.properties);
@@ -15,7 +16,7 @@ export const ShadButton = (props) => {
   latest.current = properties;
   useExposed(setExposedVariables, properties, {
     buttonText: String(properties.text ?? ''),
-    setText: async (text) => override('text', textArg(text)),
+    setText: async (text: unknown) => override('text', textArg(text)),
     click: async () => {
       if (!busy(latest.current)) fireEvent('onClick');
     },
@@ -23,7 +24,7 @@ export const ShadButton = (props) => {
   // Like ToolJet's Button, it fills its box's height, and its width when the box was sized for it (grid, or a
   // fixed-width flex child); as a flex fill child it keeps its own width. Full width always fills. A fixed 36px
   // button in a 36px box overflowed the box's padding and lost its bottom edge.
-  const boxRef = useRef(null);
+  const boxRef = useRef<HTMLDivElement>(null);
   const fillsBox = useSizedBox(boxRef);
   // Each variant has its own colours, so a style replaces them only when set. A set background darkens a little on
   // hover unless the hover background is set too.

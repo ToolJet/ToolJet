@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { ImageIcon, ImageOff, X } from 'lucide-react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useHasEvent, useOverrides, textArg } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
@@ -12,7 +13,7 @@ import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
 const FIT = new Set(['cover', 'contain', 'fill']);
 
-export const ratioOf = (value) => {
+export const ratioOf = (value: unknown): string | null => {
   if (!isSet(value) || value === 'auto') return null;
   const [w, h] = String(value)
     .split(/[/:x]/)
@@ -22,7 +23,7 @@ export const ratioOf = (value) => {
   return Number.isFinite(single) && single > 0 ? String(single) : null;
 };
 
-export const ImageFallback = ({ kind, text }) => {
+export const ImageFallback = ({ kind, text }: { kind: unknown; text: unknown }) => {
   const name = String(text ?? '').trim();
   const fg = 'text-[color:var(--lk-fg,var(--sc-muted-foreground))]';
   if (kind === 'initials' && initials(name)) {
@@ -41,18 +42,18 @@ export const ImageFallback = ({ kind, text }) => {
   );
 };
 
-export const ShadImage = (props) => {
+export const ShadImage = (props: WidgetProps) => {
   const { setExposedVariables, fireEvent, height, id } = props;
   // setImageURL and clearImage change the source until the Source property itself changes.
   const [p, override] = useOverrides(props.properties);
-  const ref = useRef(null);
-  const imgRef = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   // With a ratio the image sizes itself from the width and the widget fits it; "auto" fills the drawn height instead.
   const ratio = ratioOf(p.aspectRatio);
   useAutoHeight({ ...props, properties: { ...p, dynamicHeight: ratio ? p.dynamicHeight : false } }, ref);
   const src = String(p.source ?? '').trim();
   const alt = String(p.alternativeText ?? '');
-  const [status, setStatus] = useState(src ? 'loading' : 'error');
+  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>(src ? 'loading' : 'error');
   const [open, setOpen] = useState(false);
   useEffect(() => setStatus(src ? 'loading' : 'error'), [src]);
   // A cached image can finish before React listens for its load event.
@@ -64,7 +65,7 @@ export const ShadImage = (props) => {
     hasError: status === 'error',
     imageURL: src,
     alternativeText: alt,
-    setImageURL: async (url) => override('source', textArg(url)),
+    setImageURL: async (url: unknown) => override('source', textArg(url)),
     clearImage: async () => override('source', ''),
   });
   const hasClick = useHasEvent(id, 'onClick');

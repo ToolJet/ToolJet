@@ -1,10 +1,11 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Badge, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
-export const ShadBadge = (props) => {
+export const ShadBadge = (props: WidgetProps) => {
   const { properties, setExposedVariables } = props;
   useExposed(setExposedVariables, properties, {});
   return (

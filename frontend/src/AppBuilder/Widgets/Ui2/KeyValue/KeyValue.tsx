@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Check, Copy, X } from 'lucide-react';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
@@ -7,12 +8,13 @@ import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widget
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { clamp, colorFor, formatValue, keyValueItems, linkHref } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import type { KeyValueRow } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
 // ---- Key-value list --------------------------------------------------------------------------------------------------
 
-const cssSize = (value, fallback) => {
+const cssSize = (value: unknown, fallback: string): string => {
   if (!isSet(value)) return fallback;
   const text = String(value).trim();
   if (/^\d+(\.\d+)?$/.test(text)) return `${Math.min(Number(text), 2000)}px`;
@@ -20,7 +22,7 @@ const cssSize = (value, fallback) => {
   return fallback;
 };
 
-export const CopyButton = ({ text }) => {
+export const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
   useEffect(() => {
     if (!copied) return undefined;
@@ -46,7 +48,14 @@ export const CopyButton = ({ text }) => {
   );
 };
 
-export const KeyValueValue = ({ row, text, emptyText, badgeColors }) => {
+interface KeyValueValueProps {
+  row: KeyValueRow;
+  text: string;
+  emptyText: string;
+  badgeColors: unknown;
+}
+
+export const KeyValueValue = ({ row, text, emptyText, badgeColors }: KeyValueValueProps) => {
   const empty = <span className="text-[color:var(--sc-muted-foreground)]">{emptyText}</span>;
   if (row.type === 'boolean') {
     if (row.value === undefined || row.value === null || row.value === '') return empty;
@@ -73,7 +82,7 @@ export const KeyValueValue = ({ row, text, emptyText, badgeColors }) => {
             ? 'border-transparent bg-[color:color-mix(in_srgb,var(--tg)_14%,transparent)] text-[color:var(--tg)]'
             : 'border-transparent bg-secondary text-secondary-foreground'
         )}
-        style={colour ? { '--tg': colour } : undefined}
+        style={colour ? ({ '--tg': colour } as StyleWithVars) : undefined}
       >
         {text}
       </span>
@@ -102,15 +111,15 @@ export const KeyValueValue = ({ row, text, emptyText, badgeColors }) => {
   );
 };
 
-export const ShadKeyValue = (props) => {
+export const ShadKeyValue = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const rows = useMemo(() => keyValueItems(p.data), [stringify(p.data ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
   // The native Key value pair's data and onFieldClick (with lastClickedField: the row's label and value).
   useExposed(setExposedVariables, p, { data: rows.map(({ label, value }) => ({ label, value })) });
   const clickable = useHasEvent(id, 'onFieldClick') && !busy(p);
-  const clickField = (row) => {
+  const clickField = (row: KeyValueRow) => {
     if (busy(p)) return;
     setExposedVariable('lastClickedField', { label: row.label, value: row.value ?? null });
     fireEvent('onFieldClick');

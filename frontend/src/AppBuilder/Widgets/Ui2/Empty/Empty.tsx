@@ -1,10 +1,11 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Inbox } from 'lucide-react';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
-export const ShadEmpty = (props) => {
+export const ShadEmpty = (props: WidgetProps) => {
   const { properties, setExposedVariables, fireEvent, height } = props;
   useExposed(setExposedVariables, properties, {});
   return (

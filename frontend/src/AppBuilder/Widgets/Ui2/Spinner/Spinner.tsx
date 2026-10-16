@@ -1,4 +1,5 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -8,9 +9,9 @@ import { justify, own } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
 // ---- Spinner ---------------------------------------------------------------------------------------------------------
 
-const SPINNER_SIZE = { sm: 16, default: 24, lg: 32 };
+const SPINNER_SIZE: Record<string, number> = { sm: 16, default: 24, lg: 32 };
 
-export const ShadSpinner = (props) => {
+export const ShadSpinner = (props: WidgetProps) => {
   const { properties: p, setExposedVariables } = props;
   useExposed(setExposedVariables, p, {});
   const size = own(SPINNER_SIZE, p.size) ?? clamp(p.size, 8, 200, 24);

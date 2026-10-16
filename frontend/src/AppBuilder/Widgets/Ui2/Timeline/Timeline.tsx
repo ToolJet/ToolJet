@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
+import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -6,6 +7,7 @@ import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widget
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { formatTime, statusColor, timelineItems } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import type { Entry, TimelineItem } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { iconFor } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
@@ -15,15 +17,15 @@ const LINE_HEIGHT = 20;
 
 // the title's line, which the marker centres on
 
-export const ShadTimeline = (props) => {
+export const ShadTimeline = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const items = useMemo(
     () => timelineItems(p.items, p.newestFirst === true),
     [stringify(p.items ?? null), p.newestFirst] // eslint-disable-line react-hooks/exhaustive-deps
   );
-  const [last, setLast] = useState({});
+  const [last, setLast] = useState<Entry>({});
   useExposed(setExposedVariables, p, { lastClickedItem: last });
   const hasClick = useHasEvent(id, 'onItemClicked');
   const compact = p.density === 'compact';
@@ -32,9 +34,9 @@ export const ShadTimeline = (props) => {
   const markerTop = Math.max(0, (LINE_HEIGHT - marker) / 2);
   const contentTop = Math.max(0, (marker - LINE_HEIGHT) / 2);
   const column = Math.max(marker, 12);
-  const click = (item) => {
+  const click = (item: TimelineItem) => {
     if (busy(p)) return;
-    const { key, ...rest } = item; // eslint-disable-line no-unused-vars
+    const { key, ...rest } = item; // eslint-disable-line @typescript-eslint/no-unused-vars
     setLast(rest);
     setExposedVariable('lastClickedItem', rest);
     fireEvent('onItemClicked');
@@ -63,7 +65,7 @@ export const ShadTimeline = (props) => {
       <ol className="m-0 flex list-none flex-col p-0">
         {items.map((item, index) => {
           const colour = (isSet(item.color) ? item.color : statusColor(item.status, p.statusColors)) || null;
-          const markerVars = { '--tl-c': colour || 'var(--lk-marker,var(--sc-primary))' };
+          const markerVars: StyleWithVars = { '--tl-c': colour || 'var(--lk-marker,var(--sc-primary))' };
           const Icon = icons ? iconFor(item.icon, null) : null;
           const time = formatTime(item.time, p.dateFormat);
           const isLast = index === items.length - 1;

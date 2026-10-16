@@ -1,12 +1,13 @@
 // shadcn/ui pack (experiment): icon lookup for the display widgets (moved out of displayModel.js), kept apart from
 // the components so it is tested on its own. Every function accepts junk without throwing.
+import type { LucideIcon } from 'lucide-react';
 import { isObject, isText } from './displayModel';
 
 // ---- Icon ------------------------------------------------------------------------------------------------------------
 
 /** The PascalCase names to try for a lucide icon given as kebab-case (trending-up), snake or space separated,
  *  camelCase (trendingUp) or PascalCase (TrendingUp, TrendingUpIcon). */
-export const iconCandidates = (name) => {
+export const iconCandidates = (name: unknown): string[] => {
   if (!isText(name)) return [];
   const raw = String(name).trim();
   if (!raw) return [];
@@ -34,7 +35,7 @@ const MAX_ICON_WORDS = 6;
 // Tabler names (ToolJet's own icons, which models write on pack widgets too) whose lucide twin has another name. Keyed
 // by the name without its Icon prefix, separators or case. IconDeviceLaptop, IconTool and flask-2 drew the dashed
 // placeholder on stat cards (2026-10-14).
-const TABLER_TWINS = {
+const TABLER_TWINS: Record<string, string> = {
   tool: 'Wrench',
   tools: 'Wrench',
   flask: 'FlaskConical',
@@ -96,14 +97,15 @@ const TABLER_TWINS = {
   books: 'Library',
 };
 
-export const resolveIcon = (name, maps, fallback) => {
+export const resolveIcon = <T>(name: unknown, maps: unknown, fallback: T): LucideIcon | T => {
   if (typeof name === 'string' && name.length > MAX_ICON_NAME) return fallback;
   const sources = (Array.isArray(maps) ? maps : [maps]).filter(isObject);
-  const lookup = (candidate) => {
+  const lookup = (candidate: string): LucideIcon | null => {
     if (!candidate || candidate === 'Icon') return null; // lucide's base component, not an icon
     for (const source of sources) {
       const found = Object.prototype.hasOwnProperty.call(source, candidate) ? source[candidate] : undefined;
-      if (found && (typeof found === 'function' || typeof found === 'object')) return found;
+      // A function or an object (a forwardRef) in an icon map is an icon component.
+      if (found && (typeof found === 'function' || typeof found === 'object')) return found as LucideIcon;
     }
     return null;
   };
@@ -116,7 +118,8 @@ export const resolveIcon = (name, maps, fallback) => {
   // twin (IconListDetails reads List), rather than the placeholder.
   const base = (candidates[0] || '').replace(/^Icon(?=[A-Z])/, '');
   const twin = TABLER_TWINS[base.toLowerCase()];
-  if (twin && lookup(twin)) return lookup(twin);
+  const twinIcon = twin ? lookup(twin) : null;
+  if (twinIcon) return twinIcon;
   const words = (base.match(/[A-Z][a-z0-9]*/g) || []).slice(0, MAX_ICON_WORDS);
   for (let n = words.length; n >= 1; n -= 1) {
     const found = lookup(words.slice(0, n).join(''));

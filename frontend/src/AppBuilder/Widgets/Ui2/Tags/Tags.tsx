@@ -1,4 +1,6 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import type { RefObject } from 'react';
+import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -10,7 +12,7 @@ import { own } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
 // ---- Tags ------------------------------------------------------------------------------------------------------------
 
-const TAG_SIZE = {
+const TAG_SIZE: Record<string, string> = {
   sm: 'h-5 px-1.5 text-[11px]',
   default: 'h-6 px-2 text-xs',
   lg: 'h-7 px-2.5 text-sm',
@@ -18,7 +20,7 @@ const TAG_SIZE = {
 
 export const TAG_GAP = 6;
 
-export const tagClasses = (variant, mapped) => {
+export const tagClasses = (variant: unknown, mapped: boolean): string => {
   if (mapped) {
     if (variant === 'solid') return 'border-transparent bg-[color:var(--tg)] text-[color:var(--sc-primary-foreground)]';
     if (variant === 'outline')
@@ -33,7 +35,12 @@ export const tagClasses = (variant, mapped) => {
 };
 
 /** How many tags fit on one line, leaving room for the +N chip when some do not (all when nothing is measured). */
-export const useFit = (enabled, tags, rowRef, measureRef) => {
+export const useFit = (
+  enabled: boolean,
+  tags: string[],
+  rowRef: RefObject<HTMLDivElement>,
+  measureRef: RefObject<HTMLDivElement>
+): number => {
   const [fit, setFit] = useState(tags.length);
   const key = tags.join('\u0000');
   useLayoutEffect(() => {
@@ -43,7 +50,8 @@ export const useFit = (enabled, tags, rowRef, measureRef) => {
       const probe = measureRef.current;
       if (!row || !probe) return;
       const available = row.clientWidth;
-      const chips = Array.from(probe.children);
+      // The probe's children are the chips it draws (spans and a +N span), all HTML elements.
+      const chips = Array.from(probe.children) as HTMLElement[];
       const plus = chips.pop();
       if (!available || !chips.length) return setFit(tags.length);
       const widths = chips.map((c) => c.offsetWidth);
@@ -68,11 +76,11 @@ export const useFit = (enabled, tags, rowRef, measureRef) => {
   return enabled ? Math.min(fit, tags.length) : tags.length;
 };
 
-export const ShadTags = (props) => {
+export const ShadTags = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
-  const ref = useRef(null);
-  const rowRef = useRef(null);
-  const measureRef = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const tags = useMemo(() => toTags(p.tags), [stringify(p.tags ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
   const [last, setLast] = useState('');
@@ -88,7 +96,7 @@ export const ShadTags = (props) => {
     size,
     radius
   );
-  const chip = (tag, i, interactive) => {
+  const chip = (tag: string, i: number, interactive: boolean) => {
     const colour = colorFor(tag, p.tagColors);
     const className = cn(
       base,
@@ -96,7 +104,7 @@ export const ShadTags = (props) => {
       interactive && hasClick ? 'cursor-pointer hover:opacity-80' : 'cursor-default',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-50'
     );
-    const style = colour ? { '--tg': colour } : undefined;
+    const style = colour ? ({ '--tg': colour } as StyleWithVars) : undefined;
     if (!interactive) {
       return (
         <span key={`${tag}-${i}`} className={className} style={style}>

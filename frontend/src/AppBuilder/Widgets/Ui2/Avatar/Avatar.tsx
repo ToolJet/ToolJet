@@ -1,10 +1,11 @@
 import React from 'react';
+import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { initials, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Avatar, AvatarFallback, AvatarImage, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { avatarPeople } from '@/AppBuilder/Widgets/Ui2/_shared/people';
 
-export const ShadAvatar = (props) => {
+export const ShadAvatar = (props: WidgetProps) => {
   const { properties, setExposedVariables } = props;
   useExposed(setExposedVariables, properties, {});
   const size = Math.max(16, Math.min(256, Number(properties.size) || 32));
@@ -19,7 +20,7 @@ export const ShadAvatar = (props) => {
   const box = 'h-[var(--av-size)] w-[var(--av-size)]';
   const fill =
     'bg-[color:var(--lk-bg,var(--sc-muted))] text-[color:var(--lk-fg,var(--sc-foreground))] text-[length:var(--av-font)] leading-none';
-  const vars = {
+  const vars: StyleWithVars = {
     '--av-size': `${size}px`,
     '--av-font': `${Math.max(9, Math.round(size * 0.4))}px`,
     '--av-overlap': `${Math.round(size * 0.2)}px`,

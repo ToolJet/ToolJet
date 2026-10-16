@@ -1,17 +1,18 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Progress, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { HELP, LABEL } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 
-export const ShadProgress = (props) => {
+export const ShadProgress = (props: WidgetProps) => {
   const { setExposedVariables } = props;
   const [properties, override] = useOverrides(props.properties);
   const value = Math.max(0, Math.min(100, Number(properties.value) || 0));
   useExposed(setExposedVariables, properties, {
     value,
-    setValue: async (v) => override('value', Number(v) || 0),
+    setValue: async (v: unknown) => override('value', Number(v) || 0),
   });
   return (
     <Shell {...props}>

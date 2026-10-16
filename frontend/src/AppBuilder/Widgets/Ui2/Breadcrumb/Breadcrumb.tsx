@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Bound, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { ChevronRight } from 'lucide-react';
 import { list, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -9,13 +10,13 @@ export const MAX_CRUMBS = 8;
 
 export const ELLIPSIS = Symbol('ellipsis');
 
-export const ShadBreadcrumb = (props) => {
+export const ShadBreadcrumb = (props: WidgetProps) => {
   const { properties, setExposedVariables, setExposedVariable, fireEvent, id } = props;
   useExposed(setExposedVariables, properties, {});
   const all = list(properties.items);
   // onItemClick (with lastClickedItem: the item, its title and index) for navigating back up the trail.
   const clickable = useHasEvent(id, 'onItemClicked') && !busy(properties);
-  const clickItem = (item, index) => {
+  const clickItem = (item: Bound, index: number) => {
     if (busy(properties) || item === ELLIPSIS) return;
     const entry = item && typeof item === 'object' ? item : { title: String(item ?? '') };
     setExposedVariable('lastClickedItem', { ...entry, title: String(entry.title ?? ''), index });

@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { ExternalLink } from 'lucide-react';
 import { useOverrides, textArg } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -9,23 +10,33 @@ import { justify, own } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
 // ---- Link ------------------------------------------------------------------------------------------------------------
 
-const UNDERLINE = { always: 'underline', hover: 'on-hover', none: 'no-underline', never: 'no-underline' };
+const UNDERLINE: Record<string, string> = {
+  always: 'underline',
+  hover: 'on-hover',
+  none: 'no-underline',
+  never: 'no-underline',
+};
 
-export const WEIGHT = { normal: 'font-normal', medium: 'font-medium', semibold: 'font-semibold', bold: 'font-bold' };
+export const WEIGHT: Record<string, string> = {
+  normal: 'font-normal',
+  medium: 'font-medium',
+  semibold: 'font-semibold',
+  bold: 'font-bold',
+};
 
-export const ShadLink = (props) => {
+export const ShadLink = (props: WidgetProps) => {
   const { setExposedVariables, fireEvent, height } = props;
   // setLinkTarget and setLinkText hold until the Link target and Text properties themselves change.
   const [p, override] = useOverrides(props.properties);
   const href = String(p.linkTarget ?? '').trim();
-  const anchorRef = useRef(null);
+  const anchorRef = useRef<HTMLAnchorElement>(null);
   const latest = useRef(p);
   latest.current = p;
   useExposed(setExposedVariables, p, {
     linkTarget: href,
     linkText: String(p.linkText ?? ''),
-    setLinkTarget: async (v) => override('linkTarget', textArg(v)),
-    setLinkText: async (v) => override('linkText', textArg(v)),
+    setLinkTarget: async (v: unknown) => override('linkTarget', textArg(v)),
+    setLinkText: async (v: unknown) => override('linkText', textArg(v)),
     // click() follows the link as a click does (onClick fires, the target opens).
     click: async () => {
       if (busy(latest.current)) return;

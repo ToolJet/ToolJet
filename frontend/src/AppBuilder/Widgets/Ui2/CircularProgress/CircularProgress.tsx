@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
@@ -10,16 +11,16 @@ import { justify } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
 
 // ---- Circular progress -----------------------------------------------------------------------------------------------
 
-export const ShadCircularProgress = (props) => {
+export const ShadCircularProgress = (props: WidgetProps) => {
   const { setExposedVariables } = props;
   // The native Circular progress bar's setValue: holds until the Value property itself changes.
   const [p, override] = useOverrides(props.properties);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const g = ringGeometry(p.value, p.size, p.thickness);
   useExposed(setExposedVariables, p, {
     value: g.percent,
-    setValue: async (v) => override('value', Number(v) || 0),
+    setValue: async (v: unknown) => override('value', Number(v) || 0),
   });
   const mode = ['value', 'custom', 'none'].includes(p.centerText) ? p.centerText : 'value';
   const centre = mode === 'value' ? `${Math.round(g.percent)}%` : mode === 'custom' ? String(p.text ?? '') : '';

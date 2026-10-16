@@ -1,11 +1,12 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
 export const SKELETON = 'bg-[color:var(--lk-bg,color-mix(in_srgb,var(--sc-primary)_10%,transparent))]';
 
-export const ShadSkeleton = (props) => {
+export const ShadSkeleton = (props: WidgetProps) => {
   const { properties, setExposedVariables } = props;
   useExposed(setExposedVariables, properties, {});
   const lines = Math.max(1, Math.min(50, Math.floor(Number(properties.lines)) || 3));

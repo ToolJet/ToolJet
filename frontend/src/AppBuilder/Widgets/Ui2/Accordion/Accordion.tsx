@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
@@ -6,13 +7,13 @@ import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
 export const MAX_ACCORDION_ITEMS = 200;
 
-export const ShadAccordion = (props) => {
+export const ShadAccordion = (props: WidgetProps) => {
   const { properties, setExposedVariables, fireEvent } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const multiple = properties.multiple === true;
   const initial = list(properties.defaultOpen).map(String);
-  const [open, setOpen] = useState(initial);
+  const [open, setOpen] = useState<string[]>(initial);
   useEffect(() => setOpen(initial), [stringify(initial)]); // eslint-disable-line react-hooks/exhaustive-deps
   // An accordion of thousands of sections is a binding mistake, and drawing them all freezes the page.
   const items = list(properties.items).slice(0, MAX_ACCORDION_ITEMS);
@@ -21,7 +22,7 @@ export const ShadAccordion = (props) => {
   const shape = useRef({ multiple, count: items.length });
   shape.current = { multiple, count: items.length };
   // The native Accordion's events: onExpand when a section opens, onCollapse when one closes (with onChange after).
-  const apply = (next, fire = true) => {
+  const apply = (next: string[], fire = true) => {
     const prev = openRef.current;
     openRef.current = next;
     setOpen(next);
@@ -31,18 +32,18 @@ export const ShadAccordion = (props) => {
     if (prev.some((i) => !next.includes(i))) fireEvent('onCollapse');
     fireEvent('onChange');
   };
-  const change = (value) => apply((Array.isArray(value) ? value : value ? [value] : []).map(String));
+  const change = (value: string | string[]) => apply((Array.isArray(value) ? value : value ? [value] : []).map(String));
   // expand(index) and collapse(index) open or close one section (all of them without an index), like the native
   // Accordion's expand() and collapse(); a single-open accordion keeps one section open.
-  const indexArg = (i) => {
+  const indexArg = (i: unknown): string | null => {
     const n = Number(i);
     return Number.isInteger(n) && n >= 0 && n < shape.current.count ? String(n) : null;
   };
-  const noIndex = (i) => i === undefined || i === null || i === '';
+  const noIndex = (i: unknown): boolean => i === undefined || i === null || i === '';
   useExposed(setExposedVariables, properties, {
     openIndexes: open.map(Number),
     isExpanded: open.length > 0,
-    expand: async (index) => {
+    expand: async (index?: unknown) => {
       const one = indexArg(index);
       if (!noIndex(index) && one === null) return;
       const all = Array.from({ length: shape.current.count }, (_, k) => String(k));
@@ -53,7 +54,7 @@ export const ShadAccordion = (props) => {
         : [one ?? all[0]].filter(Boolean);
       if (stringify(next) !== stringify(openRef.current)) apply(next);
     },
-    collapse: async (index) => {
+    collapse: async (index?: unknown) => {
       const one = indexArg(index);
       if (!noIndex(index) && one === null) return;
       const next = one === null ? [] : openRef.current.filter((k) => k !== one);
@@ -61,8 +62,8 @@ export const ShadAccordion = (props) => {
     },
   });
   const rootProps = multiple
-    ? { type: 'multiple', value: open, onValueChange: change }
-    : { type: 'single', collapsible: true, value: open[0] ?? '', onValueChange: change };
+    ? { type: 'multiple' as const, value: open, onValueChange: change }
+    : { type: 'single' as const, collapsible: true, value: open[0] ?? '', onValueChange: change };
   return (
     <Shell {...props} innerRef={ref}>
       <Accordion {...rootProps} className="w-full">

@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
@@ -9,7 +10,7 @@ import { iconFor, justify, onKeyActivate, own } from '@/AppBuilder/Widgets/Ui2/_
 
 // ---- Icon ------------------------------------------------------------------------------------------------------------
 
-const TONE_COLOR = {
+const TONE_COLOR: Record<string, string> = {
   default: 'var(--sc-foreground)',
   muted: 'var(--sc-muted-foreground)',
   primary: 'var(--sc-primary)',
@@ -18,7 +19,7 @@ const TONE_COLOR = {
   destructive: 'var(--sc-destructive)',
 };
 
-export const ShadIcon = (props) => {
+export const ShadIcon = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, fireEvent, height, id } = props;
   const latest = useRef(p);
   latest.current = p;
@@ -68,7 +69,13 @@ export const ShadIcon = (props) => {
                 'cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               p.disabledState && 'opacity-50'
             )}
-            style={{ width: chipSize, height: chipSize, '--ic-tone': own(TONE_COLOR, p.tone) || TONE_COLOR.default }}
+            style={
+              {
+                width: chipSize,
+                height: chipSize,
+                '--ic-tone': own(TONE_COLOR, p.tone) || TONE_COLOR.default,
+              } as StyleWithVars
+            }
           >
             <Icon size={size} strokeWidth={stroke} aria-hidden="true" />
           </span>
