@@ -3,7 +3,7 @@ import { useDateInput, useDatetimeInput } from './hooks';
 import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
-import { isDateRangeValid, isDateValid, formatExposedDate, formatExposedDateRange, isUsableDateFormat } from './utils';
+import { isDateRangeValid, isDateValid, formatExposedDate, formatExposedDateRange } from './utils';
 import './styles.scss';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
@@ -24,20 +24,8 @@ export const DaterangePicker = ({
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
   const [datepickerMode, setDatePickerMode] = useState('date');
-  const {
-    defaultStartDate,
-    defaultEndDate,
-    format: formatProp,
-    label,
-    placeholder: placeholderProp,
-    showClearBtn,
-  } = properties;
+  const { defaultStartDate, defaultEndDate, format, label, placeholder: placeholderProp, showClearBtn } = properties;
   const placeholder = placeholderProp ?? 'Select Date Range';
-  // A format with no date tokens (e.g. a {{42}} binding) is a configuration
-  // error surfaced on the Format field in the properties panel; the widget
-  // falls back to the shipped default so the field stays usable.
-  const hasUsableFormat = isUsableDateFormat(formatProp);
-  const format = hasUsableFormat ? formatProp : 'DD/MM/YYYY';
   // Opt-in legacy marker written only by the backfill migration (never part of
   // the default widget config): migrated components keep exposing the
   // historical "Invalid date" strings until the flag is cleared by explicitly

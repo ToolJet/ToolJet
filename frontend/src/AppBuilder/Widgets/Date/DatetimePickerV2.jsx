@@ -17,8 +17,6 @@ import {
   is24HourFormat,
   isDateValid,
   getTimeSelectionBase,
-  isUsableDateFormat,
-  isUsableTimeFormat,
 } from './utils';
 
 export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
@@ -50,18 +48,13 @@ export const DatetimePickerV2 = ({
   const {
     label,
     defaultValue,
-    dateFormat: dateFormatProp,
-    timeFormat: timeFormatProp,
+    dateFormat,
+    timeFormat,
     placeholder: placeholderProp,
     isTimezoneEnabled,
     showClearBtn,
   } = properties;
   const placeholder = placeholderProp ?? 'Select date and time';
-  // Tokenless formats (e.g. {{42}}) → panel error + shipped default fallback.
-  const hasUsableDateFormat = isUsableDateFormat(dateFormatProp);
-  const hasUsableTimeFormat = isUsableTimeFormat(timeFormatProp);
-  const dateFormat = hasUsableDateFormat ? dateFormatProp : 'DD/MM/YYYY';
-  const timeFormat = hasUsableTimeFormat ? timeFormatProp : 'HH:mm';
   const inputProps = {
     properties,
     setExposedVariable,

@@ -2,14 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDatetimeInput, useTimeInput } from './hooks';
 import cx from 'classnames';
 import moment from 'moment';
-import {
-  getFormattedSelectTimestamp,
-  getUnixTime,
-  is24HourFormat,
-  isDateValid,
-  getTimeSelectionBase,
-  isUsableTimeFormat,
-} from './utils';
+import { getFormattedSelectTimestamp, getUnixTime, is24HourFormat, isDateValid, getTimeSelectionBase } from './utils';
 import { BaseDateComponent } from './BaseDateComponent';
 import './styles.scss';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
@@ -30,11 +23,8 @@ export const TimePicker = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, timeFormat: timeFormatProp, placeholder: placeholderProp, showClearBtn } = properties;
+  const { label, defaultValue, timeFormat, placeholder: placeholderProp, showClearBtn } = properties;
   const placeholder = placeholderProp ?? 'Select time';
-  // Tokenless format (e.g. {{42}}) → panel error + shipped default fallback.
-  const hasUsableFormat = isUsableTimeFormat(timeFormatProp);
-  const timeFormat = hasUsableFormat ? timeFormatProp : 'HH:mm';
   const inputProps = {
     properties,
     setExposedVariable,

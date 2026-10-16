@@ -7,7 +7,6 @@ import {
   getUnixTime,
   getUnixTimestampFromSelectedTimestamp,
   isDateValid,
-  isUsableDateFormat,
 } from './utils';
 import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
@@ -32,11 +31,8 @@ export const DatePickerV2 = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, dateFormat: dateFormatProp, placeholder: placeholderProp, showClearBtn } = properties;
+  const { label, defaultValue, dateFormat, placeholder: placeholderProp, showClearBtn } = properties;
   const placeholder = placeholderProp ?? 'Select date';
-  // Tokenless format (e.g. {{42}}) → panel error + shipped default fallback.
-  const hasUsableFormat = isUsableDateFormat(dateFormatProp);
-  const dateFormat = hasUsableFormat ? dateFormatProp : 'DD/MM/YYYY';
   const inputProps = {
     properties,
     setExposedVariable,

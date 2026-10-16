@@ -30,8 +30,6 @@ import {
   isDateValid,
   isDateRangeValid,
   getTimeSelectionBase,
-  isUsableDateFormat,
-  isUsableTimeFormat,
   parseDateInputText,
   parseDateRangeInput,
   resolveTimezone,
@@ -310,55 +308,6 @@ describe('getTimeSelectionBase', () => {
   test('an existing selection is used as the base unchanged', () => {
     const existing = moment('2026-10-05 14:25:36', 'YYYY-MM-DD HH:mm:ss').valueOf();
     expect(getTimeSelectionBase(existing).valueOf()).toBe(existing);
-  });
-});
-
-// Bug: "Date range Picker: updated invalid date with invalid format" — a Format
-// binding like {{42}} resolves to "42", which moment treats as a pure literal:
-// every display becomes the text "42" and nothing can parse, with no error
-// anywhere. A format with no alphabetic characters (hence no possible moment
-// tokens) is a configuration error; the widget falls back to its shipped
-// default format so the field stays usable.
-describe('isUsableDateFormat / isUsableTimeFormat', () => {
-  test('a tokenless format like "42" is unusable (the reported repro)', () => {
-    expect(isUsableDateFormat('42')).toBe(false);
-  });
-
-  test('standard date formats are usable', () => {
-    expect(isUsableDateFormat('DD/MM/YYYY')).toBe(true);
-    expect(isUsableDateFormat('DD-MM-YYYY')).toBe(true);
-    expect(isUsableDateFormat('MM/YYYY')).toBe(true);
-  });
-
-  test('empty or non-string formats are unusable', () => {
-    expect(isUsableDateFormat('')).toBe(false);
-    expect(isUsableDateFormat(undefined)).toBe(false);
-    expect(isUsableDateFormat(42)).toBe(false);
-  });
-
-  test('time formats with tokens are usable, letterless ones are not', () => {
-    expect(isUsableTimeFormat('HH:mm')).toBe(true);
-    expect(isUsableTimeFormat('hh:mm A')).toBe(true);
-    expect(isUsableTimeFormat('42')).toBe(false);
-    expect(isUsableTimeFormat('')).toBe(false);
-  });
-
-  // Backward compatibility: the fallback may only fire on formats that could
-  // never have worked. Every moment token is a letter, so any format with a
-  // letter — even without d/m/y (dates) or h/m (times) — must be used as-is,
-  // exactly as it was before the fallback existed.
-  test('exotic-but-valid old formats are left untouched (BC)', () => {
-    expect(isUsableDateFormat('X')).toBe(true); // unix timestamp
-    expect(isUsableDateFormat('Q')).toBe(true); // quarter
-    expect(isUsableDateFormat('ww')).toBe(true); // week of year
-    expect(isUsableDateFormat('gggg')).toBe(true); // week-year
-    expect(isUsableTimeFormat('kk')).toBe(true); // 1-24 hour clock
-    expect(isUsableTimeFormat('ss')).toBe(true); // seconds
-    expect(isUsableTimeFormat('a')).toBe(true); // meridiem alone
-  });
-
-  test('letterful nonsense is also left as-is (broken before, broken the same way now)', () => {
-    expect(isUsableDateFormat('foo')).toBe(true);
   });
 });
 

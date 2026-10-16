@@ -222,21 +222,6 @@ export const getTimeSelectionBase = (selectedTimestamp) => {
   return base.isValid() ? base : moment().startOf('day');
 };
 
-// A format with no alphabetic characters (e.g. a `{{42}}` binding resolving
-// to "42") makes every display a literal and every parse fail, silently. It
-// is a configuration error surfaced on the Format field in the properties
-// panel; the widgets fall back to their shipped default format so the field
-// stays usable.
-//
-// Backward compatibility: every moment token is alphabetic, so a letterless
-// format can never have displayed or parsed date/time info — falling back on
-// exactly that class cannot change any working app. Formats containing any
-// letter (including exotic-but-valid ones like 'X', 'Q', 'ww', 'kk', 'ss')
-// are used as-is, exactly as before the fallback existed.
-export const isUsableDateFormat = (format) => typeof format === 'string' && /[a-z]/i.test(format);
-
-export const isUsableTimeFormat = (format) => typeof format === 'string' && /[a-z]/i.test(format);
-
 // Min/Max bounds are configuration: when a bound is unparseable, or the pair
 // is contradictory (min after max), the bound(s) are IGNORED — no widget-level
 // error, no validation against them — and the widget reports the problem to
