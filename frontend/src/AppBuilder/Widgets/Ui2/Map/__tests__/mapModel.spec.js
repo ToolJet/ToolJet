@@ -1,10 +1,6 @@
 import {
   FIT_MAX_ZOOM,
-  NOMINATIM,
   SATELLITE,
-  fillUrl,
-  geocoderUrls,
-  parsePlaces,
   OSM,
   clampZoom,
   fitView,
@@ -19,6 +15,7 @@ import {
   unproject,
   viewBounds,
 } from '@/AppBuilder/Widgets/Ui2/Map/mapModel';
+import { NOMINATIM, fillUrl, geocoderUrls, parsePlaces } from '@/AppBuilder/Widgets/Ui2/Map/mapGeocoding';
 import {
   ROUTE_PALETTE,
   TONE_COLORS,

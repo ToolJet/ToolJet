@@ -1,0 +1,275 @@
+import React, { useMemo, useRef } from 'react';
+import * as Lucide from 'lucide-react';
+import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { resolveIcon } from '@/AppBuilder/Widgets/Ui2/_display/iconModel';
+import { heroAside, heroMeta } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import { ACCENT, ACCENT_INK, TITLE_FONT, text } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
+import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+
+// ---- Hero ------------------------------------------------------------------------------------------------------------
+
+const ASIDE_FIGURE: Record<string, string> = { compact: 'text-2xl', large: 'text-4xl' };
+
+export const HERO_SIZE: Record<string, { pad: string; title: string; gap: string }> = {
+  compact: { pad: 'px-6 py-5', title: 'text-2xl', gap: 'gap-1.5' },
+  default: { pad: 'px-8 py-7', title: 'text-3xl', gap: 'gap-2' },
+  large: { pad: 'px-10 py-12', title: 'text-4xl md:text-5xl', gap: 'gap-3' },
+};
+
+/** The panel behind the hero for its background style: plain draws none; tint, gradient and dark derive from the
+ *  accent; image puts the URL behind a dark overlay. The panel background style overrides any of them. */
+export const heroPanel = (background: string, imageUrl: unknown): StyleWithVars => {
+  switch (background) {
+    case 'plain':
+      return {};
+    case 'gradient':
+      return {
+        background: `radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, ${ACCENT} 22%, var(--sc-background)) 0%, color-mix(in srgb, ${ACCENT} 6%, var(--sc-background)) 55%, var(--sc-background) 100%)`,
+        '--hero-border': `color-mix(in srgb, ${ACCENT} 18%, var(--sc-border))`,
+      };
+    case 'dark':
+      return {
+        background: `linear-gradient(135deg, color-mix(in srgb, ${ACCENT} 78%, #000) 0%, color-mix(in srgb, ${ACCENT} 55%, #000) 100%)`,
+      };
+    case 'image':
+      return imageUrl
+        ? {
+            backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.35) 70%, rgba(0,0,0,0.2) 100%), url("${String(
+              imageUrl
+            ).replace(/"/g, '%22')}")`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }
+        : {
+            background: `linear-gradient(135deg, color-mix(in srgb, ${ACCENT} 78%, #000), #111)`,
+          };
+    default:
+      return {
+        background: `color-mix(in srgb, ${ACCENT} 7%, var(--sc-background))`,
+        '--hero-border': `color-mix(in srgb, ${ACCENT} 16%, var(--sc-border))`,
+      };
+  }
+};
+
+export const ShadHero = (props: WidgetProps) => {
+  const { properties: p, fireEvent } = props;
+  const ref = useRef<HTMLDivElement>(null);
+  useAutoHeight(props, ref);
+  // The viewer grows the box to the content and moves the widgets below it (dynamic height). In a fixed box (the
+  // editor, which draws every widget at its saved size, or dynamic height turned off) the panel stops at the box and its
+  // content scrolls inside it: a 236px hero in a 200px box drew over a task board's column headers (Daymark,
+  // 2026-10-15), and cut off at the box it lost its bottom edge mid-button.
+  const fixed = !(fitsContentInView(props.componentType ?? 'ShadHero', p) && props.currentMode === 'view');
+  const background = ['plain', 'tint', 'gradient', 'image', 'dark'].includes(p.background) ? p.background : 'tint';
+  const onDark = background === 'dark' || background === 'image';
+  const size = HERO_SIZE[p.size] || HERO_SIZE.default;
+  const center = p.align === 'center';
+  const meta = useMemo(() => heroMeta(p.meta), [stringify(p.meta ?? null)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const aside = useMemo(() => heroAside(p.asideValue, p.asideLabel), [stringify(p.asideValue ?? null), p.asideLabel]); // eslint-disable-line react-hooks/exhaustive-deps
+  const Icon = text(p.icon) ? resolveIcon(p.icon, [Lucide.icons, Lucide], null) : null;
+  const primary = text(p.actionLabel);
+  const secondary = text(p.secondaryActionLabel);
+  const fg = onDark ? '#ffffff' : 'var(--lk-title,var(--sc-foreground))';
+  const muted = onDark ? 'rgba(255,255,255,0.78)' : 'var(--lk-fg,var(--sc-muted-foreground))';
+  const style: StyleWithVars = {
+    ...heroPanel(background, p.imageUrl),
+    borderRadius: background === 'plain' ? undefined : 'var(--lk-radius,calc(var(--sc-radius) + 6px))',
+  };
+  if (props.styles?.backgroundColor) style.background = 'var(--lk-bg)';
+  // The tint and gradient panels' hairline: the pack's border reset beats an inline border, so it never drew.
+  const panel = cn(
+    background !== 'plain' && size.pad,
+    style['--hero-border'] && 'border border-[color:var(--hero-border)]'
+  );
+
+  const actions =
+    primary || secondary ? (
+      <div className={cn('flex min-w-0 max-w-full flex-wrap gap-2', center && 'justify-center')}>
+        {secondary ? (
+          <Button
+            variant="outline"
+            disabled={busy(p)}
+            onClick={() => fireEvent('onSecondaryActionClicked')}
+            className={cn(onDark && 'border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white')}
+          >
+            {secondary}
+          </Button>
+        ) : null}
+        {primary ? (
+          <Button
+            disabled={busy(p)}
+            onClick={() => fireEvent('onActionClicked')}
+            className={cn(
+              onDark
+                ? // A fixed dark ink: the theme foreground is near-white in a dark app, which drew a blank white button.
+                  'bg-white text-[#0f172a] hover:bg-white/90'
+                : 'bg-[color:var(--lk-accent,var(--sc-primary))] text-[color:var(--sc-primary-foreground)] hover:opacity-90'
+            )}
+          >
+            {primary}
+          </Button>
+        ) : null}
+      </div>
+    ) : null;
+
+  // The aside: a headline figure with its caption above, or a short list of facts, right of the text behind a
+  // hairline (under it when centred, or when the hero is narrow: shadcn.scss).
+  const grid = !!aside && !center;
+  const asideBlock = aside ? (
+    <div
+      className={cn(
+        'sc-hero-aside flex shrink-0 flex-col gap-1',
+        center ? 'mt-5 items-center' : 'min-w-[150px] items-end border-l pl-6 text-right'
+      )}
+      style={{
+        borderColor: onDark ? 'rgba(255,255,255,0.22)' : 'var(--lk-border,var(--sc-border))',
+      }}
+      data-aside={aside.kind}
+    >
+      {aside.label ? (
+        <span className="text-xs font-medium uppercase tracking-[0.08em]" style={{ color: muted }}>
+          {aside.label}
+        </span>
+      ) : null}
+      {aside.kind === 'figure' ? (
+        <span
+          className={cn('font-semibold leading-none tracking-tight tabular-nums', ASIDE_FIGURE[p.size] || 'text-3xl')}
+          style={{ color: fg, fontFamily: TITLE_FONT }}
+        >
+          {aside.value}
+        </span>
+      ) : (
+        <dl className="m-0 flex flex-col gap-1.5" style={{ minWidth: 170 }}>
+          {aside.facts.map((fact, i) => (
+            <div key={i} className="flex items-baseline justify-between gap-6 text-sm">
+              <dt className="m-0" style={{ color: muted }}>
+                {fact.label || ''}
+              </dt>
+              <dd className="m-0 font-semibold tabular-nums" style={{ color: fg }}>
+                {fact.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </div>
+  ) : null;
+
+  let body;
+  if (p.loadingState && !wantsSkeleton(p)) {
+    body = <LoadingBox height={props.height} />;
+  } else if (p.loadingState) {
+    body = (
+      <div className={cn('flex flex-col', size.gap, panel)} style={style}>
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-8 w-2/3" />
+        <Skeleton className="h-4 w-1/2" />
+      </div>
+    );
+  } else {
+    body = (
+      <div className={cn('sc-hero-box', fixed && 'h-full')}>
+        <section
+          className={cn(
+            'sc-hero w-full',
+            panel,
+            fixed && 'max-h-full overflow-y-auto',
+            // With an aside, a grid: text and actions on the left, the aside right of both; in a narrow hero, text,
+            // aside, actions (shadcn.scss).
+            grid
+              ? 'sc-hero-grid'
+              : cn('flex', center ? 'flex-col items-center text-center' : 'flex-wrap items-center gap-x-6 gap-y-4')
+          )}
+          style={style}
+          data-background={background}
+        >
+          <div
+            className={cn(
+              'sc-hero-text flex min-w-0',
+              center ? 'flex-col items-center' : 'flex-[1_1_20rem] items-start gap-4'
+            )}
+          >
+            {Icon ? (
+              <span
+                className={cn('flex shrink-0 items-center justify-center rounded-xl', center ? 'mb-3' : 'mt-1')}
+                style={{
+                  width: 48,
+                  height: 48,
+                  background: onDark
+                    ? 'rgba(255,255,255,0.14)'
+                    : `color-mix(in srgb, ${ACCENT} 14%, var(--sc-background))`,
+                  color: onDark ? '#ffffff' : ACCENT_INK,
+                }}
+                aria-hidden="true"
+              >
+                <Icon size={24} strokeWidth={2} />
+              </span>
+            ) : null}
+            <div className={cn('flex min-w-0 flex-col', size.gap, center && 'items-center')}>
+              {text(p.eyebrow) ? (
+                <span
+                  className="text-xs font-semibold uppercase tracking-[0.14em]"
+                  style={{
+                    color: onDark ? 'rgba(255,255,255,0.85)' : ACCENT_INK,
+                  }}
+                >
+                  {text(p.eyebrow)}
+                </span>
+              ) : null}
+              <h1
+                className={cn('m-0 font-semibold leading-tight tracking-tight', size.title)}
+                style={{
+                  color: fg,
+                  fontFamily: TITLE_FONT,
+                  textWrap: 'balance',
+                }}
+              >
+                {text(p.title)}
+              </h1>
+              {text(p.subtitle) ? (
+                <p className="m-0 max-w-[68ch] text-base leading-relaxed" style={{ color: muted }}>
+                  {text(p.subtitle)}
+                </p>
+              ) : null}
+              {meta.length ? (
+                <ul className={cn('m-0 mt-1 flex list-none flex-wrap gap-2 p-0', center && 'justify-center')}>
+                  {meta.map((fact, i) => (
+                    <li
+                      key={i}
+                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium tabular-nums"
+                      style={{
+                        background: onDark
+                          ? 'rgba(255,255,255,0.14)'
+                          : 'color-mix(in srgb, var(--sc-foreground) 6%, transparent)',
+                        color: onDark ? '#ffffff' : 'var(--sc-foreground)',
+                      }}
+                    >
+                      {fact.label ? <span style={{ color: muted }}>{fact.label}</span> : null}
+                      {fact.value}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </div>
+          {asideBlock}
+          {actions ? (
+            <div className={cn('min-w-0 max-w-full', grid ? 'sc-hero-actions' : center && 'mt-5')}>{actions}</div>
+          ) : null}
+        </section>
+      </div>
+    );
+  }
+  return (
+    <Shell {...props} innerRef={ref} className={cn(fixed && 'h-full overflow-y-auto')}>
+      {body}
+    </Shell>
+  );
+};
+
+export default withControlState(ShadHero);
