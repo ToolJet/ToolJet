@@ -28,8 +28,11 @@ export const APP_HEADER_HEIGHT = 48;
 
 export const QUERY_PANE_HEIGHT = 40; // This represents pane that contains trigger to toggle query panel
 
+// The AI chat panel: a fixed 400px, border included (popover.scss `.PopoverContent.tooljetai` matches it).
+export const AI_CHAT_WIDTH = 400;
+
 export const LEFT_SIDEBAR_WIDTH = {
-  tooljetai: 440,
+  tooljetai: AI_CHAT_WIDTH,
   default: 350,
 };
 

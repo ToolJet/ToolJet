@@ -53,4 +53,12 @@ describe(`AgentBuildingOverlay (${isCe ? 'CE' : 'EE'})`, () => {
       expect(screen.getByText('Your page fills in here as each change lands.')).toBeInTheDocument();
     }
   });
+
+  it('centres the card in the canvas the AI chat leaves visible', () => {
+    if (!isCe) return;
+    mockState = building(true);
+    render(<AgentBuildingOverlay />);
+    // The chat panel is 400px including its 2px border.
+    expect(document.querySelector('[data-cy="agent-building-overlay"]').style.paddingLeft).toBe('398px');
+  });
 });

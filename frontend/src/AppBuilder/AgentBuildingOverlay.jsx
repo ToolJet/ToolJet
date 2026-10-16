@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 
 import useStore from '@/AppBuilder/_stores/store';
+import { AI_CHAT_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 // The redesigned canvas views ship with the AI builder (ee); without it the plain card below stays.
 import { CanvasBuildOverlay } from '@ee/modules/AiBuilder/components/CanvasBuild';
 
@@ -95,7 +96,8 @@ const AgentBuildingOverlay = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingLeft: 438,
+          // The AI chat floats over the canvas's left side: centre the card in what it leaves visible.
+          paddingLeft: AI_CHAT_WIDTH - 2,
         }}
         onClickCapture={block}
         onMouseDownCapture={block}
