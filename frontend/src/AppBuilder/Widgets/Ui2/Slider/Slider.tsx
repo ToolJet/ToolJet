@@ -1,9 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  list,
+  useAutoHeight,
+  useExposed,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Slider } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { sliderBounds, sliderValues } from './sliderModel';
 import type { SliderBounds } from './sliderModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Field, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
@@ -16,7 +21,7 @@ export const ShadSlider = (props: WidgetProps) => {
   const { properties } = props;
   const raw = properties.defaultValue;
   const isRange = Array.isArray(raw);
-  const bounds = sliderBounds(properties);
+  const bounds = useStable(sliderBounds(properties));
   const initial = sliderValues(raw, bounds);
   // The native Range slider's actions: setValue(n) for one value (a range's start), setRangeValue(start, end) for a
   // range, reset() back to the default. Values are kept inside min and max; a non-number changes nothing.
@@ -49,8 +54,10 @@ export const ShadSlider = (props: WidgetProps) => {
   }));
   latest.current = { bounds, isRange, initial, value };
   useExposed(props.setExposedVariables, properties, { label: String(properties.label ?? '') });
+  // The thumbs shown while dragging; a new value or new bounds put them back on the value.
   const [live, setLive] = useState(initial);
-  useEffect(() => setLive(sliderValues(value, bounds)), [stringify(value), bounds.min, bounds.max]); // eslint-disable-line react-hooks/exhaustive-deps
+  const current = useStable(value);
+  useEffect(() => setLive(sliderValues(current, bounds)), [current, bounds]);
   return (
     <Shell {...props} innerRef={fit}>
       <Field

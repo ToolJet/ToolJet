@@ -2,7 +2,6 @@
 // Color picker's is in colorModel.ts, File upload's in fileModel.ts). No React here: every function takes junk (null,
 // wrong types, huge numbers) without throwing.
 
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import type { Option, OptionValue } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 export const isText = (v: unknown): v is OptionValue =>
@@ -12,15 +11,6 @@ export const asList = <T = unknown>(v: unknown): T[] => (Array.isArray(v) ? v : 
 export const clampInt = (v: unknown, min: number, max: number, fallback: number): number => {
   const n = Math.floor(Number(v));
   return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
-};
-
-/** A content key for effect dependencies that never throws (circular data gives a fresh key). */
-export const stableKey = (v: unknown): string => {
-  try {
-    return stringify(v ?? null);
-  } catch {
-    return String(Math.random());
-  }
 };
 
 // ---- Options (Combobox, Multiselect) -------------------------------------------------------------------------------

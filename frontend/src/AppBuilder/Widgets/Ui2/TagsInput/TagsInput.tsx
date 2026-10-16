@@ -3,7 +3,13 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  toOptions,
+  useAutoHeight,
+  useExposed,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
@@ -25,10 +31,9 @@ export const ShadTagsInput = (props: WidgetProps) => {
     pattern: properties.tagPattern,
     patternError: properties.patternError,
   };
-  const initial = M.addTags([], M.toTags(properties.defaultValue), rules).tags;
-  const initialKey = M.stableKey(initial);
+  const initial = useStable(M.addTags([], M.toTags(properties.defaultValue), rules).tags);
   const [tags, setTags] = useState(initial);
-  useEffect(() => setTags(initial), [initialKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setTags(initial), [initial]);
   const [text, setText] = useState('');
   const [tagError, setTagError] = useState('');
   const [focused, setFocused] = useState(false);

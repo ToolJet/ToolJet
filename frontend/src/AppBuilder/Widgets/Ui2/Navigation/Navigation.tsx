@@ -1,13 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { activeItemExposed, findNav, navItems, unwrap } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { MenuContent, MenuLabel, MenuRows, SIZES } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import { ITEM_BASE, NAV_HEIGHT, NAV_LOOK, NAV_SQUARE, NavFace, SEPARATOR_LINE, patchNavItems } from './navParts';
 import type { ReactNode } from 'react';
@@ -21,9 +20,9 @@ export const ShadNavigation = (props: WidgetProps) => {
   const { properties, styles, setExposedVariables, fireEvent, height, componentType } = props;
   // setItemVisibility and setItemDisable (the native Navigation's actions) change one item until the Items change.
   const [itemChanges, setItemChanges] = useState<Record<string, NavItemChange>>({});
-  const itemsKey = stringify(properties.items ?? null);
-  useEffect(() => setItemChanges({}), [itemsKey]);
-  const items = navItems(patchNavItems(properties.items, itemChanges));
+  const rawItems = useStable(properties.items);
+  useEffect(() => setItemChanges({}), [rawItems]);
+  const items = useMemo(() => navItems(patchNavItems(rawItems, itemChanges)), [rawItems, itemChanges]);
   const changeItem = (id: unknown, patch: NavItemChange) => {
     if (id === undefined || id === null || typeof id === 'object') return;
     setItemChanges((c) => ({ ...c, [String(unwrap(id))]: { ...(c[String(unwrap(id))] || {}), ...patch } }));

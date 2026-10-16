@@ -5,8 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
-import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import { useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import {
   initialView,
   parseCenter,
@@ -19,7 +18,7 @@ import {
 } from './mapModel';
 import { NOMINATIM, geocoderUrls } from './mapGeocoding';
 import { legendItems } from './mapShapes';
-import { HeatLayer } from './mapLayers';
+import { useHeatLayer } from './mapLayers';
 import { useMapData } from './useMapData';
 import { mapDrawing } from './mapDrawing';
 import { useMapActions } from './useMapActions';
@@ -41,6 +40,9 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 // live in refs and are drawn by mapDrawing.ts, and every handler reads the latest properties through `live`.
 
 const text = (v: unknown): string => (v === null || v === undefined || typeof v === 'object' ? '' : String(v));
+/** The install's settings (tile and geocoder URLs); set once when the app loads. */
+const publicConfig = (): MapConfig | undefined =>
+  typeof window !== 'undefined' ? (window as Window & { public_config?: MapConfig }).public_config : undefined;
 const isMac = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || '');
 
 export const ShadMap = (props: WidgetProps) => {
@@ -59,7 +61,7 @@ export const ShadMap = (props: WidgetProps) => {
   const {
     points,
     skipped,
-    statusColorsKey,
+    statusColors,
     routes,
     routeStart,
     areas,
@@ -78,19 +80,19 @@ export const ShadMap = (props: WidgetProps) => {
   const box = size.w > 0 && size.h > 0 ? size : { w: Number(props.width) || 600, h: Number(props.height) || 420 };
   const frameHeight = Math.max(120, Number(props.height) || 420);
 
+  const defaultCenter = useStable(p.defaultCenter);
   const target = useMemo(
     () =>
       initialView({
         points,
         extra: shapeExtent,
         fitToMarkers: p.fitToMarkers,
-        defaultCenter: p.defaultCenter,
+        defaultCenter,
         defaultZoom: p.defaultZoom,
         width: box.w,
         height: box.h,
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [points, shapeExtent, p.fitToMarkers, stringify(p.defaultCenter ?? null), p.defaultZoom, box.w, box.h]
+    [points, shapeExtent, p.fitToMarkers, defaultCenter, p.defaultZoom, box.w, box.h]
   );
 
   const [view, setView] = useState<MapViewState>(() => ({
@@ -113,20 +115,22 @@ export const ShadMap = (props: WidgetProps) => {
   const showPopup = p.showPopup !== false;
   const hasMarkerClick = useHasEvent(id, 'onMarkerClick');
 
-  const config =
-    typeof window !== 'undefined' ? (window as Window & { public_config?: MapConfig }).public_config : undefined;
   const source = useMemo(
     () =>
       tileSource({
         tileUrl: p.tileUrl,
         tileAttribution: p.tileAttribution,
         darkMode: !!darkMode,
-        config,
+        config: publicConfig(),
         mapStyle: style,
       }),
-    [p.tileUrl, p.tileAttribution, darkMode, style] // eslint-disable-line react-hooks/exhaustive-deps
+    [p.tileUrl, p.tileAttribution, darkMode, style]
   );
-  const geocoder = geocoderUrls({ geocoderUrl: p.geocoderUrl, reverseGeocoderUrl: p.reverseGeocoderUrl, config });
+  const geocoder = geocoderUrls({
+    geocoderUrl: p.geocoderUrl,
+    reverseGeocoderUrl: p.reverseGeocoderUrl,
+    config: publicConfig(),
+  });
   // Nominatim's usage policy forbids searching as you type against its public service, so with the default geocoder
   // a search runs on Enter; an install's or app's own geocoder (Photon, Pelias) searches as you type.
   const typeAhead = geocoder.search !== NOMINATIM.search;
@@ -156,19 +160,24 @@ export const ShadMap = (props: WidgetProps) => {
   const live = useRef(liveNow);
   live.current = liveNow;
 
-  const refs = {
-    hostRef,
-    mapRef,
-    markerLayerRef,
-    shapeLayerRef,
-    markersRef,
-    popupRef,
-    pickedRef,
-    heatRef,
-    ownMoveRef,
-    closingRef,
-  };
-  const drawing = mapDrawing({ refs, live, setSelectedKey, setShape, setPicked });
+  // The drawing functions read only refs, `live` and state setters, so one set serves every render, and effects can
+  // list them as dependencies.
+  const refs = useMemo(
+    () => ({
+      hostRef,
+      mapRef,
+      markerLayerRef,
+      shapeLayerRef,
+      markersRef,
+      popupRef,
+      pickedRef,
+      heatRef,
+      ownMoveRef,
+      closingRef,
+    }),
+    []
+  );
+  const drawing = useMemo(() => mapDrawing({ refs, live, setSelectedKey, setShape, setPicked }), [refs]);
   const {
     ownMove,
     resize,
@@ -216,9 +225,10 @@ export const ShadMap = (props: WidgetProps) => {
     ];
     layers.forEach((layer) => layer.addTo(map));
     return () => {
-      // Removed before its listeners go: the attribution control drops the layer's credit on its 'remove' event.
+      // Removed before its listeners go: the attribution control drops the layer's credit on its 'remove' event. On
+      // unmount the map has already been removed (useLeafletMap's cleanup runs first), and with it its layers.
       layers.forEach((layer) => {
-        if (mapRef.current) map.removeLayer(layer);
+        if (map.hasLayer(layer)) map.removeLayer(layer);
         layer.off();
       });
     };
@@ -231,7 +241,7 @@ export const ShadMap = (props: WidgetProps) => {
     if (shownTarget.current === targetKey) return;
     shownTarget.current = targetKey;
     goTo(target.center, target.zoom);
-  }, [targetKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [target, targetKey, goTo]);
 
   // ---- Markers redraw when their data, grouping, colours or the selection change ----
   useEffect(() => {
@@ -243,54 +253,52 @@ export const ShadMap = (props: WidgetProps) => {
     } else if (selected && popupRef.current && mapRef.current?.hasLayer(popupRef.current)) {
       openPopup(selected);
     }
-  }, [points, index, selected, disabled, showMarkers, statusColorsKey, iconsReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    points,
+    index,
+    selected,
+    selectedKey,
+    disabled,
+    showMarkers,
+    statusColors,
+    iconsReady,
+    draw,
+    closePopup,
+    openPopup,
+  ]);
 
   useEffect(() => {
     drawShapes();
-  }, [routes, areas, disabled, routeStart?.lat, routeStart?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [routes, areas, disabled, routeStart?.lat, routeStart?.lng, drawShapes]);
 
+  // The popup follows its settings. Selecting a marker opens its popup itself, so the selection is read through `live`.
+  const popupFields = useStable(p.popupFields);
   useEffect(() => {
+    const now = live.current.selected;
     if (!showPopup) closePopup();
-    else if (selected) openPopup(selected);
-  }, [showPopup, p.popupFields]); // eslint-disable-line react-hooks/exhaustive-deps
+    else if (now) openPopup(now);
+  }, [showPopup, popupFields, closePopup, openPopup]);
 
-  // ---- Heat ----
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    if (display === 'markers') {
-      if (heatRef.current) map.removeLayer(heatRef.current);
-      heatRef.current = null;
-      return;
-    }
-    if (!heatRef.current) {
-      heatRef.current = new HeatLayer(heat, heatRadius);
-      heatRef.current.addTo(map);
-    } else heatRef.current.setData(heat, heatRadius);
-    const canvas = heatRef.current._canvas;
-    if (canvas) {
-      canvas.setAttribute('data-points', String(heat.length));
-      canvas.setAttribute('data-weight', String(Math.round(heat.reduce((t, h) => t + h[2], 0) * 100) / 100));
-      canvas.setAttribute('data-radius', String(heatRadius));
-    }
-  }, [display, heat, heatRadius]);
+  useHeatLayer(mapRef, heatRef, display !== 'markers', heat, heatRadius);
 
   // ---- The picked location follows its properties ----
-  const defaultPickKey = stringify(p.defaultPickedLocation ?? null);
+  // A pick made on the map stays until these properties change, so the current pick is read through `live`.
+  const defaultPicked = useStable(p.defaultPickedLocation);
   const firstPick = useRef(true);
   useEffect(() => {
     if (firstPick.current) {
       firstPick.current = false;
       drawPicked();
-      if (pickLocation && picked && !picked.address) lookUpAddress(picked);
+      const opening = live.current.picked;
+      if (pickLocation && opening && !opening.address) lookUpAddress(opening);
       return;
     }
-    const start = pickLocation ? parseCenter(p.defaultPickedLocation) : null;
+    const start = pickLocation ? parseCenter(defaultPicked) : null;
     setPicked(start);
     live.current.picked = start;
     drawPicked();
     if (start) lookUpAddress(start);
-  }, [pickLocation, defaultPickKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pickLocation, defaultPicked, drawPicked, lookUpAddress]);
 
   // ---- Interaction follows the disabled and loading states, and the wheel setting ----
   useEffect(() => {

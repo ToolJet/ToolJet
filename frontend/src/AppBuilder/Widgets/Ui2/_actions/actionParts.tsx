@@ -1,9 +1,9 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check } from 'lucide-react';
 import { TablerIcon } from '@/AppBuilder/Widgets/Ui2/_shared/TablerIcon';
 import { Skeleton, cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import type { MutableRefObject, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { MenuEntry } from './actionsModel';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
@@ -16,13 +16,6 @@ export const Icon = ({ name, className, size = 16 }: { name: string; className?:
       <TablerIcon iconName={name} style={{ width: size, height: size }} stroke={1.75} />
     </span>
   ) : null;
-
-/** Latest values for actions: the exposed action functions are published once, so they read state through this. */
-export const useLive = <T,>(value: T): MutableRefObject<T> => {
-  const ref = useRef(value);
-  ref.current = value;
-  return ref;
-};
 
 // ---- Dropdown menu primitives (shadcn new-york) --------------------------------------------------------------------
 

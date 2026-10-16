@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
@@ -14,7 +14,6 @@ import {
   Group,
   INNER,
   text,
-  useLatest,
   useNumberBox,
 } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';

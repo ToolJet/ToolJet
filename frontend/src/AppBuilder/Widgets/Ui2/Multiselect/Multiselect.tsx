@@ -5,7 +5,13 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  toOptions,
+  useAutoHeight,
+  useExposed,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
@@ -75,10 +81,11 @@ export const ShadMultiselect = (props: WidgetProps) => {
   useAutoHeight(props, ref);
   const options = toOptions(properties.options);
   const limit = M.clampLimit(properties.maxSelections);
-  const initial = [...new Set(M.toValueList(properties.defaultValue).map(M.keyOf))].slice(0, limit || undefined);
-  const initialKey = M.stableKey(initial);
+  const initial = useStable(
+    [...new Set(M.toValueList(properties.defaultValue).map(M.keyOf))].slice(0, limit || undefined)
+  );
   const [keys, setKeys] = useState(initial);
-  useEffect(() => setKeys(initial), [initialKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setKeys(initial), [initial]);
   const latest = useRef({ options, limit });
   latest.current = { options, limit };
   const [search, onSearch] = useSearch(props);

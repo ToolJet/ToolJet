@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { CONTROL } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from './dateModel';
+import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
-import type { MutableRefObject, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { Exposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -13,12 +14,6 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 // in looks/inputs.ts.
 
 // ---- Building blocks -----------------------------------------------------------------------------------------------
-
-export const useLatest = <T,>(value: T): MutableRefObject<T> => {
-  const ref = useRef(value);
-  ref.current = value;
-  return ref;
-};
 
 /** The widget's props with an extra rule checked before the Validation section's (a malformed phone number, a time
  *  outside its bounds): useValidation then exposes isValid and shows the message the native way. */

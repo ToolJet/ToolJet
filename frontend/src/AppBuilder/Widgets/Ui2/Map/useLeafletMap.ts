@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import L from 'leaflet';
+import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { clampZoom, selection, shapeSelection } from './mapModel';
 import { latLngOf } from './mapIcons';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
@@ -22,25 +23,24 @@ interface LeafletMapArgs {
 const OWN_MOVE_MS = 1500;
 
 /** Makes the Leaflet map once, with its controls, layers and handlers, and removes it on unmount. */
-export const useLeafletMap = (
-  refs: MapRefs,
-  drawing: ReturnType<typeof mapDrawing>,
-  { live, target, setView, setClicked, setSelectedKey, setShape, setWheelHint, setSize }: LeafletMapArgs
-) => {
-  const {
-    hostRef,
-    mapRef,
-    markerLayerRef,
-    shapeLayerRef,
-    markersRef,
-    popupRef,
-    pickedRef,
-    heatRef,
-    ownMoveRef,
-    closingRef,
-  } = refs;
-  const { viewOf, resize, draw, drawShapes, pick, drawPicked } = drawing;
+export const useLeafletMap = (refs: MapRefs, drawing: ReturnType<typeof mapDrawing>, args: LeafletMapArgs) => {
+  // The map is made once: the effect reads its arguments through a ref, so a new target or handler never rebuilds it.
+  const mount = useLatest({ refs, drawing, args });
   useEffect(() => {
+    const {
+      hostRef,
+      mapRef,
+      markerLayerRef,
+      shapeLayerRef,
+      markersRef,
+      popupRef,
+      pickedRef,
+      heatRef,
+      ownMoveRef,
+      closingRef,
+    } = mount.current.refs;
+    const { viewOf, resize, draw, drawShapes, pick, drawPicked } = mount.current.drawing;
+    const { live, target, setView, setClicked, setSelectedKey, setShape, setWheelHint, setSize } = mount.current.args;
     const host = hostRef.current;
     if (!host) return undefined;
     const map = L.map(host, {
@@ -143,5 +143,5 @@ export const useLeafletMap = (
       heatRef.current = null;
       markersRef.current = new Map();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mount]);
 };

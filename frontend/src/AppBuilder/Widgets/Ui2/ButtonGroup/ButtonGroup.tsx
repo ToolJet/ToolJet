@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import isEqual from 'lodash/isEqual';
+import {
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
@@ -12,8 +19,7 @@ import {
   selectionExposed,
   toggleSelection,
 } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
-import { Icon, SIZES, useLive } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
+import { Icon, SIZES } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import type { GroupButton, Text } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -63,13 +69,13 @@ export const ShadButtonGroup = (props: WidgetProps) => {
   useAutoHeight(props, ref);
   const mode = GROUP_MODES.includes(properties.mode) ? properties.mode : 'single';
   const buttons = groupButtons(properties.buttons);
-  const keys = stringify(buttons.map((b) => String(b.value)));
-  const initial = initialSelection(properties.defaultValue, mode, buttons);
-  const initialKey = stringify(initial);
+  // A new default, mode or set of button values resets the selection.
+  const keys = useStable(buttons.map((b) => String(b.value)));
+  const initial = useStable(initialSelection(properties.defaultValue, mode, buttons));
   const [selected, setSelected] = useState(initial);
-  useEffect(() => setSelected(initial), [initialKey, mode, keys]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setSelected(initial), [initial, mode, keys]);
   const [lastClicked, setLastClicked] = useState<{ label: string; value: Text } | null>(null);
-  const live = useLive({ mode, buttons });
+  const live = useLatest({ mode, buttons });
   const exposed = selectionExposed(selected, mode, buttons);
   const apply = (next: string[]) => {
     setSelected(next);
@@ -92,7 +98,7 @@ export const ShadButtonGroup = (props: WidgetProps) => {
     setLastClicked(info);
     setExposedVariable('lastClicked', info);
     const next = toggleSelection(selected, String(button.value), mode, properties.allowDeselect === true);
-    const changed = stringify(next) !== stringify(selected);
+    const changed = !isEqual(next, selected);
     if (changed) apply(next);
     check.touch();
     fireEvent('onClick');

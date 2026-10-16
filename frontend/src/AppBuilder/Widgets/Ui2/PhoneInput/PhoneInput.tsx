@@ -7,21 +7,17 @@ import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/phoneModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
-import {
-  ADDON,
-  ADDON_HOVER,
-  EDGE,
-  Group,
-  INNER,
-  text,
-  useLatest,
-  withRule,
-} from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import { ADDON, ADDON_HOVER, EDGE, Group, INNER, text, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { InputHTMLAttributes, KeyboardEvent } from 'react';
 import type { Country } from 'react-phone-number-input';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -58,10 +54,13 @@ export const ShadPhoneInput = (props: WidgetProps) => {
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
-  const listKey = stringify(Array.isArray(properties.onlyCountries) ? properties.onlyCountries : null);
+  // A new default number, country or country list starts the input again.
+  const defaultValue = useStable(properties.defaultValue);
+  const defaultCountry = useStable(properties.defaultCountry);
+  const onlyCountries = useStable(Array.isArray(properties.onlyCountries) ? properties.onlyCountries : null);
   const start = useMemo(
-    () => M.phoneStart(properties.defaultValue, properties.defaultCountry, properties.onlyCountries),
-    [text(properties.defaultValue), text(properties.defaultCountry), listKey] // eslint-disable-line react-hooks/exhaustive-deps
+    () => M.phoneStart(defaultValue, defaultCountry, onlyCountries),
+    [defaultValue, defaultCountry, onlyCountries]
   );
   const { countries } = start;
   const [state, setState] = useState<PhoneState>({ value: start.value, country: start.country });

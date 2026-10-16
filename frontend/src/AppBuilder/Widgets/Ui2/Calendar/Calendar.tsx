@@ -1,9 +1,15 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Calendar, buttonVariants, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
-import { clampInt, unwrap } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
+import { clampInt } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import {
   calendarExposed,
   calendarSelection,
@@ -13,8 +19,6 @@ import {
   visiblePeriod,
   ymd,
 } from '@/AppBuilder/Widgets/Ui2/_actions/calendarModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
-import { useLive } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import type { DateRange, DayButtonProps, DayPickerProps } from 'react-day-picker';
 import type { CalendarSelection, Marker } from '@/AppBuilder/Widgets/Ui2/_actions/calendarModel';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -95,10 +99,11 @@ export const ShadCalendar = (props: WidgetProps) => {
   useAutoHeight(props, ref);
   const mode = CALENDAR_MODES.includes(properties.mode) ? properties.mode : 'single';
   const months = clampInt(properties.numberOfMonths, 1, 3, 1);
-  const rawKey = stringify([unwrap(properties.defaultValue) ?? null, mode]);
-  const initial = calendarSelection(properties.defaultValue, mode);
+  // A new default value or mode resets the selection.
+  const defaultValue = useStable(properties.defaultValue);
+  const initial = useMemo(() => calendarSelection(defaultValue, mode), [defaultValue, mode]);
   const [selected, setSelected] = useState(initial);
-  useEffect(() => setSelected(initial), [rawKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setSelected(initial), [initial]);
   // The selection's shape follows the mode.
   const firstSelected =
     mode === 'multiple'
@@ -109,8 +114,10 @@ export const ShadCalendar = (props: WidgetProps) => {
   const initialMonth = toDate(properties.defaultMonth) || firstSelected || new Date();
   const monthKey = ymd(initialMonth).slice(0, 7);
   const [month, setMonth] = useState(initialMonth);
-  useEffect(() => setMonth(initialMonth), [monthKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  const live = useLive({ mode, selected, months });
+  // The month shown resets only when the opening month changes (initialMonth can be a new Date each render).
+  const latestInitialMonth = useLatest(initialMonth);
+  useEffect(() => setMonth(latestInitialMonth.current), [monthKey, latestInitialMonth]);
+  const live = useLatest({ mode, selected, months });
 
   const publish = (next: CalendarSelection) => {
     setSelected(next);

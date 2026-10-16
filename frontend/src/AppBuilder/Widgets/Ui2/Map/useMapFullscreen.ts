@@ -26,7 +26,7 @@ export const useMapFullscreen = ({
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('fullscreenchange', onChange);
     };
-  }, [expanded]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [expanded, mapRef, resize]);
   const toggleFullscreen = () => {
     const frame = frameRef.current;
     if (expanded) {

@@ -16,7 +16,13 @@ import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  list,
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/fileModel';
 import { MUTED, isText } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
@@ -170,14 +176,16 @@ export const ShadFileUpload = (props: WidgetProps) => {
     clearFiles: async () => clearRef.current(),
     setFileName: async (indexOrUpdates: unknown, name: unknown) => renameRef.current(indexOrUpdates, name),
   });
+  // Runs once: the widget opens empty, and its file handles are released when it goes.
+  const exposeRef = useLatest(setExposedVariables);
   useEffect(() => {
     mounted.current = true;
-    setExposedVariables({ file: [], fileSize: 0 });
+    exposeRef.current({ file: [], fileSize: 0 });
     return () => {
       mounted.current = false;
       filesRef.current.forEach((f) => releaseFileHandle(f.handle));
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [exposeRef]);
   const check = useValidation(props, files.length || '', () => clearFiles(false));
 
   const onDrop = async (accepted: File[], rejections: FileRejection[]) => {

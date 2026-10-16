@@ -1,7 +1,9 @@
 // ToolJet UI 2.0 Map (Map.tsx): the parts that are not markers. A heat layer on a canvas, icons for pins (lucide,
 // loaded only when a map uses them), and a polite geocoder client for address search and the picked spot's address.
+import { useEffect } from 'react';
 import L from 'leaflet';
 import { fillUrl, parsePlaces } from './mapGeocoding';
+import type { MutableRefObject } from 'react';
 import type { LeafletMap } from 'leaflet';
 import type { HeatPoint } from './mapShapes';
 import type { Place } from './mapTypes';
@@ -125,6 +127,36 @@ export const HeatLayer = L.Layer.extend<HeatMethods, HeatState>({
 
 /** A heat layer on the map. */
 export type HeatLayerInstance = InstanceType<typeof HeatLayer>;
+
+/** Keeps the Map's heat layer in step with its points: added when heat is shown, updated, removed when it is not. The
+ *  canvas carries what it drew as data attributes, for tests and for checking a page. */
+export const useHeatLayer = (
+  mapRef: MutableRefObject<LeafletMap | null>,
+  heatRef: MutableRefObject<HeatLayerInstance | null>,
+  shown: boolean,
+  heat: HeatPoint[],
+  heatRadius: number
+): void => {
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (!shown) {
+      if (heatRef.current) map.removeLayer(heatRef.current);
+      heatRef.current = null;
+      return;
+    }
+    if (!heatRef.current) {
+      heatRef.current = new HeatLayer(heat, heatRadius);
+      heatRef.current.addTo(map);
+    } else heatRef.current.setData(heat, heatRadius);
+    const canvas = heatRef.current._canvas;
+    if (canvas) {
+      canvas.setAttribute('data-points', String(heat.length));
+      canvas.setAttribute('data-weight', String(Math.round(heat.reduce((t, h) => t + h[2], 0) * 100) / 100));
+      canvas.setAttribute('data-radius', String(heatRadius));
+    }
+  }, [mapRef, heatRef, shown, heat, heatRadius]);
+};
 
 // ---- Icons -----------------------------------------------------------------------------------------------------------
 

@@ -1,20 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { ChevronDown, Ellipsis } from 'lucide-react';
-import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { clickedOption, menuRows, unwrap } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
-import {
-  Icon,
-  MenuContent,
-  MenuRows,
-  MenuSeparator,
-  SIZES,
-  useLive,
-} from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
+import { Icon, MenuContent, MenuRows, MenuSeparator, SIZES } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import type { MenuEntry } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -45,7 +38,7 @@ export const ShadDropdownMenu = (props: WidgetProps) => {
   const [open, setOpen] = useState(false);
   const [last, setLast] = useState<ReturnType<typeof clickedOption> | null>(null);
   const disabled = busy(properties);
-  const live = useLive({ disabled });
+  const live = useLatest({ disabled });
   const changeOpen = (next: boolean) => {
     if (next && live.current.disabled) return;
     setOpen(next);
@@ -60,7 +53,7 @@ export const ShadDropdownMenu = (props: WidgetProps) => {
   });
   useEffect(() => {
     if (disabled && open) setOpen(false);
-  }, [disabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [disabled, open]);
   const rows = menuRows(properties.items);
   const variant = VARIANTS.includes(properties.variant) ? properties.variant : 'outline';
   const size = SIZES.includes(properties.size) ? properties.size : 'default';

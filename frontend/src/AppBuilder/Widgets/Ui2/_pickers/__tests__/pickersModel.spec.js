@@ -57,13 +57,6 @@ describe('pickers model: options', () => {
     expect(M.clampLimit(-3)).toBe(0);
     expect(M.clampLimit('4')).toBe(4);
   });
-
-  it('builds stable keys without throwing on circular data', () => {
-    const loop = {};
-    loop.self = loop;
-    expect(typeof M.stableKey(loop)).toBe('string');
-    expect(M.stableKey([1])).toBe('[1]');
-  });
 });
 
 describe('pickers model: tags', () => {

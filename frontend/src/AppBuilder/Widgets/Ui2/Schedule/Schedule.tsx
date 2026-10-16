@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import useStore from '@/AppBuilder/_stores/store';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import {
   resourceHeading,
@@ -12,11 +12,11 @@ import {
   scheduleRange,
   scheduleResources,
   slotValue,
+  startDay,
 } from './scheduleModel';
 import type { PlacedBooking, ScheduleColumn, ScheduleResource, ScheduleSelected, ScheduleSlot } from './scheduleTypes';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { LABEL, LINE, SURFACE, ScheduleRow } from './ScheduleRow';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 // ToolJet UI 2.0 Schedule: resources down the side, time across (the hours of a day, or days), bookings as blocks,
@@ -31,53 +31,42 @@ const num = (v: unknown, fallback: number, lo: number, hi: number): number => {
   return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : fallback;
 };
 
-/** The part of the store's events slice useHasEvent reads. */
-interface EventsState {
-  eventsSlice?: {
-    module?: Record<string, { events?: { sourceId?: string; event?: { eventId?: string; disabled?: boolean } }[] }>;
-  };
-}
-
-const useHasEvent = (id: string | undefined, eventId: string): boolean =>
-  useStore((state: EventsState) => {
-    const modules = state?.eventsSlice?.module;
-    if (!modules || !id) return false;
-    return Object.values(modules).some((m) =>
-      (Array.isArray(m?.events) ? m.events : []).some(
-        (e) => e?.sourceId === id && e?.event?.eventId === eventId && !e?.event?.disabled
-      )
-    );
-  });
-
 export const ShadSchedule = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, fireEvent, id } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
 
-  // The range is fixed for the day it was drawn on: the day only matters for 'today' (an empty date).
+  // The range is fixed for the day it was drawn on (the day only matters for an empty date, 'today'); the clock below
+  // moves `today` on when the day turns.
   const [today, setToday] = useState(() => dayKey(new Date()));
+  // Bound values keep their reference while their content is the same, so the layout rebuilds only on a change.
+  const date = useStable(p.date);
+  const resourceRows = useStable(p.resources);
+  const bookings = useStable(p.bookings);
   const range = useMemo(
     () =>
-      scheduleRange({
-        scale: p.scale,
-        date: p.date,
-        dayStart: p.dayStart,
-        dayEnd: p.dayEnd,
-        days: p.days,
-        slotMinutes: p.slotMinutes,
-        hourFormat: p.hourFormat,
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [p.scale, stringify(p.date ?? null), p.dayStart, p.dayEnd, p.days, p.slotMinutes, p.hourFormat, today]
+      scheduleRange(
+        {
+          scale: p.scale,
+          date,
+          dayStart: p.dayStart,
+          dayEnd: p.dayEnd,
+          days: p.days,
+          slotMinutes: p.slotMinutes,
+          hourFormat: p.hourFormat,
+        },
+        startDay(today).getTime()
+      ),
+    [p.scale, date, p.dayStart, p.dayEnd, p.days, p.slotMinutes, p.hourFormat, today]
   );
   const resources = useMemo(
-    () => scheduleResources(p.resources, p.bookings, p.resourceField),
-    [stringify(p.resources ?? null), stringify(p.bookings ?? null), p.resourceField] // eslint-disable-line react-hooks/exhaustive-deps
+    () => scheduleResources(resourceRows, bookings, p.resourceField),
+    [resourceRows, bookings, p.resourceField]
   );
   const placed = useMemo(
     () =>
       placeBookings(
-        p.bookings,
+        bookings,
         {
           resourceField: p.resourceField,
           startField: p.startField,
@@ -91,9 +80,8 @@ export const ShadSchedule = (props: WidgetProps) => {
         range,
         resources
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      stringify(p.bookings ?? null),
+      bookings,
       p.resourceField,
       p.startField,
       p.endField,
@@ -116,7 +104,6 @@ export const ShadSchedule = (props: WidgetProps) => {
     selectedSlot: next?.kind === 'slot' ? next.value : {},
   });
   useExposed(setExposedVariables, p, selection(selected));
-  const hasBookingClick = useHasEvent(id, 'onBookingClicked');
   const hasSlotClick = useHasEvent(id, 'onSlotClicked');
   const disabled = busy(p);
   const highlight = p.highlightSelected !== false;
@@ -149,12 +136,15 @@ export const ShadSchedule = (props: WidgetProps) => {
   // Placed when the line mounts as well as on each tick: drawn after the bookings loaded, it sat at its default, the
   // left edge, until the next tick 30 seconds later (a week view showed now on Monday; a day view before its first hour
   // showed it at the start, 2026-10-14).
-  const placeNow = (el: HTMLDivElement | null) => {
-    if (!el) return;
-    const pos = positionOf(range, Date.now());
-    el.style.display = pos === null ? 'none' : '';
-    el.style.setProperty('--now', String((pos ?? 0) / 100));
-  };
+  const placeNow = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (!el) return;
+      const pos = positionOf(range, Date.now());
+      el.style.display = pos === null ? 'none' : '';
+      el.style.setProperty('--now', String((pos ?? 0) / 100));
+    },
+    [range]
+  );
   const nowLineRef = (el: HTMLDivElement | null) => {
     nowRef.current = el;
     placeNow(el);
@@ -168,7 +158,7 @@ export const ShadSchedule = (props: WidgetProps) => {
     tick();
     const timer = setInterval(tick, 30000);
     return () => clearInterval(timer);
-  }, [range, showNow, today]);
+  }, [range, showNow, today, placeNow]);
 
   const rw = num(p.resourceWidth, 168, 80, 400);
   const rowHeight = num(p.rowHeight, 56, 32, 160);

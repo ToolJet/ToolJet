@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import {
@@ -10,7 +10,6 @@ import {
   clampInt,
   moveIndex,
 } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
-import { useLive } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Carousel ----------------------------------------------------------------------------------------------------
@@ -38,7 +37,7 @@ export const ShadCarousel = (props: WidgetProps) => {
   const [failed, setFailed] = useState<Record<number, boolean>>({});
   const [hovered, setHovered] = useState(false);
   const disabled = busy(properties);
-  const live = useLive({ positions, loop, slides });
+  const live = useLatest({ positions, loop, slides });
 
   const go = (to: number) => {
     const { positions: count, loop: wrap, slides: list } = live.current;
@@ -57,6 +56,7 @@ export const ShadCarousel = (props: WidgetProps) => {
     goTo: async (i: unknown) => go(clampInt(i, -100000, 100000, 0)),
   });
 
+  const latestGo = useLatest(go);
   const autoplay =
     properties.autoplay === true && positions > 1 && !disabled && !(properties.pauseOnHover !== false && hovered);
   const interval = clampInt(properties.interval, 1000, 600000, 5000);
@@ -64,10 +64,10 @@ export const ShadCarousel = (props: WidgetProps) => {
     if (!autoplay) return undefined;
     const timer = setInterval(() => {
       const { positions: count, loop: wrap } = live.current;
-      go(!wrap && indexRef.current >= count - 1 ? 0 : indexRef.current + 1);
+      latestGo.current(!wrap && indexRef.current >= count - 1 ? 0 : indexRef.current + 1);
     }, interval);
     return () => clearInterval(timer);
-  }, [autoplay, interval]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [autoplay, interval, live, latestGo]);
 
   // Swipes: a horizontal drag of 40px or more moves a slide, and is not a click.
   const drag = useRef<{ x: number | null; swiped: boolean }>({ x: null, swiped: false });

@@ -17,6 +17,14 @@ interface ActionArgs {
   setStyle: Dispatch<SetStateAction<'streets' | 'satellite'>>;
 }
 
+/** A point given to an action as (lat, lng), as one { lat, lng } object or as one "lat, lng" text. */
+const pointArgs = (lat: unknown, lng: unknown): LatLng | null =>
+  lat && typeof lat === 'object'
+    ? parseCenter(lat)
+    : typeof lat === 'string' && lat.includes(',')
+    ? parseCenter(lat)
+    : toLatLng(lat, lng);
+
 /** The Map's component-specific actions. They read `live`, so a call made after a data change sees the new markers. */
 export const useMapActions = ({
   live,
@@ -29,12 +37,6 @@ export const useMapActions = ({
   pick,
   setStyle,
 }: ActionArgs) => {
-  const pointArgs = (lat: unknown, lng: unknown): LatLng | null =>
-    lat && typeof lat === 'object'
-      ? parseCenter(lat)
-      : typeof lat === 'string' && lat.includes(',')
-      ? parseCenter(lat)
-      : toLatLng(lat, lng);
   const actions = useMemo(
     () => ({
       setCenter: async (lat: unknown, lng: unknown, zoom?: unknown) => {
@@ -110,7 +112,8 @@ export const useMapActions = ({
         live.current.setExposedVariables({ mapStyle: next });
       },
     }),
-    [] // eslint-disable-line react-hooks/exhaustive-deps
+    // All stable: refs, state setters and the Map's memoised drawing functions.
+    [live, mapRef, goTo, ownMove, select, setShape, drawShapes, pick, setStyle]
   );
   return actions;
 };

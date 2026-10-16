@@ -56,7 +56,7 @@ export const useMapSearch = ({
       clearTimeout(timer);
       controller?.abort();
     };
-  }, [query, submitted, typeAhead]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query, submitted, typeAhead, live]);
   const choosePlace = (place: Place) => {
     const map = mapRef.current;
     setResults([]);

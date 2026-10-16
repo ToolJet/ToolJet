@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertCircle, CircleCheck } from 'lucide-react';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import {
   answersOf,
@@ -18,7 +18,6 @@ import {
   type AnswerValue,
   type QuestionType,
 } from './questionnaireModel';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { QuestionAnswer, type AnswerOption } from './QuestionAnswer';
 import type { KeyboardEvent } from 'react';
@@ -44,10 +43,10 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
 
-  const itemsKey = stringify(p.items ?? null);
-  const defaultsKey = stringify(p.defaultAnswers ?? null);
-  const items = useMemo(() => normalizeItems(p.items), [itemsKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  const defaults = useMemo(() => initialAnswers(items, p.defaultAnswers), [items, defaultsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const rawItems = useStable(p.items);
+  const defaultAnswers = useStable(p.defaultAnswers);
+  const items = useMemo(() => normalizeItems(rawItems), [rawItems]);
+  const defaults = useMemo(() => initialAnswers(items, defaultAnswers), [items, defaultAnswers]);
 
   const [answers, setAnswers] = useState(defaults);
   const [index, setIndex] = useState(0);
@@ -100,8 +99,8 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
     if (moved) fireEvent('onStepChanged');
   };
 
-  const latest = useRef({ move, items, defaults, count });
-  latest.current = { move, items, defaults, count };
+  const latest = useRef({ move, items, defaults, count, setExposedVariables });
+  latest.current = { move, items, defaults, count, setExposedVariables };
   const actions = useMemo(
     () => ({
       reset: async () => {
@@ -110,7 +109,7 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
         setIndex(0);
         setComplete(false);
         setError('');
-        setExposedVariables({
+        latest.current.setExposedVariables({
           answers: answersOf(its, d),
           currentIndex: 0,
           currentItem: its[0]
@@ -126,7 +125,7 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
         latest.current.move(target, { isComplete: false });
       },
     }),
-    [] // eslint-disable-line react-hooks/exhaustive-deps
+    []
   );
 
   useExposed(setExposedVariables, p, { ...state(), ...actions });

@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { ArrowDown, ArrowUp, Download, MessageSquare, Trash2 } from 'lucide-react';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, useLatest, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { truthy, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import {
@@ -25,7 +25,6 @@ interface LastValues {
 import { HistorySkeleton, IconButton, MessageRow, Typing } from './ChatParts';
 import { useChatScroll } from './useChatScroll';
 import { validateMessageHistory, validateSingleMessageObject } from '@/AppBuilder/Widgets/Ui2/_shared/chatHelpers';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 // ToolJet UI 2.0 Chat: the native Chat widget (Widgets/Chat) in the pack's look, with its properties, events, exposed
@@ -40,20 +39,20 @@ const MAX_INPUT_HEIGHT = 160;
 export const ShadChat = (props: WidgetProps) => {
   const { properties: raw, setExposedVariables, fireEvent, id } = props;
   const [p, override] = useOverrides(raw);
-  const people = {
-    userName: p.userName,
-    userAvatar: p.userAvatar,
-    respondentName: p.respondentName,
-    respondentAvatar: p.respondentAvatar,
-  };
+  const people = useMemo(
+    () => ({
+      userName: p.userName,
+      userAvatar: p.userAvatar,
+      respondentName: p.respondentName,
+      respondentAvatar: p.respondentAvatar,
+    }),
+    [p.userName, p.userAvatar, p.respondentName, p.respondentAvatar]
+  );
   const peopleRef = useRef(people);
   peopleRef.current = people;
 
-  const initial = useMemo(
-    (): unknown[] => (Array.isArray(p.initialChat) ? p.initialChat : []),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [stringify(p.initialChat ?? null)]
-  );
+  const initialChat = useStable(p.initialChat);
+  const initial = useMemo((): unknown[] => (Array.isArray(initialChat) ? initialChat : []), [initialChat]);
   const [history, setHistory] = useState(initial);
   const historyRef = useRef(history);
   historyRef.current = history;
@@ -171,9 +170,10 @@ export const ShadChat = (props: WidgetProps) => {
 
   // The history is published on its own (and at once by every change, so an event handler reads it): comparing a long
   // history by content on every keystroke would cost more than it saves.
+  const publish = useLatest(setExposedVariables);
   useEffect(() => {
-    setExposedVariables({ history });
-  }, [history]); // eslint-disable-line react-hooks/exhaustive-deps
+    publish.current({ history });
+  }, [history, publish]);
   useExposed(setExposedVariables, p, {
     isHistoryLoading: historyLoading,
     isInputDisabled: inputDisabled,
@@ -186,18 +186,10 @@ export const ShadChat = (props: WidgetProps) => {
 
   const showAvatars = p.showAvatars !== false;
   const showTimestamps = p.showTimestamps !== false;
-  const allRows = useMemo(
-    () => toRows(history),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [history]
-  );
+  const allRows = useMemo(() => toRows(history), [history]);
   const [shown, setShown] = useState(MESSAGES_PER_STEP);
   const hidden = Math.max(0, allRows.length - shown);
-  const rows = useMemo(
-    () => withRuns(allRows.slice(hidden), people),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [allRows, hidden, people.userName, people.userAvatar, people.respondentName, people.respondentAvatar]
-  );
+  const rows = useMemo(() => withRuns(allRows.slice(hidden), people), [allRows, hidden, people]);
   const errorRow = error
     ? withRuns(
         [{ key: 'error', type: 'error', text: error, name: '', avatar: '', timestamp: new Date().toISOString() }],

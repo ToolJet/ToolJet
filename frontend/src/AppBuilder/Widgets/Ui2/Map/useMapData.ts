@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Supercluster from 'supercluster';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import { useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { mapPoints, parseCenter } from './mapModel';
 import { areaShapes, heatPoints, markerRoutes, routeRows, statusFill } from './mapShapes';
 import { circleCorners } from './mapIcons';
@@ -22,7 +22,9 @@ const PILL_CLUSTER_RADIUS = 88;
 
 /** The Map's markers, routes, areas, marker groups and heat points from its properties. */
 export const useMapData = (p: Resolved) => {
-  const fields = {
+  // Bound values keep their reference while their content is the same, so the shapes below rebuild only on a change.
+  const data = useStable(p.data);
+  const fields = useStable({
     latField: p.latField,
     lngField: p.lngField,
     titleField: p.titleField,
@@ -31,60 +33,41 @@ export const useMapData = (p: Resolved) => {
     idField: p.idField,
     labelField: p.labelField,
     iconField: p.iconField,
-  };
-  const dataKey = stringify(p.data ?? null);
-  const { points, skipped } = useMemo(
-    () => mapPoints(p.data, fields),
-    [dataKey, stringify(fields)] // eslint-disable-line react-hooks/exhaustive-deps
-  );
-  const statusColorsKey = stringify(p.statusColors ?? null);
-  const routeColorsKey = stringify(p.routeColors ?? null);
+  });
+  const statusColors = useStable(p.statusColors);
+  const routeColors = useStable(p.routeColors);
+  const routeStartValue = useStable(p.routeStart);
+  const routeData = useStable(p.routes);
+  const areaData = useStable(p.areas);
+  const { points, skipped } = useMemo(() => mapPoints(data, fields), [data, fields]);
   const routes = useMemo(
     () => [
       ...(p.connectMarkers === true
         ? markerRoutes(points, {
             routeField: p.routeField,
             routeOrderField: p.routeOrderField,
-            routeStart: p.routeStart,
-            routeColors: p.routeColors,
+            routeStart: routeStartValue,
+            routeColors,
           })
         : []),
-      ...routeRows(p.routes, { routeColors: p.routeColors, statusColors: p.statusColors }),
+      ...routeRows(routeData, { routeColors, statusColors }),
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      points,
-      p.connectMarkers,
-      p.routeField,
-      p.routeOrderField,
-      stringify(p.routeStart ?? null),
-      stringify(p.routes ?? null),
-      routeColorsKey,
-      statusColorsKey,
-    ]
+    [points, p.connectMarkers, p.routeField, p.routeOrderField, routeStartValue, routeData, routeColors, statusColors]
   );
   const routeStart = p.connectMarkers === true ? parseCenter(p.routeStart) : null;
   const areas = useMemo(
     () =>
       areaShapes(
-        p.areas,
+        areaData,
         {
           areaShapeField: p.areaShapeField,
           areaTitleField: p.areaTitleField,
           areaStatusField: p.areaStatusField,
           areaRadiusField: p.areaRadiusField,
         },
-        p.statusColors
+        statusColors
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      stringify(p.areas ?? null),
-      p.areaShapeField,
-      p.areaTitleField,
-      p.areaStatusField,
-      p.areaRadiusField,
-      statusColorsKey,
-    ]
+    [areaData, p.areaShapeField, p.areaTitleField, p.areaStatusField, p.areaRadiusField, statusColors]
   );
   const shapeExtent = useMemo(
     () => [
@@ -111,11 +94,11 @@ export const useMapData = (p: Resolved) => {
   }, [points, cluster]);
   const heat = useMemo(() => heatPoints(points, p.heatField), [points, p.heatField]);
   const heatRadius = Math.max(8, Math.min(120, Number(p.heatRadius) || 28));
-  const colorOfPoint = (pt: MapPoint) => statusFill(pt.status, pt.tone, p.statusColors);
+  const colorOfPoint = (pt: MapPoint) => statusFill(pt.status, pt.tone, statusColors);
 
   // Icons for the pins load once, the first time a map names one; the pins draw again when they arrive.
   const [iconsReady, setIconsReady] = useState(0);
-  const iconNames = useMemo(() => [...new Set(points.map((pt) => pt.icon).filter(Boolean))], [points]);
+  const iconNames = useStable(useMemo(() => [...new Set(points.map((pt) => pt.icon).filter(Boolean))], [points]));
   useEffect(() => {
     if (!iconNames.length) return undefined;
     let alive = true;
@@ -123,12 +106,12 @@ export const useMapData = (p: Resolved) => {
     return () => {
       alive = false;
     };
-  }, [iconNames.join('|')]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [iconNames]);
 
   return {
     points,
     skipped,
-    statusColorsKey,
+    statusColors,
     routes,
     routeStart,
     areas,

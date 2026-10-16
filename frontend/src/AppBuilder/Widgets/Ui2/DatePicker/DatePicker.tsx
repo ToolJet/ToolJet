@@ -1,12 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon } from 'lucide-react';
-import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  list,
+  useAutoHeight,
+  useExposed,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Calendar, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { toDate, ymd } from '@/AppBuilder/Widgets/Ui2/_actions/calendarModel';
 import { dateProblem, dateRules, parseDateTime, toDayjsFormat } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { textArg, useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
@@ -36,25 +41,21 @@ export const ShadDatePicker = (props: WidgetProps) => {
     typeof properties.format === 'string' && properties.format.trim()
       ? toDayjsFormat(properties.format)
       : 'DD MMM YYYY';
-  const rulesKey = stringify([
-    properties.minDate ?? null,
-    properties.maxDate ?? null,
-    properties.disabledDates ?? null,
-  ]);
+  const minDate = useStable(properties.minDate);
+  const maxDate = useStable(properties.maxDate);
+  const disabledDates = useStable(properties.disabledDates);
   const rules = useMemo(
-    () =>
-      dateRules({
-        minDate: properties.minDate,
-        maxDate: properties.maxDate,
-        disabledDates: properties.disabledDates,
-        format,
-      }),
-    [rulesKey, format] // eslint-disable-line react-hooks/exhaustive-deps
+    () => dateRules({ minDate, maxDate, disabledDates, format }),
+    [minDate, maxDate, disabledDates, format]
   );
-  const raw = properties.defaultValue;
-  const initial = range ? { from: toDate(list(raw)[0]), to: toDate(list(raw)[1]) } : toDate(raw);
+  // A new default value or mode resets the selection.
+  const raw = useStable(properties.defaultValue);
+  const initial = useMemo(
+    (): Selection => (range ? { from: toDate(list(raw)[0]), to: toDate(list(raw)[1]) } : toDate(raw)),
+    [raw, range]
+  );
   const [selected, setSelected] = useState<Selection>(initial);
-  useEffect(() => setSelected(initial), [stringify(raw ?? null), range]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setSelected(initial), [initial]);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
   const [open, setOpen] = useState(false);

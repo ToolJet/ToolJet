@@ -1,8 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
+import isEqual from 'lodash/isEqual';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  list,
+  useAutoHeight,
+  useExposed,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
 export const MAX_ACCORDION_ITEMS = 200;
@@ -12,9 +18,9 @@ export const ShadAccordion = (props: WidgetProps) => {
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const multiple = properties.multiple === true;
-  const initial = list(properties.defaultOpen).map(String);
+  const initial = useStable(list(properties.defaultOpen).map(String));
   const [open, setOpen] = useState<string[]>(initial);
-  useEffect(() => setOpen(initial), [stringify(initial)]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setOpen(initial), [initial]);
   // An accordion of thousands of sections is a binding mistake, and drawing them all freezes the page.
   const items = list(properties.items).slice(0, MAX_ACCORDION_ITEMS);
   const openRef = useRef(open);
@@ -52,13 +58,13 @@ export const ShadAccordion = (props: WidgetProps) => {
           ? all
           : [...new Set([...openRef.current, one])]
         : [one ?? all[0]].filter(Boolean);
-      if (stringify(next) !== stringify(openRef.current)) apply(next);
+      if (!isEqual(next, openRef.current)) apply(next);
     },
     collapse: async (index?: unknown) => {
       const one = indexArg(index);
       if (!noIndex(index) && one === null) return;
       const next = one === null ? [] : openRef.current.filter((k) => k !== one);
-      if (stringify(next) !== stringify(openRef.current)) apply(next);
+      if (!isEqual(next, openRef.current)) apply(next);
     },
   });
   const rootProps = multiple

@@ -4,7 +4,13 @@ import { CalendarIcon, Clock } from 'lucide-react';
 import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import {
   Button,
   Calendar,
@@ -22,16 +28,7 @@ import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import { isBlank } from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
-import {
-  ICON,
-  TRIGGER,
-  pad2,
-  parseTimeArg,
-  text,
-  useLatest,
-  withRule,
-} from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import { ICON, TRIGGER, pad2, parseTimeArg, text, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { Dayjs } from 'dayjs';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -76,20 +73,12 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
   const use24 = M.is24h(properties.timeFormat);
   const displayFormat = `${dateFormat} ${use24 ? 'HH:mm' : 'h:mm A'}`;
   const step = M.minuteStep(properties.minuteStep, 5);
-  const rulesKey = stringify([
-    properties.minDate ?? null,
-    properties.maxDate ?? null,
-    properties.disabledDates ?? null,
-  ]);
+  const minDate = useStable(properties.minDate);
+  const maxDate = useStable(properties.maxDate);
+  const disabledDates = useStable(properties.disabledDates);
   const rules = useMemo(
-    () =>
-      M.dateRules({
-        minDate: properties.minDate,
-        maxDate: properties.maxDate,
-        disabledDates: properties.disabledDates,
-        format: dateFormat,
-      }),
-    [rulesKey, dateFormat] // eslint-disable-line react-hooks/exhaustive-deps
+    () => M.dateRules({ minDate, maxDate, disabledDates, format: dateFormat }),
+    [minDate, maxDate, disabledDates, dateFormat]
   );
   const initial = M.parseDateTime(properties.defaultValue, displayFormat)?.valueOf() ?? null;
   const [ts, setTs] = useState(initial);
