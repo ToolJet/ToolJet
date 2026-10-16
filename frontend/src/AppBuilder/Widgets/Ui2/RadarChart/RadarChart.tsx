@@ -1,4 +1,5 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Legend, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, Tooltip } from 'recharts';
 import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
@@ -23,7 +24,7 @@ import {
   animated,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 
-export const ShadRadarChart = (props) => {
+export const ShadRadarChart = (props: WidgetProps) => {
   const p = props.properties;
   const { x: category, series } = resolveChartFields(
     list(p.data),
@@ -36,7 +37,7 @@ export const ShadRadarChart = (props) => {
   const max = num(p.maxValue);
   const opacity = clamp(p.fillOpacity, 0, 1, 0.5);
   const full = formatter({ prefix: p.valuePrefix, suffix: p.valueSuffix });
-  const color = (i) => seriesColor(p.colors, i);
+  const color = (i: number) => seriesColor(p.colors, i);
   return (
     <SafeFrame props={props} empty={!series.length || !hasValues(rows, series)}>
       {(onDatum) => (

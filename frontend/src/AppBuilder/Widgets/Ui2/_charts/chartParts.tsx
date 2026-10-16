@@ -4,7 +4,8 @@ import { ResponsiveContainer } from 'recharts';
 import { list, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { num, MAX_SERIES } from './chartsModel';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { num, MAX_SERIES, type FormatOptions } from './chartsModel';
 
 // shadcn/ui pack charts (experiment): Recharts styled the way shadcn/ui's chart component styles it (no axis lines,
 // horizontal grid only, a card tooltip, series colours from --sc-chart-1..5, which follow the app theme, or from the
@@ -13,12 +14,14 @@ import { num, MAX_SERIES } from './chartsModel';
 
 export const compact = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
 export const full = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
-export const fmt = (p, short) => (v) => {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return String(v ?? '');
-  return `${p.valuePrefix || ''}${short ? compact.format(n) : full.format(n)}${p.valueSuffix || ''}`;
-};
-export const seriesOf = (p) =>
+export const fmt =
+  (p: Resolved, short: boolean) =>
+  (v: unknown): string => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return String(v ?? '');
+    return `${p.valuePrefix || ''}${short ? compact.format(n) : full.format(n)}${p.valueSuffix || ''}`;
+  };
+export const seriesOf = (p: Resolved): string[] =>
   (Array.isArray(p.yFields) ? p.yFields : String(p.yFields ?? '').split(','))
     .map((s) => String(s).trim())
     .filter(Boolean)
@@ -33,7 +36,27 @@ export const AXIS = {
 };
 export const GRID = 'var(--lk-grid, var(--sc-border))';
 
-export const ChartTooltip = ({ active, payload, label, format }) => {
+/** What Recharts passes a tooltip for each series under the cursor. */
+export interface TooltipItem {
+  dataKey?: string | number;
+  name?: string | number;
+  value?: unknown;
+  color?: string;
+  payload?: { fill?: string };
+}
+
+export interface TooltipContentProps {
+  active?: boolean;
+  payload?: TooltipItem[];
+  label?: unknown;
+}
+
+export const ChartTooltip = ({
+  active,
+  payload,
+  label,
+  format,
+}: TooltipContentProps & { format: (v: unknown) => string }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="tj-shadcn">
@@ -54,7 +77,12 @@ export const ChartTooltip = ({ active, payload, label, format }) => {
   );
 };
 
-export const LegendContent = ({ payload }) => (
+export interface LegendItem {
+  value?: string | number;
+  color?: string;
+}
+
+export const LegendContent = ({ payload }: { payload?: LegendItem[] }) => (
   <div className="flex flex-wrap items-center justify-center gap-4 pt-3 text-xs">
     {(payload || []).map((item) => (
       <div key={item.value} className="flex items-center gap-1.5">
@@ -68,9 +96,9 @@ export const LegendContent = ({ payload }) => (
 /** The clicked datum and the native Chart's events and actions: a click on a datum exposes it (clickedDataPoint) and
  *  fires onClick; a double click fires onDoubleClick (the datum is the one its
  *  first click picked); clearClickedPoint() empties it. */
-export const useClickedDatum = (props) => {
-  const [clicked, setClicked] = useState({});
-  const pick = (datum) => {
+export const useClickedDatum = (props: WidgetProps) => {
+  const [clicked, setClicked] = useState<unknown>({});
+  const pick = (datum: unknown) => {
     setClicked(datum);
     props.setExposedVariables?.({ clickedDataPoint: datum });
     props.fireEvent?.('onClick');
@@ -82,11 +110,22 @@ export const useClickedDatum = (props) => {
   };
 };
 
-export const ChartFrame = ({ props, empty, children }) => {
+/** The chart a frame draws, given the handler for a clicked datum. */
+type ChartRender = (onDatum: (datum: unknown) => void) => React.ReactElement;
+
+export const ChartFrame = ({
+  props,
+  empty,
+  children,
+}: {
+  props: WidgetProps;
+  empty: boolean;
+  children: ChartRender;
+}) => {
   const { properties, setExposedVariables, height } = props;
   const click = useClickedDatum(props);
   useExposed(setExposedVariables, properties, click.exposed);
-  const onDatum = (datum) => {
+  const onDatum = (datum: unknown) => {
     if (!datum) return;
     click.pick(datum);
   };
@@ -109,12 +148,17 @@ export const ChartFrame = ({ props, empty, children }) => {
 
 /** A value axis as wide as its longest tick label (a suffix such as " seats" or a currency needs more than a fixed
  *  48px, or the labels wrap and the top one clips). The top tick is the max rounded up the way the axis rounds it. */
-const niceCeil = (v) => {
+const niceCeil = (v: number): number => {
   if (!(v > 0)) return v;
   const step = 10 ** Math.floor(Math.log10(v));
   return Math.ceil(v / step) * step;
 };
-export const valueAxisWidth = (data, series, format, stacked = false) => {
+export const valueAxisWidth = (
+  data: unknown,
+  series: string[],
+  format: (v: number) => unknown,
+  stacked = false
+): number => {
   const values = list(data).flatMap((row) => {
     const nums = series.map((key) => Number(row?.[key])).filter((n) => Number.isFinite(n));
     return stacked ? [nums.reduce((a, b) => a + b, 0)] : nums;
@@ -132,16 +176,19 @@ export const valueAxisWidth = (data, series, format, stacked = false) => {
 /** An x axis of ISO dates ("2026-09-10") reads as "10 Sep", the pack's date style; other values are shown as they are. */
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:[T ][\d:.]+(?:Z|[+-]\d{2}:?\d{2})?)?$/;
 const YEAR_MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
-export const dateTicks = (data, key) => {
+/** The tick formatter: a date's short form, any other value unchanged. */
+type DateTick = <T>(v: T) => T | string;
+
+export const dateTicks = (data: unknown, key: string | undefined): DateTick | undefined => {
   const sample = list(data)
-    .map((row) => row?.[key])
+    .map((row) => row?.[String(key)])
     .find((v) => v !== null && v !== undefined && v !== '');
   if (typeof sample === 'string' && YEAR_MONTH.test(sample)) {
     // Year-months ("2026-03", a monthly rollup's key) read "Mar", or "Mar '26" when the axis spans two years.
     const years = new Set(
       list(data)
-        .map((row) => row?.[key])
-        .filter((v) => typeof v === 'string' && YEAR_MONTH.test(v))
+        .map((row) => row?.[String(key)])
+        .filter((v): v is string => typeof v === 'string' && YEAR_MONTH.test(v))
         .map((v) => v.slice(0, 4))
     );
     const shape = years.size > 1 ? "MMM 'YY" : 'MMM';
@@ -154,21 +201,27 @@ export const dateTicks = (data, key) => {
 /** A chart drawn under 100px tall (a trend in a KPI tile) has no room for axes, grid or legend: it draws the shape
  *  alone, like a sparkline, instead of squeezing tick labels into it. Taller ones keep their labels (a 135px bar chart
  *  without its category names meant nothing). */
-export const isCompactChart = (height) => (Number(height) || 300) < 100;
+export const isCompactChart = (height: unknown): boolean => (Number(height) || 300) < 100;
 
 // ---- Line, Radar, Radial and Sparkline (logic in chartsModel.js) ----------------------------------------------------
 
 // A chart that fails to draw (data no normaliser foresaw) shows the empty state instead of taking the app down; it
 // retries when the properties change.
-export class ChartBoundary extends React.Component {
-  constructor(props) {
+interface ChartBoundaryProps {
+  resetKey: unknown;
+  fallback: React.ReactNode;
+  children: React.ReactNode;
+}
+
+export class ChartBoundary extends React.Component<ChartBoundaryProps, { failed: boolean }> {
+  constructor(props: ChartBoundaryProps) {
     super(props);
     this.state = { failed: false };
   }
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  componentDidUpdate(prev) {
+  componentDidUpdate(prev: ChartBoundaryProps) {
     if (this.state.failed && prev.resetKey !== this.props.resetKey) this.setState({ failed: false });
   }
   render() {
@@ -176,7 +229,7 @@ export class ChartBoundary extends React.Component {
   }
 }
 
-export const EmptyChart = ({ text, small }) => (
+export const EmptyChart = ({ text, small }: { text: string; small?: boolean }) => (
   <div
     className={cn(
       'flex h-full w-full items-center justify-center text-[color:var(--sc-muted-foreground)]',
@@ -189,11 +242,20 @@ export const EmptyChart = ({ text, small }) => (
 
 /** ChartFrame with an empty state, an error boundary and the widget's own exposed values. `clickable`: clicking a
  *  datum sets clickedDataPoint and fires onClick; otherwise a click anywhere fires onClick. */
-export const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true, children }) => {
+interface SafeFrameProps {
+  props: WidgetProps;
+  empty: boolean;
+  small?: boolean;
+  exposed?: Record<string, unknown>;
+  clickable?: boolean;
+  children: ChartRender;
+}
+
+export const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true, children }: SafeFrameProps) => {
   const { properties, setExposedVariables, height } = props;
   const click = useClickedDatum(props);
   useExposed(setExposedVariables, properties, clickable ? { ...click.exposed, ...exposed } : exposed);
-  const onDatum = (datum) => {
+  const onDatum = (datum: unknown) => {
     if (!datum || typeof datum !== 'object') return;
     click.pick(datum);
   };
@@ -221,16 +283,16 @@ export const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true,
 };
 
 export const AXIS_FILL = AXIS.tick.fill;
-export const animated = (p) => p.animate !== false;
+export const animated = (p: Resolved): boolean => p.animate !== false;
 /** A formatter that multiplies by scale first (a percent axis over fractions, percentScale). */
-export const scaled = (format, scale) =>
+export const scaled = (format: (v: unknown) => string, scale: number): ((v: unknown) => string) =>
   scale === 1
     ? format
-    : (v) => {
+    : (v: unknown) => {
         const n = num(v);
         return format(n === null ? v : n * scale);
       };
-export const valueFormat = (p) => ({
+export const valueFormat = (p: Resolved): FormatOptions => ({
   format: p.yAxisFormat,
   currency: p.currency,
   prefix: p.valuePrefix,
@@ -240,7 +302,7 @@ export const valueFormat = (p) => ({
 // ---- Combo ---------------------------------------------------------------------------------------------------------
 
 /** Width of a value axis for the given values under the given tick formatter. */
-export const axisWidthFor = (values, tick) => {
+export const axisWidthFor = (values: number[], tick: (v: number) => unknown): number => {
   if (!values.length) return 40;
   const max = Math.max(...values);
   const min = Math.min(...values);

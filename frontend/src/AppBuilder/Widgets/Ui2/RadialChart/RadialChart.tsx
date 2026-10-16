@@ -1,12 +1,28 @@
 import React from 'react';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Cell, PolarAngleAxis, RadialBar, RadialBarChart, Tooltip } from 'recharts';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { formatter, isSet, num } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { formatter, isSet, num, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { arcAngles, arcBox, radialRows } from './radialModel';
 import { LegendContent, SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
-export const RadialTip = ({ active, payload, format }) => {
+/** A drawn ring: its name, value and colour, the gauge's maximum in progress mode, and the row it came from. */
+interface Ring {
+  name: string;
+  value: number;
+  max?: number;
+  fill: string;
+  row: Row;
+}
+
+interface RadialTipProps {
+  active?: boolean;
+  payload?: Array<{ payload?: Ring }>;
+  format: (v: unknown) => string;
+}
+
+export const RadialTip = ({ active, payload, format }: RadialTipProps) => {
   const item = active ? payload?.[0]?.payload : null;
   if (!item) return null;
   return (
@@ -22,7 +38,17 @@ export const RadialTip = ({ active, payload, format }) => {
 
 // Sized by ResponsiveContainer (it passes width and height), so the arc can fill the box: a semicircle gauge sits low
 // and wide, a full ring centred.
-export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum }) => {
+interface RadialBodyProps {
+  width?: number;
+  height?: number;
+  p: Resolved;
+  rings: Ring[];
+  progress: boolean;
+  centre: { value: string; label: string };
+  onDatum: (datum: unknown) => void;
+}
+
+export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum }: RadialBodyProps) => {
   const w = Number(width) || 0;
   const legend = !progress && p.showLegend !== false;
   const chartHeight = Math.max(0, (Number(height) || 0) - (legend ? 32 : 0));
@@ -30,8 +56,8 @@ export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum 
   const box = arcBox(startAngle, endAngle, w, chartHeight);
   const r = box.outerRadius;
   const own = num(p.thickness);
-  let inner;
-  let barSize;
+  let inner: number;
+  let barSize: number | undefined;
   if (progress) {
     barSize = Math.max(2, Math.min(r * 0.6, own ?? Math.max(8, Math.min(28, r * 0.16))));
     inner = Math.max(0, r - barSize);
@@ -40,7 +66,7 @@ export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum 
     inner = barSize ? Math.max(r * 0.15, r - rings.length * (barSize + 4)) : r * 0.32;
   }
   // Categories fill against the larger of Max value and the largest value.
-  const max = progress ? rings[0].max : Math.max(num(p.maxValue) ?? 0, ...rings.map((g) => g.value)) || 1;
+  const max = progress ? rings[0].max ?? 100 : Math.max(num(p.maxValue) ?? 0, ...rings.map((g) => g.value)) || 1;
   const radius = p.rounded !== false ? (barSize ?? ((r - inner) / Math.max(1, rings.length)) * 0.82) / 2 : 0;
   const format = formatter({ prefix: p.valuePrefix, suffix: p.valueSuffix });
   const fontSize = Math.max(14, Math.min(40, inner * 0.42));
@@ -110,11 +136,11 @@ export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum 
   );
 };
 
-export const ShadRadialChart = (props) => {
+export const ShadRadialChart = (props: WidgetProps) => {
   const p = props.properties;
   const progress = p.mode !== 'categories';
   const format = formatter({ prefix: p.valuePrefix, suffix: p.valueSuffix });
-  let rings = [];
+  let rings: Ring[] = [];
   let centre = { value: '', label: isSet(p.centerLabel) ? String(p.centerLabel) : '' };
   if (progress) {
     const value = num(p.value);

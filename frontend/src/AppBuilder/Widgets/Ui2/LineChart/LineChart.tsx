@@ -1,4 +1,5 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, Tooltip, XAxis, YAxis } from 'recharts';
 import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
@@ -31,7 +32,7 @@ import {
   valueFormat,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 
-export const ShadLineChart = (props) => {
+export const ShadLineChart = (props: WidgetProps) => {
   const p = props.properties;
   const { x: xField, series } = resolveChartFields(
     list(p.data),
@@ -51,9 +52,10 @@ export const ShadLineChart = (props) => {
   const targetLabel = isSet(p.referenceLabel) ? String(p.referenceLabel) : '';
   const strokeWidth = clamp(p.strokeWidth, 0.5, 12, 2);
   const curve = curveOf(p.curve);
-  const color = (i) => seriesColor(p.colors, i);
+  const color = (i: number) => seriesColor(p.colors, i);
   // The y axis is as wide as its longest tick label.
-  const values = rows.flatMap((r) => series.map((s) => r[s])).filter((v) => v !== null);
+  // seriesRows makes every series value a number or null.
+  const values = rows.flatMap((r) => series.map((s) => r[s])).filter((v): v is number => v !== null);
   if (target !== null) values.push(target);
   const longest = values.length
     ? Math.max(String(tick(Math.max(...values))).length, String(tick(Math.min(...values))).length)

@@ -1,10 +1,11 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import { funnelStages } from './funnelModel';
+import { funnelStages, type FunnelStage } from './funnelModel';
 import {
   ChartBoundary,
   EmptyChart,
@@ -17,7 +18,7 @@ import {
 
 /** Stages as centred (or left-aligned) bars, widest first, with each stage's value and its conversion from the stage
  *  before (or from the first). Plain HTML rather than an SVG: labels never clip, and the bars follow the theme. */
-export const ShadFunnelChart = (props) => {
+export const ShadFunnelChart = (props: WidgetProps) => {
   const p = props.properties;
   const { setExposedVariables, height } = props;
   const click = useClickedDatum(props);
@@ -28,8 +29,8 @@ export const ShadFunnelChart = (props) => {
   const centred = p.align !== 'left';
   const showConversion = p.showConversion !== false;
   const byStage = p.colorByStage === true;
-  const fade = (i) => (stages.length > 1 ? 1 - (i / (stages.length - 1)) * 0.45 : 1);
-  const onStage = (stage) => click.pick(stage.row);
+  const fade = (i: number) => (stages.length > 1 ? 1 - (i / (stages.length - 1)) * 0.45 : 1);
+  const onStage = (stage: FunnelStage) => click.pick(stage.row);
   const labelWidth = Math.min(180, Math.max(56, Math.max(0, ...stages.map((s) => String(s.label).length)) * 7 + 12));
   const valueWidth =
     Math.max(40, Math.max(0, ...stages.map((s) => String(format(s.value)).length)) * 7.5 + 4) +

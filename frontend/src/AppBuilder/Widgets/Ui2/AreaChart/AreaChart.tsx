@@ -1,4 +1,5 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Area, AreaChart, CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts';
 import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
@@ -26,7 +27,7 @@ import {
   valueAxisWidth,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 
-export const ShadAreaChart = (props) => {
+export const ShadAreaChart = (props: WidgetProps) => {
   const p = props.properties;
   const data = list(p.data).slice(0, MAX_ROWS);
   const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
@@ -35,7 +36,7 @@ export const ShadAreaChart = (props) => {
   const states = isSet(p.colors)
     ? null
     : statusColors(series.map((s) => seriesLabel(s, seriesLabelMap(p.seriesLabels, series))));
-  const color = (i) => states?.[i] ?? seriesColor(p.colors, i);
+  const color = (i: number) => states?.[i] ?? seriesColor(p.colors, i);
   return (
     <ChartFrame props={props} empty={!data.length || !series.length}>
       {(onDatum) => (

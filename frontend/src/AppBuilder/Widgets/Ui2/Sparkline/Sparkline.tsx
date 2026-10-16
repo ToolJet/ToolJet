@@ -1,5 +1,6 @@
 import React from 'react';
-import { Area, AreaChart, Line, LineChart, ReferenceArea, Tooltip, XAxis, YAxis } from 'recharts';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { Area, AreaChart, Line, LineChart, ReferenceArea, Tooltip, XAxis, YAxis, type AreaProps } from 'recharts';
 import {
   bandRange,
   clamp,
@@ -8,11 +9,18 @@ import {
   lastPoint,
   sparkPoints,
   trendOf,
+  type SparkPoint,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
-export const SparkTip = ({ active, payload, format }) => {
+interface SparkTipProps {
+  active?: boolean;
+  payload?: Array<{ payload?: SparkPoint }>;
+  format: (v: unknown) => string;
+}
+
+export const SparkTip = ({ active, payload, format }: SparkTipProps) => {
   const point = active ? payload?.[0]?.payload : null;
   if (!point) return null;
   return (
@@ -25,7 +33,7 @@ export const SparkTip = ({ active, payload, format }) => {
   );
 };
 
-export const ShadSparkline = (props) => {
+export const ShadSparkline = (props: WidgetProps) => {
   const p = props.properties;
   const points = sparkPoints(p.data);
   const last = lastPoint(points);
@@ -43,10 +51,11 @@ export const ShadSparkline = (props) => {
   const pad = endDot ? dotRadius + 1.5 : strokeWidth;
   const format = formatter({ prefix: p.valuePrefix, suffix: p.valueSuffix });
   const Chart = p.type === 'line' ? LineChart : AreaChart;
-  const Series = p.type === 'line' ? Line : Area;
+  // Line takes the same props here as Area; one type lets either render as <Series>.
+  const Series = (p.type === 'line' ? Line : Area) as React.ComponentType<AreaProps>;
   const dot = endDot
-    ? (d) =>
-        d.index === last.i && Number.isFinite(d.cx) && Number.isFinite(d.cy) ? (
+    ? (d: { index: number; cx?: number; cy?: number }) =>
+        d.index === endDot.i && Number.isFinite(d.cx) && Number.isFinite(d.cy) ? (
           <circle
             key="end"
             cx={d.cx}

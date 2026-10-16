@@ -1,4 +1,5 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Cell, Label as ChartLabel, Legend, Pie, PieChart, Tooltip } from 'recharts';
 import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
@@ -9,7 +10,7 @@ import { ChartFrame, ChartTooltip, LegendContent, fmt } from '@/AppBuilder/Widge
 // with a cell for its colour, per row and series).
 export const MAX_SLICES = 100;
 
-export const ShadPieChart = (props) => {
+export const ShadPieChart = (props: WidgetProps) => {
   const p = props.properties;
   const slices = list(p.data).slice(0, MAX_SLICES);
   const states = isSet(p.colors) ? null : statusColors(slices.map((d) => d?.[p.categoryField]));
@@ -38,14 +39,16 @@ export const ShadPieChart = (props) => {
             {donut && (p.centerValue || p.centerLabel) ? (
               <ChartLabel
                 content={({ viewBox }) => {
-                  if (viewBox?.cx === undefined) return null;
+                  // A pie's label is given a polar box: its centre and radii.
+                  const box = viewBox && 'cx' in viewBox ? viewBox : undefined;
+                  if (box?.cx === undefined) return null;
                   // Sized to the hole, and shortened when even 16px would not fit ("$8.2M", not "$8,196,250.00" over the ring).
-                  const fit = centreValueFit(p.centerValue ?? '', viewBox.innerRadius);
+                  const fit = centreValueFit(p.centerValue ?? '', box.innerRadius);
                   return (
-                    <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                    <text x={box.cx} y={box.cy} textAnchor="middle" dominantBaseline="middle">
                       <tspan
-                        x={viewBox.cx}
-                        y={viewBox.cy}
+                        x={box.cx}
+                        y={box.cy}
                         style={{
                           fill: 'var(--lk-center-value, var(--sc-foreground))',
                           fontSize: fit.fontSize,
@@ -57,8 +60,8 @@ export const ShadPieChart = (props) => {
                       </tspan>
                       {p.centerLabel ? (
                         <tspan
-                          x={viewBox.cx}
-                          y={viewBox.cy + 22}
+                          x={box.cx}
+                          y={Number(box.cy) + 22}
                           style={{ fill: 'var(--lk-center-label, var(--sc-muted-foreground))', fontSize: 12 }}
                         >
                           {String(p.centerLabel)}

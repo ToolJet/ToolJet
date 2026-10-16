@@ -1,4 +1,5 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { clamp, formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
@@ -9,7 +10,7 @@ import { ChartBoundary, EmptyChart, useClickedDatum, valueFormat } from '@/AppBu
 
 /** A grid of cells shaded by value (weekday by hour, region by month): plain HTML, so labels never clip and the shade
  *  follows the theme's chart colour. Each cell blends the chart colour into the muted surface by its value. */
-export const ShadHeatmapChart = (props) => {
+export const ShadHeatmapChart = (props: WidgetProps) => {
   const p = props.properties;
   const { setExposedVariables, height } = props;
   const click = useClickedDatum(props);
@@ -29,11 +30,11 @@ export const ShadHeatmapChart = (props) => {
   // Column labels thin out to about one per 36px so a 24-hour axis stays legible.
   const labelEvery = Math.max(1, Math.ceil(grid.xs.length / Math.max(1, Math.floor((props.width || 600) / 36))));
   const rowLabelWidth = Math.min(160, Math.max(32, Math.max(0, ...grid.ys.map((y) => y.length)) * 7 + 12));
-  const shade = (strength) =>
+  const shade = (strength: number | null) =>
     strength === null
       ? 'var(--sc-muted)'
       : `color-mix(in srgb, var(--sc-chart-1) ${Math.round(12 + strength * 88)}%, var(--sc-muted))`;
-  const onCell = (y, x, value) => {
+  const onCell = (y: string, x: string, value: number | null) => {
     const datum = { [p.yField || 'y']: y, [p.xField || 'x']: x, [p.valueField || 'value']: value };
     click.pick(datum);
   };
@@ -71,13 +72,15 @@ export const ShadHeatmapChart = (props) => {
                         // The shade goes through a utility class: the pack's button reset (made !important) beat an
                         // inline background, and every cell drew transparent.
                         className="flex min-h-0 min-w-0 items-center justify-center rounded-[4px] bg-[color:var(--heat)] text-[11px] tabular-nums text-[color:var(--heat-fg)] outline-none transition-[filter] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-[color:var(--sc-ring)]"
-                        style={{
-                          '--heat': shade(strength),
-                          '--heat-fg':
-                            strength !== null && strength > 0.55
-                              ? 'var(--sc-primary-foreground)'
-                              : 'var(--sc-foreground)',
-                        }}
+                        style={
+                          {
+                            '--heat': shade(strength),
+                            '--heat-fg':
+                              strength !== null && strength > 0.55
+                                ? 'var(--sc-primary-foreground)'
+                                : 'var(--sc-foreground)',
+                          } as React.CSSProperties
+                        }
                       >
                         {showValues && value !== null ? format(value) : ''}
                       </button>

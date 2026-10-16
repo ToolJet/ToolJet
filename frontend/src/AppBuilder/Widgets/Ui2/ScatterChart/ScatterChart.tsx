@@ -1,8 +1,10 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { CartesianGrid, Legend, ReferenceLine, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { clamp, formatter, isSet, num, seriesLabel } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import { scatterGroups } from './scatterModel';
+import { scatterGroups, type ScatterPoint } from './scatterModel';
+import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import {
   AXIS,
   AXIS_FILL,
@@ -18,10 +20,18 @@ import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // ---- Scatter -------------------------------------------------------------------------------------------------------
 
-const ScatterTip = ({ active, payload, p, fx, fy }) => {
+interface ScatterTipProps {
+  active?: boolean;
+  payload?: Array<{ payload?: ScatterPoint }>;
+  p: Resolved;
+  fx: (v: unknown) => string;
+  fy: (v: unknown) => string;
+}
+
+const ScatterTip = ({ active, payload, p, fx, fy }: ScatterTipProps) => {
   const point = active ? payload?.[0]?.payload : null;
   if (!point) return null;
-  const label = (key, fallback) => (isSet(p[key]) ? String(p[key]) : fallback);
+  const label = (key: string, fallback: string) => (isSet(p[key]) ? String(p[key]) : fallback);
   return (
     <div className="tj-shadcn">
       <div className="grid min-w-[8rem] gap-1 rounded-lg border bg-background px-2.5 py-1.5 text-xs shadow-xl">
@@ -43,7 +53,7 @@ const ScatterTip = ({ active, payload, p, fx, fy }) => {
   );
 };
 
-export const ShadScatterChart = (props) => {
+export const ShadScatterChart = (props: WidgetProps) => {
   const p = props.properties;
   const groups = scatterGroups(p.data, {
     xField: p.xField,
@@ -70,15 +80,15 @@ export const ShadScatterChart = (props) => {
   const refX = num(p.referenceX);
   const refY = num(p.referenceY);
   const refColor = 'var(--lk-ref, var(--sc-muted-foreground))';
-  const color = (i) => seriesColor(p.colors, i);
-  const axisTitle = (text, axis) =>
+  const color = (i: number) => seriesColor(p.colors, i);
+  const axisTitle = (text: unknown, axis: 'x' | 'y') =>
     isSet(text) && !compact
       ? {
           value: String(text),
-          position: axis === 'x' ? 'insideBottom' : 'insideLeft',
+          position: axis === 'x' ? ('insideBottom' as const) : ('insideLeft' as const),
           angle: axis === 'x' ? 0 : -90,
           offset: axis === 'x' ? 0 : 10,
-          style: { fill: AXIS_FILL, fontSize: 12, textAnchor: 'middle' },
+          style: { fill: AXIS_FILL, fontSize: 12, textAnchor: 'middle' as const },
         }
       : undefined;
   return (
@@ -128,7 +138,7 @@ export const ShadScatterChart = (props) => {
           {groups.map((g, i) => (
             <Scatter
               key={g.name || 'points'}
-              name={g.name || seriesLabel(p.yField)}
+              name={String(g.name || seriesLabel(p.yField))}
               data={g.points}
               fill={color(i)}
               fillOpacity={opacity}

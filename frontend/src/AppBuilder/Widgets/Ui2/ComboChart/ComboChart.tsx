@@ -1,4 +1,5 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, Tooltip, XAxis, YAxis } from 'recharts';
 import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
@@ -28,9 +29,10 @@ import {
   isCompactChart,
   scaled,
   valueFormat,
+  type TooltipContentProps,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 
-export const ShadComboChart = (props) => {
+export const ShadComboChart = (props: WidgetProps) => {
   const p = props.properties;
   const named = comboSeries(p.barFields, p.lineFields, p.rightAxisFields);
   const { x: xField } = resolveChartFields(list(p.data), isSet(p.xField) ? String(p.xField) : undefined, []);
@@ -41,8 +43,11 @@ export const ShadComboChart = (props) => {
     series.map((s) => s.field)
   ).slice(0, MAX_BARS);
   const compact = isCompactChart(props.height);
-  const valuesOn = (axis) =>
-    rows.flatMap((r) => series.filter((s) => s.axis === axis).map((s) => r[s.field])).filter((v) => v !== null);
+  // seriesRows makes every series value a number or null.
+  const valuesOn = (axis: 'left' | 'right') =>
+    rows
+      .flatMap((r) => series.filter((s) => s.axis === axis).map((s) => r[s.field]))
+      .filter((v): v is number => v !== null);
   // A rate sent as a fraction (a 39% margin as 0.39) reads as a percent, not 0.4%.
   const leftScale = percentScale(p.yAxisFormat, valuesOn('left'));
   const rightScale = percentScale(p.rightAxisFormat, valuesOn('right'));
@@ -57,13 +62,16 @@ export const ShadComboChart = (props) => {
   const leftValues = stackedBars
     ? [
         ...rows.map((r) =>
-          series.filter((s) => s.kind === 'bar' && s.axis === 'left').reduce((sum, s) => sum + (r[s.field] ?? 0), 0)
+          series
+            .filter((s) => s.kind === 'bar' && s.axis === 'left')
+            .reduce((sum, s) => sum + ((r[s.field] as number | null) ?? 0), 0)
         ),
         ...valuesOn('left'),
       ]
     : valuesOn('left');
-  const tipFormat = (v, key) => (rightKeys.has(key) ? rightFull(v) : leftFull(v));
-  const color = (i) => seriesColor(p.colors, i);
+  const tipFormat = (v: unknown, key: unknown) =>
+    typeof key === 'string' && rightKeys.has(key) ? rightFull(v) : leftFull(v);
+  const color = (i: number) => seriesColor(p.colors, i);
   const curve = curveOf(p.curve);
   return (
     <SafeFrame
@@ -152,7 +160,12 @@ export const ShadComboChart = (props) => {
   );
 };
 
-export const ComboTip = ({ active, payload, label, format }) => {
+export const ComboTip = ({
+  active,
+  payload,
+  label,
+  format,
+}: TooltipContentProps & { format: (v: unknown, key: unknown) => string }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="tj-shadcn">

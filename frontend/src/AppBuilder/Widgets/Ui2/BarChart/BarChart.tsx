@@ -1,4 +1,5 @@
 import React from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Tooltip, XAxis, YAxis } from 'recharts';
 import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
@@ -11,6 +12,7 @@ import {
   wholeNumbers,
   wholeTicks,
   seriesLabelMap,
+  type Row,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
   AXIS,
@@ -28,9 +30,9 @@ import {
 
 /** A category name as at most `lines` lines of `max` characters, broken at spaces; what still does not fit ends in an
  *  ellipsis. Recharts dropped every other name of an 8-bar chart rather than wrap them (expense build, 2026-10-12). */
-export const wrapLabel = (value, max, lines = 2) => {
-  const cut = (text) => (text.length > max ? `${text.slice(0, Math.max(1, max - 1))}…` : text);
-  const out = [];
+export const wrapLabel = (value: unknown, max: number, lines = 2): string[] => {
+  const cut = (text: string) => (text.length > max ? `${text.slice(0, Math.max(1, max - 1))}…` : text);
+  const out: string[] = [];
   for (const word of String(value ?? '')
     .split(/\s+/)
     .filter(Boolean)) {
@@ -45,10 +47,21 @@ export const wrapLabel = (value, max, lines = 2) => {
 };
 
 /** A bar chart over categories (not dates) of up to 24 bars names every bar. */
-export const keepsEveryCategory = (data, key) => !dateTicks(data, key) && list(data).length <= 24;
+export const keepsEveryCategory = (data: unknown, key: string | undefined): boolean =>
+  !dateTicks(data, key) && list(data).length <= 24;
 
 /** An x-axis tick that wraps its name to the width of one band (the axis width over the ticks shown). */
-export const CategoryTick = ({ x, y, payload, width, visibleTicksCount, angled }) => {
+/** The props Recharts gives a custom tick (it clones the element with them), and whether names draw at an angle. */
+interface CategoryTickProps {
+  x?: number;
+  y?: number;
+  payload?: { value?: unknown };
+  width?: number;
+  visibleTicksCount?: number;
+  angled: boolean;
+}
+
+export const CategoryTick = ({ x, y, payload, width, visibleTicksCount, angled }: CategoryTickProps) => {
   if (angled) {
     // Drawn at an angle, whole up to 22 letters: ten one-word genres in a half-width chart were cut to "Ficti..."
     // (bookshop, 2026-10-14).
@@ -56,11 +69,11 @@ export const CategoryTick = ({ x, y, payload, width, visibleTicksCount, angled }
     return (
       <text
         x={x}
-        y={y + 8}
+        y={Number(y) + 8}
         textAnchor="end"
         fill={AXIS.tick.fill}
         fontSize={12}
-        transform={`rotate(-35, ${x}, ${y + 8})`}
+        transform={`rotate(-35, ${x}, ${Number(y) + 8})`}
       >
         {text.length > 22 ? `${text.slice(0, 21)}…` : text}
         <title>{text}</title>
@@ -70,7 +83,7 @@ export const CategoryTick = ({ x, y, payload, width, visibleTicksCount, angled }
   const band = (Number(width) || 0) / Math.max(1, Number(visibleTicksCount) || 1);
   const lines = wrapLabel(payload?.value, Math.max(4, Math.floor((band - 6) / 6.6)));
   return (
-    <text x={x} y={y + 4} textAnchor="middle" fill={AXIS.tick.fill} fontSize={12}>
+    <text x={x} y={Number(y) + 4} textAnchor="middle" fill={AXIS.tick.fill} fontSize={12}>
       {lines.map((line, i) => (
         <tspan key={i} x={x} dy={i === 0 ? '0.71em' : '1.2em'}>
           {line}
@@ -83,14 +96,14 @@ export const CategoryTick = ({ x, y, payload, width, visibleTicksCount, angled }
 
 /** Category names drawn at an angle: when a word of some name is wider than its band, it could only be cut. The plot is
  *  the widget less about 80px of value axis and margins. */
-export const angledCategories = (data, key, widgetWidth) => {
+export const angledCategories = (data: unknown, key: string | undefined, widgetWidth: unknown): boolean => {
   const rows = list(data);
   if (!rows.length) return false;
   const band = ((Number(widgetWidth) || 640) - 80) / rows.length;
   const longestWord = Math.max(
     0,
     ...rows.flatMap((row) =>
-      String(row?.[key] ?? '')
+      String(row?.[String(key)] ?? '')
         .split(/\s+/)
         .map((w) => w.length)
     )
@@ -100,22 +113,22 @@ export const angledCategories = (data, key, widgetWidth) => {
 
 /** Room under the bars for two lines when some name will not fit one line of its band (assuming a 560px plot), or for
  *  names at an angle. */
-export const categoryAxisHeight = (data, key, angled = false) => {
+export const categoryAxisHeight = (data: unknown, key: string | undefined, angled = false): number => {
   const rows = list(data);
   if (angled) {
-    const longest = Math.min(22, Math.max(0, ...rows.map((row) => String(row?.[key] ?? '').length)));
+    const longest = Math.min(22, Math.max(0, ...rows.map((row) => String(row?.[String(key)] ?? '').length)));
     return Math.min(96, Math.ceil(longest * 6.6 * 0.58 + 22));
   }
-  const longest = Math.max(0, ...rows.map((row) => String(row?.[key] ?? '').length));
+  const longest = Math.max(0, ...rows.map((row) => String(row?.[String(key)] ?? '').length));
   return longest * 6.6 > 560 / Math.max(1, rows.length) - 6 ? 44 : 30;
 };
 
-export const categoryAxisWidth = (data, key) => {
-  const longest = Math.max(0, ...list(data).map((row) => String(row?.[key] ?? '').length));
+export const categoryAxisWidth = (data: unknown, key: string | undefined): number => {
+  const longest = Math.max(0, ...list(data).map((row) => String(row?.[String(key)] ?? '').length));
   return Math.min(180, Math.max(48, longest * 7 + 16));
 };
 
-export const ShadBarChart = (props) => {
+export const ShadBarChart = (props: WidgetProps) => {
   const p = props.properties;
   const data = list(p.data).slice(0, MAX_BARS);
   const { x: xField, series } = resolveChartFields(data, p.xField, seriesOf(p));
@@ -124,7 +137,7 @@ export const ShadBarChart = (props) => {
   const states = isSet(p.colors)
     ? null
     : statusColors(series.map((s) => seriesLabel(s, seriesLabelMap(p.seriesLabels, series))));
-  const color = (i) => states?.[i] ?? seriesColor(p.colors, i);
+  const color = (i: number) => states?.[i] ?? seriesColor(p.colors, i);
   // Highlight: the picked bars keep the series colour (or the Highlight color style), the rest draw muted (the Muted
   // bar color style, else the series colour faded), so one month or one site stands out.
   const picked = highlightIndexes(data, xField, series, p.highlight);
@@ -135,13 +148,13 @@ export const ShadBarChart = (props) => {
     p.categoryColors && typeof p.categoryColors === 'object' && !Array.isArray(p.categoryColors)
       ? p.categoryColors
       : {};
-  const categoryColor = (row) => {
-    const key = row && typeof row === 'object' ? row[xField] : undefined;
+  const categoryColor = (row: unknown) => {
+    const key = row && typeof row === 'object' ? (row as Row)[String(xField)] : undefined;
     const v = typeof key === 'string' || typeof key === 'number' ? own[key] : undefined;
     return typeof v === 'string' && v.trim() ? v : null;
   };
   const colored = data.some((row) => categoryColor(row));
-  const cells = (i) =>
+  const cells = (i: number) =>
     !picked && colored
       ? data.map((row, d) => <Cell key={d} fill={categoryColor(row) || color(i)} />)
       : picked

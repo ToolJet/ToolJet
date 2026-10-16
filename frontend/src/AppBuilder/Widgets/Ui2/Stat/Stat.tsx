@@ -1,4 +1,5 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Badge, Card, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -17,7 +18,7 @@ const StatIconGlyph = React.lazy(() =>
   import('@/AppBuilder/Widgets/Ui2/_display/displayParts').then((m) => ({ default: m.IconGlyph }))
 );
 
-export const StatIcon = ({ name, shape, size }) => {
+export const StatIcon = ({ name, shape, size }: { name: string; shape: string; size: number }) => {
   const box = shape === 'none' ? size : size * 2;
   return (
     <span
@@ -42,7 +43,7 @@ export const SPARK_W = 120;
 
 export const SPARK_H = 36;
 
-export const StatSparkline = ({ data, type, id }) => {
+export const StatSparkline = ({ data, type, id }: { data: unknown; type: unknown; id: unknown }) => {
   const paths = sparkPaths(data, SPARK_W, SPARK_H);
   if (!paths) return null;
   const gradient = `stat-spark-${String(id ?? 'x').replace(/[^\w-]/g, '')}`;
@@ -77,24 +78,26 @@ export const StatSparkline = ({ data, type, id }) => {
   );
 };
 
-export const ShadStat = (props) => {
+export const ShadStat = (props: WidgetProps) => {
   const { setExposedVariables } = props;
   // The native Statistics' setters: the figure (primary) and the change (secondary), until those properties change.
   const [properties, override] = useOverrides(props.properties);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   useExposed(setExposedVariables, properties, {
     primaryLabel: textArg(properties.label),
     primaryValue: typeof properties.value === 'number' ? properties.value : textArg(properties.value),
     secondaryLabel: textArg(properties.changeLabel),
     secondaryValue: textArg(properties.change),
-    setPrimaryValue: async (v) => override('value', typeof v === 'number' ? v : textArg(v)),
-    setSecondaryValue: async (v) => override('change', textArg(v)),
+    setPrimaryValue: async (v: unknown) => override('value', typeof v === 'number' ? v : textArg(v)),
+    setSecondaryValue: async (v: unknown) => override('change', textArg(v)),
   });
   const trend = properties.trend || 'neutral';
   const TrendIcon = trend === 'down' ? TrendingDown : TrendingUp;
   // The change badge takes the positive or negative colour for its trend (text, on a light tint) when set.
-  const trendColor = { up: props.styles?.positiveColor, down: props.styles?.negativeColor }[trend];
+  const trendColor = (
+    { up: props.styles?.positiveColor, down: props.styles?.negativeColor } as Record<string, unknown>
+  )[trend];
   // In a fixed box (dynamic height off, or the editor) the card fills the box and its content stays inside it: a
   // footnote that wrapped past the box cut the card's bottom edge off. It keeps two lines, the rest in its title. An
   // auto-height box keeps fitting the content (the card is not stretched there, or the height could only grow).
@@ -102,8 +105,8 @@ export const ShadStat = (props) => {
   // Stats side by side in a row share one height: each reports its content's natural height (the content plus the
   // card's padding and border, never the stretched card) and takes the row's tallest as its minimum (statRow.js).
   const evenRow = !fixed && properties.card !== false;
-  const cardRef = useRef(null);
-  const bodyRef = useRef(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const [rowMin, setRowMin] = useState(0);
   useLayoutEffect(() => {
     const card = cardRef.current;
@@ -114,7 +117,7 @@ export const ShadStat = (props) => {
     const member = joinStatRow(container, setRowMin);
     const measure = () => {
       const cs = getComputedStyle(card);
-      const chrome = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'].reduce(
+      const chrome = (['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'] as const).reduce(
         (sum, key) => sum + (parseFloat(cs[key]) || 0),
         0
       );
@@ -147,7 +150,7 @@ export const ShadStat = (props) => {
   const changeBadge = change.chip ? (
     <Badge
       variant="outline"
-      style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) : undefined}
+      style={isSet(trendColor) ? badgeLook('change', { change: trendColor }) ?? undefined : undefined}
       // A long change shrinks to at most 60% of the label row and ends in an ellipsis, its whole text the tooltip: it
       // kept its full width and was cut off at the card's edge.
       title={String(properties.change)}
