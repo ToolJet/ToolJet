@@ -27,30 +27,11 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     npm install -g npm@9.8.1
     ```
 
-    1.3 Install Postgres
-    :::tip
-    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not plan to support other databases such as MySQL.
-    :::
-
-    ```bash
-    brew install postgresql@13
-    ```
-    
-    1.4 Install PostgREST
-
-    :::info
-    Please use PostgREST version 12.2.0
-    :::
-
-    ```bash
-    brew install postgrest
-    ```
-
-    1.5 Fork the repository:
+    1.3 Fork the repository:
 
     Go to the [ToolJet GitHub repository](https://github.com/ToolJet/Tooljet), click on the **Fork** button to create a copy of the repository under your own GitHub account.
 
-    1.6 Clone your forked repository:
+    1.4 Clone your forked repository:
 
     After forking, clone the forked repository to your local machine using the URL of your forked repo.
 
@@ -89,10 +70,43 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     TOOLJET_DB_USER=postgres
     TOOLJET_DB_HOST=localhost
     TOOLJET_DB_PASS=postgres
+    REDIS_HOST=localhost
+    REDIS_PORT=6379
     ORM_LOGGING=all
    ```
 
-4. Install and build dependencies
+4. Install and set up Docker
+
+    Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) for macOS and make sure Docker Desktop is running.
+
+    Verify the installation:
+
+    ```bash
+    docker --version
+    docker compose version
+    ```
+
+    Start the required development services:
+
+    ```bash
+    docker compose up -d postgres postgrest redis
+    ```
+
+    Verify that the services are running:
+
+    ```bash
+    docker compose ps postgres postgrest redis
+    ```
+
+    To stop or start the container later:
+
+    ```bash
+    docker compose stop postgres postgrest redis
+    docker compose start postgres postgrest redis
+    ```
+
+
+5. Install and build dependencies
     ```bash
     npm install
     npm install --prefix server
@@ -100,7 +114,7 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     npm run build:plugins
     ```
 
-5. Set up database
+6. Set up database
     ```bash
     npm run --prefix server db:create
     npm run --prefix server db:reset
@@ -109,24 +123,24 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     If at any point you need to reset the database, use this command `npm run --prefix server db:reset`
     :::
 
-6. Run plugins compilation in watch mode
+7. Run plugins compilation in watch mode
     ```bash
     cd ./plugins && npm start
     ```
 
-7. Run the server
+8. Run the server
     ```bash
     cd ./server && npm run start:dev
     ```
 
-8. Run the client
+9. Run the client
     ```bash
     cd ./frontend && npm start
     ```
 
     The client will start on the port 8082, you can access the client by visiting:  [http://localhost:8082](http://localhost:8082)
 
-9. Create login credentials
+10. Create login credentials
 
     Visiting [http://localhost:8082](http://localhost:8082) should redirect you to the login page, click on the signup link and enter your email. The emails sent by the server in development environment are captured and are opened in your default browser. Click the invitation link in the email preview to setup the account.
 
@@ -148,3 +162,4 @@ To run a specific unit test
 ```bash
 npm run --prefix server test <path-to-file>
 ```
+
