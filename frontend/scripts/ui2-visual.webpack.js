@@ -24,7 +24,8 @@ module.exports = {
 <style>
   /* the app's stylesheet sets the body's background too; the widgets' surfaces show this one */
   body { margin: 0; padding: 16px; background: var(--cc-surface1-surface, #fff) !important; }
-  .ui2-gallery { display: flex; flex-direction: column; gap: 12px; width: max-content; }
+  /* rows keep their own width, so a row's screenshot does not depend on which other rows are on the page */
+  .ui2-gallery { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: max-content; }
   .ui2-gallery-row { display: flex; gap: 12px; padding: 8px; }
   .ui2-gallery-slot { position: relative; overflow: hidden; flex: none; }
 </style></head><body><div id="root"></div></body></html>`,
