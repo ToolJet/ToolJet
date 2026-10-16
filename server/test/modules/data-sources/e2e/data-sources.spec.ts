@@ -272,4 +272,81 @@ describe('DataSourcesController', () => {
       expect(response.statusCode).toBe(404);
     });
   });
+
+  describe('POST /api/data-sources/fetch-oauth2-base-url | OAuth2 URL with workspace constants', () => {
+    const MARKER = 'synthetic-victim-marker-7f3a';
+
+    const seedVictimConstant = async () => {
+      const victim = await createUser(nestApp, { email: 'victim@tooljet.io', groups: ['all_users', 'admin'] });
+      const attacker = await createUser(nestApp, { email: 'attacker@tooljet.io', groups: ['all_users', 'admin'] });
+      const victimEnvs = await ensureAppEnvironments(nestApp, victim.organization.id);
+      const victimSession = await login(nestApp, victim.user.email);
+
+      await request(nestApp.getHttpServer())
+        .post('/api/organization-constants/')
+        .set('tj-workspace-id', victim.organization.id)
+        .set('Cookie', victimSession.tokenCookie)
+        .send({ constant_name: 'OAUTH_MARKER', value: MARKER, type: 'Global', environments: [victimEnvs[0].id] })
+        .expect(201);
+
+      return { victim, attacker, victimSession, victimEnvironmentId: victimEnvs[0].id };
+    };
+
+    const fetchOauthUrl = (workspaceId: string, cookie: string[], body: Record<string, unknown>) =>
+      request(nestApp.getHttpServer())
+        .post('/api/data-sources/fetch-oauth2-base-url')
+        .set('tj-workspace-id', workspaceId)
+        .set('Cookie', cookie)
+        .send({
+          provider: 'restapi',
+          source_options: {
+            auth_url: 'https://idp.example/auth',
+            client_id: '{{constants.OAUTH_MARKER}}',
+            scopes: 'read',
+          },
+          ...body,
+        });
+
+    it('should resolve constants of the caller own workspace', async () => {
+      const { victim, victimSession, victimEnvironmentId } = await seedVictimConstant();
+
+      const response = await fetchOauthUrl(victim.organization.id, victimSession.tokenCookie, {
+        organization_id: victim.organization.id,
+        environment_id: victimEnvironmentId,
+      });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body).toMatchObject({ url: expect.stringContaining(MARKER) });
+    });
+
+    it('should reject with 403 when organization_id names another workspace', async () => {
+      const { victim, attacker, victimEnvironmentId } = await seedVictimConstant();
+      const attackerSession = await login(nestApp, attacker.user.email);
+
+      const response = await fetchOauthUrl(attacker.organization.id, attackerSession.tokenCookie, {
+        organization_id: victim.organization.id,
+        environment_id: victimEnvironmentId,
+      });
+
+      expect(response.statusCode).toBe(403);
+      expect(JSON.stringify(response.body)).not.toContain(MARKER);
+    });
+
+    it('should reject with 404 when environment_id belongs to another workspace', async () => {
+      const { attacker, victimEnvironmentId } = await seedVictimConstant();
+      const attackerSession = await login(nestApp, attacker.user.email);
+
+      const withOwnOrg = await fetchOauthUrl(attacker.organization.id, attackerSession.tokenCookie, {
+        organization_id: attacker.organization.id,
+        environment_id: victimEnvironmentId,
+      });
+      const withoutOrg = await fetchOauthUrl(attacker.organization.id, attackerSession.tokenCookie, {
+        environment_id: victimEnvironmentId,
+      });
+
+      expect(withOwnOrg.statusCode).toBe(404);
+      expect(withoutOrg.statusCode).toBe(404);
+      expect(JSON.stringify([withOwnOrg.body, withoutOrg.body])).not.toContain(MARKER);
+    });
+  });
 });
