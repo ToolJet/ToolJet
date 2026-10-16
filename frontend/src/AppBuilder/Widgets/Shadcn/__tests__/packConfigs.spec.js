@@ -71,6 +71,16 @@ describe('UI 2.0 widget config files', () => {
       expect(config.component).toBe(name);
     }
   );
+
+  // Collapse when hidden was once missing on every UI 2.0 widget: a hidden widget kept its slot as a blank band and the
+  // widgets below never moved up. RenderWidget and the reflow read the property generically.
+  it.each(shadcnConfigs.filter((c) => c.name !== 'ShadDialog').map((c) => [c.name, c]))(
+    '%s offers Collapse when hidden, off by default, under Additional actions',
+    (name, config) => {
+      expect(config.properties.collapseWhenHidden?.section).toBe('additionalActions');
+      expect(config.definition.properties.collapseWhenHidden?.value).toBe('{{false}}');
+    }
+  );
 });
 
 // NAMING.md: one name per event, action and exposed value; a native counterpart's name where it has one; otherwise an

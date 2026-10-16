@@ -1,0 +1,224 @@
+/**
+ * UI 2.0 Calendar: an inline month calendar for one date, several dates or a range, with day markers.
+ *
+ * Real store, real RenderWidget, real widget; nothing about the widget is mocked. Standard control behaviour
+ * (visibility, disabled, loading, tooltip) is covered for every UI 2.0 widget in Ui2/__tests__/controlState.spec.jsx;
+ * this file covers what the Calendar itself does. Titles carry [ShadCalendar-<AREA>-<NNN>] scenario ids.
+ */
+import { act, screen, waitFor, fireEvent, within } from '@testing-library/react';
+import { createWidgetHarness, binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+
+const ID = 'cal1';
+const widget = createWidgetHarness({
+  componentType: 'ShadCalendar',
+  handle: 'calendar1',
+  id: ID,
+  widgetHeight: 320,
+  widgetWidth: 400,
+  // October 2026 starts on a Thursday: the 10th and 11th are a Saturday and a Sunday.
+  defaultProperties: { defaultValue: binding('2026-10-09'), markers: binding('{{[]}}') },
+});
+
+// Interactions are tested as an app user meets them: in view mode, where the editor's canvas does not take presses.
+const render = (options = {}) => widget.render({ currentMode: 'view', ...options });
+const exposed = () => widget.exposed() ?? {};
+const grid = () => screen.getAllByRole('grid')[0];
+/** The day button reading `n` in the first month shown (outside days excluded: they carry the outside class). */
+const day = (n) =>
+  within(grid())
+    .getAllByText(String(n))
+    .map((el) => el.closest('button'))
+    .find((b) => b && !b.closest('td').className.includes('outside'));
+const clickDay = async (n) => {
+  await act(async () => fireEvent.click(day(n)));
+};
+const range = (start, end) => ({ mode: binding('range'), defaultValue: binding(`{{['${start}', '${end}']}}`) });
+
+describe('UI 2.0 Calendar', () => {
+  beforeEach(() => widget.setup());
+  afterEach(widget.teardown);
+
+  test('[ShadCalendar-DEF-001] shows the month of defaultValue with that day selected, and exposes the date and month', async () => {
+    render();
+
+    expect(await screen.findByText('October 2026')).toBeInTheDocument();
+    expect(day(9).closest('td')).toHaveAttribute('aria-selected', 'true');
+    await waitFor(() => expect(exposed().value).toBe('2026-10-09'));
+    expect(exposed()).toMatchObject({
+      selectedDate: '2026-10-09',
+      selectedDates: ['2026-10-09'],
+      startDate: '',
+      endDate: '',
+      visibleMonth: '2026-10',
+      visibleStart: '2026-10-01',
+      visibleEnd: '2026-10-31',
+    });
+  });
+
+  // The widget's own day button replaced the pack's chevrons with react-day-picker's, filled black: the month arrows
+  // vanished on a dark theme.
+  test('[ShadCalendar-DEF-002] the month arrows draw the pack chevrons, beside its own day buttons', async () => {
+    const { container } = render();
+
+    await screen.findByText('October 2026');
+    const arrows = [...container.querySelectorAll('nav button svg')];
+    expect(arrows).toHaveLength(2);
+    expect(arrows.every((svg) => svg.classList.contains('lucide'))).toBe(true);
+    expect(container.querySelector('.rdp-chevron')).toBeNull();
+  });
+
+  test('[ShadCalendar-EVT-001] picking a day fires onSelect, and its handler reads the new value', async () => {
+    render();
+    widget.setEvents(setVariableOn(ID, 'onSelect', { value: '{{components.calendar1.value}}' }));
+
+    await clickDay(12);
+
+    await waitFor(() => expect(widget.variables().seen).toBe('2026-10-12'));
+    expect(day(12).closest('td')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('[ShadCalendar-PROP-001] markers put their label on the day, and the marked day can be picked', async () => {
+    render({ properties: { markers: binding("{{[{ date: '2026-10-12', label: 'Release', color: '#16a34a' }]}}") } });
+
+    const marked = await screen.findByTitle('Release');
+    expect(marked).toHaveAccessibleName(expect.stringContaining('Release'));
+    await act(async () => fireEvent.click(marked));
+
+    await waitFor(() => expect(exposed().value).toBe('2026-10-12'));
+  });
+
+  test('[ShadCalendar-PROP-002] mode multiple adds each picked day to the selection', async () => {
+    render({ properties: { mode: binding('multiple') } });
+
+    await clickDay(14);
+    await clickDay(12);
+
+    await waitFor(() => expect(exposed().value).toEqual(['2026-10-09', '2026-10-12', '2026-10-14']));
+    expect(exposed().selectedDates).toEqual(['2026-10-09', '2026-10-12', '2026-10-14']);
+    expect(exposed().selectedDate).toBe('2026-10-09');
+  });
+
+  test('[ShadCalendar-PROP-003] mode range exposes both ends, and two picks make a new range', async () => {
+    render({ properties: { ...range('2026-10-05', '2026-10-07'), defaultMonth: binding('2026-10-01') } });
+    await waitFor(() => expect(exposed()).toMatchObject({ startDate: '2026-10-05', endDate: '2026-10-07' }));
+    expect(exposed().selectedDates).toEqual(['2026-10-05', '2026-10-07']);
+
+    await widget.act('clear');
+    await clickDay(12);
+    await clickDay(15);
+
+    await waitFor(() => expect(exposed().value).toEqual(['2026-10-12', '2026-10-15']));
+  });
+
+  test('[ShadCalendar-PROP-004] defaultMonth opens the calendar on that month', async () => {
+    render({ properties: { defaultMonth: binding('2027-03-15') } });
+
+    expect(await screen.findByText('March 2027')).toBeInTheDocument();
+    await waitFor(() => expect(exposed().visibleMonth).toBe('2027-03'));
+  });
+
+  test('[ShadCalendar-EVT-002] the next-month arrow fires onMonthChanged, its handler reading the new visibleMonth', async () => {
+    render();
+    widget.setEvents(setVariableOn(ID, 'onMonthChanged', { value: '{{components.calendar1.visibleMonth}}' }));
+
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: /next month/i })));
+
+    await waitFor(() => expect(widget.variables().seen).toBe('2026-11'));
+    expect(screen.getByText('November 2026')).toBeInTheDocument();
+  });
+
+  test('[ShadCalendar-PROP-005] minDate, maxDate, disabledDates and disabledDays block those days', async () => {
+    render({
+      properties: {
+        minDate: binding('2026-10-05'),
+        maxDate: binding('2026-10-25'),
+        disabledDates: binding("{{['2026-10-14']}}"),
+        disabledDays: binding('{{[0, 6]}}'),
+      },
+    });
+
+    await screen.findByText('October 2026');
+    expect(day(2)).toBeDisabled();
+    expect(day(27)).toBeDisabled();
+    expect(day(14)).toBeDisabled();
+    expect(day(10)).toBeDisabled();
+    expect(day(11)).toBeDisabled();
+    expect(day(13)).not.toBeDisabled();
+    // The month bounds stop the arrows too.
+    expect(screen.getByRole('button', { name: /previous month/i })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  test('[ShadCalendar-PROP-006] weekStartsOn monday puts Monday in the first column', async () => {
+    const firstWeekday = () => grid().querySelector('thead th');
+    render();
+    expect(firstWeekday()).toHaveAttribute('aria-label', 'Sunday');
+
+    render({ properties: { weekStartsOn: binding('monday') } });
+    await waitFor(() => expect(firstWeekday()).toHaveAttribute('aria-label', 'Monday'));
+  });
+
+  test('[ShadCalendar-PROP-007] numberOfMonths shows that many months side by side and widens the visible period', async () => {
+    render({ properties: { numberOfMonths: binding('{{2}}') } });
+
+    await waitFor(() => expect(screen.getAllByRole('grid')).toHaveLength(2));
+    expect(screen.getByText('November 2026')).toBeInTheDocument();
+    expect(exposed()).toMatchObject({ visibleStart: '2026-10-01', visibleEnd: '2026-11-30' });
+  });
+
+  test('[ShadCalendar-PROP-008] showOutsideDays off hides the neighbouring months days; fixedWeeks always shows six weeks', async () => {
+    render();
+    // 28 September and 28 October.
+    expect(within(grid()).getAllByText('28')).toHaveLength(2);
+    expect(grid().querySelectorAll('tbody tr')).toHaveLength(5);
+
+    render({ properties: { showOutsideDays: binding('{{false}}') } });
+    await waitFor(() => expect(within(grid()).getAllByText('28')).toHaveLength(1));
+
+    render({ properties: { fixedWeeks: binding('{{true}}') } });
+    await waitFor(() => expect(grid().querySelectorAll('tbody tr')).toHaveLength(6));
+  });
+
+  test('[ShadCalendar-PROP-009] fullWidth stretches the calendar across the widget; showBorder off drops its border', async () => {
+    const { container } = render();
+    const calendar = () => container.querySelector('.tj-shadcn [data-mode]') || grid().closest('div.p-3');
+    expect(calendar()).toHaveClass('w-fit', 'border');
+
+    render({ properties: { fullWidth: binding('{{true}}'), showBorder: binding('{{false}}') } });
+    await waitFor(() => expect(calendar()).toHaveClass('w-full'));
+    expect(calendar()).not.toHaveClass('border');
+  });
+
+  test('[ShadCalendar-ACT-001] selectDate picks a date and shows its month; in range mode it takes both ends', async () => {
+    render();
+
+    await widget.act('selectDate', '2026-03-02');
+    await waitFor(() => expect(exposed()).toMatchObject({ value: '2026-03-02', visibleMonth: '2026-03' }));
+    expect(screen.getByText('March 2026')).toBeInTheDocument();
+
+    render({ properties: range('', '') });
+    await widget.act('selectDate', '2026-03-02', '2026-03-05');
+    await waitFor(() => expect(exposed()).toMatchObject({ startDate: '2026-03-02', endDate: '2026-03-05' }));
+  });
+
+  test('[ShadCalendar-ACT-002] setMonth shows a month without picking, and clear empties the selection', async () => {
+    render();
+
+    await widget.act('setMonth', '2027-01-15');
+    await waitFor(() => expect(exposed().visibleStart).toBe('2027-01-01'));
+    expect(screen.getByText('January 2027')).toBeInTheDocument();
+    expect(exposed().value).toBe('2026-10-09');
+
+    await widget.act('clear');
+    await waitFor(() => expect(exposed().value).toBe(''));
+    expect(exposed().selectedDates).toEqual([]);
+  });
+
+  test('[ShadCalendar-STY-001] colour and size styles reach the calendar as CSS variables', async () => {
+    const { container } = render({ styles: { accentColor: binding('#e11d48'), cellSize: binding('{{40}}') } });
+
+    await screen.findByText('October 2026');
+    const root = container.querySelector('.tj-shadcn');
+    expect(root.style.getPropertyValue('--sc-primary')).toBe('#e11d48');
+    expect(root.style.getPropertyValue('--lk-cell')).toBe('40px');
+  });
+});

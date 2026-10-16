@@ -1,0 +1,206 @@
+/**
+ * UI 2.0 Input: a one-line text box.
+ *
+ * Real store, real RenderWidget, real widget; nothing about the widget is mocked. Standard control behaviour
+ * (visibility, disabled, loading, tooltip) is covered for every UI 2.0 widget in Ui2/__tests__/controlState.spec.jsx;
+ * this file covers what the Input itself does. Titles carry [ShadInput-<AREA>-<NNN>] scenario ids.
+ */
+import { act, screen, waitFor, fireEvent } from '@testing-library/react';
+import {
+  createWidgetHarness,
+  binding,
+  setVariableOn,
+  countInvocationsOn,
+} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+
+const ID = 'inp1';
+const widget = createWidgetHarness({
+  componentType: 'ShadInput',
+  handle: 'input1',
+  id: ID,
+  widgetHeight: 64,
+  widgetWidth: 320,
+  defaultProperties: { label: binding('Full name') },
+});
+
+const render = (options = {}) => widget.render({ currentMode: 'view', ...options });
+const box = () => screen.getByRole('textbox');
+const exposed = () => widget.exposed() ?? {};
+const type = (text) => act(async () => fireEvent.change(box(), { target: { value: text } }));
+const leave = async () => {
+  await act(async () => box().focus());
+  await act(async () => box().blur());
+};
+
+describe('UI 2.0 Input', () => {
+  beforeEach(() => widget.setup());
+  afterEach(widget.teardown);
+
+  test('[ShadInput-DEF-001] shows the label, help text and placeholder, and exposes the label and an empty value', async () => {
+    render({ properties: { description: binding('As on your passport'), placeholder: binding('Ada Lovelace') } });
+
+    expect(await screen.findByText('Full name')).toBeInTheDocument();
+    expect(screen.getByText('As on your passport')).toBeInTheDocument();
+    expect(box()).toHaveAttribute('placeholder', 'Ada Lovelace');
+    // The label names the box through <label for>.
+    expect(screen.getByLabelText('Full name')).toBe(box());
+    await waitFor(() => expect(exposed().value).toBe(''));
+    expect(exposed().label).toBe('Full name');
+    expect(exposed()).toMatchObject({ isValid: true, isMandatory: false });
+  });
+
+  test('[ShadInput-DEF-002] without a label the placeholder names the box for screen readers', async () => {
+    render({ properties: { label: binding(''), placeholder: binding('Search orders') } });
+
+    expect(await screen.findByRole('textbox', { name: 'Search orders' })).toBeInTheDocument();
+  });
+
+  test('[ShadInput-PROP-001] defaultValue fills the box and the exposed value', async () => {
+    render({ properties: { defaultValue: binding('Grace') } });
+
+    await waitFor(() => expect(box()).toHaveValue('Grace'));
+    expect(exposed().value).toBe('Grace');
+  });
+
+  test('[ShadInput-PROP-002] inputType sets the kind of box, e.g. email or password', async () => {
+    render({ properties: { inputType: binding('email') } });
+    await waitFor(() => expect(box()).toHaveAttribute('type', 'email'));
+
+    const { container } = render({ properties: { inputType: binding('password') } });
+    await waitFor(() => expect(container.querySelector('input')).toHaveAttribute('type', 'password'));
+  });
+
+  test('[ShadInput-EVT-001] typing fires onChange, and its handler reads the new value', async () => {
+    render();
+    widget.setEvents(setVariableOn(ID, 'onChange', { value: '{{components.input1.value}}' }));
+
+    await type('hello');
+
+    await waitFor(() => expect(widget.variables().seen).toBe('hello'));
+    expect(box()).toHaveValue('hello');
+  });
+
+  test('[ShadInput-EVT-002] Enter fires onEnterPressed once', async () => {
+    render();
+    widget.setEvents(countInvocationsOn(ID, 'onEnterPressed'));
+
+    await act(async () => fireEvent.keyDown(box(), { key: 'Enter' }));
+    await act(async () => fireEvent.keyDown(box(), { key: 'a' }));
+
+    await waitFor(() => expect(widget.variables().calls).toBe(1));
+  });
+
+  test('[ShadInput-EVT-003] focusing and leaving the box fire onFocus and onBlur', async () => {
+    render();
+    widget.setEvents([
+      ...setVariableOn(ID, 'onFocus', { key: 'focused' }),
+      ...setVariableOn(ID, 'onBlur', { key: 'blurred' }),
+    ]);
+
+    await act(async () => box().focus());
+    await waitFor(() => expect(widget.variables().focused).toBe('YES'));
+    await act(async () => box().blur());
+    await waitFor(() => expect(widget.variables().blurred).toBe('YES'));
+  });
+
+  test('[ShadInput-ACT-001] setText fills the box and clear empties it', async () => {
+    render();
+
+    await widget.act('setText', 'Typed by a query');
+    await waitFor(() => expect(box()).toHaveValue('Typed by a query'));
+    expect(exposed().value).toBe('Typed by a query');
+
+    await widget.act('clear');
+    await waitFor(() => expect(box()).toHaveValue(''));
+    expect(exposed().value).toBe('');
+  });
+
+  test('[ShadInput-ACT-002] setFocus and setBlur move focus to and from the box', async () => {
+    render({ properties: { defaultValue: binding('x') } });
+
+    await widget.act('setFocus');
+    expect(document.activeElement).toBe(box());
+    await widget.act('setBlur');
+    expect(document.activeElement).not.toBe(box());
+  });
+
+  test('[ShadInput-VAL-001] mandatory marks the label, and the message shows only once the box is left', async () => {
+    render({ validation: { mandatory: binding('{{true}}') } });
+
+    await waitFor(() => expect(exposed()).toMatchObject({ isValid: false, isMandatory: true }));
+    expect(screen.getByText('*')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).toBeNull();
+
+    await leave();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Field cannot be empty');
+    expect(box()).toHaveAttribute('aria-invalid', 'true');
+
+    await type('Ada');
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+    expect(exposed().isValid).toBe(true);
+  });
+
+  test('[ShadInput-VAL-002] regex rejects text that does not match the pattern', async () => {
+    render({ validation: { regex: binding('^[A-Z]{3}$') } });
+
+    await type('ab1');
+    await leave();
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+    expect(await screen.findByRole('alert')).toHaveTextContent('The input should match pattern');
+
+    await type('ABC');
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+  });
+
+  test('[ShadInput-VAL-003] minLength and maxLength bound the text length', async () => {
+    render({ validation: { minLength: binding('{{3}}'), maxLength: binding('{{5}}') } });
+
+    await type('ab');
+    await leave();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Minimum 3 characters is needed');
+
+    await type('abcdef');
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Maximum 5 characters is allowed'));
+
+    await type('abcd');
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+  });
+
+  test('[ShadInput-VAL-004] a customRule message makes the text invalid and is shown under the box', async () => {
+    render({ validation: { customRule: binding("{{components.input1.value === 'admin' ? 'Name is taken' : ''}}") } });
+
+    await type('admin');
+    await leave();
+
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+    expect(await screen.findByText('Name is taken')).toBeInTheDocument();
+  });
+
+  test('[ShadInput-STY-001] colour and radius styles reach the widget as CSS variables', async () => {
+    const { container } = render({
+      styles: {
+        labelColor: binding('#111111'),
+        helpTextColor: binding('#222222'),
+        backgroundColor: binding('#fefefe'),
+        textColor: binding('#333333'),
+        placeholderColor: binding('#444444'),
+        borderColor: binding('#555555'),
+        accentColor: binding('#e11d48'),
+        errorColor: binding('#b91c1c'),
+        borderRadius: binding('{{10}}'),
+      },
+    });
+
+    await waitFor(() => expect(box()).toBeInTheDocument());
+    const root = container.querySelector('.tj-shadcn').style;
+    expect(root.getPropertyValue('--lk-label')).toBe('#111111');
+    expect(root.getPropertyValue('--lk-help')).toBe('#222222');
+    expect(root.getPropertyValue('--lk-bg')).toBe('#fefefe');
+    expect(root.getPropertyValue('--lk-fg')).toBe('#333333');
+    expect(root.getPropertyValue('--lk-placeholder')).toBe('#444444');
+    expect(root.getPropertyValue('--lk-border')).toBe('#555555');
+    expect(root.getPropertyValue('--sc-primary')).toBe('#e11d48');
+    expect(root.getPropertyValue('--lk-error')).toBe('#b91c1c');
+    expect(root.getPropertyValue('--lk-radius')).toBe('10px');
+  });
+});
