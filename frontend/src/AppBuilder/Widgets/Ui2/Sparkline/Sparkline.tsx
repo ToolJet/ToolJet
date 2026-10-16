@@ -1,16 +1,14 @@
 import React from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Area, AreaChart, Line, LineChart, ReferenceArea, Tooltip, XAxis, YAxis, type AreaProps } from 'recharts';
+import { clamp, curveOf, formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
   bandRange,
-  clamp,
-  curveOf,
-  formatter,
   lastPoint,
   sparkPoints,
   trendOf,
   type SparkPoint,
-} from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+} from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';
 import { SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 

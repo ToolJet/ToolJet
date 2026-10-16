@@ -6,18 +6,15 @@ import {
   centreValueFit,
   wholeNumbers,
   axisLabel,
-  bandRange,
   clamp,
   curveOf,
   fieldList,
   formatter,
   hasValues,
-  lastPoint,
   num,
   seriesRows,
-  sparkPoints,
-  trendOf,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { bandRange, lastPoint, sparkPoints, trendOf } from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';
 import { arcAngles, arcBox, radialRows } from '@/AppBuilder/Widgets/Ui2/RadialChart/radialModel';
 
 describe('num and clamp', () => {

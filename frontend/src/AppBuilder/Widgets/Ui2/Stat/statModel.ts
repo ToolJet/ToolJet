@@ -1,6 +1,7 @@
 // shadcn/ui pack: the pure logic of the Stat (Stat.tsx): its inline trend line, its progress bar and its
 // sizes. Every function takes whatever the author bound and never throws.
-import { FORMATS, formatter, num, sparkPoints, type SparkPoint } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { FORMATS, formatter, num } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { sparkPoints, type SparkPoint } from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';
 
 /** Value text classes by size: a small figure for dense rows of KPIs, the default, and a large hero number. */
 export const STAT_SIZES: Record<string, string> = {
