@@ -8,15 +8,17 @@ import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 import { Chip, ClearButton, MENU_SURFACE } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import type { ChangeEvent, KeyboardEvent } from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Tags input ----------------------------------------------------------------------------------------------------
 
-export const ShadTagsInput = (props) => {
+export const ShadTagsInput = (props: WidgetProps) => {
   const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
-  const inputRef = useRef(null);
-  const anchorRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
   const rules = {
     maxTags: properties.maxTags,
     caseSensitive: properties.caseSensitive === true,
@@ -37,17 +39,17 @@ export const ShadTagsInput = (props) => {
   const suggestions = toOptions(properties.suggestions).map((o) => ({ label: o.label, tag: String(o.value) }));
   // The native Tags input's names: values (the tags), newTagsAdded (those not among the suggestions).
   const known = new Set(suggestions.map((sg) => (rules.caseSensitive ? sg.tag : sg.tag.toLowerCase())));
-  const tagNames = (next) => ({
+  const tagNames = (next: string[]) => ({
     values: next,
     newTagsAdded: next.filter((t) => !known.has(rules.caseSensitive ? t : String(t).toLowerCase())),
   });
   useExposed(setExposedVariables, properties, {
     ...tagNames(tags),
     label: String(properties.label ?? ''),
-    setTags: async (t) => setTags(M.addTags([], M.toTags(t), rulesRef.current).tags),
+    setTags: async (t: unknown) => setTags(M.addTags([], M.toTags(t), rulesRef.current).tags),
     // selectTags adds tags (within the rules), deselectTags removes them.
-    selectTags: async (t) => setTags((cur) => M.addTags(cur, M.toTags(t), rulesRef.current).tags),
-    deselectTags: async (t) => {
+    selectTags: async (t: unknown) => setTags((cur) => M.addTags(cur, M.toTags(t), rulesRef.current).tags),
+    deselectTags: async (t: unknown) => {
       const gone = M.toTags(t);
       setTags((cur) => cur.filter((tag) => !gone.some((g) => M.sameTag(g, tag, rulesRef.current.caseSensitive))));
     },
@@ -70,7 +72,7 @@ export const ShadTagsInput = (props) => {
     .slice(0, 50);
   const menuOpen = focused && !dismissed && !disabled && visible.length > 0;
 
-  const commit = (next, event, tag) => {
+  const commit = (next: string[], event: 'onTagAdded' | 'onTagDeleted', tag: string) => {
     setTags(next);
     setExposedVariables({
       ...tagNames(next),
@@ -80,12 +82,12 @@ export const ShadTagsInput = (props) => {
     fireEvent('onChange');
   };
   /** Adds typed or picked tags; true when at least one was added. */
-  const add = (candidates) => {
+  const add = (candidates: unknown) => {
     let wanted = M.toTags(candidates);
     if (properties.allowCustomTags === false) {
       const known = wanted
         .map((c) => suggestions.find((s) => M.sameTag(s.tag, c) || M.sameTag(s.label, c))?.tag)
-        .filter(Boolean);
+        .filter((t): t is string => !!t);
       if (known.length < wanted.length) setTagError('Pick a tag from the suggestions');
       wanted = known;
       if (!wanted.length) return false;
@@ -96,7 +98,7 @@ export const ShadTagsInput = (props) => {
     setActive(-1);
     return result.added.length > 0;
   };
-  const remove = (index) => {
+  const remove = (index: number) => {
     const tag = tags[index];
     if (tag === undefined) return;
     setTagError('');
@@ -106,7 +108,7 @@ export const ShadTagsInput = (props) => {
       tag
     );
   };
-  const onChange = (e) => {
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     setTagError('');
     setDismissed(false);
     const { parts, rest } = M.splitTyped(e.target.value);
@@ -114,7 +116,7 @@ export const ShadTagsInput = (props) => {
     setText(rest);
     setActive(-1);
   };
-  const onKeyDown = (e) => {
+  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       if (menuOpen && active >= 0 && visible[active]) {
@@ -210,7 +212,7 @@ export const ShadTagsInput = (props) => {
               onOpenAutoFocus={(e) => e.preventDefault()}
               onCloseAutoFocus={(e) => e.preventDefault()}
               onInteractOutside={(e) => {
-                if (anchorRef.current?.contains(e.target)) e.preventDefault();
+                if (e.target instanceof Node && anchorRef.current?.contains(e.target)) e.preventDefault();
                 else setDismissed(true);
               }}
               onEscapeKeyDown={() => setDismissed(true)}

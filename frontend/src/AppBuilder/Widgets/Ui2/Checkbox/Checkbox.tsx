@@ -3,10 +3,11 @@ import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_share
 import { Checkbox } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CheckedRow, useChecked, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-export const ShadCheckbox = (props) => {
+export const ShadCheckbox = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const [checked, change] = useChecked(props);
   const check = useValidation(props, checked, () => change(false));

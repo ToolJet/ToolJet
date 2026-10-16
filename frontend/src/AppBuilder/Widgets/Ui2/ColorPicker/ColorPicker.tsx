@@ -8,25 +8,36 @@ import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
 import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { MENU_SURFACE, PLACEHOLDER } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import type { Hsv } from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Color picker --------------------------------------------------------------------------------------------------
+
+/** A colour as hue, saturation, value and alpha (0-1). */
+export type Hsva = Hsv & { a: number };
+
+/** The EyeDropper API (Chromium only), missing from TypeScript's DOM types. */
+interface EyeDropperWindow {
+  EyeDropper?: new () => { open: () => Promise<{ sRGBHex?: string }> };
+}
 
 const CHECKERBOARD = 'repeating-conic-gradient(#d4d4d4 0% 25%, #ffffff 0% 50%) 50% / 8px 8px';
 
 /** A swatch's fill: the colour over a checkerboard when it is see-through. */
-export const swatchStyle = (hex) => {
+export const swatchStyle = (hex: string): CSSProperties | undefined => {
   if (!hex) return undefined;
   return hex.length === 9 ? { background: `linear-gradient(${hex}, ${hex}), ${CHECKERBOARD}` } : { background: hex };
 };
 
-export const toHsva = (hex, keepHue) => {
+export const toHsva = (hex: unknown, keepHue?: number): Hsva => {
   const c = M.hexToRgba(hex);
   if (!c) return { h: keepHue ?? 0, s: 0, v: 1, a: 1 };
   const hsv = M.rgbToHsv(c);
   return { ...hsv, h: (hsv.s === 0 || hsv.v === 0) && keepHue !== undefined ? keepHue : hsv.h, a: c.a };
 };
 
-export const clamp01 = (n) => Math.max(0, Math.min(1, n));
+export const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
 export const THUMB =
   'pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.25),0_1px_3px_rgba(0,0,0,0.3)]';
@@ -34,9 +45,9 @@ export const THUMB =
 export const SLIDER_FOCUS = 'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
 
 /** Pointer dragging over an element: onMove({ x, y }) with both from 0 to 1, onEnd when released. */
-export const useDrag = (onMove, onEnd) => {
-  const el = useRef(null);
-  const at = (e) => {
+export const useDrag = (onMove: (point: { x: number; y: number }) => void, onEnd: () => void) => {
+  const el = useRef<HTMLDivElement>(null);
+  const at = (e: PointerEvent<HTMLElement>) => {
     const r = el.current?.getBoundingClientRect?.() || { left: 0, top: 0, width: 0, height: 0 };
     return {
       x: r.width ? clamp01((e.clientX - r.left) / r.width) : 0,
@@ -45,26 +56,26 @@ export const useDrag = (onMove, onEnd) => {
   };
   return {
     ref: el,
-    onPointerDown: (e) => {
+    onPointerDown: (e: PointerEvent<HTMLElement>) => {
       if (e.button !== undefined && e.button !== 0) return;
       e.preventDefault();
       e.currentTarget.setPointerCapture?.(e.pointerId);
       e.currentTarget.focus?.();
       onMove(at(e));
     },
-    onPointerMove: (e) => {
+    onPointerMove: (e: PointerEvent<HTMLElement>) => {
       if (e.currentTarget.hasPointerCapture?.(e.pointerId)) onMove(at(e));
     },
-    onPointerUp: (e) => {
+    onPointerUp: (e: PointerEvent<HTMLElement>) => {
       e.currentTarget.releasePointerCapture?.(e.pointerId);
       onEnd();
     },
   };
 };
 
-export const ShadColorPicker = (props) => {
+export const ShadColorPicker = (props: WidgetProps) => {
   const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const alpha = properties.allowAlpha === true;
   const initial = M.normalizeHex(properties.defaultValue, alpha) || '';
@@ -76,10 +87,10 @@ export const ShadColorPicker = (props) => {
   const [draft, setDraft] = useState(initial);
   const alphaRef = useRef(alpha);
   alphaRef.current = alpha;
-  const triggerRef = useRef(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   // value is the hex (what a Form collects); the other forms keep the native Color picker's names.
-  const colorExposed = (hex) => {
+  const colorExposed = (hex: string) => {
     const forms = M.colorForms(hex);
     return { value: hex, selectedColorRGB: forms.rgb, selectedColorRGBA: forms.rgba };
   };
@@ -91,26 +102,26 @@ export const ShadColorPicker = (props) => {
     label: String(properties.label ?? ''),
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),
-    setColor: async (c) => {
+    setColor: async (c: unknown) => {
       if (c === '' || c === null || c === undefined) return setValue('');
       const hex = M.normalizeHex(c, alphaRef.current);
       if (hex) setValue(hex);
     },
   });
-  const hexOf = (c) => M.rgbaToHex({ ...M.hsvToRgb(c), a: c.a }, alpha);
+  const hexOf = (c: Hsva) => M.rgbaToHex({ ...M.hsvToRgb(c), a: c.a }, alpha);
   const live = open ? hexOf(hsva) : value;
-  const setHsva = (next) => {
+  const setHsva = (next: Hsva) => {
     hsvaRef.current = next;
     setHsvaState(next);
     setDraft(hexOf(next));
   };
-  const commit = (hex) => {
+  const commit = (hex: string) => {
     if (!hex || hex === value) return;
     setValue(hex);
     setExposedVariables(colorExposed(hex));
     fireEvent('onChange');
   };
-  const pickHex = (hex) => {
+  const pickHex = (hex: string) => {
     setHsva(toHsva(hex, hsvaRef.current.h));
     setDraft(hex);
     commit(hex);
@@ -120,7 +131,7 @@ export const ShadColorPicker = (props) => {
     if (hex) pickHex(hex);
     else setDraft(value);
   };
-  const openChange = (next) => {
+  const openChange = (next: boolean) => {
     if (next && busy(properties)) return;
     if (next) {
       const start = toHsva(value);
@@ -136,8 +147,9 @@ export const ShadColorPicker = (props) => {
   const hue = useDrag(({ x }) => setHsva({ ...hsvaRef.current, h: x * 360 }), commitLive);
   const alphaBar = useDrag(({ x }) => setHsva({ ...hsvaRef.current, a: Math.round(x * 100) / 100 }), commitLive);
   /** Arrow keys on a slider: change one channel by a step (ten steps with Shift) and commit. */
-  const keys = (channel, step, min, max) => (e) => {
-    const dir = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+  const keys = (channel: keyof Hsva, step: number, min: number, max: number) => (e: KeyboardEvent<HTMLElement>) => {
+    const dirs: Record<string, number> = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 };
+    const dir = dirs[e.key];
     if (!dir) return;
     e.preventDefault();
     const c = hsvaRef.current;
@@ -146,16 +158,18 @@ export const ShadColorPicker = (props) => {
     setHsva(next);
     commit(hexOf(next));
   };
-  const areaKeys = (e) => {
+  const areaKeys = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') return keys('v', 0.01, 0, 1)(e);
     return keys('s', 0.01, 0, 1)(e);
   };
   const swatches = M.toSwatches(properties.swatches);
   const opaque = M.rgbaToHex(M.hsvToRgb(hsva), false);
-  const canEyeDrop = typeof window !== 'undefined' && typeof window.EyeDropper === 'function';
+  const Dropper = typeof window !== 'undefined' ? (window as Window & EyeDropperWindow).EyeDropper : undefined;
+  const canEyeDrop = typeof Dropper === 'function';
   const eyeDrop = async () => {
+    if (!Dropper) return;
     try {
-      const result = await new window.EyeDropper().open();
+      const result = await new Dropper().open();
       const hex = M.normalizeHex(result?.sRGBHex, alpha);
       if (hex) pickHex(hex);
     } catch {
@@ -301,7 +315,7 @@ export const ShadColorPicker = (props) => {
                     title={c}
                     aria-label={c}
                     aria-pressed={c === value}
-                    onClick={() => pickHex(M.normalizeHex(c, alpha))}
+                    onClick={() => pickHex(M.normalizeHex(c, alpha) ?? c)}
                     className="relative aspect-square w-full rounded-[calc(var(--sc-radius)-4px)] border border-[color:var(--sc-border)] p-0 shadow-sm outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                     style={swatchStyle(c)}
                   >

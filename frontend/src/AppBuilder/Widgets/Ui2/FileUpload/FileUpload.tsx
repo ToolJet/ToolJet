@@ -20,10 +20,14 @@ import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/fileModel';
 import { MUTED, isText } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import type { FileRejection } from 'react-dropzone';
+import type { LucideIcon } from 'lucide-react';
+import type { FileKind } from '@/AppBuilder/Widgets/Ui2/_pickers/fileModel';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- File upload ---------------------------------------------------------------------------------------------------
 
-const KIND_ICONS = {
+const KIND_ICONS: Record<FileKind, LucideIcon> = {
   image: FileImage,
   pdf: FileText,
   sheet: FileSpreadsheet,
@@ -34,8 +38,8 @@ const KIND_ICONS = {
   other: FileIcon,
 };
 
-export const readAs = (file, how) =>
-  new Promise((resolve, reject) => {
+export const readAs = (file: Blob, how: 'readAsDataURL' | 'readAsText') =>
+  new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result ?? ''));
     reader.onerror = () => reject(reader.error || new Error('Failed to read file'));
@@ -44,13 +48,27 @@ export const readAs = (file, how) =>
 
 export let handleSeq = 0;
 
+/** A file the widget has read: its registry handle, what the list shows, and the parsed rows (when parsing is on). */
+export interface ReadFile {
+  handle: string;
+  name: string;
+  type: string;
+  size: number;
+  lastModified: number;
+  preview: string;
+  parsedData: unknown;
+}
+
 /** Reads a file the native File picker's way: text content, base64 and data URL, held in the file-handle registry
  *  (the store gets light string-like refs), plus parsed rows for CSV/TSV/Excel/JSON when parsing is on. */
-export const readFile = async (file, { parse, parseFileType, delimiter }) => {
+export const readFile = async (
+  file: File,
+  { parse, parseFileType, delimiter }: { parse: boolean; parseFileType?: unknown; delimiter?: unknown }
+): Promise<ReadFile> => {
   const dataURL = await readAs(file, 'readAsDataURL');
   const content = await readAs(file, 'readAsText');
   const base64Data = dataURL.split(',')[1] || '';
-  let parsedData = null;
+  let parsedData: unknown = null;
   if (parse) {
     try {
       const fp = await import('@/AppBuilder/Widgets/FilePicker/helpers/fileProcessing');
@@ -80,7 +98,7 @@ export const readFile = async (file, { parse, parseFileType, delimiter }) => {
   };
 };
 
-export const exposedFile = (f) => ({
+export const exposedFile = (f: ReadFile) => ({
   name: f.name,
   type: f.type,
   size: f.size,
@@ -94,11 +112,11 @@ export const exposedFile = (f) => ({
 export const DROPZONE =
   'flex cursor-pointer flex-col items-center justify-center gap-1 rounded-[var(--lk-radius,var(--sc-radius))] border-2 border-dashed border-[color:var(--lk-invalid,var(--lk-drop-border,var(--sc-input)))] bg-[color:var(--lk-drop-bg,transparent)] px-6 py-5 text-center outline-none transition-colors hover:bg-[color:color-mix(in_srgb,var(--sc-muted)_50%,transparent)] focus-visible:ring-1 focus-visible:ring-ring';
 
-export const ShadFileUpload = (props) => {
+export const ShadFileUpload = (props: WidgetProps) => {
   const { properties, setExposedVariables, fireEvent, id } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<ReadFile[]>([]);
   const filesRef = useRef(files);
   const mounted = useRef(true);
   const [parsing, setParsing] = useState(false);
@@ -108,7 +126,7 @@ export const ShadFileUpload = (props) => {
   const maxSize = M.clampBytes(properties.maxSize);
   const minSize = M.clampBytes(properties.minSize);
   const disabled = busy(properties);
-  const publish = (next) => {
+  const publish = (next: ReadFile[]) => {
     filesRef.current = next;
     setFiles(next);
     const exposed = next.map(exposedFile);
@@ -117,20 +135,21 @@ export const ShadFileUpload = (props) => {
   };
   // The native File picker's setFileName(index, name) or setFileName([{ index, newFileName }]): renames files and
   // keeps each one's extension.
-  const rename = (indexOrUpdates, single) => {
-    const updates = Array.isArray(indexOrUpdates)
+  const rename = (indexOrUpdates: unknown, single?: unknown) => {
+    const updates: Resolved[] = Array.isArray(indexOrUpdates)
       ? indexOrUpdates.slice(0, 1000).filter((u) => u && typeof u === 'object')
       : [{ index: indexOrUpdates, newFileName: single }];
-    const names = new Map();
+    const names = new Map<number, string>();
     for (const u of updates) {
       const name = typeof u.newFileName === 'string' ? u.newFileName.trim() : '';
       if (Number.isInteger(u.index) && name) names.set(u.index, name);
     }
     if (!names.size) return;
     const next = filesRef.current.map((f, i) => {
-      if (!names.has(i)) return f;
+      const newName = names.get(i);
+      if (newName === undefined) return f;
       const dot = f.name.lastIndexOf('.');
-      return { ...f, name: dot > 0 ? `${names.get(i)}${f.name.slice(dot)}` : names.get(i) };
+      return { ...f, name: dot > 0 ? `${newName}${f.name.slice(dot)}` : newName };
     });
     publish(next);
   };
@@ -149,7 +168,7 @@ export const ShadFileUpload = (props) => {
     isParsing: parsing,
     label: String(properties.label ?? ''),
     clearFiles: async () => clearRef.current(),
-    setFileName: async (indexOrUpdates, name) => renameRef.current(indexOrUpdates, name),
+    setFileName: async (indexOrUpdates: unknown, name: unknown) => renameRef.current(indexOrUpdates, name),
   });
   useEffect(() => {
     mounted.current = true;
@@ -161,7 +180,7 @@ export const ShadFileUpload = (props) => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const check = useValidation(props, files.length || '', () => clearFiles(false));
 
-  const onDrop = async (accepted, rejections) => {
+  const onDrop = async (accepted: File[], rejections: FileRejection[]) => {
     check.touch();
     const current = multiple ? filesRef.current : [];
     const room = multiple ? Math.max(0, maxFiles - current.length) : 1;
@@ -182,7 +201,9 @@ export const ShadFileUpload = (props) => {
     }
     const options = { parse, parseFileType: properties.parseFileType, delimiter: properties.delimiter };
     const results = await Promise.allSettled(taking.map((f) => readFile(f, options)));
-    const read = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+    const read = results
+      .filter((r): r is PromiseFulfilledResult<ReadFile> => r.status === 'fulfilled')
+      .map((r) => r.value);
     if (!mounted.current) {
       read.forEach((f) => releaseFileHandle(f.handle));
       return;
@@ -199,7 +220,7 @@ export const ShadFileUpload = (props) => {
     // The native File picker's event once the files are read (and parsed, with Parse content on).
     fireEvent('onFileLoaded');
   };
-  const remove = (index) => {
+  const remove = (index: number) => {
     const file = filesRef.current[index];
     if (!file) return;
     releaseFileHandle(file.handle);

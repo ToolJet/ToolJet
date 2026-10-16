@@ -1,14 +1,16 @@
 import React, { useRef } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check } from 'lucide-react';
-import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { TablerIcon } from '@/AppBuilder/Widgets/Ui2/_shared/TablerIcon';
 import { Skeleton, cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import type { MutableRefObject, ReactNode } from 'react';
+import type { MenuEntry } from './actionsModel';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 // shadcn/ui pack (experiment): the actions widgets. Configs in WidgetManager/widgets/shad*.js, style variables
-// in looks/actions.js, pure logic in actionsModel.js.
+// in looks/actions, pure logic in actionsModel and calendarModel.
 
-export const Icon = ({ name, className, size = 16 }) =>
+export const Icon = ({ name, className, size = 16 }: { name: string; className?: string; size?: number }) =>
   name ? (
     <span className={cn('inline-flex shrink-0 items-center justify-center', className)} aria-hidden="true">
       <TablerIcon iconName={name} style={{ width: size, height: size }} stroke={1.75} />
@@ -16,7 +18,7 @@ export const Icon = ({ name, className, size = 16 }) =>
   ) : null;
 
 /** Latest values for actions: the exposed action functions are published once, so they read state through this. */
-export const useLive = (value) => {
+export const useLive = <T,>(value: T): MutableRefObject<T> => {
   const ref = useRef(value);
   ref.current = value;
   return ref;
@@ -27,7 +29,10 @@ export const useLive = (value) => {
 const MENU_CONTENT =
   'z-[1060] max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden border p-1 shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 rounded-[var(--lk-menu-radius,calc(var(--sc-radius)-2px))] border-[color:var(--lk-menu-border,var(--sc-border))] bg-[color:var(--lk-menu-bg,var(--sc-popover))] text-[color:var(--lk-item-fg,var(--sc-popover-foreground))]';
 
-export const MenuContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => (
+export const MenuContent = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
+>(({ className, sideOffset = 4, ...props }, ref) => (
   <DropdownMenuPrimitive.Portal container={getPortalRoot()}>
     <DropdownMenuPrimitive.Content
       ref={ref}
@@ -50,14 +55,32 @@ const MUTED = 'text-[color:var(--lk-desc,var(--sc-muted-foreground))]';
 export const MenuSeparator = () => (
   <DropdownMenuPrimitive.Separator className="-mx-1 my-1 h-px bg-[color:var(--lk-menu-border,var(--sc-border))]" />
 );
-export const MenuLabel = ({ children }) => (
+export const MenuLabel = ({ children }: { children?: ReactNode }) => (
   <DropdownMenuPrimitive.Label className="px-2 py-1.5 text-xs font-medium text-[color:var(--lk-desc,var(--sc-muted-foreground))]">
     {children}
   </DropdownMenuPrimitive.Label>
 );
 
 /** The rows of a menu (items, group headings, separators), or skeleton rows while its options load. */
-export const MenuRows = ({ rows, loading, onPick, activeKey }) => {
+/** What MenuRows reads of an item (a dropdown menu's entries carry all of it, a navigation's children some). */
+export type MenuRowsItem = Pick<MenuEntry, 'label' | 'value' | 'icon' | 'description' | 'disabled'> &
+  Partial<Pick<MenuEntry, 'shortcut' | 'destructive'>>;
+
+/** A row MenuRows draws: an item, a group heading or a separator. */
+export type MenuRowOf<T extends MenuRowsItem> =
+  | ({ kind: 'item' } & T)
+  | { kind: 'label'; label: string }
+  | { kind: 'separator' };
+
+export interface MenuRowsProps<T extends MenuRowsItem> {
+  rows: MenuRowOf<T>[];
+  loading?: boolean;
+  onPick: (item: { kind: 'item' } & T) => void;
+  /** The value (as text) of the item to mark as current. */
+  activeKey?: string;
+}
+
+export const MenuRows = <T extends MenuRowsItem>({ rows, loading, onPick, activeKey }: MenuRowsProps<T>) => {
   if (loading) {
     return (
       <div className="flex flex-col gap-1 p-1" aria-busy="true">

@@ -5,10 +5,11 @@ import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { MAX_CHOICES, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-export const ShadRadioGroup = (props) => {
+export const ShadRadioGroup = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, id } = props;
   const options = toOptions(properties.options);
@@ -19,7 +20,7 @@ export const ShadRadioGroup = (props) => {
     props,
     initial,
     (set) => ({
-      selectOption: async (v) => set(v === undefined || v === null || typeof v === 'object' ? '' : String(v)),
+      selectOption: async (v: unknown) => set(v === undefined || v === null || typeof v === 'object' ? '' : String(v)),
       // The native Radio button's deselectOption() clears the choice.
       deselectOption: async () => set(''),
     }),

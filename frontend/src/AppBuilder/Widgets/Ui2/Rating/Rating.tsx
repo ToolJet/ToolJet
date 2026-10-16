@@ -7,15 +7,18 @@ import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 import { isText } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import type { KeyboardEvent, MouseEvent } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Rating --------------------------------------------------------------------------------------------------------
 
-const RATING_SIZES = { sm: 16, default: 20, lg: 28 };
+const RATING_SIZES: Record<string, number> = { sm: 16, default: 20, lg: 28 };
 
-export const RATING_ICONS = { star: Star, heart: Heart, circle: Circle };
+export const RATING_ICONS: Record<string, LucideIcon> = { star: Star, heart: Heart, circle: Circle };
 
 // Filled icons: the filledColor style, else a colour that suits the icon (amber stars, red hearts, primary dots).
-export const FILLED = {
+export const FILLED: Record<string, string> = {
   star: 'fill-[color:var(--lk-on,var(--sc-warning))] text-[color:var(--lk-on,var(--sc-warning))]',
   heart: 'fill-[color:var(--lk-on,var(--sc-destructive))] text-[color:var(--lk-on,var(--sc-destructive))]',
   circle: 'fill-[color:var(--lk-on,var(--sc-primary))] text-[color:var(--lk-on,var(--sc-primary-ink))]',
@@ -24,16 +27,17 @@ export const FILLED = {
 export const EMPTY =
   'fill-[color:var(--lk-off,color-mix(in_srgb,var(--sc-muted-foreground)_22%,transparent))] text-[color:var(--lk-off,color-mix(in_srgb,var(--sc-muted-foreground)_22%,transparent))]';
 
-export const ShadRating = (props) => {
+export const ShadRating = (props: WidgetProps) => {
   const { properties, id } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const max = M.clampMax(properties.max);
   const half = properties.allowHalf === true;
-  const limits = useRef({ max, half });
-  limits.current = { max, half, initial: M.normalizeRating(properties.defaultValue, max, half) };
-  const [stored, change] = useValue(props, M.normalizeRating(properties.defaultValue, max, half), (set) => ({
-    setValue: async (v) => set(M.normalizeRating(v, limits.current.max, limits.current.half)),
+  const initial = M.normalizeRating(properties.defaultValue, max, half);
+  const limits = useRef({ max, half, initial });
+  limits.current = { max, half, initial };
+  const [stored, change] = useValue(props, initial, (set) => ({
+    setValue: async (v: unknown) => set(M.normalizeRating(v, limits.current.max, limits.current.half)),
     clear: async () => set(0),
     // The native Star rating's resetValue(): back to the default.
     resetValue: async () => set(limits.current.initial),
@@ -41,8 +45,8 @@ export const ShadRating = (props) => {
   useExposed(props.setExposedVariables, properties, { label: String(properties.label ?? '') });
   const value = Math.min(Number(stored) || 0, max);
   const check = useValidation(props, M.validationInput(value > 0, value), () => change(0));
-  const [hover, setHover] = useState(null);
-  const radios = useRef([]);
+  const [hover, setHover] = useState<number | null>(null);
+  const radios = useRef<(HTMLSpanElement | null)[]>([]);
   const readOnly = properties.readOnly === true;
   const interactive = !readOnly && !busy(properties);
   const shown = interactive && hover !== null ? hover : value;
@@ -50,17 +54,17 @@ export const ShadRating = (props) => {
   const Icon = RATING_ICONS[kind];
   const size = RATING_SIZES[properties.size] || RATING_SIZES.default;
   const labels = list(properties.valueLabels).map((l) => (isText(l) ? String(l) : ''));
-  const setTo = (next) => {
+  const setTo = (next: number) => {
     if (next !== value) change(next);
     check.touch();
   };
-  const pointAt = (e, position) => {
+  const pointAt = (e: MouseEvent<HTMLSpanElement>, position: number) => {
     const r = e.currentTarget.getBoundingClientRect?.();
     return half && r?.width && e.clientX - r.left < r.width / 2 ? position - 0.5 : position;
   };
-  const onKeyDown = (e) => {
+  const onKeyDown = (e: KeyboardEvent<HTMLSpanElement>) => {
     if (!interactive) return;
-    let next = null;
+    let next: number | null = null;
     if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = M.stepRating(value, 1, max, half);
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = M.stepRating(value, -1, max, half);
     else if (e.key === 'Home') next = half ? 0.5 : 1;

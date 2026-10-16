@@ -4,10 +4,11 @@ import { ToggleGroup, ToggleGroupItem, cn } from '@/AppBuilder/Widgets/Ui2/_shar
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { MAX_CHOICES, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-export const ShadToggleGroup = (props) => {
+export const ShadToggleGroup = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties } = props;
   const options = toOptions(properties.options);
@@ -22,7 +23,7 @@ export const ShadToggleGroup = (props) => {
     props,
     initial,
     (set) => ({
-      setSelected: async (v) => {
+      setSelected: async (v: unknown) => {
         const k = v === undefined || v === null || typeof v === 'object' ? null : String(v);
         if (k !== null && keysRef.current.has(k)) set(k);
       },

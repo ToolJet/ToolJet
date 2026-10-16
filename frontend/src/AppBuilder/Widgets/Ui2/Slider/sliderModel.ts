@@ -4,14 +4,25 @@
 // A range slider draws one thumb per value; past this, the rest of a bound list is ignored.
 export const MAX_THUMBS = 10;
 
-const finite = (v, fallback) => {
+/** A slider's track: min below max and a positive step. */
+export interface SliderBounds {
+  min: number;
+  max: number;
+  step: number;
+}
+
+const finite = (v: unknown, fallback: number): number => {
   if (v === null || v === undefined || v === '' || typeof v === 'object' || typeof v === 'boolean') return fallback;
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 };
 
 /** min, max and step as Radix needs them: finite, min below max, a positive step no wider than the track. */
-export const sliderBounds = ({ min, max, step } = {}) => {
+export const sliderBounds = ({
+  min,
+  max,
+  step,
+}: { min?: unknown; max?: unknown; step?: unknown } = {}): SliderBounds => {
   let lo = finite(min, 0);
   let hi = finite(max, 100);
   if (hi < lo) [lo, hi] = [hi, lo];
@@ -23,8 +34,8 @@ export const sliderBounds = ({ min, max, step } = {}) => {
 
 /** The thumbs' values: a list is a range (at most MAX_THUMBS, in order), anything else one thumb; each value is a
  *  number within the bounds (junk reads as the minimum). */
-export const sliderValues = (raw, bounds) => {
-  const clamp = (v) => Math.min(bounds.max, Math.max(bounds.min, finite(v, bounds.min)));
+export const sliderValues = (raw: unknown, bounds: SliderBounds): number[] => {
+  const clamp = (v: unknown) => Math.min(bounds.max, Math.max(bounds.min, finite(v, bounds.min)));
   if (!Array.isArray(raw)) return [clamp(raw)];
   const values = raw.slice(0, MAX_THUMBS).map(clamp);
   return values.length ? values.sort((a, b) => a - b) : [bounds.min];

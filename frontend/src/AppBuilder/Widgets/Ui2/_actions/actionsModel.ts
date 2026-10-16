@@ -1,40 +1,45 @@
 // shadcn/ui pack (experiment): the pure logic of the actions widgets (dropdown menu, button group, navigation,
-// carousel; the calendar's is in calendarModel.js). Everything here takes author data as it comes (null, wrong
+// carousel; the calendar's is in calendarModel). Everything here takes author data as it comes (null, wrong
 // types, huge lists, ToolJet's `{ value }` wrappers from the inspector's option lists) and never throws.
+
+import type { Bound, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 const MAX_ITEMS = 200;
 const MAX_CHILDREN = 50;
 const MAX_SLIDES = 100;
 
-export const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
-export const isText = (v) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
-export const arr = (v) => (Array.isArray(v) ? v : []);
+/** A value an author can type: text, a number or a flag. */
+export type Text = string | number | boolean;
+
+export const isObject = (v: unknown): v is Resolved => v !== null && typeof v === 'object' && !Array.isArray(v);
+const isText = (v: unknown): v is Text => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
+export const arr = (v: unknown): Bound[] => (Array.isArray(v) ? v : []);
 
 /** The inspector's option lists wrap some fields as `{ value }`: the bare value. */
-export const unwrap = (v) =>
+export const unwrap = (v: unknown): unknown =>
   isObject(v) && 'value' in v && Object.keys(v).every((k) => k === 'value' || k === 'fxActive') ? v.value : v;
 /** A flag set as true, 'true' or '{{true}}'. */
-export const flag = (v) => {
+export const flag = (v: unknown): boolean => {
   const raw = unwrap(v);
   return raw === true || raw === 'true' || raw === '{{true}}';
 };
 /** False only when explicitly turned off (visible defaults to on). */
-const notOff = (v) => {
+const notOff = (v: unknown): boolean => {
   const raw = unwrap(v);
   return !(raw === false || raw === 'false' || raw === '{{false}}');
 };
-export const text = (v) => {
+export const text = (v: unknown): string => {
   const raw = unwrap(v);
   return isText(raw) ? String(raw) : '';
 };
 /** A Tabler icon name ('IconBolt'); anything else means no icon. */
-export const iconName = (v) => {
+export const iconName = (v: unknown): string => {
   const raw = text(v).trim();
   return /^Icon[A-Za-z0-9]+$/.test(raw) ? raw : '';
 };
 
 /** A whole number within [min, max], or the fallback when the input is not a number. */
-export const clampInt = (v, min, max, fallback) => {
+export const clampInt = (v: unknown, min: number, max: number, fallback: number): number => {
   const n = Math.floor(Number(unwrap(v)));
   if (!Number.isFinite(n)) return fallback;
   return Math.max(min, Math.min(max, n));
@@ -44,7 +49,26 @@ export const clampInt = (v, min, max, fallback) => {
 
 /** One menu entry from author data: a string, or `{ label, value, icon, description, shortcut, disabled, visible,
  *  destructive, separator, group }`. Null when it cannot be an item (and is not a bare separator). */
-const menuEntry = (o) => {
+export interface MenuEntry {
+  label: string;
+  value: Text;
+  icon: string;
+  description: string;
+  shortcut: string;
+  disabled: boolean;
+  visible: boolean;
+  destructive: boolean;
+  separator: boolean;
+  group: string;
+  separatorOnly?: undefined;
+}
+
+/** A bare separator in the author's list (no label or value). */
+interface SeparatorOnly {
+  separatorOnly: true;
+}
+
+const menuEntry = (o: unknown): MenuEntry | SeparatorOnly | null => {
   if (isText(o)) {
     return {
       label: String(o),
@@ -61,8 +85,8 @@ const menuEntry = (o) => {
   }
   if (!isObject(o)) return null;
   const label = text(o.label ?? o.title);
-  let value = unwrap(o.value);
-  if (!isText(value)) value = label;
+  const raw = unwrap(o.value);
+  const value = isText(raw) ? raw : label;
   if (!label && (value === '' || value === undefined)) {
     return o.separator === true || o.type === 'separator' ? { separatorOnly: true } : null;
   }
@@ -82,9 +106,12 @@ const menuEntry = (o) => {
 
 /** The rows a dropdown menu draws, in order: `{ kind: 'item', ...item }`, `{ kind: 'label', label }` (a group's
  *  heading) and `{ kind: 'separator' }`. Hidden items are dropped; a separator never leads, trails or doubles. */
-export const menuRows = (items) => {
-  const rows = [];
-  let group;
+/** A row of a dropdown menu. */
+export type MenuRow = ({ kind: 'item' } & MenuEntry) | { kind: 'label'; label: string } | { kind: 'separator' };
+
+export const menuRows = (items: unknown): MenuRow[] => {
+  const rows: MenuRow[] = [];
+  let group: string | undefined;
   let pendingSeparator = false;
   for (const raw of arr(items).slice(0, MAX_ITEMS)) {
     const entry = menuEntry(raw);
@@ -107,7 +134,9 @@ export const menuRows = (items) => {
 };
 
 /** The native PopoverMenu's lastClickedOption shape. */
-export const clickedOption = (item) => ({
+export const clickedOption = (
+  item: Partial<Pick<MenuEntry, 'label' | 'description' | 'value'>> | null | undefined
+): { label: string; description: string; value: Text } => ({
   label: item?.label ?? '',
   description: item?.description ?? '',
   value: item?.value ?? '',
@@ -119,9 +148,22 @@ const BUTTON_VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructiv
 
 /** Buttons as `{ label, value, icon, disabled, variant }`, keyed uniquely by value (the first wins). Plain values
  *  are accepted (['Day', 'Week']). */
-export const groupButtons = (buttons) => {
-  const seen = new Set();
-  const out = [];
+/** A button of a button group. */
+export interface GroupButton {
+  label: string;
+  value: Text;
+  icon: string;
+  disabled: boolean;
+  variant: string;
+  tooltip: string;
+}
+
+/** How a button group selects: one button, several, or none (the buttons only act). */
+export type SelectionMode = 'single' | 'multiple' | 'actions';
+
+export const groupButtons = (buttons: unknown): GroupButton[] => {
+  const seen = new Set<string>();
+  const out: GroupButton[] = [];
   for (const raw of arr(buttons).slice(0, MAX_CHILDREN)) {
     const entry = menuEntry(raw);
     if (!entry || entry.separatorOnly || !entry.visible) continue;
@@ -143,7 +185,7 @@ export const groupButtons = (buttons) => {
 
 /** The selected keys (strings) from a default value: one value for 'single', a list for 'multiple', none for
  *  'actions'. Values that name no button are dropped. */
-export const initialSelection = (defaultValue, mode, buttons) => {
+export const initialSelection = (defaultValue: unknown, mode: unknown, buttons: readonly GroupButton[]): string[] => {
   if (mode !== 'single' && mode !== 'multiple') return [];
   const keys = new Set(buttons.map((b) => String(b.value)));
   const raw = unwrap(defaultValue);
@@ -157,7 +199,12 @@ export const initialSelection = (defaultValue, mode, buttons) => {
 
 /** The selection after clicking `key`: single picks it (or clears it when deselecting is allowed), multiple
  *  toggles it. */
-export const toggleSelection = (selected, key, mode, allowDeselect = false) => {
+export const toggleSelection = (
+  selected: string[],
+  key: string,
+  mode: unknown,
+  allowDeselect: unknown = false
+): string[] => {
   const has = selected.includes(key);
   if (mode === 'single') return has ? (allowDeselect ? [] : selected) : [key];
   if (mode === 'multiple') return has ? selected.filter((k) => k !== key) : [...selected, key];
@@ -166,22 +213,47 @@ export const toggleSelection = (selected, key, mode, allowDeselect = false) => {
 
 /** The exposed values for a selection: value (single: the value or ''; multiple: the list) and the native
  *  ButtonGroup's selected (always a list). */
-export const selectionExposed = (selected, mode, buttons) => {
+export const selectionExposed = (
+  selected: readonly string[],
+  mode: unknown,
+  buttons: readonly GroupButton[]
+): { value: Text | Text[]; selected: Text[] } => {
   const byKey = new Map(buttons.map((b) => [String(b.value), b.value]));
-  const values = selected.filter((k) => byKey.has(k)).map((k) => byKey.get(k));
+  const values = selected.map((k) => byKey.get(k)).filter((v): v is Text => v !== undefined);
   return { value: mode === 'multiple' ? values : values[0] ?? '', selected: values };
 };
 
 // ---- Navigation ------------------------------------------------------------------------------------------------
 
-const navEntry = (o, seen) => {
+/** An item of a navigation (top-level or a child), or a separator row. */
+export interface NavItem {
+  label: string;
+  value: Text;
+  key: string;
+  icon: string;
+  disabled: boolean;
+  badge: string;
+  group: string;
+  separator: boolean;
+  children: NavItem[];
+}
+
+/** A separator between navigation items. */
+export interface NavSeparator {
+  separator: true;
+  key?: undefined;
+}
+
+export type NavRow = NavItem | NavSeparator;
+
+const navEntry = (o: unknown, seen: Set<string>): Omit<NavItem, 'children'> | NavSeparator | null => {
   const entry = menuEntry(isObject(o) && o.value === undefined && isText(o.id) ? { ...o, value: o.id } : o);
   if (!entry || entry.separatorOnly) return entry?.separatorOnly ? { separator: true } : null;
   if (!entry.visible) return null;
   const key = String(entry.value);
   if (seen.has(key)) return null;
   seen.add(key);
-  const badge = unwrap(o?.badge);
+  const badge = unwrap(isObject(o) ? o.badge : undefined);
   return {
     label: entry.label,
     value: entry.value,
@@ -196,9 +268,9 @@ const navEntry = (o, seen) => {
 
 /** Navigation items as `{ label, value, key, icon, badge, disabled, group, children }` (one level of children;
  *  deeper levels are flattened into it), plus `{ separator: true }` rows. Values are unique across the tree. */
-export const navItems = (items) => {
-  const seen = new Set();
-  const out = [];
+export const navItems = (items: unknown): NavRow[] => {
+  const seen = new Set<string>();
+  const out: NavRow[] = [];
   for (const raw of arr(items).slice(0, MAX_ITEMS)) {
     const entry = navEntry(raw, seen);
     if (!entry) continue;
@@ -206,8 +278,8 @@ export const navItems = (items) => {
       if (out.length && !out[out.length - 1].separator) out.push({ separator: true });
       continue;
     }
-    const children = [];
-    const walk = (list, depth) => {
+    const children: NavItem[] = [];
+    const walk = (list: unknown, depth: number) => {
       for (const child of arr(list).slice(0, MAX_CHILDREN)) {
         if (children.length >= MAX_CHILDREN) return;
         const c = navEntry(child, seen);
@@ -225,7 +297,13 @@ export const navItems = (items) => {
 };
 
 /** The item with this value (a top-level item or a child) and its parent, or null. */
-export const findNav = (items, value) => {
+/** A navigation item and its parent (null for a top-level item). */
+export interface NavFound {
+  item: NavItem;
+  parent: NavItem | null;
+}
+
+export const findNav = (items: readonly NavRow[], value: unknown): NavFound | null => {
   if (value === undefined || value === null || value === '') return null;
   const key = String(value);
   for (const item of items) {
@@ -238,7 +316,9 @@ export const findNav = (items, value) => {
 };
 
 /** The exposed activeItem: `{ label, value, parentLabel, parentValue }`, or null when nothing is active. */
-export const activeItemExposed = (found) =>
+export const activeItemExposed = (
+  found: NavFound | null
+): { label: string; value: Text; parentLabel: string | null; parentValue: Text | null } | null =>
   found
     ? {
         label: found.item.label,
@@ -252,8 +332,16 @@ export const activeItemExposed = (found) =>
 
 /** Slides as `{ image, title, description, link }`: from objects (image, src or url) or plain image URLs. Slides
  *  with neither an image nor a title are dropped. */
-export const carouselSlides = (slides) => {
-  const out = [];
+/** A carousel slide. */
+export interface Slide {
+  image: string;
+  title: string;
+  description: string;
+  link: string;
+}
+
+export const carouselSlides = (slides: unknown): Slide[] => {
+  const out: Slide[] = [];
   for (const raw of arr(slides).slice(0, MAX_SLIDES)) {
     const slide = isObject(raw)
       ? {
@@ -271,10 +359,10 @@ export const carouselSlides = (slides) => {
 };
 
 /** The number of positions a carousel can rest at, showing `perView` slides at a time. */
-export const carouselPositions = (count, perView = 1) => Math.max(1, count - Math.max(1, perView) + 1);
+export const carouselPositions = (count: number, perView = 1): number => Math.max(1, count - Math.max(1, perView) + 1);
 
 /** The index after a move: wrapped round when looping, else clamped. */
-export const moveIndex = (index, positions, loop) => {
+export const moveIndex = (index: unknown, positions: number, loop: unknown): number => {
   if (positions <= 1) return 0;
   const i = Math.floor(Number(index));
   if (!Number.isFinite(i)) return 0;
@@ -282,11 +370,19 @@ export const moveIndex = (index, positions, loop) => {
   return Math.max(0, Math.min(positions - 1, i));
 };
 
-const RATIOS = { '16/9': 16 / 9, '4/3': 4 / 3, '3/2': 3 / 2, '1/1': 1, '21/9': 21 / 9, '3/4': 3 / 4, '9/16': 9 / 16 };
+const RATIOS: Record<string, number> = {
+  '16/9': 16 / 9,
+  '4/3': 4 / 3,
+  '3/2': 3 / 2,
+  '1/1': 1,
+  '21/9': 21 / 9,
+  '3/4': 3 / 4,
+  '9/16': 9 / 16,
+};
 
 /** The CSS aspect ratio for a setting, or null for 'fill' (the slides fill the widget's height). Accepts '16/9',
  *  '16:9' or a number. */
-export const aspectRatio = (v) => {
+export const aspectRatio = (v: unknown): number | null => {
   const raw = text(v).trim().replace(':', '/');
   if (raw === 'fill' || raw === '') return null;
   if (RATIOS[raw]) return RATIOS[raw];

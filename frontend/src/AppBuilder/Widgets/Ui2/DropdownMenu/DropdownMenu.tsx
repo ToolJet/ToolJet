@@ -15,15 +15,17 @@ import {
   SIZES,
   useLive,
 } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
+import type { MenuEntry } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Dropdown menu -----------------------------------------------------------------------------------------------
 
 const VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'];
 
-export const ICON_SIZE = { sm: 'h-8 w-8', default: 'h-9 w-9', lg: 'h-10 w-10' };
+export const ICON_SIZE: Record<string, string> = { sm: 'h-8 w-8', default: 'h-9 w-9', lg: 'h-10 w-10' };
 
 /** Trigger colours: each variant has its own, so a style replaces them only when set (as ShadButton). */
-export const triggerLook = (styles) =>
+export const triggerLook = (styles: Resolved | undefined) =>
   cn(
     whenSet(styles, 'backgroundColor', 'bg-[color:var(--lk-bg)]'),
     isSet(styles?.hoverBackgroundColor)
@@ -34,13 +36,13 @@ export const triggerLook = (styles) =>
     whenSet(styles, 'borderRadius', 'rounded-[var(--lk-radius)]')
   );
 
-export const ShadDropdownMenu = (props) => {
+export const ShadDropdownMenu = (props: WidgetProps) => {
   const { properties, styles, setExposedVariable, fireEvent, setExposedVariables, componentType } = props;
   const [open, setOpen] = useState(false);
-  const [last, setLast] = useState(null);
+  const [last, setLast] = useState<ReturnType<typeof clickedOption> | null>(null);
   const disabled = busy(properties);
   const live = useLive({ disabled });
-  const changeOpen = (next) => {
+  const changeOpen = (next: boolean) => {
     if (next && live.current.disabled) return;
     setOpen(next);
     setExposedVariable('isOpen', next);
@@ -61,7 +63,7 @@ export const ShadDropdownMenu = (props) => {
   const iconOnly = properties.triggerType === 'icon';
   const label = String(unwrap(properties.label) ?? '');
   const triggerIcon = typeof properties.triggerIcon === 'string' ? properties.triggerIcon.trim() : '';
-  const pick = (row) => {
+  const pick = (row: MenuEntry) => {
     const option = clickedOption(row);
     setLast(option);
     setExposedVariable('lastClickedOption', option);

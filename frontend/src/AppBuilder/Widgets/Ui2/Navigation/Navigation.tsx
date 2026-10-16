@@ -8,126 +8,40 @@ import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { activeItemExposed, findNav, navItems, unwrap } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
-import { Icon, MenuContent, MenuLabel, MenuRows, SIZES } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
+import { MenuContent, MenuLabel, MenuRows, SIZES } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
+import { ITEM_BASE, NAV_HEIGHT, NAV_LOOK, NAV_SQUARE, NavFace, SEPARATOR_LINE, patchNavItems } from './navParts';
+import type { ReactNode } from 'react';
+import type { NavItem } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
+import type { NavItemChange } from './navParts';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Navigation --------------------------------------------------------------------------------------------------
 
-const NAV_HEIGHT = { sm: 'h-8', default: 'h-9', lg: 'h-10' };
-
-export const NAV_SQUARE = { sm: 'h-8 w-8', default: 'h-9 w-9', lg: 'h-10 w-10' };
-
-export const RADIUS = 'rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
-
-export const ITEM_BASE =
-  'relative flex shrink-0 items-center gap-2 whitespace-nowrap text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--sc-ring)] disabled:pointer-events-none disabled:opacity-50';
-
-// Each variant's item colours: [inactive, active]. Styles override every one of them.
-export const NAV_LOOK = {
-  vertical: {
-    pills: [
-      `${RADIUS} px-2 text-[color:var(--lk-fg,var(--sc-foreground))] hover:bg-[color:var(--lk-hover,var(--sc-accent))] hover:text-[color:var(--lk-active-fg,var(--sc-accent-foreground))]`,
-      `${RADIUS} px-2 font-medium bg-[color:var(--lk-active-bg,var(--sc-accent))] text-[color:var(--lk-active-fg,var(--sc-accent-foreground))]`,
-    ],
-    underline: [
-      'rounded-l-none rounded-r-[var(--lk-radius,calc(var(--sc-radius)-2px))] border-0 border-l-2 border-solid border-transparent pl-3 pr-2 text-[color:var(--lk-fg,var(--sc-muted-foreground))] hover:bg-[color:var(--lk-hover,transparent)] hover:text-[color:var(--lk-active-fg,var(--sc-foreground))]',
-      'rounded-l-none rounded-r-[var(--lk-radius,calc(var(--sc-radius)-2px))] border-0 border-l-2 border-solid border-[color:var(--lk-indicator,var(--sc-primary))] pl-3 pr-2 font-medium bg-[color:var(--lk-active-bg,transparent)] text-[color:var(--lk-active-fg,var(--sc-foreground))]',
-    ],
-    ghost: [
-      `${RADIUS} px-2 text-[color:var(--lk-fg,var(--sc-muted-foreground))] hover:bg-[color:var(--lk-hover,transparent)] hover:text-[color:var(--lk-active-fg,var(--sc-foreground))]`,
-      `${RADIUS} px-2 font-semibold bg-[color:var(--lk-active-bg,transparent)] text-[color:var(--lk-active-fg,var(--sc-foreground))]`,
-    ],
-  },
-  horizontal: {
-    pills: [
-      `${RADIUS} px-3 font-medium text-[color:var(--lk-fg,var(--sc-muted-foreground))] hover:bg-[color:var(--lk-hover,var(--sc-accent))] hover:text-[color:var(--lk-active-fg,var(--sc-accent-foreground))]`,
-      `${RADIUS} px-3 font-medium bg-[color:var(--lk-active-bg,var(--sc-accent))] text-[color:var(--lk-active-fg,var(--sc-accent-foreground))]`,
-    ],
-    underline: [
-      '-mb-px h-10 rounded-none border-0 border-b-2 border-solid border-transparent px-3 font-medium text-[color:var(--lk-fg,var(--sc-muted-foreground))] hover:bg-[color:var(--lk-hover,transparent)] hover:text-[color:var(--lk-active-fg,var(--sc-foreground))]',
-      '-mb-px h-10 rounded-none border-0 border-b-2 border-solid border-[color:var(--lk-indicator,var(--sc-primary))] px-3 font-medium bg-[color:var(--lk-active-bg,transparent)] text-[color:var(--lk-active-fg,var(--sc-foreground))]',
-    ],
-    ghost: [
-      `${RADIUS} px-3 font-medium text-[color:var(--lk-fg,var(--sc-muted-foreground))] hover:bg-[color:var(--lk-hover,transparent)] hover:text-[color:var(--lk-active-fg,var(--sc-foreground))]`,
-      `${RADIUS} px-3 font-semibold bg-[color:var(--lk-active-bg,transparent)] text-[color:var(--lk-active-fg,var(--sc-foreground))]`,
-    ],
-  },
-};
-
-export const BADGE =
-  'inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-md px-1.5 text-xs font-medium tabular-nums bg-[color:var(--lk-badge-bg,var(--sc-muted))] text-[color:var(--lk-badge-fg,var(--sc-muted-foreground))]';
-
-export const SEPARATOR_LINE = 'bg-[color:var(--lk-sep,var(--sc-border))]';
-
-/** One navigation item's face: icon, label, badge, and a chevron when it has children. */
-export const NavFace = ({ item, active, collapsed, chevron }) => (
-  <>
-    {item.icon ? (
-      <Icon name={item.icon} className={active ? undefined : 'text-[color:var(--lk-icon,currentColor)]'} />
-    ) : collapsed ? (
-      <span className="text-xs font-semibold">{item.label.slice(0, 2)}</span>
-    ) : null}
-    {collapsed ? (
-      <span className="sr-only">{item.label}</span>
-    ) : (
-      <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
-    )}
-    {item.badge ? (
-      collapsed ? (
-        <span
-          aria-label={item.badge}
-          className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[color:var(--lk-badge-bg,var(--sc-primary))]"
-        />
-      ) : (
-        <span className={BADGE}>{item.badge}</span>
-      )
-    ) : null}
-    {chevron}
-  </>
-);
-
-export const isText = (v) => typeof v === 'string' || typeof v === 'number';
-
-/** Items with the setItemVisibility / setItemDisable changes applied: `changes` maps an item's value to
- *  { visible, disabled }. Plain text items become { label, value } so they can take a change. */
-export const patchNavItems = (items, changes) => {
-  if (!Object.keys(changes).length || !Array.isArray(items)) return items;
-  const patch = (raw, depth) => {
-    const obj = isText(raw) ? { label: String(raw), value: raw } : raw;
-    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return raw;
-    const key = String(obj.value ?? obj.id ?? '');
-    const change = changes[key];
-    const children =
-      depth < 4 && Array.isArray(obj.children) ? obj.children.map((c) => patch(c, depth + 1)) : obj.children;
-    return change || children !== obj.children ? { ...obj, ...(change || {}), children } : raw;
-  };
-  return items.slice(0, 1000).map((raw) => patch(raw, 0));
-};
-
-export const ShadNavigation = (props) => {
+export const ShadNavigation = (props: WidgetProps) => {
   const { properties, styles, setExposedVariables, fireEvent, height, componentType } = props;
   // setItemVisibility and setItemDisable (the native Navigation's actions) change one item until the Items change.
-  const [itemChanges, setItemChanges] = useState({});
+  const [itemChanges, setItemChanges] = useState<Record<string, NavItemChange>>({});
   const itemsKey = stringify(properties.items ?? null);
   useEffect(() => setItemChanges({}), [itemsKey]);
   const items = navItems(patchNavItems(properties.items, itemChanges));
-  const changeItem = (id, patch) => {
+  const changeItem = (id: unknown, patch: NavItemChange) => {
     if (id === undefined || id === null || typeof id === 'object') return;
     setItemChanges((c) => ({ ...c, [String(unwrap(id))]: { ...(c[String(unwrap(id))] || {}), ...patch } }));
   };
-  const previousRef = useRef(null);
+  const previousRef = useRef<ReturnType<typeof activeItemExposed>>(null);
   const rawDefault = unwrap(properties.defaultValue);
   const initial = rawDefault === undefined || rawDefault === null ? '' : String(rawDefault);
   const [active, setActive] = useState(initial);
   useEffect(() => setActive(initial), [initial]);
   const [collapsed, setCollapsed] = useState(properties.collapsed === true);
   useEffect(() => setCollapsed(properties.collapsed === true), [properties.collapsed]);
-  const [expanded, setExpanded] = useState({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const found = findNav(items, active);
   const parentKey = found?.parent?.key;
   useEffect(() => {
     if (parentKey) setExpanded((open) => ({ ...open, [parentKey]: true }));
   }, [parentKey]);
-  const activate = (v) => {
+  const activate = (v: unknown) => {
     const next = v === undefined || v === null || typeof v === 'object' ? '' : String(unwrap(v));
     setActive((cur) => {
       if (cur !== next) previousRef.current = activeItemExposed(findNav(items, cur));
@@ -139,10 +53,10 @@ export const ShadNavigation = (props) => {
     selectedItem: activeItemExposed(found),
     previousSelectedItem: previousRef.current,
     isCollapsed: collapsed,
-    selectItem: async (v) => activate(v),
-    setItemVisibility: async (id, v) => changeItem(id, { visible: !(v === false || v === 'false') }),
-    setItemDisable: async (id, v) => changeItem(id, { disabled: !(v === false || v === 'false') }),
-    setCollapsed: async (v) => setCollapsed(!(v === false || v === 'false')),
+    selectItem: async (v: unknown) => activate(v),
+    setItemVisibility: async (id: unknown, v: unknown) => changeItem(id, { visible: !(v === false || v === 'false') }),
+    setItemDisable: async (id: unknown, v: unknown) => changeItem(id, { disabled: !(v === false || v === 'false') }),
+    setCollapsed: async (v: unknown) => setCollapsed(!(v === false || v === 'false')),
   });
   const disabled = busy(properties);
   const vertical = properties.orientation !== 'horizontal';
@@ -153,7 +67,7 @@ export const ShadNavigation = (props) => {
   const stretch = !vertical && properties.align === 'stretch';
   const look = NAV_LOOK[orientation][variant];
 
-  const pick = (item, parent = null) => {
+  const pick = (item: NavItem, parent: NavItem | null = null) => {
     if (item.disabled || disabled) return;
     const previous = activeItemExposed(found);
     if (found?.item.key !== item.key) previousRef.current = previous;
@@ -166,7 +80,7 @@ export const ShadNavigation = (props) => {
     });
     fireEvent('onClick');
   };
-  const itemClass = (isActive, extra) =>
+  const itemClass = (isActive: boolean, extra?: string | false) =>
     cn(
       ITEM_BASE,
       NAV_HEIGHT[size],
@@ -199,7 +113,7 @@ export const ShadNavigation = (props) => {
   }
 
   // A parent opens its children as a dropdown in the top bar and the icon rail, as a nested list in the sidebar.
-  const dropdown = (item, isActive) => (
+  const dropdown = (item: NavItem, isActive: boolean) => (
     <DropdownMenuPrimitive.Root key={item.key} modal={false}>
       <DropdownMenuPrimitive.Trigger asChild disabled={disabled || item.disabled}>
         <button
@@ -225,14 +139,14 @@ export const ShadNavigation = (props) => {
         {iconRail ? <MenuLabel>{item.label}</MenuLabel> : null}
         <MenuRows
           rows={item.children.map((child) => ({ kind: 'item', ...child, description: '' }))}
-          activeKey={found?.parent?.key === item.key ? found.item.key : undefined}
+          activeKey={found && found.parent?.key === item.key ? found.item.key : undefined}
           onPick={(child) => pick(item.children.find((c) => c.key === String(child.value)) || child, item)}
         />
       </MenuContent>
     </DropdownMenuPrimitive.Root>
   );
 
-  const rows = [];
+  const rows: ReactNode[] = [];
   let group = '';
   items.forEach((item, index) => {
     if (item.separator) {
@@ -353,7 +267,7 @@ export const ShadNavigation = (props) => {
                 'w-full items-center gap-1 overflow-x-auto overflow-y-hidden',
                 variant === 'underline' &&
                   'border-0 border-b border-solid border-[color:var(--lk-sep,var(--sc-border))]',
-                { center: 'justify-center', end: 'justify-end' }[properties.align]
+                ({ center: 'justify-center', end: 'justify-end' } as Record<string, string>)[properties.align]
               )
         )}
         style={vertical ? { height } : undefined}

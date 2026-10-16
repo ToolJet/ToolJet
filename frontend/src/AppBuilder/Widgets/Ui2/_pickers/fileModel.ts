@@ -3,10 +3,19 @@
 
 import { asList, clampInt, isText } from './pickersModel';
 
+/** What fileKind names: the icon a file gets. */
+export type FileKind = 'image' | 'pdf' | 'sheet' | 'text' | 'archive' | 'audio' | 'video' | 'other';
+
+/** A file react-dropzone refused, as rejectionMessage reads it. */
+export interface Rejection {
+  file?: { name?: string };
+  errors?: readonly { code?: string }[];
+}
+
 // ---- Files ---------------------------------------------------------------------------------------------------------
 
 /** A byte count as text: '0 B', '512 B', '1.5 KB', '5 MB'. */
-export const formatBytes = (n) => {
+export const formatBytes = (n: unknown): string => {
   const bytes = Number(n);
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -15,7 +24,7 @@ export const formatBytes = (n) => {
   return `${i === 0 ? value : Math.round(value * 10) / 10} ${units[i]}`;
 };
 
-const EXT_MIME = {
+const EXT_MIME: Record<string, string> = {
   pdf: 'application/pdf',
   csv: 'text/csv',
   tsv: 'text/tab-separated-values',
@@ -37,17 +46,17 @@ const EXT_MIME = {
 };
 
 /** The accepted types as a list: from 'image/*, .pdf' or ['image/*', '.pdf']. */
-export const acceptList = (accept) =>
+export const acceptList = (accept: unknown): string[] =>
   (Array.isArray(accept) ? accept : typeof accept === 'string' ? accept.split(',') : [])
     .filter(isText)
     .map((t) => String(t).trim().toLowerCase())
     .filter((t) => /^\.[a-z0-9]+$/.test(t) || /^[a-z]+\/[a-z0-9.+*-]+$/.test(t));
 
 /** react-dropzone's accept map ({ mime: [extensions] }); undefined accepts any file. */
-export const toDropzoneAccept = (accept) => {
+export const toDropzoneAccept = (accept: unknown): Record<string, string[]> | undefined => {
   const types = acceptList(accept);
   if (!types.length) return undefined;
-  const map = {};
+  const map: Record<string, string[]> = {};
   for (const t of types) {
     if (t.startsWith('.')) {
       const mime = EXT_MIME[t.slice(1)] || 'application/octet-stream';
@@ -57,7 +66,7 @@ export const toDropzoneAccept = (accept) => {
   return map;
 };
 
-const MIME_NAME = {
+const MIME_NAME: Record<string, string> = {
   'image/*': 'Images',
   'video/*': 'Videos',
   'audio/*': 'Audio',
@@ -75,7 +84,7 @@ const MIME_NAME = {
 };
 
 /** The accepted types in words: 'Images, PDF, CSV' ('' for any file). */
-export const acceptHint = (accept) => {
+export const acceptHint = (accept: unknown): string => {
   const names = acceptList(accept).map(
     (t) => MIME_NAME[t] || (t.startsWith('.') ? t.slice(1).toUpperCase() : t.split('/')[1].toUpperCase())
   );
@@ -83,7 +92,7 @@ export const acceptHint = (accept) => {
 };
 
 /** What kind of file it is, for its icon: image, pdf, sheet, text, archive, audio, video or other. */
-export const fileKind = (type, name) => {
+export const fileKind = (type: unknown, name: unknown): FileKind => {
   const t = String(type ?? '').toLowerCase();
   const ext = (String(name ?? '').match(/\.([a-z0-9]+)$/i)?.[1] || '').toLowerCase();
   if (t.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) return 'image';
@@ -98,20 +107,24 @@ export const fileKind = (type, name) => {
 };
 
 /** A file count limit: 1 to 100 (default 10). */
-export const clampFiles = (v) => clampInt(v, 1, 100, 10);
+export const clampFiles = (v: unknown): number => clampInt(v, 1, 100, 10);
 /** A size limit in bytes: 0 means none. */
-export const clampBytes = (v) => {
+export const clampBytes = (v: unknown): number => {
   const n = Number(v);
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
 };
 
 /** The error line for files react-dropzone refused (or the count limit), naming the first problem. */
-export const rejectionMessage = (rejections, { maxSize = 0, minSize = 0, maxFiles = 0 } = {}) => {
-  const first = asList(rejections)[0];
+export const rejectionMessage = (
+  rejections: readonly Rejection[] | null | undefined,
+  { maxSize = 0, minSize = 0, maxFiles = 0 } = {}
+): string => {
+  const all = asList<Rejection>(rejections);
+  const first = all[0];
   if (!first) return '';
   const name = first.file?.name ? `"${first.file.name}"` : 'A file';
-  const code = asList(first.errors)[0]?.code;
-  const more = rejections.length > 1 ? ` (${rejections.length} files not added)` : '';
+  const code = asList<{ code?: string }>(first.errors)[0]?.code;
+  const more = all.length > 1 ? ` (${all.length} files not added)` : '';
   switch (code) {
     case 'file-too-large':
       return `${name} is larger than ${formatBytes(maxSize)}${more}`;

@@ -187,6 +187,19 @@ describe('UI 2.0 Button group', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  test('[ShadButtonGroup-VAL-003] a mandatory multiple-choice group is invalid when emptied and valid once one is picked', async () => {
+    render({
+      properties: { mode: binding('multiple'), defaultValue: binding("{{['day']}}") },
+      validation: { mandatory: binding('{{true}}') },
+    });
+
+    await waitFor(() => expect(exposed()).toMatchObject({ isMandatory: true, isValid: true }));
+    await press('Day');
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+    await press('Week');
+    await waitFor(() => expect(exposed().isValid).toBe(true));
+  });
+
   test('[ShadButtonGroup-VAL-002] a customRule message makes the choice invalid and is shown under the group', async () => {
     render({
       validation: { customRule: binding("{{components.group1.value === 'day' ? 'Pick a longer range' : ''}}") },

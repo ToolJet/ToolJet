@@ -15,10 +15,13 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_actions/calendarModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { useLive } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
+import type { DateRange, DayButtonProps, DayPickerProps } from 'react-day-picker';
+import type { CalendarSelection, Marker } from '@/AppBuilder/Widgets/Ui2/_actions/calendarModel';
+import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Calendar ----------------------------------------------------------------------------------------------------
 
-const MarkerContext = createContext(new Map());
+const MarkerContext = createContext(new Map<string, Marker[]>());
 
 export const DAY_SELECTED =
   'bg-primary text-primary-foreground opacity-100 hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground';
@@ -29,8 +32,8 @@ export const DAY_RANGE_MIDDLE =
 export const DAY_TODAY = 'bg-[color:var(--lk-today,var(--sc-accent))] text-[color:var(--sc-accent-foreground)]';
 
 /** A day: shadcn's ghost button in the state's colours, with dots for the day's markers (labels on hover). */
-export const MarkedDayButton = ({ day, modifiers, className, children, ...rest }) => {
-  const ref = useRef(null);
+export const MarkedDayButton = ({ day, modifiers, className, children, ...rest }: DayButtonProps) => {
+  const ref = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (modifiers.focused) ref.current?.focus();
   }, [modifiers.focused]);
@@ -70,7 +73,7 @@ export const MarkedDayButton = ({ day, modifiers, className, children, ...rest }
                   ? 'bg-[color:var(--sc-primary-foreground)]'
                   : 'bg-[color:var(--lk-dot,var(--lk-marker,var(--sc-primary)))]'
               )}
-              style={isSet(m.color) ? { '--lk-dot': m.color } : undefined}
+              style={isSet(m.color) ? ({ '--lk-dot': m.color } as StyleWithVars) : undefined}
             />
           ))}
         </span>
@@ -86,9 +89,9 @@ export const NAV_BUTTON = cn(
   'z-10 h-7 w-7 bg-transparent p-0 opacity-60 hover:opacity-100 text-[color:var(--lk-title,var(--sc-foreground))] border-[color:var(--lk-border,var(--sc-input))]'
 );
 
-export const ShadCalendar = (props) => {
+export const ShadCalendar = (props: WidgetProps) => {
   const { properties, setExposedVariables, fireEvent } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const mode = CALENDAR_MODES.includes(properties.mode) ? properties.mode : 'single';
   const months = clampInt(properties.numberOfMonths, 1, 3, 1);
@@ -96,18 +99,24 @@ export const ShadCalendar = (props) => {
   const initial = calendarSelection(properties.defaultValue, mode);
   const [selected, setSelected] = useState(initial);
   useEffect(() => setSelected(initial), [rawKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  const firstSelected = mode === 'multiple' ? initial?.[0] : mode === 'range' ? initial?.from : initial;
+  // The selection's shape follows the mode.
+  const firstSelected =
+    mode === 'multiple'
+      ? (initial as Date[] | undefined)?.[0]
+      : mode === 'range'
+      ? (initial as DateRange | undefined)?.from
+      : (initial as Date | undefined);
   const initialMonth = toDate(properties.defaultMonth) || firstSelected || new Date();
   const monthKey = ymd(initialMonth).slice(0, 7);
   const [month, setMonth] = useState(initialMonth);
   useEffect(() => setMonth(initialMonth), [monthKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const live = useLive({ mode, selected, months });
 
-  const publish = (next) => {
+  const publish = (next: CalendarSelection) => {
     setSelected(next);
     setExposedVariables(calendarExposed(next, live.current.mode));
   };
-  const showMonth = (date, fire) => {
+  const showMonth = (date: Date | undefined, fire: boolean) => {
     if (!date) return;
     setMonth(date);
     setExposedVariables(visiblePeriod(date, live.current.months));
@@ -116,12 +125,12 @@ export const ShadCalendar = (props) => {
   useExposed(setExposedVariables, properties, {
     ...calendarExposed(selected, mode),
     ...visiblePeriod(month, months),
-    selectDate: async (date, endDate) => {
+    selectDate: async (date: unknown, endDate?: unknown) => {
       const { mode: m, selected: current } = live.current;
-      let next;
+      let next: CalendarSelection;
       if (m === 'multiple') {
-        const add = calendarSelection(date, 'multiple');
-        next = calendarSelection([...(current || []), ...add], 'multiple');
+        const add = calendarSelection(date, 'multiple') as Date[];
+        next = calendarSelection([...((current as Date[] | undefined) || []), ...add], 'multiple');
       } else if (m === 'range') {
         next = calendarSelection([date, endDate], 'range');
       } else {
@@ -131,7 +140,7 @@ export const ShadCalendar = (props) => {
       showMonth(toDate(Array.isArray(date) ? date[0] : date), false);
     },
     clear: async () => publish(live.current.mode === 'multiple' ? [] : undefined),
-    setMonth: async (date) => showMonth(toDate(date), false),
+    setMonth: async (date: unknown) => showMonth(toDate(date), false),
   });
 
   const markers = markersByDay(properties.markers);
@@ -139,17 +148,21 @@ export const ShadCalendar = (props) => {
   const disabled = busy(properties);
   const matchers = disabledMatchers(properties);
   const cell = 'h-[var(--lk-cell,2rem)] w-[var(--lk-cell,2rem)]';
+  // react-day-picker types its selection props per mode; this widget's selection follows its mode.
+  const selection = {
+    mode,
+    selected,
+    onSelect: (next: CalendarSelection) => {
+      publish(next);
+      fireEvent('onSelect');
+    },
+    required: mode === 'single',
+  } as DayPickerProps;
   return (
     <Shell {...props} innerRef={ref}>
       <MarkerContext.Provider value={markers}>
         <Calendar
-          mode={mode}
-          selected={selected}
-          onSelect={(next) => {
-            publish(next);
-            fireEvent('onSelect');
-          }}
-          required={mode === 'single'}
+          {...selection}
           month={month}
           onMonthChange={(next) => showMonth(next, true)}
           numberOfMonths={months}

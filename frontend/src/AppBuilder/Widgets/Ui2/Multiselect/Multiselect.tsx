@@ -21,8 +21,13 @@ import {
   PLACEHOLDER,
   useSearch,
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-export const CommandSeparator = ({ className, ...props }) => (
+export const CommandSeparator = ({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>) => (
   <CommandPrimitive.Separator className={cn('-mx-1 h-px bg-[color:var(--sc-border)]', className)} {...props} />
 );
 
@@ -30,10 +35,10 @@ export const CommandSeparator = ({ className, ...props }) => (
 
 /** A field that anchors a popover without being its trigger button (it holds chips with their own buttons): opens on
  *  click, Enter, Space or ArrowDown; a click on it while open closes the menu instead of reopening it. */
-const useAnchoredMenu = (disabled, onClose) => {
-  const anchorRef = useRef(null);
+const useAnchoredMenu = (disabled: boolean, onClose?: () => void) => {
+  const anchorRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
-  const change = (next) => {
+  const change = (next: boolean) => {
     if (next && disabled) return;
     setOpen(next);
     if (!next) onClose?.();
@@ -46,15 +51,15 @@ const useAnchoredMenu = (disabled, onClose) => {
       ref: anchorRef,
       tabIndex: disabled ? -1 : 0,
       'aria-expanded': open,
-      'aria-haspopup': 'listbox',
+      'aria-haspopup': 'listbox' as const,
       'aria-disabled': disabled || undefined,
       onClick: () => change(!open),
     },
     contentProps: {
-      onInteractOutside: (e) => {
-        if (anchorRef.current?.contains(e.target)) e.preventDefault();
+      onInteractOutside: (e: Event) => {
+        if (e.target instanceof Node && anchorRef.current?.contains(e.target)) e.preventDefault();
       },
-      onCloseAutoFocus: (e) => {
+      onCloseAutoFocus: (e: Event) => {
         e.preventDefault();
         anchorRef.current?.focus();
       },
@@ -64,9 +69,9 @@ const useAnchoredMenu = (disabled, onClose) => {
 
 export const MAX_CHIPS = 50;
 
-export const ShadMultiselect = (props) => {
+export const ShadMultiselect = (props: WidgetProps) => {
   const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const options = toOptions(properties.options);
   const limit = M.clampLimit(properties.maxSelections);
@@ -85,13 +90,13 @@ export const ShadMultiselect = (props) => {
     searchText: search,
     options,
     label: String(properties.label ?? ''),
-    selectOptions: async (v) => setKeys((k) => M.addKeys(k, v, latest.current.options, latest.current.limit)),
-    deselectOptions: async (v) => setKeys((k) => M.removeKeys(k, v)),
+    selectOptions: async (v: unknown) => setKeys((k) => M.addKeys(k, v, latest.current.options, latest.current.limit)),
+    deselectOptions: async (v: unknown) => setKeys((k) => M.removeKeys(k, v)),
     clear: async () => setKeys([]),
     setFocus: async () => menu.anchorRef.current?.focus(),
     setBlur: async () => menu.anchorRef.current?.blur(),
   });
-  const publish = (next) => {
+  const publish = (next: string[]) => {
     const picked = M.selectedOf(options, next);
     setExposedVariables({ values: picked.map((o) => o.value), selectedOptions: picked });
   };
@@ -106,19 +111,19 @@ export const ShadMultiselect = (props) => {
     check.touch();
     if (search) onSearch('');
   });
-  const menuChange = (next) => {
+  const menuChange = (next: boolean) => {
     menu.change(next);
     if (!(next && disabled)) focus.opened(next);
   };
-  const commit = (next) => {
+  const commit = (next: string[]) => {
     setKeys(next);
     publish(next);
     fireEvent('onSelect');
   };
   const selectedKeys = new Set(selectedOptions.map((o) => M.keyOf(o.value)));
-  const isOn = (o) => selectedKeys.has(M.keyOf(o.value));
+  const isOn = (o: Option) => selectedKeys.has(M.keyOf(o.value));
   const full = limit > 0 && selectedOptions.length >= limit;
-  const toggle = (o) => {
+  const toggle = (o: Option) => {
     const k = M.keyOf(o.value);
     if (isOn(o)) commit(keys.filter((x) => x !== k));
     else if (!full) commit([...keys.filter((x) => selectedKeys.has(x) || !options.length), k]);

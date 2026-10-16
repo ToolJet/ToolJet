@@ -11,6 +11,7 @@ import {
   moveIndex,
 } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import { useLive } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Carousel ----------------------------------------------------------------------------------------------------
 
@@ -19,9 +20,9 @@ const ARROW =
 
 export const SLIDE_RADIUS = 'rounded-[var(--lk-radius,calc(var(--sc-radius)+4px))]';
 
-export const ShadCarousel = (props) => {
+export const ShadCarousel = (props: WidgetProps) => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent, height, currentMode } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const slides = carouselSlides(properties.slides);
   const perView = Math.min(clampInt(properties.slidesPerView, 1, 4, 1), Math.max(1, slides.length));
@@ -34,12 +35,12 @@ export const ShadCarousel = (props) => {
     indexRef.current = initial;
     setIndex(initial);
   }, [initial, positions]);
-  const [failed, setFailed] = useState({});
+  const [failed, setFailed] = useState<Record<number, boolean>>({});
   const [hovered, setHovered] = useState(false);
   const disabled = busy(properties);
   const live = useLive({ positions, loop, slides });
 
-  const go = (to) => {
+  const go = (to: number) => {
     const { positions: count, loop: wrap, slides: list } = live.current;
     const next = moveIndex(to, count, wrap);
     if (next === indexRef.current) return;
@@ -53,7 +54,7 @@ export const ShadCarousel = (props) => {
     currentSlide: slides[index] || {},
     next: async () => go(indexRef.current + 1),
     previous: async () => go(indexRef.current - 1),
-    goTo: async (i) => go(clampInt(i, -100000, 100000, 0)),
+    goTo: async (i: unknown) => go(clampInt(i, -100000, 100000, 0)),
   });
 
   const autoplay =
@@ -69,7 +70,7 @@ export const ShadCarousel = (props) => {
   }, [autoplay, interval]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Swipes: a horizontal drag of 40px or more moves a slide, and is not a click.
-  const drag = useRef({ x: null, swiped: false });
+  const drag = useRef<{ x: number | null; swiped: boolean }>({ x: null, swiped: false });
   const ratio = aspectRatio(properties.aspectRatio);
   const fill = ratio === null;
   const caption = ['overlay', 'below', 'none'].includes(properties.captionPosition)
@@ -81,7 +82,7 @@ export const ShadCarousel = (props) => {
   const canPrev = positions > 1 && (loop || index > 0);
   const canNext = positions > 1 && (loop || index < positions - 1);
 
-  const clickSlide = (i) => {
+  const clickSlide = (i: number) => {
     if (drag.current.swiped) return;
     const slide = slides[i];
     setExposedVariable('clickedSlide', { ...slide, index: i });

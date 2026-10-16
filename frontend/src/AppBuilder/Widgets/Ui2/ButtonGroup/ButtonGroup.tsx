@@ -14,6 +14,8 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { Icon, SIZES, useLive } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
+import type { GroupButton, Text } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Button group ------------------------------------------------------------------------------------------------
 
@@ -21,7 +23,7 @@ const GROUP_MODES = ['actions', 'single', 'multiple'];
 
 export const GROUP_VARIANTS = ['outline', 'secondary', 'default', 'ghost'];
 
-export const SQUARE = { sm: 'w-8 px-0', default: 'w-9 px-0', lg: 'w-10 px-0' };
+export const SQUARE: Record<string, string> = { sm: 'w-8 px-0', default: 'w-9 px-0', lg: 'w-10 px-0' };
 
 // Attached buttons: inner corners squared, one border between neighbours (outline) or a hairline divider (filled).
 export const ATTACHED = {
@@ -29,7 +31,7 @@ export const ATTACHED = {
   vertical: '[&>*:not(:first-child)]:rounded-t-none [&>*:not(:last-child)]:rounded-b-none [&>*:focus-visible]:z-10',
 };
 
-export const JOIN = {
+export const JOIN: Record<'horizontal' | 'vertical', Record<string, string>> = {
   horizontal: {
     outline: '[&>*:not(:first-child)]:border-l-0',
     filled:
@@ -49,9 +51,9 @@ export const SELECTED =
 export const SELECTED_ON_PRIMARY =
   'data-[state=on]:bg-[color:var(--lk-on-bg,color-mix(in_srgb,var(--sc-primary)_75%,#000))] data-[state=on]:text-[color:var(--lk-on-fg,var(--sc-primary-foreground))] data-[state=on]:hover:bg-[color:var(--lk-on-bg,color-mix(in_srgb,var(--sc-primary)_75%,#000))]';
 
-export const ShadButtonGroup = (props) => {
+export const ShadButtonGroup = (props: WidgetProps) => {
   const { properties, styles, setExposedVariable, setExposedVariables, fireEvent } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const mode = GROUP_MODES.includes(properties.mode) ? properties.mode : 'single';
   const buttons = groupButtons(properties.buttons);
@@ -60,30 +62,26 @@ export const ShadButtonGroup = (props) => {
   const initialKey = stringify(initial);
   const [selected, setSelected] = useState(initial);
   useEffect(() => setSelected(initial), [initialKey, mode, keys]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [lastClicked, setLastClicked] = useState(null);
+  const [lastClicked, setLastClicked] = useState<{ label: string; value: Text } | null>(null);
   const live = useLive({ mode, buttons });
   const exposed = selectionExposed(selected, mode, buttons);
-  const apply = (next) => {
+  const apply = (next: string[]) => {
     setSelected(next);
     setExposedVariables(selectionExposed(next, live.current.mode, live.current.buttons));
   };
   useExposed(setExposedVariables, properties, {
     ...exposed,
     lastClicked,
-    setSelected: async (v) => apply(initialSelection(v, live.current.mode, live.current.buttons)),
+    setSelected: async (v: unknown) => apply(initialSelection(v, live.current.mode, live.current.buttons)),
     clear: async () => apply([]),
   });
-  const check = useValidation(
-    props,
-    mode === 'multiple' ? exposed.values : mode === 'single' ? exposed.value : lastClicked?.value ?? '',
-    () => apply([])
-  );
+  const check = useValidation(props, mode === 'actions' ? lastClicked?.value ?? '' : exposed.value, () => apply([]));
   const variant = GROUP_VARIANTS.includes(properties.variant) ? properties.variant : 'outline';
   const size = SIZES.includes(properties.size) ? properties.size : 'default';
   const orientation = properties.orientation === 'vertical' ? 'vertical' : 'horizontal';
   const fullWidth = properties.fullWidth === true;
   const disabled = busy(properties);
-  const click = (button) => {
+  const click = (button: GroupButton) => {
     const info = { label: button.label, value: button.value };
     setLastClicked(info);
     setExposedVariable('lastClicked', info);

@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Check, Search, X } from 'lucide-react';
-import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { TablerIcon } from '@/AppBuilder/Widgets/Ui2/_shared/TablerIcon';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
-import { Badge, Input, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { Badge, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from './pickersModel';
+import type { ReactNode, SyntheticEvent } from 'react';
+import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 // shadcn/ui pack (experiment): the pickers widgets. Combobox and Multiselect are shadcn's Popover + Command (cmdk)
 // recipe; Tags input, Color picker and Rating follow shadcn's field look; File upload is react-dropzone in shadcn
-// styling. Pure logic lives in pickersModel.js, style variables in looks/pickers.js.
+// styling. Pure logic lives in pickersModel, colorModel and fileModel, style variables in looks/pickers.
 
 // ---- Shared pieces -------------------------------------------------------------------------------------------------
 
@@ -23,15 +26,18 @@ const CHIP =
 const ICON_BUTTON =
   'inline-flex shrink-0 items-center justify-center rounded-sm border-0 bg-transparent p-0.5 opacity-60 outline-none transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-ring';
 
-export const isText = (v) => typeof v === 'string' || typeof v === 'number';
+export const isText = (v: unknown): v is string | number => typeof v === 'string' || typeof v === 'number';
 /** Keeps a pointer press on a control inside a trigger from opening or closing the trigger's menu. */
-const stopPress = (e) => {
+const stopPress = (e: SyntheticEvent) => {
   e.preventDefault();
   e.stopPropagation();
 };
 
 // shadcn's Command (new-york), on cmdk. Items size their own icons (no [&_svg]:size-4: it would outrank them).
-const Command = React.forwardRef(({ className, ...props }, ref) => (
+const Command = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive>
+>(({ className, ...props }, ref) => (
   <CommandPrimitive
     ref={ref}
     className={cn('flex h-full w-full flex-col overflow-hidden rounded-md bg-transparent text-inherit', className)}
@@ -40,7 +46,10 @@ const Command = React.forwardRef(({ className, ...props }, ref) => (
 ));
 Command.displayName = 'Command';
 
-const CommandInput = React.forwardRef(({ className, ...props }, ref) => (
+const CommandInput = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Input>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
+>(({ className, ...props }, ref) => (
   <div className="flex items-center border-b border-[color:var(--sc-border)] px-3" cmdk-input-wrapper="">
     <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
     <CommandPrimitive.Input
@@ -55,7 +64,10 @@ const CommandInput = React.forwardRef(({ className, ...props }, ref) => (
 ));
 CommandInput.displayName = 'CommandInput';
 
-const CommandList = React.forwardRef(({ className, ...props }, ref) => (
+const CommandList = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.List>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
+>(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
     className={cn('max-h-[300px] overflow-y-auto overflow-x-hidden', className)}
@@ -64,7 +76,10 @@ const CommandList = React.forwardRef(({ className, ...props }, ref) => (
 ));
 CommandList.displayName = 'CommandList';
 
-export const CommandGroup = React.forwardRef(({ className, ...props }, ref) => (
+export const CommandGroup = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Group>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
+>(({ className, ...props }, ref) => (
   <CommandPrimitive.Group
     ref={ref}
     className={cn(
@@ -76,7 +91,10 @@ export const CommandGroup = React.forwardRef(({ className, ...props }, ref) => (
 ));
 CommandGroup.displayName = 'CommandGroup';
 
-export const CommandItem = React.forwardRef(({ className, ...props }, ref) => (
+export const CommandItem = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
+>(({ className, ...props }, ref) => (
   <CommandPrimitive.Item
     ref={ref}
     className={cn(
@@ -89,7 +107,7 @@ export const CommandItem = React.forwardRef(({ className, ...props }, ref) => (
 CommandItem.displayName = 'CommandItem';
 
 /** An option's icon: a Tabler icon name (IconUser), an image URL, or text such as an emoji. */
-export const OptionIcon = ({ icon }) => {
+export const OptionIcon = ({ icon }: { icon: unknown }) => {
   if (typeof icon !== 'string' || !icon.trim()) return null;
   if (/^(https?:|data:image\/|\/)/.test(icon)) {
     return <img src={icon} alt="" className="h-4 w-4 shrink-0 rounded-sm object-cover" />;
@@ -104,7 +122,7 @@ export const OptionIcon = ({ icon }) => {
   );
 };
 
-const OptionText = ({ option }) => (
+const OptionText = ({ option }: { option: Option }) => (
   <span className="flex min-w-0 flex-1 flex-col">
     <span className="truncate">{option.label}</span>
     {isText(option.description) && String(option.description) ? (
@@ -114,9 +132,12 @@ const OptionText = ({ option }) => (
 );
 
 /** The search text of an options menu: kept locally, exposed as searchText, with onSearchTextChanged. */
-export const useSearch = ({ setExposedVariable, fireEvent }) => {
+export const useSearch = ({
+  setExposedVariable,
+  fireEvent,
+}: Pick<WidgetProps, 'setExposedVariable' | 'fireEvent'>): [string, (text: string) => void] => {
   const [search, setSearch] = useState('');
-  const change = (text) => {
+  const change = (text: string) => {
     setSearch(text);
     setExposedVariable('searchText', text);
     fireEvent('onSearchTextChanged');
@@ -127,6 +148,19 @@ export const useSearch = ({ setExposedVariable, fireEvent }) => {
 /** The options list of Combobox and Multiselect: search box, grouped options (filtered here unless the author
  *  filters them server-side), an empty or loading state, and optional rows before (`top`) and after (`bottom`). Items
  *  are keyed by position, so an option valued '' or two options with the same label stay distinct. */
+export interface OptionsMenuProps {
+  properties: Resolved;
+  options: Option[];
+  search: string;
+  onSearch: (text: string) => void;
+  isSelected: (option: Option) => boolean;
+  isDisabled: (option: Option, selected: boolean) => boolean;
+  onPick: (option: Option) => void;
+  multiple?: boolean;
+  top?: ReactNode;
+  bottom?: ReactNode;
+}
+
 export const OptionsMenu = ({
   properties,
   options,
@@ -138,7 +172,7 @@ export const OptionsMenu = ({
   multiple,
   top,
   bottom,
-}) => {
+}: OptionsMenuProps) => {
   const entries =
     properties.serverSideSearch === true
       ? options.map((option, index) => ({ option, index }))
@@ -211,7 +245,7 @@ export const OptionsMenu = ({
   );
 };
 
-export const ClearButton = ({ onClear, label = 'Clear' }) => (
+export const ClearButton = ({ onClear, label = 'Clear' }: { onClear: () => void; label?: string }) => (
   <button
     type="button"
     aria-label={label}
@@ -226,7 +260,13 @@ export const ClearButton = ({ onClear, label = 'Clear' }) => (
   </button>
 );
 
-export const Chip = ({ label, onRemove, removeLabel }) => (
+export interface ChipProps {
+  label: ReactNode;
+  onRemove?: () => void;
+  removeLabel?: string;
+}
+
+export const Chip = ({ label, onRemove, removeLabel }: ChipProps) => (
   <Badge variant="secondary" className={cn('max-w-full gap-1 font-normal', onRemove && 'pr-1', CHIP)}>
     <span className="max-w-[12rem] truncate">{label}</span>
     {onRemove ? (

@@ -3,17 +3,33 @@
 
 import { asList, isText } from './pickersModel';
 
+/** A colour's channels: r, g and b from 0 to 255, a (alpha) from 0 to 1. */
+export interface Rgba {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
+
+/** A colour as hue (0-360), saturation and value (0-1). */
+export interface Hsv {
+  h: number;
+  s: number;
+  v: number;
+}
+
 // ---- Colour --------------------------------------------------------------------------------------------------------
 
-const clamp = (n, min, max) => Math.max(min, Math.min(max, Number.isFinite(n) ? n : min));
-const hex2 = (n) => Math.round(clamp(n, 0, 255)).toString(16).padStart(2, '0');
+const clamp = (n: number | undefined, min: number, max: number): number =>
+  Math.max(min, Math.min(max, typeof n === 'number' && Number.isFinite(n) ? n : min));
+const hex2 = (n: number | undefined): string => Math.round(clamp(n, 0, 255)).toString(16).padStart(2, '0');
 
 /** Colour text as '#rrggbb' (or '#rrggbbaa' with allowAlpha and some transparency); null when it is not a colour.
  *  Reads #rgb, #rgba, #rrggbb, #rrggbbaa (with or without '#'), rgb() and rgba(). */
-export const normalizeHex = (input, allowAlpha = false) => {
+export const normalizeHex = (input: unknown, allowAlpha = false): string | null => {
   if (!isText(input)) return null;
   const text = String(input).trim().toLowerCase();
-  let r, g, b, a;
+  let r: number, g: number, b: number, a: number;
   const rgb = text.match(/^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:[\s,/]+([\d.]+%?))?\s*\)$/);
   if (rgb) {
     [r, g, b] = [rgb[1], rgb[2], rgb[3]].map(Number);
@@ -32,28 +48,28 @@ export const normalizeHex = (input, allowAlpha = false) => {
 };
 
 /** { r, g, b, a } (a from 0 to 1) of a colour, or null. */
-export const hexToRgba = (input) => {
+export const hexToRgba = (input: unknown): Rgba | null => {
   const hex = normalizeHex(input, true);
   if (!hex) return null;
-  const n = (i) => parseInt(hex.slice(i, i + 2), 16);
+  const n = (i: number) => parseInt(hex.slice(i, i + 2), 16);
   return { r: n(1), g: n(3), b: n(5), a: hex.length === 9 ? Math.round((n(7) / 255) * 100) / 100 : 1 };
 };
 
-export const rgbaToHex = ({ r, g, b, a = 1 } = {}, allowAlpha = false) => {
+export const rgbaToHex = ({ r, g, b, a = 1 }: Partial<Rgba> = {}, allowAlpha = false): string => {
   const base = `#${hex2(r)}${hex2(g)}${hex2(b)}`;
   const alpha = Math.round(clamp(Number(a), 0, 1) * 255);
   return allowAlpha && alpha < 255 ? `${base}${hex2(alpha)}` : base;
 };
 
 /** The exposed forms of a colour: rgb 'rgb(r, g, b)' and rgba 'rgba(r, g, b, a)' ('' for no colour). */
-export const colorForms = (hex) => {
+export const colorForms = (hex: unknown): { rgb: string; rgba: string } => {
   const c = hexToRgba(hex);
   if (!c) return { rgb: '', rgba: '' };
   return { rgb: `rgb(${c.r}, ${c.g}, ${c.b})`, rgba: `rgba(${c.r}, ${c.g}, ${c.b}, ${c.a})` };
 };
 
 /** HSV (h 0-360, s and v 0-1) of an RGB colour. */
-export const rgbToHsv = ({ r, g, b }) => {
+export const rgbToHsv = ({ r, g, b }: Pick<Rgba, 'r' | 'g' | 'b'>): Hsv => {
   const [rr, gg, bb] = [r, g, b].map((n) => clamp(Number(n), 0, 255) / 255);
   const max = Math.max(rr, gg, bb);
   const d = max - Math.min(rr, gg, bb);
@@ -68,7 +84,7 @@ export const rgbToHsv = ({ r, g, b }) => {
   return { h, s: max ? d / max : 0, v: max };
 };
 
-export const hsvToRgb = ({ h, s, v }) => {
+export const hsvToRgb = ({ h, s, v }: Hsv): Pick<Rgba, 'r' | 'g' | 'b'> => {
   const hh = (((Number(h) || 0) % 360) + 360) % 360;
   const ss = clamp(Number(s), 0, 1);
   const vv = clamp(Number(v), 0, 1);
@@ -91,7 +107,7 @@ export const hsvToRgb = ({ h, s, v }) => {
 };
 
 /** Black or white, whichever reads better on the colour (for a check mark on a swatch). */
-export const contrastOn = (hex) => {
+export const contrastOn = (hex: unknown): string => {
   const c = hexToRgba(hex);
   if (!c) return '#000000';
   const lum = (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) / 255;
@@ -99,9 +115,9 @@ export const contrastOn = (hex) => {
 };
 
 /** The preset swatches: valid colours only, duplicates dropped, at most 64. */
-export const toSwatches = (v) => {
-  const seen = new Set();
-  const out = [];
+export const toSwatches = (v: unknown): string[] => {
+  const seen = new Set<string>();
+  const out: string[] = [];
   for (const entry of asList(v)) {
     const hex = normalizeHex(entry, true);
     if (!hex || seen.has(hex)) continue;

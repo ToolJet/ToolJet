@@ -16,19 +16,21 @@ import {
   PLACEHOLDER,
   useSearch,
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Combobox ------------------------------------------------------------------------------------------------------
 
-export const ShadCombobox = (props) => {
+export const ShadCombobox = (props: WidgetProps) => {
   const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const options = toOptions(properties.options);
   const initial = M.initialKey(properties.defaultValue);
   const [key, setKey] = useState(initial);
   useEffect(() => setKey(initial), [initial]);
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   const [search, onSearch] = useSearch(props);
   const selected = key === null ? undefined : options.find((o) => M.keyOf(o.value) === key);
@@ -39,7 +41,7 @@ export const ShadCombobox = (props) => {
     searchText: search,
     options,
     label: String(properties.label ?? ''),
-    selectOption: async (v) => setKey(v === undefined || v === null ? null : M.keyOf(v)),
+    selectOption: async (v: unknown) => setKey(v === undefined || v === null ? null : M.keyOf(v)),
     clear: async () => setKey(null),
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),
@@ -50,7 +52,7 @@ export const ShadCombobox = (props) => {
   });
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
-  const openChange = (next) => {
+  const openChange = (next: boolean) => {
     if (next && disabled) return;
     setOpen(next);
     focus.opened(next);
@@ -59,7 +61,7 @@ export const ShadCombobox = (props) => {
       if (search) onSearch('');
     }
   };
-  const pick = (option) => {
+  const pick = (option: Option) => {
     setKey(M.keyOf(option.value));
     setExposedVariables({ value: option.value, selectedOption: option });
     openChange(false);

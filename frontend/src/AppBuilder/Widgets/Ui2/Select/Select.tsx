@@ -7,37 +7,40 @@ import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CONTROL, Field, HELP } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export const EMPTY_OPTION_KEY = '\u0000empty';
 
 export const MAX_SELECT_OPTIONS = 500;
 
-export const ShadSelect = (props) => {
+export const ShadSelect = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
   // Radix Select keys its items by string; keep the original values for the exposed value. It refuses an item keyed
   // by the empty string (that means "nothing selected"), so an option valued '' (an "All" choice) gets its own key.
   const options = toOptions(properties.options);
-  const optionKey = (v) => (String(v) === '' ? EMPTY_OPTION_KEY : String(v));
+  const optionKey = (v: unknown) => (String(v) === '' ? EMPTY_OPTION_KEY : String(v));
   const byKey = new Map(options.map((o) => [optionKey(o.value), o]));
   const initial =
     properties.defaultValue === '' || properties.defaultValue === undefined ? '' : String(properties.defaultValue);
   const [key, setKey] = useState(initial);
   useEffect(() => setKey(initial), [initial]);
-  const selectedOption = byKey.get(key) || {};
+  const selectedOption: Partial<Option> = byKey.get(key) || {};
   // Radix mounts every item even while closed, so a 10k-option binding froze the page: the list shows the first
   // MAX_SELECT_OPTIONS (and the selected one, wherever it is); actions still reach every option.
   const shown = shownOptions(options, byKey.get(key), MAX_SELECT_OPTIONS);
-  const triggerRef = useRef(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   useExposed(setExposedVariables, properties, {
     value: selectedOption.value ?? '',
     selectedOption,
     options,
     label: String(properties.label ?? ''),
-    selectOption: async (v) => setKey(v === undefined || v === null || typeof v === 'object' ? '' : optionKey(v)),
+    selectOption: async (v: unknown) =>
+      setKey(v === undefined || v === null || typeof v === 'object' ? '' : optionKey(v)),
     clear: async () => setKey(''),
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),
