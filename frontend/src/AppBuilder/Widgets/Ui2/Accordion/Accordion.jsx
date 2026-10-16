@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { list, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -80,3 +80,5 @@ export const ShadAccordion = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadAccordion);

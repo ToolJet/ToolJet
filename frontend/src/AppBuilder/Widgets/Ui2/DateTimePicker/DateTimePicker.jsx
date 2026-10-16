@@ -1,0 +1,272 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import dayjs from 'dayjs';
+import { CalendarIcon, Clock } from 'lucide-react';
+import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  Button,
+  Calendar,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  cn,
+} from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
+import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
+import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import {
+  ICON,
+  TRIGGER,
+  pad2,
+  parseTimeArg,
+  text,
+  useLatest,
+  withRule,
+} from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+
+// ---- Date and time picker ------------------------------------------------------------------------------------------
+
+const SMALL_SELECT =
+  'h-8 w-[4.25rem] gap-1 px-2 tabular-nums text-[color:var(--sc-popover-foreground)] border-[color:var(--sc-input)]';
+
+export const TimeSelect = ({ label, value, options, onChange, disabled, style }) => (
+  <Select value={value} onValueChange={onChange} disabled={disabled}>
+    <SelectTrigger aria-label={label} className={SMALL_SELECT}>
+      <SelectValue placeholder="--" />
+    </SelectTrigger>
+    <SelectContent className="max-h-60" style={style}>
+      {options.map((o) => (
+        <SelectItem key={o.value} value={o.value} disabled={o.disabled}>
+          {o.label}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+);
+
+export const ShadDateTimePicker = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
+  const { setExposedVariables, fireEvent, id, componentType, styles } = props;
+  // setMinDate, setMaxDate and setDisabledDates change those properties until they change themselves.
+  const [properties, override] = useOverrides(props.properties);
+  const dateFormat =
+    typeof properties.dateFormat === 'string' && properties.dateFormat.trim() ? properties.dateFormat : 'DD MMM YYYY';
+  const use24 = M.is24h(properties.timeFormat);
+  const displayFormat = `${dateFormat} ${use24 ? 'HH:mm' : 'h:mm A'}`;
+  const step = M.minuteStep(properties.minuteStep, 5);
+  const rulesKey = stringify([
+    properties.minDate ?? null,
+    properties.maxDate ?? null,
+    properties.disabledDates ?? null,
+  ]);
+  const rules = useMemo(
+    () =>
+      M.dateRules({
+        minDate: properties.minDate,
+        maxDate: properties.maxDate,
+        disabledDates: properties.disabledDates,
+        format: dateFormat,
+      }),
+    [rulesKey, dateFormat] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const initial = M.parseDateTime(properties.defaultValue, displayFormat)?.valueOf() ?? null;
+  const [ts, setTs] = useState(initial);
+  useEffect(() => setTs(initial), [initial]);
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef(null);
+  const focus = useFocusEvents(fireEvent);
+  const date = ts === null ? null : dayjs(ts);
+  const exposed = M.dateTimeExposed(date, displayFormat);
+  const tsRef = useLatest(ts);
+  const formatRef = useLatest(displayFormat);
+  const setDate = (v, format) => {
+    const d = M.parseDateTime(
+      v,
+      M.isBlank(format) || typeof format !== 'string' ? formatRef.current : M.toDayjsFormat(format)
+    );
+    if (d || M.isBlank(v)) setTs(d ? d.valueOf() : null);
+  };
+  const blankArg = (v) => v === undefined || v === null || v === '';
+  useExposed(setExposedVariables, properties, {
+    ...exposed,
+    label: text(properties.label),
+    dateFormat,
+    timeFormat: use24 ? '24h' : '12h',
+    minDate: rules.min ? rules.min.format('YYYY-MM-DD') : '',
+    maxDate: rules.max ? rules.max.format('YYYY-MM-DD') : '',
+    setValue: async (v, format) => setDate(v, format),
+    setValueInTimestamp: async (v) => {
+      const n = Number(v);
+      if (!blankArg(v) && typeof v !== 'boolean' && Number.isFinite(n) && dayjs(n).isValid()) setTs(n);
+    },
+    // setTime keeps the day (today when none is picked) and sets the time of day.
+    setTime: async (v, format) => {
+      const m = parseTimeArg(v, format);
+      if (m === null) return;
+      const day = tsRef.current === null ? dayjs().startOf('day') : dayjs(tsRef.current);
+      setTs(M.atTime(day, m).valueOf());
+    },
+    clearValue: async () => setTs(null),
+    setMinDate: async (v) => override('minDate', text(v)),
+    setMaxDate: async (v) => override('maxDate', text(v)),
+    setDisabledDates: async (v) => override('disabledDates', Array.isArray(v) ? v : blankArg(v) ? [] : [v]),
+    clearDisabledDates: async () => override('disabledDates', []),
+    setFocus: async () => triggerRef.current?.focus(),
+    setBlur: async () => triggerRef.current?.blur(),
+  });
+  const commit = (next) => {
+    if (next === ts) return;
+    setTs(next);
+    setExposedVariables(M.dateTimeExposed(next === null ? null : dayjs(next), displayFormat));
+    fireEvent('onSelect');
+  };
+  const check = useValidation(
+    withRule(props, () => M.dateProblem(date, rules)),
+    exposed.value,
+    () => commit(null)
+  );
+  const disabled = busy(properties);
+  const now = dayjs();
+  const nowMinutes = Math.floor((now.hour() * 60 + now.minute()) / step) * step;
+  const timeOf = (d) => (d ? d.hour() * 60 + d.minute() : nowMinutes);
+  // Changing the time before picking a day uses today (or the first allowed day).
+  const baseDay = () => {
+    if (date) return date;
+    const today = now.startOf('day');
+    if (!M.dateProblem(today, rules)) return today;
+    return rules.min ?? today;
+  };
+  const setTime = (minutes) => commit(M.atTime(baseDay(), minutes).valueOf());
+  const minutes = date ? timeOf(date) : null;
+  const hour = minutes === null ? null : Math.floor(minutes / 60);
+  const minute = minutes === null ? null : minutes % 60;
+  const pm = hour !== null && hour >= 12;
+  const minuteChoices = M.minuteOptions(step);
+  if (minute !== null && !minuteChoices.includes(minute)) minuteChoices.push(minute);
+  minuteChoices.sort((a, b) => a - b);
+  const hourOptions = use24
+    ? Array.from({ length: 24 }, (_, h) => ({ value: String(h), label: pad2(h) }))
+    : [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((h12) => ({ value: String(h12 % 12), label: pad2(h12) }));
+  const disabledMatchers = [
+    ...(rules.min ? [{ before: rules.min.toDate() }] : []),
+    ...(rules.max ? [{ after: rules.max.toDate() }] : []),
+    ...rules.disabled.map((d) => dayjs(d).toDate()),
+  ];
+  const shown = date ? M.safeFormat(date, displayFormat) : '';
+  const vars = lookVars(componentType, styles);
+  return (
+    <Shell {...props} innerRef={fit}>
+      <Field
+        id={`shad-${id}`}
+        label={properties.label}
+        description={properties.description}
+        error={check.error}
+        required={check.required}
+      >
+        <Popover
+          open={open}
+          onOpenChange={(next) => {
+            setOpen(next);
+            focus.opened(next);
+            if (!next) check.touch();
+          }}
+        >
+          <PopoverTrigger asChild>
+            <Button
+              ref={triggerRef}
+              id={`shad-${id}`}
+              variant="outline"
+              disabled={disabled}
+              aria-invalid={!!check.error || undefined}
+              {...focus.handlers}
+              className={cn(
+                TRIGGER,
+                CONTROL,
+                !shown && 'text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
+              )}
+            >
+              <CalendarIcon className={ICON} />
+              <span className="truncate">{shown || text(properties.placeholder)}</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start" style={vars}>
+            <Calendar
+              mode="single"
+              selected={date ? date.toDate() : undefined}
+              defaultMonth={
+                date ? date.toDate() : rules.min && now.isBefore(rules.min) ? rules.min.toDate() : undefined
+              }
+              startMonth={rules.min ? rules.min.toDate() : undefined}
+              endMonth={rules.max ? rules.max.toDate() : undefined}
+              disabled={disabledMatchers}
+              onSelect={(day) => {
+                if (!day) return;
+                commit(M.atTime(dayjs(day), timeOf(date)).valueOf());
+              }}
+            />
+            <div className="flex items-center gap-2 border-t px-3 py-2.5">
+              <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="mr-auto text-sm text-muted-foreground">Time</span>
+              <TimeSelect
+                label="Hour"
+                style={vars}
+                value={hour === null ? '' : String(use24 ? hour : hour % 12)}
+                options={hourOptions}
+                onChange={(h) => setTime(((Number(h) % 24) + (!use24 && pm ? 12 : 0)) * 60 + (minute ?? 0))}
+              />
+              <span className="text-sm text-muted-foreground">:</span>
+              <TimeSelect
+                label="Minute"
+                style={vars}
+                value={minute === null ? '' : String(minute)}
+                options={minuteChoices.map((m) => ({ value: String(m), label: pad2(m) }))}
+                onChange={(m) => setTime((hour ?? Math.floor(nowMinutes / 60)) * 60 + Number(m))}
+              />
+              {!use24 ? (
+                <div
+                  className="ml-1 flex rounded-md border border-[color:var(--sc-input)] p-0.5"
+                  role="group"
+                  aria-label="AM or PM"
+                >
+                  {['AM', 'PM'].map((label) => {
+                    const on = hour !== null && pm === (label === 'PM');
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        aria-pressed={on}
+                        className={cn(
+                          'h-6 rounded-sm border-0 px-1.5 text-xs font-medium transition-colors',
+                          on ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
+                        )}
+                        onClick={() => {
+                          const base = minutes ?? nowMinutes;
+                          const h = Math.floor(base / 60) % 12;
+                          setTime((h + (label === 'PM' ? 12 : 0)) * 60 + (base % 60));
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </Field>
+    </Shell>
+  );
+};
+
+export default withControlState(ShadDateTimePicker);

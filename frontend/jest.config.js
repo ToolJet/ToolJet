@@ -126,7 +126,7 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.spec.[jt]s?(x)'],
   // The UI 2.0 widgets' junk-input fuzz suite is slow (minutes of CPU) and is not a behaviour test: it runs on its
   // own with `npm run test:ui2-fuzz`.
-  testPathIgnorePatterns: ['/node_modules/', '/Widgets/Shadcn/__tests__/fuzz/'],
+  testPathIgnorePatterns: ['/node_modules/', '/Widgets/Ui2/__tests__/fuzz/'],
   // assets/libs and build/assets/libs both ship a pyodide package.json, which
   // collides in jest-haste-map. Neither is ever imported by a test.
   modulePathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/assets/libs/'],

@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Textarea } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CONTROL, Field, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
@@ -64,3 +64,5 @@ export const ShadTextarea = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadTextarea);

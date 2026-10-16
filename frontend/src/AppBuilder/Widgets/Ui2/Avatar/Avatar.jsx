@@ -1,5 +1,5 @@
 import React from 'react';
-import { initials, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { initials, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Avatar, AvatarFallback, AvatarImage, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { avatarPeople } from '@/AppBuilder/Widgets/Ui2/_shared/people';
@@ -42,3 +42,5 @@ export const ShadAvatar = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadAvatar);

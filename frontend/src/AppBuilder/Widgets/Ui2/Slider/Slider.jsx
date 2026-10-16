@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { list, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Slider } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { sliderBounds, sliderValues } from '@/AppBuilder/Widgets/Shadcn/sliderModel';
+import { sliderBounds, sliderValues } from './sliderModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Field, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
@@ -65,3 +65,5 @@ export const ShadSlider = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadSlider);

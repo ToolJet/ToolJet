@@ -1,6 +1,6 @@
 import React from 'react';
 import { Inbox } from 'lucide-react';
-import { useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
@@ -33,3 +33,5 @@ export const ShadEmpty = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadEmpty);

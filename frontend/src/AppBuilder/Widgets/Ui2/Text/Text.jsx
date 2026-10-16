@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { typeClasses } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
@@ -37,3 +37,5 @@ export const ShadText = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadText);

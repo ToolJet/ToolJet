@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Alert, AlertDescription, AlertTitle, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -31,3 +31,5 @@ export const ShadAlert = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadAlert);

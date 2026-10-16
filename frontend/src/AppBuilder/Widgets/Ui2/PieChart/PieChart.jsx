@@ -1,0 +1,79 @@
+import React from 'react';
+import { Cell, Label as ChartLabel, Legend, Pie, PieChart, Tooltip } from 'recharts';
+import { list, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
+import { isSet, statusColors, centreValueFit } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { ChartFrame, ChartTooltip, LegendContent, fmt } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+
+// A pie past this many slices is unreadable, and drawing 10k of them freezes the page; bars likewise (a bar each,
+// with a cell for its colour, per row and series).
+export const MAX_SLICES = 100;
+
+export const ShadPieChart = (props) => {
+  const p = props.properties;
+  const slices = list(p.data).slice(0, MAX_SLICES);
+  const states = isSet(p.colors) ? null : statusColors(slices.map((d) => d?.[p.categoryField]));
+  const data = slices.map((d, i) => ({ ...d, fill: states?.[i] ?? seriesColor(p.colors, i) }));
+  const donut = p.donut !== false;
+  const format = fmt(p, false);
+  return (
+    <ChartFrame props={props} empty={!data.length}>
+      {(onDatum) => (
+        <PieChart>
+          <Tooltip content={<ChartTooltip format={format} />} />
+          {p.showLegend !== false ? <Legend content={<LegendContent />} /> : null}
+          <Pie
+            data={data}
+            dataKey={p.valueField}
+            nameKey={p.categoryField}
+            innerRadius={donut ? '58%' : 0}
+            outerRadius="85%"
+            strokeWidth={donut ? 4 : 1}
+            stroke="var(--lk-slice-border, var(--sc-background))"
+            onClick={(slice) => onDatum(slice?.payload)}
+          >
+            {data.map((d, i) => (
+              <Cell key={i} fill={d.fill} />
+            ))}
+            {donut && (p.centerValue || p.centerLabel) ? (
+              <ChartLabel
+                content={({ viewBox }) => {
+                  if (viewBox?.cx === undefined) return null;
+                  // Sized to the hole, and shortened when even 16px would not fit ("$8.2M", not "$8,196,250.00" over the ring).
+                  const fit = centreValueFit(p.centerValue ?? '', viewBox.innerRadius);
+                  return (
+                    <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                      <tspan
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        style={{
+                          fill: 'var(--lk-center-value, var(--sc-foreground))',
+                          fontSize: fit.fontSize,
+                          fontWeight: 700,
+                        }}
+                      >
+                        <title>{String(p.centerValue ?? '')}</title>
+                        {fit.text}
+                      </tspan>
+                      {p.centerLabel ? (
+                        <tspan
+                          x={viewBox.cx}
+                          y={viewBox.cy + 22}
+                          style={{ fill: 'var(--lk-center-label, var(--sc-muted-foreground))', fontSize: 12 }}
+                        >
+                          {String(p.centerLabel)}
+                        </tspan>
+                      ) : null}
+                    </text>
+                  );
+                }}
+              />
+            ) : null}
+          </Pie>
+        </PieChart>
+      )}
+    </ChartFrame>
+  );
+};
+
+export default withControlState(ShadPieChart);

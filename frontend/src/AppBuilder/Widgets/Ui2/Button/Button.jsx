@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
@@ -59,3 +59,5 @@ export const ShadButton = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadButton);

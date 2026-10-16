@@ -15,7 +15,7 @@ import {
   setVariableOn,
   countInvocationsOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { columnMinimum, kanbanCollision } from '@/AppBuilder/Widgets/Shadcn/ShadKanban';
+import { columnMinimum, kanbanCollision } from '@/AppBuilder/Widgets/Ui2/Kanban/Kanban';
 import {
   addCard,
   boardCards,
@@ -23,7 +23,7 @@ import {
   deleteCard,
   moveCard,
   updateCard,
-} from '@/AppBuilder/Widgets/Shadcn/kanbanBoard';
+} from '@/AppBuilder/Widgets/Ui2/Kanban/kanbanBoard';
 
 const ID = 'kb1';
 const widget = createWidgetHarness({

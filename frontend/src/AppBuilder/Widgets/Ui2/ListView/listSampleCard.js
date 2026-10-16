@@ -23,7 +23,8 @@ export const SAMPLE_CARD = {
 // The item height each arrangement needs.
 export const SAMPLE_ITEM_HEIGHT = { list: 72, grid: 204 };
 
-const sameBox = (a = {}, b = {}) => ['top', 'left', 'width', 'height'].every((key) => Number(a[key]) === Number(b[key]));
+const sameBox = (a = {}, b = {}) =>
+  ['top', 'left', 'width', 'height'].every((key) => Number(a[key]) === Number(b[key]));
 
 /** The new layouts ({ [id]: layout }) for a List view's children when its layout switches to `toMode`, or null when
  *  they are not the untouched sample card of the other layout. `children` is [{ id, type, layout }]. */

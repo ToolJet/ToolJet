@@ -1,5 +1,5 @@
 import React from 'react';
-import { useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Separator, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
@@ -21,3 +21,5 @@ export const ShadSeparator = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadSeparator);

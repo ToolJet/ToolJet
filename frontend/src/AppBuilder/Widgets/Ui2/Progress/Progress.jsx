@@ -1,5 +1,5 @@
 import React from 'react';
-import { useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Progress, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -27,3 +27,5 @@ export const ShadProgress = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadProgress);

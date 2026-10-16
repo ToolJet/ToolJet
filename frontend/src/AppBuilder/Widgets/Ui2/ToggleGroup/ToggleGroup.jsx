@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { toOptions, useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { toOptions, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { ToggleGroup, ToggleGroupItem, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
@@ -55,3 +55,5 @@ export const ShadToggleGroup = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadToggleGroup);

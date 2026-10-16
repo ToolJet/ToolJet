@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import { list, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { list, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -60,3 +60,5 @@ export const ShadBreadcrumb = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadBreadcrumb);

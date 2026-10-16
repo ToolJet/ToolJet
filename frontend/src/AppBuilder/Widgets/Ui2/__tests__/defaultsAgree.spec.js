@@ -6,10 +6,14 @@ import { shadcnConfigs } from '../../../WidgetManager/widgets/shadcn';
 
 const choiceCases = shadcnConfigs.flatMap((config) =>
   Object.entries(config.properties || {})
-    .filter(([key, def]) => key !== 'tooltipFormat' && (def.options || ['select', 'switch', 'toggle'].includes(def.type)))
+    .filter(
+      ([key, def]) => key !== 'tooltipFormat' && (def.options || ['select', 'switch', 'toggle'].includes(def.type))
+    )
     .map(([key, def]) => [config.name, key, def])
     .filter(([, key, def]) => (def.validation?.defaultValue ?? def.defaultValue) !== undefined)
-    .filter(([name, key]) => shadcnConfigs.find((c) => c.name === name).definition?.properties?.[key]?.value !== undefined)
+    .filter(
+      ([name, key]) => shadcnConfigs.find((c) => c.name === name).definition?.properties?.[key]?.value !== undefined
+    )
 );
 const unwrap = (v) => String(v).replace(/^\{\{(.*)\}\}$/, '$1');
 

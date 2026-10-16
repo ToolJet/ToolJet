@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Checkbox } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CheckedRow, useChecked, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
@@ -36,3 +36,5 @@ export const ShadCheckbox = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadCheckbox);

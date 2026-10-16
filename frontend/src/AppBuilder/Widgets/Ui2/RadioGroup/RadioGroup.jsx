@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { toOptions, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Label, RadioGroup, RadioGroupItem } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
@@ -68,3 +68,5 @@ export const ShadRadioGroup = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadRadioGroup);

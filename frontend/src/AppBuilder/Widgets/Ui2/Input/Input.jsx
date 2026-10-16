@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Input } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CONTROL, Field, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
@@ -44,3 +44,5 @@ export const ShadInput = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadInput);

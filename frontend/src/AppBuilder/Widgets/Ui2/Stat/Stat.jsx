@@ -1,20 +1,20 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { TrendingDown, TrendingUp } from 'lucide-react';
-import { useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Badge, Card, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { badgeLook, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { fontStack, textCase } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
-import { progressPercent, sparkPaths, splitChange, statSize, statValue } from '@/AppBuilder/Widgets/Shadcn/statModel';
-import { compactFigure } from '@/AppBuilder/Widgets/Shadcn/chartsModel';
+import { progressPercent, sparkPaths, splitChange, statSize, statValue } from './statModel';
+import { compactFigure } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { textArg, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
-import { joinStatRow } from '@/AppBuilder/Widgets/Shadcn/statRow';
+import { joinStatRow } from './statRow';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
 // The Stat's icon is drawn by the Display module, which holds the lucide icon map; it loads only for a Stat with one.
 const StatIconGlyph = React.lazy(() =>
-  import('@/AppBuilder/Widgets/Shadcn/ShadDisplay').then((m) => ({ default: m.IconGlyph }))
+  import('@/AppBuilder/Widgets/Ui2/_display/displayParts').then((m) => ({ default: m.IconGlyph }))
 );
 
 export const StatIcon = ({ name, shape, size }) => {
@@ -280,3 +280,5 @@ export const ShadStat = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadStat);

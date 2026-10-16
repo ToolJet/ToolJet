@@ -2,7 +2,8 @@ import { SAMPLE_CARD, sampleCardLayouts } from '@/AppBuilder/Widgets/Ui2/ListVie
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 
 const listView = shadcnConfigs.find((config) => config.name === 'ShadListView');
-const children = (mode) => SAMPLE_CARD[mode].map(({ type, layout }, i) => ({ id: `c${i}`, type, layout: { ...layout } }));
+const children = (mode) =>
+  SAMPLE_CARD[mode].map(({ type, layout }, i) => ({ id: `c${i}`, type, layout: { ...layout } }));
 
 describe('List view sample card', () => {
   it('matches the components a new List view drops with', () => {

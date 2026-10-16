@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { useAutoHeight } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { clampLines, typeClasses } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
@@ -53,3 +53,5 @@ export const ShadHeading = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadHeading);

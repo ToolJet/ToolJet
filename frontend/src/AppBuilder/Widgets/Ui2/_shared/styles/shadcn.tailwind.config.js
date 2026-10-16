@@ -15,7 +15,7 @@ const token =
       : `color-mix(in srgb, var(--sc-${name}) calc(${opacityValue} * 100%), transparent)`;
 
 module.exports = {
-  content: ['./src/AppBuilder/Widgets/Shadcn/**/*.{js,jsx}', './src/AppBuilder/Widgets/Ui2/**/*.{js,jsx,ts,tsx}'],
+  content: ['./src/AppBuilder/Widgets/Ui2/**/*.{js,jsx,ts,tsx}'],
   important: '.tj-shadcn',
   corePlugins: { preflight: false },
   theme: {

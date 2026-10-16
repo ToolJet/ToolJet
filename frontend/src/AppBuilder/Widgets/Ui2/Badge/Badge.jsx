@@ -1,5 +1,5 @@
 import React from 'react';
-import { useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Badge, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -23,3 +23,5 @@ export const ShadBadge = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadBadge);

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { toOptions, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
@@ -96,3 +96,5 @@ export const ShadSelect = (props) => {
     </Shell>
   );
 };
+
+export default withControlState(ShadSelect);
