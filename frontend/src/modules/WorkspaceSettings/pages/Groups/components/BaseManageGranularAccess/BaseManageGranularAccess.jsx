@@ -17,7 +17,7 @@ import ModuleResourcePermissions from './components/ModuleResourcePermission';
 import WorkflowFolderResourcePermissions from './components/WorkflowFolderResourcePermission';
 import ModuleFolderResourcePermissions from './components/ModuleFolderResourcePermission';
 import Spinner from 'react-bootstrap/Spinner';
-import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../..';
+import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../../constants';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 class BaseManageGranularAccess extends React.Component {
@@ -1062,10 +1062,10 @@ class BaseManageGranularAccess extends React.Component {
     const addPermissionTooltipMessage = !newPermissionName
       ? 'Please input permissions name'
       : isCustom && this.getSelectedResources().length === 0
-        ? 'Please select apps or select all apps option'
-        : isEmptyDsPermission
-          ? 'Select an access level or restrict query run'
-          : '';
+      ? 'Please select apps or select all apps option'
+      : isEmptyDsPermission
+      ? 'Select an access level or restrict query run'
+      : '';
     const isBasicPlan = this.props.isBasicPlan;
     const disableEditUpdate = currentGroupPermission.name == 'end-user' || isBasicPlan;
 
@@ -1116,10 +1116,10 @@ class BaseManageGranularAccess extends React.Component {
                       resourceType === RESOURCE_TYPE.APPS
                         ? 'apps'
                         : resourceType === RESOURCE_TYPE.MODULES
-                          ? 'modules'
-                          : resourceType === RESOURCE_TYPE.WORKFLOWS
-                            ? 'workflows'
-                            : 'datasource'
+                        ? 'modules'
+                        : resourceType === RESOURCE_TYPE.WORKFLOWS
+                        ? 'workflows'
+                        : 'datasource'
                     }
                     fill="var(--slate8)"
                   />

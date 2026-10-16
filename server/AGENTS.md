@@ -76,9 +76,9 @@ modules/{feature}/
 - **`SET LOCAL` lasts for the whole deploy.** All migrations share one transaction, so `SET LOCAL lock_timeout` (or `statement_timeout`) carries into every later migration. Read the old value with `SHOW lock_timeout` and restore it at the end with `SELECT set_config('lock_timeout', $1, true)`. `1781868342325-AddModuleToAppTypeEnum.ts`, `1781869753341-AddModuleToResourceTypeEnum.ts` and `1782196835449-AddModuleCreateDeleteToGroupPermissions.ts` set it without restoring; don't copy them.
 - Prefer runtime interpretation of existing values over new sentinel columns + migrations; repurpose existing columns/tables over adding parallel structures.
 
-### Widget config sync (CRITICAL)
+### Widget config (CRITICAL)
 
-Server widget config (`src/modules/apps/services/widget-config/`) and frontend config (`frontend/src/AppBuilder/WidgetManager/widgets/`) must change together. If a config change moves, renames, or removes a key, write a migration.
+Widget configs live in the shared `packages/widget-definitions` package and are imported by both server (`src/modules/apps/services/widget-config/index.js`) and frontend. If a config change moves, renames, or removes a key, write a migration.
 
 ### Security
 

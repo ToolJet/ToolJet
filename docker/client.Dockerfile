@@ -18,6 +18,10 @@ COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
+# Copy shared widget-definitions package (required by frontend file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
+
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json  ./frontend/
 RUN npm --prefix frontend install
