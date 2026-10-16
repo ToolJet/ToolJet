@@ -1,18 +1,45 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { shallow } from 'zustand/shallow';
-import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
+import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import useStore from '@/AppBuilder/_stores/store';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
-import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useDynamicHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { TabStrip } from './TabStrip';
+import type { TabsVariant } from './TabStrip';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import type { Tab, TabId } from './tabsModel';
+
+/** What the tab actions read later, without going stale. */
+interface TabsLive {
+  tabs: Tab[];
+  currentTab: TabId | undefined;
+  fireEvent: WidgetProps['fireEvent'];
+  setExposedVariables: WidgetProps['setExposedVariables'];
+  setSelectedComponents: (ids: string[]) => void;
+}
+
+/** What the tabs read from the app store. */
+type TabsStore = {
+  setSelectedComponents: (ids: string[]) => void;
+  getContainerChildrenMapping: (id: string) => string[] | undefined;
+};
+
+interface TabPanelProps {
+  id: string;
+  tab: Tab;
+  width: number;
+  active: boolean;
+  dynamic: boolean;
+  background: string;
+}
 
 // shadcn/ui pack Tabs (experiment). Same contract as the native Tabs (tabItems or dynamic tabs, defaultTab,
 // currentTab, setTab and the per-tab canvases `<id>-<tabId>`), so the editor, copy and paste, dynamic height and the
@@ -22,12 +49,13 @@ export const STEP_NAV_HEIGHT = 56;
 
 /** One tab's panel: its canvas, or a spinner while the tab is loading. Memoised on its own inputs, so switching
  *  tabs re-renders only the two panels whose visibility changes. */
-const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, background }) {
+const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, background }: TabPanelProps) {
   if (tab.visible === false) return null;
   return (
     <div
       role="tabpanel"
-      activetab={tab.id}
+      // activetab is ToolJet's own attribute on a tab pane (as on the native Tabs), not one React's types know.
+      {...{ activetab: tab.id }}
       data-disabled={tab.disable}
       className={cn('tab-pane h-full w-full', dynamic && active && `dynamic-${id}`)}
       style={{
@@ -61,7 +89,7 @@ const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, backg
   );
 });
 
-export const ShadTabs = (props) => {
+export const ShadTabs = (props: WidgetProps) => {
   const {
     id,
     width,
@@ -74,7 +102,6 @@ export const ShadTabs = (props) => {
     currentMode,
     currentLayout,
     subContainerIndex,
-    componentType,
     dataCy,
   } = props;
   // A pack widget created through the MCP carries only the properties it was given (the server has no defaults to
@@ -86,8 +113,10 @@ export const ShadTabs = (props) => {
     setExposedVariables,
     setExposedVariable
   );
-  const setSelectedComponents = useStore((state) => state.setSelectedComponents);
-  const variant = ['pills', 'underline', 'steps'].includes(properties.variant) ? properties.variant : 'pills';
+  const setSelectedComponents = useStore((state: TabsStore) => state.setSelectedComponents);
+  const variant: TabsVariant = ['pills', 'underline', 'steps'].includes(properties.variant)
+    ? properties.variant
+    : 'pills';
   const wizard = variant === 'steps';
   const dynamic = properties.dynamicHeight !== false && currentMode === 'view';
   const look = tabsLook(styles);
@@ -99,15 +128,15 @@ export const ShadTabs = (props) => {
     [properties.useDynamicOptions, properties.tabs, properties.tabItems]
   ); // eslint-disable-line react-hooks/exhaustive-deps
   const fromPropsKey = stringify(fromProps);
-  const [tabs, setTabs] = useState(fromProps);
+  const [tabs, setTabs] = useState<Tab[]>(fromProps);
   useEffect(() => setTabs(fromProps), [fromPropsKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const shown = visibleTabs(tabs);
 
-  const pickDefault = () => {
+  const pickDefault = (): TabId | undefined => {
     const wanted = properties.defaultTab;
     return shown.some((tab) => tab.id == wanted) ? wanted : shown[0]?.id;
   };
-  const [currentTab, setCurrentTab] = useState(pickDefault);
+  const [currentTab, setCurrentTab] = useState<TabId | undefined>(pickDefault);
   useEffect(() => setCurrentTab(pickDefault()), [properties.defaultTab]); // eslint-disable-line react-hooks/exhaustive-deps
   // Scroll to top on tab switch: the new tab's canvas starts at its top, as the native Tabs does.
   useEffect(() => {
@@ -132,9 +161,9 @@ export const ShadTabs = (props) => {
   const isLastStep = stepIndex === shown.length - 1;
 
   // Actions run later from event handlers: they read the latest tabs and tab through refs.
-  const live = useRef({});
+  const live = useRef<TabsLive>({ tabs, currentTab, fireEvent, setExposedVariables, setSelectedComponents });
   live.current = { tabs, currentTab, fireEvent, setExposedVariables, setSelectedComponents };
-  const switchTo = (tabId, { fire = true } = {}) => {
+  const switchTo = (tabId: unknown, { fire = true }: { fire?: boolean } = {}) => {
     const { tabs: all, currentTab: now, fireEvent: fireNow, setSelectedComponents: deselect } = live.current;
     const target = visibleTabs(all).find((tab) => tab.id == tabId);
     if (!target || target.id == now) return;
@@ -154,11 +183,12 @@ export const ShadTabs = (props) => {
     // The editor selection may hold a component of the tab that just went away.
     deselect([]);
   };
-  const patchTab = (tabId, patch) => setTabs((all) => all.map((tab) => (tab.id == tabId ? { ...tab, ...patch } : tab)));
+  const patchTab = (tabId: unknown, patch: Partial<Tab>) =>
+    setTabs((all) => all.map((tab) => (tab.id == tabId ? { ...tab, ...patch } : tab)));
 
   useEffect(() => {
     setExposedVariables({
-      setTab: async (tabId) => switchTo(tabId),
+      setTab: async (tabId: unknown) => switchTo(tabId),
       nextTab: async () => {
         const next = neighbourTab(live.current.tabs, live.current.currentTab, 1);
         if (next) switchTo(next.id);
@@ -167,9 +197,9 @@ export const ShadTabs = (props) => {
         const previous = neighbourTab(live.current.tabs, live.current.currentTab, -1);
         if (previous) switchTo(previous.id);
       },
-      setTabDisable: async (tabId, value) => patchTab(tabId, { disable: !!value }),
-      setTabLoading: async (tabId, value) => patchTab(tabId, { loading: !!value }),
-      setTabVisibility: async (tabId, value) => patchTab(tabId, { visible: value !== false }),
+      setTabDisable: async (tabId: unknown, value: unknown) => patchTab(tabId, { disable: !!value }),
+      setTabLoading: async (tabId: unknown, value: unknown) => patchTab(tabId, { loading: !!value }),
+      setTabVisibility: async (tabId: unknown, value: unknown) => patchTab(tabId, { visible: value !== false }),
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -184,7 +214,7 @@ export const ShadTabs = (props) => {
   }, [currentTab, current?.title, stepIndex, isFirstStep, isLastStep]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const componentCount = useStore(
-    (state) => state.getContainerChildrenMapping(`${id}-${currentTab}`)?.length || 0,
+    (state: TabsStore) => state.getContainerChildrenMapping(`${id}-${currentTab}`)?.length || 0,
     shallow
   );
   useDynamicHeight({
@@ -197,14 +227,13 @@ export const ShadTabs = (props) => {
     componentCount,
     visibility: isVisible,
     subContainerIndex,
-    componentType,
   });
 
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   useDisableInert(containerRef, isDisabled);
 
   const showNav = wizard && properties.showStepNav !== false;
-  const onPick = (tab) => {
+  const onPick = (tab: Tab) => {
     if (tab.disable || isDisabled) return;
     switchTo(tab.id);
   };

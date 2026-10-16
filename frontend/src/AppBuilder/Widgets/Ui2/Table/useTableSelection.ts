@@ -1,5 +1,18 @@
 import { useEffect, useState } from 'react';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell } from './tableModel';
+import type { Entry, LiveRef, Paged, WithEdits } from './types';
+
+interface UseTableSelectionArgs {
+  properties: Resolved;
+  entries: Entry[];
+  paged: Paged;
+  isDisabled: boolean;
+  live: LiveRef;
+  withEdits: WithEdits;
+  fireEvent: WidgetProps['fireEvent'];
+  setExposedVariables: WidgetProps['setExposedVariables'];
+}
 
 /** Row selection: single or bulk, the default selected row, kept on the same records across a reload. */
 export const useTableSelection = ({
@@ -11,13 +24,13 @@ export const useTableSelection = ({
   withEdits,
   fireEvent,
   setExposedVariables,
-}) => {
+}: UseTableSelectionArgs) => {
   const allowSelection = properties.allowSelection !== false;
   const bulk = allowSelection && properties.showBulkSelector === true;
-  const [selected, setSelected] = useState(() => new Set());
-  const [focusKey, setFocusKey] = useState(null);
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [focusKey, setFocusKey] = useState<string | null>(null);
 
-  const exposeSelection = (keys, focus) => {
+  const exposeSelection = (keys: Set<string>, focus: string | null) => {
     const { entries: all } = live.current;
     const picked = all.filter((entry) => keys.has(entry.key));
     const focusEntry = all.find((entry) => entry.key === focus);
@@ -28,7 +41,7 @@ export const useTableSelection = ({
       selectedRowsId: picked.map((entry) => entry.index),
     });
   };
-  const select = (keys, focus) => {
+  const select = (keys: Set<string>, focus: string | null) => {
     setSelected(keys);
     setFocusKey(focus);
     exposeSelection(keys, focus);
@@ -38,7 +51,7 @@ export const useTableSelection = ({
   useEffect(() => {
     const keys = new Set(entries.map((entry) => entry.key));
     const kept = new Set([...live.current.selected].filter((key) => keys.has(key)));
-    let focus = keys.has(live.current.focusKey) ? live.current.focusKey : null;
+    let focus = live.current.focusKey !== null && keys.has(live.current.focusKey) ? live.current.focusKey : null;
     const wanted = properties.defaultSelectedRow;
     if (!kept.size && wanted && typeof wanted === 'object' && Object.keys(wanted).length && allowSelection) {
       const [k, v] = Object.entries(wanted)[0];
@@ -53,7 +66,7 @@ export const useTableSelection = ({
     exposeSelection(kept, focus);
   }, [entries]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const clickRow = (entry) => {
+  const clickRow = (entry: Entry) => {
     if (isDisabled) return;
     if (allowSelection && !bulk) {
       const already = selected.has(entry.key);
@@ -62,7 +75,7 @@ export const useTableSelection = ({
         fireEvent('onRowClicked');
         return;
       }
-      const keys = already ? new Set() : new Set([entry.key]);
+      const keys = already ? new Set<string>() : new Set([entry.key]);
       select(keys, already ? null : entry.key);
       // A deselecting click is a selection change, not a row click: onRowClicked would open a sheet bound to
       // selectedRow with nothing in it.
@@ -75,7 +88,7 @@ export const useTableSelection = ({
     setExposedVariables({ selectedRow: withEdits(entry), selectedRowId: entry.index });
     fireEvent('onRowClicked');
   };
-  const toggleBulk = (entry) => {
+  const toggleBulk = (entry: Entry) => {
     const keys = new Set(selected);
     if (keys.has(entry.key)) keys.delete(entry.key);
     else keys.add(entry.key);

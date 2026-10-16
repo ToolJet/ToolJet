@@ -1,7 +1,24 @@
 import React from 'react';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { MUTED } from './TableCells';
+import type { Entry, FireOption, Paged } from './types';
+
+interface TableFooterProps {
+  properties: Resolved;
+  isLoading: boolean;
+  isDisabled: boolean;
+  pendingEdits: number;
+  discard: (options?: FireOption) => void;
+  fireEvent: WidgetProps['fireEvent'];
+  bulk: boolean;
+  selected: Set<string>;
+  serverPaging: boolean;
+  processed: Entry[];
+  paged: Paged;
+  goTo: (target: unknown) => void;
+}
 
 export const TableFooter = ({
   properties,
@@ -16,7 +33,7 @@ export const TableFooter = ({
   processed,
   paged,
   goTo,
-}) => (
+}: TableFooterProps) => (
   <>
     {pendingEdits > 0 && properties.showBulkUpdateActions !== false ? (
       <div className="flex items-center justify-between gap-2 rounded-md border border-dashed px-3 py-2">

@@ -2,10 +2,12 @@
 // the card 25px per arrow press, so reaching the next column took about a dozen presses; here Left and Right jump to
 // the previous or next column, Up and Down move past one card.
 
+import type { Announcements, KeyboardCodes, KeyboardCoordinateGetter, Over, UniqueIdentifier } from '@dnd-kit/core';
+
 const ARROWS = ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'];
 
 /** The KeyboardSensor coordinate getter: the new drag coordinates for an arrow key, undefined for any other key. */
-export const kanbanCoordinates = (event, { context, currentCoordinates }) => {
+export const kanbanCoordinates: KeyboardCoordinateGetter = (event, { context, currentCoordinates }) => {
   const key = ARROWS.includes(event.key) ? event.key : ARROWS.includes(event.code) ? event.code : null;
   if (!key) return undefined;
   event.preventDefault?.();
@@ -33,8 +35,11 @@ export const kanbanCoordinates = (event, { context, currentCoordinates }) => {
 };
 
 /** Screen reader announcements in the board's own words (the card's title, the column's) instead of dnd-kit's ids. */
-export const kanbanAnnouncements = (cardTitle, columnTitle) => {
-  const where = (over) => (over ? columnTitle(over.id) : '');
+export const kanbanAnnouncements = (
+  cardTitle: (id: UniqueIdentifier) => string,
+  columnTitle: (id: UniqueIdentifier) => string
+): Announcements => {
+  const where = (over: Over | null) => (over ? columnTitle(over.id) : '');
   return {
     onDragStart: ({ active }) => `Picked up ${cardTitle(active.id)}.`,
     onDragOver: ({ active, over }) =>
@@ -47,7 +52,7 @@ export const kanbanAnnouncements = (cardTitle, columnTitle) => {
 
 /** The keys of a keyboard move: Space picks a card up (Enter is the card's click, as on any button), Space or Enter
  *  drops it, Escape cancels. dnd-kit's default took Enter to pick up too, so the keyboard could never activate a card. */
-export const KANBAN_KEYS = { start: ['Space'], cancel: ['Escape'], end: ['Space', 'Enter', 'Tab'] };
+export const KANBAN_KEYS: KeyboardCodes = { start: ['Space'], cancel: ['Escape'], end: ['Space', 'Enter', 'Tab'] };
 
 export const KANBAN_INSTRUCTIONS =
   'Press Enter to open a card. To move it, press Space, use the arrow keys to move it between columns, then Space or Enter to drop it. Escape cancels.';

@@ -1,9 +1,11 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { shallow } from 'zustand/shallow';
-import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
+import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import { SubcontainerContext, useSubcontainerContext } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
+import type { ContextSegment } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
@@ -16,6 +18,45 @@ import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/load
 import { useCanvasFit } from '@/AppBuilder/Widgets/Ui2/_shared/canvasFit';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
+
+type ListMode = 'list' | 'grid';
+
+/** What the list's actions read later, without going stale. */
+interface ListLive {
+  items: unknown[];
+  keys: string[];
+  idField: string;
+  setExposedVariables: WidgetProps['setExposedVariables'];
+  fireEvent: WidgetProps['fireEvent'];
+}
+
+/** What the list reads from the app store. */
+type ListStore = {
+  updateCustomResolvables: (
+    id: string,
+    values: Record<string, unknown>[],
+    key: string,
+    moduleId: string,
+    parentIndices: number[]
+  ) => void;
+  initExposedValueArrayForChildren: (id: string, count: number, moduleId: string, parentIndices: number[]) => void;
+  containerChildrenMapping?: Record<string, string[]>;
+};
+
+interface RowProps {
+  id: string;
+  index: number;
+  parentPath: ContextSegment[];
+  height: number;
+  fit: boolean;
+  width: number;
+  onPick: (index: number) => void;
+  selected: boolean;
+  look: ReturnType<typeof listLook>;
+  mode: ListMode;
+  showBorder: boolean;
+  darkMode?: boolean;
+}
 
 // shadcn/ui pack List view (experiment). Row-scoped like the native Listview: one canvas (the components parented to
 // the list) repeated per item, each row reading its item as {{listItem}}, and the rows' component values exposed as
@@ -37,7 +78,7 @@ const Row = ({
   mode,
   showBorder,
   darkMode,
-}) => {
+}: RowProps) => {
   // With dynamic height on (in an app), a row grows with its components, as the native Listview's rows do.
   const [rowRef, height] = useCanvasFit(fit, rowHeight, '[role=listitem]');
   const contextValue = useMemo(
@@ -79,7 +120,7 @@ const Row = ({
 
 const ROWS_PER_STEP = 100;
 
-export const ShadListView = (props) => {
+export const ShadListView = (props: WidgetProps) => {
   const { id, properties, styles, setExposedVariable, setExposedVariables, fireEvent, darkMode, dataCy } = props;
   // A pack widget created through the MCP carries only the properties it was given (the server has no defaults to
   // merge for pack types), so an unset property means its default: visible, enabled, not loading.
@@ -93,16 +134,19 @@ export const ShadListView = (props) => {
   const { moduleId } = useModuleContext();
   const { contextPath } = useSubcontainerContext();
   const parentIndices = useMemo(() => contextPath.map((segment) => segment.index), [contextPath]);
-  const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
-  const initExposedValueArrayForChildren = useStore((state) => state.initExposedValueArrayForChildren, shallow);
-  const childCount = useStore((state) => (state.containerChildrenMapping?.[id] || []).length);
+  const updateCustomResolvables = useStore((state: ListStore) => state.updateCustomResolvables, shallow);
+  const initExposedValueArrayForChildren = useStore(
+    (state: ListStore) => state.initExposedValueArrayForChildren,
+    shallow
+  );
+  const childCount = useStore((state: ListStore) => (state.containerChildrenMapping?.[id] || []).length);
 
-  const rootRef = useRef(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   useAutoHeight(props, rootRef);
   useDisableInert(rootRef, isDisabled);
   const look = listLook(styles);
 
-  const mode = properties.mode === 'grid' ? 'grid' : 'list';
+  const mode: ListMode = properties.mode === 'grid' ? 'grid' : 'list';
   const columns = mode === 'grid' ? Math.min(24, Math.max(1, Math.floor(Number(properties.columns)) || 1)) : 1;
   const rowHeight = Math.min(4000, Math.max(24, Number(properties.rowHeight) || 72));
   const gap = Math.min(200, Math.max(0, Number(properties.gap) || 0));
@@ -143,7 +187,7 @@ export const ShadListView = (props) => {
   const itemsKey = stringify(items);
   const parentKey = parentIndices.join(',');
   const signature = `${itemsKey}|${childCount}|${parentKey}`;
-  const [published, setPublished] = useState(null);
+  const [published, setPublished] = useState<string | null>(null);
   useLayoutEffect(() => {
     if (items.length) {
       updateCustomResolvables(
@@ -160,13 +204,13 @@ export const ShadListView = (props) => {
   useExposedValueBatch(items.length);
 
   // Selection by item key, so it survives a refetch that reorders or reloads the data.
-  const [selectedKey, setSelectedKey] = useState(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const keys = items.map((item, index) => itemKey(item, idField, index));
   const selectedIndex = selectedKey === null ? -1 : keys.indexOf(selectedKey);
 
-  const live = useRef({});
+  const live = useRef<ListLive>({ items, keys, idField, setExposedVariables, fireEvent });
   live.current = { items, keys, idField, setExposedVariables, fireEvent };
-  const pick = (index, { fire = true } = {}) => {
+  const pick = (index: number, { fire = true }: { fire?: boolean } = {}) => {
     const { items: now, keys: nowKeys, setExposedVariables: expose, fireEvent: fireNow } = live.current;
     if (index < 0 || index >= now.length) return;
     const state = useStore.getState();
@@ -176,7 +220,8 @@ export const ShadListView = (props) => {
     setSelectedKey(nowKeys[index]);
     expose({
       selectedItem: now[index],
-      selectedItemId: now[index] && typeof now[index] === 'object' ? now[index][live.current.idField] ?? null : null,
+      selectedItemId:
+        now[index] && typeof now[index] === 'object' ? (now[index] as Resolved)[live.current.idField] ?? null : null,
       selectedRecord: record,
       selectedRecordId: index,
     });
@@ -194,7 +239,7 @@ export const ShadListView = (props) => {
     });
   };
 
-  const goTo = (target, { fire = true } = {}) => {
+  const goTo = (target: unknown, { fire = true }: { fire?: boolean } = {}) => {
     const next = Math.max(1, Math.floor(Number(target)) || 1);
     setPage(next);
     setExposedVariable('pageIndex', next);
@@ -203,21 +248,22 @@ export const ShadListView = (props) => {
 
   useEffect(() => {
     setExposedVariables({
-      selectItem: async (itemId) => {
+      selectItem: async (itemId: unknown) => {
         const index = live.current.items.findIndex(
-          (item) => item && typeof item === 'object' && String(item[live.current.idField]) === String(itemId)
+          (item) =>
+            item && typeof item === 'object' && String((item as Resolved)[live.current.idField]) === String(itemId)
         );
         if (index >= 0) pick(index, { fire: false });
       },
       clearSelection: async () => clearSelection(),
       // As on the native Table, setPage does not fire onPageChanged.
-      setPage: async (target) => goTo(target, { fire: false }),
+      setPage: async (target: unknown) => goTo(target, { fire: false }),
       pageIndex: 1,
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Measure the width a row's canvas lays its components out at.
-  const gridRef = useRef(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const [itemWidth, setItemWidth] = useState(0);
   useLayoutEffect(() => {
     const el = gridRef.current;

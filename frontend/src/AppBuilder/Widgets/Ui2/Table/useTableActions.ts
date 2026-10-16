@@ -1,9 +1,26 @@
 import { useEffect } from 'react';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell, toCsv } from './tableModel';
+import type { Entry, FireOption, LiveRef, Sort, WithEdits } from './types';
 
-const download = (name, content, mime) => {
+export type DownloadType = 'csv' | 'json';
+
+interface UseTableActionsArgs {
+  live: LiveRef;
+  componentName?: string;
+  withEdits: WithEdits;
+  setExposedVariables: WidgetProps['setExposedVariables'];
+  goTo: (target: unknown, options?: FireOption) => void;
+  select: (keys: Set<string>, focus: string | null) => void;
+  applyFilterList: (list: unknown, options?: FireOption) => void;
+  applySort: (next: Sort | null, options?: FireOption) => void;
+  setSearchInput: (text: string) => void;
+  discard: (options?: FireOption) => void;
+}
+
+const download = (name: string, content: string, mime: string) => {
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -27,9 +44,9 @@ export const useTableActions = ({
   applySort,
   setSearchInput,
   discard,
-}) => {
+}: UseTableActionsArgs) => {
   const exportRows = () => live.current.processed.map(withEdits);
-  const runDownload = (type) => {
+  const runDownload = (type: DownloadType) => {
     const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
     const base = `${componentName || 'table'}_${stamp}`;
     if (type === 'json') download(`${base}.json`, stringify(exportRows(), 2), 'application/json');
@@ -38,12 +55,13 @@ export const useTableActions = ({
 
   useEffect(() => {
     // A column key is text or a number; anything else (an action called with a list as the key) matches nothing.
-    const isKey = (key) => (typeof key === 'string' && key !== '') || typeof key === 'number';
-    const byKeyValue = (key, value) =>
+    const isKey = (key: unknown): key is string | number =>
+      (typeof key === 'string' && key !== '') || typeof key === 'number';
+    const byKeyValue = (key: unknown, value: unknown): Entry[] =>
       isKey(key) ? live.current.entries.filter((entry) => readCell(entry.row, key) == value) : []; // eslint-disable-line eqeqeq
     // The rows whose cell equals any of `values`, in one pass over the rows: matching each value against every row took
     // minutes for 10k values on 10k rows. Cells and values compare as text, as == does for text and numbers.
-    const byKeyValues = (key, values) => {
+    const byKeyValues = (key: unknown, values: unknown): Entry[] => {
       if (!isKey(key)) return [];
       const wanted = new Set(
         (Array.isArray(values) ? values : [values])
@@ -64,18 +82,18 @@ export const useTableActions = ({
       dataUpdates: [],
       lastActionClicked: {},
       // As on the native Table, setPage does not fire onPageChanged.
-      setPage: async (target) => goTo(target, { fire: false }),
-      selectRow: async (key, value) => {
+      setPage: async (target: unknown) => goTo(target, { fire: false }),
+      selectRow: async (key: unknown, value: unknown) => {
         const [match] = byKeyValue(key, value);
         if (match) select(new Set([match.key]), match.key);
       },
       deselectRow: async () => select(new Set(), null),
-      selectRows: async (key, values) => {
+      selectRows: async (key: unknown, values: unknown) => {
         const keys = new Set(live.current.selected);
         byKeyValues(key, values).forEach((entry) => keys.add(entry.key));
         select(keys, live.current.focusKey);
       },
-      deselectRows: async (key, values) => {
+      deselectRows: async (key: unknown, values: unknown) => {
         const keys = new Set(live.current.selected);
         byKeyValues(key, values).forEach((entry) => keys.delete(entry.key));
         select(keys, live.current.focusKey);
@@ -83,15 +101,17 @@ export const useTableActions = ({
       selectAllRows: async () =>
         select(new Set(live.current.processed.map((entry) => entry.key)), live.current.focusKey),
       deselectAllRows: async () => select(new Set(), null),
-      setFilters: async (list) => applyFilterList(list),
+      setFilters: async (list: unknown) => applyFilterList(list),
       clearFilters: async () => applyFilterList([]),
-      setSort: async (columnKey, direction) =>
+      setSort: async (columnKey: unknown, direction: unknown) =>
         applySort(
-          isSet(columnKey) && ['asc', 'desc'].includes(direction) ? { key: String(columnKey), direction } : null
+          isSet(columnKey) && (direction === 'asc' || direction === 'desc')
+            ? { key: String(columnKey), direction }
+            : null
         ),
-      setSearchText: async (text) => setSearchInput(String(text ?? '')),
+      setSearchText: async (text: unknown) => setSearchInput(String(text ?? '')),
       discardChanges: async () => discard({ fire: false }),
-      downloadTableData: async (type) =>
+      downloadTableData: async (type: unknown) =>
         runDownload(
           String(type ?? 'csv')
             .toLowerCase()

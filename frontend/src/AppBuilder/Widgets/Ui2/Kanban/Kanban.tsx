@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DndContext,
@@ -10,6 +10,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import type { CollisionDetection, DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -21,8 +22,26 @@ import { KANBAN_INSTRUCTIONS, KANBAN_KEYS, kanbanAnnouncements, kanbanCoordinate
 import { SHADOWS, isSet, kanbanLook, px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import type { BoardCard, BoardColumn, CardMove, CardRow } from './kanbanBoard';
 import { CardBody, CustomCardBody } from './KanbanCard';
+import type { CardFields } from './KanbanCard';
 import { KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
+import { useBoardSize } from './useBoardSize';
+
+/** What the board's actions read later, without going stale. */
+interface KanbanLive {
+  columns: BoardColumn[];
+  setExposedVariable: WidgetProps['setExposedVariable'];
+  fireEvent: WidgetProps['fireEvent'];
+  statusField: string;
+  idField: string;
+}
+
+/** What the board reads from the app store. */
+type KanbanStore = {
+  updateCustomResolvables: (id: string, values: Record<string, unknown>[], key: string, moduleId: string) => void;
+};
 
 // shadcn/ui pack Kanban (experiment): a data-driven board. Columns are values of a status field and cards are rows
 // of data shown by the fields the author maps (title, description, badge, tags, progress, meta, avatar), so an agent
@@ -33,20 +52,20 @@ import { KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
 
 // A field name is text (or a number): anything else bound there (a list of rows) was turned into a 150 KB key for
 // every card, which froze the board.
-const fieldName = (value, fallback) =>
+const fieldName = (value: unknown, fallback: string): string =>
   typeof value === 'string' && value.trim() ? value : typeof value === 'number' ? String(value) : fallback;
 
 /** The narrowest a column gets before the board scrolls: 200px, 160px on a board of six or more stages, and down to
  *  140px when that lets every stage fit the board (three stages in a 620px half of a page cut the third at the edge,
  *  2026-10-14). 16px gaps between columns. */
-export const columnMinimum = (count, boardWidth) => {
+export const columnMinimum = (count: number, boardWidth: number): number => {
   const base = count >= 6 ? 160 : 200;
   if (!(boardWidth > 0) || count < 1) return base;
   const share = Math.floor((boardWidth - 16 * (count - 1)) / count);
   return Math.max(140, Math.min(base, share));
 };
 
-const strip = (card) => {
+const strip = (card: BoardCard | null): CardRow => {
   if (!card) return {};
   const { __key, ...plain } = card;
   return plain;
@@ -59,22 +78,22 @@ const RIGHT_FADE = {
 
 /** Where a drop lands: what is under the pointer, a card first, then a column (a folded column is a 44px strip that
  *  closestCorners passed over for a card nearby, so drops on it were lost); off the board, the nearest corners. */
-export const kanbanCollision = (args) => {
+export const kanbanCollision: CollisionDetection = (args) => {
   const within = pointerWithin(args);
   const cards = within.filter((c) => c.data?.droppableContainer?.data?.current?.type === 'card');
   if (cards.length) return cards;
   return within.length ? within : closestCorners(args);
 };
 
-export const ShadKanban = (props) => {
+export const ShadKanban = (props: WidgetProps) => {
   const { properties, styles, setExposedVariable, setExposedVariables, fireEvent } = props;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   // Dynamic height off: the board keeps its drawn height and each column scrolls inside it.
   const fixed = !fitsContentInView(props.componentType ?? 'ShadKanban', properties);
   const statusField = fieldName(properties.statusField, 'status');
   const idField = fieldName(properties.idField, 'id');
-  const fields = {
+  const fields: CardFields = {
     title: fieldName(properties.titleField, 'title'),
     description: fieldName(properties.descriptionField, ''),
     badge: fieldName(properties.badgeField, ''),
@@ -92,13 +111,13 @@ export const ShadKanban = (props) => {
   );
   const [columns, setColumns] = useState(fromData);
   useEffect(() => setColumns(fromData), [fromData]);
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState<BoardCard | null>(null);
   // The card whose details show (a details field is mapped): a click opens a card's details, a second click closes them.
-  const [openKey, setOpenKey] = useState(null);
-  const [lastMove, setLastMove] = useState(null);
-  const [activeKey, setActiveKey] = useState(null);
-  const [expandedKeys, setExpandedKeys] = useState(() => new Set());
-  const toggleExpanded = (key) =>
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const [lastMove, setLastMove] = useState<CardMove | null>(null);
+  const [activeKey, setActiveKey] = useState<UniqueIdentifier | null>(null);
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(() => new Set());
+  const toggleExpanded = (key: string) =>
     setExpandedKeys((current) => {
       const next = new Set(current);
       if (next.has(key)) next.delete(key);
@@ -107,9 +126,9 @@ export const ShadKanban = (props) => {
     });
   // Folded columns: those listed in collapsedColumns at start (again whenever that list changes), then the user's.
   const startCollapsed = stringify(list(properties.collapsedColumns).map(String));
-  const [collapsedColumns, setCollapsedColumns] = useState(() => new Set(JSON.parse(startCollapsed)));
+  const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(() => new Set(JSON.parse(startCollapsed)));
   useEffect(() => setCollapsedColumns(new Set(JSON.parse(startCollapsed))), [startCollapsed]);
-  const toggleColumn = (columnId) =>
+  const toggleColumn = (columnId: string) =>
     setCollapsedColumns((current) => {
       const next = new Set(current);
       if (next.has(columnId)) next.delete(columnId);
@@ -120,10 +139,10 @@ export const ShadKanban = (props) => {
   const columnWidth = isSet(properties.columnWidth) ? px(properties.columnWidth) : undefined;
 
   // Actions run later, from event handlers and queries: they read the board and the widget's callbacks from refs.
-  const live = useRef({});
+  const live = useRef<KanbanLive>({ columns, setExposedVariable, fireEvent, statusField, idField });
   live.current = { columns, setExposedVariable, fireEvent, statusField, idField };
   /** Shows a change on the board and publishes it: the board's cards, `exposed` (e.g. lastAddedCard), then `event`. */
-  const commit = (next, exposed, event) => {
+  const commit = (next: BoardColumn[], exposed: Record<string, unknown>, event?: string) => {
     const { setExposedVariable: expose, fireEvent: fire } = live.current;
     live.current.columns = next;
     setColumns(next);
@@ -133,23 +152,23 @@ export const ShadKanban = (props) => {
     // The native Kanban's onUpdate follows every change to the cards.
     if (event) fire('onUpdate');
   };
-  const doAdd = (card, columnId) => {
+  const doAdd = (card: unknown, columnId: unknown) => {
     const { columns: cols, statusField: sf, idField: idf } = live.current;
     const result = addCard(cols, card ?? {}, isSet(columnId) ? String(columnId) : undefined, sf, idf);
     commit(result.columns, { lastAddedCard: result.card }, 'onCardAdded');
   };
-  const doUpdate = (id, values) => {
+  const doUpdate = (id: unknown, values: unknown) => {
     const { columns: cols, statusField: sf, idField: idf } = live.current;
     const result = updateCard(cols, id, values ?? {}, sf, idf);
     if (result.card) commit(result.columns, { lastUpdatedCard: result.card }, 'onCardUpdated');
   };
-  const doDelete = (id) => {
+  const doDelete = (id: unknown) => {
     const result = deleteCard(live.current.columns, id);
     if (!result.card) return;
     setSelected((current) => (current && current.__key === String(id) ? null : current));
     commit(result.columns, { lastRemovedCard: result.card }, 'onCardRemoved');
   };
-  const doMove = (id, toColumnId, beforeKey = null) => {
+  const doMove = (id: unknown, toColumnId: unknown, beforeKey: unknown = null) => {
     const { columns: cols, statusField: sf } = live.current;
     const { columns: next, move } = moveCard(cols, id, toColumnId, beforeKey, sf);
     if (!move) return;
@@ -162,16 +181,16 @@ export const ShadKanban = (props) => {
     lastSelectedCard: strip(selected),
     collapsedColumns: [...collapsedColumns],
     lastCardMovement: lastMove ?? {},
-    addCard: async (card, columnId) => doAdd(card, columnId),
-    updateCardData: async (id, values) => doUpdate(id, values),
-    moveCard: async (id, columnId) => doMove(id, columnId),
-    deleteCard: async (id) => doDelete(id),
+    addCard: async (card: unknown, columnId: unknown) => doAdd(card, columnId),
+    updateCardData: async (id: unknown, values: unknown) => doUpdate(id, values),
+    moveCard: async (id: unknown, columnId: unknown) => doMove(id, columnId),
+    deleteCard: async (id: unknown) => doDelete(id),
   });
 
   // Custom card content: every card renders the board's one card canvas (the components dropped on the first card)
   // with its own row of cardData, as a list view renders its rows. The canvas is laid out at the card's width.
   const { moduleId } = useModuleContext();
-  const updateCustomResolvables = useStore((state) => state.updateCustomResolvables);
+  const updateCustomResolvables = useStore((state: KanbanStore) => state.updateCustomResolvables);
   const custom = properties.cardLayout === 'custom';
   const editing = props.currentMode === 'edit';
   const cardHeight = Number(properties.cardHeight) || 96;
@@ -195,50 +214,10 @@ export const ShadKanban = (props) => {
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [custom, columns, props.id, moduleId]);
-  const boardRef = useRef(null);
-  // Columns that run past the board's right edge fade out there, so the board reads as scrolling sideways (macOS hides
-  // the scrollbar, and a column cut at the edge looks broken).
-  const [moreRight, setMoreRight] = useState(false);
-  const [boardWidth, setBoardWidth] = useState(0);
-  // The board can first draw after a loading state, so the measuring follows the element itself: with an empty
-  // dependency list it never attached then, and neither the fade nor the column minimum followed the board.
-  const [boardEl, setBoardEl] = useState(null);
-  const boardNode = useCallback((el) => {
-    boardRef.current = el;
-    setBoardEl(el);
-  }, []);
-  useEffect(() => {
-    const el = boardEl;
-    if (!el) return undefined;
-    const check = () => {
-      setMoreRight(el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
-      setBoardWidth(el.clientWidth);
-    };
-    check();
-    el.addEventListener('scroll', check, { passive: true });
-    const observer = new ResizeObserver(check);
-    observer.observe(el);
-    return () => {
-      el.removeEventListener('scroll', check);
-      observer.disconnect();
-    };
-  }, [boardEl]);
-  const [cardWidth, setCardWidth] = useState(0);
-  useLayoutEffect(() => {
-    if (!custom || !boardRef.current) return undefined;
-    // A column's content box less the card's 1px borders; every column has the same width.
-    const measure = () => {
-      const column = boardRef.current?.querySelector(':scope > [data-collapsed="false"]');
-      if (column) setCardWidth(Math.max(0, column.clientWidth - 24 - 2));
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(boardRef.current);
-    return () => observer.disconnect();
-  }, [custom, columns.length, collapsedColumns]);
+  const { boardNode, moreRight, boardWidth, cardWidth } = useBoardSize(custom, columns.length, collapsedColumns);
   const fitCards = custom && !editing && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
   const renderBody = custom
-    ? (card) => (
+    ? (card: BoardCard) => (
         <CustomCardBody
           id={props.id}
           index={order.get(card.__key) ?? 0}
@@ -249,7 +228,7 @@ export const ShadKanban = (props) => {
           darkMode={props.darkMode}
         />
       )
-    : (card) => (
+    : (card: BoardCard) => (
         <CardBody
           card={card}
           fields={fields}
@@ -269,12 +248,12 @@ export const ShadKanban = (props) => {
     useSensor(KeyboardSensor, { coordinateGetter: kanbanCoordinates, keyboardCodes: KANBAN_KEYS })
   );
   // What a screen reader hears while a card moves: its title and the column's, not dnd-kit's ids.
-  const titleOfCard = (key) => {
+  const titleOfCard = (key: UniqueIdentifier) => {
     const card = live.current.columns.flatMap((c) => c.cards).find((c) => c.__key === String(key));
     const t = card?.[fields.title];
     return typeof t === 'string' || typeof t === 'number' ? String(t) : 'card';
   };
-  const titleOfColumn = (overId) => {
+  const titleOfColumn = (overId: UniqueIdentifier) => {
     const id = String(overId);
     const cols = live.current.columns;
     const column = id.startsWith('col-')
@@ -287,7 +266,7 @@ export const ShadKanban = (props) => {
     screenReaderInstructions: { draggable: KANBAN_INSTRUCTIONS },
   };
   const activeCard = activeKey ? columns.flatMap((c) => c.cards).find((c) => c.__key === activeKey) : null;
-  const select = (card) => {
+  const select = (card: BoardCard) => {
     if (fields.details) setOpenKey((current) => (current === card.__key ? null : card.__key));
     setSelected(card);
     setExposedVariable('lastSelectedCard', strip(card));
@@ -295,13 +274,13 @@ export const ShadKanban = (props) => {
   };
   const onAdd =
     properties.allowAdd === true && enabled
-      ? (column) => {
+      ? (column: BoardColumn) => {
           setExposedVariable('addCardColumn', column.id);
           fireEvent('onAddCardClick');
         }
       : undefined;
-  const onDelete = properties.allowDelete === true && enabled ? (card) => doDelete(card.__key) : undefined;
-  const onDragEnd = ({ active, over }) => {
+  const onDelete = properties.allowDelete === true && enabled ? (card: BoardCard) => doDelete(card.__key) : undefined;
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveKey(null);
     const target = over?.data?.current;
     if (!target) return;
@@ -312,6 +291,7 @@ export const ShadKanban = (props) => {
   // came back was lost, and the board flashed on every move. The board takes no input until the data is back.
   const reloading = !!properties.loadingState && columns.some((c) => c.cards.length);
   const shellProps = reloading ? { ...props, properties: { ...properties, loadingState: false } } : props;
+  const portalRoot = getPortalRoot();
   return (
     <Shell {...shellProps} innerRef={ref} className={cn(fixed && 'h-full', reloading && 'relative')}>
       {reloading ? (
@@ -372,19 +352,21 @@ export const ShadKanban = (props) => {
         {/* The preview renders at the body: ToolJet places widgets with CSS transforms, and position: fixed inside a
             transformed ancestor is offset by it, so the card trailed far from the pointer. The portal root carries
             .tj-shadcn, so the preview keeps the pack's styles; DragOverlay sizes it to the dragged card. */}
-        {createPortal(
-          <DragOverlay>
-            {activeCard ? (
-              <div
-                style={{ ...look.vars, ...look.card, boxShadow: SHADOWS.lg }}
-                className={cn('h-full w-full rotate-1 overflow-hidden border text-card-foreground', padding)}
-              >
-                {renderBody(activeCard)}
-              </div>
-            ) : null}
-          </DragOverlay>,
-          getPortalRoot()
-        )}
+        {portalRoot
+          ? createPortal(
+              <DragOverlay>
+                {activeCard ? (
+                  <div
+                    style={{ ...look.vars, ...look.card, boxShadow: SHADOWS.lg }}
+                    className={cn('h-full w-full rotate-1 overflow-hidden border text-card-foreground', padding)}
+                  >
+                    {renderBody(activeCard)}
+                  </div>
+                ) : null}
+              </DragOverlay>,
+              portalRoot
+            )
+          : null}
       </DndContext>
     </Shell>
   );

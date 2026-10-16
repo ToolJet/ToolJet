@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell } from './tableModel';
+import type { Editing, Edits, Entry, FireOption, LiveRef, Row, TableColumn } from './types';
+
+interface UseTableEditsArgs {
+  data: Row[];
+  live: LiveRef;
+  setExposedVariables: WidgetProps['setExposedVariables'];
+  fireEvent: WidgetProps['fireEvent'];
+}
 
 /** Cell edits: an overlay on the data until it changes, the cell being edited, and the changeSet they publish. */
-export const useTableEdits = ({ data, live, setExposedVariables, fireEvent }) => {
-  const [edits, setEdits] = useState(() => new Map());
+export const useTableEdits = ({ data, live, setExposedVariables, fireEvent }: UseTableEditsArgs) => {
+  const [edits, setEdits] = useState<Edits>(() => new Map());
   useEffect(() => setEdits(new Map()), [data]);
-  const withEdits = (entry) => (edits.has(entry.key) ? { ...entry.row, ...edits.get(entry.key) } : entry.row);
+  const withEdits = (entry: Entry): Row =>
+    edits.has(entry.key) ? { ...entry.row, ...edits.get(entry.key) } : entry.row;
 
-  const [editing, setEditing] = useState(null);
-  const exposeEdits = (next) => {
+  const [editing, setEditing] = useState<Editing | null>(null);
+  const exposeEdits = (next: Edits) => {
     const { entries: all } = live.current;
-    const changeSet = {};
-    const dataUpdates = [];
+    const changeSet: Record<number, Row | undefined> = {};
+    const dataUpdates: Row[] = [];
     all.forEach((entry) => {
       if (!next.has(entry.key)) return;
       changeSet[entry.index] = next.get(entry.key);
@@ -23,7 +33,7 @@ export const useTableEdits = ({ data, live, setExposedVariables, fireEvent }) =>
       updatedData: all.map((entry) => (next.has(entry.key) ? { ...entry.row, ...next.get(entry.key) } : entry.row)),
     });
   };
-  const commitEdit = (entry, column, value) => {
+  const commitEdit = (entry: Entry, column: TableColumn, value: unknown) => {
     setEditing(null);
     const before = readCell(withEdits(entry), column.key);
     if (before === value || (before == null && (value === '' || value == null))) return; // eslint-disable-line eqeqeq
@@ -33,8 +43,8 @@ export const useTableEdits = ({ data, live, setExposedVariables, fireEvent }) =>
     exposeEdits(next);
     fireEvent('onCellValueChanged');
   };
-  const discard = ({ fire = true } = {}) => {
-    const next = new Map();
+  const discard = ({ fire = true }: FireOption = {}) => {
+    const next: Edits = new Map();
     setEdits(next);
     exposeEdits(next);
     if (fire) fireEvent('onCancelChanges');

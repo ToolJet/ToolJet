@@ -1,43 +1,66 @@
 import React from 'react';
+import type { KeyboardEvent } from 'react';
 import { Check } from 'lucide-react';
-import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { TablerIcon } from '@/AppBuilder/Widgets/Ui2/_shared/TablerIcon';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import type { Tab, TabId } from './tabsModel';
 
-const TabIcon = ({ tab }) =>
+export type TabsVariant = 'pills' | 'underline' | 'steps';
+
+const TabIcon = ({ tab }: { tab: Tab }) =>
   tab?.iconVisibility && tab?.icon ? (
-    <TablerIcon iconName={tab.icon} style={{ width: 16, height: 16 }} stroke={1.75} />
+    <TablerIcon iconName={String(tab.icon)} style={{ width: 16, height: 16 }} stroke={1.75} />
   ) : null;
 
 /** The WAI-ARIA tabs keyboard pattern on a tab strip: Left and Right arrows move to the previous or next enabled
  *  tab and select it, Home and End to the first and last. Only the selected tab is a Tab stop (tabIndex below). */
-const tabKeys = (tabs, currentTab, onPick, canPick) => (event) => {
-  const moves = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1, Home: 'first', End: 'last' };
-  const move = moves[event.key];
-  if (move === undefined) return;
-  const enabled = tabs.filter(canPick);
-  if (!enabled.length) return;
-  const at = enabled.findIndex((tab) => tab.id == currentTab); // eslint-disable-line eqeqeq
-  const next =
-    move === 'first'
-      ? enabled[0]
-      : move === 'last'
-      ? enabled[enabled.length - 1]
-      : enabled[(Math.max(at, 0) + move + enabled.length) % enabled.length];
-  event.preventDefault();
-  if (next.id != currentTab) onPick(next); // eslint-disable-line eqeqeq
-  const strip = event.currentTarget;
-  requestAnimationFrame(() =>
-    strip.querySelector(`[data-tab-id="${String(next.id).replace(/["\\]/g, '\\$&')}"]`)?.focus()
-  );
-};
+const tabKeys =
+  (tabs: Tab[], currentTab: TabId | undefined, onPick: (tab: Tab) => void, canPick: (tab: Tab) => boolean) =>
+  (event: KeyboardEvent<HTMLDivElement>) => {
+    const moves: Record<string, number | 'first' | 'last'> = {
+      ArrowRight: 1,
+      ArrowDown: 1,
+      ArrowLeft: -1,
+      ArrowUp: -1,
+      Home: 'first',
+      End: 'last',
+    };
+    const move = moves[event.key];
+    if (move === undefined) return;
+    const enabled = tabs.filter(canPick);
+    if (!enabled.length) return;
+    const at = enabled.findIndex((tab) => tab.id == currentTab); // eslint-disable-line eqeqeq
+    const next =
+      move === 'first'
+        ? enabled[0]
+        : move === 'last'
+        ? enabled[enabled.length - 1]
+        : enabled[(Math.max(at, 0) + move + enabled.length) % enabled.length];
+    event.preventDefault();
+    if (next.id != currentTab) onPick(next); // eslint-disable-line eqeqeq
+    const strip = event.currentTarget;
+    requestAnimationFrame(() =>
+      strip.querySelector<HTMLElement>(`[data-tab-id="${String(next.id).replace(/["\\]/g, '\\$&')}"]`)?.focus()
+    );
+  };
 
 const TAB_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 /** The tab strip in one of the three styles. Stays 50px tall (the reflow's TABS_TAB_BAR_HEIGHT). */
-export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, onPick }) => {
+interface TabStripProps {
+  tabs: Tab[];
+  currentTab: TabId | undefined;
+  variant: TabsVariant;
+  align: unknown;
+  stepIndex: number;
+  linear: boolean;
+  onPick: (tab: Tab) => void;
+}
+
+export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, onPick }: TabStripProps) => {
   const justify = align === 'center' ? 'justify-center' : 'justify-start';
   const stretch = align === 'stretch';
-  const canPick = (tab) => !tab.disable && (variant !== 'steps' || !linear || tabs.indexOf(tab) <= stepIndex);
+  const canPick = (tab: Tab) => !tab.disable && (variant !== 'steps' || !linear || tabs.indexOf(tab) <= stepIndex);
   const onKeyDown = tabKeys(tabs, currentTab, onPick, canPick);
   if (variant === 'steps') {
     return (

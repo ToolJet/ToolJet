@@ -2,8 +2,21 @@
 // email, a badge and a button. In Grid layout the same row squashed into a narrow card, so switching the layout moves
 // an untouched sample card into a stacked card (and back). A card the author has changed is left as it is.
 
+/** A child's box in the item canvas's grid: left and width in columns of 43, top and height in px. */
+export interface SampleLayout {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+/** A layout as stored on a component: the box fields, of whatever value the editor wrote. */
+type Box = Partial<Record<keyof SampleLayout, unknown>>;
+
+type SampleMode = 'list' | 'grid';
+
 // Layouts are in the item canvas's grid: left and width in columns of 43, top and height in px.
-export const SAMPLE_CARD = {
+export const SAMPLE_CARD: Record<SampleMode, { type: string; layout: SampleLayout }[]> = {
   list: [
     { type: 'ShadAvatar', layout: { top: 16, left: 1, width: 3, height: 40 } },
     { type: 'ShadText', layout: { top: 14, left: 5, width: 20, height: 22 } },
@@ -21,19 +34,19 @@ export const SAMPLE_CARD = {
 };
 
 // The item height each arrangement needs.
-export const SAMPLE_ITEM_HEIGHT = { list: 72, grid: 204 };
+export const SAMPLE_ITEM_HEIGHT: Record<SampleMode, number> = { list: 72, grid: 204 };
 
-const sameBox = (a = {}, b = {}) =>
-  ['top', 'left', 'width', 'height'].every((key) => Number(a[key]) === Number(b[key]));
+const sameBox = (a: Box = {}, b: Box = {}) =>
+  (['top', 'left', 'width', 'height'] as const).every((key) => Number(a[key]) === Number(b[key]));
 
 /** The new layouts ({ [id]: layout }) for a List view's children when its layout switches to `toMode`, or null when
  *  they are not the untouched sample card of the other layout. `children` is [{ id, type, layout }]. */
-export const sampleCardLayouts = (children, toMode) => {
-  const to = toMode === 'grid' ? 'grid' : 'list';
+export const sampleCardLayouts = (children: unknown, toMode: unknown): Record<string, Box> | null => {
+  const to: SampleMode = toMode === 'grid' ? 'grid' : 'list';
   const from = SAMPLE_CARD[to === 'grid' ? 'list' : 'grid'];
   if (!Array.isArray(children) || children.length !== from.length) return null;
   const left = [...children];
-  const layouts = {};
+  const layouts: Record<string, Box> = {};
   for (let i = 0; i < from.length; i += 1) {
     const at = left.findIndex((child) => child.type === from[i].type && sameBox(child.layout, from[i].layout));
     if (at < 0) return null;

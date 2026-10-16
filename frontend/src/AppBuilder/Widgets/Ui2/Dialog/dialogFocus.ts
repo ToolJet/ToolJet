@@ -3,12 +3,15 @@
 // closing it left focus nowhere. A strict trap would also steal focus from the pack's popovers (a select list, a
 // calendar), which render outside the dialog; this one only wraps Tab at the dialog's ends.
 
+/** An element that may take focus (an HTML or SVG element has focus(); others do not). */
+export type Focusable = Element & Partial<HTMLOrSVGElement>;
+
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-const hidden = (el, root) => {
-  for (let n = el; n && n !== root.parentElement; n = n.parentElement) {
-    if (n.hidden || n.getAttribute?.('aria-hidden') === 'true') return true;
+const hidden = (el: Element, root: Element): boolean => {
+  for (let n: Element | null = el; n && n !== root.parentElement; n = n.parentElement) {
+    if ((n instanceof HTMLElement && n.hidden) || n.getAttribute?.('aria-hidden') === 'true') return true;
     const cs = typeof getComputedStyle === 'function' ? getComputedStyle(n) : null;
     if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return true;
   }
@@ -16,12 +19,12 @@ const hidden = (el, root) => {
 };
 
 /** The elements Tab reaches inside `root`, in order. */
-export const focusables = (root) =>
-  root ? [...root.querySelectorAll(FOCUSABLE)].filter((el) => !hidden(el, root)) : [];
+export const focusables = (root: Element | null | undefined): HTMLElement[] =>
+  root ? [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => !hidden(el, root)) : [];
 
 /** A keydown handler's work: Tab from the last field goes to the first, Shift+Tab from the first to the last, and Tab
  *  with focus lost to the page body comes back into the dialog. Focus elsewhere (a popover, the editor) is left. */
-export const trapTab = (event, root) => {
+export const trapTab = (event: KeyboardEvent, root: Element | null | undefined): boolean => {
   if (event.key !== 'Tab' || !root) return false;
   const active = typeof document !== 'undefined' ? document.activeElement : null;
   const inside = !!active && root.contains(active);
@@ -30,10 +33,10 @@ export const trapTab = (event, root) => {
   if (!list.length) return false;
   const first = list[0];
   const last = list[list.length - 1];
-  let target = null;
+  let target: HTMLElement | null = null;
   if (!inside) target = event.shiftKey ? last : first;
   else if (!event.shiftKey && active === last) target = first;
-  else if (event.shiftKey && (active === first || active === root || !list.includes(active))) target = last;
+  else if (event.shiftKey && (active === first || active === root || !list.some((el) => el === active))) target = last;
   if (!target) return false;
   event.preventDefault();
   target.focus();
@@ -42,9 +45,9 @@ export const trapTab = (event, root) => {
 
 // What opened a dialog: the last element focused or pressed outside any dialog. By the time the dialog's own effect
 // runs, react-bootstrap has already moved focus into it; Safari does not focus a pressed button at all.
-let lastOutside = null;
+let lastOutside: Focusable | null = null;
 let listening = false;
-const remember = (e) => {
+const remember = (e: Event) => {
   const el = e.target instanceof Element ? e.target.closest(FOCUSABLE) || e.target : null;
   if (el && !el.closest('.modal, [data-radix-popper-content-wrapper]')) lastOutside = el;
 };
@@ -55,4 +58,4 @@ export const watchOpeners = () => {
   document.addEventListener('pointerdown', remember, true);
 };
 /** The element to give focus back to when a dialog that just opened closes. */
-export const openerOf = () => (lastOutside?.isConnected ? lastOutside : null);
+export const openerOf = (): Focusable | null => (lastOutside?.isConnected ? lastOutside : null);

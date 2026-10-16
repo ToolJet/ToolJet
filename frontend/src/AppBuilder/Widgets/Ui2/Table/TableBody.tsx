@@ -1,10 +1,46 @@
 import React from 'react';
+import type { CSSProperties, Dispatch, MutableRefObject, SetStateAction } from 'react';
+import type { VirtualItem } from '@tanstack/react-virtual';
 import { Inbox } from 'lucide-react';
 import { Checkbox, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { cellStyleFor, readCell } from './tableModel';
+import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { CellBoundary, CellEditor, MUTED, ROW_BORDER, renderCell } from './TableCells';
+import type { Editing, Edits, Entry, OnAction, Resolve, Row, TableColumn, TableFilter, WithEdits } from './types';
+
+interface TableBodyProps {
+  properties: Resolved;
+  isLoading: boolean;
+  isDisabled: boolean;
+  colCount: number;
+  rowHeight: number;
+  rendered: Entry[];
+  virtual: boolean;
+  virtualItems: VirtualItem[];
+  padTop: number;
+  padBottom: number;
+  shownColumns: TableColumn[];
+  withEdits: WithEdits;
+  selected: Set<string>;
+  bulk: boolean;
+  allowSelection: boolean;
+  striped: boolean;
+  bordered: boolean;
+  clickRow: (entry: Entry) => void;
+  hoverRow: (entry: Entry) => void;
+  hoveredRef: MutableRefObject<string | null>;
+  toggleBulk: (entry: Entry) => void;
+  editing: Editing | null;
+  setEditing: Dispatch<SetStateAction<Editing | null>>;
+  edits: Edits;
+  commitEdit: (entry: Entry, column: TableColumn, value: unknown) => void;
+  resolve: Resolve;
+  onAction: OnAction;
+  searchText: string;
+  filters: TableFilter[];
+}
 
 export const TableBody = ({
   properties,
@@ -36,13 +72,13 @@ export const TableBody = ({
   onAction,
   searchText,
   filters,
-}) => {
-  const cellStyle = (column, row, value) => {
+}: TableBodyProps) => {
+  const cellStyle = (column: TableColumn, row: Row, value: unknown): CSSProperties => {
     const color = column.textColor ? resolve(column.textColor, row, value) : undefined;
     const background = column.cellBackgroundColor ? resolve(column.cellBackgroundColor, row, value) : undefined;
     return {
-      ...(isSet(color) ? { color } : {}),
-      ...(isSet(background) ? { background } : {}),
+      ...(isSet(color) ? { color: color as CSSProperties['color'] } : {}),
+      ...(isSet(background) ? { background: background as CSSProperties['background'] } : {}),
       ...(column.fontWeight ? { fontWeight: column.fontWeight } : {}),
       ...cellStyleFor(column, row),
       ...(virtual ? { height: rowHeight } : {}),

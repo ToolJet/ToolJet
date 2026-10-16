@@ -1,7 +1,27 @@
 import React from 'react';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { Checkbox, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { ROW_BORDER } from './TableCells';
+import type { Sort, TableColumn } from './types';
+
+interface TableHeadProps {
+  properties: Resolved;
+  styles: Resolved;
+  fixedHeight: boolean;
+  bulk: boolean;
+  allOnPage: boolean;
+  someOnPage: boolean;
+  isDisabled: boolean;
+  pageKeys: string[];
+  togglePage: () => void;
+  shownColumns: TableColumn[];
+  sort: Sort | null;
+  pressHeader: (column: TableColumn) => void;
+  clickHeader: (column: TableColumn) => void;
+  bordered: boolean;
+  fitWidths: boolean;
+}
 
 export const TableHead = ({
   properties,
@@ -19,7 +39,7 @@ export const TableHead = ({
   clickHeader,
   bordered,
   fitWidths,
-}) => (
+}: TableHeadProps) => (
   <thead
     className={cn(
       'bg-[color:var(--lk-head-bg,var(--sc-background))]',

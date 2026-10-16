@@ -2,28 +2,44 @@
 // their own.
 
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-const isSet = (value) => value !== undefined && value !== null && String(value).trim() !== '';
-const px = (value) => (/^\d+(\.\d+)?$/.test(String(value).trim()) ? `${value}px` : String(value));
+/** A tab's id: its own id, else its index in the list. */
+export type TabId = string | number;
+
+/** A tab as the widget uses it, from the static list or the dynamic option. */
+export interface Tab {
+  id: TabId;
+  title: string;
+  disable: boolean;
+  visible: boolean;
+  loading: boolean;
+  icon: unknown;
+  iconVisibility: boolean;
+}
+
+const isSet = (value: unknown): boolean => value !== undefined && value !== null && String(value).trim() !== '';
+const px = (value: unknown): string => (/^\d+(\.\d+)?$/.test(String(value).trim()) ? `${value}px` : String(value));
 // The inspector stores a static tab's fields as { value }; dynamic tabs carry plain values.
-const unwrap = (field) => (field !== null && typeof field === 'object' && 'value' in field ? field.value : field);
-const truthy = (field) => {
+const unwrap = (field: unknown): unknown =>
+  field !== null && typeof field === 'object' && 'value' in field ? field.value : field;
+const truthy = (field: unknown): boolean => {
   const value = unwrap(field);
   return value === true || value === 'true' || value === '{{true}}';
 };
-const titleOf = (title) => {
+const titleOf = (title: unknown): string => {
   const value = unwrap(title);
   if (value === undefined || value === null) return '';
   return typeof value === 'object' ? stringify(value) : String(value);
 };
 
 /** The tabs from the static list (tabItems) or the dynamic option (tabs), normalised; junk entries are dropped. */
-export const tabsFromProperties = (properties = {}) => {
+export const tabsFromProperties = (properties: Resolved = {}): Tab[] => {
   const dynamic = truthy(properties.useDynamicOptions);
   const source = dynamic ? properties.tabs : properties.tabItems;
   if (!Array.isArray(source)) return [];
   return source
-    .map((tab, index) => {
+    .map((tab, index): Tab | null => {
       if (!tab || typeof tab !== 'object') return null;
       const id = isSet(tab.id) ? tab.id : index;
       const visible = unwrap(tab.visible);
@@ -37,13 +53,13 @@ export const tabsFromProperties = (properties = {}) => {
         iconVisibility: truthy(tab.iconVisibility),
       };
     })
-    .filter(Boolean);
+    .filter((tab): tab is Tab => tab !== null);
 };
 
-export const visibleTabs = (tabs = []) => tabs.filter((tab) => tab.visible !== false);
+export const visibleTabs = (tabs: Tab[] = []): Tab[] => tabs.filter((tab) => tab.visible !== false);
 
 /** The next (step 1) or previous (step -1) visible, enabled tab from `currentId`; null at either end. */
-export const neighbourTab = (tabs, currentId, step) => {
+export const neighbourTab = (tabs: Tab[], currentId: unknown, step: number): Tab | null => {
   const shown = visibleTabs(tabs);
   let index = shown.findIndex((tab) => tab.id == currentId);
   if (index < 0) return null;
@@ -53,7 +69,7 @@ export const neighbourTab = (tabs, currentId, step) => {
   return null;
 };
 
-const VARIABLES = [
+const VARIABLES: [string, string, ((value: unknown) => string)?][] = [
   ['accentColor', '--sc-primary'],
   ['tabListBackground', '--tb-list-bg'],
   ['tabTextColor', '--tb-text'],
@@ -66,7 +82,7 @@ const VARIABLES = [
 
 /** Styles as CSS: colours as variables the tab classes read (the pack's utilities are !important), the frame
  *  inline. Each falls back to the app theme. */
-export const tabsLook = (styles = {}) => {
+export const tabsLook = (styles: Resolved = {}) => {
   const border = isSet(styles.borderColor) ? styles.borderColor : 'var(--sc-border)';
   return {
     vars: Object.fromEntries(

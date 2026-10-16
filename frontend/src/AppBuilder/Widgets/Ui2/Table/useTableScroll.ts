@@ -1,9 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import type { Entry } from './types';
+
+interface UseTableScrollArgs {
+  fixedHeight: boolean;
+  virtual: boolean;
+  visibleRows: Entry[];
+  rowHeight: number;
+}
 
 /** The scroll box: the fades that show more rows below or columns to the right, and virtualised rows. */
-export const useTableScroll = ({ fixedHeight, virtual, visibleRows, rowHeight }) => {
-  const scrollRef = useRef(null);
+export const useTableScroll = ({ fixedHeight, virtual, visibleRows, rowHeight }: UseTableScrollArgs) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
   // A fixed-height table that has more rows below its edge fades them out, so it reads as scrollable (macOS hides
   // scrollbars, and a row cut off at the edge looks broken).
   // Columns wider than the table do the same at its right edge (a narrow card cut its last column).

@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo } from 'react';
-import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
+import { ModalV2 } from '@/AppBuilder/Widgets/Ui2/_shared/ModalV2';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { openerOf, trapTab, watchOpeners } from './dialogFocus';
 import { shadDialogConfig } from '@/AppBuilder/WidgetManager/widgets/shadDialog';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadDialog.scss';
 
@@ -15,8 +16,14 @@ import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadDialog.scss';
 // default before it reaches ModalV2, which renders labels as children and colours through string helpers. ToolJet's
 // validation alone does not cover it: a colour that fails its schema falls back to the schema default, which is
 // `false` for the trigger button colours.
-const definitionDefault = (section, key) => {
-  const value = shadDialogConfig.definition?.[section]?.[key]?.value;
+type DialogSection = 'properties' | 'styles';
+
+/** What sanitizeDialog reads of an inspector entry in the config: its schema type, else its control type. */
+type InspectorMeta = { type?: string; validation?: { schema?: { type?: string } } };
+
+const definitionDefault = (section: DialogSection, key: string) => {
+  const defaults: Record<string, { value?: unknown } | undefined> = shadDialogConfig.definition?.[section] ?? {};
+  const value = defaults[key]?.value;
   if (typeof value !== 'string') return value;
   const code = value.match(/^\{\{([\s\S]*)\}\}$/);
   if (!code) return value;
@@ -24,7 +31,7 @@ const definitionDefault = (section, key) => {
   const n = Number(code[1]);
   return Number.isFinite(n) ? n : undefined;
 };
-const fits = (type, value) =>
+const fits = (type: string | undefined, value: unknown): boolean =>
   type === 'string'
     ? typeof value === 'string'
     : type === 'boolean'
@@ -32,10 +39,11 @@ const fits = (type, value) =>
     : type === 'number'
     ? typeof value === 'number' && Number.isFinite(value)
     : true;
-export const sanitizeDialog = (values, section) => {
+export const sanitizeDialog = (values: unknown, section: DialogSection): Resolved => {
   if (!values || typeof values !== 'object') return {};
-  const out = { ...values };
-  for (const [key, meta] of Object.entries(shadDialogConfig[section] || {})) {
+  const out: Resolved = { ...values };
+  const metas: Record<string, InspectorMeta | undefined> = shadDialogConfig[section] || {};
+  for (const [key, meta] of Object.entries(metas)) {
     // The schema's type, else the one the inspector control edits (toggles have no schema).
     const type =
       meta?.validation?.schema?.type ||
@@ -52,17 +60,24 @@ export const sanitizeDialog = (values, section) => {
 
 /** While the dialog is open in an app (not the editor), Tab stays inside it (dialogFocus.js), and on close focus goes
  *  back to what opened it (a row's button, a trigger), as a dialog should for keyboard and screen reader users. */
-const useDialogFocus = (id, currentMode) => {
+/** What the dialog reads from the app store: whether it is open. */
+type DialogStore = {
+  resolvedStore?: {
+    modules?: Record<string, { exposedValues?: { components?: Record<string, { show?: unknown } | undefined> } }>;
+  };
+};
+
+const useDialogFocus = (id: string, currentMode?: string) => {
   const { moduleId } = useModuleContext();
   const show = useStore(
-    (state) => state.resolvedStore?.modules?.[moduleId]?.exposedValues?.components?.[id]?.show === true
+    (state: DialogStore) => state.resolvedStore?.modules?.[moduleId]?.exposedValues?.components?.[id]?.show === true
   );
   useEffect(() => watchOpeners(), []);
   useEffect(() => {
     if (!show || currentMode === 'edit' || typeof document === 'undefined') return undefined;
     const opener = openerOf();
     const root = () => document.querySelector(`.modal-dialog[component-id="${id}"]`)?.closest('.modal');
-    const onKey = (e) => trapTab(e, root());
+    const onKey = (e: KeyboardEvent) => trapTab(e, root());
     document.addEventListener('keydown', onKey, true);
     return () => {
       document.removeEventListener('keydown', onKey, true);
@@ -71,7 +86,7 @@ const useDialogFocus = (id, currentMode) => {
   }, [show, currentMode, id]);
 };
 
-export const ShadDialog = (props) => {
+export const ShadDialog = (props: WidgetProps) => {
   useDialogFocus(props.id, props.currentMode);
   const properties = useMemo(() => sanitizeDialog(props.properties, 'properties'), [props.properties]);
   const styles = useMemo(() => sanitizeDialog(props.styles, 'styles'), [props.styles]);

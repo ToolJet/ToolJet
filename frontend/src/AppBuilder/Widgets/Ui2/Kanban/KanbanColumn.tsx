@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Badge, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { KanbanCard, SECONDARY_TEXT } from './KanbanCard';
+import type { KanbanLook } from './KanbanCard';
+import type { BoardCard, BoardColumn } from './kanbanBoard';
 
 // Column title and count colours: the columnTitleColor and count styles, else the theme's.
 const COLUMN_TITLE = 'text-[color:var(--kb-col-title,var(--sc-foreground))]';
@@ -18,6 +21,30 @@ const BOTTOM_FADE = {
   maskImage: 'linear-gradient(to bottom, black calc(100% - 48px), transparent)',
   WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 48px), transparent)',
 };
+
+interface KanbanColumnProps {
+  column: BoardColumn;
+  renderBody: (card: BoardCard) => ReactNode;
+  padding: string;
+  look: KanbanLook;
+  width?: string;
+  collapsedHeight: unknown;
+  expandedKeys: Set<string>;
+  onToggle: (key: string) => void;
+  compact: boolean;
+  showCount: boolean;
+  selectedKey?: string;
+  draggable: boolean;
+  emptyText: string;
+  onSelect: (card: BoardCard) => void;
+  onDelete?: (card: BoardCard) => void;
+  onAdd?: (column: BoardColumn) => void;
+  collapsed: boolean;
+  onCollapse?: (columnId: string) => void;
+  fixed: boolean;
+  maxHeight?: number;
+  minColumn?: number;
+}
 
 export const KanbanColumn = ({
   column,
@@ -41,7 +68,7 @@ export const KanbanColumn = ({
   fixed,
   maxHeight,
   minColumn = 200,
-}) => {
+}: KanbanColumnProps) => {
   // A board that fits its content still stops at its drawn height (maxHeight): past it the column scrolls like a
   // fixed board's. Without the cap, 40 loans stood a board 2,274px tall (2026-10-13).
   const scrolls = fixed || !!maxHeight;
@@ -53,7 +80,7 @@ export const KanbanColumn = ({
   const hiddenCards = column.cards.length - shownCards;
   // On a board with a fixed height the cards scroll inside their column, fading out at the bottom while more are
   // below (Trello-like); a board that fits its content grows instead.
-  const listRef = useRef(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const [moreBelow, setMoreBelow] = useState(false);
   useEffect(() => {
     const el = listRef.current;
@@ -79,8 +106,8 @@ export const KanbanColumn = ({
         tabIndex={0}
         title={`Expand ${column.title}`}
         aria-label={`Expand ${column.title}`}
-        onClick={() => onCollapse(column.id)}
-        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onCollapse(column.id)}
+        onClick={() => onCollapse?.(column.id)}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onCollapse?.(column.id)}
         style={{ ...look.column, width: 152, flex: '0 0 152px' }}
         className={cn(
           'group/col relative flex cursor-pointer flex-col gap-2 p-3 transition-shadow hover:ring-1 hover:ring-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

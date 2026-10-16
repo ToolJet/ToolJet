@@ -6,7 +6,9 @@ import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { applyFilters, matchesSearch, normalizeColumns, rowKey, sortRows } from './tableModel';
+import type { Entry, FireOption, Live, OnAction, Paged, Row, Sort, TableColumn, TableFilter } from './types';
 import { ROW_BORDER, useCellResolver } from './TableCells';
 import { TableToolbar } from './TableToolbar';
 import { TableHead } from './TableHead';
@@ -23,7 +25,7 @@ import { useTableScroll } from './useTableScroll';
 // of taking the app down, large data is virtualised, and each user action publishes its state once and then fires its
 // event, so handlers read the new value.
 
-const ROW_HEIGHT = { condensed: 36, regular: 44, spacious: 56 };
+const ROW_HEIGHT: Record<string, number> = { condensed: 36, regular: 44, spacious: 56 };
 const VIRTUALIZE_ABOVE = 150;
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -34,7 +36,7 @@ const RIGHT_FADE = {
 
 const MAX_FILTERS = 50;
 
-export const ShadTable = (props) => {
+export const ShadTable = (props: WidgetProps) => {
   const { id, height, properties, styles, setExposedVariable, setExposedVariables, fireEvent, componentName, dataCy } =
     props;
   const { isDisabled, isVisible, isLoading } = useExposeState(
@@ -44,13 +46,13 @@ export const ShadTable = (props) => {
     setExposedVariables,
     setExposedVariable
   );
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   useDisableInert(ref, isDisabled);
   const resolve = useCellResolver();
 
   // ---- data and columns ---------------------------------------------------------------------------------------------
-  const data = useMemo(
+  const data = useMemo<Row[]>(
     () => (Array.isArray(properties.data) ? properties.data.filter((row) => row && typeof row === 'object') : []),
     [properties.data]
   );
@@ -60,16 +62,16 @@ export const ShadTable = (props) => {
     () => normalizeColumns(properties.columns, data),
     [properties.columns, autogen ? data : null] // eslint-disable-line react-hooks/exhaustive-deps
   );
-  const [hiddenIds, setHiddenIds] = useState(() => new Set());
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
   const shownColumns = columns.filter((c) => c.visible && !hiddenIds.has(c.id));
-  const entries = useMemo(
+  const entries = useMemo<Entry[]>(
     () => data.map((row, index) => ({ row, index, key: rowKey(row, idField, index) })),
     [data, idField]
   );
 
   // ---- edits (overlay on the data until it changes) -------------------------------------------------------------------
   // Everything the actions and handlers read later, without going stale.
-  const live = useRef({});
+  const live = useRef<Live>({} as Live);
   const { edits, withEdits, editing, setEditing, commitEdit, discard } = useTableEdits({
     data,
     live,
@@ -81,8 +83,8 @@ export const ShadTable = (props) => {
   const serverPaging = properties.serverSidePagination === true;
   const [searchInput, setSearchInput] = useState('');
   const [searchText, setSearchText] = useState('');
-  const [sort, setSort] = useState(null);
-  const [filters, setFilters] = useState([]);
+  const [sort, setSort] = useState<Sort | null>(null);
+  const [filters, setFilters] = useState<TableFilter[]>([]);
   const [page, setPage] = useState(1);
 
   const processed = useMemo(() => {
@@ -98,7 +100,7 @@ export const ShadTable = (props) => {
       const column = columns.find((c) => c.key === sort.key);
       if (column) {
         const order = new Map(sortRows(list.map(withEdits), column, sort.direction).map((row, i) => [row, i]));
-        list = [...list].sort((a, b) => order.get(withEdits(a)) - order.get(withEdits(b)));
+        list = [...list].sort((a, b) => Number(order.get(withEdits(a))) - Number(order.get(withEdits(b))));
       }
     }
     return list;
@@ -115,7 +117,7 @@ export const ShadTable = (props) => {
     properties.serverSideSort,
   ]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const paged = pageOf(processed, {
+  const paged: Paged = pageOf(processed, {
     enablePagination: properties.enablePagination !== false,
     serverSidePagination: serverPaging,
     rowsPerPage: properties.rowsPerPage,
@@ -160,31 +162,31 @@ export const ShadTable = (props) => {
     return () => clearTimeout(timer);
   }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const sortApplied = (next) => {
+  const sortApplied = (next: Sort | null) => {
     if (!next) return [];
     const column = columns.find((c) => c.key === next.key);
     return [{ column: column?.name ?? next.key, columnKey: next.key, direction: next.direction }];
   };
-  const applySort = (next, { fire = true } = {}) => {
+  const applySort = (next: Sort | null, { fire = true }: FireOption = {}) => {
     setSort(next);
     setExposedVariable('sortApplied', sortApplied(next));
     if (fire) fireEvent('onSort');
   };
   // The native Table's onHeaderClick, with the column in selectedColumnHeader, on any header press (sortable or not).
-  const pressHeader = (column) => {
+  const pressHeader = (column: TableColumn) => {
     if (isDisabled) return;
     setExposedVariable('selectedColumnHeader', { name: column.name, key: column.key });
     fireEvent('onHeaderClick');
   };
   // The native Table's onRowHovered, with the row in hoveredRow and its index in hoveredRowId, once per row entered.
-  const hoveredRef = useRef(null);
-  const hoverRow = (entry) => {
+  const hoveredRef = useRef<string | null>(null);
+  const hoverRow = (entry: Entry) => {
     if (hoveredRef.current === entry.key) return;
     hoveredRef.current = entry.key;
     setExposedVariables({ hoveredRow: withEdits(entry), hoveredRowId: entry.index });
     fireEvent('onRowHovered');
   };
-  const clickHeader = (column) => {
+  const clickHeader = (column: TableColumn) => {
     if (properties.enabledSort === false || !column.sortable || isDisabled) return;
     const current = sort?.key === column.key ? sort.direction : null;
     applySort(
@@ -195,34 +197,35 @@ export const ShadTable = (props) => {
         : { key: column.key, direction: 'asc' }
     );
   };
-  const exposedFilters = (list) =>
+  const exposedFilters = (list: TableFilter[]) =>
     list.map((f) => ({
       column: columns.find((c) => c.key === f.column)?.name ?? f.column,
       condition: f.condition,
       value: f.value ?? '',
     }));
-  const applyFilterList = (list, { fire = true } = {}) => {
+  const applyFilterList = (list: unknown, { fire = true }: FireOption = {}) => {
     // Every filter is checked on every row: past MAX_FILTERS, a bound list is a mistake, not a filter set.
-    const clean = (Array.isArray(list) ? list : [])
+    const clean: Resolved[] = (Array.isArray(list) ? list : [])
       .filter((f) => f && typeof f === 'object' && isSet(f.column) && isSet(f.condition))
       .slice(0, MAX_FILTERS);
     // Accept header names as well as keys, as the native setFilters does.
-    const normalized = clean.map((f) => ({
+    const normalized: TableFilter[] = clean.map((f) => ({
       ...f,
-      column: (columns.find((c) => c.key === f.column || c.name === f.column) ?? {}).key ?? f.column,
+      column: columns.find((c) => c.key === f.column || c.name === f.column)?.key ?? f.column,
+      condition: f.condition,
     }));
     setFilters(normalized);
     setPage(1);
     setExposedVariables({ filters: exposedFilters(normalized), pageIndex: 1 });
     if (fire) fireEvent('onFilterChanged');
   };
-  const goTo = (target, { fire = true } = {}) => {
+  const goTo = (target: unknown, { fire = true }: FireOption = {}) => {
     const next = Math.max(1, Math.floor(Number(target)) || 1);
     setPage(next);
     setExposedVariable('pageIndex', next);
     if (fire) fireEvent('onPageChanged');
   };
-  const onAction = (buttonId, column, row, rowIndex) => {
+  const onAction: OnAction = (buttonId, column, row, rowIndex) => {
     setExposedVariables({
       selectedRow: row,
       selectedRowId: rowIndex,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import type { ReactNode } from 'react';
 import DOMPurify from 'dompurify';
 import { Check } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
@@ -16,9 +17,13 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { badgeLook, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { formatCell, matchesCondition, readCell } from './tableModel';
+import type { OnAction, Resolve, Row, TableColumn } from './types';
 
-const BADGE_BY_STATUS = {
+type BadgeVariant = React.ComponentProps<typeof Badge>['variant'];
+
+const BADGE_BY_STATUS: Record<string, BadgeVariant> = {
   active: 'success',
   approved: 'success',
   available: 'success',
@@ -47,16 +52,21 @@ const BADGE_BY_STATUS = {
 export const ROW_BORDER = 'border-[color:var(--lk-border,var(--sc-border))]';
 export const MUTED = 'text-[color:var(--lk-muted,var(--sc-muted-foreground))]';
 
+interface CellBoundaryProps {
+  resetKey: unknown;
+  children: ReactNode;
+}
+
 /** Keeps one broken cell (a bad value, a throwing binding) from taking the table or the app down. */
-export class CellBoundary extends React.Component {
-  constructor(props) {
+export class CellBoundary extends React.Component<CellBoundaryProps, { failed: boolean }> {
+  constructor(props: CellBoundaryProps) {
     super(props);
     this.state = { failed: false };
   }
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  componentDidUpdate(previous) {
+  componentDidUpdate(previous: CellBoundaryProps) {
     if (this.state.failed && previous.resetKey !== this.props.resetKey) this.setState({ failed: false });
   }
   render() {
@@ -64,9 +74,12 @@ export class CellBoundary extends React.Component {
   }
 }
 
+/** What the resolver reads from the app store. */
+type ResolverStore = { getResolvedValue: (value: string, context: { rowData: Row; cellValue: unknown }) => unknown };
+
 /** A column option that may be a per-row binding: "{{rowData.amount < 0 ? '#dc2626' : ''}}". */
-export const useCellResolver = () => {
-  const getResolvedValue = useStore((state) => state.getResolvedValue);
+export const useCellResolver = (): Resolve => {
+  const getResolvedValue = useStore((state: ResolverStore) => state.getResolvedValue);
   return (value, row, cellValue) => {
     if (typeof value !== 'string' || !value.includes('{{')) return value;
     try {
@@ -77,10 +90,10 @@ export const useCellResolver = () => {
   };
 };
 
-const BadgeCell = ({ value, column, badgeColors }) => {
+const BadgeCell = ({ value, column, badgeColors }: { value: unknown; column: TableColumn; badgeColors: unknown }) => {
   if (!isSet(value)) return null;
   const own = badgeLook(value, column.badgeColors) ?? badgeLook(value, badgeColors);
-  const option = column.options?.find((o) => String(o?.value ?? o) === String(value));
+  const option = column.options?.find((o: Resolved) => String(o?.value ?? o) === String(value));
   const label = String(option?.label ?? value);
   return own ? (
     <Badge
@@ -95,7 +108,25 @@ const BadgeCell = ({ value, column, badgeColors }) => {
   );
 };
 
-export const renderCell = ({ value, row, column, properties, resolve, onAction, rowIndex }) => {
+interface RenderCellArgs {
+  value: unknown;
+  row: Row;
+  column: TableColumn;
+  properties: Resolved;
+  resolve: Resolve;
+  onAction: OnAction;
+  rowIndex: number;
+}
+
+export const renderCell = ({
+  value,
+  row,
+  column,
+  properties,
+  resolve,
+  onAction,
+  rowIndex,
+}: RenderCellArgs): ReactNode => {
   const format = {
     ...column.format,
     currency: column.format.currency ?? properties.currency,
@@ -152,18 +183,21 @@ export const renderCell = ({ value, row, column, properties, resolve, onAction, 
           className={cn('h-8 w-8 object-cover', column.imageShape === 'square' ? 'rounded-md' : 'rounded-full')}
         />
       ) : null;
-    case 'avatar':
+    case 'avatar': {
+      // A person ({ src, name }) or a name.
+      const person = typeof shown === 'object' ? (shown as Resolved | null) : null;
       return isSet(shown) ? (
         <span className="flex items-center gap-2">
           <Avatar className="h-7 w-7">
-            {typeof shown === 'object' && shown?.src ? <AvatarImage src={shown.src} alt="" /> : null}
+            {typeof shown === 'object' && person?.src ? <AvatarImage src={person.src} alt="" /> : null}
             <AvatarFallback className="text-[11px]">
-              {initials(typeof shown === 'object' ? shown?.name : shown)}
+              {initials(typeof shown === 'object' ? person?.name : shown)}
             </AvatarFallback>
           </Avatar>
-          <span className="truncate">{String(typeof shown === 'object' ? shown?.name ?? '' : shown)}</span>
+          <span className="truncate">{String(typeof shown === 'object' ? person?.name ?? '' : shown)}</span>
         </span>
       ) : null;
+    }
     case 'progress': {
       const n = Number(shown);
       if (!Number.isFinite(n)) return null;
@@ -181,7 +215,7 @@ export const renderCell = ({ value, row, column, properties, resolve, onAction, 
           {(column.buttons ?? []).map((button, i) => {
             const id = String(button.id ?? button.buttonId ?? `button${i + 1}`);
             // Rules are data ({ key, condition, value }); a binding inside the columns binding would end it early.
-            const when = (rule) =>
+            const when = (rule: Resolved | undefined) =>
               rule && typeof rule === 'object' && matchesCondition(readCell(row, rule.key), rule.condition, rule.value);
             if (resolve(button.visible ?? button.buttonVisibility, row, value) === false || when(button.hiddenWhen)) {
               return null;
@@ -226,9 +260,16 @@ export const renderCell = ({ value, row, column, properties, resolve, onAction, 
 };
 
 /** An editable cell's input: text, number, date, a checkbox, or a select of the column's options. */
-export const CellEditor = ({ column, value, onCommit, onCancel }) => {
-  const [draft, setDraft] = useState(value ?? '');
-  const commit = (next) =>
+interface CellEditorProps {
+  column: TableColumn;
+  value: unknown;
+  onCommit: (value: unknown) => void;
+  onCancel: () => void;
+}
+
+export const CellEditor = ({ column, value, onCommit, onCancel }: CellEditorProps) => {
+  const [draft, setDraft] = useState<unknown>(value ?? '');
+  const commit = (next: unknown) =>
     onCommit(column.type === 'number' || column.type === 'currency' ? (next === '' ? null : Number(next)) : next);
   if (column.type === 'boolean') {
     return (

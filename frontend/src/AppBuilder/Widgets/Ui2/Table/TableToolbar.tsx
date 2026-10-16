@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { Columns3, Download, Filter, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
 import {
   Badge,
@@ -11,15 +12,25 @@ import {
   cn,
 } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { FILTER_CONDITIONS } from './tableModel';
+import type { TableColumn, TableFilter } from './types';
 import { MUTED } from './TableCells';
+import type { DownloadType } from './useTableActions';
 
-const FilterPanel = ({ columns, filters, onApply }) => {
+interface FilterPanelProps {
+  columns: TableColumn[];
+  filters: TableFilter[];
+  onApply: (list: TableFilter[]) => void;
+}
+
+const FilterPanel = ({ columns, filters, onApply }: FilterPanelProps) => {
   const filterable = columns.filter((c) => c.visible && c.type !== 'button');
-  const [rows, setRows] = useState(() =>
+  const [rows, setRows] = useState<TableFilter[]>(() =>
     filters.length ? filters : [{ column: filterable[0]?.key ?? '', condition: 'contains', value: '' }]
   );
-  const update = (index, patch) => setRows((all) => all.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  const update = (index: number, patch: Partial<TableFilter>) =>
+    setRows((all) => all.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   return (
     <div className="flex w-[420px] max-w-[90vw] flex-col gap-2">
       <p className="text-sm font-medium">Filters</p>
@@ -55,7 +66,7 @@ const FilterPanel = ({ columns, filters, onApply }) => {
             <Input
               aria-label="Value"
               className="h-8 min-w-0 flex-1 px-2"
-              value={row.value ?? ''}
+              value={String(row.value ?? '')}
               onChange={(e) => update(index, { value: e.target.value })}
             />
           )}
@@ -94,6 +105,21 @@ const FilterPanel = ({ columns, filters, onApply }) => {
   );
 };
 
+interface TableToolbarProps {
+  properties: Resolved;
+  styles: Resolved;
+  isDisabled: boolean;
+  searchInput: string;
+  setSearchInput: (text: string) => void;
+  filters: TableFilter[];
+  columns: TableColumn[];
+  applyFilterList: (list: unknown) => void;
+  hiddenIds: Set<string>;
+  setHiddenIds: Dispatch<SetStateAction<Set<string>>>;
+  runDownload: (type: DownloadType) => void;
+  fireEvent: WidgetProps['fireEvent'];
+}
+
 /** The search box and the filter, columns, download and refresh buttons above the table. */
 export const TableToolbar = ({
   properties,
@@ -108,7 +134,7 @@ export const TableToolbar = ({
   setHiddenIds,
   runDownload,
   fireEvent,
-}) => (
+}: TableToolbarProps) => (
   <div className="flex flex-wrap items-center gap-2">
     {properties.displaySearchBox !== false ? (
       <div className="relative min-w-[180px] max-w-sm flex-1">
@@ -195,10 +221,12 @@ export const TableToolbar = ({
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-40 p-1" style={lookVars('ShadTable', styles)}>
-            {[
-              ['csv', 'Download CSV'],
-              ['json', 'Download JSON'],
-            ].map(([type, label]) => (
+            {(
+              [
+                ['csv', 'Download CSV'],
+                ['json', 'Download JSON'],
+              ] as const
+            ).map(([type, label]) => (
               <button
                 key={type}
                 type="button"

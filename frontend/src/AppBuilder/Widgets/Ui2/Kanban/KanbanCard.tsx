@@ -1,14 +1,32 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
-import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
+import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Avatar, AvatarFallback, Badge, Progress, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { useCanvasFit } from '@/AppBuilder/Widgets/Ui2/_shared/canvasFit';
-import { badgeLook, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+import { badgeLook, isSet, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { cardClamp, cardDateLabel, cardDetails } from './kanbanBoard';
+import type { BoardCard } from './kanbanBoard';
 
-const BADGE_BY_WORD = {
+export type KanbanLook = ReturnType<typeof kanbanLook>;
+
+/** The card fields the author maps (a field name, '' when unmapped). */
+export interface CardFields {
+  title: string;
+  description: string;
+  badge: string;
+  tags: string;
+  progress: string;
+  avatar: string;
+  meta: string;
+  details: string;
+}
+
+type BadgeVariant = React.ComponentProps<typeof Badge>['variant'];
+
+const BADGE_BY_WORD: Record<string, BadgeVariant> = {
   critical: 'destructive',
   urgent: 'destructive',
   high: 'destructive',
@@ -22,7 +40,7 @@ const BADGE_BY_WORD = {
 // A card's secondary text (description, meta, progress): the cardTextColor style, else the theme's muted text.
 export const SECONDARY_TEXT = 'text-[color:var(--kb-card-text,var(--sc-muted-foreground))]';
 
-const asTags = (value) =>
+const asTags = (value: unknown): string[] =>
   (Array.isArray(value) ? value : isSet(value) ? String(value).split(',') : [])
     .map((tag) => String(tag?.label ?? tag).trim())
     .filter(Boolean);
@@ -31,9 +49,18 @@ const asTags = (value) =>
 const SHORT_DETAIL = 22;
 
 // A card's text: a stored ISO date or timestamp as a short date, anything else as written.
-const shown = (value) => cardDateLabel(value) ?? String(value);
+const shown = (value: unknown): string => cardDateLabel(value) ?? String(value);
 
-export const CardBody = ({ card, fields, compact, badgeColors, progressStyle, expanded }) => {
+interface CardBodyProps {
+  card: BoardCard;
+  fields: CardFields;
+  compact: boolean;
+  badgeColors: unknown;
+  progressStyle: KanbanLook['progress'];
+  expanded: boolean;
+}
+
+export const CardBody = ({ card, fields, compact, badgeColors, progressStyle, expanded }: CardBodyProps) => {
   const badge = fields.badge ? card[fields.badge] : undefined;
   const avatar = fields.avatar ? card[fields.avatar] : undefined;
   const meta = fields.meta ? card[fields.meta] : undefined;
@@ -77,7 +104,7 @@ export const CardBody = ({ card, fields, compact, badgeColors, progressStyle, ex
             badgeLook(badge, badgeColors) ? (
               <Badge
                 variant="outline"
-                style={badgeLook(badge, badgeColors)}
+                style={badgeLook(badge, badgeColors) ?? undefined}
                 className="shrink-0 border-transparent bg-[color:var(--kb-badge-bg)] text-[color:var(--kb-badge-fg)]"
               >
                 {String(badge)}
@@ -133,6 +160,26 @@ export const CardBody = ({ card, fields, compact, badgeColors, progressStyle, ex
   );
 };
 
+/** A card's collapse: the collapsedHeight style, whether this card is expanded, and the toggle. */
+export interface CardCollapse {
+  height: unknown;
+  expanded: boolean;
+  onToggle: (key: string) => void;
+}
+
+interface KanbanCardProps {
+  card: BoardCard;
+  columnId: string;
+  renderBody: (card: BoardCard) => ReactNode;
+  padding: string;
+  look: KanbanLook;
+  collapse: CardCollapse;
+  selected: boolean;
+  draggable: boolean;
+  onSelect: (card: BoardCard) => void;
+  onDelete?: (card: BoardCard) => void;
+}
+
 export const KanbanCard = ({
   card,
   columnId,
@@ -144,12 +191,12 @@ export const KanbanCard = ({
   draggable,
   onSelect,
   onDelete,
-}) => {
+}: KanbanCardProps) => {
   const data = { type: 'card', key: card.__key, columnId };
   const drag = useDraggable({ id: card.__key, data, disabled: !draggable });
   const drop = useDroppable({ id: `drop-${card.__key}`, data });
   // Collapsed height: the content's natural height decides whether the card collapses at all.
-  const contentRef = useRef(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState(0);
   useLayoutEffect(() => {
     const el = contentRef.current;
@@ -241,7 +288,25 @@ export const KanbanCard = ({
 
 /** A custom card's canvas: the components on the board's card, laid out with this card's data. With dynamic height
  *  on (in an app) the card grows with them, so a long text or an opened accordion is not cut off at cardHeight. */
-export const CustomCardBody = ({ id, index, width, height: cardHeight, fit, editing, darkMode }) => {
+interface CustomCardBodyProps {
+  id: string;
+  index: number;
+  width: number;
+  height: number;
+  fit: boolean;
+  editing: boolean;
+  darkMode?: boolean;
+}
+
+export const CustomCardBody = ({
+  id,
+  index,
+  width,
+  height: cardHeight,
+  fit,
+  editing,
+  darkMode,
+}: CustomCardBodyProps) => {
   const [ref, height] = useCanvasFit(fit, cardHeight, '[data-card-canvas]', { shrink: true });
   return (
     // In the editor, a press inside the card edits its components instead of starting a card drag.
