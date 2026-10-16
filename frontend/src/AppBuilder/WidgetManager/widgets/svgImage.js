@@ -15,7 +15,7 @@ export const svgImageConfig = {
     },
     loadingState: {
       type: 'toggle',
-      displayName: 'Show loading state',
+      displayName: 'Loading state',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
@@ -44,6 +44,28 @@ export const svgImageConfig = {
       displayName: 'Disable',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   defaultSize: {
@@ -98,6 +120,8 @@ export const svgImageConfig = {
       dynamicHeight: { value: '{{false}}' },
       collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {

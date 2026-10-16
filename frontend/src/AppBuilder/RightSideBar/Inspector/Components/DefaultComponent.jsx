@@ -193,6 +193,7 @@ export const baseComponentProperties = (
       'DropdownV2',
       'MultiselectV2',
       'Image',
+      'SvgImage',
       'RangeSliderV2',
       'Divider',
       'VerticalDivider',
