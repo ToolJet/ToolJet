@@ -14,12 +14,13 @@ import EditorHeader from '@/AppBuilder/Header';
 import LeftSidebar from '@/AppBuilder/LeftSidebar';
 import Popups from './Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
-import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
 import { shallow } from 'zustand/shallow';
 import { useNavigate } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import { getErrorContext } from '@/_ui/ErrorBoundary/errorReport';
 import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomComponentDevPreviewSync';
+import { AppBuilderTooltipProvider } from '@/AppBuilder/_contexts/AppBuilderTooltipContext';
+import { getAppBuilderTypographyStyle } from '@/AppBuilder/panelLayout';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -93,27 +94,32 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     );
   }
   return (
-    <div className={cx('wrapper', { editor: currentMode === 'edit' })}>
+    <div
+      className={cx('wrapper', { editor: currentMode === 'edit' })}
+      style={currentMode === 'edit' ? getAppBuilderTypographyStyle() : undefined}
+    >
       {/* Last-resort boundary — catches anything the panel-level boundaries miss. */}
       <FallbackBoundary label="App builder" location="Editor" darkMode={darkMode}>
-        <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
-          <Suspense fallback={<div>Loading...</div>}>
-            <EditorHeader darkMode={darkMode} appType={appType} />
+        <AppBuilderTooltipProvider>
+          <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <EditorHeader darkMode={darkMode} appType={appType} />
+            </Suspense>
 
-            <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
-          </Suspense>
-
-          {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled && (
-            <RealtimeCursors />
-          )}
-          <DndProvider backend={HTML5Backend}>
-            <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
-            <QueryPanel darkMode={darkMode} />
-            <RightSidebarToggle darkMode={darkMode} />
-            <RightSideBar darkMode={darkMode} />
-          </DndProvider>
-          <Popups darkMode={darkMode} />
-        </ModuleProvider>
+            {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled && (
+              <RealtimeCursors />
+            )}
+            <DndProvider backend={HTML5Backend}>
+              <Suspense fallback={<div>Loading...</div>}>
+                <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
+              </Suspense>
+              <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
+              <QueryPanel darkMode={darkMode} />
+              <RightSideBar darkMode={darkMode} />
+            </DndProvider>
+            <Popups darkMode={darkMode} />
+          </ModuleProvider>
+        </AppBuilderTooltipProvider>
       </FallbackBoundary>
     </div>
   );

@@ -27,9 +27,10 @@ import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
+import { getPageSettingsSections } from '@/AppBuilder/panelLayout';
 import './PageMenu/style.scss';
 
-export const PageSettings = () => {
+export const PageSettings = ({ onClose, surface = 'configuration' }) => {
   const pageSettings = useStore((state) => state.pageSettings);
   const pageSettingChanged = useStore((state) => state.pageSettingChanged);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
@@ -46,8 +47,12 @@ export const PageSettings = () => {
   const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
   const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
   const appPagePermissionEnabled = useStore((state) => state.license?.featureAccess?.appPermissionPages);
+  const isNavigationSurface = surface === 'navigation';
+  const visibleSections = getPageSettingsSections(surface);
+  const propertySections = visibleSections.find(({ id }) => id === 'properties')?.sections ?? [];
 
   const handleToggle = () => {
+    if (onClose) return onClose();
     setActiveRightSideBarTab(null);
     setRightSidebarOpen(false);
   };
@@ -157,7 +162,7 @@ export const PageSettings = () => {
     <div className="inspector pages-settings">
       <div>
         <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
-          <span className="panel-header-title">Pages and navigation</span>
+          <span className="panel-header-title">{isNavigationSurface ? 'Pages' : 'Page configuration'}</span>
           <div className="panel-header-actions">
             <Button
               iconOnly
@@ -171,10 +176,12 @@ export const PageSettings = () => {
           </div>
         </div>
         <div className={cx({ disabled: shouldFreeze })}>
-          <Tabs defaultActiveKey={'properties'} id="page-settings">
+          <Tabs defaultActiveKey={'properties'} id={`page-settings-${surface}`}>
             <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
               <div className="tj-text-xsm color-slate12 ">
-                <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
+                {propertySections.includes('page-list') && (
+                  <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
+                )}
                 <Accordion items={appHeaderMenuItems} />
                 {/* <Accordion items={devices} /> */}
               </div>

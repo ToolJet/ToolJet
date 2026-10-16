@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { GitBranch, GitCommitHorizontal, GitPullRequestArrow, RefreshCw } from 'lucide-react';
 import { ToolTip } from '@/_components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
@@ -128,7 +128,7 @@ const LifecycleCTAButton = () => {
       // Git is in the plan but not configured in the workspace
       return {
         label: 'Configure Git',
-        icon: 'commit',
+        icon: GitBranch,
         variant: 'secondary',
         disabled: false,
         unsynced: false,
@@ -139,7 +139,7 @@ const LifecycleCTAButton = () => {
       // App has never been pushed to git — show "Sync" with red indicator
       return {
         label: 'Sync',
-        icon: 'refresh',
+        icon: RefreshCw,
         variant: 'secondary',
         disabled: false,
         unsynced: true,
@@ -150,7 +150,7 @@ const LifecycleCTAButton = () => {
       // Default branch (multi-branch) - show "Pull commit" button
       return {
         label: 'Pull commit',
-        icon: 'commit',
+        icon: GitPullRequestArrow,
         variant: 'secondary',
         disabled: false,
         unsynced: false,
@@ -159,7 +159,7 @@ const LifecycleCTAButton = () => {
       // Feature branch, or single-branch mode on the default branch - show "Commit" button
       return {
         label: 'Commit',
-        icon: 'commit',
+        icon: GitCommitHorizontal,
         variant: 'secondary',
         disabled: false,
         unsynced: false,
@@ -168,6 +168,7 @@ const LifecycleCTAButton = () => {
   };
 
   const config = getButtonConfig();
+  const LifecycleIcon = config.icon;
   const handleClick = async () => {
     // Guard Commit button on feature branches — check remote branch still exists
     if (isUnsynced) {
@@ -239,14 +240,9 @@ const LifecycleCTAButton = () => {
             data-tooltip-id="editor-header-tooltip"
             data-tooltip-content={config.tooltip}
             data-cy="lifecycle-cta-button"
-            style={config.unsynced ? { borderColor: '#E54D2E' } : undefined}
+            data-unsynced={config.unsynced || undefined}
           >
-            <SolidIcon
-              fill={config.unsynced ? '#E54D2E' : 'var(--icon-accent)'}
-              viewBox="0 0 16 16"
-              name={config.icon}
-              width="16"
-            />
+            <LifecycleIcon size={15} strokeWidth={1.8} aria-hidden="true" />
             <span>{config.label}</span>
           </Button>
         </ToolTip>

@@ -53,6 +53,7 @@ const DynamicForm = ({
   setDefaultOptions,
   disableMenuPortal = false,
   onBlur,
+  animateSelectMenus = false,
   layout = 'vertical',
   renderCopilot,
   elementsProps = null,
@@ -948,6 +949,7 @@ const DynamicForm = ({
                 className={cx({ 'flex-grow-1': isHorizontalLayout })}
               >
                 <Select
+                  animateMenu={animateSelectMenus}
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
                   useCustomStyles={computeSelectStyles ? true : false}

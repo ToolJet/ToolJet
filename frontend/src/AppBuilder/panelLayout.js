@@ -1,0 +1,250 @@
+export const LEFT_PANEL_SECTIONS = [
+  {
+    id: 'build',
+    items: [
+      { id: 'pages', label: 'Pages', icon: 'files' },
+      { id: 'components', label: 'Components', icon: 'blocks' },
+      { id: 'queries', label: 'Queries', icon: 'database-zap' },
+      { id: 'libraries', label: 'Libraries', icon: 'box' },
+    ],
+  },
+  {
+    id: 'manage',
+    items: [
+      { id: 'dependencies', label: 'Dependencies', icon: 'network' },
+      { id: 'apphistory', label: 'App history', icon: 'history' },
+      { id: 'settings', label: 'Settings', icon: 'settings' },
+    ],
+  },
+];
+
+export const LEFT_PANEL_ITEMS = LEFT_PANEL_SECTIONS.flatMap(({ items }) => items);
+
+export const RUNTIME_PANEL_COLLAPSED_HEIGHT = 38;
+
+export const PANEL_MOTION = {
+  durationMs: 180,
+  easing: 'cubic-bezier(0.2, 0, 0, 1)',
+  leftOffsetPx: 6,
+  rightOffsetPx: 6,
+  bottomOffsetPx: 4,
+  enterFillMode: 'both',
+  exitFillMode: 'forwards',
+  contentAnimation: 'open-and-switch',
+  shellEnterAnimation: false,
+  rightContentAnimation: 'open-and-switch',
+  rightShellEnterAnimation: false,
+};
+
+const RUNTIME_PANEL_THEMES = {
+  light: {
+    panel: '#ffffff',
+    text: '#222631',
+    muted: '#747d8f',
+    border: '#e1e5ed',
+    accent: '#4368e8',
+  },
+  dark: {
+    panel: '#1e232d',
+    text: '#f3f5f9',
+    muted: '#a8b0bf',
+    border: '#353c49',
+    accent: '#7895ff',
+  },
+};
+
+export const getRuntimePanelTheme = (darkMode) => RUNTIME_PANEL_THEMES[darkMode ? 'dark' : 'light'];
+
+export const getRuntimePanelContentStyle = (isExpanded, panelTop) =>
+  isExpanded ? { height: `calc(100% - ${panelTop}%)`, borderTopWidth: 2 } : { height: 0, borderTopWidth: 0 };
+
+export const getCanvasReservedBottom = (runtimeContentHeight, isDragging) => (isDragging ? 0 : runtimeContentHeight);
+
+export const getRuntimePanelMeasuredHeight = (isExpanded, measuredHeight) => (isExpanded ? measuredHeight : 0);
+
+export const getLeftPanelReservedBottom = (isExpanded, measuredHeight) =>
+  isExpanded ? Math.max(measuredHeight, RUNTIME_PANEL_COLLAPSED_HEIGHT) : RUNTIME_PANEL_COLLAPSED_HEIGHT;
+
+export const getLeftPanelHeight = (isExpanded, measuredHeight) =>
+  `calc(100vh - ${48 + getLeftPanelReservedBottom(isExpanded, measuredHeight)}px)`;
+
+// The editor canvas reserves only the persistent left navigation rail. The
+// right configuration panel overlays/resizes independently when it is open.
+export const EDITOR_CANVAS_WIDTH = 'calc(100% - 54px)';
+
+export const RUNTIME_PANEL_ITEMS = [
+  { id: 'inspect', label: 'Inspector' },
+  { id: 'debugger', label: 'Debugger' },
+];
+
+export const getRightPanelForSelection = (selectionType) => {
+  if (selectionType === 'component') return 'configuration';
+  if (selectionType === 'query') return 'query';
+  if (selectionType === 'page') return 'page-configuration';
+  return null;
+};
+
+export const getPageSettingsSections = (surface) => [
+  {
+    id: 'properties',
+    sections: surface === 'navigation' ? ['page-list', 'page-settings'] : ['page-settings'],
+  },
+  { id: 'styles', sections: ['page-styles'] },
+];
+
+export const getLeftPanelOverflow = (panel) => (panel === 'pages' ? 'hidden' : 'auto');
+
+export const shouldShowLibraries = (isModuleEditor, hasAppJsLibrariesAccess) =>
+  !isModuleEditor && Boolean(hasAppJsLibrariesAccess);
+
+export const getRightPanelAfterClearingSelection = (activePanel, isOpen) => {
+  if (!isOpen) return activePanel;
+  if (activePanel === 'pages' || activePanel === 'page-configuration' || activePanel === 'query') return activePanel;
+  return 'components';
+};
+
+export const getComponentPickerClassName = (surface) =>
+  `components-container${surface === 'left' ? ' components-container--left' : ''}`;
+
+export const getQueryListClassName = (surface) => `data-pane${surface === 'left' ? ' query-data-pane--left' : ''}`;
+
+export const getQueryPanelHeaderClassName = (surface) => (surface === 'left' ? 'queries-panel-header' : 'd-none');
+
+export const isQuerySearchPersistent = (surface) => surface === 'left';
+
+export const getQueryHeaderPlacement = (surface) =>
+  surface === 'left' ? { add: 'title', search: 'toolbar' } : { add: 'toolbar', search: 'conditional' };
+
+export const getQueryAddButtonPresentation = (surface) =>
+  surface === 'left'
+    ? { size: 'default', style: { fontWeight: 400, padding: '7px 12px' }, variant: 'outline' }
+    : { size: 'medium', variant: 'outline' };
+
+export const QUERY_POPOVER_MOTION_TARGETS = ['new-query', 'filter', 'query-actions', 'dropdown', 'parameter'];
+
+export const getQueryPopoverMotion = (kind) => ({
+  className: QUERY_POPOVER_MOTION_TARGETS.includes(kind) ? 'query-panel-popover-motion' : '',
+  transition: QUERY_POPOVER_MOTION_TARGETS.includes(kind),
+});
+
+export const getQueryToolbarClassName = (surface, _showSearchBox) =>
+  `queries-header${surface === 'left' ? ' queries-toolbar' : ''}`;
+
+export const getQuerySearchClassName = (surface, darkMode) =>
+  `queries-search d-flex${darkMode ? ' theme-dark' : ''}${surface === 'left' ? ' query-search--left' : ''}`;
+
+export const getQuerySearchFocusStyle = (surface) =>
+  surface === 'left'
+    ? {
+        '--query-search-focus-background': 'var(--background-surface-layer-01)',
+        '--query-search-focus-border': 'var(--slate8)',
+        '--query-search-focus-shadow': 'none',
+      }
+    : undefined;
+
+export const getRightPanelClassName = (activeTab) =>
+  `editor-sidebar right-panel-shell${activeTab === 'query' ? ' right-panel-shell--query' : ''}`;
+
+export const getAppBuilderTypographyStyle = () => ({
+  '--app-builder-font-family': "'Inter', sans-serif",
+  '--app-builder-code-font-family': "'Source Code Pro', monospace",
+  '--app-builder-canvas-font-family': "'IBM Plex Sans', sans-serif",
+});
+
+export const getRightPanelStyle = (activeTab) =>
+  activeTab === 'query'
+    ? {
+        maxWidth: 'calc(100vw - 54px)',
+        overflow: 'hidden',
+        width: 'min(496px, calc(100vw - 54px))',
+      }
+    : { overflow: 'auto' };
+
+export const getQueryManagerClassName = (surface, darkMode) =>
+  `query-manager${darkMode ? ' theme-dark' : ''}${surface === 'right' ? ' query-manager--right' : ''}`;
+
+const QUERY_DETAILS_CATEGORY_BY_TAB = { 1: 'setup', 2: 'transformation', 3: 'settings' };
+
+export const getQueryDetailsClassName = (surface, activeTab) =>
+  `query-details${
+    surface === 'right'
+      ? ` query-details--right query-fields-stacked${
+          QUERY_DETAILS_CATEGORY_BY_TAB[activeTab]
+            ? ` query-details-category--${QUERY_DETAILS_CATEGORY_BY_TAB[activeTab]}`
+            : ''
+        }`
+      : ''
+  }`;
+
+export const QUERY_FIELD_LABEL_CLASS_NAME = 'query-field-label';
+export const QUERY_FIELD_HELPER_CLASS_NAME = 'query-field-helper';
+export const getQueryTypographyClassName = (kind) =>
+  kind === 'helper' ? QUERY_FIELD_HELPER_CLASS_NAME : QUERY_FIELD_LABEL_CLASS_NAME;
+
+export const getQueryDetailsStyle = (surface) =>
+  surface === 'right'
+    ? {
+        '--query-panel-background': '#ffffff',
+        '--query-field-label-color': 'var(--slate11)',
+        '--query-field-label-font-size': '13px',
+        '--query-field-label-font-weight': 400,
+        '--query-field-label-line-height': '20px',
+        '--query-field-helper-color': 'var(--slate10)',
+        '--query-field-helper-font-size': '11px',
+        '--query-field-helper-font-weight': 400,
+        '--query-field-helper-line-height': '16px',
+        '--query-field-value-color': 'var(--text-default)',
+        '--query-field-value-font-size': '13px',
+        '--query-field-value-font-weight': 400,
+        '--query-field-value-line-height': '20px',
+        '--query-control-background': '#ffffff',
+        '--query-control-border': 'var(--slate7)',
+        '--query-control-border-width': '1px',
+        '--query-dropdown-button-border-width': '0px',
+        '--query-dropdown-height': '36px',
+        '--query-dropdown-hover-background': '#ffffff',
+        '--query-dropdown-focus-border': 'var(--slate7)',
+        '--query-dropdown-focus-shadow': 'none',
+        '--query-dropdown-selected-background': '#ffffff',
+      }
+    : undefined;
+
+export const getQueryDetailsOverflowStyle = (surface, hasSelectedQuery, previewHeight) => ({
+  height: `calc(100% - ${hasSelectedQuery ? previewHeight + 40 : 0}px)`,
+  ...(surface === 'right' && hasSelectedQuery ? { paddingBottom: `${previewHeight + 16}px` } : {}),
+});
+
+export const TOOLJET_DB_MODE_OPTIONS = [
+  { label: 'GUI mode', value: 'GUI mode' },
+  { label: 'SQL mode', value: 'SQL mode' },
+];
+
+export const getTooljetDbModeControlPresentation = () => ({
+  animateMenu: true,
+  height: 36,
+  type: 'dropdown',
+  useMenuPortal: false,
+});
+
+export const getQueryHeaderClassName = (surface) =>
+  `row header${surface === 'right' ? ' query-manager-header--right query-manager-header--polished' : ''}`;
+
+export const getQueryHeaderControlPresentation = (control, surface = 'bottom') => ({
+  className: `query-header-control${control === 'close' ? ' query-header-control--close' : ''}`,
+  ...(control === 'close' && { iconSizePx: 16 }),
+  ...(control === 'preview' && surface === 'right' && { style: { fontWeight: 400 } }),
+  size: 'medium',
+});
+
+export const getQueryTabClassName = (surface, isActive) =>
+  `query-manager-tab${surface === 'right' ? ' query-manager-tab--right' : ''}${isActive ? ' is-active' : ''}`;
+
+export const getQueryTabsStyle = (surface) =>
+  surface === 'right'
+    ? {
+        gap: '3px',
+        '--query-tab-font-size': '13px',
+        '--query-tab-font-weight': 400,
+        '--query-tab-line-height': '20px',
+      }
+    : { gap: '3px', marginBottom: '-15px' };

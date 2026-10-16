@@ -21,7 +21,7 @@ const RenderColumnUI = ({
   return (
     <div className="" key={id}>
       <Container fluid className="p-0">
-        <Row className="mx-0">
+        <Row className="mx-0 tooljetdb-condition-row">
           <Col sm="4" className="p-0">
             <DropDownSelect
               useMenuPortal={true}

@@ -129,8 +129,8 @@ export default function JoinSelect({ darkMode }) {
 
           return (
             <div key={table}>
-              <Row className="mb-2 mx-0">
-                <Col sm="3" className="p-0">
+              <Row className="mb-2 mx-0 tooljetdb-condition-row tooljetdb-join-row">
+                <Col sm="4" className="p-0">
                   <div
                     style={{
                       height: '30px',
@@ -141,7 +141,7 @@ export default function JoinSelect({ darkMode }) {
                     {findTableDetails(table)?.table_name ?? ''}
                   </div>
                 </Col>
-                <Col sm="9" className="p-0">
+                <Col sm="8" className="p-0">
                   <DropDownSelect
                     buttonClasses="border rounded-end"
                     highlightSelected={false}

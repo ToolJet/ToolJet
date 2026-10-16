@@ -76,34 +76,40 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}, 
   };
 }
 
-export function queryManagerSelectComponentStyle(darkMode, width = 224, height = 32) {
+export function queryManagerSelectComponentStyle(darkMode, width = 224, height = 36) {
   return {
-    menuPortal: (provided) => ({ ...provided, zIndex: 999, pointerEvents: 'auto' }),
+    menuPortal: (provided) => ({ ...provided, zIndex: 2000, pointerEvents: 'auto' }),
     menuList: (base) => ({
       ...base,
     }),
-    option: (provided) => ({
+    option: (provided, state) => ({
       ...provided,
       fontSize: '12px',
       cursor: 'pointer',
-      backgroundColor: darkMode ? '#2b3547' : '#fff',
+      backgroundColor: darkMode
+        ? '#2b3547'
+        : state.isSelected
+          ? 'var(--indigo3)'
+          : state.isFocused
+            ? 'var(--slate3)'
+            : '#fff',
       color: darkMode ? '#fff' : '#11181C',
       ':hover': {
-        backgroundColor: darkMode ? '#323C4B' : '#F8FAFF',
+        backgroundColor: darkMode ? '#323C4B' : 'var(--slate3)',
       },
       minHeight: '40px', // or your desired height
       padding: '10px 12px',
       display: 'flex',
       alignItems: 'center',
     }),
-    control: (provided) => ({
+    control: (provided, state) => ({
       ...provided,
-      boxShadow: 'none',
+      boxShadow: state.isFocused ? '0 0 0 2px var(--indigo4)' : 'none',
       backgroundColor: darkMode ? '#2b3547' : '#ffffff',
       borderRadius: '6px',
-      height: 32,
-      minHeight: 32,
-      borderColor: darkMode ? 'inherit' : ' #D7DBDF',
+      height,
+      minHeight: height,
+      borderColor: darkMode ? 'inherit' : state.isFocused ? 'var(--indigo9)' : 'var(--slate7)',
       '&:hover': {
         backgroundColor: darkMode ? '' : '#F8F9FA',
       },
