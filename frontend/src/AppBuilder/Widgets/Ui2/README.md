@@ -78,3 +78,7 @@ These run with the frontend jest suite (`npx jest --maxWorkers=2 src/AppBuilder/
 - `codeRules.spec.js`: prefixed classes only, no `!important` beyond the documented one, no reading of the canvas's
   DOM, no `exhaustive-deps` suppressions.
 - `npm run test:ui2-fuzz` (not in the default run): every widget with junk bindings, mounted and re-rendered.
+- `npm run test:ui2-leaks` (not in the default run, about 1.5 minutes): every widget mounted and unmounted 50 times
+  with its defaults (overlays opened first), leaving no window or document listener, observer, timer, store
+  subscription, body node or attribute, Leaflet map or Recharts node behind. `__tests__/leaks/leakSuite.jsx` lists the
+  known leaks in code outside this folder.

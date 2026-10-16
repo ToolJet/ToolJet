@@ -124,9 +124,9 @@ module.exports = {
   // One naming convention for the whole repository: `*.spec.*` inside a
   // `__tests__/` directory. A file named `*.test.*` will NOT run.
   testMatch: ['**/__tests__/**/*.spec.[jt]s?(x)'],
-  // The UI 2.0 widgets' junk-input fuzz suite is slow (minutes of CPU) and is not a behaviour test: it runs on its
-  // own with `npm run test:ui2-fuzz`.
-  testPathIgnorePatterns: ['/node_modules/', '/Widgets/Ui2/__tests__/fuzz/'],
+  // The UI 2.0 widgets' junk-input fuzz suite and leak suite are slow (minutes of CPU) and are not behaviour tests:
+  // they run on their own with `npm run test:ui2-fuzz` and `npm run test:ui2-leaks`.
+  testPathIgnorePatterns: ['/node_modules/', '/Widgets/Ui2/__tests__/fuzz/', '/Widgets/Ui2/__tests__/leaks/'],
   // assets/libs and build/assets/libs both ship a pyodide package.json, which
   // collides in jest-haste-map. Neither is ever imported by a test.
   modulePathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/assets/libs/'],
