@@ -51,6 +51,7 @@ import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
+import UpgradePlanModal from '@/modules/common/components/UpgradePlanModal';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -208,6 +209,7 @@ class AppComponent extends React.Component {
     };
     let toastOptions = {
       style: {
+        maxWidth: '400px',
         overflowWrap: 'anywhere',
       },
     };
@@ -219,6 +221,7 @@ class AppComponent extends React.Component {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
+          maxWidth: '400px',
           overflowWrap: 'anywhere',
         },
       };
@@ -497,6 +500,7 @@ class AppComponent extends React.Component {
               </Routes>
             </BreadCrumbContext.Provider>
             <div id="modal-div" />
+            <UpgradePlanModal />
           </div>
 
           <Toast toastOptions={toastOptions} />

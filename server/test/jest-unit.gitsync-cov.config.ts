@@ -52,10 +52,14 @@ const GITSYNC_COVERAGE_GLOBS = [
 const config: Config.InitialOptions = {
   ...baseConfig,
   rootDir: '..',
-  testPathIgnorePatterns: ['/node_modules/'],
-  // Only the git-sync-family unit specs.
-  testRegex:
-    'test/modules/(git-sync|git-sync-configs|git-sync-webhooks|platform-git-sync|workspace-branches|app-git)/unit/.*spec\\.ts$',
+  // Only the git-sync-family unit specs. testRegex and testPathIgnorePatterns are per project,
+  // so they are applied to each of the base config's projects.
+  projects: (baseConfig.projects as Config.InitialProjectOptions[]).map((project) => ({
+    ...project,
+    testPathIgnorePatterns: ['/node_modules/'],
+    testRegex:
+      'test/modules/(git-sync|git-sync-configs|git-sync-webhooks|platform-git-sync|workspace-branches|app-git)/unit/.*spec\\.ts$',
+  })),
   collectCoverage: true,
   collectCoverageFrom: GITSYNC_COVERAGE_GLOBS,
   coverageProvider: 'v8',

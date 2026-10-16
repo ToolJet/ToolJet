@@ -22,8 +22,8 @@ import "../commands/apiCommands";
 import "../commands/appbuilder/appbuilderCommands";
 import "../commands/appbuilder/appbuilderApiCommands";
 import "../commands/appbuilder/codemirrorCommands";
-import "../commands/workflowsApiCommands";
-import '../commands/workflowCommands';
+import "../commands/workflows/workflowsApiCommands";
+import "../commands/workflows/workflowCommands";
 
 import '../commands/platform/platformApiCommands';
 
@@ -38,12 +38,11 @@ import '../commands/platform/gitSyncAppCommands';
 // Cypress.
 import 'cypress-real-dnd/commands';
 
-// cypress-live-reporter — inert unless the plugin injects Cypress.env('clr')
-import '../../tools/cypress-live-reporter/support';
+// cypress-live-reporter — browser side; inert unless the plugin injects Cypress.env('clr')
+import 'cypress-live-reporter/support';
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 Cypress.on("uncaught:exception", (err, runnable) => {
   return false;
 });
-

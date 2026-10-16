@@ -1,8 +1,9 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useCallback, useRef, useState } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
+import { trimStaticId } from '@/AppBuilder/RightSideBar/Inspector/Utils';
 const NAV_ITEM_EVENT_META = { name: 'Navigation', events: { onClick: { displayName: 'On click' } } };
 
 const NavItemPopover = forwardRef(
@@ -14,6 +15,7 @@ const NavItemPopover = forwardRef(
       onItemChange,
       onDeleteItem,
       onDuplicateItem,
+      validateItemId,
       getResolvedValue,
       parentId = null,
       ...restProps
@@ -21,6 +23,17 @@ const NavItemPopover = forwardRef(
     ref
   ) => {
     const iconVisibility = item?.iconVisibility;
+
+    // Stable identity for the Id field's `validationFn` — it's a dependency of
+    // SingleLineCodeEditor's value-reset effect, so a fresh closure each render would
+    // wipe an in-progress edit on any unrelated re-render. Reading `item` via a ref
+    // keeps the reference stable while still validating the current id.
+    const itemRef = useRef(item);
+    itemRef.current = item;
+    const validateIdField = useCallback((value) => validateItemId(value, itemRef.current?.id), [validateItemId]);
+
+    // Bumped to force just the Id field to remount and re-seed from `initialValue`.
+    const [idFieldResetKey, setIdFieldResetKey] = useState(0);
 
     // Common CodeHinter props
     const commonCodeHinterProps = {
@@ -39,16 +52,32 @@ const NavItemPopover = forwardRef(
       type: 'fxEditor',
     };
 
+    // Identify the item by its stable `_key`, not `id` — `id` is itself editable, and
+    // a same-tick sibling edit must still resolve to the right item after a rename.
     const handleChange = (propertyPath, value) => {
-      onItemChange(propertyPath, value, item.id, parentId);
+      if (propertyPath === 'id') {
+        const trimmedValue = trimStaticId(value);
+        const [isValid] = validateIdField(trimmedValue);
+        if (!isValid) {
+          // Reject outright — letting a colliding id sit in state, even unpersisted, let two items share one.
+          setIdFieldResetKey((key) => key + 1);
+          return;
+        }
+        onItemChange(propertyPath, value, item._key, parentId);
+        // Stored trimmed (see useMenuItemsManager); nothing else would resync the
+        // field's own displayed text, so force it to re-seed from the trimmed value.
+        if (trimmedValue !== value) setIdFieldResetKey((key) => key + 1);
+        return;
+      }
+      onItemChange(propertyPath, value, item._key, parentId);
     };
 
     const handleDelete = () => {
-      onDeleteItem(item.id, parentId);
+      onDeleteItem(item._key, parentId);
     };
 
     const handleDuplicate = () => {
-      onDuplicateItem?.(item.id, parentId);
+      onDuplicateItem?.(item._key, parentId);
     };
 
     return (
@@ -108,6 +137,30 @@ const NavItemPopover = forwardRef(
                   data-cy="inspector-nav-item-details-label-input"
                   initialValue={item?.label}
                   onChange={(value) => handleChange('label', value)}
+                  componentId={componentId}
+                  paramName="label"
+                  fieldMeta={{ type: 'string', validation: { schema: { type: 'string' }, defaultValue: 'Label' } }}
+                />
+              </div>
+
+              {/* Id field */}
+              <div data-cy="inspector-nav-item-details-id-field" className="nav-item-popover-field">
+                <label data-cy="inspector-nav-item-details-id-label" className="nav-item-popover-field-label">
+                  Id
+                </label>
+                <CodeHinter
+                  key={idFieldResetKey}
+                  {...basicCodeHinterProps}
+                  data-cy="inspector-nav-item-details-id-input"
+                  initialValue={item?.id}
+                  placeholder={'Item ID'}
+                  onChange={(value) => handleChange('id', value)}
+                  // Commit synchronously on blur — the popover's rootClose can beat a deferred setTimeout(0) commit.
+                  delayOnChange={false}
+                  validationFn={validateIdField}
+                  componentId={componentId}
+                  paramName="id"
+                  fieldMeta={{ type: 'string', validation: { schema: { type: 'string' }, defaultValue: 'itemId' } }}
                 />
               </div>
 
@@ -122,6 +175,9 @@ const NavItemPopover = forwardRef(
                     initialValue={item?.caption ?? ''}
                     placeholder={'Optional description'}
                     onChange={(value) => handleChange('caption', value)}
+                    componentId={componentId}
+                    paramName="caption"
+                    fieldMeta={{ type: 'string', validation: { schema: { type: 'string' }, defaultValue: 'Caption' } }}
                   />
                 </div>
               )}

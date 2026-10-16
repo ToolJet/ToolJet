@@ -1,0 +1,15 @@
+{
+  "name": "Resource and capacity planning",
+  "description": "Balance project demand with people, skills and availability, and fill staffing requests with confidence.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "resource-and-capacity-planning",
+  "category": "projects-and-resourcing"
+}

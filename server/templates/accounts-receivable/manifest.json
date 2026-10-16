@@ -1,0 +1,21 @@
+{
+  "name": "Accounts receivable",
+  "description": "Track outstanding invoices, overdue balances and collection follow-ups by customer to keep cash moving.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "accounts-receivable",
+  "category": "finance-and-accounting"
+}

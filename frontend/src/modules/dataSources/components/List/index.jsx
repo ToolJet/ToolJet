@@ -48,14 +48,18 @@ export const List = ({ updateSelectedDatasource }) => {
     return !!(state.currentBranch?.is_default || state.currentBranch?.isDefault);
   });
 
+  // Wait for branch resolution — an earlier unscoped fetch omits is_synced and can get latched in.
+  const isBranchStoreInitialized = useWorkspaceBranchesStore((state) => state.isInitialized);
+
   useEffect(() => {
     environments?.length &&
+      isBranchStoreInitialized &&
       fetchDataSources(false).catch(() => {
         toast.error('Failed to fetch datasources');
         return;
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [environments]);
+  }, [environments, isBranchStoreInitialized]);
 
   useEffect(() => {
     setFilteredData([...dataSources]);
