@@ -5,3 +5,5 @@ import * as avatars from '@/AppBuilder/Widgets/NewTable/_utils/avatarHue';
 export const avatarHue = avatars.avatarHue as (name: unknown) => number;
 /** Whether a value names nobody (empty, 'Unassigned', a dash). */
 export const isNobody = avatars.isNobody as (value: unknown) => boolean;
+/** Two initials, of the first and the last word with a letter ("Yusuf & Leyla Demir" reads YD). */
+export const initials = avatars.initials as (name: unknown) => string;

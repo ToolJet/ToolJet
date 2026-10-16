@@ -10,8 +10,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { chipLabel, chipTone } from '../../../_utils/chipTone';
-import { avatarHue, isNobody } from '../../../_utils/avatarHue';
-import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { avatarHue, isNobody, initials } from '../../../_utils/avatarHue';
 
 /**
  * StringColumnAdapter - Table adapter for StringRenderer

@@ -2,13 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import {
-  initials,
   rootWidth,
   useAutoHeight,
   useExposed,
   useStable,
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { cardItems, gridColumns, type CardItem } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';

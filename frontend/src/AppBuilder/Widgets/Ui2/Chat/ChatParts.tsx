@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import toast from 'react-hot-toast';
 import { AlertCircle, Check, Copy } from 'lucide-react';
-import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { formatTimestamp } from '@/AppBuilder/Widgets/Ui2/_shared/chatHelpers';
 import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';

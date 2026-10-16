@@ -4,7 +4,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
-import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Avatar, AvatarFallback, Badge, Progress, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { badgeLook, isSet, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { cardClamp, cardDateLabel, cardDetails } from './kanbanBoard';

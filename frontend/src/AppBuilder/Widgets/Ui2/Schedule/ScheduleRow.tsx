@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { bookingFace, slotValue } from './scheduleModel';

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import DOMPurify from 'dompurify';
 import { Check } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
-import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import {
   Avatar,
   AvatarFallback,
