@@ -37,6 +37,7 @@ import {
 } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { getRightPanelAfterClearingSelection } from '@/AppBuilder/panelLayout';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -367,12 +368,10 @@ export const createComponentsSlice = (set, get) => ({
         state.selectedComponents = [];
         state.isCanvasHeaderSelected = false;
         state.isCanvasFooterSelected = false;
-        if (state.isRightSidebarOpen) {
-          state.activeRightSideBarTab =
-            state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
-              ? RIGHT_SIDE_BAR_TAB.PAGES
-              : RIGHT_SIDE_BAR_TAB.COMPONENTS;
-        }
+        state.activeRightSideBarTab = getRightPanelAfterClearingSelection(
+          state.activeRightSideBarTab,
+          state.isRightSidebarOpen
+        );
       },
       false,
       'clearSelectedComponents'

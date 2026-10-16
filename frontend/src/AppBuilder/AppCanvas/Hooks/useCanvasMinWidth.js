@@ -1,26 +1,28 @@
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../appCanvasConstants';
+import { getAiChatSurfaceState } from '@/AppBuilder/LeftSidebar/aiChatLayout';
 
 export default function useCanvasMinWidth({ currentMode, isModuleMode }) {
   const isLeftSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
+  const isLeftPanelOpen = getAiChatSurfaceState(selectedSidebarItem, isLeftSidebarOpen).isLeftPanelOpen;
 
   const getMinWidth = () => {
     if (isModuleMode) return '100%';
 
-    const shouldAdjust = currentMode === 'edit' && (isLeftSidebarOpen || isRightSidebarOpen);
+    const shouldAdjust = currentMode === 'edit' && (isLeftPanelOpen || isRightSidebarOpen);
 
     if (!shouldAdjust) return '';
     let offset;
     const currentSideBarWidth = LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default;
 
-    if (isLeftSidebarOpen && isRightSidebarOpen) {
+    if (isLeftPanelOpen && isRightSidebarOpen) {
       offset = `${currentSideBarWidth + RIGHT_SIDEBAR_WIDTH}px`;
-    } else if (isLeftSidebarOpen && !isRightSidebarOpen) {
+    } else if (isLeftPanelOpen && !isRightSidebarOpen) {
       offset = `${currentSideBarWidth}px`;
-    } else if (isRightSidebarOpen && !isLeftSidebarOpen) {
+    } else if (isRightSidebarOpen && !isLeftPanelOpen) {
       offset = `${RIGHT_SIDEBAR_WIDTH}px`;
     }
 

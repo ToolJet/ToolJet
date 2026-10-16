@@ -30,6 +30,7 @@ import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
 
 import useCanvasResizing from './Hooks/useCanvasResizing';
+import { EDITOR_CANVAS_WIDTH } from '@/AppBuilder/panelLayout';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -180,7 +181,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
       height: currentMode === 'edit' ? canvasContainerHeight : '100%',
       background: canvasBgColor,
-      width: currentMode === 'edit' ? `calc(100% - 96px)` : '100%',
+      width: currentMode === 'edit' ? EDITOR_CANVAS_WIDTH : '100%',
       alignItems: 'unset',
       justifyContent: 'unset',
       borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,

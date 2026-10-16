@@ -26,7 +26,7 @@ const RenderSortUI = ({
   return (
     <div className="">
       <Container fluid className="p-0 ">
-        <Row className="mb-2 mx-0 ">
+        <Row className="mb-2 mx-0 tooljetdb-condition-row">
           <Col sm="6" className="p-0">
             <DropDownSelect
               buttonClasses={`border ${

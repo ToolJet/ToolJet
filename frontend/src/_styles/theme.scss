@@ -692,7 +692,7 @@ button {
 
   .editor-sidebar {
     position: fixed;
-    right: 48px;
+    right: 0;
     overflow: hidden;
     width: 300px;
     flex: 1 1 auto;
@@ -888,7 +888,7 @@ button {
       top: 48px;
       position: fixed;
       // right: 300px;
-      left: 48px;
+      left: 54px;
       overflow-y: hidden;
       overflow-x: hidden;
       -webkit-box-pack: center;
@@ -8538,7 +8538,7 @@ tbody {
 .layout-header {
   position: fixed;
   right: 0;
-  left: 48px;
+  left: 54px;
   z-index: 1;
   background: var(--page-weak);
   height: 48px;

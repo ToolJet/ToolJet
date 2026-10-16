@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Overlay, Popover } from 'react-bootstrap';
+import { Fade, Overlay, Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import classNames from 'classnames';
 import Edit from '@/_ui/Icon/bulkIcons/Edit';
@@ -11,6 +11,7 @@ import { debounce } from 'lodash';
 import { Waypoints } from 'lucide-react';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { getQueryPopoverMotion } from '@/AppBuilder/panelLayout';
 
 const QueryCardMenu = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
@@ -27,6 +28,7 @@ const QueryCardMenu = ({ darkMode }) => {
   const setRenamingQuery = useStore((state) => state.queryPanel.setRenamingQuery);
   const deleteDataQuery = useStore((state) => state.queryPanel.deleteDataQuery);
   const setEntityToViewDependencies = useStore((state) => state.setEntityToViewDependencies);
+  const popoverMotion = getQueryPopoverMotion('query-actions');
 
   const QUERY_MENU_OPTIONS = [
     {
@@ -108,7 +110,7 @@ const QueryCardMenu = ({ darkMode }) => {
         target={targetElement}
         show={showQueryHandlerMenu}
         rootClose
-        transition={false}
+        transition={popoverMotion.transition ? Fade : false}
         onHide={() => toggleQueryHandlerMenu(false)}
         popperConfig={{
           strategy: 'absolute',
@@ -132,7 +134,11 @@ const QueryCardMenu = ({ darkMode }) => {
         }}
       >
         {(props) => (
-          <Popover {...props} id="query-list-menu" className={darkMode && 'dark-theme'}>
+          <Popover
+            {...props}
+            id="query-list-menu"
+            className={classNames(popoverMotion.className, { 'dark-theme': darkMode })}
+          >
             <Popover.Body bsPrefix="list-item-popover-body">
               {QUERY_MENU_OPTIONS.map((option) => {
                 const optionBody = (

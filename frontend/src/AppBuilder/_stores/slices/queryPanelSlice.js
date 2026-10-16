@@ -13,7 +13,7 @@ import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
-const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
+const runtimePanelPreferences = JSON.parse(localStorage.getItem('runtimePanelPreferences')) ?? {};
 
 // tj-403 = data-source query-run permission denied; toast in every mode, unlike ordinary query failures
 const toastIfQueryRunRestricted = (errorData) => {
@@ -21,10 +21,10 @@ const toastIfQueryRunRestricted = (errorData) => {
 };
 
 const initialState = {
-  isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
+  isQueryPaneExpanded: runtimePanelPreferences?.isExpanded ?? false,
   isDraggingQueryPane: false,
   // eslint-disable-next-line no-constant-binary-expression
-  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : (95 ?? 70),
+  queryPanelHeight: runtimePanelPreferences?.isExpanded ? 30 : 0,
   selectedQuery: null,
   previewPanelHeight: 0,
   selectedDataSource: null,

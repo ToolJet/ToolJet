@@ -278,6 +278,7 @@ class OpenapiComponent extends React.Component {
                 </div>
                 <div className="col openapi-operation-options">
                   <Select
+                    animateMenu
                     options={this.computeHostOptions(baseUrls)}
                     value={this.props.selectedDataSource.options?.host?.value || this.state.options.host}
                     onChange={this.changeHost}
@@ -297,6 +298,7 @@ class OpenapiComponent extends React.Component {
               </div>
               <div className="col openapi-operation-options">
                 <Select
+                  animateMenu
                   options={this.computeOperationSelectionOptions(spec.paths)}
                   value={[this.state.options.operation, this.state.options.path].join(',')}
                   onChange={this.changeOperation}

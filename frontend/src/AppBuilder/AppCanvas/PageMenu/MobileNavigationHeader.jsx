@@ -8,7 +8,6 @@ import Header from '@/AppBuilder/Viewer/Header';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import AppLogo from '@/_components/AppLogo';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import PageMenuConfigHandle from '@/AppBuilder/AppCanvas/ConfigHandle/PageMenuConfigHandle';
 
 // Lazy load MobileNavigationMenu to reduce initial bundle size
@@ -33,11 +32,8 @@ const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, switc
   const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;
 
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode);
-  const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
-  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
-  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
-  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
-  const shouldShowBlueBorder = currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
+  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
+  const shouldShowBlueBorder = currentMode === 'edit' && selectedSidebarItem === 'pages';
 
   const _renderAppNameAndLogo = () => (
     <div className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]">
@@ -92,10 +88,8 @@ const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, switc
     const isNavigationItem = e.target.closest('.icon-btn');
 
     if (!isNavigationItem) {
-      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-      if (!isRightSidebarOpen) {
-        setRightSidebarOpen(true);
-      }
+      useStore.getState().setSelectedSidebarItem('pages');
+      useStore.getState().toggleLeftSidebar(true);
     }
   };
 

@@ -5,8 +5,9 @@ import QueryManagerBody from './Components/QueryManagerBody';
 import { CodeHinterContext } from '@/AppBuilder/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
+import { getQueryManagerClassName } from '@/AppBuilder/panelLayout';
 
-const QueryManager = ({ mode, darkMode }) => {
+const QueryManager = ({ mode, darkMode, surface = 'bottom' }) => {
   // TODO to be moved into queryPanelStore and reimplemented
   const runQuery = useStore((state) => state.queryPanel.runQuery);
   const loadingDataSources = useStore((state) => state.loadingDataSources);
@@ -51,11 +52,11 @@ const QueryManager = ({ mode, darkMode }) => {
 
   return (
     <div
-      className={cx(`query-manager ${darkMode ? 'theme-dark' : ''}`, {
+      className={cx(getQueryManagerClassName(surface, darkMode), {
         'd-none': loadingDataSources,
       })}
     >
-      <QueryManagerHeader darkMode={darkMode} setActiveTab={setActiveTab} activeTab={activeTab} />
+      <QueryManagerHeader darkMode={darkMode} setActiveTab={setActiveTab} activeTab={activeTab} surface={surface} />
       <CodeHinterContext.Provider
         value={{
           parameters: selectedQuery?.options?.parameters?.reduce(
@@ -67,7 +68,7 @@ const QueryManager = ({ mode, darkMode }) => {
           ),
         }}
       >
-        <QueryManagerBody darkMode={darkMode} activeTab={activeTab} />
+        <QueryManagerBody darkMode={darkMode} activeTab={activeTab} surface={surface} />
       </CodeHinterContext.Provider>
     </div>
   );
