@@ -9,7 +9,7 @@ import {
   shadRadarChartConfig,
   shadRadialChartConfig,
   shadSparklineConfig,
-} from '../../../WidgetManager/shadcnSource.charts';
+} from '../../../WidgetManager/widgets/shadcn';
 import {
   ShadComboChart,
   ShadFunnelChart,

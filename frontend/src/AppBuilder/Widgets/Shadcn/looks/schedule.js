@@ -1,5 +1,5 @@
 // ToolJet UI 2.0 pack: style variables and loading look of the Schedule (see shadcnLook.js and Shell's LOADING_LOOK).
-// Style keys match WidgetManager/shadcnSource.schedule.js; ShadSchedule.jsx reads the variables.
+// Style keys match WidgetManager/widgets/shad*.js; ShadSchedule.jsx reads the variables.
 import { px } from '../kanbanLook';
 
 export const LOOKS = {

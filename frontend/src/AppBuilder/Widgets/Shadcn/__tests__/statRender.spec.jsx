@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
-import { shadStatConfig } from '../../../WidgetManager/shadcnSource';
+import { shadStatConfig } from '../../../WidgetManager/widgets/shadStat';
 import { ShadStat } from '../Shadcn';
 
 // jsdom has no ResizeObserver; the Stat's auto height observes its box in view mode.

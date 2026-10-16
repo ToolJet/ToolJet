@@ -20,7 +20,7 @@ import './shadcn.scss';
 export { withControlState } from '../packHooks';
 
 // ToolJet UI 2.0 Schedule: resources down the side, time across (the hours of a day, or days), bookings as blocks,
-// a now-line, and clicks on a booking or an empty slot. Config in WidgetManager/shadcnSource.schedule.js, logic in
+// a now-line, and clicks on a booking or an empty slot. Config in WidgetManager/widgets/shad*.js, logic in
 // scheduleModel.js, style variables in looks/schedule.js.
 
 const ACCENT = 'var(--lk-accent,var(--sc-primary))';

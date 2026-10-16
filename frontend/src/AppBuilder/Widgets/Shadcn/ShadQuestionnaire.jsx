@@ -24,7 +24,7 @@ export { withControlState } from '../packHooks';
 
 // ToolJet UI 2.0 Questionnaire: a data-driven multi-step form after shadcn's Questionnaire, one question at a time
 // with progress, answer cards with shortcuts, Previous / Skip / Next / Submit and required-answer validation. Config in
-// WidgetManager/shadcnSource.conversation.js, logic in questionnaireModel.js, style variables in looks/conversation.js.
+// WidgetManager/widgets/shad*.js, logic in questionnaireModel.js, style variables in looks/conversation.js.
 
 const ACCENT = 'var(--lk-accent,var(--sc-primary))';
 

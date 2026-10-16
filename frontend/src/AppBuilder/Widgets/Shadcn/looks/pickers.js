@@ -1,5 +1,5 @@
 // shadcn/ui pack (experiment): style variables and loading looks of the pickers widgets (see shadcnLook.js and
-// Shell's LOADING_LOOK). Style keys match WidgetManager/shadcnSource.pickers.js.
+// Shell's LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js.
 import { px } from '../kanbanLook';
 
 const ACCENT = ['--sc-primary', '--sc-ring'];

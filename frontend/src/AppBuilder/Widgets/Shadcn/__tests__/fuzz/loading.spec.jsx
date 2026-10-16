@@ -1,9 +1,54 @@
 import { CONFIGS, NAMES, defaultsOf, installGuards, mountCase, problemsOf, styleDefaultsOf } from './harness';
-import { SKELETON_CAPABLE } from '../../../../WidgetManager/shadcnPackHelpers';
 
 // Every pack widget has a loading look: a spinner by default; the widgets whose look is a picture of their content
 // can draw a skeleton instead (the Loading look property).
 installGuards();
+
+// Widgets whose loading look is a picture of their content: they offer a spinner (the default) or a skeleton.
+const SKELETON_CAPABLE = new Set([
+  'ShadAccordion',
+  'ShadAlert',
+  'ShadAreaChart',
+  'ShadAvatar',
+  'ShadBadge',
+  'ShadBarChart',
+  'ShadBreadcrumb',
+  'ShadCalendar',
+  'ShadCardGrid',
+  'ShadCarousel',
+  'ShadCircularProgress',
+  'ShadComboChart',
+  'ShadEmpty',
+  'ShadFunnelChart',
+  'ShadHeading',
+  'ShadHeatmapChart',
+  'ShadHero',
+  'ShadIcon',
+  'ShadImage',
+  'ShadKanban',
+  'ShadKeyValue',
+  'ShadLineChart',
+  'ShadLink',
+  'ShadListView',
+  'ShadNavigation',
+  'ShadPieChart',
+  'ShadProgress',
+  'ShadProgressList',
+  'ShadRadarChart',
+  'ShadRadialChart',
+  'ShadRecordList',
+  'ShadScatterChart',
+  'ShadSchedule',
+  'ShadSparkline',
+  'ShadStat',
+  'ShadSteps',
+  'ShadSummaryStrip',
+  'ShadTable',
+  'ShadTabs',
+  'ShadTags',
+  'ShadText',
+  'ShadTimeline',
+]);
 
 // Nothing to show while loading (a line), the skeleton itself, and the Dialog (ModalV2's own loading, closed here).
 const NO_LOOK = new Set(['ShadSeparator', 'ShadSkeleton', 'ShadDialog']);

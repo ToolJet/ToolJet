@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { shadAreaChartConfig, shadBarChartConfig } from '../../../WidgetManager/shadcnSource';
+import { shadAreaChartConfig } from '../../../WidgetManager/widgets/shadAreaChart';
+import { shadBarChartConfig } from '../../../WidgetManager/widgets/shadBarChart';
 import { ShadAreaChart, ShadBarChart } from '../ShadCharts';
 
 // Counts (doses, jobs, seats) drew value ticks of 0.5, or 0.8, 1.5 and 2.3, which blind reviewers marked down in

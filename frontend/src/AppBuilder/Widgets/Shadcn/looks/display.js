@@ -1,5 +1,5 @@
 // shadcn/ui pack (experiment): style variables and loading looks of the display widgets (see shadcnLook.js and
-// Shell's LOADING_LOOK). Style keys match WidgetManager/shadcnSource.display.js; ShadDisplay.jsx reads the variables.
+// Shell's LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js; ShadDisplay.jsx reads the variables.
 import { px } from '../kanbanLook';
 
 const ACCENT = ['--sc-primary', '--sc-ring'];

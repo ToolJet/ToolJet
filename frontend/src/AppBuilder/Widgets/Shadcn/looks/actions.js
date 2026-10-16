@@ -1,5 +1,5 @@
 // shadcn/ui pack (experiment): style variables and loading looks of the actions widgets (see shadcnLook.js and
-// Shell's LOADING_LOOK). Style keys match WidgetManager/shadcnSource.actions.js; ShadActions.jsx reads the variables.
+// Shell's LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js; ShadActions.jsx reads the variables.
 import { px } from '../kanbanLook';
 
 export const LOOKS = {

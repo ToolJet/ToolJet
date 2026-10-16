@@ -1,5 +1,5 @@
 // ToolJet UI 2.0 pack: style variables and loading looks of the conversation widgets (see shadcnLook.js and Shell's
-// LOADING_LOOK). Style keys match WidgetManager/shadcnSource.conversation.js; ShadChat.jsx and ShadQuestionnaire.jsx
+// LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js; ShadChat.jsx and ShadQuestionnaire.jsx
 // read the variables. The Chat keeps the native Chat's style keys.
 import { px } from '../kanbanLook';
 import { fontStack } from '../typeLook';

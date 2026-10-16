@@ -5,7 +5,7 @@ import {
   shadHeadingConfig,
   shadStatConfig,
   shadTextConfig,
-} from '../../../WidgetManager/shadcnSource';
+} from '../../../WidgetManager/widgets/shadcn';
 import { ShadHeading, ShadStat, ShadText } from '../Shadcn';
 import { ShadBarChart } from '../ShadCharts';
 import { FONT_STACKS } from '../typeLook';

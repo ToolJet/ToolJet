@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.charts.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadComboChartConfig = {
   name: 'ShadComboChart',
   displayName: 'Combo chart',

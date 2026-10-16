@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.table.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadTableConfig = {
   name: 'ShadTable',
   displayName: 'Table',

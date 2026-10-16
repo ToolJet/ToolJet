@@ -61,7 +61,7 @@ import { joinStatRow } from './statRow';
 export { withControlState } from '../packHooks';
 
 // shadcn/ui pack (experiment, exp/antd-pack): native ToolJet widgets rendering shadcn/ui components. Configs live in
-// WidgetManager/widgets/shadcn.js (generated from WidgetManager/shadcnSource.js).
+// WidgetManager/widgets/shad*.js.
 
 // ---- Loading ------------------------------------------------------------------------------------------------------
 

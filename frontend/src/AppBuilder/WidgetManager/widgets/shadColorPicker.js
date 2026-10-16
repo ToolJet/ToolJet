@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.pickers.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadColorPickerConfig = {
   name: 'ShadColorPicker',
   displayName: 'Color picker',

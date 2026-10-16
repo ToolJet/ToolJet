@@ -35,7 +35,7 @@ export { withControlState } from '../packHooks';
 
 // ToolJet UI 2.0 Map: markers from rows on open raster tiles (Leaflet, no API key), toned by status, grouped into
 // counts when they crowd (supercluster), with route lines, areas, a heat layer, a popup, a selection, a picked spot
-// with address search, and the view exposed. Config in WidgetManager/shadcnSource.map.js, logic in mapModel.js, the
+// with address search, and the view exposed. Config in WidgetManager/widgets/shad*.js, logic in mapModel.js, the
 // heat layer, icons and geocoder in mapLayers.js, style variables in looks/map.js, look in shadcn.scss (.sc-map).
 // Leaflet is driven imperatively from effects: the map and its layers live in refs, and every handler reads the latest
 // properties through `live`.

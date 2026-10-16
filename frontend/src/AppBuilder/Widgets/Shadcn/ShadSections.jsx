@@ -25,7 +25,7 @@ import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
 
-// shadcn/ui pack: page sections (a hero, a card grid, a record list, a progress list and a summary strip). Configs in WidgetManager/shadcnSource.sections.js, style variables and loading looks
+// shadcn/ui pack: page sections (a hero, a card grid, a record list, a progress list and a summary strip). Configs in WidgetManager/widgets/shad*.js, style variables and loading looks
 // in looks/sections.js, data logic in sectionsModel.js. A section draws a designed layout from properties only, so it
 // stays editable in the inspector. Colours come from the theme (shadcn tokens) and the accent style.
 

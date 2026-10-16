@@ -1,5 +1,5 @@
 // ToolJet UI 2.0 pack: style variables and loading look of the Map (see shadcnLook.js and Shell's LOADING_LOOK).
-// Style keys match WidgetManager/shadcnSource.map.js; ShadMap.jsx and the .sc-map rules in shadcn.scss read them.
+// Style keys match WidgetManager/widgets/shad*.js; ShadMap.jsx and the .sc-map rules in shadcn.scss read them.
 import { px } from '../kanbanLook';
 
 export const LOOKS = {

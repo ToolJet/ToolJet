@@ -34,7 +34,7 @@ import './shadcn.scss';
 export { withControlState } from '../packHooks';
 
 // ToolJet UI 2.0 Chat: the native Chat widget (Widgets/Chat) in the pack's look, with its properties, events, exposed
-// values and actions. Config in WidgetManager/shadcnSource.conversation.js, message and scroll logic in chatModel.js,
+// values and actions. Config in WidgetManager/widgets/shad*.js, message and scroll logic in chatModel.js,
 // style variables in looks/conversation.js. Scrolling follows shadcn's Message Scroller: the view follows new content
 // only while the reader is at the end; a new user turn moves near the top with its reply growing below it; scrolled
 // up, nothing moves the reader and a Jump to latest button brings them back.

@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.sections.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadSummaryStripConfig = {
   name: 'ShadSummaryStrip',
   displayName: 'Summary strip',

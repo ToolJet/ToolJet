@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.overlays.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadDialogConfig = {
   name: 'ShadDialog',
   displayName: 'Dialog',

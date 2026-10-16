@@ -8,7 +8,7 @@ import {
   shadCarouselConfig,
   shadDropdownMenuConfig,
   shadNavigationConfig,
-} from '../../../WidgetManager/shadcnSource.actions';
+} from '../../../WidgetManager/widgets/shadcn';
 
 // Radix popper measures its anchor; jsdom has no ResizeObserver.
 beforeAll(() => {

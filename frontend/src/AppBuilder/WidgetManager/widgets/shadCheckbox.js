@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadCheckboxConfig = {
   name: 'ShadCheckbox',
   displayName: 'Checkbox',

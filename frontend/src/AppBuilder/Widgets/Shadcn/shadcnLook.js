@@ -3,7 +3,7 @@
 // pack's utilities are !important, so inline colours would lose to them; variables do not. Accent-like styles override
 // shadcn's own tokens for the widget (`--sc-primary`, `--sc-ring`, `--sc-chart-1`), so everything drawn in them
 // (checked states, focus rings, the progress bar, the chart palette) follows at once. Kanban keeps its own module
-// (kanbanLook.js). Style keys match the configs in WidgetManager/shadcnSource.js.
+// (kanbanLook.js). Style keys match the configs in WidgetManager/widgets/shad*.js.
 import { isSet, px } from './kanbanLook';
 import { GROUP_LOOKS } from './looks';
 import { fontStack, fontWeight, textCase } from './typeLook';

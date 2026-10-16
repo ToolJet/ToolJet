@@ -1,7 +1,9 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import * as Display from '../ShadDisplay';
-import * as configs from '../../../WidgetManager/shadcnSource.display';
+import { shadcnConfigs } from '../../../WidgetManager/widgets/shadcn';
+
+const configs = Object.fromEntries(shadcnConfigs.map((c) => [`${c.name[0].toLowerCase()}${c.name.slice(1)}Config`, c]));
 
 // The definition's values as the app resolves them: '{{...}}' evaluated, plain strings kept.
 const resolve = (value) => {

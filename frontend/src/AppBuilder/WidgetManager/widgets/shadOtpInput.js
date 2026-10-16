@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.inputs.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadOtpInputConfig = {
   name: 'ShadOtpInput',
   displayName: 'OTP input',

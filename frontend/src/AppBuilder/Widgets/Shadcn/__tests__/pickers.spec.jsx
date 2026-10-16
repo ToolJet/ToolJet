@@ -8,7 +8,9 @@ import {
   ShadRating,
   ShadTagsInput,
 } from '../ShadPickers';
-import * as configs from '../../../WidgetManager/shadcnSource.pickers';
+import { shadcnConfigs } from '../../../WidgetManager/widgets/shadcn';
+
+const configs = Object.fromEntries(shadcnConfigs.map((c) => [`${c.name[0].toLowerCase()}${c.name.slice(1)}Config`, c]));
 
 // jsdom lacks what Radix's popper and cmdk's list reach for.
 beforeAll(() => {

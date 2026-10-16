@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { shadHeroConfig } from '../../../WidgetManager/shadcnSource.sections';
+import { shadHeroConfig } from '../../../WidgetManager/widgets/shadHero';
 import { ShadHero } from '../ShadSections';
 
 // A Hero taller than its saved box drew past its bottom edge and over the widget under it: a task board's column

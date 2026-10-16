@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.actions.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadButtonGroupConfig = {
   name: 'ShadButtonGroup',
   displayName: 'Button group',

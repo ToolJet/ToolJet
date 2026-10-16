@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.display.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadTagsConfig = {
   name: 'ShadTags',
   displayName: 'Tags',

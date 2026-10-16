@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.inputs.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadNumberInputConfig = {
   name: 'ShadNumberInput',
   displayName: 'Number input',

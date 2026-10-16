@@ -44,7 +44,7 @@ import './shadcn.scss';
 export { withControlState } from '../packHooks';
 
 // shadcn/ui pack (experiment): inputs widgets: number, password, phone, currency, OTP, time and date-time. Pure logic
-// lives in inputsModel.js; configs in WidgetManager/shadcnSource.inputs.js; style variables in looks/inputs.js.
+// lives in inputsModel.js; configs in WidgetManager/widgets/shad*.js; style variables in looks/inputs.js.
 
 // ---- Building blocks -----------------------------------------------------------------------------------------------
 

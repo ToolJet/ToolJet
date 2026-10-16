@@ -36,7 +36,7 @@ import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
 
-// shadcn/ui pack (experiment): the actions widgets. Configs in WidgetManager/shadcnSource.actions.js, style variables
+// shadcn/ui pack (experiment): the actions widgets. Configs in WidgetManager/widgets/shad*.js, style variables
 // in looks/actions.js, pure logic in actionsModel.js.
 
 const Icon = ({ name, className, size = 16 }) =>

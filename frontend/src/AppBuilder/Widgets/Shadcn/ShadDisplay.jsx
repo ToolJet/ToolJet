@@ -29,7 +29,7 @@ import './shadcn.scss';
 
 export { withControlState } from '../packHooks';
 
-// shadcn/ui pack (experiment): display widgets. Configs in WidgetManager/shadcnSource.display.js, style variables and
+// shadcn/ui pack (experiment): display widgets. Configs in WidgetManager/widgets/shad*.js, style variables and
 // loading looks in looks/display.js, data logic in displayModel.js. Colours come from the theme (shadcn tokens) and
 // each is overridable by a style through a CSS variable.
 

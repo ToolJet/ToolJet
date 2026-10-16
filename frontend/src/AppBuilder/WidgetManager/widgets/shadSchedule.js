@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.schedule.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadScheduleConfig = {
   name: 'ShadSchedule',
   displayName: 'Schedule',
