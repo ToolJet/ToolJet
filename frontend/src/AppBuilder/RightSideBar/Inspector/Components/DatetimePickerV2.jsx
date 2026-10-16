@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
-import { renderElement } from '../Utils';
+import { renderElement, getInvalidFormatError } from '../Utils';
 import { EventManager } from '../EventManager';
 import Select from '@/_ui/Select';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -146,6 +146,17 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
   const displayTimezone = resolvedProperties?.displayTimezone;
   const storeTimezone = resolvedProperties?.storeTimezone;
 
+  // Tokenless formats are flagged on the Format field (CodeHinter preview
+  // popover + red error state). The widget still uses the format verbatim.
+  const dateFormatValidationFn = (value) => {
+    const message = getInvalidFormatError(value, 'date');
+    return [!message, message];
+  };
+  const timeFormatValidationFn = (value) => {
+    const message = getInvalidFormatError(value, 'time');
+    return [!message, message];
+  };
+
   const dateValidator = useMemo(() => {
     return (date) => {
       if (typeof date !== 'string')
@@ -244,6 +255,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
             mode="javascript"
             lineNumbers={false}
             onChange={(value) => paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties')}
+            validationFn={timeFormatValidationFn}
           />
         ) : (
           <Select
@@ -300,6 +312,23 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
       children: (
         <>
           {properties?.map((property) => {
+            // DaterangePicker's Format is a generic code property — a tokenless
+            // value is flagged inside its CodeHinter preview popover.
+            if (property === 'format') {
+              return renderElement(
+                component,
+                componentMeta,
+                paramUpdated,
+                dataQueries,
+                property,
+                'properties',
+                currentState,
+                allComponents,
+                darkMode,
+                '',
+                dateFormatValidationFn
+              );
+            }
             if (['isTimezoneEnabled', 'customDateFormat'].includes(property)) {
               return (
                 <>
@@ -334,6 +363,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                           mode="javascript"
                           lineNumbers={false}
                           onChange={(value) => paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties')}
+                          validationFn={dateFormatValidationFn}
                         />
                       ) : (
                         <Select

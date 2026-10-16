@@ -38,6 +38,19 @@ export function shouldClearLegacyInvalidDates({ componentType, paramName, paramT
   );
 }
 
+// A Format with no alphabetic characters (e.g. a {{42}} binding resolving to
+// "42") can never contain a moment token: every display is a literal and no
+// input can parse. Surface it on the Format field itself — CodeHinter's
+// preview popover + error state, via validationFn — while the widget keeps
+// using the configured format verbatim (NO fallback: released apps keep
+// whatever behavior their format produced). Letterful formats are never
+// flagged — exotic tokens ('X', 'Q', 'kk') worked before and still do.
+export function getInvalidFormatError(format, kind = 'date') {
+  if (format == null || format === '') return null;
+  if (typeof format === 'string' && /[a-z]/i.test(format)) return null;
+  return `Invalid ${kind} format`;
+}
+
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
   definition = definition || {};

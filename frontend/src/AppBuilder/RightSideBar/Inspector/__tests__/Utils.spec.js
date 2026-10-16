@@ -16,7 +16,12 @@
 jest.mock('../Elements/Code', () => ({ Code: () => null }));
 jest.mock('../Components/Form/_components', () => ({ LabeledDivider: () => null }));
 
-import { validateStaticId, isClickInsidePortaledOverlay, shouldClearLegacyInvalidDates } from '../Utils';
+import {
+  validateStaticId,
+  isClickInsidePortaledOverlay,
+  shouldClearLegacyInvalidDates,
+  getInvalidFormatError,
+} from '../Utils';
 
 describe('validateStaticId', () => {
   describe('empty/blank values', () => {
@@ -202,5 +207,41 @@ describe('shouldClearLegacyInvalidDates', () => {
 
   test('other component types are never affected', () => {
     expect(shouldClearLegacyInvalidDates(change({ componentType: 'DatetimePickerV2' }))).toBe(false);
+  });
+});
+
+// A tokenless Format (e.g. a {{42}} binding resolving to "42") is flagged on
+// the Format field itself — CodeHinter preview popover + error state — while
+// the widget keeps using the configured format verbatim (no fallback: released
+// apps keep whatever behavior their format produced).
+describe('getInvalidFormatError', () => {
+  test('a tokenless format is flagged (the reported repro: "42"/"20")', () => {
+    expect(getInvalidFormatError('42', 'date')).toBe('Invalid date format');
+    expect(getInvalidFormatError('20', 'date')).toBe('Invalid date format');
+    expect(getInvalidFormatError('42', 'time')).toBe('Invalid time format');
+  });
+
+  test('a binding resolving to a number is flagged too', () => {
+    expect(getInvalidFormatError(42, 'date')).toBe('Invalid date format');
+  });
+
+  test('usable formats produce no error', () => {
+    expect(getInvalidFormatError('DD/MM/YYYY', 'date')).toBeNull();
+    expect(getInvalidFormatError('DD-MM-YY', 'date')).toBeNull();
+    expect(getInvalidFormatError('hh:mm A', 'time')).toBeNull();
+  });
+
+  // Backward compatibility: any letterful format (even exotic moment tokens)
+  // worked before and is used verbatim — never flagged.
+  test('exotic letterful formats are never flagged (BC)', () => {
+    expect(getInvalidFormatError('X', 'date')).toBeNull();
+    expect(getInvalidFormatError('Q', 'date')).toBeNull();
+    expect(getInvalidFormatError('kk', 'time')).toBeNull();
+  });
+
+  test('an empty/unset format is not an error (not set is not mis-set)', () => {
+    expect(getInvalidFormatError('', 'date')).toBeNull();
+    expect(getInvalidFormatError(undefined, 'date')).toBeNull();
+    expect(getInvalidFormatError(null, 'time')).toBeNull();
   });
 });

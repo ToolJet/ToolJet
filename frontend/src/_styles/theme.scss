@@ -15886,7 +15886,7 @@ fieldset:disabled {
     left: 2px;
     width: 7px;
     border-radius: 999px;
-    background: var(--cc-default-border);
+    background: var(--borders-disabled-on-white, #e4e7eb);
     opacity: 0;
     transition: opacity 0.25s;
     touch-action: none;
