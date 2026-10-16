@@ -26,6 +26,7 @@ import {
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
 import { normalizeButtonEvent } from './normalizeButtonEvent';
+import { createTableRowEventOptions } from './tableEventUtils';
 import SelectSearch from 'react-select-search';
 import { parseDate, getDateTimeFormat } from '@/AppBuilder/Shared/DataTypes/renderers/DatePickerRenderer';
 
@@ -162,7 +163,7 @@ export default function generateColumnsData({
       const columnDef = {
         id: column.id || uuidv4(),
         accessorKey: column.key || column.name,
-        header: getResolvedValue(column.name) ?? '',
+        header: String(getResolvedValue(column.name) ?? ''),
         // enableSorting: !disableSort,
         enableResizing: true,
         enableHiding: true,
@@ -330,6 +331,7 @@ export default function generateColumnsData({
                   horizontalAlignment={column?.horizontalAlignment}
                   textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   id={id}
+                  rowData={rowData}
                 />
               );
             }
@@ -377,6 +379,7 @@ export default function generateColumnsData({
                   horizontalAlignment={column?.horizontalAlignment}
                   textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   id={id}
+                  rowData={rowData}
                 />
               );
             }
@@ -417,10 +420,13 @@ export default function generateColumnsData({
                   activeColor={column.activeColor}
                   onChange={(value, tableColumnEvents) => {
                     handleCellValueChange(row.index, column.key || column.name, value, row.original);
-                    fireEvent('OnTableToggleCellChanged', {
-                      column: column,
-                      tableColumnEvents,
-                    });
+                    fireEvent(
+                      'OnTableToggleCellChanged',
+                      createTableRowEventOptions(row.index, {
+                        column: column,
+                        tableColumnEvents,
+                      })
+                    );
                   }}
                   horizontalAlignment={column?.horizontalAlignment}
                 />
@@ -476,9 +482,10 @@ export default function generateColumnsData({
                   cellValue={cellValue}
                   width={column?.width}
                   height={column?.height ? `${column?.height}px` : '100%'}
-                  borderRadius={column?.borderRadius}
-                  objectFit={column?.objectFit}
-                  horizontalAlignment={column?.horizontalAlignment}
+                  borderRadius={getResolvedValue(column?.borderRadius, { cellValue, rowData })}
+                  objectFit={getResolvedValue(column?.objectFit, { cellValue, rowData })}
+                  horizontalAlignment={getResolvedValue(column?.horizontalAlignment, { cellValue, rowData })}
+                  altText={getResolvedValue(column?.altText, { cellValue, rowData })}
                 />
               );
 
@@ -494,6 +501,7 @@ export default function generateColumnsData({
                   cellValue={cellValue}
                   column={column}
                   containerWidth={columnSize}
+                  cell={cell}
                   id={id}
                 />
               );
@@ -581,7 +589,7 @@ export default function generateColumnsData({
                       const button = buttons.find((b) => b.id === buttonId);
                       const inlineEvents = (button?.events || [])
                         .map((evt) => {
-                          const normalized = normalizeButtonEvent(evt, buttonId);
+                          const normalized = normalizeButtonEvent(evt, buttonId, id);
                           if (!normalized) return null;
                           return { event: { ...normalized, ref: `${columnKey}::${buttonId}` } };
                         })
@@ -589,11 +597,14 @@ export default function generateColumnsData({
                       buttonEvents.push(...inlineEvents);
                     }
 
-                    fireEvent('OnTableButtonColumnClicked', {
-                      column,
-                      buttonId,
-                      tableColumnEvents: buttonEvents,
-                    });
+                    fireEvent(
+                      'OnTableButtonColumnClicked',
+                      createTableRowEventOptions(row.index, {
+                        column,
+                        buttonId,
+                        tableColumnEvents: buttonEvents,
+                      })
+                    );
                   }}
                 />
               );
@@ -673,6 +684,52 @@ export default function generateColumnsData({
           if (!dateB) return -1;
 
           return dateA.getTime() - dateB.getTime();
+        };
+      }
+
+      // Lets filter/search match the cell's displayed text too, not just its raw stored value.
+      if (['select', 'newMultiSelect', 'tagsV2'].includes(columnType)) {
+        columnDef.meta.getFilterDisplayValues = (rawValue) => {
+          if (rawValue === null || rawValue === undefined || rawValue === '') return [rawValue];
+          const options = column?.options ?? [];
+          const rawValues = Array.isArray(rawValue) ? rawValue : [rawValue];
+          return rawValues.flatMap((item) => {
+            const value = item !== null && typeof item === 'object' ? item.value : item;
+            const match = options.find((option) => option.value === value);
+            return match ? [value, match.label] : [value];
+          });
+        };
+      } else if (columnType === 'datepicker') {
+        columnDef.meta.getFilterDisplayValues = (rawValue) => {
+          if (rawValue === null || rawValue === undefined || rawValue === '') return [rawValue];
+
+          const isTimeChecked = getResolvedValue(column?.isTimeChecked) ?? false;
+          const isDateSelectionEnabled = getResolvedValue(column?.isDateSelectionEnabled) ?? true;
+          const isTwentyFourHrFormatEnabled = getResolvedValue(column?.isTwentyFourHrFormatEnabled) ?? false;
+
+          const parsedDate = parseDate({
+            value: rawValue,
+            parseDateFormat: getDateTimeFormat(
+              column?.parseDateFormat,
+              isTimeChecked,
+              isTwentyFourHrFormatEnabled,
+              isDateSelectionEnabled
+            ),
+            timeZoneValue: column?.timeZoneValue,
+            timeZoneDisplay: column?.timeZoneDisplay,
+            unixTimestamp: column?.unixTimestamp ?? 'seconds',
+            parseInUnixTimestamp,
+            isTimeChecked,
+          });
+          if (!parsedDate) return [rawValue];
+
+          const displayFormat = getDateTimeFormat(
+            column?.dateFormat,
+            isTimeChecked,
+            isTwentyFourHrFormatEnabled,
+            isDateSelectionEnabled
+          );
+          return [rawValue, moment(parsedDate).format(displayFormat)];
         };
       }
 

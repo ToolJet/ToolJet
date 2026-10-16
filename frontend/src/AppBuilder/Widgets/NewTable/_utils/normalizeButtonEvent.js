@@ -1,3 +1,5 @@
+import moment from 'moment';
+import useStore from '@/AppBuilder/_stores/store';
 import { ActionTypes } from '@/AppBuilder/RightSideBar/Inspector/ActionTypes';
 
 // Derives the label-to-id mapping from the canonical ActionTypes array so it stays
@@ -34,7 +36,23 @@ const EVENT_LABEL_TO_ID = {
  *
  * If the event already uses internal keys (actionId), it is passed through unchanged.
  */
-export function normalizeButtonEvent(evt, buttonId) {
+export function normalizeButtonEvent(evt, buttonId, componentId) {
+  if (!evt || typeof evt !== 'object') {
+    useStore.getState().debugger.log({
+      logLevel: 'error',
+      type: 'component',
+      kind: 'component',
+      key: `Table button "${buttonId}" - malformed event`,
+      componentId,
+      strace: 'page_level',
+      message: `Malformed event in button "${buttonId}"'s events array: expected an object, got ${JSON.stringify(evt)}`,
+      error: { buttonId, componentId, value: evt },
+      errorTarget: 'Component Property',
+      timestamp: moment().toISOString(),
+    });
+    return null;
+  }
+
   // Already in internal format — pass through
   if (evt.actionId) return evt;
 

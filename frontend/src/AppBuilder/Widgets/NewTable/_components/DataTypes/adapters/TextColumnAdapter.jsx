@@ -56,6 +56,7 @@ export const TextColumn = ({
       SearchHighlightComponent={HighLightSearch}
       isEditing={isEditing}
       setIsEditing={setIsEditing}
+      validationConfig={column}
     />
   );
 };

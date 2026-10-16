@@ -364,6 +364,24 @@ export const PropertiesTabElements = ({
           </div>
         </>
       )}
+      {column.columnType === 'image' && (
+        <div data-cy={`input-and-label-alt-text`} className="field mb-2 px-3">
+          <label className="form-label">{t('widget.Table.altText', 'Alt text')}</label>
+          <CodeHinter
+            currentState={currentState}
+            initialValue={column?.altText}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            placeholder={'Image description'}
+            onChange={(value) => onColumnItemChange(index, 'altText', value)}
+            componentName={getPopoverFieldSource(column.columnType, 'altText')}
+            popOverCallback={(showing) => {
+              setColumnPopoverRootCloseBlocker('altText', showing);
+            }}
+          />
+        </div>
+      )}
       {column.columnType === 'number' && (
         <div className="field mb-2 px-3">
           <label className="form-label">{t('widget.Table.decimalPlaces', 'Decimal Places')}</label>

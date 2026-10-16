@@ -7,6 +7,7 @@ import useStore from '@/AppBuilder/_stores/store';
 export const ChangeSetUI = memo(({ width, handleChangesSaved, handleChangesDiscarded, id }) => {
   const onEvent = useStore((state) => state.eventsSlice.onEvent);
   const tableComponentEvents = useTableStore((state) => state.getTableComponentEvents(id), shallow);
+  const disableSaveChanges = useTableStore((state) => state.getTableProperties(id)?.disableSaveChanges, shallow);
 
   return (
     <>
@@ -34,13 +35,14 @@ export const ChangeSetUI = memo(({ width, handleChangesSaved, handleChangesDisca
         }}
         data-cy={`table-button-save-changes`}
         size="md"
+        disabled={disableSaveChanges}
         // isLoading={tableDetails.isSavingChanges ? true : false}
         customStyles={{
           minWidth: '32px',
           padding: width > 650 ? '6px 16px' : 0,
           backgroundColor: 'var(--cc-primary-brand)',
         }}
-        leftIcon="IconDeviceFloppy"
+        leftIcon={width > 650 ? '' : 'IconDeviceFloppy'}
         fill="var(--cc-surface1-surface)"
         iconWidth="16"
         isTablerIcon={true}

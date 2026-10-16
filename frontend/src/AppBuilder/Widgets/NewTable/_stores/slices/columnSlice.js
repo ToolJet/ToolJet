@@ -81,7 +81,8 @@ export const createColumnSlice = (set, get) => ({
         columnDeletionHistory ?? [],
         isDynamicColumnSelected,
         columnData ?? [],
-        autogenerateColumns ?? false
+        autogenerateColumns ?? false,
+        id
       );
 
       if (!isDynamicColumnSelected && !isEqual(columns, generatedColumns)) {

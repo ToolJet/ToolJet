@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useListItemManager } from '../../shared/hooks';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { DEFAULT_SELECT_COLUMN_OPTIONS } from '../utils';
 
 /**
  * Hook for managing Table columns
@@ -29,7 +28,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
           return rest;
         });
       } else {
-        modifiedColumn.options = DEFAULT_SELECT_COLUMN_OPTIONS.map((opt) => ({ ...opt }));
+        modifiedColumn.options = [];
       }
       modifiedColumn.defaultOptionsList = [];
     }
@@ -51,6 +50,14 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
         dateFormat: 'DD/MM/YYYY',
         parseDateFormat: 'DD/MM/YYYY',
         isDateSelectionEnabled: true,
+      };
+    }
+
+    // Handle json column initialization — Indent toggle defaults to visually on, so seed the real value to match
+    if (property === 'columnType' && value === 'json') {
+      modifiedColumn = {
+        ...modifiedColumn,
+        jsonIndentation: true,
       };
     }
 
@@ -105,7 +112,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
     config: {
       propertyName: 'columns',
       typeProp: 'columnType',
-      nonEditableTypes: ['link', 'image'],
+      nonEditableTypes: ['link', 'image', 'button'],
       namePrefix: 'new_column',
       defaultItemProps: {
         includeKey: true,
