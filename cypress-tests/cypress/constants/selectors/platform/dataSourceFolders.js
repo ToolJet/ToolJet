@@ -21,6 +21,13 @@ export const dataSourceFolderSelectors = {
   folderEmptyText: (folderId) =>
     `[data-cy="datasource-folder-empty-${folderId}"]`,
 
+  /** Shared <Modal> chrome, rendered for every modal. */
+  modalTitle: '[data-cy="modal-title"]',
+  modalCloseButton: commonSelectors.modalCloseButton,
+  folderNamePlaceholder: 'Enter folder name..',
+  /** A foldered row lives in .datasource-folder-contents, a loose one in the stray zone. */
+  folderContents: '.datasource-folder-contents',
+
   // ---- create / rename modal ----
   folderNameInput: '[data-cy="datasource-folder-name-input"]',
   createFolderButton: '[data-cy="create-datasource-folder-button"]',
@@ -130,6 +137,11 @@ export const dataSourceFolderPermissionSelectors = {
   sharedModalEnvironmentSelect: '[data-cy="environment-select"]',
   sharedModalComingSoonChip: '[data-cy="coming-soon-chip"]',
   sharedModalPermissionNameInput: '[data-cy="permission-name-input"]',
+  sharedModalPermissionNameError: '[data-cy="permission-name-error"]',
+  /** These info-text data-cy values are generated from the copy, so they change with it. */
+  sharedModalAllResourcesInfoText:
+    '[data-cy="this-will-select-all-data-source-folders-in-the-workspace-including-any-new-data-source-folders-created-info-text"]',
+  sharedModalCustomInfoText: '[data-cy="custom-info-text"]',
   sharedModalConfirmButton: '[data-cy="confirm-button"]',
   sharedModalAllResourcesRadio: '[data-cy="all-apps-radio"]',
   sharedModalCustomRadio: '[data-cy="custom-radio"]',

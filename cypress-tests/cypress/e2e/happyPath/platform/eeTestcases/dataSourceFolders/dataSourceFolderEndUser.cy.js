@@ -1,7 +1,7 @@
 import { commonSelectors } from 'Selectors/common';
 import { dataSourceFolderPermissionSelectors as dsFolderPerm } from 'Selectors/platform/dataSourceFolders';
 import { groupsSelector } from 'Selectors/platform/manageGroups';
-import { apiCreateGroup } from 'Support/utils/manageGroups';
+import { apiAddUserToGroup, apiCreateGroup } from 'Support/utils/manageGroups';
 import {
   apiCreateReleasedAppWithQuery,
   openGroupGranularAccess,
@@ -14,13 +14,7 @@ import {
   visitReleasedAppAndCaptureQueryRun,
 } from 'Support/utils/platform/dataSourceFolders';
 
-/**
- * End users and data source folders.
- *
- * End users can't hold a data source folder TIER (Edit folder / Configure /
- * Build with). The one control that applies to them is Restrict query run,
- * which they meet in released apps.
- */
+/** End users and data source folders. */
 describe('Data Source Folders — End User Role', () => {
   let workspaceId, wsName, wsSlug, testId;
   const queryName = 'enduserquery';
@@ -69,113 +63,59 @@ describe('Data Source Folders — End User Role', () => {
       false
     );
 
-  it('the default End-user group cannot be given data source folder access', () => {
+  it('data source folder tiers are closed to end users — the default group, the modal controls, and both role-conflict guards', () => {
+    const groupName = `QA EndUser Guards ${testId}`;
+    const email = `ds-enduser-guards-${testId}@example.com`;
+
+    // 1 — the DEFAULT End-user group cannot be given the resource at all.
     openGroupGranularAccess('End-user');
     cy.get(groupsSelector.addPermissionButton).click();
     cy.get(dsFolderPerm.addDataSourceFolderButton).should('be.disabled');
     cy.get(dsFolderPerm.addDataSourceFolderButton).realHover();
     cy.contains('.tooltip', 'End-user cannot access data source folders').should('be.visible');
-  });
-
-  it('an end user cannot be added to a group that holds a data source folder tier', () => {
-    const groupName = `QA Tier Group ${testId}`;
-    const email = `ds-enduser-tier-${testId}@example.com`;
 
     setupFolder().then(({ folderId }) => {
-      apiCreateGroup(groupName);
-      createGrant(groupName, folderId, { canViewApps: true });
-      cy.apiFullUserOnboarding('QA EndUser', email, 'end-user', 'password', wsName);
-
-      cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
-      cy.visit(`/${wsSlug}/workspace-settings/groups`);
-      cy.get(groupsSelector.groupLink(groupName)).click();
-      uiAddUserToGroup(email);
-
-      cy.get(commonSelectors.modalComponent).should('contain.text', 'Cannot add an end-user to this group');
-      cy.get(commonSelectors.modalComponent).should('contain.text', email);
-    });
-  });
-
-  it('a group containing an end user offers only Restrict query run, and a restriction-only grant saves', () => {
-    const groupName = `QA EndUser Restrict ${testId}`;
-    const email = `ds-enduser-restrict-${testId}@example.com`;
-
-    setupFolder().then(({ folderName }) => {
-      apiCreateGroup(groupName);
-      cy.apiFullUserOnboarding('QA EndUser', email, 'end-user', 'password', wsName, {}, [groupName]);
-
-      cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
-      openGroupGranularAccess(groupName);
-      uiOpenAddDataSourceFolderGrant();
-
-      // Tiers are out of an end user's scope; the restriction is not. (BUG-08)
-      cy.get(dsFolderPerm.sharedModalEditFolderRadio).should('be.disabled');
-      cy.get(dsFolderPerm.sharedModalConfigureRadio).should('be.disabled');
-      cy.get(dsFolderPerm.sharedModalBuildWithRadio).should('be.disabled');
-      cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).should('be.enabled');
-
-      // A restriction with no tier is exactly what an end user may hold. (BUG-06)
-      cy.get(dsFolderPerm.sharedModalPermissionNameInput).type(`restrict only ${testId}`);
-      cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).check();
-      uiSelectGrantFolders([folderName]);
-      cy.get(dsFolderPerm.sharedModalConfirmButton).click();
-      cy.verifyToastMessage(commonSelectors.toastMessage, 'Permission created successfully!');
-    });
-  });
-
-  it('picking a tier on a group that contains an end user is refused with the role-conflict dialog', () => {
-    const groupName = `QA EndUser Conflict ${testId}`;
-    const email = `ds-enduser-conflict-${testId}@example.com`;
-
-    setupFolder().then(({ folderId }) => {
-      // Restriction-only grant first, then the end user joins.
+      // Grant FIRST, end user second: creating a restriction-only grant on a group that ALREADY holds an end user is still refused (BUG-06) — parked at the bottom.
       apiCreateGroup(groupName);
       createGrant(groupName, folderId, { canRunQuery: false });
       cy.apiFullUserOnboarding('QA EndUser', email, 'end-user', 'password', wsName, {}, [groupName]);
-
       cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
+
+      // 2 — tiers stay enabled on purpose (a group can hold builders too); the server refuses the save and names the end user, which is asserted next.
+      openGroupGranularAccess(groupName);
+      uiOpenEditDataSourceFolderGrant();
+      cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).should('be.enabled');
+      cy.get(commonSelectors.cancelButton).click();
+
+      // 3 — promoting that grant to a TIER is refused, naming the end user.
       openGroupGranularAccess(groupName);
       uiOpenEditDataSourceFolderGrant();
       cy.get(dsFolderPerm.sharedModalBuildWithRadio).click({ force: true });
       cy.get(dsFolderPerm.sharedModalConfirmButton).click();
-
       cy.get(commonSelectors.modalComponent).should('contain.text', roleConflictTitle);
       cy.get(commonSelectors.modalComponent).should('contain.text', email);
-    });
-  });
+      cy.get(commonSelectors.cancelButton).click();
 
-  it('a restricted end user is blocked in a released app until the restriction is unticked', () => {
-    const groupName = `QA EndUser Released ${testId}`;
-    const email = `ds-enduser-released-${testId}@example.com`;
-    const appName = `enduser-app-${testId}`;
-
-    setupFolder().then(({ folderId, dataSourceId }) => {
-      apiCreateGroup(groupName);
-      createGrant(groupName, folderId, { canRunQuery: false });
-      cy.apiFullUserOnboarding('QA EndUser', email, 'end-user', 'password', wsName, {}, [groupName]);
+      // 4 — mirror guard: an end user cannot join a group that already holds a tier (Q-4: different message, different code path).
+      const tieredGroup = `QA Tier Group ${testId}`;
+      const outsider = `ds-enduser-tier-${testId}@example.com`;
+      apiCreateGroup(tieredGroup);
+      createGrant(tieredGroup, folderId, { canViewApps: true });
+      cy.apiFullUserOnboarding('QA EndUser2', outsider, 'end-user', 'password', wsName);
 
       cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
-      apiCreateReleasedAppWithQuery(appName, appName, dataSourceId, queryName).then(() => {
-        cy.apiLogin(email, 'password');
-        visitReleasedAppAndCaptureQueryRun(appName).then(verifyQueryRunBlocked);
-
-        // Admin lifts the restriction through the UI. (BUG-06)
-        cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
-        openGroupGranularAccess(groupName);
-        uiOpenEditDataSourceFolderGrant();
-        cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).uncheck();
-        cy.get(dsFolderPerm.sharedModalConfirmButton).click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, 'Permission updated successfully');
-
-        cy.apiLogin(email, 'password');
-        visitReleasedAppAndCaptureQueryRun(appName).then(verifyQueryRunAllowed);
-      });
+      cy.visit(`/${wsSlug}/workspace-settings/groups`);
+      cy.get(groupsSelector.groupLink(tieredGroup)).click();
+      uiAddUserToGroup(outsider);
+      cy.get(commonSelectors.modalComponent).should('contain.text', 'Cannot add an end-user to this group');
+      cy.get(commonSelectors.modalComponent).should('contain.text', outsider);
     });
   });
 
-  it('a released app keeps working for an unrestricted end user as its data source moves between folders', () => {
+  it('a released app for an end user survives folder churn, and is blocked once the folder is restricted', () => {
     const email = `ds-enduser-moves-${testId}@example.com`;
     const appName = `enduser-moves-${testId}`;
+    const groupName = `QA EndUser Restrict ${testId}`;
 
     setupFolder().then(({ folderId, dataSourceId }) => {
       cy.apiFullUserOnboarding('QA EndUser', email, 'end-user', 'password', wsName);
@@ -183,19 +123,26 @@ describe('Data Source Folders — End User Role', () => {
       cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
       cy.apiCreateDataSourceFolder(`Other Folder ${testId}`).then((other) => {
         apiCreateReleasedAppWithQuery(appName, appName, dataSourceId, queryName).then(() => {
-          const runAsEndUser = () => {
+          const runAsEndUser = (verify) => {
             cy.apiLogin(email, 'password');
-            visitReleasedAppAndCaptureQueryRun(appName).then(verifyQueryRunAllowed);
+            visitReleasedAppAndCaptureQueryRun(appName).then(verify);
             cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
           };
 
-          runAsEndUser();
+          // Folder placement alone never affects an app consumer.
+          runAsEndUser(verifyQueryRunAllowed);
           cy.apiAddDataSourceToFolder(dataSourceId, other.id);
-          runAsEndUser();
+          runAsEndUser(verifyQueryRunAllowed);
           cy.apiRemoveDataSourceFromFolder(dataSourceId, other.id);
-          runAsEndUser();
+          runAsEndUser(verifyQueryRunAllowed);
           cy.apiAddDataSourceToFolder(dataSourceId, folderId);
-          runAsEndUser();
+          runAsEndUser(verifyQueryRunAllowed);
+
+          // Restricting the folder DOES reach the released app.
+          apiCreateGroup(groupName);
+          createGrant(groupName, folderId, { canRunQuery: false });
+          cy.apiGetGroupId(groupName).then((groupId) => apiAddUserToGroup(groupId, email));
+          runAsEndUser(verifyQueryRunBlocked);
         });
       });
     });

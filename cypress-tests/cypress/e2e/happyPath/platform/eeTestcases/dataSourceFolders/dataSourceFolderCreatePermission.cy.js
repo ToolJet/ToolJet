@@ -1,17 +1,17 @@
 import { commonSelectors } from 'Selectors/common';
-import { groupsSelector } from 'Selectors/platform/manageGroups';
 import {
-  dataSourceFolderPermissionSelectors as dsFolderPerm,
   dataSourceFolderSelectors as dsFolder,
+  dataSourceFolderPermissionSelectors as dsFolderPerm,
 } from 'Selectors/platform/dataSourceFolders';
+import { groupsSelector } from 'Selectors/platform/manageGroups';
 import { apiAddUserToGroup, apiCreateGroup } from 'Support/utils/manageGroups';
 import {
   dragDataSourceToFolder,
   dragDataSourceToStrayList,
   openDataSourcesList,
   uiCreateDataSourceFolder,
-  uiEnsureFolderExpanded,
   uiDeleteDataSourceFolder,
+  uiEnsureFolderExpanded,
   uiOpenFolderMenu,
   uiVerifyDataSourceFolderExists,
 } from 'Support/utils/platform/dataSourceFolders';
@@ -50,15 +50,21 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
     cy.apiLogout();
 
     cy.apiLogin();
-    // A data source the user can see, so membership can be exercised. It is a
-    // data source grant only — no folder rights come with it.
+    // A data source the user can see, so membership can be exercised.
     const dataSourceName = `ds-create-flag-${testId}`;
     cy.apiCreateGlobalDataSource(dataSourceName);
     apiCreateGroup(groupName).then((groupId) => {
       groupId1 = groupId;
       apiAddUserToGroup(groupId1, userEmail);
     });
-    cy.apiCreateGranularPermission(groupName, `${groupName} ds`, 'datasource', { canUse: true, canConfigure: false }, [], true);
+    cy.apiCreateGranularPermission(
+      groupName,
+      `${groupName} ds`,
+      'datasource',
+      { canUse: true, canConfigure: false },
+      [],
+      true
+    );
     cy.apiLogout();
 
     // Create control is hidden while the coarse flag is off.
@@ -81,9 +87,7 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
     openDataSourcesList();
     cy.get(dsFolder.createFolderIcon).should('be.visible');
 
-    // Create a folder so the delete affordance has something to act on. The modal
-    // mechanics themselves are covered in dataSourceFolderDefaultAccess.cy.js —
-    // here it is only setup for the permission check below.
+    // Create a folder so the delete affordance has something to act on.
     const folderName = `Create Only Folder ${testId}`;
     uiCreateDataSourceFolder(folderName);
     uiVerifyDataSourceFolderExists(folderName);
@@ -96,8 +100,7 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
       dragDataSourceToStrayList(dataSourceName);
       cy.apiGetDataSourceIdsInFolder(folderId).then((ids) => expect(ids).to.have.length(0));
 
-      // Create alone does NOT imply delete. The ⋮ menu still renders, because the
-      // frontend gates Rename on the create flag, but Delete must be absent.
+      // Create alone does NOT imply delete.
       uiOpenFolderMenu(folderId);
       cy.get(dsFolder.folderRenameOption(folderId)).should('exist');
       cy.get(dsFolder.folderDeleteOption(folderId)).should('not.exist');
@@ -124,5 +127,4 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
       uiVerifyDataSourceFolderExists(folderName, false);
     });
   });
-
 });

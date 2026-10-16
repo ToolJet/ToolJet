@@ -80,8 +80,7 @@ describe('Data Source Folders — Default Role Access', () => {
               expect(ids, 'all three data sources start in the folder').to.have.length(3);
             });
 
-            // 1 — Remove one from the folder. Membership only: the data source
-            // itself survives and reappears in the un-foldered list.
+            // 1 — Remove one from the folder.
             cy.apiRemoveDataSourceFromFolder(removedId, folder.id).then((response) => {
               expect(response.status).to.equal(200);
             });
@@ -92,15 +91,13 @@ describe('Data Source Folders — Default Role Access', () => {
             openDataSourcesList();
             cy.get(dsFolder.dataSourceRow(removedName)).should('be.visible');
 
-            // 2 — Delete a data source that is still in the folder. Its mapping
-            // row goes with it rather than dangling.
+            // 2 — Delete a data source that is still in the folder.
             cy.apiDeleteDataSource(deletedName);
             cy.apiGetDataSourceIdsInFolder(folder.id).then((ids) => {
               expect(ids, 'the deleted data source left no membership row').to.deep.equal([keptId]);
             });
 
-            // 3 — Delete the folder. It only deletes the folder, never the data
-            // sources inside it, which become stray entries.
+            // 3 — Delete the folder.
             openDataSourcesList();
             uiDeleteDataSourceFolder(folder.id);
             uiVerifyDataSourceFolderExists(folderName, false);
@@ -109,6 +106,30 @@ describe('Data Source Folders — Default Role Access', () => {
             cy.get(dsFolder.dataSourceRow(removedName)).should('be.visible');
           });
         });
+      });
+    });
+  });
+
+  it('sidebar search reaches data sources inside collapsed folders and keeps folder rows in view', () => {
+    const folderName = `Searchable Folder ${testId}`;
+    const folderedDataSource = `ds-inside-${testId}`;
+    const strayDataSource = `ds-stray-${testId}`;
+
+    cy.apiCreateGlobalDataSource(folderedDataSource).then((folderedId) => {
+      cy.apiCreateGlobalDataSource(strayDataSource);
+      cy.apiCreateDataSourceFolder(folderName).then((folder) => {
+        cy.apiAddDataSourceToFolder(folderedId, folder.id);
+
+        openDataSourcesList();
+
+        // handleSearch filters the already-loaded array, so there is no second request to wait on.
+        cy.get(dsFolder.searchIcon).click();
+        cy.get(dsFolder.searchBar).type(folderedDataSource);
+
+        // The folder auto-expands so a match inside it surfaces without a manual click — otherwise a user would have to open every folder to find something by name.
+        cy.get(dsFolder.dataSourceRow(folderedDataSource)).should('be.visible');
+        cy.get(dsFolder.dataSourceRow(strayDataSource)).should('not.exist');
+        uiVerifyDataSourceFolderExists(folderName);
       });
     });
   });

@@ -1,11 +1,10 @@
 import { commonSelectors } from 'Selectors/common';
-import { groupsSelector } from 'Selectors/platform/manageGroups';
 import {
-  dataSourceFolderPermissionSelectors as dsFolderPerm,
   dataSourceFolderSelectors as dsFolder,
+  dataSourceFolderPermissionSelectors as dsFolderPerm,
 } from 'Selectors/platform/dataSourceFolders';
+import { groupsSelector } from 'Selectors/platform/manageGroups';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
-import { verifyGranularPermissionModalUI } from 'Support/utils/platform/groupsUI';
 import {
   openDataSourcesList,
   openGroupGranularAccess,
@@ -13,16 +12,9 @@ import {
   uiOpenEditDataSourceFolderGrant,
   uiSelectGrantFolders,
 } from 'Support/utils/platform/dataSourceFolders';
+import { verifyGranularPermissionModalUI } from 'Support/utils/platform/groupsUI';
 
-/**
- * UI-only validation for the data source folder permission surfaces.
- *
- * The behaviour behind these controls is covered elsewhere in this directory —
- * here we only assert that the controls exist, read correctly, and gate each
- * other as designed. Modal copy is asserted through the shared
- * verifyGranularPermissionModalUI helper, which now carries a
- * `data_source_folder` branch alongside app / workflow / datasource.
- */
+/** UI-only validation for the data source folder permission surfaces. */
 describe('Data Source Folders — Permission and Modal UI', () => {
   let workspaceId, testId, wsName, wsSlug;
 
@@ -54,23 +46,32 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.get(groupsSelector.groupLink(groupName)).click();
     cy.get(groupsSelector.granularLink).click();
 
-    // Data source folders is offered as its own resource type, separate from
-    // both "Data sources" and "App folders".
+    // Offered as its own resource type, separate from "Data sources" and "App folders".
     cy.get(groupsSelector.addPermissionButton).click();
     cy.get(dsFolderPerm.addDataSourceFolderButton).should('be.visible').click();
+
+    cy.get(dsFolder.modalTitle).should('have.text', 'Add data source folders permissions');
+    cy.get(dsFolder.modalCloseButton).should('be.visible');
 
     // Labels, helper texts and the Coming Soon environment block.
     verifyGranularPermissionModalUI('data_source_folder');
 
-    // Data source folders open with NO tier pre-selected — initialPermissionState
-    // is canEditFolder/canEditApps/canViewApps all false. App folders differ here,
-    // defaulting to Edit folder, so this is a deliberate per-resource difference.
+    // Both Resources options carry their own explanatory copy.
+    cy.get(dsFolderPerm.sharedModalAllResourcesInfoText).should(
+      'have.text',
+      'This will select all data source folders in the workspace including any new data source folders created'
+    );
+    cy.get(dsFolderPerm.sharedModalCustomInfoText).should(
+      'have.text',
+      'Select specific data source folders you want to add to the group'
+    );
+
+    // Opens with NO tier pre-selected (app folders default to Edit folder — deliberate difference).
     cy.get(dsFolderPerm.sharedModalEditFolderRadio).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalConfigureRadio).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).should('not.be.checked');
 
-    // The three tiers are a single-select radio group; the fourth control is an
-    // independent checkbox and must not be cleared by picking a tier.
+    // The three tiers are a single-select radio group.
     cy.get(dsFolderPerm.sharedModalEditFolderRadio).click();
     cy.get(dsFolderPerm.sharedModalEditFolderRadio).should('be.checked');
     cy.get(dsFolderPerm.sharedModalConfigureRadio).click();
@@ -87,34 +88,28 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.get(dsFolderPerm.sharedModalConfigureRadio).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).click();
 
-    // Restrict query run defaults to UNCHECKED, which means unrestricted — the
-    // control is rendered inverted against the underlying canRunQuery flag.
+    // e.
     cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).should('not.be.checked');
     cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).check();
     cy.get(dsFolderPerm.sharedModalRestrictQueryRunCheckbox).should('be.checked');
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).should('be.checked');
 
-    // The inert Environment block is asserted in the helper above (container,
-    // label, "Coming Soon" chip). The select itself cannot be asserted: its
-    // data-cy="environment-select" is passed as a PROP to EnvironmentSelect, a
-    // react-select wrapper that does not forward unknown props to the DOM, so the
-    // attribute never reaches the page. See the selector file note.
+    // The inert Environment block is asserted in the helper above (container, label, "Coming Soon" chip).
 
-    cy.get(dsFolder.cancelButton).click();
-  });
+    // Grant NAME rules, in the same open modal: capped at 50, empty blocks the save.
+    cy.get(dsFolderPerm.sharedModalPermissionNameInput).type('a'.repeat(51));
+    cy.get(dsFolderPerm.sharedModalPermissionNameInput).invoke('val').should('have.length', 50);
+    cy.get(dsFolderPerm.sharedModalPermissionNameInput).clear();
+    cy.get(dsFolderPerm.sharedModalConfirmButton).should('be.disabled');
+    // NOT ASSERTED: a spaces-only name should keep Add disabled but does not (UX-6, filed).
 
-  it('the coarse Permissions tab lists data source folders with its own create and delete controls', () => {
-    const groupName = `QA DS Coarse UI ${testId}`;
+    // The X is a different control from Cancel: it must discard too, leaving no row behind.
+    cy.get(dsFolder.modalCloseButton).click();
+    cy.get(commonSelectors.modalComponent).should('not.exist');
+    cy.get(dsFolderPerm.granularAccessRow).should('not.exist');
 
-    apiCreateGroup(groupName);
-
-    cy.visit(`/${wsSlug}/workspace-settings/groups`);
-    cy.get(groupsSelector.groupLink(groupName)).click();
+    // COARSE tab: EE splits create and delete into two controls (CE collapses them into one).
     cy.get(groupsSelector.permissionsLink).click();
-
-    // EE splits create and delete into separate controls; CE collapses them into
-    // a single CRUD checkbox, so this row is edition-shaped.
-    // The permissions table scrolls; the data source folder row sits below the fold.
     cy.get(dsFolderPerm.resourceRow).scrollIntoView().should('be.visible');
     cy.get(dsFolderPerm.createCheckbox).should('exist').and('not.be.checked');
     cy.get(dsFolderPerm.deleteCheckbox).should('exist').and('not.be.checked');
@@ -127,7 +122,10 @@ describe('Data Source Folders — Permission and Modal UI', () => {
 
     // Create modal — submit stays disabled until a valid name is present.
     cy.get(dsFolder.createFolderIcon).click();
-    cy.get(dsFolder.folderNameInput).should('be.visible');
+    cy.get(dsFolder.modalTitle).should('have.text', 'Create folder');
+    cy.get(dsFolder.folderNameInput)
+      .should('be.visible')
+      .and('have.attr', 'placeholder', dsFolder.folderNamePlaceholder);
     cy.get(dsFolder.createFolderButton).should('be.disabled');
 
     // Whitespace only is treated as empty.
@@ -160,10 +158,10 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.get(dsFolder.cancelButton).click();
 
     cy.apiGetDataSourceFolderId(folderName).then((folderId) => {
-      // Rename modal — pre-filled, and submit is disabled while the name is
-      // UNCHANGED, which is a distinct rule from the create modal's empty check.
+      // Rename modal — pre-filled; submit is disabled while the name is UNCHANGED, a different rule from the create modal's empty check.
       cy.get(dsFolder.folderMenuButton(folderId)).click({ force: true });
       cy.get(dsFolder.folderRenameOption(folderId)).click();
+      cy.get(dsFolder.modalTitle).should('have.text', 'Rename folder');
       cy.get(dsFolder.folderNameInput).should('have.value', folderName);
       cy.get(dsFolder.renameFolderButton).should('be.disabled');
 
@@ -182,27 +180,8 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     });
   });
 
-  it('a grant name is required — whitespace-only counts as empty — and is capped at 50 characters', () => {
-    const groupName = `QA DS Grant Name ${testId}`;
-
-    apiCreateGroup(groupName);
-    openGroupGranularAccess(groupName);
-    uiOpenAddDataSourceFolderGrant();
-    cy.get(dsFolderPerm.sharedModalBuildWithRadio).click();
-
-    // Capped at 50 characters.
-    cy.get(dsFolderPerm.sharedModalPermissionNameInput).type('a'.repeat(51));
-    cy.get(dsFolderPerm.sharedModalPermissionNameInput).invoke('val').should('have.length', 50);
-
-    // Empty and whitespace-only both keep Add disabled.
-    cy.get(dsFolderPerm.sharedModalPermissionNameInput).clear();
-    cy.get(dsFolderPerm.sharedModalConfirmButton).should('be.disabled');
-    cy.get(dsFolderPerm.sharedModalPermissionNameInput).type('   ');
-    cy.get(dsFolderPerm.sharedModalConfirmButton).should('be.disabled');
-    cy.get(dsFolder.cancelButton).click();
-  });
-
   it('a Custom grant needs a folder, and a saved scoped grant can be switched to All', () => {
+    // Deliberately NOT merged into the block above.
     const groupName = `QA DS Grant Scope ${testId}`;
     const folderName = `Grant Scope Folder ${testId}`;
     const grantName = `scoped ${testId}`;
@@ -214,7 +193,7 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     uiOpenAddDataSourceFolderGrant();
     cy.get(dsFolderPerm.sharedModalBuildWithRadio).click();
 
-    // Custom scope with no folder picked cannot be saved.
+    // Custom with no folder picked cannot be saved.
     cy.get(dsFolderPerm.sharedModalPermissionNameInput).type(grantName);
     cy.get(dsFolderPerm.sharedModalCustomRadio).check();
     cy.get(dsFolderPerm.sharedModalConfirmButton).should('be.disabled');
@@ -236,4 +215,5 @@ describe('Data Source Folders — Permission and Modal UI', () => {
     cy.get(dsFolderPerm.sharedModalAllResourcesRadio).should('be.checked');
     cy.get(dsFolder.cancelButton).click();
   });
+
 });

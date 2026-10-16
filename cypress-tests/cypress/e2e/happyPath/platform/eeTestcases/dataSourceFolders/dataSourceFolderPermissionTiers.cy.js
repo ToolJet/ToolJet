@@ -7,28 +7,19 @@ import {
 } from 'Support/utils/platform/dataSourceFolders';
 import { getGroupPermissionInput } from 'Support/utils/userPermissions';
 
-/**
- * The three data source folder permission tiers, verified where a user meets
- * them: on the data sources page and inside the app builder.
- *
- *   Edit folder  — manage the folder, and everything Configure grants
- *   Configure    — open and edit the connection details of data sources in it
- *   Build with   — use those data sources in an app, WITHOUT editing them
- *
- * Configure is asserted the same way the existing customGroupGranularAccess spec
- * asserts per-data-source Configure: the connection form's name field is enabled
- * for a granted data source and disabled for one the user may only use. Build
- * with is asserted in the query manager, where a usable data source appears as
- * an add-query card.
- */
+/** A data source folder grant has three tiers. */
 describe('Data Source Folders — Permission Tiers', () => {
   let workspaceId, wsName, wsSlug;
 
-  /**
-   * Folder + data source inside it + a group holding one folder-scoped tier +
-   * a builder in that group. The builder role is emptied first so the group's
-   * grant is the only privilege in play.
-   */
+  const TIERS = {
+    configure: { canEditFolder: false, canEditApps: true, canViewApps: false },
+    buildWith: { canEditFolder: false, canEditApps: false, canViewApps: true },
+    editFolder: { canEditFolder: true, canEditApps: false, canViewApps: false },
+  };
+
+  // ---------------------------------------------------------------- fixture
+
+  /** Folder + a data source inside it + one outside every folder + a group holding one tier + a builder in that group. */
   const setupTier = (label, permissions, isAll = false) => {
     const attemptId = Date.now();
     const folderName = `${label} Tier Folder ${attemptId}`;
@@ -45,8 +36,6 @@ describe('Data Source Folders — Permission Tiers', () => {
         return cy.apiCreateGlobalDataSource(insideName);
       })
       .then((insideId) => cy.apiAddDataSourceToFolder(insideId, folderId))
-      // A data source deliberately left OUTSIDE every folder, so each tier can be
-      // shown to reach only the folder's contents.
       .then(() => cy.apiCreateGlobalDataSource(outsideName))
       .then(() => apiCreateGroup(groupName))
       .then(() =>
@@ -59,33 +48,19 @@ describe('Data Source Folders — Permission Tiers', () => {
           isAll
         )
       )
-      // Emptying the builder role removed its app privileges too, so the group
-      // needs both halves back to have an app to build in: the coarse create flag
-      // AND a granular app grant, without which the user can create an app but
-      // cannot open it and the builder never fetches. Neither is a data source
-      // privilege, so the folder grant stays the only data source access.
-      // Must precede onboarding: changing a group with members is rejected.
+      // appCreate + an app grant so there is an app to build in.
       .then(() => cy.apiUpdateGroupPermission(groupName, { appCreate: true }))
       .then(() =>
-        cy.apiCreateGranularPermission(
-          groupName,
-          `${groupName} apps`,
-          'app',
-          { canEdit: true, canView: false },
-          [],
-          true
-        )
+        cy.apiCreateGranularPermission(groupName, `${groupName} apps`, 'app', { canEdit: true, canView: false }, [], true)
       )
       .then(() => cy.apiFullUserOnboarding(label, userEmail, 'builder', 'password', wsName, {}, [groupName]))
       .then(() => ({ folderName, insideName, outsideName, userEmail, folderId, groupName }));
   };
 
-  /**
-   * Runs admin-side changes while the test user stays logged in: the user's own
-   * session cookie is put back afterwards, so "takes effect on the next request"
-   * is checked without a re-login.
-   */
-  const asAdminKeepingUserSession = (changes) => {
+  // ------------------------------------------------- admin-side manipulation
+
+  /** Applies an admin change while the test user stays logged in, so "takes effect on the next request" is proven without a re-login. */
+  const asAdmin = (changes) => {
     cy.getCookie('tj_auth_token').then((userCookie) => {
       cy.apiLogin('dev@tooljet.io', 'password', workspaceId);
       changes();
@@ -96,10 +71,71 @@ describe('Data Source Folders — Permission Tiers', () => {
     });
   };
 
-  afterEach(() => {
-    cy.apiLogin();
-    cy.then(() => cy.apiArchiveWorkspace(workspaceId));
-  });
+  /** There is no update command for a granular permission, so changing a tier means delete + recreate. */
+  let swapCount = 0;
+  const adminChangesTierTo = (groupName, folderId, permissions, isAll = false) => {
+    swapCount += 1;
+    asAdmin(() => {
+      cy.apiDeleteGranularPermission(groupName, ['data_source_folder']);
+      cy.apiCreateGranularPermission(
+        groupName,
+        `${groupName} perm ${swapCount}`,
+        'data_source_folder',
+        permissions,
+        isAll ? [] : [folderId],
+        isAll
+      );
+    });
+  };
+
+  const adminMovesIntoFolder = (dataSourceName, folderId) =>
+    asAdmin(() => cy.apiGetDatasourceIds([dataSourceName]).then(([id]) => cy.apiAddDataSourceToFolder(id, folderId)));
+
+  const adminMovesOutOfFolder = (dataSourceName, folderId) =>
+    asAdmin(() => cy.apiGetDatasourceIds([dataSourceName]).then(([id]) => cy.apiRemoveDataSourceFromFolder(id, folderId)));
+
+  const adminRemovesFromGroup = (groupName, email) =>
+    asAdmin(() => cy.apiGetGroupId(groupName).then((id) => cy.apiRemoveUserFromGroup(id, email)));
+
+  const adminAddsToGroup = (groupName, email) =>
+    asAdmin(() => cy.apiGetGroupId(groupName).then((id) => apiAddUserToGroup(id, email)));
+
+  const adminDeletesTheGrant = (groupName) =>
+    asAdmin(() => cy.apiDeleteGranularPermission(groupName, ['data_source_folder']));
+
+  // ------------------------------------------------------------- assertions
+
+  const phase = (title) => cy.log(`**— ${title} —**`);
+
+  const openConnectionOf = (folderName, dataSourceName) => {
+    openDataSourcesList();
+    uiEnsureFolderExpanded(folderName, dataSourceName);
+    cy.get(dsFolder.dataSourceRow(dataSourceName)).click();
+  };
+
+  const expectConnectionEditable = (folderName, dataSourceName) => {
+    openConnectionOf(folderName, dataSourceName);
+    cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
+  };
+
+  const expectConnectionReadOnly = (folderName, dataSourceName) => {
+    openConnectionOf(folderName, dataSourceName);
+    cy.get(dataSourceSelector.dsNameInputField).should('be.disabled');
+  };
+
+  const expectListedInFolder = (folderName, dataSourceName) => {
+    openDataSourcesList();
+    uiEnsureFolderExpanded(folderName, dataSourceName);
+    cy.get(dsFolder.dataSourceRow(dataSourceName)).should('be.visible');
+  };
+
+  /** Unreachable data sources are absent from the sidebar, not rendered disabled. */
+  const expectNotListed = (dataSourceName) => {
+    openDataSourcesList();
+    cy.get(dsFolder.dataSourceRow(dataSourceName)).should('not.exist');
+  };
+
+  // ------------------------------------------------------------------ hooks
 
   beforeEach(() => {
     wsName = `ds-folder-tiers-${Date.now()}`;
@@ -112,160 +148,90 @@ describe('Data Source Folders — Permission Tiers', () => {
       Cypress.env('workspaceSlug', wsSlug);
     });
 
-    // Empty the builder role entirely — every coarse flag and every default
-    // granular row — so nothing but the custom group can grant access.
+    // Empty the builder role so only the custom group can grant access.
     cy.apiUpdateGroupPermission('builder', getGroupPermissionInput(true, false));
     cy.apiDeleteGranularPermission('builder');
   });
 
-  it('Configure lets the user edit connection details of data sources in the folder, but not outside it', () => {
-    setupTier('Configure', {
-      canEditFolder: false,
-      canEditApps: true,
-      canViewApps: false,
-    }).then(({ folderName, insideName, outsideName, userEmail }) => {
-      cy.apiLogin(userEmail, 'password');
-      openDataSourcesList();
+  afterEach(() => {
+    cy.apiLogin();
+    cy.then(() => cy.apiArchiveWorkspace(workspaceId));
+  });
 
-      // Inside the folder: the connection form opens and its name field is live.
-      uiEnsureFolderExpanded(folderName, insideName);
-      cy.get(dsFolder.dataSourceRow(insideName)).click();
-      cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
+  // ------------------------------------------------------------------ cases
 
-      // Outside every folder the grant does not reach at all — and the bound is
-      // stronger than read-only: with no other data source privilege, the row is
-      // not listed. The sidebar is filtered by data source visibility, so an
-      // unreachable data source is absent rather than present-and-disabled.
-      cy.get(dsFolder.dataSourceRow(outsideName)).should('not.exist');
+  describe('what each tier grants', () => {
+    it('Configure edits, Build with only uses, and Edit folder implies Configure', () => {
+      setupTier('Tiers', TIERS.configure).then(({ folderName, insideName, outsideName, folderId, groupName, userEmail }) => {
+        cy.apiLogin(userEmail, 'password');
+
+        phase('Configure: connection details are editable');
+        expectConnectionEditable(folderName, insideName);
+        expectNotListed(outsideName);
+
+        phase('Build with: usable, never configurable');
+        adminChangesTierTo(groupName, folderId, TIERS.buildWith);
+        expectConnectionReadOnly(folderName, insideName);
+        expectNotListed(outsideName);
+
+        phase('Edit folder: cascades Configure without Configure being set');
+        adminChangesTierTo(groupName, folderId, TIERS.editFolder);
+        expectConnectionEditable(folderName, insideName);
+      });
     });
   });
 
-  it('Build with lets the user use the folder’s data sources in an app without editing them', () => {
-    setupTier('BuildWith', {
-      canEditFolder: false,
-      canEditApps: false,
-      canViewApps: true,
-    }).then(({ folderName, insideName, outsideName, userEmail }) => {
-      const appName = `ds-tier-app-${Date.now()}`;
+  describe('where a tier is enforced', () => {
+    // Isolated on purpose: the only case that opens an App Builder app, the path that fails intermittently on getAppData.
+    it('the app query picker is filtered the same way the sidebar is', () => {
+      setupTier('Picker', TIERS.buildWith).then(({ folderName, insideName, outsideName, userEmail }) => {
+        cy.apiLogin(userEmail, 'password');
+        cy.apiCreateApp(`ds-tier-app-${Date.now()}`);
 
-      cy.apiLogin(userEmail, 'password');
-      openDataSourcesList();
+        // On a NEW app the landing picker renders folders as COLLAPSED headers — the contents are not in the DOM at all until the header is clicked.
+        cy.openApp('', Cypress.env('workspaceId'), Cypress.env('appId'), dsFolder.pickerFolderHeader(folderName));
 
-      // Build with is the LOWEST tier: usable, never configurable. The connection
-      // form must stay read-only even for a data source inside the granted folder.
-      uiEnsureFolderExpanded(folderName, insideName);
-      cy.get(dsFolder.dataSourceRow(insideName)).click();
-      cy.get(dataSourceSelector.dsNameInputField).should('be.disabled');
+        // .
+        cy.get(dsFolder.pickerFolderHeader(folderName)).should('be.visible');
+        cy.get(dsFolder.pickerDataSourceCard(insideName)).should('not.exist');
 
-      // ...but it is offered as a query source inside an app. openApp waits on the
-      // empty-canvas label by default, which this app never shows, so wait on the
-      // query manager's own card instead.
-      cy.apiCreateApp(appName);
-      cy.openApp(
-        '',
-        Cypress.env('workspaceId'),
-        Cypress.env('appId'),
-        dsFolder.pickerDataSourceCard(insideName)
-      );
+        // and expanding it reveals the data source inside.
+        cy.get(dsFolder.pickerFolderHeader(folderName)).click();
+        cy.get(dsFolder.pickerDataSourceCard(insideName)).should('be.visible');
 
-      // The picker is permission-filtered the same way the sidebar is: the granted
-      // folder's data source is offered, the un-foldered one is not.
-      cy.get(dsFolder.pickerDataSourceCard(insideName)).should('be.visible');
-      cy.get(dsFolder.pickerDataSourceCard(outsideName)).should('not.exist');
+        // The un-foldered data source is listed as a loose card for users who can reach it; this user cannot, so it is absent entirely.
+        cy.get(dsFolder.pickerDataSourceCard(outsideName)).should('not.exist');
+      });
     });
   });
 
-  it('Edit folder implies Configure — it manages the folder and edits the data sources inside it', () => {
-    setupTier('EditFolder', {
-      canEditFolder: true,
-      canEditApps: false,
-      canViewApps: false,
-    }).then(({ folderName, insideName, userEmail }) => {
-      cy.apiLogin(userEmail, 'password');
-      openDataSourcesList();
+  describe('when access changes', () => {
+    it('it recalculates on the very next request, however the change was made', () => {
+      setupTier('Recalc', TIERS.configure).then(({ folderName, insideName, outsideName, folderId, groupName, userEmail }) => {
+        cy.apiLogin(userEmail, 'password');
+        expectNotListed(outsideName);
 
-      // The tiers cascade: canEditFolder implies the Configure capability below
-      // it, so the connection form is editable without Configure being set.
-      uiEnsureFolderExpanded(folderName, insideName);
-      cy.get(dsFolder.dataSourceRow(insideName)).click();
-      cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
-    });
-  });
+        phase('folder membership: moved in, then back out');
+        adminMovesIntoFolder(outsideName, folderId);
+        expectConnectionEditable(folderName, outsideName);
+        adminMovesOutOfFolder(outsideName, folderId);
+        expectNotListed(outsideName);
 
-  it('the Configure cascade follows membership — moving a data source in or out changes access on the next request', () => {
-    setupTier('Cascade', {
-      canEditFolder: false,
-      canEditApps: true,
-      canViewApps: false,
-    }).then(({ folderName, outsideName, userEmail, folderId }) => {
-      cy.apiLogin(userEmail, 'password');
-      openDataSourcesList();
-      cy.get(dsFolder.dataSourceRow(outsideName)).should('not.exist');
+        phase('group membership: removed, then re-added');
+        adminRemovesFromGroup(groupName, userEmail);
+        expectNotListed(insideName);
+        adminAddsToGroup(groupName, userEmail);
+        expectListedInFolder(folderName, insideName);
 
-      // Admin moves the outside data source into the granted folder.
-      asAdminKeepingUserSession(() => {
-        cy.apiGetDatasourceIds([outsideName]).then(([outsideId]) => cy.apiAddDataSourceToFolder(outsideId, folderId));
+        phase('grant scope: All folders reaches foldered data sources only');
+        adminChangesTierTo(groupName, folderId, TIERS.buildWith, true);
+        expectListedInFolder(folderName, insideName);
+        expectNotListed(outsideName);
+
+        phase('grant deletion: last, because it leaves the user with nothing');
+        adminDeletesTheGrant(groupName);
+        expectNotListed(insideName);
       });
-      openDataSourcesList();
-      uiEnsureFolderExpanded(folderName, outsideName);
-      cy.get(dsFolder.dataSourceRow(outsideName)).click();
-      cy.get(dataSourceSelector.dsNameInputField).should('be.enabled');
-
-      // And out again: access goes with it.
-      asAdminKeepingUserSession(() => {
-        cy.apiGetDatasourceIds([outsideName]).then(([outsideId]) => cy.apiRemoveDataSourceFromFolder(outsideId, folderId));
-      });
-      openDataSourcesList();
-      cy.get(dsFolder.dataSourceRow(outsideName)).should('not.exist');
-    });
-  });
-
-  it('removing the user from the group, or deleting the grant, removes access on the next request', () => {
-    setupTier('Revoke', {
-      canEditFolder: false,
-      canEditApps: false,
-      canViewApps: true,
-    }).then(({ folderName, insideName, userEmail, groupName }) => {
-      cy.apiLogin(userEmail, 'password');
-      openDataSourcesList();
-      uiEnsureFolderExpanded(folderName, insideName);
-      cy.get(dsFolder.dataSourceRow(insideName)).should('be.visible');
-
-      // Out of the group → gone.
-      asAdminKeepingUserSession(() => {
-        cy.apiGetGroupId(groupName).then((groupId) => cy.apiRemoveUserFromGroup(groupId, userEmail));
-      });
-      openDataSourcesList();
-      cy.get(dsFolder.dataSourceRow(insideName)).should('not.exist');
-
-      // Back in → visible again; then delete the grant → gone.
-      asAdminKeepingUserSession(() => {
-        cy.apiGetGroupId(groupName).then((groupId) => apiAddUserToGroup(groupId, userEmail));
-      });
-      openDataSourcesList();
-      uiEnsureFolderExpanded(folderName, insideName);
-      cy.get(dsFolder.dataSourceRow(insideName)).should('be.visible');
-
-      asAdminKeepingUserSession(() => {
-        cy.apiDeleteGranularPermission(groupName, ['data_source_folder']);
-      });
-      openDataSourcesList();
-      cy.get(dsFolder.dataSourceRow(insideName)).should('not.exist');
-    });
-  });
-
-  it('an All data source folders grant reaches every data source in a folder, but not one outside every folder', () => {
-    setupTier(
-      'AllFolders',
-      { canEditFolder: false, canEditApps: false, canViewApps: true },
-      true
-    ).then(({ folderName, insideName, outsideName, userEmail }) => {
-      cy.apiLogin(userEmail, 'password');
-      openDataSourcesList();
-      uiEnsureFolderExpanded(folderName, insideName);
-      cy.get(dsFolder.dataSourceRow(insideName)).should('be.visible');
-      cy.get(dsFolder.dataSourceRow(outsideName)).should('not.exist');
     });
   });
 });
-
