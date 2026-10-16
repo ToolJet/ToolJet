@@ -5,7 +5,7 @@ import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { resolveIcon } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import { resolveIcon } from '@/AppBuilder/Widgets/Ui2/_display/iconModel';
 import { heroAside, heroMeta } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { ACCENT, ACCENT_INK, TITLE_FONT, text } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';

@@ -121,7 +121,7 @@ export const loadIcons = (names) => {
       import('lucide-react'),
       import('react-dom/server'),
       import('react'),
-      import('@/AppBuilder/Widgets/Ui2/_display/displayModel'),
+      import('@/AppBuilder/Widgets/Ui2/_display/iconModel'),
     ]).then(([Lucide, Server, React, model]) => {
       const maps = [Lucide.icons, Lucide];
       const fallback = Lucide.CircleDashed || Lucide.Circle;

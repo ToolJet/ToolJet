@@ -1,6 +1,6 @@
 import React from 'react';
 import * as Lucide from 'lucide-react';
-import { resolveIcon } from './displayModel';
+import { resolveIcon } from './iconModel';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 // shadcn/ui pack (experiment): display widgets. Configs in WidgetManager/widgets/shad*.js, style variables and

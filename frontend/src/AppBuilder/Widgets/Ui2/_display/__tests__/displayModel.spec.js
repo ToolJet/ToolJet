@@ -4,19 +4,18 @@ import {
   colorFor,
   formatTime,
   formatValue,
-  iconCandidates,
   keyValueItems,
   linkHref,
   normalizeSteps,
   pageCountOf,
   pageItems,
-  resolveIcon,
   ringGeometry,
   statusColor,
   stepIndexOf,
   timelineItems,
   toTags,
 } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import { iconCandidates, resolveIcon } from '@/AppBuilder/Widgets/Ui2/_display/iconModel';
 
 const JUNK = [null, undefined, NaN, Infinity, '', 'x', 0, -1, 1e300, true, {}, [], [null, 1, 'a', {}], () => 1];
 
