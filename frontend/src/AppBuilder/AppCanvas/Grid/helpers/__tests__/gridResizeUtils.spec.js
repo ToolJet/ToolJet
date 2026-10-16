@@ -111,6 +111,32 @@ describe('resize clamping scope', () => {
   });
 });
 
+describe('resize clamping for top-aligned label widgets', () => {
+  const canvas = { containerWidth: 600 };
+
+  // Break this catches: a top-aligned input's live (DOM) height includes the label increment but its stored
+  // height does not, so the top-resize y offset derived from the difference reads 20px too negative. A
+  // widget sitting at the top border then loses that 20px from its height as soon as its top handle is
+  // dragged upward, instead of staying the same size.
+  it('does not treat the label increment as top-border overshoot', () => {
+    expect(clampResizeToCanvas({ x: 50, y: -20, width: 300, height: 520, extraHeight: 20, ...canvas })).toEqual({
+      x: 50,
+      y: 0,
+      width: 300,
+      height: 520,
+    });
+  });
+
+  it('still removes only the real overshoot beyond the label increment', () => {
+    expect(clampResizeToCanvas({ x: 50, y: -50, width: 300, height: 520, extraHeight: 20, ...canvas })).toEqual({
+      x: 50,
+      y: 0,
+      width: 300,
+      height: 490,
+    });
+  });
+});
+
 describe('canvas resize-stop position clamping', () => {
   it('clamps a negative left position to the canvas edge, mirroring the existing top clamp', () => {
     // Break this catches: a resize ending past the canvas's left edge persists a negative `left`,
