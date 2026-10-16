@@ -83,6 +83,8 @@ export function clampResizeTranslate({ x, y, maxX = Infinity, maxY = Infinity, i
  * would cross the right/bottom border is capped. Omit `containerHeight` for canvases that grow downward.
  * Widgets nested in a Container/Form keep their original resize behaviour: those canvases scroll and are
  * padded, so their client box is not a reliable border and clamping against it crunches the widget.
+ * `extraHeight` is height present in the live box but not in the stored layout height (a top-aligned label's
+ * increment); a `y` derived from that difference is that much too negative, so it is not treated as overshoot.
  */
 export function clampResizeToCanvas({
   x,
@@ -91,6 +93,7 @@ export function clampResizeToCanvas({
   height,
   containerWidth,
   containerHeight = Infinity,
+  extraHeight = 0,
   isNested = false,
 }) {
   if (isNested) return { x, y, width, height };
@@ -99,7 +102,7 @@ export function clampResizeToCanvas({
     x = 0;
   }
   if (y < 0) {
-    height += y;
+    height += Math.min(0, y + extraHeight);
     y = 0;
   }
   return {

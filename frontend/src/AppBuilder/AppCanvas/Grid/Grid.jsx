@@ -728,6 +728,14 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const maxY = containerHeight - e.target.clientHeight;
           const maxLeft = containerWidth - e.target.clientWidth;
 
+          // A top-aligned label adds TOP_ALIGNMENT_HEIGHT_INCREMENT to the live box but not to the stored
+          // height, which inflates diffHeight (and so how far transformY overshoots the top border) by that much.
+          const hasTopAlignmentIncrement =
+            isTopChanged &&
+            transformY < 0 &&
+            getComponentAlignment(currentWidget.id, moduleId) === 'top' &&
+            getComponentLabel(currentWidget.id, moduleId)?.length > 0;
+
           // Main canvas grows downward and has no bottom border; nested widgets keep their original behaviour.
           const { width: resizeWidth, height: resizeHeight } = clampResizeToCanvas({
             x: transformX,
@@ -735,6 +743,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             width: e.width,
             height: e.height,
             containerWidth,
+            extraHeight: hasTopAlignmentIncrement ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0,
             isNested: Boolean(currentWidget.component?.parent),
           });
           transformY = Math.max(0, Math.min(transformY, maxY));
@@ -840,6 +849,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             }).width;
             width = adjustWidth(clampedSize.width, isNested ? transformX : Math.max(0, transformX), _gridWidth);
             height = Math.max(GRID_HEIGHT, clampedSize.height);
+            // Recompute after clamping: a resize clamped back to the stored height must not rewrite the DOM
+            // height, since that write drops the top-aligned label increment and no re-render restores it.
+            const committedDiffHeight = height - currentWidget?.height;
             const maxY = containerHeight - e.target.clientHeight;
             const maxLeft = containerWidth - e.target.clientWidth;
 
@@ -863,7 +875,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             }
 
             // Added diffHeight !== 0 to prevent the height from being changed and messing up the top alignment.
-            if ((!maxHeightHit || e.height < e.target.clientHeight) && diffHeight !== 0) {
+            if ((!maxHeightHit || e.height < e.target.clientHeight) && committedDiffHeight !== 0) {
               e.target.style.height = `${height}px`;
             }
             const resizeData = {
