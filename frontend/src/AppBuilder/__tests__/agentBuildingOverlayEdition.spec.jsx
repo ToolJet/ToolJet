@@ -49,7 +49,8 @@ describe(`AgentBuildingOverlay (${isCe ? 'CE' : 'EE'})`, () => {
     if (isCe) {
       expect(screen.getByText('Agent is building your app')).toBeInTheDocument();
     } else {
-      expect(screen.getByText('Understanding your data')).toBeInTheDocument();
+      // The chat already shows the stage; the new-app canvas keeps the page outline and its caption.
+      expect(screen.queryByText('Understanding your data')).toBeNull();
       expect(screen.getByText('Your page fills in here as each change lands.')).toBeInTheDocument();
     }
   });
