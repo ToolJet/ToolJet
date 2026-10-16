@@ -3,6 +3,7 @@ import * as Lucide from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { LoadingBox, Shell, busy, wantsSkeleton } from './Shadcn';
 import { initials, useAutoHeight, useExposed } from '../packHooks';
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { Button, Skeleton, cn } from './ui';
 import { resolveIcon } from './displayModel';
 import {
@@ -101,6 +102,11 @@ export const ShadHero = (props) => {
   const { properties: p, fireEvent } = props;
   const ref = useRef(null);
   useAutoHeight(props, ref);
+  // The viewer grows the box to the content and moves the widgets below it (dynamic height). In a fixed box (the
+  // editor, which draws every widget at its saved size, or dynamic height turned off) the panel stops at the box and its
+  // content scrolls inside it: a 236px hero in a 200px box drew over a task board's column headers (Daymark,
+  // 2026-10-15), and cut off at the box it lost its bottom edge mid-button.
+  const fixed = !(fitsContentInView(props.componentType ?? 'ShadHero', p) && props.currentMode === 'view');
   const background = ['plain', 'tint', 'gradient', 'image', 'dark'].includes(p.background) ? p.background : 'tint';
   const onDark = background === 'dark' || background === 'image';
   const size = HERO_SIZE[p.size] || HERO_SIZE.default;
@@ -209,11 +215,12 @@ export const ShadHero = (props) => {
     );
   } else {
     body = (
-      <div className="sc-hero-box">
+      <div className={cn('sc-hero-box', fixed && 'h-full')}>
         <section
           className={cn(
             'sc-hero w-full',
             panel,
+            fixed && 'max-h-full overflow-y-auto',
             // With an aside, a grid: text and actions on the left, the aside right of both; in a narrow hero, text,
             // aside, actions (shadcn.scss).
             grid
@@ -301,7 +308,7 @@ export const ShadHero = (props) => {
     );
   }
   return (
-    <Shell {...props} innerRef={ref}>
+    <Shell {...props} innerRef={ref} className={cn(fixed && 'h-full overflow-y-auto')}>
       {body}
     </Shell>
   );
