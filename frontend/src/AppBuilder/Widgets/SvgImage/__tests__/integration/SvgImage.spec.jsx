@@ -192,7 +192,7 @@ describe('SvgImage widget', () => {
       const { container } = widget.render({
         currentMode,
         styles: { alignment: binding('center') },
-        afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'generalStyles'),
+        afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'styles'),
       });
       const imageNode = await within(container).findByRole('img');
       expect(root(container).style.display).toBe('');
@@ -230,7 +230,7 @@ describe('SvgImage widget', () => {
     // Break this catches: ignoring loadingState, unmounting the data-cy root while loading (so box
     // shadow and the layout box vanish), or leaving the vector on screen behind the loader.
     const { container } = widget.render({
-      afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'generalStyles'),
+      afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'styles'),
     });
     await within(container).findByRole('img');
     expect(loader(container)).toBeNull();
@@ -290,9 +290,9 @@ describe('SvgImage widget', () => {
 
   test('[SvgImage-STY-001] Box shadow survives independent data, alignment, and visibility changes', async () => {
     // Break this catches: rebuilding the container's inline style on a property change without the
-    // merged universal generalStyles boxShadow.
+    // widget's own styles.boxShadow (moved out of universal generalStyles with the revamp).
     const { container } = widget.render({
-      afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'generalStyles'),
+      afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'styles'),
     });
     await within(container).findByRole('img');
     await waitFor(() => expect(root(container)).toHaveStyle({ boxShadow: SHADOW }));
