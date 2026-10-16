@@ -83,6 +83,34 @@ describe('resize clamping to the canvas borders', () => {
   });
 });
 
+describe('resize clamping scope', () => {
+  // Break this catches: stretching the bottom handle past the visible bottom of the main canvas clamps y
+  // against the visible canvas height minus the grown widget height, which goes negative and shifts the
+  // widget upward instead of letting it extend (the main canvas grows downward and has no bottom border).
+  it('does not bound y when no bottom limit is given, so a main-canvas widget can extend downward', () => {
+    expect(clampResizeTranslate({ x: 50, y: 900, maxX: 500 })).toEqual({ x: 50, y: 900 });
+  });
+
+  it('still pins a negative y to the top border when no bottom limit is given', () => {
+    expect(clampResizeTranslate({ x: 50, y: -20, maxX: 500 })).toEqual({ x: 50, y: 0 });
+  });
+
+  // Break these catch: applying the border clamps to widgets inside a Container/Form snaps and crunches
+  // them on a minor resize, because those canvases are scrollable/padded and their client box is not the
+  // widget's true bound. Nested widgets must keep their pre-fix behaviour.
+  it('leaves the resized box of a nested widget untouched', () => {
+    const box = { x: -60, y: -30, width: 900, height: 700 };
+    expect(clampResizeToCanvas({ ...box, containerWidth: 600, containerHeight: 400, isNested: true })).toEqual(box);
+  });
+
+  it('leaves the translate of a nested widget untouched', () => {
+    expect(clampResizeTranslate({ x: -42, y: 800, maxX: 500, maxY: 300, isNested: true })).toEqual({
+      x: -42,
+      y: 800,
+    });
+  });
+});
+
 describe('canvas resize-stop position clamping', () => {
   it('clamps a negative left position to the canvas edge, mirroring the existing top clamp', () => {
     // Break this catches: a resize ending past the canvas's left edge persists a negative `left`,
