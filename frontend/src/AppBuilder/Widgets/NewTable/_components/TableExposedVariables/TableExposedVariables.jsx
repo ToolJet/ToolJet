@@ -78,6 +78,13 @@ export const TableExposedVariables = ({
   };
 
   const prevSortingLength = useRef(null);
+  const selectedRowIdsKeyRef = useRef(null);
+  const rowSelection = table.getState().rowSelection ?? {};
+  const selectedRowIdsKey = JSON.stringify(
+    Object.keys(rowSelection)
+      .filter((rowId) => rowSelection[rowId])
+      .sort()
+  );
 
   const getColumnName = useCallback(
     (columnId) => {
@@ -297,6 +304,16 @@ export const TableExposedVariables = ({
     }
   }, [allowSelection, lastClickedRow, selectedRows, setExposedVariables, showBulkSelector]);
 
+  // Declared after the selectedRow(s) exposing effects and before the data-change effect below: the event must
+  // see fresh selectedRow(s), and the data-change effect re-bases selectedRowIdsKeyRef after this one has run.
+  useEffect(() => {
+    const previousKey = selectedRowIdsKeyRef.current;
+    selectedRowIdsKeyRef.current = selectedRowIdsKey;
+    if (previousKey !== null && previousKey !== selectedRowIdsKey) {
+      fireEvent('onRowSelectionChanged');
+    }
+  }, [selectedRowIdsKey, fireEvent]);
+
   // Clear dataUpdates & changeSet when data is changed
   useEffect(() => {
     if (!hasDataChanged) return;
@@ -307,11 +324,14 @@ export const TableExposedVariables = ({
   useEffect(() => {
     if (!hasDataChanged) return;
     resetRowSelection();
+    // A data change resets the selection (or applies defaultSelectedRow); that is not a user selection change.
+    selectedRowIdsKeyRef.current = JSON.stringify([]);
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
       const item = index !== -1 ? data[index] : null;
       if (item) {
         setRowSelection({ [index]: true });
+        selectedRowIdsKeyRef.current = JSON.stringify([String(index)]);
       }
       setExposedVariables({
         selectedRow: item === null ? {} : item,

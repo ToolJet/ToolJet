@@ -399,6 +399,7 @@ export const tableConfig = {
   events: {
     onRowHovered: { displayName: 'Row hovered' },
     onRowClicked: { displayName: 'Row clicked' },
+    onRowSelectionChanged: { displayName: 'Row selection changed' },
     onExpand: { displayName: 'Row expanded' },
     onBulkUpdate: { displayName: 'Save changes' },
     onPageChanged: { displayName: 'Page changed' },
