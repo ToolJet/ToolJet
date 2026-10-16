@@ -158,7 +158,10 @@ export const ColumnPopoverContent = ({
           </div>
         </div>
       </Popover.Header>
-      <Popover.Body className={`table-column-popover ${darkMode && 'theme-dark'}`}>
+      <Popover.Body
+        className={`table-column-popover ${darkMode && 'theme-dark'}`}
+        data-reveal-root={isButtonDetailView ? `listItem:${selectedButtonId}` : undefined}
+      >
         {activeTab === 'propertiesTab' ? (
           <PropertiesTabElements
             column={column}

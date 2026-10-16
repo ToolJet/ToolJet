@@ -53,16 +53,18 @@ export const KeyValuePair = (props) => {
   } = useFieldManager({ component, paramUpdated, currentState });
 
   const {
-    activeIndex: activeFieldPopoverIndex,
+    // Keyed by field id, not index, so a reorder can't move the open popover to another field.
+    activeIndex: activeFieldId,
     isRootCloseEnabled,
     togglePopover,
+    openPopover,
     setRootCloseBlocker,
   } = usePopoverState();
 
   // Derived state
   const useDynamicField = useMemo(() => {
     const value = component.component.definition.properties.useDynamicField?.value;
-    return value ? (resolveReferences(value) ?? false) : false;
+    return value ? resolveReferences(value) ?? false : false;
   }, [component.component.definition.properties.useDynamicField?.value]);
 
   // Event handlers
@@ -95,6 +97,7 @@ export const KeyValuePair = (props) => {
     (field, index) => (
       <Popover
         id="popover-basic-2"
+        data-reveal-root={`listItem:${field.id}`}
         className={`${darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
           width: '280px',
@@ -174,7 +177,7 @@ export const KeyValuePair = (props) => {
               <FieldsList
                 filteredFields={filteredFields}
                 fields={fields}
-                activeFieldPopoverIndex={activeFieldPopoverIndex}
+                activeFieldId={activeFieldId}
                 isRootCloseEnabled={isRootCloseEnabled}
                 isAllFieldsEditable={isAllFieldsEditable}
                 darkMode={darkMode}
@@ -260,7 +263,7 @@ export const KeyValuePair = (props) => {
       useDynamicField,
       filteredFields,
       fields,
-      activeFieldPopoverIndex,
+      activeFieldId,
       isRootCloseEnabled,
       isAllFieldsEditable,
       handleDragEnd,

@@ -161,7 +161,7 @@ export const PropertiesTabElements = ({
               className={`column-type-table-inspector`}
             />
           </div>
-          <div className="field px-3" data-cy={`input-and-label-column-name`}>
+          <div className="field px-3" data-cy={`input-and-label-column-name`} data-param="name">
             <label data-cy={`label-column-name`} className="form-label">
               {t('widget.Table.columnName', 'Column name')}
             </label>
@@ -179,7 +179,7 @@ export const PropertiesTabElements = ({
               }}
             />
           </div>
-          <div data-cy={`input-and-label-key`} className="field px-3">
+          <div data-cy={`input-and-label-key`} className="field px-3" data-param="key">
             <label className="form-label">{t('widget.Table.key', 'Key')}</label>
             <CodeHinter
               currentState={currentState}

@@ -47,6 +47,7 @@ const TreeSelectItemPopover = forwardRef(
         {...restProps}
         style={{ ...restProps.style, width: '310px' }}
         className={`${darkMode ? 'dark-theme theme-dark' : ''} treeselect-item-popover ${restProps.className || ''}`}
+        data-reveal-root={`listItem:${item?.value}`}
       >
         <div
           className="treeselect-item-popover-container"
@@ -75,7 +76,11 @@ const TreeSelectItemPopover = forwardRef(
           {/* Content */}
           <div data-cy="inspector-treeselect-item-details-content" className="treeselect-item-popover-content">
             {/* Label & Value fields */}
-            <div data-cy="inspector-treeselect-item-details-label-field" className="treeselect-item-popover-field">
+            <div
+              data-cy="inspector-treeselect-item-details-label-field"
+              data-param="label"
+              className="treeselect-item-popover-field"
+            >
               <label
                 data-cy="inspector-treeselect-item-details-label-label"
                 className="treeselect-item-popover-field-label"
@@ -91,7 +96,11 @@ const TreeSelectItemPopover = forwardRef(
             </div>
 
             {/* Value field */}
-            <div data-cy="inspector-treeselect-item-details-value-field" className="treeselect-item-popover-field">
+            <div
+              data-cy="inspector-treeselect-item-details-value-field"
+              data-param="value"
+              className="treeselect-item-popover-field"
+            >
               <label
                 data-cy="inspector-treeselect-item-details-value-label"
                 className="treeselect-item-popover-field-label"
@@ -110,6 +119,7 @@ const TreeSelectItemPopover = forwardRef(
               <>
                 <div
                   data-cy="inspector-treeselect-item-details-selected-field"
+                  data-param="selected"
                   className="treeselect-item-popover-field"
                 >
                   <CodeHinter
@@ -128,6 +138,7 @@ const TreeSelectItemPopover = forwardRef(
 
                 <div
                   data-cy="inspector-treeselect-item-details-expanded-field"
+                  data-param="expanded"
                   className="treeselect-item-popover-field"
                 >
                   <CodeHinter
@@ -147,7 +158,11 @@ const TreeSelectItemPopover = forwardRef(
             )}
 
             {/* Toggle fields section */}
-            <div data-cy="inspector-treeselect-item-details-visible-field" className="treeselect-item-popover-field">
+            <div
+              data-cy="inspector-treeselect-item-details-visible-field"
+              data-param="visible"
+              className="treeselect-item-popover-field"
+            >
               <CodeHinter
                 {...fxEditorCodeHinterProps}
                 data-cy="inspector-treeselect-item-details-visible-input"
@@ -162,7 +177,11 @@ const TreeSelectItemPopover = forwardRef(
               />
             </div>
 
-            <div data-cy="inspector-treeselect-item-details-disable-field" className="treeselect-item-popover-field">
+            <div
+              data-cy="inspector-treeselect-item-details-disable-field"
+              data-param="disable"
+              className="treeselect-item-popover-field"
+            >
               <CodeHinter
                 {...fxEditorCodeHinterProps}
                 data-cy="inspector-treeselect-item-details-disable-input"

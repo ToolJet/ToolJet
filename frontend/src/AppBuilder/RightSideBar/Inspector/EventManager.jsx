@@ -576,6 +576,7 @@ export const EventManager = ({
           <div className="tw-flex tw-flex-col tw-gap-3">
             <div className="tw-flex tw-flex-col tw-gap-2">
               <FieldRow
+                param="disabled"
                 label={t('editor.inspector.eventManager.enableEvent', 'Enable event')}
                 dataCy="event-enabled-label"
               >
@@ -588,7 +589,11 @@ export const EventManager = ({
                   />
                 </div>
               </FieldRow>
-              <FieldRow label={t('editor.inspector.eventManager.eventName', 'Event name')} dataCy="event-name-label">
+              <FieldRow
+                param="name"
+                label={t('editor.inspector.eventManager.eventName', 'Event name')}
+                dataCy="event-name-label"
+              >
                 <Input
                   key={eventHandler?.id}
                   type="text"
@@ -600,7 +605,7 @@ export const EventManager = ({
               </FieldRow>
             </div>
             <div className="tw-flex tw-flex-col tw-gap-3">
-              <FieldRow label={t('editor.inspector.eventManager.event', 'Event')} dataCy="event-label">
+              <FieldRow param="eventId" label={t('editor.inspector.eventManager.event', 'Event')} dataCy="event-label">
                 <div data-cy="event-selection">
                   <RocketSelect
                     value={event.eventId}
@@ -619,7 +624,11 @@ export const EventManager = ({
                   </RocketSelect>
                 </div>
               </FieldRow>
-              <FieldRow label={t('editor.inspector.eventManager.action', 'Action')} dataCy="action-label">
+              <FieldRow
+                param="actionId"
+                label={t('editor.inspector.eventManager.action', 'Action')}
+                dataCy="action-label"
+              >
                 <div data-cy="action-selection">
                   <RocketSelect
                     value={event.actionId}
@@ -650,7 +659,11 @@ export const EventManager = ({
                   </RocketSelect>
                 </div>
               </FieldRow>
-              <FieldRow label={t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')} dataCy="alert-type-label">
+              <FieldRow
+                param="runOnlyIf"
+                label={t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')}
+                dataCy="alert-type-label"
+              >
                 <CodeHinter
                   type="basic"
                   initialValue={event.runOnlyIf}
@@ -680,7 +693,11 @@ export const EventManager = ({
           >
             {event.actionId === 'show-alert' && (
               <>
-                <FieldRow label={t('editor.inspector.eventManager.message', 'Message')} dataCy="message-label">
+                <FieldRow
+                  param="message"
+                  label={t('editor.inspector.eventManager.message', 'Message')}
+                  dataCy="message-label"
+                >
                   <div data-cy="alert-message-input-field">
                     <CodeHinter
                       type="basic"
@@ -692,7 +709,11 @@ export const EventManager = ({
                     />
                   </div>
                 </FieldRow>
-                <FieldRow label={t('editor.inspector.eventManager.alertType', 'Alert Type')} dataCy="alert-type-label">
+                <FieldRow
+                  param="alertType"
+                  label={t('editor.inspector.eventManager.alertType', 'Alert Type')}
+                  dataCy="alert-type-label"
+                >
                   <div data-cy="alert-message-type">
                     <RocketSelect
                       value={event.alertType}
@@ -716,7 +737,7 @@ export const EventManager = ({
 
             {event.actionId === 'open-webpage' && (
               <>
-                <FieldRow label={t('editor.inspector.eventManager.url', 'URL')} dataCy="url-label">
+                <FieldRow param="url" label={t('editor.inspector.eventManager.url', 'URL')} dataCy="url-label">
                   <CodeHinter
                     type="basic"
                     initialValue={event.url}
@@ -725,7 +746,7 @@ export const EventManager = ({
                     component={component}
                   />
                 </FieldRow>
-                <FieldRow label="Open in" dataCy="open-in-label">
+                <FieldRow param="windowTarget" label="Open in" dataCy="open-in-label">
                   <RocketToggleGroup
                     type="single"
                     value={event?.windowTarget || 'newTab'}
@@ -754,7 +775,7 @@ export const EventManager = ({
             )}
 
             {event.actionId === 'show-modal' && (
-              <FieldRow label={t('editor.inspector.eventManager.modal', 'Modal')} dataCy="modal-label">
+              <FieldRow param="modal" label={t('editor.inspector.eventManager.modal', 'Modal')} dataCy="modal-label">
                 <OptionCombobox
                   options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
                   value={event.modal?.id ?? event.modal}
@@ -764,7 +785,7 @@ export const EventManager = ({
             )}
 
             {event.actionId === 'close-modal' && (
-              <FieldRow label={t('editor.inspector.eventManager.modal', 'Modal')} dataCy="modal-label">
+              <FieldRow param="modal" label={t('editor.inspector.eventManager.modal', 'Modal')} dataCy="modal-label">
                 <OptionCombobox
                   options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
                   value={event.modal?.id ?? event.modal}
@@ -774,7 +795,11 @@ export const EventManager = ({
             )}
 
             {event.actionId === 'copy-to-clipboard' && (
-              <FieldRow label={t('editor.inspector.eventManager.text', 'Text')} dataCy="text-label">
+              <FieldRow
+                param="contentToCopy"
+                label={t('editor.inspector.eventManager.text', 'Text')}
+                dataCy="text-label"
+              >
                 <CodeHinter
                   type="basic"
                   initialValue={event.contentToCopy}
@@ -787,7 +812,11 @@ export const EventManager = ({
 
             {['run-query', 'reset-query', 'abort-query'].includes(event.actionId) && (
               <>
-                <FieldRow label={t('editor.inspector.eventManager.query', 'Query')} dataCy="query-label">
+                <FieldRow
+                  param="queryId"
+                  label={t('editor.inspector.eventManager.query', 'Query')}
+                  dataCy="query-label"
+                >
                   <div data-cy="query-selection-field">
                     <OptionCombobox
                       options={constructDataQueryOptions()}
@@ -827,7 +856,7 @@ export const EventManager = ({
 
             {event.actionId === 'set-localstorage-value' && (
               <>
-                <FieldRow label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
+                <FieldRow param="key" label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
                   <CodeHinter
                     type="basic"
                     initialValue={event.key}
@@ -836,7 +865,7 @@ export const EventManager = ({
                     component={component}
                   />
                 </FieldRow>
-                <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
+                <FieldRow param="value" label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
                   <CodeHinter
                     type="basic"
                     initialValue={event.value}
@@ -849,7 +878,7 @@ export const EventManager = ({
             )}
             {event.actionId === 'generate-file' && (
               <>
-                <FieldRow label={t('editor.inspector.eventManager.type', 'Type')} dataCy="type-label">
+                <FieldRow param="fileType" label={t('editor.inspector.eventManager.type', 'Type')} dataCy="type-label">
                   <OptionCombobox
                     options={[
                       { name: 'CSV', value: 'csv' },
@@ -860,7 +889,11 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'fileType', value)}
                   />
                 </FieldRow>
-                <FieldRow label={t('editor.inspector.eventManager.fileName', 'File name')} dataCy="file-name-label">
+                <FieldRow
+                  param="fileName"
+                  label={t('editor.inspector.eventManager.fileName', 'File name')}
+                  dataCy="file-name-label"
+                >
                   <CodeHinter
                     type="basic"
                     initialValue={event.fileName}
@@ -868,7 +901,7 @@ export const EventManager = ({
                     component={component}
                   />
                 </FieldRow>
-                <FieldRow label={t('editor.inspector.eventManager.data', 'Data')} dataCy="data-label">
+                <FieldRow param="data" label={t('editor.inspector.eventManager.data', 'Data')} dataCy="data-label">
                   <CodeHinter
                     type="basic"
                     initialValue={event.data}
@@ -880,14 +913,18 @@ export const EventManager = ({
             )}
             {event.actionId === 'set-table-page' && (
               <>
-                <FieldRow label={t('editor.inspector.eventManager.table', 'Table')} dataCy="table-label">
+                <FieldRow param="table" label={t('editor.inspector.eventManager.table', 'Table')} dataCy="table-label">
                   <OptionCombobox
                     options={getComponentOptions('Table')}
                     value={event.table}
                     onChange={(value) => handlerChanged(index, 'table', value)}
                   />
                 </FieldRow>
-                <FieldRow label={t('editor.inspector.eventManager.pageIndex', 'Page index')} dataCy="page-index-label">
+                <FieldRow
+                  param="pageIndex"
+                  label={t('editor.inspector.eventManager.pageIndex', 'Page index')}
+                  dataCy="page-index-label"
+                >
                   <CodeHinter
                     type="basic"
                     initialValue={event.pageIndex ?? '{{1}}'}
@@ -900,7 +937,7 @@ export const EventManager = ({
             )}
             {event.actionId === 'set-custom-variable' && (
               <>
-                <FieldRow label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
+                <FieldRow param="key" label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
                   <CodeHinter
                     type="basic"
                     initialValue={event.key}
@@ -910,7 +947,7 @@ export const EventManager = ({
                     component={component}
                   />
                 </FieldRow>
-                <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
+                <FieldRow param="value" label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
                   <CodeHinter
                     type="basic"
                     initialValue={event.value}
@@ -922,7 +959,7 @@ export const EventManager = ({
               </>
             )}
             {event.actionId === 'unset-custom-variable' && (
-              <FieldRow label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
+              <FieldRow param="key" label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
                 <CodeHinter
                   type="basic"
                   initialValue={event.key}
@@ -933,7 +970,7 @@ export const EventManager = ({
             )}
             {event.actionId === 'set-page-variable' && (
               <>
-                <FieldRow label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
+                <FieldRow param="key" label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
                   <CodeHinter
                     type="basic"
                     initialValue={event.key}
@@ -942,7 +979,7 @@ export const EventManager = ({
                     component={component}
                   />
                 </FieldRow>
-                <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
+                <FieldRow param="value" label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
                   <CodeHinter
                     type="basic"
                     initialValue={event.value}
@@ -954,7 +991,7 @@ export const EventManager = ({
               </>
             )}
             {event.actionId === 'unset-page-variable' && (
-              <FieldRow label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
+              <FieldRow param="key" label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
                 <CodeHinter
                   type="basic"
                   initialValue={event.key}
@@ -975,14 +1012,18 @@ export const EventManager = ({
             )}
             {event.actionId === 'scroll-component-into-view' && (
               <>
-                <FieldRow label={t('editor.inspector.eventManager.component', 'Component')} dataCy="component-label">
+                <FieldRow
+                  param="componentId"
+                  label={t('editor.inspector.eventManager.component', 'Component')}
+                  dataCy="component-label"
+                >
                   <OptionCombobox
                     options={getComponentsOptionsWithoutModalChilds()}
                     value={event.componentId}
                     onChange={(value) => handlerChanged(index, 'componentId', value)}
                   />
                 </FieldRow>
-                <FieldRow label="Behaviour" dataCy="scroll-behavior-label">
+                <FieldRow param="scrollBehavior" label="Behaviour" dataCy="scroll-behavior-label">
                   <RocketSelect
                     value={event.scrollBehavior ?? 'smooth'}
                     onValueChange={(value) => handlerChanged(index, 'scrollBehavior', value)}
@@ -1003,7 +1044,7 @@ export const EventManager = ({
                     </SelectContent>
                   </RocketSelect>
                 </FieldRow>
-                <FieldRow label="Block" dataCy="scroll-block-label">
+                <FieldRow param="scrollBlock" label="Block" dataCy="scroll-block-label">
                   <RocketSelect
                     value={event.scrollBlock ?? 'nearest'}
                     onValueChange={(value) => handlerChanged(index, 'scrollBlock', value)}
@@ -1030,6 +1071,7 @@ export const EventManager = ({
             {event.actionId === 'control-component' && (
               <>
                 <FieldRow
+                  param="componentId"
                   label={t('editor.inspector.eventManager.component', 'Component')}
                   dataCy="action-options-component-field-label"
                 >
@@ -1042,6 +1084,7 @@ export const EventManager = ({
                   </div>
                 </FieldRow>
                 <FieldRow
+                  param="componentSpecificActionHandle"
                   label={t('editor.inspector.eventManager.action', 'Action')}
                   dataCy="action-options-action-field-label"
                 >
@@ -1112,7 +1155,11 @@ export const EventManager = ({
             )}
             {event.actionId === 'toggle-app-mode' && (
               <>
-                <FieldRow label={t('editor.inspector.eventManager.appMode', 'App mode')} dataCy="app-mode-label">
+                <FieldRow
+                  param="appMode"
+                  label={t('editor.inspector.eventManager.appMode', 'App mode')}
+                  dataCy="app-mode-label"
+                >
                   <div data-cy="query-selection-field">
                     <OptionCombobox
                       options={[
@@ -1127,7 +1174,11 @@ export const EventManager = ({
                 <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
               </>
             )}
-            <FieldRow label={t('editor.inspector.eventManager.debounce', 'Debounce')} dataCy="debounce-label">
+            <FieldRow
+              param="debounce"
+              label={t('editor.inspector.eventManager.debounce', 'Debounce')}
+              dataCy="debounce-label"
+            >
               <CodeHinter
                 type="basic"
                 initialValue={event.debounce}
@@ -1236,6 +1287,7 @@ export const EventManager = ({
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                                 data-cy="event-handler-card"
+                                data-event-id={event.id}
                                 className="tw-mb-1 tw-h-14 tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-md tw-bg-interactive-default tw-p-2 hover:tw-bg-interactive-hover"
                               >
                                 <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-justify-center tw-gap-0.5">
@@ -1323,6 +1375,7 @@ export const EventManager = ({
                                 darkMode && 'dark-theme'
                               )}
                               data-cy="popover-card"
+                              data-reveal-root={`event:${event.id}`}
                               onInteractOutside={(e) => {
                                 const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
                                 if (autocomplete && autocomplete.contains(e.target)) {

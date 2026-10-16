@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import ListGroup from 'react-bootstrap/ListGroup';
@@ -23,7 +23,8 @@ const OptionItem = ({
   ...restProps
 }) => {
   const { dataCy: dataCyPrefix } = config;
-  const { onDefaultChange, componentType } = restProps;
+  const { onDefaultChange, componentType, component } = restProps;
+  const [showPopover, setShowPopover] = useState(false);
 
   return (
     <Draggable key={item?.value} draggableId={item?.value} index={index}>
@@ -32,6 +33,7 @@ const OptionItem = ({
           <div
             key={index}
             data-cy={`${dataCyPrefix}-option-${index}`}
+            data-list-item-id={String(item?.value ?? '')}
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
@@ -41,6 +43,7 @@ const OptionItem = ({
               trigger="click"
               placement="left"
               rootClose
+              show={showPopover}
               overlay={
                 <OptionDetailsPopover
                   item={item}
@@ -55,6 +58,7 @@ const OptionItem = ({
                 />
               }
               onToggle={(isOpen) => {
+                setShowPopover(isOpen);
                 if (!isOpen) {
                   document.activeElement?.blur(); // Manually trigger blur when popover closes
                 }

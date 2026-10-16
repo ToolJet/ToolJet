@@ -307,6 +307,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   return (
     <Popover
       id="add-new-page-popup"
+      data-reveal-root={`page:${page?.id}`}
       ref={ref}
       {...props}
       className={`add-new-page-popup ${darkMode && 'dark-theme theme-dark'}`}
@@ -361,7 +362,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
         </div>
       </Popover.Header>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
-        <div className="pb-2">
+        <div data-param="name" className="pb-2">
           <div className="col">
             <label className="form-label">{type === 'default' ? 'Page name' : 'Label'}</label>
             <input
@@ -379,7 +380,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
           </div>
         </div>
         {type === 'default' && (
-          <div className="pb-2">
+          <div data-param="handle" className="pb-2">
             <div className="col">
               <label className="form-label">Handle</label>
               <input
@@ -398,7 +399,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
           </div>
         )}
         {type === 'url' && (
-          <div className="pb-2">
+          <div data-param="url" className="pb-2">
             <div className="col">
               <label className="form-label">URL</label>
               <textarea
@@ -412,7 +413,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
           </div>
         )}
         {type === 'app' && (
-          <div className="pb-2">
+          <div data-param="appId" className="pb-2">
             <div className="col d-flex justify-content-between align-items-center">
               <label className="form-label">Select app</label>
               <Select
@@ -455,7 +456,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
           </div>
         )}
         {['url', 'app'].includes(type) && (
-          <div className="d-flex justify-content-between align-items-center pb-2">
+          <div data-param="openIn" className="d-flex justify-content-between align-items-center pb-2">
             <label className="form-label">Open {type === 'url' ? 'URL' : 'app'} in</label>
             <div className="ms-auto position-relative app-mode-switch">
               <ToggleGroup
@@ -473,7 +474,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
             </div>
           </div>
         )}
-        <div className="pb-3">
+        <div data-param="icon" className="pb-3">
           <div className="d-flex justify-content-between align-items-center">
             <label className="form-label font-weight-400 mb-0">Icon</label>
             <Icon
@@ -507,7 +508,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
             isHomePage={isHomePage}
           />
           {type === 'default' && (
-            <div className=" d-flex justify-content-between align-items-center pb-2">
+            <div data-param="disabled" className=" d-flex justify-content-between align-items-center pb-2">
               <label className="form-label font-weight-400 mb-0">Disable page</label>
               <label className={`form-switch`}>
                 <input
@@ -521,9 +522,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
             </div>
           )}
         </div>
-        <div className="pb-3">
+        <div data-param="pageHeader" className="pb-3">
           <div className="section-header pb-2">Page header</div>
-          <div className=" d-flex justify-content-between align-items-center pb-2">
+          <div data-param="showOnDesktop" className=" d-flex justify-content-between align-items-center pb-2">
             <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
               Show on desktop
               <LicenseTooltip
@@ -549,7 +550,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               />
             </label>
           </div>
-          <div className=" d-flex justify-content-between align-items-center pb-2">
+          <div data-param="showOnMobile" className=" d-flex justify-content-between align-items-center pb-2">
             <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
               Show on mobile
               <LicenseTooltip
@@ -576,9 +577,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
             </label>
           </div>
         </div>
-        <div className="pb-3">
+        <div data-param="pageFooter" className="pb-3">
           <div className="section-header pb-2">Page footer</div>
-          <div className=" d-flex justify-content-between align-items-center pb-2">
+          <div data-param="showOnDesktop" className=" d-flex justify-content-between align-items-center pb-2">
             <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
               Show on desktop
               <LicenseTooltip
@@ -604,7 +605,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               />
             </label>
           </div>
-          <div className=" d-flex justify-content-between align-items-center pb-2">
+          <div data-param="showOnMobile" className=" d-flex justify-content-between align-items-center pb-2">
             <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
               Show on mobile
               <LicenseTooltip
@@ -683,7 +684,10 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
   const [forceCodeBox, setForceCodeBox] = useState(hidden?.fxActive);
 
   return (
-    <div className={cx({ 'codeShow-active': forceCodeBox, disabled: disabled }, 'wrapper-div-code-editor pb-2')}>
+    <div
+      data-param="hidden"
+      className={cx({ 'codeShow-active': forceCodeBox, disabled: disabled }, 'wrapper-div-code-editor pb-2')}
+    >
       <div className={cx('d-flex align-items-center justify-content-between')}>
         <div className={`field`}>
           <InspectorTooltip

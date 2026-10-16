@@ -24,7 +24,7 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, compon
 
   return (
     <div className="tw-flex tw-flex-col tw-gap-3" data-cy="switch-page-label-and-input">
-      <FieldRow label={t('globals.page', 'Page')} dataCy="switch-page-label">
+      <FieldRow param="pageId" label={t('globals.page', 'Page')} dataCy="switch-page-label">
         <OptionCombobox
           options={pageOptions}
           value={event.pageId}

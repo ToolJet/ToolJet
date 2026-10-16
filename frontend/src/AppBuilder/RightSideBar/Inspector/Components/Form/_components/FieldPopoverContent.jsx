@@ -140,7 +140,7 @@ const FieldPopoverContent = ({
       </Popover.Header>
       <Popover.Body className="tw-p-4 form-field-popover-body">
         <div className="tw-space-y-[12px]">
-          <div>
+          <div data-param="dataType">
             <Dropdown
               options={inputTypeOptions}
               name="field-type"

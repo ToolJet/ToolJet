@@ -155,6 +155,7 @@ export const Table = (props) => {
     (column, index) => (
       <Popover
         id="table-column-popover-basic"
+        data-reveal-root={`listItem:${column.id}`}
         className={`${darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
           width: '280px',
@@ -561,7 +562,7 @@ export const Table = (props) => {
                                       ],
                                     }}
                                   >
-                                    <div className="table-column-lists">
+                                    <div className="table-column-lists" data-list-item-id={item.id}>
                                       <List.Item
                                         isDraggable
                                         primaryText={resolvedItemName}
