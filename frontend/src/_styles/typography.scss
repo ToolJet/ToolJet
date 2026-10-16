@@ -2,6 +2,9 @@
     /* Font families */
     --font-family-inter: 'Inter', sans-serif;
     --font-family-geist-mono: 'Geist Mono', monospace;
+    /* The editor's own families (theme.scss names them directly); the AI chat and build views use these. */
+    --font-family-ibm-plex-sans: 'IBM Plex Sans', sans-serif;
+    --font-family-ibm-plex-mono: 'IBM Plex Mono', monospace;
 
     /* Font weights */
     --font-weight-regular: 400;
