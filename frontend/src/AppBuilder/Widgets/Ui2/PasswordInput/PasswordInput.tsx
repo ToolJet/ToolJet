@@ -7,33 +7,35 @@ import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widget
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { Group, INNER, text } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import type { PasswordStrength } from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Password input ------------------------------------------------------------------------------------------------
 
-const STRENGTH_BAR = {
+const STRENGTH_BAR: Partial<Record<PasswordStrength['level'], string>> = {
   weak: 'bg-[color:var(--lk-weak,var(--sc-destructive))]',
   fair: 'bg-[color:var(--lk-fair,var(--sc-warning))]',
   strong: 'bg-[color:var(--lk-strong,var(--sc-success))]',
 };
 
-export const STRENGTH_TEXT = {
+export const STRENGTH_TEXT: Partial<Record<PasswordStrength['level'], string>> = {
   weak: 'text-[color:var(--lk-weak,var(--sc-destructive))]',
   fair: 'text-[color:var(--lk-fair,var(--sc-warning))]',
   strong: 'text-[color:var(--lk-strong,var(--sc-success))]',
 };
 
-export const ShadPasswordInput = (props) => {
+export const ShadPasswordInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
   const [value, change] = useValue(props, text(properties.defaultValue), (set) => ({
-    setText: async (t) => set(text(t)),
+    setText: async (t: unknown) => set(text(t)),
     clear: async () => set(''),
   }));
   const strength = M.passwordStrength(value);
   useExposed(setExposedVariables, properties, { strength: strength.level });
-  const onChange = (next) => {
+  const onChange = (next: string) => {
     setExposedVariable('strength', M.passwordStrength(next).level);
     change(next);
   };

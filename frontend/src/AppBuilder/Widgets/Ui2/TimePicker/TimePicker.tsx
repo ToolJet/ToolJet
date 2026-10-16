@@ -10,6 +10,8 @@ import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import { isBlank } from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { ICON, TRIGGER, pad2, parseTimeArg, text, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import type { TimeBounds } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Time picker ---------------------------------------------------------------------------------------------------
 
@@ -21,11 +23,26 @@ export const OPTION_IDLE = 'hover:bg-accent hover:text-accent-foreground';
 export const OPTION_ON = 'bg-primary text-primary-foreground hover:bg-primary';
 
 /** A scrolling column of options (hours, minutes, AM/PM) that opens scrolled to its selected option. */
-export const OptionColumn = ({ label, options, className }) => {
-  const ref = useRef(null);
+/** One option of an OptionColumn. */
+export interface ColumnOption {
+  key: string | number;
+  label: string;
+  selected: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}
+
+export interface OptionColumnProps {
+  label: string;
+  options: ColumnOption[];
+  className?: string;
+}
+
+export const OptionColumn = ({ label, options, className }: OptionColumnProps) => {
+  const ref = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const col = ref.current;
-    const selected = col?.querySelector('[data-selected="true"]');
+    const selected = col?.querySelector<HTMLElement>('[data-selected="true"]');
     if (col && selected) col.scrollTop = selected.offsetTop - col.clientHeight / 2 + selected.clientHeight / 2;
   }, []);
   return (
@@ -54,18 +71,32 @@ export const OptionColumn = ({ label, options, className }) => {
 };
 
 /** The hour, minute and AM/PM columns for a time (minutes since midnight, or null), within bounds. */
-export const timeColumns = ({ minutes, use24, step, bounds, onPick }) => {
+export interface TimeColumnsInput {
+  minutes: number | null;
+  use24: boolean;
+  step: unknown;
+  bounds: TimeBounds;
+  onPick: (minutes: number) => void;
+}
+
+export const timeColumns = ({
+  minutes,
+  use24,
+  step,
+  bounds,
+  onPick,
+}: TimeColumnsInput): { label: string; options: ColumnOption[] }[] => {
   const mins = M.minuteOptions(step);
   const hour = minutes === null ? null : Math.floor(minutes / 60);
   const minute = minutes === null ? null : minutes % 60;
   const pm = hour !== null ? hour >= 12 : bounds.lo >= 720;
-  const fits = (h) => mins.some((m) => M.inTimeRange(h * 60 + m, bounds));
-  const pickAt = (h, m) => onPick(M.clampTime(h * 60 + m, bounds));
+  const fits = (h: number) => mins.some((m) => M.inTimeRange(h * 60 + m, bounds));
+  const pickAt = (h: number, m: number) => onPick(M.clampTime(h * 60 + m, bounds));
   const hours = use24
     ? Array.from({ length: 24 }, (_, h) => ({ h, label: pad2(h) }))
     : [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((h12) => ({ h: (h12 % 12) + (pm ? 12 : 0), label: pad2(h12) }));
   const baseHour = hour ?? Math.floor(bounds.lo / 60);
-  const columns = [
+  const columns: { label: string; options: ColumnOption[] }[] = [
     {
       label: 'Hours',
       options: hours.map(({ h, label }) => ({
@@ -88,7 +119,7 @@ export const timeColumns = ({ minutes, use24, step, bounds, onPick }) => {
     },
   ];
   if (!use24) {
-    const half = (isPm) => {
+    const half = (isPm: boolean) => {
       const from = isPm ? 720 : 0;
       return bounds.hi >= from && bounds.lo <= from + 719;
     };
@@ -112,9 +143,9 @@ export const timeColumns = ({ minutes, use24, step, bounds, onPick }) => {
   return columns;
 };
 
-export const ShadTimePicker = (props) => {
+export const ShadTimePicker = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { setExposedVariables, fireEvent, id, componentType, styles } = props;
   // setMinTime and setMaxTime change those properties until they change themselves.
@@ -126,10 +157,10 @@ export const ShadTimePicker = (props) => {
   const [minutes, setMinutes] = useState(initial);
   useEffect(() => setMinutes(initial), [initial]);
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
-  const exposed = (m) => ({ value: M.toHHmm(m), formattedValue: M.formatTime(m, use24) });
-  const setTime = (t, format) => {
+  const exposed = (m: number | null) => ({ value: M.toHHmm(m), formattedValue: M.formatTime(m, use24) });
+  const setTime = (t: unknown, format: unknown) => {
     const m = parseTimeArg(t, format);
     if (m !== null || isBlank(t)) setMinutes(m);
   };
@@ -139,14 +170,14 @@ export const ShadTimePicker = (props) => {
     timeFormat: use24 ? '24h' : '12h',
     minTime: M.toHHmm(bounds.lo),
     maxTime: M.toHHmm(bounds.hi),
-    setValue: async (t, format) => setTime(t, format),
+    setValue: async (t: unknown, format: unknown) => setTime(t, format),
     clearValue: async () => setMinutes(null),
-    setMinTime: async (t) => override('minTime', text(t)),
-    setMaxTime: async (t) => override('maxTime', text(t)),
+    setMinTime: async (t: unknown) => override('minTime', text(t)),
+    setMaxTime: async (t: unknown) => override('maxTime', text(t)),
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),
   });
-  const pick = (m, close = false) => {
+  const pick = (m: number | null, close = false) => {
     if (close) openChange(false);
     if (m === minutes) return;
     setMinutes(m);
@@ -165,7 +196,7 @@ export const ShadTimePicker = (props) => {
   );
   // Every close (Escape, a click outside, a pick from the list) goes through here, so a close after a pick also marks
   // the field touched and lets the focus tracking fire onBlur once focus leaves.
-  const openChange = (next) => {
+  const openChange = (next: boolean) => {
     setOpen(next);
     focus.opened(next);
     if (!next) check.touch();

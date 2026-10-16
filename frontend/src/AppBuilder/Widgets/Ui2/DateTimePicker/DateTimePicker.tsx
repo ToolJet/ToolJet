@@ -32,13 +32,24 @@ import {
   useLatest,
   withRule,
 } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import type { Dayjs } from 'dayjs';
+import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Date and time picker ------------------------------------------------------------------------------------------
 
 const SMALL_SELECT =
   'h-8 w-[4.25rem] gap-1 px-2 tabular-nums text-[color:var(--sc-popover-foreground)] border-[color:var(--sc-input)]';
 
-export const TimeSelect = ({ label, value, options, onChange, disabled, style }) => (
+export interface TimeSelectProps {
+  label: string;
+  value: string;
+  options: { value: string; label: string; disabled?: boolean }[];
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  style?: StyleWithVars;
+}
+
+export const TimeSelect = ({ label, value, options, onChange, disabled, style }: TimeSelectProps) => (
   <Select value={value} onValueChange={onChange} disabled={disabled}>
     <SelectTrigger aria-label={label} className={SMALL_SELECT}>
       <SelectValue placeholder="--" />
@@ -53,9 +64,9 @@ export const TimeSelect = ({ label, value, options, onChange, disabled, style })
   </Select>
 );
 
-export const ShadDateTimePicker = (props) => {
+export const ShadDateTimePicker = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { setExposedVariables, fireEvent, id, componentType, styles } = props;
   // setMinDate, setMaxDate and setDisabledDates change those properties until they change themselves.
@@ -84,20 +95,20 @@ export const ShadDateTimePicker = (props) => {
   const [ts, setTs] = useState(initial);
   useEffect(() => setTs(initial), [initial]);
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   const date = ts === null ? null : dayjs(ts);
   const exposed = M.dateTimeExposed(date, displayFormat);
   const tsRef = useLatest(ts);
   const formatRef = useLatest(displayFormat);
-  const setDate = (v, format) => {
+  const setDate = (v: unknown, format: unknown) => {
     const d = M.parseDateTime(
       v,
       isBlank(format) || typeof format !== 'string' ? formatRef.current : M.toDayjsFormat(format)
     );
     if (d || isBlank(v)) setTs(d ? d.valueOf() : null);
   };
-  const blankArg = (v) => v === undefined || v === null || v === '';
+  const blankArg = (v: unknown) => v === undefined || v === null || v === '';
   useExposed(setExposedVariables, properties, {
     ...exposed,
     label: text(properties.label),
@@ -105,27 +116,27 @@ export const ShadDateTimePicker = (props) => {
     timeFormat: use24 ? '24h' : '12h',
     minDate: rules.min ? rules.min.format('YYYY-MM-DD') : '',
     maxDate: rules.max ? rules.max.format('YYYY-MM-DD') : '',
-    setValue: async (v, format) => setDate(v, format),
-    setValueInTimestamp: async (v) => {
+    setValue: async (v: unknown, format: unknown) => setDate(v, format),
+    setValueInTimestamp: async (v: unknown) => {
       const n = Number(v);
       if (!blankArg(v) && typeof v !== 'boolean' && Number.isFinite(n) && dayjs(n).isValid()) setTs(n);
     },
     // setTime keeps the day (today when none is picked) and sets the time of day.
-    setTime: async (v, format) => {
+    setTime: async (v: unknown, format: unknown) => {
       const m = parseTimeArg(v, format);
       if (m === null) return;
       const day = tsRef.current === null ? dayjs().startOf('day') : dayjs(tsRef.current);
       setTs(M.atTime(day, m).valueOf());
     },
     clearValue: async () => setTs(null),
-    setMinDate: async (v) => override('minDate', text(v)),
-    setMaxDate: async (v) => override('maxDate', text(v)),
-    setDisabledDates: async (v) => override('disabledDates', Array.isArray(v) ? v : blankArg(v) ? [] : [v]),
+    setMinDate: async (v: unknown) => override('minDate', text(v)),
+    setMaxDate: async (v: unknown) => override('maxDate', text(v)),
+    setDisabledDates: async (v: unknown) => override('disabledDates', Array.isArray(v) ? v : blankArg(v) ? [] : [v]),
     clearDisabledDates: async () => override('disabledDates', []),
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),
   });
-  const commit = (next) => {
+  const commit = (next: number | null) => {
     if (next === ts) return;
     setTs(next);
     setExposedVariables(M.dateTimeExposed(next === null ? null : dayjs(next), displayFormat));
@@ -139,7 +150,7 @@ export const ShadDateTimePicker = (props) => {
   const disabled = busy(properties);
   const now = dayjs();
   const nowMinutes = Math.floor((now.hour() * 60 + now.minute()) / step) * step;
-  const timeOf = (d) => (d ? d.hour() * 60 + d.minute() : nowMinutes);
+  const timeOf = (d: Dayjs | null) => (d ? d.hour() * 60 + d.minute() : nowMinutes);
   // Changing the time before picking a day uses today (or the first allowed day).
   const baseDay = () => {
     if (date) return date;
@@ -147,7 +158,7 @@ export const ShadDateTimePicker = (props) => {
     if (!M.dateProblem(today, rules)) return today;
     return rules.min ?? today;
   };
-  const setTime = (minutes) => commit(M.atTime(baseDay(), minutes).valueOf());
+  const setTime = (minutes: number) => commit(M.atTime(baseDay(), minutes).valueOf());
   const minutes = date ? timeOf(date) : null;
   const hour = minutes === null ? null : Math.floor(minutes / 60);
   const minute = minutes === null ? null : minutes % 60;

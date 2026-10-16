@@ -22,8 +22,13 @@ import {
   useLatest,
   withRule,
 } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import type { InputHTMLAttributes, KeyboardEvent } from 'react';
+import type { Country } from 'react-phone-number-input';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-export const BareInput = React.forwardRef((props, ref) => <input ref={ref} {...props} />);
+export const BareInput = React.forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>((props, ref) => (
+  <input ref={ref} {...props} />
+));
 BareInput.displayName = 'BareInput';
 
 // ---- Phone input ---------------------------------------------------------------------------------------------------
@@ -33,7 +38,7 @@ const POPOVER_LIST = 'max-h-[300px] overflow-y-auto overflow-x-hidden';
 export const COMMAND_ITEM =
   'relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50';
 
-export const FlagIcon = ({ country, title }) => {
+export const FlagIcon = ({ country, title }: { country: Country; title: string }) => {
   const Flag = flags[country];
   return (
     <span className="flex h-4 w-6 shrink-0 overflow-hidden rounded-sm bg-[color:var(--sc-muted)] [&_svg]:h-full [&_svg]:w-full">
@@ -42,9 +47,15 @@ export const FlagIcon = ({ country, title }) => {
   );
 };
 
-export const ShadPhoneInput = (props) => {
+/** The number (E.164, '' for none) and the country it is typed for. */
+interface PhoneState {
+  value: string;
+  country: Country;
+}
+
+export const ShadPhoneInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
   const listKey = stringify(Array.isArray(properties.onlyCountries) ? properties.onlyCountries : null);
@@ -53,11 +64,11 @@ export const ShadPhoneInput = (props) => {
     [text(properties.defaultValue), text(properties.defaultCountry), listKey] // eslint-disable-line react-hooks/exhaustive-deps
   );
   const { countries } = start;
-  const [state, setState] = useState({ value: start.value, country: start.country });
+  const [state, setState] = useState<PhoneState>({ value: start.value, country: start.country });
   useEffect(() => setState({ value: start.value, country: start.country }), [start]);
   const stateRef = useLatest(state);
   const info = M.phoneInfo(state.value, state.country);
-  const update = (next, fire = true) => {
+  const update = (next: PhoneState, fire = true) => {
     const prev = stateRef.current;
     if (next.value === prev.value && next.country === prev.country) return;
     stateRef.current = next;
@@ -66,21 +77,21 @@ export const ShadPhoneInput = (props) => {
     setExposedVariables(M.phoneInfo(next.value, next.country));
     fireEvent('onChange');
   };
-  const toCountry = (c) => {
+  const toCountry = (c: Country): PhoneState => {
     const prev = stateRef.current;
     return { country: c, value: M.rebasePhone(prev.value, prev.country, c) };
   };
   useExposed(setExposedVariables, properties, {
     ...info,
     // setValue(value, country), as the native Phone input takes it.
-    setValue: async (v, c) => {
+    setValue: async (v: unknown, c: unknown) => {
       const given = c === undefined || c === null || c === '' ? null : M.countryFromInput(c, countries);
       const prev = given ? { ...stateRef.current, country: given } : stateRef.current;
       const value = M.toPhoneValue(v, prev.country);
       const detected = M.phoneCountry(value, countries);
       update({ value, country: detected || prev.country }, false);
     },
-    setCountryCode: async (c) => {
+    setCountryCode: async (c: unknown) => {
       const country = M.countryFromInput(c, countries);
       if (country) update(toCountry(country), false);
     },
@@ -194,7 +205,7 @@ export const ShadPhoneInput = (props) => {
             onFocus={textBox.onFocus}
             onBlur={textBox.onBlur}
             onChange={(v) => update({ ...stateRef.current, value: v || '' })}
-            onKeyDown={(e) => e.key === 'Enter' && fireEvent('onEnterPressed')}
+            onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && fireEvent('onEnterPressed')}
           />
         </Group>
       </Field>

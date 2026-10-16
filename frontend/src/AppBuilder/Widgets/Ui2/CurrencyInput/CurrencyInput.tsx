@@ -17,10 +17,11 @@ import {
   useLatest,
   useNumberBox,
 } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Currency input ------------------------------------------------------------------------------------------------
 
-const currencyName = (code, locale) => {
+const currencyName = (code: string, locale: string): string => {
   try {
     return new Intl.DisplayNames([locale || 'en-US', 'en-US'], { type: 'currency' }).of(code) || code;
   } catch {
@@ -28,9 +29,9 @@ const currencyName = (code, locale) => {
   }
 };
 
-export const ShadCurrencyInput = (props) => {
+export const ShadCurrencyInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
   const locale = M.isBlank(properties.locale) || typeof properties.locale !== 'string' ? 'en-US' : properties.locale;
@@ -40,14 +41,14 @@ export const ShadCurrencyInput = (props) => {
   useEffect(() => setCurrency(initialCurrency), [initialCurrency]);
   const currencyRef = useLatest(currency);
   const decimals = M.currencyDecimals(currency, properties.decimalPlaces);
-  const round = (n) => M.roundTo(n, decimals);
+  const round = (n: unknown) => M.roundTo(n, decimals);
   const initial = M.roundTo(
     M.parseNumber(properties.defaultValue, locale),
     M.currencyDecimals(initialCurrency, properties.decimalPlaces)
   );
   const box = useNumberBox(props, { initial, round, parse: (v) => M.parseNumber(v, locale) });
   const { value, draft, setDraft } = box;
-  const formatted = (n, code = currency) =>
+  const formatted = (n: number | null, code = currency) =>
     M.formatCurrency(n, { currency: code, locale, decimals: M.currencyDecimals(code, properties.decimalPlaces) });
   const latest = useLatest({ locale, decimalPlaces: properties.decimalPlaces });
   useExposed(setExposedVariables, properties, {
@@ -56,16 +57,16 @@ export const ShadCurrencyInput = (props) => {
     currency,
     // setValue(value, currency): the native Currency input takes the currency with the value. The amount is rounded
     // to the decimals of the currency it ends up in (setValue(12.345, 'JPY') is 12, not the old currency's 12.35).
-    setValue: async (v, code) => {
+    setValue: async (v: unknown, code: unknown) => {
       const next = code !== undefined && code !== null && code !== '' ? M.toCurrency(code, currencyRef.current) : null;
       if (next) setCurrency(next);
       const places = M.currencyDecimals(next ?? currencyRef.current, latest.current.decimalPlaces);
       box.set(M.roundTo(M.parseNumber(v, latest.current.locale), places));
     },
-    setCurrency: async (code) => setCurrency(M.toCurrency(code, currencyRef.current)),
+    setCurrency: async (code: unknown) => setCurrency(M.toCurrency(code, currencyRef.current)),
     clear: async () => box.set(null),
   });
-  const commit = (next) => box.commit(next, (n) => ({ formattedValue: formatted(n) }));
+  const commit = (next: number | null) => box.commit(next, (n) => ({ formattedValue: formatted(n) }));
   const check = useValidation(props, value, () => commit(null));
   const textBox = useTextBox(props, check.touch);
   const disabled = busy(properties);

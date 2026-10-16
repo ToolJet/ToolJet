@@ -7,6 +7,7 @@ import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widget
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { EDGE, text, useLatest, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- OTP input -----------------------------------------------------------------------------------------------------
 
@@ -20,9 +21,9 @@ export const SLOT_RADIUS = 'rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))
 export const SLOT_JOINED =
   'border-y border-r first:border-l first:rounded-l-[var(--lk-radius,calc(var(--sc-radius)-2px))] last:rounded-r-[var(--lk-radius,calc(var(--sc-radius)-2px))]';
 
-export const ShadOtpInput = (props) => {
+export const ShadOtpInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariables, fireEvent, id } = props;
   const length = M.otpLength(properties.length);
@@ -32,7 +33,7 @@ export const ShadOtpInput = (props) => {
   useEffect(() => setValue(initial), [initial]);
   const code = value.slice(0, length);
   const isComplete = code.length === length;
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
   const lengthRef = useLatest({ length, characters });
   useExposed(setExposedVariables, properties, {
@@ -43,9 +44,9 @@ export const ShadOtpInput = (props) => {
     setFocus: async () => inputRef.current?.focus(),
     setBlur: async () => inputRef.current?.blur(),
     // Fills the boxes as a paste does (the characters that do not fit the kind or the length are dropped).
-    setText: async (v) => setValue(M.otpSanitize(v, lengthRef.current.length, lengthRef.current.characters)),
+    setText: async (v: unknown) => setValue(M.otpSanitize(v, lengthRef.current.length, lengthRef.current.characters)),
   });
-  const change = (raw) => {
+  const change = (raw: string) => {
     const next = M.otpSanitize(raw, length, characters);
     if (next === code) return;
     setValue(next);
@@ -71,7 +72,7 @@ export const ShadOtpInput = (props) => {
           [half, length],
         ]
       : [[0, length]];
-  const slot = (i) => {
+  const slot = (i: number) => {
     const char = code[i];
     return (
       <div
@@ -157,7 +158,7 @@ export const ShadOtpInput = (props) => {
             }}
             onSelect={(e) => {
               // The caret stays at the end (select-all is kept, so a paste replaces the code).
-              const el = e.target;
+              const el = e.currentTarget;
               const end = el.value.length;
               const all = el.selectionStart === 0 && el.selectionEnd === end;
               if (!all && (el.selectionStart !== end || el.selectionEnd !== end)) el.setSelectionRange(end, end);

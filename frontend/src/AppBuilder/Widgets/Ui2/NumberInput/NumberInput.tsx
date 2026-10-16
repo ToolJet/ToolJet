@@ -7,6 +7,7 @@ import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widget
 import { Truncate, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { AFFIX, EDGE, Group, INNER, text, useLatest, useNumberBox } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // Stepper buttons attached to the box.
 export const STEP =
@@ -14,30 +15,30 @@ export const STEP =
 
 // ---- Number input --------------------------------------------------------------------------------------------------
 
-export const ShadNumberInput = (props) => {
+export const ShadNumberInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, validation, setExposedVariables, fireEvent, id } = props;
   const decimals = M.clampInt(properties.decimalPlaces, 0, 10, 2);
-  const round = (n) => M.roundTo(n, decimals);
+  const round = (n: unknown) => M.roundTo(n, decimals);
   const initial = round(M.parseNumber(properties.defaultValue));
   const box = useNumberBox(props, { initial, round, parse: (v) => M.parseNumber(v) });
   const { value, draft, setDraft } = box;
   const latest = useLatest({ round });
   useExposed(setExposedVariables, properties, {
     value,
-    setText: async (v) => box.set(latest.current.round(M.parseNumber(v))),
+    setText: async (v: unknown) => box.set(latest.current.round(M.parseNumber(v))),
     clear: async () => box.set(null),
   });
-  const commit = (next) => box.commit(next, () => ({}));
+  const commit = (next: number | null) => box.commit(next, () => ({}));
   const check = useValidation(props, value, () => commit(null));
   const textBox = useTextBox(props, check.touch);
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
   const lo = M.parseNumber(validation?.minValue);
   const hi = M.parseNumber(validation?.maxValue);
-  const step = (dir) => {
+  const step = (dir: number) => {
     if (disabled) return;
     const next = M.stepValue(box.valueRef.current, properties.step, dir, { min: lo, max: hi, decimals });
     if (draft !== null) setDraft(next === null ? '' : String(next));

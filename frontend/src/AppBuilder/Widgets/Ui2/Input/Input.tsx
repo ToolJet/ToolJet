@@ -4,14 +4,15 @@ import { Input } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CONTROL, Field, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useTextBox, useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-export const ShadInput = (props) => {
+export const ShadInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
-  const fit = useRef(null);
+  const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, fireEvent, id } = props;
   const [value, change] = useValue(props, String(properties.defaultValue ?? ''), (set) => ({
-    setText: async (t) => set(String(t ?? '')),
+    setText: async (t: unknown) => set(String(t ?? '')),
     clear: async () => set(''),
   }));
   const check = useValidation(props, value, () => change('', 'onChange'));

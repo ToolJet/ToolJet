@@ -3,19 +3,20 @@
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { clampInt, isBlank } from './inputsModel';
+import type { Dayjs } from 'dayjs';
 
 dayjs.extend(customParseFormat);
 
 // ---- Time ----------------------------------------------------------------------------------------------------------
 
 /** True for a 24-hour display: '24h', '24', 'HH:mm' (a format with H). */
-export const is24h = (format) => {
+export const is24h = (format: unknown): boolean => {
   const f = String(format ?? '').trim();
   return f === '24' || /^24/.test(f) || (/H/.test(f) && !/h/.test(f));
 };
 
 /** Minutes since midnight from '14:30', '2:30 pm', '2pm', '14:30:00', an ISO date-time or a Date; null otherwise. */
-export const parseTime = (v) => {
+export const parseTime = (v: unknown): number | null => {
   if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v.getHours() * 60 + v.getMinutes();
   if (typeof v === 'number') return Number.isFinite(v) && v >= 0 && v < 1440 ? Math.floor(v) : null;
   if (isBlank(v) || typeof v !== 'string') return null;
@@ -35,53 +36,61 @@ export const parseTime = (v) => {
   return h * 60 + min;
 };
 
-const pad = (n) => String(n).padStart(2, '0');
+const pad = (n: number) => String(n).padStart(2, '0');
 
 /** Minutes since midnight as 'HH:mm'; '' for none. */
-export const toHHmm = (minutes) =>
+export const toHHmm = (minutes: unknown): string =>
   typeof minutes === 'number' && Number.isFinite(minutes)
     ? `${pad(Math.floor(minutes / 60) % 24)}:${pad(minutes % 60)}`
     : '';
 
 /** Minutes since midnight as shown: '2:30 PM' (12-hour) or '14:30'. */
-export const formatTime = (minutes, use24h = false) => {
+export const formatTime = (minutes: unknown, use24h = false): string => {
   if (typeof minutes !== 'number' || !Number.isFinite(minutes)) return '';
   const h = Math.floor(minutes / 60) % 24;
   const m = minutes % 60;
   return use24h ? `${pad(h)}:${pad(m)}` : `${h % 12 || 12}:${pad(m)} ${h < 12 ? 'AM' : 'PM'}`;
 };
 
-export const minuteStep = (v, fallback = 15) => clampInt(v, 1, 60, fallback);
+export const minuteStep = (v: unknown, fallback = 15): number => clampInt(v, 1, 60, fallback);
 
 /** The time bounds as minutes: min defaults to 00:00, max to 23:59; swapped when given the wrong way round. */
-export const timeBounds = (minTime, maxTime) => {
+/** A time range in minutes since midnight. */
+export interface TimeBounds {
+  lo: number;
+  hi: number;
+}
+
+export const timeBounds = (minTime: unknown, maxTime: unknown): TimeBounds => {
   let lo = parseTime(minTime) ?? 0;
   let hi = parseTime(maxTime) ?? 1439;
   if (lo > hi) [lo, hi] = [hi, lo];
   return { lo, hi };
 };
 
-export const inTimeRange = (minutes, bounds) => minutes >= bounds.lo && minutes <= bounds.hi;
+export const inTimeRange = (minutes: number, bounds: TimeBounds): boolean =>
+  minutes >= bounds.lo && minutes <= bounds.hi;
 
 /** Every pickable time of a list: from the minimum, every `step` minutes, up to the maximum (at most 1440). */
-export const timeSlots = (step, minTime, maxTime) => {
+export const timeSlots = (step: unknown, minTime?: unknown, maxTime?: unknown): number[] => {
   const s = minuteStep(step);
   const { lo, hi } = timeBounds(minTime, maxTime);
-  const out = [];
+  const out: number[] = [];
   for (let t = Math.ceil(lo / s) * s; t <= hi && out.length < 1440; t += s) out.push(t);
   return out;
 };
 
 /** The minutes of an hour column: 0, step, 2*step ... below 60. */
-export const minuteOptions = (step) => {
+export const minuteOptions = (step: unknown): number[] => {
   const s = minuteStep(step);
-  const out = [];
+  const out: number[] = [];
   for (let m = 0; m < 60; m += s) out.push(m);
   return out;
 };
 
 /** The nearest time within the bounds. */
-export const clampTime = (minutes, bounds) => Math.min(bounds.hi, Math.max(bounds.lo, minutes));
+export const clampTime = (minutes: number, bounds: TimeBounds): number =>
+  Math.min(bounds.hi, Math.max(bounds.lo, minutes));
 
 // ---- Date and time -------------------------------------------------------------------------------------------------
 
@@ -100,7 +109,7 @@ const DATE_INPUT_FORMATS = [
 
 /** A date (dayjs) from ISO text, 'YYYY-MM-DD HH:mm', text in the display `format`, a unix timestamp (seconds or
  *  milliseconds) or a Date; null otherwise. */
-export const parseDateTime = (v, format) => {
+export const parseDateTime = (v: unknown, format?: unknown): Dayjs | null => {
   if (v === undefined || v === null || v === '' || typeof v === 'boolean') return null;
   if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : dayjs(v);
   if (typeof v === 'number') {
@@ -124,7 +133,16 @@ export const parseDateTime = (v, format) => {
 };
 
 /** What a date-time picker exposes for a date (local time). */
-export const dateTimeExposed = (d, displayFormat) =>
+/** What a date-time picker exposes (a type, not an interface: it is passed to setExposedVariables as a record). */
+export type DateTimeExposed = {
+  value: string;
+  selectedDate: string;
+  selectedTime: string;
+  unixTimestamp: number | null;
+  displayValue: string;
+};
+
+export const dateTimeExposed = (d: Dayjs | null | undefined, displayFormat: unknown): DateTimeExposed =>
   d && d.isValid()
     ? {
         value: d.format('YYYY-MM-DDTHH:mm'),
@@ -141,7 +159,7 @@ export const dateTimeExposed = (d, displayFormat) =>
  * the year, d and dd the day of the month, do its ordinal, EEE and EEEE the weekday. A lone d is always the day of the
  * month. [Escaped] text is kept.
  */
-export const toDayjsFormat = (format) => {
+export const toDayjsFormat = <T>(format: T): T | string => {
   if (typeof format !== 'string' || !format) return format;
   const parts = format.split(/(\[[^\]]*\])/);
   const plain = parts.filter((part) => !part.startsWith('['));
@@ -162,7 +180,7 @@ export const toDayjsFormat = (format) => {
 };
 
 /** A date in an author's format, falling back to 'DD MMM YYYY h:mm A' when the format is not text. */
-export const safeFormat = (d, format) => {
+export const safeFormat = (d: Dayjs | null | undefined, format: unknown): string => {
   if (!d || !d.isValid()) return '';
   try {
     return d.format(isBlank(format) || typeof format !== 'string' ? 'DD MMM YYYY h:mm A' : toDayjsFormat(format));
@@ -172,19 +190,34 @@ export const safeFormat = (d, format) => {
 };
 
 /** The day bounds (start of day) and disabled days for the calendar, from author input of any shape. */
-export const dateRules = ({ minDate, maxDate, disabledDates, format } = {}) => {
+/** Author input for the calendar's rules, of any shape. */
+export interface DateRuleInput {
+  minDate?: unknown;
+  maxDate?: unknown;
+  disabledDates?: unknown;
+  format?: unknown;
+}
+
+/** The calendar's rules: first and last pickable day (start of day) and the disabled days as 'YYYY-MM-DD'. */
+export interface DateRules {
+  min: Dayjs | null;
+  max: Dayjs | null;
+  disabled: string[];
+}
+
+export const dateRules = ({ minDate, maxDate, disabledDates, format }: DateRuleInput = {}): DateRules => {
   const min = parseDateTime(minDate, format)?.startOf('day') ?? null;
   const max = parseDateTime(maxDate, format)?.startOf('day') ?? null;
   const disabled = (Array.isArray(disabledDates) ? disabledDates : [])
     .slice(0, 1000)
     .map((d) => parseDateTime(d, format))
-    .filter(Boolean)
+    .filter((d): d is Dayjs => !!d)
     .map((d) => d.format('YYYY-MM-DD'));
   return { min, max, disabled };
 };
 
 /** Why a date cannot be picked under the rules ('' when it can). */
-export const dateProblem = (d, rules) => {
+export const dateProblem = (d: Dayjs | null | undefined, rules: DateRules | null | undefined): string => {
   if (!d || !rules) return '';
   const day = d.startOf('day');
   if (rules.min && day.isBefore(rules.min)) return `Pick a date on or after ${rules.min.format('DD MMM YYYY')}`;
@@ -194,7 +227,7 @@ export const dateProblem = (d, rules) => {
 };
 
 /** `date` (a dayjs day) at `minutes` past midnight. */
-export const atTime = (date, minutes) =>
+export const atTime = (date: Dayjs, minutes: number): Dayjs =>
   date
     .startOf('day')
     .hour(Math.floor(minutes / 60))
