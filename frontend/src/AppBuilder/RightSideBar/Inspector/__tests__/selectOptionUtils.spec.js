@@ -1,4 +1,4 @@
-import { isValueTaken, nextFreeOption, optionRowId } from '../Components/selectOptionUtils';
+import { isValueTaken, nextFreeOption, optionRowId, validateOptionValue } from '../Components/selectOptionUtils';
 
 const options = [
   { label: 'Apple', value: 'apple' },
@@ -58,5 +58,32 @@ describe('optionRowId', () => {
     const ids = duplicates.map(optionRowId);
 
     expect(new Set(ids).size).toBe(2);
+  });
+});
+
+describe('validateOptionValue', () => {
+  it('[TagsInput-BUG-012] rejects a value another option already uses, with a message', () => {
+    // Break this catches: the editor accepting a duplicate, so two rows resolve to one option.
+    expect(validateOptionValue(options, 'grapes', 0)).toEqual([
+      false,
+      'Option value must be unique. This value is already used by another option.',
+    ]);
+  });
+
+  it('[TagsInput-BUG-012] treats surrounding spaces as the same value', () => {
+    // Break this catches: an invisible near-duplicate that looks identical in the editor and in chips.
+    expect(validateOptionValue(options, '  grapes ', 0)[0]).toBe(false);
+  });
+
+  it('[TagsInput-BUG-012] rejects an empty or blank value', () => {
+    expect(validateOptionValue(options, '', 0)).toEqual([false, 'Option value cannot be empty']);
+    expect(validateOptionValue(options, '   ', 0)[0]).toBe(false);
+  });
+
+  it('[TagsInput-BUG-012] accepts an unchanged value, a different case, and a free value', () => {
+    // Break this catches: rejecting an option against itself, which would make it uneditable.
+    expect(validateOptionValue(options, 'apple', 0)).toEqual([true, null]);
+    expect(validateOptionValue(options, 'Apple', 1)).toEqual([true, null]);
+    expect(validateOptionValue(options, 'mango', 1)).toEqual([true, null]);
   });
 });

@@ -14,3 +14,13 @@ export const nextFreeOption = (options = []) => {
 
 // Saved duplicates still exist, so a row needs an identity that survives them.
 export const optionRowId = (option, index) => `${option?.value}-${index}`;
+
+// Values are stored trimmed, so a padded copy is the same value and a blank one is no value at all.
+export const validateOptionValue = (options = [], value, index) => {
+  const trimmed = typeof value === 'string' ? value.trim() : value;
+  if (trimmed === '' || trimmed === null || trimmed === undefined) return [false, 'Option value cannot be empty'];
+  if (options.some((option, i) => i !== index && String(option?.value).trim() === String(trimmed))) {
+    return [false, 'Option value must be unique. This value is already used by another option.'];
+  }
+  return [true, null];
+};
