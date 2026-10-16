@@ -5,15 +5,12 @@
  * (visibility, disabled, loading, tooltip) is covered for every UI 2.0 widget in Ui2/__tests__/controlState.spec.jsx;
  * this file covers what the Button itself does. Titles carry [ShadButton-<AREA>-<NNN>] scenario ids.
  */
-import React from 'react';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import {
   createWidgetHarness,
   binding,
   setVariableOn,
   countInvocationsOn,
-  widgetProps,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'btn1';
@@ -49,25 +46,20 @@ describe('UI 2.0 Button', () => {
     expect(button()).not.toHaveClass('tw-bg-ui2-primary');
   });
 
-  // On the grid a button fills the box drawn for it either way (boxFit.js). As a fill child of a flex row it keeps
-  // its own width, and fullWidth makes it span the row.
-  test('[ShadButton-PROP-002] fullWidth stretches a button in a flex row across the row', async () => {
-    const inFlexRow = (fullWidth) => {
-      render({ properties: { fullWidth: binding(`{{${fullWidth}}}`) } });
-      widget.session.render(
-        <div className="flex-child-wrapper" style={{ flexGrow: 1, width: 'auto' }}>
-          <RenderWidget
-            {...widgetProps(ID, 'ShadButton', { currentMode: 'view', widgetHeight: 36, widgetWidth: 160 })}
-          />
-        </div>
-      );
-    };
-
-    inFlexRow(false);
+  // On the grid, or as a fixed-width flex child, a button fills the box drawn for it (boxFit 'grid' or 'fixed', from
+  // WidgetWrapper). As a fill child of a flex row it keeps its own width, and fullWidth makes it span the row.
+  test('[ShadButton-PROP-002] a button fills a box sized for it; in a flex fill slot only fullWidth widens it', async () => {
+    render({ boxFit: 'grid' });
     await waitFor(() => expect(button()).toHaveTextContent('Save'));
-    expect(button()).not.toHaveClass('tw-w-full');
+    expect(button()).toHaveClass('tw-w-full');
 
-    inFlexRow(true);
+    render({ boxFit: 'fixed' });
+    await waitFor(() => expect(button()).toHaveClass('tw-w-full'));
+
+    render({ boxFit: 'fill', properties: { fullWidth: binding('{{false}}') } });
+    await waitFor(() => expect(button()).not.toHaveClass('tw-w-full'));
+
+    render({ boxFit: 'fill', properties: { fullWidth: binding('{{true}}') } });
     await waitFor(() => expect(button()).toHaveClass('tw-w-full'));
   });
 

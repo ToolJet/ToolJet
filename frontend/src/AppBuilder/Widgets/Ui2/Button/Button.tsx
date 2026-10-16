@@ -4,7 +4,6 @@ import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/p
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { useSizedBox } from '@/AppBuilder/Widgets/Ui2/_shared/boxFit';
 import { textArg, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 
@@ -24,15 +23,14 @@ export const ShadButton = (props: WidgetProps) => {
   // Like ToolJet's Button, it fills its box's height, and its width when the box was sized for it (grid, or a
   // fixed-width flex child); as a flex fill child it keeps its own width. Full width always fills. A fixed 36px
   // button in a 36px box overflowed the box's padding and lost its bottom edge.
-  const boxRef = useRef<HTMLDivElement>(null);
-  const fillsBox = useSizedBox(boxRef);
+  const fillsBox = props.boxFit !== 'fill';
   // Each variant has its own colours, so a style replaces them only when set. A set background darkens a little on
   // hover unless the hover background is set too.
   const hover = isSet(styles?.hoverBackgroundColor)
     ? 'hover:tw-bg-[color:var(--lk-hover)]'
     : whenSet(styles, 'backgroundColor', 'hover:tw-bg-[color:color-mix(in_srgb,var(--lk-bg)_88%,#000)]');
   return (
-    <Shell {...props} innerRef={boxRef} className="tw-h-full">
+    <Shell {...props} className="tw-h-full">
       <Button
         variant={properties.variant || 'default'}
         size={properties.size || 'default'}

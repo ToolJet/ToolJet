@@ -30,6 +30,9 @@ export interface WidgetProps {
   /** The widget's box in px, from the grid or its FlexContainer. */
   width: number;
   height: number;
+  /** How the box was sized: placed on the grid, a fixed-width flex child, or a flex child that fills its share of the
+   *  line (WidgetWrapper, from useFlexWidgetLayout). */
+  boxFit?: 'grid' | 'fixed' | 'fill';
   currentMode?: 'edit' | 'view';
   currentLayout?: string;
   darkMode?: boolean;

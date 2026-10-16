@@ -338,6 +338,7 @@ const WidgetWrapper = memo(
             moduleId={moduleId}
             currentMode={mode}
             currentLayout={currentLayout}
+            boxFit={isFlexLayout ? (flexLayout.fillWidth ? 'fill' : 'fixed') : 'grid'}
           />
         </div>
       </>
