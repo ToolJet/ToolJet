@@ -328,7 +328,8 @@ export const MultiselectV2 = ({
       isLoading: multiSelectLoadingState,
       isDisabled: disabledState,
       isMandatory: isMandatory,
-      isValid: isValid,
+      // Of the default selection the effects above just made (this render's `isValid` predates it).
+      isValid: validate(defaultItems?.length ? defaultItems.map((option) => option.value) : null)?.isValid,
       selectedOptions:
         Array.isArray(defaultItems) &&
         defaultItems?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),

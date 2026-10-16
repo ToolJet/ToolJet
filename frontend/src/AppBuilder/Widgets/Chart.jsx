@@ -105,7 +105,7 @@ export default function Chart({
       yAxisTitle: yAxisTitle,
     };
     setExposedVariables(exposedVariables);
-  }, [JSON.stringify(chartLayout, chartTitle)]);
+  }, [JSON.stringify(chartLayout), chartTitle]);
 
   const axisDefaults = {
     showgrid: showGridLines,

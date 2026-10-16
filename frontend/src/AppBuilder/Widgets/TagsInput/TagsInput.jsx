@@ -563,7 +563,8 @@ const TagsInput = ({
       isLoading: tagsLoadingState,
       isDisabled: properties.disabledState,
       isMandatory: isMandatory,
-      isValid: isValid,
+      // Of the default selection the effects above just made (this render's `isValid` predates it).
+      isValid: validate(defaultItems?.length ? defaultItems.map((option) => option.value) : null)?.isValid,
       selectedTags: Array.isArray(defaultItems) ? defaultItems.map(({ label, value }) => ({ label, value })) : [],
       tags: Array.isArray(selectOptions) ? selectOptions.map(({ label, value }) => ({ label, value })) : [],
       newTagsAdded: [],
