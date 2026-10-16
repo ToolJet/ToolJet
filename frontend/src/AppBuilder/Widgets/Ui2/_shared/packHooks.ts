@@ -4,6 +4,7 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { stringify } from './packJson';
 import type { MutableRefObject, RefObject } from 'react';
 import type { Bound, Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -102,6 +103,10 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
   Controlled.displayName = `Controlled(${Widget.displayName || Widget.name || 'Widget'})`;
   return Controlled;
 };
+
+/** The width a widget's root is drawn at: its box (`width`, set by the canvas grid or the FlexContainer) less the
+ *  padding RenderWidget draws around every widget. Read from props, so the widget does not measure itself. */
+export const rootWidth = (width: unknown): number => Math.max(0, (Number(width) || 0) - 2 * BOX_PADDING);
 
 /** Sizes the widget to its content in view mode, unless its Dynamic height property is turned off: a pack widget
  *  given a guessed height (an agent's, or a default) neither clips its content nor leaves a gap under it. */

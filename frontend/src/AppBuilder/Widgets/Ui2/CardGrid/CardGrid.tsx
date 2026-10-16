@@ -1,11 +1,11 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import {
   initials,
+  rootWidth,
   useAutoHeight,
   useExposed,
-  useLatest,
   useStable,
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -99,17 +99,8 @@ export const ShadCardGrid = (props: WidgetProps) => {
   const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
-  const [width, setWidth] = useState(Number(props.width) || 0);
-  // The layout width is only the fallback before the first measurement: it does not restart the observer.
-  const layoutWidth = useLatest(props.width);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
-    ro.observe(el);
-    setWidth(el.getBoundingClientRect().width || Number(layoutWidth.current) || 0);
-    return () => ro.disconnect();
-  }, [layoutWidth]);
+  // The root has no padding of its own, so its width is the box's.
+  const width = rootWidth(props.width);
   const data = useStable(p.data);
   const badgeFields = useStable(p.badgeFields);
   const metaFields = useStable(p.metaFields);

@@ -1,7 +1,7 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useAutoHeight, useLatest, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { rootWidth, useAutoHeight, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { stripColumns, summaryFigures } from '@/AppBuilder/Widgets/Ui2/_sections/summaryModel';
 import { TITLE_FONT } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
@@ -25,17 +25,8 @@ export const ShadSummaryStrip = (props: WidgetProps) => {
   const { properties: p } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
-  const [width, setWidth] = useState(Number(props.width) || 0);
-  // The layout width is only the fallback before the first measurement: it does not restart the observer.
-  const layoutWidth = useLatest(props.width);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
-    ro.observe(el);
-    setWidth(el.getBoundingClientRect().width || Number(layoutWidth.current) || 0);
-    return () => ro.disconnect();
-  }, [layoutWidth]);
+  // The root has no padding of its own, so its width is the box's.
+  const width = rootWidth(props.width);
   const items = useStable(p.items);
   const { valueFormat, currency, deltaFormat } = p;
   const figures = useMemo(
