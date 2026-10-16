@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import DOMPurify from 'dompurify';
 
 const ID = 'html1';
 const INITIAL_HTML = '<main><h1 style="color: red">Initial content</h1><button>Run</button></main>';
@@ -142,6 +143,68 @@ describe('Html widget', () => {
     const viewer = html.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'view' });
     expect(root(viewer.container)).toHaveClass('dynamic-height');
     expect(root(viewer.container)).toHaveStyle({ height: 'auto', minHeight: '76px' });
+  });
+
+  test('[Html-LINK-001] links keep the destination and tab the author asked for', async () => {
+    // Break this catches: a sanitize hook forced target="_blank" and rel="noopener" onto EVERY
+    // element owning a target. An in-page `#id` link then opened a new tab at the app URL instead
+    // of scrolling to its heading; an explicit target="_self" was overridden; and an author's
+    // rel was replaced outright, silently dropping nofollow and noreferrer. The hook was also
+    // registered on the SHARED DOMPurify instance and never removed, so it rewrote anchors for
+    // every other consumer of the library — Text, tooltips, the markdown and HTML renderers.
+    const authored =
+      '<a id="frag" href="#faq">Jump to the FAQ</a>' +
+      '<a id="self" href="https://example.com/self" target="_self">Same tab</a>' +
+      '<a id="keeprel" href="https://example.com/rel" rel="nofollow noreferrer">Keeps rel</a>' +
+      '<a id="plain" href="https://example.com/plain">Plain</a>' +
+      // The exact markup from issue #5794, which PR #5883's hook was written for.
+      '<a id="issue5794" href="https://www.tooljet.io" target="_blank" rel="noopener noreferrer">Tooljet</a>' +
+      '<h3 id="faq">FAQ</h3>';
+
+    const { container } = html.render({ properties: { rawHtml: binding(authored) } });
+    await waitFor(() => expect(container.querySelector('#faq')).toBeInTheDocument());
+    const link = (id) => container.querySelector(`#${id}`);
+
+    // An in-page link must stay in this tab, or it navigates away instead of scrolling.
+    expect(link('frag').getAttribute('target')).toBeNull();
+    // An explicit choice is the author's to make.
+    expect(link('self').getAttribute('target')).toBe('_self');
+    // An author's rel survives; noopener is added to it rather than replacing it.
+    expect(link('keeprel').getAttribute('rel').split(/\s+/).sort()).toEqual(['nofollow', 'noopener', 'noreferrer']);
+    // The long-standing default for an outbound link is unchanged.
+    expect(link('plain').getAttribute('target')).toBe('_blank');
+    expect(link('plain').getAttribute('rel')).toBe('noopener');
+
+    // Issue #5794: `target` was being dropped silently. PR #5883 restored it but collapsed the
+    // author's `rel` to `noopener`, losing `noreferrer`. Both halves have to survive now.
+    expect(link('issue5794').getAttribute('target')).toBe('_blank');
+    expect(link('issue5794').getAttribute('rel').split(/\s+/).sort()).toEqual(['noopener', 'noreferrer']);
+
+    // The rewrite belongs to this widget. Every other DOMPurify caller is untouched.
+    expect(DOMPurify.sanitize('<a href="https://example.com">x</a>')).toBe('<a href="https://example.com">x</a>');
+  });
+
+  test('[Html-LINK-002] an in-page link scrolls to its target instead of navigating', async () => {
+    // Break this catches: index.ejs sets `<base href="/">`, and per spec a fragment-only href
+    // resolves against the BASE url, not the current page. Verified in Chrome: on
+    // /apps/myapp/ an `#faq` link resolves to `/#faq`, so clicking it leaves the app for the
+    // dashboard. Removing target="_blank" only changed that from a new tab to the same tab.
+    // The widget has to handle the click itself and scroll to the author's own element.
+    const scrollIntoView = jest.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+
+    const authored =
+      '<a id="jump" href="#faq">Jump to the FAQ</a><div style="height:380px"></div><h3 id="faq">FAQ</h3>';
+    const { container } = html.render({ properties: { rawHtml: binding(authored) } });
+    await waitFor(() => expect(container.querySelector('#faq')).toBeInTheDocument());
+
+    const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+    container.querySelector('#jump').dispatchEvent(clickEvent);
+
+    // The browser must not be allowed to follow the link; the widget scrolls instead.
+    expect(clickEvent.defaultPrevented).toBe(true);
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.instances[0]).toBe(container.querySelector('#faq'));
   });
 
   test('[Html-STY-004] the background covers the whole document, not just the visible part', async () => {
