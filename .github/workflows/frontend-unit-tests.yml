@@ -16,6 +16,11 @@ on:
     paths:
       - 'frontend/**'
   workflow_dispatch:
+    inputs:
+      update_ui2_visual_baselines:
+        description: 'UI 2.0 visual check: write the Linux baselines and upload them as an artifact'
+        type: boolean
+        default: false
 
 concurrency:
   group: frontend-unit-tests-${{ github.ref }}
@@ -161,3 +166,52 @@ jobs:
           else
             npm run validate:widget-testing-contracts
           fi
+
+  # The UI 2.0 widgets' visual check: every widget (default, loading, disabled) in the light and dark theme, against
+  # committed screenshots. Like widget-contracts it runs ON DEMAND (the run-ui2-visual label, or a manual run) and must
+  # not be marked required. It needs no submodule: the gallery is built as CE. Baselines are per platform; a manual run
+  # with update_ui2_visual_baselines writes the Linux set and uploads it for a developer to commit.
+  ui2-visual:
+    name: UI 2.0 visual check
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'run-ui2-visual'))
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.15.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Not an app dependency, so not in package.json: installed for this job only.
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright-core@1.63.0
+          npx playwright-core install --with-deps chromium
+
+      - name: Compare the widgets with their screenshots
+        run: npm run test:ui2-visual -- ${{ inputs.update_ui2_visual_baselines && '--update' || '' }}
+
+      - name: Upload differences
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui2-visual-differences
+          path: frontend/build/ui2-visual/diff
+
+      - name: Upload Linux baselines
+        if: inputs.update_ui2_visual_baselines
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui2-visual-baselines-linux
+          path: frontend/src/AppBuilder/Widgets/Ui2/__tests__/visual/baselines/linux

@@ -110,9 +110,14 @@ These run with the frontend jest suite (`npx jest --maxWorkers=2 src/AppBuilder/
 - `__tests__/integration/hostileData.spec.jsx`: HTML, quote breakouts, script URLs and markdown through every text,
   URL and data field from a query; nothing may run or reach the DOM unsanitised. Bound URLs go through `safeUrl` or
   `safeImageUrl` (`_shared/values.ts`), HTML through DOMPurify or rehype-sanitize.
+- `__tests__/compat/contracts.spec.js` and `__tests__/integration/savedApps.spec.jsx`: apps saved under an earlier
+  release keep working (frozen names and defaults per widget, and saved pages per release replayed after the rename and
+  the data migrations). How to read a failure and how to add a release's fixtures: `__tests__/compat/README.md`.
 - `npm run test:ui2-browsers` and `npm run test:ui2-phone` (not in the default run): Chromium, WebKit and Firefox on a
   running ToolJet's gallery app of every widget (axe with colour contrast in light and dark, every overlay, the Map),
   and phones at 375 and 414 px (overflow, cut-off text, touch targets). Setup is in `scripts/ui2-browsers.js`.
+- `npm run test:ui2-visual` (not in the default run; CI label `run-ui2-visual`): screenshots of every widget, default,
+  loading and disabled, light and dark, against committed baselines.
 - `npm run test:ui2-fuzz` (not in the default run): every widget with junk bindings, mounted and re-rendered.
 - `npm run test:ui2-leaks` (not in the default run, about 1.5 minutes): every widget mounted and unmounted 50 times
   with its defaults (overlays opened first), leaving no window or document listener, observer, timer, store
