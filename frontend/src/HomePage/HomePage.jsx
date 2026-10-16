@@ -235,7 +235,10 @@ class HomePageComponent extends React.Component {
     const urlFolderSlug = new URL(window.location.href)?.searchParams?.get('folder');
     // Gate the first apps/folders fetch on branch resolution so they carry the right branch_id
     // after a hard reload on a feature branch (no-op when the URL has no `branch` param).
+    this._initialFetchResolved = false;
     whenBranchResolved().then(() => {
+      this._initialFetchBranchId = useWorkspaceBranchesStore.getState().activeBranchId;
+      this._initialFetchResolved = true;
       if (!urlFolderSlug) {
         this.fetchApps(1, this.state.currentFolder.id);
       }
@@ -253,9 +256,23 @@ class HomePageComponent extends React.Component {
     // Check module access permission
     this.props.checkModuleAccess();
 
-    // Refetch on real branch switch only (skip the initial null→<id> hydration).
+    // Refetch on a real branch switch, and on the initial null→<id> hydration only if it
+    // resolved to a different branch than the one the initial fetch above already used.
+    // Gated on _initialFetchResolved: on a `?branch=` hard reload, the branches store's
+    // setActiveBranch() resolves the same whenBranchResolved() promise this mount is waiting
+    // on, then synchronously set()s activeBranchId — which fires this subscriber BEFORE the
+    // `.then()` above (a separately-scheduled microtask) has run. Without the gate, that
+    // null→<id> transition reads as a mismatch (since _initialFetchBranchId isn't set yet) and
+    // double-fetches, racing the `.then()`'s own (folder-slug-aware) fetch.
     this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
-      if (state.activeBranchId && prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
+      const isRealSwitch =
+        state.activeBranchId && prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId;
+      const isFirstResolveMismatch =
+        this._initialFetchResolved &&
+        !prevState.activeBranchId &&
+        state.activeBranchId &&
+        state.activeBranchId !== this._initialFetchBranchId;
+      if (isRealSwitch || isFirstResolveMismatch) {
         this.fetchApps(1, this.state.currentFolder.id);
         this.fetchFolders();
       }
