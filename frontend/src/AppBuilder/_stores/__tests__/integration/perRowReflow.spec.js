@@ -73,6 +73,19 @@ describe('per-row reflow of the UI 2.0 List view', () => {
     expect(state().temporaryLayouts['list-0'].height).toBe(150 + 8);
   });
 
+  // A row's height must come from its components alone, never from what the reflow wrote before: reading its own
+  // earlier temp made a list in a native Kanban card and its row 0 grow each other without end (fixed with
+  // useOwnContextPath, [ShadListView-PROP-010]). Repeated passes reach one height and stay there.
+  it('reaches a fixed height and stays there over repeated passes', () => {
+    seed();
+    state().setTemporaryLayouts({ 'note-1': { top: 10, height: 140 } });
+    const heights = Array.from({ length: 6 }, () => {
+      flushRow('list', 1);
+      return state().temporaryLayouts['list-1'].height;
+    });
+    expect(new Set(heights)).toEqual(new Set([10 + 140 + 8]));
+  });
+
   it('stays at its row height with dynamic height off', () => {
     seed({ dynamicHeight: binding('{{false}}') });
     state().setTemporaryLayouts({ 'note-1': { top: 10, height: 140 } });
