@@ -150,13 +150,14 @@ describe('UI 2.0 List view', () => {
     expect(items()[0].style.height).not.toBe('5000px');
   });
 
+  // The first edit-mode render loads the editor's own modules (about 4s in jest), so this one gets more time.
   test('[ShadListView-PROP-009] in the editor rows keep rowHeight whatever the reflow wrote', async () => {
     render({ currentMode: 'edit', properties: people({ rowHeight: binding('{{72}}') }) });
     await waitFor(() => expect(items()).toHaveLength(3));
     act(() => useStore.getState().setTemporaryLayouts({ 'lv1-1': { height: 260 } }));
     await settle();
     expect(items()[1].style.height).toBe('72px');
-  });
+  }, 15000);
 
   test('[ShadListView-PROP-004] highlightSelectedRow off selects a row without marking it', async () => {
     render({ properties: people({ highlightSelectedRow: binding('{{false}}') }) });

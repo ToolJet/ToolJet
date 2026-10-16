@@ -132,7 +132,7 @@ export const TableBody = ({
                   striped &&
                     position % 2 === 1 &&
                     'tw-bg-[color:var(--lk-striped,color-mix(in_srgb,var(--sc-muted)_35%,transparent))]',
-                  'data-[state=selected]:tw-bg-[color:var(--lk-selected,var(--sc-muted))]'
+                  'data-[state=selected]:tw-bg-[color:var(--lk-selected,var(--sc-accent-soft))]'
                 )}
               >
                 {bulk ? (

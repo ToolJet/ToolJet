@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 
 // ToolJet UI 2.0: the pager the List view and Table share. Page numbers around the current one (1 … 4 5 6
 // … 20) when the page count is known, else previous / next only.
@@ -50,7 +50,11 @@ export const Pager = ({ page, pageCount, hasPrevious, hasNext, disabled, onPage 
           key={p}
           variant={p === page ? 'outline' : 'ghost'}
           size="sm"
-          className="tw-h-8 tw-min-w-8 tw-px-2 tw-tabular-nums"
+          className={cn(
+            'tw-h-8 tw-min-w-8 tw-px-2 tw-tabular-nums',
+            p === page &&
+              'tw-border-[color:color-mix(in_srgb,var(--sc-primary)_35%,var(--sc-input))] tw-bg-[color:var(--sc-accent-soft)] tw-text-ui2-primary'
+          )}
           aria-current={p === page ? 'page' : undefined}
           disabled={disabled}
           onClick={() => p !== page && onPage(p)}

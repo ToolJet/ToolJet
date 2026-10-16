@@ -17,7 +17,7 @@ export const PAGE_IDLE =
   'tw-border tw-border-transparent tw-text-[color:var(--lk-fg,var(--sc-foreground))] hover:tw-bg-[color:var(--lk-hover,var(--sc-accent))] hover:tw-text-[color:var(--lk-fg,var(--sc-accent-foreground))]';
 
 export const PAGE_ACTIVE =
-  'tw-border tw-border-[color:var(--lk-on-border,var(--sc-input))] tw-bg-[color:var(--lk-on-bg,var(--sc-background))] tw-text-[color:var(--lk-on-fg,var(--sc-foreground))] tw-shadow-sm hover:tw-bg-[color:var(--lk-on-bg,var(--sc-accent))]';
+  'tw-border tw-border-[color:var(--lk-on-border,color-mix(in_srgb,var(--sc-primary)_35%,var(--sc-input)))] tw-bg-[color:var(--lk-on-bg,var(--sc-accent-soft))] tw-text-[color:var(--lk-on-fg,var(--sc-primary-ink))] tw-shadow-sm hover:tw-bg-[color:var(--lk-on-bg,var(--sc-accent-soft))]';
 
 interface PageButton {
   label: string;

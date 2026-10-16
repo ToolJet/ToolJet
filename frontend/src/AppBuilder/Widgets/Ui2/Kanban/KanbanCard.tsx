@@ -131,7 +131,9 @@ export const CardBody = ({ card, fields, compact, badgeColors, progressStyle, ex
           ) : null}
           {isSet(avatar) ? (
             <Avatar className="tw-ml-auto tw-h-6 tw-w-6">
-              <AvatarFallback className="tw-text-[10px]">{initials(avatar)}</AvatarFallback>
+              <AvatarFallback className="tw-bg-[color:var(--sc-accent-soft)] tw-text-[10px] tw-text-[color:var(--sc-primary-ink)]">
+                {initials(avatar)}
+              </AvatarFallback>
             </Avatar>
           ) : null}
         </div>
@@ -246,7 +248,7 @@ export const KanbanCard = ({
         draggable && 'tw-cursor-grab active:tw-cursor-grabbing',
         selected && 'tw-border-ui2-primary tw-ring-1 tw-ring-ui2-primary',
         drop.isOver && 'tw-border-t-2 tw-border-t-ui2-primary',
-        drag.isDragging && 'tw-opacity-40'
+        drag.isDragging && 'tw-opacity-40 tw-ring-1 tw-ring-ui2-primary/40'
       )}
     >
       {onDelete ? (

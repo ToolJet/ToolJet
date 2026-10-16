@@ -88,7 +88,12 @@ export const TableHead = ({
                 )}
               >
                 <span>{column.name}</span>
-                <SortIcon className={cn('tw-h-3 tw-w-3 tw-shrink-0', active ? 'tw-opacity-90' : 'tw-opacity-40')} />
+                <SortIcon
+                  className={cn(
+                    'tw-h-3 tw-w-3 tw-shrink-0',
+                    active ? 'tw-text-ui2-primary tw-opacity-90' : 'tw-opacity-40'
+                  )}
+                />
               </button>
             ) : (
               column.name

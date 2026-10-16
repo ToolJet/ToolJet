@@ -31,6 +31,10 @@
   --sc-border: var(--cc-weak-border, #e5e5e5);
   --sc-input: var(--cc-default-border, #e5e5e5);
   --sc-ring: var(--cc-primary-brand, #a3a3a3);
+  // A soft tint of the theme's primary for the few places a widget shows the theme by default (a Kanban count badge
+  // and avatars, the Table's selected row, the current page): switching themes visibly changes an app built only from
+  // neutrals. Authored colours still win; status chips keep their own tones.
+  --sc-accent-soft: color-mix(in srgb, var(--sc-primary) 12%, var(--sc-background));
   // The theme's radius scale (default 8 / small 6 / large 12 on ToolJet Modern), else shadcn's.
   --sc-radius: var(--cc-radius-default, 0.625rem);
   // Chart series: the theme's primary and its shades, so a chart never brings in a second accent the app does not

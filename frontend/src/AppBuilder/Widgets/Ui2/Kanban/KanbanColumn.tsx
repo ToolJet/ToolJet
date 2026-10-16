@@ -10,7 +10,7 @@ import type { BoardCard, BoardColumn } from './kanbanBoard';
 // Column title and count colours: the columnTitleColor and count styles, else the theme's.
 const COLUMN_TITLE = 'tw-text-[color:var(--kb-col-title,var(--sc-foreground))]';
 const COUNT_BADGE =
-  'tw-bg-[color:var(--kb-count-bg,var(--sc-secondary))] tw-text-[color:var(--kb-count-fg,var(--sc-secondary-foreground))]';
+  'tw-bg-[color:var(--kb-count-bg,var(--sc-accent-soft))] tw-text-[color:var(--kb-count-fg,var(--sc-primary-ink))]';
 
 // A board draws this many cards a column at first, then this many more per "Show more" click (10k cards froze the
 // page); and at most MAX_BOARD_COLUMNS columns (a 10k-item list bound as the columns).
