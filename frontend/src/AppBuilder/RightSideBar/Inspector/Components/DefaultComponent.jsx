@@ -71,6 +71,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   TextArea: 'Data',
   Button: 'Data',
   Image: 'Data',
+  SvgImage: 'Data',
   Container: 'Data',
   Divider: 'Data',
   VerticalDivider: 'Data',
