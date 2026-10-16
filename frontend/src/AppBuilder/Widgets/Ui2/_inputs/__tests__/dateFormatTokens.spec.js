@@ -1,4 +1,4 @@
-import { toDayjsFormat } from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
+import { toDayjsFormat } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 
 describe('toDayjsFormat', () => {
   it('reads date-fns style formats, which builds write', () => {

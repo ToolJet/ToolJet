@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CONTROL } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import * as M from './inputsModel';
+import * as M from './dateModel';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 // shadcn/ui pack (experiment): inputs widgets: number, password, phone, currency, OTP, time and date-time. Pure logic
-// lives in inputsModel.js; configs in WidgetManager/widgets/shad*.js; style variables in looks/inputs.js.
+// lives in inputsModel.js, phoneModel.js and dateModel.js; configs in WidgetManager/widgets/shad*.js; style variables
+// in looks/inputs.js.
 
 // ---- Building blocks -----------------------------------------------------------------------------------------------
 
@@ -49,7 +50,6 @@ export const ICON = 'h-4 w-4 shrink-0 text-[color:var(--lk-icon,var(--sc-muted-f
 export const Group = ({ disabled, className, children }) => (
   <div className={cn(GROUP, CONTROL, disabled && 'cursor-not-allowed opacity-50', className)}>{children}</div>
 );
-
 
 export const text = (v) => (v === undefined || v === null || typeof v === 'object' ? '' : String(v));
 

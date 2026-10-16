@@ -10,7 +10,7 @@ import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/form
 import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
+import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/phoneModel';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import {
   ADDON,

@@ -19,7 +19,8 @@ import {
   cn,
 } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
+import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
+import { isBlank } from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import {
@@ -92,9 +93,9 @@ export const ShadDateTimePicker = (props) => {
   const setDate = (v, format) => {
     const d = M.parseDateTime(
       v,
-      M.isBlank(format) || typeof format !== 'string' ? formatRef.current : M.toDayjsFormat(format)
+      isBlank(format) || typeof format !== 'string' ? formatRef.current : M.toDayjsFormat(format)
     );
-    if (d || M.isBlank(v)) setTs(d ? d.valueOf() : null);
+    if (d || isBlank(v)) setTs(d ? d.valueOf() : null);
   };
   const blankArg = (v) => v === undefined || v === null || v === '';
   useExposed(setExposedVariables, properties, {

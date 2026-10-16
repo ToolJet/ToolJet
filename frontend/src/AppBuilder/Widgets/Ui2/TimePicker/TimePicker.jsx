@@ -6,7 +6,8 @@ import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
+import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
+import { isBlank } from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { ICON, TRIGGER, pad2, parseTimeArg, text, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 
@@ -130,7 +131,7 @@ export const ShadTimePicker = (props) => {
   const exposed = (m) => ({ value: M.toHHmm(m), formattedValue: M.formatTime(m, use24) });
   const setTime = (t, format) => {
     const m = parseTimeArg(t, format);
-    if (m !== null || M.isBlank(t)) setMinutes(m);
+    if (m !== null || isBlank(t)) setMinutes(m);
   };
   useExposed(setExposedVariables, properties, {
     ...exposed(minutes),
