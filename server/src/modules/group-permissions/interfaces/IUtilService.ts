@@ -23,7 +23,12 @@ export interface IGroupPermissionsUtilService {
   ): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }>;
   createDefaultGroups(organizationId: string, manager?: EntityManager): Promise<void>;
   deleteFromAllCustomGroupUser(userId: string, organizationId: string, manager?: EntityManager): Promise<void>;
-  addUsersToGroup(addGroupUserDto: AddGroupUserDto, organizationId: string, manager?: EntityManager): Promise<void>;
+  addUsersToGroup(
+    addGroupUserDto: AddGroupUserDto,
+    organizationId: string,
+    manager?: EntityManager,
+    canChangeRole?: boolean
+  ): Promise<void>;
   getAllGroupByOrganization(organizationId: string): Promise<GetUsersResponse>;
 }
 

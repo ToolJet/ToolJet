@@ -1,0 +1,6 @@
+id,code,name,value,guidance
+,TRAVEL,Ground travel,150,Itemized receipt required. Record the business journey.
+,HOTEL,Accommodation,300,Room-only charge per night; exclude personal extras.
+,MEALS,Business meals,100,Itemized receipt and meeting purpose required.
+,OFFICE,Office supplies,250,Receipt and business justification required.
+,TRAINING,Learning materials,500,Receipt and relevance to the role required.
