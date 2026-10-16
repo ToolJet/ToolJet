@@ -247,6 +247,7 @@ export class DataQueriesService implements IDataQueriesService {
     // been deleted, in which case it is rebuilt from the snapshot.
     if (updateDataQueryDto.snapshotId) {
       if (!app) throw new NotFoundException();
+      // Edit access is checked by SnapshotRunGuard on the route.
       const stored = await dbTransactionWrap((manager: EntityManager) =>
         new VersionSnapshotStore().load(manager, app.id, updateDataQueryDto.snapshotId)
       );

@@ -14,6 +14,7 @@ import { buildSnapshot } from '../diff/snapshot';
 import { contentFingerprint } from '../diff/fingerprint';
 import { diffVersions } from '../diff/version-diff';
 import { ReviewEvent, reviewState } from './review-state';
+import { isValidUUID } from '@helpers/import_export.helpers';
 
 // Which actions need an approved review. Off unless the instance opts in, so
 // existing workspaces keep releasing as before. A workspace setting would
@@ -47,8 +48,6 @@ type ReviewRowRaw = {
   updatedAt: string;
 };
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 // Two requests racing past the "already open" check meet the partial unique index instead.
 const ONE_OPEN_INDEX = 'app_version_reviews_one_open';
 const isOneOpenViolation = (error: any) =>
@@ -57,6 +56,10 @@ const isOneOpenViolation = (error: any) =>
 const REVIEW_COLUMNS = `r.id, r.app_id AS "appId", r.version_id AS "versionId", r.base_version_id AS "baseVersionId",
   r.author_id AS "authorId", r.title, r.description, r.status, r.required_approvals AS "requiredApprovals",
   r.created_at AS "createdAt", r.updated_at AS "updatedAt"`;
+
+const requireOpen = (row: ReviewRowRaw) => {
+  if (row.status !== 'open') throw new BadRequestException(`This review is ${row.status}`);
+};
 
 @Injectable()
 export class VersionReviewService {
@@ -136,13 +139,19 @@ export class VersionReviewService {
     });
   }
 
-  async list(app: App, status?: string) {
+  // `brief`: ids and titles only, for the editor header's poll. Full entries read every reviewed
+  // version's content to say whether approvals still hold.
+  async list(app: App, status?: string, brief = false) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const rows: ReviewRowRaw[] = await manager.query(
         `SELECT ${REVIEW_COLUMNS} FROM app_version_reviews r WHERE r.app_id = $1 ${status ? 'AND r.status = $2' : ''}
           ORDER BY r.created_at DESC LIMIT 50`,
         status ? [app.id, status] : [app.id]
       );
+      if (brief) {
+        const reviews = rows.map(({ id, versionId, title, status }) => ({ id, versionId, title, status }));
+        return { reviews, policy: reviewPolicy() };
+      }
       return { reviews: await this.present(manager, app, rows, false), policy: reviewPolicy() };
     });
   }
@@ -199,7 +208,7 @@ export class VersionReviewService {
       const baseVersionId = body.baseVersionId || (currentVersionId !== versionId ? currentVersionId : null);
       if (body.baseVersionId) {
         // The base must be a version of this app; anything else would make the review unreadable for good.
-        const [base] = UUID.test(body.baseVersionId)
+        const [base] = isValidUUID(body.baseVersionId)
           ? await manager.query(`SELECT id FROM app_versions WHERE id = $1 AND app_id = $2`, [
               body.baseVersionId,
               app.id,
@@ -257,21 +266,43 @@ export class VersionReviewService {
     await manager.query(`UPDATE app_version_reviews SET updated_at = now() WHERE id = $1`, [reviewId]);
   }
 
-  async comment(app: App, user: User, reviewId: string, body: { body?: string; anchor?: string }) {
-    if (!body.body?.trim()) throw new BadRequestException('Write a comment first');
+  // One step on a review, in one transaction: load it, let `step` check its rules (and change it,
+  // for close and reopen), record the event against the version's content as it is now, and return
+  // the review as the panel draws it.
+  private step(
+    app: App,
+    user: User,
+    reviewId: string,
+    step: (
+      manager: EntityManager,
+      row: ReviewRowRaw,
+      fingerprint: string
+    ) => Promise<{ kind: ReviewEvent['kind']; body?: string | null; anchor?: string | null }>
+  ) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const row = await this.row(manager, app, reviewId);
+      const fingerprint = await this.fingerprint(manager, app.id, row.versionId);
+      const event = await step(manager, row, fingerprint);
       await this.addEvent(
         manager,
         reviewId,
         user.id,
-        'comment',
-        body.body.trim(),
-        body.anchor || null,
-        await this.fingerprint(manager, app.id, row.versionId)
+        event.kind,
+        event.body ?? null,
+        event.anchor ?? null,
+        fingerprint
       );
       return this.getWith(manager, app, reviewId);
     });
+  }
+
+  async comment(app: App, user: User, reviewId: string, body: { body?: string; anchor?: string }) {
+    if (!body.body?.trim()) throw new BadRequestException('Write a comment first');
+    return this.step(app, user, reviewId, async () => ({
+      kind: 'comment',
+      body: body.body.trim(),
+      anchor: body.anchor || null,
+    }));
   }
 
   // An approval names the exact content the reviewer looked at (the fingerprint the
@@ -286,13 +317,11 @@ export class VersionReviewService {
     const kinds = { approve: 'approved', request_changes: 'changes_requested', dismiss: 'dismissed' } as const;
     const kind = kinds[body.decision];
     if (!kind) throw new BadRequestException('decision must be approve, request_changes or dismiss');
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const row = await this.row(manager, app, reviewId);
-      if (row.status !== 'open') throw new BadRequestException(`This review is ${row.status}`);
+    return this.step(app, user, reviewId, async (manager, row, current) => {
+      requireOpen(row);
       if (row.authorId === user.id && kind !== 'dismissed')
         throw new ForbiddenException('You opened this review, so someone else has to approve it');
       if (kind === 'changes_requested' && !body.body?.trim()) throw new BadRequestException('Say what needs to change');
-      const current = await this.fingerprint(manager, app.id, row.versionId);
       if (kind === 'approved') {
         if (!body.fingerprint)
           throw new BadRequestException('Approve from the compare view, which says what you reviewed');
@@ -301,33 +330,21 @@ export class VersionReviewService {
             'The version changed after you opened it. Reload the changes and review them again.'
           );
       }
-      await this.addEvent(manager, reviewId, user.id, kind, body.body?.trim() || null, null, current);
-      return this.getWith(manager, app, reviewId);
+      return { kind, body: body.body?.trim() || null };
     });
   }
 
   async override(app: App, user: User, reviewId: string, body: { reason?: string }) {
     if (!body.reason?.trim() || body.reason.trim().length < 10)
       throw new BadRequestException('Give a reason for releasing without approval (at least 10 characters)');
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const row = await this.row(manager, app, reviewId);
-      if (row.status !== 'open') throw new BadRequestException(`This review is ${row.status}`);
-      await this.addEvent(
-        manager,
-        reviewId,
-        user.id,
-        'override',
-        body.reason.trim(),
-        null,
-        await this.fingerprint(manager, app.id, row.versionId)
-      );
-      return this.getWith(manager, app, reviewId);
+    return this.step(app, user, reviewId, async (manager, row) => {
+      requireOpen(row);
+      return { kind: 'override', body: body.reason.trim() };
     });
   }
 
   async close(app: App, user: User, reviewId: string, reopen = false) {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const row = await this.row(manager, app, reviewId);
+    return this.step(app, user, reviewId, async (manager, row) => {
       if (reopen ? row.status !== 'closed' : row.status !== 'open')
         throw new BadRequestException(`This review is ${row.status}`);
       if (reopen) {
@@ -341,16 +358,7 @@ export class VersionReviewService {
         reviewId,
         reopen ? 'open' : 'closed',
       ]);
-      await this.addEvent(
-        manager,
-        reviewId,
-        user.id,
-        reopen ? 'reopened' : 'closed',
-        null,
-        null,
-        await this.fingerprint(manager, app.id, row.versionId)
-      );
-      return this.getWith(manager, app, reviewId);
+      return { kind: reopen ? 'reopened' : 'closed' };
     });
   }
 

@@ -475,6 +475,13 @@ export const VersionDiffDialog = ({ darkMode }) => {
     (keys) => setFound((prev) => (sameSet(prev.target, keys) ? prev : { ...prev, target: keys })),
     []
   );
+  // The change list's page rows and the page tabs: show that page's preview, nothing selected.
+  const goToPage = useCallback((key) => {
+    setPageKey(key);
+    setSelectedKey(null);
+    setScroll(null);
+    setCodeId(null);
+  }, []);
   const onHover = useCallback((key, point) => setHover(key ? { key, ...(point ?? {}) } : null), []);
   const onSelect = useCallback((key, inPage) => {
     setSelectedKey(key);
@@ -785,12 +792,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
               filter={filter}
               onFilter={setFilter}
               pageKey={pageKey}
-              onPageSelect={(key) => {
-                setPageKey(key);
-                setSelectedKey(null);
-                setScroll(null);
-                setCodeId(null);
-              }}
+              onPageSelect={goToPage}
               selectedKey={selectedKey}
               onSelect={onSelect}
               hoveredKey={hover?.key ?? null}
@@ -805,12 +807,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
               {diff.pages.length > 1 && (
                 <Tabs
                   value={pageKey ?? undefined}
-                  onValueChange={(key) => {
-                    setPageKey(key);
-                    setSelectedKey(null);
-                    setScroll(null);
-                    setCodeId(null);
-                  }}
+                  onValueChange={goToPage}
                   className="tw-shrink-0 tw-px-4 tw-bg-background-surface-layer-01 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak"
                 >
                   <TabsList variant="underline" className="vd-pages tw-border-b-0" aria-label="Changed pages">
@@ -1012,6 +1009,10 @@ const Missing = ({ side, isBase }) => (
 // How long the later version waits on the earlier one before it starts anyway.
 const STAGGER_TIMEOUT_MS = 20000;
 
+// One side of the comparison: its frame, or a note that the page is not in that version.
+const Side = ({ side, shared, isBase = false }) =>
+  side.missing ? <Missing side={side} isBase={isBase} /> : <SideFrame shared={shared} side={side} />;
+
 const Stage = ({ mode, base: baseSide, target: targetSide, shared }) => {
   // Each live frame boots a whole viewer on the editor's main thread; two at once froze the editor
   // for seconds on slow machines. The later version starts once the earlier one has rendered.
@@ -1060,10 +1061,10 @@ const Stage = ({ mode, base: baseSide, target: targetSide, shared }) => {
     return (
       <div className={cx('vd-swipe', { 'vd-swipe--dragging': dragging })} ref={stageRef}>
         <div className="vd-swipe__layer">
-          {base.missing ? <Missing side={base} isBase /> : <SideFrame shared={shared} side={base} />}
+          <Side side={base} shared={shared} isBase />
         </div>
         <div className="vd-swipe__layer" style={{ clipPath: `inset(0 0 0 ${split ?? 0}px)` }}>
-          {target.missing ? <Missing side={target} /> : <SideFrame shared={shared} side={target} />}
+          <Side side={target} shared={shared} />
         </div>
         <FrameLabel side={base} floating="base" />
         <FrameLabel side={target} floating="target" />
@@ -1095,11 +1096,11 @@ const Stage = ({ mode, base: baseSide, target: targetSide, shared }) => {
     <div className="vd-split">
       <section className="vd-pane">
         <FrameLabel side={base} />
-        {base.missing ? <Missing side={base} isBase /> : <SideFrame shared={shared} side={base} />}
+        <Side side={base} shared={shared} isBase />
       </section>
       <section className="vd-pane">
         <FrameLabel side={target} />
-        {target.missing ? <Missing side={target} /> : <SideFrame shared={shared} side={target} />}
+        <Side side={target} shared={shared} />
       </section>
     </div>
   );

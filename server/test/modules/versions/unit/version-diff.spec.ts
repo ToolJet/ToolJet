@@ -287,6 +287,17 @@ describe('version diff', () => {
     expect(queries.find((query) => query.name === 'getDeals').type).toBe('Run JavaScript');
   });
 
+  it('describes a new query\'s settings in the change list\'s words, code left to the code view', () => {
+    const target = baseSpec();
+    target.queries.push({ name: 'listDeals', source: 'postgresql', options: { mode: 'sql', runOnPageLoad: true, query: 'select 1', transformation: '' } });
+    const added = diff(baseSpec(), target).queries.find((query) => query.name === 'listDeals');
+    expect(added.settings).toEqual([
+      { key: 'mode', label: 'Mode', value: '"sql"' },
+      { key: 'query', label: 'SQL', value: '"select 1"' },
+      { key: 'runOnPageLoad', label: 'Run on page load', value: 'on' },
+    ]);
+  });
+
   it('keeps the content fingerprint free of the query type', () => {
     const snapshot = buildSnapshot(rows(baseSpec()));
     expect(snapshot.queries.length).toBeGreaterThan(0);

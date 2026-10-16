@@ -399,8 +399,18 @@ export function diffVersions(
         });
       if (a && b) changes.push(...queryOptionChanges(a.options, b.options));
       const status = !a ? 'added' : !b ? 'removed' : changes.length || events.length ? 'changed' : 'unchanged';
-      // A new or removed query has no field-by-field changes; its options let the compare view show its code.
-      const options = status === 'added' || status === 'removed' ? { options: subject.options } : {};
+      // A new or removed query has no field-by-field changes: its options let the compare view show its
+      // code, and `settings` describe the rest in the change list's words.
+      const options =
+        status === 'added' || status === 'removed'
+          ? {
+              options: subject.options,
+              settings: Object.keys(subject.options ?? {})
+                .sort()
+                .filter((name) => !isEmpty(subject.options[name]))
+                .map((name) => ({ key: name, label: humanize(name), value: show(subject.options[name]) })),
+            }
+          : {};
       return {
         key,
         name: subject.name,

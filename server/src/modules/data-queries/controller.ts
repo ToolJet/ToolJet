@@ -21,6 +21,7 @@ import { AppDecorator } from '@modules/app/decorators/app.decorator';
 import { DataQuery } from '@entities/data_query.entity';
 import { IDataQueriesController } from './interfaces/IController';
 import { QueryAuthGuard } from './guards/query-auth.guard';
+import { SnapshotRunGuard } from './guards/snapshot-run.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
@@ -105,6 +106,7 @@ export class DataQueriesController implements IDataQueriesController {
     JwtAuthGuard,
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
+    SnapshotRunGuard,
     ValidateQuerySourceGuard,
     DataSourceFeatureAbilityGuard
   )

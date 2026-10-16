@@ -71,13 +71,20 @@ describe('a query in the right pane', () => {
       changes: [],
       events: [],
       options: { mode: 'sql', query: 'select *\nfrom deals', runOnPageLoad: true, transformation: '' },
+      // Described by the server, in the change list's words.
+      settings: [
+        { key: 'mode', label: 'Mode', value: '"sql"' },
+        { key: 'query', label: 'SQL', value: '"select * from deals"' },
+        { key: 'runOnPageLoad', label: 'Run on page load', value: 'on' },
+      ],
     };
     const view = viewOf(query);
     expect(view.wholeQuery).toBe(true);
     expect(view.code).toHaveLength(1);
     expect(view.code[0]).toMatchObject({ before: '', after: 'select *\nfrom deals', language: 'sql' });
+    // The SQL shows as code, so it is not repeated among the settings.
     expect(view.settings).toEqual([
-      { label: 'Mode', value: 'sql' },
+      { label: 'Mode', value: '"sql"' },
       { label: 'Run on page load', value: 'on' },
     ]);
   });

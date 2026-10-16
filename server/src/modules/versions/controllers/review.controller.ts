@@ -26,8 +26,8 @@ export class VersionReviewController {
   @InitFeature(FEATURE_KEY.COMPARE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/reviews')
-  list(@App() app: AppEntity, @Query('status') status?: string) {
-    return this.reviews.list(app, status);
+  list(@App() app: AppEntity, @Query('status') status?: string, @Query('brief') brief?: string) {
+    return this.reviews.list(app, status, brief === '1');
   }
 
   @InitFeature(FEATURE_KEY.COMPARE)

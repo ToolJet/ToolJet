@@ -106,6 +106,24 @@ describe('version snapshots', () => {
     ]);
   });
 
+  it('bounds the history per version and per app, newest kept', async () => {
+    jest.spyOn(VersionDiffService.prototype, 'loadRows').mockResolvedValue(rows('Deals'));
+    const statements: Array<{ sql: string; params: any[] }> = [];
+    const manager: any = {
+      query: async (sql: string, params: any[]) => {
+        statements.push({ sql, params });
+        return sql.includes('INSERT') ? [{ id: 's-9' }] : [];
+      },
+    };
+    await new VersionSnapshotStore().capture(manager, { organizationId: 'o', appId: 'a', versionId: 'v-1', reason: 'ai_turn' });
+    const trims = statements.filter((statement) => statement.sql.includes('DELETE FROM app_version_snapshots'));
+    expect(trims.map((trim) => trim.params)).toEqual([
+      ['v-1', 'ai_turn', 100],
+      ['a', 'ai_turn', 300],
+    ]);
+    expect(trims[1].sql).toMatch(/app_id = \$1/);
+  });
+
   it('reports a fingerprint that changes only when content does', async () => {
     const spy = jest.spyOn(VersionDiffService.prototype, 'loadRows').mockResolvedValue(rows('Deals'));
     const store = new VersionSnapshotStore();
@@ -116,7 +134,7 @@ describe('version snapshots', () => {
   });
 
   // A manager for restore: the stored snapshot, the version's freeze flags, and a log of every statement.
-  const restoreManager = (version: Record<string, any>) => {
+  const restoreManager = (version: Record<string, any>, { aiBuilding = false } = {}) => {
     const content = {
       ...rows('Deals'),
       permissions: [
@@ -136,6 +154,7 @@ describe('version snapshots', () => {
       query: async (sql: string, params: any[] = []) => {
         statements.push({ sql, params });
         if (sql.includes('FROM app_versions v JOIN apps')) return [version];
+        if (sql.includes('FROM ai_active_runs')) return aiBuilding ? [{ running: 1 }] : [];
         if (sql.includes('INSERT INTO app_version_snapshots')) return [{ id: 's-backup' }];
         if (sql.includes('FROM app_version_snapshots'))
           return [{ id: 's-1', versionId: 'v-1', reason: 'ai_turn', content: JSON.stringify(content) }];
@@ -194,5 +213,25 @@ describe('version snapshots', () => {
     expect(manager.statements.some((statement) => statement.sql.includes('INSERT INTO app_version_snapshots'))).toBe(
       false
     );
+  });
+
+  it('refuses to undo while ToolJet AI is building in the app, before touching anything', async () => {
+    const load = jest.spyOn(VersionDiffService.prototype, 'loadRows').mockResolvedValue(rows('Open deals'));
+    const manager: any = restoreManager(draft, { aiBuilding: true });
+    await expect(
+      new VersionSnapshotStore().restore(manager, { appId: 'a', snapshotId: 's-1', organizationId: 'o' })
+    ).rejects.toThrow('building');
+    expect(load).not.toHaveBeenCalled();
+    expect(manager.statements.some((statement) => statement.sql.includes('INSERT INTO app_version_snapshots'))).toBe(
+      false
+    );
+  });
+
+  it('locks the version for the restore, so two Undos cannot interleave', async () => {
+    jest.spyOn(VersionDiffService.prototype, 'loadRows').mockResolvedValue(rows('Deals'));
+    const manager: any = restoreManager(draft);
+    await new VersionSnapshotStore().restore(manager, { appId: 'a', snapshotId: 's-1', organizationId: 'o' });
+    const lookup = manager.statements.find((statement) => statement.sql.includes('FROM app_versions v JOIN apps'));
+    expect(lookup.sql).toMatch(/FOR UPDATE OF v/);
   });
 });

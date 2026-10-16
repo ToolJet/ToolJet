@@ -17,6 +17,9 @@ import { VersionSnapshot } from './types';
 // older "See what changed" buttons point to. A missing snapshot reads as 410 Gone.
 const KEEP_PER_VERSION: Record<string, number> = { ai_turn: 100, before_restore: 20 };
 const KEEP_OTHER = 20;
+// An app can have many drafts, each with its own history: the app as a whole is bounded too.
+const KEEP_PER_APP: Record<string, number> = { ai_turn: 300, before_restore: 60 };
+const KEEP_OTHER_PER_APP = 60;
 
 export type StoredSnapshot = {
   id: string;
@@ -56,6 +59,11 @@ export class VersionSnapshotStore {
       `DELETE FROM app_version_snapshots WHERE version_id = $1 AND reason = $2 AND id NOT IN (
          SELECT id FROM app_version_snapshots WHERE version_id = $1 AND reason = $2 ORDER BY created_at DESC LIMIT $3)`,
       [input.versionId, input.reason, KEEP_PER_VERSION[input.reason] ?? KEEP_OTHER]
+    );
+    await manager.query(
+      `DELETE FROM app_version_snapshots WHERE app_id = $1 AND reason = $2 AND id NOT IN (
+         SELECT id FROM app_version_snapshots WHERE app_id = $1 AND reason = $2 ORDER BY created_at DESC LIMIT $3)`,
+      [input.appId, input.reason, KEEP_PER_APP[input.reason] ?? KEEP_OTHER_PER_APP]
     );
     return { id, fingerprint };
   }
@@ -101,16 +109,26 @@ export class VersionSnapshotStore {
     const stored = await this.load(manager, input.appId, input.snapshotId);
     const { versionId, rows } = { versionId: stored.versionId, rows: stored.rows };
     // Undo writes to the version, so it follows the editor's freeze rules: no saved, released or
-    // promoted version, and nothing that git sync has locked.
+    // promoted version, and nothing that git sync has locked. The row stays locked until the
+    // restore commits, so two Undos on one version run one after the other.
     const [version] = await manager.query(
       `SELECT v.status, a.current_version_id = v.id AS "isReleased", e.priority, g.allow_editing AS "gitAllowsEditing"
          FROM app_versions v JOIN apps a ON a.id = v.app_id
          LEFT JOIN app_environments e ON e.id = v.current_environment_id
          LEFT JOIN app_git_sync g ON g.app_id = v.app_id
-        WHERE v.id = $1 AND v.app_id = $2`,
+        WHERE v.id = $1 AND v.app_id = $2
+          FOR UPDATE OF v`,
       [versionId, input.appId]
     );
     if (!version) throw new NotFoundException('The version this snapshot belongs to no longer exists');
+    // An AI build writes into the app as it goes: undoing under it would interleave the two.
+    // Runs refresh their heartbeat while alive; one silent for two minutes has ended.
+    const [building] = await manager.query(
+      `SELECT 1 AS running FROM ai_active_runs r JOIN ai_conversations c ON c.id = r.conversation_id
+        WHERE c.app_id = $1 AND r.heartbeat_at > now() - interval '2 minutes' LIMIT 1`,
+      [input.appId]
+    );
+    if (building) throw new ConflictException('ToolJet AI is building in this app. Undo once the build finishes.');
     if (version.status === 'PUBLISHED')
       throw new BadRequestException(
         'This version is saved, so it cannot be changed. Create a draft from it to undo there.'

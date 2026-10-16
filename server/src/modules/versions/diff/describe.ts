@@ -65,6 +65,7 @@ export function unwrap(value: any): any {
 export function show(value: any, max = 48): string {
   const inner = unwrap(value);
   if (inner === undefined || inner === null || inner === '') return 'empty';
+  if (typeof inner === 'boolean') return inner ? 'on' : 'off';
   let text: string;
   if (typeof inner === 'string') text = inner;
   else if (typeof inner === 'number' || typeof inner === 'boolean') text = String(inner);

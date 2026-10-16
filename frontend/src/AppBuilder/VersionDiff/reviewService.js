@@ -11,7 +11,11 @@ const request = (method, path, body) =>
   }).then(handleResponse);
 
 export const reviewService = {
-  list: (appId, status) => request('GET', `${appId}/reviews${status ? `?status=${status}` : ''}`),
+  // brief: ids and titles only (no approval state), which is all the editor header polls for.
+  list: (appId, status, { brief = false } = {}) => {
+    const query = [status && `status=${status}`, brief && 'brief=1'].filter(Boolean).join('&');
+    return request('GET', `${appId}/reviews${query ? `?${query}` : ''}`);
+  },
   get: (appId, reviewId) => request('GET', `${appId}/reviews/${reviewId}`),
   open: (appId, versionId, body) => request('POST', `${appId}/versions/${versionId}/reviews`, body),
   comment: (appId, reviewId, body, anchor) =>

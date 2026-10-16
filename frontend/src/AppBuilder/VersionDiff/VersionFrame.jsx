@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
+import { markFrame, markState } from './frameMarks';
+import { useElementSize } from '@/_hooks/useElementSize';
 
 // Renders one version of one page through the real viewer in a same-origin
 // iframe, then marks changed components in place. Every widget in the viewer
@@ -63,8 +65,8 @@ export const VersionFrame = ({
   className,
 }) => {
   const wrapRef = useRef(null);
+  const size = useElementSize(wrapRef);
   const iframeRef = useRef(null);
-  const [size, setSize] = useState({ width: 0, height: 0 });
   // Counts documents loaded into the frame: the viewer can reload itself, and each new
   // document needs the read-only listeners again.
   const [loaded, setLoaded] = useState(0);
@@ -86,14 +88,6 @@ export const VersionFrame = ({
     : viewport === 'mobile'
     ? Math.min(1, (size.width - 24) / logicalWidth, (size.height - 28) / PHONE_HEIGHT)
     : Math.min(1, size.width / logicalWidth);
-
-  useLayoutEffect(() => {
-    const observer = new ResizeObserver(([entry]) =>
-      setSize({ width: entry.contentRect.width, height: entry.contentRect.height })
-    );
-    if (wrapRef.current) observer.observe(wrapRef.current);
-    return () => observer.disconnect();
-  }, []);
 
   // The viewer picks its desktop or mobile layout once, when it loads, so a
   // change of screen size reloads the frame (the iframe is keyed by it).
@@ -118,8 +112,11 @@ export const VersionFrame = ({
     }
   }, []);
 
-  // Widgets mount lazily and re-mount as queries resolve, so marking runs on
-  // a short interval rather than once.
+  // Hover and selection change often (every widget the pointer crosses): they live in a ref, so a
+  // change moves two attributes (markState) instead of restarting the frame's marking.
+  const stateRef = useRef({ selectedKey, hoveredKey });
+  stateRef.current = { selectedKey, hoveredKey };
+
   const mark = useCallback(() => {
     const d = doc();
     if (!d?.body) return;
@@ -129,29 +126,14 @@ export const VersionFrame = ({
       style.textContent = frameCss(statusColors(wrapRef.current));
       d.head.appendChild(style);
     }
-    const found = new Set();
-    for (const highlight of highlights) {
-      if (!highlight.id) continue;
-      const elements = d.querySelectorAll(`.ele-${CSS.escape(highlight.id)}`);
-      elements.forEach((element) => {
-        if (element.getAttribute('data-vd') !== highlight.status) element.setAttribute('data-vd', highlight.status);
-        element.setAttribute('data-vd-key', highlight.key);
-        element.setAttribute('data-vd-name', highlight.name);
-        if (highlight.weak !== element.hasAttribute('data-vd-weak'))
-          highlight.weak ? element.setAttribute('data-vd-weak', '') : element.removeAttribute('data-vd-weak');
-        if (d.defaultView.getComputedStyle(element).position === 'static') element.style.position = 'relative';
-        const isSelected = highlight.key === selectedKey;
-        if (isSelected !== element.hasAttribute('data-vd-selected'))
-          isSelected ? element.setAttribute('data-vd-selected', '') : element.removeAttribute('data-vd-selected');
-        const isHovered = highlight.key === hoveredKey;
-        if (isHovered !== element.hasAttribute('data-vd-hover'))
-          isHovered ? element.setAttribute('data-vd-hover', '') : element.removeAttribute('data-vd-hover');
-      });
-      if (elements.length) found.add(highlight.key);
-    }
-    callbacks.current.onFound?.(found);
+    callbacks.current.onFound?.(markFrame(d, highlights, stateRef.current));
     if (d.querySelector(PAGE_SCROLLER) || d.querySelector('[class*="ele-"]')) setSettled(true);
-  }, [doc, highlights, selectedKey, hoveredKey]);
+  }, [doc, highlights]);
+
+  useEffect(() => {
+    const d = doc();
+    if (loaded && d?.body) markState(d, selectedKey, hoveredKey);
+  }, [loaded, doc, selectedKey, hoveredKey]);
 
   // Widgets mount lazily and re-mount as queries resolve, so marking follows the
   // frame's DOM: it re-runs (at most every 150 ms) only when elements are added or

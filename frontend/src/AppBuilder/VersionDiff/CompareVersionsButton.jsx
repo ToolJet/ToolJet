@@ -21,7 +21,7 @@ export const CompareVersionsButton = ({ darkMode }) => {
     let cancelled = false;
     const load = () =>
       reviewService
-        .list(appId, 'open')
+        .list(appId, 'open', { brief: true })
         .then(({ reviews = [] }) => !cancelled && setWaiting(reviews))
         .catch(() => {});
     load();

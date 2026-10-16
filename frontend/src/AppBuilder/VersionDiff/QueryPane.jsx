@@ -1,17 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { Columns2, Rows2, X } from 'lucide-react';
-import { Button } from '@/components/ui/Rocket';
 import { CodeDiff } from './CodeDiff';
-import { IconChoice, StatusDot, Tag } from './ui';
-
-const LANGUAGE_NAME = {
-  javascript: 'JavaScript',
-  python: 'Python',
-  sql: 'SQL',
-  css: 'CSS',
-  json: 'JSON',
-  text: 'Text',
-};
+import { LANGUAGE_NAME, Pane, SideLabels } from './Pane';
+import { Tag } from './ui';
 
 /**
  * A query picked in the change list: name, type and data source on top, then its code and its
@@ -30,44 +20,23 @@ export const QueryPane = ({ view, baseName, targetName, mode, onMode, darkMode, 
   const codeMode = view.wholeQuery ? 'plain' : mode;
 
   return (
-    <section
-      className="vd-code-pane vd-query-pane tw-h-full tw-flex tw-flex-col tw-min-h-0 tw-rounded-lg tw-overflow-hidden tw-bg-background-surface-layer-01 tw-border tw-border-solid tw-border-border-weak"
-      aria-label={`Query ${view.name}`}
+    <Pane
+      className="vd-query-pane"
+      label={`Query ${view.name}`}
+      status={view.status}
+      title={view.name}
+      note={kind}
+      tag={
+        view.status === 'added' ? (
+          <Tag tone="success">New in {targetName}</Tag>
+        ) : view.status === 'removed' ? (
+          <Tag tone="danger">Only in {baseName}</Tag>
+        ) : null
+      }
+      mode={mode}
+      onMode={!view.wholeQuery && view.code.length > 0 ? onMode : null}
+      onClose={onClose}
     >
-      <header className="tw-flex tw-items-center tw-gap-3 tw-px-4 tw-h-12 tw-shrink-0 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
-        <StatusDot status={view.status} />
-        <div className="tw-flex tw-items-baseline tw-gap-2 tw-min-w-0">
-          <span className="tw-truncate tw-font-title-default tw-text-text-default">{view.name}</span>
-          {kind && <span className="tw-truncate tw-font-body-small tw-text-text-placeholder">{kind}</span>}
-        </div>
-        {view.status === 'added' && <Tag tone="success">New in {targetName}</Tag>}
-        {view.status === 'removed' && <Tag tone="danger">Only in {baseName}</Tag>}
-        <div className="tw-ml-auto tw-flex tw-items-center tw-gap-2 tw-shrink-0">
-          {!view.wholeQuery && view.code.length > 0 && (
-            <IconChoice
-              label="Code diff layout"
-              value={mode}
-              onChange={onMode}
-              options={[
-                { id: 'split', text: 'Split diff', Icon: Columns2 },
-                { id: 'unified', text: 'Unified diff', Icon: Rows2 },
-              ]}
-            />
-          )}
-          {onClose && (
-            <Button
-              variant="ghost"
-              size="medium"
-              iconOnly
-              aria-label="Back to the preview"
-              data-tip="Back to the preview"
-              onClick={onClose}
-            >
-              <X size={16} strokeWidth={1.75} className="tw-text-icon-strong" aria-hidden="true" />
-            </Button>
-          )}
-        </div>
-      </header>
       <div ref={bodyRef} className="vd-scroll tw-flex-1 tw-min-h-0 tw-overflow-auto">
         {view.code.map((entry) => (
           <section
@@ -81,14 +50,7 @@ export const QueryPane = ({ view, baseName, targetName, mode, onMode, darkMode, 
                 {LANGUAGE_NAME[entry.language] ?? entry.language}
               </span>
             </div>
-            {codeMode === 'split' && (
-              <div className="vd-code-pane__sides tw-grid tw-grid-cols-2 tw-font-body-small tw-text-text-placeholder tw-border-0 tw-border-y tw-border-solid tw-border-border-weak">
-                <span className="tw-px-4 tw-py-1.5 tw-truncate">{baseName}</span>
-                <span className="tw-px-4 tw-py-1.5 tw-truncate tw-border-0 tw-border-l tw-border-solid tw-border-border-weak">
-                  {targetName}
-                </span>
-              </div>
-            )}
+            {codeMode === 'split' && <SideLabels baseName={baseName} targetName={targetName} className="tw-border-y" />}
             <CodeDiff
               before={entry.before}
               after={entry.after}
@@ -133,7 +95,7 @@ export const QueryPane = ({ view, baseName, targetName, mode, onMode, darkMode, 
           </p>
         )}
       </div>
-    </section>
+    </Pane>
   );
 };
 

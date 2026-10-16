@@ -155,8 +155,10 @@ export type QueryDiff = {
   type?: string | null;
   changes: Change[];
   events: EventDiff[];
-  // Only for added and removed queries: everything they hold, for the code view.
+  // Only for added and removed queries: everything they hold, for the code view, and their
+  // settings described as the change list would.
   options?: Record<string, any>;
+  settings?: Array<{ key: string; label: string; value: string }>;
 };
 
 export type VersionDiff = {

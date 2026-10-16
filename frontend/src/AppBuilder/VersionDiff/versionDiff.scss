@@ -2,6 +2,13 @@
 // classes in the JSX; this file holds what classes cannot: the full-screen
 // grid, the frames and the swipe divider, CSS tooltips, and the layout outline.
 
+// A phone's outline around the mobile view, live or layout-only.
+@mixin vd-phone {
+  border-radius: 28px;
+  box-shadow: 0 0 0 1px var(--border-default), 0 0 0 8px var(--background-surface-layer-01),
+    0 0 0 9px var(--border-weak);
+}
+
 .vd-root {
   --vd-added: var(--icon-success);
   --vd-changed: var(--icon-warning);
@@ -202,9 +209,7 @@
 
     .vd-frame__iframe {
       top: 12px !important;
-      border-radius: 28px;
-      box-shadow: 0 0 0 1px var(--border-default), 0 0 0 8px var(--background-surface-layer-01),
-        0 0 0 9px var(--border-weak);
+      @include vd-phone;
     }
   }
 }
@@ -337,9 +342,7 @@
 
   &--mobile .vd-bp__canvas {
     margin-top: 12px;
-    border-radius: 28px;
-    box-shadow: 0 0 0 1px var(--border-default), 0 0 0 8px var(--background-surface-layer-01),
-      0 0 0 9px var(--border-weak);
+    @include vd-phone;
   }
 }
 

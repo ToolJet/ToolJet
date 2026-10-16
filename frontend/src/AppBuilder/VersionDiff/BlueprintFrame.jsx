@@ -1,7 +1,8 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import cx from 'classnames';
 import { appVersionService } from '@/_services';
 import { typeLabel } from './ChangeList';
+import { useElementSize } from '@/_hooks/useElementSize';
 
 // Draws a page from its layout boxes alone, without running anything: used
 // for the state before an AI turn (a snapshot cannot be rendered by the
@@ -131,18 +132,10 @@ export const BlueprintFrame = ({
   note,
 }) => {
   const wrapRef = useRef(null);
+  const size = useElementSize(wrapRef);
   const scrollRef = useRef(null);
-  const [size, setSize] = useState({ width: 0, height: 0 });
   const [layout, setLayout] = useState(null);
   const [error, setError] = useState(null);
-
-  useLayoutEffect(() => {
-    const observer = new ResizeObserver(([entry]) =>
-      setSize({ width: entry.contentRect.width, height: entry.contentRect.height })
-    );
-    if (wrapRef.current) observer.observe(wrapRef.current);
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
