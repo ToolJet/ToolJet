@@ -37,4 +37,11 @@ describe('code diff view', () => {
     const { container } = render(<CodeDiff before={lines.join('\n')} after={changed.join('\n')} mode="unified" />);
     expect(container.querySelector('.cm-collapsedLines')).not.toBeNull();
   });
+
+  it('shows code that is entirely new as it is, without diff marks', () => {
+    const { container } = render(<CodeDiff before="" after={after} language="javascript" mode="plain" />);
+    expect(container.querySelectorAll('.cm-editor')).toHaveLength(1);
+    expect(container.querySelector('.cm-content').textContent).toContain('const b = 3;');
+    expect(container.querySelector('.cm-changedLine, .cm-insertedLine, .cm-deletedChunk')).toBeNull();
+  });
 });

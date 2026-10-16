@@ -29,7 +29,9 @@ import { Button, Tabs, TabsList, TabsTrigger, selectTriggerVariants } from '@/co
 import { useVersionDiffStore } from './useVersionDiffStore';
 import { ChangeList, STATUS_WORD, typeLabel } from './ChangeList';
 import { CodePane } from './CodePane';
-import { autoOpenCode, codeEntries, codeForSelection } from './codeChanges';
+import { autoOpen, codeEntries, firstCodeOf } from './codeChanges';
+import { QueryPane } from './QueryPane';
+import { queryView } from './queryView';
 import { VersionFrame } from './VersionFrame';
 import { BlueprintFrame } from './BlueprintFrame';
 import { ReviewPanel, RequestReviewForm, REVIEW_STATUS } from './ReviewPanel';
@@ -229,11 +231,11 @@ export const VersionDiffDialog = ({ darkMode }) => {
       .then((result) => {
         if (cancelled) return;
         setDiff(result);
-        // With no page to preview, the first code change opens, with its row expanded on the left.
+        // With no page to preview, the first query (or app-settings code change) opens on the right.
         const entries = codeEntries(result);
-        const autoCode = autoOpenCode(result, entries);
-        setSelectedKey(autoCode ? entries.find((entry) => entry.id === autoCode).owner : null);
-        setCodeId(autoCode);
+        const opened = autoOpen(result, entries);
+        setSelectedKey(opened.selectedKey);
+        setCodeId(opened.codeId);
         setFilter('all');
         setScroll(null);
         setFound({ base: new Set(), target: new Set() });
@@ -325,9 +327,25 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const page = diff?.pages.find((item) => item.key === pageKey) ?? null;
   const codeList = useMemo(() => codeEntries(diff), [diff]);
   const codeIds = useMemo(() => new Set(codeList.map((entry) => entry.id)), [codeList]);
-  const codeEntry = codeList.find((entry) => entry.id === codeId) ?? null;
+  // A query picked in the list opens in the right pane; other code changes open one at a time.
+  const selectedQuery = selectedKey?.startsWith('query:')
+    ? diff?.queries.find((query) => `query:${query.key}` === selectedKey) ?? null
+    : null;
+  const queryPaneView = useMemo(
+    () => (selectedQuery ? queryView(selectedQuery, codeList) : null),
+    [selectedQuery, codeList]
+  );
+  const codeEntry = selectedQuery ? null : codeList.find((entry) => entry.id === codeId) ?? null;
   const codeListRef = useRef(codeList);
   codeListRef.current = codeList;
+  const openCode = useCallback(
+    (id) => {
+      const owner = codeList.find((entry) => entry.id === id)?.owner;
+      if (owner?.startsWith('query:')) setSelectedKey(owner);
+      setCodeId(id);
+    },
+    [codeList]
+  );
   const chooseCodeMode = useCallback((value) => {
     setCodeMode(value);
     try {
@@ -461,8 +479,9 @@ export const VersionDiffDialog = ({ darkMode }) => {
   const onSelect = useCallback((key, inPage) => {
     setSelectedKey(key);
     if (inPage) setPageKey(inPage);
-    // A query has no place on the canvas: picking it opens its code. A component shows the preview.
-    setCodeId(codeForSelection(key, codeListRef.current));
+    // A query opens in the right pane (selectedQuery) at its first code change; a component
+    // shows the live preview.
+    setCodeId(firstCodeOf(key, codeListRef.current));
   }, []);
 
   if (!isOpen) return null;
@@ -595,7 +614,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
             aria-label="Swap the two versions"
             data-tip={snapshotId ? undefined : 'Swap'}
           >
-            <ArrowRight size={14} strokeWidth={1.75} className="tw-text-icon-default" />
+            <ArrowRight size={14} strokeWidth={1.75} className="tw-text-icon-strong" />
           </Button>
           <VersionSelect
             label="To"
@@ -728,7 +747,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
             onClick={closeCompare}
             aria-label="Close"
           >
-            <X size={16} strokeWidth={1.75} className="tw-text-icon-default" />
+            <X size={16} strokeWidth={1.75} className="tw-text-icon-strong" />
           </Button>
         </div>
       </header>
@@ -780,7 +799,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
               commentCounts={commentCounts}
               codeIds={codeIds}
               activeCodeId={codeId}
-              onOpenCode={setCodeId}
+              onOpenCode={openCode}
             />
             <main className="vd-stage-wrap tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-bg-page-weak">
               {diff.pages.length > 1 && (
@@ -811,6 +830,28 @@ export const VersionDiffDialog = ({ darkMode }) => {
                 </Tabs>
               )}
               <div className="tw-relative tw-flex-1 tw-min-h-0 tw-p-4">
+                {queryPaneView && (
+                  // Laid over the frames rather than in their place, so they keep their render.
+                  <div className="tw-absolute tw-inset-4 tw-z-[4]">
+                    <QueryPane
+                      view={queryPaneView}
+                      baseName={snapshotLabel ?? baseName}
+                      targetName={targetName}
+                      mode={codeMode}
+                      onMode={chooseCodeMode}
+                      darkMode={darkMode}
+                      focusId={codeId}
+                      onClose={
+                        page
+                          ? () => {
+                              setSelectedKey(null);
+                              setCodeId(null);
+                            }
+                          : null
+                      }
+                    />
+                  </div>
+                )}
                 {codeEntry && (
                   // Laid over the frames rather than in their place, so they keep their render.
                   <div className="tw-absolute tw-inset-4 tw-z-[4]">
@@ -831,7 +872,7 @@ export const VersionDiffDialog = ({ darkMode }) => {
                   </Calm>
                 ) : page ? (
                   frames
-                ) : codeEntry ? null : (
+                ) : codeEntry || queryPaneView ? null : (
                   <Calm title="No page changes">
                     The differences are in queries or app settings. They are listed on the left.
                   </Calm>

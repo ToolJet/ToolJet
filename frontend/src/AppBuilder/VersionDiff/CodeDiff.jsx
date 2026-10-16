@@ -34,6 +34,7 @@ const baseExtensions = (language, darkMode) => [
 /**
  * A read-only line diff of two texts: side by side ('split') or interleaved
  * ('unified'), with line numbers from each side and unchanged lines folded.
+ * 'plain' shows one side as it is, for code that is entirely new or gone.
  */
 export const CodeDiff = ({ before = '', after = '', language = 'text', mode = 'split', darkMode = false }) => {
   const hostRef = useRef(null);
@@ -43,7 +44,10 @@ export const CodeDiff = ({ before = '', after = '', language = 'text', mode = 's
     if (!parent) return undefined;
     const extensions = baseExtensions(language, darkMode);
     const view =
-      mode === 'unified'
+      mode === 'plain'
+        ? // A query that is new or gone: its code as it is, without diff marks.
+          new EditorView({ parent, state: EditorState.create({ doc: after || before, extensions }) })
+        : mode === 'unified'
         ? new EditorView({
             parent,
             state: EditorState.create({

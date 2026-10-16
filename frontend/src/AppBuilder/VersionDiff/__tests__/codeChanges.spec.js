@@ -1,4 +1,4 @@
-import { autoOpenCode, codeEntries, codeForSelection, codeOf, languageFor } from '../codeChanges';
+import { autoOpen, codeEntries, codeOf, firstCodeOf, languageFor } from '../codeChanges';
 
 const change = (path, from, to, group = 'query') => ({
   group,
@@ -187,9 +187,28 @@ describe('what the right pane opens on its own', () => {
     events: [],
   };
 
-  it('opens the first code change when no page changed', () => {
+  it('opens the first query when no page changed, at its first code change', () => {
     const diff = { settings: [], pages: [], queries: [query] };
-    expect(autoOpenCode(diff, codeEntries(diff))).toBe('query:pipelineStats|options.code');
+    expect(autoOpen(diff, codeEntries(diff))).toEqual({
+      selectedKey: 'query:pipelineStats',
+      codeId: 'query:pipelineStats|options.code',
+    });
+  });
+
+  it('opens a picked query at its first code change, and nothing for a component', () => {
+    const diff = { settings: [], pages: [], queries: [query] };
+    const entries = codeEntries(diff);
+    expect(firstCodeOf('query:pipelineStats', entries)).toBe('query:pipelineStats|options.code');
+    expect(firstCodeOf('home/table1', entries)).toBeNull();
+  });
+
+  it('opens the first code change in the app settings when only they changed', () => {
+    const diff = {
+      settings: [change('globalSettings.theme', { a: 1, b: 'x'.repeat(70) }, { a: 2, b: 'x'.repeat(70) }, 'settings')],
+      pages: [],
+      queries: [],
+    };
+    expect(autoOpen(diff, codeEntries(diff))).toEqual({ selectedKey: null, codeId: 'settings|globalSettings.theme' });
   });
 
   it('leaves the preview in place when a page changed', () => {
@@ -198,15 +217,7 @@ describe('what the right pane opens on its own', () => {
       pages: [{ key: 'home', name: 'Home', changes: [], events: [], components: [] }],
       queries: [query],
     };
-    expect(autoOpenCode(diff, codeEntries(diff))).toBeNull();
-  });
-
-  it('opens a query’s first code change when its row is picked, and nothing for a component', () => {
-    const diff = { settings: [], pages: [], queries: [query] };
-    const entries = codeEntries(diff);
-    expect(codeForSelection('query:pipelineStats', entries)).toBe('query:pipelineStats|options.code');
-    expect(codeForSelection('home/table1', entries)).toBeNull();
-    expect(codeForSelection(null, entries)).toBeNull();
+    expect(autoOpen(diff, codeEntries(diff))).toEqual({ selectedKey: null, codeId: null });
   });
 });
 

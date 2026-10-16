@@ -401,9 +401,16 @@ export function diffVersions(
       const status = !a ? 'added' : !b ? 'removed' : changes.length || events.length ? 'changed' : 'unchanged';
       // A new or removed query has no field-by-field changes; its options let the compare view show its code.
       const options = status === 'added' || status === 'removed' ? { options: subject.options } : {};
-      return { key, name: subject.name, status, dataSource: subject.dataSource, changes, events, ...options } as
-        | QueryDiff
-        | { status: 'unchanged' };
+      return {
+        key,
+        name: subject.name,
+        status,
+        dataSource: subject.dataSource,
+        type: (b ?? a).type ?? null,
+        changes,
+        events,
+        ...options,
+      } as QueryDiff | { status: 'unchanged' };
     })
     .filter((query): query is QueryDiff => query.status !== 'unchanged')
     .sort((x, y) => ORDER[x.status] - ORDER[y.status] || x.name.localeCompare(y.name));

@@ -151,6 +151,34 @@ const box = (row: VersionRows['layouts'][number]): LayoutBox => {
   return out;
 };
 
+// Names for data source kinds, for built-in sources (which carry internal names) and query types.
+const KINDS: Record<string, string> = {
+  tooljetdb: 'ToolJet Database',
+  runjs: 'Run JavaScript',
+  runpy: 'Run Python',
+  restapi: 'REST API',
+  graphql: 'GraphQL',
+  workflows: 'Workflow',
+  postgresql: 'PostgreSQL',
+  mysql: 'MySQL',
+  mssql: 'SQL Server',
+  mariadb: 'MariaDB',
+  oracledb: 'Oracle',
+  snowflake: 'Snowflake',
+  bigquery: 'BigQuery',
+  redshift: 'Redshift',
+  mongodb: 'MongoDB',
+  dynamodb: 'DynamoDB',
+  elasticsearch: 'Elasticsearch',
+  redis: 'Redis',
+  firestore: 'Firestore',
+  googlesheets: 'Google Sheets',
+  airtable: 'Airtable',
+  s3: 'Amazon S3',
+  openapi: 'OpenAPI',
+  databricks: 'Databricks',
+};
+
 export function buildSnapshot(rows: VersionRows): VersionSnapshot {
   const refs = new Map<string, string>();
   const pageKeyById = new Map<string, string>();
@@ -164,15 +192,10 @@ export function buildSnapshot(rows: VersionRows): VersionSnapshot {
   for (const query of rows.queries) refs.set(query.id.toLowerCase(), `@query:${query.name}`);
   // Static data sources (REST, RunJS, ToolJet DB) are copied per version, so
   // their ids differ too. Global ones keep their id and need no rewrite.
-  const KINDS: Record<string, string> = {
-    tooljetdb: 'ToolJet Database',
-    runjs: 'Run JavaScript',
-    runpy: 'Run Python',
-    restapi: 'REST API',
-    workflows: 'Workflow',
-  };
   const dataSourceLabel = new Map<string, string>();
+  const dataSourceType = new Map<string, string>();
   for (const source of rows.dataSources) {
+    dataSourceType.set(source.id, KINDS[source.kind] ?? source.kind);
     // Built-in sources carry internal names (tooljetdbdefault, runjsdefault).
     const builtIn = !source.name || source.name === source.kind || source.name === `${source.kind}default`;
     const label = builtIn ? (KINDS[source.kind] ?? source.kind) : source.name;
@@ -243,6 +266,8 @@ export function buildSnapshot(rows: VersionRows): VersionSnapshot {
     key: query.name,
     name: query.name,
     dataSource: query.dataSourceId ? (dataSourceLabel.get(query.dataSourceId) ?? query.dataSourceId) : 'none',
+    // What kind of query it is, for the compare view; kept out of the content fingerprint.
+    type: (query.dataSourceId && dataSourceType.get(query.dataSourceId)) || null,
     options: normalizeQueryOptions(rewrite(asObject(query.options))),
   }));
 

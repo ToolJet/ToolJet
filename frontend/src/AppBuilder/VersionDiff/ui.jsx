@@ -63,17 +63,14 @@ export const Counts = ({ counts, className }) => {
 
 export const Divider = () => <span className="tw-w-px tw-h-5 tw-bg-border-weak tw-shrink-0" aria-hidden="true" />;
 
-// Icon-only choices, as in the editor header's desktop and mobile switch.
+// Icon-only choices, as in the editor header's desktop and mobile switch. Rocket draws unselected
+// items in its disabled colours; these use the normal icon colour, and the selected one the text
+// colour on its raised pill, so only a disabled control looks disabled. The colours live in
+// versionDiff.scss: tailwind-merge drops state variants that conflict with Rocket's own.
 export const IconChoice = ({ label, value, onChange, options }) => (
   <ToggleGroup type="single" value={value} onValueChange={(next) => next && onChange(next)} aria-label={label}>
     {options.map(({ id, text, Icon }) => (
-      <ToggleGroupItem
-        key={id}
-        value={id}
-        aria-label={text}
-        data-tip={text}
-        className="vd-seg__opt tw-w-7 tw-text-icon-default [&_svg]:!tw-text-icon-default data-[state=on]:[&_svg]:!tw-text-icon-strong hover:[&_svg]:!tw-text-icon-strong"
-      >
+      <ToggleGroupItem key={id} value={id} aria-label={text} data-tip={text} className="vd-seg__opt tw-w-7">
         <Icon size={14} strokeWidth={1.75} aria-hidden="true" />
       </ToggleGroupItem>
     ))}

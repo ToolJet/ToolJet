@@ -49,7 +49,7 @@ export const CodePane = ({ entry, mode, onMode, baseName, targetName, darkMode, 
             data-tip="Back to the preview"
             onClick={onClose}
           >
-            <X size={16} strokeWidth={1.75} aria-hidden="true" />
+            <X size={16} strokeWidth={1.75} className="tw-text-icon-strong" aria-hidden="true" />
           </Button>
         )}
       </div>

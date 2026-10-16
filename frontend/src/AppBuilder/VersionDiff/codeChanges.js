@@ -77,7 +77,9 @@ const looksLikeCode = (key, text) =>
 export function codeOf(item, context = {}) {
   if (!item) return null;
   if (item.eventId !== undefined && !item.path) {
-    return { before: pretty(item.from), after: pretty(item.to), language: 'json', field: 'handler' };
+    const before = pretty(item.from);
+    const after = pretty(item.to);
+    return before === after ? null : { before, after, language: 'json', field: 'handler' };
   }
   if (NOT_CODE.has(item.group)) return null;
   const field = item.path?.startsWith('options.') ? item.path.slice('options.'.length) : lastKey(item.path);
@@ -163,9 +165,17 @@ export function codeEntries(diff) {
   return out;
 }
 
-/** With no page to preview, the right pane shows the first code change instead. */
-export const autoOpenCode = (diff, entries) => (diff && !diff.pages?.length && entries[0] ? entries[0].id : null);
+/**
+ * What the right pane opens on its own. With no page to preview: the first changed query, else the
+ * first code change in the app settings. With a page, the live preview.
+ */
+export const autoOpen = (diff, entries) => {
+  if (!diff || diff.pages?.length) return { selectedKey: null, codeId: null };
+  const query = diff.queries?.[0];
+  if (query) return { selectedKey: `query:${query.key}`, codeId: firstCodeOf(`query:${query.key}`, entries) };
+  return { selectedKey: null, codeId: entries[0]?.id ?? null };
+};
 
-/** Picking a query opens its first code change; components keep the live preview. */
-export const codeForSelection = (key, entries) =>
-  key && key.startsWith('query:') ? entries.find((entry) => entry.owner === key)?.id ?? null : null;
+/** A query's first code change, which the change list marks and the query pane scrolls to. */
+export const firstCodeOf = (key, entries) =>
+  key?.startsWith('query:') ? entries.find((entry) => entry.owner === key)?.id ?? null : null;

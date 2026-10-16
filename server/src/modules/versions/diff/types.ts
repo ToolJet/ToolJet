@@ -56,6 +56,7 @@ export type SnapshotQuery = {
   key: string;
   name: string;
   dataSource: string;
+  type?: string | null;
   options: Record<string, any>;
 };
 
@@ -150,6 +151,8 @@ export type QueryDiff = {
   name: string;
   status: Exclude<ChangeStatus, 'unchanged'>;
   dataSource: string;
+  // The kind of query (Run JavaScript, PostgreSQL), when the data source still exists.
+  type?: string | null;
   changes: Change[];
   events: EventDiff[];
   // Only for added and removed queries: everything they hold, for the code view.

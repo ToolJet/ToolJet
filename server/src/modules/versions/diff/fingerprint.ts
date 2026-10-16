@@ -30,14 +30,15 @@ export function contentFingerprint(snapshot: VersionSnapshot): string {
   delete content.versionId;
   delete content.name;
   delete content.status;
-  const sortByKey = (items: Array<{ key: string }>) => [...items].sort((a, b) => a.key.localeCompare(b.key));
+  const sortByKey = <T extends { key: string }>(items: T[]) => [...items].sort((a, b) => a.key.localeCompare(b.key));
   const hash = createHash('sha256')
     .update(
       stable(
         strip({
           ...content,
           components: sortByKey(content.components),
-          queries: sortByKey(content.queries),
+          // The query type is shown in the compare view, not content: older approvals stay valid.
+          queries: sortByKey(content.queries).map(({ type: _type, ...query }) => query),
           events: sortByKey(content.events),
         })
       )

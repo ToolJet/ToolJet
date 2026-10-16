@@ -1,6 +1,7 @@
 /** @group platform */
 import { buildSnapshot, VersionRows } from '@modules/versions/diff/snapshot';
 import { diffVersions } from '@modules/versions/diff/version-diff';
+import { contentFingerprint } from '@modules/versions/diff/fingerprint';
 
 // Two versions of the same small app. The target is a copy of the base, so
 // every id differs, exactly as VersionsCreateService leaves them.
@@ -265,7 +266,7 @@ describe('version diff', () => {
     expect(query.changes[0].summary).toBe('Code edited (2 lines added, 1 removed)');
   });
 
-  it('carries a new or removed query\'s options, so its code can be shown', () => {
+  it("carries a new or removed query's options, so its code can be shown", () => {
     const target = baseSpec();
     target.queries.push({ name: 'pipelineStats', options: { code: 'return 1;' } } as any);
     const added = diff(baseSpec(), target).queries.find((query) => query.name === 'pipelineStats');
@@ -275,6 +276,22 @@ describe('version diff', () => {
     expect(removed.status).toBe('removed');
     expect(removed.options).toEqual({ code: 'return 1;' });
     expect(diff(baseSpec(), baseSpec()).queries.every((query) => !('options' in query))).toBe(true);
+  });
+
+  it("names each listed query's type, even when its data source has its own name", () => {
+    const target = baseSpec();
+    target.queries.push({ name: 'listDeals', source: 'postgresql', options: { query: 'select 1' } });
+    target.queries[0].options = { code: 'return 2' };
+    const queries = diff(baseSpec(), target).queries;
+    expect(queries.find((query) => query.name === 'listDeals').type).toBe('PostgreSQL');
+    expect(queries.find((query) => query.name === 'getDeals').type).toBe('Run JavaScript');
+  });
+
+  it('keeps the content fingerprint free of the query type', () => {
+    const snapshot = buildSnapshot(rows(baseSpec()));
+    expect(snapshot.queries.length).toBeGreaterThan(0);
+    const withoutType = { ...snapshot, queries: snapshot.queries.map(({ type, ...query }: any) => query) } as any;
+    expect(contentFingerprint(snapshot)).toBe(contentFingerprint(withoutType));
   });
 
   it('reports pages added, removed, renamed and reordered, and the home page', () => {

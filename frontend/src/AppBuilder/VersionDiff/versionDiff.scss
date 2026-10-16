@@ -607,3 +607,31 @@ body:has(.vd-root) > .tooltip {
     cursor: pointer;
   }
 }
+
+// Toggle options in the compare view. Rocket draws unselected items in its disabled colours, so
+// a choice read as switched off; these read as enabled, and the selected one as selected.
+.vd-root .vd-seg__opt {
+  svg {
+    color: var(--icon-strong) !important;
+  }
+
+  &:hover svg {
+    color: var(--text-medium) !important;
+  }
+
+  &[data-state='on'] svg {
+    color: var(--text-default) !important;
+  }
+}
+
+.vd-root .vd-filter {
+  color: var(--text-placeholder);
+
+  &[data-state='on'] {
+    color: var(--text-default);
+  }
+
+  &:disabled {
+    color: var(--text-disabled);
+  }
+}
