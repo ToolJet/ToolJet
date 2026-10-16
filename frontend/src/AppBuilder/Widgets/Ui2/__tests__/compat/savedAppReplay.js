@@ -129,11 +129,12 @@ export async function replay(harness, app, original) {
       for (const [, ref, key, call] of text.matchAll(REF)) {
         if (!refsToWidget.has(ref)) continue;
         const live = exposed();
+        const by = ref === widget.id ? 'by id' : 'by name';
         if (call && typeof live[key] !== 'function')
-          problems.push(`${where} calls ${widget.name}.${key}(), which ${type} no longer has.`);
+          problems.push(`${where} calls ${widget.name}.${key}() (${by}), which ${type} no longer has.`);
         if (!call && !(key in live))
           problems.push(
-            `${where} reads ${widget.name}.${key}, which ${type} no longer exposes (it resolves to undefined).`
+            `${where} reads ${widget.name}.${key} (${by}), which ${type} no longer exposes (it resolves to undefined).`
           );
       }
     }
