@@ -12,7 +12,6 @@ import {
   findHighestLevelofSelection,
   hasParentWithClass,
   getPositionForGroupDrag,
-  adjustWidth,
   hideGridLines,
   showGridLines,
   handleActivateTargets,
@@ -45,7 +44,7 @@ import {
   computeFlexResizeStyles,
   computeFlexResizeEndPatch,
   computeResizeStopPosition,
-  clampResizeTranslate,
+  computeResizeEndRect,
   clampResizeToCanvas,
 } from './helpers/gridResizeUtils';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
@@ -838,29 +837,26 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const containerWidth = elemContainer.clientWidth;
             // Main canvas grows downward and has no bottom border; nested widgets keep their original behaviour.
             const isNested = Boolean(currentWidget.component?.parent);
-            const bounds = { containerWidth, isNested };
-            const clampedSize = clampResizeToCanvas({ x: transformX, y: transformY, width, height, ...bounds });
-            const lastEventWidth = clampResizeToCanvas({
+            // One clamped + snapped rectangle feeds both the DOM write and the saved layout so they cannot disagree.
+            const resizeRect = computeResizeEndRect({
               x: transformX,
               y: transformY,
               width: e.lastEvent.width,
               height,
-              ...bounds,
-            }).width;
-            width = adjustWidth(clampedSize.width, isNested ? transformX : Math.max(0, transformX), _gridWidth);
-            height = Math.max(GRID_HEIGHT, clampedSize.height);
+              gridWidth: _gridWidth,
+              gridHeight: GRID_HEIGHT,
+              containerWidth,
+              isNested,
+            });
+            width = resizeRect.width;
+            height = resizeRect.height;
+            transformX = resizeRect.x;
+            transformY = resizeRect.y;
             // Recompute after clamping: a resize clamped back to the stored height must not rewrite the DOM
             // height, since that write drops the top-aligned label increment and no re-render restores it.
             const committedDiffHeight = height - currentWidget?.height;
             const maxY = containerHeight - e.target.clientHeight;
             const maxLeft = containerWidth - e.target.clientWidth;
-
-            ({ x: transformX, y: transformY } = clampResizeTranslate({
-              x: transformX,
-              y: transformY,
-              maxX: maxLeft,
-              isNested,
-            }));
 
             const maxWidthHit = transformX < 0 || transformX >= maxLeft;
             const maxHeightHit = transformY < 0 || transformY >= maxY;
@@ -871,7 +867,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
             }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
-              e.target.style.width = `${Math.round(lastEventWidth / _gridWidth) * _gridWidth}px`;
+              e.target.style.width = `${width}px`;
             }
 
             // Added diffHeight !== 0 to prevent the height from being changed and messing up the top alignment.

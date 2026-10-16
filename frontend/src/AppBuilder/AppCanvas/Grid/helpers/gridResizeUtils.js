@@ -1,3 +1,5 @@
+import { NO_OF_GRIDS } from '../../appCanvasConstants';
+
 /**
  * Returns the inline styles needed while resizing a FlexContainer child.
  * Live dimensions stay unsnapped so the rendered edge remains aligned with
@@ -62,22 +64,6 @@ export function computeResizeStopPosition({ x, y, gw, gridHeight }) {
 }
 
 /**
- * Clamps a resize-end pixel translate to the canvas's bounds so it can be written
- * straight to the DOM without waiting on a store round-trip to correct it. Needed
- * because a widget already sitting at a boundary produces an unchanged store value
- * (e.g. left: 0 -> 0), which skips the re-render that would otherwise fix the transform.
- * Omit `maxY` for the main canvas, which grows downward; bounding y by the visible height would shift a
- * widget stretched past the visible bottom upward. Nested widgets are returned unchanged.
- */
-export function clampResizeTranslate({ x, y, maxX = Infinity, maxY = Infinity, isNested = false }) {
-  if (isNested) return { x, y };
-  return {
-    x: Math.max(0, Math.min(x, maxX)),
-    y: Math.max(0, Math.min(y, maxY)),
-  };
-}
-
-/**
  * Clamps a resized box to the canvas borders while keeping the opposite edge fixed: overshoot past the
  * left/top border is removed from the width/height instead of only pinning x/y to 0, and a size that
  * would cross the right/bottom border is capped. Omit `containerHeight` for canvases that grow downward.
@@ -111,4 +97,29 @@ export function clampResizeToCanvas({
     width: Math.min(width, Math.max(0, containerWidth - x)),
     height: Math.min(height, Math.max(0, containerHeight - y)),
   };
+}
+
+/**
+ * Resolves the single rectangle a finished resize commits, so the DOM write and the saved layout are
+ * derived from the same numbers: clamps the raw position and size together to the canvas, then snaps the
+ * width to the grid once and caps it at the grid's column count. `height` is expected already snapped.
+ */
+export function computeResizeEndRect({
+  x,
+  y,
+  width,
+  height,
+  gridWidth,
+  gridHeight,
+  containerWidth,
+  extraHeight,
+  isNested = false,
+}) {
+  const clamped = clampResizeToCanvas({ x, y, width, height, containerWidth, extraHeight, isNested });
+  let snappedWidth = Math.max(gridWidth, Math.round(clamped.width / gridWidth) * gridWidth);
+  const column = Math.round(clamped.x / gridWidth);
+  if (column + snappedWidth / gridWidth > NO_OF_GRIDS) {
+    snappedWidth = (NO_OF_GRIDS - column) * gridWidth;
+  }
+  return { x: clamped.x, y: clamped.y, width: snappedWidth, height: Math.max(gridHeight, clamped.height) };
 }
