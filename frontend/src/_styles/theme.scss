@@ -15812,7 +15812,7 @@ fieldset:disabled {
   }
 
   .time-header {
-    width: 62px;
+    width: 68px;
     height: 35px;
     padding: 8px 6px 7px 6px;
     justify-content: center;
@@ -15829,11 +15829,13 @@ fieldset:disabled {
     padding-bottom: 12px;
   }
 
-  // Wraps each scroll column so the custom scrollbar can overlay its right
-  // edge; sizing stays on .time-col (original design).
+  // Wraps each scroll column so the custom scrollbar can sit on its right
+  // edge; item sizing stays original, but the column is 6px wider than the
+  // items + margins (68 vs 62) so the 12px scrollbar strip never overlaps the
+  // numbers.
   .time-colwrap {
     position: relative;
-    width: 62px;
+    width: 68px;
   }
 
   .time-col {
@@ -15842,7 +15844,7 @@ fieldset:disabled {
     overflow-x: hidden;
     scrollbar-width: none;
     height: 265px;
-    width: 62px;
+    width: 68px;
     color: var(--cc-primary-text) !important;
 
     &::-webkit-scrollbar {
