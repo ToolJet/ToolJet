@@ -5,8 +5,7 @@ import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { GROUP_LOADING } from '@/AppBuilder/Widgets/Ui2/_shared/looks/groups';
 import { LoadingBox, Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { avatarPeople } from './people';
-
-// ---- Loading ------------------------------------------------------------------------------------------------------
+import './styles/shadcn.scss';
 
 // How each widget looks while loading (the loadingState property or the setLoading action). Controls stay in place,
 // non-interactive, with a spinner: 'field' inside the text box (Field draws it), 'inline' right after the control,

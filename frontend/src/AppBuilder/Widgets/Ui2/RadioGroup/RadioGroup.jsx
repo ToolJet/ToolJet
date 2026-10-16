@@ -1,0 +1,70 @@
+import React, { useRef } from 'react';
+import { toOptions, useAutoHeight, useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { Label, RadioGroup, RadioGroupItem } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { MAX_CHOICES, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+
+export const ShadRadioGroup = (props) => {
+  // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
+  const fit = useRef(null);
+  useAutoHeight(props, fit);
+  const { properties, id } = props;
+  const options = toOptions(properties.options);
+  const byKey = new Map(options.map((o) => [String(o.value), o]));
+  const initial =
+    properties.defaultValue === '' || properties.defaultValue === undefined ? '' : String(properties.defaultValue);
+  const [key, change] = useValue(
+    props,
+    initial,
+    (set) => ({
+      selectOption: async (v) => set(v === undefined || v === null || typeof v === 'object' ? '' : String(v)),
+      // The native Radio button's deselectOption() clears the choice.
+      deselectOption: async () => set(''),
+    }),
+    (k) => byKey.get(k)?.value ?? ''
+  );
+  useExposed(props.setExposedVariables, properties, {
+    label: String(properties.label ?? ''),
+    selectedOption: byKey.get(key) || {},
+    options,
+  });
+  const check = useValidation(props, byKey.get(key)?.value ?? '', () => change(''));
+  return (
+    <Shell {...props} innerRef={fit}>
+      <Field
+        label={properties.label}
+        description={properties.description}
+        error={check.error}
+        required={check.required}
+      >
+        <RadioGroup
+          value={key}
+          disabled={busy(properties)}
+          className={properties.horizontal === true ? 'flex flex-wrap gap-4' : undefined}
+          onValueChange={(next) => {
+            change(next, 'onSelectionChange');
+            check.touch();
+          }}
+        >
+          {shownOptions(options, byKey.get(key), MAX_CHOICES).map((o) => {
+            const itemId = `shad-${id}-${String(o.value)}`;
+            return (
+              <div key={String(o.value)} className="flex items-center gap-2">
+                <RadioGroupItem
+                  value={String(o.value)}
+                  id={itemId}
+                  className="border-[color:var(--lk-invalid,var(--sc-primary))]"
+                />
+                <Label htmlFor={itemId} className="font-normal text-[color:var(--lk-fg,var(--sc-foreground))]">
+                  {o.label}
+                </Label>
+              </div>
+            );
+          })}
+        </RadioGroup>
+      </Field>
+    </Shell>
+  );
+};

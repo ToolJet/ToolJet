@@ -36,8 +36,6 @@ export const getPortalRoot = () => {
   return portalRoot;
 };
 
-// ---- Button ------------------------------------------------------------------------------------------------------
-
 export const buttonVariants = cva(
   'inline-flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
@@ -92,8 +90,6 @@ export const Button = React.forwardRef(({ className, variant, size, asChild = fa
   );
 });
 Button.displayName = 'Button';
-
-// ---- Inputs ------------------------------------------------------------------------------------------------------
 
 export const Input = React.forwardRef(({ className, type, ...props }, ref) => (
   <input
@@ -205,8 +201,6 @@ export const Slider = React.forwardRef(({ className, thumbLabel, ...props }, ref
 ));
 Slider.displayName = 'Slider';
 
-// ---- Select ------------------------------------------------------------------------------------------------------
-
 export const Select = SelectPrimitive.Root;
 export const SelectValue = SelectPrimitive.Value;
 
@@ -279,8 +273,6 @@ export const SelectItem = React.forwardRef(({ className, children, ...props }, r
 ));
 SelectItem.displayName = 'SelectItem';
 
-// ---- Popover and calendar ------------------------------------------------------------------------------------------
-
 export const Popover = PopoverPrimitive.Root;
 export const PopoverTrigger = PopoverPrimitive.Trigger;
 export const PopoverContent = React.forwardRef(({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
@@ -344,8 +336,6 @@ export const Calendar = ({ className, classNames, components, showOutsideDays = 
     }}
   />
 );
-
-// ---- Display -----------------------------------------------------------------------------------------------------
 
 export const Card = React.forwardRef(({ className, ...props }, ref) => (
   <div ref={ref} className={cn('rounded-xl border bg-card text-card-foreground shadow-sm', className)} {...props} />
@@ -511,8 +501,6 @@ export const ToggleGroupItem = React.forwardRef(({ className, ...props }, ref) =
   />
 ));
 ToggleGroupItem.displayName = 'ToggleGroupItem';
-
-// ---- Table -------------------------------------------------------------------------------------------------------
 
 export const Table = React.forwardRef(({ className, ...props }, ref) => (
   <div className="relative w-full overflow-auto">

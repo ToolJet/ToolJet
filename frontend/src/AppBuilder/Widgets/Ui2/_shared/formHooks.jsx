@@ -7,8 +7,6 @@ import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { truthy } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { ERROR, HELP, INVALID_VARS, LABEL } from './field';
 
-// ---- Inputs --------------------------------------------------------------------------------------------------------
-
 /** A single-value input: local state seeded from defaultValue, published as `value` (through `toExposed`, for
  *  controls that key options by string), plus actions built from the setter. */
 export const useValue = (props, initial, actions = () => ({}), toExposed = (v) => v) => {
