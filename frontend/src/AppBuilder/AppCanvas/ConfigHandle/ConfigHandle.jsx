@@ -22,7 +22,42 @@ const MentionComponentInChat = lazy(() => import('./MentionComponentInChat'));
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
 
-export const ConfigHandle = ({
+/**
+ * A widget's handle (its name and buttons, above it on the canvas). It shows only for the widget hovered or selected
+ * (and always for a hidden widget), so the handle itself (about 20 store subscriptions, its buttons, tooltips and
+ * popovers) is mounted the first time it shows, not for every widget on the canvas: an app with thousands of widgets
+ * kept hundreds of MB of handles nobody had looked at.
+ */
+export const ConfigHandle = (props) => {
+  const { id, readOnly, showHandle, componentType, visibility, isModuleContainer, subContainerIndex, isModalOpen } =
+    props;
+  const isMultipleComponentsSelected = useStore(
+    (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
+    shallow
+  );
+  const isModal = componentType === 'Modal' || componentType === 'ModalV2';
+
+  // If one component is hovered and one is selected, show the handle for the hovered component
+  const _showHandle = useTransientStore((state) => {
+    const isWidgetHovered = state.hoveredComponentForGrid === id;
+    const anyComponentHovered = state.hoveredComponentForGrid !== '';
+    return (
+      ((subContainerIndex === 0 || subContainerIndex === null) && (isModuleContainer || (isModal && isModalOpen))) ||
+      isWidgetHovered ||
+      (showHandle && !isMultipleComponentsSelected && !anyComponentHovered)
+    );
+  });
+
+  const shows = _showHandle || visibility === false;
+  const [hasShown, setHasShown] = useState(shows);
+  if (shows && !hasShown) setHasShown(true);
+  if (readOnly || !hasShown) return null;
+  return (
+    <WidgetHandle {...props} _showHandle={_showHandle} isMultipleComponentsSelected={isMultipleComponentsSelected} />
+  );
+};
+
+const WidgetHandle = ({
   id,
   readOnly,
   widgetTop,
@@ -30,12 +65,11 @@ export const ConfigHandle = ({
   setSelectedComponentAsModal = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
   isModalOpen = false,
   customClassName = '',
-  showHandle,
   componentType,
   visibility,
-  isModuleContainer,
-  subContainerIndex,
   isDynamicHeightEnabled,
+  _showHandle,
+  isMultipleComponentsSelected,
 }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
@@ -44,10 +78,6 @@ export const ConfigHandle = ({
   );
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
-  const isMultipleComponentsSelected = useStore(
-    (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
-    shallow
-  );
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation, shallow);
   const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
@@ -65,17 +95,6 @@ export const ConfigHandle = ({
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const setEntityToViewDependencies = useStore((state) => state.setEntityToViewDependencies);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
-
-  // If one component is hovered and one is selected, show the handle for the hovered component
-  const _showHandle = useTransientStore((state) => {
-    const isWidgetHovered = state.hoveredComponentForGrid === id;
-    const anyComponentHovered = state.hoveredComponentForGrid !== '';
-    return (
-      ((subContainerIndex === 0 || subContainerIndex === null) && (isModuleContainer || (isModal && isModalOpen))) ||
-      isWidgetHovered ||
-      (showHandle && !isMultipleComponentsSelected && !anyComponentHovered)
-    );
-  });
 
   const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
   const component = useStore((state) => state.modules.canvas.pages[currentPageIndex]?.components[id]);

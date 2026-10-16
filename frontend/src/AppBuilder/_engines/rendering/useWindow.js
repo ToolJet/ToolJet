@@ -35,7 +35,8 @@ const noop = () => {};
  * Each item is `{ index, key, start }`; its element's CSS `top` is `itemTop(start)`. Keep the item's content in a
  * component that doesn't take `start`, so moving an item doesn't re-render its content.
  *
- * Returns `{ items, height, itemTop, sizeAt, measureElement, resizeItem, scrollToIndex, isScrolling, pending, tick }`,
+ * Returns `{ items, height, itemTop, sizeAt, inView, measureElement, resizeItem, scrollToIndex, isScrolling,
+ * pending, tick }`,
  * where `tick` changes whenever the window itself re-rendered the list.
  */
 export function useWindow({
@@ -183,7 +184,7 @@ export function useWindow({
   // A press on the scroll element itself (its scrollbar; rows are its children) starts a drag; a scroll while it is
   // held, with no wheel turning, is the drag.
   const pressed = useRef(false);
-  const lastWheel = useRef(0);
+  const lastWheel = useRef(-Infinity);
   const onWheel = useCallback(() => {
     lastWheel.current = performance.now();
     if (model.current.dragging) model.current.endDrag();
@@ -251,6 +252,7 @@ export function useWindow({
   }, []);
 
   const scrollToIndex = useCallback((i, { align = 'start' } = {}) => {
+    attachRef.current();
     const el = element.current;
     const index = sizesRef.current;
     if (!el || !(i >= 0 && i < index.count)) return;
@@ -310,6 +312,31 @@ export function useWindow({
     el[method]('pointerdown', onPointerDown, { passive: true });
   };
   const viewportObserver = useRef(null);
+  // Follows the scroll element. Also run after layout effects: React sets an ancestor's ref after its descendants'
+  // layout effects, so a list inside the element that scrolls it (a menu) finds it only then.
+  const attach = () => {
+    const el = scrollRef.current ?? null;
+    if (el === element.current) return;
+    if (element.current) listen(element.current, false);
+    viewportObserver.current?.disconnect();
+    element.current = el;
+    if (!el) return;
+    listen(el, true);
+    // The viewport's own height changes too (list resized, dynamic height).
+    if (typeof ResizeObserver !== 'undefined') {
+      viewportObserver.current = new ResizeObserver(() => update(true));
+      viewportObserver.current.observe(el);
+    }
+    update(true);
+  };
+  const attachRef = useRef(attach);
+  attachRef.current = attach;
+  useEffect(() => {
+    if (scrollRef.current !== element.current) {
+      attach();
+      writeWindowTop(element.current, rendered.current.anchor);
+    }
+  });
   useLayoutEffect(() => {
     if (freshCount.current > 0) {
       const cost = (performance.now() - renderStart.current) / freshCount.current;
@@ -317,22 +344,8 @@ export function useWindow({
     }
     mounted.current = new Set(items.map((item) => item.key));
     rendered.current = view;
-    const el = scrollRef.current ?? null;
-    if (el !== element.current) {
-      if (element.current) listen(element.current, false);
-      viewportObserver.current?.disconnect();
-      element.current = el;
-      if (el) {
-        listen(el, true);
-        // The viewport's own height changes too (list resized, dynamic height).
-        if (typeof ResizeObserver !== 'undefined') {
-          viewportObserver.current = new ResizeObserver(() => update(true));
-          viewportObserver.current.observe(el);
-        }
-        update(true);
-      }
-    }
-    writeWindowTop(el, view.anchor);
+    attach();
+    writeWindowTop(element.current, view.anchor);
     for (const item of observed.current) {
       if (!item.isConnected) {
         resizeObserver.current?.unobserve(item);
@@ -369,6 +382,12 @@ export function useWindow({
     height: shape.height,
     itemTop: (start) => itemTop(shape, start),
     sizeAt: (i) => sizes.sizeAt(i),
+    // Whether any part of item i is in the viewport.
+    inView: (i) => {
+      const top = sizes.offsetOf(i);
+      const { offset } = model.current;
+      return top + sizes.sizeAt(i) > offset && top < offset + viewport.current.height;
+    },
     measureElement: measure ? measureElement : noop,
     resizeItem,
     scrollToIndex,

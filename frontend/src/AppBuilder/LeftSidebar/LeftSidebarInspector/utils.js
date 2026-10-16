@@ -1,4 +1,12 @@
 import { toast } from 'react-hot-toast';
+import { stringifyBounded } from '@/AppBuilder/_engines/data/bounded';
+
+// Above this many characters of JSON a value's text is cut at the limit. Past ~500 MB of text (a query of millions of
+// rows) the browser can't build it at all, and the inspector failed to open; it is rebuilt whenever a query changes.
+const DATA_TEXT_LIMIT = 1000000;
+
+/** A node's `data`: the value, or its JSON text (`JSON.stringify(value)` up to DATA_TEXT_LIMIT characters). */
+const dataOf = (value) => (typeof value === 'object' ? stringifyBounded(value, DATA_TEXT_LIMIT).text : value);
 
 export const noDataFoundChildDataFormat = (path, keyName) => ({
   id: `empty-${path}`,
@@ -36,7 +44,7 @@ export const formatInspectorDataMisc = (obj, type, searchablePaths = new Set()) 
             type: type,
             path: currentPath,
             ...((path === 'page.variables' ? level === 2 : level === 1) && {
-              data: typeof value === 'object' ? JSON.stringify(value) : value,
+              data: dataOf(value),
             }),
           },
         },
@@ -77,7 +85,7 @@ export const formatInspectorQueryData = (queryNameIdMapping, exposedQueries, sea
             metadata: {
               type: 'queries',
               path: currentPath,
-              ...(level === 1 && { data: typeof value === 'object' ? JSON.stringify(value) : value }),
+              ...(level === 1 && { data: dataOf(value) }),
             },
           },
         ];

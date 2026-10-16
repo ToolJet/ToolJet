@@ -12,6 +12,7 @@ import { useFlexWidgetLayout } from '@/AppBuilder/Widgets/FlexContainer/useFlexW
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import ComponentFrame from './interaction/ComponentFrame';
 import { columnSpan } from './interaction/geometry';
+import { useWidgetStore, widgetInputs } from '@/AppBuilder/_engines/rendering/useWidgetStore';
 
 const DYNAMIC_HEIGHT_AUTO_LIST = [
   'CodeEditor',
@@ -78,71 +79,74 @@ const WidgetWrapper = memo(
       return null;
     }, [subContainerIndex, contextPath]);
 
-    const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
-    const debouncedIncrementCanvasUpdater = useStore((state) => state.debouncedIncrementCanvasUpdater, shallow);
-    const stylesDefinition = useStore(
-      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
-      shallow
-    );
-    const resolvedAlignment = useStore(
-      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.styles?.alignment
-    );
-    const resolvedLegacyInputSize = useStore(
-      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.legacyInputSize
-    );
-    const resolvedLabel = useStore(
-      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.label
-    );
-    const layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout]);
-    const temporaryLayouts = useStore((state) => {
-      const layoutContext = indices ?? subContainerIndex;
-      return state.temporaryLayouts?.[getDynamicLayoutKey(id, layoutContext, '', moduleId)];
-    }, shallow);
-    const getExposedPropertyForAdditionalActions = useStore(
-      (state) => state.getExposedPropertyForAdditionalActions,
-      shallow
-    );
-
-    const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
-    // Being moved: dimmed in place while the drop ghost shows where it lands (the engine moves nothing else).
-    const isDragging = useStore(
-      (state) => state.draggingComponentId === id || (state.isGroupDragging && state.selectedComponents.includes(id))
-    );
-    const isResizing = useStore(
-      (state) => state.resizingComponentId === id || (state.isGroupResizing && state.selectedComponents.includes(id))
-    );
-    const componentType = useStore(
-      (state) => state.getComponentDefinition(id, moduleId)?.component?.component,
-      shallow
+    // Store actions never change: read, not subscribed to (see RenderWidget).
+    const { calculateMoveableBoxHeightWithId, debouncedIncrementCanvasUpdater } = useStore.getState();
+    // One store subscription for the widget's values (see useWidgetStore), each compared as before.
+    const layoutKey = getDynamicLayoutKey(id, indices ?? subContainerIndex, '', moduleId);
+    const resolved = (state) => state.getResolvedComponent(id, resolveIndex, moduleId);
+    const definition = (state) => state.getComponentDefinition(id, moduleId);
+    const {
+      stylesDefinition,
+      resolvedAlignment,
+      resolvedLegacyInputSize,
+      resolvedLabel,
+      layoutData,
+      temporaryLayouts,
+      isWidgetActive,
+      isDragging,
+      isResizing,
+      componentType,
+      isDynamicHeightEnabled,
+      canShowInCurrentLayout,
+      visibility,
+    } = useWidgetStore(
+      useStore,
+      (state) => [
+        ...widgetInputs(state, id, moduleId),
+        state.temporaryLayouts?.[layoutKey],
+        state.selectedComponents,
+        state.draggingComponentId,
+        state.resizingComponentId,
+        state.isGroupDragging,
+        state.isGroupResizing,
+      ],
+      [id, resolveIndex, moduleId, currentLayout, layoutKey, readOnly],
+      {
+        stylesDefinition: [(state) => definition(state)?.component?.definition?.styles, shallow],
+        resolvedAlignment: [(state) => resolved(state)?.styles?.alignment],
+        resolvedLegacyInputSize: [(state) => resolved(state)?.properties?.legacyInputSize],
+        resolvedLabel: [(state) => resolved(state)?.properties?.label],
+        layoutData: [(state) => definition(state)?.layouts?.[currentLayout]],
+        temporaryLayouts: [(state) => state.temporaryLayouts?.[layoutKey], shallow],
+        isWidgetActive: [(state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow],
+        // Being moved: dimmed in place while the drop ghost shows where it lands (the engine moves nothing else).
+        isDragging: [
+          (state) =>
+            state.draggingComponentId === id || (state.isGroupDragging && state.selectedComponents.includes(id)),
+        ],
+        isResizing: [
+          (state) =>
+            state.resizingComponentId === id || (state.isGroupResizing && state.selectedComponents.includes(id)),
+        ],
+        componentType: [(state) => definition(state)?.component?.component, shallow],
+        isDynamicHeightEnabled: [(state) => resolved(state)?.properties?.dynamicHeight, shallow],
+        // Re-renders height calculations when textSize changes (ProgressBar)
+        textSize: [(state) => definition(state)?.component?.definition?.styles?.textSize],
+        canShowInCurrentLayout: [
+          (state) => resolved(state)?.others?.[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'],
+        ],
+        visibility: [
+          (state) => {
+            const exposed = state.getExposedPropertyForAdditionalActions(id, resolveIndex, 'isVisible', moduleId);
+            if (exposed !== undefined) return exposed;
+            const component = resolved(state);
+            return component?.properties?.visibility ?? component?.styles?.visibility;
+          },
+        ],
+      }
     );
     const isFlexSubcontainer = isFlexLayout && SUBCONTAINER_WIDGETS.includes(componentType);
-    const isDynamicHeightEnabled = useStore(
-      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.dynamicHeight,
-      shallow
-    );
     const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
-    // Dont remove - used to re-render height calculations when textSize changes (ProgressBar)
-    // eslint-disable-next-line no-unused-vars
-    const textSize = useStore(
-      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles?.textSize
-    );
-
-    const canShowInCurrentLayout = useStore((state) => {
-      const others = state.getResolvedComponent(id, resolveIndex, moduleId)?.others;
-      return others?.[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'];
-    });
-
-    const visibility = useStore((state) => {
-      const component = state.getResolvedComponent(id, resolveIndex, moduleId);
-      const componentExposedVisibility = getExposedPropertyForAdditionalActions(
-        id,
-        resolveIndex,
-        'isVisible',
-        moduleId
-      );
-      if (componentExposedVisibility !== undefined) return componentExposedVisibility;
-      return component?.properties?.visibility ?? component?.styles?.visibility;
-    });
 
     useEffect(() => {
       debouncedIncrementCanvasUpdater();

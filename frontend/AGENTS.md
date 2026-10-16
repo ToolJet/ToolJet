@@ -117,6 +117,18 @@ How the App Builder handles data of any size without blocking the page or runnin
 - Large query responses are parsed in a worker (`transport.js`); debugger logs keep the newest 1,000 entries and bounded snapshots of logged values (`bounded.js`)
 - Kill switches: `_engines/features.js` (`DISABLE_BACKGROUND_DATA`)
 
+### Rendering engine (`src/AppBuilder/_engines/rendering/`)
+
+How the App Builder draws long lists and large pages without blocking the page. Reuse it; don't add another virtualization library.
+
+- Long lists render a window of their items (`useWindow.js`; heights in a Fenwick tree, `sizeIndex.js`). Wheel, touch and keys scroll 1:1; only a scrollbar drag is proportional, and lists taller than the browser allows are scaled without rows moving on screen (`scrollModel.js`). An item is a positioned wrapper (`start`) around memoized content that never takes `start`. Used by the Table rows (placeholders are the tbody's background), Table pagination, Dropdown/Multiselect/TagsInput menus (`WindowedList.jsx`: sticky item, keyboard focus follow, initial item centered)
+- A ListView mounts every row: its `children` and `data` hold every row's values, and apps rely on that. Don't window ListView rows unless every row's exposed values stay complete
+- The inspector opens a large array or object as groups of 100 / 10,000 / 1,000,000 entries (`childGroups.js`), never one row per entry
+- A widget reads the store through one subscription (`useWidgetStore.js` in `RenderWidget` and `WidgetWrapper`): its fields are read only when one of its inputs changed (its definition and its parent's, its resolved values, its own, parent's and grandparent's exposed values, its children list, its custom resolvables), each field compared as its own subscription was. A new field must read only what `widgetInputs` (plus the widget's extra inputs) covers; add the input if it doesn't. Store actions are read with `useStore.getState()`, never subscribed to
+- A page of more than 500 widgets mounts them over several tasks while it loads (`mountQueue.js`, in `AppCanvas/Container.jsx`): one commit per task, containers first come first served, so it mounts a level at a time. Each container holds the page's pending count (`useLoadHold`), so on-load queries and `onPageLoad` still run once everything has mounted. Not inside ListView/Kanban rows, and not after the page has loaded
+- Never read an element's size in render or in a mount effect of a widget that a page has thousands of: each read lays out the whole page. Use `useObservedWidth.js` (one shared ResizeObserver, sizes applied in one render)
+- Overlays that rarely show (cell tooltips) mount on first show (`LazyOverlayTrigger.jsx`)
+
 ### Bundles and performance
 
 - Viewer (`/applications/*`) and editor are separate lazy bundles via `RootRouter.jsx`. Never import editor-only code into viewer paths

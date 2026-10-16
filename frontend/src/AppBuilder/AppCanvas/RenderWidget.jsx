@@ -10,6 +10,7 @@ import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { useWidgetStore, widgetInputs } from '@/AppBuilder/_engines/rendering/useWidgetStore';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -89,49 +90,20 @@ const RenderWidget = ({
   currentMode,
   currentLayout,
 }) => {
-  const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
-  const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
-  const componentCount = useStore((state) => state.getContainerChildrenMapping(id)?.length || 0, shallow);
-  const getExposedPropertyForAdditionalActions = useStore(
-    (state) => state.getExposedPropertyForAdditionalActions,
-    shallow
-  );
-  const componentName = component?.name;
-  const [key, setKey] = useState(Math.random());
-  const resolvedProperties = useStore(
-    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties,
-    shallow
-  );
-
-  const resolvedStyles = useStore((state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.styles, shallow);
-  // Per-widget custom CSS class is gated by the `customStyling` enterprise license flag.
-  // When the license is absent we skip applying the class to the DOM, but the saved value
-  // stays in the schema/DB so it re-applies if the license is re-enabled.
-  const hasCustomStyling = useStore((state) => state.license.featureAccess?.customStyling);
-  const fireEvent = useStore((state) => state.eventsSlice.fireEvent, shallow);
-  const resolvedGeneralProperties = useStore(
-    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.general,
-    shallow
-  );
-  const resolvedGeneralStyles = useStore(
-    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.generalStyles,
-    shallow
-  );
-  const unResolvedValidation = component?.definition?.validation || {};
-  const validateWidget = useStore((state) => state.validateWidget, shallow);
-  const setExposedValue = useStore((state) => state.setExposedValue, shallow);
-  const setExposedValues = useStore((state) => state.setExposedValues, shallow);
-  const setExposedValuePerRow = useStore((state) => state.setExposedValuePerRow, shallow);
-  const setExposedValuesPerRow = useStore((state) => state.setExposedValuesPerRow, shallow);
-  const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
-  const resetComponentExposedValues = useStore((state) => state.resetComponentExposedValues, shallow);
-  const resetComponentExposedValuesPerRow = useStore((state) => state.resetComponentExposedValuesPerRow, shallow);
-  const resolvedValidation = useStore(
-    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.validation,
-    shallow
-  );
-  const parentId = component?.parent;
-
+  // Store actions are created once and never change: read, not subscribed to (a subscription per action per widget
+  // added a store listener each, run on every store write).
+  const {
+    debugger: { getDefaultStyles },
+    eventsSlice: { fireEvent, onComponentClickEvent: onComponentClick },
+    validateWidget,
+    setExposedValue,
+    setExposedValues,
+    setExposedValuePerRow,
+    setExposedValuesPerRow,
+    setDefaultExposedValues,
+    resetComponentExposedValues,
+    resetComponentExposedValuesPerRow,
+  } = useStore.getState();
   // Compute outer indices for this component's parent's custom resolvables
   // resolveIndex = [outerIdx, middleIdx, innerIdx] → parentOuterIndices = [outerIdx, middleIdx]
   // The last index is the immediate parent's row index (subContainerIndex)
@@ -142,33 +114,82 @@ const RenderWidget = ({
     return indices.slice(0, -1);
   }, [resolveIndex]);
 
-  const customResolvables = useStore((state) => {
-    const lookupId = nearestListviewId || parentId;
-    let base = state.resolvedStore.modules[moduleId]?.customResolvables?.[lookupId];
-    if (!base) return base;
-    // Navigate through outer indices to reach the correct nested level
-    for (let i = 0; i < parentOuterIndices.length; i++) {
-      base = base?.[parentOuterIndices[i]];
-      if (!base) return undefined;
+  // One store subscription for the widget's values (see useWidgetStore), each compared as before.
+  const resolved = (state) => state.getResolvedComponent(id, resolveIndex, moduleId);
+  const {
+    component,
+    componentCount,
+    resolvedProperties,
+    resolvedStyles,
+    hasCustomStyling,
+    resolvedGeneralProperties,
+    resolvedGeneralStyles,
+    resolvedValidation,
+    customResolvables,
+    isDisabled,
+    isLoading,
+    resolvedWidgetVisibility,
+  } = useWidgetStore(
+    useStore,
+    (state) => [...widgetInputs(state, id, moduleId, nearestListviewId), state.license],
+    [id, resolveIndex, moduleId, nearestListviewId, parentOuterIndices],
+    {
+      component: [(state) => state.getComponentDefinition(id, moduleId)?.component, shallow],
+      componentCount: [(state) => state.getContainerChildrenMapping(id)?.length || 0, shallow],
+      resolvedProperties: [(state) => resolved(state)?.properties, shallow],
+      resolvedStyles: [(state) => resolved(state)?.styles, shallow],
+      // Per-widget custom CSS class is gated by the `customStyling` enterprise license flag.
+      // When the license is absent we skip applying the class to the DOM, but the saved value
+      // stays in the schema/DB so it re-applies if the license is re-enabled.
+      hasCustomStyling: [(state) => state.license.featureAccess?.customStyling],
+      resolvedGeneralProperties: [(state) => resolved(state)?.general, shallow],
+      resolvedGeneralStyles: [(state) => resolved(state)?.generalStyles, shallow],
+      resolvedValidation: [(state) => resolved(state)?.validation, shallow],
+      customResolvables: [
+        (state) => {
+          const lookupId = nearestListviewId || state.getComponentDefinition(id, moduleId)?.component?.parent;
+          let base = state.resolvedStore.modules[moduleId]?.customResolvables?.[lookupId];
+          if (!base) return base;
+          // Navigate through outer indices to reach the correct nested level
+          for (let i = 0; i < parentOuterIndices.length; i++) {
+            base = base?.[parentOuterIndices[i]];
+            if (!base) return undefined;
+          }
+          return base;
+        },
+        shallow,
+      ],
+      isDisabled: [
+        (state) => {
+          const exposed = state.getExposedPropertyForAdditionalActions(id, resolveIndex, 'isDisabled', moduleId);
+          if (exposed !== undefined) return exposed;
+          return resolved(state)?.properties?.disabledState || resolved(state)?.styles?.disabledState;
+        },
+      ],
+      isLoading: [
+        (state) => {
+          const exposed = state.getExposedPropertyForAdditionalActions(id, resolveIndex, 'isLoading', moduleId);
+          if (exposed !== undefined) return exposed;
+          return resolved(state)?.properties?.loadingState || resolved(state)?.styles?.loadingState;
+        },
+      ],
+      resolvedWidgetVisibility: [
+        (state) => {
+          const exposed = state.getExposedPropertyForAdditionalActions(id, resolveIndex, 'isVisible', moduleId);
+          if (exposed !== undefined) return exposed;
+          const component = resolved(state);
+          return component?.properties?.visibility ?? component?.styles?.visibility ?? true;
+        },
+        shallow,
+      ],
     }
-    return base;
-  }, shallow);
+  );
+  const componentName = component?.name;
+  const [key, setKey] = useState(Math.random());
+  const unResolvedValidation = component?.definition?.validation || {};
+  const parentId = component?.parent;
   const { t } = useTranslation();
   const transformedStyles = getDefaultStyles(resolvedStyles, componentType);
-
-  const isDisabled = useStore((state) => {
-    const component = state.getResolvedComponent(id, resolveIndex, moduleId);
-    const componentExposedDisabled = getExposedPropertyForAdditionalActions(id, resolveIndex, 'isDisabled', moduleId);
-    if (componentExposedDisabled !== undefined) return componentExposedDisabled;
-    return component?.properties?.disabledState || component?.styles?.disabledState;
-  });
-
-  const isLoading = useStore((state) => {
-    const component = state.getResolvedComponent(id, resolveIndex, moduleId);
-    const componentExposedLoading = getExposedPropertyForAdditionalActions(id, resolveIndex, 'isLoading', moduleId);
-    if (componentExposedLoading !== undefined) return componentExposedLoading;
-    return component?.properties?.loadingState || component?.styles?.loadingState;
-  });
 
   const obj = {
     properties: { ...resolvedGeneralProperties, ...resolvedProperties },
@@ -285,19 +306,12 @@ const RenderWidget = ({
     [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId, resolveIndex]
   );
 
-  const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);
   setDefaultExposedValues(id, parentId, componentType, moduleId);
   useEffect(() => {
     setExposedVariable('id', id);
   }, []);
 
   const collapseWhenHidden = resolvedProperties?.collapseWhenHidden ?? false;
-  const resolvedWidgetVisibility = useStore((state) => {
-    const resolved = state.getResolvedComponent(id, resolveIndex, moduleId);
-    const exposed = getExposedPropertyForAdditionalActions(id, resolveIndex, 'isVisible', moduleId);
-    if (exposed !== undefined) return exposed;
-    return resolved?.properties?.visibility ?? resolved?.styles?.visibility ?? true;
-  }, shallow);
   useEffect(() => {
     if (currentMode !== 'view') return;
     if (!collapseWhenHidden) return;

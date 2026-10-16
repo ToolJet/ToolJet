@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import useStore from '@/AppBuilder/_stores/store';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 //eslint-disable-next-line import/no-unresolved
 import { getCountryCallingCode, formatPhoneNumberIntl } from 'react-phone-number-input';
 import { parseValueToNumber } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
+import { useObservedWidth } from '@/AppBuilder/_engines/rendering/useObservedWidth';
 
 export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
   return {
@@ -32,16 +32,13 @@ export const checkIfInputWidgetTypeIsDeprecated = (optionValue) => {
 };
 
 export const useInput = ({
-  id,
   properties,
-  styles,
   validation,
   validate,
   setExposedVariable,
   setExposedVariables,
   fireEvent,
   inputType,
-  width,
   beforeSetInputValue,
 }) => {
   const isInitialRender = useRef(true);
@@ -54,8 +51,6 @@ export const useInput = ({
   beforeSetInputValueRef.current = beforeSetInputValue;
 
   const { loadingState, disabledState, label, visibility: initialVisibility } = properties;
-  // Set by the canvas engine while this component is being resized.
-  const isResizing = useStore((state) => state.resizingComponentId === id);
 
   const [value, setValue] = useState(properties.value ?? '');
   const [visibility, setVisibility] = useState(initialVisibility);
@@ -74,7 +69,8 @@ export const useInput = ({
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
   const [isFocused, setIsFocused] = useState(false);
-  const [labelWidth, setLabelWidth] = useState(0);
+  // Followed as the label resizes, without laying out the page to read it (see useObservedWidth).
+  const labelWidth = useObservedWidth(labelRef);
   const [iconVisibility, setIconVisibility] = useState(false);
   const [country, setCountry] = useState(properties.defaultCountry || 'US');
 
@@ -98,26 +94,6 @@ export const useInput = ({
     }
     return num;
   };
-
-  useEffect(() => {
-    if (labelRef?.current) {
-      const absolutewidth = labelRef?.current?.getBoundingClientRect()?.width;
-      setLabelWidth(absolutewidth);
-    } else setLabelWidth(0);
-  }, [
-    isResizing,
-    styles.width,
-    styles.auto,
-    styles.alignment,
-    styles.iconVisibility,
-    label?.length,
-    isMandatory,
-    styles.padding,
-    styles.direction,
-    styles.widthType,
-    width,
-    labelRef?.current?.getBoundingClientRect()?.width,
-  ]);
 
   useEffect(() => {
     if (isInitialRender.current) return;

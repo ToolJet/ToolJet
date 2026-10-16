@@ -22,6 +22,19 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { FlexContainerDropIndicator } from '@/AppBuilder/Widgets/FlexContainer/FlexContainerDropIndicator';
 import { useSubCanvasContentWidth } from './Hooks/useSubCanvasContentWidth';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import { useMountBatches } from '@/AppBuilder/_engines/rendering/mountQueue';
+import { useLoadHold } from './SuspenseTracker';
+
+// A page with more widgets than this mounts them over several tasks while it loads, top-down (see mountQueue.js):
+// mounting them all in one go blocks the page for seconds.
+const MOUNT_IN_BATCHES_ABOVE = 500;
+// Widgets on a page, counted once per page components object (every container mounting while it loads asks).
+const pageSizes = new WeakMap();
+const pageSize = (components) => {
+  if (!pageSizes.has(components)) pageSizes.set(components, Object.keys(components).length);
+  return pageSizes.get(components);
+};
 
 // Lazy load editor-only component to reduce viewer bundle size
 const ModuleContainerBlank = lazy(() =>
@@ -161,6 +174,20 @@ const Container = React.memo(
       );
     };
     const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId, isFlexContainer);
+    // While a large page loads, its widgets mount in batches; not in a ListView's or Kanban's rows, which mount theirs.
+    const loadHold = useLoadHold();
+    const { contextPath } = useSubcontainerContext();
+    const shownCount = useMountBatches(
+      sortedComponents.length,
+      () =>
+        !!loadHold?.isLoading &&
+        index === null &&
+        contextPath.length === 0 &&
+        pageSize(useStore.getState().getCurrentPageComponents(moduleId) ?? {}) > MOUNT_IN_BATCHES_ABOVE,
+      loadHold
+    );
+    const shownComponents =
+      shownCount >= sortedComponents.length ? sortedComponents : sortedComponents.slice(0, shownCount);
 
     return (
       <div
@@ -204,7 +231,7 @@ const Container = React.memo(
       >
         {isFlexContainer ? (
           <>
-            {sortedComponents.map((componentId) => (
+            {shownComponents.map((componentId) => (
               <WidgetWrapper
                 id={componentId}
                 key={componentId}
@@ -238,7 +265,7 @@ const Container = React.memo(
               data-parent-type={id === 'canvas' ? 'canvas' : componentType}
               style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
             >
-              {sortedComponents.map((componentId) => (
+              {shownComponents.map((componentId) => (
                 <WidgetWrapper
                   id={componentId}
                   key={componentId}

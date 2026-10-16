@@ -30,7 +30,6 @@ import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from '@/AppBuilder/_engines/data/diff';
 import cx from 'classnames';
-import { isEqual } from 'lodash';
 import { useContentStable } from '@/AppBuilder/_engines/data/useContentStable';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
@@ -93,7 +92,9 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
     backgroundColor: accentColor ?? '#4d72fa',
   };
 
-  const flatCardData = Object.values(cardDataAsObj).flat();
+  // The cards in order, as the cards' row indexes (their custom resolvables) are numbered: rebuilt when they change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const flatCardData = useMemo(() => Object.values(cardDataAsObj).flat(), [cardDataAsObj, cardsVersion.current]);
 
   const updateCardDataInCustomResolvable = useCallback((cardDataAsObj) => {
     const flatCardData = Object.values(cardDataAsObj).flat();
@@ -106,8 +107,8 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
     );
   }, []);
 
-  // Check if the previous filtered data is different from the current filtered data
-  if (!isEqual(normalizedCardData, prevCardData.current)) {
+  // New card data (normalizedCardData changes only when the cards' content does, so comparing it is enough)
+  if (normalizedCardData !== prevCardData.current) {
     prevCardData.current = normalizedCardData;
     updateCardDataInCustomResolvable(cardDataAsObj);
   }
@@ -358,6 +359,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
       shouldUpdateData.current = true;
       const deletedCard = cardDataAsObj[activeId];
       delete cardDataAsObj[activeId];
+      cardsChanged();
       setItems((items) => ({
         ...items,
         [activeContainer]: items[activeContainer].filter((id) => id !== activeId),
