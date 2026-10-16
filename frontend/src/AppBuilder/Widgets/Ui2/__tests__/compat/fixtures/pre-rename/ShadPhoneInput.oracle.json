@@ -1,0 +1,110 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "isValid": true,
+    "isMandatory": false,
+    "value": "",
+    "country": "US",
+    "countryCode": "+1",
+    "formattedValue": "",
+    "isValidNumber": false,
+    "label": "Phone number (saved)",
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"isValid\":true,\"isMandatory\":false,\"value\":\"\",\"country\":\"US\",\"countryCode\":\"+1\",\"formattedValue\":\"\",\"isValidNumber\":false,\"label\":\"Phone number (saved)\"},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"isValid\":true,\"isMandatory\":false,\"value\":\"\",\"country\":\"US\",\"countryCode\":\"+1\",\"formattedValue\":\"\",\"isValidNumber\":false,\"label\":\"Phone number (saved)\"}}",
+  "steps": [
+    {
+      "call": "setValue",
+      "changed": {
+        "value": "+12025550143",
+        "formattedValue": "+1 202 555 0143",
+        "isValidNumber": true
+      }
+    },
+    {
+      "call": "setCountryCode",
+      "changed": {
+        "isValid": false,
+        "value": "+442025550143",
+        "country": "GB",
+        "countryCode": "+44",
+        "formattedValue": "+44 20 2555 0143",
+        "isValidNumber": false
+      }
+    },
+    {
+      "call": "setCountryCode",
+      "changed": {}
+    },
+    {
+      "call": "clear",
+      "changed": {
+        "isValid": true,
+        "value": "",
+        "formattedValue": ""
+      }
+    },
+    {
+      "call": "setFocus",
+      "changed": {}
+    },
+    {
+      "call": "setBlur",
+      "changed": {}
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "isValid": true,
+      "isMandatory": false,
+      "value": "",
+      "country": "GB",
+      "countryCode": "+44",
+      "formattedValue": "",
+      "isValidNumber": false,
+      "label": "Phone number (saved)"
+    },
+    "changed": {}
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "isValid": true,
+    "isMandatory": false,
+    "value": "",
+    "isComplete": false,
+    "label": "Verification code (saved)",
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"isValid\":true,\"isMandatory\":false,\"value\":\"\",\"isComplete\":false,\"label\":\"Verification code (saved)\"},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"isValid\":true,\"isMandatory\":false,\"value\":\"\",\"isComplete\":false,\"label\":\"Verification code (saved)\"}}",
+  "steps": [
+    {
+      "call": "clear",
+      "changed": {}
+    },
+    {
+      "call": "setFocus",
+      "changed": {}
+    },
+    {
+      "call": "setBlur",
+      "changed": {}
+    },
+    {
+      "call": "setText",
+      "changed": {
+        "isValid": false,
+        "value": "1234"
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "isValid": false,
+      "isMandatory": false,
+      "value": "1234",
+      "isComplete": false,
+      "label": "Verification code (saved)"
+    },
+    "changed": {}
+  }
+}

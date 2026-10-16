@@ -1,0 +1,318 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "updatedCardData": [
+      {
+        "id": 1,
+        "title": "Draft the brief",
+        "status": "todo",
+        "priority": "High",
+        "owner": "Ada Lovelace"
+      },
+      {
+        "id": 2,
+        "title": "Review designs",
+        "status": "doing",
+        "priority": "Medium",
+        "owner": "Alan Turing"
+      },
+      {
+        "id": 3,
+        "title": "Ship v1",
+        "status": "done",
+        "priority": "Low",
+        "owner": "Grace Hopper"
+      }
+    ],
+    "lastSelectedCard": {},
+    "lastCardMovement": {},
+    "addCardColumn": "",
+    "collapsedColumns": [],
+    "lastAddedCard": {},
+    "lastUpdatedCard": {},
+    "lastRemovedCard": {},
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"updatedCardData\":[{\"id\":1,\"title\":\"Draft the brief\",\"status\":\"todo\",\"priority\":\"High\",\"owner\":\"Ada Lovelace\"},{\"id\":2,\"title\":\"Review designs\",\"status\":\"doing\",\"priority\":\"Medium\",\"owner\":\"Alan Turing\"},{\"id\":3,\"title\":\"Ship v1\",\"status\":\"done\",\"priority\":\"Low\",\"owner\":\"Grace Hopper\"}],\"lastSelectedCard\":{},\"lastCardMovement\":{},\"addCardColumn\":\"\",\"collapsedColumns\":[],\"lastAddedCard\":{},\"lastUpdatedCard\":{},\"lastRemovedCard\":{}},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"updatedCardData\":[{\"id\":1,\"title\":\"Draft the brief\",\"status\":\"todo\",\"priority\":\"High\",\"owner\":\"Ada Lovelace\"},{\"id\":2,\"title\":\"Review designs\",\"status\":\"doing\",\"priority\":\"Medium\",\"owner\":\"Alan Turing\"},{\"id\":3,\"title\":\"Ship v1\",\"status\":\"done\",\"priority\":\"Low\",\"owner\":\"Grace Hopper\"}],\"lastSelectedCard\":{},\"lastCardMovement\":{},\"addCardColumn\":\"\",\"collapsedColumns\":[],\"lastAddedCard\":{},\"lastUpdatedCard\":{},\"lastRemovedCard\":{}}}",
+  "steps": [
+    {
+      "call": "addCard",
+      "changed": {
+        "updatedCardData": [
+          {
+            "id": 1,
+            "title": "Draft the brief",
+            "status": "todo",
+            "priority": "High",
+            "owner": "Ada Lovelace"
+          },
+          {
+            "id": 9,
+            "title": "Saved card",
+            "status": "todo"
+          },
+          {
+            "id": 2,
+            "title": "Review designs",
+            "status": "doing",
+            "priority": "Medium",
+            "owner": "Alan Turing"
+          },
+          {
+            "id": 3,
+            "title": "Ship v1",
+            "status": "done",
+            "priority": "Low",
+            "owner": "Grace Hopper"
+          }
+        ],
+        "lastAddedCard": {
+          "id": 9,
+          "title": "Saved card",
+          "status": "todo"
+        }
+      }
+    },
+    {
+      "call": "moveCard",
+      "changed": {
+        "updatedCardData": [
+          {
+            "id": 9,
+            "title": "Saved card",
+            "status": "todo"
+          },
+          {
+            "id": 2,
+            "title": "Review designs",
+            "status": "doing",
+            "priority": "Medium",
+            "owner": "Alan Turing"
+          },
+          {
+            "id": 3,
+            "title": "Ship v1",
+            "status": "done",
+            "priority": "Low",
+            "owner": "Grace Hopper"
+          },
+          {
+            "id": 1,
+            "title": "Draft the brief",
+            "status": "done",
+            "priority": "High",
+            "owner": "Ada Lovelace"
+          }
+        ],
+        "lastCardMovement": {
+          "cardId": 1,
+          "card": {
+            "id": 1,
+            "title": "Draft the brief",
+            "status": "done",
+            "priority": "High",
+            "owner": "Ada Lovelace"
+          },
+          "from": "todo",
+          "to": "done",
+          "toIndex": 1
+        }
+      }
+    },
+    {
+      "call": "deleteCard",
+      "changed": {
+        "updatedCardData": [
+          {
+            "id": 9,
+            "title": "Saved card",
+            "status": "todo"
+          },
+          {
+            "id": 2,
+            "title": "Review designs",
+            "status": "doing",
+            "priority": "Medium",
+            "owner": "Alan Turing"
+          },
+          {
+            "id": 1,
+            "title": "Draft the brief",
+            "status": "done",
+            "priority": "High",
+            "owner": "Ada Lovelace"
+          }
+        ],
+        "lastRemovedCard": {
+          "id": 3,
+          "title": "Ship v1",
+          "status": "done",
+          "priority": "Low",
+          "owner": "Grace Hopper"
+        }
+      }
+    },
+    {
+      "call": "updateCardData",
+      "changed": {
+        "updatedCardData": [
+          {
+            "id": 9,
+            "title": "Saved card",
+            "status": "todo"
+          },
+          {
+            "id": 2,
+            "title": "Renamed card",
+            "status": "doing",
+            "priority": "Medium",
+            "owner": "Alan Turing"
+          },
+          {
+            "id": 1,
+            "title": "Draft the brief",
+            "status": "done",
+            "priority": "High",
+            "owner": "Ada Lovelace"
+          }
+        ],
+        "lastUpdatedCard": {
+          "id": 2,
+          "title": "Renamed card",
+          "status": "doing",
+          "priority": "Medium",
+          "owner": "Alan Turing"
+        }
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "updatedCardData": [
+        {
+          "id": 9,
+          "title": "Saved card",
+          "status": "todo"
+        },
+        {
+          "id": 2,
+          "title": "Renamed card",
+          "status": "doing",
+          "priority": "Medium",
+          "owner": "Alan Turing"
+        },
+        {
+          "id": 1,
+          "title": "Draft the brief",
+          "status": "done",
+          "priority": "High",
+          "owner": "Ada Lovelace"
+        }
+      ],
+      "lastSelectedCard": {},
+      "lastCardMovement": {
+        "cardId": 1,
+        "card": {
+          "id": 1,
+          "title": "Draft the brief",
+          "status": "done",
+          "priority": "High",
+          "owner": "Ada Lovelace"
+        },
+        "from": "todo",
+        "to": "done",
+        "toIndex": 1
+      },
+      "addCardColumn": "",
+      "collapsedColumns": [],
+      "lastAddedCard": {
+        "id": 9,
+        "title": "Saved card",
+        "status": "todo"
+      },
+      "lastUpdatedCard": {
+        "id": 2,
+        "title": "Renamed card",
+        "status": "doing",
+        "priority": "Medium",
+        "owner": "Alan Turing"
+      },
+      "lastRemovedCard": {
+        "id": 3,
+        "title": "Ship v1",
+        "status": "done",
+        "priority": "Low",
+        "owner": "Grace Hopper"
+      }
+    },
+    "changed": {
+      "updatedCardData": [
+        {
+          "id": 9,
+          "title": "Saved card",
+          "status": "todo"
+        },
+        {
+          "id": 9,
+          "title": "Saved card",
+          "status": "todo"
+        },
+        {
+          "id": 2,
+          "title": "Renamed card",
+          "status": "doing",
+          "priority": "Medium",
+          "owner": "Alan Turing"
+        },
+        {
+          "id": 1,
+          "title": "Draft the brief",
+          "status": "done",
+          "priority": "High",
+          "owner": "Ada Lovelace"
+        }
+      ]
+    }
+  }
+}

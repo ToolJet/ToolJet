@@ -1,0 +1,97 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "value": "",
+    "selectedDate": "",
+    "selectedDates": [],
+    "startDate": "",
+    "endDate": "",
+    "visibleMonth": "2026-06",
+    "visibleStart": "2026-06-01",
+    "visibleEnd": "2026-07-31",
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"value\":\"\",\"selectedDate\":\"\",\"selectedDates\":[],\"startDate\":\"\",\"endDate\":\"\",\"visibleMonth\":\"2026-06\",\"visibleStart\":\"2026-06-01\",\"visibleEnd\":\"2026-07-31\"},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"value\":\"\",\"selectedDate\":\"\",\"selectedDates\":[],\"startDate\":\"\",\"endDate\":\"\",\"visibleMonth\":\"2026-06\",\"visibleStart\":\"2026-06-01\",\"visibleEnd\":\"2026-07-31\"}}",
+  "steps": [
+    {
+      "call": "selectDate",
+      "changed": {
+        "value": "2026-06-18",
+        "selectedDate": "2026-06-18",
+        "selectedDates": [
+          "2026-06-18"
+        ]
+      }
+    },
+    {
+      "call": "clear",
+      "changed": {
+        "value": "",
+        "selectedDate": "",
+        "selectedDates": []
+      }
+    },
+    {
+      "call": "setMonth",
+      "changed": {
+        "visibleMonth": "2026-07",
+        "visibleStart": "2026-07-01",
+        "visibleEnd": "2026-08-31"
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "value": "",
+      "selectedDate": "",
+      "selectedDates": [],
+      "startDate": "",
+      "endDate": "",
+      "visibleMonth": "2026-07",
+      "visibleStart": "2026-07-01",
+      "visibleEnd": "2026-08-31"
+    },
+    "changed": {}
+  }
+}

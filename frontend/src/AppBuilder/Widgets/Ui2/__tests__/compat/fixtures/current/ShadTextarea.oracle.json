@@ -1,0 +1,83 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "isValid": true,
+    "isMandatory": false,
+    "value": "",
+    "label": "Saved label",
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"isValid\":true,\"isMandatory\":false,\"value\":\"\",\"label\":\"Saved label\"},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"isValid\":true,\"isMandatory\":false,\"value\":\"\",\"label\":\"Saved label\"}}",
+  "steps": [
+    {
+      "call": "setText",
+      "changed": {
+        "value": "Saved notes"
+      }
+    },
+    {
+      "call": "clear",
+      "changed": {
+        "value": ""
+      }
+    },
+    {
+      "call": "setFocus",
+      "changed": {}
+    },
+    {
+      "call": "setBlur",
+      "changed": {}
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "isValid": true,
+      "isMandatory": false,
+      "value": "",
+      "label": "Saved label"
+    },
+    "changed": {}
+  }
+}

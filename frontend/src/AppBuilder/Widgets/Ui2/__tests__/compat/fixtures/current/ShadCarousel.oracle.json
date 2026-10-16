@@ -1,0 +1,107 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "currentIndex": 0,
+    "currentSlide": {
+      "image": "https://picsum.photos/seed/tj-coast/1200/675",
+      "title": "Coastal routes",
+      "description": "Plan deliveries along the shoreline",
+      "link": ""
+    },
+    "clickedSlide": {},
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"currentIndex\":0,\"currentSlide\":{\"image\":\"https://picsum.photos/seed/tj-coast/1200/675\",\"title\":\"Coastal routes\",\"description\":\"Plan deliveries along the shoreline\",\"link\":\"\"},\"clickedSlide\":{}},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"currentIndex\":0,\"currentSlide\":{\"image\":\"https://picsum.photos/seed/tj-coast/1200/675\",\"title\":\"Coastal routes\",\"description\":\"Plan deliveries along the shoreline\",\"link\":\"\"},\"clickedSlide\":{}}}",
+  "steps": [
+    {
+      "call": "next",
+      "changed": {
+        "currentIndex": 1,
+        "currentSlide": {
+          "image": "https://picsum.photos/seed/tj-city/1200/675",
+          "title": "City hubs",
+          "description": "Twelve depots, one dashboard",
+          "link": ""
+        }
+      }
+    },
+    {
+      "call": "previous",
+      "changed": {
+        "currentIndex": 0,
+        "currentSlide": {
+          "image": "https://picsum.photos/seed/tj-coast/1200/675",
+          "title": "Coastal routes",
+          "description": "Plan deliveries along the shoreline",
+          "link": ""
+        }
+      }
+    },
+    {
+      "call": "goTo",
+      "changed": {
+        "currentIndex": 1,
+        "currentSlide": {
+          "image": "https://picsum.photos/seed/tj-city/1200/675",
+          "title": "City hubs",
+          "description": "Twelve depots, one dashboard",
+          "link": ""
+        }
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "currentIndex": 1,
+      "currentSlide": {
+        "image": "https://picsum.photos/seed/tj-city/1200/675",
+        "title": "City hubs",
+        "description": "Twelve depots, one dashboard",
+        "link": ""
+      },
+      "clickedSlide": {}
+    },
+    "changed": {}
+  }
+}

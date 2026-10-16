@@ -3,9 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import { deepFreeze } from './shared';
 
-const root = path.resolve(__dirname, '../../../test-resources/app-builder/compatibility');
+const defaultRoot = path.resolve(__dirname, '../../../test-resources/app-builder/compatibility');
 
-export function loadCompatibilityFixture(name, { edition } = {}) {
+/** `root` is the folder holding manifest.json; the App Builder's own fixtures by default. */
+export function loadCompatibilityFixture(name, { edition, root = defaultRoot } = {}) {
   if (!edition) throw new Error('Compatibility fixture loading requires an explicit edition');
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
   const entry = manifest.fixtures[name];

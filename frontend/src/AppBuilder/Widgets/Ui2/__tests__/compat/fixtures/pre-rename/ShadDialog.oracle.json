@@ -1,0 +1,67 @@
+{
+  "loaded": {
+    "show": false,
+    "isDisabledModal": false,
+    "isDisabledTrigger": false,
+    "isVisible": true,
+    "isLoading": false,
+    "id": "<uuid>"
+  },
+  "probe": "",
+  "steps": [
+    {
+      "call": "open",
+      "changed": {
+        "show": true
+      }
+    },
+    {
+      "call": "close",
+      "changed": {
+        "show": false
+      }
+    },
+    {
+      "call": "setDisableTrigger",
+      "changed": {}
+    },
+    {
+      "call": "setDisableModal",
+      "changed": {}
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "show": false,
+      "isDisabledModal": false,
+      "isDisabledTrigger": false,
+      "isVisible": true,
+      "isLoading": false
+    },
+    "changed": {}
+  }
+}

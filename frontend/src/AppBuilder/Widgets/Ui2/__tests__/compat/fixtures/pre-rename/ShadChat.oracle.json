@@ -1,0 +1,167 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "history": [
+      {
+        "message": "Hi! Ask me anything about your orders, invoices or deliveries.",
+        "messageId": "welcome-1",
+        "timestamp": "new Date().toISOString()",
+        "name": "Assistant",
+        "avatar": "",
+        "type": "response"
+      }
+    ],
+    "isHistoryLoading": false,
+    "isInputDisabled": false,
+    "isResponseLoading": false,
+    "lastMessage": {},
+    "lastResponse": {},
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"history\":[{\"message\":\"Hi! Ask me anything about your orders, invoices or deliveries.\",\"messageId\":\"welcome-1\",\"timestamp\":\"new Date().toISOString()\",\"name\":\"Assistant\",\"avatar\":\"\",\"type\":\"response\"}],\"isHistoryLoading\":false,\"isInputDisabled\":false,\"isResponseLoading\":false,\"lastMessage\":{},\"lastResponse\":{}},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"history\":[{\"message\":\"Hi! Ask me anything about your orders, invoices or deliveries.\",\"messageId\":\"welcome-1\",\"timestamp\":\"new Date().toISOString()\",\"name\":\"Assistant\",\"avatar\":\"\",\"type\":\"response\"}],\"isHistoryLoading\":false,\"isInputDisabled\":false,\"isResponseLoading\":false,\"lastMessage\":{},\"lastResponse\":{}}}",
+  "steps": [
+    {
+      "call": "appendHistory",
+      "changed": {
+        "history": [
+          {
+            "message": "Hi! Ask me anything about your orders, invoices or deliveries.",
+            "messageId": "welcome-1",
+            "timestamp": "new Date().toISOString()",
+            "name": "Assistant",
+            "avatar": "",
+            "type": "response"
+          },
+          {
+            "message": "Saved message",
+            "messageId": "<uuid>",
+            "timestamp": "2026-06-15T09:00:00.000Z",
+            "name": "Assistant",
+            "avatar": "",
+            "type": "response"
+          }
+        ],
+        "lastResponse": {
+          "message": "Saved message",
+          "messageId": "<uuid>",
+          "timestamp": "2026-06-15T09:00:00.000Z",
+          "name": "Assistant",
+          "avatar": "",
+          "type": "response"
+        }
+      }
+    },
+    {
+      "call": "clearHistory",
+      "changed": {
+        "history": [
+          {
+            "message": "Hi! Ask me anything about your orders, invoices or deliveries.",
+            "messageId": "welcome-1",
+            "timestamp": "new Date().toISOString()",
+            "name": "Assistant",
+            "avatar": "",
+            "type": "response"
+          }
+        ],
+        "lastResponse": {}
+      }
+    },
+    {
+      "call": "sendMessage",
+      "changed": {}
+    },
+    {
+      "call": "setError",
+      "changed": {}
+    },
+    {
+      "call": "setHistory",
+      "changed": {
+        "history": [
+          {
+            "message": "Earlier message",
+            "type": "message"
+          }
+        ]
+      }
+    },
+    {
+      "call": "setHistoryLoading",
+      "changed": {}
+    },
+    {
+      "call": "setInputDisable",
+      "changed": {}
+    },
+    {
+      "call": "setResponderAvatar",
+      "changed": {}
+    },
+    {
+      "call": "setResponseLoading",
+      "changed": {}
+    },
+    {
+      "call": "setUserAvatar",
+      "changed": {}
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "history": [
+        {
+          "message": "Earlier message",
+          "type": "message"
+        }
+      ],
+      "isHistoryLoading": false,
+      "isInputDisabled": false,
+      "isResponseLoading": false,
+      "lastMessage": {},
+      "lastResponse": {}
+    },
+    "changed": {}
+  }
+}
