@@ -342,6 +342,7 @@
     "validate:widget-testing-contracts:pr": "node scripts/validate-widget-testing-contracts.js --pr",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "npx storybook build",
-    "ui2:contracts": "node scripts/ui2-contracts.js"
+    "ui2:contracts": "node scripts/ui2-contracts.js",
+    "test:ui2-visual": "node scripts/ui2-visual.js"
   }
 }
