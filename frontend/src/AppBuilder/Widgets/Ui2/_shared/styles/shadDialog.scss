@@ -2,12 +2,14 @@
 // dialog, tj-shad-tokens to its content (the theme-mapped --sc-* tokens, without the pack's reset, so the native
 // widgets a dialog may hold keep their own look) and tj-shad-backdrop to the overlay; a side sheet adds tj-shad-sheet.
 
-.tj-shad-dialog .tj-shad-dialog-content.modal-content {
+// One class more than ToolJet's modal content rule (.modal-content.modal-component.tj-modal-widget-content), so these
+// win without !important wherever the stylesheets load.
+.tj-shad-dialog .tj-shad-dialog-content.modal-content.modal-component {
   background: var(--sc-background);
   color: var(--sc-foreground);
-  border: 1px solid var(--sc-border) !important;
-  border-radius: calc(var(--sc-radius) + 4px) !important;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+  border: 1px solid var(--sc-border);
+  border-radius: calc(var(--sc-radius) + 4px);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   overflow: hidden;
 }
 
@@ -40,15 +42,17 @@
 
 // The trigger button (when the default button is on) takes the theme radius like the pack's buttons.
 .tj-shad-trigger.jet-btn {
-  border-radius: calc(var(--cc-radius-default, 8px) - 2px) !important;
+  border-radius: calc(var(--cc-radius-default, 8px) - 2px);
   font-weight: 500;
 }
 
 // Side sheet: full height against one edge, sliding in from it.
-.modal-dialog.tj-shad-sheet {
-  margin: 0 !important;
-  // ToolJet pads the modal dialog's bottom for centred modals; a sheet runs to the edge.
-  padding: 0 !important;
+// ToolJet pads the modal dialog's bottom for centred modals (an id rule, #modal-container); a sheet runs to the edge.
+#modal-container.tj-shad-sheet {
+  padding: 0;
+}
+.modal .modal-dialog.tj-shad-sheet {
+  margin: 0;
   height: 100%;
   max-height: 100%;
   width: 100%;
@@ -62,22 +66,22 @@
   &.modal-xl {
     max-width: 640px;
   }
-  .tj-shad-dialog-content.modal-content {
-    height: 100% !important;
-    border-radius: 0 !important;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+  .tj-shad-dialog-content.modal-content.modal-component {
+    height: 100%;
+    border-radius: 0;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
   }
 }
-.modal-dialog.tj-shad-sheet--right {
-  margin-left: auto !important;
-  .tj-shad-dialog-content.modal-content {
-    border-width: 0 0 0 1px !important;
+.modal .modal-dialog.tj-shad-sheet--right {
+  margin-left: auto;
+  .tj-shad-dialog-content.modal-content.modal-component {
+    border-width: 0 0 0 1px;
   }
 }
-.modal-dialog.tj-shad-sheet--left {
-  margin-right: auto !important;
-  .tj-shad-dialog-content.modal-content {
-    border-width: 0 1px 0 0 !important;
+.modal .modal-dialog.tj-shad-sheet--left {
+  margin-right: auto;
+  .tj-shad-dialog-content.modal-content.modal-component {
+    border-width: 0 1px 0 0;
   }
 }
 .modal.fade .modal-dialog.tj-shad-sheet--right {
