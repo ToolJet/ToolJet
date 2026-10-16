@@ -117,7 +117,13 @@ export class InternalTableRepository extends Repository<InternalTable> {
         'dq.name AS dq_name',
         'dq.options AS dq_options',
         'a.id AS app_id',
-        'a.name AS app_name',
+        // apps.name is NULL for front-end apps and modules (metadata lives on app_versions);
+        // workflows still keep it on apps.
+        `COALESCE(a.name, (
+          SELECT av_name.app_name FROM app_versions av_name
+          WHERE av_name.app_id = a.id AND av_name.app_name IS NOT NULL
+          ORDER BY av_name.created_at DESC LIMIT 1
+        )) AS app_name`,
         'a.type AS app_type',
       ])
       .getRawMany();
