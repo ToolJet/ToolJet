@@ -564,6 +564,9 @@ export const createComponentsSlice = (set, get) => ({
 
       if (index !== null) {
         updateResolvedValueForNonNullIndex(resolvedValue, index);
+      } else if (Array.isArray(componentResolvedValues[componentId]) && componentResolvedValues[componentId].length) {
+        // A skip-resolve value arrives without a row, but a component in a row is already stored per row.
+        componentResolvedValues[componentId].forEach((_row, i) => updateResolvedValueForNonNullIndex(resolvedValue, i));
       } else {
         if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
           componentResolvedValues[componentId] = deepClone(DEFAULT_COMPONENT_STRUCTURE);

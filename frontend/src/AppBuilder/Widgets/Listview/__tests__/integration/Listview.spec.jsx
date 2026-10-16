@@ -1746,6 +1746,53 @@ describe('Listview: a Custom Component belongs to its own row', () => {
     expect(published()['0']?.customcomponent1?.data?.picked).toBe(false);
     expect(published()['2']?.customcomponent1?.data?.picked).toBe(false);
   });
+
+  test('[Listview-BUG-036] every row receives the code, which is registered to skip resolution', async () => {
+    // Break this catches: a skip-resolve property written once for the whole component. In a row its
+    // resolved value is per row, so the code lands beside the rows and every iframe starts blank.
+    const cc = customComponentChild();
+    cc.component.definition.properties.code = { value: 'ROW_CODE', skipResolve: true };
+    customComponentWidget.render({ currentMode: 'view', extraComponents: { cc1: cc } });
+    await waitFor(() => expect(document.querySelectorAll('iframe')).toHaveLength(3));
+
+    const replies = [...document.querySelectorAll('iframe')].map((frame) => {
+      const postMessage = jest.spyOn(frame.contentWindow, 'postMessage');
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { from: 'customComponent', componentId: 'cc1', message: 'INIT' },
+          source: frame.contentWindow,
+        })
+      );
+      return postMessage.mock.calls.find(([msg]) => msg.message === 'INIT_RESPONSE')?.[0]?.code;
+    });
+    expect(replies).toEqual(['ROW_CODE', 'ROW_CODE', 'ROW_CODE']);
+  });
+
+  test('[Listview-BUG-036] an iframe that starts after its code resolved still receives that code', async () => {
+    // Break this catches: the startup reply sending the code from the first render. In a row in the viewer
+    // that is still unresolved, and the later update reaches an iframe not yet listening, so the row stays blank.
+    customComponentWidget.render({ currentMode: 'view' });
+    await waitFor(() => expect(document.querySelectorAll('iframe')).toHaveLength(3));
+
+    await customComponentWidget.session.store.act(() => {
+      customComponentWidget.setComponentProperty('cc1', 'code', 'RESOLVED_CODE', 'properties');
+    });
+
+    const frame = document.querySelectorAll('iframe')[1];
+    const postMessage = jest.spyOn(frame.contentWindow, 'postMessage');
+    await customComponentWidget.session.store.act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { from: 'customComponent', componentId: 'cc1', message: 'INIT' },
+          source: frame.contentWindow,
+        })
+      );
+    });
+
+    const replies = postMessage.mock.calls.filter(([msg]) => msg.message === 'INIT_RESPONSE');
+    expect(replies).toHaveLength(1);
+    expect(replies[0][0].code).toBe('RESOLVED_CODE');
+  });
 });
 
 /**

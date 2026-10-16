@@ -15,6 +15,9 @@ export const CustomComponent = (props) => {
   const messageEventListenerRef = useRef(null);
 
   const customPropRef = useRef(data);
+  // The startup reply is sent from a listener bound at mount, when a row in the viewer has no code yet.
+  const codeRef = useRef(code);
+  codeRef.current = code;
 
   useEffect(() => {
     setCustomProps(data);
@@ -130,7 +133,7 @@ export const CustomComponent = (props) => {
             message: 'INIT_RESPONSE',
             componentId: id,
             data: customPropRef.current,
-            code: code,
+            code: codeRef.current,
           },
           '*'
         );
