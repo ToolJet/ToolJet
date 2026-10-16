@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import isEqual from 'lodash/isEqual';
 import type { FocusEvent } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -14,11 +14,11 @@ import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/typ
 export type Override = (key: string, ...value: [] | [unknown]) => void;
 
 export const useOverrides = (properties: Resolved): [Resolved, Override] => {
-  const [over, setOver] = useState<Record<string, { value: unknown; base: string }>>({});
+  const [over, setOver] = useState<Record<string, { value: unknown; base: unknown }>>({});
   const latest = useRef(properties);
   latest.current = properties;
   const override: Override = useCallback((key: string, ...value: [] | [unknown]) => {
-    const base = stringify(latest.current?.[key] ?? null);
+    const base = latest.current?.[key] ?? null;
     setOver((o) => {
       const next = { ...o };
       if (value.length) next[key] = { value: value[0], base };
@@ -27,7 +27,7 @@ export const useOverrides = (properties: Resolved): [Resolved, Override] => {
     });
   }, []);
   const effective = useMemo(() => {
-    const keys = Object.keys(over).filter((k) => stringify(properties?.[k] ?? null) === over[k].base);
+    const keys = Object.keys(over).filter((k) => isEqual(properties?.[k] ?? null, over[k].base));
     if (!keys.length) return properties;
     return { ...properties, ...Object.fromEntries(keys.map((k) => [k, over[k].value])) };
   }, [properties, over]);

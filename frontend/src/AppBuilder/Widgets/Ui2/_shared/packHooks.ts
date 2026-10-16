@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
+import isEqual from 'lodash/isEqual';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { stringify } from './packJson';
-import type { RefObject } from 'react';
+import type { MutableRefObject, RefObject } from 'react';
 import type { Bound, Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export { stringify };
@@ -18,30 +19,58 @@ export const list = (v: unknown): Bound[] => (Array.isArray(v) ? v : []);
 /** A widget's exposed values and actions (async functions), by name. */
 export type Exposed = Record<string, unknown>;
 
-/** Publishes the standard exposed state plus the widget's own values and actions, keeping them in sync. Compares by
- *  content: values rebuilt on every render (a selected option object) would loop if re-published on identity. */
+/** The value, keeping the previous reference while its content is the same. A binding re-evaluates to a new array or
+ *  object whenever anything it reads changes, so a dependency on the value itself would rerun work (and effects that
+ *  reset state) for an unchanged list. The comparison runs only when a new reference arrives (lodash isEqual, which
+ *  also handles a circular value such as a JS query's result). */
+export const useStable = <T>(value: T): T => {
+  const ref = useRef(value);
+  if (!Object.is(ref.current, value) && !isEqual(ref.current, value)) ref.current = value;
+  return ref.current;
+};
+
+/** A ref that always holds the latest value: for callbacks and effects that read current props without rerunning
+ *  when they change. */
+export const useLatest = <T>(value: T): MutableRefObject<T> => {
+  const ref = useRef(value);
+  ref.current = value;
+  return ref;
+};
+
+type Action = (...args: unknown[]) => unknown;
+
+/** Publishes the standard exposed state plus the widget's own values and actions. Values are re-published when one of
+ *  them changes by content. Each action is published once, as a stable function that calls the widget's latest
+ *  closure, so an action never runs with the props of an earlier render. */
 export const useExposed = (
   setExposedVariables: WidgetProps['setExposedVariables'],
   properties: Resolved,
   values: Exposed
 ): void => {
-  const dataKey = stringify([
-    properties.visibility,
-    properties.loadingState,
-    properties.disabledState,
-    Object.entries(values).filter(([, v]) => typeof v !== 'function'),
-  ]);
-  const latest = useRef(values);
-  latest.current = values;
+  const latest = useLatest(values);
+  const publish = useLatest(setExposedVariables);
+  const actionNames = Object.keys(values)
+    .filter((key) => typeof values[key] === 'function')
+    .join(',');
+  const actions = useMemo(
+    () =>
+      Object.fromEntries(
+        actionNames
+          .split(',')
+          .filter(Boolean)
+          .map((name) => [name, (...args: unknown[]) => (latest.current[name] as Action)(...args)])
+      ),
+    [actionNames, latest]
+  );
+  const data = useStable({
+    isVisible: properties.visibility !== false,
+    isLoading: !!properties.loadingState,
+    isDisabled: !!properties.disabledState,
+    ...Object.fromEntries(Object.entries(values).filter(([, value]) => typeof value !== 'function')),
+  });
   useEffect(() => {
-    setExposedVariables({
-      isVisible: properties.visibility !== false,
-      isLoading: !!properties.loadingState,
-      isDisabled: !!properties.disabledState,
-      ...latest.current,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataKey]);
+    publish.current({ ...data, ...actions });
+  }, [data, actions, publish]);
 };
 
 /** Gives a pack widget the control state every ToolJet widget has: visibility, loading and disabled follow their

@@ -1,9 +1,8 @@
 // State, validation and focus behaviour the UI 2.0 inputs share.
 import React, { useEffect, useRef, useState } from 'react';
-import { useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Label, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { truthy } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { ERROR, HELP, INVALID_VARS, LABEL } from './field';
 import type { Dispatch, RefObject, SetStateAction } from 'react';
@@ -26,8 +25,9 @@ export const useValue = <T,>(
 ): [T, ChangeValue<T>] => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   const [value, setValue] = useState(initial);
-  const key = stringify(initial ?? null);
-  useEffect(() => setValue(initial), [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  // A new default (by content) resets the value, as the native inputs do.
+  const seed = useStable(initial);
+  useEffect(() => setValue(seed), [seed]);
   useExposed(setExposedVariables, properties, { value: toExposed(value) ?? '', ...actions(setValue) });
   const change: ChangeValue<T> = (v, event = 'onChange') => {
     setValue(v);
@@ -64,12 +64,13 @@ export const useValidation = (
     clear?.();
     setTouched(false);
   });
+  const publish = useLatest(setExposedVariable);
   useEffect(() => {
-    setExposedVariable('isValid', isValid);
-  }, [isValid]); // eslint-disable-line react-hooks/exhaustive-deps
+    publish.current('isValid', isValid);
+  }, [isValid, publish]);
   useEffect(() => {
-    setExposedVariable('isMandatory', isMandatory);
-  }, [isMandatory]); // eslint-disable-line react-hooks/exhaustive-deps
+    publish.current('isMandatory', isMandatory);
+  }, [isMandatory, publish]);
   return {
     error: touched && !isValid ? status.validationError || 'Invalid value' : '',
     required: isMandatory,
@@ -94,12 +95,13 @@ export const useTextBox = <E extends HTMLElement = HTMLInputElement>(
   const ref = useRef<E>(null);
   // The native inputs expose their label.
   useExposed(setExposedVariables, properties, { label: String(properties.label ?? '') });
+  const publish = useLatest(setExposedVariables);
   useEffect(() => {
-    setExposedVariables({
+    publish.current({
       setFocus: async () => ref.current?.focus(),
       setBlur: async () => ref.current?.blur(),
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [publish]);
   return {
     ref,
     onFocus: () => setTimeout(() => fireEvent('onFocus'), 0),
