@@ -3,7 +3,7 @@ import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
-import { findHighestLevelofSelection } from '../Grid/gridUtils';
+import { findHighestLevelofSelection } from '../selection';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
@@ -68,8 +68,8 @@ export const ConfigHandle = ({
 
   // If one component is hovered and one is selected, show the handle for the hovered component
   const _showHandle = useTransientStore((state) => {
-    const isWidgetHovered = state.hoveredComponentForGrid === id || state.hoveredComponentBoundaryId === id;
-    const anyComponentHovered = state.hoveredComponentForGrid !== '' || state.hoveredComponentBoundaryId !== '';
+    const isWidgetHovered = state.hoveredComponentForGrid === id;
+    const anyComponentHovered = state.hoveredComponentForGrid !== '';
     return (
       ((subContainerIndex === 0 || subContainerIndex === null) && (isModuleContainer || (isModal && isModalOpen))) ||
       isWidgetHovered ||
@@ -82,7 +82,8 @@ export const ConfigHandle = ({
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isRestricted = component?.permissions && component?.permissions?.length !== 0;
-  const draggingComponentId = useStore((state) => state.draggingComponentId);
+  // Only the lock button reads this; other handles must not re-render each time a drag starts or ends.
+  const isAnyComponentDragging = useStore((state) => !!isRestricted && !!state.draggingComponentId);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
 
@@ -150,7 +151,7 @@ export const ConfigHandle = ({
         height: '24px',
       };
   if (isDynamicHeightEnabled && !isHiddenOrModalOpen) {
-    getConfigHandleButtonStyle.background = '#9747FF';
+    getConfigHandleButtonStyle.background = 'var(--canvas-dynamic-height)';
   }
 
   const iconOnlyButtonStyle = {
@@ -316,7 +317,7 @@ export const ConfigHandle = ({
         <ConfigHandleButton
           customStyles={iconOnlyButtonStyle}
           message={getTooltip()}
-          show={licenseValid && isRestricted && !draggingComponentId}
+          show={licenseValid && isRestricted && !isAnyComponentDragging}
           dataCy={`${componentName.toLowerCase()}-permissions-button`}
         >
           <Lock size={14} color="var(--icon-strong)" />

@@ -100,7 +100,7 @@ describe('Toggle Switch — canvas facet', { testIsolation: false }, () => {
 
         selectAllWidgets();
         verifySelectedWidgetCount(2);
-        cy.get('.moveable-area').should('exist');
+        cy.get('.tj-group-frame').should('exist');
     });
 
     it('rename via the widget menu', () => {

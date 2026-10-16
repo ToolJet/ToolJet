@@ -7,7 +7,7 @@ import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
 import AgentBuildingOverlay from '@/AppBuilder/AgentBuildingOverlay';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS, PAGE_CANVAS_HEADER_HEIGHT, PAGE_CANVAS_FOOTER_HEIGHT } from './appCanvasConstants';
+import { PAGE_CANVAS_HEADER_HEIGHT, PAGE_CANVAS_FOOTER_HEIGHT } from './appCanvasConstants';
 
 // TODO: Move these to page settings / global settings when ready
 import cx from 'classnames';
@@ -24,8 +24,7 @@ import { MobileLayout } from './MobileLayout';
 import { DesktopLayout } from './DesktopLayout';
 // Lazy load editor-only component to reduce viewer bundle size
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
-const EditorSelecto = React.lazy(() => import('./Selecto'));
-const Grid = React.lazy(() => import('./Grid'));
+const CanvasInteraction = React.lazy(() => import('./interaction/CanvasInteraction'));
 import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
 
@@ -44,9 +43,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     shallow
   );
   const [canvasWidth, setCanvasWidth] = useState(getCanvasWidth(moduleId));
-  const gridWidth = canvasWidth / NO_OF_GRIDS;
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
-  const pageSidebarStyle = useStore((state) => state?.pageSettings?.definition?.properties?.style, shallow);
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const queryPanelHeight = useStore((state) => state?.queryPanel?.queryPanelHeight || 0);
   const isDraggingQueryPane = useStore((state) => state.queryPanel.isDraggingQueryPane, shallow);
@@ -157,7 +154,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     isRightSidebarOpen,
     isViewerSidebarPinned,
     position,
-    currentMode,
   });
 
   const canvasContainerStyles = useMemo(() => {
@@ -201,14 +197,9 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const mainCanvasContainer = (
     <Container
       id={moduleId}
-      gridWidth={gridWidth}
       canvasWidth={canvasWidth}
       canvasHeight={canvasHeight}
       darkMode={isAppDarkMode}
-      canvasMaxWidth={canvasMaxWidth}
-      isViewerSidebarPinned={isViewerSidebarPinned}
-      pageSidebarStyle={pageSidebarStyle}
-      pagePositionType={position}
       appType={appType}
     />
   );
@@ -216,7 +207,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const gridContent =
     currentMode === 'view' ? null : (
       <Suspense fallback={null}>
-        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+        <CanvasInteraction />
       </Suspense>
     );
 
@@ -361,11 +352,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             </div>
           </div>
         </div>
-        {currentMode === 'edit' && (
-          <Suspense fallback={null}>
-            <EditorSelecto />
-          </Suspense>
-        )}
       </div>
     </div>
   );

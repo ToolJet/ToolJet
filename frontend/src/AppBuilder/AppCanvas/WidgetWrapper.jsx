@@ -1,6 +1,5 @@
 import React, { memo, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
-import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { shallow } from 'zustand/shallow';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import cx from 'classnames';
@@ -11,6 +10,8 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import { useFlexWidgetLayout } from '@/AppBuilder/Widgets/FlexContainer/useFlexWidgetLayout';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import ComponentFrame from './interaction/ComponentFrame';
+import { columnSpan } from './interaction/geometry';
 
 const DYNAMIC_HEIGHT_AUTO_LIST = [
   'CodeEditor',
@@ -103,8 +104,13 @@ const WidgetWrapper = memo(
     );
 
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
-    const isDragging = useStore((state) => state.draggingComponentId === id);
-    const isResizing = useStore((state) => state.resizingComponentId === id);
+    // Being moved: dimmed in place while the drop ghost shows where it lands (the engine moves nothing else).
+    const isDragging = useStore(
+      (state) => state.draggingComponentId === id || (state.isGroupDragging && state.selectedComponents.includes(id))
+    );
+    const isResizing = useStore(
+      (state) => state.resizingComponentId === id || (state.isGroupResizing && state.selectedComponents.includes(id))
+    );
     const componentType = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.component,
       shallow
@@ -121,7 +127,6 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles?.textSize
     );
 
-    const setHoveredComponentForGrid = useTransientStore((state) => state.setHoveredComponentForGrid);
     const canShowInCurrentLayout = useStore((state) => {
       const others = state.getResolvedComponent(id, resolveIndex, moduleId)?.others;
       return others?.[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'];
@@ -170,7 +175,9 @@ const WidgetWrapper = memo(
       newLayoutData = { ...layoutData, top: 0, left: 0, width: isEmbeddedModule ? NO_OF_GRIDS : layoutData.width };
     }
 
-    const gridWidthPx = gridWidth * newLayoutData?.width;
+    // On whole-pixel column edges, the same ones the editor draws grid lines, ghosts and frames on.
+    const span = columnSpan(newLayoutData?.left ?? 0, newLayoutData?.width ?? 0, gridWidth);
+    const gridWidthPx = span.width;
     const gridHeight = calculateMoveableBoxHeightWithId(
       id,
       currentLayout,
@@ -203,7 +210,7 @@ const WidgetWrapper = memo(
         (isTruthyOrZero(subContainerIndex) || DYNAMIC_HEIGHT_AUTO_LIST.includes(componentType))
           ? 'auto'
           : gridFinalHeight + 'px',
-      transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
+      transform: `translate(${span.x}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
       borderTop: !visibility && mode === 'edit' ? `1px dashed var(--border-accent-strong)` : 'none',
       boxSizing: 'content-box',
@@ -235,10 +242,8 @@ const WidgetWrapper = memo(
 
     // Capture phase fires before the embedded widget can consume the click, so a
     // click anywhere inside the module reliably opens the configuration sidebar.
-    // Widgets embedded inside a module render read-only and are not Moveable
-    // targets, so clicking them never fires Moveable's `onClick` (the path that
-    // opens the right sidebar) — react-moveable derives `onClick` from its gesto
-    // drag-end, which never starts on interactive child elements.
+    // The canvas engine leaves presses on interactive elements (the module's
+    // inputs) to them and opens nothing for those.
     const handleModuleClickCapture = (e) => {
       if (e.shiftKey) return; // don't interfere with shift multi-select
       const { setActiveRightSideBarTab, setRightSidebarOpen } = useStore.getState();
@@ -256,7 +261,8 @@ const WidgetWrapper = memo(
             [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
             'position-absolute': isGridLayout && readOnly,
             'active-target': isWidgetActive,
-            'opacity-0 pointer-events-none': isDragging || isResizing,
+            // Flex children are resized live on their own element, so only grid components dim under a shadow.
+            'tj-drag-source': isDragging || (isResizing && !isFlexLayout),
             'module-container': isModuleContainer,
             'dynamic-height-target': isDynamicHeightEnabled,
             'flex-child-wrapper': isFlexLayout,
@@ -271,17 +277,8 @@ const WidgetWrapper = memo(
           data-module-id={moduleId || 'canvas'}
           style={outerStyle}
           onClickCapture={isModuleViewerWidget && mode === 'edit' ? handleModuleClickCapture : undefined}
-          onMouseEnter={() => {
-            if (isDragging || isModuleContainer) return;
-            if (isFlexLayout) {
-              flexLayout.refreshConfigWidgetTop();
-            }
-            setHoveredComponentForGrid(id);
-          }}
-          onMouseLeave={() => {
-            if (isDragging || isModuleContainer) return;
-            setHoveredComponentForGrid('');
-          }}
+          // Which component is hovered is tracked by the canvas engine (interaction/engine.js).
+          onMouseEnter={isFlexLayout && !isDragging ? flexLayout.refreshConfigWidgetTop : undefined}
         >
           {mode == 'edit' && (
             <ConfigHandle
@@ -296,6 +293,14 @@ const WidgetWrapper = memo(
               isModuleContainer={isModuleContainer}
               subContainerIndex={subContainerIndex}
               isDynamicHeightEnabled={isDynamicHeightEnabled}
+            />
+          )}
+          {mode === 'edit' && !readOnly && (
+            <ComponentFrame
+              id={id}
+              moduleId={moduleId}
+              canResize={!!visibility}
+              isDynamicHeight={!!isDynamicHeightEnabled}
             />
           )}
           <RenderWidget

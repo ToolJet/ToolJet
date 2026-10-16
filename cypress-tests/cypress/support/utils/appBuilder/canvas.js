@@ -204,7 +204,7 @@ export const deleteWidgetFromMenu = (widgetName) => {
  * @tjBlock  canvas
  * @tjUsage  selectAllWidgets()   // Cmd/Ctrl+A — selects every widget on the canvas
  * @tjDom    click empty canvas → Cmd/Ctrl+A → each wrapper gains `.active-target`
- *           + a group `.moveable-area` box appears
+ *           + a group frame `.tj-group-frame` appears
  */
 export const selectAllWidgets = () => {
   cy.forceClickOnCanvas();

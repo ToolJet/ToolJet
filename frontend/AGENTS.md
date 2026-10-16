@@ -51,6 +51,7 @@ On top of the above:
 - Prefer Tailwind over Bootstrap for new code; do not extend legacy `react-bootstrap` usage
 - Use typography utilities (`tw-font-title-default`, `tw-font-body-default`) instead of ad-hoc font-size/weight
 - Design tokens: `frontend/src/_styles/designtheme.scss` + `frontend/tailwind.config.js`
+- Editor canvas chrome (selection, grips, guides, drag ghost, grid lines) uses the `--canvas-*` tokens in `componentdesign.scss`
 
 ### Imports
 
@@ -121,6 +122,25 @@ How the App Builder handles data of any size without blocking the page or runnin
 - Viewer (`/applications/*`) and editor are separate lazy bundles via `RootRouter.jsx`. Never import editor-only code into viewer paths
 - Avoid `JSON.parse(JSON.stringify(...))` and `_.cloneDeep` in render or hot paths — use Immer
 - Watch for O(N) loops inside already-O(N) resolution paths (eager resolution for ListView children)
+
+### Canvas geometry
+
+- Grid: `NO_OF_GRIDS` (43) columns × `GRID_HEIGHT` (10px) rows (`AppCanvas/appCanvasConstants.js`). Layouts store `left`/`width` in columns and `top`/`height` in px
+- Every canvas (`.real-canvas`) has no padding and a whole-pixel width; its columns span its width minus one pixel, `(floor(width) - 1) / 43` (`Container.jsx`), so its edges are grid lines 0 and 43
+- Column edges are whole pixels (`columnEdge`/`columnSpan` in `AppCanvas/interaction/geometry.js`). Components, ghosts, frames and the drawn grid all use them; don't position anything at `left * gridWidth` directly
+- The main canvas width is measured from the rendered `#real-canvas` (`Hooks/useCanvasResizing.jsx`); sub-canvases measure their own content box (`Hooks/useSubCanvasContentWidth.js`). `getSubContainerWidthAfterPadding` is only the first-render estimate
+
+### Canvas interactions (`AppCanvas/interaction/`)
+
+Select, move, resize, marquee and drop-from-panel in the editor are our own engine (no react-moveable or react-selecto), mounted once per editor canvas by `CanvasInteraction.jsx`.
+
+- `geometry.js` and `rules.js` are pure and fully specced: snapping, keeping boxes inside their canvas, resize by grip, group move/resize; `canDrop` is the one answer for every drop (restricted children, header/footer slots, nesting limits, modules). Extend their specs first
+- `engine.js` is a pointer-event state machine (press → past 3px → move | resize | marquee → commit; Esc or pointercancel cancels). During a gesture nothing re-renders: the component stays in place, dimmed (`tj-drag-source`), and a dashed ghost shows where it lands or its new size. The release saves it with one `setComponentLayout` (one undo step)
+- While moving, the pointer is hidden and the moved box's top-left corner (tagged on the ghost) picks the canvas it lands in (`chooseCanvas`). Within a container's own canvases (body, header, footer) it goes into a bigger one by position and into a smaller one only on a push or a flick (`pushedInto`, `FLICK_PX_PER_MS`); a canvas that refuses the component never takes it and shows a red haze while the ghost glides over it
+- Auto-scroll starts when the moved box's edge reaches what shows of a scroller's edge, innermost first, a whole grid row at a time; a container waits at its edge (`AUTOSCROLL_DWELL_MS`) only when the pointer is passing fast, so a component can always be moved out of a container
+- Feedback: `ComponentFrame.jsx` (one per component), `GroupFrame.jsx` (multi-select), `interaction.scss`. Alignment guides are drawn by the engine (`showGuides`); hover (`hoveredComponentForGrid`) is set by the engine, not per-component mouse events
+- Panel drops: react-dnd drives the drag; the engine publishes the landing cell (`ghostDragPosition.landing`, `currentDragCanvasId`) that `addNewWidgetToTheEditor` uses as is
+- Cypress drives it with pointer events (`cy.resizeWidget`, `cy.moveComponent`); grips are `[data-tj-handle="n|s|e|w|nw|ne|sw|se"]`, the group frame `.tj-group-frame`
 
 ### App Builder store
 

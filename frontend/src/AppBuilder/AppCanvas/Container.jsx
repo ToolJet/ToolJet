@@ -13,7 +13,6 @@ import {
 import {
   NO_OF_GRIDS,
   GRID_HEIGHT,
-  HOVER_CLICK_OUTLINE_BORDER,
   PAGE_CANVAS_HEADER_FOOTER_PADDING,
   ROW_SCOPED_WIDGET_TYPES,
 } from './appCanvasConstants';
@@ -21,10 +20,8 @@ import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
-import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
-import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
-import { computeFlexInsertIndex } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { FlexContainerDropIndicator } from '@/AppBuilder/Widgets/FlexContainer/FlexContainerDropIndicator';
+import { useSubCanvasContentWidth } from './Hooks/useSubCanvasContentWidth';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const ModuleContainerBlank = lazy(() =>
@@ -50,7 +47,6 @@ const Container = React.memo(
     listViewMode = 'list',
     columns,
     darkMode,
-    canvasMaxWidth: _canvasMaxWidth,
     componentType,
     appType,
     hasNoScroll = false,
@@ -68,144 +64,16 @@ const Container = React.memo(
     );
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
-    const isMobileMainCanvas = currentLayout === 'mobile' && id === 'canvas';
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
-    const isWidgetInSubContainerDragging = useStore(
-      (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
-      shallow
-    );
     const isFlexContainer = componentType === 'FlexContainer';
-    const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
-    const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
     const flexDirection = useStore(
       (state) => (isFlexContainer ? (state.getResolvedComponent?.(id)?.properties?.direction ?? 'column') : 'column'),
       shallow
     );
     const flexDirectionForFlex = isFlexContainer ? (flexEffectiveDirection ?? flexDirection) : flexDirection;
 
-    // Initialize ghost moveable hook
-    const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
-
-    // rAF ref to throttle FlexContainer drop-target updates
-    const flexRafRef = useRef(null);
-
-    // // Monitor drag layer to update ghost position continuously
-    const { isDragging, clientOffset, draggedItem } = useDragLayer((monitor) => ({
-      isDragging: monitor.isDragging(),
-      clientOffset: monitor.getClientOffset(),
-      draggedItem: monitor.getItem(),
-    }));
-    // // // Cleanup ghost when drag ends
-    useEffect(() => {
-      if (!isDragging) {
-        if (flexRafRef.current) {
-          cancelAnimationFrame(flexRafRef.current);
-          flexRafRef.current = null;
-        }
-        deactivateMoveableGhost();
-        if (isFlexContainer) {
-          setFlexContainerDropTarget(null);
-        }
-      }
-    }, [id, isDragging, deactivateMoveableGhost, isFlexContainer, setFlexContainerDropTarget]);
-
-    useEffect(() => {
-      if (id !== 'canvas' || !isDragging || !clientOffset || !draggedItem?.component?.defaultSize) return;
-
-      const canvasArea = document.getElementsByClassName('tj-canvas-area')?.[0];
-      if (!canvasArea) return;
-
-      const canvasAreaRect = canvasArea.getBoundingClientRect();
-      const isPointerInsideCanvasArea =
-        clientOffset.x >= canvasAreaRect.left &&
-        clientOffset.x <= canvasAreaRect.right &&
-        clientOffset.y >= canvasAreaRect.top &&
-        clientOffset.y <= canvasAreaRect.bottom;
-
-      if (!isPointerInsideCanvasArea) return;
-
-      const hoveredCanvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
-      if (hoveredCanvasId) {
-        setCurrentDragCanvasId(hoveredCanvasId);
-      } else {
-        setCurrentDragCanvasId('canvas');
-      }
-
-      // Constant pixel width based on the main canvas grid (see hover handler note).
-      const mainCanvasGridWidth = useGridStore.getState().subContainerWidths.canvas || gridWidth;
-      const componentSize = {
-        width: mainCanvasGridWidth * draggedItem.component.defaultSize.width,
-        height: draggedItem.component.defaultSize.height,
-      };
-
-      activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
-      updateGhostSize(componentSize);
-    }, [
-      id,
-      isDragging,
-      clientOffset,
-      draggedItem,
-      activateMoveableGhost,
-      updateGhostSize,
-      gridWidth,
-      setCurrentDragCanvasId,
-    ]);
-
-    const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
-    }, [index, componentType, currentMode]);
-
-    const [{ isOverCurrent }, drop] = useDrop({
-      accept: 'box',
-      canDrop: () => !isContainerReadOnly,
-      hover: (item, monitor) => {
-        if (isContainerReadOnly) return;
-        const clientOffset = monitor.getClientOffset();
-
-        if (clientOffset) {
-          const canvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
-          if (canvasId === id) {
-            setCurrentDragCanvasId(id);
-
-            // FlexContainer: compute and publish insertion index (rAF-throttled)
-            if (componentType === 'FlexContainer') {
-              if (!flexRafRef.current) {
-                flexRafRef.current = requestAnimationFrame(() => {
-                  flexRafRef.current = null;
-                  const index = computeFlexInsertIndex(id, clientOffset.x, clientOffset.y, flexDirectionForFlex);
-                  setFlexContainerDropTarget({ flexContainerId: id, index });
-                });
-              }
-            }
-          }
-        }
-        // Size the ghost using the MAIN canvas grid width so the ghost keeps a
-        // (near) constant pixel width regardless of which subcontainer the cursor is
-        // over. A button that is ~40px on the main canvas should stay ~40px inside a
-        // subcontainer. onDrag re-snaps this px width to the current canvas's grid via
-        // getDraggingWidgetWidth, matching the drop math in addNewWidgetToTheEditor.
-        const mainCanvasGridWidth = useGridStore.getState().subContainerWidths.canvas || gridWidth;
-        const componentSize = {
-          width: mainCanvasGridWidth * (item.component?.defaultSize?.width ?? 0),
-          height: item.component?.defaultSize?.height,
-        };
-        // Activate ghost from any container (main canvas OR modal/sub-canvas) so that
-        // dropping a new widget directly into an open modal still produces a visible
-        // drag preview - main canvas hover never fires when its drop region is covered
-        // by the modal backdrop.
-        if (clientOffset) {
-          activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
-          updateGhostSize(componentSize);
-        }
-      },
-    });
-
-    const showEmptyContainer =
-      currentMode === 'edit' &&
-      (id === 'canvas' || componentType === 'ModuleContainer') &&
-      components.length === 0 &&
-      !isDragging;
-
+    // Content width of this canvas; the NO_OF_GRIDS columns span it exactly. Computed before the effects
+    // below, which list `gridWidth` as a dependency.
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
@@ -218,8 +86,34 @@ const Container = React.memo(
       return realCanvasRef?.current?.offsetWidth;
     }
 
-    const containerCanvasWidth = getContainerCanvasWidth();
-    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
+    // Sub-canvases use their measured content box; the per-widget arithmetic above is only the first-render
+    // estimate (it drifted for ListView, Kanban, full-screen modals, FlexContainer...). The main canvas is
+    // measured by useCanvasResizing and arrives as `canvasWidth`.
+    const measuredCanvasWidth = useSubCanvasContentWidth(realCanvasRef, id !== 'canvas');
+    const containerCanvasWidth = measuredCanvasWidth ?? getContainerCanvasWidth();
+    // The columns span the content box minus one pixel: the last pixel holds the closing grid line, so the canvas's
+    // boundary, its grid lines and the frames of the components on them all fall on the same pixels.
+    const gridWidth = Math.max(0, Math.floor(containerCanvasWidth) - 1) / NO_OF_GRIDS;
+
+    const isContainerReadOnly = useMemo(() => {
+      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
+    }, [index, componentType, currentMode]);
+
+    // A drop target for the components panel, so the browser shows a drop is possible. Where a dragged component
+    // lands is the canvas interaction engine's business (interaction/engine.js).
+    // Only whether a panel drag is on (the empty-canvas placeholder hides then); not its position, which changes on
+    // every pointer move and would re-render every canvas.
+    const isDragging = useDragLayer((monitor) => monitor.isDragging());
+    const [, drop] = useDrop({
+      accept: 'box',
+      canDrop: () => !isContainerReadOnly,
+    });
+
+    const showEmptyContainer =
+      currentMode === 'edit' &&
+      (id === 'canvas' || componentType === 'ModuleContainer') &&
+      components.length === 0 &&
+      !isDragging;
 
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
@@ -277,38 +171,28 @@ const Container = React.memo(
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : getSubContainerHeightAfterPadding(componentType),
           backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
-          // Stops the hover outline being clipped. Skipped on mobile, where widget widths come from
-          // the unpadded outer width and this would push them past the content box.
-          padding: isMobileMainCanvas ? 0 : `${HOVER_CLICK_OUTLINE_BORDER}px`,
+          // Widgets are placed from the content edge, so start the grid-line pattern there too.
+          backgroundOrigin: 'content-box',
+          // No padding: the grid fills the canvas, its closing line on the last pixel, and every frame is drawn
+          // inside its own box (interaction.scss), so nothing needs room around the grid.
+          padding: 0,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
                 ? canvasBgColor
-                : '#f0f0f0',
-          width: '100%',
-          maxWidth: (() => {
-            // For Main Canvas
-            if (id === 'canvas' || componentType === 'canvas-header' || componentType === 'canvas-footer') {
-              return '100%';
-            }
-            // For Subcontainers
-            return canvasWidth;
-          })(),
+                : 'var(--canvas-subcontainer-background)',
+          // Width: the slot its widget gives it, to a whole pixel (appCanvas.scss, .real-canvas).
           transform: 'translateZ(0)', //Very very imp --> Hack to make modal position respect canvas container, else it positions w.r.t window.
           ...styles,
-          // Prevent the scroll when dragging a widget inside the container or moving out of the container
-          overflow: isWidgetInSubContainerDragging ? 'hidden' : undefined,
           ...(id !== 'canvas' && appType !== 'module' && { backgroundColor: 'transparent' }), // Ensure the container's background isn't overridden by the canvas background color.
           ...(isEmbeddedModule && id === moduleId && { backgroundColor: 'transparent' }), // Embedded module root canvas inherits host app background
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas' && appType !== 'module',
-          'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
           'module-container': appType === 'module',
           'is-module-editor': isModuleEditor,
           'has-no-scroll': hasNoScroll,
-          'is-child-being-dragged': !hasNoScroll && isWidgetInSubContainerDragging,
           'flex-container-canvas': isFlexContainer,
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}

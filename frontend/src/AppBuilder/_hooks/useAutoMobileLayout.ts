@@ -4,7 +4,7 @@ import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from '@/AppBuilder/_engines/data/diff';
 import useStore from '@/AppBuilder/_stores/store';
-import { computeAutoMobileLayout } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { computeAutoMobileLayout } from '@/AppBuilder/AppCanvas/mobileAutoLayout';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 type MobileBoxes = Record<string, { top: number; left: number; width: number; height: number }>;

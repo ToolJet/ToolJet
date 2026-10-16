@@ -8,11 +8,8 @@ import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { handleDeactivateTargets, hideGridLines } from '../Grid/gridUtils';
 import { appsService } from '@/_services';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
-
-const BUFFER_OFFSET = 15;
 
 /**
  * Fetch every module in the workspace scoped to the active branch (header injected
@@ -77,11 +74,14 @@ export const useCanvasDropHandler = () => {
         ? document.getElementById(`real-canvas`)
         : document.getElementById(`canvas-${canvasId}`);
     const isParentModuleContainer = realCanvasRef?.getAttribute('component-type') === 'ModuleContainer';
-    handleDeactivateTargets();
-    hideGridLines();
     setShowModuleBorder(false); // Hide the module border when dropping
 
     try {
+      // Released where nothing can be dropped: outside every canvas, or on one that refuses this component.
+      if (!canvasId) {
+        return;
+      }
+
       if (isModuleEditor && canvasId === 'canvas') {
         return;
       }
@@ -109,17 +109,6 @@ export const useCanvasDropHandler = () => {
       // we re-fetch the modules list so module_container / input_items are real.
       let dropComponent = component;
       if (dropComponent?.moduleId && dropComponent?.isStub && dropComponent?.appId) {
-        // Snapshot the drag ghost's bounding rect NOW, while the element is still
-        // mounted. The async hydration below lets the browser complete the drag
-        // lifecycle, which removes the ghost from the DOM. After that,
-        // getBoundingClientRect() on the detached node returns all-zeros, causing
-        // the widget to land at (0,0) instead of the drop position.
-        const ghostPos = useGridStore.getState().getGhostDragPosition();
-        if (ghostPos?.e?.target) {
-          const frozenTargetRect = ghostPos.e.target.getBoundingClientRect();
-          useGridStore.getState().actions.setGhostDragPosition({ ...ghostPos, frozenTargetRect });
-        }
-
         const toastId = toast.loading('Loading module from git…');
         try {
           await appsService.getApp(dropComponent.appId);

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useGridStore } from '@/_stores/gridStore';
+import useStore from '@/AppBuilder/_stores/store';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 //eslint-disable-next-line import/no-unresolved
 import { getCountryCallingCode, formatPhoneNumberIntl } from 'react-phone-number-input';
@@ -54,7 +54,8 @@ export const useInput = ({
   beforeSetInputValueRef.current = beforeSetInputValue;
 
   const { loadingState, disabledState, label, visibility: initialVisibility } = properties;
-  const isResizing = useGridStore((state) => state.resizingComponentId === id);
+  // Set by the canvas engine while this component is being resized.
+  const isResizing = useStore((state) => state.resizingComponentId === id);
 
   const [value, setValue] = useState(properties.value ?? '');
   const [visibility, setVisibility] = useState(initialVisibility);

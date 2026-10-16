@@ -177,6 +177,18 @@
     --illu-ring-2: #F2F7FF;
     --illu-ring-3: #E4EEFF;
 
+    // Canvas chrome in the editor: selection, grips, guides, drag ghost, grid lines. The same in dark mode.
+    --canvas-selection: #44AAFF;
+    --canvas-dynamic-height: #9747FF;
+    --canvas-guideline: #97AEFC;
+    --canvas-grid-line: rgba(194, 191, 191, 0.2);
+    --canvas-ghost-background: #D9E2FC;
+    --canvas-dynamic-height-guideline: #C4A1FF;
+    --canvas-dynamic-height-ghost-background: #EBDDFF;
+    --canvas-refused: var(--border-danger-strong);
+    --canvas-module-outline: #CCD1D5;
+    --canvas-subcontainer-background: #F0F0F0;
+
 }
 
 .dark-theme {
