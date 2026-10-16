@@ -327,6 +327,7 @@
     "test:layout": "node scripts/validate-test-layout.js",
     "test:unit:only": "jest --testPathIgnorePatterns '/node_modules/' '/__tests__/integration/'",
     "test:integration": "jest --testPathPattern \"__tests__/integration\"",
+    "test:ui2-fuzz": "jest --testPathIgnorePatterns '/node_modules/' --testPathPattern 'Widgets/Shadcn/__tests__/fuzz/'",
     "test:ci:changed": "jest --ci --coverage --onlyChanged --maxWorkers=2",
     "test:app-builder": "node scripts/run-app-builder-tests.js all",
     "test:app-builder:watch": "node scripts/run-app-builder-tests.js watch",
