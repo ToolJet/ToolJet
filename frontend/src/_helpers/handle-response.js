@@ -1,6 +1,7 @@
 import React from 'react';
 import * as ReactDOM from 'react-dom';
 import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
+import WorkspaceLimitModal from '../_components/WorkspaceLimitModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { sessionService, authenticationService } from '@/_services';
@@ -106,17 +107,26 @@ export function handleResponse(
         }
         const darkMode = localStorage.getItem('darkMode') === 'true';
         const edition = fetchEdition();
-        const modalEl = React.createElement(LegalReasonsErrorModal, {
-          showModal: true,
-          message,
-          body: message.includes('apps') && modalBody,
-          feature,
-          darkMode,
-          edition: edition,
-        });
+        const workspaceLimitMatch = message.match(/reached the number of workspaces \((\d+)\/(\d+)\)/);
+        const modalEl = workspaceLimitMatch
+          ? React.createElement(WorkspaceLimitModal, {
+              showModal: true,
+              current: workspaceLimitMatch[1],
+              limit: workspaceLimitMatch[2],
+            })
+          : React.createElement(LegalReasonsErrorModal, {
+              showModal: true,
+              message,
+              body: message.includes('apps') && modalBody,
+              feature,
+              darkMode,
+              edition: edition,
+            });
 
         const modalContainer = document.getElementById('modal-div');
         if (!message?.includes('expired') && !avoidUpgradeModal && modalContainer) {
+          // Force remount so the modal reopens on repeated 451s, not just a no-op prop update.
+          ReactDOM.unmountComponentAtNode(modalContainer);
           ReactDOM.render(modalEl, modalContainer);
         }
       } else if ([400].indexOf(response.status) !== -1) {

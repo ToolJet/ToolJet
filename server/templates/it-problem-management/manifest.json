@@ -1,0 +1,15 @@
+{
+  "name": "IT problem management",
+  "description": "Investigate recurring incidents to their root cause. Connect incident patterns, hypotheses, workarounds and verified fixes in one problem record.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "it-problem-management",
+  "category": "it-operations"
+}

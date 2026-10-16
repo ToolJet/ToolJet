@@ -23,6 +23,15 @@ const defaultDeadlineDays = {
   'development:low': 60,
 };
 
+// Manifests outside the shipped product. docs/ is the standalone documentation
+// site (also excluded by npm-audit-branch.yml), so its alerts never block.
+const ignoredManifestPrefixes = ['docs/'];
+
+function isIgnored(alert) {
+  const manifest = alert.dependency?.manifest_path ?? '';
+  return ignoredManifestPrefixes.some((prefix) => manifest.startsWith(prefix));
+}
+
 function parseJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
@@ -191,6 +200,7 @@ try {
   };
 
   for (const alert of alerts) {
+    if (isIgnored(alert)) continue;
     const severity = normalizeSeverity(alert.security_advisory?.severity);
     const scope = alert.dependency?.scope;
 
