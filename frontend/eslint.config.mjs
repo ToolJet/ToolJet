@@ -182,6 +182,7 @@ export default [
 
     plugins: {
       '@typescript-eslint': tsPlugin,
+      import: pluginImportX,
       react: pluginReact,
       'react-hooks': pluginReactHooks,
       prettier: pluginPrettier,
@@ -190,6 +191,14 @@ export default [
     settings: {
       react: {
         version: 'detect',
+      },
+      'import-x/resolver': {
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+        webpack: {
+          config: new URL('./webpack.config.js', import.meta.url).pathname,
+        },
       },
     },
 
@@ -207,7 +216,10 @@ export default [
       // @typescript-eslint recommended
       '@typescript-eslint/adjacent-overload-signatures': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/ban-types': 'error',
+      // ban-types was split in typescript-eslint v8; the three rules below are its replacements.
+      '@typescript-eslint/no-unsafe-function-type': 'error',
+      '@typescript-eslint/no-wrapper-object-types': 'error',
+      '@typescript-eslint/no-empty-object-type': 'error',
       '@typescript-eslint/no-array-constructor': 'error',
       '@typescript-eslint/no-empty-interface': 'error',
       '@typescript-eslint/no-extra-non-null-assertion': 'error',

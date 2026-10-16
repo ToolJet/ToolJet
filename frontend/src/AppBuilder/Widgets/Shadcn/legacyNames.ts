@@ -72,7 +72,11 @@ export const UI2_RENAMES: Record<string, Ui2Renames> = {
     events: { onMapClick: 'onMapClicked', onShapeClick: 'onShapeClicked', onLocationPick: 'onLocationPicked' },
   },
   ShadMultiselect: { events: { onChange: 'onSelect' } },
-  ShadNavigation: { events: { onSelect: 'onClick' }, actions: { setActive: 'selectItem' }, exposed: { activeItem: 'selectedItem' } },
+  ShadNavigation: {
+    events: { onSelect: 'onClick' },
+    actions: { setActive: 'selectItem' },
+    exposed: { activeItem: 'selectedItem' },
+  },
   ShadPhoneInput: { actions: { setCountry: 'setCountryCode' } },
   ShadNumberInput: { actions: { setValue: 'setText' } },
   ShadProgressList: { events: { onItemClick: 'onItemClicked' } },
