@@ -116,7 +116,13 @@ export const useNumberBox = (
     setValue(next);
     fireEvent('onChange');
   };
-  return { value, valueRef, draft, setDraft, commit, set };
+  /** Empties the box as a Form's clearForm does: the value, and the text being typed when the box has focus (else the
+   *  next digit typed would append to the old text: 42, clear, 1 gave 421). */
+  const clearTyped = (extra: (value: number | null) => Exposed) => {
+    setDraft((d) => (d === null ? null : ''));
+    commit(null, extra);
+  };
+  return { value, valueRef, draft, setDraft, commit, set, clearTyped };
 };
 
 /** A number box's text field, spread on its input: while focused it holds the text as typed (starting from

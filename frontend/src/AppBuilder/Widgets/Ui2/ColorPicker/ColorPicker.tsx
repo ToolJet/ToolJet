@@ -12,6 +12,7 @@ import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import type { Hsv } from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { useFormClearNow } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 
 // ---- Color picker --------------------------------------------------------------------------------------------------
 
@@ -135,6 +136,13 @@ export const ShadColorPicker = (props: WidgetProps) => {
     setExposedVariables(colorExposed(hex));
     fireEvent('onChange');
   };
+  // A Form's clearForm empties it, as the native Color picker.
+  useFormClearNow(() => {
+    if (value === '') return;
+    setValue('');
+    setExposedVariables(colorExposed(''));
+    fireEvent('onChange');
+  });
   const pickHex = (hex: string) => {
     if (popup.blocked) return;
     setHsva(toHsva(hex, hsvaRef.current.h));

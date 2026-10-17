@@ -68,12 +68,19 @@ export const ShadTagsInput = (props: WidgetProps) => {
       const gone = M.toTags(t);
       setTags((cur) => cur.filter((tag) => !gone.some((g) => M.sameTag(g, tag, rulesRef.current.caseSensitive))));
     },
-    clear: async () => setTags([]),
+    // Clearing drops the unfinished text too, or leaving the box would add it as a tag.
+    clear: async () => {
+      setTags([]);
+      setText('');
+      setTagError('');
+    },
     setFocus: async () => inputRef.current?.focus(),
     setBlur: async () => inputRef.current?.blur(),
   });
   const check = useValidation(props, tags, () => {
     setTags([]);
+    setText('');
+    setTagError('');
     setExposedVariables(tagNames([]));
   });
   const disabled = busy(properties);
