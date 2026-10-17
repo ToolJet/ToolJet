@@ -23,6 +23,7 @@ import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicH
 import { fitsContentInView, listRowHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
+import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 import { useListSelection } from './useListSelection';
 import { takeRowValues } from './rowValues';
 
@@ -100,17 +101,22 @@ const Row = ({
     height: rowHeight,
     currentLayout,
   });
+  const activate = onKeyActivate(() => onPick(index));
   const contextValue = useMemo(
     () => ({ contextPath: [...parentPath, { containerId: id, index }] }),
     [parentPath, id, index]
   );
   return (
     <SubcontainerContext.Provider value={contextValue}>
+      {/* A tab stop like RecordList's rows: Enter or Space on the row itself picks it (keys typed in its components
+          stay theirs). */}
       <div
         role="listitem"
+        tabIndex={0}
         onClickCapture={() => onPick(index)}
+        onKeyDown={(e) => e.target === e.currentTarget && activate(e)}
         className={cn(
-          'tw-relative tw-overflow-hidden tw-transition-colors hover:tw-bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
+          'tw-relative tw-overflow-hidden tw-outline-none tw-transition-colors focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--sc-ring)] hover:tw-bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
           selected &&
             'tw-bg-[color:var(--lv-selected-bg,color-mix(in_srgb,var(--sc-primary)_8%,transparent))] tw-ring-1 tw-ring-inset tw-ring-ui2-primary',
           look.framed && 'tw-border tw-border-[color:var(--lv-item-border,var(--sc-border))]',
