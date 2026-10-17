@@ -82,9 +82,7 @@ describe("Workflows - execution history (API)", () => {
     });
   });
 
-  // The editor sends the start node's JSON as params; the run API itself does
-  // not merge the saved defaultParams (only the webhook endpoint does, see
-  // workflowWebhooksApi.cy.js), so a run sees exactly the params it was given.
+  // The run API does not merge defaultParams (only the webhook does).
   it("A run passes exactly the params it was given to the start trigger", () => {
     createRunjsQueries({ echo: "return startTrigger.params" }).then((ids) => {
       cy.apiSaveWorkflowDefinition(
@@ -114,8 +112,7 @@ describe("Workflows - execution history (API)", () => {
     });
   });
 
-  // BUG: a workflow whose definition was never saved answers 500
-  // "Cannot read properties of null (reading 'nodes')" instead of a 4xx.
+  // BUG: a run with no saved definition answers 500 instead of 4xx.
   it.skip("Running a workflow with no saved definition is a client error (4xx)", () => {
     data.emptyWorkflowName = `${data.workflowName}-empty`;
     cy.apiCreateWorkflowApp(data.emptyWorkflowName);
@@ -124,9 +121,7 @@ describe("Workflows - execution history (API)", () => {
     cleanupWorkflows([data.emptyWorkflowName]);
   });
 
-  // BUG: terminating a finished synchronous run answers 200
-  // {success:true, previousState:"sync"} and overwrites the run's status
-  // with "terminated".
+  // BUG: terminating a finished sync run answers 200 and overwrites its status.
   it.skip("Terminating a finished run is refused and keeps its outcome", () => {
     cy.apiRunWorkflow({ params: { fail: false } });
     cy.then(() =>

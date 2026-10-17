@@ -11,8 +11,7 @@ import {
 
 const data = {};
 
-// Creates a constant (type "Global") or secret (type "Secret") with one value
-// in every environment and resolves with its id.
+// Creates a constant or secret with one value per environment.
 const createConstant = (name, value, type) =>
   cy.apiGetEnvironments().then((environments) =>
     cy.getAuthHeaders().then((headers) =>
@@ -77,8 +76,7 @@ describe("Workflows - workspace constants and secrets", () => {
     cy.apiCreateWorkflowApp(data.workflowName);
     cy.apiFetchWorkflowContext();
     createRunjsQueries({
-      // RunJS sees secrets only as a mask; their values are meant for data
-      // source configuration, so nothing derived from them is readable here.
+      // RunJS sees secrets only as a mask.
       read: `return { constant: constants.${data.constantName}, secret: secrets.${data.secretName}, secretPart: secrets.${data.secretName}.split("-")[0] }`,
     }).then((ids) => {
       cy.apiSaveWorkflowDefinition(

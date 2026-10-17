@@ -27,8 +27,7 @@ const asCurrentUser = (method, path, body) =>
     })
   );
 
-// Default role groups: admin and builder create/edit workflows; an end user
-// can only run them (granular "Workflows: view" on all workflows).
+// Admin and builder create/edit workflows; an end user can only run them.
 describe("Workflows - role permissions", () => {
   beforeEach(() => {
     data.workflowName = `${fake.lastName.toLowerCase()}-perm`;

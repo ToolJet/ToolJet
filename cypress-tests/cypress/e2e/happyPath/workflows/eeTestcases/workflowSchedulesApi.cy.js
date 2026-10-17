@@ -12,8 +12,7 @@ const invalidCron = {
   dayOfWeek: "*",
 };
 
-// Schedule CRUD only. Firing is not asserted: the CI stack runs no BullMQ
-// worker (WORKER is unset), so scheduled jobs are stored but never processed.
+// Schedule CRUD only; CI has no worker, so firing is not asserted.
 describe("Workflows - schedules (API)", () => {
   beforeEach(() => {
     cy.apiLogin();
@@ -86,8 +85,7 @@ describe("Workflows - schedules (API)", () => {
     cy.apiListWorkflowSchedules().should("have.length", 0);
   });
 
-  // BUG: an invalid pattern answers 500 "Invalid interval configuration ..."
-  // instead of a 400.
+  // BUG: an invalid cron pattern answers 500 instead of 4xx.
   it.skip("An invalid cron expression is a client error (4xx)", () => {
     cy.apiCreateWorkflowSchedule({ type: "cron", details: invalidCron })
       .its("status")

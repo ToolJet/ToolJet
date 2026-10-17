@@ -13,9 +13,7 @@ import {
 
 const data = {};
 
-// start → pong (runjs) → response. The draft is addressed explicitly with
-// ?version=<name>&environment=development, since without ?version the
-// webhook runs (and checks) the released version.
+// start → pong (runjs) → response, run via ?version and ?environment.
 const buildPongWorkflow = (statusCode = "200") =>
   createRunjsQueries({ pong: "return 'pong'" }).then((ids) => {
     cy.apiSaveWorkflowDefinition(
@@ -39,8 +37,7 @@ const draftQuery = () => ({
   environment: "development",
 });
 
-// Webhook popup UI and request parameters are left to the workflow-inputs
-// work (#18117), which replaces webhook params; these cases stay API-only.
+// Webhook popup UI and parameters wait for the workflow-inputs work (#18117).
 describe("Workflows - webhook endpoint (API)", () => {
   beforeEach(() => {
     cy.apiLogin();
@@ -131,8 +128,7 @@ describe("Workflows - webhook endpoint (API)", () => {
     // The status route ignores ?version and gates on the released version.
     releaseWorkflow(data.workflowName);
 
-    // Only the enqueue + status contract is asserted: the CI stack runs no
-    // BullMQ worker (WORKER is unset), so queued runs never complete there.
+    // Only enqueue and status are asserted; CI runs no worker.
     cy.then(() =>
       cy
         .apiTriggerWorkflowWebhook({ token: data.token, async: true })
@@ -158,8 +154,7 @@ describe("Workflows - webhook endpoint (API)", () => {
         token: data.token,
         qs: { version: "no-such-version", environment: "development" },
       }).then((res) => {
-        // The guard reads workflow_enabled from the named version, so an
-        // unknown version is refused there before the service's 404.
+        // An unknown version is refused by the guard (403) before the service's 404.
         expect(res.status).to.equal(403);
         expect(res.body.message).to.equal(workflowsText.webhookDisabledError);
       });
@@ -237,9 +232,7 @@ describe("Workflows - webhook endpoint (API)", () => {
     });
   });
 
-  // BUG: WebhookGuard resolves a non-UUID :idOrName via apps.name, which is
-  // null for every app since the name moved to app_versions.app_name, so a
-  // trigger by name always answers 404 "Workflow doesn't exists".
+  // BUG: triggering by workflow name always answers 404.
   it.skip("The webhook can be triggered by workflow name", () => {
     buildPongWorkflow();
     cy.apiSetWorkflowWebhookEnabled(true);

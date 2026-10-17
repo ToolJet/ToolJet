@@ -343,10 +343,7 @@ Cypress.Commands.add("apiValidateLogsWithData", (expectedValue, reuseSession = f
     });
   });
 });
-// ---------------------------------------------------------------------------
-// Graph-level API commands. A definition PUT replaces the whole graph, so
-// specs build it with the node/edge helpers in Support/utils/workflows/workFlows.
-// ---------------------------------------------------------------------------
+// Graph-level API commands.
 
 Cypress.Commands.add(
   "apiSaveWorkflowDefinition",
@@ -368,8 +365,7 @@ Cypress.Commands.add(
   }
 );
 
-// Runs the editing version synchronously. Resolves with the raw response so
-// specs can assert on gate errors (403/451) as well as on successful runs.
+// Runs the editing version synchronously.
 Cypress.Commands.add(
   "apiRunWorkflow",
   ({
@@ -420,9 +416,7 @@ Cypress.Commands.add(
   }
 );
 
-// Node results come back `flatted`-encoded: a JSON array whose entry 0 is
-// the root, where every string is an index into the array and other
-// primitives are inline.
+// Node results come back `flatted`-encoded.
 const parseFlatted = (text) => {
   const table = JSON.parse(text);
   const resolved = new Map();
@@ -441,8 +435,7 @@ const parseFlatted = (text) => {
   return resolve(0);
 };
 
-// Resolves with the execution's node rows; `result` is decoded so specs can
-// read `node.result.data` directly (null for nodes that did not run).
+// Resolves with the execution's node rows.
 Cypress.Commands.add(
   "apiGetWorkflowExecutionNodes",
   (executionId = Cypress.env("executionId")) => {
@@ -479,8 +472,7 @@ Cypress.Commands.add(
   }
 );
 
-// Writes `workflow_enabled` on the editable version; any value other than
-// "endPointTrigger" disables the endpoint.
+// Writes `workflow_enabled` on the editable version.
 Cypress.Commands.add(
   "apiSetWorkflowWebhookEnabled",
   (enabled, workflowId = Cypress.env("workflowId")) => {
@@ -511,8 +503,7 @@ Cypress.Commands.add(
   }
 );
 
-// Calls the public webhook endpoint without session cookies. Resolves with the
-// raw response; never fails on status so specs can assert gate errors.
+// Calls the public webhook endpoint without session cookies.
 Cypress.Commands.add(
   "apiTriggerWorkflowWebhook",
   ({

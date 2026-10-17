@@ -461,11 +461,7 @@ export const runWorkflowFromEditor = (timeout = 120000) => {
     .its("response.body.result");
 };
 
-// An app's workflow query runs the workflow's released version; the trigger
-// returns 404 "No released version found for this workflow" otherwise. With
-// multi-env licensed, release needs the version promoted to production, so
-// publish → dev→staging → staging→production → release. Env ids are read
-// inside cy.then so values set by earlier queued commands are used.
+// An app's workflow query runs the workflow's released version.
 export const releaseWorkflow = (workflowName) => {
   cy.then(() => {
     const workflowId = Cypress.env("workflowId");
@@ -568,11 +564,7 @@ export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
     ).to.be.true;
   });
 };
-// ---------------------------------------------------------------------------
-// Graph builders for cy.apiSaveWorkflowDefinition. Shapes mirror what the
-// editor saves: query nodes point at their data query via idOnDefinition, the
-// if-condition and response nodes are keyed by data.nodeName.
-// ---------------------------------------------------------------------------
+// Graph builders for cy.apiSaveWorkflowDefinition.
 
 export const wfStartNode = (id = "start") => ({
   id,
@@ -583,9 +575,7 @@ export const wfStartNode = (id = "start") => ({
   deletable: false,
 });
 
-// `queryId` is the data query created by cy.apiCreateWorkflowNode. Extra data
-// carries node-level options: { errorHandler: true } or
-// { looped: true, iterationValuesCode: "return [1, 2]" }.
+// `queryId` is the data query created by cy.apiCreateWorkflowNode.
 export const wfQueryNode = (id, queryId, kind = "runjs", extraData = {}) => ({
   id,
   type: "query",
@@ -626,8 +616,7 @@ export const wfResponseNode = (
   targetPosition: "left",
 });
 
-// sourceHandle: null from start, "success"/"failure" from query nodes,
-// "true"/"false" from if-condition nodes.
+// sourceHandle: null from start, success/failure from query nodes, true/false from if nodes.
 export const wfEdge = (source, target, sourceHandle = null) => ({
   id: `${source}-${sourceHandle ?? "out"}-${target}`,
   source,
@@ -653,8 +642,7 @@ export const workflowDefinition = ({
   setupScript,
 });
 
-// Query nodes are named by definition.handle (the query name); if-condition
-// and response nodes by definition.nodeName.
+// Query nodes are named by definition.handle (the query name).
 export const findExecutionNode = (nodes, name) =>
   nodes.find(
     (node) =>

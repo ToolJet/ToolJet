@@ -18,8 +18,7 @@ const draftQuery = () => ({
   environment: "development",
 });
 
-// The header "Enable" toggle writes apps.is_maintenance_on; every trigger
-// path (editor run, API run, webhook) is gated on it.
+// The header "Enable" toggle writes apps.is_maintenance_on.
 describe("Workflows - enable toggle", () => {
   beforeEach(() => {
     cy.apiLogin();

@@ -13,8 +13,7 @@ import {
 
 const data = {};
 
-// Graphs are saved over the API and run with POST /api/workflow_executions;
-// assertions read the per-node rows of the execution.
+// Graphs are saved over the API and run with POST /api/workflow_executions.
 describe("Workflows - control flow nodes", () => {
   beforeEach(() => {
     cy.apiLogin();
