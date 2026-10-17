@@ -106,6 +106,28 @@ describe('ButtonColumnGroup in the ToolJet UI 2.0 look', () => {
     expect(onClick.mock.calls[0][0]).toBe('del');
   });
 
+  // Review: <ActionIcon /> is always a truthy element, even when it renders null, so an action with no icon of its own
+  // and a label the icon table does not know ("Reconcile", a localized label) drew a blank button.
+  it('shows the label as text when an action has no icon of its own and none can be read from its label', () => {
+    seed('t-text', 'shadcn');
+    const onClick = jest.fn();
+    const buttons = [
+      { id: 'rec', buttonLabel: 'Reconcile' },
+      { id: 'fr', buttonLabel: 'Supprimer' },
+      { id: 'del', buttonLabel: 'Delete' },
+    ];
+    render(<ButtonColumnGroup id="t-text" buttons={buttons} display="icons" rowData={{}} onClick={onClick} />);
+    const [reconcile, supprimer, del] = screen.getAllByRole('button');
+    expect(reconcile).toHaveTextContent('Reconcile');
+    expect(reconcile.querySelector('svg')).toBeNull();
+    expect(reconcile.className).toContain('tj-row-action-icon--text');
+    expect(supprimer).toHaveTextContent('Supprimer');
+    // A label the table knows still draws its icon, without the text.
+    expect(del.querySelector('svg')).not.toBeNull();
+    expect(del).not.toHaveTextContent('Delete');
+    expect(del.className).not.toContain('tj-row-action-icon--text');
+  });
+
   it('collapses the buttons into a "..." menu whose items run the buttons', async () => {
     seed('t-menu', 'shadcn');
     const onClick = renderGroup('t-menu', 'menu', { status: 'Pending' });
