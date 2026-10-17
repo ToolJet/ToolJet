@@ -50,6 +50,32 @@ describe('boardColumns', () => {
   });
 });
 
+describe('duplicate ids', () => {
+  // Audit finding 54: each duplicate probed its suffixes from ~2 again, so n cards sharing an id cost n(n+1)/2 key
+  // checks before the board drew (2,001,000 for 2,000 cards).
+  it('get unique keys in linear work', () => {
+    const cards = Array.from({ length: 2000 }, (_, i) => ({ id: 'same', status: i % 2 ? 'todo' : 'done' }));
+    const has = jest.spyOn(Set.prototype, 'has');
+    const columns = boardColumns(cards, [], 'status', 'id');
+    const probes = has.mock.calls.length;
+    has.mockRestore();
+    const keys = columns.flatMap((c) => c.cards.map((card) => card.__key));
+    expect(new Set(keys).size).toBe(2000);
+    expect(keys).toContain('same');
+    expect(probes).toBeLessThan(3 * 2000);
+  });
+
+  it('skip a suffix the data already uses', () => {
+    const columns = boardColumns(
+      [{ id: 'a' }, { id: 'a~2' }, { id: 'a' }, { id: 'a' }].map((card) => ({ ...card, status: 'todo' })),
+      [],
+      'status',
+      'id'
+    );
+    expect(columns[0].cards.map((card) => card.__key)).toEqual(['a', 'a~2', 'a~3', 'a~4']);
+  });
+});
+
 describe('moveCard', () => {
   const cols = () => boardColumns(cards, ['todo', 'doing', 'done'], 'status', 'id');
 
