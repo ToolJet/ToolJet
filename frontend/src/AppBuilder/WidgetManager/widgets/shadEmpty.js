@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadEmptyConfig = {
   name: 'ShadEmpty',
   displayName: 'Empty',
@@ -164,8 +163,8 @@ export const shadEmptyConfig = {
     },
   },
   events: {
-    onAction: {
-      displayName: 'On action',
+    onActionClicked: {
+      displayName: 'On action clicked',
     },
   },
   styles: {

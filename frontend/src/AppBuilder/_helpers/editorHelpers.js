@@ -73,6 +73,7 @@ const ModuleContainer = lazy(() =>
 const ModuleViewer = lazy(() => import('@/modules/Modules/components').then((m) => ({ default: m.ModuleViewer })));
 
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
+import { UI2_WIDGETS } from '@/AppBuilder/Widgets/Ui2/registry';
 
 // import './requestIdleCallbackPolyfill';
 
@@ -95,103 +96,6 @@ const Cascader = lazy(() => import('@/AppBuilder/Widgets/Cascader/Cascader'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
 const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
 const LibraryComponent = lazy(() => import('@/AppBuilder/Widgets/LibraryComponent'));
-// ToolJet UI 2.0: widgets in one lazy chunk, charts (Recharts) in another. Widgets that do not keep
-// their own control state get it from withControlState (setVisibility, setLoading and setDisable actions).
-const shadcnWidgets = () => import('@/AppBuilder/Widgets/Shadcn/Shadcn');
-const shadcnCharts = () => import('@/AppBuilder/Widgets/Shadcn/ShadCharts');
-const shadcnKanban = () => import('@/AppBuilder/Widgets/Shadcn/ShadKanban');
-const shadcnTable = () => import('@/AppBuilder/Widgets/Shadcn/ShadTable');
-const shadcnTabs = () => import('@/AppBuilder/Widgets/Shadcn/ShadTabs');
-const shadcnListView = () => import('@/AppBuilder/Widgets/Shadcn/ShadListView');
-const shadcnInputs = () => import('@/AppBuilder/Widgets/Shadcn/ShadInputs');
-const shadcnPickers = () => import('@/AppBuilder/Widgets/Shadcn/ShadPickers');
-const shadcnDisplay = () => import('@/AppBuilder/Widgets/Shadcn/ShadDisplay');
-const shadcnSections = () => import('@/AppBuilder/Widgets/Shadcn/ShadSections');
-const shadcnActions = () => import('@/AppBuilder/Widgets/Shadcn/ShadActions');
-const shadcnOverlays = () => import('@/AppBuilder/Widgets/Shadcn/ShadOverlays');
-const shadcnChat = () => import('@/AppBuilder/Widgets/Shadcn/ShadChat');
-const shadcnQuestionnaire = () => import('@/AppBuilder/Widgets/Shadcn/ShadQuestionnaire');
-// Leaflet and its stylesheet load with this chunk, the first time a map is on the page.
-const shadcnMap = () => import('@/AppBuilder/Widgets/Shadcn/ShadMap');
-const shadcnSchedule = () => import('@/AppBuilder/Widgets/Shadcn/ShadSchedule');
-const shadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m[name] })));
-const controlledShadWidget = (load, name) => lazy(() => load().then((m) => ({ default: m.withControlState(m[name]) })));
-const ShadButton = controlledShadWidget(shadcnWidgets, 'ShadButton');
-const ShadAlert = controlledShadWidget(shadcnWidgets, 'ShadAlert');
-const ShadBreadcrumb = controlledShadWidget(shadcnWidgets, 'ShadBreadcrumb');
-const ShadHeading = controlledShadWidget(shadcnWidgets, 'ShadHeading');
-const ShadText = controlledShadWidget(shadcnWidgets, 'ShadText');
-const ShadTable = shadWidget(shadcnTable, 'ShadTable');
-const ShadStat = controlledShadWidget(shadcnWidgets, 'ShadStat');
-const ShadBadge = controlledShadWidget(shadcnWidgets, 'ShadBadge');
-const ShadAvatar = controlledShadWidget(shadcnWidgets, 'ShadAvatar');
-const ShadProgress = controlledShadWidget(shadcnWidgets, 'ShadProgress');
-const ShadSeparator = controlledShadWidget(shadcnWidgets, 'ShadSeparator');
-const ShadSkeleton = controlledShadWidget(shadcnWidgets, 'ShadSkeleton');
-const ShadAccordion = controlledShadWidget(shadcnWidgets, 'ShadAccordion');
-const ShadEmpty = controlledShadWidget(shadcnWidgets, 'ShadEmpty');
-const ShadInput = controlledShadWidget(shadcnWidgets, 'ShadInput');
-const ShadTextarea = controlledShadWidget(shadcnWidgets, 'ShadTextarea');
-const ShadSelect = controlledShadWidget(shadcnWidgets, 'ShadSelect');
-const ShadCheckbox = controlledShadWidget(shadcnWidgets, 'ShadCheckbox');
-const ShadSwitch = controlledShadWidget(shadcnWidgets, 'ShadSwitch');
-const ShadRadioGroup = controlledShadWidget(shadcnWidgets, 'ShadRadioGroup');
-const ShadSlider = controlledShadWidget(shadcnWidgets, 'ShadSlider');
-const ShadDatePicker = controlledShadWidget(shadcnWidgets, 'ShadDatePicker');
-const ShadToggleGroup = controlledShadWidget(shadcnWidgets, 'ShadToggleGroup');
-const ShadAreaChart = controlledShadWidget(shadcnCharts, 'ShadAreaChart');
-const ShadBarChart = controlledShadWidget(shadcnCharts, 'ShadBarChart');
-const ShadPieChart = controlledShadWidget(shadcnCharts, 'ShadPieChart');
-const ShadKanban = controlledShadWidget(shadcnKanban, 'ShadKanban');
-const ShadTabs = shadWidget(shadcnTabs, 'ShadTabs');
-const ShadListView = shadWidget(shadcnListView, 'ShadListView');
-// ModalV2 in the pack's look: it keeps ModalV2's own control state.
-const ShadDialog = shadWidget(shadcnOverlays, 'ShadDialog');
-const ShadNumberInput = controlledShadWidget(shadcnInputs, 'ShadNumberInput');
-const ShadPasswordInput = controlledShadWidget(shadcnInputs, 'ShadPasswordInput');
-const ShadPhoneInput = controlledShadWidget(shadcnInputs, 'ShadPhoneInput');
-const ShadCurrencyInput = controlledShadWidget(shadcnInputs, 'ShadCurrencyInput');
-const ShadOtpInput = controlledShadWidget(shadcnInputs, 'ShadOtpInput');
-const ShadTimePicker = controlledShadWidget(shadcnInputs, 'ShadTimePicker');
-const ShadDateTimePicker = controlledShadWidget(shadcnInputs, 'ShadDateTimePicker');
-const ShadCombobox = controlledShadWidget(shadcnPickers, 'ShadCombobox');
-const ShadMultiselect = controlledShadWidget(shadcnPickers, 'ShadMultiselect');
-const ShadTagsInput = controlledShadWidget(shadcnPickers, 'ShadTagsInput');
-const ShadColorPicker = controlledShadWidget(shadcnPickers, 'ShadColorPicker');
-const ShadRating = controlledShadWidget(shadcnPickers, 'ShadRating');
-const ShadFileUpload = controlledShadWidget(shadcnPickers, 'ShadFileUpload');
-const ShadImage = controlledShadWidget(shadcnDisplay, 'ShadImage');
-const ShadIcon = controlledShadWidget(shadcnDisplay, 'ShadIcon');
-const ShadLink = controlledShadWidget(shadcnDisplay, 'ShadLink');
-const ShadTags = controlledShadWidget(shadcnDisplay, 'ShadTags');
-const ShadCircularProgress = controlledShadWidget(shadcnDisplay, 'ShadCircularProgress');
-const ShadSpinner = controlledShadWidget(shadcnDisplay, 'ShadSpinner');
-const ShadKeyValue = controlledShadWidget(shadcnDisplay, 'ShadKeyValue');
-const ShadTimeline = controlledShadWidget(shadcnDisplay, 'ShadTimeline');
-const ShadHero = controlledShadWidget(shadcnSections, 'ShadHero');
-const ShadCardGrid = controlledShadWidget(shadcnSections, 'ShadCardGrid');
-const ShadRecordList = controlledShadWidget(shadcnSections, 'ShadRecordList');
-const ShadSummaryStrip = controlledShadWidget(shadcnSections, 'ShadSummaryStrip');
-const ShadProgressList = controlledShadWidget(shadcnSections, 'ShadProgressList');
-const ShadSchedule = controlledShadWidget(shadcnSchedule, 'ShadSchedule');
-const ShadChat = controlledShadWidget(shadcnChat, 'ShadChat');
-const ShadQuestionnaire = controlledShadWidget(shadcnQuestionnaire, 'ShadQuestionnaire');
-const ShadMap = controlledShadWidget(shadcnMap, 'ShadMap');
-const ShadSteps = controlledShadWidget(shadcnDisplay, 'ShadSteps');
-const ShadPagination = controlledShadWidget(shadcnDisplay, 'ShadPagination');
-const ShadDropdownMenu = controlledShadWidget(shadcnActions, 'ShadDropdownMenu');
-const ShadButtonGroup = controlledShadWidget(shadcnActions, 'ShadButtonGroup');
-const ShadNavigation = controlledShadWidget(shadcnActions, 'ShadNavigation');
-const ShadCalendar = controlledShadWidget(shadcnActions, 'ShadCalendar');
-const ShadCarousel = controlledShadWidget(shadcnActions, 'ShadCarousel');
-const ShadLineChart = controlledShadWidget(shadcnCharts, 'ShadLineChart');
-const ShadRadarChart = controlledShadWidget(shadcnCharts, 'ShadRadarChart');
-const ShadComboChart = controlledShadWidget(shadcnCharts, 'ShadComboChart');
-const ShadScatterChart = controlledShadWidget(shadcnCharts, 'ShadScatterChart');
-const ShadFunnelChart = controlledShadWidget(shadcnCharts, 'ShadFunnelChart');
-const ShadHeatmapChart = controlledShadWidget(shadcnCharts, 'ShadHeatmapChart');
-const ShadRadialChart = controlledShadWidget(shadcnCharts, 'ShadRadialChart');
-const ShadSparkline = controlledShadWidget(shadcnCharts, 'ShadSparkline');
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -252,81 +156,7 @@ export const AllComponents = {
   Tags,
   Spinner,
   LibraryComponent,
-  ShadButton,
-  ShadAlert,
-  ShadBreadcrumb,
-  ShadHeading,
-  ShadText,
-  ShadTable,
-  ShadStat,
-  ShadBadge,
-  ShadAvatar,
-  ShadProgress,
-  ShadSeparator,
-  ShadSkeleton,
-  ShadAccordion,
-  ShadEmpty,
-  ShadInput,
-  ShadTextarea,
-  ShadSelect,
-  ShadCheckbox,
-  ShadSwitch,
-  ShadRadioGroup,
-  ShadSlider,
-  ShadDatePicker,
-  ShadToggleGroup,
-  ShadAreaChart,
-  ShadBarChart,
-  ShadPieChart,
-  ShadKanban,
-  ShadTabs,
-  ShadListView,
-  ShadDialog,
-  ShadNumberInput,
-  ShadPasswordInput,
-  ShadPhoneInput,
-  ShadCurrencyInput,
-  ShadOtpInput,
-  ShadTimePicker,
-  ShadDateTimePicker,
-  ShadCombobox,
-  ShadMultiselect,
-  ShadTagsInput,
-  ShadColorPicker,
-  ShadRating,
-  ShadFileUpload,
-  ShadImage,
-  ShadIcon,
-  ShadLink,
-  ShadTags,
-  ShadCircularProgress,
-  ShadSpinner,
-  ShadKeyValue,
-  ShadTimeline,
-  ShadHero,
-  ShadCardGrid,
-  ShadRecordList,
-  ShadSummaryStrip,
-  ShadProgressList,
-  ShadSchedule,
-  ShadChat,
-  ShadQuestionnaire,
-  ShadMap,
-  ShadSteps,
-  ShadPagination,
-  ShadDropdownMenu,
-  ShadButtonGroup,
-  ShadNavigation,
-  ShadCalendar,
-  ShadCarousel,
-  ShadLineChart,
-  ShadRadarChart,
-  ShadComboChart,
-  ShadScatterChart,
-  ShadFunnelChart,
-  ShadHeatmapChart,
-  ShadRadialChart,
-  ShadSparkline,
+  ...UI2_WIDGETS,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,

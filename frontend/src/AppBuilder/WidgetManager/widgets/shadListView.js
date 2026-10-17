@@ -1,9 +1,8 @@
-// GENERATED from WidgetManager/shadcnSource.layout.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadListViewConfig = {
   name: 'ShadListView',
   displayName: 'List view',
   description:
-    'List or grid: one canvas repeated per item of data; parent components to it and bind them to {{listItem.<field>}}. A click selects the item (selectedItem, onRowClicked); optional pagination (client or server side), dividers, hover and selected highlight. Items have a fixed height (rowHeight)',
+    'List or grid: one canvas repeated per item of data; parent components to it and bind them to {{listItem.<field>}}. A click selects the item (selectedItem, selectedRecord; onRecordClicked); optional pagination (client or server side), dividers, hover and selected highlight. Items have a fixed height (rowHeight)',
   component: 'ShadListView',
   defaultSize: {
     width: 30,
@@ -373,9 +372,6 @@ export const shadListViewConfig = {
     },
   },
   events: {
-    onRowClicked: {
-      displayName: 'Row clicked',
-    },
     onRecordClicked: {
       displayName: 'Record clicked',
     },
@@ -581,8 +577,6 @@ export const shadListViewConfig = {
     selectedItemId: null,
     selectedRecord: {},
     selectedRecordId: null,
-    selectedRow: {},
-    selectedRowId: null,
     pageIndex: 1,
   },
   actions: [

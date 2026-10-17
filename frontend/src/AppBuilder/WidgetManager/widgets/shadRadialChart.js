@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.charts.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadRadialChartConfig = {
   name: 'ShadRadialChart',
   displayName: 'Radial chart',
@@ -478,7 +477,6 @@ export const shadRadialChartConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
-    clickedDatum: {},
     clickedDataPoint: {},
   },
   actions: [

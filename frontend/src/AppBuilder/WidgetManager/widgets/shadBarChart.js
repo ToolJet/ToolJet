@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadBarChartConfig = {
   name: 'ShadBarChart',
   displayName: 'Bar chart',
@@ -399,7 +398,6 @@ export const shadBarChartConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
-    clickedDatum: {},
     clickedDataPoint: {},
   },
   actions: [

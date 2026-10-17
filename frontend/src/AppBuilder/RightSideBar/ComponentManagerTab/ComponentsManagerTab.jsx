@@ -141,7 +141,7 @@ const COMPONENT_LIBRARIES = [
     components: [...SHADCN_COMPONENTS.filter((name) => name !== 'ShadTable'), SHADCN_TABLE, SHADCN_GOOGLE_MAP],
   },
 ];
-// Pack widgets never appear in the ToolJet list.
+// UI 2.0 widgets never appear in the ToolJet list.
 const PACK_COMPONENTS = new Set(SHADCN_COMPONENTS);
 const libraryComponentNames = (library) =>
   library.components ? new Set(['FlexContainer', ...library.components]) : null;

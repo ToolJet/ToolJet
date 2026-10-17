@@ -1,0 +1,42 @@
+import { useEffect, useState } from 'react';
+import type { MutableRefObject, RefObject } from 'react';
+import type { LeafletMap } from 'leaflet';
+
+/** Full screen: the browser's when it allows it, else the map fills the window. Escape, or leaving the browser's full
+ *  screen, ends it. */
+export const useMapFullscreen = ({
+  frameRef,
+  mapRef,
+  resize,
+}: {
+  frameRef: RefObject<HTMLDivElement>;
+  mapRef: MutableRefObject<LeafletMap | null>;
+  resize: (map: LeafletMap) => void;
+}) => {
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (map) setTimeout(() => mapRef.current && resize(mapRef.current), 0);
+    if (!expanded) return undefined;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setExpanded(false);
+    const onChange = () => !document.fullscreenElement && setExpanded(false);
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('fullscreenchange', onChange);
+    };
+  }, [expanded, mapRef, resize]);
+  const toggleFullscreen = () => {
+    const frame = frameRef.current;
+    if (expanded) {
+      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+      setExpanded(false);
+      return;
+    }
+    setExpanded(true);
+    frame?.requestFullscreen?.().catch(() => {});
+  };
+
+  return { expanded, toggleFullscreen };
+};

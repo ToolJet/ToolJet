@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadRadioGroupConfig = {
   name: 'ShadRadioGroup',
   displayName: 'Radio group',
@@ -191,9 +190,6 @@ export const shadRadioGroupConfig = {
     },
   },
   events: {
-    onChange: {
-      displayName: 'On change',
-    },
     onSelectionChange: {
       displayName: 'On selection change',
     },

@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.pickers.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadMultiselectConfig = {
   name: 'ShadMultiselect',
   displayName: 'Multiselect',
@@ -304,9 +303,6 @@ export const shadMultiselectConfig = {
   events: {
     onSelect: {
       displayName: 'On select',
-    },
-    onChange: {
-      displayName: 'On change',
     },
     onSearchTextChanged: {
       displayName: 'On search text changed',

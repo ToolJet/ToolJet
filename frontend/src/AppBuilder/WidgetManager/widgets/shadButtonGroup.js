@@ -1,9 +1,8 @@
-// GENERATED from WidgetManager/shadcnSource.actions.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadButtonGroupConfig = {
   name: 'ShadButtonGroup',
   displayName: 'Button group',
   description:
-    "Button group (attached buttons) from buttons [{ label, value, icon?: 'IconBolt', disabled?, variant? }] (label '' with an icon = icon-only). mode: 'actions' (each click fires onClick, exposed lastClicked), 'single' or 'multiple' (a segmented selection: exposed value, values, selected; onChange). Height 36px (sm 32px, lg 40px); add 22px for a label",
+    "Button group (attached buttons) from buttons [{ label, value, icon?: 'IconBolt', disabled?, variant? }] (label '' with an icon = icon-only). mode: 'actions' (each click fires onClick, exposed lastClicked), 'single' or 'multiple' (a segmented selection: exposed value, selected; onChange). Height 36px (sm 32px, lg 40px); add 22px for a label",
   component: 'ShadButtonGroup',
   defaultSize: {
     width: 10,
@@ -455,7 +454,6 @@ export const shadButtonGroupConfig = {
     isLoading: false,
     isDisabled: false,
     value: '',
-    values: [],
     selected: [],
     lastClicked: null,
     isValid: true,

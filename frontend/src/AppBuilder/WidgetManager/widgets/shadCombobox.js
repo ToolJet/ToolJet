@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.pickers.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadComboboxConfig = {
   name: 'ShadCombobox',
   displayName: 'Combobox',
@@ -272,9 +271,6 @@ export const shadComboboxConfig = {
   events: {
     onSelect: {
       displayName: 'On select',
-    },
-    onChange: {
-      displayName: 'On change',
     },
     onSearchTextChanged: {
       displayName: 'On search text changed',

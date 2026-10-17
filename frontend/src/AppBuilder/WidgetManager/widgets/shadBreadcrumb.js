@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadBreadcrumbConfig = {
   name: 'ShadBreadcrumb',
   displayName: 'Breadcrumb',
@@ -143,8 +142,8 @@ export const shadBreadcrumbConfig = {
     },
   },
   events: {
-    onItemClick: {
-      displayName: 'On item click',
+    onItemClicked: {
+      displayName: 'On item clicked',
     },
   },
   styles: {

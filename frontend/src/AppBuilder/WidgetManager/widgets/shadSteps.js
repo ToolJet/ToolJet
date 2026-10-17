@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.display.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadStepsConfig = {
   name: 'ShadSteps',
   displayName: 'Steps',
@@ -379,18 +378,6 @@ export const shadStepsConfig = {
         },
         {
           handle: 'disabled',
-          displayName: 'Disabled',
-          defaultValue: '{{true}}',
-          type: 'toggle',
-        },
-      ],
-    },
-    {
-      handle: 'setDisabled',
-      displayName: 'Set disabled',
-      params: [
-        {
-          handle: 'disable',
           displayName: 'Disabled',
           defaultValue: '{{true}}',
           type: 'toggle',

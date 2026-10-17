@@ -1,9 +1,8 @@
-// GENERATED from WidgetManager/shadcnSource.display.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadTagsConfig = {
   name: 'ShadTags',
   displayName: 'Tags',
   description:
-    "Read-only tag chips: tags is an array or a comma-separated string; tagColors maps a value to a colour ({ Paid: '#16a34a' }: tinted chip, light background and strong text of that hue); variant ('soft', 'outline', 'solid'), size ('sm', 'default', 'lg'), overflow ('wrap', or 'single' for one line with +N), pill. Clicking a tag sets lastClickedTag and fires onTagClick. Height: 24px per line",
+    "Read-only tag chips: tags is an array or a comma-separated string; tagColors maps a value to a colour ({ Paid: '#16a34a' }: tinted chip, light background and strong text of that hue); variant ('soft', 'outline', 'solid'), size ('sm', 'default', 'lg'), overflow ('wrap', or 'single' for one line with +N), pill. Clicking a tag sets lastClickedTag and fires onTagClicked. Height: 24px per line",
   component: 'ShadTags',
   defaultSize: {
     width: 12,
@@ -264,8 +263,8 @@ export const shadTagsConfig = {
     },
   },
   events: {
-    onTagClick: {
-      displayName: 'On tag click',
+    onTagClicked: {
+      displayName: 'On tag clicked',
     },
   },
   styles: {

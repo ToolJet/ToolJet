@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.inputs.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadNumberInputConfig = {
   name: 'ShadNumberInput',
   displayName: 'Number input',
@@ -446,17 +445,6 @@ export const shadNumberInputConfig = {
     label: '',
   },
   actions: [
-    {
-      handle: 'setValue',
-      displayName: 'Set value',
-      params: [
-        {
-          handle: 'value',
-          displayName: 'Value',
-          defaultValue: '',
-        },
-      ],
-    },
     {
       handle: 'setText',
       displayName: 'Set text',

@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadTextareaConfig = {
   name: 'ShadTextarea',
   displayName: 'Textarea',
@@ -342,30 +341,6 @@ export const shadTextareaConfig = {
     {
       handle: 'setBlur',
       displayName: 'Set blur',
-    },
-    {
-      handle: 'disable',
-      displayName: 'Disable',
-      params: [
-        {
-          handle: 'disable',
-          displayName: 'Value',
-          defaultValue: '{{false}}',
-          type: 'toggle',
-        },
-      ],
-    },
-    {
-      handle: 'visibility',
-      displayName: 'Visibility',
-      params: [
-        {
-          handle: 'visible',
-          displayName: 'Value',
-          defaultValue: '{{true}}',
-          type: 'toggle',
-        },
-      ],
     },
     {
       handle: 'setVisibility',

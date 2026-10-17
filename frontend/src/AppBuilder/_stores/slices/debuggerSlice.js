@@ -74,7 +74,7 @@ export const createDebuggerSlice = (set, get) => ({
     getDefaultStyles: (resolvedStyles, componentType) => {
       const getResolvedValue = get().getResolvedValue;
       const componentMeta = componentTypeDefinitionMap[componentType];
-      const defaultStyles = componentMeta.definition.styles;
+      const defaultStyles = componentMeta?.definition?.styles;
       const transformedStyles = { ...resolvedStyles };
       Object.keys(transformedStyles).forEach((key) => {
         if (transformedStyles[key] === '' && defaultStyles?.[key]?.value) {
@@ -106,6 +106,9 @@ export const createDebuggerSlice = (set, get) => ({
       const componentName = componentDefinition.component.name;
       const componentType = componentDefinition.component.component;
       const componentMeta = componentTypeDefinitionMap[componentType];
+      // A type with no registered config (a retired widget, a widget from a newer ToolJet) is passed through
+      // unvalidated: throwing here stopped the whole app from loading.
+      if (!componentMeta) return component;
 
       const [coercedProperties, allPropertyErrors] = validateProperties(
         component.properties,

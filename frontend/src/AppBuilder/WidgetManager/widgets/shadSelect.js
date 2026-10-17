@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadSelectConfig = {
   name: 'ShadSelect',
   displayName: 'Select',
@@ -191,9 +190,6 @@ export const shadSelectConfig = {
     },
   },
   events: {
-    onChange: {
-      displayName: 'On change',
-    },
     onSelect: {
       displayName: 'On select',
     },

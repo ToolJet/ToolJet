@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadButtonConfig = {
   name: 'ShadButton',
   displayName: 'Button',
@@ -301,42 +300,6 @@ export const shadButtonConfig = {
           handle: 'text',
           displayName: 'Text',
           defaultValue: 'New text',
-        },
-      ],
-    },
-    {
-      handle: 'disable',
-      displayName: 'Disable',
-      params: [
-        {
-          handle: 'disable',
-          displayName: 'Value',
-          defaultValue: '{{false}}',
-          type: 'toggle',
-        },
-      ],
-    },
-    {
-      handle: 'visibility',
-      displayName: 'Visibility',
-      params: [
-        {
-          handle: 'visible',
-          displayName: 'Value',
-          defaultValue: '{{true}}',
-          type: 'toggle',
-        },
-      ],
-    },
-    {
-      handle: 'loading',
-      displayName: 'Loading',
-      params: [
-        {
-          handle: 'loading',
-          displayName: 'Value',
-          defaultValue: '{{false}}',
-          type: 'toggle',
         },
       ],
     },

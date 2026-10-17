@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.inputs.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadPhoneInputConfig = {
   name: 'ShadPhoneInput',
   displayName: 'Phone input',
@@ -443,17 +442,6 @@ export const shadPhoneInputConfig = {
           handle: 'country',
           displayName: 'Country (optional ISO code)',
           defaultValue: '',
-        },
-      ],
-    },
-    {
-      handle: 'setCountry',
-      displayName: 'Set country',
-      params: [
-        {
-          handle: 'country',
-          displayName: 'Country (ISO code or +calling code)',
-          defaultValue: 'US',
         },
       ],
     },

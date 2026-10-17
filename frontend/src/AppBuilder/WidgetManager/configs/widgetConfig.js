@@ -197,6 +197,6 @@ export const widgets = [
   moduleContainerConfig,
   moduleViewerConfig,
 
-  // ToolJet UI 2.0: listed under its own library in the components panel
+  // ToolJet UI 2.0 widgets, listed in the components panel under their own library
   ...shadcnConfigs,
 ];

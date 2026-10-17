@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadCheckboxConfig = {
   name: 'ShadCheckbox',
   displayName: 'Checkbox',
@@ -253,18 +252,6 @@ export const shadCheckboxConfig = {
       params: [
         {
           handle: 'value',
-          displayName: 'Checked',
-          defaultValue: '{{true}}',
-          type: 'toggle',
-        },
-      ],
-    },
-    {
-      handle: 'setChecked',
-      displayName: 'Set checked',
-      params: [
-        {
-          handle: 'status',
           displayName: 'Checked',
           defaultValue: '{{true}}',
           type: 'toggle',

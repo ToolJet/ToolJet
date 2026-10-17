@@ -1,9 +1,8 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadKanbanConfig = {
   name: 'ShadKanban',
   displayName: 'Kanban',
   description:
-    'Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar), or, with Card content Custom, child components laid out on the card and bound to {{cardData.<field>}}. Drag to move, optional add and delete buttons, and addCard/updateCard/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.movedCard, lastAddedCard, lastRemovedCard, lastUpdatedCard, cards)',
+    'Kanban board from data: columns are values of a status field; cards show the fields you map (title, description, badge, tags, progress, meta, avatar), or, with Card content Custom, child components laid out on the card and bound to {{cardData.<field>}}. Drag to move, optional add and delete buttons, and addCard/updateCardData/deleteCard/moveCard actions; save changes with queries on the card events (components.<name>.lastCardMovement, lastAddedCard, lastRemovedCard, lastUpdatedCard, updatedCardData)',
   component: 'ShadKanban',
   defaultSize: {
     width: 43,
@@ -461,9 +460,6 @@ export const shadKanbanConfig = {
     },
   },
   events: {
-    onCardClicked: {
-      displayName: 'On card clicked',
-    },
     onCardMoved: {
       displayName: 'On card moved',
     },
@@ -705,12 +701,8 @@ export const shadKanbanConfig = {
     isVisible: true,
     isLoading: false,
     isDisabled: false,
-    cards: [],
     updatedCardData: [],
-    selectedCard: {},
     lastSelectedCard: {},
-    movedCard: {},
-    lastMove: {},
     lastCardMovement: {},
     addCardColumn: '',
     collapsedColumns: [],
@@ -732,22 +724,6 @@ export const shadKanbanConfig = {
           handle: 'columnId',
           displayName: 'Column id (optional)',
           defaultValue: '',
-        },
-      ],
-    },
-    {
-      handle: 'updateCard',
-      displayName: 'Update card',
-      params: [
-        {
-          handle: 'id',
-          displayName: 'Card id',
-          defaultValue: '',
-        },
-        {
-          handle: 'values',
-          displayName: 'Values',
-          defaultValue: "{{{ title: 'Renamed' }}}",
         },
       ],
     },

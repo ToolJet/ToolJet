@@ -1,9 +1,8 @@
-// GENERATED from WidgetManager/shadcnSource.conversation.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadQuestionnaireConfig = {
   name: 'ShadQuestionnaire',
   displayName: 'Questionnaire',
   description:
-    "ToolJet UI 2.0 multi-step questionnaire, one question at a time: a 'Question 2 of 5' progress bar, the prompt and description, answer cards with a letter (or number) shortcut, and Previous, Skip (optional questions), Next and Submit. items: [{ name, prompt, description, required, type: 'single' | 'multiple' | 'text', choices: ['Label'] or [{ label, value, description }], other: true or { label, placeholder } (a free-text Other answer), placeholder (text), multiline: false (a one-line text answer: a name, an email) }]. A required question blocks Next with an error until answered. Exposes answers ({ [name]: value, multiple as an array, Other as its text }), currentIndex, currentItem and isComplete; onStepChange on every move, onSubmit with the answers (run the save query there). After submit it shows completeTitle and completeText. Actions reset() and goTo(index or name). defaultAnswers restores saved answers. Height: grows with the question (about 440px for four choices, 160px plus 58px per choice)",
+    "ToolJet UI 2.0 multi-step questionnaire, one question at a time: a 'Question 2 of 5' progress bar, the prompt and description, answer cards with a letter (or number) shortcut, and Previous, Skip (optional questions), Next and Submit. items: [{ name, prompt, description, required, type: 'single' | 'multiple' | 'text', choices: ['Label'] or [{ label, value, description }], other: true or { label, placeholder } (a free-text Other answer), placeholder (text), multiline: false (a one-line text answer: a name, an email) }]. A required question blocks Next with an error until answered. Exposes answers ({ [name]: value, multiple as an array, Other as its text }), currentIndex, currentItem and isComplete; onStepChanged on every move, onSubmit with the answers (run the save query there). After submit it shows completeTitle and completeText. Actions reset() and goTo(index or name). defaultAnswers restores saved answers. Height: grows with the question (about 440px for four choices, 160px plus 58px per choice)",
   component: 'ShadQuestionnaire',
   defaultSize: {
     width: 20,
@@ -239,8 +238,8 @@ export const shadQuestionnaireConfig = {
     },
   },
   events: {
-    onStepChange: {
-      displayName: 'On step change',
+    onStepChanged: {
+      displayName: 'On step changed',
     },
     onSubmit: {
       displayName: 'On submit',

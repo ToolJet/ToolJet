@@ -1,9 +1,8 @@
-// GENERATED from WidgetManager/shadcnSource.pickers.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadTagsInputConfig = {
   name: 'ShadTagsInput',
   displayName: 'Tags input',
   description:
-    'Tags input: free-form tags typed in the field (Enter or comma adds, Backspace removes the last, x removes one), with optional suggestions, maxTags, duplicate check and a per-tag pattern. Exposes tags (array of text) and value (the same). Height: 64px with a label, 36px without (one row; grows with dynamic height)',
+    'Tags input: free-form tags typed in the field (Enter or comma adds, Backspace removes the last, x removes one), with optional suggestions, maxTags, duplicate check and a per-tag pattern. Exposes values (array of text). Height: 64px with a label, 36px without (one row; grows with dynamic height)',
   component: 'ShadTagsInput',
   defaultSize: {
     width: 10,
@@ -279,9 +278,6 @@ export const shadTagsInputConfig = {
     onTagAdded: {
       displayName: 'On tag added',
     },
-    onTagRemoved: {
-      displayName: 'On tag removed',
-    },
     onTagDeleted: {
       displayName: 'On tag deleted',
     },
@@ -468,10 +464,7 @@ export const shadTagsInputConfig = {
     isDisabled: false,
     isValid: true,
     isMandatory: false,
-    tags: [],
-    value: [],
     values: [],
-    selectedTags: [],
     newTagsAdded: [],
     lastAddedTag: '',
     lastRemovedTag: '',

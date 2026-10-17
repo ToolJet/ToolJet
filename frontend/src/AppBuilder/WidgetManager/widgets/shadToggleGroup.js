@@ -1,4 +1,3 @@
-// GENERATED from WidgetManager/shadcnSource.js by scripts-shadcn-literals.mjs. Do not edit by hand.
 export const shadToggleGroupConfig = {
   name: 'ShadToggleGroup',
   displayName: 'Toggle group',
@@ -247,7 +246,6 @@ export const shadToggleGroupConfig = {
     isLoading: false,
     isDisabled: false,
     value: '',
-    selected: '',
   },
   actions: [
     {
