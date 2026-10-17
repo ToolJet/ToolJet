@@ -1,4 +1,10 @@
 import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  componentLibraryFor,
+  definitionComponentTypes,
+  isComponentLibrary,
+  versionComponentTypes,
+} from '@helpers/component_library.helper';
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -29,7 +35,8 @@ import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
+import { applyUi2RenamesToImport } from './ui2-legacy-names';
+import { remapFlexContainerChildOrder, SLOTTED_PARENT_TYPES } from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -969,6 +976,15 @@ export class AppImportExportService {
       importingDataQueryFolderMappings,
     } = this.extractImportDataFromAppParams(appParams);
 
+    // An export made before the UI 2.0 pack settled its names carries the old event, action, exposed and property
+    // names; rename them before anything is saved (a no-op without Shad* widgets or Ant cards).
+    applyUi2RenamesToImport({
+      pages: importingPages,
+      components: importingComponents,
+      events: importingEvents,
+      dataQueries: importingDataQueries,
+    });
+
     const { appDefaultEnvironmentMapping, appVersionMapping } = await this.createAppVersionsForImportedApp(
       manager,
       user,
@@ -977,6 +993,8 @@ export class AppImportExportService {
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
       createNewVersion,
+      importingPages,
+      importingComponents,
       isTemplateApp
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
@@ -1100,6 +1118,8 @@ export class AppImportExportService {
                   newLayout.height = layout.height;
                   if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
                   if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+                  if (layout.grow != null) newLayout.grow = layout.grow;
+                  if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
                   newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
@@ -1564,6 +1584,8 @@ export class AppImportExportService {
                 newLayout.height = layout.height;
                 if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
                 if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+                if (layout.grow != null) newLayout.grow = layout.grow;
+                if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
                 newLayout.component = savedComponent;
 
                 await manager.save(newLayout);
@@ -2250,6 +2272,9 @@ export class AppImportExportService {
     appResourceMappings: AppResourceMappings,
     isNormalizedAppDefinitionSchema: boolean,
     createNewVersion?: boolean,
+    importingPages: Array<{ id?: string; appVersionId?: string }> = [],
+    importingComponents: Array<{ pageId?: string; type?: string }> = [],
+    // Last, so callers that pass the page and component lists positionally keep working.
     isTemplateApp = false
   ) {
     appResourceMappings = { ...appResourceMappings };
@@ -2272,9 +2297,12 @@ export class AppImportExportService {
       }
 
       let version;
+      // An existing app's own library outlives an import into it.
+      let targetLibrary: unknown;
       // this case only happens in the AI flow when app is imported within an existing app
       if (importedApp.editingVersion && !createNewVersion) {
         version = importedApp.editingVersion;
+        targetLibrary = version.globalSettings?.componentLibrary;
       } else {
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
@@ -2316,6 +2344,19 @@ export class AppImportExportService {
           version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
         }
       }
+
+      // Saved at creation: the source's library, or the one its widgets imply when it has none.
+      version.globalSettings = {
+        ...(version.globalSettings ?? {}),
+        componentLibrary: isComponentLibrary(targetLibrary)
+          ? targetLibrary
+          : componentLibraryFor(
+              version.globalSettings,
+              isNormalizedAppDefinitionSchema
+                ? versionComponentTypes(appVersion.id, importingPages, importingComponents)
+                : definitionComponentTypes(appVersion.definition)
+            ),
+      };
 
       await manager.save(version);
 
@@ -3564,11 +3605,8 @@ const isChildOfTabsOrCalendar = (
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
     if (parentComponent) {
-      if (!isNormalizedAppDefinitionSchema) {
-        return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
-      }
-
-      return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+      const type = isNormalizedAppDefinitionSchema ? parentComponent.type : parentComponent.component.component;
+      return SLOTTED_PARENT_TYPES.includes(type);
     }
   }
 

@@ -1,0 +1,535 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "selectedRow": {},
+    "selectedRowId": null,
+    "selectedRows": [],
+    "selectedRowsId": [],
+    "pageIndex": 1,
+    "searchText": "",
+    "sortApplied": [],
+    "filters": [],
+    "changeSet": {},
+    "dataUpdates": [],
+    "updatedData": [],
+    "currentData": [
+      {
+        "id": 1,
+        "name": "Ada Lovelace",
+        "status": "Paid",
+        "amount": 1250,
+        "date": "2026-09-14"
+      },
+      {
+        "id": 2,
+        "name": "Alan Turing",
+        "status": "Pending",
+        "amount": 980.5,
+        "date": "2026-09-21"
+      },
+      {
+        "id": 3,
+        "name": "Grace Hopper",
+        "status": "Overdue",
+        "amount": 3120,
+        "date": "2026-08-30"
+      }
+    ],
+    "currentPageData": [
+      {
+        "id": 1,
+        "name": "Ada Lovelace",
+        "status": "Paid",
+        "amount": 1250,
+        "date": "2026-09-14"
+      },
+      {
+        "id": 2,
+        "name": "Alan Turing",
+        "status": "Pending",
+        "amount": 980.5,
+        "date": "2026-09-21"
+      },
+      {
+        "id": 3,
+        "name": "Grace Hopper",
+        "status": "Overdue",
+        "amount": 3120,
+        "date": "2026-08-30"
+      }
+    ],
+    "filteredData": [
+      {
+        "id": 1,
+        "name": "Ada Lovelace",
+        "status": "Paid",
+        "amount": 1250,
+        "date": "2026-09-14"
+      },
+      {
+        "id": 2,
+        "name": "Alan Turing",
+        "status": "Pending",
+        "amount": 980.5,
+        "date": "2026-09-21"
+      },
+      {
+        "id": 3,
+        "name": "Grace Hopper",
+        "status": "Overdue",
+        "amount": 3120,
+        "date": "2026-08-30"
+      }
+    ],
+    "lastActionClicked": {},
+    "hoveredRow": {},
+    "hoveredRowId": null,
+    "selectedColumnHeader": {},
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"selectedRow\":{},\"selectedRowId\":null,\"selectedRows\":[],\"selectedRowsId\":[],\"pageIndex\":1,\"searchText\":\"\",\"sortApplied\":[],\"filters\":[],\"changeSet\":{},\"dataUpdates\":[],\"updatedData\":[],\"currentData\":[{\"id\":1,\"name\":\"Ada Lovelace\",\"status\":\"Paid\",\"amount\":1250,\"date\":\"2026-09-14\"},{\"id\":2,\"name\":\"Alan Turing\",\"status\":\"Pending\",\"amount\":980.5,\"date\":\"2026-09-21\"},{\"id\":3,\"name\":\"Grace Hopper\",\"status\":\"Overdue\",\"amount\":3120,\"date\":\"2026-08-30\"}],\"currentPageData\":[{\"id\":1,\"name\":\"Ada Lovelace\",\"status\":\"Paid\",\"amount\":1250,\"date\":\"2026-09-14\"},{\"id\":2,\"name\":\"Alan Turing\",\"status\":\"Pending\",\"amount\":980.5,\"date\":\"2026-09-21\"},{\"id\":3,\"name\":\"Grace Hopper\",\"status\":\"Overdue\",\"amount\":3120,\"date\":\"2026-08-30\"}],\"filteredData\":[{\"id\":1,\"name\":\"Ada Lovelace\",\"status\":\"Paid\",\"amount\":1250,\"date\":\"2026-09-14\"},{\"id\":2,\"name\":\"Alan Turing\",\"status\":\"Pending\",\"amount\":980.5,\"date\":\"2026-09-21\"},{\"id\":3,\"name\":\"Grace Hopper\",\"status\":\"Overdue\",\"amount\":3120,\"date\":\"2026-08-30\"}],\"lastActionClicked\":{},\"hoveredRow\":{},\"hoveredRowId\":null,\"selectedColumnHeader\":{}},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"selectedRow\":{},\"selectedRowId\":null,\"selectedRows\":[],\"selectedRowsId\":[],\"pageIndex\":1,\"searchText\":\"\",\"sortApplied\":[],\"filters\":[],\"changeSet\":{},\"dataUpdates\":[],\"updatedData\":[],\"currentData\":[{\"id\":1,\"name\":\"Ada Lovelace\",\"status\":\"Paid\",\"amount\":1250,\"date\":\"2026-09-14\"},{\"id\":2,\"name\":\"Alan Turing\",\"status\":\"Pending\",\"amount\":980.5,\"date\":\"2026-09-21\"},{\"id\":3,\"name\":\"Grace Hopper\",\"status\":\"Overdue\",\"amount\":3120,\"date\":\"2026-08-30\"}],\"currentPageData\":[{\"id\":1,\"name\":\"Ada Lovelace\",\"status\":\"Paid\",\"amount\":1250,\"date\":\"2026-09-14\"},{\"id\":2,\"name\":\"Alan Turing\",\"status\":\"Pending\",\"amount\":980.5,\"date\":\"2026-09-21\"},{\"id\":3,\"name\":\"Grace Hopper\",\"status\":\"Overdue\",\"amount\":3120,\"date\":\"2026-08-30\"}],\"filteredData\":[{\"id\":1,\"name\":\"Ada Lovelace\",\"status\":\"Paid\",\"amount\":1250,\"date\":\"2026-09-14\"},{\"id\":2,\"name\":\"Alan Turing\",\"status\":\"Pending\",\"amount\":980.5,\"date\":\"2026-09-21\"},{\"id\":3,\"name\":\"Grace Hopper\",\"status\":\"Overdue\",\"amount\":3120,\"date\":\"2026-08-30\"}],\"lastActionClicked\":{},\"hoveredRow\":{},\"hoveredRowId\":null,\"selectedColumnHeader\":{}}}",
+  "steps": [
+    {
+      "call": "setPage",
+      "changed": {}
+    },
+    {
+      "call": "selectRow",
+      "changed": {
+        "selectedRow": {
+          "id": 2,
+          "name": "Alan Turing",
+          "status": "Pending",
+          "amount": 980.5,
+          "date": "2026-09-21"
+        },
+        "selectedRowId": 1,
+        "selectedRows": [
+          {
+            "id": 2,
+            "name": "Alan Turing",
+            "status": "Pending",
+            "amount": 980.5,
+            "date": "2026-09-21"
+          }
+        ],
+        "selectedRowsId": [
+          1
+        ]
+      }
+    },
+    {
+      "call": "deselectRow",
+      "changed": {
+        "selectedRow": {},
+        "selectedRowId": null,
+        "selectedRows": [],
+        "selectedRowsId": []
+      }
+    },
+    {
+      "call": "selectRows",
+      "changed": {
+        "selectedRows": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          },
+          {
+            "id": 3,
+            "name": "Grace Hopper",
+            "status": "Overdue",
+            "amount": 3120,
+            "date": "2026-08-30"
+          }
+        ],
+        "selectedRowsId": [
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "call": "deselectRows",
+      "changed": {
+        "selectedRows": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          }
+        ],
+        "selectedRowsId": [
+          0
+        ]
+      }
+    },
+    {
+      "call": "selectAllRows",
+      "changed": {
+        "selectedRows": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          },
+          {
+            "id": 2,
+            "name": "Alan Turing",
+            "status": "Pending",
+            "amount": 980.5,
+            "date": "2026-09-21"
+          },
+          {
+            "id": 3,
+            "name": "Grace Hopper",
+            "status": "Overdue",
+            "amount": 3120,
+            "date": "2026-08-30"
+          }
+        ],
+        "selectedRowsId": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "call": "deselectAllRows",
+      "changed": {
+        "selectedRows": [],
+        "selectedRowsId": []
+      }
+    },
+    {
+      "call": "setFilters",
+      "changed": {
+        "filters": [
+          {
+            "column": "Status",
+            "condition": "equals",
+            "value": "Paid"
+          }
+        ],
+        "currentPageData": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          }
+        ],
+        "filteredData": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          }
+        ]
+      }
+    },
+    {
+      "call": "clearFilters",
+      "changed": {
+        "filters": [],
+        "currentPageData": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          },
+          {
+            "id": 2,
+            "name": "Alan Turing",
+            "status": "Pending",
+            "amount": 980.5,
+            "date": "2026-09-21"
+          },
+          {
+            "id": 3,
+            "name": "Grace Hopper",
+            "status": "Overdue",
+            "amount": 3120,
+            "date": "2026-08-30"
+          }
+        ],
+        "filteredData": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          },
+          {
+            "id": 2,
+            "name": "Alan Turing",
+            "status": "Pending",
+            "amount": 980.5,
+            "date": "2026-09-21"
+          },
+          {
+            "id": 3,
+            "name": "Grace Hopper",
+            "status": "Overdue",
+            "amount": 3120,
+            "date": "2026-08-30"
+          }
+        ]
+      }
+    },
+    {
+      "call": "setSort",
+      "changed": {
+        "sortApplied": [
+          {
+            "column": "Amount",
+            "columnKey": "amount",
+            "direction": "desc"
+          }
+        ],
+        "currentPageData": [
+          {
+            "id": 3,
+            "name": "Grace Hopper",
+            "status": "Overdue",
+            "amount": 3120,
+            "date": "2026-08-30"
+          },
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          },
+          {
+            "id": 2,
+            "name": "Alan Turing",
+            "status": "Pending",
+            "amount": 980.5,
+            "date": "2026-09-21"
+          }
+        ],
+        "filteredData": [
+          {
+            "id": 3,
+            "name": "Grace Hopper",
+            "status": "Overdue",
+            "amount": 3120,
+            "date": "2026-08-30"
+          },
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          },
+          {
+            "id": 2,
+            "name": "Alan Turing",
+            "status": "Pending",
+            "amount": 980.5,
+            "date": "2026-09-21"
+          }
+        ]
+      }
+    },
+    {
+      "call": "setSearchText",
+      "changed": {
+        "searchText": "Ada",
+        "currentPageData": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          }
+        ],
+        "filteredData": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          }
+        ]
+      }
+    },
+    {
+      "call": "discardChanges",
+      "changed": {
+        "updatedData": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          },
+          {
+            "id": 2,
+            "name": "Alan Turing",
+            "status": "Pending",
+            "amount": 980.5,
+            "date": "2026-09-21"
+          },
+          {
+            "id": 3,
+            "name": "Grace Hopper",
+            "status": "Overdue",
+            "amount": 3120,
+            "date": "2026-08-30"
+          }
+        ]
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "selectedRow": {},
+      "selectedRowId": null,
+      "selectedRows": [],
+      "selectedRowsId": [],
+      "pageIndex": 1,
+      "searchText": "Ada",
+      "sortApplied": [
+        {
+          "column": "Amount",
+          "columnKey": "amount",
+          "direction": "desc"
+        }
+      ],
+      "filters": [],
+      "changeSet": {},
+      "dataUpdates": [],
+      "updatedData": [
+        {
+          "id": 1,
+          "name": "Ada Lovelace",
+          "status": "Paid",
+          "amount": 1250,
+          "date": "2026-09-14"
+        },
+        {
+          "id": 2,
+          "name": "Alan Turing",
+          "status": "Pending",
+          "amount": 980.5,
+          "date": "2026-09-21"
+        },
+        {
+          "id": 3,
+          "name": "Grace Hopper",
+          "status": "Overdue",
+          "amount": 3120,
+          "date": "2026-08-30"
+        }
+      ],
+      "currentData": [
+        {
+          "id": 1,
+          "name": "Ada Lovelace",
+          "status": "Paid",
+          "amount": 1250,
+          "date": "2026-09-14"
+        },
+        {
+          "id": 2,
+          "name": "Alan Turing",
+          "status": "Pending",
+          "amount": 980.5,
+          "date": "2026-09-21"
+        },
+        {
+          "id": 3,
+          "name": "Grace Hopper",
+          "status": "Overdue",
+          "amount": 3120,
+          "date": "2026-08-30"
+        }
+      ],
+      "currentPageData": [
+        {
+          "id": 1,
+          "name": "Ada Lovelace",
+          "status": "Paid",
+          "amount": 1250,
+          "date": "2026-09-14"
+        }
+      ],
+      "filteredData": [
+        {
+          "id": 1,
+          "name": "Ada Lovelace",
+          "status": "Paid",
+          "amount": 1250,
+          "date": "2026-09-14"
+        }
+      ],
+      "lastActionClicked": {},
+      "hoveredRow": {},
+      "hoveredRowId": null,
+      "selectedColumnHeader": {}
+    },
+    "changed": {}
+  }
+}

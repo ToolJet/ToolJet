@@ -1,0 +1,368 @@
+{
+  "schemaVersion": 1,
+  "release": "current",
+  "widget": "ShadKeyValue",
+  "pages": [
+    {
+      "id": "775e1e07-f27f-587c-a06b-34a18e80c0b1",
+      "appVersionId": "4d5ca7f4-84e6-5e23-ada8-dce564b6ecd0",
+      "name": "Home",
+      "handle": "home"
+    }
+  ],
+  "components": [
+    {
+      "id": "5728c91d-ceac-5941-a684-b65e626b8577",
+      "name": "keyValue1",
+      "type": "ShadKeyValue",
+      "pageId": "775e1e07-f27f-587c-a06b-34a18e80c0b1",
+      "parent": null,
+      "properties": {
+        "data": {
+          "value": "{{[{ label: 'Customer', value: 'Ada Lovelace' }, { label: 'Email', value: 'ada@example.com', type: 'link' }, { label: 'Status', value: 'Active', type: 'badge' }, { label: 'Plan', value: 'Pro' }, { label: 'Amount', value: 1250, type: 'currency' }, { label: 'Renews', value: '2026-11-14', type: 'date' }]}}"
+        },
+        "columns": {
+          "value": "2"
+        },
+        "layout": {
+          "value": "stacked"
+        },
+        "labelWidth": {
+          "value": "40% (saved)"
+        },
+        "dividers": {
+          "value": "{{false}}"
+        },
+        "emptyText": {
+          "value": "— (saved)"
+        },
+        "currency": {
+          "value": "USD"
+        },
+        "locale": {
+          "value": "en-US"
+        },
+        "dateFormat": {
+          "value": "DD MMM YYYY"
+        },
+        "badgeColors": {
+          "value": "{{{ Active: '#16a34a' }}}"
+        },
+        "allowCopy": {
+          "value": "{{false}}"
+        },
+        "dynamicHeight": {
+          "value": "{{true}}"
+        },
+        "loadingState": {
+          "value": "{{false}}"
+        },
+        "loadingIndicator": {
+          "value": "spinner"
+        },
+        "visibility": {
+          "value": "{{true}}"
+        },
+        "collapseWhenHidden": {
+          "value": "{{false}}"
+        },
+        "disabledState": {
+          "value": "{{false}}"
+        },
+        "tooltipFormat": {
+          "value": "plainText"
+        },
+        "tooltip": {
+          "value": "Saved tooltip"
+        }
+      },
+      "general": {},
+      "styles": {
+        "boxShadow": {
+          "value": "0px 4px 12px 0px #0f172a1f"
+        },
+        "labelColor": {
+          "value": "#7c3aed"
+        },
+        "valueColor": {
+          "value": "#b45309"
+        },
+        "dividerColor": {
+          "value": "#be123c"
+        },
+        "linkColor": {
+          "value": "#1d4ed8"
+        }
+      },
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 0,
+          "left": 0,
+          "width": 20,
+          "height": 248
+        }
+      }
+    },
+    {
+      "id": "44162c68-010c-59f7-af3d-d784ae919989",
+      "name": "savedBindings",
+      "type": "ShadText",
+      "pageId": "775e1e07-f27f-587c-a06b-34a18e80c0b1",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "{{JSON.stringify({ byId: { \"isVisible\": components.5728c91d-ceac-5941-a684-b65e626b8577.isVisible, \"isLoading\": components.5728c91d-ceac-5941-a684-b65e626b8577.isLoading, \"isDisabled\": components.5728c91d-ceac-5941-a684-b65e626b8577.isDisabled, \"data\": components.5728c91d-ceac-5941-a684-b65e626b8577.data, \"lastClickedField\": components.5728c91d-ceac-5941-a684-b65e626b8577.lastClickedField }, byName: { \"isVisible\": components.keyValue1.isVisible, \"isLoading\": components.keyValue1.isLoading, \"isDisabled\": components.keyValue1.isDisabled, \"data\": components.keyValue1.data, \"lastClickedField\": components.keyValue1.lastClickedField } })}}"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 258,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "f37b3893-e00c-5a15-a495-0c4d4d90281b",
+      "name": "eventMarker",
+      "type": "ShadButton",
+      "pageId": "775e1e07-f27f-587c-a06b-34a18e80c0b1",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Marker"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 308,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "d04f69bc-e671-5515-acf7-fd2ce426aa94",
+      "name": "runActions",
+      "type": "ShadButton",
+      "pageId": "775e1e07-f27f-587c-a06b-34a18e80c0b1",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Run actions"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 358,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "7be6bd68-3cd3-5b2e-a316-d488de00d225",
+      "name": "onFieldClick",
+      "index": 0,
+      "sourceId": "5728c91d-ceac-5941-a684-b65e626b8577",
+      "target": "component",
+      "appVersionId": "4d5ca7f4-84e6-5e23-ada8-dce564b6ecd0",
+      "event": {
+        "eventId": "onFieldClick",
+        "actionId": "control-component",
+        "componentId": "f37b3893-e00c-5a15-a495-0c4d4d90281b",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "8010cfc0-fcee-5106-a9b9-a64a6d227518",
+      "name": "onClick",
+      "index": 0,
+      "sourceId": "d04f69bc-e671-5515-acf7-fd2ce426aa94",
+      "target": "component",
+      "appVersionId": "4d5ca7f4-84e6-5e23-ada8-dce564b6ecd0",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5728c91d-ceac-5941-a684-b65e626b8577",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "6c220d30-f4b4-51e3-af2e-69b154532917",
+      "name": "onClick",
+      "index": 1,
+      "sourceId": "d04f69bc-e671-5515-acf7-fd2ce426aa94",
+      "target": "component",
+      "appVersionId": "4d5ca7f4-84e6-5e23-ada8-dce564b6ecd0",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5728c91d-ceac-5941-a684-b65e626b8577",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "7df882a8-633b-5e02-aa39-e217c73bcb78",
+      "name": "onClick",
+      "index": 2,
+      "sourceId": "d04f69bc-e671-5515-acf7-fd2ce426aa94",
+      "target": "component",
+      "appVersionId": "4d5ca7f4-84e6-5e23-ada8-dce564b6ecd0",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5728c91d-ceac-5941-a684-b65e626b8577",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b57e398f-86a2-5fbe-af54-c9ea811c479a",
+      "name": "onClick",
+      "index": 3,
+      "sourceId": "d04f69bc-e671-5515-acf7-fd2ce426aa94",
+      "target": "component",
+      "appVersionId": "4d5ca7f4-84e6-5e23-ada8-dce564b6ecd0",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5728c91d-ceac-5941-a684-b65e626b8577",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "72ebbbf3-97f2-52a9-a58b-eca6c834d259",
+      "name": "onClick",
+      "index": 4,
+      "sourceId": "d04f69bc-e671-5515-acf7-fd2ce426aa94",
+      "target": "component",
+      "appVersionId": "4d5ca7f4-84e6-5e23-ada8-dce564b6ecd0",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5728c91d-ceac-5941-a684-b65e626b8577",
+        "componentSpecificActionHandle": "setVisibility",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cfccadad-10d1-556f-a46b-dfe148061f86",
+      "name": "onClick",
+      "index": 5,
+      "sourceId": "d04f69bc-e671-5515-acf7-fd2ce426aa94",
+      "target": "component",
+      "appVersionId": "4d5ca7f4-84e6-5e23-ada8-dce564b6ecd0",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "5728c91d-ceac-5941-a684-b65e626b8577",
+        "componentSpecificActionHandle": "setVisibility",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    }
+  ],
+  "dataQueries": [
+    {
+      "id": "74552a18-2967-59ab-a334-f248c04b4224",
+      "name": "callWidget",
+      "kind": "runjs",
+      "appVersionId": "4d5ca7f4-84e6-5e23-ada8-dce564b6ecd0",
+      "options": {
+        "code": "// Calls keyValue1's actions and reads its values by name, as RunJS code in a saved app does.\nawait components.keyValue1.setLoading(true);\nawait components.keyValue1.setLoading(false);\nawait components.keyValue1.setDisable(true);\nawait components.keyValue1.setDisable(false);\nawait components.keyValue1.setVisibility(false);\nawait components.keyValue1.setVisibility(true);\nreturn { \"isVisible\": components.keyValue1.isVisible, \"isLoading\": components.keyValue1.isLoading, \"isDisabled\": components.keyValue1.isDisabled, \"data\": components.keyValue1.data, \"lastClickedField\": components.keyValue1.lastClickedField };",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    }
+  ]
+}

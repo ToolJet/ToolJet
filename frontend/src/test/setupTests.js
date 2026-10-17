@@ -72,6 +72,23 @@ if (typeof window !== 'undefined') {
   // stderr. Stubbing the method is cheaper than mapping plotly to a stub,
   // and keeps the real chart component under test.
   HTMLCanvasElement.prototype.getContext = jest.fn(() => null);
+
+  // Radix primitives (select, popover, slider, menu) open on pointer events and call pointer capture and
+  // scrollIntoView, none of which jsdom implements: without PointerEvent a fired pointerdown carries no pointerType or
+  // button and Radix ignores it, and without the others a press throws inside the component.
+  if (!window.PointerEvent) {
+    window.PointerEvent = class PointerEvent extends MouseEvent {
+      constructor(type, init = {}) {
+        super(type, init);
+        this.pointerId = init.pointerId ?? 1;
+        this.pointerType = init.pointerType ?? 'mouse';
+      }
+    };
+  }
+  Element.prototype.hasPointerCapture = Element.prototype.hasPointerCapture || (() => false);
+  Element.prototype.setPointerCapture = Element.prototype.setPointerCapture || (() => {});
+  Element.prototype.releasePointerCapture = Element.prototype.releasePointerCapture || (() => {});
+  Element.prototype.scrollIntoView = Element.prototype.scrollIntoView || (() => {});
 }
 
 afterEach(async () => {

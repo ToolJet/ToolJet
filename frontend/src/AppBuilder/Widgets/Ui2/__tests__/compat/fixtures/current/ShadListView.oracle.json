@@ -1,0 +1,132 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "data": [
+      {
+        "id": 1,
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "role": "Engineering"
+      },
+      {
+        "id": 2,
+        "name": "Alan Turing",
+        "email": "alan@example.com",
+        "role": "Research"
+      },
+      {
+        "id": 3,
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "role": "Platform"
+      }
+    ],
+    "children": {},
+    "selectedItem": {},
+    "selectedItemId": null,
+    "selectedRecord": {},
+    "selectedRecordId": null,
+    "pageIndex": 1,
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"data\":[{\"id\":1,\"name\":\"Ada Lovelace\",\"email\":\"ada@example.com\",\"role\":\"Engineering\"},{\"id\":2,\"name\":\"Alan Turing\",\"email\":\"alan@example.com\",\"role\":\"Research\"},{\"id\":3,\"name\":\"Grace Hopper\",\"email\":\"grace@example.com\",\"role\":\"Platform\"}],\"children\":{},\"selectedItem\":{},\"selectedItemId\":null,\"selectedRecord\":{},\"selectedRecordId\":null,\"pageIndex\":1},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"data\":[{\"id\":1,\"name\":\"Ada Lovelace\",\"email\":\"ada@example.com\",\"role\":\"Engineering\"},{\"id\":2,\"name\":\"Alan Turing\",\"email\":\"alan@example.com\",\"role\":\"Research\"},{\"id\":3,\"name\":\"Grace Hopper\",\"email\":\"grace@example.com\",\"role\":\"Platform\"}],\"children\":{},\"selectedItem\":{},\"selectedItemId\":null,\"selectedRecord\":{},\"selectedRecordId\":null,\"pageIndex\":1}}",
+  "steps": [
+    {
+      "call": "selectItem",
+      "changed": {
+        "selectedItem": {
+          "id": 2,
+          "name": "Alan Turing",
+          "email": "alan@example.com",
+          "role": "Research"
+        },
+        "selectedItemId": 2,
+        "selectedRecordId": 1
+      }
+    },
+    {
+      "call": "clearSelection",
+      "changed": {
+        "selectedItem": {},
+        "selectedItemId": null,
+        "selectedRecordId": null
+      }
+    },
+    {
+      "call": "setPage",
+      "changed": {}
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "data": [
+        {
+          "id": 1,
+          "name": "Ada Lovelace",
+          "email": "ada@example.com",
+          "role": "Engineering"
+        },
+        {
+          "id": 2,
+          "name": "Alan Turing",
+          "email": "alan@example.com",
+          "role": "Research"
+        },
+        {
+          "id": 3,
+          "name": "Grace Hopper",
+          "email": "grace@example.com",
+          "role": "Platform"
+        }
+      ],
+      "children": {},
+      "selectedItem": {},
+      "selectedItemId": null,
+      "selectedRecord": {},
+      "selectedRecordId": null,
+      "pageIndex": 1
+    },
+    "changed": {}
+  }
+}

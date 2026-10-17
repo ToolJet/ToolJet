@@ -36,6 +36,16 @@ export class ConfigService implements IConfigService {
       'TOOLJET_SERVER_URL',
       'RELEASE_VERSION',
       'GOOGLE_MAPS_API_KEY',
+      // The ToolJet UI 2.0 Map's tiles for this install (a {z}/{x}/{y} template, e.g. a self-hosted tile server for
+      // installs without internet); unset, it uses public basemaps.
+      'MAP_TILE_URL',
+      'MAP_TILE_URL_DARK',
+      'MAP_TILE_ATTRIBUTION',
+      // Its satellite tiles and its geocoder (address search, a picked spot's address), for the same installs.
+      'MAP_SATELLITE_TILE_URL',
+      'MAP_SATELLITE_ATTRIBUTION',
+      'MAP_GEOCODER_URL',
+      'MAP_REVERSE_GEOCODER_URL',
       'APM_VENDOR',
       'SENTRY_DNS',
       'SENTRY_DEBUG',

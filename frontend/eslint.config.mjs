@@ -182,6 +182,7 @@ export default [
 
     plugins: {
       '@typescript-eslint': tsPlugin,
+      import: pluginImportX,
       react: pluginReact,
       'react-hooks': pluginReactHooks,
       prettier: pluginPrettier,
@@ -190,6 +191,14 @@ export default [
     settings: {
       react: {
         version: 'detect',
+      },
+      'import-x/resolver': {
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+        webpack: {
+          config: new URL('./webpack.config.js', import.meta.url).pathname,
+        },
       },
     },
 
@@ -207,7 +216,10 @@ export default [
       // @typescript-eslint recommended
       '@typescript-eslint/adjacent-overload-signatures': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/ban-types': 'error',
+      // ban-types was split in typescript-eslint v8; the three rules below are its replacements.
+      '@typescript-eslint/no-unsafe-function-type': 'error',
+      '@typescript-eslint/no-wrapper-object-types': 'error',
+      '@typescript-eslint/no-empty-object-type': 'error',
       '@typescript-eslint/no-array-constructor': 'error',
       '@typescript-eslint/no-empty-interface': 'error',
       '@typescript-eslint/no-extra-non-null-assertion': 'error',
@@ -265,6 +277,17 @@ export default [
       ],
 
       'react/no-unknown-property': 'off',
+    },
+  },
+
+  // ToolJet UI 2.0 widgets: dependency lists are complete (useStable and useLatest in _shared/packHooks.ts are the
+  // tools for bound data and latest-value reads); Ui2/__tests__/codeRules.spec.js also rejects suppressions. A
+  // condition that renders an element is a boolean or a ternary, so a 0 never shows (Ui2/README.md).
+  {
+    files: ['src/AppBuilder/Widgets/Ui2/**/*.{ts,tsx}'],
+    rules: {
+      'react-hooks/exhaustive-deps': 'error',
+      'react/jsx-no-leaked-render': ['error', { validStrategies: ['ternary', 'coerce'] }],
     },
   },
 

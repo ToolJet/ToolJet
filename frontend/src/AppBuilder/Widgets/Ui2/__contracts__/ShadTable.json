@@ -1,0 +1,608 @@
+{
+  "type": "ShadTable",
+  "properties": {
+    "allowSelection": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "badgeColors": {
+      "type": "object",
+      "schema": {
+        "optional": true,
+        "type": "object"
+      },
+      "default": {},
+      "initial": "{{{}}}"
+    },
+    "cellSize": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "regular",
+      "initial": "regular"
+    },
+    "collapseWhenHidden": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "columns": {
+      "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
+      "default": [],
+      "initial": "{{[{ key: 'name', name: 'Name' }, { key: 'status', name: 'Status', columnType: 'badge' }, { key: 'date', name: 'Date', columnType: 'date' }, { key: 'amount', name: 'Amount', columnType: 'currency' }]}}"
+    },
+    "currency": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "USD",
+      "initial": "USD"
+    },
+    "data": {
+      "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
+      "default": [],
+      "initial": "{{[{ id: 1, name: 'Ada Lovelace', status: 'Paid', amount: 1250, date: '2026-09-14' }, { id: 2, name: 'Alan Turing', status: 'Pending', amount: 980.5, date: '2026-09-21' }, { id: 3, name: 'Grace Hopper', status: 'Overdue', amount: 3120, date: '2026-08-30' }]}}"
+    },
+    "dateFormat": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "DD MMM YYYY",
+      "initial": "DD MMM YYYY"
+    },
+    "defaultSelectedRow": {
+      "type": "object",
+      "schema": {
+        "optional": true,
+        "type": "object"
+      },
+      "default": {},
+      "initial": "{{{}}}"
+    },
+    "disableRowDeselection": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "disabledState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "displaySearchBox": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "dynamicHeight": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "emptyDescription": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "",
+      "initial": ""
+    },
+    "emptyText": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "No results.",
+      "initial": "No results."
+    },
+    "enableNextButton": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "enablePagination": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "enablePrevButton": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "enabledSort": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "hideColumnSelectorButton": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "highlightSelectedRow": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "idField": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "id",
+      "initial": "id"
+    },
+    "loadingIndicator": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "spinner",
+      "initial": "spinner"
+    },
+    "loadingState": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "locale": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "en-US",
+      "initial": "en-US"
+    },
+    "rowsPerPage": {
+      "type": "number",
+      "schema": {
+        "optional": true,
+        "type": "number"
+      },
+      "default": 10,
+      "initial": "{{10}}"
+    },
+    "searchPlaceholder": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "Search…",
+      "initial": "Search…"
+    },
+    "serverSideFilter": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "serverSidePagination": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "serverSideSearch": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "serverSideSort": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showBulkSelector": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showBulkUpdateActions": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showDownloadButton": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showFilterButton": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "showRefreshButton": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": false,
+      "initial": "{{false}}"
+    },
+    "showRowCount": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "stickyHeader": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    },
+    "tableType": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "regular",
+      "initial": "regular"
+    },
+    "tooltip": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "initial": ""
+    },
+    "tooltipFormat": {
+      "type": "any",
+      "default": "plainText",
+      "initial": "plainText"
+    },
+    "totalRecords": {
+      "type": "number",
+      "schema": {
+        "optional": true,
+        "type": "number"
+      },
+      "default": 0,
+      "initial": "{{0}}"
+    },
+    "visibility": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": "{{true}}"
+    }
+  },
+  "styles": {
+    "accentColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "backgroundColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "borderColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "borderRadius": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
+    },
+    "boxShadow": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
+      "default": "0px 0px 0px 0px #00000040",
+      "initial": "0px 0px 0px 0px #00000040"
+    },
+    "fontSize": {
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
+    },
+    "headerBackgroundColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "headerCasing": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
+      "default": "none",
+      "initial": "none"
+    },
+    "headerTextColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "mutedTextColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "rowHoverColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "selectedRowColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "showBorder": {
+      "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
+      "default": true,
+      "initial": true
+    },
+    "stripedRowColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    },
+    "textColor": {
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
+    }
+  },
+  "validation": {},
+  "events": [
+    "onActionButtonClicked",
+    "onBulkUpdate",
+    "onCancelChanges",
+    "onCellValueChanged",
+    "onFilterChanged",
+    "onHeaderClick",
+    "onPageChanged",
+    "onRefresh",
+    "onRowClicked",
+    "onRowHovered",
+    "onSearch",
+    "onSelectionChanged",
+    "onSort",
+    "onTableDataDownload"
+  ],
+  "actions": {
+    "clearFilters": [],
+    "deselectAllRows": [],
+    "deselectRow": [],
+    "deselectRows": [
+      "key",
+      "values"
+    ],
+    "discardChanges": [],
+    "downloadTableData": [
+      "type"
+    ],
+    "selectAllRows": [],
+    "selectRow": [
+      "key",
+      "value"
+    ],
+    "selectRows": [
+      "key",
+      "values"
+    ],
+    "setDisable": [
+      "value"
+    ],
+    "setFilters": [
+      "parameters"
+    ],
+    "setLoading": [
+      "value"
+    ],
+    "setPage": [
+      "page"
+    ],
+    "setSearchText": [
+      "text"
+    ],
+    "setSort": [
+      "columnKey",
+      "direction"
+    ],
+    "setVisibility": [
+      "value"
+    ]
+  },
+  "exposed": [
+    "changeSet",
+    "currentData",
+    "currentPageData",
+    "dataUpdates",
+    "filteredData",
+    "filters",
+    "hoveredRow",
+    "hoveredRowId",
+    "isDisabled",
+    "isLoading",
+    "isVisible",
+    "lastActionClicked",
+    "pageIndex",
+    "searchText",
+    "selectedColumnHeader",
+    "selectedRow",
+    "selectedRowId",
+    "selectedRows",
+    "selectedRowsId",
+    "sortApplied",
+    "updatedData"
+  ]
+}

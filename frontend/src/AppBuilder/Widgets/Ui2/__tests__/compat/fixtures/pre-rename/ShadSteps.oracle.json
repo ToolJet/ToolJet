@@ -1,0 +1,218 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "currentStepId": 2,
+    "currentStepIndex": 1,
+    "steps": [
+      {
+        "id": 1,
+        "name": "Account",
+        "description": "Your details",
+        "visible": true,
+        "disabled": false
+      },
+      {
+        "id": 2,
+        "name": "Company",
+        "description": "Team and size",
+        "visible": true,
+        "disabled": false
+      },
+      {
+        "id": 3,
+        "name": "Billing",
+        "description": "Plan and payment",
+        "visible": true,
+        "disabled": false
+      },
+      {
+        "id": 4,
+        "name": "Done",
+        "description": "Review and finish",
+        "visible": true,
+        "disabled": false
+      }
+    ],
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"currentStepId\":2,\"currentStepIndex\":1,\"steps\":[{\"id\":1,\"name\":\"Account\",\"description\":\"Your details\",\"visible\":true,\"disabled\":false},{\"id\":2,\"name\":\"Company\",\"description\":\"Team and size\",\"visible\":true,\"disabled\":false},{\"id\":3,\"name\":\"Billing\",\"description\":\"Plan and payment\",\"visible\":true,\"disabled\":false},{\"id\":4,\"name\":\"Done\",\"description\":\"Review and finish\",\"visible\":true,\"disabled\":false}]},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"currentStepId\":2,\"currentStepIndex\":1,\"steps\":[{\"id\":1,\"name\":\"Account\",\"description\":\"Your details\",\"visible\":true,\"disabled\":false},{\"id\":2,\"name\":\"Company\",\"description\":\"Team and size\",\"visible\":true,\"disabled\":false},{\"id\":3,\"name\":\"Billing\",\"description\":\"Plan and payment\",\"visible\":true,\"disabled\":false},{\"id\":4,\"name\":\"Done\",\"description\":\"Review and finish\",\"visible\":true,\"disabled\":false}]}}",
+  "steps": [
+    {
+      "call": "setStep",
+      "changed": {
+        "currentStepId": 1,
+        "currentStepIndex": 0
+      }
+    },
+    {
+      "call": "nextStep",
+      "changed": {
+        "currentStepId": 2,
+        "currentStepIndex": 1
+      }
+    },
+    {
+      "call": "previousStep",
+      "changed": {
+        "currentStepId": 1,
+        "currentStepIndex": 0
+      }
+    },
+    {
+      "call": "resetSteps",
+      "changed": {}
+    },
+    {
+      "call": "setStepVisible",
+      "changed": {
+        "steps": [
+          {
+            "id": 1,
+            "name": "Account",
+            "description": "Your details",
+            "visible": true,
+            "disabled": false
+          },
+          {
+            "id": 2,
+            "name": "Company",
+            "description": "Team and size",
+            "visible": true,
+            "disabled": false
+          },
+          {
+            "id": 3,
+            "name": "Billing",
+            "description": "Plan and payment",
+            "visible": true,
+            "disabled": false
+          },
+          {
+            "id": 4,
+            "name": "Done",
+            "description": "Review and finish",
+            "visible": false,
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "call": "setStepDisable",
+      "changed": {
+        "steps": [
+          {
+            "id": 1,
+            "name": "Account",
+            "description": "Your details",
+            "visible": true,
+            "disabled": false
+          },
+          {
+            "id": 2,
+            "name": "Company",
+            "description": "Team and size",
+            "visible": true,
+            "disabled": false
+          },
+          {
+            "id": 3,
+            "name": "Billing",
+            "description": "Plan and payment",
+            "visible": true,
+            "disabled": true
+          },
+          {
+            "id": 4,
+            "name": "Done",
+            "description": "Review and finish",
+            "visible": false,
+            "disabled": false
+          }
+        ]
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {}
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "currentStepId": 1,
+      "currentStepIndex": 0,
+      "steps": [
+        {
+          "id": 1,
+          "name": "Account",
+          "description": "Your details",
+          "visible": true,
+          "disabled": false
+        },
+        {
+          "id": 2,
+          "name": "Company",
+          "description": "Team and size",
+          "visible": true,
+          "disabled": false
+        },
+        {
+          "id": 3,
+          "name": "Billing",
+          "description": "Plan and payment",
+          "visible": true,
+          "disabled": true
+        },
+        {
+          "id": 4,
+          "name": "Done",
+          "description": "Review and finish",
+          "visible": false,
+          "disabled": false
+        }
+      ]
+    },
+    "changed": {}
+  }
+}

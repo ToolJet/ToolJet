@@ -1,0 +1,380 @@
+export const shadSliderConfig = {
+  name: 'ShadSlider',
+  displayName: 'Slider',
+  description:
+    'Slider, single value or range. Height: 64px with a label (label above the control), 36px without; add 24px for help text',
+  component: 'ShadSlider',
+  defaultSize: {
+    width: 14,
+    height: 64,
+  },
+  others: {
+    showOnDesktop: {
+      type: 'toggle',
+      displayName: 'Show on desktop',
+    },
+    showOnMobile: {
+      type: 'toggle',
+      displayName: 'Show on mobile',
+    },
+  },
+  properties: {
+    label: {
+      type: 'code',
+      displayName: 'Label',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '',
+      },
+    },
+    description: {
+      type: 'code',
+      displayName: 'Help text',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+        defaultValue: '',
+      },
+    },
+    min: {
+      type: 'code',
+      displayName: 'Minimum',
+      validation: {
+        schema: {
+          type: 'number',
+          optional: true,
+        },
+        defaultValue: 0,
+      },
+    },
+    max: {
+      type: 'code',
+      displayName: 'Maximum',
+      validation: {
+        schema: {
+          type: 'number',
+          optional: true,
+        },
+        defaultValue: 100,
+      },
+    },
+    step: {
+      type: 'code',
+      displayName: 'Step',
+      validation: {
+        schema: {
+          type: 'number',
+          optional: true,
+        },
+        defaultValue: 1,
+      },
+    },
+    defaultValue: {
+      type: 'code',
+      displayName: 'Default value (number, or [start, end] for a range)',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'number',
+            },
+            {
+              type: 'array',
+            },
+          ],
+          optional: true,
+        },
+        defaultValue: 50,
+      },
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: {
+        schema: {
+          type: 'boolean',
+          optional: true,
+        },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        {
+          displayName: 'Plain text',
+          value: 'plainText',
+        },
+        {
+          displayName: 'Markdown',
+          value: 'markdown',
+        },
+        {
+          displayName: 'HTML',
+          value: 'html',
+        },
+      ],
+      isFxNotRequired: true,
+      defaultValue: {
+        value: 'plainText',
+      },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
+  },
+  events: {
+    onChange: {
+      displayName: 'On change (on release)',
+    },
+  },
+  styles: {
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [
+            {
+              type: 'string',
+            },
+            {
+              type: 'number',
+            },
+          ],
+          optional: true,
+        },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
+    },
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Range and handle color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Label color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    helpTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Help text color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+    trackColor: {
+      type: 'colorSwatches',
+      displayName: 'Track color',
+      validation: {
+        schema: {
+          type: 'string',
+          optional: true,
+        },
+      },
+    },
+  },
+  exposedVariables: {
+    isVisible: true,
+    isLoading: false,
+    isDisabled: false,
+    value: 50,
+    label: '',
+  },
+  actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'num1',
+          displayName: 'Value',
+          defaultValue: '{{50}}',
+        },
+      ],
+    },
+    {
+      handle: 'setRangeValue',
+      displayName: 'Set range value',
+      params: [
+        {
+          handle: 'num1',
+          displayName: 'Start',
+          defaultValue: '{{20}}',
+        },
+        {
+          handle: 'num2',
+          displayName: 'End',
+          defaultValue: '{{80}}',
+        },
+      ],
+    },
+    {
+      handle: 'reset',
+      displayName: 'Reset',
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+  ],
+  definition: {
+    others: {
+      showOnDesktop: {
+        value: '{{true}}',
+      },
+      showOnMobile: {
+        value: '{{false}}',
+      },
+    },
+    properties: {
+      label: {
+        value: '',
+      },
+      description: {
+        value: '',
+      },
+      min: {
+        value: '{{0}}',
+      },
+      max: {
+        value: '{{100}}',
+      },
+      step: {
+        value: '{{1}}',
+      },
+      defaultValue: {
+        value: '{{50}}',
+      },
+      loadingState: {
+        value: '{{false}}',
+      },
+      visibility: {
+        value: '{{true}}',
+      },
+      collapseWhenHidden: {
+        value: '{{false}}',
+      },
+      disabledState: {
+        value: '{{false}}',
+      },
+      tooltipFormat: {
+        value: 'plainText',
+      },
+      tooltip: {
+        value: '',
+      },
+    },
+    events: [],
+    styles: {
+      boxShadow: {
+        value: '0px 0px 0px 0px #00000040',
+      },
+    },
+  },
+};

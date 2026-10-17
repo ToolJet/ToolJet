@@ -282,3 +282,26 @@ describe('per-row exposed value writes are deferred (asymmetric with the flat pa
     });
   });
 });
+
+describe('the shadcn List view keeps data as its records', () => {
+  // The pack's List view publishes data as its records (the catalog's meaning; pages count them with
+  // (components.list.data || []).length). Deriving children/data from a row's components replaced data with an
+  // object of row values, so that count read "undefined" as soon as a row held a component. children is still derived.
+  const RECORDS = [{ name: 'One' }, { name: 'Two' }, { name: 'Three' }];
+  beforeEach(() => {
+    seedPage({
+      [LV]: component('list1', 'ShadListView'),
+      [TEXT_INPUT]: component('text1', 'ShadText', LV),
+    });
+    seedChildrenMapping({ [LV]: [TEXT_INPUT], canvas: [LV] });
+    seedExposedComponents({ [LV]: { data: RECORDS } });
+  });
+
+  it('derives children from a row component but leaves data as the records', async () => {
+    useStore.getState().setExposedValuePerRow(TEXT_INPUT, 'text', 'One', [0], 'canvas');
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(exposedComponents()[LV].children[0]).toEqual({ text1: { text: 'One', id: TEXT_INPUT } });
+    expect(exposedComponents()[LV].data).toEqual(RECORDS);
+  });
+});

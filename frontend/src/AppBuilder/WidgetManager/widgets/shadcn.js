@@ -1,0 +1,233 @@
+// ToolJet UI 2.0 widget configs (one file per widget, written like the native configs; NAMING.md has the naming rules).
+import { shadButtonGroupConfig } from './shadButtonGroup';
+import { shadCalendarConfig } from './shadCalendar';
+import { shadCarouselConfig } from './shadCarousel';
+import { shadDropdownMenuConfig } from './shadDropdownMenu';
+import { shadNavigationConfig } from './shadNavigation';
+import { shadComboChartConfig } from './shadComboChart';
+import { shadFunnelChartConfig } from './shadFunnelChart';
+import { shadHeatmapChartConfig } from './shadHeatmapChart';
+import { shadLineChartConfig } from './shadLineChart';
+import { shadRadarChartConfig } from './shadRadarChart';
+import { shadRadialChartConfig } from './shadRadialChart';
+import { shadScatterChartConfig } from './shadScatterChart';
+import { shadSparklineConfig } from './shadSparkline';
+import { shadChatConfig } from './shadChat';
+import { shadQuestionnaireConfig } from './shadQuestionnaire';
+import { shadCircularProgressConfig } from './shadCircularProgress';
+import { shadIconConfig } from './shadIcon';
+import { shadImageConfig } from './shadImage';
+import { shadKeyValueConfig } from './shadKeyValue';
+import { shadLinkConfig } from './shadLink';
+import { shadPaginationConfig } from './shadPagination';
+import { shadSpinnerConfig } from './shadSpinner';
+import { shadStepsConfig } from './shadSteps';
+import { shadTagsConfig } from './shadTags';
+import { shadTimelineConfig } from './shadTimeline';
+import { shadCurrencyInputConfig } from './shadCurrencyInput';
+import { shadDateTimePickerConfig } from './shadDateTimePicker';
+import { shadNumberInputConfig } from './shadNumberInput';
+import { shadOtpInputConfig } from './shadOtpInput';
+import { shadPasswordInputConfig } from './shadPasswordInput';
+import { shadPhoneInputConfig } from './shadPhoneInput';
+import { shadTimePickerConfig } from './shadTimePicker';
+import { shadAccordionConfig } from './shadAccordion';
+import { shadAlertConfig } from './shadAlert';
+import { shadAreaChartConfig } from './shadAreaChart';
+import { shadAvatarConfig } from './shadAvatar';
+import { shadBadgeConfig } from './shadBadge';
+import { shadBarChartConfig } from './shadBarChart';
+import { shadBreadcrumbConfig } from './shadBreadcrumb';
+import { shadButtonConfig } from './shadButton';
+import { shadCheckboxConfig } from './shadCheckbox';
+import { shadDatePickerConfig } from './shadDatePicker';
+import { shadEmptyConfig } from './shadEmpty';
+import { shadHeadingConfig } from './shadHeading';
+import { shadInputConfig } from './shadInput';
+import { shadKanbanConfig } from './shadKanban';
+import { shadPieChartConfig } from './shadPieChart';
+import { shadProgressConfig } from './shadProgress';
+import { shadRadioGroupConfig } from './shadRadioGroup';
+import { shadSelectConfig } from './shadSelect';
+import { shadSeparatorConfig } from './shadSeparator';
+import { shadSkeletonConfig } from './shadSkeleton';
+import { shadSliderConfig } from './shadSlider';
+import { shadStatConfig } from './shadStat';
+import { shadSwitchConfig } from './shadSwitch';
+import { shadTextConfig } from './shadText';
+import { shadTextareaConfig } from './shadTextarea';
+import { shadToggleGroupConfig } from './shadToggleGroup';
+import { shadListViewConfig } from './shadListView';
+import { shadTabsConfig } from './shadTabs';
+import { shadMapConfig } from './shadMap';
+import { shadDialogConfig } from './shadDialog';
+import { shadColorPickerConfig } from './shadColorPicker';
+import { shadComboboxConfig } from './shadCombobox';
+import { shadFileUploadConfig } from './shadFileUpload';
+import { shadMultiselectConfig } from './shadMultiselect';
+import { shadRatingConfig } from './shadRating';
+import { shadTagsInputConfig } from './shadTagsInput';
+import { shadScheduleConfig } from './shadSchedule';
+import { shadCardGridConfig } from './shadCardGrid';
+import { shadHeroConfig } from './shadHero';
+import { shadProgressListConfig } from './shadProgressList';
+import { shadRecordListConfig } from './shadRecordList';
+import { shadSummaryStripConfig } from './shadSummaryStrip';
+import { shadTableConfig } from './shadTable';
+
+export const shadcnConfigs = [
+  shadButtonGroupConfig,
+  shadCalendarConfig,
+  shadCarouselConfig,
+  shadDropdownMenuConfig,
+  shadNavigationConfig,
+  shadComboChartConfig,
+  shadFunnelChartConfig,
+  shadHeatmapChartConfig,
+  shadLineChartConfig,
+  shadRadarChartConfig,
+  shadRadialChartConfig,
+  shadScatterChartConfig,
+  shadSparklineConfig,
+  shadChatConfig,
+  shadQuestionnaireConfig,
+  shadCircularProgressConfig,
+  shadIconConfig,
+  shadImageConfig,
+  shadKeyValueConfig,
+  shadLinkConfig,
+  shadPaginationConfig,
+  shadSpinnerConfig,
+  shadStepsConfig,
+  shadTagsConfig,
+  shadTimelineConfig,
+  shadCurrencyInputConfig,
+  shadDateTimePickerConfig,
+  shadNumberInputConfig,
+  shadOtpInputConfig,
+  shadPasswordInputConfig,
+  shadPhoneInputConfig,
+  shadTimePickerConfig,
+  shadAccordionConfig,
+  shadAlertConfig,
+  shadAreaChartConfig,
+  shadAvatarConfig,
+  shadBadgeConfig,
+  shadBarChartConfig,
+  shadBreadcrumbConfig,
+  shadButtonConfig,
+  shadCheckboxConfig,
+  shadDatePickerConfig,
+  shadEmptyConfig,
+  shadHeadingConfig,
+  shadInputConfig,
+  shadKanbanConfig,
+  shadPieChartConfig,
+  shadProgressConfig,
+  shadRadioGroupConfig,
+  shadSelectConfig,
+  shadSeparatorConfig,
+  shadSkeletonConfig,
+  shadSliderConfig,
+  shadStatConfig,
+  shadSwitchConfig,
+  shadTextConfig,
+  shadTextareaConfig,
+  shadToggleGroupConfig,
+  shadListViewConfig,
+  shadTabsConfig,
+  shadMapConfig,
+  shadDialogConfig,
+  shadColorPickerConfig,
+  shadComboboxConfig,
+  shadFileUploadConfig,
+  shadMultiselectConfig,
+  shadRatingConfig,
+  shadTagsInputConfig,
+  shadScheduleConfig,
+  shadCardGridConfig,
+  shadHeroConfig,
+  shadProgressListConfig,
+  shadRecordListConfig,
+  shadSummaryStripConfig,
+  shadTableConfig,
+];
+export const SHADCN_COMPONENTS = shadcnConfigs.map((c) => c.name);
+
+export {
+  shadButtonGroupConfig,
+  shadCalendarConfig,
+  shadCarouselConfig,
+  shadDropdownMenuConfig,
+  shadNavigationConfig,
+  shadComboChartConfig,
+  shadFunnelChartConfig,
+  shadHeatmapChartConfig,
+  shadLineChartConfig,
+  shadRadarChartConfig,
+  shadRadialChartConfig,
+  shadScatterChartConfig,
+  shadSparklineConfig,
+  shadChatConfig,
+  shadQuestionnaireConfig,
+  shadCircularProgressConfig,
+  shadIconConfig,
+  shadImageConfig,
+  shadKeyValueConfig,
+  shadLinkConfig,
+  shadPaginationConfig,
+  shadSpinnerConfig,
+  shadStepsConfig,
+  shadTagsConfig,
+  shadTimelineConfig,
+  shadCurrencyInputConfig,
+  shadDateTimePickerConfig,
+  shadNumberInputConfig,
+  shadOtpInputConfig,
+  shadPasswordInputConfig,
+  shadPhoneInputConfig,
+  shadTimePickerConfig,
+  shadAccordionConfig,
+  shadAlertConfig,
+  shadAreaChartConfig,
+  shadAvatarConfig,
+  shadBadgeConfig,
+  shadBarChartConfig,
+  shadBreadcrumbConfig,
+  shadButtonConfig,
+  shadCheckboxConfig,
+  shadDatePickerConfig,
+  shadEmptyConfig,
+  shadHeadingConfig,
+  shadInputConfig,
+  shadKanbanConfig,
+  shadPieChartConfig,
+  shadProgressConfig,
+  shadRadioGroupConfig,
+  shadSelectConfig,
+  shadSeparatorConfig,
+  shadSkeletonConfig,
+  shadSliderConfig,
+  shadStatConfig,
+  shadSwitchConfig,
+  shadTextConfig,
+  shadTextareaConfig,
+  shadToggleGroupConfig,
+  shadListViewConfig,
+  shadTabsConfig,
+  shadMapConfig,
+  shadDialogConfig,
+  shadColorPickerConfig,
+  shadComboboxConfig,
+  shadFileUploadConfig,
+  shadMultiselectConfig,
+  shadRatingConfig,
+  shadTagsInputConfig,
+  shadScheduleConfig,
+  shadCardGridConfig,
+  shadHeroConfig,
+  shadProgressListConfig,
+  shadRecordListConfig,
+  shadSummaryStripConfig,
+  shadTableConfig,
+};

@@ -1,0 +1,97 @@
+{
+  "loaded": {
+    "isVisible": true,
+    "isLoading": false,
+    "isDisabled": false,
+    "answers": {
+      "role": null,
+      "goals": [],
+      "notes": ""
+    },
+    "currentIndex": 0,
+    "currentItem": {
+      "name": "role",
+      "prompt": "What best describes your role?",
+      "type": "single",
+      "required": true
+    },
+    "isComplete": false,
+    "id": "<uuid>"
+  },
+  "probe": "{\"byId\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"answers\":{\"role\":null,\"goals\":[],\"notes\":\"\"},\"currentIndex\":0,\"currentItem\":{\"name\":\"role\",\"prompt\":\"What best describes your role?\",\"type\":\"single\",\"required\":true},\"isComplete\":false},\"byName\":{\"isVisible\":true,\"isLoading\":false,\"isDisabled\":false,\"answers\":{\"role\":null,\"goals\":[],\"notes\":\"\"},\"currentIndex\":0,\"currentItem\":{\"name\":\"role\",\"prompt\":\"What best describes your role?\",\"type\":\"single\",\"required\":true},\"isComplete\":false}}",
+  "steps": [
+    {
+      "call": "reset",
+      "changed": {}
+    },
+    {
+      "call": "goTo",
+      "changed": {
+        "currentIndex": 1,
+        "currentItem": {
+          "name": "goals",
+          "prompt": "What do you want to get done first?",
+          "type": "multiple",
+          "required": false
+        }
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": true
+      }
+    },
+    {
+      "call": "setLoading",
+      "changed": {
+        "isLoading": false
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": true
+      }
+    },
+    {
+      "call": "setDisable",
+      "changed": {
+        "isDisabled": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": false
+      }
+    },
+    {
+      "call": "setVisibility",
+      "changed": {
+        "isVisible": true
+      }
+    }
+  ],
+  "runJs": {
+    "returned": {
+      "isVisible": true,
+      "isLoading": false,
+      "isDisabled": false,
+      "answers": {
+        "role": null,
+        "goals": [],
+        "notes": ""
+      },
+      "currentIndex": 1,
+      "currentItem": {
+        "name": "goals",
+        "prompt": "What do you want to get done first?",
+        "type": "multiple",
+        "required": false
+      },
+      "isComplete": false
+    },
+    "changed": {}
+  }
+}

@@ -10,6 +10,141 @@ import { CustomComponentsTab } from './CustomComponentsTab';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
+import { SHADCN_COMPONENTS } from '@/AppBuilder/WidgetManager/widgets/shadcn';
+import { UI1, UI2, resolveComponentLibrary } from './componentLibrary';
+
+// Presets (component packs): a palette entry that adds a native widget with some styles set. The shadcn/ui Table is
+// ToolJet's own Table in its shadcn look, so it keeps every Table feature and convention (the older ShadTable widget
+// stays registered for apps that use it, but leaves the palette). The Google Map is the native Map in the pack's frame
+// (it needs a Google Maps API key; the pack's own Map does not), named apart from it in the palette.
+const SHADCN_TABLE = 'Table:shadcn';
+const SHADCN_GOOGLE_MAP = 'Map:shadcn';
+const PRESETS = {
+  [SHADCN_TABLE]: { base: 'Table', stylePreset: { tableLook: 'shadcn' } },
+  [SHADCN_GOOGLE_MAP]: { base: 'Map', stylePreset: { mapLook: 'shadcn' }, displayName: 'Google Map' },
+};
+const presetDefinition = (name) => {
+  const preset = PRESETS[name];
+  const base = preset && componentTypeDefinitionMap[preset.base];
+  return base
+    ? {
+        ...base,
+        stylePreset: preset.stylePreset,
+        ...(preset.displayName ? { displayName: preset.displayName, presetLabel: preset.displayName } : {}),
+      }
+    : undefined;
+};
+
+const SHADCN_SECTIONS = [
+  { title: 'Page sections', items: ['ShadHero', 'ShadSummaryStrip', 'ShadCardGrid', 'ShadRecordList'] },
+  {
+    title: 'Layout',
+    items: ['FlexContainer', 'ShadTabs', 'ShadListView', 'ShadDialog', 'ShadSeparator', 'ShadAccordion'],
+  },
+  { title: 'Typography', items: ['ShadHeading', 'ShadText'] },
+  { title: 'Conversation', items: ['ShadChat', 'ShadQuestionnaire'] },
+  {
+    title: 'Data display',
+    items: [
+      SHADCN_TABLE,
+      'ShadKanban',
+      'ShadMap',
+      SHADCN_GOOGLE_MAP,
+      'ShadSchedule',
+      'ShadStat',
+      'ShadProgressList',
+      'ShadBadge',
+      'ShadAvatar',
+      'ShadProgress',
+      'ShadEmpty',
+      'ShadSkeleton',
+      'ShadKeyValue',
+      'ShadTimeline',
+      'ShadTags',
+      'ShadCircularProgress',
+      'ShadSpinner',
+      'ShadImage',
+      'ShadIcon',
+      'ShadCarousel',
+      'ShadCalendar',
+    ],
+  },
+  {
+    title: 'Charts',
+    items: [
+      'ShadAreaChart',
+      'ShadBarChart',
+      'ShadLineChart',
+      'ShadComboChart',
+      'ShadPieChart',
+      'ShadScatterChart',
+      'ShadFunnelChart',
+      'ShadHeatmapChart',
+      'ShadRadarChart',
+      'ShadRadialChart',
+      'ShadSparkline',
+    ],
+  },
+  {
+    title: 'Inputs',
+    items: [
+      'ShadInput',
+      'ShadTextarea',
+      'ShadSelect',
+      'ShadDatePicker',
+      'ShadCheckbox',
+      'ShadSwitch',
+      'ShadRadioGroup',
+      'ShadSlider',
+      'ShadToggleGroup',
+      'ShadNumberInput',
+      'ShadPasswordInput',
+      'ShadPhoneInput',
+      'ShadCurrencyInput',
+      'ShadOtpInput',
+      'ShadTimePicker',
+      'ShadDateTimePicker',
+      'ShadCombobox',
+      'ShadMultiselect',
+      'ShadTagsInput',
+      'ShadColorPicker',
+      'ShadRating',
+      'ShadFileUpload',
+    ],
+  },
+  {
+    title: 'Actions and navigation',
+    items: [
+      'ShadButton',
+      'ShadButtonGroup',
+      'ShadDropdownMenu',
+      'ShadLink',
+      'ShadNavigation',
+      'ShadSteps',
+      'ShadPagination',
+      'ShadBreadcrumb',
+      'ShadAlert',
+    ],
+  },
+];
+
+// Component libraries: the panel lists one library at a time, picked in a toggle above the search box. The pick is the
+// app's saved library (globalSettings.componentLibrary, see componentLibrary.js), which AI builds also follow.
+// A pack lists its own widgets plus FlexContainer, which composes them.
+const COMPONENT_LIBRARIES = [
+  { value: UI1, label: 'ToolJet UI 1.0' },
+  {
+    value: UI2,
+    label: 'ToolJet UI 2.0',
+    badge: 'Beta',
+    sections: SHADCN_SECTIONS,
+    components: [...SHADCN_COMPONENTS.filter((name) => name !== 'ShadTable'), SHADCN_TABLE, SHADCN_GOOGLE_MAP],
+  },
+];
+// UI 2.0 widgets never appear in the ToolJet list.
+const PACK_COMPONENTS = new Set(SHADCN_COMPONENTS);
+const libraryComponentNames = (library) =>
+  library.components ? new Set(['FlexContainer', ...library.components]) : null;
 import { Button } from '@/components/ui/Button/Button';
 import { ModuleManager } from '@/modules/Modules/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
@@ -18,6 +153,8 @@ import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import Beta from '@/_ui/Beta';
+import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
+import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import './styles.scss';
 
 // Simple error boundary component for module errors
@@ -66,19 +203,56 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
+  // The app's library: saved, else inferred (an app that already holds a UI 2.0 widget opens on UI 2.0). A switch saves
+  // it, except in a frozen editor, where it only changes the list.
+  const savedLibrary = useStore((state) => state.globalSettings?.componentLibrary);
+  const pages = useStore((state) => state.modules?.canvas?.pages);
+  const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
+  const appLibrary = useMemo(
+    () => resolveComponentLibrary({ componentLibrary: savedLibrary }, pages).library,
+    [savedLibrary, pages]
+  );
+  // The pick shows at once; it gives way to the app's library once that is saved or another app or version loads.
+  const [pickedLibrary, setPickedLibrary] = useState(null);
+  useEffect(() => setPickedLibrary(null), [appLibrary]);
+  const libraryKey = pickedLibrary ?? appLibrary;
+  const pickLibrary = (value) => {
+    setPickedLibrary(value);
+    if (value !== savedLibrary && !shouldFreeze) globalSettingsChanged({ componentLibrary: value });
+  };
+  const library = COMPONENT_LIBRARIES.find((entry) => entry.value === libraryKey) ?? COMPONENT_LIBRARIES[0];
+
+  // The widgets of the selected library: a pack's own widgets (and FlexContainer), or every native widget. A preset
+  // belongs to the pack that lists it, so a search in ToolJet UI 1.0 does not offer the pack's Table or Google Map.
+  const inLibrary = useCallback(
+    (name) => {
+      const names = libraryComponentNames(library);
+      return names ? names.has(name) : !PACK_COMPONENTS.has(name) && !PRESETS[name];
+    },
+    [library]
+  );
+
   const componentList = useMemo(() => {
-    return componentTypes
-      .map((component) => component.component)
-      .filter((component) => !IGNORED_ITEMS.includes(component));
-  }, [componentTypes]);
+    return [
+      ...componentTypes
+        .map((component) => component.component)
+        .filter((component) => !IGNORED_ITEMS.includes(component) && inLibrary(component)),
+      ...Object.keys(PRESETS).filter(inLibrary),
+    ];
+  }, [componentTypes, inLibrary]);
 
   const searchList = useMemo(() => {
-    return componentTypes
-      .filter((component) => !IGNORED_ITEMS.includes(component.component))
-      .map((component) => {
-        return { component: component.component, displayName: component.displayName };
-      });
-  }, [componentTypes]);
+    return [
+      ...componentTypes
+        .filter((component) => !IGNORED_ITEMS.includes(component.component) && inLibrary(component.component))
+        .map((component) => {
+          return { component: component.component, displayName: component.displayName };
+        }),
+      ...Object.keys(PRESETS)
+        .filter(inLibrary)
+        .map((name) => ({ component: name, displayName: presetDefinition(name)?.displayName ?? name })),
+    ];
+  }, [componentTypes, inLibrary]);
 
   const [filteredComponents, setFilteredComponents] = useState(componentList);
   const [searchQuery, setSearchQuery] = useState('');
@@ -153,7 +327,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   function renderComponentCard(component, index) {
     return (
       <div key={component} className="text-center align-items-center clearfix draggable-box-wrapper">
-        <DragLayer index={index} component={componentTypeDefinitionMap[component]} />
+        <DragLayer index={index} component={presetDefinition(component) ?? componentTypeDefinitionMap[component]} />
       </div>
     );
   }
@@ -197,6 +371,23 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       return <>{renderList(filteredComponents)}</>;
     }
 
+    if (library.sections) {
+      return (
+        <div className="mt-3">
+          <Accordion
+            isTitleCase={false}
+            items={library.sections
+              .map((section) => ({
+                title: section.title,
+                isOpen: true,
+                children: renderList(section.items.filter((name) => componentList.includes(name))),
+              }))
+              .filter((section) => section.children)}
+          />
+        </div>
+      );
+    }
+
     const sections = Object.entries(sectionConfig).map(([key, config]) => ({
       title: config.title,
       items: filteredComponents.filter((component) => config.valueSet.has(component)),
@@ -223,6 +414,45 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   // Remove handleChangeTab and related logic
 
   // Remove renderSection, replace with Tabs/Tab logic below
+
+  const libraryPicker = () => (
+    <div className="mt-3 d-flex align-items-center" style={{ width: 266, marginLeft: 16 }}>
+      <ToggleGroup
+        id="component-library-select"
+        data-cy="component-library-select"
+        aria-label="Component library"
+        className="w-full"
+        style={{ flex: 1 }}
+        defaultValue={libraryKey}
+        onValueChange={(value) => {
+          // A click on the active item deselects it in a toggle group; keep a library picked.
+          if (!value) return;
+          pickLibrary(value);
+          setSearchQuery('');
+        }}
+      >
+        {COMPONENT_LIBRARIES.map((entry) => (
+          <ToggleGroupItem
+            key={entry.value}
+            value={entry.value}
+            style={{
+              width: '100%',
+              whiteSpace: 'nowrap',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {/* The toggle draws its children in a block: label and badge share one inline row. */}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}>
+              {entry.label}
+              {entry.badge ? <Beta className="tw-py-0.5 tw-px-1.5 tw-border-none" /> : null}
+            </span>
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </div>
+  );
 
   const searchBox = () => {
     return (
@@ -268,7 +498,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               />
             </div>
           </div>
-          {searchBox()}
+          {libraryPicker()}
+          <React.Fragment key={libraryKey}>{searchBox()}</React.Fragment>
           <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
         </>
       ) : (
@@ -303,7 +534,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               })()}
               darkMode={darkMode}
             >
-              {searchBox()}
+              {libraryPicker()}
+              <React.Fragment key={libraryKey}>{searchBox()}</React.Fragment>
               <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
             </Tab>
             {hasModuleAccess && (

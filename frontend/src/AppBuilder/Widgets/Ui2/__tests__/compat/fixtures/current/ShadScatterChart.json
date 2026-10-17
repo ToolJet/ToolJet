@@ -1,0 +1,436 @@
+{
+  "schemaVersion": 1,
+  "release": "current",
+  "widget": "ShadScatterChart",
+  "pages": [
+    {
+      "id": "c81e1111-388d-599e-a540-3dbfb9d2dbce",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "name": "Home",
+      "handle": "home"
+    }
+  ],
+  "components": [
+    {
+      "id": "ea14d19c-1129-5a8b-aceb-d1a462bcd854",
+      "name": "scatterChart1",
+      "type": "ShadScatterChart",
+      "pageId": "c81e1111-388d-599e-a540-3dbfb9d2dbce",
+      "parent": null,
+      "properties": {
+        "data": {
+          "value": "{{[{ account: 'Northwind', spend: 12, revenue: 48, seats: 40, segment: 'Mid-market' }, { account: 'Globex', spend: 30, revenue: 95, seats: 120, segment: 'Enterprise' }, { account: 'Initech', spend: 8, revenue: 21, seats: 15, segment: 'SMB' }, { account: 'Umbrella', spend: 26, revenue: 61, seats: 90, segment: 'Enterprise' }, { account: 'Hooli', spend: 18, revenue: 70, seats: 55, segment: 'Mid-market' }, { account: 'Vandelay', spend: 5, revenue: 14, seats: 10, segment: 'SMB' }, { account: 'Stark', spend: 34, revenue: 128, seats: 150, segment: 'Enterprise' }, { account: 'Wonka', spend: 14, revenue: 33, seats: 30, segment: 'SMB' }]}}"
+        },
+        "xField": {
+          "value": "spend"
+        },
+        "yField": {
+          "value": "revenue"
+        },
+        "sizeField": {
+          "value": "seats"
+        },
+        "groupField": {
+          "value": "segment"
+        },
+        "nameField": {
+          "value": "account"
+        },
+        "xLabel": {
+          "value": "Marketing spend ($k) (saved)"
+        },
+        "yLabel": {
+          "value": "Revenue ($k) (saved)"
+        },
+        "xAxisFormat": {
+          "value": "currency"
+        },
+        "yAxisFormat": {
+          "value": "currency"
+        },
+        "currency": {
+          "value": "USD"
+        },
+        "referenceX": {
+          "value": ""
+        },
+        "referenceY": {
+          "value": ""
+        },
+        "pointSize": {
+          "value": "{{7}}"
+        },
+        "fillOpacity": {
+          "value": ""
+        },
+        "valuePrefix": {
+          "value": ""
+        },
+        "valueSuffix": {
+          "value": ""
+        },
+        "emptyText": {
+          "value": "No data (saved)"
+        },
+        "animate": {
+          "value": "{{false}}"
+        },
+        "showGrid": {
+          "value": "{{false}}"
+        },
+        "showLegend": {
+          "value": "{{false}}"
+        },
+        "colors": {
+          "value": "{{[]}}"
+        },
+        "loadingState": {
+          "value": "{{false}}"
+        },
+        "loadingIndicator": {
+          "value": "spinner"
+        },
+        "visibility": {
+          "value": "{{true}}"
+        },
+        "collapseWhenHidden": {
+          "value": "{{false}}"
+        },
+        "disabledState": {
+          "value": "{{false}}"
+        },
+        "tooltipFormat": {
+          "value": "plainText"
+        },
+        "tooltip": {
+          "value": "Saved tooltip"
+        }
+      },
+      "general": {},
+      "styles": {
+        "boxShadow": {
+          "value": "0px 4px 12px 0px #0f172a1f"
+        },
+        "chartColor": {
+          "value": "#7c3aed"
+        },
+        "gridColor": {
+          "value": "#b45309"
+        },
+        "axisTextColor": {
+          "value": "#be123c"
+        },
+        "legendTextColor": {
+          "value": "#1d4ed8"
+        },
+        "referenceLineColor": {
+          "value": "#4d7c0f"
+        }
+      },
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 0,
+          "left": 0,
+          "width": 20,
+          "height": 320
+        }
+      }
+    },
+    {
+      "id": "cda69b40-de58-56e5-a380-153f6cf94a0f",
+      "name": "savedBindings",
+      "type": "ShadText",
+      "pageId": "c81e1111-388d-599e-a540-3dbfb9d2dbce",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "{{JSON.stringify({ byId: { \"isVisible\": components.ea14d19c-1129-5a8b-aceb-d1a462bcd854.isVisible, \"isLoading\": components.ea14d19c-1129-5a8b-aceb-d1a462bcd854.isLoading, \"isDisabled\": components.ea14d19c-1129-5a8b-aceb-d1a462bcd854.isDisabled, \"clickedDataPoint\": components.ea14d19c-1129-5a8b-aceb-d1a462bcd854.clickedDataPoint }, byName: { \"isVisible\": components.scatterChart1.isVisible, \"isLoading\": components.scatterChart1.isLoading, \"isDisabled\": components.scatterChart1.isDisabled, \"clickedDataPoint\": components.scatterChart1.clickedDataPoint } })}}"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 330,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "74c44cec-47f9-5c87-a891-8e2f2ae0b4cc",
+      "name": "eventMarker",
+      "type": "ShadButton",
+      "pageId": "c81e1111-388d-599e-a540-3dbfb9d2dbce",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Marker"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 380,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    },
+    {
+      "id": "de8ae2f1-31ca-53ef-ad06-0459029e29a3",
+      "name": "runActions",
+      "type": "ShadButton",
+      "pageId": "c81e1111-388d-599e-a540-3dbfb9d2dbce",
+      "parent": null,
+      "properties": {
+        "text": {
+          "value": "Run actions"
+        }
+      },
+      "general": {},
+      "styles": {},
+      "generalStyles": {},
+      "validation": {},
+      "displayPreferences": {
+        "showOnDesktop": {
+          "value": "{{true}}"
+        },
+        "showOnMobile": {
+          "value": "{{false}}"
+        }
+      },
+      "layouts": {
+        "desktop": {
+          "top": 430,
+          "left": 0,
+          "width": 20,
+          "height": 40
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "20826617-3340-5632-ad82-d3604e8702a4",
+      "name": "onClick",
+      "index": 0,
+      "sourceId": "ea14d19c-1129-5a8b-aceb-d1a462bcd854",
+      "target": "component",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "74c44cec-47f9-5c87-a891-8e2f2ae0b4cc",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "892bd648-d079-5abc-a969-7f475a10629d",
+      "name": "onDoubleClick",
+      "index": 0,
+      "sourceId": "ea14d19c-1129-5a8b-aceb-d1a462bcd854",
+      "target": "component",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "event": {
+        "eventId": "onDoubleClick",
+        "actionId": "control-component",
+        "componentId": "74c44cec-47f9-5c87-a891-8e2f2ae0b4cc",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fa6d1979-efe9-5b69-a5fd-66738214e54f",
+      "name": "onClick",
+      "index": 0,
+      "sourceId": "de8ae2f1-31ca-53ef-ad06-0459029e29a3",
+      "target": "component",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "ea14d19c-1129-5a8b-aceb-d1a462bcd854",
+        "componentSpecificActionHandle": "clearClickedPoint",
+        "componentSpecificActionParams": []
+      }
+    },
+    {
+      "id": "5a20f0cd-80f0-5c66-ad2a-cd9fae54538e",
+      "name": "onClick",
+      "index": 1,
+      "sourceId": "de8ae2f1-31ca-53ef-ad06-0459029e29a3",
+      "target": "component",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "ea14d19c-1129-5a8b-aceb-d1a462bcd854",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c162c721-3a7a-58e7-aadd-5e80732f6b28",
+      "name": "onClick",
+      "index": 2,
+      "sourceId": "de8ae2f1-31ca-53ef-ad06-0459029e29a3",
+      "target": "component",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "ea14d19c-1129-5a8b-aceb-d1a462bcd854",
+        "componentSpecificActionHandle": "setLoading",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fe7471da-0f29-5572-a2a3-3dbc536cbd25",
+      "name": "onClick",
+      "index": 3,
+      "sourceId": "de8ae2f1-31ca-53ef-ad06-0459029e29a3",
+      "target": "component",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "ea14d19c-1129-5a8b-aceb-d1a462bcd854",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c1611e4d-1d4b-5273-af91-371561a73ab1",
+      "name": "onClick",
+      "index": 4,
+      "sourceId": "de8ae2f1-31ca-53ef-ad06-0459029e29a3",
+      "target": "component",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "ea14d19c-1129-5a8b-aceb-d1a462bcd854",
+        "componentSpecificActionHandle": "setDisable",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "44a4a760-709f-59ce-a291-7d10cd17d0bb",
+      "name": "onClick",
+      "index": 5,
+      "sourceId": "de8ae2f1-31ca-53ef-ad06-0459029e29a3",
+      "target": "component",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "ea14d19c-1129-5a8b-aceb-d1a462bcd854",
+        "componentSpecificActionHandle": "setVisibility",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{false}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "5bbda73a-197a-5537-ac25-07daa6573cba",
+      "name": "onClick",
+      "index": 6,
+      "sourceId": "de8ae2f1-31ca-53ef-ad06-0459029e29a3",
+      "target": "component",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "event": {
+        "eventId": "onClick",
+        "actionId": "control-component",
+        "componentId": "ea14d19c-1129-5a8b-aceb-d1a462bcd854",
+        "componentSpecificActionHandle": "setVisibility",
+        "componentSpecificActionParams": [
+          {
+            "handle": "value",
+            "value": "{{true}}"
+          }
+        ]
+      }
+    }
+  ],
+  "dataQueries": [
+    {
+      "id": "43711bd9-cf4f-5a66-ae5f-06471e9a0985",
+      "name": "callWidget",
+      "kind": "runjs",
+      "appVersionId": "db472322-b762-53fb-ac79-88a68d06a5d3",
+      "options": {
+        "code": "// Calls scatterChart1's actions and reads its values by name, as RunJS code in a saved app does.\nawait components.scatterChart1.clearClickedPoint();\nawait components.scatterChart1.setLoading(true);\nawait components.scatterChart1.setLoading(false);\nawait components.scatterChart1.setDisable(true);\nawait components.scatterChart1.setDisable(false);\nawait components.scatterChart1.setVisibility(false);\nawait components.scatterChart1.setVisibility(true);\nreturn { \"isVisible\": components.scatterChart1.isVisible, \"isLoading\": components.scatterChart1.isLoading, \"isDisabled\": components.scatterChart1.isDisabled, \"clickedDataPoint\": components.scatterChart1.clickedDataPoint };",
+        "hasParamSupport": false,
+        "parameters": []
+      }
+    }
+  ]
+}

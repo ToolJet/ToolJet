@@ -70,6 +70,7 @@ export function renderCustomStyles(
     componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'Image' ||
     componentConfig.component == 'ModalV2' ||
+    componentConfig.component == 'ShadDialog' ||
     componentConfig.component == 'RangeSlider' ||
     componentConfig.component == 'DatetimePickerV2' ||
     componentConfig.component == 'RangeSliderV2' ||
@@ -196,7 +197,8 @@ export function renderElement(
     componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'FileInput' ||
     componentConfig.component == 'FileButton' ||
-    componentConfig.component == 'Tabs'
+    componentConfig.component == 'Tabs' ||
+    componentConfig.component == 'ShadTabs'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

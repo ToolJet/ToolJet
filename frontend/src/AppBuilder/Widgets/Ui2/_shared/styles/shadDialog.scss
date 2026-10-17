@@ -1,0 +1,97 @@
+// ToolJet UI 2.0: the Dialog's look over ModalV2 (Dialog/Dialog.tsx). ModalV2 adds tj-shad-dialog to the
+// dialog, tj-shad-tokens to its content (the theme-mapped --sc-* tokens, without the pack's reset, so the native
+// widgets a dialog may hold keep their own look) and tj-shad-backdrop to the overlay; a side sheet adds tj-shad-sheet.
+
+// One class more than ToolJet's modal content rule (.modal-content.modal-component.tj-modal-widget-content), so these
+// win without !important wherever the stylesheets load.
+.tj-shad-dialog .tj-shad-dialog-content.modal-content.modal-component {
+  background: var(--sc-background);
+  color: var(--sc-foreground);
+  border: 1px solid var(--sc-border);
+  border-radius: calc(var(--sc-radius) + 4px);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  overflow: hidden;
+}
+
+// The close button sits level with the title, at the top of the header: centred in a tall header (a title over a
+// description, 80px or more) it hung below the title line, beside the description.
+.tj-shad-dialog .modal-header {
+  align-items: flex-start;
+}
+
+// The close button: shadcn's small muted X in the top right corner.
+.tj-shad-dialog .tj-modal-close-button {
+  color: var(--sc-muted-foreground);
+  opacity: 0.7;
+  border-radius: calc(var(--sc-radius) - 4px);
+  transition: opacity 0.15s ease;
+  &:hover {
+    opacity: 1;
+    background: transparent;
+  }
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.modal-backdrop.tj-shad-backdrop.show {
+  background: #000000;
+  opacity: 0.8;
+}
+
+// The trigger button (when the default button is on) takes the theme radius like the pack's buttons.
+.tj-shad-trigger.jet-btn {
+  border-radius: calc(var(--cc-radius-default, 8px) - 2px);
+  font-weight: 500;
+}
+
+// Side sheet: full height against one edge, sliding in from it.
+// ToolJet pads the modal dialog's bottom for centred modals (an id rule, #modal-container); a sheet runs to the edge.
+#modal-container.tj-shad-sheet {
+  padding: 0;
+}
+.modal .modal-dialog.tj-shad-sheet {
+  margin: 0;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  &.modal-sm {
+    max-width: 360px;
+  }
+  &.modal-lg,
+  &:not(.modal-sm):not(.modal-xl) {
+    max-width: 480px;
+  }
+  &.modal-xl {
+    max-width: 640px;
+  }
+  .tj-shad-dialog-content.modal-content.modal-component {
+    height: 100%;
+    border-radius: 0;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+}
+.modal .modal-dialog.tj-shad-sheet--right {
+  margin-left: auto;
+  .tj-shad-dialog-content.modal-content.modal-component {
+    border-width: 0 0 0 1px;
+  }
+}
+.modal .modal-dialog.tj-shad-sheet--left {
+  margin-right: auto;
+  .tj-shad-dialog-content.modal-content.modal-component {
+    border-width: 0 1px 0 0;
+  }
+}
+.modal.fade .modal-dialog.tj-shad-sheet--right {
+  transform: translateX(100%);
+  transition: transform 0.3s ease-out;
+}
+.modal.fade .modal-dialog.tj-shad-sheet--left {
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-out;
+}
+.modal.show .modal-dialog.tj-shad-sheet {
+  transform: none;
+}

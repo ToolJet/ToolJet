@@ -69,13 +69,15 @@ export const createInspectorSlice = (set, get) => ({
       case 'Container':
       case 'Form':
       case 'ModalV2':
+      case 'ShadDialog':
       case 'Accordion':
         return [
           ...get().getContainerChildrenMapping(id),
           ...get().getContainerChildrenMapping(`${id}-header`),
           ...get().getContainerChildrenMapping(`${id}-footer`),
         ];
-      case 'Tabs': {
+      case 'Tabs':
+      case 'ShadTabs': {
         const jsonTabs = getResolvedComponent(id)?.properties?.tabs;
         const tabItems = getResolvedComponent(id)?.properties?.tabItems;
         const useDynamicOptions = getResolvedComponent(id)?.properties?.useDynamicOptions;

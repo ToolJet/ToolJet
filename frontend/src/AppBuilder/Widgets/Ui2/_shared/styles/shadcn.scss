@@ -1,0 +1,1174 @@
+// The UI 2.0 widgets' styles beside their Tailwind classes (ToolJet's Tailwind build, `tw-` prefix; the `ui2` theme
+// keys are in ui2.tailwind.js): the theme tokens every widget reads, and the rules a class cannot express.
+
+// shadcn's tokens, taken from the app theme so a pack widget follows whatever theme the user or the model chose.
+// Values without a theme counterpart use shadcn's neutral defaults. tj-shad-tokens gives a surface outside the pack's
+// widgets (the Dialog's content) the same tokens without the pack's reset.
+.tj-shadcn,
+.tj-shad-tokens {
+  --sc-background: var(--cc-surface1-surface, #ffffff);
+  --sc-foreground: var(--cc-primary-text, #0a0a0a);
+  --sc-card: var(--cc-surface1-surface, #ffffff);
+  --sc-card-foreground: var(--cc-primary-text, #0a0a0a);
+  --sc-popover: var(--cc-surface1-surface, #ffffff);
+  --sc-popover-foreground: var(--cc-primary-text, #0a0a0a);
+  --sc-primary: var(--cc-primary-brand, #171717);
+  --sc-primary-foreground: var(--cc-on-primary-brand, #ffffff);
+  // Muted surfaces use surface3: shadcn's muted (#f4f4f5) matches it in light themes, and in dark themes surface2
+  // often equals surface1 (ToolJet Modern: both #1F2937), which would hide pill bars and hover states.
+  --sc-secondary: var(--cc-surface3-surface, #f5f5f5);
+  --sc-secondary-foreground: var(--cc-primary-text, #171717);
+  --sc-muted: var(--cc-surface3-surface, #f5f5f5);
+  --sc-muted-foreground: var(--cc-placeholder-text, #737373);
+  --sc-accent: var(--cc-surface3-surface, #f5f5f5);
+  --sc-accent-foreground: var(--cc-primary-text, #171717);
+  --sc-destructive: var(--cc-error-systemStatus, #dc2626);
+  --sc-destructive-foreground: #ffffff;
+  --sc-success: var(--cc-success-systemStatus, #16a34a);
+  --sc-success-foreground: #ffffff;
+  --sc-warning: var(--cc-warning-systemStatus, #d97706);
+  --sc-warning-foreground: #ffffff;
+  --sc-border: var(--cc-weak-border, #e5e5e5);
+  --sc-input: var(--cc-default-border, #e5e5e5);
+  --sc-ring: var(--cc-primary-brand, #a3a3a3);
+  // A soft tint of the theme's primary for the few places a widget shows the theme by default (a Kanban count badge
+  // and avatars, the Table's selected row, the current page): switching themes visibly changes an app built only from
+  // neutrals. Authored colours still win; status chips keep their own tones.
+  --sc-accent-soft: color-mix(in srgb, var(--sc-primary) 12%, var(--sc-background));
+  // The theme's radius scale (default 8 / small 6 / large 12 on ToolJet Modern), else shadcn's.
+  --sc-radius: var(--cc-radius-default, 0.625rem);
+  // Chart series: the theme's primary and its shades, so a chart never brings in a second accent the app does not
+  // have (a teal and a yellow beside an amber theme read as off-brand). Lighter tints, then a deeper shade, then grey;
+  // where relative colours work, series 2 to 4 become the brand's hue neighbours instead (see the @supports below).
+  --sc-chart-1: var(--cc-primary-brand, #2563eb);
+  --sc-chart-2: color-mix(in srgb, var(--sc-chart-1) 62%, var(--sc-background));
+  --sc-chart-3: color-mix(in srgb, var(--sc-chart-1) 34%, var(--sc-background));
+  --sc-chart-4: color-mix(in srgb, var(--sc-chart-1) 70%, #000000);
+  --sc-chart-5: var(--cc-placeholder-text, #94a3b8);
+  // Series that are states (chartsModel statusColors): info is a fixed blue beside green, amber and red, as on the map.
+  --sc-chart-info: #2563eb;
+
+  color: var(--sc-foreground);
+  font-family: inherit;
+  // Scroll areas (a table, a tab strip) take the theme's colours, so a dark theme has no light scrollbar track.
+  scrollbar-color: var(--sc-border) transparent;
+}
+
+// Status colours as small text (a Badge's success, warning and destructive tones on their 10% tint, an Alert's text):
+// mixed half toward the theme's text colour, so they darken on light themes and lighten on dark ones. Every shipped
+// theme then reads at 4.5:1 or more (the lowest is 4.76, Navy dark error); drawn as they are, they read at 3.1:1 on
+// dark cards. Fills, pins and charts keep the status colours (statusInk.spec checks the themes).
+.tj-shadcn,
+.tj-shad-tokens {
+  --sc-success-ink: color-mix(in srgb, var(--sc-success) 50%, var(--sc-foreground));
+  --sc-warning-ink: color-mix(in srgb, var(--sc-warning) 50%, var(--sc-foreground));
+  --sc-destructive-ink: color-mix(in srgb, var(--sc-destructive) 50%, var(--sc-foreground));
+}
+
+// The primary as text (links, an eyebrow, an active tab): its lightness clamped so it reads on the background, light
+// or dark. A typical brand blue is left as it is; a bright green or gold brand gave links at 1.6:1 on white. Browsers
+// without relative colour syntax use the primary as it is.
+.tj-shadcn,
+.tj-shad-tokens {
+  --sc-primary-ink: var(--sc-primary);
+}
+@supports (color: oklch(from red l c h)) {
+  .tj-shadcn,
+  .tj-shad-tokens {
+    --sc-primary-ink: #{'oklch(from var(--sc-primary) min(l, 0.55) c h)'};
+  }
+  .dark-theme .tj-shadcn,
+  .theme-dark .tj-shadcn,
+  .dark-theme .tj-shad-tokens,
+  .theme-dark .tj-shad-tokens {
+    --sc-primary-ink: #{'oklch(from var(--sc-primary) max(l, 0.66) c h)'};
+  }
+}
+
+// Dark themes: the tints mix toward white instead of the dark background, and the deeper shade lifts. Mixed toward
+// the background they sank into it (a pie's second and third slices, a radar's second series and a scatter's third
+// read as the page colour on ToolJet Modern dark).
+// Hairlines take the theme's default border in dark themes: its weak border is the card surface there (ToolJet Modern
+// dark: both #1F2937), so every divider and separator drawn on a card (a record list's rows, a summary strip's
+// figures, a Kanban card's details) vanished. Light themes keep the weak border, which differs from white.
+.dark-theme .tj-shadcn,
+.theme-dark .tj-shadcn,
+.dark-theme .tj-shad-tokens,
+.theme-dark .tj-shad-tokens {
+  --sc-border: var(--cc-default-border, #374151);
+}
+
+.dark-theme .tj-shadcn,
+.theme-dark .tj-shadcn {
+  --sc-chart-2: color-mix(in srgb, var(--sc-chart-1) 62%, #ffffff);
+  --sc-chart-3: color-mix(in srgb, var(--sc-chart-1) 36%, #ffffff);
+  --sc-chart-4: color-mix(in srgb, var(--sc-chart-1) 82%, var(--sc-background));
+  --sc-chart-info: #60a5fa;
+}
+
+// Series that sit side by side (stacked bars, several lines) were tints of one hue: a seven-series chart read as seven
+// near-identical teals (blind review, 2026-10-12). Where the browser has relative colours, series 2 to 4 are the
+// brand's neighbours on the colour wheel instead (+25, -25 and +50 degrees, lighter or deeper): distinct
+// enough to tell apart, still one family with the brand, so no off-brand second accent. Series 5 stays grey. Without
+// relative-colour support the tints above apply.
+//
+// A dark primary (Navy, Ink, Slate, Graphite: lightness under 0.5) moves its neighbours to set lightnesses (0.58, 0.82,
+// 0.70, each 0.12 or more from the others and from a primary up to 0.46) instead of
+// small steps from it: 0.12 lighter and a hue turn left Navy's two lines near-identical, a deeper third series vanished,
+// and a near-grey primary has no hue to turn (help desk dashboard on ToolJet Navy, 2026-10-14). `dark` below is 1 for a
+// primary under 0.48 lightness and 0 from 0.5, so a mid-tone primary keeps the steps it had.
+@supports (color: oklch(from red l c h)) {
+  .tj-shadcn,
+  .tj-shad-tokens {
+    --sc-chart-2: #{'oklch(from var(--sc-chart-1) calc(l + 0.12 + clamp(0, (0.5 - l) * 50, 1) * (0.46 - l)) c calc(h + 25))'};
+    --sc-chart-3: #{'oklch(from var(--sc-chart-1) calc(l - 0.1 + clamp(0, (0.5 - l) * 50, 1) * (0.92 - l)) c calc(h - 25))'};
+    --sc-chart-4: #{'oklch(from var(--sc-chart-1) calc(l + 0.22 + clamp(0, (0.5 - l) * 50, 1) * (0.48 - l)) calc(c * 0.75) calc(h + 50))'};
+  }
+  .dark-theme .tj-shadcn,
+  .theme-dark .tj-shadcn {
+    --sc-chart-2: #{'oklch(from var(--sc-chart-1) calc(l + 0.08) c calc(h + 25))'};
+    --sc-chart-3: #{'oklch(from var(--sc-chart-1) calc(l + 0.14) c calc(h - 25))'};
+    --sc-chart-4: #{'oklch(from var(--sc-chart-1) calc(l + 0.2) calc(c * 0.75) calc(h + 50))'};
+  }
+}
+
+// The reset: Tailwind's preflight is off in ToolJet, and shadcn relies on its box model, border and form-control
+// resets, so the pack restores those for its own elements. `:where()` keeps it at element specificity, like preflight:
+// it wins over the global stylesheet's element rules (it loads later) and loses to every utility class.
+:where(.tj-shadcn),
+:where(.tj-shadcn) *,
+:where(.tj-shadcn) ::before,
+:where(.tj-shadcn) ::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--sc-border);
+}
+:where(.tj-shadcn) :is(button, input, textarea, select) {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+:where(.tj-shadcn) button {
+  background-color: transparent;
+  cursor: pointer;
+}
+:where(.tj-shadcn) :is(p, h1, h2, h3, h4, table) {
+  margin: 0;
+}
+:where(.tj-shadcn) table {
+  border-collapse: collapse;
+}
+// The one !important in the pack: ToolJet's global stylesheet sets `input[type='text'] { outline-color: ... !important }`,
+// which turns a widget's `tw-outline-none` (a transparent outline) into a visible frame inside the field. Only another
+// !important undoes it; the widgets draw their focus with a ring (box-shadow), never an outline.
+.tj-shadcn input[type='text'] {
+  outline-color: transparent !important;
+}
+
+// Typeface styles (typeLook.ts) on Heading, Text and Stat: each class reads the variable its style sets. These rules
+// come after the utilities at the same specificity, so a chosen weight or size wins over the tone's own.
+.tj-shadcn {
+  .lk-font {
+    font-family: var(--lk-font);
+  }
+  .lk-weight {
+    font-weight: var(--lk-weight);
+  }
+  .lk-tracking {
+    letter-spacing: var(--lk-tracking);
+  }
+  .lk-case {
+    text-transform: var(--lk-case);
+  }
+  .lk-size {
+    font-size: var(--lk-size);
+  }
+  .lk-value-font {
+    font-family: var(--lk-value-font);
+  }
+  .lk-label-case {
+    text-transform: var(--lk-label-case);
+  }
+  .lk-label-tracking {
+    letter-spacing: var(--lk-label-tracking);
+  }
+}
+
+// Funnel chart bars grow in when the chart's Animate property is on.
+@keyframes tj-funnel-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+// A chart that takes keyboard focus (Recharts' accessibility layer) shows it: ToolJet's global styles remove the
+// outline of focused elements, so tabbing onto a chart or a pie slice showed nothing.
+.tj-shadcn .recharts-wrapper :focus-visible,
+.tj-shadcn .recharts-surface:focus-visible {
+  outline: 2px solid var(--sc-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+// ToolJet UI 2.0 Chat (Chat/Chat.tsx): markdown in replies, sized for a message bubble. ToolJet's global styles give
+// paragraphs and lists page margins, so each block is reset here.
+.tj-shadcn .sc-markdown {
+  // Rules drawn on the reply bubble: the theme's border colour is the bubble's own muted colour in most themes.
+  --sc-md-rule: color-mix(in srgb, var(--sc-foreground) 14%, transparent);
+  overflow-wrap: anywhere;
+  > :first-child {
+    margin-top: 0;
+  }
+  > :last-child {
+    margin-bottom: 0;
+  }
+  p,
+  ul,
+  ol,
+  blockquote,
+  table,
+  .sc-md-pre {
+    margin: 0 0 0.6em;
+  }
+  ul,
+  ol {
+    padding-left: 1.25em;
+  }
+  ul {
+    list-style: disc;
+  }
+  ol {
+    list-style: decimal;
+  }
+  li + li {
+    margin-top: 0.2em;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0.8em 0 0.4em;
+    font-size: 1em;
+    font-weight: 600;
+    line-height: 1.4;
+    color: inherit;
+  }
+  a {
+    color: var(--lk-accent, var(--sc-primary-ink));
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  blockquote {
+    padding-left: 0.75em;
+    border-left: 3px solid var(--sc-md-rule);
+    color: var(--sc-muted-foreground);
+  }
+  code {
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--sc-foreground) 8%, transparent);
+    font-size: 0.88em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: inherit;
+  }
+  .sc-md-pre {
+    padding: 0.7em 0.85em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--sc-foreground) 7%, var(--sc-background));
+    font-size: 0.85em;
+    line-height: 1.55;
+    code {
+      padding: 0;
+      background: transparent;
+      font-size: inherit;
+    }
+  }
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 0.92em;
+  }
+  th,
+  td {
+    padding: 0.3em 0.6em;
+    border: 1px solid var(--sc-md-rule);
+    text-align: left;
+  }
+  th {
+    font-weight: 600;
+    background: color-mix(in srgb, var(--sc-foreground) 4%, transparent);
+  }
+  img {
+    max-width: 100%;
+    border-radius: 6px;
+  }
+  hr {
+    margin: 0.8em 0;
+    border: 0;
+    border-top: 1px solid var(--sc-md-rule);
+  }
+}
+
+// The chat's typing indicator: three dots rising in turn.
+.tj-shadcn .sc-typing-dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--sc-muted-foreground);
+  animation: sc-typing 1.2s ease-in-out infinite;
+}
+// Each dot starts a little later than the one before.
+.tj-shadcn .sc-typing-dot:nth-child(2) {
+  animation-delay: 160ms;
+}
+.tj-shadcn .sc-typing-dot:nth-child(3) {
+  animation-delay: 320ms;
+}
+@keyframes sc-typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tj-shadcn .sc-typing-dot {
+    animation: none;
+  }
+}
+
+// ---- Map (Map/Map.tsx) ---------------------------------------------------------------------------------------------
+// Leaflet's map in the pack's frame. Its panes, controls and popups are restyled from the tokens, so they follow light,
+// dark and brand themes. Pins are toned by status (info is a fixed blue: on a map the four states must stay apart
+// whatever the brand colour; pins with no status take the accent). Leaflet positions markers with inline transforms,
+// margins and sizes, so no rule here sets those on .leaflet-marker-icon.
+.tj-shadcn .sc-map {
+  --sc-map-info: #2563eb;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--lk-border, var(--sc-border));
+  border-radius: var(--lk-radius, calc(var(--sc-radius) + 4px));
+  background: var(--lk-bg, var(--sc-muted));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+.dark-theme .tj-shadcn .sc-map,
+.theme-dark .tj-shadcn .sc-map {
+  --sc-map-info: #60a5fa;
+}
+.tj-shadcn .sc-map[data-disabled] .sc-map-canvas {
+  opacity: 0.6;
+  filter: grayscale(0.4);
+}
+.tj-shadcn .sc-map-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--lk-bg, var(--sc-muted));
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+.tj-shadcn .sc-map-canvas:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--lk-accent, var(--sc-ring));
+}
+
+// Zoom buttons: a small bordered group, like the pack's outline buttons.
+.tj-shadcn .sc-map .leaflet-control-zoom {
+  margin: 10px 10px 0 0;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  overflow: hidden;
+  background: var(--sc-card);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.08);
+}
+.tj-shadcn .sc-map .leaflet-control-zoom a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--sc-foreground);
+  background: var(--sc-card);
+  text-decoration: none;
+}
+.tj-shadcn .sc-map .leaflet-control-zoom a + a {
+  border-top: 1px solid var(--sc-border);
+}
+.tj-shadcn .sc-map .leaflet-control-zoom a:hover {
+  background: var(--sc-muted);
+}
+.tj-shadcn .sc-map .leaflet-control-zoom a.leaflet-disabled {
+  color: var(--sc-muted-foreground);
+  opacity: 0.5;
+  cursor: default;
+}
+.tj-shadcn .sc-map[data-disabled] .leaflet-control-zoom {
+  display: none;
+}
+
+// Attribution: small and quiet, on a translucent surface.
+.tj-shadcn .sc-map .leaflet-control-attribution {
+  margin: 0;
+  padding: 1px 6px;
+  font-size: 10px;
+  line-height: 16px;
+  color: var(--sc-muted-foreground);
+  background: color-mix(in srgb, var(--sc-card) 82%, transparent);
+  border-top-left-radius: 6px;
+}
+.tj-shadcn .sc-map .leaflet-control-attribution a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+
+// Pins: a teardrop in the status tone with a white heart; the selected pin is larger with a ring.
+.tj-shadcn .sc-map-pin {
+  --pin: var(--lk-accent, var(--sc-primary));
+  display: block;
+  width: 28px;
+  height: 36px;
+  color: var(--pin);
+  cursor: pointer;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.35));
+  transform-origin: 50% 100%;
+  transition: transform 120ms ease;
+}
+.tj-shadcn .sc-map-pin[data-tone='success'] {
+  --pin: var(--sc-success);
+}
+.tj-shadcn .sc-map-pin[data-tone='warning'] {
+  --pin: var(--sc-warning);
+}
+.tj-shadcn .sc-map-pin[data-tone='danger'] {
+  --pin: var(--sc-destructive);
+}
+.tj-shadcn .sc-map-pin[data-tone='info'] {
+  --pin: var(--sc-map-info);
+}
+.tj-shadcn .sc-map-pin[data-tone='neutral'] {
+  --pin: var(--sc-muted-foreground);
+}
+.tj-shadcn .sc-map-pin svg {
+  display: block;
+  overflow: visible;
+}
+.tj-shadcn .sc-map-pin-body {
+  fill: var(--pin);
+  stroke: #ffffff;
+  stroke-width: 1.5px;
+}
+.tj-shadcn .sc-map-pin-dot {
+  fill: #ffffff;
+}
+.tj-shadcn .sc-map-marker:hover .sc-map-pin,
+.tj-shadcn .sc-map-marker:focus-visible .sc-map-pin {
+  transform: scale(1.12);
+}
+.tj-shadcn .sc-map-pin[data-selected] {
+  transform: scale(1.25);
+  filter: drop-shadow(0 0 0 var(--pin)) drop-shadow(0 2px 4px rgb(0 0 0 / 0.4));
+}
+.tj-shadcn .sc-map-pin[data-selected] .sc-map-pin-body {
+  stroke-width: 2px;
+}
+.tj-shadcn .sc-map-marker {
+  outline: none;
+}
+.tj-shadcn .sc-map[data-disabled] .sc-map-pin,
+.tj-shadcn .sc-map[data-disabled] .sc-map-cluster {
+  cursor: default;
+}
+
+// Groups: a count in the foreground colour (apart from every status colour), with a soft halo.
+.tj-shadcn .sc-map-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--lk-cluster, var(--sc-foreground));
+  color: var(--sc-background);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-cluster, var(--sc-foreground)) 18%, transparent),
+    0 1px 3px rgb(0 0 0 / 0.25);
+  border: 2px solid #ffffff;
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.tj-shadcn .sc-map-marker:hover .sc-map-cluster,
+.tj-shadcn .sc-map-marker:focus-visible .sc-map-cluster {
+  transform: scale(1.08);
+}
+
+// Popup: a popover card from the tokens.
+.tj-shadcn .sc-map .sc-map-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  border: 1px solid var(--sc-border);
+  border-radius: calc(var(--sc-radius) + 2px);
+  background: var(--sc-popover);
+  color: var(--sc-popover-foreground);
+  box-shadow: 0 10px 24px -6px rgb(0 0 0 / 0.18), 0 2px 6px rgb(0 0 0 / 0.08);
+}
+.tj-shadcn .sc-map .sc-map-popup .leaflet-popup-content {
+  margin: 12px 30px 12px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.tj-shadcn .sc-map .sc-map-popup .leaflet-popup-tip {
+  background: var(--sc-popover);
+  box-shadow: none;
+  border: 1px solid var(--sc-border);
+}
+.tj-shadcn .sc-map .sc-map-popup a.leaflet-popup-close-button {
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  font-size: 18px;
+  line-height: 20px;
+  border-radius: 6px;
+  color: var(--sc-muted-foreground);
+  text-align: center;
+}
+.tj-shadcn .sc-map .sc-map-popup a.leaflet-popup-close-button:hover {
+  background: var(--sc-muted);
+  color: var(--sc-foreground);
+}
+.tj-shadcn .sc-map-popup-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+.tj-shadcn .sc-map-popup-title {
+  font-weight: 600;
+  color: var(--sc-foreground);
+}
+.tj-shadcn .sc-map-popup-sub {
+  margin-top: 2px;
+  color: var(--sc-muted-foreground);
+}
+.tj-shadcn .sc-map-popup-lines {
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--sc-border);
+  color: var(--sc-foreground);
+  font-size: 12px;
+}
+.tj-shadcn .sc-map-popup-lines li + li {
+  margin-top: 2px;
+}
+.tj-shadcn .sc-map-chip {
+  --chip: var(--sc-muted-foreground);
+  padding: 1px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  background: color-mix(in srgb, var(--chip) 14%, transparent);
+  color: color-mix(in srgb, var(--chip) 78%, var(--sc-foreground));
+}
+.tj-shadcn .sc-map-chip[data-tone='success'] {
+  --chip: var(--sc-success);
+}
+.tj-shadcn .sc-map-chip[data-tone='warning'] {
+  --chip: var(--sc-warning);
+}
+.tj-shadcn .sc-map-chip[data-tone='danger'] {
+  --chip: var(--sc-destructive);
+}
+.tj-shadcn .sc-map-chip[data-tone='info'] {
+  --chip: var(--sc-map-info);
+}
+
+// The empty state, the skipped-rows footnote and the loading veil sit over the map.
+.tj-shadcn .sc-map-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.tj-shadcn .sc-map-empty span {
+  padding: 6px 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--sc-card) 92%, transparent);
+  color: var(--sc-muted-foreground);
+  font-size: 13px;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.06);
+}
+.tj-shadcn .sc-map-note {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 2px 8px;
+  border: 1px solid var(--sc-border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--sc-card) 90%, transparent);
+  color: var(--sc-muted-foreground);
+  font-size: 11px;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tj-shadcn .sc-map-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--sc-background) 55%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tj-shadcn .sc-map-pin,
+  .tj-shadcn .sc-map-cluster {
+    transition: none;
+  }
+}
+
+// The default basemap (OpenStreetMap's tiles, mapModel.tileSource) toned to the theme: muted under light themes, so
+// the pins carry the colour, and inverted under dark ones, so the map is not a bright block on a dark page. Tiles an
+// author or the install chose carry no data-basemap and are drawn as they are. The filter goes on each tile, not on the
+// tile pane: filtering the pane as one layer drew hairline seams between tiles.
+.tj-shadcn .sc-map-canvas[data-basemap='light'] img.leaflet-tile {
+  filter: saturate(0.28) contrast(0.9) brightness(1.06);
+}
+.tj-shadcn .sc-map-canvas[data-basemap='dark'] img.leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) saturate(0.35) brightness(0.88) contrast(0.86);
+}
+
+// The hero's aside sits right of its text behind a hairline; in a narrow hero (a phone, a half-width column) it goes
+// under the text, starting at the left edge.
+.tj-shadcn .sc-hero-box {
+  container-type: inline-size;
+}
+.tj-shadcn .sc-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'text aside'
+    'actions aside';
+  column-gap: 1.5rem;
+  align-items: center;
+}
+.tj-shadcn .sc-hero-grid > .sc-hero-text {
+  grid-area: text;
+}
+.tj-shadcn .sc-hero-grid > .sc-hero-aside {
+  grid-area: aside;
+}
+.tj-shadcn .sc-hero-grid > .sc-hero-actions {
+  grid-area: actions;
+  margin-top: 0.75rem;
+}
+@container (max-width: 560px) {
+  .tj-shadcn .sc-hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'text'
+      'aside'
+      'actions';
+  }
+  .tj-shadcn .sc-hero-grid > .sc-hero-aside {
+    margin-top: 1rem;
+    border-left-width: 0;
+    padding-left: 0;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .tj-shadcn .sc-hero-grid > .sc-hero-actions {
+    margin-top: 1rem;
+  }
+}
+
+// The schedule's bookings and empty slots: their fills are rules here. A booking's tone arrives as --bk-tone
+// (Schedule/ScheduleRow.tsx).
+.tj-shadcn .sc-schedule .sc-booking {
+  background-color: color-mix(in srgb, var(--bk-tone) 14%, var(--sc-background));
+  border-color: var(--bk-tone);
+  color: color-mix(in srgb, var(--bk-tone) 70%, var(--sc-foreground));
+}
+.tj-shadcn .sc-schedule .sc-booking:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--bk-tone) 20%, var(--sc-background));
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+.tj-shadcn .sc-schedule .sc-booking[data-selected] {
+  box-shadow: 0 0 0 2px var(--lk-accent, var(--sc-primary));
+}
+.tj-shadcn .sc-schedule .sc-slot {
+  border-color: var(--lk-border, var(--sc-border));
+}
+.tj-shadcn .sc-schedule .sc-slot[data-today] {
+  background-color: color-mix(in srgb, var(--lk-accent, var(--sc-primary)) 4%, transparent);
+}
+.tj-shadcn .sc-schedule .sc-slot-live:hover {
+  background-color: color-mix(in srgb, var(--lk-accent, var(--sc-primary)) 7%, transparent);
+}
+.tj-shadcn .sc-schedule .sc-slot[data-selected] {
+  background-color: color-mix(in srgb, var(--lk-accent, var(--sc-primary)) 14%, transparent);
+}
+
+// Pin contents: a short label (a stop number) or an icon in place of the dot, white on the pin's colour.
+.tj-shadcn .sc-map-pin {
+  position: relative;
+}
+.tj-shadcn .sc-map-pin-label,
+.tj-shadcn .sc-map-pin-glyph {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 28px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.tj-shadcn .sc-map-pin-glyph svg {
+  display: block;
+}
+
+// A longer label is a pill with a pointer (a price): the card surface, a dot of the status colour; selected, filled.
+.tj-shadcn .sc-map-pill {
+  --pin: var(--lk-accent, var(--sc-primary));
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px 0 8px;
+  border: 1px solid color-mix(in srgb, var(--pin) 55%, var(--sc-border));
+  border-radius: 9999px;
+  background: var(--sc-card);
+  color: var(--sc-foreground);
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.tj-shadcn .sc-map-pill::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--pin);
+}
+.tj-shadcn .sc-map-pill::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  transform: rotate(45deg);
+  background: inherit;
+  border-right: 1px solid color-mix(in srgb, var(--pin) 55%, var(--sc-border));
+  border-bottom: 1px solid color-mix(in srgb, var(--pin) 55%, var(--sc-border));
+}
+.tj-shadcn .sc-map-pill-icon {
+  display: flex;
+  color: var(--pin);
+}
+.tj-shadcn .sc-map-pill-icon svg {
+  stroke: currentColor;
+}
+.tj-shadcn .sc-map-pill[data-tone='success'] {
+  --pin: var(--sc-success);
+}
+.tj-shadcn .sc-map-pill[data-tone='warning'] {
+  --pin: var(--sc-warning);
+}
+.tj-shadcn .sc-map-pill[data-tone='danger'] {
+  --pin: var(--sc-destructive);
+}
+.tj-shadcn .sc-map-pill[data-tone='info'] {
+  --pin: var(--sc-map-info);
+}
+.tj-shadcn .sc-map-pill[data-selected] {
+  background: var(--sc-foreground);
+  color: var(--sc-background);
+  border-color: var(--sc-foreground);
+  z-index: 1;
+}
+.tj-shadcn .sc-map-marker:hover .sc-map-pill {
+  transform: translateY(-1px) scale(1.04);
+}
+
+// Where the routes start (a depot), and the picked spot.
+.tj-shadcn .sc-map-start {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--sc-foreground);
+  border: 3px solid var(--sc-card);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+}
+.tj-shadcn .sc-map-picked {
+  --pin: var(--lk-accent, var(--sc-primary));
+  display: block;
+  color: var(--pin);
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.4));
+  cursor: grab;
+}
+.tj-shadcn .sc-map-picked svg {
+  display: block;
+  overflow: visible;
+}
+.tj-shadcn .sc-map-picked .sc-map-pin-body {
+  fill: var(--pin);
+  stroke: #ffffff;
+  stroke-width: 2px;
+}
+.tj-shadcn .sc-map[data-picking] .sc-map-canvas {
+  cursor: crosshair;
+}
+
+// Routes: a line in its colour over a light casing; areas: a tinted fill with an outline. The colour arrives as the
+// --shape variable on each path (an SVG attribute cannot hold var()).
+.tj-shadcn .sc-map path.sc-map-route-casing {
+  stroke: var(--sc-card);
+  stroke-opacity: 0.9;
+  fill: none;
+}
+.tj-shadcn .sc-map path.sc-map-route {
+  stroke: var(--shape, var(--lk-accent, var(--sc-primary)));
+  stroke-opacity: 0.9;
+  fill: none;
+  cursor: pointer;
+}
+.tj-shadcn .sc-map path.sc-map-route[data-selected] {
+  stroke-width: 6px;
+  stroke-opacity: 1;
+}
+.tj-shadcn .sc-map path.sc-map-area {
+  stroke: var(--shape, var(--lk-accent, var(--sc-primary)));
+  stroke-opacity: 0.75;
+  fill: var(--shape, var(--lk-accent, var(--sc-primary)));
+  fill-opacity: 0.1;
+  cursor: pointer;
+}
+.tj-shadcn .sc-map path.sc-map-area:hover {
+  fill-opacity: 0.16;
+}
+.tj-shadcn .sc-map path.sc-map-area[data-selected] {
+  stroke-width: 2.5px;
+  stroke-opacity: 1;
+  fill-opacity: 0.2;
+}
+.tj-shadcn .sc-map .leaflet-tooltip.sc-map-area-label,
+.tj-shadcn .sc-map .leaflet-tooltip.sc-map-route-label {
+  padding: 2px 8px;
+  border: 1px solid var(--sc-border);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--sc-card) 88%, transparent);
+  color: var(--sc-foreground);
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.tj-shadcn .sc-map .leaflet-tooltip.sc-map-area-label {
+  color: var(--sc-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+.tj-shadcn .sc-map .leaflet-tooltip.sc-map-area-label::before,
+.tj-shadcn .sc-map .leaflet-tooltip.sc-map-route-label::before {
+  display: none;
+}
+
+// The bottom-left corner: the legend, then the skipped-rows footnote.
+.tj-shadcn .sc-map-corner {
+  position: absolute;
+  left: 8px;
+  // Above the attribution line, which a wide legend would otherwise run into.
+  bottom: 22px;
+  z-index: 800;
+  max-width: calc(100% - 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  pointer-events: none;
+}
+.tj-shadcn .sc-map-corner > * {
+  pointer-events: auto;
+}
+.tj-shadcn .sc-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: calc(var(--sc-radius) + 2px);
+  background: color-mix(in srgb, var(--sc-card) 92%, transparent);
+  color: var(--sc-foreground);
+  font-size: 11.5px;
+  line-height: 18px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.tj-shadcn .sc-map-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.tj-shadcn .sc-map-legend-count {
+  color: var(--sc-muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.tj-shadcn .sc-map-legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: var(--swatch, var(--lk-accent, var(--sc-primary)));
+}
+.tj-shadcn .sc-map-legend-swatch.is-line {
+  width: 14px;
+  height: 4px;
+}
+.tj-shadcn .sc-map-legend-swatch.is-area {
+  width: 12px;
+  height: 10px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--swatch, var(--lk-accent, var(--sc-primary))) 22%, transparent);
+  border: 1.5px solid var(--swatch, var(--lk-accent, var(--sc-primary)));
+}
+
+// Address search, top left.
+.tj-shadcn .sc-map-search {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 850;
+  width: min(320px, calc(100% - 70px));
+}
+.tj-shadcn .sc-map-search input {
+  width: 100%;
+  height: 34px;
+  padding: 0 30px 0 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-card);
+  color: var(--sc-foreground);
+  font-size: 13px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  outline: none;
+}
+.tj-shadcn .sc-map-search input:focus {
+  border-color: var(--lk-accent, var(--sc-ring));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-accent, var(--sc-ring)) 22%, transparent);
+}
+.tj-shadcn .sc-map-search-spin {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.tj-shadcn .sc-map-search-results {
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-popover);
+  box-shadow: 0 10px 24px -6px rgb(0 0 0 / 0.2);
+}
+.tj-shadcn .sc-map-search-results button {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: calc(var(--sc-radius) - 2px);
+  color: var(--sc-foreground);
+  font-size: 12.5px;
+  line-height: 1.35;
+  text-align: left;
+}
+.tj-shadcn .sc-map-search-results button:hover,
+.tj-shadcn .sc-map-search-results button:focus-visible {
+  background: var(--sc-muted);
+  outline: none;
+}
+.tj-shadcn .sc-map-search-note {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-popover);
+  color: var(--sc-muted-foreground);
+  font-size: 12px;
+}
+
+// Tools under the zoom buttons (fullscreen), and the Map | Satellite switch above the attribution.
+.tj-shadcn .sc-map-tools {
+  position: absolute;
+  top: 82px;
+  right: 10px;
+  z-index: 850;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  overflow: hidden;
+  background: var(--sc-card);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.08);
+}
+.tj-shadcn .sc-map-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--sc-card);
+  color: var(--sc-foreground);
+}
+.tj-shadcn .sc-map-tool:hover {
+  background: var(--sc-muted);
+}
+.tj-shadcn .sc-map[data-disabled] .sc-map-tools {
+  display: none;
+}
+.tj-shadcn .sc-map-style-switch {
+  position: absolute;
+  right: 8px;
+  bottom: 24px;
+  z-index: 850;
+  display: flex;
+  padding: 2px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-card);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.14);
+}
+.tj-shadcn .sc-map-style-switch button {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: calc(var(--sc-radius) - 2px);
+  color: var(--sc-muted-foreground);
+  font-size: 12px;
+  font-weight: 600;
+}
+.tj-shadcn .sc-map-style-switch button[data-active] {
+  background: var(--sc-foreground);
+  color: var(--sc-background);
+}
+
+// Hints over the map: how to place the picked pin, and how to zoom with the wheel off.
+.tj-shadcn .sc-map-pick-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 820;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--sc-foreground);
+  color: var(--sc-background);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.tj-shadcn .sc-map-wheel-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 880;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.38);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+// Fullscreen without the browser's (inside a frame that does not allow it): the map fills the window.
+.tj-shadcn .sc-map[data-expanded] {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  height: 100vh;
+  border-radius: 0;
+}
+.tj-shadcn .sc-map:fullscreen {
+  height: 100vh;
+  border-radius: 0;
+}
+.tj-shadcn .sc-map-heat {
+  pointer-events: none;
+}
+// The routes and areas list: visually hidden until a keyboard user tabs into it, then a small panel at the top left.
+.tj-shadcn .sc-map-shapes {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tj-shadcn .sc-map-shapes:focus-within {
+  top: 10px;
+  left: 10px;
+  z-index: 900;
+  width: auto;
+  height: auto;
+  max-height: calc(100% - 20px);
+  overflow: auto;
+  clip: auto;
+  padding: 4px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  background: var(--sc-popover);
+  box-shadow: 0 10px 24px -6px rgb(0 0 0 / 0.2);
+}
+.tj-shadcn .sc-map-shapes button {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: calc(var(--sc-radius) - 2px);
+  font-size: 12px;
+  text-align: left;
+  color: var(--sc-foreground);
+}
+.tj-shadcn .sc-map-shapes button[aria-pressed='true'],
+.tj-shadcn .sc-map-shapes button:focus-visible {
+  background: var(--sc-muted);
+  outline: none;
+}
