@@ -28,14 +28,22 @@ export const ShadCarousel = (props: WidgetProps) => {
   const perView = Math.min(clampUnwrapped(properties.slidesPerView, 1, 4, 1), Math.max(1, slides.length));
   const positions = carouselPositions(slides.length, perView);
   const loop = properties.loop !== false;
-  const initial = moveIndex(clampUnwrapped(properties.defaultIndex, 0, 100000, 0), positions, false);
+  const authored = clampUnwrapped(properties.defaultIndex, 0, 100000, 0);
+  const initial = moveIndex(authored, positions, false);
   const [index, setIndex] = useState(initial);
   const indexRef = useRef(initial);
+  // A new defaultIndex ("Start at slide") moves to it. New slides or a new slides-per-view keep the current slide,
+  // only brought back within the positions there are now; neither fires onSlideChanged (a passive refresh).
+  const authoredRef = useRef(authored);
   useEffect(() => {
-    indexRef.current = initial;
-    setIndex(initial);
-  }, [initial, positions]);
-  const [failed, setFailed] = useState<Record<number, boolean>>({});
+    const next = moveIndex(authoredRef.current === authored ? indexRef.current : authored, positions, false);
+    authoredRef.current = authored;
+    if (next === indexRef.current) return;
+    indexRef.current = next;
+    setIndex(next);
+  }, [authored, positions]);
+  // The image URL that failed, by slide: a slide shows its image again when new data brings another URL.
+  const [failed, setFailed] = useState<Record<number, string>>({});
   const [hovered, setHovered] = useState(false);
   const disabled = busy(properties);
   const live = useLatest({ positions, loop, slides });
@@ -123,6 +131,8 @@ export const ShadCarousel = (props: WidgetProps) => {
         )}
         style={fill ? { height } : undefined}
         onKeyDown={(e) => {
+          // Disabled, the arrow keys do nothing, as the arrow buttons and swipes.
+          if (disabled) return;
           if (e.key === 'ArrowLeft') {
             e.preventDefault();
             go(indexRef.current - 1);
@@ -154,7 +164,7 @@ export const ShadCarousel = (props: WidgetProps) => {
             style={{ columnGap: gap, transform: `translateX(calc(-1 * ${index} * ${step}))` }}
           >
             {slides.map((slide, i) => {
-              const showImage = !!safeImageUrl(slide.image) && !failed[i];
+              const showImage = !!safeImageUrl(slide.image) && failed[i] !== safeImageUrl(slide.image);
               const visible = i >= index && i < index + perView;
               return (
                 <div
@@ -182,7 +192,7 @@ export const ShadCarousel = (props: WidgetProps) => {
                         alt={slide.title || `Slide ${i + 1}`}
                         loading={i <= index + perView ? 'eager' : 'lazy'}
                         draggable={false}
-                        onError={() => setFailed((f) => ({ ...f, [i]: true }))}
+                        onError={() => setFailed((f) => ({ ...f, [i]: safeImageUrl(slide.image) }))}
                         className={cn('tw-absolute tw-inset-0 tw-h-full tw-w-full tw-select-none', fit)}
                       />
                     ) : (
