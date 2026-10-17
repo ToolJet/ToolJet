@@ -10,6 +10,7 @@ import {
   clampUnwrapped,
   moveIndex,
 } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
+import { safeImageUrl, safeUrl } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Carousel ----------------------------------------------------------------------------------------------------
@@ -87,8 +88,8 @@ export const ShadCarousel = (props: WidgetProps) => {
     const slide = slides[i];
     setExposedVariable('clickedSlide', { ...slide, index: i });
     fireEvent('onSlideClicked');
-    if (slide?.link && currentMode !== 'edit' && typeof window !== 'undefined') {
-      window.open(slide.link, '_blank', 'noopener,noreferrer');
+    if (safeUrl(slide?.link) && currentMode !== 'edit' && typeof window !== 'undefined') {
+      window.open(safeUrl(slide.link), '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -153,7 +154,7 @@ export const ShadCarousel = (props: WidgetProps) => {
             style={{ columnGap: gap, transform: `translateX(calc(-1 * ${index} * ${step}))` }}
           >
             {slides.map((slide, i) => {
-              const showImage = slide.image && !failed[i];
+              const showImage = !!safeImageUrl(slide.image) && !failed[i];
               const visible = i >= index && i < index + perView;
               return (
                 <div
@@ -177,7 +178,7 @@ export const ShadCarousel = (props: WidgetProps) => {
                   >
                     {showImage ? (
                       <img
-                        src={slide.image}
+                        src={safeImageUrl(slide.image)}
                         alt={slide.title || `Slide ${i + 1}`}
                         loading={i <= index + perView ? 'eager' : 'lazy'}
                         draggable={false}

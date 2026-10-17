@@ -3,7 +3,15 @@
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import type { ColumnFormat } from '@/AppBuilder/Widgets/Ui2/Table/types';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
-import { clampCoerce, isEmptyValue, isRecord, isScalar, isSet, own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import {
+  clampCoerce,
+  isEmptyValue,
+  isRecord,
+  isScalar,
+  isSet,
+  own,
+  safeUrl,
+} from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** A plain object as bound data (an entry of a bound list, an author's map). */
 export type Entry = Record<string, unknown>;
@@ -162,7 +170,7 @@ export const keyValueText = (row: Entry | null | undefined, defaults: KeyValueDe
 
 /** A link row's URL: its href, else its value when that reads as a URL, mail or phone link. */
 export const linkHref = (row: Entry | null | undefined): string => {
-  const href = isScalar(row?.href) ? String(row?.href) : isScalar(row?.url) ? String(row?.url) : '';
+  const href = safeUrl(isScalar(row?.href) ? row?.href : row?.url);
   if (href) return href;
   const value = isScalar(row?.value) ? String(row?.value).trim() : '';
   if (/^(https?:\/\/|mailto:|tel:|\/)/i.test(value)) return value;

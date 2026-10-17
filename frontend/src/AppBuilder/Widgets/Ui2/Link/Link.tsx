@@ -6,7 +6,7 @@ import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { justify } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
-import { clampCoerce, own, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { clampCoerce, own, safeUrl, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Link ------------------------------------------------------------------------------------------------------------
 
@@ -28,7 +28,8 @@ export const ShadLink = (props: WidgetProps) => {
   const { setExposedVariables, fireEvent, height } = props;
   // setLinkTarget and setLinkText hold until the Link target and Text properties themselves change.
   const [p, override] = useOverrides(props.properties);
-  const href = String(p.linkTarget ?? '').trim();
+  // A script URL (javascript:) is no link: the text shows without one.
+  const href = safeUrl(p.linkTarget);
   const anchorRef = useRef<HTMLAnchorElement>(null);
   const latest = useRef(p);
   latest.current = p;

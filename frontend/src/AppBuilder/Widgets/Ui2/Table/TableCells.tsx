@@ -21,7 +21,11 @@ import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { matchesCondition, readCell } from './tableModel';
 import type { OnAction, Resolve, Row, TableColumn } from './types';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isSet, safeImageUrl, safeUrl } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+
+// An HTML cell is the row's data: DOMPurify's defaults keep <style> (which restyles the whole page) and forms (a
+// password box in a cell), so both are dropped too.
+const CELL_HTML = { FORBID_TAGS: ['style', 'form', 'input', 'button', 'select', 'textarea'] };
 
 type BadgeVariant = React.ComponentProps<typeof Badge>['variant'];
 
@@ -164,9 +168,11 @@ export const renderCell = ({
     case 'link': {
       if (!isSet(shown)) return null;
       const text = resolve(column.linkText, row, shown);
+      // A script URL is shown as text, not as a link.
+      if (!safeUrl(shown)) return <span>{String(isSet(text) ? text : shown)}</span>;
       return (
         <a
-          href={String(shown)}
+          href={safeUrl(shown)}
           target={column.openInNewTab ? '_blank' : '_self'}
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
@@ -177,9 +183,9 @@ export const renderCell = ({
       );
     }
     case 'image':
-      return isSet(shown) ? (
+      return safeImageUrl(shown) ? (
         <img
-          src={String(shown)}
+          src={safeImageUrl(shown)}
           alt=""
           loading="lazy"
           className={cn(
@@ -252,7 +258,9 @@ export const renderCell = ({
         </span>
       );
     case 'html':
-      return isSet(shown) ? <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(shown)) }} /> : null;
+      return isSet(shown) ? (
+        <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(shown), CELL_HTML) }} />
+      ) : null;
     case 'json':
       return isSet(shown) ? (
         <code className="tw-block tw-max-w-[320px] tw-truncate tw-rounded tw-bg-ui2-muted tw-px-1.5 tw-py-0.5 tw-text-xs">
