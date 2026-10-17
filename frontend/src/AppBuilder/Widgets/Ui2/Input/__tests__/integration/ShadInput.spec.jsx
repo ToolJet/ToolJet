@@ -111,6 +111,19 @@ describe('UI 2.0 Input', () => {
     expect(exposed().value).toBe('');
   });
 
+  // A query reads the value on its next line: `await components.input1.setText('after')` then `.value` read
+  // "before" while the value was published in a later effect, and setText fired no onChange (review, 2026-10-17).
+  test('[ShadInput-ACT-003] setText and clear publish the value and validation before they resolve, and fire onChange', async () => {
+    render({ properties: { defaultValue: binding('before') }, validation: { mandatory: binding('{{true}}') } });
+    widget.setEvents(countInvocationsOn(ID, 'onChange', { key: 'changes' }));
+    await waitFor(() => expect(exposed().value).toBe('before'));
+
+    expect(await widget.actNow('setText', 'after')).toMatchObject({ value: 'after', isValid: true });
+    expect(widget.variables().changes).toBe(1);
+    expect(await widget.actNow('clear')).toMatchObject({ value: '', isValid: false });
+    expect(widget.variables().changes).toBe(2);
+  });
+
   test('[ShadInput-ACT-002] setFocus and setBlur move focus to and from the box', async () => {
     render({ properties: { defaultValue: binding('x') } });
 

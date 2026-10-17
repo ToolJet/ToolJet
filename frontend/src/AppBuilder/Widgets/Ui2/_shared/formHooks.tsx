@@ -116,11 +116,20 @@ export const useTextBox = <E extends HTMLElement = HTMLInputElement>(
  *  control takes (spread `fieldProps` on it). */
 export const useTextField = <E extends HTMLInputElement | HTMLTextAreaElement>(props: WidgetProps) => {
   const { properties } = props;
-  const [value, change] = useValue(props, String(properties.defaultValue ?? ''), (set) => ({
-    setText: async (t: unknown) => set(String(t ?? '')),
-    clear: async () => set(''),
+  // The native setText and clear change the value as typing does (onChange) and show its validation message.
+  const reveal = useRef(() => {});
+  const [value, change] = useValue(props, String(properties.defaultValue ?? ''), () => ({
+    setText: async (t: unknown) => {
+      change(String(t ?? ''));
+      reveal.current();
+    },
+    clear: async () => {
+      change('');
+      reveal.current();
+    },
   }));
   const check = useValidation(props, value, () => change('', 'onChange'));
+  reveal.current = check.touch;
   const box = useTextBox<E>(props, check.touch);
   const fieldProps = {
     ref: box.ref,

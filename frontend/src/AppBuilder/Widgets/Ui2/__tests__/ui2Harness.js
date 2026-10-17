@@ -13,7 +13,7 @@
  * specs (scripts/validate-test-layout.js).
  */
 import './consoleGuard';
-import { act } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import { createWidgetHarness as createSharedHarness } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 // In the editor a widget inside a canvas (a List view row, a tab) gets ConfigHandle, which lazy-loads the AI chat
@@ -55,6 +55,20 @@ export function createWidgetHarness(options) {
       WRITES.includes(key) ? { ...descriptor, value: inAct(descriptor.value) } : descriptor
     );
   }
+  /**
+   * Runs a component action the way an app does (`await components.x.action(...)`) and returns the exposed values as
+   * they are right after its promise resolves, before act() flushes anything else: what the next line of a query
+   * would read. `widget.act` reads them only after act has flushed every update and effect.
+   */
+  wrapped.actNow = async (name, ...args) => {
+    await waitFor(() => expect(harness.exposed()?.[name]).toBeInstanceOf(Function));
+    let seen;
+    await act(async () => {
+      await harness.exposed()[name](...args);
+      seen = { ...harness.exposed() };
+    });
+    return seen;
+  };
   return wrapped;
 }
 
