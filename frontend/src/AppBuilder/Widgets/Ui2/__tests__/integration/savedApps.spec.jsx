@@ -5,16 +5,17 @@
  * widget with non-default properties and styles, a handler on each of its events, control-component calls of each of
  * its actions, a text bound to each of its exposed values, and a RunJS query calling and reading it by name. Each runs
  * through import's rename and the data migrations (which must agree), loads into the real store, and renders. Then:
- * no widget is unavailable, nothing logs an error, every saved event still dispatches its action, every saved action
+ * no widget is unavailable, nothing logs an error or a warning (ui2Harness's console guard), every saved event still dispatches its action, every saved action
  * and binding still exists, and the exposed values match what was recorded for that fixture
  * (<Type>.oracle.json). Fixtures are never edited or deleted; fixtures/manifest.json pins each by checksum.
  *
  * UI2_COMPAT_RECORD=1 records the oracles still marked pending (a new release's set). It never overwrites one.
  */
+import { createWidgetHarness, measureChartsAt } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import fs from 'fs';
 import path from 'path';
 import { loadCompatibilityFixture } from '@/test/app-builder';
-import { createWidgetHarness } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { MODULE_ID, store, drain } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { harnessFor, replay } from '../compat/savedAppReplay';
 import { importRename, migrate } from '../compat/migrationReplay';
 
@@ -50,14 +51,6 @@ const NOT_DATE = [
   'setTimeout',
   'clearTimeout',
 ];
-// Not app errors: React's own test-timing notice; jsdom refusing to navigate when a Link's click() follows it; and
-// React's development-only attribute casing warning for the core canvas's `data-parentId` (AppCanvas/Container.jsx),
-// printed once for the first container a run mounts.
-const NOISE = [
-  /not wrapped in act\(/,
-  /Not implemented: navigation/,
-  /does not recognize the `%s` prop.*data-parentId/,
-];
 
 const onDisk = fs
   .readdirSync(ROOT, { withFileTypes: true })
@@ -68,6 +61,17 @@ const onDisk = fs
       .filter((f) => f.endsWith('.json') && !f.endsWith('.oracle.json'))
       .map((f) => `${d.name}/${f.replace(/\.json$/, '')}`)
   );
+
+// Charts get a size (jsdom has no layout); the gallery's slots are 640 wide.
+measureChartsAt(640, 320);
+
+// A Link's click() follows its target as a press does; a browser would leave the page, jsdom logs that it cannot.
+// The widget's own handling (onClick) still runs; only the page change is held back.
+const stayOnPage = (event) => {
+  if (event.target?.closest?.('a[href^="http"]')) event.preventDefault();
+};
+beforeAll(() => document.addEventListener('click', stayOnPage));
+afterAll(() => document.removeEventListener('click', stayOnPage));
 
 describe('UI 2.0 saved-app fixtures', () => {
   it('are all pinned in fixtures/manifest.json, and none is missing', () => {
@@ -83,17 +87,14 @@ describe('UI 2.0 saved-app fixtures', () => {
 describe.each(Object.keys(manifest.fixtures))('saved app %s', (name) => {
   const { payload, oracle: recorded, metadata } = loadCompatibilityFixture(name, { edition: 'ce', root: ROOT });
   const harness = harnessFor(payload, createWidgetHarness);
-  let consoleError;
 
   beforeEach(async () => {
     process.env.TZ = 'UTC';
     jest.useFakeTimers({ now: NOW, doNotFake: NOT_DATE });
-    consoleError = jest.spyOn(console, 'error');
     await harness.setup();
   });
   afterEach(() => {
     harness.teardown();
-    consoleError.mockRestore();
     jest.useRealTimers();
   });
 
@@ -102,11 +103,7 @@ describe.each(Object.keys(manifest.fixtures))('saved app %s', (name) => {
     const migrated = await migrate(payload);
     expect(migrated).toEqual(imported); // an exported app and a stored app become the same app
 
-    const { problems, observed } = await replay(harness, imported, payload);
-    const errors = consoleError.mock.calls
-      .map((args) => args.map((a) => (a instanceof Error ? a.message : String(a))).join(' '))
-      .filter((text) => !NOISE.some((re) => re.test(text)));
-    for (const text of errors) problems.push(`console.error: ${text.slice(0, 400)}`);
+    const { problems, observed } = await replay(harness, imported, payload, { MODULE_ID, store, drain });
     if (problems.length) throw new Error(`${name} (${metadata.provenance}):\n  ${problems.join('\n  ')}`);
 
     if (recorded.pending) {

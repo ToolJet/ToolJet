@@ -2,7 +2,6 @@
 // harness, renders it, and drives it the way the saved app would: its events, its control-component actions, its RunJS
 // query and its bindings. Returns what a builder would see (exposed values after each step) and every problem found.
 import { act, screen, waitFor } from '@testing-library/react';
-import { MODULE_ID, store, drain } from '@/AppBuilder/Widgets/widgetHarness';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager/componentTypes';
 
 const UUID = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
@@ -83,9 +82,9 @@ export function harnessFor(fixture, createWidgetHarness) {
 
 /**
  * Replays `app` (already renamed) through `harness`. `original` is the fixture as it was saved, to name the old name
- * in a problem. Returns { problems, observed }.
+ * in a problem. The store helpers come from the spec's shared widget harness. Returns { problems, observed }.
  */
-export async function replay(harness, app, original) {
+export async function replay(harness, app, original, { MODULE_ID, store, drain }) {
   const problems = [];
   const [widget, probe, marker] = app.components;
   const type = widget.type;
