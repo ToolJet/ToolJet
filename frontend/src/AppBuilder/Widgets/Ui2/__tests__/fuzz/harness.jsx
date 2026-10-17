@@ -4,7 +4,7 @@
 // or take too long. Shared by the shard*.spec.jsx suites; not a suite itself.
 import React, { Profiler, useReducer } from 'react';
 import { act, fireEvent as fire, render } from '@testing-library/react';
-import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
+import { CONFIGS, TYPES, defaultsOf, styleDefaultsOf } from '../packWidgets';
 
 // jsdom has no layout: charts get a fixed box, and sub-canvases (tabs, list rows, custom cards, the dialog body) a
 // placeholder, since the canvas they hold is ToolJet's, not the pack's.
@@ -41,8 +41,8 @@ if (typeof window !== 'undefined') {
     Element.prototype.releasePointerCapture || function releasePointerCapture() {};
 }
 
-export const CONFIGS = Object.fromEntries(shadcnConfigs.map((c) => [c.name, c]));
-export const NAMES = Object.keys(CONFIGS);
+export { CONFIGS, defaultsOf, styleDefaultsOf };
+export const NAMES = TYPES;
 
 /** The widget as registered (Widgets/Ui2/registry.js): each folder's default export. */
 export const componentOf = (name) => {
@@ -52,20 +52,6 @@ export const componentOf = (name) => {
   return widget;
 };
 
-// A definition value as the app resolves it: '{{...}}' evaluated, plain strings kept.
-const resolve = (value) => {
-  if (typeof value !== 'string') return value;
-  const m = value.match(/^\{\{([\s\S]*)\}\}$/);
-  if (!m) return value;
-  try {
-    return new Function(`return (${m[1]});`)(); // eslint-disable-line no-new-func
-  } catch {
-    return value;
-  }
-};
-const valuesOf = (section) => Object.fromEntries(Object.entries(section || {}).map(([k, v]) => [k, resolve(v?.value)]));
-export const defaultsOf = (name) => valuesOf(CONFIGS[name].definition.properties);
-export const styleDefaultsOf = (name) => valuesOf(CONFIGS[name].definition.styles);
 export const propertyKeys = (name) => Object.keys(CONFIGS[name].properties || {});
 export const styleKeys = (name) => Object.keys(CONFIGS[name].styles || {});
 export const eventNames = (name) => Object.keys(CONFIGS[name].events || {});
