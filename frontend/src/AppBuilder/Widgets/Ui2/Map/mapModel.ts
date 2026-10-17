@@ -294,6 +294,11 @@ export const SATELLITE = {
   attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics',
 };
 
+/** A tile URL Leaflet can draw from: it names the tile's zoom, x and y. Anything else (about:blank, one image, a page)
+ *  would draw no tiles, so the widget's own tileUrl counts as unset unless it is one. */
+const isTileTemplate = (url: unknown): url is string =>
+  isNonBlankString(url) && url.includes('{z}') && url.includes('{x}') && /\{-?y\}/.test(url);
+
 /** The tiles to draw: the widget's own tileUrl, else the install's (public config MAP_TILE_URL, MAP_TILE_URL_DARK for
  *  dark themes, MAP_TILE_ATTRIBUTION), else OpenStreetMap's, toned to the theme: basemap 'light' or 'dark' says which
  *  (null for tiles someone chose, which are drawn as they are). mapStyle 'satellite' draws imagery (the install's
@@ -323,7 +328,7 @@ export const tileSource = ({
         }
       : { url: SATELLITE.url, attribution: SATELLITE.attribution, basemap: null, labels: SATELLITE.labels };
   }
-  const own = isNonBlankString(tileUrl) ? tileUrl.trim() : '';
+  const own = isTileTemplate(tileUrl) ? tileUrl.trim() : '';
   const installed = (darkMode && isNonBlankString(c.MAP_TILE_URL_DARK) ? c.MAP_TILE_URL_DARK : c.MAP_TILE_URL) || '';
   const attribution = isNonBlankString(tileAttribution)
     ? tileAttribution.trim()
