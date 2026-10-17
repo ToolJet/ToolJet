@@ -10,7 +10,8 @@ export const ShadCheckbox = (props: WidgetProps) => {
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const [checked, change] = useChecked(props);
-  const check = useValidation(props, checked, () => change(false));
+  // A mandatory checkbox must be checked: unchecked is not a value here.
+  const check = useValidation(props, checked, () => change(false), checked);
   const id = `shad-${props.id}`;
   return (
     <Shell {...props} innerRef={fit}>

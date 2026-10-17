@@ -15,6 +15,19 @@ export const isRecord = <T extends object = Record<string, unknown>>(v: unknown)
   v !== null && typeof v === 'object' && !Array.isArray(v);
 /** Set to something other than blank text. */
 export const isSet = (v: unknown): boolean => v !== undefined && v !== null && String(v).trim() !== '';
+/** A field holds a value: anything but undefined, null, '' and an empty list. 0 and false are values. */
+export const isFilled = (v: unknown): boolean =>
+  v !== undefined && v !== null && v !== '' && !(Array.isArray(v) && v.length === 0);
+
+/** What ToolJet's validation engine should judge for a field: '' when it holds nothing, else a value its mandatory
+ *  check reads as filled. The engine's check is `!value`, so a picked false, a typed 0 or a chosen '' option would
+ *  read as empty: those go as text ('false', '0', ' '), which its number checks still compare as numbers. */
+export const validationInput = (present: boolean, value: unknown): unknown => {
+  if (!present) return '';
+  if (Array.isArray(value)) return value.length ? value : '';
+  return value === 0 || value === false || value === '' ? String(value) || ' ' : value;
+};
+
 /** Nothing to show: unset, blank text or NaN. */
 export const isEmptyValue = (v: unknown): boolean =>
   v === undefined || v === null || (typeof v === 'string' && v.trim() === '') || Number.isNaN(v);

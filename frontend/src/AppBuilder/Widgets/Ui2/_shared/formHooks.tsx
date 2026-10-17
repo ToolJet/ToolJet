@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useExposed, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { truthy } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { isFilled, validationInput } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { CONTROL, FieldLabel, FieldNote, INVALID_VARS, fieldName } from './field';
 import { busy } from './Shell';
 import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from 'react';
@@ -52,10 +53,14 @@ export interface Validation {
 export const useValidation = (
   props: Pick<WidgetProps, 'validate' | 'validation' | 'setExposedVariable'>,
   value: unknown,
-  clear?: () => void
+  clear?: () => void,
+  /** Whether the field holds a value, when that is not just "not empty": a Checkbox only once checked, a Select once
+   *  an option is picked (an option's value can be ''). 0 and false are values (validationInput). */
+  present: boolean = isFilled(value)
 ): Validation => {
   const { validate, validation, setExposedVariable } = props;
-  const status: ValidationResult = (typeof validate === 'function' ? validate(value) : null) || {};
+  const status: ValidationResult =
+    (typeof validate === 'function' ? validate(validationInput(present, value)) : null) || {};
   const isValid = status.isValid !== false;
   const isMandatory = validation?.mandatory === true;
   const [touched, setTouched] = useState(false);

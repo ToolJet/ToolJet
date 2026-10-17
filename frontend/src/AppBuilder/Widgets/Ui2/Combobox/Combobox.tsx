@@ -46,10 +46,15 @@ export const ShadCombobox = (props: WidgetProps) => {
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),
   });
-  const check = useValidation(props, M.validationInput(!!selected, value), () => {
-    setKey(null);
-    setExposedVariables({ value: '', selectedOption: {} });
-  });
+  const check = useValidation(
+    props,
+    value,
+    () => {
+      setKey(null);
+      setExposedVariables({ value: '', selectedOption: {} });
+    },
+    !!selected
+  );
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
   const openChange = (next: boolean) => {
