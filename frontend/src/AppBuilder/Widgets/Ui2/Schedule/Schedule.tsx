@@ -12,10 +12,11 @@ import {
   scheduleRange,
   scheduleResources,
   slotTracks,
-  slotValue,
   startDay,
 } from './scheduleModel';
-import type { PlacedBooking, ScheduleColumn, ScheduleResource, ScheduleSelected, ScheduleSlot } from './scheduleTypes';
+import { pickBooking, pickSlot, resolveSelection, selectionExposed } from './scheduleSelection';
+import type { SchedulePick } from './scheduleSelection';
+import type { PlacedBooking, ScheduleColumn, ScheduleResource, ScheduleSlot } from './scheduleTypes';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { LABEL, LINE, SURFACE, ScheduleRow } from './ScheduleRow';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
@@ -101,35 +102,27 @@ export const ShadSchedule = (props: WidgetProps) => {
 
   const tracks = useMemo(() => slotTracks(range), [range]);
   const [shownCount, showMore] = useShownCount(RESOURCES_PER_STEP, resources);
-  const [selected, setSelected] = useState<ScheduleSelected | null>(null);
-  const selection = (next: ScheduleSelected | null) => ({
-    selectedBooking: next?.kind === 'booking' ? next.item.row : {},
-    selectedBookingId: next?.kind === 'booking' ? next.item.id ?? null : null,
-    selectedSlot: next?.kind === 'slot' ? next.value : {},
-  });
-  useExposed(setExposedVariables, p, selection(selected));
+  // The selection is who or what was picked, resolved against the schedule as it is now (scheduleSelection.ts).
+  const [pick, setPick] = useState<SchedulePick | null>(null);
+  const selected = useMemo(
+    () => resolveSelection(pick, placed, resources, range, p.hourFormat),
+    [pick, placed, resources, range, p.hourFormat]
+  );
+  useExposed(setExposedVariables, p, selectionExposed(selected));
   const hasSlotClick = useHasEvent(id, 'onSlotClicked');
   const disabled = busy(p);
   const highlight = p.highlightSelected !== false;
 
-  const clickBooking = (item: PlacedBooking) => {
-    if (disabled) return;
-    const next: ScheduleSelected = { kind: 'booking', key: item.key, item };
-    setSelected(next);
-    setExposedVariables(selection(next));
-    fireEvent('onBookingClicked');
+  const choose = (next: SchedulePick, event: string) => {
+    setPick(next);
+    setExposedVariables(selectionExposed(resolveSelection(next, placed, resources, range, p.hourFormat)));
+    fireEvent(event);
   };
-  const clickSlot = (resource: ScheduleResource, slot: ScheduleSlot, index: number) => {
-    if (disabled) return;
-    const next: ScheduleSelected = {
-      kind: 'slot',
-      resource: resource.key,
-      index,
-      value: slotValue(resource, slot, p.hourFormat, range.scale),
-    };
-    setSelected(next);
-    setExposedVariables(selection(next));
-    fireEvent('onSlotClicked');
+  const clickBooking = (resource: ScheduleResource, item: PlacedBooking) => {
+    if (!disabled) choose(pickBooking(resource, item), 'onBookingClicked');
+  };
+  const clickSlot = (resource: ScheduleResource, slot: ScheduleSlot) => {
+    if (!disabled) choose(pickSlot(resource, slot), 'onSlotClicked');
   };
 
   // The now-line moves with the clock without drawing the schedule again: its position is a CSS variable set here.
