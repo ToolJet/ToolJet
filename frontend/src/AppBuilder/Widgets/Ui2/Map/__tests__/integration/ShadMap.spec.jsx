@@ -7,6 +7,7 @@
  * answers where a scenario searches. Standard control behaviour (visibility, disabled, loading, tooltip) is covered for
  * every UI 2.0 widget in Ui2/__tests__/controlState.spec.jsx. Titles carry [ShadMap-<AREA>-<NNN>] scenario ids.
  */
+import React from 'react';
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
 import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
@@ -452,6 +453,40 @@ describe('UI 2.0 Map', () => {
       await widget.act('setPickedLocation', 37.81, -122.41);
       await waitFor(() => expect(exposed().pickedLocation.address).toBe('Pier 39, San Francisco'), { timeout: 4000 });
       expect(calls(/geo\.example/)).toEqual(['https://geo.example/reverse?lat=37.81&lon=-122.41']);
+    }, 10000);
+
+    // A geocoder that answers each query with "<query> result" at 10, 20. Each scenario has its own URL: the client
+    // keeps answers by URL for the whole page.
+    const answerByQuery = (url) =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve([{ lat: '10', lon: '20', display_name: `${new URL(url).searchParams.get('q')} result` }]),
+      });
+
+    test('[ShadMap-EVT-005] Enter on a new query picks nothing from the previous query, then picks the new place', async () => {
+      // Release audit 42: Enter during the pause after typing Beta picked Alpha's place and fired onLocationPicked.
+      fetchMock.mockImplementation(answerByQuery);
+      render({
+        properties: {
+          showSearch: binding('{{true}}'),
+          pickLocation: binding('{{true}}'),
+          geocoderUrl: binding('https://geo.example/evt-005/search?q={query}'),
+        },
+      });
+      const input = await screen.findByRole('searchbox');
+      fireEvent.change(input, { target: { value: 'Alpha' } });
+      await screen.findByRole('button', { name: 'Alpha result' }, { timeout: 4000 });
+
+      fireEvent.change(input, { target: { value: 'Beta' } });
+      expect(screen.queryByRole('button', { name: 'Alpha result' })).not.toBeInTheDocument();
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(exposed().pickedLocation).toEqual({});
+      expect(input).toHaveValue('Beta');
+
+      await screen.findByRole('button', { name: 'Beta result' }, { timeout: 4000 });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(exposed().pickedLocation).toEqual({ lat: 10, lng: 20, address: 'Beta result' });
     }, 10000);
   });
 
