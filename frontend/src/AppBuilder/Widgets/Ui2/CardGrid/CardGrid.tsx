@@ -36,9 +36,10 @@ export const CardImage = ({
   badges?: string[];
   fill?: boolean;
 }) => {
-  const [failed, setFailed] = useState(false);
+  // The URL that failed: new data with another URL shows its image again.
+  const [failed, setFailed] = useState<string | null>(null);
   const hue = avatarHue(title);
-  const showImg = src && !failed;
+  const showImg = src && failed !== src;
   return (
     <div
       className={cn(
@@ -53,7 +54,7 @@ export const CardImage = ({
           src={src}
           alt={title}
           loading="lazy"
-          onError={() => setFailed(true)}
+          onError={() => setFailed(src)}
           className="tw-absolute tw-inset-0 tw-h-full tw-w-full tw-object-cover"
         />
       ) : (
