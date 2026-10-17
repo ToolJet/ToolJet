@@ -21,6 +21,7 @@ import {
   calendarExposed,
   calendarSelection,
   disabledMatchers,
+  shownMonth,
   markersByDay,
   toDate,
   visiblePeriod,
@@ -274,5 +275,16 @@ describe('carousel logic', () => {
     expect(toDate('2026-13-01')).toBeUndefined();
     expect(ymd(toDate('2028-02-29'))).toBe('2028-02-29');
     expect(ymd(toDate('2026-10-09T14:30:00'))).toBe('2026-10-09');
+  });
+
+  // Audit 57: the month the calendar draws, inside minDate and maxDate.
+  it('moves the first month shown inside the allowed months', () => {
+    const at = (month, n, min, max) => ymd(shownMonth(new Date(month), n, min, max));
+    expect(at('2025-01-15T00:00', 1, '2026-10-01', '2026-12-31')).toBe('2026-10-01');
+    expect(at('2027-02-01T00:00', 1, '2026-10-01', '2026-12-31')).toBe('2026-12-01');
+    expect(at('2026-12-01T00:00', 2, '2026-10-01', '2026-12-31')).toBe('2026-11-01');
+    expect(at('2026-11-20T00:00', 2, '2026-10-01', '2026-12-31')).toBe('2026-11-01');
+    expect(at('2026-11-01T00:00', 3, '2026-11-01', '2026-11-30')).toBe('2026-11-01');
+    expect(at('2025-01-01T00:00', 1, '', '')).toBe('2025-01-01');
   });
 });
