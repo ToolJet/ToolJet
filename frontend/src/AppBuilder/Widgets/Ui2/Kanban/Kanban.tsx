@@ -9,6 +9,7 @@ import { useOwnContextPath } from '@/AppBuilder/Widgets/Ui2/_shared/Subcontainer
 import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { addCard, boardCards, boardColumns, deleteCard, moveCard, updateCard } from './kanbanBoard';
 import { KANBAN_INSTRUCTIONS, KANBAN_KEYS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
 import { SHADOWS, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
@@ -106,6 +107,9 @@ export const ShadKanban = (props: WidgetProps) => {
       else next.add(columnId);
       return next;
     });
+  // The first MAX_BOARD_COLUMNS columns, then Show more for the rest (a 10k-item list bound as the columns froze the
+  // page; past the cap, columns and their cards were dropped without a sign). Back to the first ones for new columns.
+  const [shownColumns, showMoreColumns] = useShownCount(MAX_BOARD_COLUMNS, useStable(properties.columns));
   const collapsedHeight = isSet(properties.collapsedHeight) ? properties.collapsedHeight : '';
   const columnWidth = cssLength(properties.columnWidth);
 
@@ -312,7 +316,7 @@ export const ShadKanban = (props: WidgetProps) => {
             reloading && 'tw-pointer-events-none'
           )}
         >
-          {columns.slice(0, MAX_BOARD_COLUMNS).map((column) => (
+          {columns.slice(0, shownColumns).map((column) => (
             <KanbanColumn
               key={column.id}
               column={column}
@@ -335,9 +339,15 @@ export const ShadKanban = (props: WidgetProps) => {
               onAdd={onAdd}
               fixed={fixed}
               maxHeight={!fixed && Number(props.height) > 0 ? Number(props.height) : undefined}
-              minColumn={columnMinimum(columns.length, boardWidth)}
+              minColumn={columnMinimum(Math.min(columns.length, shownColumns), boardWidth)}
             />
           ))}
+          <ShowMore
+            remaining={columns.length - shownColumns}
+            step={MAX_BOARD_COLUMNS}
+            onMore={showMoreColumns}
+            className="tw-shrink-0 tw-self-start tw-whitespace-nowrap tw-rounded-ui2-md tw-px-3 tw-py-1.5 tw-text-ui2-sm tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground"
+          />
         </div>
         {/* The preview renders at the body: ToolJet places widgets with CSS transforms, and position: fixed inside a
             transformed ancestor is offset by it, so the card trailed far from the pointer. The portal root carries
