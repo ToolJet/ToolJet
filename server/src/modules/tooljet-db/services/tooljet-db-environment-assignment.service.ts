@@ -33,6 +33,7 @@ export type TableMigrationChainEntry = {
   id: string;
   kind: InternalTableMigrationKind;
   name: string | null;
+  description: string | null;
   sequence: string;
   // 1-based position in this table's ordered chain - display-only, computed on read so the
   // frontend never has to re-derive it (and disagree with itself) from array position.
@@ -269,10 +270,14 @@ export class TooljetDbEnvironmentAssignmentService {
       organizationId
     );
     const allEnvironments = await this.manager.find(AppEnvironment, { where: { organizationId } });
+    const relations = await this.manager.find(InternalTableRelation, { where: { internalTableId } });
+    // An environment that still holds a relation after a lapse stays listed: its data is readable.
     const environments = multiEnvironmentEnabled
       ? allEnvironments
-      : allEnvironments.filter((environment) => environment.priority === 1);
-    const relations = await this.manager.find(InternalTableRelation, { where: { internalTableId } });
+      : allEnvironments.filter(
+          (environment) =>
+            environment.priority === 1 || relations.some((relation) => relation.environmentId === environment.id)
+        );
     const relationByEnvironmentId = new Map(relations.map((relation) => [relation.environmentId, relation]));
 
     const environmentStates = await Promise.all(
@@ -290,19 +295,55 @@ export class TooljetDbEnvironmentAssignmentService {
       })
     );
 
+    const baselineContext = {
+      tableName: internalTable.tableName,
+      tableNameByRelationId: await this.resolveBaselineForeignKeyTableNames(migrations),
+    };
+
     return {
-      migrations: migrations.map((migration, index) => ({
-        id: migration.id,
-        kind: migration.kind,
-        name: migration.name,
-        sequence: migration.sequence,
-        migrationNumber: index + 1,
-        createdAt: migration.createdAt,
-        createdBy: migration.createdBy,
-        sql: this.migrationSqlCompilerService.compile(migration),
-      })),
+      migrations: migrations.map((migration, index) => {
+        const label = this.migrationSqlCompilerService.baselineLabel(migration, internalTable.tableName);
+        return {
+          id: migration.id,
+          kind: migration.kind,
+          name: migration.name ?? label?.name ?? null,
+          description: migration.description ?? label?.description ?? null,
+          sequence: migration.sequence,
+          migrationNumber: index + 1,
+          createdAt: migration.createdAt,
+          createdBy: migration.createdBy,
+          sql: this.migrationSqlCompilerService.compile(migration, baselineContext),
+        };
+      }),
       environments: environmentStates,
     };
+  }
+
+  /**
+   * A baseline row's foreign keys name their target by physical relation id, which is meaningless in
+   * display SQL. Resolved through the relation (not `internal_tables.id`): a repaired or twin
+   * relation's id differs from its table's. `withDeleted`: a table dropped after the baseline was
+   * recorded still appears in that older row's foreign keys.
+   */
+  private async resolveBaselineForeignKeyTableNames(
+    migrations: InternalTableMigration[]
+  ): Promise<Map<string, string>> {
+    const relationIds = new Set<string>();
+    for (const migration of migrations) {
+      if (migration.kind !== 'baseline') continue;
+      for (const fk of migration.resultingSchema?.foreign_keys ?? []) relationIds.add(fk.referenced_table);
+    }
+    if (!relationIds.size) return new Map();
+
+    const rows: { relationId: string; tableName: string }[] = await this.manager
+      .createQueryBuilder(InternalTableRelation, 'relation')
+      .withDeleted()
+      .innerJoin(InternalTable, 'internal_table', 'internal_table.id = relation.internalTableId')
+      .select('relation.id', 'relationId')
+      .addSelect('internal_table.tableName', 'tableName')
+      .where('relation.id IN (:...relationIds)', { relationIds: [...relationIds] })
+      .getRawMany();
+    return new Map(rows.map((row) => [row.relationId, row.tableName]));
   }
 
   /**

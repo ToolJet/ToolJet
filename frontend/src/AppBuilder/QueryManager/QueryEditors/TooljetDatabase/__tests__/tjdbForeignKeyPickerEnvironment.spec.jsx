@@ -8,7 +8,7 @@ import { server } from '@/test/msw/server';
 import { render, waitFor, act } from '@/test/test-utils';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/context';
 import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
-import SelectBox from '../../SelectBox';
+import SelectBox from '../SelectBox';
 
 const STAGING = { id: 'env-staging', name: 'staging', priority: 2 };
 const PRODUCTION = { id: 'env-production', name: 'production', priority: 3 };

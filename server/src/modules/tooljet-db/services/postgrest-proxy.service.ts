@@ -53,7 +53,8 @@ export class PostgrestProxyService {
     req.headers['Authorization'] = authToken;
     // https://postgrest.org/en/v12/references/api/preferences.html#prefer-header
     req.headers['Prefer'] = `count=exact, return=representation`;
-    if (['GET', 'HEAD'].includes(req.method)) req.headers['Accept-Profile'] = dbSchema;
+    const isRead = ['GET', 'HEAD'].includes(req.method);
+    if (isRead) req.headers['Accept-Profile'] = dbSchema;
     if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) req.headers['Content-Profile'] = dbSchema;
     // PostgREST renders text/csv natively; everything else stays JSON. Allowlisted rather than
     // passed through, so an arbitrary client Accept can't reshape the proxy's responses.
@@ -72,7 +73,8 @@ export class PostgrestProxyService {
     const { url: rewrittenUrl, tableInfo } = await this.resolveAndRewrite(
       replaceUrlForPostgrest(req.url),
       organizationId,
-      environmentId
+      environmentId,
+      isRead
     );
     req.url = rewrittenUrl;
     req.headers['tableInfo'] = tableInfo;
@@ -203,12 +205,19 @@ export class PostgrestProxyService {
   protected async resolveAndRewrite(
     url: string,
     organizationId: string,
-    environmentId: string | undefined
+    environmentId: string | undefined,
+    readOnly = false
   ): Promise<{ url: string; tableInfo: Record<string, string> }> {
     const { path, embedded } = extractTableRefs(url);
     if (!path) throw new NotFoundException('Table not found');
 
-    const resolved = await this.relationResolverService.resolve(organizationId, [path, ...embedded], environmentId);
+    const resolved = await this.relationResolverService.resolve(
+      organizationId,
+      [path, ...embedded],
+      environmentId,
+      undefined,
+      { readOnly }
+    );
 
     const missing = [path, ...embedded].filter((id) => !resolved.has(id));
     if (missing.length) {
