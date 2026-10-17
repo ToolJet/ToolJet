@@ -155,7 +155,8 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
   const hour = minutes === null ? null : Math.floor(minutes / 60);
   const minute = minutes === null ? null : minutes % 60;
   const pm = hour !== null && hour >= 12;
-  const minuteChoices = M.minuteOptions(step);
+  // Each hour offers the minutes on the step from midnight, as the Time picker does.
+  const minuteChoices = M.minuteOptions(step, hour ?? Math.floor(nowMinutes / 60));
   if (minute !== null && !minuteChoices.includes(minute)) minuteChoices.push(minute);
   minuteChoices.sort((a, b) => a - b);
   const hourOptions = use24
@@ -214,7 +215,10 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
               style={vars}
               value={hour === null ? '' : String(use24 ? hour : hour % 12)}
               options={hourOptions}
-              onChange={(h) => setTime(((Number(h) % 24) + (!use24 && pm ? 12 : 0)) * 60 + (minute ?? 0))}
+              onChange={(h) => {
+                const next = (Number(h) % 24) + (!use24 && pm ? 12 : 0);
+                setTime(next * 60 + M.minuteInHour(step, next, minute));
+              }}
             />
             <span className="tw-text-ui2-sm tw-text-ui2-muted-foreground">:</span>
             <TimeSelect
@@ -246,7 +250,8 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
                       onClick={() => {
                         const base = minutes ?? nowMinutes;
                         const h = Math.floor(base / 60) % 12;
-                        setTime((h + (label === 'PM' ? 12 : 0)) * 60 + (base % 60));
+                        const next = h + (label === 'PM' ? 12 : 0);
+                        setTime(next * 60 + M.minuteInHour(step, next, base % 60));
                       }}
                     >
                       {label}

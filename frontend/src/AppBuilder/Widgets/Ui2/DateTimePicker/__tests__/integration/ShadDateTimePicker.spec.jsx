@@ -315,4 +315,13 @@ describe('UI 2.0 Date and time picker', () => {
       expect(exposed().displayValue).toBe('2026-21-10 14:30');
     });
   });
+
+  // The minute step means a time every that many minutes from midnight, as in the Time picker.
+  test('[ShadDateTimePicker-PROP-009] a 45-minute step offers each hour the minutes that fall on it', async () => {
+    render({ properties: { defaultValue: binding('2026-10-15 10:30'), minuteStep: binding('{{45}}') } });
+    await open();
+
+    const minutes = await openSelect('Minute');
+    expect(minutes.map((o) => o.textContent)).toEqual(['30']);
+  });
 });
