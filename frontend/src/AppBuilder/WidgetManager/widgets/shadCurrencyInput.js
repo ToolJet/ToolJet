@@ -68,7 +68,7 @@ export const shadCurrencyInputConfig = {
           ],
           optional: true,
         },
-        defaultValue: 1250,
+        defaultValue: '',
       },
     },
     currency: {
@@ -572,7 +572,7 @@ export const shadCurrencyInputConfig = {
         value: '0.00',
       },
       defaultValue: {
-        value: '{{1250}}',
+        value: '',
       },
       currency: {
         value: 'USD',

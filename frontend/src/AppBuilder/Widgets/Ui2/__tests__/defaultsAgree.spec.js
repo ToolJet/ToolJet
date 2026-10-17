@@ -24,3 +24,31 @@ describe('pack choice defaults agree with what a new widget is created with', ()
     expect(unwrap(created)).toBe(unwrap(def.validation?.defaultValue ?? def.defaultValue));
   });
 });
+
+// A form submits what its inputs hold. Free-entry inputs start empty, as their native counterparts do: a new Tags
+// input held two sample tags and a Currency input $1,250.00, and an AI-built intake form submitted both (2026-10-17).
+// Choice controls (radio, toggle and button groups, multiselect, slider, rating) keep a preselection, as native ones do.
+const FREE_ENTRY = [
+  'ShadInput',
+  'ShadTextarea',
+  'ShadPasswordInput',
+  'ShadPhoneInput',
+  'ShadOtpInput',
+  'ShadCurrencyInput',
+  'ShadTagsInput',
+  'ShadDatePicker',
+  'ShadTimePicker',
+  'ShadDateTimePicker',
+  'ShadSelect',
+  'ShadCombobox',
+];
+const EMPTY = ['', '{{[]}}', '[]', '{{null}}', '{{""}}', "{{''}}"];
+
+describe('free-entry inputs start empty', () => {
+  it.each(FREE_ENTRY)('%s', (name) => {
+    const config = shadcnConfigs.find((c) => c.name === name);
+    expect(config).toBeDefined();
+    const created = config.definition.properties.defaultValue?.value ?? '';
+    expect(EMPTY).toContain(typeof created === 'string' ? created.trim() : JSON.stringify(created));
+  });
+});
