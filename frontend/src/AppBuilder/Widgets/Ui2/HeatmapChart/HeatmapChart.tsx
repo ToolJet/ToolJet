@@ -14,6 +14,15 @@ import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 // ---- Heatmap -------------------------------------------------------------------------------------------------------
 
+/** The labels past the drawn grid, as the note under it reads them ("5 more columns not shown"). */
+const hiddenNote = ({ columns, rows }: { columns: number; rows: number }) =>
+  `${[
+    columns ? `${columns} more column${columns === 1 ? '' : 's'}` : '',
+    rows ? `${rows} more row${rows === 1 ? '' : 's'}` : '',
+  ]
+    .filter(Boolean)
+    .join(' and ')} not shown`;
+
 /** A grid of cells shaded by value (weekday by hour, region by month): plain HTML, so labels never clip and the shade
  *  follows the theme's chart colour. Each cell blends the chart colour into the muted surface by its value. */
 export const ShadHeatmapChart = (props: WidgetProps) => {
@@ -109,6 +118,11 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
                 </div>
               ))}
             </div>
+            {grid.hidden.columns || grid.hidden.rows ? (
+              <div className="tw-pt-1.5 tw-text-[color:var(--lk-legend,var(--sc-muted-foreground))]">
+                {hiddenNote(grid.hidden)}
+              </div>
+            ) : null}
             {p.showLegend !== false ? (
               <div className="tw-flex tw-items-center tw-justify-end tw-gap-2 tw-pt-2 tw-text-[color:var(--lk-legend,var(--sc-muted-foreground))]">
                 <span className="tw-tabular-nums">{format(grid.min)}</span>
