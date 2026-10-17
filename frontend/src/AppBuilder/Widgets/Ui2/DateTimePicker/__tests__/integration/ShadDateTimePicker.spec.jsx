@@ -141,6 +141,15 @@ describe('UI 2.0 Date and time picker', () => {
     expect(exposed()).toMatchObject({ minDate: '2026-10-10', maxDate: '2026-10-18' });
   });
 
+  test('[ShadDateTimePicker-KBD-001] opening the calendar focuses the selected day, so arrow keys move between days', async () => {
+    render({ properties: { defaultValue: binding('2026-10-15 09:30') } });
+    await open();
+
+    await waitFor(() => expect(day(15)).toHaveFocus());
+    await act(async () => fireEvent.keyDown(day(15), { key: 'ArrowRight' }));
+    await waitFor(() => expect(day(16)).toHaveFocus());
+  });
+
   test('[ShadDateTimePicker-VAL-001] a default outside the bounds is invalid until an allowed day is picked', async () => {
     render({ properties: { defaultValue: binding('2026-10-25 10:00'), maxDate: binding('2026-10-18') } });
 

@@ -187,6 +187,8 @@ export const ShadDatePicker = (props: WidgetProps) => {
     startMonth: rules.min ? rules.min.toDate() : undefined,
     endMonth: rules.max ? rules.max.toDate() : undefined,
     disabled: disabledMatchers,
+    // Focus the selected (or today's) day on open, so arrow keys move between days.
+    autoFocus: true,
   };
   return (
     <FormField props={props} properties={properties} check={check} innerRef={fit}>

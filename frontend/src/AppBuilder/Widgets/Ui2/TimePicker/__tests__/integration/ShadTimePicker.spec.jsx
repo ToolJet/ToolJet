@@ -120,6 +120,35 @@ describe('UI 2.0 Time picker', () => {
     expect(within(column('Hours')).getByRole('option', { name: '18' })).toBeDisabled();
   });
 
+  test('[ShadTimePicker-KBD-001] each column has one tab stop, its selected hour, and arrows, Home and End move between enabled options', async () => {
+    render({
+      properties: {
+        defaultValue: binding('14:30'),
+        minTime: binding('09:00'),
+        maxTime: binding('17:00'),
+        timeFormat: binding('24h'),
+      },
+    });
+    await open();
+    const hours = column('Hours');
+    const hour = (label) => within(hours).getByRole('option', { name: label });
+    const tabStops = within(hours)
+      .getAllByRole('option')
+      .filter((o) => o.tabIndex === 0);
+    expect(tabStops).toEqual([hour('14')]);
+
+    act(() => hour('14').focus());
+    fireEvent.keyDown(hour('14'), { key: 'ArrowDown' });
+    expect(hour('15')).toHaveFocus();
+    fireEvent.keyDown(hour('15'), { key: 'ArrowUp' });
+    fireEvent.keyDown(hour('14'), { key: 'ArrowUp' });
+    expect(hour('13')).toHaveFocus();
+    fireEvent.keyDown(hour('13'), { key: 'End' });
+    expect(hour('17')).toHaveFocus();
+    fireEvent.keyDown(hour('17'), { key: 'Home' });
+    expect(hour('09')).toHaveFocus();
+  });
+
   test('[ShadTimePicker-VAL-001] a default outside the bounds is invalid and says which times are allowed', async () => {
     render({ properties: { defaultValue: binding('08:00'), minTime: binding('09:00'), maxTime: binding('10:00') } });
 

@@ -23,7 +23,6 @@ export const OPTION_IDLE = 'hover:tw-bg-ui2-accent hover:tw-text-ui2-accent-fore
 
 export const OPTION_ON = 'tw-bg-ui2-primary tw-text-ui2-primary-foreground hover:tw-bg-ui2-primary';
 
-/** A scrolling column of options (hours, minutes, AM/PM) that opens scrolled to its selected option. */
 /** One option of an OptionColumn. */
 export interface ColumnOption {
   key: string | number;
@@ -39,8 +38,30 @@ export interface OptionColumnProps {
   className?: string;
 }
 
+const COLUMN_KEYS: Record<string, (i: number, n: number) => number> = {
+  ArrowDown: (i, n) => Math.min(i + 1, n - 1),
+  ArrowUp: (i) => Math.max(i - 1, 0),
+  Home: () => 0,
+  End: (_i, n) => n - 1,
+};
+
+/** Arrow keys, Home and End move focus between a column's enabled options. */
+const onColumnKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const move = COLUMN_KEYS[e.key];
+  if (!move) return;
+  const enabled = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="option"]:not(:disabled)'));
+  if (!enabled.length) return;
+  e.preventDefault();
+  enabled[move(enabled.indexOf(e.target as HTMLButtonElement), enabled.length)].focus();
+};
+
+/**
+ * A scrolling column of options (hours, minutes, AM/PM) that opens scrolled to its selected option. One option per
+ * column is in the tab order (the selected one, else the first enabled), so Tab moves between columns.
+ */
 export const OptionColumn = ({ label, options, className }: OptionColumnProps) => {
   const ref = useRef<HTMLDivElement>(null);
+  const tabbable = options.find((o) => o.selected && !o.disabled) ?? options.find((o) => !o.disabled);
   useLayoutEffect(() => {
     const col = ref.current;
     const selected = col?.querySelector<HTMLElement>('[data-selected="true"]');
@@ -51,6 +72,7 @@ export const OptionColumn = ({ label, options, className }: OptionColumnProps) =
       ref={ref}
       role="listbox"
       aria-label={label}
+      onKeyDown={onColumnKey}
       className={cn('tw-relative tw-flex tw-h-56 tw-w-16 tw-flex-col tw-gap-1 tw-overflow-y-auto tw-p-1', className)}
     >
       {options.map((o) => (
@@ -61,6 +83,7 @@ export const OptionColumn = ({ label, options, className }: OptionColumnProps) =
           aria-selected={o.selected}
           data-selected={o.selected || undefined}
           disabled={o.disabled}
+          tabIndex={o === tabbable ? 0 : -1}
           className={cn(OPTION, o.selected ? OPTION_ON : OPTION_IDLE)}
           onClick={o.onClick}
         >

@@ -189,6 +189,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
         </PopoverTrigger>
         <PopoverContent className="tw-w-auto tw-p-0" align="start" style={vars}>
           <Calendar
+            autoFocus
             mode="single"
             selected={date ? date.toDate() : undefined}
             defaultMonth={date ? date.toDate() : rules.min && now.isBefore(rules.min) ? rules.min.toDate() : undefined}
