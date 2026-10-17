@@ -62,9 +62,13 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
       if (next) setCurrency(next);
       const places = M.currencyDecimals(next ?? currencyRef.current, latest.current.decimalPlaces);
       box.set(M.roundTo(M.parseNumber(v, latest.current.locale), places));
+      check.touch();
     },
     setCurrency: async (code: unknown) => setCurrency(M.toCurrency(code, currencyRef.current)),
-    clear: async () => box.set(null),
+    clear: async () => {
+      box.set(null);
+      check.touch();
+    },
   });
   const commit = (next: number | null) => box.commit(next, (n) => ({ formattedValue: formatted(n) }));
   const check = useValidation(props, value, () => commit(null));

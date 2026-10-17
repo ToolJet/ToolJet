@@ -66,18 +66,17 @@ describe('UI 2.0 Switch', () => {
     await waitFor(() => expect(widget.variables().calls).toBe(1));
   });
 
-  test('[ShadSwitch-ACT-002] setValue turns it on or off, and setting the current value fires nothing', async () => {
+  // As the native Toggle switch's setValue: it turns it on or off and fires nothing (review, 2026-10-17).
+  test('[ShadSwitch-ACT-002] setValue turns it on or off and fires nothing, as the native one does', async () => {
     render();
     widget.setEvents(countInvocationsOn(ID, 'onChange'));
 
-    await widget.act('setValue', true);
+    expect(await widget.actNow('setValue', true)).toMatchObject({ value: true });
     await waitFor(() => expect(toggle()).toBeChecked());
-    await widget.act('setValue', true);
-    await widget.act('setValue', false);
+    expect(await widget.actNow('setValue', false)).toMatchObject({ value: false });
     await waitFor(() => expect(toggle()).not.toBeChecked());
 
-    expect(exposed().value).toBe(false);
-    await waitFor(() => expect(widget.variables().calls).toBe(2));
+    expect(widget.variables().calls).toBeUndefined();
   });
 
   test('[ShadSwitch-STY-001] accent, label, help and off colours reach the widget as CSS variables', async () => {

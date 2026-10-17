@@ -71,30 +71,37 @@ describe('UI 2.0 Checkbox', () => {
     expect(box()).not.toBeChecked();
   });
 
-  test('[ShadCheckbox-ACT-001] toggle flips the box and fires what a click fires', async () => {
+  // The native Checkbox's actions, with its events: toggle fires onChange only; setValue fires onCheck or onUnCheck
+  // (not onChange), every time (review, 2026-10-17: actions fire what the native ones fire).
+  test('[ShadCheckbox-ACT-001] toggle flips the box and fires onChange, as the native toggle does', async () => {
     render();
-    widget.setEvents([...countInvocationsOn(ID, 'onChange'), ...setVariableOn(ID, 'onCheck', { key: 'checked' })]);
+    widget.setEvents([
+      ...countInvocationsOn(ID, 'onChange', { key: 'changes' }),
+      ...countInvocationsOn(ID, 'onCheck', { key: 'checks' }),
+    ]);
 
-    await widget.act('toggle');
+    expect(await widget.actNow('toggle')).toMatchObject({ value: true });
 
     await waitFor(() => expect(box()).toBeChecked());
-    expect(exposed().value).toBe(true);
-    await waitFor(() => expect(widget.variables().checked).toBe('YES'));
-    expect(widget.variables().calls).toBe(1);
+    expect(widget.variables()).toMatchObject({ changes: 1 });
+    expect(widget.variables().checks).toBeUndefined();
   });
 
-  test('[ShadCheckbox-ACT-002] setValue checks or unchecks, and setting the current value fires nothing', async () => {
+  test('[ShadCheckbox-ACT-002] setValue checks or unchecks and fires onCheck or onUnCheck, as the native one does', async () => {
     render();
-    widget.setEvents(countInvocationsOn(ID, 'onChange'));
+    widget.setEvents([
+      ...countInvocationsOn(ID, 'onChange', { key: 'changes' }),
+      ...countInvocationsOn(ID, 'onCheck', { key: 'checks' }),
+      ...countInvocationsOn(ID, 'onUnCheck', { key: 'unchecks' }),
+    ]);
 
-    await widget.act('setValue', true);
-    await waitFor(() => expect(box()).toBeChecked());
-    await widget.act('setValue', true);
-    await widget.act('setValue', false);
+    expect(await widget.actNow('setValue', true)).toMatchObject({ value: true });
+    expect(await widget.actNow('setValue', true)).toMatchObject({ value: true });
+    expect(await widget.actNow('setValue', false)).toMatchObject({ value: false });
+
     await waitFor(() => expect(box()).not.toBeChecked());
-
-    expect(exposed().value).toBe(false);
-    await waitFor(() => expect(widget.variables().calls).toBe(2));
+    expect(widget.variables()).toMatchObject({ checks: 2, unchecks: 1 });
+    expect(widget.variables().changes).toBeUndefined();
   });
 
   test('[ShadCheckbox-VAL-001] a mandatory box is invalid until checked, and says so once unchecked again', async () => {

@@ -29,8 +29,14 @@ export const ShadNumberInput = (props: WidgetProps) => {
   const latest = useLatest({ round });
   useExposed(setExposedVariables, properties, {
     value,
-    setText: async (v: unknown) => box.set(latest.current.round(M.parseNumber(v))),
-    clear: async () => box.set(null),
+    setText: async (v: unknown) => {
+      box.set(latest.current.round(M.parseNumber(v)));
+      check.touch();
+    },
+    clear: async () => {
+      box.set(null);
+      check.touch();
+    },
   });
   const commit = (next: number | null) => box.commit(next, () => ({}));
   const check = useValidation(props, value, () => commit(null));

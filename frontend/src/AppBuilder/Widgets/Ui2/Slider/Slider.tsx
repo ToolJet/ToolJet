@@ -19,7 +19,8 @@ export const ShadSlider = (props: WidgetProps) => {
   const bounds = useStable(sliderBounds(properties));
   const initial = sliderValues(raw, bounds);
   // The native Range slider's actions: setValue(n) for one value (a range's start), setRangeValue(start, end) for a
-  // range, reset() back to the default. Values are kept inside min and max; a non-number changes nothing.
+  // range, reset() back to the default. Values are kept inside min and max; a non-number changes nothing. As the
+  // native ones, setValue and setRangeValue fire onChange and reset fires nothing.
   const numeric = (n: unknown) =>
     (typeof n === 'number' || (typeof n === 'string' && n.trim() !== '')) && Number.isFinite(Number(n));
   // What the actions read: they are published once, so they see this render's values through the ref.
@@ -34,13 +35,13 @@ export const ShadSlider = (props: WidgetProps) => {
       const { bounds: b, isRange: range, value: current } = latest.current;
       if (!numeric(n)) return;
       const [v] = sliderValues(Number(n), b);
-      set(range ? sliderValues([v, Math.max(v, list(current)[1] ?? v)], b) : v);
+      change(range ? sliderValues([v, Math.max(v, list(current)[1] ?? v)], b) : v);
     },
     setRangeValue: async (a: unknown, z: unknown) => {
       const { bounds: b, isRange: range } = latest.current;
       if (!numeric(a) || !numeric(z)) return;
       const pair = sliderValues([Number(a), Number(z)], b);
-      set(range ? pair : pair[0]);
+      change(range ? pair : pair[0]);
     },
     reset: async () => {
       const { initial: start, isRange: range } = latest.current;

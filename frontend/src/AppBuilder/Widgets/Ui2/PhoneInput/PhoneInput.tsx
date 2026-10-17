@@ -77,6 +77,13 @@ export const ShadPhoneInput = (props: WidgetProps) => {
     setExposedVariables(M.phoneInfo(next.value, next.country));
     fireEvent('onChange');
   };
+  /** Sets the number from an action, as the native Phone input's setValue and clear do: onChange, every time. */
+  const set = (next: PhoneState) => {
+    stateRef.current = next;
+    setState(next);
+    setExposedVariables(M.phoneInfo(next.value, next.country));
+    fireEvent('onChange');
+  };
   const toCountry = (c: Country): PhoneState => {
     const prev = stateRef.current;
     return { country: c, value: M.rebasePhone(prev.value, prev.country, c) };
@@ -89,13 +96,13 @@ export const ShadPhoneInput = (props: WidgetProps) => {
       const prev = given ? { ...stateRef.current, country: given } : stateRef.current;
       const value = M.toPhoneValue(v, prev.country);
       const detected = M.phoneCountry(value, countries);
-      update({ value, country: detected || prev.country }, false);
+      set({ value, country: detected || prev.country });
     },
     setCountryCode: async (c: unknown) => {
       const country = M.countryFromInput(c, countries);
       if (country) update(toCountry(country), false);
     },
-    clear: async () => update({ ...stateRef.current, value: '' }, false),
+    clear: async () => set({ ...stateRef.current, value: '' }),
   });
   const check = useValidation(
     withRule(props, (v) => (v && !isValidPhoneNumber(String(v)) ? 'Enter a valid phone number' : '')),

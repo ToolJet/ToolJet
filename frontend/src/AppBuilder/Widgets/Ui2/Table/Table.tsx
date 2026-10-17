@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
-import { useAutoHeight, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useActionFire, useAutoHeight, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
@@ -17,6 +17,7 @@ import { useTableActions } from './useTableActions';
 import { useTableEdits } from './useTableEdits';
 import { useTableSelection } from './useTableSelection';
 import { useTableScroll } from './useTableScroll';
+import { useTableSearch } from './useTableSearch';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ToolJet UI 2.0 Table. Native Table conventions (property, event, exposed and action names; server-side
@@ -27,7 +28,6 @@ import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 const ROW_HEIGHT: Record<string, number> = { condensed: 36, regular: 44, spacious: 56 };
 const VIRTUALIZE_ABOVE = 150;
-const SEARCH_DEBOUNCE_MS = 300;
 
 const RIGHT_FADE = {
   maskImage: 'linear-gradient(to right, #000 calc(100% - 40px), transparent)',
@@ -37,7 +37,9 @@ const RIGHT_FADE = {
 const MAX_FILTERS = 50;
 
 export const ShadTable = (props: WidgetProps) => {
-  const { height, properties, styles, setExposedVariable, setExposedVariables, fireEvent, componentName } = props;
+  const { height, properties, styles, setExposedVariable, setExposedVariables, componentName } = props;
+  // Events an action fires wait until it has published (useActionFire).
+  const fireEvent = useActionFire(props.fireEvent);
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState === true,
     properties.visibility !== false,
@@ -78,11 +80,14 @@ export const ShadTable = (props: WidgetProps) => {
 
   // ---- search, sort, filters, page ------------------------------------------------------------------------------------
   const serverPaging = properties.serverSidePagination === true;
-  const [searchInput, setSearchInput] = useState('');
-  const [searchText, setSearchText] = useState('');
   const [sort, setSort] = useState<Sort | null>(null);
   const [filters, setFilters] = useState<TableFilter[]>([]);
   const [page, setPage] = useState(1);
+  const { searchInput, setSearchInput, searchText, searchNow } = useTableSearch(
+    setPage,
+    setExposedVariables,
+    fireEvent
+  );
 
   const processed = useMemo(() => {
     let list = entries;
@@ -151,20 +156,8 @@ export const ShadTable = (props: WidgetProps) => {
   live.current = { entries, processed, paged, selected, edits, columns, filters, sort, searchText, data, focusKey };
 
   // ---- user actions that publish state, then fire their event ----------------------------------------------------------
-  // Read through refs: a new callback from RenderWidget must not restart the search pause or republish the data.
+  // Read through a ref: a new callback from RenderWidget must not republish the data.
   const publish = useLatest(setExposedVariables);
-  const fire = useLatest(fireEvent);
-  useEffect(() => {
-    if (searchInput === searchText) return undefined;
-    const timer = setTimeout(() => {
-      setSearchText(searchInput);
-      setPage(1);
-      publish.current({ searchText: searchInput, pageIndex: 1 });
-      fire.current('onSearch');
-    }, SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [searchInput, searchText, publish, fire]);
-
   const sortApplied = (next: Sort | null) => {
     if (!next) return [];
     const column = columns.find((c) => c.key === next.key);
@@ -250,7 +243,7 @@ export const ShadTable = (props: WidgetProps) => {
     select,
     applyFilterList,
     applySort,
-    setSearchInput,
+    searchNow,
     discard,
   });
 

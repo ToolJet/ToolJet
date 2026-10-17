@@ -69,8 +69,11 @@ Each widget loads in its own chunk, the first time a page shows it.
 - **Actions publish before they resolve.** `useExposed` runs every action inside `flushSync`, so the value, `isValid`
   and everything derived are published when `await components.x.action()` returns. Each action fires what its native
   counterpart's action fires (a text input's `setText` and `clear` fire `onChange`; a Select's `selectOption` fires
-  `onSelect`; many native actions fire nothing). Specs check it with `widget.actNow`, which reads the exposed values
-  right after the action resolves.
+  `onSelect`; many native actions fire nothing). A widget with no native counterpart fires nothing on a programmatic
+  change, except moving through views (Carousel `goTo` fires `onSlideChanged`, as Tabs and Pagination do). Events an
+  action fires wait until it has published (`useActionFire`), so their handlers read the new values.
+  `__tests__/integration/actionContract.spec.jsx` checks every value-changing action, with `widget.actNow`, which reads
+  the exposed values right after the action resolves.
 - **0 and false are values.** `useValidation` judges `validationInput(present, value)`: a field holds a value unless
   it is undefined, null, '' or an empty list, and a widget passes `present` where that differs (a Select or Radio group
   once an option is picked, a Checkbox once checked, a Rating once it has a star).

@@ -30,9 +30,16 @@ export const ShadPasswordInput = (props: WidgetProps) => {
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
-  const [value, change] = useValue(props, toText(properties.defaultValue), (set) => ({
-    setText: async (t: unknown) => set(toText(t)),
-    clear: async () => set(''),
+  // The native setText and clear change the value as typing does (onChange) and show its validation message.
+  const [value, change] = useValue(props, toText(properties.defaultValue), () => ({
+    setText: async (t: unknown) => {
+      onChange(toText(t));
+      check.touch();
+    },
+    clear: async () => {
+      onChange('');
+      check.touch();
+    },
   }));
   const strength = M.passwordStrength(value);
   useExposed(setExposedVariables, properties, { strength: strength.level });
