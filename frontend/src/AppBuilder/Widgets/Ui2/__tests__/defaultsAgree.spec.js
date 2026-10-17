@@ -52,3 +52,34 @@ describe('free-entry inputs start empty', () => {
     expect(EMPTY).toContain(typeof created === 'string' ? created.trim() : JSON.stringify(created));
   });
 });
+
+// Default children are placed in grid columns (43 across the parent). A child with no layout width gets its widget's
+// default width scaled by the canvas rule in appCanvasUtils (defaultSize.width * 100 / 43), which on a Button is 14
+// columns, not 6: the Dialog's two footer buttons, 8 columns apart, overlapped and the second ran past the dialog's
+// edge (2026-10-17). Every default child fits the 43 columns, and no two in one slot and row overlap.
+const NO_OF_GRIDS = 43;
+const parentCases = shadcnConfigs.filter((config) => Array.isArray(config.defaultChildren));
+
+describe('default children fit their parent', () => {
+  it.each(parentCases.map((config) => [config.name, config]))('%s', (name, config) => {
+    const placed = config.defaultChildren.map((child) => {
+      const meta = shadcnConfigs.find((c) => c.component === child.componentName);
+      const width = child.layout.width ?? (meta.defaultSize.width * 100) / NO_OF_GRIDS;
+      const left = child.layout.left ?? 0;
+      const top = child.layout.top ?? 0;
+      const height = child.layout.height ?? meta.defaultSize.height;
+      return { label: child.displayName ?? child.componentName, slot: child.slotName ?? '', left, width, top, height };
+    });
+    for (const child of placed)
+      expect(`${child.label} ends at ${child.left + child.width}`).toBe(
+        `${child.label} ends at ${Math.min(child.left + child.width, NO_OF_GRIDS)}`
+      );
+    for (const a of placed)
+      for (const b of placed) {
+        if (a === b || a.slot !== b.slot) continue;
+        const rows = a.top < b.top + b.height && b.top < a.top + a.height;
+        const cols = a.left < b.left + b.width && b.left < a.left + a.width;
+        expect(`${a.label} and ${b.label} overlap: ${rows && cols}`).toBe(`${a.label} and ${b.label} overlap: false`);
+      }
+  });
+});

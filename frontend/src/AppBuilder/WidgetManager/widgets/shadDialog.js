@@ -313,9 +313,12 @@ export const shadDialogConfig = {
     {
       componentName: 'ShadButton',
       slotName: 'footer',
+      // Widths in columns: without one, the canvas scales the Button's default width to 14 columns and the two
+      // buttons overlap (defaultsAgree.spec.js).
       layout: {
         top: 16,
-        left: 26,
+        left: 27,
+        width: 7,
         height: 36,
       },
       displayName: 'DialogCancel',
@@ -330,7 +333,8 @@ export const shadDialogConfig = {
       slotName: 'footer',
       layout: {
         top: 16,
-        left: 34,
+        left: 35,
+        width: 7,
         height: 36,
       },
       displayName: 'DialogConfirm',
