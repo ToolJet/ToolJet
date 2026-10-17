@@ -8,6 +8,7 @@ import {
   useAutoHeight,
   useExposed,
   useLatest,
+  useStable,
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -35,9 +36,16 @@ export const ShadOtpInput = (props: WidgetProps) => {
   const { properties, setExposedVariables, fireEvent } = props;
   const length = M.otpLength(properties.length);
   const characters = properties.characters === 'alphanumeric' ? 'alphanumeric' : 'numeric';
-  const initial = M.otpSanitize(properties.defaultValue, length, characters);
-  const [value, setValue] = useState(initial);
-  useEffect(() => setValue(initial), [initial]);
+  // A new default starts the code again; a new length or kind of character keeps what the user typed, with the
+  // characters that no longer fit dropped (AB1234 in a digits-only box is 1234, not complete).
+  const defaultCode = useStable(properties.defaultValue);
+  const kind = useLatest({ length, characters });
+  const [value, setValue] = useState(() => M.otpSanitize(defaultCode, length, characters));
+  useEffect(
+    () => setValue(M.otpSanitize(defaultCode, kind.current.length, kind.current.characters)),
+    [defaultCode, kind]
+  );
+  useEffect(() => setValue((v) => M.otpSanitize(v, length, characters)), [length, characters]);
   const code = value.slice(0, length);
   const isComplete = code.length === length;
   const inputRef = useRef<HTMLInputElement>(null);

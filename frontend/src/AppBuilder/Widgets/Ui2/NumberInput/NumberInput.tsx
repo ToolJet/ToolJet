@@ -25,7 +25,13 @@ export const ShadNumberInput = (props: WidgetProps) => {
   const decimals = M.clampInt(properties.decimalPlaces, 0, 10, 2);
   const round = (n: unknown) => M.roundTo(n, decimals);
   const initial = round(M.parseNumber(properties.defaultValue));
-  const box = useNumberBox(props, { initial, round, parse: (v) => M.parseNumber(v) });
+  const box = useNumberBox(props, {
+    initial,
+    round,
+    parse: (v) => M.parseNumber(v),
+    seed: properties.defaultValue,
+    precision: decimals,
+  });
   const { value, draft, setDraft } = box;
   const latest = useLatest({ round });
   useExposed(setExposedVariables, properties, {

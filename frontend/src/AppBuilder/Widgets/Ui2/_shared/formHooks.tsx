@@ -18,18 +18,24 @@ export type ValueProps = Pick<WidgetProps, 'properties' | 'setExposedVariable' |
 export type ChangeValue<T> = (value: T, event?: string) => void;
 
 /** A single-value input: local state seeded from defaultValue, published as `value` (through `toExposed`, for
- *  controls that key options by string), plus actions built from the setter. */
+ *  controls that key options by string), plus actions built from the setter. Returns the value, `change` (as the user
+ *  sets it, with its event) and `set` (no event: for fitting the value to a new configuration). */
 export const useValue = <T,>(
   props: ValueProps,
   initial: T,
   actions: (set: Dispatch<SetStateAction<T>>) => Exposed = () => ({}),
-  toExposed: (value: T) => unknown = (v) => v
-): [T, ChangeValue<T>] => {
+  toExposed: (value: T) => unknown = (v) => v,
+  /** What starts the value again when it changes (by content): the default as authored. Defaults to `initial`; a
+   *  widget whose start value also depends on its configuration (a Rating's maximum) passes the bare default, so a
+   *  configuration change keeps what the user set (the widget fits it with `set`). */
+  seedKey: unknown = initial
+): [T, ChangeValue<T>, Dispatch<SetStateAction<T>>] => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   const [value, setValue] = useState(initial);
   // A new default (by content) resets the value, as the native inputs do.
-  const seed = useStable(initial);
-  useEffect(() => setValue(seed), [seed]);
+  const seed = useStable(seedKey);
+  const start = useLatest(initial);
+  useEffect(() => setValue(start.current), [seed, start]);
   useExposed(setExposedVariables, properties, { value: toExposed(value) ?? '', ...actions(setValue) });
   const change: ChangeValue<T> = (v, event = 'onChange') =>
     runNow(() => {
@@ -37,7 +43,7 @@ export const useValue = <T,>(
       setExposedVariable('value', toExposed(v) ?? '');
       fireEvent(event);
     });
-  return [value, change];
+  return [value, change, setValue];
 };
 
 /** Runs `clear` when a Form around the control clears (clearForm), for every value control, validating or not, as the

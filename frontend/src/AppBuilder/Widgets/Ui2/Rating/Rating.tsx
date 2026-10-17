@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Circle, Heart, Star } from 'lucide-react';
 import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
@@ -36,12 +36,23 @@ export const ShadRating = (props: WidgetProps) => {
   const initial = M.normalizeRating(properties.defaultValue, max, half);
   const limits = useRef({ max, half, initial });
   limits.current = { max, half, initial };
-  const [stored, change] = useValue(props, initial, (set) => ({
-    setValue: async (v: unknown) => set(M.normalizeRating(v, limits.current.max, limits.current.half)),
-    clear: async () => set(0),
-    // The native Star rating's resetValue(): back to the default.
-    resetValue: async () => set(limits.current.initial),
-  }));
+  const [stored, change, set] = useValue(
+    props,
+    initial,
+    (setStored) => ({
+      setValue: async (v: unknown) => setStored(M.normalizeRating(v, limits.current.max, limits.current.half)),
+      clear: async () => setStored(0),
+      // The native Star rating's resetValue(): back to the default.
+      resetValue: async () => setStored(limits.current.initial),
+    }),
+    undefined,
+    properties.defaultValue
+  );
+  // A smaller maximum (or whole stars only) fits the rating the user gave, so what is exposed is what is drawn.
+  useEffect(() => {
+    const fitted = M.normalizeRating(stored, max, half);
+    if (fitted !== stored) set(fitted);
+  }, [stored, max, half, set]);
   useExposed(props.setExposedVariables, properties, { label: String(properties.label ?? '') });
   const value = Math.min(Number(stored) || 0, max);
   // No stars is no rating, though 0 is a number.
