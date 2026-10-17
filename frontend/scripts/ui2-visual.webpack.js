@@ -13,6 +13,15 @@ module.exports = {
   mode: 'development',
   devtool: false,
   entry: path.resolve(__dirname, '../src/AppBuilder/Widgets/Ui2/__tests__/visual/gallery.jsx'),
+  // The data source plugins are a sibling package CI does not build for the frontend; no widget needs them, so the
+  // gallery takes the stand-in the jest config uses.
+  resolve: {
+    ...base.resolve,
+    alias: {
+      ...base.resolve.alias,
+      '@tooljet/plugins/client$': path.resolve(__dirname, '../src/test/mocks/tooljetPluginsClient.js'),
+    },
+  },
   output: { ...base.output, path: path.resolve(__dirname, '../build/ui2-visual'), publicPath: '/' },
   optimization: { ...base.optimization, minimize: false, realContentHash: false },
   // Next to the output, not in node_modules/.cache (about 1 GB; node_modules may be shared between checkouts).
