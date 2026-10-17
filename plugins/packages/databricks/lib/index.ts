@@ -8,6 +8,7 @@ import {
   ConnectionTestResult,
   getCurrentToken,
   createQueryBuilder,
+  validateUrlForSSRF,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { DBSQLClient } from '@databricks/sql';
@@ -102,6 +103,10 @@ export default class Databricks implements QueryService {
     const redirectUri = `${fullUrl}oauth2/authorize`;
     const tokenUrl = `https://${workspaceHost}/oidc/v1/token`;
 
+    // SSRF Protection: workspaceHost is data-source config, same shape as
+    // access_token_url elsewhere — validate before sending client_id/client_secret.
+    await validateUrlForSSRF(tokenUrl);
+
     const data = {
       client_id: clientId,
       client_secret: clientSecret,
@@ -184,6 +189,9 @@ export default class Databricks implements QueryService {
     const clientId = sourceOptions['client_id'];
     const clientSecret = sourceOptions['client_secret'];
     const tokenUrl = `https://${workspaceHost}/oidc/v1/token`;
+
+    // SSRF Protection: same token-refresh sink as the code exchange above.
+    await validateUrlForSSRF(tokenUrl);
 
     const data = {
       client_id: clientId,
@@ -316,6 +324,10 @@ export default class Databricks implements QueryService {
       socketTimeout: 60 * 1000,
     };
 
+    // SSRF Protection: DBSQLClient opens its own Thrift/HTTP connection to this
+    // host with no filtering of its own.
+    await validateUrlForSSRF(`https://${credentials.host}`);
+
     try {
       const client = new DBSQLClient();
       await client.connect(credentials);
@@ -445,6 +457,10 @@ export default class Databricks implements QueryService {
 
     const warehouseId = this.extractWarehouseId(httpPath);
     const host = sourceOptions.host;
+
+    // SSRF Protection: validate before this host is used for the statements
+    // request below, and reused for the poll requests in pollStatementResult().
+    await validateUrlForSSRF(`https://${host}`);
 
     const sqlText = queryOptions.query || queryOptions.sql_query;
     const finalSql = this.isSqlParametersUsed(queryOptions)
@@ -1145,6 +1161,9 @@ export default class Databricks implements QueryService {
 
       const warehouseId = this.extractWarehouseId(httpPath);
       const host = sourceOptions.host;
+
+      // SSRF Protection: same host validation as the single-auth path above.
+      await validateUrlForSSRF(`https://${host}`);
 
       const response = await got(`https://${host}/api/2.0/sql/statements`, {
         method: 'POST',

@@ -1,4 +1,5 @@
 import { SourceOptions, QueryOptions, GrpcService, GrpcMethod, GrpcClient, GrpcOperationError, toError, isRecord } from './types';
+import { validateUrlForSSRF } from '@tooljet-plugins/common';
 import got from 'got';
 import { GrpcReflection, serviceHelper, ServiceHelperOptionsType } from 'grpc-js-reflection-client';
 import type { ListMethodsType } from 'grpc-js-reflection-client/dist/Types/ListMethodsType';
@@ -581,6 +582,9 @@ export const extractMethodsFromService = (
 };
 
 export const loadProtoFromRemoteUrl = async (url: string): Promise<protoLoader.PackageDefinition> => {
+  // SSRF Protection: Validate URL before fetching the proto file.
+  await validateUrlForSSRF(url);
+
   try {
     const response = await got(url, {
       timeout: {

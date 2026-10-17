@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, ConnectionTestResult, validateUrlForSSRF } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import nodemailer, { Transporter } from 'nodemailer';
 import type { Attachment } from 'nodemailer/lib/mailer';
@@ -66,6 +66,12 @@ export default class Smtp implements QueryService {
   async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<Transporter> {
     const { host, user, password } = sourceOptions;
     const port = Number(sourceOptions.port);
+
+    // SSRF Protection: this opens a real socket to an arbitrary internal host/port
+    // via the SMTP protocol. Not an HTTP request, so we validate the host through
+    // the same IP/hostname checks as any other sink (scheme is irrelevant here).
+    // Covers both run() and testConnection(), which both go through this method.
+    await validateUrlForSSRF(`https://${host}:${port}`);
 
     const transport: Transporter = nodemailer.createTransport({
       port,
