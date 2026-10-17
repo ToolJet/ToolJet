@@ -111,7 +111,7 @@ const UI2_RENAMES: Record<string, Ui2Renames> = {
 
 /** The renames for one widget type (its own plus the common ones), or null for a type that is not a UI 2.0 widget. */
 const renamesFor = (type: string): Required<Ui2Renames> | null => {
-  if (!type || !type.startsWith('Shad')) return null;
+  if (typeof type !== 'string' || !type.startsWith('Shad')) return null;
   const own = UI2_RENAMES[type] ?? {};
   return {
     events: { ...own.events },
@@ -163,7 +163,8 @@ const buildRenamesByComponentRef = (
     idsByName.set(component.name, ids);
   }
 
-  const byRef: Ui2RenamesByComponentRef = {};
+  // No prototype: a reference to `components.constructor` (or a component named `__proto__`) is just a key.
+  const byRef: Ui2RenamesByComponentRef = Object.create(null);
   for (const component of components) {
     const renames = renamesFor(component?.type);
     if (!renames) continue;
@@ -207,7 +208,11 @@ const rewriteReferences = (text: string, renamesByComponentName: Ui2RenamesByCom
   let match: RegExpExecArray | null;
   while ((match = re.exec(text)) !== null) {
     const [whole, dotRef, , bracketRef, member, dotPrefix, dotKey, bracketPrefix, quote, bracketKey] = match;
-    const renames = renamesByComponentName[dotRef ?? bracketRef];
+    const ref = dotRef ?? bracketRef;
+    // Own keys only: plain text naming `components.constructor.name` must not reach Object.prototype.
+    const renames = Object.prototype.hasOwnProperty.call(renamesByComponentName, ref)
+      ? renamesByComponentName[ref]
+      : undefined;
     const key = dotKey ?? bracketKey;
     if (!renames || !key) continue;
 
@@ -309,11 +314,19 @@ type ComponentRow = {
   general_properties: any;
   styles: any;
   general_styles: any;
+  display_preferences: any;
   validation: any;
 };
 type EventRow = { id: string; name: string; event: any; source_id: string };
 
-const JSON_COLUMNS = ['properties', 'general_properties', 'styles', 'general_styles', 'validation'] as const;
+const JSON_COLUMNS = [
+  'properties',
+  'general_properties',
+  'styles',
+  'general_styles',
+  'display_preferences',
+  'validation',
+] as const;
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const BATCH_SIZE = 100;
 
@@ -325,8 +338,8 @@ export class RenameUi2PackNames1792158590141 implements MigrationInterface {
    * with a Shad* component this rewrites, in place:
    *  - event handlers: a Shad* source's event id (and the handler name when it was that id); a control-component
    *    action on a Shad* target, from any source;
-   *  - references in every string of event JSON, component properties/general/styles/general styles/validation and
-   *    data query options: `components.<id or name>.<old exposed>` and `components.<id or name>.<old action>(`. The
+   *  - references in every string of event JSON, component properties/general/styles/general styles/display
+   *    preferences/validation and data query options: `components.<id or name>.<old exposed>` and `components.<id or name>.<old action>(`. The
    *    editor stores `{{ }}` bindings by component id; RunJS code and older apps use the name, which is rewritten only
    *    when exactly one component in the version has it;
    *  - Shad* property keys, only where the new key is absent.
@@ -406,7 +419,7 @@ export class RenameUi2PackNames1792158590141 implements MigrationInterface {
     let changed = false;
     const components: ComponentRow[] = await queryRunner.query(
       `SELECT c.id, c.name, c.type, c.page_id, c.properties, c.general_properties, c.styles, c.general_styles,
-              c.validation
+              c.display_preferences, c.validation
          FROM components c JOIN pages p ON p.id = c.page_id
         WHERE p.app_version_id = $1`,
       [versionId]
