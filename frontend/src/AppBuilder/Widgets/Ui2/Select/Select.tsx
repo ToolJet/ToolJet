@@ -44,7 +44,7 @@ export const ShadSelect = (props: WidgetProps) => {
       const option = byKey.get(optionKey(wanted));
       if (!option || option.disabled) return;
       setKey(optionKey(wanted));
-      fireEvent('onSelect');
+      fireEvent('onPick');
     },
     clear: async () => setKey(''),
     setFocus: async () => triggerRef.current?.focus(),
@@ -74,7 +74,7 @@ export const ShadSelect = (props: WidgetProps) => {
           setKey(next);
           setExposedVariable('value', byKey.get(next)?.value ?? '');
           setExposedVariable('selectedOption', byKey.get(next) || {});
-          fireEvent('onSelect');
+          fireEvent('onPick');
         }}
       >
         <SelectTrigger
