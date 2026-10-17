@@ -19,6 +19,9 @@ import { isStringOrNumber } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const PLACEHOLDER = 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]';
 export const MUTED = 'tw-text-[color:var(--sc-muted-foreground)]';
+// An option's secondary text (a description, a dialling code) is muted, except on the highlighted row, where muted
+// text on the highlight read at 4.4:1 (4.05:1 dark): there it takes the row's colour. Mark the text data-secondary.
+export const SECONDARY_ON_HIGHLIGHT = '[&[data-selected=true]_[data-secondary]]:tw-text-inherit';
 export const MENU_SURFACE =
   'tw-bg-[color:var(--lk-menu-bg,var(--sc-popover))] tw-text-[color:var(--lk-menu-fg,var(--sc-popover-foreground))]';
 const CHIP =
@@ -102,6 +105,7 @@ export const CommandItem = React.forwardRef<
     ref={ref}
     className={cn(
       'tw-relative tw-flex tw-cursor-default tw-select-none tw-items-center tw-gap-2 tw-rounded-ui2-sm tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-outline-none data-[disabled=true]:tw-pointer-events-none data-[disabled=true]:tw-opacity-50 data-[selected=true]:tw-bg-[color:var(--lk-hl,var(--sc-accent))] data-[selected=true]:tw-text-[color:var(--lk-menu-fg,var(--sc-accent-foreground))]',
+      SECONDARY_ON_HIGHLIGHT,
       className
     )}
     {...props}
@@ -129,7 +133,9 @@ const OptionText = ({ option }: { option: Option }) => (
   <span className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col">
     <span className="tw-truncate">{option.label}</span>
     {isStringOrNumber(option.description) && String(option.description) ? (
-      <span className={cn('tw-truncate tw-text-xs', MUTED)}>{String(option.description)}</span>
+      <span data-secondary className={cn('tw-truncate tw-text-xs', MUTED)}>
+        {String(option.description)}
+      </span>
     ) : null}
   </span>
 );

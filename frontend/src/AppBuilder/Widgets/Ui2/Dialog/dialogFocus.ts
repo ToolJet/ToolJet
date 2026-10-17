@@ -59,8 +59,12 @@ export const trapTab = (event: KeyboardEvent, root: Element | null | undefined):
 let lastOutside: Focusable | null = null;
 let listening = false;
 const remember = (e: Event) => {
-  const el = e.target instanceof Element ? e.target.closest(FOCUSABLE) || e.target : null;
-  if (el && !el.closest('.modal, [data-radix-popper-content-wrapper]')) lastOutside = el;
+  const target = e.target instanceof Element ? e.target : null;
+  if (!target || target.closest('.modal, [data-radix-popper-content-wrapper]')) return;
+  // Focus landing on something Tab does not reach (Safari focuses a pressed button's tabindex="-1" container, not the
+  // button) is not an opener; a press on anything is.
+  const el = target.closest(FOCUSABLE) || (e.type === 'pointerdown' ? target : null);
+  if (el) lastOutside = el;
 };
 export const watchOpeners = () => {
   if (listening || typeof document === 'undefined') return;

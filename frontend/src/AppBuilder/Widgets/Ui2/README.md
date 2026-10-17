@@ -77,6 +77,19 @@ These run with the frontend jest suite (`npx jest --maxWorkers=2 src/AppBuilder/
 - `_stores/__tests__/integration/everyWidgetEventDispatches.spec.js`: every config event is on the dispatcher's list.
 - `codeRules.spec.js`: prefixed classes only, no `!important` beyond the documented one, no reading of the canvas's
   DOM, no `exhaustive-deps` suppressions.
+- `__tests__/integration/renderCounts.spec.jsx`: on a page of every widget, typing in one input re-renders only it,
+  typing in a native input re-renders no UI 2.0 widget, and new query data re-renders only the widgets bound to it
+  (React Profiler commit counts).
+- `__tests__/integration/scale.spec.jsx`: a 10k-row Table, 500-card Kanban, 1,000-row List view and 5,000-point charts
+  draw a bounded number of DOM nodes, and big charts do not animate (the Map's 2,000 points: `[ShadMap-PROP-004]`).
+- `__tests__/integration/accessibility.spec.jsx`: axe-core (jest-axe) over every widget's defaults, disabled and error
+  states and open overlays, and each overlay's keyboard path (open, focus, Escape, focus back; Tab kept in the Dialog).
+- `__tests__/integration/hostileData.spec.jsx`: HTML, quote breakouts, script URLs and markdown through every text,
+  URL and data field from a query; nothing may run or reach the DOM unsanitised. Bound URLs go through `safeUrl` or
+  `safeImageUrl` (`_shared/values.ts`), HTML through DOMPurify or rehype-sanitize.
+- `npm run test:ui2-browsers` and `npm run test:ui2-phone` (not in the default run): Chromium, WebKit and Firefox on a
+  running ToolJet's gallery app of every widget (axe with colour contrast in light and dark, every overlay, the Map),
+  and phones at 375 and 414 px (overflow, cut-off text, touch targets). Setup is in `scripts/ui2-browsers.js`.
 - `npm run test:ui2-fuzz` (not in the default run): every widget with junk bindings, mounted and re-rendered.
 - `npm run test:ui2-leaks` (not in the default run, about 1.5 minutes): every widget mounted and unmounted 50 times
   with its defaults (overlays opened first), leaving no window or document listener, observer, timer, store
