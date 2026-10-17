@@ -67,7 +67,6 @@ export default function ConsentPage() {
       });
       if (!active) return;
       if (session.status === 401) {
-        setNeedsLogin(true);
         const key = `tj_mcp_login_${id}`;
         // Storage can be blocked by browser privacy settings. A manual sign-in
         // link still works, while avoiding an automatic login loop.
@@ -75,10 +74,12 @@ export default function ConsentPage() {
           if (!sessionStorage.getItem(key)) {
             sessionStorage.setItem(key, '1');
             window.location.assign(info.loginUrl);
+            return;
           }
         } catch {
           // Keep the explicit sign-in link available.
         }
+        setNeedsLogin(true);
         return;
       }
       if (session.status === 403)
@@ -130,18 +131,26 @@ export default function ConsentPage() {
     }
   };
 
+  // Keep consent hidden during the session check and while leaving for login.
+  if (!email && !error && !needsLogin) {
+    return (
+      <main className="mcp-oauth-page">
+        <p role="status">Connecting to ToolJet…</p>
+      </main>
+    );
+  }
+
   return (
     <main className="mcp-oauth-page">
       <section className="mcp-oauth-card" aria-labelledby="mcp-oauth-title">
         <p className="mcp-oauth-brand">ToolJet</p>
-        <h1 id="mcp-oauth-title">Authorize an AI client</h1>
+        <h1 id="mcp-oauth-title">{email ? 'Authorize an AI client' : 'Connect to ToolJet'}</h1>
         {error && (
           <p role="alert" className="mcp-oauth-error">
             {error}
           </p>
         )}
-        {!flow && !error && <p role="status">Loading connection request…</p>}
-        {flow && (
+        {flow && email && (
           <>
             <p>
               <strong>{flow.clientName}</strong> is requesting access to <strong>{flow.organizationName}</strong>.
@@ -162,28 +171,23 @@ export default function ConsentPage() {
               The client can perform the actions listed above, including changes and deletions, only within your current
               permissions in this workspace. You can disconnect it in Profile settings.
             </p>
-            {email ? (
-              <>
-                <p>
-                  Signed in as <strong>{email}</strong>
-                </p>
-                <div className="mcp-oauth-actions">
-                  <button disabled={busy} onClick={() => decide(false)}>
-                    Cancel
-                  </button>
-                  <button className="mcp-oauth-primary" disabled={busy} onClick={() => decide(true)}>
-                    {busy ? 'Please wait…' : 'Allow access'}
-                  </button>
-                </div>
-              </>
-            ) : needsLogin ? (
-              <a className="mcp-oauth-signin" href={flow.loginUrl}>
-                Sign in to this workspace
-              </a>
-            ) : !error ? (
-              <p role="status">Verifying workspace access…</p>
-            ) : null}
+            <p>
+              Signed in as <strong>{email}</strong>
+            </p>
+            <div className="mcp-oauth-actions">
+              <button disabled={busy} onClick={() => decide(false)}>
+                Cancel
+              </button>
+              <button className="mcp-oauth-primary" disabled={busy} onClick={() => decide(true)}>
+                {busy ? 'Please wait…' : 'Allow access'}
+              </button>
+            </div>
           </>
+        )}
+        {flow && needsLogin && (
+          <a className="mcp-oauth-signin" href={flow.loginUrl}>
+            Sign in to this workspace
+          </a>
         )}
       </section>
     </main>

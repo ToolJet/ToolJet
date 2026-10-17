@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ConsentPage from '../ConsentPage';
 import config from 'config';
 
@@ -22,6 +22,54 @@ beforeEach(() => {
 });
 afterEach(() => {
   global.fetch = originalFetch;
+  jest.restoreAllMocks();
+});
+test('keeps consent hidden until the workspace session has been verified', async () => {
+  let resolveSession;
+  const session = new Promise((resolve) => {
+    resolveSession = resolve;
+  });
+  global.fetch.mockImplementationOnce(() => result(flow)).mockImplementationOnce(() => session);
+  render(<ConsentPage />);
+  expect(screen.queryByRole('heading', { name: 'Authorize an AI client' })).not.toBeInTheDocument();
+  await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
+  expect(screen.getByRole('status')).toHaveTextContent('Connecting to ToolJet');
+  expect(screen.queryByText(flow.clientName)).not.toBeInTheDocument();
+  expect(screen.queryByText(flow.redirectUri)).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
+
+  await act(async () => {
+    resolveSession(await result({ email: 'builder@synthetic.example' }));
+  });
+  expect(screen.getByRole('heading', { name: 'Authorize an AI client' })).toBeInTheDocument();
+  expect(screen.getByText(flow.clientName)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Allow access' })).toBeEnabled();
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+});
+test('redirects a signed-out browser without displaying the authorization screen', async () => {
+  // A same-document destination lets jsdom observe navigation without replacing the test page.
+  const loginUrl = `${window.location.href}#workspace-login`;
+  global.fetch
+    .mockImplementationOnce(() => result({ ...flow, loginUrl }))
+    .mockImplementationOnce(() => result({}, 401));
+  render(<ConsentPage />);
+  await waitFor(() => expect(window.location.hash).toBe('#workspace-login'));
+  expect(sessionStorage.getItem(`tj_mcp_login_${requestId}`)).toBe('1');
+  expect(screen.getByRole('status')).toHaveTextContent('Connecting to ToolJet');
+  expect(screen.queryByRole('heading', { name: 'Authorize an AI client' })).not.toBeInTheDocument();
+  expect(screen.queryByText(flow.clientName)).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
+});
+test('offers manual sign-in without consent details when browser storage is unavailable', async () => {
+  jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new Error('Storage unavailable');
+  });
+  global.fetch.mockImplementationOnce(() => result(flow)).mockImplementationOnce(() => result({}, 401));
+  render(<ConsentPage />);
+  expect(await screen.findByRole('link', { name: 'Sign in to this workspace' })).toHaveAttribute('href', flow.loginUrl);
+  expect(screen.queryByRole('heading', { name: 'Authorize an AI client' })).not.toBeInTheDocument();
+  expect(screen.queryByText(flow.clientName)).not.toBeInTheDocument();
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
 });
 test('scrubs and exchanges a custom-domain bootstrap before loading consent', async () => {
   window.history.replaceState({}, '', `/mcp/consent?request=${requestId}#bootstrap=${'B'.repeat(43)}`);
@@ -84,6 +132,8 @@ test('offers the correct workspace login after an unsuccessful login attempt', a
   });
   await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
   expect(link).toHaveAttribute('href', flow.loginUrl);
+  expect(screen.queryByRole('heading', { name: 'Authorize an AI client' })).not.toBeInTheDocument();
+  expect(screen.queryByText(flow.clientName)).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
 });
 test('an expired connection cannot be approved', async () => {
@@ -104,6 +154,8 @@ test('does not present approval when the authenticated user lacks workspace acce
   global.fetch.mockImplementationOnce(() => result(flow)).mockImplementationOnce(() => result({}, 403));
   render(<ConsentPage />);
   expect(await screen.findByRole('alert')).toHaveTextContent('do not have access');
+  expect(screen.queryByRole('heading', { name: 'Authorize an AI client' })).not.toBeInTheDocument();
+  expect(screen.queryByText(flow.clientName)).not.toBeInTheDocument();
   expect(screen.queryByRole('button')).not.toBeInTheDocument();
 });
 test('invalid interaction IDs never request or approve a connection', async () => {
