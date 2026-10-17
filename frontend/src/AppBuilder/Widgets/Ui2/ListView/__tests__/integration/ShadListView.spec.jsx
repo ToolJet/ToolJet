@@ -10,7 +10,7 @@
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
-import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
 
 const ID = 'lv1';
@@ -184,6 +184,32 @@ describe('UI 2.0 List view', () => {
     await waitFor(() => expect(names()).toEqual(['Alan', 'Ada']));
     expect(items()[1]).toHaveClass('tw-ring-1');
     expect(items()[0]).not.toHaveClass('tw-ring-1');
+  });
+
+  // Review: the highlight followed the record key, but selectedItem kept the old record after a refresh (.data had
+  // the new name, .selectedItem the old one). The selection is kept by key with the fresh record, at its new place,
+  // and cleared when the key is gone; none of this fires an event.
+  test('[ShadListView-PROP-011] a data refresh updates the selected item, follows it when reordered and clears it when removed', async () => {
+    render({ properties: people() });
+    widget.setEvents(countInvocationsOn(ID, 'onRecordClicked', { key: 'clicks' }));
+    await waitFor(() => expect(names()).toHaveLength(3));
+    fireEvent.click(screen.getByText('Grace'));
+    await waitFor(() => expect(exposed().selectedItem).toEqual({ key: 'b', name: 'Grace' }));
+
+    const setData = (d) => widget.setComponentProperty(ID, 'data', d, 'properties');
+    setData("{{[{ key: 'a', name: 'Ada' }, { key: 'b', name: 'Grace Hopper' }, { key: 'c', name: 'Alan' }]}}");
+    await waitFor(() => expect(exposed().selectedItem).toEqual({ key: 'b', name: 'Grace Hopper' }));
+    expect(exposed()).toMatchObject({ selectedItemId: 'b', selectedRecordId: 1 });
+
+    setData("{{[{ key: 'b', name: 'Grace Hopper' }, { key: 'a', name: 'Ada' }]}}");
+    await waitFor(() => expect(exposed().selectedRecordId).toBe(0));
+    expect(exposed()).toMatchObject({ selectedItem: { key: 'b', name: 'Grace Hopper' }, selectedItemId: 'b' });
+
+    setData("{{[{ key: 'a', name: 'Ada' }]}}");
+    await waitFor(() => expect(exposed().selectedItemId).toBeNull());
+    expect(exposed()).toMatchObject({ selectedItem: {}, selectedRecord: {}, selectedRecordId: null });
+    expect(items()[0]).not.toHaveClass('tw-ring-1');
+    expect(widget.variables().clicks).toBe(1);
   });
 
   test('[ShadListView-PROP-006] enablePagination with rowsPerPage pages the rows; Next fires onPageChanged with pageIndex set', async () => {

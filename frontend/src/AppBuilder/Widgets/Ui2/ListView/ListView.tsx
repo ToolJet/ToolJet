@@ -17,6 +17,7 @@ import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicH
 import { fitsContentInView, listRowHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
+import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 type ListMode = 'list' | 'grid';
 
@@ -250,6 +251,31 @@ export const ShadListView = (props: WidgetProps) => {
       selectedRecordId: null,
     });
   };
+
+  // A data change (an edit, a removal, a reorder) re-publishes the selection from the fresh record, at its new row, and
+  // clears it when the item is gone; no event fires (README, "Selection after a data change"). Keyed by idField when
+  // the items have one, else by position on the page. Runs for data changes only, not for a page turn.
+  const reconcile = useLatest(() => {
+    if (selectedKey === null) return;
+    const all = list(data);
+    const shownAt = keys.indexOf(selectedKey);
+    const at = all.findIndex((item, index) => itemKey(item, idField, index) === selectedKey);
+    const item = shownAt >= 0 ? items[shownAt] : at >= 0 ? all[at] : undefined;
+    if (item === undefined) {
+      clearSelection();
+      return;
+    }
+    const state = useStore.getState();
+    let exposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
+    for (const outer of parentIndices) exposed = Array.isArray(exposed) ? exposed?.[outer] : exposed;
+    live.current.setExposedVariables({
+      selectedItem: item,
+      selectedItemId: item && typeof item === 'object' ? (item as Resolved)[idField] ?? null : null,
+      selectedRecord: shownAt >= 0 ? exposed?.children?.[shownAt] ?? {} : {},
+      selectedRecordId: shownAt >= 0 ? shownAt : null,
+    });
+  });
+  useEffect(() => reconcile.current(), [data, reconcile]);
 
   const goTo = pageGoTo(setPage, setExposedVariable, fireEvent);
 
