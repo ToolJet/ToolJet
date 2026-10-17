@@ -7,8 +7,8 @@
  * answers where a scenario searches. Standard control behaviour (visibility, disabled, loading, tooltip) is covered for
  * every UI 2.0 widget in Ui2/__tests__/controlState.spec.jsx. Titles carry [ShadMap-<AREA>-<NNN>] scenario ids.
  */
-import React from 'react';
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
+import React from 'react';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
 import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
