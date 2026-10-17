@@ -11,6 +11,7 @@ import { MENU_SURFACE, PLACEHOLDER } from '@/AppBuilder/Widgets/Ui2/_pickers/pic
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import type { Hsv } from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Color picker --------------------------------------------------------------------------------------------------
 
@@ -301,7 +302,7 @@ export const ShadColorPicker = (props: WidgetProps) => {
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onBlur={applyDraft}
-                onKeyDown={(e) => e.key === 'Enter' && applyDraft()}
+                onKeyDown={(e) => isEnter(e) && applyDraft()}
                 className="tw-h-8 tw-border-[color:var(--sc-input)] tw-font-mono tw-text-xs tw-uppercase"
               />
               {canEyeDrop ? (

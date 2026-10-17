@@ -17,6 +17,7 @@ import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 import { Chip, ClearButton, MENU_SURFACE } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isComposing } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Tags input ----------------------------------------------------------------------------------------------------
 
@@ -125,6 +126,8 @@ export const ShadTagsInput = (props: WidgetProps) => {
     setActive(-1);
   };
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // Keys that belong to an IME composition (the Enter that confirms it) are the input method's, not the field's.
+    if (isComposing(e)) return;
     if (e.key === 'Enter') {
       e.preventDefault();
       if (menuOpen && active >= 0 && visible[active]) {

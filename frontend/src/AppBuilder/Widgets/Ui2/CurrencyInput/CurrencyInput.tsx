@@ -24,6 +24,7 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Currency input ------------------------------------------------------------------------------------------------
 
@@ -153,7 +154,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
           value={shown}
           placeholder={toText(properties.placeholder)}
           disabled={disabled}
-          onKeyDown={(e) => e.key === 'Enter' && fireEvent('onEnterPressed')}
+          onKeyDown={(e) => isEnter(e) && fireEvent('onEnterPressed')}
         />
         {showSign && sign.after ? <span className={cn(AFFIX, 'tw-pr-3')}>{sign.sign}</span> : null}
       </Group>

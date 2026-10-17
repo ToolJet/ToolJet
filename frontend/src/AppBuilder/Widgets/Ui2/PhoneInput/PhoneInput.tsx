@@ -23,6 +23,7 @@ import type { Country } from 'react-phone-number-input';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { SECONDARY_ON_HIGHLIGHT } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 export const BareInput = React.forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>((props, ref) => (
   <input ref={ref} {...props} />
@@ -254,7 +255,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
           onFocus={textBox.onFocus}
           onBlur={textBox.onBlur}
           onChange={(v) => update({ ...stateRef.current, value: v || '' })}
-          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && fireEvent('onEnterPressed')}
+          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => isEnter(e) && fireEvent('onEnterPressed')}
         />
       </Group>
     </FormField>
