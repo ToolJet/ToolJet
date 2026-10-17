@@ -54,6 +54,17 @@
   scrollbar-color: var(--sc-border) transparent;
 }
 
+// Status colours as small text (a Badge's success, warning and destructive tones on their 10% tint, an Alert's text):
+// mixed half toward the theme's text colour, so they darken on light themes and lighten on dark ones. Every shipped
+// theme then reads at 4.5:1 or more (the lowest is 4.76, Navy dark error); drawn as they are, they read at 3.1:1 on
+// dark cards. Fills, pins and charts keep the status colours (statusInk.spec checks the themes).
+.tj-shadcn,
+.tj-shad-tokens {
+  --sc-success-ink: color-mix(in srgb, var(--sc-success) 50%, var(--sc-foreground));
+  --sc-warning-ink: color-mix(in srgb, var(--sc-warning) 50%, var(--sc-foreground));
+  --sc-destructive-ink: color-mix(in srgb, var(--sc-destructive) 50%, var(--sc-foreground));
+}
+
 // The primary as text (links, an eyebrow, an active tab): its lightness clamped so it reads on the background, light
 // or dark. A typical brand blue is left as it is; a bright green or gold brand gave links at 1.6:1 on white. Browsers
 // without relative colour syntax use the primary as it is.

@@ -44,8 +44,14 @@ module.exports = {
   },
   // Text in the primary colour uses its ink: the primary darkened (or, in a dark theme, lightened) just enough to read
   // on the background, so a light brand primary (a bright green, a gold) still gives readable links.
+  // Status colours as text use their inks the same way (shadcn.scss: half toward the text colour, 4.5:1 on a tint).
   textColor: {
-    ui2: { primary: { DEFAULT: token('primary-ink'), foreground: token('primary-foreground') } },
+    ui2: {
+      primary: { DEFAULT: token('primary-ink'), foreground: token('primary-foreground') },
+      success: { DEFAULT: token('success-ink'), foreground: token('success-foreground') },
+      warning: { DEFAULT: token('warning-ink'), foreground: token('warning-foreground') },
+      destructive: { DEFAULT: token('destructive-ink'), foreground: token('destructive-foreground') },
+    },
   },
   borderRadius: {
     'ui2-sm': 'calc(var(--sc-radius) - 4px)',
