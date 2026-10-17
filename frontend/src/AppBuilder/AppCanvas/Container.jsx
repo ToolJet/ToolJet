@@ -81,6 +81,15 @@ const Container = React.memo(
       shallow
     );
     const flexDirectionForFlex = isFlexContainer ? flexEffectiveDirection ?? flexDirection : flexDirection;
+    const flexAlignItems = useStore(
+      (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.alignItems : undefined),
+      shallow
+    );
+    // FlexContainer.jsx wraps a row unless flexWrap is false (the definition defaults it on).
+    const flexWraps = useStore(
+      (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.flexWrap !== false : true),
+      shallow
+    );
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
@@ -237,6 +246,9 @@ const Container = React.memo(
 
     const renderEmptyContainer = () => {
       if (components && components?.length !== 0) return;
+      // Only the page canvas and a module container ever show the empty state; every other empty container (a tab, a
+      // list row, a dialog body) mounted a hidden copy of it, AI build panel and modal included.
+      if (id !== 'canvas' && componentType !== 'ModuleContainer') return null;
 
       const styles = {
         display: showEmptyContainer ? 'block' : 'none',
@@ -325,6 +337,8 @@ const Container = React.memo(
                 layoutMode="flex"
                 containerWidth={containerCanvasWidth}
                 flexDirection={flexDirectionForFlex}
+                flexAlignItems={flexAlignItems}
+                flexWraps={flexWraps}
                 flexShouldStack={flexShouldStack}
               />
             ))}

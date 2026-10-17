@@ -4,10 +4,14 @@ import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useShouldStackFlexRealCanvas } from './useFlexStackBelow';
+import { flexCardHeaderPx } from './flexContainer.utils';
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import Spinner from '@/_ui/Spinner';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import './flexContainer.scss';
 
 export const FlexContainer = ({
   id,
@@ -44,16 +48,38 @@ export const FlexContainer = ({
     direction = 'column',
     flexWrap = false,
     stackBelow = 'none',
+    cardStyle = 'none',
+    cardTitle = '',
+    cardExtra = '',
   } = properties;
+  // ToolJet UI 2.0: a card, with its header above the flex body. The body
+  // stays the same flex canvas, so nesting, child order and dynamic height are unchanged.
+  const isShadcnCard = cardStyle === 'shadcnCard';
+  const isCard = isShadcnCard;
+  const CARD_HEADER_PX = flexCardHeaderPx(properties);
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
   const shouldStack = useShouldStackFlexRealCanvas(stackBelow);
   const effectiveDirection = shouldStack ? 'column' : direction;
 
   const isRow = effectiveDirection === 'row';
-  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  // A card (component packs) always fits its content in the viewer: it never scrolls inside or leaves a band. A row
+  // is never a scroll area either: it grows to its tallest child (a fixed-height column may still scroll).
+  const isCardSurface = cardStyle === 'shadcnCard';
+  const isDynamicHeightEnabled =
+    fitsContentInView('FlexContainer', { ...properties, direction: effectiveDirection }) && currentMode === 'view';
 
   const childIds = useStore((state) => state.containerChildrenMapping?.[id] ?? [], shallow);
+
+  // Inside a row whose Align is Stretch, this container fills the line's height (its wrapper is stretched), so the
+  // cards of a row share one height. Its own content height stays its floor and still drives the reflow.
+  const { moduleId } = useModuleContext();
+  const isStretched = useStore((state) => {
+    const parentId = state.getComponentDefinition?.(id, moduleId)?.component?.parent;
+    if (!parentId) return false;
+    const parent = state.getResolvedComponent?.(parentId, null, moduleId);
+    return parent?.properties?.alignItems === 'stretch' && (parent?.properties?.direction ?? 'column') === 'row';
+  }, shallow);
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -98,13 +124,15 @@ export const FlexContainer = ({
 
   const outerStyles = {
     height: isDynamicHeightEnabled ? 'auto' : '100%',
-    ...(isDynamicHeightEnabled ? { minHeight: `${height}px` } : {}),
+    ...(isDynamicHeightEnabled && !isCardSurface ? { minHeight: `${height}px` } : {}),
+    ...(isDynamicHeightEnabled && isStretched ? { minHeight: isCardSurface ? '100%' : `max(100%, ${height}px)` } : {}),
     display: isVisible ? 'flex' : 'none',
-    flexDirection: effectiveDirection,
-    backgroundColor,
-    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
-    border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
-    boxShadow,
+    flexDirection: isCard ? 'column' : effectiveDirection,
+    backgroundColor: isCard ? 'var(--cc-surface1-surface)' : backgroundColor,
+    borderRadius: isShadcnCard ? 14 : borderRadius ? parseFloat(borderRadius) : 0,
+    border: isCard ? '1px solid var(--cc-weak-border)' : `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
+    boxShadow:
+      isShadcnCard && (!boxShadow || /^0px 0px 0px 0px/.test(boxShadow)) ? '0 1px 2px 0 rgb(0 0 0 / 0.05)' : boxShadow,
     overflow: 'hidden',
     position: 'relative',
   };
@@ -113,16 +141,66 @@ export const FlexContainer = ({
   const flexCanvasStyles = {
     display: 'flex',
     flexDirection: effectiveDirection,
-    flexWrap: shouldStack ? 'nowrap' : flexWrap ? 'wrap' : 'nowrap',
+    // Only a row wraps: a wrapping column starts a second column beside the first once its content outgrows its
+    // height (dynamic-height tables did), and a rooms page drew all its cards off the right edge.
+    flexWrap: shouldStack || !isRow ? 'nowrap' : flexWrap ? 'wrap' : 'nowrap',
     gap: `${gap ?? 8}px`,
     padding: `${padding ?? 12}px`,
     justifyContent: justifyContent ?? 'flex-start',
     alignItems: alignItems ?? 'flex-start',
     backgroundColor: 'transparent',
-    height: isDynamicHeightEnabled ? 'auto' : '100%',
+    height: isDynamicHeightEnabled ? 'auto' : CARD_HEADER_PX ? `calc(100% - ${CARD_HEADER_PX}px)` : '100%',
     ...(isDisabled && { opacity: 0.5, pointerEvents: 'none' }),
     ...overflowStyle,
   };
+  const shadcnHeader = isShadcnCard ? (
+    <div
+      style={{
+        height: CARD_HEADER_PX,
+        // The title lines up with the card's content: its side padding is the body's (a 24px title inset over a 12px
+        // body put the title and the table below it on different edges).
+        padding: `20px ${Math.max(8, Number(padding ?? 12) || 12)}px 0`,
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        flex: '0 0 auto',
+        overflow: 'hidden',
+      }}
+    >
+      <span
+        style={{
+          fontWeight: 600,
+          fontSize: 16,
+          lineHeight: 1,
+          color: 'var(--cc-primary-text)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+        }}
+      >
+        {String(cardTitle ?? '')}
+      </span>
+      {cardExtra ? (
+        // One line, as the header's height assumes: wrapping to two, a description pushed the title out of a KPI card.
+        <span
+          title={String(cardExtra)}
+          style={{
+            fontSize: 14,
+            lineHeight: '20px',
+            color: 'var(--cc-placeholder-text)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {String(cardExtra)}
+        </span>
+      ) : null}
+    </div>
+  ) : null;
+  const cardHeader = isShadcnCard && CARD_HEADER_PX ? shadcnHeader : null;
 
   return (
     <div
@@ -130,13 +208,14 @@ export const FlexContainer = ({
       style={outerStyles}
       className={`flex-container-widget ${isLoading ? 'jet-container-loading' : ''}`}
     >
+      {cardHeader}
       {isLoading ? (
         <Spinner />
       ) : (
         <ContainerCanvas
           id={id}
           styles={flexCanvasStyles}
-          canvasHeight={height}
+          canvasHeight={height - CARD_HEADER_PX}
           canvasWidth={width}
           darkMode={darkMode}
           componentType="FlexContainer"

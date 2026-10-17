@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { DROPPABLE_PARENTS, GRID_HEIGHT } from '../appCanvasConstants';
+import { DROPPABLE_PARENTS, GRID_HEIGHT, isTabsType } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
@@ -52,7 +52,7 @@ export const ConfigHandle = ({
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation, shallow);
   const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
   const currentTab = useStore(
-    (state) => componentType === 'Tabs' && state.getExposedValueOfComponent(id)?.currentTab,
+    (state) => isTabsType(componentType) && state.getExposedValueOfComponent(id)?.currentTab,
     shallow
   );
   const [hideDynamicHeightInfo, setHideDynamicHeightInfo] = useState(
@@ -63,6 +63,7 @@ export const ConfigHandle = ({
   // Flip handle above the widget only once there's a full 3 grid rows of space above it —
   // 1-2 rows isn't enough headroom in a child canvas (Tabs/Form/Modal etc.), handle ends up clipped.
   const position = widgetTop < GRID_HEIGHT * 3 ? 'bottom' : 'top';
+  const insideFlex = String(customClassName ?? '').includes('flex-child-config-handle');
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
@@ -219,7 +220,14 @@ export const ConfigHandle = ({
             ? '0px'
             : position === 'top'
             ? '-26px'
+            : insideFlex
+            ? 'auto'
             : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+        // In a flex container the handle anchors to the widget's bottom edge: placed from the height it hung 3px below
+        // it (the handle is 24px, not 20), and the flex canvas scrolled by that much under the pointer on hover.
+        ...(insideFlex && position !== 'top' && !(componentType === 'Modal' && isModalOpen)
+          ? { bottom: `${BUFFER_HEIGHT}px` }
+          : {}),
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',
@@ -231,7 +239,7 @@ export const ConfigHandle = ({
         if (isModal) {
           setSelectedComponentAsModal(id);
         }
-        if (componentType === 'Tabs') {
+        if (isTabsType(componentType)) {
           setFocusedParentId(`${id}-${currentTab}`);
         } else {
           if (DROPPABLE_PARENTS.has(componentType)) {
