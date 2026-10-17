@@ -329,6 +329,14 @@ const JSON_COLUMNS = [
 ] as const;
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const BATCH_SIZE = 100;
+// Undo/redo history (app_history.change_payload, jsonb) that names a UI 2.0 widget type or the removed Ant card. A
+// version whose history mentions either can restore pre-rename contracts, even when its current rows needed no rewrite
+// or the widget has since been deleted. Every component a delta touches appears with its type in the version's base
+// snapshot or in its create delta, so matching the type is enough to find the version.
+const HISTORY_PATTERNS = ['"(type|componentType)":\\s*"Shad', '"antCard"'];
+// No UI 2.0 widget type or Ant card existed before this date, so older history rows cannot name one. Bounds the
+// text scan to recent rows (app_history has no index that could narrow it).
+const HISTORY_SINCE = '2026-10-01';
 
 export class RenameUi2PackNames1792158590141 implements MigrationInterface {
   /**
@@ -345,10 +353,13 @@ export class RenameUi2PackNames1792158590141 implements MigrationInterface {
    *  - Shad* property keys, only where the new key is absent.
    * Separately, for every app: a FlexContainer drawn with the removed Ant Design card (`cardStyle: { value: 'antCard' }`)
    * becomes the shadcn card.
+   * Then undo/redo history is cleared for every version with a UI 2.0 widget or an Ant card, now or in its history.
    * Only rows that change are written, and every rewrite maps old names to names that are never old names of the same
    * type, so a second run changes nothing.
    */
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Versions whose undo/redo history is cleared at the end: every version with a UI 2.0 widget or an Ant card, now
+    // or in its history.
     const touchedVersionIds = new Set<string>();
 
     await this.migrateAntCards(queryRunner, touchedVersionIds);
@@ -377,15 +388,25 @@ export class RenameUi2PackNames1792158590141 implements MigrationInterface {
         );
         if (versions.length === 0) break;
         for (const { app_version_id } of versions) {
-          if (await this.migrateVersion(queryRunner, app_version_id)) touchedVersionIds.add(app_version_id);
+          await this.migrateVersion(queryRunner, app_version_id);
+          touchedVersionIds.add(app_version_id);
           progress.show();
         }
         offset += BATCH_SIZE;
       }
     }
 
-    // Event ids, action handles and property keys move: stale undo/redo snapshots would bring the old names back.
-    // Scoped to the versions actually rewritten.
+    // Event ids, action handles and property keys move: an undo/redo entry saved before this migration would restore
+    // the old names (and the Ant card) on top of the rewritten rows. History is not rewritten (a delta holds only the
+    // fields it changed, so it cannot be renamed reliably); it is cleared for every version that has a UI 2.0 widget
+    // or an Ant card now, or whose history names one (a widget since deleted, a card already moved). History is
+    // per version and is not carried by import, export or a new version, so this covers every restore path.
+    const fromHistory: { app_version_id: string }[] = await queryRunner.query(
+      `SELECT DISTINCT app_version_id FROM app_history
+        WHERE created_at >= $1 AND (change_payload::text ~ $2 OR change_payload::text ~ $3)`,
+      [HISTORY_SINCE, ...HISTORY_PATTERNS]
+    );
+    for (const { app_version_id } of fromHistory) touchedVersionIds.add(app_version_id);
     if (touchedVersionIds.size > 0) {
       await deleteAppHistoryForStructuralMigration(
         queryRunner.manager,
@@ -393,7 +414,7 @@ export class RenameUi2PackNames1792158590141 implements MigrationInterface {
         MIGRATION_NAME
       );
     }
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Rewrote ${touchedVersionIds.size} app versions.`);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Checked ${touchedVersionIds.size} app versions.`);
   }
 
   /** FlexContainer `antCard` -> `shadcnCard`, in every app. `properties` is `json`, so the filter is a text match. */
