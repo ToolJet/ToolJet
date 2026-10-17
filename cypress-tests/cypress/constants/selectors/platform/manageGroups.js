@@ -73,6 +73,7 @@ export const groupsSelector = {
   moduleDeleteLabel: '[data-cy="module-delete-label"]',
   moduleFolderCreateCheck: '[data-cy="module-folder-create-checkbox"]',
   moduleFolderDeleteCheck: '[data-cy="module-folder-delete-checkbox"]',
+  workflowFolderCreateCheck: '[data-cy="workflow-folder-create-checkbox"]',
   foldersCreateCheck: "[data-cy=folder-create-checkbox]",
   foldersDeleteCheck: '[data-cy="folder-delete-checkbox"]',
   foldersCreateLabel: "[data-cy=folder-create-label]",
@@ -109,6 +110,8 @@ export const groupsSelector = {
   datasourcesBuildWithHelperText: '[data-cy="datasource-build-with-helper-text"]',
 
   foldersText: '[data-cy="folders-text"]',
+  folderGranularAccessRow: '[data-cy="folder-granular-access"]',
+  editFolderGranularAccess: '[data-cy="edit-folder-granular-access"]',
   folderEditRadio: '[data-cy="folder-edit-folder-radio"]',
   folderEditLabel: '[data-cy="folder-edit-folder-label"]',
   folderEditHelperText: '[data-cy="folder-edit-folder-helper-text"]',
@@ -231,4 +234,9 @@ export const groupsSelector = {
   editFolderRadio: '[data-cy="edit-folder-permission-radio"]',
   editAppRadio: '[data-cy="edit-apps-permission-radio"]',
   viewAppRadio: '[data-cy="view-apps-permission-radio"]',
+  editAppsPermissionLabel: '[data-cy="edit-apps-permission-label"]',
+  editAppsPermissionHelperText: '[data-cy="edit-apps-permission-helper-text"]',
+  viewAppsPermissionLabel: '[data-cy="view-apps-permission-label"]',
+  viewAppsPermissionHelperText: '[data-cy="view-apps-permission-helper-text"]',
+  allAppFoldersLabel: '[data-cy="all-app-folders-label"]',
 };
