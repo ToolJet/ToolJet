@@ -84,7 +84,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
     },
   });
   const commit = (next: number | null) => box.commit(next, (n) => ({ formattedValue: formatted(n) }));
-  const check = useValidation(props, value, () => commit(null));
+  const check = useValidation(props, value, () => box.clearTyped((n) => ({ formattedValue: formatted(n) })));
   const textBox = useTextBox(props, check.touch);
   const disabled = busy(properties);
   const display = ['symbol', 'narrowSymbol', 'code'].includes(properties.currencyDisplay)

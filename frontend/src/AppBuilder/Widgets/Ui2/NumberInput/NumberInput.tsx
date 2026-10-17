@@ -46,7 +46,7 @@ export const ShadNumberInput = (props: WidgetProps) => {
     },
   });
   const commit = (next: number | null) => box.commit(next, () => ({}));
-  const check = useValidation(props, value, () => commit(null));
+  const check = useValidation(props, value, () => box.clearTyped(() => ({})));
   const textBox = useTextBox(props, check.touch);
   const disabled = busy(properties);
   const loading = !!properties.loadingState;

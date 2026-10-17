@@ -5,7 +5,7 @@ import { sliderBounds, sliderValues } from './sliderModel';
 import type { SliderBounds } from './sliderModel';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Field, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { useFormClearNow, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
@@ -61,6 +61,11 @@ export const ShadSlider = (props: WidgetProps) => {
     if (JSON.stringify(next) !== JSON.stringify(value)) setValue(next);
   }, [value, bounds, isRange, setValue]);
   latest.current = { bounds, isRange, initial, value };
+  // A Form's clearForm sets it to its minimum (a range to minimum and minimum), as the native Range slider.
+  useFormClearNow(() => {
+    const { bounds: b, isRange: range } = latest.current;
+    change(range ? [b.min, b.min] : b.min);
+  });
   useExposed(props.setExposedVariables, properties, { label: String(properties.label ?? '') });
   // The thumbs shown while dragging; a new value or new bounds put them back on the value.
   const [live, setLive] = useState(initial);

@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { toOptions, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { ToggleGroup, ToggleGroupItem, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { useFormClearNow, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
   MAX_CHOICES,
   choiceKey,
@@ -36,6 +36,8 @@ export const ShadToggleGroup = (props: WidgetProps) => {
     }),
     (k) => byKey.get(k)?.value ?? ''
   );
+  // A Form's clearForm leaves none picked, as the native Button group.
+  useFormClearNow(() => change(''));
   return (
     <Shell {...props} innerRef={fit}>
       <ToggleGroup
