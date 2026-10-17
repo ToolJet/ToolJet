@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon, Clock } from 'lucide-react';
-import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, controlAria, fieldIdOf, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -27,7 +27,7 @@ import {
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import { isBlank } from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
-import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, useOverrides, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { ICON, TRIGGER, parseTimeArg, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { Dayjs } from 'dayjs';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -66,7 +66,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { setExposedVariables, fireEvent, id, componentType, styles } = props;
+  const { setExposedVariables, fireEvent, componentType, styles } = props;
   // setMinDate, setMaxDate and setDisabledDates change those properties until they change themselves.
   const [properties, override] = useOverrides(props.properties);
   const dateFormat =
@@ -95,7 +95,9 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
     setDefaultRead(rawDefault);
     setTs(readDefault());
   }
-  const [open, setOpen] = useState(false);
+  // The popup is open only while the picker takes choices (usePickerPopup): disabling, loading or hiding it closes it.
+  const popup = usePickerPopup(properties);
+  const { open } = popup;
   const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   const date = ts === null ? null : dayjs(ts);
@@ -153,7 +155,8 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
     if (!M.dateProblem(today, rules)) return today;
     return rules.min ?? today;
   };
-  const setTime = (minutes: number) => commit(M.atTime(baseDay(), minutes).valueOf());
+  // From the popup's time controls: nothing once the picker is off (an open popup can outlive a setDisable).
+  const setTime = (minutes: number) => !popup.blocked && commit(M.atTime(baseDay(), minutes).valueOf());
   const minutes = date ? timeOf(date) : null;
   const hour = minutes === null ? null : Math.floor(minutes / 60);
   const minute = minutes === null ? null : minutes % 60;
@@ -173,7 +176,8 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
       <Popover
         open={open}
         onOpenChange={(next) => {
-          setOpen(next);
+          if (next && popup.blocked) return;
+          popup.setOpen(next);
           focus.opened(next);
           if (!next) check.touch();
         }}
@@ -181,7 +185,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
         <PopoverTrigger asChild>
           <Button
             ref={triggerRef}
-            id={`shad-${id}`}
+            id={fieldIdOf(props)}
             variant="outline"
             disabled={disabled}
             {...controlAria(props, check.error)}
@@ -206,7 +210,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
             endMonth={rules.max ? rules.max.toDate() : undefined}
             disabled={disabledMatchers}
             onSelect={(day) => {
-              if (!day) return;
+              if (!day || popup.blocked) return;
               commit(M.atTime(dayjs(day), timeOf(date)).valueOf());
             }}
           />

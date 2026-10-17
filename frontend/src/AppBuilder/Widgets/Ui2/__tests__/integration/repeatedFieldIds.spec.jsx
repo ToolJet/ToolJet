@@ -34,6 +34,10 @@ const TYPES = [
   ['ShadSlider', {}],
   ['ShadColorPicker', {}],
   ['ShadButtonGroup', { buttons: OPTIONS }],
+  ['ShadDatePicker', {}],
+  ['ShadDateTimePicker', {}],
+  ['ShadTimePicker', {}],
+  ['ShadFileUpload', {}],
 ];
 
 let clientWidth;

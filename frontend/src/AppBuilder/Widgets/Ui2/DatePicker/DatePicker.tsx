@@ -13,9 +13,9 @@ import {
   toDayjsFormat,
 } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, useOverrides, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, controlAria, fieldIdOf, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { DateRange } from 'react-day-picker';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -34,7 +34,7 @@ export const ShadDatePicker = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { setExposedVariables, fireEvent, id } = props;
+  const { setExposedVariables, fireEvent } = props;
   // setMinDate, setMaxDate and setDisabledDates change those properties until they change themselves.
   const [properties, override] = useOverrides(props.properties);
   const range = properties.mode === 'range';
@@ -63,7 +63,9 @@ export const ShadDatePicker = (props: WidgetProps) => {
   useEffect(() => setSelected(initial), [initial]);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
-  const [open, setOpen] = useState(false);
+  // The popup is open only while the picker takes choices (usePickerPopup): disabling, loading or hiding it closes it.
+  const popup = usePickerPopup(properties);
+  const { open } = popup;
   const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   const shown = (d: Date | undefined) => (d ? dayjs(d).format(format) : '');
@@ -174,12 +176,14 @@ export const ShadDatePicker = (props: WidgetProps) => {
   // field touched for validation and lets the focus tracking fire onBlur once focus leaves.
   const rangeClicks = useRef(0);
   const openChange = (next: boolean) => {
+    if (next && popup.blocked) return;
     if (next) rangeClicks.current = 0;
-    setOpen(next);
+    popup.setOpen(next);
     focus.opened(next);
     if (!next) check.touch();
   };
   const pick = (next: Selection) => {
+    if (popup.blocked) return;
     commit(next, true);
     // A range's first click already sets both ends to that day: it closes on the second click.
     rangeClicks.current += 1;
@@ -201,7 +205,7 @@ export const ShadDatePicker = (props: WidgetProps) => {
         <PopoverTrigger asChild>
           <Button
             ref={triggerRef}
-            id={`shad-${id}`}
+            id={fieldIdOf(props)}
             variant="outline"
             disabled={busy(properties)}
             {...controlAria(props, check.error)}
