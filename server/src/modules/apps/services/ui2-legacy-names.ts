@@ -107,7 +107,7 @@ export const UI2_RENAMES: Record<string, Ui2Renames> = {
 
 /** The renames for one widget type (its own plus the common ones), or null for a type that is not a UI 2.0 widget. */
 export const renamesFor = (type: string): Required<Ui2Renames> | null => {
-  if (!type || !type.startsWith('Shad')) return null;
+  if (typeof type !== 'string' || !type.startsWith('Shad')) return null;
   const own = UI2_RENAMES[type] ?? {};
   return {
     events: { ...own.events },
@@ -159,7 +159,8 @@ export const buildRenamesByComponentRef = (
     idsByName.set(component.name, ids);
   }
 
-  const byRef: Ui2RenamesByComponentRef = {};
+  // No prototype: a reference to `components.constructor` (or a component named `__proto__`) is just a key.
+  const byRef: Ui2RenamesByComponentRef = Object.create(null);
   for (const component of components) {
     const renames = renamesFor(component?.type);
     if (!renames) continue;
@@ -203,7 +204,11 @@ export const rewriteReferences = (text: string, renamesByComponentName: Ui2Renam
   let match: RegExpExecArray | null;
   while ((match = re.exec(text)) !== null) {
     const [whole, dotRef, , bracketRef, member, dotPrefix, dotKey, bracketPrefix, quote, bracketKey] = match;
-    const renames = renamesByComponentName[dotRef ?? bracketRef];
+    const ref = dotRef ?? bracketRef;
+    // Own keys only: plain text naming `components.constructor.name` must not reach Object.prototype.
+    const renames = Object.prototype.hasOwnProperty.call(renamesByComponentName, ref)
+      ? renamesByComponentName[ref]
+      : undefined;
     const key = dotKey ?? bracketKey;
     if (!renames || !key) continue;
 
@@ -327,7 +332,7 @@ export const applyUi2RenamesToImport = (data: {
 
     for (const c of versionComponents) {
       if (c.type?.startsWith('Shad')) c.properties = renameProperties(c.properties, c.type);
-      for (const column of ['properties', 'general', 'styles', 'generalStyles', 'validation']) {
+      for (const column of ['properties', 'general', 'styles', 'generalStyles', 'displayPreferences', 'validation']) {
         if (c[column] != null) c[column] = rewriteStringsDeep(c[column], rewrite);
       }
     }

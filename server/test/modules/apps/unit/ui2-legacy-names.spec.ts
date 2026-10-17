@@ -302,4 +302,51 @@ describe('applyUi2RenamesToImport', () => {
     expect(data.components[0].properties.cardStyle.value).toBe('shadcnCard');
     expect(data.events[0].event.eventId).toBe('onChange');
   });
+
+  // Audit 35: a layout-visibility binding (Show on desktop / mobile) lives in displayPreferences, which the rewrite
+  // skipped, so `components.tags1.tags` kept the retired name and the widget was hidden.
+  it('[UI2-IMPORT-035] rewrites references in display preferences', () => {
+    const data = {
+      pages: [page],
+      components: [
+        { id: 'tags-id', name: 'tags1', type: 'ShadTagsInput', pageId: 'p1', properties: {} },
+        {
+          id: 'txt',
+          name: 'label',
+          type: 'Text',
+          pageId: 'p1',
+          properties: {},
+          displayPreferences: {
+            showOnDesktop: { value: '{{(components.tags1.tags || []).length > 0}}' },
+            showOnMobile: { value: '{{true}}' },
+          },
+        },
+      ],
+    };
+    applyUi2RenamesToImport(data);
+    expect(data.components[1].displayPreferences).toEqual({
+      showOnDesktop: { value: '{{(components.tags1.values || []).length > 0}}' },
+      showOnMobile: { value: '{{true}}' },
+    });
+  });
+
+  // Audit 36: the reference lookup was a plain object, so `components.constructor` found Object.prototype.constructor
+  // and reading its rename table threw. Plain text naming any inherited member must pass through untouched.
+  it.each(['constructor', 'toString', '__proto__', 'hasOwnProperty', 'valueOf'])(
+    '[UI2-IMPORT-036] leaves text naming components.%s alone',
+    (name) => {
+      const text = `Example: components.${name}.name and components['${name}'].value`;
+      const data = {
+        pages: [page],
+        components: [
+          { id: 'tags-id', name: 'tags1', type: 'ShadTagsInput', pageId: 'p1', properties: {} },
+          { id: 'txt', name: 'text1', type: 'Text', pageId: 'p1', properties: { text: { value: text } } },
+        ],
+        dataQueries: [{ id: 'q', appVersionId: 'v1', options: { code: `return ${text}` } }],
+      };
+      expect(() => applyUi2RenamesToImport(data)).not.toThrow();
+      expect(data.components[1].properties).toEqual({ text: { value: text } });
+      expect(data.dataQueries[0].options.code).toBe(`return ${text}`);
+    }
+  );
 });
