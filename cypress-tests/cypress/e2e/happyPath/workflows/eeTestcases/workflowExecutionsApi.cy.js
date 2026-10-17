@@ -2,6 +2,7 @@ import { fake } from "Fixtures/fake";
 import {
   wfStartNode,
   wfQueryNode,
+  wfResponseNode,
   wfEdge,
   workflowDefinition,
   createRunjsQueries,
@@ -70,6 +71,7 @@ describe("Workflows - execution history (API)", () => {
 
     cy.then(() => {
       const [passedId, failedId] = data.executionIds;
+      // The graph has no Response node; a run does not need one to succeed.
       cy.apiGetWorkflowExecution(passedId)
         .its("status")
         .should("equal", "success");
@@ -78,6 +80,48 @@ describe("Workflows - execution history (API)", () => {
         expect(JSON.stringify(execution.logs)).to.include("requested failure");
       });
     });
+  });
+
+  // The editor sends the start node's JSON as params; the run API itself does
+  // not merge the saved defaultParams (only the webhook endpoint does, see
+  // workflowWebhooksApi.cy.js), so a run sees exactly the params it was given.
+  it("A run passes exactly the params it was given to the start trigger", () => {
+    createRunjsQueries({ echo: "return startTrigger.params" }).then((ids) => {
+      cy.apiSaveWorkflowDefinition(
+        workflowDefinition({
+          nodes: [
+            wfStartNode(),
+            wfQueryNode("echo-node", ids.echo),
+            wfResponseNode("response", "return echo.data"),
+          ],
+          edges: [
+            wfEdge("start", "echo-node"),
+            wfEdge("echo-node", "response", "success"),
+          ],
+          queryIds: [ids.echo],
+          defaultParams: JSON.stringify({ greeting: "hello" }),
+        })
+      );
+    });
+
+    cy.apiRunWorkflow({ params: { who: "me", count: 2 } }).then((res) => {
+      expect(res.status).to.equal(201);
+      expect(res.body.result.data).to.deep.equal({ who: "me", count: 2 });
+    });
+    cy.apiRunWorkflow({ params: {} }).then((res) => {
+      expect(res.status).to.equal(201);
+      expect(res.body.result.data).to.deep.equal({});
+    });
+  });
+
+  // BUG: a workflow whose definition was never saved answers 500
+  // "Cannot read properties of null (reading 'nodes')" instead of a 4xx.
+  it.skip("Running a workflow with no saved definition is a client error (4xx)", () => {
+    data.emptyWorkflowName = `${data.workflowName}-empty`;
+    cy.apiCreateWorkflowApp(data.emptyWorkflowName);
+    cy.apiFetchWorkflowContext();
+    cy.apiRunWorkflow().its("status").should("be.within", 400, 499);
+    cleanupWorkflows([data.emptyWorkflowName]);
   });
 
   // BUG: terminating a finished synchronous run answers 200

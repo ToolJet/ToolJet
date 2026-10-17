@@ -183,6 +183,60 @@ describe("Workflows - webhook endpoint (API)", () => {
     });
   });
 
+  it("Only declared webhook parameters reach the run; defaults fill gaps and wrong types are rejected", () => {
+    createRunjsQueries({ echo: "return startTrigger.params" }).then((ids) => {
+      cy.apiSaveWorkflowDefinition(
+        workflowDefinition({
+          nodes: [
+            wfStartNode(),
+            wfQueryNode("echo-node", ids.echo),
+            wfResponseNode("response", "return echo.data"),
+          ],
+          edges: [
+            wfEdge("start", "echo-node"),
+            wfEdge("echo-node", "response", "success"),
+          ],
+          queryIds: [ids.echo],
+          webhookParams: [{ key: "name", dataType: "string" }],
+          defaultParams: JSON.stringify({ name: "default-name" }),
+        })
+      );
+    });
+    cy.apiSetWorkflowWebhookEnabled(true);
+
+    cy.then(() => {
+      // Undeclared keys are dropped.
+      cy.apiTriggerWorkflowWebhook({
+        token: data.token,
+        qs: draftQuery(),
+        body: { name: "given", extra: "dropped" },
+      }).then((res) => {
+        expect(res.status).to.be.oneOf([200, 201]);
+        expect(res.body).to.deep.equal({ name: "given" });
+      });
+
+      // A declared key that is not sent falls back to the default params.
+      cy.apiTriggerWorkflowWebhook({
+        token: data.token,
+        qs: draftQuery(),
+        body: {},
+      }).then((res) => {
+        expect(res.status).to.be.oneOf([200, 201]);
+        expect(res.body).to.deep.equal({ name: "default-name" });
+      });
+
+      // A declared key of the wrong type is refused before the run starts.
+      cy.apiTriggerWorkflowWebhook({
+        token: data.token,
+        qs: draftQuery(),
+        body: { name: 5 },
+      }).then((res) => {
+        expect(res.status).to.equal(400);
+        expect(res.body.message).to.equal("name has incorrect datatype");
+      });
+    });
+  });
+
   // BUG: WebhookGuard resolves a non-UUID :idOrName via apps.name, which is
   // null for every app since the name moved to app_versions.app_name, so a
   // trigger by name always answers 404 "Workflow doesn't exists".

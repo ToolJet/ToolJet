@@ -118,7 +118,8 @@ describe("Workflows - LLM agent workflow import", () => {
     );
   });
 
-  it.skip("The imported agents chain through their tools and return the computed result", () => {
+  // Needs a real OpenAI key; runs only where one is configured.
+  (Cypress.env("openai_api_key") ? it : it.skip)("The imported agents chain through their tools and return the computed result", () => {
     const apiKey = Cypress.env("openai_api_key");
     // Checked without an assertion so the key never reaches the command log.
     if (!apiKey) {
