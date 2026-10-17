@@ -289,4 +289,30 @@ describe('UI 2.0 Date and time picker', () => {
     await widget.act('setValue', '2026-10-15T25:30');
     expect(exposed().value).toBe('2026-10-15T09:30');
   });
+
+  // Audit 69: under the display format 'YYYY-DD-MM' the default 2026-10-09 14:30 read as 10 September, and changing
+  // only the display format put a picked value back to the default.
+  describe('the display format', () => {
+    const DEFAULT_ISO = { defaultValue: binding('2026-10-09 14:30'), timeFormat: binding('24h') };
+
+    test('[ShadDateTimePicker-PROP-007] does not change how an ISO value is read', async () => {
+      render({ properties: { ...DEFAULT_ISO, dateFormat: binding('YYYY-DD-MM') } });
+
+      await waitFor(() => expect(exposed().value).toBe('2026-10-09T14:30'));
+      await widget.act('setValue', '2026-10-09 14:30', 'YYYY-DD-MM HH:mm');
+      await waitFor(() => expect(exposed().value).toBe('2026-09-10T14:30'));
+    });
+
+    test('[ShadDateTimePicker-PROP-008] changing it keeps the value picked since', async () => {
+      render({ properties: DEFAULT_ISO });
+      await waitFor(() => expect(exposed().value).toBe('2026-10-09T14:30'));
+      await widget.act('setValue', '2026-10-21T14:30');
+      await waitFor(() => expect(exposed().value).toBe('2026-10-21T14:30'));
+
+      act(() => widget.setComponentProperty(ID, 'dateFormat', 'YYYY-DD-MM', 'properties'));
+      await waitFor(() => expect(exposed().dateFormat).toBe('YYYY-DD-MM'));
+      expect(exposed().value).toBe('2026-10-21T14:30');
+      expect(exposed().displayValue).toBe('2026-21-10 14:30');
+    });
+  });
 });
