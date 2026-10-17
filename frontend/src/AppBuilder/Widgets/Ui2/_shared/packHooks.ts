@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import isEqual from 'lodash/isEqual';
+import { flushSync } from 'react-dom';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
@@ -37,9 +38,22 @@ export const useLatest = <T>(value: T): MutableRefObject<T> => {
 
 type Action = (...args: unknown[]) => unknown;
 
+/** Runs an action so that the state it sets is rendered, and the effects that publish from it (the value, isValid,
+ *  every derived exposed value) have run, before the call returns. A query reads them on its next line
+ *  (`await components.input1.setText('a'); components.input1.value`), as the native actions publish at once; without
+ *  this the value arrived in a later effect and the next line read the old one. */
+const runNow = (action: () => unknown): unknown => {
+  let result: unknown;
+  flushSync(() => {
+    result = action();
+  });
+  return result;
+};
+
 /** Publishes the standard exposed state plus the widget's own values and actions. Values are re-published when one of
  *  them changes by content. Each action is published once, as a stable function that calls the widget's latest
- *  closure, so an action never runs with the props of an earlier render. */
+ *  closure, so an action never runs with the props of an earlier render, and what it changes is published before it
+ *  returns (runNow). */
 export const useExposed = (
   setExposedVariables: WidgetProps['setExposedVariables'],
   properties: Resolved,
@@ -56,7 +70,7 @@ export const useExposed = (
         actionNames
           .split(',')
           .filter(Boolean)
-          .map((name) => [name, (...args: unknown[]) => (latest.current[name] as Action)(...args)])
+          .map((name) => [name, (...args: unknown[]) => runNow(() => (latest.current[name] as Action)(...args))])
       ),
     [actionNames, latest]
   );
