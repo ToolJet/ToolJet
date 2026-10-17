@@ -221,9 +221,11 @@ export const ShadKanban = (props: WidgetProps) => {
       );
   const padding = custom ? 'tw-p-0' : compact ? 'tw-p-2.5' : 'tw-p-3';
 
-  const enabled = !properties.disabledState;
+  // Disabled or loading, the board takes no input: a card or button that already had focus kept its keys (Enter
+  // selected a card, Delete removed one during a reload), and a drag under way still dropped.
+  const enabled = !properties.disabledState && !properties.loadingState;
   // Custom cards don't drag in the editor, where a press edits the card's components.
-  const draggable = properties.allowDrag !== false && enabled && !properties.loadingState && !(custom && editing);
+  const draggable = properties.allowDrag !== false && enabled && !(custom && editing);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: kanbanCoordinates, keyboardCodes: KANBAN_KEYS })
@@ -248,23 +250,30 @@ export const ShadKanban = (props: WidgetProps) => {
   };
   const activeCard = activeKey ? columns.flatMap((c) => c.cards).find((c) => c.__key === activeKey) : null;
   const select = (card: BoardCard) => {
+    if (!enabled) return;
     if (fields.details) setOpenKey((current) => (current === card.__key ? null : card.__key));
     setSelectedKey(card.__key);
     setExposedVariable('lastSelectedCard', strip(card));
     fireEvent('onCardSelected');
   };
+  // The add and delete buttons stay while the board reloads (a focused one keeps its focus) but do nothing.
   const onAdd =
-    properties.allowAdd === true && enabled
+    properties.allowAdd === true && !properties.disabledState
       ? (column: BoardColumn) => {
+          if (!enabled) return;
           setExposedVariable('addCardColumn', column.id);
           fireEvent('onAddCardClick');
         }
       : undefined;
-  const onDelete = properties.allowDelete === true && enabled ? (card: BoardCard) => doDelete(card.__key) : undefined;
+  const onDelete =
+    properties.allowDelete === true && !properties.disabledState
+      ? (card: BoardCard) => enabled && doDelete(card.__key)
+      : undefined;
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveKey(null);
     const target = over?.data?.current;
-    if (!target) return;
+    // Checked at the drop too: the board may have been disabled, set loading or locked since the pick-up.
+    if (!target || !draggable) return;
     doMove(active.id, target.columnId, target.type === 'card' ? target.key : null);
   };
   // Reloading a board that has cards (a query refetching after a move) keeps the board on screen under a spinner,
