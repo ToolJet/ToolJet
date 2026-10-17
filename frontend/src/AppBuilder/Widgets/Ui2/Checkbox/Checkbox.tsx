@@ -3,7 +3,7 @@ import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_share
 import { Checkbox } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CheckedRow, useChecked, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export const ShadCheckbox = (props: WidgetProps) => {
@@ -13,7 +13,7 @@ export const ShadCheckbox = (props: WidgetProps) => {
   const [checked, change] = useChecked(props);
   // A mandatory checkbox must be checked: unchecked is not a value here.
   const check = useValidation(props, checked, () => change(false), checked);
-  const id = `shad-${props.id}`;
+  const id = fieldIdOf(props);
   return (
     <Shell {...props} innerRef={fit}>
       <CheckedRow

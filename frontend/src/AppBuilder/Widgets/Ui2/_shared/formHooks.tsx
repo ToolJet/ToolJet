@@ -4,7 +4,7 @@ import { fromEffect, runNow, useExposed, useLatest, useStable } from '@/AppBuild
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { truthy } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { isFilled, validationInput } from '@/AppBuilder/Widgets/Ui2/_shared/values';
-import { CONTROL, FieldLabel, FieldNote, INVALID_VARS, controlAria, fieldName } from './field';
+import { CONTROL, FieldLabel, FieldNote, INVALID_VARS, controlAria, fieldName, fieldIdOf } from './field';
 import { busy } from './Shell';
 import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from 'react';
 import type { Exposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -159,7 +159,7 @@ export const useTextField = <E extends HTMLInputElement | HTMLTextAreaElement>(p
   const box = useTextBox<E>(props, check.touch);
   const fieldProps = {
     ref: box.ref,
-    id: `shad-${props.id}`,
+    id: fieldIdOf(props),
     className: CONTROL,
     value,
     ...controlAria(props, check.error),

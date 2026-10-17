@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { CONTROL, FormField, controlAria, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria, fieldName, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -74,7 +74,7 @@ const useAnchoredMenu = (disabled: boolean, onClose?: () => void) => {
 export const MAX_CHIPS = 50;
 
 export const ShadMultiselect = (props: WidgetProps) => {
-  const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
+  const { properties, styles, setExposedVariables, fireEvent, componentType } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const options = toOptions(properties.options);
@@ -112,7 +112,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
   const focus = useFocusEvents(fireEvent);
-  const menuId = `shad-${id}-menu`;
+  const menuId = `${fieldIdOf(props)}-menu`;
   const menu = useAnchoredMenu(disabled, () => {
     check.touch();
     if (search) onSearch('');
@@ -158,7 +158,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
             {...menu.anchorProps}
             {...focus.handlers}
             onClick={() => menuChange(!menu.open)}
-            id={`shad-${id}`}
+            id={fieldIdOf(props)}
             role="combobox"
             aria-controls={menu.open ? menuId : undefined}
             // A div takes no name from <label for>: the label's text, else the placeholder, names it.

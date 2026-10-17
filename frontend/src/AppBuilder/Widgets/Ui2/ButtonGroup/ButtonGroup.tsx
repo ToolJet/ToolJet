@@ -8,7 +8,7 @@ import {
   useStable,
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { Field, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { Field, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
@@ -110,7 +110,7 @@ export const ShadButtonGroup = (props: WidgetProps) => {
   return (
     <Shell {...props} innerRef={ref}>
       <Field
-        id={`shad-${props.id}`}
+        id={fieldIdOf(props)}
         label={properties.label}
         description={properties.description}
         error={check.error}
@@ -119,7 +119,7 @@ export const ShadButtonGroup = (props: WidgetProps) => {
         {buttons.length ? (
           <div className={cn('tw-flex tw-items-center tw-gap-3', fullWidth && 'tw-w-full')}>
             <div
-              id={`shad-${props.id}`}
+              id={fieldIdOf(props)}
               role="group"
               aria-label={properties.label ? String(properties.label) : 'Button group'}
               {...controlAria(props, check.error)}

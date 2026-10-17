@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, Pipette } from 'lucide-react';
-import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, Field, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Input, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -75,7 +75,7 @@ export const useDrag = (onMove: (point: { x: number; y: number }) => void, onEnd
 };
 
 export const ShadColorPicker = (props: WidgetProps) => {
-  const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
+  const { properties, styles, setExposedVariables, fireEvent, componentType } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const alpha = properties.allowAlpha === true;
@@ -181,12 +181,12 @@ export const ShadColorPicker = (props: WidgetProps) => {
   const disabled = busy(properties);
   return (
     <Shell {...props} innerRef={ref}>
-      <Field id={`shad-${id}`} label={properties.label} description={properties.description}>
+      <Field id={fieldIdOf(props)} label={properties.label} description={properties.description}>
         <Popover open={open} onOpenChange={openChange}>
           <PopoverTrigger asChild>
             <Button
               ref={triggerRef}
-              id={`shad-${id}`}
+              id={fieldIdOf(props)}
               type="button"
               variant="outline"
               disabled={disabled}

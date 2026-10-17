@@ -4,7 +4,7 @@ import PhoneNumberInput from 'react-phone-number-input/input';
 import flags from 'react-phone-number-input/flags';
 import { isValidPhoneNumber } from 'react-phone-number-input';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
-import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -54,7 +54,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
+  const { properties, setExposedVariables, fireEvent, componentType, styles } = props;
   // A new default number, country or country list starts the input again.
   const defaultValue = useStable(properties.defaultValue);
   const defaultCountry = useStable(properties.defaultCountry);
@@ -241,7 +241,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
         <PhoneNumberInput
           key={revision}
           ref={textBox.ref}
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           country={state.country}
           international={false}
           value={state.value || undefined}

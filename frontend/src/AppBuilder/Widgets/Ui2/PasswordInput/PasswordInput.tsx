@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { FormField, HELP, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, HELP, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -29,7 +29,7 @@ export const ShadPasswordInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
+  const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   // The native setText and clear change the value as typing does (onChange) and show its validation message.
   const [value, change] = useValue(props, toText(properties.defaultValue), () => ({
     setText: async (t: unknown) => {
@@ -58,7 +58,7 @@ export const ShadPasswordInput = (props: WidgetProps) => {
       <Group disabled={disabled}>
         <input
           ref={textBox.ref}
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           type={visible ? 'text' : 'password'}
           autoComplete={properties.showStrength === true ? 'new-password' : 'current-password'}
           {...controlAria(props, check.error)}

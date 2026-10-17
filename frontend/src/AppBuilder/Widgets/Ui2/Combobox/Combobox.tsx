@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronsUpDown } from 'lucide-react';
-import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -28,7 +28,7 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 // ---- Combobox ------------------------------------------------------------------------------------------------------
 
 export const ShadCombobox = (props: WidgetProps) => {
-  const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
+  const { properties, styles, setExposedVariables, fireEvent, componentType } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const options = toOptions(properties.options);
@@ -103,7 +103,7 @@ export const ShadCombobox = (props: WidgetProps) => {
           <PopoverTrigger asChild>
             <Button
               ref={triggerRef}
-              id={`shad-${id}`}
+              id={fieldIdOf(props)}
               type="button"
               variant="outline"
               role="combobox"

@@ -4,13 +4,14 @@ import { Switch } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CheckedRow, useChecked } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 
 export const ShadSwitch = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const [checked, change] = useChecked(props);
-  const id = `shad-${props.id}`;
+  const id = fieldIdOf(props);
   return (
     <Shell {...props} innerRef={fit}>
       <CheckedRow

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Minus } from 'lucide-react';
-import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useFocusEvent, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -32,7 +32,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariables, fireEvent, id } = props;
+  const { properties, setExposedVariables, fireEvent } = props;
   const length = M.otpLength(properties.length);
   const characters = properties.characters === 'alphanumeric' ? 'alphanumeric' : 'numeric';
   const initial = M.otpSanitize(properties.defaultValue, length, characters);
@@ -145,7 +145,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
         ))}
         <input
           ref={inputRef}
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           aria-label={toText(properties.label) || 'One-time code'}
           {...controlAria(props, check.error)}
           inputMode={characters === 'numeric' ? 'numeric' : 'text'}

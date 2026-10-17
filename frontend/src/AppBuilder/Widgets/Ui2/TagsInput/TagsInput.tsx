@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useFocusEvent, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -21,7 +21,7 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 // ---- Tags input ----------------------------------------------------------------------------------------------------
 
 export const ShadTagsInput = (props: WidgetProps) => {
-  const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
+  const { properties, styles, setExposedVariables, fireEvent, componentType } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -166,7 +166,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
             ))}
             <input
               ref={inputRef}
-              id={`shad-${id}`}
+              id={fieldIdOf(props)}
               type="text"
               role="combobox"
               aria-expanded={menuOpen}
