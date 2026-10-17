@@ -3,7 +3,7 @@ import {
   getNextBubbleTargetId,
   resolveContainerHeight,
   resolveListviewHeightFromRows,
-} from '../dynamicHeightReflow';
+} from '../../dynamicHeightReflow';
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition, binding } from '@/test/app-builder';
 
