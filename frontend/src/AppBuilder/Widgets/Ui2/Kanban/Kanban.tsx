@@ -1,16 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  closestCorners,
-  pointerWithin,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import type { CollisionDetection, DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
+import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import type { DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -23,11 +14,12 @@ import { KANBAN_INSTRUCTIONS, KANBAN_KEYS, kanbanAnnouncements, kanbanCoordinate
 import { SHADOWS, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { fitsContentInView, kanbanCardHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import type { BoardCard, BoardColumn, CardMove, CardRow } from './kanbanBoard';
+import type { BoardCard, BoardColumn, CardMove } from './kanbanBoard';
 import { CardBody, CustomCardBody } from './KanbanCard';
 import type { CardFields } from './KanbanCard';
 import { KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
 import { useBoardSize } from './useBoardSize';
+import { RIGHT_FADE, columnMinimum, fieldName, kanbanCollision, strip } from './kanbanLayout';
 import { cssLength, isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** What the board's actions read later, without going stale. */
@@ -51,40 +43,7 @@ type KanbanStore = {
 // updated or removed card, and an event) for a query to save; the board follows the data again when the data
 // changes. Own lazy chunk (dnd-kit).
 
-// A field name is text (or a number): anything else bound there (a list of rows) was turned into a 150 KB key for
-// every card, which froze the board.
-const fieldName = (value: unknown, fallback: string): string =>
-  typeof value === 'string' && value.trim() ? value : typeof value === 'number' ? String(value) : fallback;
-
-/** The narrowest a column gets before the board scrolls: 200px, 160px on a board of six or more stages, and down to
- *  140px when that lets every stage fit the board (three stages in a 620px half of a page cut the third at the edge,
- *  2026-10-14). 16px gaps between columns. */
-export const columnMinimum = (count: number, boardWidth: number): number => {
-  const base = count >= 6 ? 160 : 200;
-  if (!(boardWidth > 0) || count < 1) return base;
-  const share = Math.floor((boardWidth - 16 * (count - 1)) / count);
-  return Math.max(140, Math.min(base, share));
-};
-
-const strip = (card: BoardCard | null): CardRow => {
-  if (!card) return {};
-  const { __key, ...plain } = card;
-  return plain;
-};
-
-const RIGHT_FADE = {
-  maskImage: 'linear-gradient(to right, #000 calc(100% - 48px), transparent)',
-  WebkitMaskImage: 'linear-gradient(to right, #000 calc(100% - 48px), transparent)',
-};
-
-/** Where a drop lands: what is under the pointer, a card first, then a column (a folded column is a 44px strip that
- *  closestCorners passed over for a card nearby, so drops on it were lost); off the board, the nearest corners. */
-export const kanbanCollision: CollisionDetection = (args) => {
-  const within = pointerWithin(args);
-  const cards = within.filter((c) => c.data?.droppableContainer?.data?.current?.type === 'card');
-  if (cards.length) return cards;
-  return within.length ? within : closestCorners(args);
-};
+export { columnMinimum, kanbanCollision } from './kanbanLayout';
 
 export const ShadKanban = (props: WidgetProps) => {
   const { properties, styles, setExposedVariable, setExposedVariables, fireEvent } = props;
@@ -172,7 +131,12 @@ export const ShadKanban = (props: WidgetProps) => {
   const doUpdate = (id: unknown, values: unknown) => {
     const { columns: cols, statusField: sf, idField: idf } = live.current;
     const result = updateCard(cols, id, values ?? {}, sf, idf);
-    if (result.card) commit(result.columns, { lastUpdatedCard: result.card }, 'onCardUpdated');
+    if (!result.card) return;
+    // A changed id changes the card's key: its selection and open details follow it.
+    const follow = (key: string | null) => (key === String(id ?? '') ? result.key : key);
+    setSelectedKey(follow);
+    setOpenKey(follow);
+    commit(result.columns, { lastUpdatedCard: result.card }, 'onCardUpdated');
   };
   const doDelete = (id: unknown) => {
     const result = deleteCard(live.current.columns, id);
