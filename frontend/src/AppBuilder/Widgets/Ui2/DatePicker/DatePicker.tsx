@@ -50,12 +50,15 @@ export const ShadDatePicker = (props: WidgetProps) => {
     () => dateRules({ minDate, maxDate, disabledDates, format }),
     [minDate, maxDate, disabledDates, format]
   );
-  // A new default value or mode resets the selection.
+  // A new default value or mode resets the selection. Both ends given together are put in order, as setDateRange and
+  // the Calendar do; only one end moved past the other leaves a range out of order (and invalid).
   const raw = useStable(properties.defaultValue);
-  const initial = useMemo(
-    (): Selection => (range ? { from: toDate(list(raw)[0]), to: toDate(list(raw)[1]) } : toDate(raw)),
-    [raw, range]
-  );
+  const initial = useMemo((): Selection => {
+    if (!range) return toDate(raw);
+    const from = toDate(list(raw)[0]);
+    const to = toDate(list(raw)[1]);
+    return from && to && to < from ? { from: to, to: from } : { from, to };
+  }, [raw, range]);
   const [selected, setSelected] = useState<Selection>(initial);
   useEffect(() => setSelected(initial), [initial]);
   const selectedRef = useRef(selected);
@@ -141,14 +144,16 @@ export const ShadDatePicker = (props: WidgetProps) => {
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),
   });
-  // A picked day outside minDate/maxDate or on a disabled date fails validation; a range counts as filled once both
-  // ends are picked.
+  // A picked day outside minDate/maxDate or on a disabled date fails validation, and so does a range whose end comes
+  // before its start; a range counts as filled once both ends are picked.
   const values = exposedOf(selected);
   const from = endOf(selected, 'from');
   const to = endOf(selected, 'to');
   const day = dayOf(selected);
   const problem = range
-    ? dateProblem(from ? dayjs(from) : null, rules) || dateProblem(to ? dayjs(to) : null, rules)
+    ? dateProblem(from ? dayjs(from) : null, rules) ||
+      dateProblem(to ? dayjs(to) : null, rules) ||
+      (from && to && to < from ? 'Pick an end date on or after the start date' : '')
     : dateProblem(day ? dayjs(day) : null, rules);
   const check = useValidation(
     {

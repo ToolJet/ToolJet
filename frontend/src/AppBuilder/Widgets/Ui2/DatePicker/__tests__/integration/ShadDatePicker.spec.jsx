@@ -313,4 +313,35 @@ describe('UI 2.0 Date picker', () => {
       await waitFor(() => expect(exposed().isValid).toBe(true));
     });
   });
+
+  // Audit 47: a range whose end came before its start reported valid and reached Form.onSubmit.
+  describe('a range in the wrong order', () => {
+    const rangeOf = (start, end) => ({ mode: binding('range'), defaultValue: binding(`{{['${start}', '${end}']}}`) });
+
+    test('[ShadDatePicker-VAL-007] a default given end first is put in order, as setDateRange does', async () => {
+      render({ properties: rangeOf('2026-10-20', '2026-10-09') });
+
+      await waitFor(() => expect(exposed().value).toEqual(['2026-10-09', '2026-10-20']));
+      expect(exposed().isValid).toBe(true);
+      await widget.act('setDateRange', '2026-10-25', '2026-10-21');
+      await waitFor(() => expect(exposed().value).toEqual(['2026-10-21', '2026-10-25']));
+    });
+
+    test('[ShadDatePicker-VAL-008] moving one end past the other makes the range invalid until it is fixed', async () => {
+      render({ properties: rangeOf('2026-10-09', '2026-10-20') });
+      await waitFor(() => expect(exposed().isValid).toBe(true));
+
+      await widget.act('setStartDate', '2026-10-25');
+      await waitFor(() => expect(exposed().isValid).toBe(false));
+      expect(exposed().value).toEqual(['2026-10-25', '2026-10-20']);
+      await open();
+      await act(async () => fireEvent.keyDown(document.activeElement, { key: 'Escape' }));
+      expect(await screen.findByText('Pick an end date on or after the start date')).toBeInTheDocument();
+
+      await widget.act('setEndDate', '2026-10-28');
+      await waitFor(() => expect(exposed().isValid).toBe(true));
+      await widget.act('setEndDate', '2026-10-01');
+      await waitFor(() => expect(exposed().isValid).toBe(false));
+    });
+  });
 });
