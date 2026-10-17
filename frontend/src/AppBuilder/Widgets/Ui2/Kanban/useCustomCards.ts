@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { takeRowValues } from '@/AppBuilder/Widgets/Ui2/ListView/rowValues';
+import { takeRowValues } from '@/AppBuilder/Widgets/Ui2/_shared/rowValues';
 import { boardCards } from './kanbanBoard';
 import type { BoardColumn } from './kanbanBoard';
 

@@ -1,9 +1,10 @@
 import useStore from '@/AppBuilder/_stores/store';
 
 // The components in a row-scoped widget's rows keep their values per row, by row index (components[child][row]). The
-// List view draws a row per record key, so when records move (a sort, an insert, a removal) each drawn row moves with
-// its record and keeps what the user typed. Its values must move with it: they stayed at the old index, so the row
-// now drawn there read them (another record's edit), and its actions changed the record that left.
+// List view draws a row per record key (and a top-level Kanban a custom card per card key), so when records move (a
+// sort, an insert, a removal, a card move) each drawn row moves with its record and keeps what the user typed. Its
+// values must move with it: they stayed at the old index, so the row now drawn there read them (another record's
+// edit), and its actions changed the record that left.
 
 type Row = Record<string, unknown>;
 

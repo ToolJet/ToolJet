@@ -25,7 +25,7 @@ import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 import { useListSelection } from './useListSelection';
-import { takeRowValues } from './rowValues';
+import { takeRowValues } from '@/AppBuilder/Widgets/Ui2/_shared/rowValues';
 
 type ListMode = 'list' | 'grid';
 
