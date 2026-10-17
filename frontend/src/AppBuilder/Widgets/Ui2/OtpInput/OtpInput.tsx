@@ -41,12 +41,18 @@ export const ShadOtpInput = (props: WidgetProps) => {
     value: code,
     isComplete,
     label: toText(properties.label),
-    clear: async () => setValue(''),
+    clear: async () => fill(''),
     setFocus: async () => inputRef.current?.focus(),
     setBlur: async () => inputRef.current?.blur(),
     // Fills the boxes as a paste does (the characters that do not fit the kind or the length are dropped).
-    setText: async (v: unknown) => setValue(M.otpSanitize(v, lengthRef.current.length, lengthRef.current.characters)),
+    setText: async (v: unknown) => fill(M.otpSanitize(v, lengthRef.current.length, lengthRef.current.characters)),
   });
+  /** Sets the code from an action, as a text input's setText and clear do: onChange, every time. */
+  const fill = (next: string) => {
+    setValue(next);
+    setExposedVariables({ value: next, isComplete: next.length === lengthRef.current.length });
+    fireEvent('onChange');
+  };
   const change = (raw: string) => {
     const next = M.otpSanitize(raw, length, characters);
     if (next === code) return;

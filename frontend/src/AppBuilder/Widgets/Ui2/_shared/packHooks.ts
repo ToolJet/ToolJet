@@ -38,17 +38,57 @@ export const useLatest = <T>(value: T): MutableRefObject<T> => {
 
 type Action = (...args: unknown[]) => unknown;
 
+/** Events fired while an action runs wait here until it has published (runNow). */
+let actionDepth = 0;
+let deferredEvents: Array<() => void> = [];
+
 /** Runs an action so that the state it sets is rendered, and the effects that publish from it (the value, isValid,
  *  every derived exposed value) have run, before the call returns. A query reads them on its next line
  *  (`await components.input1.setText('a'); components.input1.value`), as the native actions publish at once; without
- *  this the value arrived in a later effect and the next line read the old one. */
+ *  this the value arrived in a later effect and the next line read the old one. The events the action fires are held
+ *  until then and fired in order, so their handlers read the new values too, as the native actions publish first. */
 const runNow = (action: () => unknown): unknown => {
   let result: unknown;
-  flushSync(() => {
-    result = action();
-  });
+  actionDepth += 1;
+  try {
+    flushSync(() => {
+      result = action();
+    });
+  } finally {
+    actionDepth -= 1;
+    if (actionDepth === 0) {
+      const queued = deferredEvents;
+      deferredEvents = [];
+      queued.forEach((fire) => fire());
+    }
+  }
   return result;
 };
+
+/** For the few widgets that publish actions themselves rather than through useExposed (Table, Tabs, List view): runs
+ *  each function among `values` as an action (runNow), leaving the other values as they are. */
+export const asActions = <T extends Record<string, unknown>>(values: T): T =>
+  Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [
+      key,
+      typeof value === 'function' ? (...args: unknown[]) => runNow(() => (value as Action)(...args)) : value,
+    ])
+  ) as T;
+
+/** The widget's fireEvent, holding events fired while one of its actions runs until the action has published. Every
+ *  UI 2.0 widget fires through it (withControlState, or this hook in the few that do not use it). */
+export const useActionFire = (fireEvent: WidgetProps['fireEvent']): WidgetProps['fireEvent'] =>
+  useMemo(
+    () =>
+      ((...args: Parameters<WidgetProps['fireEvent']>) => {
+        if (actionDepth > 0) {
+          deferredEvents.push(() => fireEvent(...args));
+          return undefined;
+        }
+        return fireEvent(...args);
+      }) as WidgetProps['fireEvent'],
+    [fireEvent]
+  );
 
 /** Publishes the standard exposed state plus the widget's own values and actions. Values are re-published when one of
  *  them changes by content. Each action is published once, as a stable function that calls the widget's latest
@@ -109,7 +149,8 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
       }),
       [properties, isVisible, isLoading, isDisabled]
     );
-    return React.createElement(Widget, { ...props, properties: effective });
+    const fireEvent = useActionFire(props.fireEvent);
+    return React.createElement(Widget, { ...props, properties: effective, fireEvent });
   };
   Controlled.displayName = `Controlled(${Widget.displayName || Widget.name || 'Widget'})`;
   return Controlled;

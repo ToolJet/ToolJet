@@ -95,9 +95,14 @@ export const useNumberBox = (
     setExposedVariables({ value: next, ...extra(next) });
     fireEvent('onChange');
   };
+  /** Sets the value from an action, as the native number inputs' setText, setValue and clear do: onChange, every
+   *  time. The value is published by the action's flush before the event fires (runNow). */
   const set = (v: unknown) => {
     setDraft(null);
-    setValue(round(typeof v === 'number' ? v : parse(v)));
+    const next = round(typeof v === 'number' ? v : parse(v));
+    valueRef.current = next;
+    setValue(next);
+    fireEvent('onChange');
   };
   return { value, valueRef, draft, setDraft, commit, set };
 };

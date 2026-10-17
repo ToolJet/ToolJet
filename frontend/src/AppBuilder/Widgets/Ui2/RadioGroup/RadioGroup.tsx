@@ -18,10 +18,11 @@ export const ShadRadioGroup = (props: WidgetProps) => {
   const [key, change] = useValue(
     props,
     initial,
-    (set) => ({
-      selectOption: async (v: unknown) => set(v === undefined || v === null || typeof v === 'object' ? '' : String(v)),
-      // The native Radio button's deselectOption() clears the choice.
-      deselectOption: async () => set(''),
+    () => ({
+      // As the native Radio button's: both fire onSelectionChange; deselectOption() clears the choice.
+      selectOption: async (v: unknown) =>
+        change(v === undefined || v === null || typeof v === 'object' ? '' : String(v), 'onSelectionChange'),
+      deselectOption: async () => change('', 'onSelectionChange'),
     }),
     (k) => byKey.get(k)?.value ?? ''
   );

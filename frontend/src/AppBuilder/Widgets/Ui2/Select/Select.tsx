@@ -38,8 +38,16 @@ export const ShadSelect = (props: WidgetProps) => {
     selectedOption,
     options,
     label: String(properties.label ?? ''),
-    selectOption: async (v: unknown) =>
-      setKey(v === undefined || v === null || typeof v === 'object' ? '' : optionKey(v)),
+    // As the native Select: an option that exists and is enabled is picked, with onSelect; anything else changes
+    // nothing. An { value } object picks by its value.
+    selectOption: async (v: unknown) => {
+      const wanted = v && typeof v === 'object' && 'value' in v ? (v as { value: unknown }).value : v;
+      if (wanted === undefined || wanted === null || typeof wanted === 'object') return;
+      const option = byKey.get(optionKey(wanted));
+      if (!option || option.disabled) return;
+      setKey(optionKey(wanted));
+      fireEvent('onSelect');
+    },
     clear: async () => setKey(''),
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),

@@ -168,18 +168,24 @@ export const useChecked = (props: ValueProps & Pick<WidgetProps, 'componentType'
     fireEvent('onChange');
     if (props.componentType === 'ShadCheckbox') fireEvent(v === true ? 'onCheck' : 'onUnCheck');
   };
-  // The native Checkbox and Toggle switch actions: toggle(), setValue(value) and the Checkbox's setChecked(status)
-  // change it as a click does, with its events (the native setValue fires onCheck or onUnCheck but not onChange, and
-  // toggle the reverse; here each fires what a click fires). Setting the value it already has fires nothing.
-  const set = (v: unknown) => {
-    const next = truthy(v);
-    if (next !== checkedRef.current) change(next);
+  // The native Checkbox and Toggle switch actions, with the native events, every time: a Checkbox's setValue fires
+  // onCheck or onUnCheck (not onChange) and its toggle fires onChange; a Switch's setValue fires nothing and its toggle
+  // fires onChange.
+  const set = (v: boolean, events: string[]) => {
+    checkedRef.current = v;
+    setChecked(v);
+    setExposedVariable('value', v);
+    events.forEach((event) => fireEvent(event));
   };
+  const isCheckbox = props.componentType === 'ShadCheckbox';
   useExposed(setExposedVariables, properties, {
     value: checked,
     label: String(properties.label ?? ''),
-    toggle: async () => change(!checkedRef.current),
-    setValue: async (v: unknown) => set(v),
+    toggle: async () => set(!checkedRef.current, ['onChange']),
+    setValue: async (v: unknown) => {
+      const next = truthy(v);
+      set(next, isCheckbox ? [next ? 'onCheck' : 'onUnCheck'] : []);
+    },
   });
   return [checked, change];
 };

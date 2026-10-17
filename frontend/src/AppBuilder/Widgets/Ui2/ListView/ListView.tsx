@@ -8,16 +8,22 @@ import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/typ
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
-import { useAutoHeight, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  asActions,
+  useActionFire,
+  useAutoHeight,
+  useLatest,
+  useStable,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
-import { itemKey, listLook, pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
+import { listLook, pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { fitsContentInView, listRowHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
-import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { useListSelection } from './useListSelection';
 
 type ListMode = 'list' | 'grid';
 
@@ -132,7 +138,9 @@ const Row = ({
 const ROWS_PER_STEP = 100;
 
 export const ShadListView = (props: WidgetProps) => {
-  const { id, properties, styles, setExposedVariable, setExposedVariables, fireEvent, darkMode, dataCy } = props;
+  const { id, properties, styles, setExposedVariable, setExposedVariables, darkMode, dataCy } = props;
+  // Events an action fires wait until it has published (useActionFire).
+  const fireEvent = useActionFire(props.fireEvent);
   // A pack widget created through the MCP carries only the properties it was given (the server has no defaults to
   // merge for pack types), so an unset property means its default: visible, enabled, not loading.
   const { isDisabled, isVisible, isLoading } = useExposeState(
@@ -216,85 +224,39 @@ export const ShadListView = (props: WidgetProps) => {
   }, [items, childCount, parentIndices, id, moduleId, updateCustomResolvables, initExposedValueArrayForChildren]);
   useExposedValueBatch(items.length);
 
-  // Selection by item key, so it survives a refetch that reorders or reloads the data.
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const keys = items.map((item, index) => itemKey(item, idField, index));
-  const selectedIndex = selectedKey === null ? -1 : keys.indexOf(selectedKey);
-
+  const { keys, selectedIndex, pick, clearSelection } = useListSelection({
+    id,
+    moduleId,
+    parentIndices,
+    data,
+    items,
+    idField,
+    setExposedVariables,
+    fireEvent,
+  });
   const live = useRef<ListLive>({ items, keys, idField, setExposedVariables, fireEvent });
   live.current = { items, keys, idField, setExposedVariables, fireEvent };
-  const pick = (index: number, { fire = true }: { fire?: boolean } = {}) => {
-    const { items: now, keys: nowKeys, setExposedVariables: expose, fireEvent: fireNow } = live.current;
-    if (index < 0 || index >= now.length) return;
-    const state = useStore.getState();
-    let exposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
-    for (const outer of parentIndices) exposed = Array.isArray(exposed) ? exposed?.[outer] : exposed;
-    const record = exposed?.children?.[index] ?? {};
-    setSelectedKey(nowKeys[index]);
-    expose({
-      selectedItem: now[index],
-      selectedItemId:
-        now[index] && typeof now[index] === 'object' ? (now[index] as Resolved)[live.current.idField] ?? null : null,
-      selectedRecord: record,
-      selectedRecordId: index,
-    });
-    if (fire) {
-      fireNow('onRecordClicked');
-    }
-  };
-  const clearSelection = () => {
-    setSelectedKey(null);
-    live.current.setExposedVariables({
-      selectedItem: {},
-      selectedItemId: null,
-      selectedRecord: {},
-      selectedRecordId: null,
-    });
-  };
-
-  // A data change (an edit, a removal, a reorder) re-publishes the selection from the fresh record, at its new row, and
-  // clears it when the item is gone; no event fires (README, "Selection after a data change"). Keyed by idField when
-  // the items have one, else by position on the page. Runs for data changes only, not for a page turn.
-  const reconcile = useLatest(() => {
-    if (selectedKey === null) return;
-    const all = list(data);
-    const shownAt = keys.indexOf(selectedKey);
-    const at = all.findIndex((item, index) => itemKey(item, idField, index) === selectedKey);
-    const item = shownAt >= 0 ? items[shownAt] : at >= 0 ? all[at] : undefined;
-    if (item === undefined) {
-      clearSelection();
-      return;
-    }
-    const state = useStore.getState();
-    let exposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
-    for (const outer of parentIndices) exposed = Array.isArray(exposed) ? exposed?.[outer] : exposed;
-    live.current.setExposedVariables({
-      selectedItem: item,
-      selectedItemId: item && typeof item === 'object' ? (item as Resolved)[idField] ?? null : null,
-      selectedRecord: shownAt >= 0 ? exposed?.children?.[shownAt] ?? {} : {},
-      selectedRecordId: shownAt >= 0 ? shownAt : null,
-    });
-  });
-  useEffect(() => reconcile.current(), [data, reconcile]);
 
   const goTo = pageGoTo(setPage, setExposedVariable, fireEvent);
 
   // Published once; each action calls the latest handlers.
   const handlers = useLatest({ pick, clearSelection, goTo });
   useEffect(() => {
-    live.current.setExposedVariables({
-      selectItem: async (itemId: unknown) => {
-        const index = live.current.items.findIndex(
-          (item) =>
-            item && typeof item === 'object' && String((item as Resolved)[live.current.idField]) === String(itemId)
-        );
-        if (index >= 0) handlers.current.pick(index, { fire: false });
-      },
-      clearSelection: async () => handlers.current.clearSelection(),
-      // As on the native Table, setPage does not fire onPageChanged.
-      setPage: async (target: unknown) => handlers.current.goTo(target, { fire: false }),
-      pageIndex: 1,
-    });
+    live.current.setExposedVariables(
+      asActions({
+        selectItem: async (itemId: unknown) => {
+          const index = live.current.items.findIndex(
+            (item) =>
+              item && typeof item === 'object' && String((item as Resolved)[live.current.idField]) === String(itemId)
+          );
+          if (index >= 0) handlers.current.pick(index, { fire: false });
+        },
+        clearSelection: async () => handlers.current.clearSelection(),
+        // As on the native Table, setPage does not fire onPageChanged.
+        setPage: async (target: unknown) => handlers.current.goTo(target, { fire: false }),
+        pageIndex: 1,
+      })
+    );
   }, [handlers]);
 
   // Measure the width a row's canvas lays its components out at.

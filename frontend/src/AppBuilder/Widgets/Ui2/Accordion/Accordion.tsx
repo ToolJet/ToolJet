@@ -35,7 +35,8 @@ export const ShadAccordion = (props: WidgetProps) => {
   };
   const change = (value: string | string[]) => apply((Array.isArray(value) ? value : value ? [value] : []).map(String));
   // expand(index) and collapse(index) open or close one section (all of them without an index), like the native
-  // Accordion's expand() and collapse(); a single-open accordion keeps one section open.
+  // Accordion's expand() and collapse(), and fire onExpand or onCollapse every time as those do (not onChange, which
+  // follows the user); a single-open accordion keeps one section open.
   const indexArg = (i: unknown): string | null => {
     const n = Number(i);
     return Number.isInteger(n) && n >= 0 && n < shape.current.count ? String(n) : null;
@@ -53,13 +54,15 @@ export const ShadAccordion = (props: WidgetProps) => {
           ? all
           : [...new Set([...openRef.current, one])]
         : [one ?? all[0]].filter(Boolean);
-      if (!isEqual(next, openRef.current)) apply(next);
+      if (!isEqual(next, openRef.current)) apply(next, false);
+      fireEvent('onExpand');
     },
     collapse: async (index?: unknown) => {
       const one = indexArg(index);
       if (!noIndex(index) && one === null) return;
       const next = one === null ? [] : openRef.current.filter((k) => k !== one);
-      if (!isEqual(next, openRef.current)) apply(next);
+      if (!isEqual(next, openRef.current)) apply(next, false);
+      fireEvent('onCollapse');
     },
   });
   const rootProps = multiple

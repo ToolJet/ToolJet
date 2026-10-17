@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
-import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { asActions, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell, toCsv } from './tableModel';
 import type { Entry, FireOption, LiveRef, Sort, WithEdits } from './types';
@@ -17,7 +17,7 @@ interface UseTableActionsArgs {
   select: (keys: Set<string>, focus: string | null) => void;
   applyFilterList: (list: unknown, options?: FireOption) => void;
   applySort: (next: Sort | null, options?: FireOption) => void;
-  setSearchInput: (text: string) => void;
+  searchNow: (text: string) => void;
   discard: (options?: FireOption) => void;
 }
 
@@ -43,7 +43,7 @@ export const useTableActions = ({
   select,
   applyFilterList,
   applySort,
-  setSearchInput,
+  searchNow,
   discard,
 }: UseTableActionsArgs) => {
   const exportRows = () => live.current.processed.map(withEdits);
@@ -55,7 +55,7 @@ export const useTableActions = ({
   };
 
   // The actions are published once and call the latest handlers, so they never act on an earlier render's columns.
-  const handlers = useLatest({ goTo, select, applyFilterList, applySort, setSearchInput, discard, runDownload });
+  const handlers = useLatest({ goTo, select, applyFilterList, applySort, searchNow, discard, runDownload });
   const publish = useLatest(setExposedVariables);
   useEffect(() => {
     const act = () => handlers.current;
@@ -78,53 +78,55 @@ export const useTableActions = ({
         return cell !== null && cell !== undefined && typeof cell !== 'object' && wanted.has(String(cell));
       });
     };
-    publish.current({
-      pageIndex: 1,
-      searchText: '',
-      sortApplied: [],
-      filters: [],
-      changeSet: {},
-      dataUpdates: [],
-      lastActionClicked: {},
-      // As on the native Table, setPage does not fire onPageChanged.
-      setPage: async (target: unknown) => act().goTo(target, { fire: false }),
-      selectRow: async (key: unknown, value: unknown) => {
-        const [match] = byKeyValue(key, value);
-        if (match) act().select(new Set([match.key]), match.key);
-      },
-      deselectRow: async () => act().select(new Set(), null),
-      selectRows: async (key: unknown, values: unknown) => {
-        const keys = new Set(live.current.selected);
-        byKeyValues(key, values).forEach((entry) => keys.add(entry.key));
-        act().select(keys, live.current.focusKey);
-      },
-      deselectRows: async (key: unknown, values: unknown) => {
-        const keys = new Set(live.current.selected);
-        byKeyValues(key, values).forEach((entry) => keys.delete(entry.key));
-        act().select(keys, live.current.focusKey);
-      },
-      selectAllRows: async () =>
-        act().select(new Set(live.current.processed.map((entry) => entry.key)), live.current.focusKey),
-      deselectAllRows: async () => act().select(new Set(), null),
-      setFilters: async (list: unknown) => act().applyFilterList(list),
-      clearFilters: async () => act().applyFilterList([]),
-      setSort: async (columnKey: unknown, direction: unknown) =>
-        act().applySort(
-          isSet(columnKey) && (direction === 'asc' || direction === 'desc')
-            ? { key: String(columnKey), direction }
-            : null
-        ),
-      setSearchText: async (text: unknown) => act().setSearchInput(String(text ?? '')),
-      discardChanges: async () => act().discard({ fire: false }),
-      downloadTableData: async (type: unknown) =>
-        act().runDownload(
-          String(type ?? 'csv')
-            .toLowerCase()
-            .includes('json')
-            ? 'json'
-            : 'csv'
-        ),
-    });
+    publish.current(
+      asActions({
+        pageIndex: 1,
+        searchText: '',
+        sortApplied: [],
+        filters: [],
+        changeSet: {},
+        dataUpdates: [],
+        lastActionClicked: {},
+        // As on the native Table, setPage does not fire onPageChanged.
+        setPage: async (target: unknown) => act().goTo(target, { fire: false }),
+        selectRow: async (key: unknown, value: unknown) => {
+          const [match] = byKeyValue(key, value);
+          if (match) act().select(new Set([match.key]), match.key);
+        },
+        deselectRow: async () => act().select(new Set(), null),
+        selectRows: async (key: unknown, values: unknown) => {
+          const keys = new Set(live.current.selected);
+          byKeyValues(key, values).forEach((entry) => keys.add(entry.key));
+          act().select(keys, live.current.focusKey);
+        },
+        deselectRows: async (key: unknown, values: unknown) => {
+          const keys = new Set(live.current.selected);
+          byKeyValues(key, values).forEach((entry) => keys.delete(entry.key));
+          act().select(keys, live.current.focusKey);
+        },
+        selectAllRows: async () =>
+          act().select(new Set(live.current.processed.map((entry) => entry.key)), live.current.focusKey),
+        deselectAllRows: async () => act().select(new Set(), null),
+        setFilters: async (list: unknown) => act().applyFilterList(list),
+        clearFilters: async () => act().applyFilterList([]),
+        setSort: async (columnKey: unknown, direction: unknown) =>
+          act().applySort(
+            isSet(columnKey) && (direction === 'asc' || direction === 'desc')
+              ? { key: String(columnKey), direction }
+              : null
+          ),
+        setSearchText: async (text: unknown) => act().searchNow(String(text ?? '')),
+        discardChanges: async () => act().discard({ fire: false }),
+        downloadTableData: async (type: unknown) =>
+          act().runDownload(
+            String(type ?? 'csv')
+              .toLowerCase()
+              .includes('json')
+              ? 'json'
+              : 'csv'
+          ),
+      })
+    );
   }, [live, handlers, publish]);
 
   return runDownload;

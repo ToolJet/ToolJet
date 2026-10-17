@@ -8,7 +8,7 @@ import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useDynamicHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
-import { useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { asActions, useActionFire, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { TabStrip } from './TabStrip';
@@ -97,12 +97,13 @@ export const ShadTabs = (props: WidgetProps) => {
     styles,
     setExposedVariable,
     setExposedVariables,
-    fireEvent,
     currentMode,
     currentLayout,
     subContainerIndex,
     dataCy,
   } = props;
+  // Events an action fires wait until it has published (useActionFire).
+  const fireEvent = useActionFire(props.fireEvent);
   // A pack widget created through the MCP carries only the properties it was given (the server has no defaults to
   // merge for pack types), so an unset property means its default: visible, enabled, not loading.
   const { isDisabled, isVisible, isLoading } = useExposeState(
@@ -191,20 +192,22 @@ export const ShadTabs = (props: WidgetProps) => {
   const handlers = useLatest({ switchTo, patchTab });
   useEffect(() => {
     const act = () => handlers.current;
-    live.current.setExposedVariables({
-      setTab: async (tabId: unknown) => act().switchTo(tabId),
-      nextTab: async () => {
-        const next = neighbourTab(live.current.tabs, live.current.currentTab, 1);
-        if (next) act().switchTo(next.id);
-      },
-      previousTab: async () => {
-        const previous = neighbourTab(live.current.tabs, live.current.currentTab, -1);
-        if (previous) act().switchTo(previous.id);
-      },
-      setTabDisable: async (tabId: unknown, value: unknown) => act().patchTab(tabId, { disable: !!value }),
-      setTabLoading: async (tabId: unknown, value: unknown) => act().patchTab(tabId, { loading: !!value }),
-      setTabVisibility: async (tabId: unknown, value: unknown) => act().patchTab(tabId, { visible: value !== false }),
-    });
+    live.current.setExposedVariables(
+      asActions({
+        setTab: async (tabId: unknown) => act().switchTo(tabId),
+        nextTab: async () => {
+          const next = neighbourTab(live.current.tabs, live.current.currentTab, 1);
+          if (next) act().switchTo(next.id);
+        },
+        previousTab: async () => {
+          const previous = neighbourTab(live.current.tabs, live.current.currentTab, -1);
+          if (previous) act().switchTo(previous.id);
+        },
+        setTabDisable: async (tabId: unknown, value: unknown) => act().patchTab(tabId, { disable: !!value }),
+        setTabLoading: async (tabId: unknown, value: unknown) => act().patchTab(tabId, { loading: !!value }),
+        setTabVisibility: async (tabId: unknown, value: unknown) => act().patchTab(tabId, { visible: value !== false }),
+      })
+    );
   }, [handlers]);
 
   const currentTitle = current?.title ?? '';
