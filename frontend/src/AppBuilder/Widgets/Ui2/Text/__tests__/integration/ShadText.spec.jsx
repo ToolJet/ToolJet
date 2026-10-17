@@ -117,6 +117,16 @@ describe('UI 2.0 Text', () => {
     expect(paragraph(container).style.textAlign).toBe('right');
   });
 
+  // A custom size kept the tone's fixed line height: paragraph text at 64px drew 28px lines over each other (release
+  // audit 40).
+  test('[ShadText-STY-003] a custom font size takes a line height in proportion, not the fixed one of its tone', async () => {
+    const { container } = render({ properties: { tone: binding('small') } });
+    await waitFor(() => expect(paragraph(container)).toHaveClass('tw-leading-none'));
+    render({ properties: { tone: binding('small') }, styles: { fontSize: binding('{{64}}') } });
+    await waitFor(() => expect(paragraph(container)).toHaveClass('lk-size', 'tw-leading-normal'));
+    expect(paragraph(container)).not.toHaveClass('tw-leading-none');
+  });
+
   test('[ShadText-STY-002] junk typeface styles add no classes and do not break the text', async () => {
     const { container } = render({
       styles: { fontFamily: binding('{{42}}'), fontWeight: binding('heavy'), textTransform: binding('{{[]}}') },
