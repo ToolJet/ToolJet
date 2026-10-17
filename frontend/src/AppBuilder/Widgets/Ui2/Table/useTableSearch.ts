@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { runNow, useActionFire, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -15,13 +15,16 @@ export const useTableSearch = (
   const [searchText, setSearchText] = useState('');
   // Read through refs: a new callback from RenderWidget must not restart the search pause.
   const publish = useLatest(setExposedVariables);
-  const fire = useLatest(fireEvent);
-  const apply = (text: string) => {
-    setSearchText(text);
-    setPage(1);
-    publish.current({ searchText: text, pageIndex: 1 });
-    fire.current('onSearch');
-  };
+  const fire = useLatest(useActionFire(fireEvent));
+  // The search is rendered and published (searchText, pageIndex, and Table's filteredData and currentPageData, from
+  // its effect) before onSearch fires: a handler reading filteredData saw the rows before the search.
+  const apply = (text: string) =>
+    runNow(() => {
+      setSearchText(text);
+      setPage(1);
+      publish.current({ searchText: text, pageIndex: 1 });
+      fire.current('onSearch');
+    });
   const applyLatest = useLatest(apply);
   useEffect(() => {
     if (searchInput === searchText) return undefined;
