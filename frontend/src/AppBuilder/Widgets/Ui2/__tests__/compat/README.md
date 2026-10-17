@@ -43,7 +43,7 @@ ones that release's configs had.
 same app. It loads the result into the real store with `createWidgetHarness`, renders it in view mode, and fails on:
 
 - a widget that renders "This widget is not available";
-- any `console.error` (three known non-app messages are listed in the spec);
+- any console error or warning (the console guard every UI 2.0 spec gets from `ui2Harness.js`);
 - a saved handler on an event the widget no longer has, or one that no longer runs its action;
 - a saved control-component action, RunJS call or binding that names something the widget no longer has;
 - exposed values, after loading, after each action and after the RunJS query, that differ from the recorded

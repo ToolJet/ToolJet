@@ -3,6 +3,7 @@
 // written it. A removed or renamed name, a changed default, a changed value type or reordered action parameters fail,
 // unless the same change records the rename in legacyNames.ts with a data migration, or lists an accepted break with
 // its reason in __contracts__/acceptedBreaks.json. The failure message says which, and how.
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 import { renamesFor } from '@/AppBuilder/Widgets/Ui2/legacyNames';
 import { classify, compareWithFrozen, contractOf, diffContract, explainAll, readAcceptedBreaks } from './contract';
