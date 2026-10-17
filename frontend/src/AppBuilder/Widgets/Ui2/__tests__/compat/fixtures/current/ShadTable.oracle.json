@@ -353,7 +353,27 @@
     },
     {
       "call": "setSearchText",
-      "changed": {}
+      "changed": {
+        "searchText": "Ada",
+        "currentPageData": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          }
+        ],
+        "filteredData": [
+          {
+            "id": 1,
+            "name": "Ada Lovelace",
+            "status": "Paid",
+            "amount": 1250,
+            "date": "2026-09-14"
+          }
+        ]
+      }
     },
     {
       "call": "discardChanges",
@@ -430,7 +450,7 @@
       "selectedRows": [],
       "selectedRowsId": [],
       "pageIndex": 1,
-      "searchText": "",
+      "searchText": "Ada",
       "sortApplied": [
         {
           "column": "Amount",
@@ -489,48 +509,20 @@
       ],
       "currentPageData": [
         {
-          "id": 3,
-          "name": "Grace Hopper",
-          "status": "Overdue",
-          "amount": 3120,
-          "date": "2026-08-30"
-        },
-        {
           "id": 1,
           "name": "Ada Lovelace",
           "status": "Paid",
           "amount": 1250,
           "date": "2026-09-14"
-        },
-        {
-          "id": 2,
-          "name": "Alan Turing",
-          "status": "Pending",
-          "amount": 980.5,
-          "date": "2026-09-21"
         }
       ],
       "filteredData": [
         {
-          "id": 3,
-          "name": "Grace Hopper",
-          "status": "Overdue",
-          "amount": 3120,
-          "date": "2026-08-30"
-        },
-        {
           "id": 1,
           "name": "Ada Lovelace",
           "status": "Paid",
           "amount": 1250,
           "date": "2026-09-14"
-        },
-        {
-          "id": 2,
-          "name": "Alan Turing",
-          "status": "Pending",
-          "amount": 980.5,
-          "date": "2026-09-21"
         }
       ],
       "lastActionClicked": {},
