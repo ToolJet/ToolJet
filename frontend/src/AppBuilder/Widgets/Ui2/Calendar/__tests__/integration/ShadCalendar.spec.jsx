@@ -237,4 +237,55 @@ describe('UI 2.0 Calendar', () => {
     expect(exposed().value).toBe('2026-10-09');
     expect(widget.variables().picked).toBeUndefined();
   });
+
+  // Audit 57: with minDate and maxDate the calendar drew the nearest allowed month, but visibleMonth, visibleStart and
+  // visibleEnd still described the month asked for, so a query on them loaded another period than the one shown.
+  describe('months limited by minDate and maxDate', () => {
+    const LIMITS = {
+      defaultMonth: binding('2026-10-01'),
+      minDate: binding('2026-10-01'),
+      maxDate: binding('2026-12-31'),
+    };
+    const draw = async (properties = {}) => {
+      render({ properties: { ...LIMITS, ...properties } });
+      await screen.findAllByRole('grid');
+    };
+
+    test('[ShadCalendar-PROP-011] a month before minDate or after maxDate shows and exposes the nearest allowed one', async () => {
+      await draw({ defaultMonth: binding('2025-01-01') });
+      expect(screen.getByText('October 2026')).toBeInTheDocument();
+      expect(exposed().visibleMonth).toBe('2026-10');
+
+      await widget.act('setMonth', '2027-02-01');
+      expect(screen.getByText('December 2026')).toBeInTheDocument();
+      expect(exposed()).toMatchObject({
+        visibleMonth: '2026-12',
+        visibleStart: '2026-12-01',
+        visibleEnd: '2026-12-31',
+      });
+    });
+
+    test('[ShadCalendar-PROP-012] two months at maxDate start a month earlier, and say so', async () => {
+      await draw({ numberOfMonths: binding('{{2}}') });
+      await widget.act('setMonth', '2026-12-01');
+
+      expect(screen.getByText('November 2026')).toBeInTheDocument();
+      expect(screen.getByText('December 2026')).toBeInTheDocument();
+      expect(exposed()).toMatchObject({
+        visibleMonth: '2026-11',
+        visibleStart: '2026-11-01',
+        visibleEnd: '2026-12-31',
+      });
+    });
+
+    test('[ShadCalendar-PROP-013] a maxDate moved before the month shown moves both the view and the period', async () => {
+      await draw();
+      await widget.act('setMonth', '2026-11-01');
+      expect(exposed().visibleMonth).toBe('2026-11');
+
+      act(() => widget.setComponentProperty(ID, 'maxDate', '2026-10-31', 'properties'));
+      await screen.findByText('October 2026');
+      await waitFor(() => expect(exposed().visibleMonth).toBe('2026-10'));
+    });
+  });
 });

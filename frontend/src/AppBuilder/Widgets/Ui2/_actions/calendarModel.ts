@@ -104,6 +104,23 @@ export const visiblePeriod = (
   };
 };
 
+/** The first month the calendar shows: `month`, moved inside the months minDate and maxDate allow, so that the last
+ *  of `numberOfMonths` months is not after maxDate's month (when they cannot all fit, minDate's month). The calendar
+ *  is drawn from it and its visible period exposed from it, so the two describe the same months. */
+export const shownMonth = (month: ConfigType, numberOfMonths: number, minDate?: unknown, maxDate?: unknown): Date => {
+  let start = (dayjs(month).isValid() ? dayjs(month) : dayjs()).startOf('month');
+  const min = toDate(minDate);
+  const max = toDate(maxDate);
+  if (max) {
+    const latest = dayjs(max)
+      .startOf('month')
+      .subtract(Math.max(1, numberOfMonths) - 1, 'month');
+    if (start.isAfter(latest)) start = latest;
+  }
+  if (min && start.isBefore(dayjs(min).startOf('month'))) start = dayjs(min).startOf('month');
+  return start.toDate();
+};
+
 /** Markers by day ('YYYY-MM-DD' -> [{ label, color }]): `[{ date, label?, color? }]`, or plain dates. */
 export const markersByDay = (markers: unknown): Map<string, Marker[]> => {
   const map = new Map<string, Marker[]>();

@@ -13,6 +13,7 @@ import {
   calendarSelection,
   disabledMatchers,
   markersByDay,
+  shownMonth,
   toDate,
   visiblePeriod,
   ymd,
@@ -118,7 +119,10 @@ export const ShadCalendar = (props: WidgetProps) => {
   // The month shown resets only when the opening month changes (initialMonth can be a new Date each render).
   const latestInitialMonth = useLatest(initialMonth);
   useEffect(() => setMonth(latestInitialMonth.current), [monthKey, latestInitialMonth]);
-  const live = useLatest({ mode, selected, months });
+  // The months shown, inside minDate and maxDate: drawn, exposed and published as one.
+  const { minDate, maxDate } = properties;
+  const shown = shownMonth(month, months, minDate, maxDate);
+  const live = useLatest({ mode, selected, months, minDate, maxDate });
 
   const publish = (next: CalendarSelection) => {
     setSelected(next);
@@ -126,13 +130,15 @@ export const ShadCalendar = (props: WidgetProps) => {
   };
   const showMonth = (date: Date | undefined, fire: boolean) => {
     if (!date) return;
-    setMonth(date);
-    setExposedVariables(visiblePeriod(date, live.current.months));
+    const { months: n, minDate: min, maxDate: max } = live.current;
+    const next = shownMonth(date, n, min, max);
+    setMonth(next);
+    setExposedVariables(visiblePeriod(next, n));
     if (fire) fireEvent('onMonthChanged');
   };
   useExposed(setExposedVariables, properties, {
     ...calendarExposed(selected, mode),
-    ...visiblePeriod(month, months),
+    ...visiblePeriod(shown, months),
     selectDate: async (date: unknown, endDate?: unknown) => {
       const { mode: m, selected: current } = live.current;
       let next: CalendarSelection;
@@ -156,7 +162,6 @@ export const ShadCalendar = (props: WidgetProps) => {
   const disabled = busy(properties);
   const disabledDates = useStable(properties.disabledDates);
   const disabledDays = useStable(properties.disabledDays);
-  const { minDate, maxDate } = properties;
   const matchers = useMemo(
     () => disabledMatchers({ minDate, maxDate, disabledDates, disabledDays }),
     [minDate, maxDate, disabledDates, disabledDays]
@@ -177,7 +182,7 @@ export const ShadCalendar = (props: WidgetProps) => {
       <MarkerContext.Provider value={markers}>
         <Calendar
           {...selection}
-          month={month}
+          month={shown}
           onMonthChange={(next) => showMonth(next, true)}
           numberOfMonths={months}
           weekStartsOn={properties.weekStartsOn === 'monday' ? 1 : 0}
