@@ -14,6 +14,7 @@ import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
 import {
   heightHeldInView,
   isUi2PerRowType,
+  keepsFittedHeightWhenMoved,
   UI2_ROW_CHROME,
   ui2RowFloor,
 } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
@@ -1374,7 +1375,9 @@ export const buildReflowPatch = ({
         : resolvedHeights[componentId] ?? currentEffectiveLayout?.height ?? 0;
 
     // Floor a non-changed sibling at its calc-bumped canonical so a stale/raw temp can't pin a top-label input below its rendered label row.
-    if (componentId !== changedComponentId) {
+    // A UI 2.0 widget keeps the height its own reflow fitted: flooring it made its height depend on reflow order.
+    const movedType = currentPageComponents?.[componentId]?.component?.component;
+    if (componentId !== changedComponentId && !keepsFittedHeightWhenMoved(movedType)) {
       const bumpedHeight = getEffectiveCanonicalHeight(componentId);
       nextHeight = Math.max(nextHeight, bumpedHeight);
     }

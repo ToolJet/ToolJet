@@ -28,6 +28,15 @@ export const heightHeldInView = (componentType, properties = {}) => {
   return properties.dynamicHeight === false;
 };
 
+/**
+ * Whether a widget moved by a sibling keeps the height its own reflow fitted, even below the height it was drawn at.
+ * True for a component-pack widget, which fits its content. A native widget moved by a sibling is floored at its drawn
+ * height, so a stale height cannot pin a top-label input below its label row.
+ * @param {string | undefined} componentType
+ * @returns {boolean}
+ */
+export const keepsFittedHeightWhenMoved = (componentType) => isPackWidget(componentType);
+
 // UI 2.0 widgets whose rows (or cards) each take their own height in the reflow, the way the native Listview's rows
 // do: a child growing in row r writes the row's height under the widget's id at that row's context. The native
 // Listview keeps its own branches in the reflow; these names are only ever true for UI 2.0 types.
