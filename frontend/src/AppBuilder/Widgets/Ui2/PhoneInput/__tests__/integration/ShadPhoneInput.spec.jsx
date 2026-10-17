@@ -188,6 +188,27 @@ describe('UI 2.0 Phone input', () => {
     expect(box()).toHaveValue(last.value ? '(202) 555-0143' : '');
   });
 
+  // Release audit 34: an action restarted the phone library (a new key) every time, so a box the user was typing in
+  // lost focus, even when the action changed nothing.
+  test.each([
+    ['the same country', 'setCountryCode', ['US'], '+12025550143'],
+    ['the same number', 'setValue', ['2025550143', 'US'], '+12025550143'],
+    ['a new number', 'setValue', ['4155550123', 'US'], '+14155550123'],
+    ['a new country', 'setCountryCode', ['GB'], '+442025550143'],
+    ['clear', 'clear', [], ''],
+    ['an unknown country', 'setCountryCode', ['NOT_A_COUNTRY'], '+12025550143'],
+  ])('[ShadPhoneInput-ACT-005] an action keeps a focused box focused: %s', async (_label, action, args, value) => {
+    render({ properties: { defaultValue: binding('+12025550143'), defaultCountry: binding('US') } });
+    await waitFor(() => expect(exposed().value).toBe('+12025550143'));
+    await act(async () => box().focus());
+    expect(box()).toHaveFocus();
+    await widget.act(action, ...args);
+    await waitFor(() => expect(exposed().value).toBe(value));
+    expect(box()).toHaveFocus();
+    // Typing goes on at the end of what the box shows.
+    expect(box().selectionStart).toBe(box().value.length);
+  });
+
   test('[ShadPhoneInput-ACT-003] setFocus and setBlur move focus to and from the box', async () => {
     render();
 

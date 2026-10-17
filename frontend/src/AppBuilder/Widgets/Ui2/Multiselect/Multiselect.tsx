@@ -5,6 +5,7 @@ import { CONTROL, FormField, controlAria, fieldName } from '@/AppBuilder/Widgets
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
+  runNow,
   toOptions,
   useAutoHeight,
   useExposed,
@@ -120,11 +121,12 @@ export const ShadMultiselect = (props: WidgetProps) => {
     menu.change(next);
     if (!(next && disabled)) focus.opened(next);
   };
-  const commit = (next: string[]) => {
-    setKeys(next);
-    publish(next);
-    fireEvent('onSelect');
-  };
+  const commit = (next: string[]) =>
+    runNow(() => {
+      setKeys(next);
+      publish(next);
+      fireEvent('onSelect');
+    });
   const selectedKeys = new Set(selectedOptions.map((o) => M.keyOf(o.value)));
   const isOn = (o: Option) => selectedKeys.has(M.keyOf(o.value));
   const full = limit > 0 && selectedOptions.length >= limit;

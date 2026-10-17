@@ -1,6 +1,6 @@
 // State, validation and focus behaviour the UI 2.0 inputs share.
 import React, { useEffect, useRef, useState } from 'react';
-import { useExposed, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { fromEffect, runNow, useExposed, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { truthy } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { isFilled, validationInput } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -13,7 +13,8 @@ import type { ValidationResult, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_sh
 /** What the value hooks read of the widget's props. */
 export type ValueProps = Pick<WidgetProps, 'properties' | 'setExposedVariable' | 'setExposedVariables' | 'fireEvent'>;
 
-/** Sets the value as the user does: publishes it and fires `event` (onChange by default). */
+/** Sets the value as the user does: publishes it, and everything derived from it (isValid, a selected option), then
+ *  fires `event` (onChange by default), so the event's handlers read the new state (runNow). */
 export type ChangeValue<T> = (value: T, event?: string) => void;
 
 /** A single-value input: local state seeded from defaultValue, published as `value` (through `toExposed`, for
@@ -30,12 +31,19 @@ export const useValue = <T,>(
   const seed = useStable(initial);
   useEffect(() => setValue(seed), [seed]);
   useExposed(setExposedVariables, properties, { value: toExposed(value) ?? '', ...actions(setValue) });
-  const change: ChangeValue<T> = (v, event = 'onChange') => {
-    setValue(v);
-    setExposedVariable('value', toExposed(v) ?? '');
-    fireEvent(event);
-  };
+  const change: ChangeValue<T> = (v, event = 'onChange') =>
+    runNow(() => {
+      setValue(v);
+      setExposedVariable('value', toExposed(v) ?? '');
+      fireEvent(event);
+    });
   return [value, change];
+};
+
+/** Runs `clear` when a Form around the control clears (clearForm), for every value control, validating or not, as the
+ *  native inputs do. The signal arrives in an effect, so the change runs there without a flush (fromEffect). */
+export const useFormClearNow = (clear?: () => void): void => {
+  useFormClear(() => fromEffect(() => clear?.()));
 };
 
 /** Validation the native way: validate(value) (the widget's Validation section) gives isValid and the message, both
@@ -65,7 +73,7 @@ export const useValidation = (
   const isMandatory = validation?.mandatory === true;
   const [touched, setTouched] = useState(false);
   useShowValidationOnFormSubmit(setTouched);
-  useFormClear(() => {
+  useFormClearNow(() => {
     clear?.();
     setTouched(false);
   });
@@ -161,13 +169,14 @@ export const useChecked = (props: ValueProps & Pick<WidgetProps, 'componentType'
   useEffect(() => setChecked(!!properties.defaultChecked), [properties.defaultChecked]);
   const checkedRef = useRef(checked);
   checkedRef.current = checked;
-  const change: ChangeChecked = (v) => {
-    checkedRef.current = v === true;
-    setChecked(v === true);
-    setExposedVariable('value', v === true);
-    fireEvent('onChange');
-    if (props.componentType === 'ShadCheckbox') fireEvent(v === true ? 'onCheck' : 'onUnCheck');
-  };
+  const change: ChangeChecked = (v) =>
+    runNow(() => {
+      checkedRef.current = v === true;
+      setChecked(v === true);
+      setExposedVariable('value', v === true);
+      fireEvent('onChange');
+      if (props.componentType === 'ShadCheckbox') fireEvent(v === true ? 'onCheck' : 'onUnCheck');
+    });
   // The native Checkbox and Toggle switch actions, with the native events, every time: a Checkbox's setValue fires
   // onCheck or onUnCheck (not onChange) and its toggle fires onChange; a Switch's setValue fires nothing and its toggle
   // fires onChange.
