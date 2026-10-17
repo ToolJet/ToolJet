@@ -82,6 +82,22 @@ describe('UI 2.0 Questionnaire', () => {
     await waitFor(() => expect(exposed().answers.role).toBe('Legal'));
   });
 
+  // Release audit 63: typing Japanese, Chinese or Korean in Other, the Enter that confirms the composed characters went
+  // on to the next question (on the last one it submitted).
+  test('[ShadQuestionnaire-KBD-002] the Enter that ends an IME composition in Other does not go on', async () => {
+    render();
+    fireEvent.keyDown(await screen.findByRole('radiogroup'), { key: 'c' });
+    const other = screen.getByRole('textbox', { name: 'Other' });
+    fireEvent.change(other, { target: { value: 'とう' } });
+    await waitFor(() => expect(exposed().answers.role).toBe('とう'));
+    fireEvent.keyDown(other, { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(other, { key: 'Enter', keyCode: 229 });
+    expect(await screen.findByText('Question 1 of 3')).toBeInTheDocument();
+    expect(exposed().currentIndex).toBe(0);
+    fireEvent.keyDown(other, { key: 'Enter' });
+    expect(await screen.findByText('Question 2 of 3')).toBeInTheDocument();
+  });
+
   test('[ShadQuestionnaire-PROP-001] shortcuts numbers labels the answers 1, 2, 3; none drops the keys', async () => {
     render({ properties: { shortcuts: binding('numbers') } });
     await waitFor(() => expect(screen.getAllByRole('radio')[0].textContent).toBe('1OperationsDay-to-day work'));

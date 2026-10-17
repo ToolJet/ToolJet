@@ -22,6 +22,7 @@ import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { QuestionAnswer, type AnswerOption } from './QuestionAnswer';
 import type { KeyboardEvent } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isComposing } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 /** What the Questionnaire exposes besides its actions. */
 type QuestionnaireState = {
@@ -200,7 +201,8 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
   // Shortcut keys pick an answer, arrows move between answers and Enter goes on, while focus is in the question (not
   // while typing in a text answer).
   const onKeyDown = (e: KeyboardEvent<HTMLFieldSetElement>) => {
-    if (disabled || !item) return;
+    // Keys of an IME composition (the Enter that confirms composed characters in Other) are the input method's.
+    if (disabled || !item || isComposing(e)) return;
     const target = e.target as HTMLElement | null;
     const typing = target?.tagName === 'TEXTAREA' || target?.tagName === 'INPUT';
     if (e.key === 'Enter' && !e.shiftKey && (!typing || target?.tagName === 'INPUT')) {
