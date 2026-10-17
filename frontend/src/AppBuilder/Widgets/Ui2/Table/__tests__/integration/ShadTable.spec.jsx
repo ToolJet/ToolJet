@@ -358,6 +358,19 @@ describe('UI 2.0 Table', () => {
     expect(screen.getByText('1 row changed')).toBeInTheDocument();
   });
 
+  test('[ShadTable-EVT-012] new data drops the edits, and the published changeSet, dataUpdates and updatedData with them', async () => {
+    render({ properties: { columns: binding(EDITABLE) } });
+    widget.setEvents(on('onCellValueChanged', 'edited', 'changes'));
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    await editFirstName('Zed');
+    await waitFor(() => expect(exposed().changeSet).toEqual({ 0: { name: 'Zed' } }));
+    widget.setComponentProperty(ID, 'data', "{{[{ id: 1, name: 'From server' }]}}", 'properties');
+    await waitFor(() => expect(names()).toEqual(['From server']));
+    await waitFor(() => expect(exposed().changeSet).toEqual({}));
+    expect(exposed().dataUpdates).toEqual([]);
+    expect(exposed().updatedData.map((r) => r.name)).toEqual(['From server']);
+  });
+
   test('[ShadTable-EVT-011] an edited row is filtered and sorted by its edited values', async () => {
     render({ properties: { columns: binding(EDITABLE) } });
 
