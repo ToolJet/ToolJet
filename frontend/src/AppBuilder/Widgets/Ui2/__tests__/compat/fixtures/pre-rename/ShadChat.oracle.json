@@ -37,7 +37,7 @@
           {
             "message": "Saved message",
             "messageId": "<uuid>",
-            "timestamp": "2026-06-15T09:00:00.000Z",
+            "timestamp": "local 2026-06-15T09:00:00.000",
             "name": "Assistant",
             "avatar": "",
             "type": "response"
@@ -46,7 +46,7 @@
         "lastResponse": {
           "message": "Saved message",
           "messageId": "<uuid>",
-          "timestamp": "2026-06-15T09:00:00.000Z",
+          "timestamp": "local 2026-06-15T09:00:00.000",
           "name": "Assistant",
           "avatar": "",
           "type": "response"
