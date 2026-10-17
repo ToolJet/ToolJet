@@ -68,6 +68,13 @@ type DialogStore = {
   };
 };
 
+/** The text of the first heading in an open dialog, its header's before its body's ('' for none). */
+const headingOf = (modal: Element): string => {
+  const HEADING = 'h1, h2, h3, h4, h5, h6, [role="heading"]';
+  const el = modal.querySelector(`.modal-header :is(${HEADING})`) || modal.querySelector(HEADING);
+  return (el?.textContent || '').trim().slice(0, 120);
+};
+
 const useDialogFocus = (id: string, currentMode?: string, name = 'Dialog') => {
   const { moduleId } = useModuleContext();
   const show = useStore(
@@ -85,15 +92,17 @@ const useDialogFocus = (id: string, currentMode?: string, name = 'Dialog') => {
     };
   }, [show, currentMode, id]);
   // ModalV2 gives the open dialog role="dialog" and no name, so a screen reader announces an unnamed dialog: it reads
-  // as the Dialog's title. The modal mounts a commit or two after `show` turns on, so this waits for it (20 frames).
+  // as the heading its header holds (a Heading widget, as a new Dialog has), else the Dialog's title. The modal and its
+  // canvases mount a few commits after `show` turns on, so this looks again for 20 frames.
   useEffect(() => {
     if (!show) return undefined;
     let tries = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const label = () => {
       const modal = modalOf(id);
-      if (modal) modal.setAttribute('aria-label', name);
-      else if ((tries += 1) < 20) timer = setTimeout(label, 16);
+      const heading = modal ? headingOf(modal) : '';
+      if (modal) modal.setAttribute('aria-label', heading || name);
+      if (!heading && (tries += 1) < 20) timer = setTimeout(label, 16);
     };
     label();
     return () => clearTimeout(timer);
