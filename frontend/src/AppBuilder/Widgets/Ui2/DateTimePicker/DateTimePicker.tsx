@@ -72,14 +72,17 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
   const dateFormat =
     typeof properties.dateFormat === 'string' && properties.dateFormat.trim() ? properties.dateFormat : 'DD MMM YYYY';
   const use24 = M.is24h(properties.timeFormat);
-  const displayFormat = `${dateFormat} ${use24 ? 'HH:mm' : 'h:mm A'}`;
+  // One format shows the value and reads text written in it (a default, setValue, minDate): dayjs tokens, with a
+  // date-fns format ('dd MMM yyyy') read as dayjs's ('DD MMM YYYY') for both, as in the Date picker.
+  const dayFormat = M.toDayjsFormat(dateFormat);
+  const displayFormat = `${dayFormat} ${use24 ? 'HH:mm' : 'h:mm A'}`;
   const step = M.minuteStep(properties.minuteStep, 5);
   const minDate = useStable(properties.minDate);
   const maxDate = useStable(properties.maxDate);
   const disabledDates = useStable(properties.disabledDates);
   const rules = useMemo(
-    () => M.dateRules({ minDate, maxDate, disabledDates, format: dateFormat }),
-    [minDate, maxDate, disabledDates, dateFormat]
+    () => M.dateRules({ minDate, maxDate, disabledDates, format: dayFormat }),
+    [minDate, maxDate, disabledDates, dayFormat]
   );
   // A new default value resets the value; a new display format only changes how it is shown (the default is read
   // with the format in force when the default itself changes).
