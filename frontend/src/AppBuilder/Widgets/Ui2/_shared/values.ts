@@ -65,6 +65,10 @@ export const cssLength = (v: unknown): string | undefined => {
 };
 /** A CSS length: a bare number in px ('12' reads 12px), anything else as written. */
 export const px = (v: unknown): string => (/^\d+(\.\d+)?$/.test(String(v).trim()) ? `${v}px` : String(v));
+/** A CSS length that may be negative (letter spacing): a bare number, signed or not, in px; anything else as written.
+ *  Sizes that cannot be negative (radius, font size) use px. */
+export const signedPx = (v: unknown): string =>
+  /^-?\d+(\.\d+)?$/.test(String(v).trim()) ? `${String(v).trim()}px` : String(v);
 /** A number padded to two digits (clock parts). */
 export const pad2 = (n: number): string => String(n).padStart(2, '0');
 

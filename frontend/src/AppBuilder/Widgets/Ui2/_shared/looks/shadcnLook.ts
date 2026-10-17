@@ -7,7 +7,7 @@
 import { GROUP_LOOKS } from '@/AppBuilder/Widgets/Ui2/_shared/looks/groups';
 import { fontStack, fontWeight, textCase } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 import type { CssVars, LookEntry, LookMap, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { isSet, px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isSet, px, signedPx } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { ACCENT, FIELD, CHART } from '@/AppBuilder/Widgets/Ui2/_shared/looks/entries';
 
 // Controls beside a label: checkbox, switch, radio group.
@@ -20,7 +20,7 @@ const CHOICE: LookEntry[] = [
 const TYPE: LookEntry[] = [
   ['fontFamily', '--lk-font', fontStack],
   ['fontWeight', '--lk-weight', fontWeight],
-  ['letterSpacing', '--lk-tracking', px],
+  ['letterSpacing', '--lk-tracking', signedPx],
   ['textTransform', '--lk-case', textCase],
   ['fontSize', '--lk-size', px],
 ];
@@ -74,7 +74,7 @@ export const LOOKS: LookMap = {
     ['progressColor', '--lk-progress'],
     ['valueFontFamily', '--lk-value-font', fontStack],
     ['labelTextTransform', '--lk-label-case', textCase],
-    ['labelLetterSpacing', '--lk-label-tracking', px],
+    ['labelLetterSpacing', '--lk-label-tracking', signedPx],
   ],
   ShadBadge: [
     ['backgroundColor', '--lk-bg'],
