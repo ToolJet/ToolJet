@@ -54,7 +54,10 @@ same app. It loads the result into the real store with `createWidgetHarness`, re
 - exposed values, after loading, after each action and after the RunJS query, that differ from the recorded
   `<Type>.oracle.json`.
 
-Dates are pinned (15 June 2026, UTC), and generated ids in exposed values are masked.
+Today is pinned to 09:00 local time on 15 June 2026, and times are compared as local wall-clock text (an epoch under a
+time key, or a UTC ISO string, reads `local 2026-06-09T00:00:00.000`), so the oracles hold in any time zone; generated
+ids in exposed values are masked. A step that shows an absolute moment as local time (the Date time picker's
+`setValueInTimestamp`) is recorded as that moment and the names of the values it changed.
 
 **Fixtures are never edited or deleted.** `fixtures/manifest.json` pins each by checksum and the spec fails on a missing
 or changed one. If a widget's behaviour changes on purpose, the oracle may be re-recorded: set its file to
