@@ -268,6 +268,30 @@ describe('UI 2.0 Table', () => {
     expect(widget.variables().seen).toEqual(['grace', 1, 1]);
   });
 
+  test('[ShadTable-EVT-014] onSort, onFilterChanged and onPageChanged handlers read the rows after the change', async () => {
+    render({ properties: { rowsPerPage: binding('{{2}}') } });
+    widget.setEvents([
+      ...on('onSort', '{{components.table1.filteredData[0].name}}', 'sorted'),
+      ...on('onFilterChanged', '{{components.table1.filteredData.length}}', 'filtered'),
+      ...on('onPageChanged', '{{components.table1.currentPageData[0].name}}', 'paged'),
+    ]);
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    await waitFor(() => expect(widget.variables().paged).toBeDefined());
+    expect(widget.variables().paged).toBe('Grace Hopper');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Amount' }));
+    await waitFor(() => expect(widget.variables().sorted).toBeDefined());
+    expect(widget.variables().sorted).toBe('Alan Turing');
+
+    popover(/Filter/);
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Value' }), { target: { value: 'Ada' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    await waitFor(() => expect(widget.variables().filtered).toBeDefined());
+    expect(widget.variables().filtered).toBe(1);
+  });
+
   test('[ShadTable-PROP-007] displaySearchBox, showFilterButton and hideColumnSelectorButton control the toolbar', async () => {
     render({
       properties: {

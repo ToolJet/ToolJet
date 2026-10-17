@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
-import { useActionFire, useAutoHeight, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { runNow, useActionFire, useAutoHeight, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
@@ -156,6 +156,8 @@ export const ShadTable = (props: WidgetProps) => {
   live.current = { entries, processed, paged, selected, edits, columns, filters, sort, searchText, data, focusKey };
 
   // ---- user actions that publish state, then fire their event ----------------------------------------------------------
+  // Sort, filters and page change rows that filteredData and currentPageData publish from an effect: each runs in
+  // runNow, so that effect has run before its event fires (a handler read the rows from before the change).
   // Read through a ref: a new callback from RenderWidget must not republish the data.
   const publish = useLatest(setExposedVariables);
   const sortApplied = (next: Sort | null) => {
@@ -163,11 +165,12 @@ export const ShadTable = (props: WidgetProps) => {
     const column = columns.find((c) => c.key === next.key);
     return [{ column: column?.name ?? next.key, columnKey: next.key, direction: next.direction }];
   };
-  const applySort = (next: Sort | null, { fire = true }: FireOption = {}) => {
-    setSort(next);
-    setExposedVariable('sortApplied', sortApplied(next));
-    if (fire) fireEvent('onSort');
-  };
+  const applySort = (next: Sort | null, { fire = true }: FireOption = {}) =>
+    runNow(() => {
+      setSort(next);
+      setExposedVariable('sortApplied', sortApplied(next));
+      if (fire) fireEvent('onSort');
+    });
   // The native Table's onHeaderClick, with the column in selectedColumnHeader, on any header press (sortable or not).
   const pressHeader = (column: TableColumn) => {
     if (isDisabled) return;
@@ -210,12 +213,15 @@ export const ShadTable = (props: WidgetProps) => {
       column: columns.find((c) => c.key === f.column || c.name === f.column)?.key ?? f.column,
       condition: f.condition,
     }));
-    setFilters(normalized);
-    setPage(1);
-    setExposedVariables({ filters: exposedFilters(normalized), pageIndex: 1 });
-    if (fire) fireEvent('onFilterChanged');
+    runNow(() => {
+      setFilters(normalized);
+      setPage(1);
+      setExposedVariables({ filters: exposedFilters(normalized), pageIndex: 1 });
+      if (fire) fireEvent('onFilterChanged');
+    });
   };
-  const goTo = pageGoTo(setPage, setExposedVariable, fireEvent);
+  const turnPage = pageGoTo(setPage, setExposedVariable, fireEvent);
+  const goTo: typeof turnPage = (target, options) => runNow(() => turnPage(target, options));
   const onAction: OnAction = (buttonId, column, row, rowIndex) => {
     setExposedVariables({
       selectedRow: row,
