@@ -4,6 +4,7 @@
 import { chipTone } from '@/AppBuilder/Widgets/Ui2/_shared/chipTone';
 import type {
   BookingFields,
+  PlacedBooking,
   PlacedBookings,
   Row,
   ScheduleColumn,
@@ -302,6 +303,25 @@ export const placeBookings = (
     entry.lanes = Math.max(1, laneEnds.length);
   }
   return out;
+};
+
+/** A slot's availability on its resource: 'booked' when bookings cover all of it, 'partly' when they cover some,
+ *  else 'free', with the titles of the bookings in it. A booking's own times count, not the whole day it is drawn
+ *  across on the days scale, and a cancelled booking takes no time. */
+export const slotAvailability = (
+  slot: ScheduleSlot,
+  items: readonly PlacedBooking[] = []
+): { state: 'free' | 'partly' | 'booked'; titles: string[] } => {
+  const inSlot = items
+    .filter((b) => !/\bcancel/i.test(b.status) && b.start < slot.end && b.end > slot.start)
+    .sort((a, b) => a.start - b.start);
+  if (!inSlot.length) return { state: 'free', titles: [] };
+  let reached = slot.start;
+  for (const b of inSlot) if (b.start <= reached) reached = Math.max(reached, b.end);
+  return {
+    state: reached >= slot.end ? 'booked' : 'partly',
+    titles: [...new Set(inSlot.map((b) => b.title || 'Booking'))],
+  };
 };
 
 /** A slot as the app reads it: the resource, ISO start and end, the local day and times, and a label ('9:30 AM to
