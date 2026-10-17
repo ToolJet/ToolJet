@@ -281,11 +281,13 @@ export default [
   },
 
   // ToolJet UI 2.0 widgets: dependency lists are complete (useStable and useLatest in _shared/packHooks.ts are the
-  // tools for bound data and latest-value reads); Ui2/__tests__/codeRules.spec.js also rejects suppressions.
+  // tools for bound data and latest-value reads); Ui2/__tests__/codeRules.spec.js also rejects suppressions. A
+  // condition that renders an element is a boolean or a ternary, so a 0 never shows (Ui2/README.md).
   {
     files: ['src/AppBuilder/Widgets/Ui2/**/*.{ts,tsx}'],
     rules: {
       'react-hooks/exhaustive-deps': 'error',
+      'react/jsx-no-leaked-render': ['error', { validStrategies: ['ternary', 'coerce'] }],
     },
   },
 
