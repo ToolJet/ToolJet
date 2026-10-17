@@ -1,11 +1,10 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import isEqual from 'lodash/isEqual';
 import type { FocusEvent } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-// ToolJet UI 2.0: what the pack widgets share to match the native widgets' events and actions (the
-// parity table is in Widgets/Shadcn/EVENT_PARITY.md).
+// ToolJet UI 2.0: what the pack widgets share to match the native widgets' events and actions.
 
 /** Properties an action can change at run time (setText, setImageURL, setMinDate): the action's value holds until the
  *  property itself changes (a binding updates, an inspector edit), the way the native widgets' setters work. Returns
@@ -73,8 +72,21 @@ export const useFocusEvents = (fireEvent: WidgetProps['fireEvent']): FocusEvents
     inside: boolean;
     open: boolean;
     timer: ReturnType<typeof setTimeout> | undefined;
+    focusTimer: ReturnType<typeof setTimeout> | undefined;
     trigger?: HTMLElement | null;
-  }>({ inside: false, open: false, timer: undefined });
+  }>({ inside: false, open: false, timer: undefined, focusTimer: undefined });
+  // An unmounted widget fires nothing: drop a pending focus or blur.
+  useEffect(() => {
+    const s = state.current;
+    return () => {
+      clearTimeout(s.timer);
+      clearTimeout(s.focusTimer);
+    };
+  }, []);
+  const focused = () => {
+    state.current.inside = true;
+    state.current.focusTimer = setTimeout(() => fireEvent('onFocus'), 0);
+  };
   const leave = () => {
     clearTimeout(state.current.timer);
     state.current.timer = setTimeout(() => {
@@ -91,9 +103,7 @@ export const useFocusEvents = (fireEvent: WidgetProps['fireEvent']): FocusEvents
       onFocus: (e?: FocusEvent<HTMLElement>) => {
         state.current.trigger = e?.currentTarget;
         clearTimeout(state.current.timer);
-        if (state.current.inside) return;
-        state.current.inside = true;
-        setTimeout(() => fireEvent('onFocus'), 0);
+        if (!state.current.inside) focused();
       },
       onBlur: leave,
     },
@@ -101,10 +111,7 @@ export const useFocusEvents = (fireEvent: WidgetProps['fireEvent']): FocusEvents
       state.current.open = !!isOpen;
       if (isOpen) {
         clearTimeout(state.current.timer);
-        if (!state.current.inside) {
-          state.current.inside = true;
-          setTimeout(() => fireEvent('onFocus'), 0);
-        }
+        if (!state.current.inside) focused();
       } else leave();
     },
   };
