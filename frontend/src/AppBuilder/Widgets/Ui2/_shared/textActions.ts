@@ -2,6 +2,7 @@
 import { useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { useHasEvent, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 import type { KeyboardEvent } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -40,9 +41,7 @@ export const useTextActions = (
     handlers: {
       onClick: () => !busy(properties) && fireEvent('onClick'),
       onMouseEnter: () => fireEvent('onHover'),
-      ...(clickable
-        ? { role: 'button', tabIndex: 0, onKeyDown: (e: KeyboardEvent) => e.key === 'Enter' && fireEvent('onClick') }
-        : {}),
+      ...(clickable ? { role: 'button', tabIndex: 0, onKeyDown: onKeyActivate(() => fireEvent('onClick')) } : {}),
     },
     clickable,
   };
