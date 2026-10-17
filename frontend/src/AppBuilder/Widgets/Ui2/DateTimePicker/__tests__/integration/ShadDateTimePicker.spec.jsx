@@ -324,4 +324,18 @@ describe('UI 2.0 Date and time picker', () => {
     const minutes = await openSelect('Minute');
     expect(minutes.map((o) => o.textContent)).toEqual(['30']);
   });
+
+  // Audit 69's open question: a date-fns dateFormat ('dd MMM yyyy') was shown right but text in it was not read, so
+  // a default or setValue written that way gave no value and a minDate written that way no bound. One format, the
+  // display format, now shows and reads text alike, as in the Date picker.
+  test('[ShadDateTimePicker-PROP-010] text in a date-fns date format is read as it is shown', async () => {
+    const unicode = { dateFormat: binding('dd MMM yyyy'), timeFormat: binding('24h') };
+    render({ properties: { ...unicode, defaultValue: binding('21 Oct 2026 09:30'), minDate: binding('20 Oct 2026') } });
+
+    await waitFor(() => expect(exposed().value).toBe('2026-10-21T09:30'));
+    expect(exposed()).toMatchObject({ displayValue: '21 Oct 2026 09:30', minDate: '2026-10-20', isValid: true });
+    await widget.act('setValue', '19 Oct 2026 08:00');
+    await waitFor(() => expect(exposed().value).toBe('2026-10-19T08:00'));
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+  });
 });
