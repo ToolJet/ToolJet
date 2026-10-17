@@ -7,23 +7,47 @@
     },
     "collapseWhenHidden": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "disabledModal": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "disabledTrigger": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "dynamicHeight": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
+    },
+    "footerHeight": {
+      "type": "any",
+      "initial": 68
+    },
+    "headerHeight": {
+      "type": "any",
+      "initial": 80
     },
     "hideCloseButton": {
       "type": "any",
@@ -35,11 +59,27 @@
     },
     "loadingState": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "modalHeight": {
       "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
       "default": 400,
       "initial": "{{400}}"
     },
@@ -53,16 +93,28 @@
     },
     "side": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "right",
       "initial": "right"
     },
     "size": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "lg",
       "initial": "lg"
     },
     "tooltip": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "initial": ""
     },
     "tooltipFormat": {
@@ -72,21 +124,37 @@
     },
     "triggerButtonLabel": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "Launch Modal",
       "initial": "Open dialog"
     },
     "useDefaultButton": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": true,
       "initial": "{{true}}"
     },
     "variant": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "dialog",
       "initial": "dialog"
     },
     "visibility": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": true,
       "initial": "{{true}}"
     }
@@ -94,48 +162,92 @@
   "styles": {
     "bodyBackgroundColor": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "var(--cc-surface1-surface)",
       "initial": "var(--cc-surface1-surface)"
     },
     "direction": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "initial": "left"
     },
     "footerBackgroundColor": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "var(--cc-surface1-surface)",
       "initial": "var(--cc-surface1-surface)"
     },
     "footerDividerColor": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "var(--cc-default-border)",
       "initial": "#00000000"
     },
     "headerBackgroundColor": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "var(--cc-surface1-surface)",
       "initial": "var(--cc-surface1-surface)"
     },
     "headerDividerColor": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "var(--cc-default-border)",
       "initial": "#00000000"
     },
     "icon": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "initial": "IconAlignBoxBottomLeft"
     },
     "iconColor": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "initial": "var(--cc-surface1-surface)"
+    },
+    "iconVisibility": {
+      "type": "any",
+      "initial": false
     },
     "triggerButtonBackgroundColor": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "var(--cc-primary-brand)",
       "initial": "var(--cc-primary-brand)"
     },
     "triggerButtonContentAlignment": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "center",
       "initial": "center"
     },
@@ -145,21 +257,45 @@
     },
     "triggerButtonHoverBackgroundColor": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "var(--cc-primary-brand)",
       "initial": "var(--cc-primary-brand)"
     },
     "triggerButtonHoverBackgroundMode": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "auto",
       "initial": "auto"
     },
     "triggerButtonTextColor": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "var(--cc-surface1-surface)",
       "initial": "var(--cc-surface1-surface)"
     },
     "triggerButtonTextSize": {
       "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
       "default": 14,
       "initial": "{{14}}"
     }

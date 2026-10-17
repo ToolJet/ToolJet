@@ -3,66 +3,118 @@
   "properties": {
     "align": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "start",
       "initial": "start"
     },
     "collapseWhenHidden": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "disabledState": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "fullWidth": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "items": {
       "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
       "default": [],
       "initial": "{{[{ label: 'Edit', value: 'edit', icon: 'IconPencil', shortcut: '⌘E' }, { label: 'Duplicate', value: 'duplicate', icon: 'IconCopy', shortcut: '⌘D' }, { label: 'Archive', value: 'archive', icon: 'IconArchive' }, { label: 'Delete', value: 'delete', icon: 'IconTrash', destructive: true, separator: true }]}}"
     },
     "label": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "Actions",
       "initial": "Actions"
     },
     "loadingState": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "menuLabel": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "",
       "initial": ""
     },
     "optionsLoadingState": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "showChevron": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": true,
       "initial": "{{true}}"
     },
     "side": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "bottom",
       "initial": "bottom"
     },
     "size": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "default",
       "initial": "default"
     },
     "tooltip": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "initial": ""
     },
     "tooltipFormat": {
@@ -72,75 +124,187 @@
     },
     "triggerIcon": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "",
       "initial": ""
     },
     "triggerType": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "button",
       "initial": "button"
     },
     "variant": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "outline",
       "initial": "outline"
     },
     "visibility": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": true,
       "initial": "{{true}}"
     }
   },
   "styles": {
     "backgroundColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "borderColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "borderRadius": {
-      "type": "union<string|number>"
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
     },
     "boxShadow": {
       "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
       "default": "0px 0px 0px 0px #00000040",
       "initial": "0px 0px 0px 0px #00000040"
     },
     "descriptionColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "destructiveColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "hoverBackgroundColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "iconColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "itemHoverBackgroundColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "itemHoverTextColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "itemTextColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "menuBackgroundColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "menuBorderColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "menuRadius": {
-      "type": "union<string|number>"
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
     },
     "menuWidth": {
-      "type": "union<string|number>"
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
     },
     "textColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     }
   },
   "validation": {},

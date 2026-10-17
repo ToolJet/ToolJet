@@ -16,7 +16,7 @@ describe('UI 2.0 widget contracts', () => {
 
   it('accept a break only with a reason', () => {
     const AREAS = ['property', 'style', 'validation', 'event', 'action', 'exposed', 'widget'];
-    const CHANGES = ['removed', 'default', 'initial', 'valueType', 'params'];
+    const CHANGES = ['removed', 'default', 'initial', 'valueType', 'rules', 'params'];
     const invalid = readAcceptedBreaks().filter(
       (b) =>
         !/^Shad\w+$/.test(b.type) ||
@@ -113,5 +113,46 @@ describe('UI 2.0 widget contract rules', () => {
     const [change] = verdicts(config);
     expect(change).toMatchObject({ area: 'exposed', key: 'selectedOption', verdict: 'break' });
     expect(explainAll([change])).toContain('{{components.x.selectedOption}}');
+  });
+
+  // Audit 32: the contract kept only a type summary, so a rule that rejects a value saved apps hold (a pattern, a
+  // length, an optional value made required, an object's fields) passed; and keys only in a config's definition (Tabs'
+  // tabItems, Dialog's headerHeight, footerHeight, iconVisibility), which saved apps carry, were not frozen at all.
+  it.each([
+    ['a pattern', (schema) => Object.assign(schema, { pattern: '^[A-Z]+$' })],
+    ['a size', (schema) => Object.assign(schema, { size: { max: 3 } })],
+    ['a value made required', (schema) => Object.assign(schema, { optional: false })],
+  ])('[COMPAT-CONTRACT-007] %s added to a property is a break', (_, tighten) => {
+    const config = edit((c) => tighten(c.properties.label.validation.schema));
+    const [change] = verdicts(config);
+    expect(change).toMatchObject({ area: 'property', key: 'label', change: 'rules', verdict: 'break' });
+    expect(explainAll([change])).toContain('changed its value rules');
+  });
+
+  it('[COMPAT-CONTRACT-008] a changed type is still reported as a type change, not twice', () => {
+    const config = edit((c) => {
+      c.properties.label.validation.schema.type = 'number';
+    });
+    expect(verdicts(config).map((v) => v.change)).toEqual(['valueType']);
+  });
+
+  it('[COMPAT-CONTRACT-009] keys only in the definition are frozen, and removing one is a break', () => {
+    const tabs = shadcnConfigs.find((c) => c.name === 'ShadTabs');
+    const dialog = shadcnConfigs.find((c) => c.name === 'ShadDialog');
+    expect(contractOf(tabs).properties.tabItems).toBeDefined();
+    expect(contractOf(dialog).properties).toHaveProperty('headerHeight');
+    expect(contractOf(dialog).properties).toHaveProperty('footerHeight');
+    expect(contractOf(dialog).styles).toHaveProperty('iconVisibility');
+
+    const before = contractOf(tabs);
+    const after = JSON.parse(JSON.stringify(tabs));
+    delete after.definition.properties.tabItems;
+    const [change] = classify(diffContract(before, contractOf(after)), {
+      renamesFor: () => ({ events: {}, actions: {}, exposed: {}, properties: {} }),
+      migrationTexts: [],
+      acceptedBreaks: [],
+      liveContracts: { ShadTabs: contractOf(after) },
+    });
+    expect(change).toMatchObject({ area: 'property', key: 'tabItems', change: 'removed', verdict: 'break' });
   });
 });
