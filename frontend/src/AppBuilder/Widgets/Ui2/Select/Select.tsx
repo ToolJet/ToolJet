@@ -33,6 +33,7 @@ export const ShadSelect = (props: WidgetProps) => {
   const focus = useFocusEvents(fireEvent);
   useExposed(setExposedVariables, properties, {
     value: selectedOption.value ?? '',
+    selectedOption,
     options,
     label: String(properties.label ?? ''),
     // As the native Select: an option that exists and is enabled is picked, with onSelect; anything else changes
@@ -56,6 +57,7 @@ export const ShadSelect = (props: WidgetProps) => {
     () => {
       setKey('');
       setExposedVariable('value', '');
+      setExposedVariable('selectedOption', {});
     },
     byKey.has(key)
   );
@@ -71,6 +73,7 @@ export const ShadSelect = (props: WidgetProps) => {
         onValueChange={(next) => {
           setKey(next);
           setExposedVariable('value', byKey.get(next)?.value ?? '');
+          setExposedVariable('selectedOption', byKey.get(next) || {});
           fireEvent('onSelect');
         }}
       >
