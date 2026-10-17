@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -39,7 +39,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
+  const { properties, setExposedVariables, fireEvent, componentType, styles } = props;
   const locale = M.isBlank(properties.locale) || typeof properties.locale !== 'string' ? 'en-US' : properties.locale;
   const options = M.toCurrencyList(properties.currencyOptions);
   const initialCurrency = M.toCurrency(properties.currency, options[0] ?? 'USD');
@@ -136,7 +136,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
         ) : null}
         {showSign && !sign.after ? <span className={cn(AFFIX, 'tw-pl-3')}>{sign.sign}</span> : null}
         <input
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           {...numberTextProps(
             setDraft,
             textBox,

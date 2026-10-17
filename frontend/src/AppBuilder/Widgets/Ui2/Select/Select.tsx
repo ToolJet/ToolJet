@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } fro
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { CONTROL, FormField, HELP, controlAria, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, HELP, controlAria, fieldName, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { choiceKey, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -22,7 +22,7 @@ export const ShadSelect = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
+  const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   // Radix Select keys its items by string; keep the original values for the exposed value. An option valued '' (an
   // "All" choice) gets its own key (choiceKey): '' means nothing selected.
   const options = toOptions(properties.options);
@@ -87,7 +87,7 @@ export const ShadSelect = (props: WidgetProps) => {
       >
         <SelectTrigger
           ref={triggerRef}
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           // role="combobox" takes no name from its content: without a label, the placeholder names it.
           aria-label={fieldName(props, 'Select')}
           {...controlAria(props, check.error)}

@@ -27,14 +27,17 @@ export const FieldLabel = ({ id, text, required }: { id?: string; text: string; 
   </Label>
 );
 
+/** A widget's control DOM id (withControlState's domId): `shad-<id>`, with an instance suffix in repeated rows. */
+export const fieldIdOf = (props: { id?: string; domId?: string }): string => props.domId ?? `shad-${props.id}`;
+
 /** The id of the note under a widget's control (its validation message, else its help text). */
-export const noteIdOf = (widgetId: string) => `shad-${widgetId}-note`;
+export const noteIdOf = (props: { id?: string; domId?: string }) => `${fieldIdOf(props)}-note`;
 
 /** What a widget's form control carries for assistive tech: invalid while `error` shows, and described by the note
  *  under it (the error, else the help text), so a screen reader reads both with the control. */
-export const controlAria = (props: { id?: string; properties?: Resolved }, error: unknown) => ({
+export const controlAria = (props: { id?: string; domId?: string; properties?: Resolved }, error: unknown) => ({
   'aria-invalid': !!error || undefined,
-  'aria-describedby': props.id && (error || props.properties?.description) ? noteIdOf(props.id) : undefined,
+  'aria-describedby': props.id && (error || props.properties?.description) ? noteIdOf(props) : undefined,
 });
 
 /** The validation message, else the help text, under a control; `size` is the text size class. `controlId` (the
@@ -126,7 +129,7 @@ export interface FormFieldProps {
 export const FormField = ({ props, properties, check, innerRef, label, error, children }: FormFieldProps) => (
   <Shell {...props} innerRef={innerRef}>
     <Field
-      id={`shad-${props.id}`}
+      id={fieldIdOf(props)}
       label={label ?? properties.label}
       description={properties.description}
       error={error ?? check.error}

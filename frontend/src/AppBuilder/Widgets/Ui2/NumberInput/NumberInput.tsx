@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { ChevronDown, ChevronUp, Minus, Plus } from 'lucide-react';
-import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -20,7 +20,7 @@ export const ShadNumberInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, validation, setExposedVariables, fireEvent, id } = props;
+  const { properties, validation, setExposedVariables, fireEvent } = props;
   const decimals = M.clampInt(properties.decimalPlaces, 0, 10, 2);
   const round = (n: unknown) => M.roundTo(n, decimals);
   const initial = round(M.parseNumber(properties.defaultValue));
@@ -80,7 +80,7 @@ export const ShadNumberInput = (props: WidgetProps) => {
           </span>
         ) : null}
         <input
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           {...numberTextProps(
             setDraft,
             textBox,

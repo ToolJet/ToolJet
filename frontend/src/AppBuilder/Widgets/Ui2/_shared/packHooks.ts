@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useId, useMemo, useRef } from 'react';
 import isEqual from 'lodash/isEqual';
 import { flushSync } from 'react-dom';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -166,7 +166,11 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
       [properties, isVisible, isLoading, isDisabled]
     );
     const fireEvent = useActionFire(props.fireEvent);
-    return React.createElement(Widget, { ...props, properties: effective, fireEvent });
+    // The control's DOM id (labels, help notes): component ids repeat in List view and Kanban rows, so a widget in a
+    // row adds its instance's id, or the second row's label would name the first row's control.
+    const instance = useId().replace(/[^\w-]/g, '');
+    const domId = props.subContainerIndex == null ? `shad-${props.id}` : `shad-${props.id}-${instance}`;
+    return React.createElement(Widget, { ...props, properties: effective, fireEvent, domId });
   };
   Controlled.displayName = `Controlled(${Widget.displayName || Widget.name || 'Widget'})`;
   return Controlled;

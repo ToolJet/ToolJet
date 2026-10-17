@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Circle, Heart, Star } from 'lucide-react';
-import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -28,7 +28,7 @@ export const EMPTY =
   'tw-fill-[color:var(--lk-off,color-mix(in_srgb,var(--sc-muted-foreground)_22%,transparent))] tw-text-[color:var(--lk-off,color-mix(in_srgb,var(--sc-muted-foreground)_22%,transparent))]';
 
 export const ShadRating = (props: WidgetProps) => {
-  const { properties, id } = props;
+  const { properties } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const max = M.clampMax(properties.max);
@@ -83,7 +83,7 @@ export const ShadRating = (props: WidgetProps) => {
     <FormField props={props} properties={properties} check={check} innerRef={ref}>
       <div className="tw-flex tw-items-center tw-gap-2">
         <div
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           role="radiogroup"
           aria-label={isStringOrNumber(properties.label) && properties.label ? String(properties.label) : 'Rating'}
           aria-readonly={readOnly || undefined}
