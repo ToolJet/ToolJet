@@ -217,11 +217,22 @@ export const ShadListView = (props: WidgetProps) => {
         moduleId,
         parentIndices
       );
-      initExposedValueArrayForChildren(id, items.length, moduleId, parentIndices);
     }
+    // Sized for no rows too: an emptied list kept its last rows' values (and actions) in children.
+    initExposedValueArrayForChildren(id, items.length, moduleId, parentIndices);
+    if (!items.length) exposeOne.current('children', {});
     setPublished(true);
     // childCount: a component added to the row template needs its per-row values too.
-  }, [items, childCount, parentIndices, id, moduleId, updateCustomResolvables, initExposedValueArrayForChildren]);
+  }, [
+    items,
+    childCount,
+    parentIndices,
+    id,
+    moduleId,
+    updateCustomResolvables,
+    initExposedValueArrayForChildren,
+    exposeOne,
+  ]);
   useExposedValueBatch(items.length);
 
   const { keys, selectedIndex, pick, clearSelection } = useListSelection({
