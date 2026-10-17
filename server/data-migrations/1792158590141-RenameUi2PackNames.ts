@@ -320,7 +320,7 @@ const BATCH_SIZE = 100;
 export class RenameUi2PackNames1792158590141 implements MigrationInterface {
   /**
    * ToolJet UI 2.0's widget pack (component types starting with `Shad`) settled its names: event ids, control actions,
-   * exposed values and a few property keys each got one name (frontend Widgets/Shadcn/legacyNames.ts). Apps saved
+   * exposed values and a few property keys each got one name (frontend Widgets/Ui2/legacyNames.ts). Apps saved
    * before that still carry the old names, which the widgets no longer fire, run or expose. For every app version
    * with a Shad* component this rewrites, in place:
    *  - event handlers: a Shad* source's event id (and the handler name when it was that id); a control-component

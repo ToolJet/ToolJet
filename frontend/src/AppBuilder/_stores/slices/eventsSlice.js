@@ -455,7 +455,7 @@ export const createEventsSlice = (set, get) => ({
           'onFieldValueChanged',
           'onCancelKeyValuePairChanges',
           'onRefresh',
-          // ToolJet UI 2.0 widgets' own events (Widgets/Shadcn/NAMING.md): a name missing here never runs its
+          // ToolJet UI 2.0 widgets' own events (Widgets/Ui2/NAMING.md): a name missing here never runs its
           // handlers, with no error (everyWidgetEventDispatches.spec.js fails for any widget event left out).
           'onActionButtonClicked',
           'onActionClicked',

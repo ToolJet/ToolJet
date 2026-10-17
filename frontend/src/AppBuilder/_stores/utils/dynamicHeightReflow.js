@@ -758,7 +758,7 @@ export const resolveContainerHeight = ({
     getComponentDefinition,
     isAccordionExpanded,
     hideTabs: component?.properties?.hideTabs === true,
-    // shadcn/ui Tabs (experiment): its 1px frame, and the wizard's Back/Next footer (ShadTabs STEP_NAV_HEIGHT).
+    // ToolJet UI 2.0 Tabs: its 1px frame, and the wizard's Back/Next footer (ShadTabs STEP_NAV_HEIGHT).
     tabsExtraChrome:
       componentType === 'ShadTabs'
         ? 2 + (component?.properties?.variant === 'steps' && component?.properties?.showStepNav !== false ? 56 : 0)

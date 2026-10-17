@@ -1,5 +1,5 @@
 // Names the UI 2.0 widgets (component types starting with `Shad`) used before their names were settled, and the name
-// each one became. This is the server copy of frontend/src/AppBuilder/Widgets/Shadcn/legacyNames.ts: keep the data
+// each one became. This is the server copy of frontend/src/AppBuilder/Widgets/Ui2/legacyNames.ts: keep the data
 // identical. The data migration (data-migrations/*-RenameUi2PackNames.ts) carries its own frozen copy; this one is
 // used on import, so an app exported before the rename comes in with the new names.
 //

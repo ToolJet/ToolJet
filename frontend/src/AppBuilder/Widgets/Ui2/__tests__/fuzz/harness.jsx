@@ -1,4 +1,4 @@
-// Fuzz harness for the shadcn/ui pack (experiment): mounts a pack widget the way RenderWidget does, from its generated
+// Fuzz harness for the ToolJet UI 2.0 widgets: mounts a widget the way RenderWidget does, from its
 // config, feeds adversarial property and style values, and reports what a single misconfigured widget could do to an
 // app: throw during render, throw in an event handler or a promise, loop on its exposed state, render without end,
 // or take too long. Shared by the shard*.spec.jsx suites; not a suite itself.
