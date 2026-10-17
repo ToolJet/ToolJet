@@ -3,15 +3,16 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Badge, Card, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { badgeLook, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+import { badgeLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { fontStack, textCase } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { progressPercent, sparkPaths, splitChange, statSize, statValue } from './statModel';
 import { compactFigure } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import { textArg, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { joinStatRow } from './statRow';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { isSet, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // The Stat's icon is drawn by the Display module, which holds the lucide icon map; it loads only for a Stat with one.
 const StatIconGlyph = React.lazy(() =>
@@ -87,12 +88,12 @@ export const ShadStat = (props: WidgetProps) => {
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   useExposed(setExposedVariables, properties, {
-    primaryLabel: textArg(properties.label),
-    primaryValue: typeof properties.value === 'number' ? properties.value : textArg(properties.value),
-    secondaryLabel: textArg(properties.changeLabel),
-    secondaryValue: textArg(properties.change),
-    setPrimaryValue: async (v: unknown) => override('value', typeof v === 'number' ? v : textArg(v)),
-    setSecondaryValue: async (v: unknown) => override('change', textArg(v)),
+    primaryLabel: toText(properties.label),
+    primaryValue: typeof properties.value === 'number' ? properties.value : toText(properties.value),
+    secondaryLabel: toText(properties.changeLabel),
+    secondaryValue: toText(properties.change),
+    setPrimaryValue: async (v: unknown) => override('value', typeof v === 'number' ? v : toText(v)),
+    setSecondaryValue: async (v: unknown) => override('change', toText(v)),
   });
   const trend = properties.trend || 'neutral';
   const TrendIcon = trend === 'down' ? TrendingDown : TrendingUp;

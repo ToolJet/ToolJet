@@ -3,6 +3,7 @@ import { Icon } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import type { ReactNode } from 'react';
 import type { NavItem } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import type { Bound, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isStringOrNumber } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // The Navigation's item looks, an item's face, and the item changes its actions make.
 
@@ -90,8 +91,6 @@ export const NavFace = ({ item, active, collapsed, chevron }: NavFaceProps) => (
   </>
 );
 
-export const isText = (v: unknown): v is string | number => typeof v === 'string' || typeof v === 'number';
-
 /** Items with the setItemVisibility / setItemDisable changes applied: `changes` maps an item's value to
  *  { visible, disabled }. Plain text items become { label, value } so they can take a change. */
 /** An item's changes from setItemVisibility / setItemDisable. */
@@ -100,7 +99,7 @@ export type NavItemChange = { visible?: boolean; disabled?: boolean };
 export const patchNavItems = (items: unknown, changes: Record<string, NavItemChange>): unknown => {
   if (!Object.keys(changes).length || !Array.isArray(items)) return items;
   const patch = (raw: Bound, depth: number): Bound => {
-    const obj: Resolved = isText(raw) ? { label: String(raw), value: raw } : raw;
+    const obj: Resolved = isStringOrNumber(raw) ? { label: String(raw), value: raw } : raw;
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return raw;
     const key = String(obj.value ?? obj.id ?? '');
     const change = changes[key];

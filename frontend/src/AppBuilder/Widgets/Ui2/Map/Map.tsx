@@ -31,6 +31,7 @@ import type { LayerGroup, LeafletMap, Marker, Popup } from 'leaflet';
 import type { HeatLayerInstance } from './mapLayers';
 import type { LatLng, MapConfig, MapLive, MapShape, MapViewState, PickedLocation } from './mapTypes';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ToolJet UI 2.0 Map: markers from rows on open raster tiles (Leaflet, no API key), toned by status, grouped into
 // counts when they crowd (supercluster), with route lines, areas, a heat layer, a popup, a selection, a picked spot
@@ -39,7 +40,6 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 // shadcn.scss (.sc-map). Leaflet is driven imperatively from effects: the map is made in useLeafletMap.ts, its layers
 // live in refs and are drawn by mapDrawing.ts, and every handler reads the latest properties through `live`.
 
-const text = (v: unknown): string => (v === null || v === undefined || typeof v === 'object' ? '' : String(v));
 /** The install's settings (tile and geocoder URLs); set once when the app loads. */
 const publicConfig = (): MapConfig | undefined =>
   typeof window !== 'undefined' ? (window as Window & { public_config?: MapConfig }).public_config : undefined;
@@ -353,7 +353,7 @@ export const ShadMap = (props: WidgetProps) => {
           <MapSearch
             search={search}
             disabled={disabled}
-            placeholder={text(p.searchPlaceholder)}
+            placeholder={toText(p.searchPlaceholder)}
             typeAhead={typeAhead}
           />
         ) : null}

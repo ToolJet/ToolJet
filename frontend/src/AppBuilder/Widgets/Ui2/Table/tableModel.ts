@@ -7,10 +7,9 @@ import dayjs from 'dayjs';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { ColumnLike, ColumnType, Row, TableColumn } from './types';
+import { isEmptyValue, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
-const isSet = (value: unknown): boolean => value !== undefined && value !== null && String(value).trim() !== '';
-const isEmptyValue = (value: unknown): boolean =>
-  value === undefined || value === null || (typeof value === 'string' && value.trim() === '') || Number.isNaN(value);
 const falsy = (value: unknown): boolean => value === false || value === 'false' || value === '{{false}}';
 
 const TYPE_ALIASES: Record<string, ColumnType> = {
@@ -132,59 +131,6 @@ export const normalizeColumns = (columns: unknown, data: unknown): TableColumn[]
         : [],
     };
   });
-};
-
-// Intl.NumberFormat is costly to build; a table formats every cell on each search, so formatters are reused.
-const FORMATTERS = new Map<string, Intl.NumberFormat>();
-const numberFormatter = (locale: string, options: Intl.NumberFormatOptions): Intl.NumberFormat => {
-  const key = `${locale}|${stringify(options)}`;
-  let formatter = FORMATTERS.get(key);
-  if (!formatter) {
-    if (FORMATTERS.size > 200) FORMATTERS.clear();
-    formatter = new Intl.NumberFormat(locale, options);
-    FORMATTERS.set(key, formatter);
-  }
-  return formatter;
-};
-
-const DEFAULT_DATE = 'DD MMM YYYY';
-const DEFAULT_DATETIME = 'DD MMM YYYY, HH:mm';
-
-/** A cell as text: what the table shows for plain types, searches and exports. Never throws. */
-export const formatCell = (value: unknown, column: ColumnLike = {}): string => {
-  try {
-    if (isEmptyValue(value)) return '';
-    const { type = 'string', format = {} } = column;
-    const wrap = (text: string) => `${format.prefix ?? ''}${text}${format.suffix ?? ''}`;
-    if (type === 'number' || type === 'currency') {
-      const n = typeof value === 'number' ? value : Number(String(value).replace(/,/g, ''));
-      if (!Number.isFinite(n)) return String(value);
-      const digits = format.decimalPlaces;
-      const options: Intl.NumberFormatOptions =
-        type === 'currency'
-          ? {
-              style: 'currency',
-              currency: String(format.currency || 'USD').toUpperCase(),
-              minimumFractionDigits: digits ?? 2,
-              maximumFractionDigits: digits ?? 2,
-            }
-          : { minimumFractionDigits: digits ?? 0, maximumFractionDigits: digits ?? 2 };
-      return wrap(numberFormatter(format.locale || 'en-US', options).format(n));
-    }
-    if (type === 'date' || type === 'datetime') {
-      const parsed =
-        typeof value === 'number' ? dayjs(value < 1e12 ? value * 1000 : value) : dayjs(value as dayjs.ConfigType);
-      if (!parsed.isValid()) return String(value);
-      return wrap(parsed.format(format.dateFormat || (type === 'datetime' ? DEFAULT_DATETIME : DEFAULT_DATE)));
-    }
-    if (type === 'boolean') return value === true || value === 'true' ? 'Yes' : 'No';
-    if (type === 'tags')
-      return (Array.isArray(value) ? value : String(value).split(',')).map((t) => String(t).trim()).join(', ');
-    if (typeof value === 'object') return stringify(value);
-    return wrap(String(value));
-  } catch {
-    return '';
-  }
 };
 
 /** Case-insensitive substring match over the searchable visible columns; the text is never a regex. */

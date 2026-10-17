@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { ImageIcon, ImageOff, X } from 'lucide-react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { useHasEvent, useOverrides, textArg } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useHasEvent, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Skeleton, cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
-import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { isSet, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Image -----------------------------------------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ export const ShadImage = (props: WidgetProps) => {
     hasError: status === 'error',
     imageURL: src,
     alternativeText: alt,
-    setImageURL: async (url: unknown) => override('source', textArg(url)),
+    setImageURL: async (url: unknown) => override('source', toText(url)),
     clearImage: async () => override('source', ''),
   });
   const hasClick = useHasEvent(id, 'onClick');

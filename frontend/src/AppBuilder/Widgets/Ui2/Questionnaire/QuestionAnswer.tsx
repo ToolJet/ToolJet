@@ -91,6 +91,9 @@ const AnswerCard = ({
   </button>
 );
 
+// A text answer's box: the radius and border styles, else the theme's.
+const ANSWER_EDGE = 'tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border-[color:var(--lk-border,var(--sc-input))]';
+
 /** The current question's answer: a text field (one line or several), else its choices as answer cards, with a field
  *  for the 'other' answer when it is picked. */
 interface QuestionAnswerProps {
@@ -117,28 +120,23 @@ export const QuestionAnswer = ({
   mode,
   update,
   choose,
-}: QuestionAnswerProps) =>
-  item.type === 'text' && !item.multiline ? (
-    <Input
-      aria-labelledby={promptId}
-      aria-invalid={error ? true : undefined}
-      value={answer.text}
-      placeholder={item.placeholder || 'Type your answer'}
-      disabled={disabled}
-      onChange={(e) => update({ ...answer, text: e.target.value })}
-      className="tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border-[color:var(--lk-border,var(--sc-input))]"
-    />
-  ) : item.type === 'text' ? (
-    <Textarea
-      aria-labelledby={promptId}
-      aria-invalid={error ? true : undefined}
-      value={answer.text}
-      placeholder={item.placeholder || 'Type your answer'}
-      disabled={disabled}
-      onChange={(e) => update({ ...answer, text: e.target.value })}
-      className="tw-min-h-[96px] tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border-[color:var(--lk-border,var(--sc-input))]"
-    />
-  ) : (
+}: QuestionAnswerProps) => {
+  if (item.type === 'text') {
+    const field = {
+      'aria-labelledby': promptId,
+      'aria-invalid': error ? true : undefined,
+      value: answer.text,
+      placeholder: item.placeholder || 'Type your answer',
+      disabled,
+      onChange: (e: { target: { value: string } }) => update({ ...answer, text: e.target.value }),
+    };
+    return item.multiline ? (
+      <Textarea {...field} className={cn('tw-min-h-[96px]', ANSWER_EDGE)} />
+    ) : (
+      <Input {...field} className={ANSWER_EDGE} />
+    );
+  }
+  return (
     <div
       role={item.type === 'single' ? 'radiogroup' : 'group'}
       aria-labelledby={promptId}
@@ -170,8 +168,9 @@ export const QuestionAnswer = ({
           placeholder={item.other.placeholder}
           disabled={disabled}
           onChange={(e) => update({ ...answer, other: e.target.value })}
-          className="tw-mt-1 tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border-[color:var(--lk-border,var(--sc-input))]"
+          className={cn('tw-mt-1', ANSWER_EDGE)}
         />
       ) : null}
     </div>
   );
+};

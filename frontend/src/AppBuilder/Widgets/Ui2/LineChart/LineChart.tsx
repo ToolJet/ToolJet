@@ -1,16 +1,12 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, Tooltip, XAxis, YAxis } from 'recharts';
-import { list, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis } from 'recharts';
+import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import {
-  clamp,
   curveOf,
   fieldList,
-  formatter,
   hasValues,
-  isSet,
-  num,
   seriesRows,
   resolveChartFields,
   seriesLabel,
@@ -21,9 +17,7 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
   AXIS,
-  ChartTooltip,
   GRID,
-  LegendContent,
   SafeFrame,
   animated,
   dateTicks,
@@ -31,14 +25,14 @@ import {
   scaled,
   useValueFormat,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { tooltipAndLegend, useSeriesInputs, valueAxis } from '@/AppBuilder/Widgets/Ui2/_charts/cartesianParts';
+import { clamp, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 export const ShadLineChart = (props: WidgetProps) => {
   const p = props.properties;
-  const bound = useStable(p.data);
-  const yFields = useStable(p.yFields);
+  const { bound, yFields, seriesLabels, colors } = useSeriesInputs(p);
   const dashedFields = useStable(p.dashedFields);
-  const seriesLabels = useStable(p.seriesLabels);
-  const colors = useStable(p.colors);
   const format = useValueFormat(p);
   const target = num(p.referenceValue);
   // Rows, series, colours and the value axis are worked out again only when what they read changes, not on every
@@ -97,16 +91,12 @@ export const ShadLineChart = (props: WidgetProps) => {
         >
           {p.showGrid !== false && !compact ? <CartesianGrid vertical={false} stroke={GRID} /> : null}
           <XAxis dataKey={xField} {...AXIS} hide={compact} minTickGap={24} tickFormatter={xTicks} />
-          <YAxis
-            {...AXIS}
-            hide={compact}
-            width={yWidth}
-            tickFormatter={tick}
-            allowDecimals={allowDecimals}
-            {...ticks}
-          />
-          <Tooltip cursor={{ stroke: 'var(--sc-border)' }} content={<ChartTooltip format={full} />} />
-          {p.showLegend === true && series.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
+          {valueAxis({ yWidth, tick, allowDecimals, ticks }, compact)}
+          {tooltipAndLegend(
+            full,
+            { stroke: 'var(--sc-border)' },
+            p.showLegend === true && series.length > 1 && !compact
+          )}
           {target !== null ? (
             <ReferenceLine
               y={target}

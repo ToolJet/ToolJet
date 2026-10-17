@@ -1,10 +1,9 @@
 // ToolJet UI 2.0 List view: paging and the look, kept apart from the component so they are tested on
 // their own.
 import type { CSSProperties } from 'react';
-import type { CssVars, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import type { CssVars, Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isSet, px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
-const isSet = (value: unknown): boolean => value !== undefined && value !== null && String(value).trim() !== '';
-const px = (value: unknown): string => (/^\d+(\.\d+)?$/.test(String(value).trim()) ? `${value}px` : String(value));
 const positive = (value: unknown, fallback: number): number => {
   const n = Math.floor(Number(value));
   return Number.isFinite(n) && n > 0 ? n : fallback;
@@ -114,3 +113,18 @@ export const listLook = (styles: Resolved = {}): ListLook => ({
   background: isSet(styles.backgroundColor) ? styles.backgroundColor : 'transparent',
   padding: isSet(styles.padding) ? px(styles.padding) : '0px',
 });
+
+/** A paged widget's goTo (List view, Table): the page from a whole number of 1 or more (anything else is page 1),
+ *  exposed as pageIndex, and onPageChanged unless `fire` is false. */
+export const pageGoTo =
+  (
+    setPage: (page: number) => void,
+    setExposedVariable: WidgetProps['setExposedVariable'],
+    fireEvent: WidgetProps['fireEvent']
+  ) =>
+  (target: unknown, { fire = true }: { fire?: boolean } = {}) => {
+    const next = Math.max(1, Math.floor(Number(target)) || 1);
+    setPage(next);
+    setExposedVariable('pageIndex', next);
+    if (fire) fireEvent('onPageChanged');
+  };

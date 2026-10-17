@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Check, Copy, X } from 'lucide-react';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
@@ -6,10 +6,11 @@ import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/load
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
-import { clamp, colorFor, formatValue, keyValueItems, linkHref } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import { colorFor, keyValueItems, keyValueText, linkHref } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import type { KeyValueRow } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
-import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { clampCoerce, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { useCopied } from '@/AppBuilder/Widgets/Ui2/_shared/useCopied';
 
 // ---- Key-value list --------------------------------------------------------------------------------------------------
 
@@ -22,12 +23,7 @@ const cssSize = (value: unknown, fallback: string): string => {
 };
 
 export const CopyButton = ({ text }: { text: string }) => {
-  const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    if (!copied) return undefined;
-    const t = setTimeout(() => setCopied(false), 1500);
-    return () => clearTimeout(t);
-  }, [copied]);
+  const [copied, markCopied] = useCopied();
   return (
     <button
       type="button"
@@ -39,7 +35,7 @@ export const CopyButton = ({ text }: { text: string }) => {
         } catch {
           // Clipboard access can be refused; nothing to do.
         }
-        setCopied(true);
+        markCopied();
       }}
     >
       {copied ? <Check className="tw-h-3.5 tw-w-3.5" /> : <Copy className="tw-h-3.5 tw-w-3.5" />}
@@ -128,7 +124,7 @@ export const ShadKeyValue = (props: WidgetProps) => {
   // As many columns as fit: two inline columns in a 400px card cut every value to a few letters ("PO 88", "$8,") on a
   // claim's facts (2026-10-14). An inline pair needs about 300px, a stacked one 160px.
   const fits = Number(props.width) > 0 ? Math.max(1, Math.floor(Number(props.width) / (inline ? 300 : 160))) : 4;
-  const columns = Math.min(Math.floor(clamp(p.columns, 1, 4, 1)), fits);
+  const columns = Math.min(Math.floor(clampCoerce(p.columns, 1, 4, 1)), fits);
   const dividers = p.dividers !== false;
   const emptyText = p.emptyText === undefined || p.emptyText === null ? '—' : String(p.emptyText);
   const labelWidth = cssSize(p.labelWidth, '40%');
@@ -160,7 +156,7 @@ export const ShadKeyValue = (props: WidgetProps) => {
     body = (
       <dl className="tw-m-0 tw-grid tw-gap-x-8" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
         {rows.map((row, index) => {
-          const text = formatValue(row, defaults);
+          const text = keyValueText(row, defaults);
           return (
             <div
               key={row.key}

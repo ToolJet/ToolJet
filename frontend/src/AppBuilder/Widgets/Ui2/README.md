@@ -13,7 +13,7 @@ with `Shad` (saved in apps, so they stay); nothing user-facing uses that prefix.
 | A widget's config | `WidgetManager/widgets/shad<Widget>.js`, listed in `WidgetManager/widgets/shadcn.js` |
 | Registration | `Ui2/registry.ts`, one `lazy()` import per widget, spread into `AllComponents` in `_helpers/editorHelpers.js` |
 | Code a family shares | `_inputs`, `_pickers`, `_display`, `_actions`, `_sections`, `_charts` |
-| Code every widget shares | `_shared`: `Shell` (root element, loading and visibility), `field` (label, help, error), `formHooks` (validation), `packHooks` (exposed values and actions), `ui` (the primitives), `looks` (style keys to CSS variables), `types.ts` |
+| Code every widget shares | `_shared`: `Shell` (root element, loading and visibility), `field` (label, help, error, `FormField`), `formHooks` (validation), `packHooks` (exposed values and actions), `values` (readers for bound values: `toText`, `isSet`, `num`, `clamp`...), `format` (numbers, money, percentages, dates, table cells), `ui` (the primitives), `looks` (style keys to CSS variables), `types.ts` |
 | Names | `NAMING.md`; retired names in `legacyNames.ts` |
 | Behaviour tests | `Ui2/<Widget>/__tests__/integration/<Type>.spec.jsx` |
 

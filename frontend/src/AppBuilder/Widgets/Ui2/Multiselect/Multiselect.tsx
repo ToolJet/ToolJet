@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
   toOptions,
@@ -151,131 +151,117 @@ export const ShadMultiselect = (props: WidgetProps) => {
   const showClear = properties.showClearBtn !== false && selectedOptions.length > 0 && !disabled;
   const showSelectAll = properties.showSelectAll !== false && limit === 0 && !search && enabled.length > 1;
   return (
-    <Shell {...props} innerRef={ref}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={check.error}
-        required={check.required}
-      >
-        <PopoverPrimitive.Root open={menu.open} onOpenChange={menuChange}>
-          <PopoverPrimitive.Anchor asChild>
-            <div
-              {...menu.anchorProps}
-              {...focus.handlers}
-              onClick={() => menuChange(!menu.open)}
-              id={`shad-${id}`}
-              role="combobox"
-              aria-invalid={!!check.error || undefined}
-              onKeyDown={(e) => {
-                if (disabled) return;
-                if (['Enter', ' ', 'ArrowDown'].includes(e.key)) {
-                  e.preventDefault();
-                  menuChange(true);
-                } else if (e.key === 'Backspace' && selectedOptions.length) {
-                  toggle(selectedOptions[selectedOptions.length - 1]);
-                }
-              }}
-              className={cn(
-                'tw-flex tw-min-h-9 tw-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-border tw-px-3 tw-py-1 tw-text-ui2-sm tw-shadow-sm tw-transition-colors focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring',
-                CONTROL,
-                disabled && 'tw-cursor-not-allowed tw-opacity-50'
+    <FormField props={props} properties={properties} check={check} innerRef={ref}>
+      <PopoverPrimitive.Root open={menu.open} onOpenChange={menuChange}>
+        <PopoverPrimitive.Anchor asChild>
+          <div
+            {...menu.anchorProps}
+            {...focus.handlers}
+            onClick={() => menuChange(!menu.open)}
+            id={`shad-${id}`}
+            role="combobox"
+            aria-invalid={!!check.error || undefined}
+            onKeyDown={(e) => {
+              if (disabled) return;
+              if (['Enter', ' ', 'ArrowDown'].includes(e.key)) {
+                e.preventDefault();
+                menuChange(true);
+              } else if (e.key === 'Backspace' && selectedOptions.length) {
+                toggle(selectedOptions[selectedOptions.length - 1]);
+              }
+            }}
+            className={cn(
+              'tw-flex tw-min-h-9 tw-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-border tw-px-3 tw-py-1 tw-text-ui2-sm tw-shadow-sm tw-transition-colors focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring',
+              CONTROL,
+              disabled && 'tw-cursor-not-allowed tw-opacity-50'
+            )}
+          >
+            <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-1">
+              {selectedOptions.length === 0 ? (
+                <span className={cn('tw-truncate tw-py-0.5', PLACEHOLDER)}>{String(properties.placeholder ?? '')}</span>
+              ) : (
+                chips.map((o) => (
+                  <Chip
+                    key={M.keyOf(o.value)}
+                    label={o.label}
+                    removeLabel={`Remove ${o.label}`}
+                    onRemove={disabled ? undefined : () => toggle(o)}
+                  />
+                ))
               )}
-            >
-              <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-wrap tw-items-center tw-gap-1">
-                {selectedOptions.length === 0 ? (
-                  <span className={cn('tw-truncate tw-py-0.5', PLACEHOLDER)}>
-                    {String(properties.placeholder ?? '')}
-                  </span>
-                ) : (
-                  chips.map((o) => (
-                    <Chip
-                      key={M.keyOf(o.value)}
-                      label={o.label}
-                      removeLabel={`Remove ${o.label}`}
-                      onRemove={disabled ? undefined : () => toggle(o)}
-                    />
-                  ))
-                )}
-                {extra > 0 ? <Chip label={`+${extra} more`} /> : null}
-              </div>
-              {loading ? null : (
-                <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-1">
-                  {showClear ? <ClearButton onClear={() => commit([])} label="Clear selection" /> : null}
-                  <ChevronsUpDown className="tw-h-4 tw-w-4 tw-opacity-50" />
-                </span>
-              )}
+              {extra > 0 ? <Chip label={`+${extra} more`} /> : null}
             </div>
-          </PopoverPrimitive.Anchor>
-          <PopoverPrimitive.Portal container={getPortalRoot()}>
-            <PopoverPrimitive.Content
-              align="start"
-              sideOffset={4}
-              {...menu.contentProps}
-              className={cn(
-                'tw-z-[1060] tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[12rem] tw-rounded-ui2-md tw-border tw-border-[color:var(--sc-border)] tw-p-0 tw-shadow-md tw-outline-none data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95',
-                MENU_SURFACE
-              )}
-              style={lookVars(componentType, styles)}
-            >
-              <OptionsMenu
-                multiple
-                properties={properties}
-                options={options}
-                search={search}
-                onSearch={onSearch}
-                isSelected={isOn}
-                isDisabled={(o, on) => M.isDisabledOption(o) || (full && !on)}
-                onPick={toggle}
-                top={
-                  showSelectAll ? (
+            {loading ? null : (
+              <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-1">
+                {showClear ? <ClearButton onClear={() => commit([])} label="Clear selection" /> : null}
+                <ChevronsUpDown className="tw-h-4 tw-w-4 tw-opacity-50" />
+              </span>
+            )}
+          </div>
+        </PopoverPrimitive.Anchor>
+        <PopoverPrimitive.Portal container={getPortalRoot()}>
+          <PopoverPrimitive.Content
+            align="start"
+            sideOffset={4}
+            {...menu.contentProps}
+            className={cn(
+              'tw-z-[1060] tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[12rem] tw-rounded-ui2-md tw-border tw-border-[color:var(--sc-border)] tw-p-0 tw-shadow-md tw-outline-none data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95',
+              MENU_SURFACE
+            )}
+            style={lookVars(componentType, styles)}
+          >
+            <OptionsMenu
+              multiple
+              properties={properties}
+              options={options}
+              search={search}
+              onSearch={onSearch}
+              isSelected={isOn}
+              isDisabled={(o, on) => M.isDisabledOption(o) || (full && !on)}
+              onPick={toggle}
+              top={
+                showSelectAll ? (
+                  <CommandGroup>
+                    <CommandItem value="select-all" onSelect={toggleAll}>
+                      <span
+                        className={cn(
+                          'tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-sm tw-border tw-border-[color:var(--sc-primary)]',
+                          allOn
+                            ? 'tw-bg-[color:var(--sc-primary)] tw-text-[color:var(--sc-primary-foreground)]'
+                            : 'tw-opacity-50'
+                        )}
+                      >
+                        {allOn ? <Check className="tw-h-3 tw-w-3" /> : null}
+                      </span>
+                      <span className="tw-font-medium">Select all</span>
+                    </CommandItem>
+                  </CommandGroup>
+                ) : null
+              }
+              bottom={
+                selectedOptions.length > 0 || limit > 0 ? (
+                  <>
+                    <CommandSeparator />
                     <CommandGroup>
-                      <CommandItem value="select-all" onSelect={toggleAll}>
-                        <span
-                          className={cn(
-                            'tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-sm tw-border tw-border-[color:var(--sc-primary)]',
-                            allOn
-                              ? 'tw-bg-[color:var(--sc-primary)] tw-text-[color:var(--sc-primary-foreground)]'
-                              : 'tw-opacity-50'
-                          )}
-                        >
-                          {allOn ? <Check className="tw-h-3 tw-w-3" /> : null}
-                        </span>
-                        <span className="tw-font-medium">Select all</span>
-                      </CommandItem>
+                      {limit > 0 ? (
+                        <div className={cn('tw-px-2 tw-py-1 tw-text-xs', MUTED)}>
+                          {selectedOptions.length} of {limit} selected
+                        </div>
+                      ) : null}
+                      {selectedOptions.length > 0 ? (
+                        <CommandItem value="clear-selection" onSelect={() => commit([])} className="tw-justify-center">
+                          Clear selection
+                        </CommandItem>
+                      ) : null}
                     </CommandGroup>
-                  ) : null
-                }
-                bottom={
-                  selectedOptions.length > 0 || limit > 0 ? (
-                    <>
-                      <CommandSeparator />
-                      <CommandGroup>
-                        {limit > 0 ? (
-                          <div className={cn('tw-px-2 tw-py-1 tw-text-xs', MUTED)}>
-                            {selectedOptions.length} of {limit} selected
-                          </div>
-                        ) : null}
-                        {selectedOptions.length > 0 ? (
-                          <CommandItem
-                            value="clear-selection"
-                            onSelect={() => commit([])}
-                            className="tw-justify-center"
-                          >
-                            Clear selection
-                          </CommandItem>
-                        ) : null}
-                      </CommandGroup>
-                    </>
-                  ) : null
-                }
-              />
-            </PopoverPrimitive.Content>
-          </PopoverPrimitive.Portal>
-        </PopoverPrimitive.Root>
-      </Field>
-    </Shell>
+                  </>
+                ) : null
+              }
+            />
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
+    </FormField>
   );
 };
 

@@ -13,20 +13,14 @@ import {
 import type { CollisionDetection, DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import {
-  list,
-  useAutoHeight,
-  useExposed,
-  useStable,
-  withControlState,
-} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { useOwnContextPath } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { addCard, boardCards, boardColumns, deleteCard, moveCard, updateCard } from './kanbanBoard';
 import { KANBAN_INSTRUCTIONS, KANBAN_KEYS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
-import { SHADOWS, isSet, kanbanLook, px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+import { SHADOWS, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { fitsContentInView, kanbanCardHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import type { BoardCard, BoardColumn, CardMove, CardRow } from './kanbanBoard';
@@ -34,6 +28,7 @@ import { CardBody, CustomCardBody } from './KanbanCard';
 import type { CardFields } from './KanbanCard';
 import { KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
 import { useBoardSize } from './useBoardSize';
+import { isSet, list, px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** What the board's actions read later, without going stale. */
 interface KanbanLive {

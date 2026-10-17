@@ -3,7 +3,7 @@ import { toOptions, useAutoHeight, withControlState } from '@/AppBuilder/Widgets
 import { ToggleGroup, ToggleGroupItem, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { MAX_CHOICES, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import { MAX_CHOICES, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export const ShadToggleGroup = (props: WidgetProps) => {
@@ -12,9 +12,8 @@ export const ShadToggleGroup = (props: WidgetProps) => {
   useAutoHeight(props, fit);
   const { properties } = props;
   const options = toOptions(properties.options);
-  const byKey = new Map(options.map((o) => [String(o.value), o]));
-  const initial =
-    properties.defaultValue === '' || properties.defaultValue === undefined ? '' : String(properties.defaultValue);
+  const byKey = optionsByKey(options);
+  const initial = defaultKey(properties.defaultValue);
   // The native Button group's actions: setSelected(value) picks an option (a value no option has changes nothing),
   // clear() leaves none picked.
   const keysRef = useRef(byKey);

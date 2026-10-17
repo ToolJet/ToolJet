@@ -1,5 +1,7 @@
 // ToolJet UI 2.0: the pure logic of the Scatter chart. Every function takes whatever the author bound and never throws.
-import { axisLabel, isPlain, isSet, MAX_SERIES, num, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { MAX_SERIES, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { axisLabel } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isRecord, isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** A scatter's points, one group per groupField value (one group without it) in order of first appearance: x and y
  *  (rows without both numbers are left out), z from sizeField for bubbles, label from nameField, and the row. When the
@@ -32,7 +34,7 @@ export const scatterGroups = (
   data: unknown,
   { xField, yField, sizeField, groupField, nameField }: ScatterFields = {}
 ): ScatterGroup[] => {
-  const rows = (Array.isArray(data) ? data : []).filter(isPlain).slice(0, MAX_POINTS);
+  const rows = (Array.isArray(data) ? data : []).filter(isRecord).slice(0, MAX_POINTS);
   if (!rows.length) return [];
   let xKey = isSet(xField) ? String(xField) : undefined;
   let yKey = isSet(yField) ? String(yField) : undefined;

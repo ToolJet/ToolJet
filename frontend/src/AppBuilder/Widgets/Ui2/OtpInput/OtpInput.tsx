@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Minus } from 'lucide-react';
-import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
-import { EDGE, text, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import { EDGE, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- OTP input -----------------------------------------------------------------------------------------------------
 
@@ -39,7 +40,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
   useExposed(setExposedVariables, properties, {
     value: code,
     isComplete,
-    label: text(properties.label),
+    label: toText(properties.label),
     clear: async () => setValue(''),
     setFocus: async () => inputRef.current?.focus(),
     setBlur: async () => inputRef.current?.blur(),
@@ -62,7 +63,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
   );
   const disabled = busy(properties);
   const joined = properties.slotStyle !== 'separate';
-  const placeholder = text(properties.placeholder).slice(0, 1);
+  const placeholder = toText(properties.placeholder).slice(0, 1);
   const active = focused ? Math.min(code.length, length - 1) : -1;
   const half = Math.ceil(length / 2);
   const groups =
@@ -105,68 +106,60 @@ export const ShadOtpInput = (props: WidgetProps) => {
     );
   };
   return (
-    <Shell {...props} innerRef={fit}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={check.error}
-        required={check.required}
+    <FormField props={props} properties={properties} check={check} innerRef={fit}>
+      <div
+        className={cn(
+          'tw-relative tw-flex tw-w-fit tw-max-w-full tw-items-center tw-gap-2',
+          disabled && 'tw-cursor-not-allowed tw-opacity-50'
+        )}
       >
-        <div
-          className={cn(
-            'tw-relative tw-flex tw-w-fit tw-max-w-full tw-items-center tw-gap-2',
-            disabled && 'tw-cursor-not-allowed tw-opacity-50'
-          )}
-        >
-          {groups.map(([from, to], g) => (
-            <React.Fragment key={g}>
-              {g > 0 ? (
-                <div
-                  role="separator"
-                  className="tw-flex tw-items-center tw-text-[color:var(--lk-sep,var(--sc-muted-foreground))]"
-                >
-                  <Minus className="tw-h-4 tw-w-4" />
-                </div>
-              ) : null}
-              <div className={cn('tw-flex tw-items-center', !joined && 'tw-gap-2')}>
-                {Array.from({ length: to - from }, (_, k) => slot(from + k))}
+        {groups.map(([from, to], g) => (
+          <React.Fragment key={g}>
+            {g > 0 ? (
+              <div
+                role="separator"
+                className="tw-flex tw-items-center tw-text-[color:var(--lk-sep,var(--sc-muted-foreground))]"
+              >
+                <Minus className="tw-h-4 tw-w-4" />
               </div>
-            </React.Fragment>
-          ))}
-          <input
-            ref={inputRef}
-            id={`shad-${id}`}
-            aria-label={text(properties.label) || 'One-time code'}
-            aria-invalid={!!check.error || undefined}
-            inputMode={characters === 'numeric' ? 'numeric' : 'text'}
-            autoComplete="one-time-code"
-            autoCapitalize="characters"
-            spellCheck={false}
-            className="tw-absolute tw-inset-0 tw-h-full tw-w-full tw-cursor-text tw-border-0 tw-bg-transparent tw-p-0 tw-text-transparent tw-caret-transparent tw-opacity-0 tw-outline-none disabled:tw-cursor-not-allowed"
-            value={code}
-            disabled={disabled}
-            onChange={(e) => change(e.target.value)}
-            onFocus={() => {
-              setFocused(true);
-              setTimeout(() => fireEvent('onFocus'), 0);
-            }}
-            onBlur={() => {
-              setFocused(false);
-              check.touch();
-              fireEvent('onBlur');
-            }}
-            onSelect={(e) => {
-              // The caret stays at the end (select-all is kept, so a paste replaces the code).
-              const el = e.currentTarget;
-              const end = el.value.length;
-              const all = el.selectionStart === 0 && el.selectionEnd === end;
-              if (!all && (el.selectionStart !== end || el.selectionEnd !== end)) el.setSelectionRange(end, end);
-            }}
-          />
-        </div>
-      </Field>
-    </Shell>
+            ) : null}
+            <div className={cn('tw-flex tw-items-center', !joined && 'tw-gap-2')}>
+              {Array.from({ length: to - from }, (_, k) => slot(from + k))}
+            </div>
+          </React.Fragment>
+        ))}
+        <input
+          ref={inputRef}
+          id={`shad-${id}`}
+          aria-label={toText(properties.label) || 'One-time code'}
+          aria-invalid={!!check.error || undefined}
+          inputMode={characters === 'numeric' ? 'numeric' : 'text'}
+          autoComplete="one-time-code"
+          autoCapitalize="characters"
+          spellCheck={false}
+          className="tw-absolute tw-inset-0 tw-h-full tw-w-full tw-cursor-text tw-border-0 tw-bg-transparent tw-p-0 tw-text-transparent tw-caret-transparent tw-opacity-0 tw-outline-none disabled:tw-cursor-not-allowed"
+          value={code}
+          disabled={disabled}
+          onChange={(e) => change(e.target.value)}
+          onFocus={() => {
+            setFocused(true);
+            setTimeout(() => fireEvent('onFocus'), 0);
+          }}
+          onBlur={() => {
+            setFocused(false);
+            check.touch();
+            fireEvent('onBlur');
+          }}
+          onSelect={(e) => {
+            // The caret stays at the end (select-all is kept, so a paste replaces the code).
+            const el = e.currentTarget;
+            const end = el.value.length;
+            const all = el.selectionStart === 0 && el.selectionEnd === end;
+            if (!all && (el.selectionStart !== end || el.selectionEnd !== end)) el.setSelectionRange(end, end);
+          }}
+        />
+      </div>
+    </FormField>
   );
 };
 

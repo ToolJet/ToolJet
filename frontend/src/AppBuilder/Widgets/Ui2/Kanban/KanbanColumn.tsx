@@ -6,6 +6,7 @@ import { Badge, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { KanbanCard, SECONDARY_TEXT } from './KanbanCard';
 import type { KanbanLook } from './KanbanCard';
 import type { BoardCard, BoardColumn } from './kanbanBoard';
+import { ShowMore } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 
 // Column title and count colours: the columnTitleColor and count styles, else the theme's.
 const COLUMN_TITLE = 'tw-text-[color:var(--kb-col-title,var(--sc-foreground))]';
@@ -215,16 +216,13 @@ export const KanbanColumn = ({
             {emptyText}
           </div>
         )}
-        {hiddenCards > 0 ? (
-          <button
-            type="button"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => setShownCards((n) => n + CARDS_PER_STEP)}
-            className="tw-rounded-ui2-md tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground"
-          >
-            {`Show ${Math.min(hiddenCards, CARDS_PER_STEP)} more of ${hiddenCards}`}
-          </button>
-        ) : null}
+        <ShowMore
+          remaining={hiddenCards}
+          step={CARDS_PER_STEP}
+          onMore={() => setShownCards((n) => n + CARDS_PER_STEP)}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="tw-rounded-ui2-md tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground"
+        />
         {onAdd ? (
           <button
             type="button"

@@ -12,24 +12,19 @@ import {
   X,
 } from 'lucide-react';
 import { createFileFieldRef, registerFileHandle, releaseFileHandle } from '@/AppBuilder/_utils/fileHandleRegistry';
-import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import {
-  list,
-  useAutoHeight,
-  useExposed,
-  useLatest,
-  withControlState,
-} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/fileModel';
-import { MUTED, isText } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import { MUTED } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { FileRejection } from 'react-dropzone';
 import type { LucideIcon } from 'lucide-react';
 import type { FileKind } from '@/AppBuilder/Widgets/Ui2/_pickers/fileModel';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isStringOrNumber, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- File upload ---------------------------------------------------------------------------------------------------
 
@@ -246,7 +241,7 @@ export const ShadFileUpload = (props: WidgetProps) => {
     disabled: disabled || full,
   });
   const hint =
-    isText(properties.hint) && String(properties.hint).trim()
+    isStringOrNumber(properties.hint) && String(properties.hint).trim()
       ? String(properties.hint)
       : [
           M.acceptHint(properties.accept) || 'Any file',
@@ -261,98 +256,90 @@ export const ShadFileUpload = (props: WidgetProps) => {
     ? 'Drop to upload'
     : String(properties.title ?? 'Drag & drop files here');
   return (
-    <Shell {...props} innerRef={ref}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={rejectError || check.error}
-        required={check.required}
-      >
-        <div className="tw-flex tw-flex-col tw-gap-2">
-          <div
-            {...getRootProps({
-              'aria-label': title,
-              'aria-invalid': !!(rejectError || check.error) || undefined,
-              className: cn(
-                DROPZONE,
-                isDragActive &&
-                  'tw-border-[color:var(--sc-primary)] tw-bg-[color:color-mix(in_srgb,var(--sc-primary)_6%,transparent)]',
-                isDragReject && 'tw-border-[color:var(--lk-error,var(--sc-destructive))]',
-                (disabled || full) && 'tw-cursor-not-allowed tw-opacity-60 hover:tw-bg-transparent'
-              ),
-            })}
-          >
-            <input {...getInputProps({ id: `shad-${id}` })} />
-            <div className="tw-mb-1 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-full tw-bg-[color:var(--lk-icon-bg,var(--sc-muted))]">
-              {properties.loadingState || parsing ? (
-                <Spinner />
-              ) : (
-                <Upload className="tw-h-5 tw-w-5 tw-text-[color:var(--lk-icon,var(--sc-muted-foreground))]" />
-              )}
-            </div>
-            <p className="tw-m-0 tw-text-ui2-sm tw-font-medium tw-text-[color:var(--lk-title,var(--sc-foreground))]">
-              {title}
-            </p>
-            {full ? null : (
-              <p className={cn('tw-m-0 tw-text-ui2-sm', MUTED)}>
-                or{' '}
-                <span className="tw-font-medium tw-text-[color:var(--sc-primary-ink)] tw-underline-offset-4 hover:tw-underline">
-                  click to browse
-                </span>
-              </p>
+    <FormField props={props} properties={properties} check={check} innerRef={ref} error={rejectError || check.error}>
+      <div className="tw-flex tw-flex-col tw-gap-2">
+        <div
+          {...getRootProps({
+            'aria-label': title,
+            'aria-invalid': !!(rejectError || check.error) || undefined,
+            className: cn(
+              DROPZONE,
+              isDragActive &&
+                'tw-border-[color:var(--sc-primary)] tw-bg-[color:color-mix(in_srgb,var(--sc-primary)_6%,transparent)]',
+              isDragReject && 'tw-border-[color:var(--lk-error,var(--sc-destructive))]',
+              (disabled || full) && 'tw-cursor-not-allowed tw-opacity-60 hover:tw-bg-transparent'
+            ),
+          })}
+        >
+          <input {...getInputProps({ id: `shad-${id}` })} />
+          <div className="tw-mb-1 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-full tw-bg-[color:var(--lk-icon-bg,var(--sc-muted))]">
+            {properties.loadingState || parsing ? (
+              <Spinner />
+            ) : (
+              <Upload className="tw-h-5 tw-w-5 tw-text-[color:var(--lk-icon,var(--sc-muted-foreground))]" />
             )}
-            <p className="tw-m-0 tw-text-xs tw-text-[color:var(--lk-hint,var(--sc-muted-foreground))]">{hint}</p>
           </div>
-          {files.length ? (
-            <ul className="tw-m-0 tw-flex tw-list-none tw-flex-col tw-gap-2 tw-p-0" aria-label="Selected files">
-              {files.map((f, i) => {
-                const Kind = KIND_ICONS[M.fileKind(f.type, f.name)] || FileIcon;
-                const ext = (f.name.match(/\.([a-z0-9]+)$/i)?.[1] || '').toUpperCase();
-                return (
-                  <li
-                    key={f.handle}
-                    className="tw-flex tw-items-center tw-gap-3 tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] tw-border tw-border-[color:var(--lk-item-border,var(--sc-border))] tw-bg-[color:var(--lk-item-bg,var(--sc-card))] tw-p-2 tw-pr-1"
-                  >
-                    {properties.showPreview !== false && f.preview ? (
-                      <img
-                        src={f.preview}
-                        alt=""
-                        className="tw-h-10 tw-w-10 tw-shrink-0 tw-rounded-ui2-md tw-border tw-border-[color:var(--sc-border)] tw-object-cover"
-                      />
-                    ) : (
-                      <span className="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-md tw-bg-[color:var(--sc-muted)]">
-                        <Kind className={cn('tw-h-5 tw-w-5', MUTED)} />
-                      </span>
-                    )}
-                    <div className="tw-min-w-0 tw-flex-1">
-                      <p className="tw-m-0 tw-truncate tw-text-ui2-sm tw-font-medium tw-text-[color:var(--sc-foreground)]">
-                        {f.name}
-                      </p>
-                      <p className={cn('tw-m-0 tw-text-xs', MUTED)}>
-                        {M.formatBytes(f.size)}
-                        {ext ? ` · ${ext}` : ''}
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className={cn('tw-h-8 tw-w-8 tw-shrink-0', MUTED)}
-                      aria-label={`Remove ${f.name}`}
-                      disabled={disabled}
-                      onClick={() => remove(i)}
-                    >
-                      <X />
-                    </Button>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : null}
+          <p className="tw-m-0 tw-text-ui2-sm tw-font-medium tw-text-[color:var(--lk-title,var(--sc-foreground))]">
+            {title}
+          </p>
+          {full ? null : (
+            <p className={cn('tw-m-0 tw-text-ui2-sm', MUTED)}>
+              or{' '}
+              <span className="tw-font-medium tw-text-[color:var(--sc-primary-ink)] tw-underline-offset-4 hover:tw-underline">
+                click to browse
+              </span>
+            </p>
+          )}
+          <p className="tw-m-0 tw-text-xs tw-text-[color:var(--lk-hint,var(--sc-muted-foreground))]">{hint}</p>
         </div>
-      </Field>
-    </Shell>
+        {files.length ? (
+          <ul className="tw-m-0 tw-flex tw-list-none tw-flex-col tw-gap-2 tw-p-0" aria-label="Selected files">
+            {files.map((f, i) => {
+              const Kind = KIND_ICONS[M.fileKind(f.type, f.name)] || FileIcon;
+              const ext = (f.name.match(/\.([a-z0-9]+)$/i)?.[1] || '').toUpperCase();
+              return (
+                <li
+                  key={f.handle}
+                  className="tw-flex tw-items-center tw-gap-3 tw-rounded-[var(--lk-radius,calc(var(--sc-radius)-2px))] tw-border tw-border-[color:var(--lk-item-border,var(--sc-border))] tw-bg-[color:var(--lk-item-bg,var(--sc-card))] tw-p-2 tw-pr-1"
+                >
+                  {properties.showPreview !== false && f.preview ? (
+                    <img
+                      src={f.preview}
+                      alt=""
+                      className="tw-h-10 tw-w-10 tw-shrink-0 tw-rounded-ui2-md tw-border tw-border-[color:var(--sc-border)] tw-object-cover"
+                    />
+                  ) : (
+                    <span className="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-md tw-bg-[color:var(--sc-muted)]">
+                      <Kind className={cn('tw-h-5 tw-w-5', MUTED)} />
+                    </span>
+                  )}
+                  <div className="tw-min-w-0 tw-flex-1">
+                    <p className="tw-m-0 tw-truncate tw-text-ui2-sm tw-font-medium tw-text-[color:var(--sc-foreground)]">
+                      {f.name}
+                    </p>
+                    <p className={cn('tw-m-0 tw-text-xs', MUTED)}>
+                      {M.formatBytes(f.size)}
+                      {ext ? ` · ${ext}` : ''}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className={cn('tw-h-8 tw-w-8 tw-shrink-0', MUTED)}
+                    aria-label={`Remove ${f.name}`}
+                    disabled={disabled}
+                    onClick={() => remove(i)}
+                  >
+                    <X />
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+      </div>
+    </FormField>
   );
 };
 

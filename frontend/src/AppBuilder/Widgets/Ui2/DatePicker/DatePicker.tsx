@@ -1,23 +1,25 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon } from 'lucide-react';
-import {
-  list,
-  useAutoHeight,
-  useExposed,
-  useStable,
-  withControlState,
-} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Calendar, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { toDate, ymd } from '@/AppBuilder/Widgets/Ui2/_actions/calendarModel';
-import { dateProblem, dateRules, parseDateTime, toDayjsFormat } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
+import {
+  dateBoundActions,
+  dateProblem,
+  dateRules,
+  dayMatchers,
+  parseDateTime,
+  toDayjsFormat,
+} from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { textArg, useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { DateRange } from 'react-day-picker';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** The picked day (single mode) or range (a cleared range is {}). */
 type Selection = Date | Partial<DateRange> | undefined;
@@ -135,10 +137,7 @@ export const ShadDatePicker = (props: WidgetProps) => {
     clearStartDate: async () => latest.current.range && commit({ ...(selectedRef.current || {}), from: undefined }),
     clearEndDate: async () => latest.current.range && commit({ ...(selectedRef.current || {}), to: undefined }),
     clearDateRange: async () => latest.current.range && commit({}),
-    setMinDate: async (v: unknown) => override('minDate', textArg(v)),
-    setMaxDate: async (v: unknown) => override('maxDate', textArg(v)),
-    setDisabledDates: async (v: unknown) => override('disabledDates', Array.isArray(v) ? v : blank(v) ? [] : [v]),
-    clearDisabledDates: async () => override('disabledDates', []),
+    ...dateBoundActions(override),
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),
   });
@@ -164,11 +163,7 @@ export const ShadDatePicker = (props: WidgetProps) => {
     range ? (values.startDate && values.endDate ? values.value : '') : values.value,
     () => commit(range ? {} : undefined)
   );
-  const disabledMatchers = [
-    ...(rules.min ? [{ before: rules.min.toDate() }] : []),
-    ...(rules.max ? [{ after: rules.max.toDate() }] : []),
-    ...rules.disabled.map((d) => dayjs(d).toDate()),
-  ];
+  const disabledMatchers = dayMatchers(rules);
   const text = range ? (from ? `${shown(from)}${to ? ` – ${shown(to)}` : ''}` : '') : shown(day);
   // Every close (Escape, a click outside, a completed pick) goes through here, so a close after a pick also marks the
   // field touched for validation and lets the focus tracking fire onBlur once focus leaves.
@@ -194,46 +189,34 @@ export const ShadDatePicker = (props: WidgetProps) => {
     disabled: disabledMatchers,
   };
   return (
-    <Shell {...props} innerRef={fit}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={check.error}
-        required={check.required}
-      >
-        <Popover open={open} onOpenChange={openChange}>
-          <PopoverTrigger asChild>
-            <Button
-              ref={triggerRef}
-              id={`shad-${id}`}
-              variant="outline"
-              disabled={busy(properties)}
-              {...focus.handlers}
-              className={cn(
-                'tw-w-full tw-justify-start tw-text-left tw-font-normal',
-                CONTROL,
-                !text && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
-              )}
-            >
-              <CalendarIcon className="tw-h-4 tw-w-4" />
-              {text || String(properties.placeholder ?? '')}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="tw-w-auto tw-p-0"
-            align="start"
-            style={lookVars(props.componentType, props.styles)}
-          >
-            {range ? (
-              <Calendar {...calendar} mode="range" selected={{ from, to }} onSelect={pick} />
-            ) : (
-              <Calendar {...calendar} mode="single" selected={day} onSelect={pick} />
+    <FormField props={props} properties={properties} check={check} innerRef={fit}>
+      <Popover open={open} onOpenChange={openChange}>
+        <PopoverTrigger asChild>
+          <Button
+            ref={triggerRef}
+            id={`shad-${id}`}
+            variant="outline"
+            disabled={busy(properties)}
+            {...focus.handlers}
+            className={cn(
+              'tw-w-full tw-justify-start tw-text-left tw-font-normal',
+              CONTROL,
+              !text && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
             )}
-          </PopoverContent>
-        </Popover>
-      </Field>
-    </Shell>
+          >
+            <CalendarIcon className="tw-h-4 tw-w-4" />
+            {text || String(properties.placeholder ?? '')}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="tw-w-auto tw-p-0" align="start" style={lookVars(props.componentType, props.styles)}>
+          {range ? (
+            <Calendar {...calendar} mode="range" selected={{ from, to }} onSelect={pick} />
+          ) : (
+            <Calendar {...calendar} mode="single" selected={day} onSelect={pick} />
+          )}
+        </PopoverContent>
+      </Popover>
+    </FormField>
   );
 };
 

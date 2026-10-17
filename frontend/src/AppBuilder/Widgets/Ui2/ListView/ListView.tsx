@@ -12,11 +12,12 @@ import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useAutoHeight, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
-import { itemKey, listLook, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
+import { itemKey, listLook, pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { fitsContentInView, listRowHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
+import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 
 type ListMode = 'list' | 'grid';
 
@@ -181,8 +182,7 @@ export const ShadListView = (props: WidgetProps) => {
   );
   // Every row is a canvas of components: past ROWS_PER_STEP rows on a page (no paging, or a huge page size), the rest
   // wait behind "Show more" (10k rows froze the page).
-  const [shownRows, setShownRows] = useState(ROWS_PER_STEP);
-  useEffect(() => setShownRows(ROWS_PER_STEP), [paged.page]);
+  const [shownRows, showMore] = useShownCount(ROWS_PER_STEP, paged.page);
   // Kept by content: the rows' {{listItem}} are rewritten only when the shown items change.
   const items = useStable(useMemo(() => paged.items.slice(0, shownRows), [paged.items, shownRows]));
   // data is the list's records, as the catalog says: its initial {} made (components.list.data || []).length read
@@ -255,12 +255,7 @@ export const ShadListView = (props: WidgetProps) => {
     });
   };
 
-  const goTo = (target: unknown, { fire = true }: { fire?: boolean } = {}) => {
-    const next = Math.max(1, Math.floor(Number(target)) || 1);
-    setPage(next);
-    setExposedVariable('pageIndex', next);
-    if (fire) fireEvent('onPageChanged');
-  };
+  const goTo = pageGoTo(setPage, setExposedVariable, fireEvent);
 
   // Published once; each action calls the latest handlers.
   const handlers = useLatest({ pick, clearSelection, goTo });
@@ -357,15 +352,14 @@ export const ShadListView = (props: WidgetProps) => {
           ))}
         </div>
       )}
-      {hiddenRows > 0 && !isLoading ? (
-        <button
-          type="button"
-          onClick={() => setShownRows((n) => n + ROWS_PER_STEP)}
+      {isLoading ? null : (
+        <ShowMore
+          remaining={hiddenRows}
+          step={ROWS_PER_STEP}
+          onMore={showMore}
           className="tw-rounded-ui2-md tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground"
-        >
-          {`Show ${Math.min(hiddenRows, ROWS_PER_STEP)} more of ${hiddenRows}`}
-        </button>
-      ) : null}
+        />
+      )}
       {showPager ? (
         <nav aria-label="Pagination" className="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-pt-1">
           <span className="tw-text-xs tw-tabular-nums tw-text-ui2-muted-foreground">

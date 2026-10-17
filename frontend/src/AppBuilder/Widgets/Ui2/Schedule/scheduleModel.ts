@@ -13,6 +13,7 @@ import type {
   ScheduleSlot,
   SlotSelection,
 } from './scheduleTypes';
+import { clampNumber, isNonBlankString, pad2, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 const HOUR = 3600000;
 const DAY = 24 * HOUR;
@@ -21,14 +22,11 @@ export const MAX_SLOTS = 96;
 export const MAX_LANES = 4;
 export const MAX_BOOKINGS = 2000;
 
-const isText = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
-const shown = (v: unknown): string => (v === null || v === undefined || typeof v === 'object' ? '' : String(v));
 const int = (v: unknown, fallback: number): number => {
   if (v === null || v === undefined || v === '' || typeof v === 'boolean') return fallback;
   const n = Math.round(Number(v));
   return Number.isFinite(n) ? n : fallback;
 };
-const clamp = (n: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, n));
 /** An hour of the day from a number (9) or a clock time ('09:00', '5:30 PM'); an end rounds up to the next hour
  *  ('17:30' ends after 17:00-18:00). dayStart="09:00" fell back to 8 (2026-10-14). */
 const hourOf = (v: unknown, fallback: number, roundUp: boolean): number => {
@@ -40,17 +38,16 @@ const hourOf = (v: unknown, fallback: number, roundUp: boolean): number => {
   return roundUp && Number(clock[2] || 0) > 0 ? h + 1 : h;
 };
 const midnight = (d: Date): Date => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-const pad = (n: number): string => String(n).padStart(2, '0');
 
 /** A local day as YYYY-MM-DD. */
-export const dayKey = (d: Date): string => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+export const dayKey = (d: Date): string => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
 /** A time from what a binding gives: a Date, a timestamp, 'YYYY-MM-DD' (a day, local), 'HH:mm' or '9:30 am' (that
  *  time on `day`), or any date text Date reads. { time, dateOnly } in ms, or null when it is not a time. */
 export const parseTime = (v: unknown, day?: Date): ParsedTime | null => {
   if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : { time: v.getTime(), dateOnly: false };
   if (typeof v === 'number') return Number.isFinite(v) ? { time: v, dateOnly: false } : null;
-  if (!isText(v) || v.length > 64) return null;
+  if (!isNonBlankString(v) || v.length > 64) return null;
   const s = v.trim();
   const date = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (date) {
@@ -90,10 +87,10 @@ export const startDay = (date: unknown, now: number = Date.now()): Date => {
 };
 
 const hourText = (h: number, m: number, format: unknown): string => {
-  if (format === '24h') return `${pad(h % 24)}:${pad(m)}`;
+  if (format === '24h') return `${pad2(h % 24)}:${pad2(m)}`;
   const suffix = h % 24 < 12 ? 'AM' : 'PM';
   const h12 = h % 12 === 0 ? 12 : h % 12;
-  return m ? `${h12}:${pad(m)} ${suffix}` : `${h12} ${suffix}`;
+  return m ? `${h12}:${pad2(m)} ${suffix}` : `${h12} ${suffix}`;
 };
 
 /** A time of day as text: '9:30 AM' (12h) or '09:30' (24h). */
@@ -131,7 +128,7 @@ export const scheduleRange = (
   const first = startDay(date, now);
   const todayKey = dayKey(new Date(now));
   if (scale === 'days') {
-    const count = clamp(int(days, 7), 1, MAX_DAYS);
+    const count = clampNumber(int(days, 7), 1, MAX_DAYS);
     const columns = Array.from({ length: count }, (_, i): ScheduleColumn => {
       const d = new Date(first.getFullYear(), first.getMonth(), first.getDate() + i);
       const next = new Date(first.getFullYear(), first.getMonth(), first.getDate() + i + 1);
@@ -152,8 +149,8 @@ export const scheduleRange = (
       slots: columns.map((c) => ({ start: c.start, end: c.end, edge: true })),
     };
   }
-  const from = clamp(hourOf(dayStart, 8, false), 0, 23);
-  const to = clamp(hourOf(dayEnd, 18, true), from + 1, 24);
+  const from = clampNumber(hourOf(dayStart, 8, false), 0, 23);
+  const to = clampNumber(hourOf(dayEnd, 18, true), from + 1, 24);
   const at = (h: number, m = 0): number =>
     new Date(first.getFullYear(), first.getMonth(), first.getDate(), h, m).getTime();
   const columns = Array.from({ length: to - from }, (_, i) => ({
@@ -166,7 +163,7 @@ export const scheduleRange = (
   }));
   const span = (to - from) * 60;
   // Slots divide the hour evenly where they can, and never number more than MAX_SLOTS.
-  let step = clamp(int(slotMinutes, 30), 5, 240);
+  let step = clampNumber(int(slotMinutes, 30), 5, 240);
   step = Math.max(step, Math.ceil(span / MAX_SLOTS));
   const slots: ScheduleSlot[] = [];
   for (let m = 0; m < span; m += step) {
@@ -191,11 +188,11 @@ export const scheduleResources = (
   resourceField: unknown
 ): ScheduleResource[] => {
   let list: (Row | string | number | null | undefined)[] = Array.isArray(resources) ? resources : [];
-  if (!list.length && Array.isArray(bookings) && isText(resourceField)) {
+  if (!list.length && Array.isArray(bookings) && isNonBlankString(resourceField)) {
     const seen = new Set<string>();
     list = [];
     for (const b of bookings) {
-      const v = b && typeof b === 'object' ? shown(b[resourceField]).trim() : '';
+      const v = b && typeof b === 'object' ? toText(b[resourceField]).trim() : '';
       if (v && !seen.has(v)) {
         seen.add(v);
         list.push(v);
@@ -211,14 +208,14 @@ export const scheduleResources = (
       if (!name) return [];
       entry = { id: name, name, caption: '', avatar: '' };
     } else if (r && typeof r === 'object' && !Array.isArray(r)) {
-      const name = shown(r.name ?? r.label ?? r.title).trim();
-      const id = shown(r.id ?? r.value ?? r.key).trim() || name;
+      const name = toText(r.name ?? r.label ?? r.title).trim();
+      const id = toText(r.id ?? r.value ?? r.key).trim() || name;
       if (!id && !name) return [];
       entry = {
         id,
         name: name || id,
-        caption: shown(r.caption ?? r.subtitle ?? r.role ?? r.description).trim(),
-        avatar: shown(r.avatar ?? r.image).trim(),
+        caption: toText(r.caption ?? r.subtitle ?? r.role ?? r.description).trim(),
+        avatar: toText(r.avatar ?? r.image).trim(),
       };
     } else return [];
     let key = entry.id || String(index);
@@ -232,7 +229,7 @@ const TONES: readonly string[] = ['success', 'warning', 'danger', 'info', 'neutr
 /** A booking's tone from its status: a tone name, else its words (Confirmed green, Tentative amber, Cancelled red,
  *  Booked blue); '' (the accent) when it has none. */
 export const bookingTone = (status: unknown): string => {
-  if (!isText(status)) return '';
+  if (!isNonBlankString(status)) return '';
   const word = status.trim().toLowerCase();
   if (TONES.includes(word)) return word;
   const tone = chipTone(status);
@@ -260,11 +257,11 @@ export const placeBookings = (
   }
   const day = new Date(range.start);
   const days = range.scale === 'days';
-  const field = (row: Row, name: unknown): unknown => (isText(name) ? row[name] : undefined);
+  const field = (row: Row, name: unknown): unknown => (isNonBlankString(name) ? row[name] : undefined);
   let count = 0;
   bookings.forEach((row: Row, index: number) => {
     if (count >= MAX_BOOKINGS || !row || typeof row !== 'object' || Array.isArray(row)) return;
-    const resourceKey = byId.get(shown(field(row, f.resourceField)).trim());
+    const resourceKey = byId.get(toText(field(row, f.resourceField)).trim());
     if (resourceKey === undefined) return;
     const start = parseTime(field(row, f.startField), day);
     if (!start) return;
@@ -281,20 +278,20 @@ export const placeBookings = (
     const spanEnd = wholeDay ? spanStart + DAY : end;
     const from = Math.max(spanStart, range.start);
     const to = Math.min(spanEnd, range.end);
-    const status = shown(field(row, f.statusField)).trim();
-    const id = isText(f.idField) ? row[f.idField] : row.id;
+    const status = toText(field(row, f.statusField)).trim();
+    const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
     const fmt = f.hourFormat === '24h' ? '24h' : '12h';
     const time =
       days && (start.dateOnly || endParsed?.dateOnly) ? '' : `${clockText(start.time, fmt)} to ${clockText(end, fmt)}`;
     count += 1;
     if (!out[resourceKey]) out[resourceKey] = { lanes: 1, items: [] };
     out[resourceKey].items.push({
-      key: shown(id) || `#${index}`,
+      key: toText(id) || `#${index}`,
       id: id ?? null,
       row,
       index,
-      title: shown(field(row, f.titleField)).trim(),
-      subtitle: shown(field(row, f.subtitleField)).trim(),
+      title: toText(field(row, f.titleField)).trim(),
+      subtitle: toText(field(row, f.subtitleField)).trim(),
       status: TONES.includes(status.toLowerCase()) ? '' : status,
       tone: bookingTone(status),
       start: start.time,
@@ -335,9 +332,9 @@ export const slotValue = (
   scale = 'hours'
 ): SlotSelection | Record<string, never> => {
   if (!resource || !slot) return {};
-  const pad2 = (ms: number) => {
+  const clock = (ms: number) => {
     const d = new Date(ms);
-    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
   };
   return {
     resourceId: resource.id,
@@ -345,8 +342,8 @@ export const slotValue = (
     start: new Date(slot.start).toISOString(),
     end: new Date(slot.end).toISOString(),
     date: dayKey(new Date(slot.start)),
-    startTime: pad2(slot.start),
-    endTime: pad2(slot.end),
+    startTime: clock(slot.start),
+    endTime: clock(slot.end),
     label:
       scale === 'days'
         ? (() => {

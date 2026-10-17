@@ -1,10 +1,10 @@
 import React from 'react';
 import * as Lucide from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { KeyboardEvent } from 'react';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { resolveIcon } from './iconModel';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
+import { own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ToolJet UI 2.0: display widgets. Configs in WidgetManager/widgets/shad*.js, style variables and
 // loading looks in looks/display.ts, data logic in displayModel.ts. Colours come from the theme (shadcn tokens) and
@@ -34,9 +34,6 @@ export const IconGlyph = ({
   return <Icon size={size} strokeWidth={strokeWidth} aria-hidden="true" />;
 };
 
-/** A map entry for a property value, never an inherited key (a "constructor" from junk data). */
-export const own = <T,>(map: Record<string, T>, key: unknown): T | undefined =>
-  typeof key === 'string' && Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
 const JUSTIFY: Record<string, string> = {
   left: 'tw-justify-start',
   center: 'tw-justify-center',
@@ -44,13 +41,3 @@ const JUSTIFY: Record<string, string> = {
 };
 export const justify = (styles: Resolved | undefined, fallback = 'left'): string | undefined =>
   own(JUSTIFY, styles?.alignment) || JUSTIFY[fallback];
-
-/** Enter or Space activates a div acting as a button. */
-export const onKeyActivate =
-  <E extends Element>(handler: (e: KeyboardEvent<E>) => void) =>
-  (e: KeyboardEvent<E>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handler(e);
-    }
-  };

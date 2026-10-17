@@ -1,8 +1,9 @@
 // ToolJet UI 2.0: the Map's colours, route lines, areas, legend and heat points (pure, as mapModel.ts): every
 // function takes whatever the author bound and never throws.
 import { chipLabel } from '@/AppBuilder/Widgets/Ui2/_shared/chipTone';
-import { isText, markerTone, parseCenter, shown, toLatLng } from './mapModel';
+import { markerTone, parseCenter, toLatLng } from './mapModel';
 import type { Row, LatLng, MapPoint } from './mapTypes';
+import { isNonBlankString, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** A route line: through the markers (connectMarkers) or from the routes rows. */
 export interface MapRoute {
@@ -59,7 +60,7 @@ export const ROUTE_PALETTE = ['#4f46e5', '#db2777', '#0891b2', '#7c3aed', '#ea58
 /** A colour safe to place in an inline style: hex, rgb()/hsl() with plain numbers, a named colour or a tone name;
  *  anything else (a url(), an expression, junk) is null. */
 export const safeColor = (v: unknown): string | null => {
-  if (!isText(v)) return null;
+  if (!isNonBlankString(v)) return null;
   const c = v.trim();
   if (TONE_COLORS[c.toLowerCase()]) return TONE_COLORS[c.toLowerCase()];
   if (/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(c)) return c;
@@ -71,8 +72,8 @@ export const safeColor = (v: unknown): string | null => {
 /** The colour an author gave a value in a map ({ 'Under offer': '#d97706', Open: 'warning' }), matched exactly or
  *  ignoring case; null when the map does not name it. */
 export const colorOf = (value: unknown, colors: unknown): string | null => {
-  if (!colors || typeof colors !== 'object' || Array.isArray(colors) || !isText(shown(value))) return null;
-  const text = shown(value);
+  if (!colors || typeof colors !== 'object' || Array.isArray(colors) || !isNonBlankString(toText(value))) return null;
+  const text = toText(value);
   const key =
     Object.keys(colors).find((k) => k === text) ??
     Object.keys(colors).find((k) => k.toLowerCase() === text.toLowerCase());
@@ -102,7 +103,7 @@ const pointOf = (v: unknown, geo = false): LatLng | null => {
  *  two. */
 export const toPath = (value: unknown): LatLng[] | null => {
   let v: unknown = value;
-  if (isText(v)) {
+  if (isNonBlankString(v)) {
     try {
       v = JSON.parse(v);
     } catch {
@@ -125,7 +126,7 @@ export const toPath = (value: unknown): LatLng[] | null => {
   return path.length >= 2 ? path : null;
 };
 
-const rowName = (row: Row | null | undefined): string => shown(row?.name ?? row?.title ?? row?.label ?? row?.id);
+const rowName = (row: Row | null | undefined): string => toText(row?.name ?? row?.title ?? row?.label ?? row?.id);
 
 /** Lines through the markers in order (connectMarkers): one per value of routeField (all markers when it is empty),
  *  sorted by routeOrderField (numbers in numeric order) else in data order, starting at routeStart when given. Each
@@ -143,14 +144,14 @@ export const markerRoutes = (
   const start = parseCenter(routeStart);
   const groups = new Map<string, MapPoint[]>();
   points.forEach((p) => {
-    const name = isText(routeField) ? shown(p.row?.[routeField]) : '';
+    const name = isNonBlankString(routeField) ? toText(p.row?.[routeField]) : '';
     if (!groups.has(name)) groups.set(name, []);
     groups.get(name)?.push(p);
   });
   const orderOf = (p: MapPoint): number | string | null => {
-    const raw = isText(routeOrderField) ? p.row?.[routeOrderField] : undefined;
-    const n = typeof raw === 'number' ? raw : isText(raw) && raw.trim() !== '' ? Number(raw) : NaN;
-    return Number.isFinite(n) ? n : isText(raw) ? raw : null;
+    const raw = isNonBlankString(routeOrderField) ? p.row?.[routeOrderField] : undefined;
+    const n = typeof raw === 'number' ? raw : isNonBlankString(raw) && raw.trim() !== '' ? Number(raw) : NaN;
+    return Number.isFinite(n) ? n : isNonBlankString(raw) ? raw : null;
   };
   let i = 0;
   return [...groups.entries()].flatMap(([name, members]): MapRoute[] => {
@@ -193,13 +194,13 @@ export const routeRows = (
     const path = toPath(row.path ?? row.points ?? row.coordinates ?? row.geometry);
     if (!path) return [];
     const name = rowName(row);
-    const tone = markerTone(shown(row.status));
+    const tone = markerTone(toText(row.status));
     const color =
       safeColor(row.color) ||
       colorOf(name, routeColors) ||
       statusFill(row.status, tone, statusColors) ||
       ROUTE_PALETTE[index % ROUTE_PALETTE.length];
-    return [{ key: `line:${shown(row.id) || index}`, name: name || `Route ${index + 1}`, path, color, row }];
+    return [{ key: `line:${toText(row.id) || index}`, name: name || `Route ${index + 1}`, path, color, row }];
   });
 };
 
@@ -215,18 +216,18 @@ export interface AreaFields {
 
 export const areaShapes = (rows: unknown, f: AreaFields = {}, statusColors?: unknown): MapArea[] => {
   if (!Array.isArray(rows)) return [];
-  const shapeKey = isText(f.areaShapeField) ? f.areaShapeField : 'outline';
-  const titleKey = isText(f.areaTitleField) ? f.areaTitleField : 'name';
-  const statusKey = isText(f.areaStatusField) ? f.areaStatusField : 'status';
-  const radiusKey = isText(f.areaRadiusField) ? f.areaRadiusField : 'radius';
+  const shapeKey = isNonBlankString(f.areaShapeField) ? f.areaShapeField : 'outline';
+  const titleKey = isNonBlankString(f.areaTitleField) ? f.areaTitleField : 'name';
+  const statusKey = isNonBlankString(f.areaStatusField) ? f.areaStatusField : 'status';
+  const radiusKey = isNonBlankString(f.areaRadiusField) ? f.areaRadiusField : 'radius';
   return rows.slice(0, 1000).flatMap((row: Row, index: number): MapArea[] => {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
-    const status = shown(row[statusKey]);
+    const status = toText(row[statusKey]);
     const tone = markerTone(status);
     const color = safeColor(row.color) || statusFill(status, tone, statusColors) || null;
     const base = {
-      key: `area:${shown(row.id) || index}`,
-      title: shown(row[titleKey]) || rowName(row),
+      key: `area:${toText(row.id) || index}`,
+      title: toText(row[titleKey]) || rowName(row),
       status,
       tone,
       color,
@@ -277,7 +278,7 @@ export const legendItems = ({
 /** Heat points [lat, lng, weight]: weight from heatField (a positive number), else 1. */
 export const heatPoints = (points: MapPoint[], heatField: unknown): HeatPoint[] =>
   (Array.isArray(points) ? points : []).flatMap((p): HeatPoint[] => {
-    if (!isText(heatField)) return [[p.lat, p.lng, 1]];
+    if (!isNonBlankString(heatField)) return [[p.lat, p.lng, 1]];
     const w = Number(p.row?.[heatField]);
     return Number.isFinite(w) && w > 0 ? [[p.lat, p.lng, w]] : [];
   });

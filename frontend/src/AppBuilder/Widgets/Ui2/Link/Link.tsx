@@ -1,12 +1,12 @@
 import React, { useRef } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { ExternalLink } from 'lucide-react';
-import { useOverrides, textArg } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { clamp } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
-import { justify, own } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { justify } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { clampCoerce, own, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Link ------------------------------------------------------------------------------------------------------------
 
@@ -35,8 +35,8 @@ export const ShadLink = (props: WidgetProps) => {
   useExposed(setExposedVariables, p, {
     linkTarget: href,
     linkText: String(p.linkText ?? ''),
-    setLinkTarget: async (v: unknown) => override('linkTarget', textArg(v)),
-    setLinkText: async (v: unknown) => override('linkText', textArg(v)),
+    setLinkTarget: async (v: unknown) => override('linkTarget', toText(v)),
+    setLinkText: async (v: unknown) => override('linkText', toText(v)),
     // click() follows the link as a click does (onClick fires, the target opens).
     click: async () => {
       if (busy(latest.current)) return;
@@ -56,7 +56,7 @@ export const ShadLink = (props: WidgetProps) => {
     own(WEIGHT, p.fontWeight) || WEIGHT.medium,
     disabled && 'tw-pointer-events-none tw-opacity-50'
   );
-  const style = { fontSize: clamp(p.fontSize, 8, 96, 14), lineHeight: 1.4 };
+  const style = { fontSize: clampCoerce(p.fontSize, 8, 96, 14), lineHeight: 1.4 };
   const content = (
     <>
       <span className="tw-truncate">{String(p.linkText ?? '')}</span>

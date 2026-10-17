@@ -16,9 +16,7 @@ import type {
   PickedLocation,
   MapConfig,
 } from './mapTypes';
-
-export const isText = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
-export const shown = (v: unknown): string => (v === null || v === undefined || typeof v === 'object' ? '' : String(v));
+import { isNonBlankString, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_LAT = 85.0511287798;
 export const MIN_ZOOM = 1;
@@ -52,7 +50,7 @@ export const parseCenter = (v: unknown): LatLng | null => {
     const o = v as Row;
     return toLatLng(o.lat ?? o.latitude, o.lng ?? o.lon ?? o.longitude);
   }
-  if (isText(v)) {
+  if (isNonBlankString(v)) {
     const parts = v.split(',');
     return parts.length === 2 ? toLatLng(parts[0], parts[1]) : null;
   }
@@ -66,7 +64,7 @@ const TONE_NAMES: Record<string, number> = { success: 1, warning: 1, danger: 1, 
  *  are amber; a zone's Overloaded is red; a listing Under offer or Reserved is amber and Sold or Let grey. No status,
  *  or words with no tone: '' (the pin takes the accent colour). */
 export const markerTone = (status: unknown): string => {
-  if (!isText(status)) return '';
+  if (!isNonBlankString(status)) return '';
   const word = status.trim().toLowerCase();
   if (TONE_NAMES[word]) return word;
   const words = word.replace(/[_-]+/g, ' ');
@@ -101,8 +99,8 @@ export const mapPoints = (
 ): { points: MapPoint[]; skipped: number; rows: number } => {
   if (!Array.isArray(data)) return { points: [], skipped: 0, rows: 0 };
   const f = fields || {};
-  const latKey = isText(f.latField) ? f.latField : 'lat';
-  const lngKey = isText(f.lngField) ? f.lngField : 'lng';
+  const latKey = isNonBlankString(f.latField) ? f.latField : 'lat';
+  const lngKey = isNonBlankString(f.lngField) ? f.lngField : 'lng';
   let skipped = 0;
   const points: MapPoint[] = [];
   data.forEach((row: Row, index: number) => {
@@ -115,25 +113,25 @@ export const mapPoints = (
       skipped += 1;
       return;
     }
-    const idKey = isText(f.idField) ? f.idField : 'id';
+    const idKey = isNonBlankString(f.idField) ? f.idField : 'id';
     const titleKey =
-      isText(f.titleField) && f.titleField in row
+      isNonBlankString(f.titleField) && f.titleField in row
         ? f.titleField
-        : TITLE_KEYS.find((k) => isText(row[k])) ||
-          Object.keys(row).find((k) => isText(row[k]) && ![latKey, lngKey, idKey].includes(k));
+        : TITLE_KEYS.find((k) => isNonBlankString(row[k])) ||
+          Object.keys(row).find((k) => isNonBlankString(row[k]) && ![latKey, lngKey, idKey].includes(k));
     const id = row[idKey];
     // Unset (a widget made with only some properties) reads the default field; '' means no status.
     const statusKey = f.statusField === undefined || f.statusField === null ? 'status' : f.statusField;
-    const status = isText(statusKey) ? shown(row[statusKey]) : '';
+    const status = isNonBlankString(statusKey) ? toText(row[statusKey]) : '';
     points.push({
-      key: shown(id) || `#${index}`,
+      key: toText(id) || `#${index}`,
       id: id === undefined || id === null || typeof id === 'object' ? null : id,
       lat: at.lat,
       lng: at.lng,
-      title: titleKey ? shown(row[titleKey]) : '',
-      label: isText(f.labelField) ? shown(row[f.labelField]).trim().slice(0, 24) : '',
-      icon: isText(f.iconField) ? shown(row[f.iconField]).trim() : '',
-      subtitle: isText(f.subtitleField) ? shown(row[f.subtitleField]) : '',
+      title: titleKey ? toText(row[titleKey]) : '',
+      label: isNonBlankString(f.labelField) ? toText(row[f.labelField]).trim().slice(0, 24) : '',
+      icon: isNonBlankString(f.iconField) ? toText(row[f.iconField]).trim() : '',
+      subtitle: isNonBlankString(f.subtitleField) ? toText(row[f.subtitleField]) : '',
       status,
       statusLabel: chipLabel(status),
       tone: markerTone(status),
@@ -148,8 +146,8 @@ export const mapPoints = (
  *  'eta|datetime:ETA {}', 'total|currency', 'seats:Seats'). Fields the row lacks or leaves empty are left out. */
 export const popupLines = (row: Row, popupFields: unknown, currency?: unknown): string[] => {
   const specs: string[] = Array.isArray(popupFields)
-    ? popupFields.filter(isText)
-    : isText(popupFields)
+    ? popupFields.filter(isNonBlankString)
+    : isNonBlankString(popupFields)
     ? popupFields.split(',')
     : [];
   if (!row || typeof row !== 'object' || !specs.length) return [];
@@ -315,24 +313,24 @@ export const tileSource = ({
 } = {}): TileSource => {
   const c: MapConfig = config && typeof config === 'object' ? (config as MapConfig) : {};
   if (mapStyle === 'satellite') {
-    const own = isText(c.MAP_SATELLITE_TILE_URL) ? c.MAP_SATELLITE_TILE_URL.trim() : '';
+    const own = isNonBlankString(c.MAP_SATELLITE_TILE_URL) ? c.MAP_SATELLITE_TILE_URL.trim() : '';
     return own
       ? {
           url: own,
-          attribution: isText(c.MAP_SATELLITE_ATTRIBUTION) ? c.MAP_SATELLITE_ATTRIBUTION.trim() : '',
+          attribution: isNonBlankString(c.MAP_SATELLITE_ATTRIBUTION) ? c.MAP_SATELLITE_ATTRIBUTION.trim() : '',
           basemap: null,
           labels: '',
         }
       : { url: SATELLITE.url, attribution: SATELLITE.attribution, basemap: null, labels: SATELLITE.labels };
   }
-  const own = isText(tileUrl) ? tileUrl.trim() : '';
-  const installed = (darkMode && isText(c.MAP_TILE_URL_DARK) ? c.MAP_TILE_URL_DARK : c.MAP_TILE_URL) || '';
-  const attribution = isText(tileAttribution)
+  const own = isNonBlankString(tileUrl) ? tileUrl.trim() : '';
+  const installed = (darkMode && isNonBlankString(c.MAP_TILE_URL_DARK) ? c.MAP_TILE_URL_DARK : c.MAP_TILE_URL) || '';
+  const attribution = isNonBlankString(tileAttribution)
     ? tileAttribution.trim()
-    : !own && isText(installed) && isText(c.MAP_TILE_ATTRIBUTION)
+    : !own && isNonBlankString(installed) && isNonBlankString(c.MAP_TILE_ATTRIBUTION)
     ? c.MAP_TILE_ATTRIBUTION.trim()
     : '';
   if (own) return { url: own, attribution, basemap: null };
-  if (isText(installed)) return { url: installed.trim(), attribution, basemap: null };
+  if (isNonBlankString(installed)) return { url: installed.trim(), attribution, basemap: null };
   return { url: OSM.url, attribution: attribution || OSM.attribution, basemap: darkMode ? 'dark' : 'light' };
 };

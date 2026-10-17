@@ -6,9 +6,10 @@ import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Avatar, AvatarFallback, Badge, Progress, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { badgeLook, isSet, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+import { badgeLook, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { cardClamp, cardDateLabel, cardDetails } from './kanbanBoard';
 import type { BoardCard } from './kanbanBoard';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export type KanbanLook = ReturnType<typeof kanbanLook>;
 

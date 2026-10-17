@@ -3,7 +3,6 @@ import {
   cellStyleFor,
   matchesCondition,
   compareCells,
-  formatCell,
   matchesSearch,
   normalizeColumns,
   readCell,
@@ -11,6 +10,7 @@ import {
   sortRows,
   toCsv,
 } from '@/AppBuilder/Widgets/Ui2/Table/tableModel';
+import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 const rows = [
   { id: 1, name: 'Ada Lovelace', amount: 1200.5, status: 'Paid', joined: '2024-03-02', meta: { team: 'Core' } },

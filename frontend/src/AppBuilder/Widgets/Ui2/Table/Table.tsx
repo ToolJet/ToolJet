@@ -4,8 +4,7 @@ import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useAutoHeight, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
-import { pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
+import { pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { applyFilters, matchesSearch, normalizeColumns, rowKey, sortRows } from './tableModel';
 import type { Entry, FireOption, Live, OnAction, Paged, Row, Sort, TableColumn, TableFilter } from './types';
@@ -18,6 +17,7 @@ import { useTableActions } from './useTableActions';
 import { useTableEdits } from './useTableEdits';
 import { useTableSelection } from './useTableSelection';
 import { useTableScroll } from './useTableScroll';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ToolJet UI 2.0 Table. Native Table conventions (property, event, exposed and action names; server-side
 // pagination, search, sort and filters), the shadcn data-table look, and none of the native table's known failure
@@ -222,12 +222,7 @@ export const ShadTable = (props: WidgetProps) => {
     setExposedVariables({ filters: exposedFilters(normalized), pageIndex: 1 });
     if (fire) fireEvent('onFilterChanged');
   };
-  const goTo = (target: unknown, { fire = true }: FireOption = {}) => {
-    const next = Math.max(1, Math.floor(Number(target)) || 1);
-    setPage(next);
-    setExposedVariable('pageIndex', next);
-    if (fire) fireEvent('onPageChanged');
-  };
+  const goTo = pageGoTo(setPage, setExposedVariable, fireEvent);
   const onAction: OnAction = (buttonId, column, row, rowIndex) => {
     setExposedVariables({
       selectedRow: row,

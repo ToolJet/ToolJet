@@ -1,34 +1,24 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Tooltip, XAxis, YAxis } from 'recharts';
-import { list, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import {
-  isPlain,
-  isSet,
-  resolveChartFields,
-  seriesLabel,
-  statusColors,
-  highlightIndexes,
-  wholeNumbers,
-  wholeTicks,
-  seriesLabelMap,
-  type Row,
-} from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
+import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { highlightIndexes, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
   AXIS,
   ChartFrame,
-  ChartTooltip,
   GRID,
-  LegendContent,
   MAX_BARS,
   dateTicks,
-  fmt,
   isCompactChart,
-  seriesOf,
   useAffixes,
-  valueAxisWidth,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import {
+  seriesSetup,
+  tooltipAndLegend,
+  useSeriesInputs,
+  valueAxis,
+} from '@/AppBuilder/Widgets/Ui2/_charts/cartesianParts';
+import { isRecord, isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** A category name as at most `lines` lines of `max` characters, broken at spaces; what still does not fit ends in an
  *  ellipsis. Recharts dropped every other name of an 8-bar chart rather than wrap them (expense build, 2026-10-12). */
@@ -137,7 +127,7 @@ export const categoryFills = (
   xField: string | undefined,
   categoryColors: unknown
 ): (string | null)[] => {
-  const own: Row = isPlain(categoryColors) ? categoryColors : {};
+  const own: Row = isRecord(categoryColors) ? categoryColors : {};
   return data.map((row) => {
     const key = row && typeof row === 'object' ? (row as Row)[String(xField)] : undefined;
     const v = typeof key === 'string' || typeof key === 'number' ? own[key] : undefined;
@@ -147,39 +137,24 @@ export const categoryFills = (
 
 export const ShadBarChart = (props: WidgetProps) => {
   const p = props.properties;
-  const bound = useStable(p.data);
-  const yFields = useStable(p.yFields);
-  const seriesLabels = useStable(p.seriesLabels);
-  const colors = useStable(p.colors);
+  const { bound, yFields, seriesLabels, colors } = useSeriesInputs(p);
   const highlight = useStable(p.highlight);
   const categoryColors = useStable(p.categoryColors);
   const affixes = useAffixes(p);
   const stacked = p.stack === true;
   // Rows, series, colours and the value axis are worked out again only when what they read changes, not on every
   // render of the widget (a hover, a sibling's exposed value).
-  const { data, xField, series, names, fills, picked, rowFills, tick, full, yWidth, allowDecimals, ticks } =
-    useMemo(() => {
-      const rows = list(bound).slice(0, MAX_BARS);
-      const fields = resolveChartFields(rows, p.xField, seriesOf({ yFields }));
-      const labels = seriesLabelMap(seriesLabels, fields.series);
-      const seriesNames = fields.series.map((s) => seriesLabel(s, labels));
-      const states = isSet(colors) ? null : statusColors(seriesNames);
-      const short = fmt(affixes, true);
-      return {
-        data: rows,
-        xField: fields.x,
-        series: fields.series,
-        names: seriesNames,
-        fills: fields.series.map((_, i) => states?.[i] ?? seriesColor(colors, i)),
-        picked: highlightIndexes(rows, fields.x, fields.series, highlight),
-        rowFills: categoryFills(rows, fields.x, categoryColors),
-        tick: short,
-        full: fmt(affixes, false),
-        yWidth: valueAxisWidth(rows, fields.series, short, stacked),
-        allowDecimals: !wholeNumbers(rows, fields.series),
-        ticks: wholeTicks(rows, fields.series, stacked),
-      };
-    }, [bound, p.xField, yFields, seriesLabels, colors, highlight, categoryColors, affixes, stacked]);
+  const { data, setup, picked, rowFills } = useMemo(() => {
+    const rows = list(bound).slice(0, MAX_BARS);
+    const fields = seriesSetup(rows, { xField: p.xField, yFields, seriesLabels, colors, affixes, stacked });
+    return {
+      data: rows,
+      setup: fields,
+      picked: highlightIndexes(rows, fields.xField, fields.series, highlight),
+      rowFills: categoryFills(rows, fields.xField, categoryColors),
+    };
+  }, [bound, p.xField, yFields, seriesLabels, colors, highlight, categoryColors, affixes, stacked]);
+  const { xField, series, names, fills, tick, allowDecimals, ticks } = setup;
   // The category axis: whether names are drawn at an angle depends on the widget's width as well.
   const categoryAxis = useMemo(() => {
     const angled = angledCategories(data, xField, props.width);
@@ -262,18 +237,14 @@ export const ShadBarChart = (props: WidgetProps) => {
               ) : (
                 <XAxis dataKey={xField} {...AXIS} hide={compact} minTickGap={16} tickFormatter={categoryAxis.dates} />
               )}
-              <YAxis
-                {...AXIS}
-                hide={compact}
-                width={yWidth}
-                tickFormatter={tick}
-                allowDecimals={allowDecimals}
-                {...ticks}
-              />
+              {valueAxis(setup, compact)}
             </>
           )}
-          <Tooltip cursor={{ fill: 'var(--sc-muted)' }} content={<ChartTooltip format={full} />} />
-          {p.showLegend === true && series.length > 1 && !compact ? <Legend content={<LegendContent />} /> : null}
+          {tooltipAndLegend(
+            setup.full,
+            { fill: 'var(--sc-muted)' },
+            p.showLegend === true && series.length > 1 && !compact
+          )}
           {series.map((s, i) => (
             <Bar
               key={s}

@@ -2,7 +2,7 @@
 import React, { useContext } from 'react';
 import { Label, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
-import { LoadingContext } from './Shell';
+import { LoadingContext, Shell } from './Shell';
 import type { CssVars, Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // Label and help text colours of form controls: the labelColor and helpTextColor styles, else the theme's.
@@ -18,6 +18,24 @@ export const CONTROL =
 export const ERROR = 'tw-text-[color:var(--lk-error,var(--sc-destructive))]';
 
 export const INVALID_VARS: CssVars = { '--lk-invalid': 'var(--lk-error, var(--sc-destructive))' };
+
+/** A control's label, with a mark when the field is mandatory. */
+export const FieldLabel = ({ id, text, required }: { id?: string; text: string; required?: boolean }) => (
+  <Label htmlFor={id} className={LABEL}>
+    {text}
+    {required ? <span className={cn('tw-ml-0.5', ERROR)}>*</span> : null}
+  </Label>
+);
+
+/** The validation message, else the help text, under a control; `size` is the text size class. */
+export const FieldNote = ({ error, description, size }: { error?: string; description?: unknown; size: string }) =>
+  error ? (
+    <p role="alert" className={cn(size, 'tw-font-medium', ERROR)}>
+      {String(error)}
+    </p>
+  ) : description ? (
+    <p className={cn(size, HELP)}>{String(description)}</p>
+  ) : null;
 
 /** shadcn's form field: label above (with a mark when mandatory), control, then the validation error or the help
  *  text below. While loading, a spinner sits inside the control. An error also turns the control's border to the
@@ -38,12 +56,7 @@ export const Field = ({ id, label, description, error, required, children }: Fie
   const loading = useContext(LoadingContext);
   return (
     <div className="tw-flex tw-w-full tw-flex-col tw-gap-2" style={error ? INVALID_VARS : undefined}>
-      {label ? (
-        <Label htmlFor={id} className={LABEL}>
-          {String(label)}
-          {required ? <span className={cn('tw-ml-0.5', ERROR)}>*</span> : null}
-        </Label>
-      ) : null}
+      {label ? <FieldLabel id={id} text={String(label)} required={required} /> : null}
       {loading ? (
         <div className="tw-relative">
           {children}
@@ -52,13 +65,7 @@ export const Field = ({ id, label, description, error, required, children }: Fie
       ) : (
         children
       )}
-      {error ? (
-        <p role="alert" className={cn('tw-text-[0.8rem] tw-font-medium', ERROR)}>
-          {String(error)}
-        </p>
-      ) : description ? (
-        <p className={cn('tw-text-[0.8rem]', HELP)}>{String(description)}</p>
-      ) : null}
+      <FieldNote error={error} description={description} size="tw-text-[0.8rem]" />
     </div>
   );
 };
@@ -77,3 +84,30 @@ export const fieldName = (
 
 export const textAlign = (styles: Resolved | undefined): 'left' | 'center' | 'right' | undefined =>
   ['left', 'center', 'right'].includes(styles?.textAlign) ? styles?.textAlign : undefined;
+
+/** A form widget's root: Shell (loading look, visibility) around its Field. The label and help text come from
+ *  `properties` (the widget's properties with any action overrides applied); the error and mark from `check`. */
+export interface FormFieldProps {
+  props: WidgetProps;
+  properties: Resolved;
+  check: { error: string; required: boolean };
+  innerRef?: React.Ref<HTMLDivElement>;
+  /** In place of properties.label or check.error, where the widget shows its own. */
+  label?: unknown;
+  error?: string;
+  children?: React.ReactNode;
+}
+
+export const FormField = ({ props, properties, check, innerRef, label, error, children }: FormFieldProps) => (
+  <Shell {...props} innerRef={innerRef}>
+    <Field
+      id={`shad-${props.id}`}
+      label={label ?? properties.label}
+      description={properties.description}
+      error={error ?? check.error}
+      required={check.required}
+    >
+      {children}
+    </Field>
+  </Shell>
+);

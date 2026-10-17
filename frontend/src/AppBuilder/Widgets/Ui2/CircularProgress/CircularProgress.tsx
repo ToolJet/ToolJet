@@ -5,9 +5,9 @@ import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { ringGeometry } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import { justify } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Circular progress -----------------------------------------------------------------------------------------------
 

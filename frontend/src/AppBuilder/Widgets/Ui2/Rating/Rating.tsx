@@ -1,15 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { Circle, Heart, Star } from 'lucide-react';
-import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { list, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
-import { isText } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { KeyboardEvent, MouseEvent } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isStringOrNumber, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Rating --------------------------------------------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ export const ShadRating = (props: WidgetProps) => {
   const kind = RATING_ICONS[properties.icon] ? properties.icon : 'star';
   const Icon = RATING_ICONS[kind];
   const size = RATING_SIZES[properties.size] || RATING_SIZES.default;
-  const labels = list(properties.valueLabels).map((l) => (isText(l) ? String(l) : ''));
+  const labels = list(properties.valueLabels).map((l) => (isStringOrNumber(l) ? String(l) : ''));
   const setTo = (next: number) => {
     if (next !== value) change(next);
     check.touch();
@@ -79,78 +79,70 @@ export const ShadRating = (props: WidgetProps) => {
   const focusable = Math.max(1, Math.ceil(value));
   const valueText = shown > 0 ? labels[Math.ceil(shown) - 1] || `${shown} / ${max}` : labels.length ? '' : `0 / ${max}`;
   return (
-    <Shell {...props} innerRef={ref}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={check.error}
-        required={check.required}
-      >
-        <div className="tw-flex tw-items-center tw-gap-2">
-          <div
-            id={`shad-${id}`}
-            role="radiogroup"
-            aria-label={isText(properties.label) && properties.label ? String(properties.label) : 'Rating'}
-            aria-readonly={readOnly || undefined}
-            aria-disabled={busy(properties) || undefined}
-            className={cn('tw-inline-flex tw-items-center', size >= 28 ? 'tw-gap-1.5' : 'tw-gap-1')}
-            onMouseLeave={() => setHover(null)}
-          >
-            {Array.from({ length: max }, (_, i) => {
-              const position = i + 1;
-              const fill = M.iconFill(position, shown);
-              return (
-                <span
-                  key={position}
-                  ref={(el) => (radios.current[i] = el)}
-                  role="radio"
-                  aria-checked={Math.ceil(value) === position}
-                  aria-label={labels[i] || `${position} of ${max}`}
-                  tabIndex={interactive && position === focusable ? 0 : -1}
-                  onKeyDown={onKeyDown}
-                  onMouseMove={interactive ? (e) => setHover(pointAt(e, position)) : undefined}
-                  onClick={
-                    interactive
-                      ? (e) => {
-                          const next = pointAt(e, position);
-                          setHover(null);
-                          setTo(next === value && properties.allowClear !== false ? 0 : next);
-                        }
-                      : undefined
-                  }
-                  className={cn(
-                    'tw-relative tw-inline-flex tw-shrink-0 tw-rounded-ui2-sm tw-outline-none tw-transition-transform focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring focus-visible:tw-ring-offset-2',
-                    interactive && 'tw-cursor-pointer hover:tw-scale-110'
-                  )}
+    <FormField props={props} properties={properties} check={check} innerRef={ref}>
+      <div className="tw-flex tw-items-center tw-gap-2">
+        <div
+          id={`shad-${id}`}
+          role="radiogroup"
+          aria-label={isStringOrNumber(properties.label) && properties.label ? String(properties.label) : 'Rating'}
+          aria-readonly={readOnly || undefined}
+          aria-disabled={busy(properties) || undefined}
+          className={cn('tw-inline-flex tw-items-center', size >= 28 ? 'tw-gap-1.5' : 'tw-gap-1')}
+          onMouseLeave={() => setHover(null)}
+        >
+          {Array.from({ length: max }, (_, i) => {
+            const position = i + 1;
+            const fill = M.iconFill(position, shown);
+            return (
+              <span
+                key={position}
+                ref={(el) => (radios.current[i] = el)}
+                role="radio"
+                aria-checked={Math.ceil(value) === position}
+                aria-label={labels[i] || `${position} of ${max}`}
+                tabIndex={interactive && position === focusable ? 0 : -1}
+                onKeyDown={onKeyDown}
+                onMouseMove={interactive ? (e) => setHover(pointAt(e, position)) : undefined}
+                onClick={
+                  interactive
+                    ? (e) => {
+                        const next = pointAt(e, position);
+                        setHover(null);
+                        setTo(next === value && properties.allowClear !== false ? 0 : next);
+                      }
+                    : undefined
+                }
+                className={cn(
+                  'tw-relative tw-inline-flex tw-shrink-0 tw-rounded-ui2-sm tw-outline-none tw-transition-transform focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring focus-visible:tw-ring-offset-2',
+                  interactive && 'tw-cursor-pointer hover:tw-scale-110'
+                )}
+                style={{ width: size, height: size }}
+              >
+                <Icon
+                  className={cn('tw-absolute tw-inset-0', fill === 'full' ? FILLED[kind] : EMPTY)}
                   style={{ width: size, height: size }}
-                >
-                  <Icon
-                    className={cn('tw-absolute tw-inset-0', fill === 'full' ? FILLED[kind] : EMPTY)}
-                    style={{ width: size, height: size }}
-                    strokeWidth={1.5}
-                  />
-                  {fill === 'half' ? (
-                    <span className="tw-absolute tw-inset-y-0 tw-left-0 tw-w-1/2 tw-overflow-hidden">
-                      <Icon
-                        className={cn('tw-absolute tw-left-0 tw-top-0', FILLED[kind])}
-                        style={{ width: size, height: size }}
-                        strokeWidth={1.5}
-                      />
-                    </span>
-                  ) : null}
-                </span>
-              );
-            })}
-          </div>
-          {properties.showValue === true && valueText ? (
-            <span className="tw-text-ui2-sm tw-tabular-nums tw-text-[color:var(--lk-value,var(--sc-muted-foreground))]">
-              {valueText}
-            </span>
-          ) : null}
+                  strokeWidth={1.5}
+                />
+                {fill === 'half' ? (
+                  <span className="tw-absolute tw-inset-y-0 tw-left-0 tw-w-1/2 tw-overflow-hidden">
+                    <Icon
+                      className={cn('tw-absolute tw-left-0 tw-top-0', FILLED[kind])}
+                      style={{ width: size, height: size }}
+                      strokeWidth={1.5}
+                    />
+                  </span>
+                ) : null}
+              </span>
+            );
+          })}
         </div>
-      </Field>
-    </Shell>
+        {properties.showValue === true && valueText ? (
+          <span className="tw-text-ui2-sm tw-tabular-nums tw-text-[color:var(--lk-value,var(--sc-muted-foreground))]">
+            {valueText}
+          </span>
+        ) : null}
+      </div>
+    </FormField>
   );
 };
 

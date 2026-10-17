@@ -2,10 +2,10 @@ import React, { useRef } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { textArg, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { isSet, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const ShadButton = (props: WidgetProps) => {
   const { styles, setExposedVariables, fireEvent } = props;
@@ -15,7 +15,7 @@ export const ShadButton = (props: WidgetProps) => {
   latest.current = properties;
   useExposed(setExposedVariables, properties, {
     buttonText: String(properties.text ?? ''),
-    setText: async (text: unknown) => override('text', textArg(text)),
+    setText: async (text: unknown) => override('text', toText(text)),
     click: async () => {
       if (!busy(latest.current)) fireEvent('onClick');
     },

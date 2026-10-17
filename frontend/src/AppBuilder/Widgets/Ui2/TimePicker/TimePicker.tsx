@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Clock } from 'lucide-react';
-import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -9,9 +9,10 @@ import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import { isBlank } from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
-import { ICON, TRIGGER, pad2, parseTimeArg, text, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import { ICON, TRIGGER, parseTimeArg, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { TimeBounds } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { pad2, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Time picker ---------------------------------------------------------------------------------------------------
 
@@ -166,14 +167,14 @@ export const ShadTimePicker = (props: WidgetProps) => {
   };
   useExposed(setExposedVariables, properties, {
     ...exposed(minutes),
-    label: text(properties.label),
+    label: toText(properties.label),
     timeFormat: use24 ? '24h' : '12h',
     minTime: M.toHHmm(bounds.lo),
     maxTime: M.toHHmm(bounds.hi),
     setValue: async (t: unknown, format: unknown) => setTime(t, format),
     clearValue: async () => setMinutes(null),
-    setMinTime: async (t: unknown) => override('minTime', text(t)),
-    setMaxTime: async (t: unknown) => override('maxTime', text(t)),
+    setMinTime: async (t: unknown) => override('minTime', toText(t)),
+    setMaxTime: async (t: unknown) => override('maxTime', toText(t)),
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),
   });
@@ -205,63 +206,53 @@ export const ShadTimePicker = (props: WidgetProps) => {
   const shown = M.formatTime(minutes, use24);
   const listMode = properties.pickerStyle === 'list';
   return (
-    <Shell {...props} innerRef={fit}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={check.error}
-        required={check.required}
-      >
-        <Popover open={open} onOpenChange={openChange}>
-          <PopoverTrigger asChild>
-            <Button
-              ref={triggerRef}
-              id={`shad-${id}`}
-              variant="outline"
-              disabled={disabled}
-              aria-invalid={!!check.error || undefined}
-              {...focus.handlers}
-              className={cn(
-                TRIGGER,
-                CONTROL,
-                'tw-tabular-nums',
-                !shown && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
-              )}
-            >
-              <Clock className={ICON} />
-              {shown || text(properties.placeholder)}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            align="start"
-            style={lookVars(componentType, styles)}
-            className={
-              listMode ? 'tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[9rem] tw-p-0' : 'tw-w-auto tw-p-0'
-            }
-          >
-            {listMode ? (
-              <OptionColumn
-                label="Times"
-                className="tw-h-auto tw-max-h-64 tw-w-full"
-                options={M.timeSlots(step, properties.minTime, properties.maxTime).map((t) => ({
-                  key: t,
-                  label: M.formatTime(t, use24),
-                  selected: t === minutes,
-                  onClick: () => pick(t, true),
-                }))}
-              />
-            ) : (
-              <div className="tw-flex tw-divide-x tw-divide-[color:var(--sc-border)]">
-                {timeColumns({ minutes, use24, step, bounds, onPick: (m) => pick(m) }).map((col) => (
-                  <OptionColumn key={col.label} label={col.label} options={col.options} />
-                ))}
-              </div>
+    <FormField props={props} properties={properties} check={check} innerRef={fit}>
+      <Popover open={open} onOpenChange={openChange}>
+        <PopoverTrigger asChild>
+          <Button
+            ref={triggerRef}
+            id={`shad-${id}`}
+            variant="outline"
+            disabled={disabled}
+            aria-invalid={!!check.error || undefined}
+            {...focus.handlers}
+            className={cn(
+              TRIGGER,
+              CONTROL,
+              'tw-tabular-nums',
+              !shown && 'tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
             )}
-          </PopoverContent>
-        </Popover>
-      </Field>
-    </Shell>
+          >
+            <Clock className={ICON} />
+            {shown || toText(properties.placeholder)}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          style={lookVars(componentType, styles)}
+          className={listMode ? 'tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[9rem] tw-p-0' : 'tw-w-auto tw-p-0'}
+        >
+          {listMode ? (
+            <OptionColumn
+              label="Times"
+              className="tw-h-auto tw-max-h-64 tw-w-full"
+              options={M.timeSlots(step, properties.minTime, properties.maxTime).map((t) => ({
+                key: t,
+                label: M.formatTime(t, use24),
+                selected: t === minutes,
+                onClick: () => pick(t, true),
+              }))}
+            />
+          ) : (
+            <div className="tw-flex tw-divide-x tw-divide-[color:var(--sc-border)]">
+              {timeColumns({ minutes, use24, step, bounds, onPick: (m) => pick(m) }).map((col) => (
+                <OptionColumn key={col.label} label={col.label} options={col.options} />
+              ))}
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+    </FormField>
   );
 };
 

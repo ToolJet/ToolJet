@@ -1,13 +1,14 @@
 import React, { useRef } from 'react';
 import { ChevronDown, ChevronUp, Minus, Plus } from 'lucide-react';
-import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Truncate, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
-import { AFFIX, EDGE, Group, INNER, text, useNumberBox } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
+import { AFFIX, EDGE, Group, INNER, numberTextProps, useNumberBox } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // Stepper buttons attached to the box.
 export const STEP =
@@ -48,122 +49,103 @@ export const ShadNumberInput = (props: WidgetProps) => {
   const steppers = layout !== 'none' && !loading;
   const atMin = lo !== null && value !== null && value <= lo;
   const atMax = hi !== null && value !== null && value >= hi;
-  const prefix = text(properties.prefix);
-  const suffix = text(properties.suffix);
+  const prefix = toText(properties.prefix);
+  const suffix = toText(properties.suffix);
   const shown =
     draft !== null ? draft : M.formatNumber(value, { decimals, grouping: properties.thousandSeparator !== false });
   return (
-    <Shell {...props} innerRef={fit}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={check.error}
-        required={check.required}
-      >
-        <Group disabled={disabled}>
-          {steppers && layout === 'split' ? (
-            <button
-              type="button"
-              tabIndex={-1}
-              aria-label="Decrease"
-              className={cn(STEP, EDGE, 'tw-w-9 tw-border-r')}
-              disabled={disabled || atMin}
-              onClick={() => step(-1)}
-            >
-              <Minus className="tw-h-4 tw-w-4" />
-            </button>
-          ) : null}
-          {prefix ? (
-            <span className={cn(AFFIX, 'tw-pl-3')}>
-              <Truncate>{prefix}</Truncate>
-            </span>
-          ) : null}
-          <input
-            ref={textBox.ref}
-            id={`shad-${id}`}
-            type="text"
-            inputMode="decimal"
-            autoComplete="off"
-            role="spinbutton"
-            aria-valuenow={value ?? undefined}
-            aria-valuemin={lo ?? undefined}
-            aria-valuemax={hi ?? undefined}
-            aria-invalid={!!check.error || undefined}
-            className={cn(
-              INNER,
-              prefix && 'tw-pl-1.5',
-              suffix && 'tw-pr-1.5',
-              layout === 'split' && !prefix && !suffix && 'tw-text-center'
-            )}
-            value={shown}
-            placeholder={text(properties.placeholder)}
-            disabled={disabled}
-            onFocus={() => {
-              setDraft(value === null ? '' : String(value));
-              textBox.onFocus();
-            }}
-            onBlur={() => {
-              setDraft(null);
-              textBox.onBlur();
-            }}
-            onChange={(e) => {
-              const typed = M.numericText(e.target.value);
-              setDraft(typed);
-              commit(round(M.parseNumber(typed)));
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') fireEvent('onEnterPressed');
-              else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                e.preventDefault();
-                step(e.key === 'ArrowUp' ? 1 : -1);
-              }
-            }}
-          />
-          {suffix ? (
-            <span className={cn(AFFIX, 'tw-pr-3')}>
-              <Truncate>{suffix}</Truncate>
-            </span>
-          ) : null}
-          {steppers && layout === 'split' ? (
+    <FormField props={props} properties={properties} check={check} innerRef={fit}>
+      <Group disabled={disabled}>
+        {steppers && layout === 'split' ? (
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label="Decrease"
+            className={cn(STEP, EDGE, 'tw-w-9 tw-border-r')}
+            disabled={disabled || atMin}
+            onClick={() => step(-1)}
+          >
+            <Minus className="tw-h-4 tw-w-4" />
+          </button>
+        ) : null}
+        {prefix ? (
+          <span className={cn(AFFIX, 'tw-pl-3')}>
+            <Truncate>{prefix}</Truncate>
+          </span>
+        ) : null}
+        <input
+          id={`shad-${id}`}
+          {...numberTextProps(
+            setDraft,
+            textBox,
+            () => (value === null ? '' : String(value)),
+            (typed) => commit(round(M.parseNumber(typed)))
+          )}
+          role="spinbutton"
+          aria-valuenow={value ?? undefined}
+          aria-valuemin={lo ?? undefined}
+          aria-valuemax={hi ?? undefined}
+          aria-invalid={!!check.error || undefined}
+          className={cn(
+            INNER,
+            prefix && 'tw-pl-1.5',
+            suffix && 'tw-pr-1.5',
+            layout === 'split' && !prefix && !suffix && 'tw-text-center'
+          )}
+          value={shown}
+          placeholder={toText(properties.placeholder)}
+          disabled={disabled}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') fireEvent('onEnterPressed');
+            else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+              e.preventDefault();
+              step(e.key === 'ArrowUp' ? 1 : -1);
+            }
+          }}
+        />
+        {suffix ? (
+          <span className={cn(AFFIX, 'tw-pr-3')}>
+            <Truncate>{suffix}</Truncate>
+          </span>
+        ) : null}
+        {steppers && layout === 'split' ? (
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label="Increase"
+            className={cn(STEP, EDGE, 'tw-w-9 tw-border-l')}
+            disabled={disabled || atMax}
+            onClick={() => step(1)}
+          >
+            <Plus className="tw-h-4 tw-w-4" />
+          </button>
+        ) : null}
+        {steppers && layout === 'stacked' ? (
+          <div className={cn('tw-flex tw-w-7 tw-shrink-0 tw-flex-col tw-border-l', EDGE)}>
             <button
               type="button"
               tabIndex={-1}
               aria-label="Increase"
-              className={cn(STEP, EDGE, 'tw-w-9 tw-border-l')}
+              className={cn(STEP, 'tw-h-1/2 tw-w-full')}
               disabled={disabled || atMax}
               onClick={() => step(1)}
             >
-              <Plus className="tw-h-4 tw-w-4" />
+              <ChevronUp className="tw-h-3.5 tw-w-3.5" />
             </button>
-          ) : null}
-          {steppers && layout === 'stacked' ? (
-            <div className={cn('tw-flex tw-w-7 tw-shrink-0 tw-flex-col tw-border-l', EDGE)}>
-              <button
-                type="button"
-                tabIndex={-1}
-                aria-label="Increase"
-                className={cn(STEP, 'tw-h-1/2 tw-w-full')}
-                disabled={disabled || atMax}
-                onClick={() => step(1)}
-              >
-                <ChevronUp className="tw-h-3.5 tw-w-3.5" />
-              </button>
-              <button
-                type="button"
-                tabIndex={-1}
-                aria-label="Decrease"
-                className={cn(STEP, EDGE, 'tw-h-1/2 tw-w-full tw-border-t')}
-                disabled={disabled || atMin}
-                onClick={() => step(-1)}
-              >
-                <ChevronDown className="tw-h-3.5 tw-w-3.5" />
-              </button>
-            </div>
-          ) : null}
-        </Group>
-      </Field>
-    </Shell>
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label="Decrease"
+              className={cn(STEP, EDGE, 'tw-h-1/2 tw-w-full tw-border-t')}
+              disabled={disabled || atMin}
+              onClick={() => step(-1)}
+            >
+              <ChevronDown className="tw-h-3.5 tw-w-3.5" />
+            </button>
+          </div>
+        ) : null}
+      </Group>
+    </FormField>
   );
 };
 

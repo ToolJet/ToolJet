@@ -2,7 +2,8 @@
 // carousel; the calendar's is in calendarModel). Everything here takes author data as it comes (null, wrong
 // types, huge lists, ToolJet's `{ value }` wrappers from the inspector's option lists) and never throws.
 
-import type { Bound, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { clampInt, isRecord, isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 const MAX_ITEMS = 200;
 const MAX_CHILDREN = 50;
@@ -11,13 +12,9 @@ const MAX_SLIDES = 100;
 /** A value an author can type: text, a number or a flag. */
 export type Text = string | number | boolean;
 
-export const isObject = (v: unknown): v is Resolved => v !== null && typeof v === 'object' && !Array.isArray(v);
-const isText = (v: unknown): v is Text => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
-export const arr = (v: unknown): Bound[] => (Array.isArray(v) ? v : []);
-
 /** The inspector's option lists wrap some fields as `{ value }`: the bare value. */
 export const unwrap = (v: unknown): unknown =>
-  isObject(v) && 'value' in v && Object.keys(v).every((k) => k === 'value' || k === 'fxActive') ? v.value : v;
+  isRecord<Resolved>(v) && 'value' in v && Object.keys(v).every((k) => k === 'value' || k === 'fxActive') ? v.value : v;
 /** A flag set as true, 'true' or '{{true}}'. */
 export const flag = (v: unknown): boolean => {
   const raw = unwrap(v);
@@ -30,7 +27,7 @@ const notOff = (v: unknown): boolean => {
 };
 export const text = (v: unknown): string => {
   const raw = unwrap(v);
-  return isText(raw) ? String(raw) : '';
+  return isScalar(raw) ? String(raw) : '';
 };
 /** A Tabler icon name ('IconBolt'); anything else means no icon. */
 export const iconName = (v: unknown): string => {
@@ -38,12 +35,9 @@ export const iconName = (v: unknown): string => {
   return /^Icon[A-Za-z0-9]+$/.test(raw) ? raw : '';
 };
 
-/** A whole number within [min, max], or the fallback when the input is not a number. */
-export const clampInt = (v: unknown, min: number, max: number, fallback: number): number => {
-  const n = Math.floor(Number(unwrap(v)));
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(min, Math.min(max, n));
-};
+/** clampInt on an inspector field, unwrapped first. */
+export const clampUnwrapped = (v: unknown, min: number, max: number, fallback: number): number =>
+  clampInt(unwrap(v), min, max, fallback);
 
 // ---- Dropdown menu ---------------------------------------------------------------------------------------------
 
@@ -69,7 +63,7 @@ interface SeparatorOnly {
 }
 
 const menuEntry = (o: unknown): MenuEntry | SeparatorOnly | null => {
-  if (isText(o)) {
+  if (isScalar(o)) {
     return {
       label: String(o),
       value: o,
@@ -83,10 +77,10 @@ const menuEntry = (o: unknown): MenuEntry | SeparatorOnly | null => {
       group: '',
     };
   }
-  if (!isObject(o)) return null;
+  if (!isRecord<Resolved>(o)) return null;
   const label = text(o.label ?? o.title);
   const raw = unwrap(o.value);
-  const value = isText(raw) ? raw : label;
+  const value = isScalar(raw) ? raw : label;
   if (!label && (value === '' || value === undefined)) {
     return o.separator === true || o.type === 'separator' ? { separatorOnly: true } : null;
   }
@@ -113,7 +107,7 @@ export const menuRows = (items: unknown): MenuRow[] => {
   const rows: MenuRow[] = [];
   let group: string | undefined;
   let pendingSeparator = false;
-  for (const raw of arr(items).slice(0, MAX_ITEMS)) {
+  for (const raw of list(items).slice(0, MAX_ITEMS)) {
     const entry = menuEntry(raw);
     if (!entry) continue;
     if (entry.separatorOnly) {
@@ -164,7 +158,7 @@ export type SelectionMode = 'single' | 'multiple' | 'actions';
 export const groupButtons = (buttons: unknown): GroupButton[] => {
   const seen = new Set<string>();
   const out: GroupButton[] = [];
-  for (const raw of arr(buttons).slice(0, MAX_CHILDREN)) {
+  for (const raw of list(buttons).slice(0, MAX_CHILDREN)) {
     const entry = menuEntry(raw);
     if (!entry || entry.separatorOnly || !entry.visible) continue;
     const key = String(entry.value);
@@ -172,12 +166,12 @@ export const groupButtons = (buttons: unknown): GroupButton[] => {
     seen.add(key);
     out.push({
       // An icon-only button: an empty label with an icon.
-      label: isObject(raw) && raw.label === '' && entry.icon ? '' : entry.label,
+      label: isRecord<Resolved>(raw) && raw.label === '' && entry.icon ? '' : entry.label,
       value: entry.value,
       icon: entry.icon,
       disabled: entry.disabled,
       variant: BUTTON_VARIANTS.includes(raw?.variant) ? raw.variant : '',
-      tooltip: isObject(raw) ? text(raw.tooltip) : '',
+      tooltip: isRecord<Resolved>(raw) ? text(raw.tooltip) : '',
     });
   }
   return out;
@@ -190,7 +184,7 @@ export const initialSelection = (defaultValue: unknown, mode: unknown, buttons: 
   const keys = new Set(buttons.map((b) => String(b.value)));
   const raw = unwrap(defaultValue);
   const wanted = (Array.isArray(raw) ? raw : raw === '' || raw === undefined || raw === null ? [] : [raw])
-    .filter(isText)
+    .filter(isScalar)
     .map(String)
     .filter((k) => keys.has(k));
   const unique = [...new Set(wanted)];
@@ -247,20 +241,20 @@ export interface NavSeparator {
 export type NavRow = NavItem | NavSeparator;
 
 const navEntry = (o: unknown, seen: Set<string>): Omit<NavItem, 'children'> | NavSeparator | null => {
-  const entry = menuEntry(isObject(o) && o.value === undefined && isText(o.id) ? { ...o, value: o.id } : o);
+  const entry = menuEntry(isRecord<Resolved>(o) && o.value === undefined && isScalar(o.id) ? { ...o, value: o.id } : o);
   if (!entry || entry.separatorOnly) return entry?.separatorOnly ? { separator: true } : null;
   if (!entry.visible) return null;
   const key = String(entry.value);
   if (seen.has(key)) return null;
   seen.add(key);
-  const badge = unwrap(isObject(o) ? o.badge : undefined);
+  const badge = unwrap(isRecord<Resolved>(o) ? o.badge : undefined);
   return {
     label: entry.label,
     value: entry.value,
     key,
     icon: entry.icon,
     disabled: entry.disabled,
-    badge: isText(badge) && String(badge) !== '' ? String(badge) : '',
+    badge: isScalar(badge) && String(badge) !== '' ? String(badge) : '',
     group: entry.group,
     separator: entry.separator,
   };
@@ -271,7 +265,7 @@ const navEntry = (o: unknown, seen: Set<string>): Omit<NavItem, 'children'> | Na
 export const navItems = (items: unknown): NavRow[] => {
   const seen = new Set<string>();
   const out: NavRow[] = [];
-  for (const raw of arr(items).slice(0, MAX_ITEMS)) {
+  for (const raw of list(items).slice(0, MAX_ITEMS)) {
     const entry = navEntry(raw, seen);
     if (!entry) continue;
     if (entry.separator && !entry.key) {
@@ -279,16 +273,16 @@ export const navItems = (items: unknown): NavRow[] => {
       continue;
     }
     const children: NavItem[] = [];
-    const walk = (list: unknown, depth: number) => {
-      for (const child of arr(list).slice(0, MAX_CHILDREN)) {
+    const walk = (nested: unknown, depth: number) => {
+      for (const child of list(nested).slice(0, MAX_CHILDREN)) {
         if (children.length >= MAX_CHILDREN) return;
         const c = navEntry(child, seen);
         if (!c || !c.key) continue;
         children.push({ ...c, separator: false, children: [] });
-        if (depth < 3 && isObject(child)) walk(child.children, depth + 1);
+        if (depth < 3 && isRecord<Resolved>(child)) walk(child.children, depth + 1);
       }
     };
-    if (isObject(raw)) walk(raw.children, 1);
+    if (isRecord<Resolved>(raw)) walk(raw.children, 1);
     if (entry.separator && out.length && !out[out.length - 1].separator) out.push({ separator: true });
     out.push({ ...entry, separator: false, children });
   }
@@ -342,8 +336,8 @@ export interface Slide {
 
 export const carouselSlides = (slides: unknown): Slide[] => {
   const out: Slide[] = [];
-  for (const raw of arr(slides).slice(0, MAX_SLIDES)) {
-    const slide = isObject(raw)
+  for (const raw of list(slides).slice(0, MAX_SLIDES)) {
+    const slide = isRecord<Resolved>(raw)
       ? {
           image: text(raw.image ?? raw.src ?? raw.url ?? raw.imageUrl),
           title: text(raw.title ?? raw.label),

@@ -5,8 +5,9 @@ import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { clamp } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
-import { iconFor, justify, onKeyActivate, own } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { iconFor, justify } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { clampCoerce, own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Icon ------------------------------------------------------------------------------------------------------------
 
@@ -26,10 +27,10 @@ export const ShadIcon = (props: WidgetProps) => {
   useExposed(setExposedVariables, p, { click: async () => !busy(latest.current) && fireEvent('onClick') });
   const hasClick = useHasEvent(id, 'onClick');
   const Icon = iconFor(p.icon);
-  const size = clamp(p.size, 8, 512, 20);
-  const stroke = clamp(p.strokeWidth, 0.5, 4, 2);
+  const size = clampCoerce(p.size, 8, 512, 20);
+  const stroke = clampCoerce(p.strokeWidth, 0.5, 4, 2);
   const chip = p.chip === 'circle' || p.chip === 'square' ? p.chip : 'none';
-  const chipSize = chip === 'none' ? size : clamp(p.chipSize, size, 1024, Math.round(size * 2));
+  const chipSize = chip === 'none' ? size : clampCoerce(p.chipSize, size, 1024, Math.round(size * 2));
   const clickable = hasClick && !busy(p);
   const click = () => !busy(p) && fireEvent('onClick');
   const shape = chip === 'circle' ? 'tw-rounded-full' : 'tw-rounded-[var(--lk-radius,var(--sc-radius))]';

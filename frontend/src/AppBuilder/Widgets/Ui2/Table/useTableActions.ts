@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell, toCsv } from './tableModel';
 import type { Entry, FireOption, LiveRef, Sort, WithEdits } from './types';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export type DownloadType = 'csv' | 'json';
 

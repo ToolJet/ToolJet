@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
+import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import { ShowMoreBar } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
+import { useExposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import type { ReactNode, Ref } from 'react';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { barWidth, percentLabel } from './sectionsModel';
 import { chipLabel, chipTone } from '@/AppBuilder/Widgets/Ui2/_shared/chipTone';
 import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
-import type { KeyboardEvent } from 'react';
 
 // ToolJet UI 2.0: page sections (a hero, a card grid, a record list, a progress list and a summary strip). Configs in WidgetManager/widgets/shad*.js, style variables and loading looks
 // in looks/sections.ts, data logic in sectionsModel.ts. A section draws a designed layout from properties only, so it
@@ -16,16 +22,103 @@ export const ACCENT = 'var(--lk-accent,var(--sc-primary))';
 export const ACCENT_INK = 'var(--lk-accent,var(--sc-primary-ink))';
 export const TITLE_FONT = 'var(--lk-title-font,inherit)';
 
-export const onKeyActivate =
-  <E extends HTMLElement>(handler: (e: KeyboardEvent<E>) => void) =>
-  (e: KeyboardEvent<E>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handler(e);
-    }
-  };
+// ---- Lists (record list, progress list) ------------------------------------------------------------------------------
 
-export const text = (v: unknown): string => (v === null || v === undefined || typeof v === 'object' ? '' : String(v));
+/** A list's frame: a card (border, radius, card background) or plain. Borders are classes (the pack's preflight zeroes
+ *  inline border widths); the colour stays inline. */
+export const LIST_BORDER = 'var(--lk-border,var(--sc-border))';
+export const listFrame = (card: boolean) => ({
+  frameClass: card ? 'tw-border' : '',
+  frame: card
+    ? {
+        borderColor: LIST_BORDER,
+        borderRadius: 'var(--lk-radius,calc(var(--sc-radius) + 4px))',
+        background: 'var(--lk-bg,var(--sc-card))',
+      }
+    : { background: 'var(--lk-bg,transparent)' },
+});
+
+/** What a section shows with no data: the author's empty text, else `fallback`. */
+export const EmptyText = ({ text, fallback }: { text: unknown; fallback: string }) => (
+  <p className="tw-m-0 tw-py-10 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
+    {toText(text) || fallback}
+  </p>
+);
+
+/** A clicked row as selectedItem (its data) and selectedItemId (its idField value), and the click that selects it and
+ *  fires `event`; nothing while the widget is disabled or loading. */
+export const useItemSelection = <T extends { row?: Resolved }>(props: WidgetProps, event: string) => {
+  const { properties: p, setExposedVariables, fireEvent } = props;
+  const [selected, setSelected] = useState<T | null>(null);
+  const idKey = toText(p.idField) || 'id';
+  const selection = (row: T | null) => ({
+    selectedItem: row?.row ?? {},
+    selectedItemId: row ? row.row?.[idKey] ?? null : null,
+  });
+  useExposed(setExposedVariables, p, selection(selected));
+  const click = (row: T) => {
+    if (busy(p)) return;
+    setSelected(row);
+    setExposedVariables(selection(row));
+    fireEvent(event);
+  };
+  return { selected, click };
+};
+
+/** A list section (record list, progress list) by state: ToolJet's loading look, the section's own skeleton, the
+ *  empty text, or the rows (`children`, its <li>s) with Show more under them. */
+interface ListSectionProps {
+  props: WidgetProps;
+  innerRef: Ref<HTMLDivElement>;
+  card: boolean;
+  /** The skeleton frame's layout classes, and classes the card frame adds in every state but empty. */
+  skeletonClass: string;
+  cardClass?: string;
+  skeleton: ReactNode;
+  emptyFallback: string;
+  /** Rows in all, rows drawn and the Show more step. */
+  count: number;
+  shown: number;
+  step: number;
+  onMore: () => void;
+  children: ReactNode;
+}
+
+export const ListSection = (s: ListSectionProps) => {
+  const p = s.props.properties;
+  const { frameClass, frame } = listFrame(s.card);
+  const pad = s.card && s.cardClass;
+  let body;
+  if (p.loadingState && !wantsSkeleton(p)) {
+    body = <LoadingBox height={s.props.height} />;
+  } else if (p.loadingState) {
+    body = (
+      <div className={cn(s.skeletonClass, frameClass, pad)} style={frame}>
+        {s.skeleton}
+      </div>
+    );
+  } else if (!s.count) {
+    body = (
+      <div className={frameClass} style={frame}>
+        <EmptyText text={p.emptyText} fallback={s.emptyFallback} />
+      </div>
+    );
+  } else {
+    body = (
+      <div className={cn('tw-overflow-hidden', frameClass, pad)} style={frame}>
+        <ul className="tw-m-0 tw-list-none tw-p-0" role="list">
+          {s.children}
+        </ul>
+        <ShowMoreBar remaining={s.count - s.shown} step={s.step} onMore={s.onMore} borderColor={LIST_BORDER} />
+      </div>
+    );
+  }
+  return (
+    <Shell {...s.props} innerRef={s.innerRef}>
+      {body}
+    </Shell>
+  );
+};
 
 // ---- Card grid -------------------------------------------------------------------------------------------------------
 

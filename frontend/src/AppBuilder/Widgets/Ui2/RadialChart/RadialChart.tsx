@@ -2,10 +2,12 @@ import React, { useMemo } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Cell, PolarAngleAxis, RadialBar, RadialBarChart, Tooltip } from 'recharts';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { formatter, isSet, num, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { arcAngles, arcBox, radialRows } from './radialModel';
 import { LegendContent, SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** A drawn ring: its name, value and colour, the gauge's maximum in progress mode, and the row it came from. */
 interface Ring {

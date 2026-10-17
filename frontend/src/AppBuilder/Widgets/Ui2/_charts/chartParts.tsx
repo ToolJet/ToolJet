@@ -1,26 +1,19 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { ResponsiveContainer } from 'recharts';
-import { list, useExposed, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { num, MAX_SERIES, type FormatOptions } from './chartsModel';
+import { MAX_SERIES } from './chartsModel';
+import { list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { FormatOptions } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 // ToolJet UI 2.0 charts: Recharts styled the way shadcn/ui's chart component styles it (no axis lines,
 // horizontal grid only, a card tooltip, series colours from --sc-chart-1..5, which follow the app theme, or from the
 // Chart color style, or from the Series colors list). Grid, axis and legend colours come from the widget's styles
 // as variables (shadcnLook.ts), else the theme's. Own lazy chunk, so Recharts loads only for apps with a chart.
 
-export const compact = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
-export const full = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
-export const fmt =
-  (p: Resolved, short: boolean) =>
-  (v: unknown): string => {
-    const n = Number(v);
-    if (!Number.isFinite(n)) return String(v ?? '');
-    return `${p.valuePrefix || ''}${short ? compact.format(n) : full.format(n)}${p.valueSuffix || ''}`;
-  };
 export const seriesOf = (p: Resolved): string[] =>
   (Array.isArray(p.yFields) ? p.yFields : String(p.yFields ?? '').split(','))
     .map((s) => String(s).trim())
@@ -51,12 +44,15 @@ export interface TooltipContentProps {
   label?: unknown;
 }
 
+/** The chart's tooltip card: the label, then each series' swatch, name and value in `format` (which also gets the
+ *  series key). The swatch falls back to the row's own fill (a pie slice) unless `rowFill` is false. */
 export const ChartTooltip = ({
   active,
   payload,
   label,
   format,
-}: TooltipContentProps & { format: (v: unknown) => string }) => {
+  rowFill = true,
+}: TooltipContentProps & { format: (v: unknown, key: unknown) => string; rowFill?: boolean }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="tj-shadcn">
@@ -66,10 +62,10 @@ export const ChartTooltip = ({
           <div key={item.dataKey ?? item.name} className="tw-flex tw-items-center tw-gap-2">
             <span
               className="tw-h-2.5 tw-w-2.5 tw-shrink-0 tw-rounded-[2px]"
-              style={{ background: item.color || item.payload?.fill }}
+              style={{ background: rowFill ? item.color || item.payload?.fill : item.color }}
             />
             <span className="tw-flex-1 tw-text-ui2-muted-foreground">{String(item.name)}</span>
-            <span className="tw-font-mono tw-font-medium tw-tabular-nums">{format(item.value)}</span>
+            <span className="tw-font-mono tw-font-medium tw-tabular-nums">{format(item.value, item.dataKey)}</span>
           </div>
         ))}
       </div>
@@ -110,6 +106,13 @@ export const useClickedDatum = (props: WidgetProps) => {
   };
 };
 
+/** useClickedDatum with clickedDataPoint and clearClickedPoint exposed. */
+export const useExposedClick = (props: WidgetProps) => {
+  const click = useClickedDatum(props);
+  useExposed(props.setExposedVariables, props.properties, click.exposed);
+  return click;
+};
+
 /** The chart a frame draws, given the handler for a clicked datum. */
 type ChartRender = (onDatum: (datum: unknown) => void) => React.ReactElement;
 
@@ -122,9 +125,8 @@ export const ChartFrame = ({
   empty: boolean;
   children: ChartRender;
 }) => {
-  const { properties, setExposedVariables, height } = props;
-  const click = useClickedDatum(props);
-  useExposed(setExposedVariables, properties, click.exposed);
+  const { properties, height } = props;
+  const click = useExposedClick(props);
   const onDatum = (datum: unknown) => {
     if (!datum) return;
     click.pick(datum);
@@ -301,7 +303,7 @@ export const valueFormat = (p: Resolved): FormatOptions => ({
 /** valueFormat as one reference while the format properties are unchanged, so axes memoised on it are not worked out
  *  again on every render. */
 export const useValueFormat = (p: Resolved): FormatOptions => useStable(valueFormat(p));
-/** The value prefix and suffix fmt reads, as one reference while they are unchanged. */
+/** The value prefix and suffix affixFormatter reads, as one reference while they are unchanged. */
 export const useAffixes = (p: Resolved): Resolved =>
   useStable({ valuePrefix: p.valuePrefix, valueSuffix: p.valueSuffix });
 

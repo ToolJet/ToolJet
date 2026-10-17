@@ -5,10 +5,11 @@ import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/load
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
-import { formatTime, statusColor, timelineItems } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
+import { statusColor, timelineItems } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import type { Entry, TimelineItem } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import { iconFor } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { formatDate } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Timeline --------------------------------------------------------------------------------------------------------
 
@@ -64,7 +65,7 @@ export const ShadTimeline = (props: WidgetProps) => {
           const colour = (isSet(item.color) ? item.color : statusColor(item.status, p.statusColors)) || null;
           const markerVars: StyleWithVars = { '--tl-c': colour || 'var(--lk-marker,var(--sc-primary))' };
           const Icon = icons ? iconFor(item.icon, null) : null;
-          const time = formatTime(item.time, p.dateFormat);
+          const time = formatDate(item.time, p.dateFormat);
           const isLast = index === items.length - 1;
           const timeNode = time ? (
             <span className="tw-whitespace-nowrap tw-text-xs tw-tabular-nums tw-text-[color:var(--lk-time,var(--sc-muted-foreground))]">

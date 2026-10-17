@@ -1,19 +1,14 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Textarea } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { CONTROL, Field, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { useTextBox, useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { useTextField } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export const ShadTextarea = (props: WidgetProps) => {
   const { properties, id, height, fireEvent } = props;
-  const [value, change] = useValue(props, String(properties.defaultValue ?? ''), (set) => ({
-    setText: async (t: unknown) => set(String(t ?? '')),
-    clear: async () => set(''),
-  }));
-  const check = useValidation(props, value, () => change('', 'onChange'));
-  const box = useTextBox<HTMLTextAreaElement>(props, check.touch);
+  const { check, fieldProps } = useTextField<HTMLTextAreaElement>(props);
   // The label, help text and message take what they draw and the text area the rest of the box. A one-line estimate
   // (22px label, 24px help) let a label or help text that wraps push the text area past the box's bottom edge.
   const estimate = (properties.label ? 22 : 0) + (properties.description || check.error ? 24 : 0);
@@ -46,18 +41,8 @@ export const ShadTextarea = (props: WidgetProps) => {
           required={check.required}
         >
           <Textarea
-            ref={box.ref}
-            id={`shad-${id}`}
-            className={CONTROL}
-            value={value}
-            aria-invalid={!!check.error || undefined}
-            aria-label={fieldName(props)}
-            onFocus={box.onFocus}
-            onBlur={box.onBlur}
-            placeholder={String(properties.placeholder ?? '')}
-            disabled={busy(properties)}
+            {...fieldProps}
             style={{ height: Math.max(60, (Number(height) || 96) - chrome) }}
-            onChange={(e) => change(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && fireEvent('onEnterPressed')}
           />
         </Field>

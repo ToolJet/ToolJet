@@ -5,17 +5,15 @@ import {
   compactFigure,
   centreValueFit,
   wholeNumbers,
-  axisLabel,
-  clamp,
   curveOf,
   fieldList,
-  formatter,
   hasValues,
-  num,
   seriesRows,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { bandRange, lastPoint, sparkPoints, trendOf } from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';
 import { arcAngles, arcBox, radialRows } from '@/AppBuilder/Widgets/Ui2/RadialChart/radialModel';
+import { axisLabel, formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { clamp, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 describe('num and clamp', () => {
   it('reads numbers and numeric text, and nothing else', () => {

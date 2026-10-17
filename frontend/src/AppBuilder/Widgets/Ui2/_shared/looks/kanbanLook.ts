@@ -1,6 +1,7 @@
 import tinycolor from 'tinycolor2';
 import type { CSSProperties } from 'react';
 import type { CssVars, Resolved, StyleWithVars } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isSet, px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 // ToolJet UI 2.0 Kanban: its styles as CSS. Each style falls back to the app theme when unset.
 // Background, border, radius and shadow go inline on the column or card. Colours of text, the count badge and the
 // accent go in CSS variables the board's utility classes read; the accent overrides the pack's primary colour for the board, so the selection outline,
@@ -12,10 +13,6 @@ export const SHADOWS: Record<string, string> = {
   md: '0 4px 10px -2px rgb(0 0 0 / 0.08)',
   lg: '0 12px 24px -6px rgb(0 0 0 / 0.16)',
 };
-
-export const isSet = (value: unknown): boolean => value !== undefined && value !== null && String(value).trim() !== '';
-export const px = (value: unknown): string =>
-  /^\d+(\.\d+)?$/.test(String(value).trim()) ? `${value}px` : String(value);
 
 const VARIABLES: [styleKey: string, cssVar: string, toCss?: (value: unknown) => string][] = [
   ['accentColor', '--sc-primary'],

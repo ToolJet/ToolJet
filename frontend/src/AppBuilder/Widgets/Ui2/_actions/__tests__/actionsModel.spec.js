@@ -3,7 +3,7 @@ import {
   aspectRatio,
   carouselPositions,
   carouselSlides,
-  clampInt,
+  clampUnwrapped,
   clickedOption,
   findNav,
   groupButtons,
@@ -38,10 +38,10 @@ describe('actionsModel basics', () => {
   });
 
   it('clamps whole numbers and falls back on junk', () => {
-    expect(clampInt('7', 1, 3, 1)).toBe(3);
-    expect(clampInt(-5, 1, 3, 2)).toBe(1);
-    expect(clampInt('abc', 1, 3, 2)).toBe(2);
-    expect(clampInt(Infinity, 1, 3, 2)).toBe(2);
+    expect(clampUnwrapped('7', 1, 3, 1)).toBe(3);
+    expect(clampUnwrapped(-5, 1, 3, 2)).toBe(1);
+    expect(clampUnwrapped('abc', 1, 3, 2)).toBe(2);
+    expect(clampUnwrapped(Infinity, 1, 3, 2)).toBe(2);
   });
 });
 

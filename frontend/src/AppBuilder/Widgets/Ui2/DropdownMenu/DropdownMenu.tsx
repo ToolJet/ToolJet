@@ -5,11 +5,11 @@ import { useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Button, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { clickedOption, menuRows, unwrap } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import { Icon, MenuContent, MenuRows, MenuSeparator, SIZES } from '@/AppBuilder/Widgets/Ui2/_actions/actionParts';
 import type { MenuEntry } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Dropdown menu -----------------------------------------------------------------------------------------------
 

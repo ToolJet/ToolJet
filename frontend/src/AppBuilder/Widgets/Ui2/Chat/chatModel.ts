@@ -1,3 +1,4 @@
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 // ToolJet UI 2.0 Chat (Chat.tsx): the message and scroll logic, kept free of React so it can be tested. The
 // message shape and the validation are the native Chat's (Widgets/Chat/utils/helpers.js).
 
@@ -49,11 +50,9 @@ export const MESSAGES_PER_STEP = 200;
 export const BOTTOM_SLACK = 48;
 export const ANCHOR_PEEK = 64;
 
-const text = (v: unknown): string => (v === null || v === undefined || typeof v === 'object' ? '' : String(v));
-
 /** A message's text: a string as is, a number or boolean as text, anything else empty (the native Chat refuses a
  *  non-string message with a toast; here a bound junk value just draws an empty bubble). */
-export const messageText = (v: unknown): string => (typeof v === 'string' ? v : text(v));
+export const messageText = (v: unknown): string => (typeof v === 'string' ? v : toText(v));
 
 /** The history as rows to draw: only objects, a known type (else a reply), and a key unique in the list (the
  *  messageId, else the position), so React never sees two rows with one key. */
@@ -65,15 +64,15 @@ export const toRows = (history: unknown): ChatRow[] => {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
     const m = entry as ChatEntry;
     const type = typeof m.type === 'string' && MESSAGE_TYPES.includes(m.type) ? (m.type as MessageType) : 'response';
-    let key = text(m.messageId) || `#${index}`;
+    let key = toText(m.messageId) || `#${index}`;
     if (seen.has(key)) key = `${key}#${index}`;
     seen.add(key);
     rows.push({
       key,
       type,
       text: messageText(m.message),
-      name: text(m.name),
-      avatar: text(m.avatar),
+      name: toText(m.name),
+      avatar: toText(m.avatar),
       timestamp: m.timestamp,
       source: m,
     });
@@ -88,8 +87,8 @@ export const sender = (
 ): Sender => {
   const mine = row.type === 'message';
   return {
-    name: row.name || text(mine ? userName : respondentName) || (mine ? 'You' : 'Assistant'),
-    avatar: row.avatar || text(mine ? userAvatar : respondentAvatar),
+    name: row.name || toText(mine ? userName : respondentName) || (mine ? 'You' : 'Assistant'),
+    avatar: row.avatar || toText(mine ? userAvatar : respondentAvatar),
   };
 };
 

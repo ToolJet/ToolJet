@@ -1,15 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import {
-  list,
-  useAutoHeight,
-  useExposed,
-  useStable,
-  withControlState,
-} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_ACCORDION_ITEMS = 200;
 

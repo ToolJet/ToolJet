@@ -1,11 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  list,
-  useAutoHeight,
-  useExposed,
-  useStable,
-  withControlState,
-} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Slider } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { sliderBounds, sliderValues } from './sliderModel';
 import type { SliderBounds } from './sliderModel';
@@ -13,6 +7,7 @@ import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Field, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const ShadSlider = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.

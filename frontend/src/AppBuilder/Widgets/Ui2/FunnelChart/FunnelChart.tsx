@@ -1,18 +1,18 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { funnelStages, type FunnelStage } from './funnelModel';
 import {
   ChartBoundary,
   EmptyChart,
   animated,
-  useClickedDatum,
+  useExposedClick,
   useValueFormat,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 // ---- Funnel --------------------------------------------------------------------------------------------------------
 
@@ -20,9 +20,8 @@ import {
  *  before (or from the first). Plain HTML rather than an SVG: labels never clip, and the bars follow the theme. */
 export const ShadFunnelChart = (props: WidgetProps) => {
   const p = props.properties;
-  const { setExposedVariables, height } = props;
-  const click = useClickedDatum(props);
-  useExposed(setExposedVariables, p, click.exposed);
+  const { height } = props;
+  const click = useExposedClick(props);
   const bound = useStable(p.data);
   const options = useValueFormat(p);
   const showConversion = p.showConversion !== false;

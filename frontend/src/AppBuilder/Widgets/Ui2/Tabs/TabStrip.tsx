@@ -12,6 +12,31 @@ const TabIcon = ({ tab }: { tab: Tab }) =>
     <TablerIcon iconName={String(tab.icon)} style={{ width: 16, height: 16 }} stroke={1.75} />
   ) : null;
 
+/** A tab in the strip: selected by click, and a Tab stop only while selected (tabKeys moves between tabs). */
+interface TabButtonProps {
+  tab: Tab;
+  active: boolean;
+  disabled: boolean;
+  onPick: (tab: Tab) => void;
+  className: string;
+  children: React.ReactNode;
+}
+
+const TabButton = ({ tab, active, disabled, onPick, className, children }: TabButtonProps) => (
+  <button
+    type="button"
+    role="tab"
+    aria-selected={active}
+    data-tab-id={tab.id}
+    tabIndex={active ? 0 : -1}
+    disabled={disabled}
+    onClick={() => onPick(tab)}
+    className={className}
+  >
+    {children}
+  </button>
+);
+
 /** The WAI-ARIA tabs keyboard pattern on a tab strip: Left and Right arrows move to the previous or next enabled
  *  tab and select it, Home and End to the first and last. Only the selected tab is a Tab stop (tabIndex below). */
 const tabKeys =
@@ -84,14 +109,11 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
                   )}
                 />
               ) : null}
-              <button
-                type="button"
-                role="tab"
-                aria-selected={active}
-                data-tab-id={tab.id}
-                tabIndex={active ? 0 : -1}
+              <TabButton
+                tab={tab}
+                active={active}
                 disabled={!!tab.disable || !reachable}
-                onClick={() => onPick(tab)}
+                onPick={onPick}
                 className={cn(
                   'tw-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-ui2-md tw-px-1.5 tw-py-1 tw-text-ui2-sm tw-transition-colors disabled:tw-cursor-not-allowed',
                   TAB_RING,
@@ -112,13 +134,31 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
                   {done ? <Check className="tw-h-3.5 tw-w-3.5" /> : index + 1}
                 </span>
                 <span className="tw-max-w-[160px] tw-truncate">{String(tab.title ?? '')}</span>
-              </button>
+              </TabButton>
             </React.Fragment>
           );
         })}
       </div>
     );
   }
+  // Underline and pills tabs: the same button with the tab's icon and title, in each style's classes.
+  const titledTabs = (classes: (active: boolean) => string) =>
+    tabs.map((tab) => {
+      const active = tab.id == currentTab;
+      return (
+        <TabButton
+          key={tab.id}
+          tab={tab}
+          active={active}
+          disabled={!!tab.disable}
+          onPick={onPick}
+          className={classes(active)}
+        >
+          <TabIcon tab={tab} />
+          {String(tab.title ?? '')}
+        </TabButton>
+      );
+    });
   if (variant === 'underline') {
     return (
       <div
@@ -130,32 +170,16 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
         )}
         style={{ borderColor: 'var(--tb-border, var(--sc-border))' }}
       >
-        {tabs.map((tab) => {
-          const active = tab.id == currentTab;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              data-tab-id={tab.id}
-              tabIndex={active ? 0 : -1}
-              disabled={!!tab.disable}
-              onClick={() => onPick(tab)}
-              className={cn(
-                '-tw-mb-px tw-flex tw-h-10 tw-items-center tw-justify-center tw-gap-1.5 tw-whitespace-nowrap tw-rounded-t-ui2-sm tw-border-b-2 tw-px-3 tw-text-[length:var(--tb-font,0.875rem)] tw-font-medium tw-transition-colors disabled:tw-pointer-events-none disabled:tw-opacity-50',
-                TAB_RING,
-                stretch && 'tw-flex-1',
-                active
-                  ? 'tw-border-[color:var(--tb-indicator,var(--sc-primary))] tw-text-[color:var(--tb-active-text,var(--sc-foreground))]'
-                  : 'tw-border-transparent tw-text-[color:var(--tb-text,var(--sc-muted-foreground))] hover:tw-text-[color:var(--tb-active-text,var(--sc-foreground))]'
-              )}
-            >
-              <TabIcon tab={tab} />
-              {String(tab.title ?? '')}
-            </button>
-          );
-        })}
+        {titledTabs((active) =>
+          cn(
+            '-tw-mb-px tw-flex tw-h-10 tw-items-center tw-justify-center tw-gap-1.5 tw-whitespace-nowrap tw-rounded-t-ui2-sm tw-border-b-2 tw-px-3 tw-text-[length:var(--tb-font,0.875rem)] tw-font-medium tw-transition-colors disabled:tw-pointer-events-none disabled:tw-opacity-50',
+            TAB_RING,
+            stretch && 'tw-flex-1',
+            active
+              ? 'tw-border-[color:var(--tb-indicator,var(--sc-primary))] tw-text-[color:var(--tb-active-text,var(--sc-foreground))]'
+              : 'tw-border-transparent tw-text-[color:var(--tb-text,var(--sc-muted-foreground))] hover:tw-text-[color:var(--tb-active-text,var(--sc-foreground))]'
+          )
+        )}
       </div>
     );
   }
@@ -169,30 +193,14 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
           stretch && 'tw-flex tw-w-full'
         )}
       >
-        {tabs.map((tab) => {
-          const active = tab.id == currentTab;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              data-tab-id={tab.id}
-              tabIndex={active ? 0 : -1}
-              disabled={!!tab.disable}
-              onClick={() => onPick(tab)}
-              className={cn(
-                'tw-inline-flex tw-h-7 tw-items-center tw-justify-center tw-gap-1.5 tw-whitespace-nowrap tw-rounded-ui2-md tw-px-3 tw-text-[length:var(--tb-font,0.875rem)] tw-font-medium tw-transition-all focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring disabled:tw-pointer-events-none disabled:tw-opacity-50',
-                stretch && 'tw-flex-1',
-                active &&
-                  'tw-bg-[color:var(--tb-active-bg,var(--sc-background))] tw-text-[color:var(--tb-active-text,var(--sc-foreground))] tw-shadow-sm'
-              )}
-            >
-              <TabIcon tab={tab} />
-              {String(tab.title ?? '')}
-            </button>
-          );
-        })}
+        {titledTabs((active) =>
+          cn(
+            'tw-inline-flex tw-h-7 tw-items-center tw-justify-center tw-gap-1.5 tw-whitespace-nowrap tw-rounded-ui2-md tw-px-3 tw-text-[length:var(--tb-font,0.875rem)] tw-font-medium tw-transition-all focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring disabled:tw-pointer-events-none disabled:tw-opacity-50',
+            stretch && 'tw-flex-1',
+            active &&
+              'tw-bg-[color:var(--tb-active-bg,var(--sc-background))] tw-text-[color:var(--tb-active-text,var(--sc-foreground))] tw-shadow-sm'
+          )
+        )}
       </div>
     </div>
   );

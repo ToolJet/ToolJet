@@ -7,8 +7,9 @@ import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { resolveIcon } from '@/AppBuilder/Widgets/Ui2/_display/iconModel';
 import { heroAside, heroMeta } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
-import { ACCENT, ACCENT_INK, TITLE_FONT, text } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
+import { ACCENT, ACCENT_INK, TITLE_FONT } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Hero ------------------------------------------------------------------------------------------------------------
 
@@ -73,9 +74,9 @@ export const ShadHero = (props: WidgetProps) => {
   const asideLabel = p.asideLabel;
   const meta = useMemo(() => heroMeta(metaSource), [metaSource]);
   const aside = useMemo(() => heroAside(asideValue, asideLabel), [asideValue, asideLabel]);
-  const Icon = text(p.icon) ? resolveIcon(p.icon, [Lucide.icons, Lucide], null) : null;
-  const primary = text(p.actionLabel);
-  const secondary = text(p.secondaryActionLabel);
+  const Icon = toText(p.icon) ? resolveIcon(p.icon, [Lucide.icons, Lucide], null) : null;
+  const primary = toText(p.actionLabel);
+  const secondary = toText(p.secondaryActionLabel);
   const fg = onDark ? '#ffffff' : 'var(--lk-title,var(--sc-foreground))';
   const muted = onDark ? 'rgba(255,255,255,0.78)' : 'var(--lk-fg,var(--sc-muted-foreground))';
   const style: StyleWithVars = {
@@ -226,14 +227,14 @@ export const ShadHero = (props: WidgetProps) => {
               </span>
             ) : null}
             <div className={cn('tw-flex tw-min-w-0 tw-flex-col', size.gap, center && 'tw-items-center')}>
-              {text(p.eyebrow) ? (
+              {toText(p.eyebrow) ? (
                 <span
                   className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-[0.14em]"
                   style={{
                     color: onDark ? 'rgba(255,255,255,0.85)' : ACCENT_INK,
                   }}
                 >
-                  {text(p.eyebrow)}
+                  {toText(p.eyebrow)}
                 </span>
               ) : null}
               <h1
@@ -244,11 +245,11 @@ export const ShadHero = (props: WidgetProps) => {
                   textWrap: 'balance',
                 }}
               >
-                {text(p.title)}
+                {toText(p.title)}
               </h1>
-              {text(p.subtitle) ? (
+              {toText(p.subtitle) ? (
                 <p className="tw-m-0 tw-max-w-[68ch] tw-text-ui2-base tw-leading-relaxed" style={{ color: muted }}>
-                  {text(p.subtitle)}
+                  {toText(p.subtitle)}
                 </p>
               ) : null}
               {meta.length ? (

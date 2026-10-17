@@ -1,3 +1,4 @@
+import { isScalar, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 // ToolJet UI 2.0 Questionnaire (Questionnaire.tsx): items, answers and validation, kept free of React so they can be
 // tested. An answer is held as { selected, other, otherOn, text } and exposed as one value per item name.
 
@@ -51,9 +52,6 @@ export type AnswerValue = string | ChoiceValue[] | ChoiceValue | null;
 /** A multiple question's chosen values (a single question's selection is not a list: none). */
 const chosen = (answer: Answer): ChoiceValue[] => (Array.isArray(answer.selected) ? answer.selected : []);
 
-const text = (v: unknown): string => (v === null || v === undefined || typeof v === 'object' ? '' : String(v));
-const isText = (v: unknown): v is ChoiceValue =>
-  typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
 const on = (v: unknown): boolean => v === true || v === 'true';
 
 const toChoices = (choices: unknown): Choice[] => {
@@ -62,12 +60,12 @@ const toChoices = (choices: unknown): Choice[] => {
   for (const c of Array.isArray(choices) ? (choices as unknown[]) : []) {
     if (out.length >= MAX_CHOICES) break;
     let choice: Choice;
-    if (isText(c)) choice = { label: String(c), value: c, description: '' };
+    if (isScalar(c)) choice = { label: String(c), value: c, description: '' };
     else if (c && typeof c === 'object' && !Array.isArray(c)) {
       const { value: v, label, description } = c as Record<string, unknown>;
-      const value = isText(v) ? v : isText(label) ? label : null;
+      const value = isScalar(v) ? v : isScalar(label) ? label : null;
       if (value === null) continue;
-      choice = { label: isText(label) ? String(label) : String(value), value, description: text(description) };
+      choice = { label: isScalar(label) ? String(label) : String(value), value, description: toText(description) };
     } else continue;
     const key = String(choice.value);
     if (!choice.label.trim() || seen.has(key)) continue;
@@ -81,7 +79,7 @@ const toOther = (other: unknown): OtherSpec | null => {
   if (on(other)) return { label: 'Other', placeholder: 'Type your answer' };
   if (other && typeof other === 'object' && !Array.isArray(other)) {
     const { label, placeholder } = other as Record<string, unknown>;
-    return { label: text(label) || 'Other', placeholder: text(placeholder) || 'Type your answer' };
+    return { label: toText(label) || 'Other', placeholder: toText(placeholder) || 'Type your answer' };
   }
   return null;
 };
@@ -95,7 +93,7 @@ export const normalizeItems = (items: unknown): QuestionItem[] => {
   for (const raw of Array.isArray(items) ? (items as Record<string, unknown>[]) : []) {
     if (out.length >= MAX_ITEMS) break;
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue;
-    let name = text(raw.name).trim() || `question${out.length + 1}`;
+    let name = toText(raw.name).trim() || `question${out.length + 1}`;
     if (names.has(name)) {
       let n = 2;
       while (names.has(`${name}_${n}`)) n += 1;
@@ -113,13 +111,13 @@ export const normalizeItems = (items: unknown): QuestionItem[] => {
     if (type !== 'text' && !choices.length && !other) type = 'text';
     out.push({
       name,
-      prompt: text(raw.prompt) || text(raw.label) || name,
-      description: text(raw.description),
+      prompt: toText(raw.prompt) || toText(raw.label) || name,
+      description: toText(raw.description),
       required: on(raw.required),
       type,
       choices: type === 'text' ? [] : choices,
       other: type === 'text' ? null : other,
-      placeholder: text(raw.placeholder),
+      placeholder: toText(raw.placeholder),
       // A text answer is a box of several lines unless multiline is false (a name, an email, a number: one line).
       multiline: type === 'text' ? raw.multiline !== false && raw.multiline !== 'false' : false,
     });
@@ -141,12 +139,12 @@ const sameValue = (a: unknown, b: unknown): boolean => String(a) === String(b);
 export const answerFrom = (item: QuestionItem, value: unknown): Answer => {
   const answer = emptyAnswer(item);
   if (value === undefined || value === null) return answer;
-  if (item.type === 'text') return { ...answer, text: isText(value) ? String(value) : '' };
+  if (item.type === 'text') return { ...answer, text: isScalar(value) ? String(value) : '' };
   const values: unknown[] = item.type === 'multiple' ? (Array.isArray(value) ? value : [value]) : [value];
   const selected: ChoiceValue[] = [];
   let other = '';
   for (const v of values) {
-    if (!isText(v)) continue;
+    if (!isScalar(v)) continue;
     const choice = item.choices.find((c) => sameValue(c.value, v));
     if (choice) selected.push(choice.value);
     else if (item.other && String(v).trim()) other = String(v);

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Area, AreaChart, Line, LineChart, ReferenceArea, Tooltip, XAxis, YAxis, type AreaProps } from 'recharts';
-import { clamp, curveOf, formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { curveOf } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
   bandRange,
   lastPoint,
@@ -11,6 +11,8 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';
 import { SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { clamp } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 interface SparkTipProps {
   active?: boolean;

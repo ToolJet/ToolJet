@@ -3,6 +3,7 @@
 
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isSet, px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** A tab's id: its own id, else its index in the list. */
 export type TabId = string | number;
@@ -18,8 +19,6 @@ export interface Tab {
   iconVisibility: boolean;
 }
 
-const isSet = (value: unknown): boolean => value !== undefined && value !== null && String(value).trim() !== '';
-const px = (value: unknown): string => (/^\d+(\.\d+)?$/.test(String(value).trim()) ? `${value}px` : String(value));
 // The inspector stores a static tab's fields as { value }; dynamic tabs carry plain values.
 const unwrap = (field: unknown): unknown =>
   field !== null && typeof field === 'object' && 'value' in field ? field.value : field;

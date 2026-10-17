@@ -1,8 +1,9 @@
 // ToolJet UI 2.0: the progress list's rows (ProgressList.tsx), pure as sectionsModel.ts: every function takes
 // whatever the author bound and never throws.
-import { FORMATS } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { chipTone } from '@/AppBuilder/Widgets/Ui2/_shared/chipTone';
-import { firstTextField, formatValue, isText, percentOf, shown, uniqueKeys, type Row } from './sectionsModel';
+import { firstTextField, percentOf, uniqueKeys, type Row } from './sectionsModel';
+import { FORMATS, formatValue } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isNonBlankString, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const PROGRESS_TONES: readonly string[] = ['success', 'warning', 'danger', 'info', 'neutral'];
 const TONE_NAMES: Record<string, string> = {
@@ -81,25 +82,25 @@ export const progressItems = (data: unknown, fields: ProgressFields = {}): Progr
     typeof v === 'number' ? (Number.isFinite(v) ? v : null) : percentOf(v);
   const items = data.flatMap((row: Row, index: number): (ProgressItem & { keyFromId: boolean })[] => {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
-    const labelKey = isText(f.labelField) && f.labelField in row ? f.labelField : firstTextField(row);
-    const id = isText(f.idField) ? row[f.idField] : row.id;
-    const rawValue = isText(f.valueField) ? row[f.valueField] : undefined;
-    const rawTarget = isText(f.targetField) ? row[f.targetField] : undefined;
+    const labelKey = isNonBlankString(f.labelField) && f.labelField in row ? f.labelField : firstTextField(row);
+    const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
+    const rawValue = isNonBlankString(f.valueField) ? row[f.valueField] : undefined;
+    const rawTarget = isNonBlankString(f.targetField) ? row[f.targetField] : undefined;
     const value = numberOf(rawValue);
     const target = numberOf(rawTarget);
-    let pct = isText(f.percentField) ? numberOf(row[f.percentField]) : null;
+    let pct = isNonBlankString(f.percentField) ? numberOf(row[f.percentField]) : null;
     if (pct === null && value !== null) pct = target !== null ? (target > 0 ? (value / target) * 100 : null) : value;
-    const status = isText(f.statusField) ? shown(row[f.statusField]).trim() : '';
+    const status = isNonBlankString(f.statusField) ? toText(row[f.statusField]).trim() : '';
     const tone = progressTone(status) || autoProgressTone(pct, f.autoTone);
     return [
       {
-        key: shown(id) || String(index),
-        keyFromId: !!shown(id),
-        label: labelKey ? shown(row[labelKey]) : '',
+        key: toText(id) || String(index),
+        keyFromId: !!toText(id),
+        label: labelKey ? toText(row[labelKey]) : '',
         value: value !== null ? formatValue(value, format, f.currency) : '',
         target: target !== null ? formatValue(target, format, f.currency) : '',
         pct,
-        caption: isText(f.captionField) ? shown(row[f.captionField]).trim() : '',
+        caption: isNonBlankString(f.captionField) ? toText(row[f.captionField]).trim() : '',
         // A status that only names a tone colours the bar without a chip.
         status: status && !PROGRESS_TONES.includes(status.toLowerCase()) ? status : '',
         tone,

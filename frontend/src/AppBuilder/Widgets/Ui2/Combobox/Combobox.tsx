@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronsUpDown } from 'lucide-react';
-import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -75,67 +75,57 @@ export const ShadCombobox = (props: WidgetProps) => {
   };
   const showClear = properties.showClearBtn !== false && !!selected && !disabled;
   return (
-    <Shell {...props} innerRef={ref}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={check.error}
-        required={check.required}
-      >
-        <Popover open={open} onOpenChange={openChange}>
-          <div className="tw-relative">
-            <PopoverTrigger asChild>
-              <Button
-                ref={triggerRef}
-                id={`shad-${id}`}
-                type="button"
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                aria-invalid={!!check.error || undefined}
-                disabled={disabled}
-                {...focus.handlers}
-                className={cn('tw-w-full tw-justify-between tw-gap-2 tw-px-3 tw-font-normal', CONTROL)}
-              >
-                <span className={cn('tw-flex tw-min-w-0 tw-items-center tw-gap-2', !selected && PLACEHOLDER)}>
-                  {selected ? <OptionIcon icon={selected.icon} /> : null}
-                  <span className="tw-truncate">
-                    {selected ? selected.label : String(properties.placeholder ?? '')}
-                  </span>
-                </span>
-                {loading ? null : (
-                  <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-1">
-                    {showClear ? <span className="tw-w-5" /> : null}
-                    <ChevronsUpDown className="tw-h-4 tw-w-4 tw-opacity-50" />
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            {showClear && !loading ? (
-              <span className="tw-absolute tw-right-8 tw-top-1/2 tw-flex -tw-translate-y-1/2">
-                <ClearButton onClear={clear} label="Clear selection" />
+    <FormField props={props} properties={properties} check={check} innerRef={ref}>
+      <Popover open={open} onOpenChange={openChange}>
+        <div className="tw-relative">
+          <PopoverTrigger asChild>
+            <Button
+              ref={triggerRef}
+              id={`shad-${id}`}
+              type="button"
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              aria-invalid={!!check.error || undefined}
+              disabled={disabled}
+              {...focus.handlers}
+              className={cn('tw-w-full tw-justify-between tw-gap-2 tw-px-3 tw-font-normal', CONTROL)}
+            >
+              <span className={cn('tw-flex tw-min-w-0 tw-items-center tw-gap-2', !selected && PLACEHOLDER)}>
+                {selected ? <OptionIcon icon={selected.icon} /> : null}
+                <span className="tw-truncate">{selected ? selected.label : String(properties.placeholder ?? '')}</span>
               </span>
-            ) : null}
-          </div>
-          <PopoverContent
-            align="start"
-            className={cn('tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[12rem] tw-p-0', MENU_SURFACE)}
-            style={lookVars(componentType, styles)}
-          >
-            <OptionsMenu
-              properties={properties}
-              options={options}
-              search={search}
-              onSearch={onSearch}
-              isSelected={(o) => !!selected && M.keyOf(o.value) === key}
-              isDisabled={(o) => M.isDisabledOption(o)}
-              onPick={pick}
-            />
-          </PopoverContent>
-        </Popover>
-      </Field>
-    </Shell>
+              {loading ? null : (
+                <span className="tw-flex tw-shrink-0 tw-items-center tw-gap-1">
+                  {showClear ? <span className="tw-w-5" /> : null}
+                  <ChevronsUpDown className="tw-h-4 tw-w-4 tw-opacity-50" />
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          {showClear && !loading ? (
+            <span className="tw-absolute tw-right-8 tw-top-1/2 tw-flex -tw-translate-y-1/2">
+              <ClearButton onClear={clear} label="Clear selection" />
+            </span>
+          ) : null}
+        </div>
+        <PopoverContent
+          align="start"
+          className={cn('tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[12rem] tw-p-0', MENU_SURFACE)}
+          style={lookVars(componentType, styles)}
+        >
+          <OptionsMenu
+            properties={properties}
+            options={options}
+            search={search}
+            onSearch={onSearch}
+            isSelected={(o) => !!selected && M.keyOf(o.value) === key}
+            isDisabled={(o) => M.isDisabledOption(o)}
+            onPick={pick}
+          />
+        </PopoverContent>
+      </Popover>
+    </FormField>
   );
 };
 

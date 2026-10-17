@@ -1,5 +1,7 @@
 // ToolJet UI 2.0: the pure logic of the Heatmap chart. Every function takes whatever the author bound and never throws.
-import { axisLabel, isPlain, isText, MAX_ROWS, num } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { MAX_ROWS } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { axisLabel } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isRecord, isScalar, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // A heatmap past this many cells is unreadable and slow to draw.
 export const MAX_HEAT_COLUMNS = 60;
@@ -30,13 +32,13 @@ export const heatmapGrid = (
   { xField: xf, yField: yf, valueField: vf, xOrder, yOrder }: HeatmapFields = {}
 ): HeatmapGrid => {
   // A field name is text: an array bound there (10k rows) became a huge string key on every row.
-  const field = (f: unknown) => (isText(f) ? String(f) : undefined);
+  const field = (f: unknown) => (isScalar(f) ? String(f) : undefined);
   const [xField, yField, valueField] = [field(xf), field(yf), field(vf)];
-  const rows = (Array.isArray(data) ? data : []).filter(isPlain).slice(0, MAX_ROWS * 5);
+  const rows = (Array.isArray(data) ? data : []).filter(isRecord).slice(0, MAX_ROWS * 5);
   const label = (v: unknown) => (v === null || v === undefined ? '' : String(axisLabel(v)));
   // Sets keep a 10k-row bind linear; labels past the drawable grid are not collected.
   const ordered = (preset: unknown, cap: number) =>
-    new Set((Array.isArray(preset) ? preset.slice(0, cap) : []).filter(isText).map((v) => String(v)));
+    new Set((Array.isArray(preset) ? preset.slice(0, cap) : []).filter(isScalar).map((v) => String(v)));
   const xs = ordered(xOrder, MAX_HEAT_COLUMNS);
   const ys = ordered(yOrder, MAX_HEAT_ROWS);
   const cells = new Map<string, number>();

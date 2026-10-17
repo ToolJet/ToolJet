@@ -1,9 +1,8 @@
 // ToolJet UI 2.0: style variables and loading looks of the display widgets (see shadcnLook.ts and
 // Shell's LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js; the display widgets read the variables.
-import { px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import type { LoadingMap, LookMap } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-
-const ACCENT = ['--sc-primary', '--sc-ring'];
+import { px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { ACCENT } from '@/AppBuilder/Widgets/Ui2/_shared/looks/entries';
 
 export const LOOKS: LookMap = {
   ShadImage: [

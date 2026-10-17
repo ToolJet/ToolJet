@@ -1,0 +1,70 @@
+// ToolJet UI 2.0: the small readers every widget uses on bound values. A binding can be anything (undefined, NaN, an
+// object, text for a number), so each takes `unknown` and never throws. Where two widgets read a value differently,
+// both readers are here under their own names, so neither changes behaviour.
+import type { Bound } from './types';
+
+/** Text, a number or a flag: a value an author can type. */
+export const isScalar = (v: unknown): v is string | number | boolean =>
+  typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
+/** Text or a number (a flag is not a label). */
+export const isStringOrNumber = (v: unknown): v is string | number => typeof v === 'string' || typeof v === 'number';
+/** Text with something in it besides spaces. */
+export const isNonBlankString = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
+/** A plain object (not null, not an array); T names the shape the caller reads it as. */
+export const isRecord = <T extends object = Record<string, unknown>>(v: unknown): v is T =>
+  v !== null && typeof v === 'object' && !Array.isArray(v);
+/** Set to something other than blank text. */
+export const isSet = (v: unknown): boolean => v !== undefined && v !== null && String(v).trim() !== '';
+/** Nothing to show: unset, blank text or NaN. */
+export const isEmptyValue = (v: unknown): boolean =>
+  v === undefined || v === null || (typeof v === 'string' && v.trim() === '') || Number.isNaN(v);
+
+/** A value as text; '' for unset or an object, so junk never renders [object Object]. */
+export const toText = (v: unknown): string => (v === null || v === undefined || typeof v === 'object' ? '' : String(v));
+/** A CSS length: a bare number in px ('12' reads 12px), anything else as written. */
+export const px = (v: unknown): string => (/^\d+(\.\d+)?$/.test(String(v).trim()) ? `${v}px` : String(v));
+/** A number padded to two digits (clock parts). */
+export const pad2 = (n: number): string => String(n).padStart(2, '0');
+
+/** A bound list as it is (its items untyped, as bound); anything else (unset, an object, a string) as []. T names what
+ *  the caller's list holds. */
+export const list = <T = Bound>(v: unknown): T[] => (Array.isArray(v) ? v : []);
+/** A map entry for a value, never an inherited key (a "constructor" from junk data). */
+export const own = <T>(map: Record<string, T>, key: unknown): T | undefined =>
+  typeof key === 'string' && Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
+
+// ---- Numbers ---------------------------------------------------------------------------------------------------------
+
+/** A finite number, or null: numbers, numeric strings ("1,200", " 42 "); never booleans, objects or NaN. */
+export const num = (v: unknown): number | null => {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  if (typeof v === 'string') {
+    const t = v.trim().replace(/,/g, '');
+    if (t === '') return null;
+    const n = Number(t);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+};
+
+/** n within [lo, hi]. */
+export const clampNumber = (n: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, n));
+
+/** A number (as `num` reads it) within [lo, hi]; `fallback` for anything else. */
+export const clamp = (v: unknown, lo: number, hi: number, fallback: number): number => {
+  const n = num(v);
+  return n === null ? fallback : clampNumber(n, lo, hi);
+};
+
+/** clamp for values read with Number(): a flag counts (true is 1), grouped text ("1,200") does not, blank text is not a
+ *  number. The display widgets have always read their sizes this way. */
+export const clampCoerce = (value: unknown, min: number, max: number, fallback: number = min): number => {
+  const n = typeof value === 'number' ? value : Number(String(value ?? '').trim() === '' ? NaN : value);
+  return Number.isFinite(n) ? clampNumber(n, min, max) : fallback;
+};
+
+/** A whole number within [min, max] read with Number() (null reads 0), or the fallback when it is not a number. */
+export const clampInt = (v: unknown, min: number, max: number, fallback: number): number => {
+  const n = Math.floor(Number(v));
+  return Number.isFinite(n) ? clampNumber(n, min, max) : fallback;
+};

@@ -1,35 +1,24 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { Legend, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, Tooltip } from 'recharts';
-import { list, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from 'recharts';
+import { tooltipAndLegend, useSeriesInputs } from '@/AppBuilder/Widgets/Ui2/_charts/cartesianParts';
+import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import {
-  clamp,
   fieldList,
-  formatter,
   hasValues,
-  isSet,
-  num,
   seriesRows,
   resolveChartFields,
   seriesLabel,
   seriesLabelMap,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import {
-  AXIS_FILL,
-  ChartTooltip,
-  GRID,
-  LegendContent,
-  SafeFrame,
-  animated,
-} from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { AXIS_FILL, GRID, SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { clamp, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 export const ShadRadarChart = (props: WidgetProps) => {
   const p = props.properties;
-  const bound = useStable(p.data);
-  const yFields = useStable(p.yFields);
-  const seriesLabels = useStable(p.seriesLabels);
-  const colors = useStable(p.colors);
+  const { bound, yFields, seriesLabels, colors } = useSeriesInputs(p);
   // Rows, series and colours are worked out again only when what they read changes, not on every render.
   const { category, series, plotted, empty, names, fills } = useMemo(() => {
     const fields = resolveChartFields(
@@ -71,8 +60,7 @@ export const ShadRadarChart = (props: WidgetProps) => {
             axisLine={false}
             allowDataOverflow={false}
           />
-          <Tooltip cursor={false} content={<ChartTooltip format={full} />} />
-          {p.showLegend !== false ? <Legend content={<LegendContent />} /> : null}
+          {tooltipAndLegend(full, false, p.showLegend !== false)}
           {series.map((s, i) => (
             <Radar
               key={s}

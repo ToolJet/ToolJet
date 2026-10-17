@@ -1,14 +1,14 @@
 // ToolJet UI 2.0: icon lookup for the display widgets (kept out of displayModel.ts), kept apart from
 // the components so it is tested on its own. Every function accepts junk without throwing.
 import type { LucideIcon } from 'lucide-react';
-import { isObject, isText } from './displayModel';
+import { isRecord, isScalar } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Icon ------------------------------------------------------------------------------------------------------------
 
 /** The PascalCase names to try for a lucide icon given as kebab-case (trending-up), snake or space separated,
  *  camelCase (trendingUp) or PascalCase (TrendingUp, TrendingUpIcon). */
 export const iconCandidates = (name: unknown): string[] => {
-  if (!isText(name)) return [];
+  if (!isScalar(name)) return [];
   const raw = String(name).trim();
   if (!raw) return [];
   const pascal = raw
@@ -99,7 +99,7 @@ const TABLER_TWINS: Record<string, string> = {
 
 export const resolveIcon = <T>(name: unknown, maps: unknown, fallback: T): LucideIcon | T => {
   if (typeof name === 'string' && name.length > MAX_ICON_NAME) return fallback;
-  const sources = (Array.isArray(maps) ? maps : [maps]).filter(isObject);
+  const sources = (Array.isArray(maps) ? maps : [maps]).filter(isRecord);
   const lookup = (candidate: string): LucideIcon | null => {
     if (!candidate || candidate === 'Icon') return null; // lucide's base component, not an icon
     for (const source of sources) {

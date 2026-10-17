@@ -4,7 +4,7 @@ import { Label, RadioGroup, RadioGroupItem } from '@/AppBuilder/Widgets/Ui2/_sha
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { MAX_CHOICES, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import { MAX_CHOICES, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export const ShadRadioGroup = (props: WidgetProps) => {
@@ -13,9 +13,8 @@ export const ShadRadioGroup = (props: WidgetProps) => {
   useAutoHeight(props, fit);
   const { properties, id } = props;
   const options = toOptions(properties.options);
-  const byKey = new Map(options.map((o) => [String(o.value), o]));
-  const initial =
-    properties.defaultValue === '' || properties.defaultValue === undefined ? '' : String(properties.defaultValue);
+  const byKey = optionsByKey(options);
+  const initial = defaultKey(properties.defaultValue);
   const [key, change] = useValue(
     props,
     initial,

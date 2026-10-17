@@ -15,11 +15,13 @@ import {
   Progress,
   cn,
 } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { badgeLook, isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
+import { badgeLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { formatCell, matchesCondition, readCell } from './tableModel';
+import { matchesCondition, readCell } from './tableModel';
 import type { OnAction, Resolve, Row, TableColumn } from './types';
+import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 type BadgeVariant = React.ComponentProps<typeof Badge>['variant'];
 

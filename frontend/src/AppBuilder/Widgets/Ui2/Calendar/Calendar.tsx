@@ -8,8 +8,6 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Calendar, buttonVariants, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
-import { clampInt } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import {
   calendarExposed,
   calendarSelection,
@@ -22,6 +20,8 @@ import {
 import type { DateRange, DayButtonProps, DayPickerProps } from 'react-day-picker';
 import type { CalendarSelection, Marker } from '@/AppBuilder/Widgets/Ui2/_actions/calendarModel';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { clampUnwrapped } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Calendar ----------------------------------------------------------------------------------------------------
 
@@ -98,7 +98,7 @@ export const ShadCalendar = (props: WidgetProps) => {
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const mode = CALENDAR_MODES.includes(properties.mode) ? properties.mode : 'single';
-  const months = clampInt(properties.numberOfMonths, 1, 3, 1);
+  const months = clampUnwrapped(properties.numberOfMonths, 1, 3, 1);
   // A new default value or mode resets the selection.
   const defaultValue = useStable(properties.defaultValue);
   const initial = useMemo(() => calendarSelection(defaultValue, mode), [defaultValue, mode]);

@@ -5,7 +5,9 @@ import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from './dateModel';
 import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
-import type { ReactNode } from 'react';
+import { numericText } from './inputsModel';
+import type { ChangeEvent, ReactNode } from 'react';
+import type { TextBox } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { Exposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -55,8 +57,6 @@ export const Group = ({ disabled, className, children }: GroupProps) => (
   <div className={cn(GROUP, CONTROL, disabled && 'tw-cursor-not-allowed tw-opacity-50', className)}>{children}</div>
 );
 
-export const text = (v: unknown): string => (v === undefined || v === null || typeof v === 'object' ? '' : String(v));
-
 /** A time (minutes since midnight) from an action's argument, read with the format given when there is one ('HH:mm',
  *  'hh:mm A'), else any time text; null when it is not a time. */
 export const parseTimeArg = (v: unknown, format: unknown): number | null => {
@@ -102,6 +102,31 @@ export const useNumberBox = (
   return { value, valueRef, draft, setDraft, commit, set };
 };
 
-export const TRIGGER = 'tw-w-full tw-justify-start tw-gap-2 tw-px-3 tw-text-left tw-font-normal';
+/** A number box's text field, spread on its input: while focused it holds the text as typed (starting from
+ *  `editText`), each edit commits what `commitTyped` reads from it, and leaving shows the formatted value again. */
+export const numberTextProps = (
+  setDraft: (text: string | null) => void,
+  textBox: TextBox<HTMLInputElement>,
+  editText: () => string,
+  commitTyped: (typed: string) => void
+) => ({
+  ref: textBox.ref,
+  type: 'text',
+  inputMode: 'decimal' as const,
+  autoComplete: 'off',
+  onFocus: () => {
+    setDraft(editText());
+    textBox.onFocus();
+  },
+  onBlur: () => {
+    setDraft(null);
+    textBox.onBlur();
+  },
+  onChange: (e: ChangeEvent<HTMLInputElement>) => {
+    const typed = numericText(e.target.value);
+    setDraft(typed);
+    commitTyped(typed);
+  },
+});
 
-export const pad2 = (n: number): string => String(n).padStart(2, '0');
+export const TRIGGER = 'tw-w-full tw-justify-start tw-gap-2 tw-px-3 tw-text-left tw-font-normal';

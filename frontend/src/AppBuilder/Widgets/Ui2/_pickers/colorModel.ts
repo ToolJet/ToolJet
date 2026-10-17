@@ -1,7 +1,7 @@
 // ToolJet UI 2.0: pure colour logic of the Color picker widget. No React here: every function takes
 // junk (null, wrong types, huge numbers) without throwing.
 
-import { asList, isText } from './pickersModel';
+import { clamp, isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** A colour's channels: r, g and b from 0 to 255, a (alpha) from 0 to 1. */
 export interface Rgba {
@@ -20,14 +20,12 @@ export interface Hsv {
 
 // ---- Colour --------------------------------------------------------------------------------------------------------
 
-const clamp = (n: number | undefined, min: number, max: number): number =>
-  Math.max(min, Math.min(max, typeof n === 'number' && Number.isFinite(n) ? n : min));
-const hex2 = (n: number | undefined): string => Math.round(clamp(n, 0, 255)).toString(16).padStart(2, '0');
+const hex2 = (n: number | undefined): string => Math.round(clamp(n, 0, 255, 0)).toString(16).padStart(2, '0');
 
 /** Colour text as '#rrggbb' (or '#rrggbbaa' with allowAlpha and some transparency); null when it is not a colour.
  *  Reads #rgb, #rgba, #rrggbb, #rrggbbaa (with or without '#'), rgb() and rgba(). */
 export const normalizeHex = (input: unknown, allowAlpha = false): string | null => {
-  if (!isText(input)) return null;
+  if (!isScalar(input)) return null;
   const text = String(input).trim().toLowerCase();
   let r: number, g: number, b: number, a: number;
   const rgb = text.match(/^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:[\s,/]+([\d.]+%?))?\s*\)$/);
@@ -35,7 +33,7 @@ export const normalizeHex = (input: unknown, allowAlpha = false): string | null 
     [r, g, b] = [rgb[1], rgb[2], rgb[3]].map(Number);
     if ([r, g, b].some((n) => !Number.isFinite(n) || n > 255)) return null;
     a = rgb[4] === undefined ? 1 : rgb[4].endsWith('%') ? parseFloat(rgb[4]) / 100 : Number(rgb[4]);
-    a = Math.round(clamp(a, 0, 1) * 255);
+    a = Math.round(clamp(a, 0, 1, 0) * 255);
   } else {
     let h = text.replace(/^#/, '');
     if (!/^([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/.test(h)) return null;
@@ -57,7 +55,7 @@ export const hexToRgba = (input: unknown): Rgba | null => {
 
 export const rgbaToHex = ({ r, g, b, a = 1 }: Partial<Rgba> = {}, allowAlpha = false): string => {
   const base = `#${hex2(r)}${hex2(g)}${hex2(b)}`;
-  const alpha = Math.round(clamp(Number(a), 0, 1) * 255);
+  const alpha = Math.round(clamp(Number(a), 0, 1, 0) * 255);
   return allowAlpha && alpha < 255 ? `${base}${hex2(alpha)}` : base;
 };
 
@@ -70,7 +68,7 @@ export const colorForms = (hex: unknown): { rgb: string; rgba: string } => {
 
 /** HSV (h 0-360, s and v 0-1) of an RGB colour. */
 export const rgbToHsv = ({ r, g, b }: Pick<Rgba, 'r' | 'g' | 'b'>): Hsv => {
-  const [rr, gg, bb] = [r, g, b].map((n) => clamp(Number(n), 0, 255) / 255);
+  const [rr, gg, bb] = [r, g, b].map((n) => clamp(Number(n), 0, 255, 0) / 255);
   const max = Math.max(rr, gg, bb);
   const d = max - Math.min(rr, gg, bb);
   let h = 0;
@@ -86,8 +84,8 @@ export const rgbToHsv = ({ r, g, b }: Pick<Rgba, 'r' | 'g' | 'b'>): Hsv => {
 
 export const hsvToRgb = ({ h, s, v }: Hsv): Pick<Rgba, 'r' | 'g' | 'b'> => {
   const hh = (((Number(h) || 0) % 360) + 360) % 360;
-  const ss = clamp(Number(s), 0, 1);
-  const vv = clamp(Number(v), 0, 1);
+  const ss = clamp(Number(s), 0, 1, 0);
+  const vv = clamp(Number(v), 0, 1, 0);
   const c = vv * ss;
   const x = c * (1 - Math.abs(((hh / 60) % 2) - 1));
   const m = vv - c;
@@ -118,7 +116,7 @@ export const contrastOn = (hex: unknown): string => {
 export const toSwatches = (v: unknown): string[] => {
   const seen = new Set<string>();
   const out: string[] = [];
-  for (const entry of asList(v)) {
+  for (const entry of list<unknown>(v)) {
     const hex = normalizeHex(entry, true);
     if (!hex || seen.has(hex)) continue;
     seen.add(hex);

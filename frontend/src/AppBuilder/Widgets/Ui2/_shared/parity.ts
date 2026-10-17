@@ -58,10 +58,6 @@ export const useHasEvent = (id: string | undefined, eventId: string): boolean =>
 export const truthy = (v: unknown): boolean =>
   !(v === false || v === 'false' || v === 0 || v === '0' || v === null || v === undefined);
 
-/** Text from an action's argument: '' for nothing or an object, so a junk argument never renders [object Object]. */
-export const textArg = (v: unknown): string =>
-  v === undefined || v === null || typeof v === 'object' ? '' : String(v);
-
 /** onFocus and onBlur for a control that opens a list or popover (a select, a date picker): onFocus when focus comes
  *  to the control from outside, onBlur once it leaves the control and its open list, not when focus moves into the
  *  list and back. Spread `handlers` on the trigger and call `opened(isOpen)` from the popup's open change. */

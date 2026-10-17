@@ -1,11 +1,11 @@
 // State, validation and focus behaviour the UI 2.0 inputs share.
 import React, { useEffect, useRef, useState } from 'react';
 import { useExposed, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { Label, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { truthy } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
-import { ERROR, HELP, INVALID_VARS, LABEL } from './field';
-import type { Dispatch, RefObject, SetStateAction } from 'react';
+import { CONTROL, FieldLabel, FieldNote, INVALID_VARS, fieldName } from './field';
+import { busy } from './Shell';
+import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from 'react';
 import type { Exposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { ValidationResult, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -112,6 +112,32 @@ export const useTextBox = <E extends HTMLElement = HTMLInputElement>(
   };
 };
 
+/** A text field (Input, Textarea): its value with the setText and clear actions, validation, and the props its
+ *  control takes (spread `fieldProps` on it). */
+export const useTextField = <E extends HTMLInputElement | HTMLTextAreaElement>(props: WidgetProps) => {
+  const { properties } = props;
+  const [value, change] = useValue(props, String(properties.defaultValue ?? ''), (set) => ({
+    setText: async (t: unknown) => set(String(t ?? '')),
+    clear: async () => set(''),
+  }));
+  const check = useValidation(props, value, () => change('', 'onChange'));
+  const box = useTextBox<E>(props, check.touch);
+  const fieldProps = {
+    ref: box.ref,
+    id: `shad-${props.id}`,
+    className: CONTROL,
+    value,
+    'aria-invalid': !!check.error || undefined,
+    'aria-label': fieldName(props),
+    onFocus: box.onFocus,
+    onBlur: box.onBlur,
+    placeholder: String(properties.placeholder ?? ''),
+    disabled: busy(properties),
+    onChange: (e: ChangeEvent<E>) => change(e.target.value),
+  };
+  return { check, fieldProps };
+};
+
 /** Sets the checked state as a click does; only `true` checks (Radix passes 'indeterminate' too). */
 export type ChangeChecked = (checked: unknown) => void;
 
@@ -159,17 +185,8 @@ export const CheckedRow = ({ id, control, label, description, error, required }:
   <div className="tw-flex tw-items-start tw-gap-3" style={error ? INVALID_VARS : undefined}>
     {control}
     <div className="tw-grid tw-gap-1.5 tw-leading-none">
-      <Label htmlFor={id} className={LABEL}>
-        {String(label ?? '')}
-        {required ? <span className={cn('tw-ml-0.5', ERROR)}>*</span> : null}
-      </Label>
-      {error ? (
-        <p role="alert" className={cn('tw-text-ui2-sm tw-font-medium', ERROR)}>
-          {String(error)}
-        </p>
-      ) : description ? (
-        <p className={cn('tw-text-ui2-sm', HELP)}>{String(description)}</p>
-      ) : null}
+      <FieldLabel id={id} text={String(label ?? '')} required={required} />
+      <FieldNote error={error} description={description} size="tw-text-ui2-sm" />
     </div>
   </div>
 );

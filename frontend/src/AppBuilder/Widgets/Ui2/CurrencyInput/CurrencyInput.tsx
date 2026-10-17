@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -13,10 +13,11 @@ import {
   EDGE,
   Group,
   INNER,
-  text,
+  numberTextProps,
   useNumberBox,
 } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Currency input ------------------------------------------------------------------------------------------------
 
@@ -82,89 +83,70 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
       : M.formatNumber(value, { decimals, grouping: properties.thousandSeparator !== false, locale, fixed: true });
   const vars = lookVars(componentType, styles);
   return (
-    <Shell {...props} innerRef={fit}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={check.error}
-        required={check.required}
-      >
-        <Group disabled={disabled}>
-          {selectable ? (
-            <Select
-              value={currency}
-              disabled={disabled}
-              onValueChange={(code) => {
-                const next = M.toCurrency(code, currency);
-                if (next === currency) return;
-                const rounded = M.roundTo(value, M.currencyDecimals(next, properties.decimalPlaces));
-                setCurrency(next);
-                box.valueRef.current = rounded;
-                box.set(rounded);
-                setExposedVariables({ currency: next, value: rounded, formattedValue: formatted(rounded, next) });
-                fireEvent('onChange');
-              }}
-            >
-              <SelectTrigger
-                aria-label="Currency"
-                className={cn(
-                  ADDON,
-                  ADDON_HOVER,
-                  EDGE,
-                  'tw-h-full tw-w-auto tw-justify-start tw-rounded-none tw-py-0 tw-font-medium focus:tw-ring-0'
-                )}
-              >
-                <SelectValue>{currency}</SelectValue>
-              </SelectTrigger>
-              <SelectContent style={vars} className="tw-max-h-72">
-                {choices.map((code) => (
-                  <SelectItem key={code} value={code}>
-                    <span className="tw-font-medium">{code}</span>
-                    <span className="tw-ml-2 tw-text-[color:var(--sc-muted-foreground)]">
-                      {currencyName(code, locale)}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : null}
-          {showSign && !sign.after ? <span className={cn(AFFIX, 'tw-pl-3')}>{sign.sign}</span> : null}
-          <input
-            ref={textBox.ref}
-            id={`shad-${id}`}
-            type="text"
-            inputMode="decimal"
-            autoComplete="off"
-            aria-invalid={!!check.error || undefined}
-            className={cn(
-              INNER,
-              'tw-tabular-nums',
-              showSign && !sign.after && 'tw-pl-1.5',
-              showSign && sign.after && 'tw-pr-1.5'
-            )}
-            value={shown}
-            placeholder={text(properties.placeholder)}
+    <FormField props={props} properties={properties} check={check} innerRef={fit}>
+      <Group disabled={disabled}>
+        {selectable ? (
+          <Select
+            value={currency}
             disabled={disabled}
-            onFocus={() => {
-              setDraft(value === null ? '' : M.formatNumber(value, { decimals, grouping: false, locale }));
-              textBox.onFocus();
+            onValueChange={(code) => {
+              const next = M.toCurrency(code, currency);
+              if (next === currency) return;
+              const rounded = M.roundTo(value, M.currencyDecimals(next, properties.decimalPlaces));
+              setCurrency(next);
+              box.valueRef.current = rounded;
+              box.set(rounded);
+              setExposedVariables({ currency: next, value: rounded, formattedValue: formatted(rounded, next) });
+              fireEvent('onChange');
             }}
-            onBlur={() => {
-              setDraft(null);
-              textBox.onBlur();
-            }}
-            onChange={(e) => {
-              const typed = M.numericText(e.target.value);
-              setDraft(typed);
-              commit(round(M.parseNumber(typed, locale)));
-            }}
-            onKeyDown={(e) => e.key === 'Enter' && fireEvent('onEnterPressed')}
-          />
-          {showSign && sign.after ? <span className={cn(AFFIX, 'tw-pr-3')}>{sign.sign}</span> : null}
-        </Group>
-      </Field>
-    </Shell>
+          >
+            <SelectTrigger
+              aria-label="Currency"
+              className={cn(
+                ADDON,
+                ADDON_HOVER,
+                EDGE,
+                'tw-h-full tw-w-auto tw-justify-start tw-rounded-none tw-py-0 tw-font-medium focus:tw-ring-0'
+              )}
+            >
+              <SelectValue>{currency}</SelectValue>
+            </SelectTrigger>
+            <SelectContent style={vars} className="tw-max-h-72">
+              {choices.map((code) => (
+                <SelectItem key={code} value={code}>
+                  <span className="tw-font-medium">{code}</span>
+                  <span className="tw-ml-2 tw-text-[color:var(--sc-muted-foreground)]">
+                    {currencyName(code, locale)}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : null}
+        {showSign && !sign.after ? <span className={cn(AFFIX, 'tw-pl-3')}>{sign.sign}</span> : null}
+        <input
+          id={`shad-${id}`}
+          {...numberTextProps(
+            setDraft,
+            textBox,
+            () => (value === null ? '' : M.formatNumber(value, { decimals, grouping: false, locale })),
+            (typed) => commit(round(M.parseNumber(typed, locale)))
+          )}
+          aria-invalid={!!check.error || undefined}
+          className={cn(
+            INNER,
+            'tw-tabular-nums',
+            showSign && !sign.after && 'tw-pl-1.5',
+            showSign && sign.after && 'tw-pr-1.5'
+          )}
+          value={shown}
+          placeholder={toText(properties.placeholder)}
+          disabled={disabled}
+          onKeyDown={(e) => e.key === 'Enter' && fireEvent('onEnterPressed')}
+        />
+        {showSign && sign.after ? <span className={cn(AFFIX, 'tw-pr-3')}>{sign.sign}</span> : null}
+      </Group>
+    </FormField>
   );
 };
 

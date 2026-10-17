@@ -1,15 +1,16 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { clamp, formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { heatmapGrid } from './heatmapModel';
 import {
   ChartBoundary,
   EmptyChart,
-  useClickedDatum,
+  useExposedClick,
   useValueFormat,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { clamp } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 // ---- Heatmap -------------------------------------------------------------------------------------------------------
 
@@ -17,9 +18,8 @@ import {
  *  follows the theme's chart colour. Each cell blends the chart colour into the muted surface by its value. */
 export const ShadHeatmapChart = (props: WidgetProps) => {
   const p = props.properties;
-  const { setExposedVariables, height } = props;
-  const click = useClickedDatum(props);
-  useExposed(setExposedVariables, p, click.exposed);
+  const { height } = props;
+  const click = useExposedClick(props);
   const bound = useStable(p.data);
   const xOrder = useStable(p.xOrder);
   const yOrder = useStable(p.yOrder);

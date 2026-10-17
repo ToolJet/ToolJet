@@ -1,9 +1,9 @@
 // ToolJet UI 2.0: style variables and loading looks of the conversation widgets (see shadcnLook.ts and Shell's
 // LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js; Chat/Chat.tsx and Questionnaire/Questionnaire.tsx
 // read the variables. The Chat keeps the native Chat's style keys.
-import { px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { fontStack } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 import type { LoadingMap, LookMap } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const LOOKS: LookMap = {
   ShadChat: [

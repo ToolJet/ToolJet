@@ -4,6 +4,8 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { clampInt, isBlank } from './inputsModel';
 import type { Dayjs } from 'dayjs';
+import { pad2, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import type { Override } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 
 dayjs.extend(customParseFormat);
 
@@ -36,12 +38,10 @@ export const parseTime = (v: unknown): number | null => {
   return h * 60 + min;
 };
 
-const pad = (n: number) => String(n).padStart(2, '0');
-
 /** Minutes since midnight as 'HH:mm'; '' for none. */
 export const toHHmm = (minutes: unknown): string =>
   typeof minutes === 'number' && Number.isFinite(minutes)
-    ? `${pad(Math.floor(minutes / 60) % 24)}:${pad(minutes % 60)}`
+    ? `${pad2(Math.floor(minutes / 60) % 24)}:${pad2(minutes % 60)}`
     : '';
 
 /** Minutes since midnight as shown: '2:30 PM' (12-hour) or '14:30'. */
@@ -49,7 +49,7 @@ export const formatTime = (minutes: unknown, use24h = false): string => {
   if (typeof minutes !== 'number' || !Number.isFinite(minutes)) return '';
   const h = Math.floor(minutes / 60) % 24;
   const m = minutes % 60;
-  return use24h ? `${pad(h)}:${pad(m)}` : `${h % 12 || 12}:${pad(m)} ${h < 12 ? 'AM' : 'PM'}`;
+  return use24h ? `${pad2(h)}:${pad2(m)}` : `${h % 12 || 12}:${pad2(m)} ${h < 12 ? 'AM' : 'PM'}`;
 };
 
 export const minuteStep = (v: unknown, fallback = 15): number => clampInt(v, 1, 60, fallback);
@@ -232,3 +232,19 @@ export const atTime = (date: Dayjs, minutes: number): Dayjs =>
     .startOf('day')
     .hour(Math.floor(minutes / 60))
     .minute(minutes % 60);
+
+/** react-day-picker's disabled matchers for the rules: before the minimum, after the maximum, each disabled day. */
+export const dayMatchers = (rules: DateRules) => [
+  ...(rules.min ? [{ before: rules.min.toDate() }] : []),
+  ...(rules.max ? [{ after: rules.max.toDate() }] : []),
+  ...rules.disabled.map((d) => dayjs(d).toDate()),
+];
+
+/** The date pickers' bound actions; each sets its property until the property itself changes. */
+export const dateBoundActions = (override: Override) => ({
+  setMinDate: async (v: unknown) => override('minDate', toText(v)),
+  setMaxDate: async (v: unknown) => override('maxDate', toText(v)),
+  setDisabledDates: async (v: unknown) =>
+    override('disabledDates', Array.isArray(v) ? v : v === undefined || v === null || v === '' ? [] : [v]),
+  clearDisabledDates: async () => override('disabledDates', []),
+});

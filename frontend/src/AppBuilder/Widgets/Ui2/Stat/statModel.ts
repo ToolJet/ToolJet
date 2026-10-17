@@ -1,7 +1,8 @@
 // ToolJet UI 2.0: the pure logic of the Stat (Stat.tsx): its inline trend line, its progress bar and its
 // sizes. Every function takes whatever the author bound and never throws.
-import { FORMATS, formatter, num } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { sparkPoints, type SparkPoint } from '@/AppBuilder/Widgets/Ui2/_charts/sparkModel';
+import { formatter, isFormat, isNumericFigure } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** Value text classes by size: a small figure for dense rows of KPIs, the default, and a large hero number. */
 export const STAT_SIZES: Record<string, string> = {
@@ -61,13 +62,8 @@ export const statValue = (
 ): string => {
   // A number that is not finite (Infinity, NaN from a division by zero in a binding) is not a value to show.
   if (value === null || value === undefined || (typeof value === 'number' && !Number.isFinite(value))) return '';
-  const numeric =
-    typeof value === 'number'
-      ? Number.isFinite(value)
-      : typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim());
-  if (!numeric) return String(value);
-  if (!(typeof valueFormat === 'string' && FORMATS.includes(valueFormat)))
-    return typeof value === 'number' ? formatter({ format: 'number' })(value) : String(value);
+  if (!isNumericFigure(value)) return String(value);
+  if (!isFormat(valueFormat)) return typeof value === 'number' ? formatter({ format: 'number' })(value) : String(value);
   // A percent below 1 is a ratio, as the pack's charts read a series of fractions (percentScale): a churn rate of 0.021
   // and a margin of 0.70 showed "0%" and "0.7%" (2026-10-14). A whole percentage (42.5) shows as written.
   const n = Number(value);

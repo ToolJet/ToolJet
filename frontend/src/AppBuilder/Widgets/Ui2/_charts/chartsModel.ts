@@ -2,8 +2,9 @@
 // Every function takes whatever the author bound (null, strings, mixed arrays, objects with missing keys) and returns
 // clean values: numbers or null, plain rows, text labels. Nothing here throws.
 
-import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
+import { axisLabel } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { chipTone } from '@/AppBuilder/Widgets/Ui2/_shared/chipTone';
+import { isRecord, isScalar, isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_ROWS = 2000;
 export const MAX_SERIES = 12;
@@ -11,47 +12,12 @@ export const MAX_SERIES = 12;
 /** A data row as bound: any fields, of any value. */
 export type Row = Record<string, unknown>;
 
-export const isText = (v: unknown): v is string | number | boolean =>
-  typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
-export const isPlain = (v: unknown): v is Row => v !== null && typeof v === 'object' && !Array.isArray(v);
-export const isSet = (v: unknown): boolean => v !== undefined && v !== null && String(v).trim() !== '';
-
-/** A finite number, or null: numbers, numeric strings ("1,200", " 42 "); never booleans, objects or NaN. */
-export const num = (v: unknown): number | null => {
-  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
-  if (typeof v === 'string') {
-    const t = v.trim().replace(/,/g, '');
-    if (t === '') return null;
-    const n = Number(t);
-    return Number.isFinite(n) ? n : null;
-  }
-  return null;
-};
-
-export const clamp = (v: unknown, lo: number, hi: number, fallback: number): number => {
-  const n = num(v);
-  if (n === null) return fallback;
-  return Math.min(hi, Math.max(lo, n));
-};
-
-/** A value fit for an axis tick or a legend: text and numbers as they are, anything else as text. */
-export const axisLabel = (v: unknown): string | number => {
-  if (v === null || v === undefined) return '';
-  if (typeof v === 'number') return Number.isFinite(v) ? v : String(v);
-  if (isText(v)) return typeof v === 'boolean' ? String(v) : v;
-  try {
-    return stringify(v) ?? '';
-  } catch {
-    return String(v);
-  }
-};
-
 /** Field names from 'a, b', ['a', 'b'] or junk: trimmed, unique, at most MAX_SERIES. */
 export const fieldList = (v: unknown): string[] => {
   const raw: unknown[] = Array.isArray(v) ? v : typeof v === 'string' ? v.split(',') : [];
   const out: string[] = [];
   raw.forEach((f) => {
-    if (!isText(f)) return;
+    if (!isScalar(f)) return;
     const s = String(f).trim();
     if (s && !out.includes(s)) out.push(s);
   });
@@ -61,7 +27,7 @@ export const fieldList = (v: unknown): string[] => {
 /** Plain object rows with the category field as a label and every series field as a number or null (a gap). */
 export const seriesRows = (data: unknown, categoryField: string | undefined, series: string[]): Row[] =>
   (Array.isArray(data) ? data : [])
-    .filter(isPlain)
+    .filter(isRecord)
     .slice(0, MAX_ROWS)
     .map((row) => {
       const out = { ...row };
@@ -88,65 +54,6 @@ export const wholeNumbers = (rows: ReadonlyArray<Row | null | undefined>, series
     }
   }
   return seen;
-};
-
-// ---- Number formats ------------------------------------------------------------------------------------------------
-
-export type NumberFormat = 'number' | 'currency' | 'percent' | 'compact';
-export const FORMATS: readonly string[] = ['number', 'currency', 'percent', 'compact'];
-
-/** A value's format as bound: format, currency, prefix and suffix are whatever the author set (unset, text or junk). */
-export interface FormatOptions {
-  format?: unknown;
-  currency?: unknown;
-  prefix?: unknown;
-  suffix?: unknown;
-}
-
-const intl = (options: Intl.NumberFormatOptions): Intl.NumberFormat => {
-  try {
-    return new Intl.NumberFormat(undefined, options);
-  } catch {
-    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
-  }
-};
-
-/** A formatter for the format ('number' | 'currency' | 'percent' | 'compact'), with the value prefix and suffix.
- *  Short (axis ticks) abbreviates large numbers. Percent takes values already in percent (42 shows 42%). Non-numbers
- *  show as text. */
-export const formatter = (
-  { format, currency, prefix, suffix }: FormatOptions = {},
-  short = false
-): ((v: unknown) => string) => {
-  const kind = typeof format === 'string' && FORMATS.includes(format) ? format : 'number';
-  const code = typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim() : 'USD';
-  const compact = short || kind === 'compact';
-  let f: Intl.NumberFormat;
-  if (kind === 'currency') {
-    f = intl({
-      style: 'currency',
-      currency: code.toUpperCase(),
-      ...(compact
-        ? { notation: 'compact', minimumFractionDigits: 0, maximumFractionDigits: 1 }
-        : { minimumFractionDigits: 0, maximumFractionDigits: 2 }),
-    });
-  } else if (compact && kind !== 'percent') {
-    f = intl({ notation: 'compact', maximumFractionDigits: 1 });
-  } else {
-    f = intl({ maximumFractionDigits: kind === 'percent' ? 1 : 2 });
-  }
-  const before = isText(prefix) ? String(prefix) : '';
-  const after = (kind === 'percent' ? '%' : '') + (isText(suffix) ? String(suffix) : '');
-  // Money with cents shows both digits ("$3,043.50", never "$3,043.5"); whole amounts and compact ticks stay as they are.
-  const cents =
-    kind === 'currency' && !compact
-      ? intl({ style: 'currency', currency: code.toUpperCase(), minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      : null;
-  return (v) => {
-    const n = num(v);
-    if (n === null) return v === null || v === undefined ? '' : String(axisLabel(v));
-    return `${before}${(cents && !Number.isInteger(n) ? cents : f).format(n)}${after}`;
-  };
 };
 
 // ---- Line ----------------------------------------------------------------------------------------------------------
@@ -205,7 +112,7 @@ export const seriesLabelMap = (labels: unknown, series: string[] | undefined): R
 };
 
 export const seriesLabel = (key: unknown, labels?: unknown): string => {
-  const own = isPlain(labels) ? labels[String(key)] : undefined;
+  const own = isRecord(labels) ? labels[String(key)] : undefined;
   // Text or a number only: a label bound to an object (a list of rows by mistake) read "[object Object]" in the legend.
   if ((typeof own === 'string' || typeof own === 'number') && String(own).trim() !== '') return String(own);
   const words = String(key ?? '')
@@ -234,7 +141,7 @@ const STATUS_FILLS: Record<string, string> = {
  *  all share one tone: the theme's series colours then. */
 export const statusColors = (labels: unknown): string[] | null => {
   if (!Array.isArray(labels) || labels.length < 2 || labels.length > MAX_SERIES) return null;
-  const tones = labels.map((label) => chipTone(isText(label) ? String(label) : ''));
+  const tones = labels.map((label) => chipTone(isScalar(label) ? String(label) : ''));
   if (tones.some((tone) => !STATUS_FILLS[tone]) || new Set(tones).size < 2) return null;
   const seen: Record<string, number> = {};
   return tones.map((tone) => {
@@ -262,14 +169,14 @@ export const highlightIndexes = (
 ): Set<number> | null => {
   if (!Array.isArray(data) || !data.length) return null;
   const wanted = (
-    Array.isArray(highlight) ? (highlight as unknown[]) : isText(highlight) ? String(highlight).split(',') : []
+    Array.isArray(highlight) ? (highlight as unknown[]) : isScalar(highlight) ? String(highlight).split(',') : []
   )
-    .filter(isText)
+    .filter(isScalar)
     .map((v) => String(v).trim())
     .filter(Boolean);
   if (!wanted.length) return null;
   const label = (row: unknown) =>
-    isPlain(row) && isText(row[String(xField)]) ? String(row[String(xField)]).trim() : undefined;
+    isRecord(row) && isScalar(row[String(xField)]) ? String(row[String(xField)]).trim() : undefined;
   const picked = new Set<number>();
   data.forEach((row, i) => {
     const name = label(row);
@@ -282,7 +189,7 @@ export const highlightIndexes = (
     else if (k === 'last') picked.add(data.length - 1);
     else {
       const totals = data.map((row) =>
-        isPlain(row)
+        isRecord(row)
           ? (Array.isArray(series) ? series : []).reduce((sum: number, s) => sum + (num(row[s]) ?? 0), 0)
           : null
       );

@@ -1,7 +1,8 @@
 // ToolJet UI 2.0 Map: where address search and the picked spot's address lookup go (pure, as mapModel.ts): the
 // geocoder URLs and the places in their answers. The client that calls them is mapLayers.geocode.
-import { isText, shown, toLatLng } from './mapModel';
+import { toLatLng } from './mapModel';
 import type { MapConfig, Place } from './mapTypes';
+import { isNonBlankString, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Geocoding -------------------------------------------------------------------------------------------------------
 
@@ -24,8 +25,9 @@ export const geocoderUrls = ({
 } => {
   const c: MapConfig = config && typeof config === 'object' ? (config as MapConfig) : {};
   const pick = (own: unknown, installed: unknown, fallback: string, mark: string): string =>
-    [own, installed].map((u) => (isText(u) ? u.trim() : '')).find((u) => /^https?:\/\//i.test(u) && u.includes(mark)) ||
-    fallback;
+    [own, installed]
+      .map((u) => (isNonBlankString(u) ? u.trim() : ''))
+      .find((u) => /^https?:\/\//i.test(u) && u.includes(mark)) || fallback;
   return {
     search: pick(geocoderUrl, c.MAP_GEOCODER_URL, NOMINATIM.search, '{query}'),
     reverse: pick(reverseGeocoderUrl, c.MAP_REVERSE_GEOCODER_URL, NOMINATIM.reverse, '{lat}'),
@@ -66,13 +68,13 @@ export const parsePlaces = (response: unknown): Place[] => {
     if (item.geometry && Array.isArray(coordinates)) {
       const at = toLatLng(coordinates[1], coordinates[0]);
       const p = item.properties || {};
-      const label = shown(
+      const label = toText(
         p.label ?? p.display_name ?? [p.name, p.street, p.city, p.country].filter(Boolean).join(', ')
       );
       return at && label ? [{ ...at, label }] : [];
     }
     const at = toLatLng(item.lat, item.lon ?? item.lng);
-    const label = shown(item.display_name ?? item.label ?? item.name);
+    const label = toText(item.display_name ?? item.label ?? item.name);
     return at && label ? [{ ...at, label }] : [];
   });
 };

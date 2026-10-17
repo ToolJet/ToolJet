@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { CartesianGrid, Legend, ReferenceLine, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { clamp, formatter, isSet, num, seriesLabel } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { seriesLabel } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { scatterGroups, type ScatterPoint } from './scatterModel';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import {
@@ -13,10 +13,11 @@ import {
   SafeFrame,
   animated,
   axisWidthFor,
-  full,
   isCompactChart,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { clamp, isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { PLAIN_NUMBER, formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 // ---- Scatter -------------------------------------------------------------------------------------------------------
 
@@ -40,7 +41,7 @@ const ScatterTip = ({ active, payload, p, fx, fy }: ScatterTipProps) => {
           [label('xLabel', seriesLabel(p.xField)), fx(point.x)],
           [label('yLabel', seriesLabel(p.yField)), fy(point.y)],
           ...(point.z !== null && isSet(p.sizeField)
-            ? [[label('sizeLabel', seriesLabel(p.sizeField)), full.format(point.z)]]
+            ? [[label('sizeLabel', seriesLabel(p.sizeField)), PLAIN_NUMBER.format(point.z)]]
             : []),
         ].map(([name, value]) => (
           <div key={name} className="tw-flex tw-items-center tw-gap-2">

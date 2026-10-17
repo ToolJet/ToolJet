@@ -3,12 +3,12 @@ import type { CSSProperties, Dispatch, MutableRefObject, SetStateAction } from '
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { Inbox } from 'lucide-react';
 import { Checkbox, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { cellStyleFor, readCell } from './tableModel';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { CellBoundary, CellEditor, MUTED, ROW_BORDER, renderCell } from './TableCells';
 import type { Editing, Edits, Entry, OnAction, Resolve, Row, TableColumn, TableFilter, WithEdits } from './types';
+import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 interface TableBodyProps {
   properties: Resolved;

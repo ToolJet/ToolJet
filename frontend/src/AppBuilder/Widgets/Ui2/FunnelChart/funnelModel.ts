@@ -1,14 +1,7 @@
 // ToolJet UI 2.0: the pure logic of the Funnel chart. Every function takes whatever the author bound and never throws.
-import {
-  axisLabel,
-  fieldList,
-  isPlain,
-  isSet,
-  MAX_ROWS,
-  num,
-  resolveChartFields,
-  type Row,
-} from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { fieldList, MAX_ROWS, resolveChartFields, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { axisLabel } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isRecord, isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 const round1 = (v: number) => Math.round(v * 10) / 10;
 
@@ -25,7 +18,7 @@ export interface FunnelStage {
 }
 
 export const funnelStages = (data: unknown, stageField: unknown, valueField: unknown): FunnelStage[] => {
-  const rows = (Array.isArray(data) ? data : []).filter(isPlain).slice(0, MAX_ROWS);
+  const rows = (Array.isArray(data) ? data : []).filter(isRecord).slice(0, MAX_ROWS);
   if (!rows.length) return [];
   const { x, series } = resolveChartFields(
     rows,

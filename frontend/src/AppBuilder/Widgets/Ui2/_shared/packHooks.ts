@@ -7,15 +7,12 @@ import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { stringify } from './packJson';
 import type { MutableRefObject, RefObject } from 'react';
-import type { Bound, Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export { stringify };
 
 // The ToolJet side of a UI 2.0 widget (exposed values, actions, auto height, bound lists), with no UI library in it.
-
-/** A bound list as it is (its items are bound values, untyped like Resolved); anything else (unset, an object, a
- *  string) as an empty list. */
-export const list = (v: unknown): Bound[] => (Array.isArray(v) ? v : []);
 
 /** A widget's exposed values and actions (async functions), by name. */
 export type Exposed = Record<string, unknown>;
@@ -146,19 +143,17 @@ export interface Option extends Resolved {
 /** Options as { label, value }: accepts plain values (['A', 'B']) as well as objects. Entries that cannot be an option
  *  (null, empty objects, object values) are dropped, a missing or non-text label falls back to the value, and only the
  *  first of options sharing a value is kept, so a select can key its items by value. */
-const isText = (v: unknown): v is OptionValue =>
-  typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
 export const toOptions = (v: unknown): Option[] => {
   const seen = new Set<string>();
   const options: Option[] = [];
   for (const o of list(v)) {
     let option: Option;
-    if (isText(o)) option = { label: String(o), value: o };
+    if (isScalar(o)) option = { label: String(o), value: o };
     else if (o !== null && typeof o === 'object' && !Array.isArray(o)) {
       const entry = o as Resolved;
       const value: unknown = entry.value !== undefined && entry.value !== null ? entry.value : entry.label;
-      if (!isText(value)) continue;
-      option = { ...entry, label: isText(entry.label) ? String(entry.label) : String(value), value };
+      if (!isScalar(value)) continue;
+      option = { ...entry, label: isScalar(entry.label) ? String(entry.label) : String(value), value };
     } else continue;
     const key = String(option.value);
     if (seen.has(key)) continue;

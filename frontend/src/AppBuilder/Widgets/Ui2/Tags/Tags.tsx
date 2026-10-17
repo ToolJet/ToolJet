@@ -7,7 +7,7 @@ import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { colorFor, toTags } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
-import { own } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Tags ------------------------------------------------------------------------------------------------------------
 

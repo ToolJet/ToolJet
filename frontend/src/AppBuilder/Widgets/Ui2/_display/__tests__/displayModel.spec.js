@@ -1,10 +1,8 @@
 import {
-  clamp,
   clampPage,
   colorFor,
-  formatTime,
-  formatValue,
   keyValueItems,
+  keyValueText,
   linkHref,
   normalizeSteps,
   pageCountOf,
@@ -16,17 +14,19 @@ import {
   toTags,
 } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
 import { iconCandidates, resolveIcon } from '@/AppBuilder/Widgets/Ui2/_display/iconModel';
+import { clampCoerce } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { formatDate } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 const JUNK = [null, undefined, NaN, Infinity, '', 'x', 0, -1, 1e300, true, {}, [], [null, 1, 'a', {}], () => 1];
 
 describe('clamp', () => {
   it('keeps numbers in range and falls back for junk', () => {
-    expect(clamp(150, 0, 100)).toBe(100);
-    expect(clamp('42', 0, 100)).toBe(42);
-    expect(clamp(-5, 0, 100)).toBe(0);
-    expect(clamp('abc', 0, 100, 7)).toBe(7);
-    expect(clamp(null, 0, 100, 7)).toBe(7);
-    expect(clamp(Infinity, 0, 100, 7)).toBe(7);
+    expect(clampCoerce(150, 0, 100)).toBe(100);
+    expect(clampCoerce('42', 0, 100)).toBe(42);
+    expect(clampCoerce(-5, 0, 100)).toBe(0);
+    expect(clampCoerce('abc', 0, 100, 7)).toBe(7);
+    expect(clampCoerce(null, 0, 100, 7)).toBe(7);
+    expect(clampCoerce(Infinity, 0, 100, 7)).toBe(7);
   });
 });
 
@@ -126,19 +126,19 @@ describe('key-value', () => {
   });
   it('formats by type, with the widget defaults', () => {
     const d = { currency: 'USD', locale: 'en-US', dateFormat: 'DD MMM YYYY' };
-    expect(formatValue({ value: 1250, type: 'currency' }, d)).toBe('$1,250.00');
-    expect(formatValue({ value: 1250, type: 'currency', format: { currency: 'EUR' } }, d)).toBe('€1,250.00');
-    expect(formatValue({ value: 3.14159, type: 'number', format: { decimalPlaces: 2 } }, d)).toBe('3.14');
-    expect(formatValue({ value: '2026-11-14', type: 'date' }, d)).toBe('14 Nov 2026');
-    expect(formatValue({ value: '2026-11-14', type: 'date', format: 'YYYY/MM/DD' }, d)).toBe('2026/11/14');
-    expect(formatValue({ value: false, type: 'boolean' }, d)).toBe('No');
-    expect(formatValue({ value: 'true', type: 'boolean' }, d)).toBe('Yes');
-    expect(formatValue({ value: ['a', 'b'] }, d)).toBe('a, b');
-    expect(formatValue({ value: { a: 1 } }, d)).toBe('{"a":1}');
-    expect(formatValue({ value: '' }, d)).toBe('');
-    expect(formatValue({ value: 'x', type: 'number' }, d)).toBe('x');
-    JUNK.forEach((j) => expect(typeof formatValue({ value: j, type: 'currency' }, d)).toBe('string'));
-    expect(formatValue(null)).toBe('');
+    expect(keyValueText({ value: 1250, type: 'currency' }, d)).toBe('$1,250.00');
+    expect(keyValueText({ value: 1250, type: 'currency', format: { currency: 'EUR' } }, d)).toBe('€1,250.00');
+    expect(keyValueText({ value: 3.14159, type: 'number', format: { decimalPlaces: 2 } }, d)).toBe('3.14');
+    expect(keyValueText({ value: '2026-11-14', type: 'date' }, d)).toBe('14 Nov 2026');
+    expect(keyValueText({ value: '2026-11-14', type: 'date', format: 'YYYY/MM/DD' }, d)).toBe('2026/11/14');
+    expect(keyValueText({ value: false, type: 'boolean' }, d)).toBe('No');
+    expect(keyValueText({ value: 'true', type: 'boolean' }, d)).toBe('Yes');
+    expect(keyValueText({ value: ['a', 'b'] }, d)).toBe('a, b');
+    expect(keyValueText({ value: { a: 1 } }, d)).toBe('{"a":1}');
+    expect(keyValueText({ value: '' }, d)).toBe('');
+    expect(keyValueText({ value: 'x', type: 'number' }, d)).toBe('x');
+    JUNK.forEach((j) => expect(typeof keyValueText({ value: j, type: 'currency' }, d)).toBe('string'));
+    expect(keyValueText(null)).toBe('');
   });
   it('finds a link row URL', () => {
     expect(linkHref({ value: 'ada@example.com' })).toBe('mailto:ada@example.com');
@@ -168,10 +168,10 @@ describe('timeline', () => {
     expect(statusColor('constructor')).toBeUndefined();
   });
   it('formats ISO times only when a format is given', () => {
-    expect(formatTime('2026-10-09T09:12:00', 'DD MMM, HH:mm')).toBe('09 Oct, 09:12');
-    expect(formatTime('2026-10-09', '')).toBe('2026-10-09');
-    expect(formatTime('Yesterday', 'DD MMM')).toBe('Yesterday');
-    expect(formatTime('', 'DD MMM')).toBe('');
+    expect(formatDate('2026-10-09T09:12:00', 'DD MMM, HH:mm')).toBe('09 Oct, 09:12');
+    expect(formatDate('2026-10-09', '')).toBe('2026-10-09');
+    expect(formatDate('Yesterday', 'DD MMM')).toBe('Yesterday');
+    expect(formatDate('', 'DD MMM')).toBe('');
   });
 });
 

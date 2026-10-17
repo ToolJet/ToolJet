@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
   toOptions,
@@ -141,116 +141,108 @@ export const ShadTagsInput = (props: WidgetProps) => {
     }
   };
   return (
-    <Shell {...props} innerRef={ref}>
-      <Field
-        id={`shad-${id}`}
-        label={properties.label}
-        description={properties.description}
-        error={tagError || check.error}
-        required={check.required}
-      >
-        <PopoverPrimitive.Root open={menuOpen}>
-          <PopoverPrimitive.Anchor asChild>
-            <div
-              ref={anchorRef}
-              onClick={() => inputRef.current?.focus()}
-              className={cn(
-                'tw-flex tw-min-h-9 tw-w-full tw-cursor-text tw-flex-wrap tw-items-center tw-gap-1.5 tw-border tw-px-2 tw-py-1 tw-text-ui2-sm tw-shadow-sm tw-transition-colors focus-within:tw-ring-1 focus-within:tw-ring-ui2-ring',
-                CONTROL,
-                disabled && 'tw-cursor-not-allowed tw-opacity-50'
-              )}
-            >
-              {tags.map((tag, i) => (
-                <Chip
-                  key={`${tag}-${i}`}
-                  label={tag}
-                  removeLabel={`Remove ${tag}`}
-                  onRemove={disabled ? undefined : () => remove(i)}
-                />
-              ))}
-              <input
-                ref={inputRef}
-                id={`shad-${id}`}
-                type="text"
-                role="combobox"
-                aria-expanded={menuOpen}
-                aria-autocomplete="list"
-                aria-invalid={!!(tagError || check.error) || undefined}
-                autoComplete="off"
-                value={text}
-                disabled={disabled}
-                placeholder={String(properties.placeholder ?? '')}
-                onChange={onChange}
-                onKeyDown={onKeyDown}
-                onFocus={() => {
-                  setFocused(true);
-                  setDismissed(false);
-                  setTimeout(() => fireEvent('onFocus'), 0);
-                }}
-                onBlur={() => {
-                  setFocused(false);
-                  setActive(-1);
-                  check.touch();
-                  if (properties.addOnBlur === true && text.trim() && add([text])) setText('');
-                  fireEvent('onBlur');
-                }}
-                className={cn(
-                  'tw-h-7 tw-min-w-[6rem] tw-flex-1 tw-border-0 tw-bg-transparent tw-px-1 tw-py-0 tw-text-ui2-sm tw-text-[color:var(--lk-fg,var(--sc-foreground))] tw-shadow-none tw-outline-none focus:tw-outline-none focus:tw-ring-0 disabled:tw-cursor-not-allowed',
-                  'placeholder:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
-                )}
+    <FormField props={props} properties={properties} check={check} innerRef={ref} error={tagError || check.error}>
+      <PopoverPrimitive.Root open={menuOpen}>
+        <PopoverPrimitive.Anchor asChild>
+          <div
+            ref={anchorRef}
+            onClick={() => inputRef.current?.focus()}
+            className={cn(
+              'tw-flex tw-min-h-9 tw-w-full tw-cursor-text tw-flex-wrap tw-items-center tw-gap-1.5 tw-border tw-px-2 tw-py-1 tw-text-ui2-sm tw-shadow-sm tw-transition-colors focus-within:tw-ring-1 focus-within:tw-ring-ui2-ring',
+              CONTROL,
+              disabled && 'tw-cursor-not-allowed tw-opacity-50'
+            )}
+          >
+            {tags.map((tag, i) => (
+              <Chip
+                key={`${tag}-${i}`}
+                label={tag}
+                removeLabel={`Remove ${tag}`}
+                onRemove={disabled ? undefined : () => remove(i)}
               />
-              {properties.showClearBtn === true && tags.length && !disabled && !properties.loadingState ? (
-                <ClearButton
-                  label="Clear tags"
-                  onClear={() => {
-                    setTagError('');
-                    commit([], 'onTagDeleted', tags[tags.length - 1]);
-                  }}
-                />
-              ) : null}
-            </div>
-          </PopoverPrimitive.Anchor>
-          <PopoverPrimitive.Portal container={getPortalRoot()}>
-            <PopoverPrimitive.Content
-              align="start"
-              sideOffset={4}
-              onOpenAutoFocus={(e) => e.preventDefault()}
-              onCloseAutoFocus={(e) => e.preventDefault()}
-              onInteractOutside={(e) => {
-                if (e.target instanceof Node && anchorRef.current?.contains(e.target)) e.preventDefault();
-                else setDismissed(true);
+            ))}
+            <input
+              ref={inputRef}
+              id={`shad-${id}`}
+              type="text"
+              role="combobox"
+              aria-expanded={menuOpen}
+              aria-autocomplete="list"
+              aria-invalid={!!(tagError || check.error) || undefined}
+              autoComplete="off"
+              value={text}
+              disabled={disabled}
+              placeholder={String(properties.placeholder ?? '')}
+              onChange={onChange}
+              onKeyDown={onKeyDown}
+              onFocus={() => {
+                setFocused(true);
+                setDismissed(false);
+                setTimeout(() => fireEvent('onFocus'), 0);
               }}
-              onEscapeKeyDown={() => setDismissed(true)}
+              onBlur={() => {
+                setFocused(false);
+                setActive(-1);
+                check.touch();
+                if (properties.addOnBlur === true && text.trim() && add([text])) setText('');
+                fireEvent('onBlur');
+              }}
               className={cn(
-                'tw-z-[1060] tw-max-h-60 tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[10rem] tw-overflow-y-auto tw-rounded-ui2-md tw-border tw-border-[color:var(--sc-border)] tw-p-1 tw-shadow-md tw-outline-none',
-                MENU_SURFACE
+                'tw-h-7 tw-min-w-[6rem] tw-flex-1 tw-border-0 tw-bg-transparent tw-px-1 tw-py-0 tw-text-ui2-sm tw-text-[color:var(--lk-fg,var(--sc-foreground))] tw-shadow-none tw-outline-none focus:tw-outline-none focus:tw-ring-0 disabled:tw-cursor-not-allowed',
+                'placeholder:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]'
               )}
-              style={lookVars(componentType, styles)}
-            >
-              <div role="listbox" aria-label="Suggestions">
-                {visible.map((s, i) => (
-                  <div
-                    key={`${s.tag}-${i}`}
-                    role="option"
-                    aria-selected={i === active}
-                    data-selected={i === active || undefined}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onMouseEnter={() => setActive(i)}
-                    onClick={() => {
-                      if (add([s.tag])) setText('');
-                      inputRef.current?.focus();
-                    }}
-                    className="tw-flex tw-cursor-default tw-select-none tw-items-center tw-rounded-ui2-sm tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-outline-none data-[selected]:tw-bg-[color:var(--lk-hl,var(--sc-accent))] data-[selected]:tw-text-[color:var(--lk-menu-fg,var(--sc-accent-foreground))]"
-                  >
-                    {s.label}
-                  </div>
-                ))}
-              </div>
-            </PopoverPrimitive.Content>
-          </PopoverPrimitive.Portal>
-        </PopoverPrimitive.Root>
-      </Field>
-    </Shell>
+            />
+            {properties.showClearBtn === true && tags.length && !disabled && !properties.loadingState ? (
+              <ClearButton
+                label="Clear tags"
+                onClear={() => {
+                  setTagError('');
+                  commit([], 'onTagDeleted', tags[tags.length - 1]);
+                }}
+              />
+            ) : null}
+          </div>
+        </PopoverPrimitive.Anchor>
+        <PopoverPrimitive.Portal container={getPortalRoot()}>
+          <PopoverPrimitive.Content
+            align="start"
+            sideOffset={4}
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            onInteractOutside={(e) => {
+              if (e.target instanceof Node && anchorRef.current?.contains(e.target)) e.preventDefault();
+              else setDismissed(true);
+            }}
+            onEscapeKeyDown={() => setDismissed(true)}
+            className={cn(
+              'tw-z-[1060] tw-max-h-60 tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[10rem] tw-overflow-y-auto tw-rounded-ui2-md tw-border tw-border-[color:var(--sc-border)] tw-p-1 tw-shadow-md tw-outline-none',
+              MENU_SURFACE
+            )}
+            style={lookVars(componentType, styles)}
+          >
+            <div role="listbox" aria-label="Suggestions">
+              {visible.map((s, i) => (
+                <div
+                  key={`${s.tag}-${i}`}
+                  role="option"
+                  aria-selected={i === active}
+                  data-selected={i === active || undefined}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onMouseEnter={() => setActive(i)}
+                  onClick={() => {
+                    if (add([s.tag])) setText('');
+                    inputRef.current?.focus();
+                  }}
+                  className="tw-flex tw-cursor-default tw-select-none tw-items-center tw-rounded-ui2-sm tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-outline-none data-[selected]:tw-bg-[color:var(--lk-hl,var(--sc-accent))] data-[selected]:tw-text-[color:var(--lk-menu-fg,var(--sc-accent-foreground))]"
+                >
+                  {s.label}
+                </div>
+              ))}
+            </div>
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
+    </FormField>
   );
 };
 

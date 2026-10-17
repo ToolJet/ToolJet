@@ -1,14 +1,11 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, Tooltip, XAxis, YAxis } from 'recharts';
-import { list, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import {
-  clamp,
   curveOf,
-  formatter,
   hasValues,
-  isSet,
   seriesRows,
   resolveChartFields,
   seriesLabel,
@@ -19,6 +16,7 @@ import {
 import { comboSeries } from './comboModel';
 import {
   AXIS,
+  ChartTooltip,
   GRID,
   LegendContent,
   MAX_BARS,
@@ -29,8 +27,9 @@ import {
   isCompactChart,
   scaled,
   useValueFormat,
-  type TooltipContentProps,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { clamp, isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 export const ShadComboChart = (props: WidgetProps) => {
   const p = props.properties;
@@ -167,7 +166,10 @@ export const ShadComboChart = (props: WidgetProps) => {
               allowDecimals={rightDecimals}
             />
           ) : null}
-          <Tooltip cursor={{ fill: 'var(--sc-muted)', fillOpacity: 0.6 }} content={<ComboTip format={tipFormat} />} />
+          <Tooltip
+            cursor={{ fill: 'var(--sc-muted)', fillOpacity: 0.6 }}
+            content={<ChartTooltip format={tipFormat} rowFill={false} />}
+          />
           {p.showLegend !== false && !compact ? <Legend content={<LegendContent />} /> : null}
           {series.map((s, i) =>
             s.kind === 'bar' ? (
@@ -200,29 +202,6 @@ export const ShadComboChart = (props: WidgetProps) => {
         </ComposedChart>
       )}
     </SafeFrame>
-  );
-};
-
-export const ComboTip = ({
-  active,
-  payload,
-  label,
-  format,
-}: TooltipContentProps & { format: (v: unknown, key: unknown) => string }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="tj-shadcn">
-      <div className="tw-grid tw-min-w-[8rem] tw-gap-1.5 tw-rounded-ui2-lg tw-border tw-bg-ui2-background tw-px-2.5 tw-py-1.5 tw-text-xs tw-shadow-xl">
-        {label !== undefined ? <div className="tw-font-medium">{String(label)}</div> : null}
-        {payload.map((item) => (
-          <div key={item.dataKey ?? item.name} className="tw-flex tw-items-center tw-gap-2">
-            <span className="tw-h-2.5 tw-w-2.5 tw-shrink-0 tw-rounded-[2px]" style={{ background: item.color }} />
-            <span className="tw-flex-1 tw-text-ui2-muted-foreground">{String(item.name)}</span>
-            <span className="tw-font-mono tw-font-medium tw-tabular-nums">{format(item.value, item.dataKey)}</span>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 };
 

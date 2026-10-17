@@ -1,7 +1,7 @@
 // ToolJet UI 2.0: pure logic of the File upload widget. No React here: every function takes junk
 // (null, wrong types, huge numbers) without throwing.
 
-import { asList, clampInt, isText } from './pickersModel';
+import { clampInt, isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** What fileKind names: the icon a file gets. */
 export type FileKind = 'image' | 'pdf' | 'sheet' | 'text' | 'archive' | 'audio' | 'video' | 'other';
@@ -48,7 +48,7 @@ const EXT_MIME: Record<string, string> = {
 /** The accepted types as a list: from 'image/*, .pdf' or ['image/*', '.pdf']. */
 export const acceptList = (accept: unknown): string[] =>
   (Array.isArray(accept) ? accept : typeof accept === 'string' ? accept.split(',') : [])
-    .filter(isText)
+    .filter(isScalar)
     .map((t) => String(t).trim().toLowerCase())
     .filter((t) => /^\.[a-z0-9]+$/.test(t) || /^[a-z]+\/[a-z0-9.+*-]+$/.test(t));
 
@@ -119,11 +119,11 @@ export const rejectionMessage = (
   rejections: readonly Rejection[] | null | undefined,
   { maxSize = 0, minSize = 0, maxFiles = 0 } = {}
 ): string => {
-  const all = asList<Rejection>(rejections);
+  const all = list<Rejection>(rejections);
   const first = all[0];
   if (!first) return '';
   const name = first.file?.name ? `"${first.file.name}"` : 'A file';
-  const code = asList<{ code?: string }>(first.errors)[0]?.code;
+  const code = list<{ code?: string }>(first.errors)[0]?.code;
   const more = all.length > 1 ? ` (${all.length} files not added)` : '';
   switch (code) {
     case 'file-too-large':

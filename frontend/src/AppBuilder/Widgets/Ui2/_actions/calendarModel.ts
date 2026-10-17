@@ -1,9 +1,11 @@
 // ToolJet UI 2.0: the pure date logic of the Calendar widget (also used by the Date picker). It takes
 // author data as it comes and never throws.
 import dayjs from 'dayjs';
-import { arr, isObject, text, unwrap } from './actionsModel';
+import { text, unwrap } from './actionsModel';
 import type { ConfigType } from 'dayjs';
 import type { DateRange, Matcher } from 'react-day-picker';
+import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isRecord, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** What a calendar holds: a date (single mode), a list of dates (multiple) or a range, or nothing. */
 export type CalendarSelection = Date | Date[] | DateRange | undefined;
@@ -49,7 +51,7 @@ export const calendarSelection = (raw: unknown, mode: unknown): CalendarSelectio
   if (mode === 'range') {
     const pair = Array.isArray(value)
       ? value
-      : isObject(value)
+      : isRecord<Resolved>(value)
       ? [value.from ?? value.start ?? value.startDate, value.to ?? value.end ?? value.endDate]
       : [value];
     const from = toDate(pair[0]);
@@ -63,7 +65,7 @@ export const calendarSelection = (raw: unknown, mode: unknown): CalendarSelectio
 /** The exposed values of a selection. value: 'YYYY-MM-DD' (single), a list (multiple) or [start, end] (range). */
 export const calendarExposed = (selected: CalendarSelection, mode: unknown): CalendarExposed => {
   if (mode === 'multiple') {
-    const dates = arr(selected).map(ymd).filter(Boolean).sort();
+    const dates = list(selected).map(ymd).filter(Boolean).sort();
     return { value: dates, selectedDate: dates[0] ?? '', selectedDates: dates, startDate: '', endDate: '' };
   }
   if (mode === 'range') {
@@ -102,13 +104,13 @@ export const visiblePeriod = (
 /** Markers by day ('YYYY-MM-DD' -> [{ label, color }]): `[{ date, label?, color? }]`, or plain dates. */
 export const markersByDay = (markers: unknown): Map<string, Marker[]> => {
   const map = new Map<string, Marker[]>();
-  for (const raw of arr(markers).slice(0, 2000)) {
-    const date = toDate(isObject(raw) ? raw.date ?? raw.day ?? raw.start : raw);
+  for (const raw of list(markers).slice(0, 2000)) {
+    const date = toDate(isRecord<Resolved>(raw) ? raw.date ?? raw.day ?? raw.start : raw);
     if (!date) continue;
     const key = ymd(date);
     const marker = {
-      label: isObject(raw) ? text(raw.label ?? raw.title) : '',
-      color: isObject(raw) ? text(raw.color) : '',
+      label: isRecord<Resolved>(raw) ? text(raw.label ?? raw.title) : '',
+      color: isRecord<Resolved>(raw) ? text(raw.color) : '',
     };
     map.set(key, [...(map.get(key) || []), marker]);
   }
@@ -130,12 +132,12 @@ export const disabledMatchers = ({
   const max = toDate(maxDate);
   if (min) matchers.push({ before: min });
   if (max) matchers.push({ after: max });
-  const dates = arr(disabledDates)
+  const dates = list(disabledDates)
     .slice(0, 2000)
     .map(toDate)
     .filter((d): d is Date => !!d);
   if (dates.length) matchers.push(...dates);
-  const days = arr(disabledDays)
+  const days = list(disabledDays)
     .map((d) => (typeof d === 'string' && WEEKDAYS.includes(d.toLowerCase()) ? WEEKDAYS.indexOf(d.toLowerCase()) : d))
     .map(Number)
     .filter((d) => Number.isInteger(d) && d >= 0 && d <= 6);

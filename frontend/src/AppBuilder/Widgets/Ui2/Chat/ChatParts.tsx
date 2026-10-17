@@ -10,6 +10,7 @@ import { formatTimestamp } from '@/AppBuilder/Widgets/Ui2/_shared/chatHelpers';
 import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import type { ReactNode } from 'react';
 import type { RunRow } from './chatModel';
+import { useCopied } from '@/AppBuilder/Widgets/Ui2/_shared/useCopied';
 
 // ToolJet UI 2.0 Chat (Chat.tsx): its message rows, the typing dots, the loading skeleton and the header's buttons.
 
@@ -68,12 +69,7 @@ const Markdown = React.memo(({ content }: { content: string }) => (
 Markdown.displayName = 'Markdown';
 
 const CopyButton = ({ value, align }: { value: string; align: 'start' | 'end' }) => {
-  const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    if (!copied) return undefined;
-    const t = setTimeout(() => setCopied(false), 1500);
-    return () => clearTimeout(t);
-  }, [copied]);
+  const [copied, markCopied] = useCopied();
   return (
     <button
       type="button"
@@ -82,7 +78,7 @@ const CopyButton = ({ value, align }: { value: string; align: 'start' | 'end' })
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(value);
-          setCopied(true);
+          markCopied();
         } catch {
           toast.error('Failed to copy message');
         }

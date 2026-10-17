@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import {
@@ -17,13 +17,15 @@ import {
   ACCENT,
   ACCENT_INK,
   Chip,
+  EmptyText,
   InlineProgress,
   RecordAvatar,
   TITLE_FONT,
-  onKeyActivate,
-  text,
 } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 
 /** The picture of a card: its image, or (none, or one that fails to load) a tinted panel with the title's initials.
  *  Its badges sit over its top left corner. `fill` makes it a side panel as tall as the card (the row layout). */
@@ -138,12 +140,11 @@ export const ShadCardGrid = (props: WidgetProps) => {
   );
   // A grid draws its first CARDS_PER_STEP cards and a button for the next ones: a 10,000-row binding drew every card
   // (over 100,000 elements) and froze the page. A new data binding starts again from the first step.
-  const [shownCount, setShownCount] = useState(CARDS_PER_STEP);
-  useEffect(() => setShownCount(CARDS_PER_STEP), [cards]);
+  const [shownCount, showMore] = useShownCount(CARDS_PER_STEP, cards);
   const [selected, setSelected] = useState<CardItem | null>(null);
   useExposed(setExposedVariables, p, {
     selectedItem: selected?.row ?? {},
-    selectedItemId: selected ? selected.row?.[text(p.idField) || 'id'] ?? null : null,
+    selectedItemId: selected ? selected.row?.[toText(p.idField) || 'id'] ?? null : null,
   });
   const hasClick = useHasEvent(id, 'onCardClicked');
   const columns = gridColumns(p.columns, width || Number(props.width) || 960, p.minCardWidth);
@@ -158,7 +159,7 @@ export const ShadCardGrid = (props: WidgetProps) => {
     if (busy(p)) return;
     setSelected(card);
     setExposedVariable('selectedItem', card.row);
-    setExposedVariable('selectedItemId', card.row?.[text(p.idField) || 'id'] ?? null);
+    setExposedVariable('selectedItemId', card.row?.[toText(p.idField) || 'id'] ?? null);
     fireEvent('onCardClicked');
   };
 
@@ -188,11 +189,7 @@ export const ShadCardGrid = (props: WidgetProps) => {
       </div>
     );
   } else if (!cards.length) {
-    body = (
-      <p className="tw-m-0 tw-py-10 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
-        {text(p.emptyText) || 'Nothing here yet'}
-      </p>
-    );
+    body = <EmptyText text={p.emptyText} fallback="Nothing here yet" />;
   } else {
     body = (
       <div className="tw-grid tw-gap-4" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
@@ -313,13 +310,12 @@ export const ShadCardGrid = (props: WidgetProps) => {
         })}
         {cards.length > shownCount ? (
           <div className="tw-col-span-full tw-flex tw-justify-center tw-pt-1">
-            <button
-              type="button"
-              onClick={() => setShownCount((n) => n + CARDS_PER_STEP)}
+            <ShowMore
+              remaining={cards.length - shownCount}
+              step={CARDS_PER_STEP}
+              onMore={showMore}
               className="tw-rounded-ui2-md tw-border tw-border-[color:var(--lk-border,var(--sc-border))] tw-px-3 tw-py-1.5 tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)] tw-transition-colors hover:tw-bg-[color:var(--sc-muted)] hover:tw-text-[color:var(--sc-foreground)]"
-            >
-              {`Show ${Math.min(CARDS_PER_STEP, cards.length - shownCount)} more of ${cards.length - shownCount}`}
-            </button>
+            />
           </div>
         ) : null}
       </div>

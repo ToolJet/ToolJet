@@ -9,6 +9,7 @@ import type { ReactNode, SyntheticEvent } from 'react';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
+import { isStringOrNumber } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ToolJet UI 2.0: the pickers widgets. Combobox and Multiselect are shadcn's Popover + Command (cmdk)
 // recipe; Tags input, Color picker and Rating follow shadcn's field look; File upload is react-dropzone in shadcn
@@ -26,7 +27,6 @@ const CHIP =
 const ICON_BUTTON =
   'tw-inline-flex tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-sm tw-border-0 tw-bg-transparent tw-p-0.5 tw-opacity-60 tw-outline-none tw-transition-opacity hover:tw-opacity-100 focus-visible:tw-opacity-100 focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring';
 
-export const isText = (v: unknown): v is string | number => typeof v === 'string' || typeof v === 'number';
 /** Keeps a pointer press on a control inside a trigger from opening or closing the trigger's menu. */
 const stopPress = (e: SyntheticEvent) => {
   e.preventDefault();
@@ -128,7 +128,7 @@ export const OptionIcon = ({ icon }: { icon: unknown }) => {
 const OptionText = ({ option }: { option: Option }) => (
   <span className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col">
     <span className="tw-truncate">{option.label}</span>
-    {isText(option.description) && String(option.description) ? (
+    {isStringOrNumber(option.description) && String(option.description) ? (
       <span className={cn('tw-truncate tw-text-xs', MUTED)}>{String(option.description)}</span>
     ) : null}
   </span>

@@ -1,5 +1,7 @@
 // The Sparkline's points, and the trend and band it draws from them (Stat's sparkline reads the same points).
-import { MAX_ROWS, axisLabel, isPlain, isSet, num } from './chartsModel';
+import { MAX_ROWS } from './chartsModel';
+import { axisLabel } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isRecord, isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** Sparkline points from [3, 5, 4], '3,5,4' or [{ x, y }] (also { label, value }): { i, x, y } with y a number or
  *  null. The last MAX_ROWS points are kept. */
@@ -12,7 +14,7 @@ export interface SparkPoint {
 export const sparkPoints = (data: unknown): SparkPoint[] => {
   const raw: unknown[] = Array.isArray(data) ? data : typeof data === 'string' ? data.split(',') : [];
   return raw.slice(-MAX_ROWS).map((d, i) => {
-    if (isPlain(d)) {
+    if (isRecord(d)) {
       const y = num(d.y !== undefined ? d.y : d.value);
       const x = d.x !== undefined ? d.x : d.label;
       return { i, x: isSet(x) ? axisLabel(x) : i + 1, y };

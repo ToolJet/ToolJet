@@ -2,7 +2,6 @@ import {
   barWidth,
   cardItems,
   fieldList,
-  formatValue,
   gridColumns,
   heroAside,
   heroMeta,
@@ -12,6 +11,7 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
 import { stripColumns, summaryFigures } from '@/AppBuilder/Widgets/Ui2/_sections/summaryModel';
 import { autoProgressTone, progressItems, progressTone } from '@/AppBuilder/Widgets/Ui2/_sections/progressModel';
+import { formatValue } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
 describe('cardItems', () => {
   const rows = [

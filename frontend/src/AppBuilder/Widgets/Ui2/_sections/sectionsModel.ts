@@ -1,15 +1,14 @@
 // ToolJet UI 2.0: the pure logic of the page sections (Hero, CardGrid, RecordList): the hero's facts, the card grid's cards and
 // columns, the record list's rows and the value formats (the summary strip's figures are in summaryModel.ts, the
 // progress list's rows in progressModel.ts). Every function takes whatever the author bound and never throws.
-import { FORMATS, formatter } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { formatValue, VALUE_FORMATS } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isNonBlankString, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** A data row as bound: any fields, of any value. */
 export type Row = Record<string, unknown>;
 
-export const isText = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
-const isImageUrl = (v: unknown): v is string => isText(v) && /^(https?:\/\/|data:image\/|\/|\.\/)/i.test(v.trim());
-export const shown = (v: unknown): string =>
-  v === null || v === undefined ? '' : typeof v === 'object' ? '' : String(v);
+const isImageUrl = (v: unknown): v is string =>
+  isNonBlankString(v) && /^(https?:\/\/|data:image\/|\/|\.\/)/i.test(v.trim());
 
 /** The hero's facts beside the title: ['Sun, 11 Oct', '14 bookings'], [{ label, value }] or one string with ' · '
  *  between facts. Empty entries are dropped. */
@@ -19,14 +18,14 @@ export interface HeroFact {
 }
 
 export const heroMeta = (meta: unknown): HeroFact[] => {
-  const list: unknown[] = Array.isArray(meta) ? meta : isText(meta) ? meta.split(/\s+·\s+/) : [];
+  const list: unknown[] = Array.isArray(meta) ? meta : isNonBlankString(meta) ? meta.split(/\s+·\s+/) : [];
   return list.flatMap((entry): HeroFact[] => {
     if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
       const { label, value: raw } = entry as Row;
-      const value = shown(raw);
-      return value ? [{ ...(isText(label) ? { label } : {}), value }] : [];
+      const value = toText(raw);
+      return value ? [{ ...(isNonBlankString(label) ? { label } : {}), value }] : [];
     }
-    const value = shown(entry).trim();
+    const value = toText(entry).trim();
     return value ? [{ value }] : [];
   });
 };
@@ -39,29 +38,30 @@ export type HeroAside =
   | { kind: 'facts'; facts: HeroFact[]; label: string };
 
 export const heroAside = (value: unknown, label: unknown): HeroAside | null => {
-  const heading = shown(label).trim();
+  const heading = toText(label).trim();
   if (Array.isArray(value)) {
     const facts = heroMeta(value).slice(0, 4);
     return facts.length ? { kind: 'facts', facts, label: heading } : null;
   }
-  const figure = typeof value === 'number' ? formatValue(value, 'auto') : shown(value).trim();
+  const figure = typeof value === 'number' ? formatValue(value, 'auto') : toText(value).trim();
   return figure ? { kind: 'figure', value: figure, label: heading } : null;
 };
 
 // A label that only repeats its field key as written ('status:status') is not a label: "status To do" read like debug
 // output. A label in its own case ('serves:Serves') is meant and stays.
 const sameName = (label: string, field: string): boolean => String(label).trim() === String(field).trim();
+/** A value in its label: at '{}', else after the label; a label that only names the field is left out. */
+const withLabel = (label: string, field: string, value: string): string =>
+  !label || sameName(label, field) ? value : label.includes('{}') ? label.replace('{}', value) : `${label} ${value}`;
 
 /** One meta field: 'prep' shows the value, 'prep:{} min' places it in the label, 'serves:Serves' puts the label first. */
 const metaPart = (row: Row, spec: string): string => {
   const [field, label] = spec.split(/:(.*)/s).map((s) => (s ?? '').trim());
-  const value = shown(row[field]);
-  if (!field || !value) return '';
-  if (!label || sameName(label, field)) return value;
-  return label.includes('{}') ? label.replace('{}', value) : `${label} ${value}`;
+  const value = toText(row[field]);
+  return field && value ? withLabel(label, field, value) : '';
 };
 
-export const firstTextField = (row: Row): string | undefined => Object.keys(row).find((k) => isText(row[k]));
+export const firstTextField = (row: Row): string | undefined => Object.keys(row).find((k) => isNonBlankString(row[k]));
 
 /** Keys from ids, one of their own for every item: a repeated id (or a row without one, keyed by its position, where
  *  another row's id is that number) gets a suffix, so React keeps the rows apart and a click selects one row, not
@@ -86,7 +86,7 @@ export const uniqueKeys = <T extends { key: string }>(items: T[], fromId: boolea
 
 /** Field names from a comma list ('cuisine, diet') or a list of names; anything else is none. */
 export const fieldList = (spec: unknown): string[] =>
-  (Array.isArray(spec) ? (spec as unknown[]) : isText(spec) ? spec.split(',') : [])
+  (Array.isArray(spec) ? (spec as unknown[]) : isNonBlankString(spec) ? spec.split(',') : [])
     .filter((s): s is string => typeof s === 'string')
     .map((s) => s.trim())
     .filter(Boolean);
@@ -115,7 +115,7 @@ const avatarOf = (value: unknown, fallback: string): { image: string; name: stri
   const image = isImageUrl(value) ? value.trim() : '';
   return {
     image,
-    name: !image && shown(value).trim() ? shown(value).trim() : fallback,
+    name: !image && toText(value).trim() ? toText(value).trim() : fallback,
   };
 };
 
@@ -157,37 +157,39 @@ export const cardItems = (data: unknown, fields: CardFields = {}): CardItem[] =>
   const f = fields || {};
   // A comma list or a list of names (metaFields={["duration_label", "seats_label"]} showed nothing, 2026-10-14).
   const metaSpecs = fieldList(f.metaFields);
-  const badgeKeys = [...new Set([...(isText(f.badgeField) ? [f.badgeField.trim()] : []), ...fieldList(f.badgeFields)])];
+  const badgeKeys = [
+    ...new Set([...(isNonBlankString(f.badgeField) ? [f.badgeField.trim()] : []), ...fieldList(f.badgeFields)]),
+  ];
   const items = data.flatMap((row: Row, index: number): (CardItem & { keyFromId: boolean })[] => {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
-    const titleKey = isText(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
-    const id = isText(f.idField) ? row[f.idField] : row.id;
-    const title = titleKey ? shown(row[titleKey]) : '';
+    const titleKey = isNonBlankString(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
+    const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
+    const title = titleKey ? toText(row[titleKey]) : '';
     const badges = badgeKeys
-      .map((k) => shown(row[k]).trim())
+      .map((k) => toText(row[k]).trim())
       .filter(Boolean)
       .slice(0, 4);
-    const hasAvatar = isText(f.avatarField) && f.avatarField in row;
-    const progress = isText(f.progressField) ? percentOf(row[f.progressField]) : null;
+    const hasAvatar = isNonBlankString(f.avatarField) && f.avatarField in row;
+    const progress = isNonBlankString(f.progressField) ? percentOf(row[f.progressField]) : null;
     // A description that only repeats the bar's percentage ("25%") is left out: the bar labels it already.
-    const description = isText(f.descriptionField) ? shown(row[f.descriptionField]) : '';
+    const description = isNonBlankString(f.descriptionField) ? toText(row[f.descriptionField]) : '';
     const repeatsProgress = progress !== null && description.replace(/\s+/g, '') === `${Math.round(progress)}%`;
     return [
       {
-        key: shown(id) || String(index),
-        keyFromId: !!shown(id),
+        key: toText(id) || String(index),
+        keyFromId: !!toText(id),
         title,
         // A subtitle that only repeats the badge (a category shown as both) is left out.
         subtitle:
-          isText(f.subtitleField) && shown(row[f.subtitleField]).trim() !== (badges[0] || '').trim()
-            ? shown(row[f.subtitleField])
+          isNonBlankString(f.subtitleField) && toText(row[f.subtitleField]).trim() !== (badges[0] || '').trim()
+            ? toText(row[f.subtitleField])
             : '',
-        image: isText(f.imageField) ? shown(row[f.imageField]) : '',
+        image: isNonBlankString(f.imageField) ? toText(row[f.imageField]) : '',
         description: repeatsProgress ? '' : description,
         badge: badges[0] || '',
         badges,
-        eyebrow: isText(f.eyebrowField) ? shown(row[f.eyebrowField]).trim() : '',
-        avatar: hasAvatar && isText(f.avatarField) ? avatarOf(row[f.avatarField], title) : null,
+        eyebrow: isNonBlankString(f.eyebrowField) ? toText(row[f.eyebrowField]).trim() : '',
+        avatar: hasAvatar && isNonBlankString(f.avatarField) ? avatarOf(row[f.avatarField], title) : null,
         progress,
         meta: metaSpecs
           .map((spec) => metaPart(row, spec))
@@ -212,71 +214,6 @@ export const gridColumns = (columns: unknown, width: unknown, minCardWidth: unkn
   return Number.isFinite(set) && set > 0 ? Math.max(1, Math.min(set, fit)) : fit;
 };
 
-// ---- Value formats (record list, summary strip) ----------------------------------------------------------------------
-
-export const VALUE_FORMATS: readonly string[] = ['auto', ...FORMATS, 'date', 'datetime'];
-
-/** A date from a Date, a timestamp or date text. A bare 'YYYY-MM-DD' is that day where the viewer is (Date reads it as
- *  UTC midnight, which shows the day before west of Greenwich). null when it is not a date. */
-export const toDay = (v: unknown): Date | null => {
-  if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v;
-  if (typeof v === 'number') return Number.isFinite(v) ? new Date(v) : null;
-  if (!isText(v)) return null;
-  const day = v.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  const d = day ? new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3])) : new Date(v.trim());
-  return Number.isNaN(d.getTime()) ? null : d;
-};
-
-const dateText = (d: Date, withTime: boolean): string => {
-  const sameYear = d.getFullYear() === new Date().getFullYear();
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      day: 'numeric',
-      month: 'short',
-      ...(sameYear ? {} : { year: 'numeric' }),
-      ...(withTime ? { hour: 'numeric', minute: '2-digit' } : {}),
-    }).format(d);
-  } catch {
-    return d.toDateString();
-  }
-};
-
-/** A value in a format: 'number', 'currency' (in currency, default USD), 'percent' (42.5 shows 42.5%) and 'compact'
- *  format numbers and numeric text; 'date' (14 Oct) and 'datetime' (14 Oct, 9:30 AM) format dates. 'auto' groups the
- *  digits of a bare number. Anything that is not of the format's kind (an already formatted "$1,250.00", "12 open")
- *  shows as written; objects show nothing. */
-export const formatValue = (value: unknown, format: unknown = 'auto', currency?: unknown): string => {
-  // A number that is not finite (Infinity, NaN, a division by zero in a binding) is not a value to show.
-  if (value === null || value === undefined || typeof value === 'object') return '';
-  if (typeof value === 'number' && !Number.isFinite(value)) return '';
-  if (format === 'date' || format === 'datetime') {
-    const d = toDay(value);
-    return d ? dateText(d, format === 'datetime') : String(value);
-  }
-  const numeric =
-    typeof value === 'number'
-      ? Number.isFinite(value)
-      : typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim());
-  if (!numeric) return String(value);
-  if (!(typeof format === 'string' && FORMATS.includes(format)))
-    return typeof value === 'number' ? formatter({ format: 'number' })(value) : String(value);
-  const n = Number(value);
-  // Money with cents shows both digits ($386.50, not $386.5); whole amounts show none.
-  if (format === 'currency' && !Number.isInteger(n)) {
-    const code = isText(currency) && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
-    try {
-      return new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: code,
-        minimumFractionDigits: 2,
-      }).format(n);
-    } catch {
-      return formatter({ format, currency })(n);
-    }
-  }
-  return formatter({ format, currency })(n);
-};
-
 // ---- Record list -----------------------------------------------------------------------------------------------------
 
 /** One record meta field: 'city' shows the value, 'total|currency' formats it ('|date', '|number', ...), 'due|date:Due {}'
@@ -286,9 +223,7 @@ export const recordMetaPart = (row: Row, spec: string, currency?: unknown): stri
   const [field, format] = head.split('|').map((s) => s.trim());
   if (!field || !(field in row)) return '';
   const value = formatValue(row[field], VALUE_FORMATS.includes(format) ? format : 'auto', currency);
-  if (!value) return '';
-  if (!label || sameName(label, field)) return value;
-  return label.includes('{}') ? label.replace('{}', value) : `${label} ${value}`;
+  return value ? withLabel(label, field, value) : '';
 };
 
 /** Rows of a record list: a title, an avatar (an image when avatarField holds a URL, else the initials of avatarField's
@@ -329,16 +264,16 @@ export const recordItems = (data: unknown, fields: RecordFields = {}): RecordIte
   const format = typeof f.valueFormat === 'string' && VALUE_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
   const items = data.flatMap((row: Row, index: number): (RecordItem & { keyFromId: boolean })[] => {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return [];
-    const titleKey = isText(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
-    const title = titleKey ? shown(row[titleKey]) : '';
-    const id = isText(f.idField) ? row[f.idField] : row.id;
-    const avatarValue = isText(f.avatarField) ? row[f.avatarField] : undefined;
+    const titleKey = isNonBlankString(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
+    const title = titleKey ? toText(row[titleKey]) : '';
+    const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
+    const avatarValue = isNonBlankString(f.avatarField) ? row[f.avatarField] : undefined;
     const image = isImageUrl(avatarValue) ? avatarValue.trim() : '';
-    const avatarName = !image && shown(avatarValue).trim() ? shown(avatarValue).trim() : title;
+    const avatarName = !image && toText(avatarValue).trim() ? toText(avatarValue).trim() : title;
     return [
       {
-        key: shown(id) || String(index),
-        keyFromId: !!shown(id),
+        key: toText(id) || String(index),
+        keyFromId: !!toText(id),
         title,
         image,
         avatarName,
@@ -346,9 +281,9 @@ export const recordItems = (data: unknown, fields: RecordFields = {}): RecordIte
           .map((spec) => recordMetaPart(row, spec, f.currency))
           .filter(Boolean)
           .join(' · '),
-        status: isText(f.statusField) ? shown(row[f.statusField]) : '',
-        value: isText(f.valueField) ? formatValue(row[f.valueField], format, f.currency) : '',
-        progress: isText(f.progressField) ? percentOf(row[f.progressField]) : null,
+        status: isNonBlankString(f.statusField) ? toText(row[f.statusField]) : '',
+        value: isNonBlankString(f.valueField) ? formatValue(row[f.valueField], format, f.currency) : '',
+        progress: isNonBlankString(f.progressField) ? percentOf(row[f.progressField]) : null,
         row,
         index,
       },

@@ -1,3 +1,4 @@
+import { isRecord } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 // ToolJet UI 2.0 Kanban: the board's data logic, kept apart from the drag-and-drop UI so it is tested on
 // its own. Cards are rows of data; a column is a value of the status field.
 
@@ -28,7 +29,6 @@ export interface CardDetail {
 }
 
 const keyOf = (value: unknown): string => String(value ?? '');
-const isPlain = (v: unknown): v is CardRow => v !== null && typeof v === 'object' && !Array.isArray(v);
 /** A drag key no other card has: the card's id when free, else the id with a suffix. Duplicate or empty ids (two
  *  rows with id '' or the same id) gave two cards one key: dnd-kit dragged both and React reused one's element for
  *  the other, and a move removed every copy. */
@@ -60,7 +60,7 @@ export const boardColumns = (cards: unknown, columns: unknown, statusField: stri
   const keys = new Set<string>();
   for (const column of byId.values()) {
     column.cards = column.cards.map((card, i) => {
-      const row = isPlain(card) ? card : {};
+      const row = isRecord(card) ? card : {};
       const id = row[idField];
       const base = id === undefined || id === null || id === '' ? `${column.id}-${i}` : keyOf(id);
       return { ...row, __key: uniqueKey(keys, base) };
@@ -119,7 +119,7 @@ export const addCard = (
   statusField: string,
   idField: string
 ): { columns: BoardColumn[]; card: CardRow } => {
-  const card: CardRow = isPlain(rawCard) ? rawCard : {};
+  const card: CardRow = isRecord(rawCard) ? rawCard : {};
   const keys = new Set(columns.flatMap((c) => c.cards.map((x) => x.__key)));
   let id = card[idField];
   if (id === undefined || id === null || id === '') {
@@ -161,7 +161,7 @@ export const updateCard = (
   const key = keyOf(cardId);
   const card = columns.flatMap((c) => c.cards).find((x) => x.__key === key);
   if (!card) return { columns, card: null };
-  const updated: BoardCard = { ...card, ...(isPlain(values) ? values : {}), __key: key };
+  const updated: BoardCard = { ...card, ...(isRecord(values) ? values : {}), __key: key };
   if (keyOf(updated[statusField]) === keyOf(card[statusField])) {
     const next = columns.map((c) => ({ ...c, cards: c.cards.map((x) => (x.__key === key ? updated : x)) }));
     return { columns: next, card: plain(updated) };

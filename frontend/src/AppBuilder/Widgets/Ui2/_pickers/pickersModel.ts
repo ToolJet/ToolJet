@@ -3,15 +3,7 @@
 // wrong types, huge numbers) without throwing.
 
 import type { Option, OptionValue } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-
-export const isText = (v: unknown): v is OptionValue =>
-  typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
-/** A list as it is, anything else as []; T names what the caller's list holds. */
-export const asList = <T = unknown>(v: unknown): T[] => (Array.isArray(v) ? v : []);
-export const clampInt = (v: unknown, min: number, max: number, fallback: number): number => {
-  const n = Math.floor(Number(v));
-  return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
-};
+import { clampInt, isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Options (Combobox, Multiselect) -------------------------------------------------------------------------------
 
@@ -25,12 +17,12 @@ export const isDisabledOption = (o: Option | undefined): boolean => o?.disabled 
 export const findOption = (options: unknown, value: unknown): Option | undefined => {
   if (value === undefined || value === null) return undefined;
   const key = keyOf(value);
-  return asList<Option>(options).find((o) => keyOf(o.value) === key);
+  return list<Option>(options).find((o) => keyOf(o.value) === key);
 };
 
 /** The stored key of a default value: null when nothing is selected (empty, null, or not a text value). */
 export const initialKey = (v: unknown): string | null =>
-  v === undefined || v === null || v === '' || !isText(v) ? null : keyOf(v);
+  v === undefined || v === null || v === '' || !isScalar(v) ? null : keyOf(v);
 
 /** Options matching the search text (label, description, value or group; case-insensitive). */
 /** The most options a Combobox or Multiselect list draws at once: search still runs over every option, and a hint asks
@@ -53,11 +45,11 @@ export const filterOptions = (options: unknown, search: unknown): OptionEntry[] 
   const q = String(search ?? '')
     .trim()
     .toLowerCase();
-  const all = asList<Option>(options).map((option, index) => ({ option, index }));
+  const all = list<Option>(options).map((option, index) => ({ option, index }));
   if (!q) return all;
   return all.filter(({ option }) =>
     [option.label, option.description, option.value, option.group].some(
-      (field) => isText(field) && String(field).toLowerCase().includes(q)
+      (field) => isScalar(field) && String(field).toLowerCase().includes(q)
     )
   );
 };
@@ -67,8 +59,8 @@ export const filterOptions = (options: unknown, search: unknown): OptionEntry[] 
 export const groupOptions = (entries: unknown): OptionGroup[] => {
   const groups: OptionGroup[] = [];
   const byName = new Map<string, OptionGroup>();
-  for (const entry of asList<OptionEntry>(entries)) {
-    const heading = isText(entry?.option?.group) ? String(entry.option.group) : '';
+  for (const entry of list<OptionEntry>(entries)) {
+    const heading = isScalar(entry?.option?.group) ? String(entry.option.group) : '';
     if (!byName.has(heading)) {
       const group = { heading, items: [] };
       byName.set(heading, group);
@@ -89,8 +81,8 @@ export const validationInput = (picked: unknown, value: unknown): unknown => {
 
 /** Values as a list: an array as is, one value as a list of one, nothing as []. */
 export const toValueList = (v: unknown): OptionValue[] => {
-  if (Array.isArray(v)) return v.filter((x): x is OptionValue => isText(x));
-  return v === undefined || v === null || v === '' || !isText(v) ? [] : [v];
+  if (Array.isArray(v)) return v.filter((x): x is OptionValue => isScalar(x));
+  return v === undefined || v === null || v === '' || !isScalar(v) ? [] : [v];
 };
 
 /** A selection limit: 0 means none. */
@@ -98,8 +90,8 @@ export const clampLimit = (v: unknown): number => clampInt(v, 0, 10000, 0);
 
 /** Multiselect keys after adding `values` (unknown values ignored when options are known; at most `limit`). */
 export const addKeys = (keys: unknown, values: unknown, options: unknown, limit = 0): string[] => {
-  const known = asList<Option>(options);
-  const next = [...asList<string>(keys)];
+  const known = list<Option>(options);
+  const next = [...list<string>(keys)];
   for (const v of toValueList(values)) {
     const key = keyOf(v);
     if (next.includes(key)) continue;
@@ -113,13 +105,13 @@ export const addKeys = (keys: unknown, values: unknown, options: unknown, limit 
 
 export const removeKeys = (keys: unknown, values: unknown): string[] => {
   const drop = new Set(toValueList(values).map(keyOf));
-  return asList<string>(keys).filter((k) => !drop.has(k));
+  return list<string>(keys).filter((k) => !drop.has(k));
 };
 
 /** The options a multiselect shows as selected, in option order. */
 export const selectedOf = (options: unknown, keys: unknown): Option[] => {
-  const set = new Set(asList<string>(keys));
-  return asList<Option>(options).filter((o) => set.has(keyOf(o.value)));
+  const set = new Set(list<string>(keys));
+  return list<Option>(options).filter((o) => set.has(keyOf(o.value)));
 };
 
 // ---- Tags ----------------------------------------------------------------------------------------------------------
@@ -132,7 +124,7 @@ export const toTags = (v: unknown): string[] => {
   const raw = Array.isArray(v) ? v : typeof v === 'string' ? v.split(',', MAX_TAGS * 2) : [];
   return raw
     .slice(0, MAX_TAGS * 2)
-    .filter(isText)
+    .filter(isScalar)
     .map((t) => String(t).trim())
     .filter(Boolean);
 };
@@ -148,7 +140,7 @@ export const splitTyped = (text: unknown): { parts: string[]; rest: string } => 
  *  on its first use, so it is tried once here: a huge one ("Regular expression too large") then fails here, not in
  *  render. */
 export const safeRegex = (pattern: unknown): RegExp | null => {
-  const source = pattern instanceof RegExp ? pattern.source : isText(pattern) ? String(pattern) : '';
+  const source = pattern instanceof RegExp ? pattern.source : isScalar(pattern) ? String(pattern) : '';
   if (source.trim() === '' || source.length > 2000) return null;
   try {
     const re = new RegExp(source, pattern instanceof RegExp ? pattern.flags.replace('g', '') : '');
@@ -192,7 +184,7 @@ export const addTags = (
       continue;
     }
     if (re && !re.test(tag)) {
-      error = isText(patternError) && String(patternError).trim() ? String(patternError) : `"${tag}" is not valid`;
+      error = isScalar(patternError) && String(patternError).trim() ? String(patternError) : `"${tag}" is not valid`;
       continue;
     }
     if (next.length >= max) {

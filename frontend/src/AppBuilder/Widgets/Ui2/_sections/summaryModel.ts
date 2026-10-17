@@ -1,7 +1,8 @@
 // ToolJet UI 2.0: the summary strip's figures (SummaryStrip.tsx), pure as sectionsModel.ts: every function takes
 // whatever the author bound and never throws.
-import { formatter, num } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import { VALUE_FORMATS, formatValue, isText, shown, type Row } from './sectionsModel';
+import { type Row } from './sectionsModel';
+import { formatter, formatValue, VALUE_FORMATS } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isNonBlankString, num, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_FIGURES = 6;
 const DELTA_FORMATS = ['percent', 'number', 'currency'];
@@ -50,7 +51,7 @@ const COUNT_OR_CHANGE_LABEL =
   /\b(calls|users|customers|clients|accounts|people|members|seats|units|items|orders|invoices|sent|issued|emails|tickets|leads|deals|visits|sessions|days|hours|minutes|weeks|months|growth|margin|change|increase|decrease|trend|uplift)\b/i;
 const SUM_LABEL = /\b(total|totals|value|amount|sum|balance)\b/i;
 const autoFigureFormat = (label: unknown, value: unknown): string =>
-  isText(label) &&
+  isNonBlankString(label) &&
   MONEY_LABEL.test(label) &&
   !NOT_MONEY_LABEL.test(label) &&
   (!COUNT_OR_CHANGE_LABEL.test(label) || SUM_LABEL.test(label)) &&
@@ -84,7 +85,7 @@ export const summaryFigures = (
     .flatMap((item: Row | string | number | boolean | null | undefined, index: number): SummaryFigure[] => {
       if (item === null || item === undefined || Array.isArray(item)) return [];
       if (typeof item !== 'object') {
-        const value = shown(item);
+        const value = toText(item);
         return value ? [{ key: String(index), label: '', value, delta: null, caption: '' }] : [];
       }
       const format =
@@ -93,9 +94,13 @@ export const summaryFigures = (
           : valueFormat === 'auto'
           ? autoFigureFormat(item.label, item.value)
           : valueFormat;
-      const itemCurrency = isText(item.currency) ? item.currency : currency;
-      const delta = deltaOf(item.delta, isText(item.deltaFormat) ? item.deltaFormat : deltaFormat, itemCurrency);
-      let tone = TONES[isText(item.tone) ? item.tone.trim().toLowerCase() : ''];
+      const itemCurrency = isNonBlankString(item.currency) ? item.currency : currency;
+      const delta = deltaOf(
+        item.delta,
+        isNonBlankString(item.deltaFormat) ? item.deltaFormat : deltaFormat,
+        itemCurrency
+      );
+      let tone = TONES[isNonBlankString(item.tone) ? item.tone.trim().toLowerCase() : ''];
       if (delta && !tone) {
         const dir = item.lowerIsBetter === true ? -delta.direction : delta.direction;
         tone = dir > 0 ? 'positive' : dir < 0 ? 'negative' : 'neutral';
@@ -103,10 +108,10 @@ export const summaryFigures = (
       return [
         {
           key: String(index),
-          label: shown(item.label),
+          label: toText(item.label),
           value: formatValue(item.value, format, itemCurrency),
           delta: delta ? { ...delta, tone } : null,
-          caption: shown(item.caption),
+          caption: toText(item.caption),
         },
       ];
     })

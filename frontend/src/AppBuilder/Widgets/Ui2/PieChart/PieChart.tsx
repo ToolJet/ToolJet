@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Cell, Label as ChartLabel, Legend, Pie, PieChart, Tooltip } from 'recharts';
-import { list, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { isSet, statusColors, centreValueFit } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import { ChartFrame, ChartTooltip, LegendContent, fmt } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { statusColors, centreValueFit } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { ChartFrame, ChartTooltip, LegendContent } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { affixFormatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // A pie past this many slices is unreadable, and drawing 10k of them freezes the page; bars likewise (a bar each,
 // with a cell for its colour, per row and series).
@@ -21,7 +23,7 @@ export const ShadPieChart = (props: WidgetProps) => {
     return slices.map((d, i) => ({ ...d, fill: states?.[i] ?? seriesColor(colors, i) }));
   }, [bound, colors, p.categoryField]);
   const donut = p.donut !== false;
-  const format = fmt(p, false);
+  const format = affixFormatter(p, false);
   return (
     <ChartFrame props={props} empty={!data.length}>
       {(onDatum) => (

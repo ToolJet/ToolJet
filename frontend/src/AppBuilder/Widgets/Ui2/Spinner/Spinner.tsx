@@ -3,9 +3,8 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
-import { clamp } from '@/AppBuilder/Widgets/Ui2/_display/displayModel';
-import { justify, own } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { justify } from '@/AppBuilder/Widgets/Ui2/_display/displayParts';
+import { clampCoerce, isSet, own } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Spinner ---------------------------------------------------------------------------------------------------------
 
@@ -14,7 +13,7 @@ const SPINNER_SIZE: Record<string, number> = { sm: 16, default: 24, lg: 32 };
 export const ShadSpinner = (props: WidgetProps) => {
   const { properties: p, setExposedVariables } = props;
   useExposed(setExposedVariables, p, {});
-  const size = own(SPINNER_SIZE, p.size) ?? clamp(p.size, 8, 200, 24);
+  const size = own(SPINNER_SIZE, p.size) ?? clampCoerce(p.size, 8, 200, 24);
   const label = isSet(p.label) ? String(p.label) : '';
   const below = p.labelPosition === 'bottom';
   const stroke = Math.max(2, Math.round(size / 10));

@@ -1,14 +1,8 @@
 // ToolJet UI 2.0: style variables and loading looks of the Line, Radar, Radial and Sparkline charts
 // (see shadcnLook.ts and Shell's LOADING_LOOK). Chart color overrides --sc-chart-1, from which the theme derives the
 // rest of the series palette (--sc-chart-2..5), so every series follows it.
-import type { LoadingMap, LookEntry, LookMap } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-
-const CHART: LookEntry[] = [
-  ['chartColor', '--sc-chart-1'],
-  ['gridColor', '--lk-grid'],
-  ['axisTextColor', '--lk-axis'],
-  ['legendTextColor', '--lk-legend'],
-];
+import type { LoadingMap, LookMap } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { CHART } from '@/AppBuilder/Widgets/Ui2/_shared/looks/entries';
 
 export const LOOKS: LookMap = {
   ShadLineChart: [...CHART, ['referenceLineColor', '--lk-ref']],

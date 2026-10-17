@@ -1,10 +1,11 @@
 import React from 'react';
 import type { Bound, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { ChevronRight } from 'lucide-react';
-import { list, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_CRUMBS = 8;
 

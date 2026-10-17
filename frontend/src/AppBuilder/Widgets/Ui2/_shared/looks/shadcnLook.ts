@@ -4,25 +4,12 @@
 // shadcn's own tokens for the widget (`--sc-primary`, `--sc-ring`, `--sc-chart-1`), so everything drawn in them
 // (checked states, focus rings, the progress bar, the chart palette) follows at once. Kanban keeps its own module
 // (kanbanLook.ts). Style keys match the configs in WidgetManager/widgets/shad*.js.
-import { isSet, px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { GROUP_LOOKS } from '@/AppBuilder/Widgets/Ui2/_shared/looks/groups';
 import { fontStack, fontWeight, textCase } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 import type { CssVars, LookEntry, LookMap, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isSet, px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { ACCENT, FIELD, CHART } from '@/AppBuilder/Widgets/Ui2/_shared/looks/entries';
 
-const ACCENT = ['--sc-primary', '--sc-ring'];
-
-// Form controls with a box: label, control, help text.
-const FIELD: LookEntry[] = [
-  ['labelColor', '--lk-label'],
-  ['helpTextColor', '--lk-help'],
-  ['backgroundColor', '--lk-bg'],
-  ['textColor', '--lk-fg'],
-  ['placeholderColor', '--lk-placeholder'],
-  ['borderColor', '--lk-border'],
-  ['accentColor', ACCENT],
-  ['errorColor', '--lk-error'],
-  ['borderRadius', '--lk-radius', px],
-];
 // Controls beside a label: checkbox, switch, radio group.
 const CHOICE: LookEntry[] = [
   ['accentColor', ACCENT],
@@ -36,12 +23,6 @@ const TYPE: LookEntry[] = [
   ['letterSpacing', '--lk-tracking', px],
   ['textTransform', '--lk-case', textCase],
   ['fontSize', '--lk-size', px],
-];
-const CHART: LookEntry[] = [
-  ['chartColor', '--sc-chart-1'],
-  ['gridColor', '--lk-grid'],
-  ['axisTextColor', '--lk-axis'],
-  ['legendTextColor', '--lk-legend'],
 ];
 
 /** Style key -> CSS variable(s) (and how to write the value) for each pack widget. */

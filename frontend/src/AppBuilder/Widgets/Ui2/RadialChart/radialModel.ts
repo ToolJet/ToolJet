@@ -1,5 +1,7 @@
 // ToolJet UI 2.0: the pure logic of the Radial chart. Every function takes whatever the author bound and never throws.
-import { axisLabel, isPlain, isSet, isText, num, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
+import { axisLabel } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { isRecord, isScalar, isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_RINGS = 12;
 
@@ -13,11 +15,11 @@ export interface RadialRow {
 
 export const radialRows = (data: unknown, categoryField: unknown, valueField: unknown): RadialRow[] =>
   (Array.isArray(data) ? data : [])
-    .filter(isPlain)
+    .filter(isRecord)
     .slice(0, MAX_RINGS)
     .map((row, i) => {
       const own =
-        isSet(row.fill) && isText(row.fill) ? row.fill : isSet(row.color) && isText(row.color) ? row.color : null;
+        isSet(row.fill) && isScalar(row.fill) ? row.fill : isSet(row.color) && isScalar(row.color) ? row.color : null;
       const name = isSet(categoryField) ? axisLabel(row[String(categoryField)]) : '';
       return {
         name: name === '' ? `Item ${i + 1}` : String(name),

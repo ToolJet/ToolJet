@@ -18,6 +18,9 @@ import type { PlacedBooking, ScheduleColumn, ScheduleResource, ScheduleSelected,
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { LABEL, LINE, SURFACE, ScheduleRow } from './ScheduleRow';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
+import { clampNumber, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { ShowMoreBar, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
+import { EmptyText } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 
 // ToolJet UI 2.0 Schedule: resources down the side, time across (the hours of a day, or days), bookings as blocks,
 // a now-line, and clicks on a booking or an empty slot. Config in WidgetManager/widgets/shad*.js, logic in
@@ -25,10 +28,10 @@ import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 
 const RESOURCES_PER_STEP = 50;
 
-const text = (v: unknown): string => (v === null || v === undefined || typeof v === 'object' ? '' : String(v));
-const num = (v: unknown, fallback: number, lo: number, hi: number): number => {
+// Number() reading: null and '' are 0 here, unlike clampCoerce's.
+const bounded = (v: unknown, fallback: number, lo: number, hi: number): number => {
   const n = Number(v);
-  return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : fallback;
+  return Number.isFinite(n) ? clampNumber(n, lo, hi) : fallback;
 };
 
 export const ShadSchedule = (props: WidgetProps) => {
@@ -95,8 +98,7 @@ export const ShadSchedule = (props: WidgetProps) => {
     ]
   );
 
-  const [shownCount, setShownCount] = useState(RESOURCES_PER_STEP);
-  useEffect(() => setShownCount(RESOURCES_PER_STEP), [resources]);
+  const [shownCount, showMore] = useShownCount(RESOURCES_PER_STEP, resources);
   const [selected, setSelected] = useState<ScheduleSelected | null>(null);
   const selection = (next: ScheduleSelected | null) => ({
     selectedBooking: next?.kind === 'booking' ? next.item.row : {},
@@ -160,8 +162,8 @@ export const ShadSchedule = (props: WidgetProps) => {
     return () => clearInterval(timer);
   }, [range, showNow, today, placeNow]);
 
-  const rw = num(p.resourceWidth, 168, 80, 400);
-  const rowHeight = num(p.rowHeight, 56, 32, 160);
+  const rw = bounded(p.resourceWidth, 168, 80, 400);
+  const rowHeight = bounded(p.rowHeight, 56, 32, 160);
   // A day column holds "Mon 12 Oct" and a truncated booking at 80px: at 96 a week beside a 190px resource column needed
   // 862px, and a rental desk's two-thirds-width card cut Sunday off behind a scroll (2026-10-14).
   const columnMin = range.scale === 'days' ? 80 : 72;
@@ -220,9 +222,7 @@ export const ShadSchedule = (props: WidgetProps) => {
   } else if (!resources.length) {
     body = (
       <div className="tw-border" style={frame}>
-        <p className="tw-m-0 tw-py-10 tw-text-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
-          {text(p.emptyText) || 'No resources to schedule'}
-        </p>
+        <EmptyText text={p.emptyText} fallback="No resources to schedule" />
       </div>
     );
   } else {
@@ -241,7 +241,7 @@ export const ShadSchedule = (props: WidgetProps) => {
                 style={{ width: rw, background: SURFACE, color: LABEL }}
               >
                 {/* A header written in lowercase ("name", a field name) reads as a label: "Name". */}
-                <span className="tw-truncate">{resourceHeading(text(p.resourceTitle))}</span>
+                <span className="tw-truncate">{resourceHeading(toText(p.resourceTitle))}</span>
               </div>
               <div className="tw-flex tw-min-w-0 tw-flex-1">
                 {range.columns.map((c, i) => (
@@ -302,19 +302,12 @@ export const ShadSchedule = (props: WidgetProps) => {
             </div>
           </div>
         </div>
-        {resources.length > shownCount ? (
-          <div className="tw-flex tw-justify-center tw-border-t tw-py-2" style={{ borderColor: LINE }}>
-            <button
-              type="button"
-              onClick={() => setShownCount((n) => n + RESOURCES_PER_STEP)}
-              className="tw-rounded-ui2-md tw-px-3 tw-py-1.5 tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)] tw-transition-colors hover:tw-bg-[color:var(--sc-muted)] hover:tw-text-[color:var(--sc-foreground)]"
-            >
-              {`Show ${Math.min(RESOURCES_PER_STEP, resources.length - shownCount)} more of ${
-                resources.length - shownCount
-              }`}
-            </button>
-          </div>
-        ) : null}
+        <ShowMoreBar
+          remaining={resources.length - shownCount}
+          step={RESOURCES_PER_STEP}
+          onMore={showMore}
+          borderColor={LINE}
+        />
       </div>
     );
   }

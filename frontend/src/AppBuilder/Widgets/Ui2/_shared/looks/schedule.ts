@@ -1,7 +1,7 @@
 // ToolJet UI 2.0: style variables and loading look of the Schedule (see shadcnLook.ts and Shell's LOADING_LOOK).
 // Style keys match WidgetManager/widgets/shad*.js; Schedule/Schedule.tsx reads the variables.
-import { px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import type { LoadingMap, LookMap } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const LOOKS: LookMap = {
   ShadSchedule: [

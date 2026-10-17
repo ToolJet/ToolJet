@@ -7,7 +7,7 @@ import {
   aspectRatio,
   carouselPositions,
   carouselSlides,
-  clampInt,
+  clampUnwrapped,
   moveIndex,
 } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -24,10 +24,10 @@ export const ShadCarousel = (props: WidgetProps) => {
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const slides = carouselSlides(properties.slides);
-  const perView = Math.min(clampInt(properties.slidesPerView, 1, 4, 1), Math.max(1, slides.length));
+  const perView = Math.min(clampUnwrapped(properties.slidesPerView, 1, 4, 1), Math.max(1, slides.length));
   const positions = carouselPositions(slides.length, perView);
   const loop = properties.loop !== false;
-  const initial = moveIndex(clampInt(properties.defaultIndex, 0, 100000, 0), positions, false);
+  const initial = moveIndex(clampUnwrapped(properties.defaultIndex, 0, 100000, 0), positions, false);
   const [index, setIndex] = useState(initial);
   const indexRef = useRef(initial);
   useEffect(() => {
@@ -53,13 +53,13 @@ export const ShadCarousel = (props: WidgetProps) => {
     currentSlide: slides[index] || {},
     next: async () => go(indexRef.current + 1),
     previous: async () => go(indexRef.current - 1),
-    goTo: async (i: unknown) => go(clampInt(i, -100000, 100000, 0)),
+    goTo: async (i: unknown) => go(clampUnwrapped(i, -100000, 100000, 0)),
   });
 
   const latestGo = useLatest(go);
   const autoplay =
     properties.autoplay === true && positions > 1 && !disabled && !(properties.pauseOnHover !== false && hovered);
-  const interval = clampInt(properties.interval, 1000, 600000, 5000);
+  const interval = clampUnwrapped(properties.interval, 1000, 600000, 5000);
   useEffect(() => {
     if (!autoplay) return undefined;
     const timer = setInterval(() => {

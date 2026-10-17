@@ -1,22 +1,9 @@
 // ToolJet UI 2.0: style variables and loading looks of the pickers widgets (see shadcnLook.ts and
 // Shell's LOADING_LOOK). Style keys match WidgetManager/widgets/shad*.js.
-import { px } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import type { LoadingMap, LookEntry, LookMap } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { ACCENT, FIELD } from '@/AppBuilder/Widgets/Ui2/_shared/looks/entries';
 
-const ACCENT = ['--sc-primary', '--sc-ring'];
-
-// A form control's box: label, control, help text (the same variables as the pack's other fields).
-const FIELD: LookEntry[] = [
-  ['labelColor', '--lk-label'],
-  ['helpTextColor', '--lk-help'],
-  ['backgroundColor', '--lk-bg'],
-  ['textColor', '--lk-fg'],
-  ['placeholderColor', '--lk-placeholder'],
-  ['borderColor', '--lk-border'],
-  ['accentColor', ACCENT],
-  ['errorColor', '--lk-error'],
-  ['borderRadius', '--lk-radius', px],
-];
 // The options menu (it opens in the pack's portal root and takes the widget's variables itself).
 const MENU: LookEntry[] = [
   ['menuBackgroundColor', '--lk-menu-bg'],
