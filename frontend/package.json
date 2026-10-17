@@ -329,6 +329,7 @@
     "test:integration": "jest --testPathPattern \"__tests__/integration\"",
     "test:ui2-fuzz": "jest --testPathIgnorePatterns '/node_modules/' --testPathPattern 'Widgets/Ui2/__tests__/fuzz/'",
     "test:ui2-leaks": "jest --maxWorkers=2 --testPathIgnorePatterns '/node_modules/' --testPathPattern 'Widgets/Ui2/__tests__/leaks/'",
+    "test:ui2-dates-tz": "TZ=America/Los_Angeles jest --maxWorkers=2 --testPathPattern 'Widgets/Ui2/(DatePicker|DateTimePicker|TimePicker|Calendar|Schedule)/|Widgets/Ui2/_inputs/__tests__/dateModel|Widgets/Ui2/_actions/__tests__/actionsModel'",
     "test:ui2-browsers": "node scripts/ui2-browsers.js",
     "test:ui2-phone": "node scripts/ui2-browsers.js --phone",
     "test:ci:changed": "jest --ci --coverage --onlyChanged --maxWorkers=2",
