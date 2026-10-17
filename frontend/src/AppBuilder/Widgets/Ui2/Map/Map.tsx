@@ -207,6 +207,8 @@ export const ShadMap = (props: WidgetProps) => {
   });
 
   useLeafletMap(refs, drawing, { live, target, setView, setClicked, setSelectedKey, setShape, setWheelHint, setSize });
+  // Work this mount started ends with it: a late address answer must not write into the next mount's location.
+  useEffect(() => drawing.dispose, [drawing]);
 
   // ---- Tiles: the source follows the theme, the style and the tile properties ----
   useEffect(() => {

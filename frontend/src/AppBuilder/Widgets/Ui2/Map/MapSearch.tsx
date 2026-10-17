@@ -22,7 +22,11 @@ export const useMapSearch = ({
   typeAhead: boolean;
 }) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Place[]>([]);
+  // The places found and the query they were found for: a place answers only that query, so Enter on a new query
+  // during the pause before its search never picks the last query's place (release audit 42).
+  const [found, setFound] = useState<{ query: string; places: Place[] }>({ query: '', places: [] });
+  const results = found.query === query.trim() ? found.places : [];
+  const setResults = (places: Place[]) => setFound({ query: query.trim(), places });
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   // The query Enter asked for, when the geocoder does not search as you type.
@@ -32,7 +36,7 @@ export const useMapSearch = ({
   useEffect(() => {
     const q = query.trim();
     if (q.length < 3 || typeof fetch !== 'function' || query === chosenRef.current || (!typeAhead && submitted !== q)) {
-      setResults([]);
+      setFound({ query: '', places: [] });
       setSearching(false);
       return undefined;
     }
@@ -43,7 +47,7 @@ export const useMapSearch = ({
         geocode(live.current.geocoder.search, { query: q }, controller?.signal)
           .then((places) => {
             if (places) {
-              setResults(places);
+              setFound({ query: q, places });
               setSearchError(places.length ? '' : 'No places found');
             }
           })

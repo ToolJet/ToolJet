@@ -197,12 +197,67 @@ export const iconSvg = (name: string): string => ICON_SVG.get(name) || '';
 
 // One request a second at most, from any map on the page (Nominatim's policy), and the last 100 answers kept.
 const MIN_GAP_MS = 1100;
+// A request with no answer by then is given up: one that never settled held the queue for every map on the page.
+export const GEOCODE_TIMEOUT_MS = 10000;
 let lastRequest = 0;
 let queue: Promise<unknown> = Promise.resolve();
 const CACHE = new Map<string, Place[]>();
 
+/** A request on its way, shared by every caller asking for its URL meanwhile: five setPickedLocation calls on one spot
+ *  made five requests a second apart for one answer. It is cancelled when the last caller stops waiting. */
+interface SharedRequest {
+  answer: Promise<Place[] | null>;
+  waiting: number;
+  stop: AbortController;
+}
+const IN_FLIGHT = new Map<string, SharedRequest>();
+
+const request = (url: string): SharedRequest => {
+  const stop = new AbortController();
+  const run = async (): Promise<Place[] | null> => {
+    const wait = lastRequest + MIN_GAP_MS - Date.now();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    if (stop.signal.aborted) return null;
+    lastRequest = Date.now();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        stop.abort();
+        reject(new Error('geocoder did not answer'));
+      }, GEOCODE_TIMEOUT_MS);
+    });
+    const fetched = (async () => {
+      const res = await fetch(url, {
+        signal: stop.signal,
+        headers: { Accept: 'application/json', 'Accept-Language': navigator.language || 'en' },
+      });
+      if (!res.ok) throw new Error(`geocoder ${res.status}`);
+      return parsePlaces(await res.json());
+    })();
+    try {
+      const places = await Promise.race([fetched, deadline]);
+      CACHE.set(url, places);
+      const oldest = CACHE.keys().next().value;
+      if (CACHE.size > 100 && oldest !== undefined) CACHE.delete(oldest);
+      return places;
+    } finally {
+      clearTimeout(timer);
+      fetched.catch(() => null);
+    }
+  };
+  const answer = queue.then(run, run);
+  queue = answer.catch(() => null);
+  const shared: SharedRequest = { answer, waiting: 0, stop };
+  answer.then(
+    () => IN_FLIGHT.get(url) === shared && IN_FLIGHT.delete(url),
+    () => IN_FLIGHT.get(url) === shared && IN_FLIGHT.delete(url)
+  );
+  return shared;
+};
+
 /** Fetches places for a geocoder URL (search: { query }; reverse: { lat, lng }), at most one request a second, from a
- *  cache when asked before. Rejects on a network or HTTP error; an aborted call resolves to null. */
+ *  cache when asked before, sharing a request already on its way. Rejects on a network or HTTP error, or no answer in
+ *  GEOCODE_TIMEOUT_MS; a call whose signal aborts resolves to null. */
 export const geocode = (
   template: string,
   values: Record<string, unknown>,
@@ -210,23 +265,40 @@ export const geocode = (
 ): Promise<Place[] | null> => {
   const url = fillUrl(template, values);
   if (CACHE.has(url)) return Promise.resolve(CACHE.get(url) ?? null);
-  const run = async () => {
-    const wait = lastRequest + MIN_GAP_MS - Date.now();
-    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-    if (signal?.aborted) return null;
-    lastRequest = Date.now();
-    const res = await fetch(url, {
-      signal,
-      headers: { Accept: 'application/json', 'Accept-Language': navigator.language || 'en' },
-    });
-    if (!res.ok) throw new Error(`geocoder ${res.status}`);
-    const places = parsePlaces(await res.json());
-    CACHE.set(url, places);
-    const oldest = CACHE.keys().next().value;
-    if (CACHE.size > 100 && oldest !== undefined) CACHE.delete(oldest);
-    return places;
-  };
-  const next = queue.then(run, run);
-  queue = next.catch(() => null);
-  return next.catch((e) => (e?.name === 'AbortError' ? null : Promise.reject(e)));
+  if (signal?.aborted) return Promise.resolve(null);
+  const shared = IN_FLIGHT.get(url) ?? request(url);
+  IN_FLIGHT.set(url, shared);
+  shared.waiting += 1;
+  return new Promise((resolve, reject) => {
+    let done = false;
+    const finish = () => {
+      done = true;
+      signal?.removeEventListener('abort', leave);
+      shared.waiting -= 1;
+    };
+    // The last caller to stop waiting cancels the request; a later call for the URL starts a new one.
+    function leave() {
+      if (done) return;
+      finish();
+      if (shared.waiting === 0) {
+        if (IN_FLIGHT.get(url) === shared) IN_FLIGHT.delete(url);
+        shared.stop.abort();
+      }
+      resolve(null);
+    }
+    signal?.addEventListener('abort', leave, { once: true });
+    shared.answer.then(
+      (places) => {
+        if (done) return;
+        finish();
+        resolve(places);
+      },
+      (e) => {
+        if (done) return;
+        finish();
+        if (e?.name === 'AbortError') resolve(null);
+        else reject(e);
+      }
+    );
+  });
 };

@@ -79,12 +79,20 @@ export const markerTone = (status: unknown): string => {
 // Where a title is when titleField names nothing the row has.
 const TITLE_KEYS = ['name', 'title', 'label'];
 
-/** Keys from ids, one of their own for every marker: a repeated id gets a suffix, so a click selects one marker. */
+/** Keys from ids, one of their own for every marker: a repeated id gets a suffix, so a click selects one marker. Each
+ *  id remembers the next suffix to try: searching from ~1 again for every repeat made 2,000 equal ids 2,001,000 key
+ *  checks (release audit 54). A suffix an id already has is still skipped. */
 const uniqueKeys = (points: MapPoint[]): MapPoint[] => {
   const seen = new Set<string>();
+  const nextSuffix = new Map<string, number>();
   return points.map((p) => {
     let key = p.key;
-    for (let n = 1; seen.has(key); n++) key = `${p.key}~${n}`;
+    if (seen.has(key)) {
+      let n = nextSuffix.get(p.key) ?? 1;
+      while (seen.has(`${p.key}~${n}`)) n++;
+      key = `${p.key}~${n}`;
+      nextSuffix.set(p.key, n + 1);
+    }
     seen.add(key);
     return key === p.key ? p : { ...p, key };
   });
