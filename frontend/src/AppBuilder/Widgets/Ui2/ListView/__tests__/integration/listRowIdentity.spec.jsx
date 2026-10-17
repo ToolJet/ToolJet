@@ -23,6 +23,8 @@ const widget = createWidgetHarness({
 
 const ALPHA = { id: 'a', name: 'Alpha' };
 const BETA = { id: 'b', name: 'Beta' };
+const GAMMA = { id: 'c', name: 'Gamma' };
+const DELTA = { id: 'd', name: 'Delta' };
 const json = (records) => `{{${JSON.stringify(records)}}}`;
 
 /** An Input per row, labelled and defaulted with the row's name. */
@@ -42,14 +44,18 @@ const exposed = () => widget.exposed() ?? {};
 const published = () => Object.values(exposed().children ?? {}).map((row) => row.field1?.value);
 const boxes = () => screen.queryAllByRole('textbox');
 
-const render = async (records, properties = {}) => {
+/** Renders the list and waits for its first `rows` rows (all records by default) to publish their values. */
+const render = async (records, properties = {}, rows = records.length) => {
   widget.render({
     currentMode: 'view',
     extraComponents: { field1: field() },
     properties: { data: binding(json(records)), idField: binding('id'), ...properties },
   });
-  await waitFor(() => expect(published()).toHaveLength(records.length));
+  await waitFor(() => expect(published()).toHaveLength(rows));
 };
+
+const paged = { enablePagination: binding('{{true}}'), rowsPerPage: binding('{{2}}') };
+const setData = (records) => widget.setComponentProperty(ID, 'data', json(records), 'properties');
 
 let restoreWidth;
 beforeAll(() => {
@@ -65,9 +71,18 @@ describe('UI 2.0 List view row identity', () => {
 
   test('[finding 10] data refreshed to nothing leaves no rows in children', async () => {
     await render([ALPHA, BETA]);
-    widget.setComponentProperty(ID, 'data', '{{[]}}', 'properties');
+    setData([]);
     await waitFor(() => expect(boxes()).toHaveLength(0));
     expect(exposed().data).toEqual([]);
     await waitFor(() => expect(Object.keys(exposed().children ?? {})).toHaveLength(0));
+  });
+
+  test('[finding 29] a page clamped after the data shrinks is the page published', async () => {
+    await render([ALPHA, BETA, GAMMA, DELTA], paged, 2);
+    await widget.act('setPage', 2);
+    await waitFor(() => expect(screen.getByText('Page 2 of 2')).toBeInTheDocument());
+    setData([ALPHA, BETA]);
+    await waitFor(() => expect(screen.getByText('Page 1 of 1')).toBeInTheDocument());
+    await waitFor(() => expect(exposed().pageIndex).toBe(1));
   });
 });

@@ -197,10 +197,12 @@ export const ShadListView = (props: WidgetProps) => {
     exposeOne.current('data', Array.isArray(data) ? data : []);
   }, [data, exposeOne]);
   const hiddenRows = paged.items.length - items.length;
-  // Client-side data shorter than the current page: follow the clamp.
+  // Client-side data shorter than the current page: follow the clamp, and publish it (no event: the user did not page).
   useEffect(() => {
-    if (paged.page !== page) setPage(paged.page);
-  }, [paged.page, page]);
+    if (paged.page === page) return;
+    setPage(paged.page);
+    exposeOne.current('pageIndex', paged.page);
+  }, [paged.page, page, exposeOne]);
 
   // Each row reads its item as {{listItem}}, written when the page's items, the row template or the nesting changes.
   // Written in a layout effect, not during render (the native Listview's way), which updated the store, and so other
