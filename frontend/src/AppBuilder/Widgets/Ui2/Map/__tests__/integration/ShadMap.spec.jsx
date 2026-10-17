@@ -512,6 +512,26 @@ describe('UI 2.0 Map', () => {
       await settle();
       expect(exposed().pickedLocation).toEqual({});
     }, 10000);
+
+    test('[ShadMap-ACT-006] repeated setPickedLocation on one spot shares one address lookup', async () => {
+      let answer;
+      fetchMock.mockImplementation(() => new Promise((resolve) => (answer = resolve)));
+      render({
+        properties: {
+          pickLocation: binding('{{true}}'),
+          reverseGeocoderUrl: binding('https://geo.example/act-006/reverse?lat={lat}&lon={lng}'),
+        },
+      });
+      for (let i = 0; i < 5; i++) await widget.act('setPickedLocation', 12, 22);
+      await waitFor(() => expect(answer).toBeInstanceOf(Function), { timeout: 4000 });
+      await act(async () =>
+        answer({ ok: true, json: () => Promise.resolve([{ lat: '12', lon: '22', display_name: 'Shared address' }]) })
+      );
+      await waitFor(() => expect(exposed().pickedLocation).toEqual({ lat: 12, lng: 22, address: 'Shared address' }));
+      // The others would each have waited their turn in the one-a-second queue for the same answer.
+      await settle(1500);
+      expect(calls(/act-006/)).toHaveLength(1);
+    }, 10000);
   });
 
   test('[ShadMap-STY-001] background, border, accent, cluster colour and radius reach the map as CSS variables', async () => {
