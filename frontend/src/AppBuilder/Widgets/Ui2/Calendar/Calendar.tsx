@@ -154,7 +154,13 @@ export const ShadCalendar = (props: WidgetProps) => {
   const markers = markersByDay(properties.markers);
   const fullWidth = properties.fullWidth === true;
   const disabled = busy(properties);
-  const matchers = disabledMatchers(properties);
+  const disabledDates = useStable(properties.disabledDates);
+  const disabledDays = useStable(properties.disabledDays);
+  const { minDate, maxDate } = properties;
+  const matchers = useMemo(
+    () => disabledMatchers({ minDate, maxDate, disabledDates, disabledDays }),
+    [minDate, maxDate, disabledDates, disabledDays]
+  );
   const cell = 'tw-h-[var(--lk-cell,2rem)] tw-w-[var(--lk-cell,2rem)]';
   // react-day-picker types its selection props per mode; this widget's selection follows its mode.
   const selection = {

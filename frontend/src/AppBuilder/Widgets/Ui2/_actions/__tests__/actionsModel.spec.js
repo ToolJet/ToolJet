@@ -254,4 +254,16 @@ describe('carousel logic', () => {
     expect(aspectRatio(2)).toBe(2);
     expect(aspectRatio('junk')).toBeCloseTo(16 / 9);
   });
+
+  // Audit 76: the calendar once kept only the first 2,000 disabled dates.
+  it('blocks every disabled date, however long the list', () => {
+    const dates = Array.from({ length: 3000 }, (_, i) => {
+      const d = new Date(2020, 0, 1 + i);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
+    const [blocks] = disabledMatchers({ disabledDates: [...dates, '2040-05-05'] });
+    expect(blocks(new Date(2040, 4, 5))).toBe(true);
+    expect(blocks(new Date(2020, 0, 1))).toBe(true);
+    expect(blocks(new Date(2040, 4, 6))).toBe(false);
+  });
 });

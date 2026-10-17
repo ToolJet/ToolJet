@@ -119,8 +119,8 @@ export const markersByDay = (markers: unknown): Map<string, Marker[]> => {
 
 const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-/** react-day-picker's disabled matchers from min and max dates, a list of disabled dates and disabled weekdays
- *  (0 to 6 or names). */
+/** react-day-picker's disabled matchers from min and max dates, a list of disabled dates (one lookup) and disabled
+ *  weekdays (0 to 6 or names). */
 export const disabledMatchers = ({
   minDate,
   maxDate,
@@ -132,11 +132,9 @@ export const disabledMatchers = ({
   const max = toDate(maxDate);
   if (min) matchers.push({ before: min });
   if (max) matchers.push({ after: max });
-  const dates = list(disabledDates)
-    .slice(0, 2000)
-    .map(toDate)
-    .filter((d): d is Date => !!d);
-  if (dates.length) matchers.push(...dates);
+  // Every disabled date is kept (a rule left out would let that day be picked), behind one lookup.
+  const dates = new Set(list(disabledDates).map(toDate).filter(Boolean).map(ymd));
+  if (dates.size) matchers.push((date: Date) => dates.has(ymd(date)));
   const days = list(disabledDays)
     .map((d) => (typeof d === 'string' && WEEKDAYS.includes(d.toLowerCase()) ? WEEKDAYS.indexOf(d.toLowerCase()) : d))
     .map(Number)
