@@ -28,8 +28,8 @@
     },
     "defaultValue": {
       "type": "union<number|string>",
-      "default": 1250,
-      "initial": "{{1250}}"
+      "default": "",
+      "initial": ""
     },
     "description": {
       "type": "string",
