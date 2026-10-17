@@ -6,7 +6,7 @@ export const shadSummaryStripConfig = {
   component: 'ShadSummaryStrip',
   defaultSize: {
     width: 43,
-    height: 100,
+    height: 110,
   },
   others: {
     showOnDesktop: {

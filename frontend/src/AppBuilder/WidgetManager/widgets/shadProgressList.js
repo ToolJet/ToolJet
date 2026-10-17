@@ -6,7 +6,7 @@ export const shadProgressListConfig = {
   component: 'ShadProgressList',
   defaultSize: {
     width: 20,
-    height: 330,
+    height: 360,
   },
   others: {
     showOnDesktop: {
