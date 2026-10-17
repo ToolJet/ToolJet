@@ -85,7 +85,8 @@ Each widget loads in its own chunk, the first time a page shows it.
 - **Selection after a data change.** A widget keeps its selection by the item's key (its id field, else its position).
   When the data changes it re-publishes the selection from the fresh record at its new place, and clears it when the
   key is gone. No event fires for either. `selectionRefresh.spec.jsx` renames, reorders and removes a selected item in
-  each selecting widget.
+  each selecting widget. A paged List view keeps the selected item across a page turn, with no record
+  (`selectedRecord` empty, `selectedRecordId` null) while the item is on another page.
 - **An element is always truthy.** Never test a JSX element (`const icon = <Icon />`, or a prop typed `JSX.Element`) to
   decide what to show: the component may render nothing. Return `null` from a function instead (`actionIconOf` in
   the Table's row actions). Render conditionally with a ternary or a boolean (`{count > 0 && ...}`, never
