@@ -69,6 +69,23 @@ export function createWidgetHarness(options) {
     });
     return seen;
   };
+  /**
+   * Runs several actions as one RunJS query does (`await a(); await b();`): all inside one act() scope, so React work
+   * an action leaves for later (updates scheduled in effects) is still pending when the next one runs. Returns the
+   * exposed values right after each action and once everything has settled; a late update that writes over a later
+   * action shows in `settled`.
+   */
+  wrapped.runQuery = async (steps) => {
+    await waitFor(() => expect(harness.exposed()?.[steps[0][0]]).toBeInstanceOf(Function));
+    const after = [];
+    await act(async () => {
+      for (const [name, ...args] of steps) {
+        await harness.exposed()[name](...args);
+        after.push({ ...harness.exposed() });
+      }
+    });
+    return { after, settled: { ...harness.exposed() } };
+  };
   return wrapped;
 }
 

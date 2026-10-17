@@ -167,6 +167,27 @@ describe('UI 2.0 Phone input', () => {
     expect(box()).toHaveValue('');
   });
 
+  // Compat fixtures (17 Oct): `await setValue(...); await clear();` in one RunJS query ended with the number set again.
+  // The phone library copies `value` into its own state in an effect and reports that copy back as a change; the copy
+  // from setValue landed after clear.
+  test.each([
+    [[['setValue', '2025550143', 'US'], ['clear']]],
+    [[['setValue', '2025550143', 'US'], ['setCountryCode', 'GB'], ['clear']]],
+    [[['clear'], ['setValue', '2025550143', 'US']]],
+  ])('[ShadPhoneInput-ACT-004] actions run one after another in a query: %j', async (steps) => {
+    render();
+    widget.setEvents(countInvocationsOn(ID, 'onChange', { key: 'changes' }));
+    const { after, settled } = await widget.runQuery(steps);
+    const last = after[after.length - 1];
+    expect(after.map((e) => e.value)).toEqual(
+      steps.map(([name]) => (name === 'clear' ? '' : expect.stringMatching(/^\+\d+$/)))
+    );
+    expect({ value: settled.value, country: settled.country }).toEqual({ value: last.value, country: last.country });
+    // onChange once per setValue and clear, as the native Phone input: none from the library's late copy.
+    expect(widget.variables().changes).toBe(steps.filter(([name]) => name !== 'setCountryCode').length);
+    expect(box()).toHaveValue(last.value ? '(202) 555-0143' : '');
+  });
+
   test('[ShadPhoneInput-ACT-003] setFocus and setBlur move focus to and from the box', async () => {
     render();
 
