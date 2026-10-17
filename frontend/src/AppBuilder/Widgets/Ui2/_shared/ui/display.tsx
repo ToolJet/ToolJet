@@ -51,7 +51,9 @@ export const Calendar = ({
       selected:
         '[&>button]:tw-bg-ui2-primary [&>button]:tw-text-ui2-primary-foreground [&>button]:hover:tw-bg-ui2-primary [&>button]:hover:tw-text-ui2-primary-foreground',
       today: '[&>button]:tw-bg-ui2-accent [&>button]:tw-text-ui2-accent-foreground',
-      outside: 'tw-text-ui2-muted-foreground tw-opacity-50',
+      // Days of the next and last month are selectable, so they keep the muted colour's contrast (no extra opacity,
+      // which left them at 2:1); disabled days are exempt and fade.
+      outside: 'tw-text-ui2-muted-foreground',
       disabled: 'tw-text-ui2-muted-foreground tw-opacity-50',
       hidden: 'tw-invisible',
       ...classNames,

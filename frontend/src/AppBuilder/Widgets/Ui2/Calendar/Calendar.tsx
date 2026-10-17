@@ -55,7 +55,8 @@ export const MarkedDayButton = ({ day, modifiers, className, children, ...rest }
       aria-label={title ? `${rest['aria-label'] ?? ''}, ${title}` : rest['aria-label']}
       className={cn(
         className,
-        modifiers.outside && 'tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))] tw-opacity-50',
+        // Selectable, so no extra fade (see the shared Calendar primitive).
+        modifiers.outside && 'tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))]',
         modifiers.disabled && 'tw-text-[color:var(--lk-muted,var(--sc-muted-foreground))] tw-opacity-50',
         !selected && !modifiers.range_middle && modifiers.today && DAY_TODAY,
         modifiers.range_middle && DAY_RANGE_MIDDLE,

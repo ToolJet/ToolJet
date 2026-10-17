@@ -78,4 +78,18 @@ describe('dialog focus', () => {
     pressed.remove();
     expect(openerOf()).toBeNull();
   });
+  // Safari does not focus a pressed button, but it does focus the nearest tabindex="-1" container (the canvas), and
+  // that focusin overwrote the button: focus went back to the canvas, not the trigger (found in WebKit).
+  it('keeps a pressed button over the container Safari focuses after the press', () => {
+    watchOpeners();
+    const canvas = document.createElement('div');
+    canvas.tabIndex = -1;
+    const pressed = document.createElement('button');
+    canvas.append(pressed);
+    document.body.append(canvas);
+    pressed.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    canvas.focus();
+    expect(openerOf()).toBe(pressed);
+    canvas.remove();
+  });
 });
