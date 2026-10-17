@@ -12,9 +12,16 @@ export const shownOptions = <T>(options: T[], selected: T | null | undefined, ma
   return shown;
 };
 
-/** The key a select, radio group or toggle group starts on: its default value as text, '' for none. */
-export const defaultKey = (v: unknown): string => (v === '' || v === undefined ? '' : String(v));
+/** The key of "nothing chosen" is ''. '' is also a valid option value (an "All" choice), so that option has a key of
+ *  its own: deselecting a radio group picked the "All" option, and Radix refuses an item keyed ''. */
+export const EMPTY_OPTION_KEY = '\u0000empty';
 
-/** Options by key: String(value), unless the widget keys its items its own way. */
-export const optionsByKey = (options: Option[], keyOf: (v: OptionValue) => string = String): Map<string, Option> =>
+/** The key of an option's value: its text, with the '' option's own key. */
+export const choiceKey = (v: unknown): string => (String(v) === '' ? EMPTY_OPTION_KEY : String(v));
+
+/** The key a select, radio group or toggle group starts on: its default value's key, '' for none. */
+export const defaultKey = (v: unknown): string => (v === '' || v === undefined ? '' : choiceKey(v));
+
+/** Options by key (choiceKey), unless the widget keys its items its own way. */
+export const optionsByKey = (options: Option[], keyOf: (v: OptionValue) => string = choiceKey): Map<string, Option> =>
   new Map(options.map((o) => [keyOf(o.value), o]));

@@ -6,11 +6,9 @@ import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CONTROL, FormField, HELP } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import { choiceKey, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-
-export const EMPTY_OPTION_KEY = '\u0000empty';
 
 export const MAX_SELECT_OPTIONS = 500;
 
@@ -19,11 +17,11 @@ export const ShadSelect = (props: WidgetProps) => {
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
   const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
-  // Radix Select keys its items by string; keep the original values for the exposed value. It refuses an item keyed
-  // by the empty string (that means "nothing selected"), so an option valued '' (an "All" choice) gets its own key.
+  // Radix Select keys its items by string; keep the original values for the exposed value. An option valued '' (an
+  // "All" choice) gets its own key (choiceKey): '' means nothing selected.
   const options = toOptions(properties.options);
-  const optionKey = (v: unknown) => (String(v) === '' ? EMPTY_OPTION_KEY : String(v));
-  const byKey = optionsByKey(options, optionKey);
+  const optionKey = choiceKey;
+  const byKey = optionsByKey(options);
   const initial = defaultKey(properties.defaultValue);
   const [key, setKey] = useState(initial);
   useEffect(() => setKey(initial), [initial]);
