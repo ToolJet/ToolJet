@@ -1,7 +1,7 @@
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { Definition } from '@modules/organization-themes/dto';
-import { defaultThemeName } from '@modules/organization-themes/constants';
+import { defaultThemeName, TJDefaultTheme } from '@modules/organization-themes/constants';
 import { shippedThemes } from '@modules/organization-themes/constants/shipped-themes';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 
@@ -27,10 +27,17 @@ describe('shipped themes', () => {
     // The palette menu approved on 2026-09-12 (Ink, Slate, Navy, Indigo, Emerald, Graphite; ToolJet's own blue covers
     // Blue), plus Rose as the one expressive choice. White text needs 4.5:1 on the primary in light and dark mode.
     expect(shippedThemes.map((theme) => theme.name)).toEqual([
-      'ToolJet Ink', 'ToolJet Slate', 'ToolJet Navy', 'ToolJet Indigo', 'ToolJet Emerald', 'ToolJet Graphite', 'ToolJet Rose',
+      'ToolJet Ink',
+      'ToolJet Slate',
+      'ToolJet Navy',
+      'ToolJet Indigo',
+      'ToolJet Emerald',
+      'ToolJet Graphite',
+      'ToolJet Rose',
     ]);
     const luminance = (hex: string) => {
-      const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      const [r, g, b] = [1, 3, 5]
+        .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
         .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
       return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     };
@@ -39,6 +46,40 @@ describe('shipped themes', () => {
       const { light, dark } = theme.definition.brand.colors.primary;
       expect([theme.name, onWhite(light) >= 4.5]).toEqual([theme.name, true]);
       expect([theme.name, onWhite(dark) >= 4.5]).toEqual([theme.name, true]);
+    }
+  });
+
+  it('tint every neutral towards their primary, keeping text readable in both modes', () => {
+    const luminance = (hex: string) => {
+      const [r, g, b] = [1, 3, 5]
+        .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const contrast = (a: string, b: string) => {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    const neutrals = (d: Definition) => ({
+      surface3: d.surface.colors.surface3.light,
+      borderWeak: d.border.colors.weak.light,
+      borderDefault: d.border.colors.default.light,
+      text: d.text.colors.primary.light,
+      placeholder: d.text.colors.placeholder.light,
+    });
+    const basic = neutrals(TJDefaultTheme);
+    for (const { name, definition } of shippedThemes) {
+      // Every neutral differs from the basic theme's, so switching themes changes an app built only from neutrals.
+      for (const [key, value] of Object.entries(neutrals(definition))) {
+        expect([name, key, value !== basic[key as keyof typeof basic]]).toEqual([name, key, true]);
+      }
+      const { text, surface } = definition;
+      for (const mode of ['light', 'dark'] as const) {
+        for (const background of [surface.colors.surface1[mode], surface.colors.appBackground[mode]]) {
+          expect([name, mode, contrast(text.colors.primary[mode], background) >= 7]).toEqual([name, mode, true]);
+          expect([name, mode, contrast(text.colors.placeholder[mode], background) >= 4.5]).toEqual([name, mode, true]);
+        }
+      }
     }
   });
 
