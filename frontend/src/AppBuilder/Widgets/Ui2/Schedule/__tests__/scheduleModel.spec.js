@@ -323,3 +323,37 @@ describe('repeated ids', () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 });
+
+// Audit 53: after 2,000 bookings in range every later row was left out, whichever resource it belonged to, so a
+// shown resource lost a booking because a resource further down had many.
+describe('many bookings', () => {
+  const fields = { idField: 'id', resourceField: 'room', startField: 'from', endField: 'to', titleField: 'title' };
+  const range = () => scheduleRange({ date: '2026-10-17', dayStart: 9, dayEnd: 10, slotMinutes: 60 }, at(8, 0, 17));
+  const rooms = scheduleResources(
+    [
+      { id: 'front', name: 'Front' },
+      { id: 'back', name: 'Back' },
+    ],
+    [],
+    ''
+  );
+  const bulk = Array.from({ length: 2500 }, (_, i) => ({
+    id: `bulk-${i}`,
+    room: 'back',
+    from: '2026-10-17 09:00',
+    to: '2026-10-17 10:00',
+  }));
+  const target = {
+    id: 'target',
+    room: 'front',
+    title: 'Board meeting',
+    from: '2026-10-17 09:00',
+    to: '2026-10-17 10:00',
+  };
+
+  it('places every booking in range, wherever it comes in the list', () => {
+    const placed = placeBookings([...bulk, target], fields, range(), rooms);
+    expect(placed.front.items.map((b) => b.id)).toEqual(['target']);
+    expect(placed.back.items).toHaveLength(2500);
+  });
+});

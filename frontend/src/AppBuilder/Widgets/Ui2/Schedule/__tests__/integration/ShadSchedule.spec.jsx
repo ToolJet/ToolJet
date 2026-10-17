@@ -235,4 +235,59 @@ describe('UI 2.0 Schedule', () => {
     expect(root.style.getPropertyValue('--lk-accent')).toBe('#2563eb');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('8px');
   });
+
+  // Audit 53: after 2,000 bookings every later row was left out without a trace, so a shown resource lost a booking
+  // because one further down had many. Every booking is placed; a row draws at most MAX_ROW_BOOKINGS and says how
+  // many more it has.
+  describe('many bookings', () => {
+    const json = (v) => `{{${JSON.stringify(v)}}}`;
+    const hour = { date: binding('2026-10-17'), dayStart: binding('{{9}}'), dayEnd: binding('{{10}}') };
+    const fields = {
+      resourceField: binding('room'),
+      startField: binding('from'),
+      endField: binding('to'),
+      titleField: binding('title'),
+      idField: binding('id'),
+    };
+    const rows = (room, n) =>
+      Array.from({ length: n }, (_, i) => ({
+        id: `${room}-${i}`,
+        room,
+        title: `${room} ${i}`,
+        from: '2026-10-17 09:00',
+      }));
+
+    test('[ShadSchedule-PROP-011] a shown resource keeps its booking when a resource further down has thousands', async () => {
+      const rooms = [
+        { id: 'front', name: 'Front' },
+        ...Array.from({ length: 50 }, (_, i) => ({ id: `r${i}`, name: `R${i}` })),
+      ];
+      const target = { id: 'target', room: 'front', title: 'Board meeting', from: '2026-10-17 09:00' };
+      render({
+        properties: {
+          ...hour,
+          ...fields,
+          resources: binding(json(rooms)),
+          bookings: binding(json([...rows('r49', 2100), target])),
+        },
+      });
+
+      await waitFor(() => expect(screen.getByText('Board meeting')).toBeInTheDocument());
+      expect(resourceRow('r49')).toBeNull();
+    });
+
+    test('[ShadSchedule-PROP-012] a row with more bookings than it draws says how many more', async () => {
+      render({
+        properties: {
+          ...hour,
+          ...fields,
+          resources: binding(json(['busy'])),
+          bookings: binding(json(rows('busy', 205))),
+        },
+      });
+
+      await waitFor(() => expect(resourceRow('busy').querySelectorAll('[data-booking]')).toHaveLength(200));
+      expect(resourceRow('busy').querySelector('[data-more-bookings]')).toHaveTextContent('+5 more');
+    });
+  });
 });
