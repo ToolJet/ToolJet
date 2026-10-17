@@ -3,7 +3,13 @@ import { toOptions, useAutoHeight, withControlState } from '@/AppBuilder/Widgets
 import { ToggleGroup, ToggleGroupItem, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { MAX_CHOICES, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import {
+  MAX_CHOICES,
+  choiceKey,
+  defaultKey,
+  optionsByKey,
+  shownOptions,
+} from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export const ShadToggleGroup = (props: WidgetProps) => {
@@ -23,7 +29,7 @@ export const ShadToggleGroup = (props: WidgetProps) => {
     initial,
     (set) => ({
       setSelected: async (v: unknown) => {
-        const k = v === undefined || v === null || typeof v === 'object' ? null : String(v);
+        const k = v === undefined || v === null || typeof v === 'object' ? null : choiceKey(v);
         if (k !== null && keysRef.current.has(k)) set(k);
       },
       clear: async () => set(''),
@@ -45,7 +51,7 @@ export const ShadToggleGroup = (props: WidgetProps) => {
         {shownOptions(options, byKey.get(key), MAX_CHOICES).map((o) => (
           <ToggleGroupItem
             key={String(o.value)}
-            value={String(o.value)}
+            value={choiceKey(o.value)}
             className="tw-rounded-[calc(var(--lk-radius,var(--sc-radius))*0.8)] data-[state=on]:tw-bg-[color:var(--lk-on-bg,var(--sc-background))] data-[state=on]:tw-text-[color:var(--lk-on-fg,var(--sc-foreground))]"
           >
             {o.label}

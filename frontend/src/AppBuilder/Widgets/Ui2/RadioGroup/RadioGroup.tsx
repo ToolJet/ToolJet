@@ -4,7 +4,13 @@ import { Label, RadioGroup, RadioGroupItem } from '@/AppBuilder/Widgets/Ui2/_sha
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { MAX_CHOICES, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import {
+  MAX_CHOICES,
+  choiceKey,
+  defaultKey,
+  optionsByKey,
+  shownOptions,
+} from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export const ShadRadioGroup = (props: WidgetProps) => {
@@ -21,7 +27,7 @@ export const ShadRadioGroup = (props: WidgetProps) => {
     () => ({
       // As the native Radio button's: both fire onSelectionChange; deselectOption() clears the choice.
       selectOption: async (v: unknown) =>
-        change(v === undefined || v === null || typeof v === 'object' ? '' : String(v), 'onSelectionChange'),
+        change(v === undefined || v === null || typeof v === 'object' ? '' : choiceKey(v), 'onSelectionChange'),
       deselectOption: async () => change('', 'onSelectionChange'),
     }),
     (k) => byKey.get(k)?.value ?? ''
@@ -54,7 +60,7 @@ export const ShadRadioGroup = (props: WidgetProps) => {
             return (
               <div key={String(o.value)} className="tw-flex tw-items-center tw-gap-2">
                 <RadioGroupItem
-                  value={String(o.value)}
+                  value={choiceKey(o.value)}
                   id={itemId}
                   className="tw-border-[color:var(--lk-invalid,var(--sc-primary))]"
                 />
