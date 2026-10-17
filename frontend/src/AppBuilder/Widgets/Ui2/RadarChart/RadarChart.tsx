@@ -16,6 +16,10 @@ import { AXIS_FILL, GRID, SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_
 import { clamp, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
+// A radar past this many axes is unreadable, and every axis is a spoke, a grid vertex and a label: 2,000 rows (MAX_ROWS)
+// drew over 10,000 nodes.
+export const MAX_AXES = 100;
+
 export const ShadRadarChart = (props: WidgetProps) => {
   const p = props.properties;
   const { bound, yFields, seriesLabels, colors } = useSeriesInputs(p);
@@ -26,7 +30,7 @@ export const ShadRadarChart = (props: WidgetProps) => {
       isSet(p.categoryField) ? String(p.categoryField) : undefined,
       fieldList(yFields)
     );
-    const rows = seriesRows(bound, fields.x, fields.series);
+    const rows = seriesRows(bound, fields.x, fields.series).slice(0, MAX_AXES);
     const labels = seriesLabelMap(seriesLabels, fields.series);
     return {
       category: fields.x,
