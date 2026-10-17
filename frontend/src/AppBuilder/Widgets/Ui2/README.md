@@ -64,6 +64,20 @@ Each widget loads in its own chunk, the first time a page shows it.
 - `useExposed` publishes exposed values and registers each action once as a stable function over the latest closure.
 - No `react-hooks/exhaustive-deps` suppressions (ESLint error in this folder).
 
+## Actions, validation and selection
+
+- **Actions publish before they resolve.** `useExposed` runs every action inside `flushSync`, so the value, `isValid`
+  and everything derived are published when `await components.x.action()` returns. Each action fires what its native
+  counterpart's action fires (a text input's `setText` and `clear` fire `onChange`; a Select's `selectOption` fires
+  `onSelect`; many native actions fire nothing). Specs check it with `widget.actNow`, which reads the exposed values
+  right after the action resolves.
+- **0 and false are values.** `useValidation` judges `validationInput(present, value)`: a field holds a value unless
+  it is undefined, null, '' or an empty list, and a widget passes `present` where that differs (a Select or Radio group
+  once an option is picked, a Checkbox once checked, a Rating once it has a star).
+- **Selection after a data change.** A widget keeps its selection by the item's key (its id field, else its position).
+  When the data changes it re-publishes the selection from the fresh record at its new place, and clears it when the
+  key is gone. No event fires for either.
+
 ## Checks that keep it this way
 
 These run with the frontend jest suite (`npx jest --maxWorkers=2 src/AppBuilder/Widgets/Ui2`):
