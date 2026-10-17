@@ -16,7 +16,7 @@ import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
-import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import {
   Chip,
   ClearButton,
@@ -39,16 +39,19 @@ const MenuRule = () => <div aria-hidden="true" className="-tw-mx-1 tw-h-px tw-bg
 
 /** A field that anchors a popover without being its trigger button (it holds chips with their own buttons): opens on
  *  click, Enter, Space or ArrowDown; a click on it while open closes the menu instead of reopening it. */
-const useAnchoredMenu = (disabled: boolean, onClose?: () => void) => {
+const useAnchoredMenu = (properties: WidgetProps['properties'], onClose?: () => void) => {
   const anchorRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
+  const popup = usePickerPopup(properties);
+  const { open } = popup;
+  const disabled = busy(properties);
   const change = (next: boolean) => {
-    if (next && disabled) return;
-    setOpen(next);
+    if (next && popup.blocked) return;
+    popup.setOpen(next);
     if (!next) onClose?.();
   };
   return {
     open,
+    blocked: popup.blocked,
     change,
     anchorRef,
     anchorProps: {
@@ -113,7 +116,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
   const loading = !!properties.loadingState;
   const focus = useFocusEvents(fireEvent);
   const menuId = `${fieldIdOf(props)}-menu`;
-  const menu = useAnchoredMenu(disabled, () => {
+  const menu = useAnchoredMenu(properties, () => {
     check.touch();
     if (search) onSearch('');
   });
@@ -122,6 +125,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
     if (!(next && disabled)) focus.opened(next);
   };
   const commit = (next: string[]) =>
+    !menu.blocked &&
     runNow(() => {
       setKeys(next);
       publish(next);
