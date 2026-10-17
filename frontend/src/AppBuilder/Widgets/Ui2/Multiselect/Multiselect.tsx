@@ -23,10 +23,12 @@ import {
   ClearButton,
   CommandGroup,
   CommandItem,
+  keptOptions,
   MENU_SURFACE,
   MUTED,
   OptionsMenu,
   PLACEHOLDER,
+  useKeptSelection,
   useSearch,
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -94,7 +96,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
   const latest = useRef({ options, limit });
   latest.current = { options, limit };
   const [search, onSearch] = useSearch(props);
-  const selectedOptions = M.selectedOf(options, keys);
+  const selectedOptions = useKeptSelection(options, keys, properties.serverSideSearch === true);
   const values = selectedOptions.map((o) => o.value);
   useExposed(setExposedVariables, properties, {
     values,
@@ -109,7 +111,9 @@ export const ShadMultiselect = (props: WidgetProps) => {
     setBlur: async () => menu.anchorRef.current?.blur(),
   });
   const publish = (next: string[]) => {
-    const picked = M.selectedOf(options, next);
+    // As the rendered selection resolves them: with server-side search, kept records stand in for options off the page.
+    const kept = new Map(selectedOptions.map((o) => [M.keyOf(o.value), o] as [string, Option]));
+    const picked = keptOptions(options, next, properties.serverSideSearch === true ? kept : null);
     setExposedVariables({ values: picked.map((o) => o.value), selectedOptions: picked });
   };
   const check = useValidation(props, values, () => {
