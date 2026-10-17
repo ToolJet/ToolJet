@@ -44,11 +44,17 @@ export const ShadSelect = (props: WidgetProps) => {
     setFocus: async () => triggerRef.current?.focus(),
     setBlur: async () => triggerRef.current?.blur(),
   });
-  const check = useValidation(props, selectedOption.value ?? '', () => {
-    setKey('');
-    setExposedVariable('value', '');
-    setExposedVariable('selectedOption', {});
-  });
+  // A picked option counts even when its value is false, 0 or '' (an "All" choice); only no pick is empty.
+  const check = useValidation(
+    props,
+    selectedOption.value ?? '',
+    () => {
+      setKey('');
+      setExposedVariable('value', '');
+      setExposedVariable('selectedOption', {});
+    },
+    byKey.has(key)
+  );
   return (
     <FormField props={props} properties={properties} check={check} innerRef={fit}>
       <Select

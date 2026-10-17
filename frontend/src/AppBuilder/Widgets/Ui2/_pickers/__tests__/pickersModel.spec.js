@@ -1,5 +1,6 @@
 import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
+import { isFilled, validationInput } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 describe('pickers model: options', () => {
   const options = [
@@ -37,12 +38,15 @@ describe('pickers model: options', () => {
   });
 
   it('gives the validation engine a filled value for 0, false and an option valued ""', () => {
-    expect(M.validationInput(false, 'x')).toBe('');
-    expect(M.validationInput(true, 0)).toBe('0');
-    expect(M.validationInput(true, false)).toBe('false');
-    expect(M.validationInput(true, '')).toBe(' ');
-    expect(M.validationInput(true, [])).toBe('');
-    expect(M.validationInput(true, ['a'])).toEqual(['a']);
+    expect(validationInput(false, 'x')).toBe('');
+    expect(validationInput(true, 0)).toBe('0');
+    expect(validationInput(true, false)).toBe('false');
+    expect(validationInput(true, '')).toBe(' ');
+    expect(validationInput(true, [])).toBe('');
+    expect(validationInput(true, ['a'])).toEqual(['a']);
+    // What counts as holding a value when a widget does not say: 0 and false do, '' and [] do not.
+    expect([0, false, 'x', [1]].map(isFilled)).toEqual([true, true, true, true]);
+    expect([undefined, null, '', []].map(isFilled)).toEqual([false, false, false, false]);
   });
 
   it('adds and removes multiselect keys within the limit, skipping unknown and disabled options', () => {

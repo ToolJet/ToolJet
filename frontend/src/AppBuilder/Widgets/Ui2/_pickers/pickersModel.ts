@@ -71,14 +71,6 @@ export const groupOptions = (entries: unknown): OptionGroup[] => {
   return groups;
 };
 
-/** What the validation engine should see for a pick: '' when nothing is picked, else a value its mandatory check
- *  reads as filled (it treats 0 and false as empty). */
-export const validationInput = (picked: unknown, value: unknown): unknown => {
-  if (!picked) return '';
-  if (Array.isArray(value)) return value.length ? value : '';
-  return value === 0 || value === false || value === '' ? String(value) || ' ' : value;
-};
-
 /** Values as a list: an array as is, one value as a list of one, nothing as []. */
 export const toValueList = (v: unknown): OptionValue[] => {
   if (Array.isArray(v)) return v.filter((x): x is OptionValue => isScalar(x));

@@ -126,6 +126,26 @@ describe('UI 2.0 Select', () => {
     await waitFor(() => expect(exposed().isValid).toBe(true));
   });
 
+  // A required Yes/No select exposed false for "No" but reported isValid false: the check read false as nothing
+  // picked (review, 2026-10-17). Nothing picked and a picked falsy value are different.
+  test('[ShadSelect-VAL-003] a mandatory select accepts a picked false or 0, and stays invalid with nothing picked', async () => {
+    render({
+      properties: {
+        options: binding(
+          "{{[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'None', value: 0 }]}}"
+        ),
+      },
+      validation: { mandatory: binding('{{true}}') },
+    });
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+
+    await pick('No');
+    await waitFor(() => expect(exposed().value).toBe(false));
+    expect(exposed().isValid).toBe(true);
+    expect(await widget.actNow('selectOption', 0)).toMatchObject({ value: 0, isValid: true });
+    expect(await widget.actNow('clear')).toMatchObject({ value: '', isValid: false });
+  });
+
   test('[ShadSelect-VAL-002] a customRule message makes the pick invalid and is shown under the control', async () => {
     render({
       validation: { customRule: binding("{{components.select1.value === 'pe' ? 'We do not ship to Peru' : ''}}") },

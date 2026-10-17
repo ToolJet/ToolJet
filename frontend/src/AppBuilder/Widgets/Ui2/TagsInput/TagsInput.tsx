@@ -62,7 +62,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
     setFocus: async () => inputRef.current?.focus(),
     setBlur: async () => inputRef.current?.blur(),
   });
-  const check = useValidation(props, M.validationInput(tags.length > 0, tags), () => {
+  const check = useValidation(props, tags, () => {
     setTags([]);
     setExposedVariables(tagNames([]));
   });

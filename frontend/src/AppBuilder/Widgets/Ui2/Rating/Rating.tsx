@@ -44,7 +44,8 @@ export const ShadRating = (props: WidgetProps) => {
   }));
   useExposed(props.setExposedVariables, properties, { label: String(properties.label ?? '') });
   const value = Math.min(Number(stored) || 0, max);
-  const check = useValidation(props, M.validationInput(value > 0, value), () => change(0));
+  // No stars is no rating, though 0 is a number.
+  const check = useValidation(props, value, () => change(0), value > 0);
   const [hover, setHover] = useState<number | null>(null);
   const radios = useRef<(HTMLSpanElement | null)[]>([]);
   const readOnly = properties.readOnly === true;

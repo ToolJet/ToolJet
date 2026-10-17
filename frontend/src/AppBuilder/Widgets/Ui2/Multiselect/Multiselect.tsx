@@ -107,7 +107,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
     const picked = M.selectedOf(options, next);
     setExposedVariables({ values: picked.map((o) => o.value), selectedOptions: picked });
   };
-  const check = useValidation(props, M.validationInput(values.length > 0, values), () => {
+  const check = useValidation(props, values, () => {
     setKeys([]);
     publish([]);
   });

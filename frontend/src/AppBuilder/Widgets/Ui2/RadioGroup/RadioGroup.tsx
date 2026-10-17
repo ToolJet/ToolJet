@@ -30,7 +30,7 @@ export const ShadRadioGroup = (props: WidgetProps) => {
     selectedOption: byKey.get(key) || {},
     options,
   });
-  const check = useValidation(props, byKey.get(key)?.value ?? '', () => change(''));
+  const check = useValidation(props, byKey.get(key)?.value ?? '', () => change(''), byKey.has(key));
   return (
     <Shell {...props} innerRef={fit}>
       <Field
