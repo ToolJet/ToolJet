@@ -6,7 +6,7 @@ import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widget
 import { Button, Input, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
-import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { MENU_SURFACE, PLACEHOLDER } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import type { Hsv } from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
@@ -83,7 +83,8 @@ export const ShadColorPicker = (props: WidgetProps) => {
   const initial = M.normalizeHex(properties.defaultValue, alpha) || '';
   const [value, setValue] = useState(initial);
   useEffect(() => setValue(initial), [initial]);
-  const [open, setOpen] = useState(false);
+  const popup = usePickerPopup(properties);
+  const { open } = popup;
   const [hsva, setHsvaState] = useState(() => toHsva(initial));
   const hsvaRef = useRef(hsva);
   const [draft, setDraft] = useState(initial);
@@ -111,6 +112,17 @@ export const ShadColorPicker = (props: WidgetProps) => {
     },
   });
   const hexOf = (c: Hsva) => M.rgbaToHex({ ...M.hsvToRgb(c), a: c.a }, alpha);
+  // A color set from outside while the popup is open (setColor, a new default) reaches the open editor and its hex
+  // field; otherwise leaving the field applied its old text and undid the change. The user's own picks already match.
+  useEffect(() => {
+    if (!open) return;
+    const c = hsvaRef.current;
+    if (M.rgbaToHex({ ...M.hsvToRgb(c), a: c.a }, alphaRef.current) === value) return;
+    const next = toHsva(value, c.h);
+    hsvaRef.current = next;
+    setHsvaState(next);
+    setDraft(value);
+  }, [open, value]);
   const live = open ? hexOf(hsva) : value;
   const setHsva = (next: Hsva) => {
     hsvaRef.current = next;
@@ -118,12 +130,13 @@ export const ShadColorPicker = (props: WidgetProps) => {
     setDraft(hexOf(next));
   };
   const commit = (hex: string) => {
-    if (!hex || hex === value) return;
+    if (!hex || hex === value || popup.blocked) return;
     setValue(hex);
     setExposedVariables(colorExposed(hex));
     fireEvent('onChange');
   };
   const pickHex = (hex: string) => {
+    if (popup.blocked) return;
     setHsva(toHsva(hex, hsvaRef.current.h));
     setDraft(hex);
     commit(hex);
@@ -134,14 +147,14 @@ export const ShadColorPicker = (props: WidgetProps) => {
     else setDraft(value);
   };
   const openChange = (next: boolean) => {
-    if (next && busy(properties)) return;
+    if (next && popup.blocked) return;
     if (next) {
       const start = toHsva(value);
       hsvaRef.current = start;
       setHsvaState(start);
       setDraft(value);
     }
-    setOpen(next);
+    popup.setOpen(next);
     focus.opened(next);
   };
   const commitLive = () => commit(hexOf(hsvaRef.current));

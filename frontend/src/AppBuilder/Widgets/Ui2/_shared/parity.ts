@@ -64,6 +64,24 @@ export const useHasEvent = (id: string | undefined, eventId: string): boolean =>
   });
 };
 
+/** A picker's popup, owned by the picker: open only while the picker takes choices (not disabled, not loading,
+ *  visible), and closed for good when it stops, so a popup left open cannot change a control the app turned off.
+ *  `blocked` is for the picker's choice handlers too: a choice can arrive before the closed popup has rendered. */
+export interface PickerPopup {
+  open: boolean;
+  blocked: boolean;
+  setOpen: (next: boolean) => void;
+}
+
+export const usePickerPopup = (properties: Resolved): PickerPopup => {
+  const blocked = !!properties?.disabledState || !!properties?.loadingState || properties?.visibility === false;
+  const [open, setOpenState] = useState(false);
+  useEffect(() => {
+    if (blocked) setOpenState(false);
+  }, [blocked]);
+  return { open: open && !blocked, blocked, setOpen: (next: boolean) => setOpenState(next && !blocked) };
+};
+
 /** A toggle action's argument as a boolean: `{{false}}`, false, 'false', 0 and null are off; anything else is on
  *  (the native setters take the value as given, so a junk value left the widget half disabled). */
 export const truthy = (v: unknown): boolean =>

@@ -13,7 +13,7 @@ import {
 import { Button, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
-import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import {
   ClearButton,
   MENU_SURFACE,
@@ -35,7 +35,8 @@ export const ShadCombobox = (props: WidgetProps) => {
   const initial = M.initialKey(properties.defaultValue);
   const [key, setKey] = useState(initial);
   useEffect(() => setKey(initial), [initial]);
-  const [open, setOpen] = useState(false);
+  const popup = usePickerPopup(properties);
+  const { open } = popup;
   const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   const [search, onSearch] = useSearch(props);
@@ -73,8 +74,8 @@ export const ShadCombobox = (props: WidgetProps) => {
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
   const openChange = (next: boolean) => {
-    if (next && disabled) return;
-    setOpen(next);
+    if (next && popup.blocked) return;
+    popup.setOpen(next);
     focus.opened(next);
     if (!next) {
       check.touch();
@@ -82,6 +83,7 @@ export const ShadCombobox = (props: WidgetProps) => {
     }
   };
   const pick = (option: Option) =>
+    !popup.blocked &&
     runNow(() => {
       setKey(M.keyOf(option.value));
       setExposedVariables({ value: option.value, selectedOption: option });
@@ -89,6 +91,7 @@ export const ShadCombobox = (props: WidgetProps) => {
       fireEvent('onSelect');
     });
   const clear = () =>
+    !popup.blocked &&
     runNow(() => {
       setKey(null);
       setExposedVariables({ value: '', selectedOption: {} });

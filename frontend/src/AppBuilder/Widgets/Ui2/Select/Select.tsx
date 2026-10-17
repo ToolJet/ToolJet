@@ -8,7 +8,7 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CONTROL, FormField, HELP, controlAria, fieldName, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
@@ -37,6 +37,7 @@ export const ShadSelect = (props: WidgetProps) => {
   const shown = shownOptions(options, byKey.get(key), MAX_SELECT_OPTIONS);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
+  const popup = usePickerPopup(properties);
   useExposed(setExposedVariables, properties, {
     value: selectedOption.value ?? '',
     selectedOption,
@@ -72,11 +73,15 @@ export const ShadSelect = (props: WidgetProps) => {
       <Select
         value={key}
         disabled={busy(properties)}
+        open={popup.open}
         onOpenChange={(open) => {
+          if (open && popup.blocked) return;
+          popup.setOpen(open);
           focus.opened(open);
           if (!open) check.touch();
         }}
         onValueChange={(next) =>
+          !popup.blocked &&
           runNow(() => {
             setKey(next);
             setExposedVariable('value', byKey.get(next)?.value ?? '');
