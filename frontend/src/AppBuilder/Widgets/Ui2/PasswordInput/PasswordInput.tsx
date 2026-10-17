@@ -10,6 +10,7 @@ import { Group, INNER } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { PasswordStrength } from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Password input ------------------------------------------------------------------------------------------------
 
@@ -69,7 +70,7 @@ export const ShadPasswordInput = (props: WidgetProps) => {
           onFocus={textBox.onFocus}
           onBlur={textBox.onBlur}
           onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && fireEvent('onEnterPressed')}
+          onKeyDown={(e) => isEnter(e) && fireEvent('onEnterPressed')}
         />
         {properties.showToggle !== false && !loading ? (
           <button

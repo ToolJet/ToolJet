@@ -5,6 +5,7 @@ import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Field, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useTextField } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 export const ShadTextarea = (props: WidgetProps) => {
   const { properties, height, fireEvent } = props;
@@ -43,7 +44,7 @@ export const ShadTextarea = (props: WidgetProps) => {
           <Textarea
             {...fieldProps}
             style={{ height: Math.max(60, (Number(height) || 96) - chrome) }}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && fireEvent('onEnterPressed')}
+            onKeyDown={(e) => isEnter(e) && !e.shiftKey && fireEvent('onEnterPressed')}
           />
         </Field>
       </div>

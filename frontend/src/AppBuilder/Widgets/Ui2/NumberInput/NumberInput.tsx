@@ -9,6 +9,7 @@ import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { AFFIX, EDGE, Group, INNER, numberTextProps, useNumberBox } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // Stepper buttons attached to the box.
 export const STEP =
@@ -102,7 +103,7 @@ export const ShadNumberInput = (props: WidgetProps) => {
           placeholder={toText(properties.placeholder)}
           disabled={disabled}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') fireEvent('onEnterPressed');
+            if (isEnter(e)) fireEvent('onEnterPressed');
             else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
               e.preventDefault();
               step(e.key === 'ArrowUp' ? 1 : -1);
