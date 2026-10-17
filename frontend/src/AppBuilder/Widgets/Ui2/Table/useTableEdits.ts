@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { readCell } from './tableModel';
 import type { Editing, Edits, Entry, FireOption, LiveRef, Row, TableColumn } from './types';
@@ -13,7 +14,8 @@ interface UseTableEditsArgs {
 /** Cell edits: an overlay on the data until it changes, the cell being edited, and the changeSet they publish. */
 export const useTableEdits = ({ data, live, setExposedVariables, fireEvent }: UseTableEditsArgs) => {
   const [edits, setEdits] = useState<Edits>(() => new Map());
-  useEffect(() => setEdits(new Map()), [data]);
+  const editsRef = useRef(edits);
+  editsRef.current = edits;
   // One merged row per entry for a set of edits: search, filter and sort match rows by reference, so an edited row
   // must be the same object on every call (a fresh merge dropped it from the filter and sorted it as NaN).
   const withEdits = useMemo(() => {
@@ -46,6 +48,15 @@ export const useTableEdits = ({ data, live, setExposedVariables, fireEvent }: Us
       updatedData: all.map((entry) => (next.has(entry.key) ? { ...entry.row, ...next.get(entry.key) } : entry.row)),
     });
   };
+  // New data drops the edits, and what they published with them: the cells showed the new data while changeSet,
+  // dataUpdates and updatedData still held the old edits, for a save to replay. A passive refresh, so no event.
+  const latestExpose = useLatest(exposeEdits);
+  useEffect(() => {
+    if (!editsRef.current.size) return;
+    const next: Edits = new Map();
+    setEdits(next);
+    latestExpose.current(next);
+  }, [data, latestExpose]);
   const commitEdit = (entry: Entry, column: TableColumn, value: unknown) => {
     setEditing(null);
     const before = readCell(withEdits(entry), column.key);
