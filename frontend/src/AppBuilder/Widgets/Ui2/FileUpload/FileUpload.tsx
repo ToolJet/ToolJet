@@ -154,7 +154,11 @@ export const ShadFileUpload = (props: WidgetProps) => {
     });
     publish(next);
   };
+  // Reads in flight belong to a generation: clearing starts a new one, so a read that finishes after a clear is
+  // released, not published (a cleared file came back, with its load events).
+  const generation = useRef(0);
   const clearFiles = (withEvent = true) => {
+    generation.current += 1;
     const old = filesRef.current;
     old.forEach((f) => releaseFileHandle(f.handle));
     setRejectError('');
@@ -185,6 +189,7 @@ export const ShadFileUpload = (props: WidgetProps) => {
 
   const onDrop = async (accepted: File[], rejections: FileRejection[]) => {
     check.touch();
+    const started = generation.current;
     const current = multiple ? filesRef.current : [];
     const room = multiple ? Math.max(0, maxFiles - current.length) : 1;
     const fresh = list(accepted).filter(
@@ -215,10 +220,26 @@ export const ShadFileUpload = (props: WidgetProps) => {
       setParsing(false);
       setExposedVariables({ isParsing: false });
     }
+    if (started !== generation.current) {
+      read.forEach((f) => releaseFileHandle(f.handle));
+      return;
+    }
     if (read.length < taking.length) setRejectError(`${taking.length - read.length} file(s) could not be read`);
     if (!read.length) return;
     if (!multiple) filesRef.current.forEach((f) => releaseFileHandle(f.handle));
-    publish(multiple ? [...filesRef.current, ...read].slice(0, maxFiles) : read.slice(0, 1));
+    // The files are put together when the reads finish, not when they start: two drops can both have seen room for
+    // the last file, or both carried the same file. What does not fit is released, so its payload is not kept.
+    const kept = multiple ? filesRef.current : [];
+    const same = (a: ReadFile, b: ReadFile) =>
+      a.name === b.name && a.size === b.size && a.lastModified === b.lastModified;
+    const added = read.filter((f, i) => !kept.some((k) => same(k, f)) && read.findIndex((g) => same(g, f)) === i);
+    const next = [...kept, ...added].slice(0, maxFiles);
+    read.filter((f) => !next.includes(f)).forEach((f) => releaseFileHandle(f.handle));
+    if (added.length > next.length - kept.length) {
+      setRejectError(M.rejectionMessage([{ errors: [{ code: 'too-many-files' }] }], { maxFiles }));
+    }
+    if (next.length === kept.length && multiple) return;
+    publish(next);
     fireEvent('onFileSelected');
     // The native File picker's event once the files are read (and parsed, with Parse content on).
     fireEvent('onFileLoaded');
