@@ -34,14 +34,22 @@ const hasId = (id: unknown) => id !== undefined && id !== null && id !== '';
  *  number). A card without one is named by its drag key, which every action also accepts. */
 export const cardIdOf = (card: BoardCard, idField: string): unknown =>
   hasId(card[idField]) ? card[idField] : card.__key;
-/** A drag key no other card has: the card's id when free, else the id with a suffix. Duplicate or empty ids (two
- *  rows with id '' or the same id) gave two cards one key: dnd-kit dragged both and React reused one's element for
- *  the other, and a move removed every copy. */
-const uniqueKey = (keys: Set<string>, base: string): string => {
-  let key = base;
-  for (let n = 2; keys.has(key); n += 1) key = `${base}~${n}`;
-  keys.add(key);
-  return key;
+/** Hands out drag keys no other card has: the card's id when free, else the id with a suffix. Duplicate or empty ids
+ *  (two rows with id '' or the same id) gave two cards one key: dnd-kit dragged both and React reused one's element
+ *  for the other, and a move removed every copy. Each id remembers its next suffix: probing from ~2 again for every
+ *  duplicate cost n(n+1)/2 checks for n cards sharing an id (2,000 cards: two million). */
+const keyMaker = (keys: Set<string>) => {
+  const nextSuffix = new Map<string, number>();
+  return (base: string): string => {
+    let key = base;
+    if (keys.has(key)) {
+      let n = nextSuffix.get(base) ?? 2;
+      for (key = `${base}~${n}`; keys.has(key); key = `${base}~${n}`) n += 1;
+      nextSuffix.set(base, n + 1);
+    }
+    keys.add(key);
+    return key;
+  };
 };
 
 /** Columns in the order given ({ id, title } objects or plain values), each with its cards; a status value no column
@@ -62,13 +70,13 @@ export const boardColumns = (cards: unknown, columns: unknown, statusField: stri
   }
   // Keep a stable id on every card for drag and drop, unique across the board. Rows that are not objects become
   // empty cards rather than spreading a string's characters into fields.
-  const keys = new Set<string>();
+  const uniqueKey = keyMaker(new Set<string>());
   for (const column of byId.values()) {
     column.cards = column.cards.map((card, i) => {
       const row = isRecord(card) ? card : {};
       const id = row[idField];
       const base = hasId(id) ? keyOf(id) : `${column.id}-${i}`;
-      return { ...row, __key: uniqueKey(keys, base) };
+      return { ...row, __key: uniqueKey(base) };
     });
   }
   // Every card now has its key.
@@ -145,7 +153,7 @@ export const addCard = (
     target = { id: status, title: status, cards: [] };
     next.push(target);
   }
-  const key = uniqueKey(keys, keyOf(id));
+  const key = keyMaker(keys)(keyOf(id));
   target.cards.push({ ...added, __key: key });
   return { columns: next, card: added, key };
 };
@@ -178,7 +186,7 @@ export const updateCard = (
   if (keyOf(updated[statusField]) === keyOf(card[statusField])) {
     if (hasId(updated[idField]) && keyOf(updated[idField]) !== keyOf(card[idField])) {
       const others = new Set(columns.flatMap((c) => c.cards.map((x) => x.__key)).filter((k) => k !== key));
-      updated.__key = uniqueKey(others, keyOf(updated[idField]));
+      updated.__key = keyMaker(others)(keyOf(updated[idField]));
     }
     const next = columns.map((c) => ({ ...c, cards: c.cards.map((x) => (x.__key === key ? updated : x)) }));
     return { columns: next, card: plain(updated), key: updated.__key };
