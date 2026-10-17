@@ -119,7 +119,8 @@ describe('UI 2.0 Schedule', () => {
 
     await waitFor(() => expect(header().map((c) => c.textContent)).toEqual(['9 AM', '10 AM', '11 AM']));
     expect(slots('Van 1')).toHaveLength(3);
-    expect(slots('Van 1')[0]).toHaveAccessibleName('Van 1, 9 AM to 10 AM, free');
+    // Under the 9 to 11 AM job, so booked (it once read "free", audit 33).
+    expect(slots('Van 1')[0]).toHaveAccessibleName('Van 1, 9 AM to 10 AM, booked: Boiler service');
     // The 9 AM job starts at the left edge; the 1:30 PM one is outside the hours shown.
     expect(booking('J-1').style.left).toBe('calc(0% + 2px)');
     expect(booking('J-2')).toBeNull();
@@ -316,5 +317,48 @@ describe('UI 2.0 Schedule', () => {
       expect(new Date(end).getTime()).toBeGreaterThan(new Date(start).getTime());
       expect(date).toBe('2026-03-08');
     }
+  });
+
+  // Audit 33: every slot was announced "free", and a keyboard could select the interval underneath a booking (Tab to
+  // "Atlas, 9 AM to 9:30 AM, free" under Design review, Enter, onSlotClicked). A slot says what is in it; one a
+  // booking covers cannot be picked as free, and a cancelled booking does not take its time.
+  describe('slots under bookings', () => {
+    const atlas = (bookings) => ({
+      date: binding('2026-10-20'),
+      resources: binding("{{[{ id: 'atlas', name: 'Atlas' }]}}"),
+      bookings: binding(`{{${JSON.stringify(bookings)}}}`),
+      resourceField: binding('room'),
+      startField: binding('from'),
+      endField: binding('to'),
+      titleField: binding('title'),
+      statusField: binding('state'),
+      idField: binding('id'),
+      dayStart: binding('{{8}}'),
+      dayEnd: binding('{{12}}'),
+      slotMinutes: binding('{{30}}'),
+    });
+    const review = { id: 'r', room: 'atlas', title: 'Design review', from: '2026-10-20 09:00', to: '2026-10-20 10:15' };
+
+    test('[ShadSchedule-PROP-013] a booked slot says so, names the booking, and cannot be picked', async () => {
+      render({ properties: atlas([review]) });
+      widget.setEvents(setVariableOn(ID, 'onSlotClicked', { key: 'picked', value: 'yes' }));
+
+      const booked = await screen.findByRole('button', { name: 'Atlas, 9 AM to 9:30 AM, booked: Design review' });
+      expect(booked).toBeDisabled();
+      fireEvent.click(booked);
+      expect(widget.variables().picked).toBeUndefined();
+      expect(exposed().selectedSlot).toEqual({});
+      expect(screen.getByRole('button', { name: 'Atlas, 8 AM to 8:30 AM, free' })).toBeEnabled();
+      expect(
+        screen.getByRole('button', { name: 'Atlas, 10 AM to 10:30 AM, partly booked: Design review' })
+      ).toBeEnabled();
+      expect(screen.queryByRole('button', { name: /9 AM to 9:30 AM, free/ })).toBeNull();
+    });
+
+    test('[ShadSchedule-PROP-014] a cancelled booking leaves its slots free', async () => {
+      render({ properties: atlas([{ ...review, state: 'Cancelled' }]) });
+
+      expect(await screen.findByRole('button', { name: 'Atlas, 9 AM to 9:30 AM, free' })).toBeEnabled();
+    });
   });
 });

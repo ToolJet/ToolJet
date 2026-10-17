@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
-import { MAX_ROW_BOOKINGS, bookingFace, slotValue } from './scheduleModel';
+import { MAX_ROW_BOOKINGS, bookingFace, slotAvailability, slotValue } from './scheduleModel';
 import type {
   PlacedBooking,
   PlacedBookings,
@@ -126,13 +126,18 @@ export const ScheduleRow = ({
             const isSelected =
               highlight && selected?.kind === 'slot' && selected.resource === r.key && selected.index === j;
             const todayColumn = range.scale === 'days' && range.columns[j]?.today;
+            // A slot says what is in it; one bookings cover entirely is not offered as free (by keyboard either).
+            const { state, titles } = slotAvailability(slot, entry?.items);
+            const status =
+              state === 'free' ? 'free' : `${state === 'booked' ? 'booked' : 'partly booked'}: ${titles.join(', ')}`;
             return (
               <button
                 key={j}
                 type="button"
-                disabled={disabled}
+                disabled={disabled || state === 'booked'}
                 onClick={() => clickSlot(r, slot, j)}
-                aria-label={`${r.name}, ${slotValue(r, slot, hourFormat, range.scale).label}, free`}
+                aria-label={`${r.name}, ${slotValue(r, slot, hourFormat, range.scale).label}, ${status}`}
+                data-availability={state}
                 className={cn(
                   'sc-slot tw-h-full tw-min-w-0 tw-outline-none tw-transition-colors tw-duration-100 focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))] disabled:tw-cursor-default',
                   j > 0 && slot.edge && 'tw-border-l',
