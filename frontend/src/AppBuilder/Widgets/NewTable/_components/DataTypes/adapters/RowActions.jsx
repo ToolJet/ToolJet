@@ -48,8 +48,10 @@ const LUCIDE = {
   plus: Plus,
 };
 
-/** The icon of an action: its own Tabler icon when it shows one, else one read from its label; null when neither. */
-const ActionIcon = ({ action, size = 16 }) => {
+/** The icon of an action: its own Tabler icon when it shows one, else one read from its label; null when neither.
+ *  A function, not a component: an icon component's element is truthy even when it renders nothing, so an action
+ *  with no icon ("Reconcile", a localized label) drew a blank button instead of its label. */
+const actionIconOf = (action, size = 16) => {
   if (action.loading) return <Loader2 size={size} className="tj-row-action-spin" aria-hidden="true" />;
   if (action.iconVisible && typeof action.iconName === 'string' && action.iconName) {
     return <TablerIcon iconName={action.iconName} size={size} stroke={1.75} aria-hidden="true" />;
@@ -63,7 +65,7 @@ const stop = (e) => e.stopPropagation();
 export const RowActionIcons = ({ actions, onAction }) => (
   <div className="tj-row-actions h-100 d-flex align-items-center" role="group" aria-label="Row actions">
     {actions.map((action) => {
-      const icon = <ActionIcon action={action} />;
+      const icon = actionIconOf(action);
       return (
         <button
           key={action.id}
@@ -122,9 +124,7 @@ export const RowActionMenu = ({ actions, onAction }) => {
                   onSelect={() => onAction(action.id)}
                   data-action={action.id}
                 >
-                  <span className="tj-row-action-item-icon">
-                    <ActionIcon action={action} size={15} />
-                  </span>
+                  <span className="tj-row-action-item-icon">{actionIconOf(action, 15)}</span>
                   <span className="tj-row-action-item-label">{action.label}</span>
                 </DropdownMenu.Item>
               </React.Fragment>
