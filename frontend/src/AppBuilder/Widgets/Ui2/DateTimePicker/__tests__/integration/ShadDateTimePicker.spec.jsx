@@ -276,4 +276,17 @@ describe('UI 2.0 Date and time picker', () => {
     await waitFor(() => expect(exposed().isValid).toBe(false));
     expect(exposed().value).toBe('2026-10-17T09:30');
   });
+
+  // Audit 48: 30 February became 2 March and hour 25 the next day, as a default and through setValue.
+  test('[ShadDateTimePicker-PROP-006] a date or time that does not exist is not read as another', async () => {
+    render({ properties: { defaultValue: binding('2026-02-30T09:30') } });
+    await waitFor(() => expect(exposed().setValue).toBeInstanceOf(Function));
+    expect(exposed().value).toBe('');
+
+    await widget.act('setValue', '2026-10-15T09:30');
+    await waitFor(() => expect(exposed().value).toBe('2026-10-15T09:30'));
+    await widget.act('setValue', '2026-02-30T09:30');
+    await widget.act('setValue', '2026-10-15T25:30');
+    expect(exposed().value).toBe('2026-10-15T09:30');
+  });
 });

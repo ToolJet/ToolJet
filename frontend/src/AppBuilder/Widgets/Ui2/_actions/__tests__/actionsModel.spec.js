@@ -266,4 +266,13 @@ describe('carousel logic', () => {
     expect(blocks(new Date(2020, 0, 1))).toBe(true);
     expect(blocks(new Date(2040, 4, 6))).toBe(false);
   });
+
+  // Audit 48: the calendar read 30 February as 2 March.
+  it('reads no day from a date that does not exist', () => {
+    expect(toDate('2026-02-30')).toBeUndefined();
+    expect(toDate('2026-02-30T09:30')).toBeUndefined();
+    expect(toDate('2026-13-01')).toBeUndefined();
+    expect(ymd(toDate('2028-02-29'))).toBe('2028-02-29');
+    expect(ymd(toDate('2026-10-09T14:30:00'))).toBe('2026-10-09');
+  });
 });
