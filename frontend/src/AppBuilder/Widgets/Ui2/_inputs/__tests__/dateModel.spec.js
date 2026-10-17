@@ -117,3 +117,17 @@ describe('impossible dates', () => {
     expect(M.parseDateTime('2026-10-09T14:30:00+05:30').valueOf()).toBe(Date.UTC(2026, 9, 9, 9, 0));
   });
 });
+
+// Audit 69: the display format was tried before ISO, so under 'YYYY-DD-MM' the ISO text 2026-10-09 14:30 read as
+// 10 September. ISO text is ISO; a format given with the value (an action's argument) still wins.
+describe('which format reads a value', () => {
+  it('reads ISO text as ISO whatever the display format', () => {
+    expect(M.parseDateTime('2026-10-09 14:30', 'YYYY-DD-MM HH:mm').format('YYYY-MM-DD')).toBe('2026-10-09');
+    expect(M.parseDateTime('2026-21-10 14:30', 'YYYY-DD-MM HH:mm').format('YYYY-MM-DD')).toBe('2026-10-21');
+    expect(M.parseDateTime('21/10/2026', 'DD/MM/YYYY').format('YYYY-MM-DD')).toBe('2026-10-21');
+  });
+
+  it('reads a value in the format given with it first', () => {
+    expect(M.parseDateTime('2026-10-09 14:30', 'YYYY-DD-MM HH:mm', true).format('YYYY-MM-DD')).toBe('2026-09-10');
+  });
+});

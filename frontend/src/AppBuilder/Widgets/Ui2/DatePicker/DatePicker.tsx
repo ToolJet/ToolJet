@@ -101,8 +101,8 @@ export const ShadDatePicker = (props: WidgetProps) => {
   const latest = useRef({ range, format });
   latest.current = { range, format };
   const parse = (v: unknown, fmt: unknown) => {
-    const formats = typeof fmt === 'string' && fmt.trim() ? toDayjsFormat(fmt) : latest.current.format;
-    const d = parseDateTime(v, formats);
+    const explicit = typeof fmt === 'string' && !!fmt.trim();
+    const d = parseDateTime(v, explicit ? toDayjsFormat(fmt) : latest.current.format, explicit);
     return d ? d.startOf('day').toDate() : undefined;
   };
   const blank = (v: unknown) => v === undefined || v === null || v === '';

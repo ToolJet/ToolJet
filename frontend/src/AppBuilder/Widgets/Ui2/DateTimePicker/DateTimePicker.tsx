@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon, Clock } from 'lucide-react';
 import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
@@ -81,21 +81,26 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
     () => M.dateRules({ minDate, maxDate, disabledDates, format: dateFormat }),
     [minDate, maxDate, disabledDates, dateFormat]
   );
-  const initial = M.parseDateTime(properties.defaultValue, displayFormat)?.valueOf() ?? null;
-  const [ts, setTs] = useState(initial);
-  useEffect(() => setTs(initial), [initial]);
+  // A new default value resets the value; a new display format only changes how it is shown (the default is read
+  // with the format in force when the default itself changes).
+  const formatRef = useLatest(displayFormat);
+  const rawDefault = useStable(properties.defaultValue);
+  const readDefault = () => M.parseDateTime(rawDefault, displayFormat)?.valueOf() ?? null;
+  const [ts, setTs] = useState(readDefault);
+  const [defaultRead, setDefaultRead] = useState(rawDefault);
+  if (defaultRead !== rawDefault) {
+    setDefaultRead(rawDefault);
+    setTs(readDefault());
+  }
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   const date = ts === null ? null : dayjs(ts);
   const exposed = M.dateTimeExposed(date, displayFormat);
   const tsRef = useLatest(ts);
-  const formatRef = useLatest(displayFormat);
   const setDate = (v: unknown, format: unknown) => {
-    const d = M.parseDateTime(
-      v,
-      isBlank(format) || typeof format !== 'string' ? formatRef.current : M.toDayjsFormat(format)
-    );
+    const explicit = !isBlank(format) && typeof format === 'string';
+    const d = M.parseDateTime(v, explicit ? M.toDayjsFormat(format) : formatRef.current, explicit);
     if (d || isBlank(v)) setTs(d ? d.valueOf() : null);
   };
   const blankArg = (v: unknown) => v === undefined || v === null || v === '';

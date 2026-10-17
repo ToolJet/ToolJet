@@ -94,18 +94,17 @@ export const clampTime = (minutes: number, bounds: TimeBounds): number =>
 
 // ---- Date and time -------------------------------------------------------------------------------------------------
 
-const DATE_INPUT_FORMATS = [
+// ISO text means one date whatever a widget's display format is, so it is read before that format.
+const ISO_INPUT_FORMATS = [
   'YYYY-MM-DDTHH:mm:ss',
   'YYYY-MM-DDTHH:mm',
   'YYYY-MM-DD HH:mm:ss',
   'YYYY-MM-DD HH:mm',
   'YYYY-MM-DD h:mm A',
   'YYYY-MM-DD',
-  'DD/MM/YYYY HH:mm',
-  'DD/MM/YYYY',
-  'MM/DD/YYYY HH:mm',
-  'MM/DD/YYYY',
 ];
+// Day-first and month-first text is ambiguous: the display format, when it reads the text, decides.
+const LOCAL_INPUT_FORMATS = ['DD/MM/YYYY HH:mm', 'DD/MM/YYYY', 'MM/DD/YYYY HH:mm', 'MM/DD/YYYY'];
 
 // Text that starts like an ISO date, with an optional time: year, month, day, hour, minute, second.
 const ISO_FIELDS = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/;
@@ -121,8 +120,10 @@ export const isRealDateText = (text: string): boolean => {
 };
 
 /** A date (dayjs) from ISO text, 'YYYY-MM-DD HH:mm', text in the display `format`, a unix timestamp (seconds or
- *  milliseconds) or a Date; null otherwise, and for a day or time that does not exist. */
-export const parseDateTime = (v: unknown, format?: unknown): Dayjs | null => {
+ *  milliseconds) or a Date; null otherwise, and for a day or time that does not exist. ISO text is read as ISO before
+ *  the display format; `formatFirst` reads with `format` first, for a format given with the value (an action's
+ *  argument). */
+export const parseDateTime = (v: unknown, format?: unknown, formatFirst = false): Dayjs | null => {
   if (v === undefined || v === null || v === '' || typeof v === 'boolean') return null;
   if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : dayjs(v);
   if (typeof v === 'number') {
@@ -133,7 +134,10 @@ export const parseDateTime = (v: unknown, format?: unknown): Dayjs | null => {
   if (typeof v !== 'string') return null;
   const s = v.trim();
   if (/^\d{9,13}$/.test(s)) return parseDateTime(Number(s));
-  const formats = isBlank(format) ? DATE_INPUT_FORMATS : [String(format), ...DATE_INPUT_FORMATS];
+  const given = isBlank(format) ? [] : [String(format)];
+  const formats = formatFirst
+    ? [...given, ...ISO_INPUT_FORMATS, ...LOCAL_INPUT_FORMATS]
+    : [...ISO_INPUT_FORMATS, ...given, ...LOCAL_INPUT_FORMATS];
   for (const f of formats) {
     const d = dayjs(s, f, true);
     if (d.isValid()) return d;
