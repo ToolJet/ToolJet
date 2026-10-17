@@ -4,8 +4,9 @@
  * skeleton loading look on the widgets that offer one. Each widget's own behaviour is in
  * Ui2/<Widget>/__tests__/integration/<Type>.spec.jsx.
  */
+import { createWidgetHarness, measureChartsAt } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { waitFor } from '@testing-library/react';
-import { createWidgetHarness, binding, store } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, store } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 
 // The Dialog is ModalV2 in the UI 2.0 look and keeps ModalV2's own controls (setDisableTrigger, setDisableModal).
@@ -15,6 +16,9 @@ const SKELETON_TYPES = shadcnConfigs.filter((c) => 'loadingIndicator' in c.prope
 const DYNAMIC_HEIGHT_TYPES = shadcnConfigs
   .filter((c) => 'dynamicHeight' in c.properties && c.name !== 'ShadDialog')
   .map((c) => c.name);
+
+// The charts draw at the widget's size (jsdom has no layout).
+measureChartsAt(400, 200);
 
 const root = (container) => container.querySelector('.tj-shadcn');
 // Busy is announced on the widget or, for a board or list that keeps its rows on screen while it reloads, on them.

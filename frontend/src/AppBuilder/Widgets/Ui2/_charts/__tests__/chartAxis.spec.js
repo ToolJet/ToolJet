@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { valueAxisWidth } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 
 describe('valueAxisWidth', () => {

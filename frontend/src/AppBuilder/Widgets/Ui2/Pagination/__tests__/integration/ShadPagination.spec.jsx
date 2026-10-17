@@ -6,13 +6,9 @@
  * this file covers what the Pagination itself does. Titles carry [ShadPagination-<AREA>-<NNN>] scenario ids.
  * The registered defaults apply: ten pages, starting on page 1, one page either side of the current one.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import {
-  createWidgetHarness,
-  binding,
-  setVariableOn,
-  countInvocationsOn,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'pg1';
 const widget = createWidgetHarness({

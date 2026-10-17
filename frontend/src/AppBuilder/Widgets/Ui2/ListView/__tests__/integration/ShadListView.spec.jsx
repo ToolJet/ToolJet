@@ -7,9 +7,10 @@
  * tooltip) is covered for every UI 2.0 widget in Ui2/__tests__/controlState.spec.jsx; this file covers what the List
  * view itself does. Titles carry [ShadListView-<AREA>-<NNN>] scenario ids.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
-import { createWidgetHarness, binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
 
 const ID = 'lv1';

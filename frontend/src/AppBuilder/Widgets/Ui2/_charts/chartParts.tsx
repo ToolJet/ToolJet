@@ -80,8 +80,9 @@ export interface LegendItem {
 
 export const LegendContent = ({ payload }: { payload?: LegendItem[] }) => (
   <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-4 tw-pt-3 tw-text-xs">
-    {(payload || []).map((item) => (
-      <div key={item.value} className="tw-flex tw-items-center tw-gap-1.5">
+    {(payload || []).map((item, i) => (
+      // By position: entries can repeat a value or have none (a junk category field).
+      <div key={i} className="tw-flex tw-items-center tw-gap-1.5">
         <span className="tw-h-2 tw-w-2 tw-shrink-0 tw-rounded-[2px]" style={{ background: item.color }} />
         <span className="tw-text-[color:var(--lk-legend,var(--sc-muted-foreground))]">{String(item.value)}</span>
       </div>

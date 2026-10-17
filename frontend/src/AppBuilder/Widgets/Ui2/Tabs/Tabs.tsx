@@ -1,6 +1,5 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { shallow } from 'zustand/shallow';
 import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import useStore from '@/AppBuilder/_stores/store';
@@ -220,8 +219,7 @@ export const ShadTabs = (props: WidgetProps) => {
   }, [currentTab, currentTitle, stepIndex, isFirstStep, isLastStep]);
 
   const componentCount = useStore(
-    (state: TabsStore) => state.getContainerChildrenMapping(`${id}-${currentTab}`)?.length || 0,
-    shallow
+    (state: TabsStore) => state.getContainerChildrenMapping(`${id}-${currentTab}`)?.length || 0
   );
   useDynamicHeight({
     isDynamicHeightEnabled: dynamic,

@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import {
   MAX_CHOICES,
   MAX_ITEMS,

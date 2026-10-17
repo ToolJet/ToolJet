@@ -1,6 +1,7 @@
 // The UI 2.0 widget configs are written by hand, one file per widget in WidgetManager/widgets, like the native configs.
 // Other tools read these files without running them (the MCP server's component catalog parses them), so each must
 // stay one plain object literal; and every widget must carry the standard control actions and values.
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import fs from 'fs';
 import path from 'path';
 import { parse } from '@babel/parser';

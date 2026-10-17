@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { joinStatRow } from '@/AppBuilder/Widgets/Ui2/Stat/statRow';
 
 // KPI cards side by side came out at different heights (a change chip wrapped in the narrower ones): Stats that share

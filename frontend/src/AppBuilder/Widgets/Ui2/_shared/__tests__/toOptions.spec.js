@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { toOptions } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 describe('toOptions', () => {

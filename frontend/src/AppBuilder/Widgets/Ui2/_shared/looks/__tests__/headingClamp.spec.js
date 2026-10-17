@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { clampLines } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 
 describe('clampLines', () => {

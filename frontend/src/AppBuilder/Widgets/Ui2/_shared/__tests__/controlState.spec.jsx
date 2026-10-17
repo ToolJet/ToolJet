@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import React from 'react';
 import { act, render } from '@testing-library/react';
 import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';

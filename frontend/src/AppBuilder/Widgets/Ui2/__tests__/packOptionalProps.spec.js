@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { validateProperties } from '@/AppBuilder/_utils/component-properties-validation';
 import { shadcnConfigs } from '../../../WidgetManager/widgets/shadcn';
 

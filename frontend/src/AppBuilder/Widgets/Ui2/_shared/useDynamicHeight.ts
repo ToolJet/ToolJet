@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { shallow } from 'zustand/shallow';
 import { useDynamicHeight as useDynamicHeightHook } from '@/_hooks/useDynamicHeight';
 import useStore from '@/AppBuilder/_stores/store';
 import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
@@ -47,7 +46,7 @@ export interface RowHeightArgs {
 export const useFittedRowHeight = ({ id, path, index, value, fit, height, currentLayout }: RowHeightArgs): number => {
   const indices = useMemo(() => [...path.map((segment) => segment.index), index], [path, index]);
   const key = layoutKey(id, indices);
-  const fitted = useStore((state: TempStore) => state.temporaryLayouts?.[key]?.height, shallow);
+  const fitted = useStore((state: TempStore) => state.temporaryLayouts?.[key]?.height);
   useDynamicHeight({
     isDynamicHeightEnabled: fit,
     id,

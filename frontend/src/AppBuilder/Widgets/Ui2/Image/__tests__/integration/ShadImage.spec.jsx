@@ -6,12 +6,9 @@
  * this file covers what the Image itself does. Titles carry [ShadImage-<AREA>-<NNN>] scenario ids. jsdom never loads
  * images, so a test fires the img's load or error event itself.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import {
-  createWidgetHarness,
-  binding,
-  countInvocationsOn,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'img1';
 const SRC = 'https://example.invalid/lake.png';

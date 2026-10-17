@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { itemKey, listLook, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 
 const rows = Array.from({ length: 23 }, (_, i) => ({ id: i + 1 }));

@@ -2,6 +2,7 @@
 // created with must agree. They disagreed on the Line and Combo charts (yAxisFormat "number" in the inspector, created
 // as "currency"), so a line chart of job counts read "$0 $1 $2" on its axis; and on the Line chart's legend and the
 // Record list's trailing value format.
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { shadcnConfigs } from '../../../WidgetManager/widgets/shadcn';
 
 const choiceCases = shadcnConfigs.flatMap((config) =>

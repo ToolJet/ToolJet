@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { highlightIndexes } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 
 const data = [

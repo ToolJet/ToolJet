@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { FONT_STACKS, fontStack, typeClasses } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 

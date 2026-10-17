@@ -7,13 +7,9 @@
  * The registered defaults apply: Dashboard (active), Orders (badge 12), Customers, Reports (Sales and Traffic under
  * it) and Settings in a Workspace group.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import {
-  createWidgetHarness,
-  binding,
-  setVariableOn,
-  countInvocationsOn,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'nav1';
 const widget = createWidgetHarness({

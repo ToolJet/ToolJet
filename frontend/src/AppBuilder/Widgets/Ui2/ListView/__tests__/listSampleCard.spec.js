@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { SAMPLE_CARD, sampleCardLayouts } from '@/AppBuilder/Widgets/Ui2/ListView/listSampleCard';
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 

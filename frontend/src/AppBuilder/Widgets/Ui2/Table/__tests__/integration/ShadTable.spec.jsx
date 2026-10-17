@@ -7,13 +7,9 @@
  * every UI 2.0 widget in Ui2/__tests__/controlState.spec.jsx; this file covers what the Table itself does, related keys
  * grouped. Titles carry [ShadTable-<AREA>-<NNN>] scenario ids.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent, within } from '@testing-library/react';
-import {
-  createWidgetHarness,
-  binding,
-  setVariableOn,
-  countInvocationsOn,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 
 const ID = 'tbl1';

@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { avatarPeople } from '@/AppBuilder/Widgets/Ui2/_shared/people';
 
 describe('avatarPeople', () => {

@@ -7,14 +7,10 @@
  * loading, tooltip) is covered for every UI 2.0 widget in Ui2/__tests__/controlState.spec.jsx; this file covers what the
  * Kanban itself does. Titles carry [ShadKanban-<AREA>-<NNN>] scenario ids.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
-import {
-  createWidgetHarness,
-  binding,
-  setVariableOn,
-  countInvocationsOn,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { columnMinimum, kanbanCollision } from '@/AppBuilder/Widgets/Ui2/Kanban/Kanban';
 import useStore from '@/AppBuilder/_stores/store';
 import {

@@ -1,6 +1,7 @@
 // Guardrail: the UI 2.0 widgets stay easy to read and to review. Every source file (outside tests) is TypeScript and at
 // most 400 lines; a widget's code lives in its own folder, Ui2/<Widget>/, with what several widgets share in _shared or a
 // family folder (_inputs, _pickers, _display, _actions, _sections, _charts). README.md explains the layout.
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import fs from 'fs';
 import path from 'path';
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';

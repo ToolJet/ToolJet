@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { LOOKS, lookVars, seriesColor, whenSet } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 

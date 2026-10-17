@@ -1,5 +1,4 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { shallow } from 'zustand/shallow';
 import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -146,11 +145,8 @@ export const ShadListView = (props: WidgetProps) => {
   // Rows, their values and their heights hang off the list's own path (in a native Kanban card, that card's index).
   const contextPath = useOwnContextPath(props.subContainerIndex, props.parentId);
   const parentIndices = useStable(useMemo(() => contextPath.map((segment) => segment.index), [contextPath]));
-  const updateCustomResolvables = useStore((state: ListStore) => state.updateCustomResolvables, shallow);
-  const initExposedValueArrayForChildren = useStore(
-    (state: ListStore) => state.initExposedValueArrayForChildren,
-    shallow
-  );
+  const updateCustomResolvables = useStore((state: ListStore) => state.updateCustomResolvables);
+  const initExposedValueArrayForChildren = useStore((state: ListStore) => state.initExposedValueArrayForChildren);
   const childCount = useStore((state: ListStore) => (state.containerChildrenMapping?.[id] || []).length);
 
   const rootRef = useRef<HTMLDivElement>(null);

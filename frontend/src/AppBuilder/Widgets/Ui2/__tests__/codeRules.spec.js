@@ -7,6 +7,7 @@
 //   the app builder team: Stat equalises a row of Stat cards by reading their FlexContainer wrapper (Stat/statRow.ts).
 // - No `react-hooks/exhaustive-deps` suppressions: dependencies are complete (useStable and useLatest in packHooks are
 //   the tools for bound data and latest-value reads).
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import fs from 'fs';
 import path from 'path';
 import { parse } from '@babel/parser';

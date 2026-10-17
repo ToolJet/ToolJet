@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import React from 'react';
 import { render } from '@testing-library/react';
 import { shadAreaChartConfig } from '@/AppBuilder/WidgetManager/widgets/shadAreaChart';

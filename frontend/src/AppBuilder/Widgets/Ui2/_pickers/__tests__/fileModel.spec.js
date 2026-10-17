@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/fileModel';
 
 describe('pickers model: files', () => {

@@ -7,13 +7,9 @@
  * measures as jsdom does. Standard control behaviour (visibility, disabled, loading, tooltip) is covered for every
  * UI 2.0 widget in Ui2/__tests__/integration/controlState.spec.jsx. Titles carry [ShadRadialChart-<AREA>-<NNN>] ids.
  */
+import { createWidgetHarness, measureChartsAt } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import {
-  createWidgetHarness,
-  binding,
-  setVariableOn,
-  countInvocationsOn,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'radial1';
 const W = 480;
@@ -28,16 +24,7 @@ const widget = createWidgetHarness({
   defaultProperties: { animate: binding('{{false}}') },
 });
 
-let measure;
-beforeAll(() => {
-  const own = Element.prototype.getBoundingClientRect;
-  measure = jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function rect() {
-    return this.classList?.contains('recharts-responsive-container')
-      ? { x: 0, y: 0, top: 0, left: 0, right: W, bottom: H, width: W, height: H }
-      : own.call(this);
-  });
-});
-afterAll(() => measure.mockRestore());
+measureChartsAt(W, H);
 
 const render = (options = {}) => widget.render({ currentMode: 'view', ...options });
 const exposed = () => widget.exposed() ?? {};

@@ -23,6 +23,8 @@ export const ShadPieChart = (props: WidgetProps) => {
     return slices.map((d, i) => ({ ...d, fill: states?.[i] ?? seriesColor(colors, i) }));
   }, [bound, colors, p.categoryField]);
   const donut = p.donut !== false;
+  // Recharts needs a key for a slice's value; an unset or junk field reads `value`, the default rows' own field.
+  const valueKey = isSet(p.valueField) && typeof p.valueField !== 'object' ? String(p.valueField) : 'value';
   const format = affixFormatter(p, false);
   return (
     <ChartFrame props={props} empty={!data.length}>
@@ -32,7 +34,7 @@ export const ShadPieChart = (props: WidgetProps) => {
           {p.showLegend !== false ? <Legend content={<LegendContent />} /> : null}
           <Pie
             data={data}
-            dataKey={p.valueField}
+            dataKey={valueKey}
             nameKey={p.categoryField}
             innerRadius={donut ? '58%' : 0}
             outerRadius="85%"

@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { percentScale } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { comboSeries } from '@/AppBuilder/Widgets/Ui2/ComboChart/comboModel';
 import { funnelStages } from '@/AppBuilder/Widgets/Ui2/FunnelChart/funnelModel';

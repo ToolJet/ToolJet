@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { focusables, openerOf, trapTab, watchOpeners } from '@/AppBuilder/Widgets/Ui2/Dialog/dialogFocus';
 
 // The Dialog (ModalV2 in the pack's look) has react-bootstrap's focus enforcement off, so Tab left an open dialog for

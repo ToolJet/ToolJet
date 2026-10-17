@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { kanbanAnnouncements, kanbanCoordinates } from '@/AppBuilder/Widgets/Ui2/Kanban/kanbanKeyboard';
 
 // Keyboard moves on the Kanban took about a dozen arrow presses per column (dnd-kit's 25px default step), and the

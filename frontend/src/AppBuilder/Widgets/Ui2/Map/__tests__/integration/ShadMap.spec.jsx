@@ -7,8 +7,9 @@
  * answers where a scenario searches. Standard control behaviour (visibility, disabled, loading, tooltip) is covered for
  * every UI 2.0 widget in Ui2/__tests__/controlState.spec.jsx. Titles carry [ShadMap-<AREA>-<NNN>] scenario ids.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import { createWidgetHarness, binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'map1';
 const widget = createWidgetHarness({
@@ -18,6 +19,9 @@ const widget = createWidgetHarness({
   widgetHeight: 424,
   widgetWidth: 600,
   defaultProperties: { clusterMarkers: binding('{{false}}') },
+  // Picking a spot looks up its address on the default Nominatim; it answers with no place, so pickedLocation keeps
+  // just the spot. The address search scenarios below stub fetch themselves.
+  capabilities: { network: [{ url: 'https://nominatim.openstreetmap.org/reverse', json: [] }] },
 });
 
 const ROUTE = "{{[{ name: 'Van 1', path: [[37.79, -122.39], [37.76, -122.42]] }]}}";
@@ -392,13 +396,14 @@ describe('UI 2.0 Map', () => {
   // one-request-a-second queue is shared by every map on the page.
   describe('address search', () => {
     let fetchMock;
+    const realFetch = global.fetch;
     const calls = (re) => fetchMock.mock.calls.map(([url]) => url).filter((url) => re.test(url));
     beforeEach(() => {
       fetchMock = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve([]) }));
       global.fetch = fetchMock;
     });
     afterEach(() => {
-      delete global.fetch;
+      global.fetch = realFetch;
     });
 
     test('[ShadMap-PROP-011] showSearch with searchPlaceholder searches the default Nominatim only on Enter', async () => {

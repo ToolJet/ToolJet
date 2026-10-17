@@ -6,13 +6,9 @@
  * this file covers what the Steps widget itself does. Titles carry [ShadSteps-<AREA>-<NNN>] scenario ids.
  * The registered defaults apply: Account, Company, Billing and Done (ids 1 to 4), on step 2.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import {
-  createWidgetHarness,
-  binding,
-  setVariableOn,
-  countInvocationsOn,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'steps1';
 const widget = createWidgetHarness({

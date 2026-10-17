@@ -6,13 +6,9 @@
  * (visibility, disabled, loading, tooltip) is covered for every UI 2.0 widget in
  * Ui2/__tests__/integration/controlState.spec.jsx. Titles carry [ShadFunnelChart-<AREA>-<NNN>] ids.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
-import {
-  createWidgetHarness,
-  binding,
-  setVariableOn,
-  countInvocationsOn,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'funnel1';
 const widget = createWidgetHarness({

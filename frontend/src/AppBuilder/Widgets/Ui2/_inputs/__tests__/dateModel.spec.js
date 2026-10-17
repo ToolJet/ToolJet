@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import dayjs from 'dayjs';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 

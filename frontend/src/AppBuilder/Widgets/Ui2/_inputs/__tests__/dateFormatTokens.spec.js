@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { toDayjsFormat } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 
 describe('toDayjsFormat', () => {

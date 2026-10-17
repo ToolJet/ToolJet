@@ -5,8 +5,9 @@
  * (visibility, disabled, loading, tooltip) is covered for every UI 2.0 widget in Ui2/__tests__/controlState.spec.jsx;
  * this file covers what the Stat itself does. Titles carry [ShadStat-<AREA>-<NNN>] scenario ids.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { screen, waitFor } from '@testing-library/react';
-import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { FONT_STACKS } from '@/AppBuilder/Widgets/Ui2/_shared/looks/typeLook';
 
 const widget = createWidgetHarness({

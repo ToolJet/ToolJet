@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { neighbourTab, tabsFromProperties, tabsLook, visibleTabs } from '@/AppBuilder/Widgets/Ui2/Tabs/tabsModel';
 
 describe('tabsFromProperties', () => {

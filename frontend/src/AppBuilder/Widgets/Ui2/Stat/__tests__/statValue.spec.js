@@ -1,3 +1,4 @@
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import { statValue } from '@/AppBuilder/Widgets/Ui2/Stat/statModel';
 
 describe('statValue', () => {

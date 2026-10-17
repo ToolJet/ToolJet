@@ -7,14 +7,10 @@
  * covers what the Tabs widget itself does. Titles carry [ShadTabs-<AREA>-<NNN>] scenario ids.
  * The registered defaults apply: Overview (t0), Activity (t1) and Settings (t2) as pills, on Overview.
  */
+import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, screen, waitFor, fireEvent } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
-import {
-  createWidgetHarness,
-  binding,
-  setVariableOn,
-  countInvocationsOn,
-} from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'tab1';
 const widget = createWidgetHarness({

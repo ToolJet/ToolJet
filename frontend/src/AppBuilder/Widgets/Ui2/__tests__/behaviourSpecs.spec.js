@@ -2,6 +2,7 @@
 // and that spec names everything the widget adds to the standard set: each of its own properties, validation rules,
 // events, actions and exposed values (a key it never mentions is a key nothing checks). What every widget shares is
 // covered once, in Ui2/__tests__/integration/controlState.spec.jsx. Titles carry [<Type>-<AREA>-<NNN>] ids.
+import '@/AppBuilder/Widgets/Ui2/__tests__/consoleGuard';
 import fs from 'fs';
 import path from 'path';
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
@@ -59,5 +60,32 @@ describe.each(shadcnConfigs.map((c) => [c.name, c]))('%s behaviour spec', (type,
     expect(titles.filter((t) => !t.startsWith(`[${type}-`))).toEqual([]);
     const ownStyles = Object.keys(config.styles || {}).filter((k) => k !== 'boxShadow');
     if (ownStyles.length) expect(text).toMatch(new RegExp(`\\[${type}-STY-\\d{3}\\]`));
+  });
+});
+
+// Every spec in the default run has the console guard on (consoleGuard.js), installed by its first import so it is in
+// place before anything the spec loads can log; behaviour specs take createWidgetHarness from ui2Harness.js, which
+// also puts its store writes inside act().
+describe('UI 2.0 specs', () => {
+  const specs = (dir) =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) return e.name === 'fuzz' || e.name === 'leaks' ? [] : specs(p);
+      return /\.spec\.jsx?$/.test(e.name) ? [p] : [];
+    });
+  const GUARDED =
+    /^import (?:'@\/AppBuilder\/Widgets\/Ui2\/__tests__\/consoleGuard'|\{[^}]*\bcreateWidgetHarness\b[^}]*\} from '@\/AppBuilder\/Widgets\/Ui2\/__tests__\/ui2Harness');/m;
+  const firstImport = (text) => text.match(/^import [^;]*;/m)?.[0] ?? '';
+
+  it('import the console guard (or ui2Harness) first, and take createWidgetHarness from ui2Harness', () => {
+    const files = specs(UI2);
+    expect(files.length).toBeGreaterThan(100);
+    const wrong = files.filter((file) => {
+      const text = fs.readFileSync(file, 'utf8');
+      const sharedHarness =
+        /\bcreateWidgetHarness\b[^}]*\} from '@\/AppBuilder\/Widgets\/__tests__\/integration\/widgetHarness'/;
+      return !GUARDED.test(firstImport(text)) || sharedHarness.test(text);
+    });
+    expect(wrong.map((file) => path.relative(UI2, file))).toEqual([]);
   });
 });
