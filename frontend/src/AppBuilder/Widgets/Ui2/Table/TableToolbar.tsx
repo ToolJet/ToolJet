@@ -183,7 +183,7 @@ export const TableToolbar = ({
               ) : null}
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="tw-w-auto" style={lookVars('ShadTable', styles)}>
+          <PopoverContent aria-label="Filters" align="end" className="tw-w-auto" style={lookVars('ShadTable', styles)}>
             <FilterPanel columns={columns} filters={filters} onApply={(list) => applyFilterList(list)} />
           </PopoverContent>
         </Popover>
@@ -196,7 +196,12 @@ export const TableToolbar = ({
               Columns
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="tw-w-52 tw-p-2" style={lookVars('ShadTable', styles)}>
+          <PopoverContent
+            aria-label="Columns"
+            align="end"
+            className="tw-w-52 tw-p-2"
+            style={lookVars('ShadTable', styles)}
+          >
             {columns
               .filter((c) => c.visible)
               .map((c) => (
@@ -228,7 +233,12 @@ export const TableToolbar = ({
               <Download className="tw-h-3.5 tw-w-3.5" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="tw-w-40 tw-p-1" style={lookVars('ShadTable', styles)}>
+          <PopoverContent
+            aria-label="Download"
+            align="end"
+            className="tw-w-40 tw-p-1"
+            style={lookVars('ShadTable', styles)}
+          >
             {(
               [
                 ['csv', 'Download CSV'],

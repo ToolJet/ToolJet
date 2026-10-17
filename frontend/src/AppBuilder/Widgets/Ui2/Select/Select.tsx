@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } fro
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { CONTROL, FormField, HELP } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, HELP, controlAria, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { choiceKey, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -80,6 +80,9 @@ export const ShadSelect = (props: WidgetProps) => {
         <SelectTrigger
           ref={triggerRef}
           id={`shad-${id}`}
+          // role="combobox" takes no name from its content: without a label, the placeholder names it.
+          aria-label={fieldName(props, 'Select')}
+          {...controlAria(props, check.error)}
           {...focus.handlers}
           className={cn(CONTROL, 'data-[placeholder]:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]')}
         >

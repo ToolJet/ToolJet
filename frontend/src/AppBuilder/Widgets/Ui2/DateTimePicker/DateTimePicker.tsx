@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon, Clock } from 'lucide-react';
-import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -175,7 +175,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
             id={`shad-${id}`}
             variant="outline"
             disabled={disabled}
-            aria-invalid={!!check.error || undefined}
+            {...controlAria(props, check.error)}
             {...focus.handlers}
             className={cn(
               TRIGGER,
@@ -187,7 +187,7 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
             <span className="tw-truncate">{shown || toText(properties.placeholder)}</span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="tw-w-auto tw-p-0" align="start" style={vars}>
+        <PopoverContent aria-label="Choose a date and time" className="tw-w-auto tw-p-0" align="start" style={vars}>
           <Calendar
             autoFocus
             mode="single"

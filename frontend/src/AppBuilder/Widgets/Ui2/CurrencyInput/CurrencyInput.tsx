@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -136,7 +136,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
             () => (value === null ? '' : M.formatNumber(value, { decimals, grouping: false, locale })),
             (typed) => commit(round(M.parseNumber(typed, locale)))
           )}
-          aria-invalid={!!check.error || undefined}
+          {...controlAria(props, check.error)}
           className={cn(
             INNER,
             'tw-tabular-nums',

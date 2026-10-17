@@ -12,7 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import { createFileFieldRef, registerFileHandle, releaseFileHandle } from '@/AppBuilder/_utils/fileHandleRegistry';
-import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
@@ -261,7 +261,7 @@ export const ShadFileUpload = (props: WidgetProps) => {
         <div
           {...getRootProps({
             'aria-label': title,
-            'aria-invalid': !!(rejectError || check.error) || undefined,
+            ...controlAria(props, rejectError || check.error),
             className: cn(
               DROPZONE,
               isDragActive &&
