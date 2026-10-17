@@ -1,18 +1,33 @@
 import { commonSelectors } from 'Selectors/common';
-import { dashboardSelector } from 'Selectors/platform/dashboard';
 import { versionSwitcherSelectors } from 'Selectors/platform/version';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
-import { openAppEditor, openAppsDashboard } from 'Support/utils/platform/folderPermissions';
+import {
+  TIERS,
+  apiGetItemIdsInFolder,
+  expectFolderMenuAbsent,
+  expectFolderMenuOptions,
+  loginAs,
+  openAllApps,
+  openAppEditor,
+  openAppsDashboard,
+  openFolder,
+  phase,
+  uiAddItemToFolder,
+  uiRemoveItemFromFolder,
+  uiRenameFolder,
+} from 'Support/utils/platform/folderPermissions';
 
-describe('Apps — Folder Granular Access', () => {
+// What a folder-scoped grant lets a builder DO to the folder itself, through the UI.
+describe('Apps — Folder Granular Access', { retries: 0 }, () => {
   let workspaceId, wsName, wsSlug;
 
+  // Folder + an admin-owned app inside it + a group holding one tier on the folder + a builder in that group.
   const setupFolderAccess = (label, permissions) => {
     const attemptId = Date.now();
     const folderName = `${label} App Folder ${attemptId}`;
     const appName = `${label} App ${attemptId}`;
     const groupName = `QA ${label} App Group ${attemptId}`;
-    const userEmail = `qa-app-folder-${label.toLowerCase().replace(/\s+/g, '-')}-${attemptId}@example.com`;
+    const userEmail = `qa-app-folder-${label.toLowerCase()}-${attemptId}@example.com`;
     let folderId;
     let appId;
 
@@ -27,11 +42,9 @@ describe('Apps — Folder Granular Access', () => {
         return cy.apiAddAppToFolder(folderId, appId);
       })
       .then(() => apiCreateGroup(groupName))
-      .then(() =>
-        cy.apiCreateGranularPermission(groupName, `perm ${attemptId}`, 'folder', permissions, [folderId], false)
-      )
+      .then(() => cy.apiCreateGranularPermission(groupName, `perm ${attemptId}`, 'folder', permissions, [folderId], false))
       .then(() => cy.apiFullUserOnboarding(label, userEmail, 'builder', 'password', wsName, {}, [groupName]))
-      .then(() => ({ folderId, appId, folderName, appName, userEmail }));
+      .then(() => ({ folderId, appId, folderName, appName, userEmail, groupName }));
   };
 
   afterEach(() => {
@@ -50,70 +63,73 @@ describe('Apps — Folder Granular Access', () => {
       Cypress.env('workspaceSlug', wsSlug);
     });
 
+    // Empty the builder role's folder/app grants and coarse folder flags before it has members, so the custom group is the only source of access.
     cy.apiDeleteGranularPermission('builder', ['app', 'folder']);
+    cy.apiUpdateGroupPermission('builder', { folderCreate: false, folderDelete: false });
   });
 
-  it('user with Edit Folder permission can rename an authorized folder, move apps in and out of it, and edit an app within it — and deleting the folder does not delete the app inside it', () => {
-    setupFolderAccess('EditFolder', { canEditFolder: true, canEditApps: false, canViewApps: false }).then(
-      ({ folderId, appId, folderName, appName, userEmail }) => {
-        const renamedFolderName = `${folderName} Renamed`;
-        const looseAppName = `Loose App ${Date.now()}`;
-        let looseAppId;
+  it('should let an Edit folder grant rename the folder, move apps in and out of it from the UI, and edit the app inside it', () => {
+    setupFolderAccess('EditFolder', TIERS.editFolder).then(({ folderId, appId, folderName, userEmail }) => {
+      const renamedFolderName = `${folderName} Renamed`;
+      const looseAppName = `Loose App ${Date.now()}`;
+      let looseAppId;
 
-        cy.apiCreateApp(looseAppName).then(() => {
-          looseAppId = Cypress.env('appId');
-        });
+      loginAs(userEmail);
+      // The user owns this app, which is what lets them move it.
+      cy.apiCreateApp(looseAppName).then(() => {
+        looseAppId = Cypress.env('appId');
+      });
 
-        cy.apiLogin(userEmail, 'password');
+      phase('rename: offered and works; delete stays a coarse right');
+      openAppsDashboard();
+      expectFolderMenuOptions(folderName, { rename: true, remove: false });
+      uiRenameFolder(folderName, renamedFolderName);
 
-        // Rename the authorized folder — via API, verified via UI.
-        cy.then(() => cy.apiRenameFolder(folderId, renamedFolderName));
-        openAppsDashboard();
-        cy.get(commonSelectors.folderListcard(renamedFolderName)).should('exist');
-        cy.get(commonSelectors.folderListcard(folderName)).should('not.exist');
+      phase('move a loose app IN through the card menu');
+      // Rename leaves the renamed folder active, so go back to All apps where the loose app lives.
+      openAllApps();
+      uiAddItemToFolder(looseAppName, renamedFolderName);
+      cy.then(() => apiGetItemIdsInFolder(folderId).then((ids) => expect(ids).to.include(looseAppId)));
 
-        // Add a loose app to the (renamed) folder, then remove it again — via API, verified via UI.
-        cy.then(() => cy.apiAddAppToFolder(folderId, looseAppId));
-        cy.get(dashboardSelector.folderName(renamedFolderName)).click();
-        cy.get(commonSelectors.appCard(looseAppName)).should('be.visible');
+      phase('move it back OUT from inside the folder');
+      openFolder(renamedFolderName);
+      uiRemoveItemFromFolder(looseAppName);
+      cy.then(() => apiGetItemIdsInFolder(folderId).then((ids) => expect(ids).to.deep.equal([appId])));
 
-        cy.then(() => cy.apiRemoveAppFromFolder(looseAppId, folderId));
-        cy.get(dashboardSelector.allApplicationsLink).click({ force: true });
-        cy.get(dashboardSelector.folderName(renamedFolderName)).click();
-        cy.get(commonSelectors.appCard(looseAppName)).should('not.exist');
-
-        // Edit the app that lives inside the folder — via API, verified via UI.
-        cy.then(() =>
-          cy
-            .apiGetEditingVersionId(appId)
-            .then((versionId) => cy.apiCreateAppVersion(appId, 'v2-folder-edit-allowed', versionId))
-        );
-        openAppEditor(Cypress.env('workspaceSlug'), appId);
-        cy.get(versionSwitcherSelectors.versionSwitcherButton).should('contain.text', 'v2-folder-edit-allowed');
-
-        // Deleting the folder (as its owner, admin) does not delete the app inside it.
-        cy.apiLogin();
-        cy.then(() => cy.apiDeleteFolder(folderId));
-        openAppsDashboard();
-
-        cy.get(commonSelectors.folderListcard(renamedFolderName)).should('not.exist');
-
-        cy.get(dashboardSelector.allApplicationsLink).click({ force: true });
-        cy.get(commonSelectors.appCard(appName)).should('exist');
-      }
-    );
+      phase('the app already in the folder is editable');
+      cy.apiGetEditingVersionId(appId).then((versionId) =>
+        cy.apiCreateAppVersion(appId, 'v2-folder-edit-allowed', versionId)
+      );
+      openAppEditor(wsSlug, appId);
+      cy.get(versionSwitcherSelectors.versionSwitcherButton).should('contain.text', 'v2-folder-edit-allowed');
+    });
   });
 
-  it("non-owner without any folder-level grant cannot rename or manage another user's app folder", () => {
+  it('should list, but not let the user manage, the folder of an app reached only through a direct app grant', () => {
     const attemptId = Date.now();
-    const folderName = `Unshared App Folder ${attemptId}`;
-    const userEmail = `qa-app-folder-unshared-${attemptId}@example.com`;
+    const folderName = `Direct Grant App Folder ${attemptId}`;
+    const appName = `Direct Grant App ${attemptId}`;
+    const groupName = `QA App Direct ${attemptId}`;
+    const userEmail = `qa-app-direct-${attemptId}@example.com`;
 
-    cy.apiCreateAppFolder(folderName);
-    cy.apiFullUserOnboarding('QA Unshared App Folder User', userEmail, 'builder', 'password', wsName);
+    cy.apiCreateAppFolder(folderName).then((folder) => {
+      cy.apiCreateApp(appName).then(() => {
+        const appId = Cypress.env('appId');
+        cy.apiAddAppToFolder(folder.id, appId);
+        apiCreateGroup(groupName);
+        cy.apiCreateGranularPermission(groupName, `${groupName} app`, 'app', { canEdit: false, canView: true }, [appId], false);
+        cy.apiFullUserOnboarding('QA Direct', userEmail, 'builder', 'password', wsName, {}, [groupName]);
+      });
+    });
 
-    cy.apiLogin(userEmail, 'password');
+    loginAs(userEmail);
     openAppsDashboard();
-    cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
+
+    // A folder is listed when it holds an app the viewer can see, even without a folder grant.
+    expectFolderMenuAbsent(folderName);
+    openFolder(folderName);
+    cy.get(commonSelectors.appCard(appName)).should('be.visible');
+    openAllApps();
+    cy.get(commonSelectors.appCard(appName)).should('be.visible');
   });
 });

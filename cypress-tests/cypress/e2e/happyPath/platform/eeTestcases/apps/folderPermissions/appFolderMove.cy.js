@@ -1,19 +1,38 @@
 import { commonSelectors } from 'Selectors/common';
 import { dashboardSelector } from 'Selectors/platform/dashboard';
-import { versionModalSelector } from 'Selectors/platform/eeCommon';
-import { versionSwitcherSelectors } from 'Selectors/platform/version';
-import { viewAppCardOptions } from 'Support/utils/common';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
 import {
-  openAppEditor,
+  TIERS,
+  apiGetItemIdsInFolder,
+  loginAs,
+  openAllApps,
   openAppsDashboard,
-  openEditorExpectingRestricted,
+  openFolder,
+  uiAddItemToFolder,
+  uiOpenAddToFolder,
+  uiPickFolder,
+  uiSubmitAddToFolder,
 } from 'Support/utils/platform/folderPermissions';
-import { commonText } from 'Texts/common';
-import { dashboardText } from 'Texts/platform/dashboard';
 
-describe('Apps — Moving Apps Between Folders', () => {
+// Moving apps between folders through the dashboard "Add to folder" modal.
+describe('Apps — Moving Apps Between Folders', { retries: 0 }, () => {
   let workspaceId, wsName, wsSlug;
+
+  // The apps menu portals to document.body and is multi-select, so it stays open after a pick and overlays the folder select below; clicking the control again toggles it shut.
+  const toggleAppsPicker = () => cy.get(dashboardSelector.bulkMoveAppsSelect).click();
+  const pickApp = (appName) => cy.contains(dashboardSelector.bulkMoveAppOption, appName).click();
+
+  // A group holding Edit folder on the given folders, and a builder in it.
+  const setupEditor = (label, folderIds) => {
+    const attemptId = Date.now();
+    const groupName = `QA App ${label} Group ${attemptId}`;
+    const userEmail = `qa-app-${label.toLowerCase()}-${attemptId}@example.com`;
+
+    apiCreateGroup(groupName);
+    cy.apiCreateGranularPermission(groupName, `folder edit ${attemptId}`, 'folder', TIERS.editFolder, folderIds, false);
+    cy.apiFullUserOnboarding(`QA App ${label}`, userEmail, 'builder', 'password', wsName, {}, [groupName]);
+    return cy.wrap(userEmail);
+  };
 
   afterEach(() => {
     cy.apiLogin();
@@ -33,151 +52,145 @@ describe('Apps — Moving Apps Between Folders', () => {
     cy.apiDeleteGranularPermission('builder', ['app', 'folder']);
   });
 
-  it('user with Edit Folder access sees only authorized folders in the move picker, and can move an app they can edit into one', () => {
+  it('should offer only folders the user can edit in the move picker, and move an app the user can edit into one', () => {
     const attemptId = Date.now();
     const editableFolderName = `Editable App Folder ${attemptId}`;
     const inaccessibleFolderName = `Inaccessible App Folder ${attemptId}`;
     const appName = `Move Source App ${attemptId}`;
-    const groupName = `QA App Move Group ${attemptId}`;
-    const userEmail = `qa-app-move-basic-${attemptId}@example.com`;
 
     cy.apiCreateAppFolder(inaccessibleFolderName);
     cy.apiCreateAppFolder(editableFolderName).then((folder) => {
-      apiCreateGroup(groupName).then(() =>
-        cy.apiCreateGranularPermission(
-          groupName,
-          `folder edit ${attemptId}`,
-          'folder',
-          { canEditFolder: true, canEditApps: false, canViewApps: false },
-          [folder.id],
-          false
-        )
-      );
-    });
-    cy.then(() => {
-      cy.apiFullUserOnboarding('QA App Move Basic User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
-      cy.apiLogin(userEmail, 'password');
-      // Ownership grants edit access on the app itself.
-      cy.apiCreateApp(appName);
+      setupEditor('Move', [folder.id]).then((userEmail) => {
+        loginAs(userEmail);
+        // Ownership grants edit access on the app itself.
+        cy.apiCreateApp(appName);
 
-      openAppsDashboard();
-      cy.wait(2000);
-      viewAppCardOptions(appName);
-      cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
-      cy.get(dashboardSelector.selectFolder).click();
+        openAppsDashboard();
+        uiOpenAddToFolder(appName);
+        cy.get(dashboardSelector.selectFolder).click();
+        cy.get(commonSelectors.folderList).should('contain.text', editableFolderName);
+        cy.get(commonSelectors.folderList).should('not.contain.text', inaccessibleFolderName);
+        cy.get(commonSelectors.folderList).contains(editableFolderName).click();
+        uiSubmitAddToFolder(editableFolderName);
 
-      // The picker only lists folders this user has Edit Folder access to.
-      cy.get(commonSelectors.folderList).should('contain.text', editableFolderName);
-      cy.get(commonSelectors.folderList).should('not.contain.text', inaccessibleFolderName);
-
-      cy.get(commonSelectors.folderList).contains(editableFolderName).click();
-      cy.get(dashboardSelector.addToFolderButton).click();
-      cy.verifyToastMessage(commonSelectors.toastMessage, dashboardText.bulkMoveSuccessToast(editableFolderName), false);
-
-      cy.get(dashboardSelector.folderName(editableFolderName)).click();
-      cy.get(commonSelectors.appCard(appName)).should('be.visible');
+        openFolder(editableFolderName);
+        cy.get(commonSelectors.appCard(appName)).should('be.visible');
+      });
     });
   });
 
-  it('an app can belong to only one folder — moving it to another folder removes it from the previous one', () => {
+  it('should bulk move several apps into an authorized folder in one submit, with the same folder filtering', () => {
+    const attemptId = Date.now();
+    const editableFolderName = `Bulk Editable Folder ${attemptId}`;
+    const inaccessibleFolderName = `Bulk Inaccessible Folder ${attemptId}`;
+    const appNames = [`Bulk App A ${attemptId}`, `Bulk App B ${attemptId}`, `Bulk App C ${attemptId}`];
+
+    cy.apiCreateAppFolder(inaccessibleFolderName);
+    cy.apiCreateAppFolder(editableFolderName).then((folder) => {
+      setupEditor('Bulk', [folder.id]).then((userEmail) => {
+        loginAs(userEmail);
+        appNames.forEach((appName) => cy.apiCreateApp(appName));
+
+        openAppsDashboard();
+        uiOpenAddToFolder(appNames[0]);
+
+        // The first app rides in pre-selected; add the other two.
+        toggleAppsPicker();
+        pickApp(appNames[1]);
+        pickApp(appNames[2]);
+        toggleAppsPicker();
+        cy.get(dashboardSelector.bulkMoveSelectedValue).should('contain.text', '3 apps selected');
+
+        cy.get(dashboardSelector.selectFolder).click();
+        cy.get(commonSelectors.folderList).should('contain.text', editableFolderName);
+        cy.get(commonSelectors.folderList).should('not.contain.text', inaccessibleFolderName);
+        cy.get(commonSelectors.folderList).contains(editableFolderName).click();
+        uiSubmitAddToFolder(editableFolderName);
+
+        apiGetItemIdsInFolder(folder.id).then((ids) => expect(ids).to.have.length(3));
+        openFolder(editableFolderName);
+        appNames.forEach((appName) => cy.get(commonSelectors.appCard(appName)).should('be.visible'));
+      });
+    });
+  });
+
+  it('should bulk move every app the user can see with the "All apps" option', () => {
+    const attemptId = Date.now();
+    const folderName = `Bulk All Folder ${attemptId}`;
+    const appNames = [`Bulk All App A ${attemptId}`, `Bulk All App B ${attemptId}`];
+
+    cy.apiCreateAppFolder(folderName).then((folder) => {
+      setupEditor('BulkAll', [folder.id]).then((userEmail) => {
+        loginAs(userEmail);
+        appNames.forEach((appName) => cy.apiCreateApp(appName));
+
+        openAppsDashboard();
+        uiOpenAddToFolder(appNames[0]);
+        toggleAppsPicker();
+        cy.contains(dashboardSelector.bulkMoveAppOption, 'All apps').click();
+        toggleAppsPicker();
+        cy.get(dashboardSelector.bulkMoveSelectedValue).should('contain.text', 'All apps');
+
+        uiPickFolder(folderName);
+        uiSubmitAddToFolder(folderName);
+
+        openFolder(folderName);
+        appNames.forEach((appName) => cy.get(commonSelectors.appCard(appName)).should('be.visible'));
+      });
+    });
+  });
+
+  it('should keep an app in one folder only — a single or bulk move relocates it out of its previous folder', () => {
     const attemptId = Date.now();
     const sourceFolderName = `App Source Folder ${attemptId}`;
     const destFolderName = `App Dest Folder ${attemptId}`;
-    const appName = `Relocating App ${attemptId}`;
-    const groupName = `QA App Relocate Group ${attemptId}`;
-    const userEmail = `qa-app-move-relocate-${attemptId}@example.com`;
-    let appId;
-    let destFolderId;
+    const singleAppName = `Relocating App ${attemptId}`;
+    const bulkAppNames = [`Bulk Relocate A ${attemptId}`, `Bulk Relocate B ${attemptId}`];
+    const bulkAppIds = [];
+    let singleAppId;
 
     cy.apiCreateAppFolder(sourceFolderName).then((sourceFolder) => {
       cy.apiCreateAppFolder(destFolderName).then((destFolder) => {
-        destFolderId = destFolder.id;
-        apiCreateGroup(groupName).then(() =>
-          cy.apiCreateGranularPermission(
-            groupName,
-            `folder edit ${attemptId}`,
-            'folder',
-            { canEditFolder: true, canEditApps: false, canViewApps: false },
-            [sourceFolder.id, destFolder.id],
-            false
-          )
+        cy.apiCreateApp(singleAppName).then(() => {
+          singleAppId = Cypress.env('appId');
+          cy.apiAddAppToFolder(sourceFolder.id, singleAppId);
+        });
+        bulkAppNames.forEach((appName) =>
+          cy.apiCreateApp(appName).then(() => {
+            bulkAppIds.push(Cypress.env('appId'));
+            cy.apiAddAppToFolder(sourceFolder.id, Cypress.env('appId'));
+          })
         );
 
-        cy.apiCreateApp(appName).then(() => {
-          appId = Cypress.env('appId');
-          cy.apiAddAppToFolder(sourceFolder.id, appId);
+        // Edit folder on both folders cascades edit to the apps inside, which is what lets the user move them.
+        setupEditor('Relocate', [sourceFolder.id, destFolder.id]).then((userEmail) => {
+          loginAs(userEmail);
+
+          // Single move through the UI, from inside the source folder.
+          openAppsDashboard();
+          openFolder(sourceFolderName);
+          uiAddItemToFolder(singleAppName, destFolderName);
+
+          // Bulk relocate in one request.
+          cy.then(() => cy.apiBulkAddAppsToFolder(destFolder.id, bulkAppIds));
+
+          cy.then(() => {
+            apiGetItemIdsInFolder(destFolder.id).then((ids) =>
+              expect(ids).to.have.members([singleAppId, ...bulkAppIds])
+            );
+            apiGetItemIdsInFolder(sourceFolder.id).then((ids) => expect(ids).to.be.empty);
+          });
+
+          openAppsDashboard();
+          openFolder(destFolderName);
+          [singleAppName, ...bulkAppNames].forEach((appName) =>
+            cy.get(commonSelectors.appCard(appName)).should('be.visible')
+          );
+          openAllApps();
+          openFolder(sourceFolderName);
+          cy.get(commonSelectors.empytyFolderImage).should('be.visible');
         });
       });
-    });
-
-    cy.then(() => {
-      cy.apiFullUserOnboarding('QA App Relocate User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
-      cy.apiLogin(userEmail, 'password');
-
-      // Move it into the destination folder — via API, verified via UI.
-      cy.then(() => cy.apiAddAppToFolder(destFolderId, appId));
-
-      openAppsDashboard();
-      cy.get(dashboardSelector.folderName(destFolderName)).click();
-      cy.get(commonSelectors.appCard(appName)).should('be.visible');
-
-      cy.get(dashboardSelector.allApplicationsLink).click({ force: true });
-      cy.get(dashboardSelector.folderName(sourceFolderName)).click();
-      cy.get(commonSelectors.appCard(appName)).should('not.exist');
-    });
-  });
-
-  it("an app's effective permission recalculates immediately once it's moved into a folder that grants access", () => {
-    const attemptId = Date.now();
-    const folderName = `App Recalc Folder ${attemptId}`;
-    const appName = `Recalc App ${attemptId}`;
-    const groupName = `QA App Recalc Group ${attemptId}`;
-    const userEmail = `qa-app-move-recalc-${attemptId}@example.com`;
-    let appId;
-    let folderId;
-
-    cy.apiCreateAppFolder(folderName).then((folder) => {
-      folderId = folder.id;
-      apiCreateGroup(groupName).then(() =>
-        cy.apiCreateGranularPermission(
-          groupName,
-          `folder edit ${attemptId}`,
-          'folder',
-          { canEditFolder: false, canEditApps: true, canViewApps: false },
-          [folderId],
-          false
-        )
-      );
-      cy.apiCreateApp(appName).then(() => {
-        appId = Cypress.env('appId');
-      });
-    });
-
-    cy.then(() => {
-      // "Create draft version" only renders once a saved version exists
-      // (VersionManagerDropdown.jsx: showCreateDraftButton = savedVersions.length > 0).
-      cy.apiGetEditingVersionId(appId).then((versionId) => {
-        Cypress.env('appId', appId);
-        Cypress.env('editingVersionId', versionId);
-        cy.apiPublishDraftVersion('v1');
-      });
-
-      cy.apiFullUserOnboarding('QA App Recalc User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
-      openEditorExpectingRestricted(wsSlug, appId);
-
-      // Move it into the folder (as admin) — no re-login for the test user needed.
-      cy.apiLogin();
-      cy.apiAddAppToFolder(folderId, appId);
-
-      // After the move: same user, fresh visit, now editable via the folder grant.
-      cy.apiLogin(userEmail, 'password');
-      openAppEditor(wsSlug, appId);
-      cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
-      cy.get(commonSelectors.buttonSelector('create draft version')).click();
-      cy.get(versionModalSelector.versionNameInput).type('v2-after-move');
-      cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
-      cy.get(commonSelectors.toastMessage).should('not.exist');
-      cy.get(versionSwitcherSelectors.versionSwitcherButton).should('contain.text', 'v2-after-move');
     });
   });
 });

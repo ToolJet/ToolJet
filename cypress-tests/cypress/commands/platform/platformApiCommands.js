@@ -342,7 +342,7 @@ Cypress.Commands.add(
           canEditFolder: perms.canEditFolder ?? false,
           canEditApps: perms.canEditApps ?? false,
           canViewApps: perms.canViewApps ?? false,
-          // Defaults true = unrestricted. The UI renders this inverted as "Restrict query run".
+          // Defaults true = unrestricted.
           canRunQuery: perms.canRunQuery ?? true,
           resourcesToAdd: formattedResources,
         };
@@ -396,8 +396,7 @@ Cypress.Commands.add(
     };
 
     const sendRequest = (url, headers, body, resourceType, name) => {
-      // failOnStatusCode:false so a rejection surfaces the server's message
-      // instead of Cypress' generic "status code was not 2xx" wall of headers.
+      // failOnStatusCode:false so a rejection surfaces the server's message instead of Cypress' generic "status code was not 2xx" wall of headers.
       cy.request({
         method: "POST",
         url,
@@ -419,9 +418,7 @@ Cypress.Commands.add(
         const typeMap = {
           app: { type: "app", endpoint: "app" },
           module: { type: "module", endpoint: "data-source" },
-          // Workflow resources ride the app granular endpoint (there is no
-          // /granular-permissions/workflow route); the DTO's `type` is what the
-          // service dispatches on. Matches apiDeleteGranularPermission's map.
+          // Workflow resources ride the app granular endpoint (there is no /granular-permissions/workflow route); the DTO's `type` is what the service dispatches on.
           workflow: { type: "workflow", endpoint: "app" },
           datasource: { type: "data_source", endpoint: "data-source" },
           folder: { type: "folder", endpoint: "folder" },
@@ -1426,15 +1423,7 @@ Cypress.Commands.add("apiRemoveModuleFromFolder", (moduleId, folderId) => {
   });
 });
 
-/* ------------------------------------------------------------------------- *
- * App folders and workflow folders
- *
- * Both reuse the same two endpoints as module folders — /api/folders for CRUD
- * (`type` is the discriminator: "front-end" for app folders, "workflow" for
- * workflow folders) and /api/folder-apps for membership, which is type-agnostic
- * and keyed on app_id alone. The wrappers below exist so a spec reads in the
- * vocabulary of the resource it is testing rather than passing a magic `type`.
- * ------------------------------------------------------------------------- */
+// App and workflow folders reuse /api/folders for CRUD (`type` is "front-end" or "workflow") and the type-agnostic /api/folder-apps for membership.
 
 const createFolderOfType = (folderName, folderType) =>
   cy.getAuthHeaders().then((headers) =>
@@ -1508,9 +1497,7 @@ Cypress.Commands.add("apiGetAppFolderId", (folderName) =>
   getFolderIdOfType(folderName, "front-end"),
 );
 
-// Argument order is (folderId, appId) — the signature this command has always
-// had, kept so existing gitSync callers are unaffected by the move from
-// gitSyncAppCommands.js. Note it is the reverse of the sibling wrappers below.
+// Argument order is (folderId, appId) — the signature this command has always had, kept so existing gitSync callers are unaffected by the move from gitSyncAppCommands.js.
 Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) =>
   addAppIdToFolder(appId, folderId),
 );
@@ -1519,9 +1506,7 @@ Cypress.Commands.add("apiRemoveAppFromFolder", (appId, folderId) =>
   removeAppIdFromFolder(appId, folderId),
 );
 
-/** Bulk variant: the same endpoint takes app_ids[] instead of app_id, which is
- *  what the dashboard's "Add to folder" modal posts when several apps are
- *  selected (folderService.bulkAddToFolder). */
+// Bulk variant: the same endpoint takes app_ids[] instead of app_id, which is what the dashboard's "Add to folder" modal posts when several apps are selected (folderService.bulkAddToFolder).
 Cypress.Commands.add("apiBulkAddAppsToFolder", (folderId, appIds = []) =>
   cy.getAuthHeaders().then((headers) =>
     cy
@@ -1559,27 +1544,7 @@ Cypress.Commands.add("apiRemoveWorkflowFromFolder", (workflowId, folderId) =>
   removeAppIdFromFolder(workflowId, folderId),
 );
 
-/* ------------------------------------------------------------------------- *
- * Data source folders
- *
- * Folder CRUD reuses /api/folders with type "data_source" (same endpoint as app,
- * module and workflow folders — `type` is the discriminator). Membership lives on
- * its own resource, /api/folder-data-sources.
- *
- * Membership is BRANCH-SCOPED: folder_data_sources is unique on
- * (data_source_id, branch_id), so one data source can sit in different folders on
- * different branches. Omitting branchId is NOT neutral — the server treats a
- * missing value as the default branch (`onDefaultBranch = !branchId || ...`), so
- * under multi-branching these calls are refused rather than silently applied to
- * the caller's current branch.
- *
- * Argument order matches the module folder commands: RESOURCE FIRST, folder second.
- * Both are UUID strings, so a swap fails confusingly rather than loudly.
- *
- * These commands do NOT assert status and pass failOnStatusCode:false by default,
- * because permission specs need to read 403s. They yield the raw response — assert
- * on `response.status` / `response.body` at the call site.
- * ------------------------------------------------------------------------- */
+// Data source folders reuse /api/folders with type "data_source"; `type` is the discriminator.
 
 const dataSourceFolderUrl = (path, branchId) => {
   const url = `${Cypress.env("server_host")}/api/folder-data-sources${path}`;
@@ -1588,16 +1553,12 @@ const dataSourceFolderUrl = (path, branchId) => {
     : url;
 };
 
-/** Yields the created folder body. Delegates to apiCreateFolder so folder creation
- *  has exactly one implementation (and one createdFolderId cache). */
+// Yields the created folder body.
 Cypress.Commands.add("apiCreateDataSourceFolder", (folderName) => {
   return cy.apiCreateFolder(folderName, "data_source");
 });
 
-/** Yields the folders array. /api/folders has no GET — folders are listed through
- *  the membership endpoint, and each carries folder_data_sources + count.
- *  Note this is a different endpoint from apiGetModuleFolderId's /api/folder-apps,
- *  which does not return data source folders. */
+// Yields the folders array.
 Cypress.Commands.add(
   "apiGetDataSourceFolders",
   (searchKey = "", { branchId = null } = {}) => {
@@ -1620,7 +1581,7 @@ Cypress.Commands.add(
   },
 );
 
-/** Yields the folder id. Throws if absent, matching apiGetModuleFolderId. */
+// Yields the folder id.
 Cypress.Commands.add("apiGetDataSourceFolderId", (folderName) => {
   return cy.apiGetDataSourceFolders().then((folders) => {
     const folder = folders.find((f) => f.name === folderName);
@@ -1630,7 +1591,7 @@ Cypress.Commands.add("apiGetDataSourceFolderId", (folderName) => {
   });
 });
 
-/** Yields the ids of the data sources currently mapped to a folder. */
+// Yields the ids of the data sources currently mapped to a folder.
 Cypress.Commands.add("apiGetDataSourceIdsInFolder", (folderId) => {
   return cy.apiGetDataSourceFolders().then((folders) => {
     const folder = folders.find((f) => f.id === folderId);
@@ -1638,8 +1599,7 @@ Cypress.Commands.add("apiGetDataSourceIdsInFolder", (folderId) => {
   });
 });
 
-/** Moves one data source into a folder. Idempotent; if it already sits in another
- *  folder on this branch it is re-homed (old mapping deleted), not duplicated. */
+// Moves one data source into a folder.
 Cypress.Commands.add(
   "apiAddDataSourceToFolder",
   (dataSourceId, folderId, { branchId = null, failOnStatusCode = false } = {}) => {
@@ -1656,9 +1616,7 @@ Cypress.Commands.add(
   },
 );
 
-/** Bulk variant — a DIFFERENT request body from the single move. data_source_ids
- *  (plural) takes the bulk branch server-side and data_source_id is ignored. The
- *  frontend only sends this shape when more than one item is selected. */
+// Bulk variant — a DIFFERENT request body from the single move.
 Cypress.Commands.add(
   "apiBulkAddDataSourcesToFolder",
   (dataSourceIds = [], folderId, { branchId = null, failOnStatusCode = false } = {}) => {
@@ -1675,8 +1633,7 @@ Cypress.Commands.add(
   },
 );
 
-/** PUT, not DELETE — removes one data source from a folder on this branch.
- *  Mirrors apiRemoveModuleFromFolder, which is also a PUT. */
+// PUT, not DELETE — removes one data source from a folder on this branch.
 Cypress.Commands.add(
   "apiRemoveDataSourceFromFolder",
   (dataSourceId, folderId, { branchId = null, failOnStatusCode = false } = {}) => {
@@ -1693,10 +1650,7 @@ Cypress.Commands.add(
   },
 );
 
-/** Creates a global REST API data source and yields its ID.
- *  apiCreateDataSource does not return the created row — it stashes the id in
- *  Cypress.env(`<name>-dataSource-id`) — so read it back and yield it, keeping
- *  callers on a normal .then(dataSourceId => ...) chain. */
+// Creates a global REST API data source and yields its ID.
 Cypress.Commands.add("apiCreateGlobalDataSource", (dataSourceName) => {
   cy.apiCreateDataSource(
     `${Cypress.env("server_host")}/api/data-sources`,

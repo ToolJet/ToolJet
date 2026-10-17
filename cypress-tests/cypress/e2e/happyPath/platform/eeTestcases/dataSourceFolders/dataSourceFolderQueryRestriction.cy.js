@@ -16,7 +16,7 @@ import {
   verifyQueryRunBlocked,
 } from 'Support/utils/platform/dataSourceFolders';
 
-/** Restrict query run on a data source folder grant. */
+// Restrict query run on a data source folder grant.
 describe('Data Source Folders — Restrict Query Run', () => {
   let workspaceId, wsName, wsSlug, testId;
   const queryName = 'folderquery';
@@ -39,7 +39,7 @@ describe('Data Source Folders — Restrict Query Run', () => {
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
-  /** Folder + data source inside it. */
+  // Folder + data source inside it.
   const setupFolder = () => {
     const folderName = `Restrict Folder ${testId}`;
     const dataSourceName = `ds-restrict-${testId}`;
@@ -55,7 +55,7 @@ describe('Data Source Folders — Restrict Query Run', () => {
       );
   };
 
-  /** Group with one folder grant. */
+  // Group with one folder grant.
   const createFolderGroup = (groupName, folderId, permissions) => {
     apiCreateGroup(groupName);
     return cy.apiCreateGranularPermission(
@@ -115,7 +115,7 @@ describe('Data Source Folders — Restrict Query Run', () => {
     const email = `ds-restricted-${testId}@example.com`;
     const groupName = `QA Restricted Configure ${testId}`;
 
-    /** Toggles Restrict query run through the UI as admin, then hands the session back to the member — so "takes effect on the next run" is proven without a re-login. */
+    // Toggles Restrict query run through the UI as admin, then hands the session back to the member — so "takes effect on the next run" is proven without a re-login.
     const adminTogglesRestrict = () => {
       cy.getCookie('tj_auth_token').then((userCookie) => {
         cy.apiLogin('dev@tooljet.io', 'password', workspaceId);

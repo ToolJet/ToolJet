@@ -8,16 +8,11 @@ import {
   uiOpenFolderMenu,
   uiRenameDataSourceFolder,
   uiVerifyDataSourceFolderExists,
+  uiVerifyFolderMenuAbsent,
 } from 'Support/utils/platform/dataSourceFolders';
 
 
-/**
- * NOT COVERED HERE — the folder -> data source Configure cascade. Proving it needs a subject with
- * no data source access of their own, i.e. an end user, and ToolJet blocks that in both directions
- * (any tier on a DATA_SOURCE_FOLDER grant makes the group builder-level). With a builder instead,
- * the role's own access masks the cascade and the test passes whether it works or not. Owned by
- * server/ee/test/modules/folder-data-sources/e2e/folder-data-source-permissions.spec.ts.
- */
+// NOT COVERED HERE — the folder -> data source Configure cascade.
 describe('Data Source Folders — Folder Granular Access', () => {
   let workspaceId, wsName, wsSlug;
 
@@ -95,7 +90,7 @@ describe('Data Source Folders — Folder Granular Access', () => {
       const strayName = `ds-stray-${Date.now()}`;
       const renamed = `${folderName} Renamed`;
 
-      // A folder the group has no grant on is no longer rendered at all, so there is nothing to open a menu on or drop onto — that scoping is asserted in the Visibility spec instead.
+      // A folder the group has no grant on is no longer rendered at all, so there is nothing to open a menu on or drop onto, so that scoping is asserted in PermissionTiers.
       cy.apiLogin();
       cy.apiCreateGlobalDataSource(strayName);
       cy.then(() => {
@@ -123,7 +118,7 @@ describe('Data Source Folders — Folder Granular Access', () => {
     });
   });
 
-  it('a data-source-level grant does not reveal the folder its data source sits in, so that data source is unreachable', () => {
+  it('a data-source-level grant reveals the folder its data source sits in, without letting the user manage it', () => {
     const attemptId = Date.now();
     const folderName = `DS Grant Folder ${attemptId}`;
     const dataSourceName = `ds-direct-${attemptId}`;
@@ -151,9 +146,11 @@ describe('Data Source Folders — Folder Granular Access', () => {
       cy.apiLogin(userEmail, 'password');
       openDataSourcesList();
 
-      // CURRENT BEHAVIOUR, asserted as-is.
-      uiVerifyDataSourceFolderExists(folderName, false);
-      cy.get(dsFolder.dataSourceRow(dataSourceName)).should('not.exist');
+      // Expected to match app, workflow and module folders: the folder is listed because it holds a data source the user can see.
+      uiVerifyDataSourceFolderExists(folderName);
+      uiVerifyFolderMenuAbsent(folder.id);
+      uiEnsureFolderExpanded(folderName, dataSourceName);
+      cy.get(dsFolder.dataSourceRow(dataSourceName)).should('be.visible');
     });
   });
 });

@@ -1,6 +1,6 @@
 import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
 
-/** Folder grouping inside the app builder. */
+// Folder grouping inside the app builder.
 describe('Data Source Folders — Query Panel Grouping', () => {
   let workspaceId, wsName, wsSlug, testId, names;
 
@@ -43,7 +43,7 @@ describe('Data Source Folders — Query Panel Grouping', () => {
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
-  /** Same checks for both pickers; `item` maps a data source name to its row selector. */
+  // Same checks for both pickers; `item` maps a data source name to its row selector.
   const verifyFolderGrouping = (item, search) => {
     // Headers for folders with contents, collapsed; an empty folder is not offered.
     cy.get(dsFolder.pickerFolderHeader(names.folderA)).should('be.visible');
@@ -88,7 +88,7 @@ describe('Data Source Folders — Query Panel Grouping', () => {
     verifyFolderGrouping(dsFolder.selectDataSourceOption, dsFolder.addQueryPopoverSearch);
     cy.get('body').type('{esc}');
 
-    // A folder change made outside the builder shows up after a reload, and the data source moves rather.
+    // A folder change made outside the builder shows up after a reload, and the data source moves rather than duplicates.
     cy.get(dsFolder.pickerDataSourceCard(names.stray)).should('be.visible');
     cy.then(() => cy.apiAddDataSourceToFolder(Cypress.env('strayId'), Cypress.env('folderAId')));
     cy.reload();

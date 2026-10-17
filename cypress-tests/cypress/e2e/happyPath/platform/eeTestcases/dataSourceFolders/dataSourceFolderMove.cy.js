@@ -30,7 +30,7 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
     });
   });
 
-  /** Visible inside this folder's contents, and nowhere in the un-foldered list. */
+  // Visible inside this folder's contents, and nowhere in the un-foldered list.
   const expectInsideFolder = (folderName, dataSourceName) => {
     uiEnsureFolderExpanded(folderName, dataSourceName);
     cy.get(dsFolder.folderRow(folderName))
@@ -76,11 +76,11 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
       cy.apiCreateDataSourceFolder(beta).then((betaFolder) => {
         openDataSourcesList();
 
-        // ---- Baseline: nothing is foldered yet -----------------------------
+        // Baseline: nothing is foldered yet
         [one, two, three].forEach(expectUnFoldered);
         expectFolderEmpty(alpha, alphaFolder.id);
 
-        // ---- 1.
+        // 1 — drag a data source into a folder.
         dragDataSourceToFolder(one, alpha, { expectDragLabel: one });
         cy.apiGetDataSourceIdsInFolder(alphaFolder.id).then((inFolder) => {
           expect(inFolder, 'landed in the first folder').to.deep.equal([ids.one]);
@@ -88,7 +88,7 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
         // Shown inside the folder, gone from the un-foldered list.
         expectInsideFolder(alpha, one);
 
-        // ---- 2.
+        // 2 — drag it into a second folder, which re-homes it.
         dragDataSourceToFolder(one, beta);
         cy.apiGetDataSourceIdsInFolder(betaFolder.id).then((inFolder) => {
           expect(inFolder, 're-homed into the second folder').to.deep.equal([ids.one]);
@@ -99,7 +99,7 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
         expectInsideFolder(beta, one);
         expectFolderEmpty(alpha, alphaFolder.id);
 
-        // ---- 3.
+        // 3 — drag it out of the folder onto the un-foldered list.
         uiEnsureFolderExpanded(beta, one);
         dragDataSourceToStrayList(one);
         cy.apiGetDataSourceIdsInFolder(betaFolder.id).then((inFolder) => {
@@ -108,8 +108,7 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
         // The data source itself survives the removal and is listed loose again.
         expectUnFoldered(one);
 
-        // ---- 4.
-
+        // 4 — shift-click toggles a row out of the selection, and a plain click clears it.
         multiSelectDataSources([two]);
         cy.get(dsFolder.dataSourceRow(two)).click({ shiftKey: true });
         cy.get(dsFolder.dataSourceRow(two)).parents('.datasource-draggable').should('not.have.class', 'is-selected');
@@ -119,7 +118,7 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
         cy.get('.datasource-draggable.is-selected').should('not.exist');
         openDataSourcesList();
 
-        // ---- 5.
+        // 5 — drag a multi-selection into a folder in one go.
         multiSelectDataSources([two, three]);
         dragDataSourceToFolder(three, alpha, { expectDragLabel: '2 data sources' });
         cy.apiGetDataSourceIdsInFolder(alphaFolder.id).then((inFolder) => {
@@ -130,7 +129,7 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
         expectInsideFolder(alpha, two);
         expectInsideFolder(alpha, three);
 
-        // ---- 6.
+        // 6 — move through the Update folder modal.
         cy.apiAddDataSourceToFolder(ids.one, betaFolder.id);
         openDataSourcesList();
 
@@ -174,7 +173,7 @@ describe('Data Source Folders — Moving Data Sources Between Folders', () => {
         });
         expectInsideFolder(alpha, one);
 
-        // ---- 7.
+        // 7 — a refused move surfaces the server message.
         const serverMessage = 'You do not have permission to access this resource';
         cy.intercept('POST', '/api/folder-data-sources*', {
           statusCode: 403,

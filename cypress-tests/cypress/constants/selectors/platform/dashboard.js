@@ -21,22 +21,21 @@ export const dashboardSelector = {
   moveAppText: "[data-cy=move-selected-app-to-text]",
   selectFolder: '[data-cy="select-folder"]>.css-nwhe5y-container > .react-select__control > .react-select__value-container',
 
-  // Bulk "Add to folder": the modal pairs an apps multi-select with the folder
-  // select above. The apps select has no classNamePrefix and portals its menu to
-  // document.body, so its options are reached by the per-option markup
-  // (.select-option / the row checkbox) rather than a react-select__ class.
+  // Bulk "Add to folder": the modal pairs an apps multi-select with the folder select above.
   bulkMoveAppsSelect: '[data-cy="move-selected-app-to-text"]',
   bulkMoveAppOption: '.select-option',
-  bulkMoveOptionCheckbox: '[data-cy="group-check-input"]',
   bulkMoveSelectedValue: '.selected-value',
   addToFolderButton: "[data-cy=add-to-folder-button]",
   homePageContent: '[data-cy="home-page-content"]',
   seeAllAppsTemplateButton: '[data-cy="see-all-app-template-buton"]',
   folderLabel: '[data-cy="folder-info"]',
-  // "All apps" / "All workflows" reset the active folder on their dashboards.
-  // Built in Folders.jsx from the appType, which is why the names differ.
+  // Folder sidebar (Folders.jsx): every folder row's data-cy ends in "-list-card".
+  anyFolderRow: '[data-cy$="-list-card"]',
+  folderSearchIcon: '[data-cy="folder-search-icon"]',
+  folderSearchInput: '[data-cy="query-manager-search-bar"]',
+  // "All apps" resets the active folder (the workflows equivalent lives in workflowSelector.allWorkflowsLink).
   allApplicationsLink: '[data-cy="all-applications-link"]',
-  allWorkflowsLink: '[data-cy="all-workflows-link"]',
+  allModulesLink: '[data-cy="all-modules-link"]',
   dashboardAppsHeaderLabel: '[data-cy="app-header-label"]',
   versionLabel: '[data-cy="version-label"]',
 

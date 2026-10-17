@@ -1,43 +1,30 @@
 import { commonSelectors } from 'Selectors/common';
-import { dashboardSelector } from 'Selectors/platform/dashboard';
-import { workflowSelector } from 'Selectors/platform/workflows';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
-import { openWorkflowEditor, openWorkflowsList } from 'Support/utils/platform/folderPermissions';
+import {
+  RESOURCES,
+  TIERS,
+  apiAddItemToFolder,
+  apiCreateFolder,
+  apiCreateItem,
+  apiGetItemIdsInFolder,
+  apiGrantFolderTier,
+  expectFolderMenuAbsent,
+  expectFolderMenuOptions,
+  loginAs,
+  openAll,
+  openFolder,
+  openList,
+  openWorkflowEditor,
+  phase,
+  uiAddItemToFolder,
+  uiRemoveItemFromFolder,
+  uiRenameFolder,
+} from 'Support/utils/platform/folderPermissions';
 
-describe('Workflows — Folder Granular Access', () => {
+// What a workflow folder grant lets a builder do to the folder itself; tier effects on the workflows live in PermissionTiers.
+describe('Workflows — Folder Granular Access', { retries: 0 }, () => {
+  const R = RESOURCES.workflow;
   let workspaceId, wsName, wsSlug;
-
-  // Workflows have no version-switcher UI, so "can this user work on it?" is
-  // asserted through editor access: the start node renders when the workflow
-  // editor loads, and the app router sends an unauthorized user to
-  // /error/restricted instead.
-
-  const setupFolderAccess = (label, permissions) => {
-    const attemptId = Date.now();
-    const folderName = `${label} Workflow Folder ${attemptId}`;
-    const workflowName = `${label} Workflow ${attemptId}`;
-    const groupName = `QA ${label} Workflow Group ${attemptId}`;
-    const userEmail = `qa-wf-folder-${label.toLowerCase().replace(/\s+/g, '-')}-${attemptId}@example.com`;
-    let folderId;
-    let workflowId;
-
-    return cy
-      .apiCreateWorkflowFolder(folderName)
-      .then((folder) => {
-        folderId = folder.id;
-        return cy.apiCreateWorkflow(workflowName);
-      })
-      .then(() => {
-        workflowId = Cypress.env('workflowId');
-        return cy.apiAddWorkflowToFolder(workflowId, folderId);
-      })
-      .then(() => apiCreateGroup(groupName))
-      .then(() =>
-        cy.apiCreateGranularPermission(groupName, `perm ${attemptId}`, 'workflow_folder', permissions, [folderId], false)
-      )
-      .then(() => cy.apiFullUserOnboarding(label, userEmail, 'builder', 'password', wsName, {}, [groupName]))
-      .then(() => ({ folderId, workflowId, folderName, workflowName, userEmail }));
-  };
 
   afterEach(() => {
     cy.apiLogin();
@@ -47,6 +34,8 @@ describe('Workflows — Folder Granular Access', () => {
   beforeEach(() => {
     wsName = `wf-folder-granular-${Date.now()}`;
     wsSlug = wsName;
+    // The workflow card menu only mounts when the whole card is in view, which the default viewport cuts off.
+    cy.viewport(1800, 1400);
 
     cy.apiLogin();
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
@@ -54,66 +43,77 @@ describe('Workflows — Folder Granular Access', () => {
       Cypress.env('workspaceId', workspaceId);
       Cypress.env('workspaceSlug', wsSlug);
     });
-
-    cy.apiDeleteGranularPermission('builder', ['workflow', 'workflow_folder']);
+    cy.apiDeleteGranularPermission('builder', [R.itemGrantType, R.granularType]);
+    cy.apiUpdateGroupPermission('builder', { [R.coarse.create]: false, [R.coarse.delete]: false });
   });
 
-  it('user with Edit Folder permission can rename an authorized folder, move workflows in and out of it, and open a workflow within it — and deleting the folder does not delete the workflow inside it', () => {
-    setupFolderAccess('EditFolder', { canEditFolder: true, canEditApps: false, canViewApps: false }).then(
-      ({ folderId, workflowId, folderName, workflowName, userEmail }) => {
-        const renamedFolderName = `${folderName} Renamed`;
-        const looseWorkflowName = `Loose Workflow ${Date.now()}`;
-        let looseWorkflowId;
-
-        cy.apiCreateWorkflow(looseWorkflowName).then(() => {
-          looseWorkflowId = Cypress.env('workflowId');
-        });
-
-        cy.apiLogin(userEmail, 'password');
-
-        // Rename the authorized folder — via API, verified via UI.
-        cy.then(() => cy.apiRenameFolder(folderId, renamedFolderName));
-        openWorkflowsList();
-        cy.get(commonSelectors.folderListcard(renamedFolderName)).should('exist');
-        cy.get(commonSelectors.folderListcard(folderName)).should('not.exist');
-
-        // Add a loose workflow to the (renamed) folder, then remove it again — via API, verified via UI.
-        cy.then(() => cy.apiAddWorkflowToFolder(looseWorkflowId, folderId));
-        cy.get(dashboardSelector.folderName(renamedFolderName)).click();
-        cy.get(commonSelectors.appCard(looseWorkflowName)).should('be.visible');
-
-        cy.then(() => cy.apiRemoveWorkflowFromFolder(looseWorkflowId, folderId));
-        cy.get(workflowSelector.allWorkflowsLink).click({ force: true });
-        cy.get(dashboardSelector.folderName(renamedFolderName)).click();
-        cy.get(commonSelectors.appCard(looseWorkflowName)).should('not.exist');
-
-        // The workflow that lives inside the folder opens in the editor.
-        openWorkflowEditor(Cypress.env('workspaceSlug'), workflowId);
-        cy.url().should('not.include', '/error/restricted');
-
-        // Deleting the folder (as its owner, admin) does not delete the workflow inside it.
-        cy.apiLogin();
-        cy.then(() => cy.apiDeleteFolder(folderId));
-        openWorkflowsList();
-
-        cy.get(commonSelectors.folderListcard(renamedFolderName)).should('not.exist');
-
-        cy.get(workflowSelector.allWorkflowsLink).click({ force: true });
-        cy.get(commonSelectors.appCard(workflowName)).should('exist');
-      }
-    );
-  });
-
-  it("non-owner without any folder-level grant cannot rename or manage another user's workflow folder", () => {
+  it('should let an Edit folder grant rename the folder, move workflows in and out of it from the UI, and open the workflow inside it', () => {
     const attemptId = Date.now();
-    const folderName = `Unshared Workflow Folder ${attemptId}`;
-    const userEmail = `qa-wf-folder-unshared-${attemptId}@example.com`;
+    const folderName = `EditFolder Workflow Folder ${attemptId}`;
+    const renamed = `${folderName} Renamed`;
+    const workflowName = `EditFolder Workflow ${attemptId}`;
+    const looseName = `Loose Workflow ${attemptId}`;
+    const groupName = `QA EditFolder Workflow Group ${attemptId}`;
+    const userEmail = `qa-wf-folder-editfolder-${attemptId}@example.com`;
+    let folderId, workflowId, looseId;
 
-    cy.apiCreateWorkflowFolder(folderName);
-    cy.apiFullUserOnboarding('QA Unshared Workflow Folder User', userEmail, 'builder', 'password', wsName);
+    apiCreateFolder(R, folderName).then((folder) => {
+      folderId = folder.id;
+      apiCreateItem(R, workflowName).then((id) => {
+        workflowId = id;
+        apiAddItemToFolder(R, id, folder.id);
+      });
+      apiCreateGroup(groupName);
+      apiGrantFolderTier(R, groupName, `${groupName} perm`, TIERS.editFolder, [folder.id]);
+    });
+    cy.apiFullUserOnboarding('QA EditFolder', userEmail, 'builder', 'password', wsName, {}, [groupName]);
 
-    cy.apiLogin(userEmail, 'password');
-    openWorkflowsList();
-    cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
+    loginAs(userEmail);
+    // The user owns this workflow, which is what lets them move it.
+    apiCreateItem(R, looseName).then((id) => {
+      looseId = id;
+    });
+
+    phase('rename: offered and works; delete stays a coarse right');
+    openList(R);
+    expectFolderMenuOptions(folderName, { rename: true, remove: false });
+    uiRenameFolder(folderName, renamed);
+
+    phase('move a loose workflow IN through the card menu');
+    openAll(R);
+    uiAddItemToFolder(looseName, renamed);
+    cy.then(() => apiGetItemIdsInFolder(folderId, R.folderType).then((ids) => expect(ids).to.include(looseId)));
+
+    phase('move it back OUT from inside the folder');
+    openFolder(renamed);
+    uiRemoveItemFromFolder(looseName);
+    cy.then(() => apiGetItemIdsInFolder(folderId, R.folderType).then((ids) => expect(ids).to.deep.equal([workflowId])));
+
+    phase('the workflow already in the folder opens in the editor');
+    cy.then(() => openWorkflowEditor(wsSlug, workflowId));
+  });
+
+  it('should list, but not let the user manage, the folder of a workflow reached only through a direct workflow grant', () => {
+    const attemptId = Date.now();
+    const folderName = `Direct Grant Workflow Folder ${attemptId}`;
+    const workflowName = `Direct Grant Workflow ${attemptId}`;
+    const groupName = `QA Workflow Direct ${attemptId}`;
+    const userEmail = `qa-wf-direct-${attemptId}@example.com`;
+
+    apiCreateFolder(R, folderName).then((folder) => {
+      apiCreateItem(R, workflowName).then((workflowId) => {
+        apiAddItemToFolder(R, workflowId, folder.id);
+        apiCreateGroup(groupName);
+        cy.apiCreateGranularPermission(groupName, `${groupName} wf`, R.itemGrantType, { canEdit: false, canView: true }, [workflowId], false);
+      });
+    });
+    cy.apiFullUserOnboarding('QA Direct', userEmail, 'builder', 'password', wsName, {}, [groupName]);
+
+    // A folder is listed when it holds a workflow the viewer can see, even without a folder grant.
+    loginAs(userEmail);
+    openList(R);
+    expectFolderMenuAbsent(folderName);
+    openFolder(folderName);
+    cy.get(commonSelectors.appCard(workflowName)).should('be.visible');
   });
 });
