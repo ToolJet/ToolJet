@@ -65,7 +65,7 @@ export type PlacedBookings = Record<string, { lanes: number; items: PlacedBookin
 
 /** What the schedule has selected: a booking, or an empty slot of a resource. */
 export type ScheduleSelected =
-  | { kind: 'booking'; key: string; item: PlacedBooking }
+  | { kind: 'booking'; resource: string; key: string; item: PlacedBooking }
   | { kind: 'slot'; resource: string; index: number; value: SlotSelection | Record<string, never> };
 
 /** The schedule's booking field properties, as bound. */

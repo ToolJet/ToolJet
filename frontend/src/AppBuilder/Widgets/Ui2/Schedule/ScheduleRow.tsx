@@ -76,8 +76,8 @@ interface ScheduleRowProps {
   width: number;
   /** The slots' grid tracks (slotTracks). */
   slotTracks: string;
-  clickSlot: (resource: ScheduleResource, slot: ScheduleSlot, index: number) => void;
-  clickBooking: (item: PlacedBooking) => void;
+  clickSlot: (resource: ScheduleResource, slot: ScheduleSlot) => void;
+  clickBooking: (resource: ScheduleResource, item: PlacedBooking) => void;
 }
 
 export const ScheduleRow = ({
@@ -135,7 +135,7 @@ export const ScheduleRow = ({
                 key={j}
                 type="button"
                 disabled={disabled || state === 'booked'}
-                onClick={() => clickSlot(r, slot, j)}
+                onClick={() => clickSlot(r, slot)}
                 aria-label={`${r.name}, ${slotValue(r, slot, hourFormat, range.scale).label}, ${status}`}
                 data-availability={state}
                 className={cn(
@@ -152,7 +152,8 @@ export const ScheduleRow = ({
         </div>
         {(entry?.items || []).slice(0, MAX_ROW_BOOKINGS).map((b) => {
           const tone = b.tone ? TONE_VAR[b.tone] : ACCENT;
-          const isSelected = highlight && selected?.kind === 'booking' && selected.key === b.key;
+          const isSelected =
+            highlight && selected?.kind === 'booking' && selected.resource === r.key && selected.key === b.key;
           const cancelled = /\bcancel/i.test(b.status);
           const second = [b.time, b.subtitle].filter(Boolean).join(' · ');
           const face = bookingFace(((Number(width) || 0) - rw) * (b.width / 100) - 4, laneHeight, !!second);
@@ -162,7 +163,7 @@ export const ScheduleRow = ({
               key={b.key}
               type="button"
               disabled={disabled}
-              onClick={() => clickBooking(b)}
+              onClick={() => clickBooking(r, b)}
               title={[b.title, second, b.status].filter(Boolean).join(' · ')}
               aria-pressed={isSelected}
               data-selected={isSelected || undefined}

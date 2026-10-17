@@ -6,8 +6,8 @@
  * this file covers what the Schedule itself does. Titles carry [ShadSchedule-<AREA>-<NNN>] scenario ids.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
-import { screen, waitFor, fireEvent } from '@testing-library/react';
-import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { act, screen, waitFor, fireEvent } from '@testing-library/react';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'sch1';
 const widget = createWidgetHarness({
@@ -359,6 +359,92 @@ describe('UI 2.0 Schedule', () => {
       render({ properties: atlas([{ ...review, state: 'Cancelled' }]) });
 
       expect(await screen.findByRole('button', { name: 'Atlas, 9 AM to 9:30 AM, free' })).toBeEnabled();
+    });
+  });
+
+  // Audit 75: the Schedule kept a copy of what was clicked, and highlighted by slot position or booking key. After a
+  // refresh the highlight showed the current slot or booking while selectedSlot and selectedBooking (and a workflow
+  // reading them) still held the old one. The selection is now the booking (by its id) or the slot (resource and
+  // times); what is highlighted and exposed is that, as it is now, and nothing while it is not on the schedule.
+  describe('a selection through a refresh', () => {
+    const json = (v) => `{{${JSON.stringify(v)}}}`;
+    const row = (id, title, extra = {}) => ({
+      id,
+      title,
+      room: 'room',
+      from: '2026-10-17 09:00',
+      to: '2026-10-17 10:00',
+      note: 'old',
+      ...extra,
+    });
+    const mount = (bookings = []) => {
+      render({
+        properties: {
+          date: binding('2026-10-17'),
+          dayStart: binding('{{8}}'),
+          dayEnd: binding('{{12}}'),
+          slotMinutes: binding('{{30}}'),
+          hourFormat: binding('24h'),
+          resources: binding("{{[{ id: 'room', name: 'Room' }]}}"),
+          bookings: binding(json(bookings)),
+          resourceField: binding('room'),
+          startField: binding('from'),
+          endField: binding('to'),
+          titleField: binding('title'),
+          idField: binding('id'),
+        },
+      });
+      widget.setEvents(
+        [
+          ...countInvocationsOn(ID, 'onBookingClicked', { key: 'bookingClicks' }),
+          ...countInvocationsOn(ID, 'onSlotClicked', { key: 'slotClicks' }),
+        ].map((e, i) => ({ ...e, id: `selection-${i}` }))
+      );
+    };
+    const set = (key, value) => act(() => widget.setComponentProperty(ID, key, json(value), 'properties'));
+    const highlighted = () => document.querySelectorAll('[data-selected="true"]');
+
+    test('[ShadSchedule-EVT-004] a booking refreshed under the same id is exposed as it is now', async () => {
+      mount([row('a', 'Original')]);
+      fireEvent.click(await waitFor(() => booking('a')));
+      await waitFor(() => expect(exposed().selectedBooking).toMatchObject({ title: 'Original' }));
+
+      const updated = row('a', 'Updated', { note: 'current' });
+      set('bookings', [updated]);
+      await waitFor(() => expect(exposed().selectedBooking).toEqual(updated));
+      expect(highlighted()).toHaveLength(1);
+      expect(highlighted()[0]).toHaveTextContent('Updated');
+      expect(widget.variables().bookingClicks).toBe(1);
+
+      set('bookings', []);
+      await waitFor(() => expect(exposed().selectedBooking).toEqual({}));
+      expect(exposed().selectedBookingId).toBeNull();
+      const replacement = row('a', 'Replacement');
+      set('bookings', [replacement]);
+      await waitFor(() => expect(exposed().selectedBooking).toEqual(replacement));
+      expect(highlighted()[0]).toHaveTextContent('Replacement');
+    });
+
+    test('[ShadSchedule-EVT-005] a slot is selected by its resource and times, not its place in the row', async () => {
+      mount();
+      await waitFor(() => expect(slots('room')).toHaveLength(8));
+      fireEvent.click(slots('room')[1]);
+      await waitFor(() => expect(exposed().selectedSlot).toMatchObject({ date: '2026-10-17', startTime: '08:30' }));
+
+      set('resources', [{ id: 'room', name: 'Renamed room' }]);
+      await waitFor(() => expect(exposed().selectedSlot.resource).toBe('Renamed room'));
+      expect(slots('room')[1]).toHaveAttribute('data-selected', 'true');
+
+      set('slotMinutes', 60);
+      await waitFor(() => expect(exposed().selectedSlot).toEqual({}));
+      expect(highlighted()).toHaveLength(0);
+      set('slotMinutes', 30);
+      await waitFor(() => expect(exposed().selectedSlot.startTime).toBe('08:30'));
+
+      set('date', '2026-10-18');
+      await waitFor(() => expect(exposed().selectedSlot).toEqual({}));
+      expect(highlighted()).toHaveLength(0);
+      expect(widget.variables().slotClicks).toBe(1);
     });
   });
 });
