@@ -9,7 +9,7 @@ import { createWidgetHarness, measureChartsAt } from '@/AppBuilder/Widgets/Ui2/_
 import { act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { binding, store, MODULE_ID } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { createPackPage, idOf } from '@/AppBuilder/Widgets/Ui2/__tests__/packPage';
+import { CONFIGS, TYPES, createPackPage, idOf } from '@/AppBuilder/Widgets/Ui2/__tests__/packPage';
 
 const mockCommits = {};
 jest.mock('@/AppBuilder/AppCanvas/RenderWidget', () => {
@@ -65,15 +65,25 @@ const reset = () => Object.keys(mockCommits).forEach((id) => delete mockCommits[
 /** The widgets that committed since the last reset, with their commit counts. */
 const rendered = () => Object.fromEntries(Object.entries(mockCommits).filter(([, n]) => n > 0));
 const settle = () => act(() => new Promise((r) => setTimeout(r, 50)));
-/** Waits until a 50 ms window passes with no commit (mount-time effects and chart entry animations done). */
+const pause = () => act(() => new Promise((r) => setTimeout(r, 100)));
+/** Waits until two 100 ms windows in a row pass with no commit (mount-time effects done). */
 const quiet = async () => {
-  for (let i = 0; i < 100; i += 1) {
+  let still = 0;
+  for (let i = 0; i < 100 && still < 2; i += 1) {
     reset();
-    await settle();
-    if (!Object.keys(rendered()).length) return i;
+    await pause();
+    still = Object.keys(rendered()).length ? 0 : still + 1;
   }
-  throw new Error(`the page never came to rest: ${JSON.stringify(rendered())}`);
+  if (still < 2) throw new Error(`the page never came to rest: ${JSON.stringify(rendered())}`);
+  reset();
 };
+// Charts draw at once: an entrance animation commits on its own frames, which under load land in a measured window.
+const STILL_CHARTS = Object.fromEntries(
+  TYPES.filter((type) => 'animate' in (CONFIGS[type].properties || {})).map((type) => [
+    idOf(type),
+    { animate: binding('{{false}}') },
+  ])
+);
 const inputOf = (id) => page.elementOf(id)?.querySelector('input');
 
 describe('UI 2.0 re-renders on a page of every widget', () => {
@@ -89,7 +99,7 @@ describe('UI 2.0 re-renders on a page of every widget', () => {
     store().setQueryMapping(MODULE_ID);
     store().setResolvedQuery('q1', { data: ROWS, isLoading: false }, MODULE_ID);
     store().setResolvedQuery('q2', { data: { total: 7 }, isLoading: false }, MODULE_ID);
-    page.render();
+    page.render(STILL_CHARTS);
     await quiet();
   });
   afterEach(page.harness.teardown);
