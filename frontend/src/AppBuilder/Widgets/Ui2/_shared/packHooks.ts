@@ -62,7 +62,7 @@ export const fromEffect = (callback: () => void): void => {
  *  until then and fired in order, so their handlers read the new values too (isValid, selectedOption), as the native
  *  widgets publish first. Widgets call it in their user handlers (typing, a click); actions get it from useExposed. */
 export const runNow = <T>(action: () => T): T => {
-  let result: T;
+  let result = undefined as T;
   actionDepth += 1;
   try {
     if (effectDepth > 0) result = action();
