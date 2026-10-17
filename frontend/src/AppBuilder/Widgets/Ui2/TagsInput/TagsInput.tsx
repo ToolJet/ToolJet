@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { useFocusEvent, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
   runNow,
   toOptions,
@@ -38,6 +38,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
   const [text, setText] = useState('');
   const [tagError, setTagError] = useState('');
   const [focused, setFocused] = useState(false);
+  const focusEvent = useFocusEvent(fireEvent);
   const [dismissed, setDismissed] = useState(false);
   const [active, setActive] = useState(-1);
   const rulesRef = useRef(rules);
@@ -180,7 +181,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
               onFocus={() => {
                 setFocused(true);
                 setDismissed(false);
-                setTimeout(() => fireEvent('onFocus'), 0);
+                focusEvent();
               }}
               onBlur={() => {
                 setFocused(false);
