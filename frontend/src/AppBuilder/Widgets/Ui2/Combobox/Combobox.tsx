@@ -20,6 +20,7 @@ import {
   OptionIcon,
   OptionsMenu,
   PLACEHOLDER,
+  useKeptSelection,
   useSearch,
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -40,7 +41,9 @@ export const ShadCombobox = (props: WidgetProps) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   const [search, onSearch] = useSearch(props);
-  const selected = key === null ? undefined : options.find((o) => M.keyOf(o.value) === key);
+  const [selected] = useKeptSelection(options, key === null ? [] : [key], properties.serverSideSearch === true) as [
+    Option | undefined
+  ];
   const value = selected ? selected.value : '';
   useExposed(setExposedVariables, properties, {
     value,
