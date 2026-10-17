@@ -253,6 +253,21 @@ describe('UI 2.0 Table', () => {
     expect(rows()).toHaveLength(3);
   });
 
+  // CI (2026-10-17): onSearch fired before filteredData, currentPageData and searchText were published, so a handler
+  // reading them saw the rows before the search. A widget publishes before the event that announces it.
+  test('[ShadTable-EVT-013] onSearch handlers read the searched rows: they are published before it fires', async () => {
+    render({ properties: { searchPlaceholder: binding('Find a customer') } });
+    widget.setEvents(
+      on(
+        'onSearch',
+        '{{[components.table1.searchText, components.table1.filteredData.length, components.table1.currentPageData.length]}}'
+      )
+    );
+    fireEvent.change(await screen.findByPlaceholderText('Find a customer'), { target: { value: 'grace' } });
+    await waitFor(() => expect(widget.variables().seen).toBeDefined());
+    expect(widget.variables().seen).toEqual(['grace', 1, 1]);
+  });
+
   test('[ShadTable-PROP-007] displaySearchBox, showFilterButton and hideColumnSelectorButton control the toolbar', async () => {
     render({
       properties: {
