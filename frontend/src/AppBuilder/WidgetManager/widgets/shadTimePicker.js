@@ -2,7 +2,7 @@ export const shadTimePickerConfig = {
   name: 'ShadTimePicker',
   displayName: 'Time picker',
   description:
-    "Time picker: a field opening hour, minute (every minuteStep) and AM/PM columns, or (pickerStyle list) one list of times. Exposes value as 'HH:mm' in 24-hour time ('' when empty) and formattedValue as shown ('2:30 PM' or '14:30'); defaultValue, minTime and maxTime take '14:30' or '2:30 PM'. Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message",
+    "Time picker: a field opening hour, minute and AM/PM columns, or (pickerStyle list) one list of times; both offer a time every minuteStep minutes from midnight (with 45: 09:00, 09:45, 10:30). Exposes value as 'HH:mm' in 24-hour time ('' when empty) and formattedValue as shown ('2:30 PM' or '14:30'); defaultValue, minTime and maxTime take '14:30' or '2:30 PM'. Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message",
   component: 'ShadTimePicker',
   defaultSize: {
     width: 10,

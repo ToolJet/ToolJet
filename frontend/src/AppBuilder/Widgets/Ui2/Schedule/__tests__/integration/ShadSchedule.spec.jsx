@@ -6,8 +6,8 @@
  * this file covers what the Schedule itself does. Titles carry [ShadSchedule-<AREA>-<NNN>] scenario ids.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
-import { screen, waitFor, fireEvent } from '@testing-library/react';
-import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { act, screen, waitFor, fireEvent } from '@testing-library/react';
+import { binding, setVariableOn, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'sch1';
 const widget = createWidgetHarness({
@@ -119,7 +119,8 @@ describe('UI 2.0 Schedule', () => {
 
     await waitFor(() => expect(header().map((c) => c.textContent)).toEqual(['9 AM', '10 AM', '11 AM']));
     expect(slots('Van 1')).toHaveLength(3);
-    expect(slots('Van 1')[0]).toHaveAccessibleName('Van 1, 9 AM to 10 AM, free');
+    // Under the 9 to 11 AM job, so booked (it once read "free", audit 33).
+    expect(slots('Van 1')[0]).toHaveAccessibleName('Van 1, 9 AM to 10 AM, booked: Boiler service');
     // The 9 AM job starts at the left edge; the 1:30 PM one is outside the hours shown.
     expect(booking('J-1').style.left).toBe('calc(0% + 2px)');
     expect(booking('J-2')).toBeNull();
@@ -234,5 +235,216 @@ describe('UI 2.0 Schedule', () => {
     expect(root.style.getPropertyValue('--lk-fg')).toBe('#475569');
     expect(root.style.getPropertyValue('--lk-accent')).toBe('#2563eb');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('8px');
+  });
+
+  // Audit 53: after 2,000 bookings every later row was left out without a trace, so a shown resource lost a booking
+  // because one further down had many. Every booking is placed; a row draws at most MAX_ROW_BOOKINGS and says how
+  // many more it has.
+  describe('many bookings', () => {
+    const json = (v) => `{{${JSON.stringify(v)}}}`;
+    const hour = { date: binding('2026-10-17'), dayStart: binding('{{9}}'), dayEnd: binding('{{10}}') };
+    const fields = {
+      resourceField: binding('room'),
+      startField: binding('from'),
+      endField: binding('to'),
+      titleField: binding('title'),
+      idField: binding('id'),
+    };
+    const rows = (room, n) =>
+      Array.from({ length: n }, (_, i) => ({
+        id: `${room}-${i}`,
+        room,
+        title: `${room} ${i}`,
+        from: '2026-10-17 09:00',
+      }));
+
+    test('[ShadSchedule-PROP-011] a shown resource keeps its booking when a resource further down has thousands', async () => {
+      const rooms = [
+        { id: 'front', name: 'Front' },
+        ...Array.from({ length: 50 }, (_, i) => ({ id: `r${i}`, name: `R${i}` })),
+      ];
+      const target = { id: 'target', room: 'front', title: 'Board meeting', from: '2026-10-17 09:00' };
+      render({
+        properties: {
+          ...hour,
+          ...fields,
+          resources: binding(json(rooms)),
+          bookings: binding(json([...rows('r49', 2100), target])),
+        },
+      });
+
+      await waitFor(() => expect(screen.getByText('Board meeting')).toBeInTheDocument());
+      expect(resourceRow('r49')).toBeNull();
+    });
+
+    test('[ShadSchedule-PROP-012] a row with more bookings than it draws says how many more', async () => {
+      render({
+        properties: {
+          ...hour,
+          ...fields,
+          resources: binding(json(['busy'])),
+          bookings: binding(json(rows('busy', 205))),
+        },
+      });
+
+      await waitFor(() => expect(resourceRow('busy').querySelectorAll('[data-booking]')).toHaveLength(200));
+      expect(resourceRow('busy').querySelector('[data-more-bookings]')).toHaveTextContent('+5 more');
+    });
+  });
+
+  // Audit 74: on the day the clocks went forward the slot after 02:00 ran from 03:30 back to 03:00, and its click sent
+  // that backwards interval to onSlotClicked. (Exercised in a zone with the change by npm run test:ui2-dates-tz.)
+  test('[ShadSchedule-EVT-003] on the day the clocks change, every slot clicked ends after it starts', async () => {
+    render({
+      properties: {
+        date: binding('2026-03-08'),
+        dayStart: binding('{{0}}'),
+        dayEnd: binding('{{4}}'),
+        slotMinutes: binding('{{30}}'),
+        resources: binding("{{[{ id: 'room', name: 'Room' }]}}"),
+        bookings: binding('{{[]}}'),
+      },
+    });
+    widget.setEvents(
+      setVariableOn(ID, 'onSlotClicked', { key: 'picked', value: '{{components.schedule1.selectedSlot}}' })
+    );
+    await waitFor(() => expect(slots('room').length).toBeGreaterThan(0));
+
+    for (const slot of slots('room')) {
+      fireEvent.click(slot);
+      await waitFor(() => expect(widget.variables().picked).toEqual(exposed().selectedSlot));
+      const { start, end, date } = exposed().selectedSlot;
+      expect(new Date(end).getTime()).toBeGreaterThan(new Date(start).getTime());
+      expect(date).toBe('2026-03-08');
+    }
+  });
+
+  // Audit 33: every slot was announced "free", and a keyboard could select the interval underneath a booking (Tab to
+  // "Atlas, 9 AM to 9:30 AM, free" under Design review, Enter, onSlotClicked). A slot says what is in it; one a
+  // booking covers cannot be picked as free, and a cancelled booking does not take its time.
+  describe('slots under bookings', () => {
+    const atlas = (bookings) => ({
+      date: binding('2026-10-20'),
+      resources: binding("{{[{ id: 'atlas', name: 'Atlas' }]}}"),
+      bookings: binding(`{{${JSON.stringify(bookings)}}}`),
+      resourceField: binding('room'),
+      startField: binding('from'),
+      endField: binding('to'),
+      titleField: binding('title'),
+      statusField: binding('state'),
+      idField: binding('id'),
+      dayStart: binding('{{8}}'),
+      dayEnd: binding('{{12}}'),
+      slotMinutes: binding('{{30}}'),
+    });
+    const review = { id: 'r', room: 'atlas', title: 'Design review', from: '2026-10-20 09:00', to: '2026-10-20 10:15' };
+
+    test('[ShadSchedule-PROP-013] a booked slot says so, names the booking, and cannot be picked', async () => {
+      render({ properties: atlas([review]) });
+      widget.setEvents(setVariableOn(ID, 'onSlotClicked', { key: 'picked', value: 'yes' }));
+
+      const booked = await screen.findByRole('button', { name: 'Atlas, 9 AM to 9:30 AM, booked: Design review' });
+      expect(booked).toBeDisabled();
+      fireEvent.click(booked);
+      expect(widget.variables().picked).toBeUndefined();
+      expect(exposed().selectedSlot).toEqual({});
+      expect(screen.getByRole('button', { name: 'Atlas, 8 AM to 8:30 AM, free' })).toBeEnabled();
+      expect(
+        screen.getByRole('button', { name: 'Atlas, 10 AM to 10:30 AM, partly booked: Design review' })
+      ).toBeEnabled();
+      expect(screen.queryByRole('button', { name: /9 AM to 9:30 AM, free/ })).toBeNull();
+    });
+
+    test('[ShadSchedule-PROP-014] a cancelled booking leaves its slots free', async () => {
+      render({ properties: atlas([{ ...review, state: 'Cancelled' }]) });
+
+      expect(await screen.findByRole('button', { name: 'Atlas, 9 AM to 9:30 AM, free' })).toBeEnabled();
+    });
+  });
+
+  // Audit 75: the Schedule kept a copy of what was clicked, and highlighted by slot position or booking key. After a
+  // refresh the highlight showed the current slot or booking while selectedSlot and selectedBooking (and a workflow
+  // reading them) still held the old one. The selection is now the booking (by its id) or the slot (resource and
+  // times); what is highlighted and exposed is that, as it is now, and nothing while it is not on the schedule.
+  describe('a selection through a refresh', () => {
+    const json = (v) => `{{${JSON.stringify(v)}}}`;
+    const row = (id, title, extra = {}) => ({
+      id,
+      title,
+      room: 'room',
+      from: '2026-10-17 09:00',
+      to: '2026-10-17 10:00',
+      note: 'old',
+      ...extra,
+    });
+    const mount = (bookings = []) => {
+      render({
+        properties: {
+          date: binding('2026-10-17'),
+          dayStart: binding('{{8}}'),
+          dayEnd: binding('{{12}}'),
+          slotMinutes: binding('{{30}}'),
+          hourFormat: binding('24h'),
+          resources: binding("{{[{ id: 'room', name: 'Room' }]}}"),
+          bookings: binding(json(bookings)),
+          resourceField: binding('room'),
+          startField: binding('from'),
+          endField: binding('to'),
+          titleField: binding('title'),
+          idField: binding('id'),
+        },
+      });
+      widget.setEvents(
+        [
+          ...countInvocationsOn(ID, 'onBookingClicked', { key: 'bookingClicks' }),
+          ...countInvocationsOn(ID, 'onSlotClicked', { key: 'slotClicks' }),
+        ].map((e, i) => ({ ...e, id: `selection-${i}` }))
+      );
+    };
+    const set = (key, value) => act(() => widget.setComponentProperty(ID, key, json(value), 'properties'));
+    const highlighted = () => document.querySelectorAll('[data-selected="true"]');
+
+    test('[ShadSchedule-EVT-004] a booking refreshed under the same id is exposed as it is now', async () => {
+      mount([row('a', 'Original')]);
+      fireEvent.click(await waitFor(() => booking('a')));
+      await waitFor(() => expect(exposed().selectedBooking).toMatchObject({ title: 'Original' }));
+
+      const updated = row('a', 'Updated', { note: 'current' });
+      set('bookings', [updated]);
+      await waitFor(() => expect(exposed().selectedBooking).toEqual(updated));
+      expect(highlighted()).toHaveLength(1);
+      expect(highlighted()[0]).toHaveTextContent('Updated');
+      expect(widget.variables().bookingClicks).toBe(1);
+
+      set('bookings', []);
+      await waitFor(() => expect(exposed().selectedBooking).toEqual({}));
+      expect(exposed().selectedBookingId).toBeNull();
+      const replacement = row('a', 'Replacement');
+      set('bookings', [replacement]);
+      await waitFor(() => expect(exposed().selectedBooking).toEqual(replacement));
+      expect(highlighted()[0]).toHaveTextContent('Replacement');
+    });
+
+    test('[ShadSchedule-EVT-005] a slot is selected by its resource and times, not its place in the row', async () => {
+      mount();
+      await waitFor(() => expect(slots('room')).toHaveLength(8));
+      fireEvent.click(slots('room')[1]);
+      await waitFor(() => expect(exposed().selectedSlot).toMatchObject({ date: '2026-10-17', startTime: '08:30' }));
+
+      set('resources', [{ id: 'room', name: 'Renamed room' }]);
+      await waitFor(() => expect(exposed().selectedSlot.resource).toBe('Renamed room'));
+      expect(slots('room')[1]).toHaveAttribute('data-selected', 'true');
+
+      set('slotMinutes', 60);
+      await waitFor(() => expect(exposed().selectedSlot).toEqual({}));
+      expect(highlighted()).toHaveLength(0);
+      set('slotMinutes', 30);
+      await waitFor(() => expect(exposed().selectedSlot.startTime).toBe('08:30'));
+
+      set('date', '2026-10-18');
+      await waitFor(() => expect(exposed().selectedSlot).toEqual({}));
+      expect(highlighted()).toHaveLength(0);
+      expect(widget.variables().slotClicks).toBe(1);
+    });
   });
 });

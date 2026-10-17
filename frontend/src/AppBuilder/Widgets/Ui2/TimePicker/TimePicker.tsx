@@ -110,11 +110,12 @@ export const timeColumns = ({
   bounds,
   onPick,
 }: TimeColumnsInput): { label: string; options: ColumnOption[] }[] => {
-  const mins = M.minuteOptions(step);
   const hour = minutes === null ? null : Math.floor(minutes / 60);
   const minute = minutes === null ? null : minutes % 60;
   const pm = hour !== null ? hour >= 12 : bounds.lo >= 720;
-  const fits = (h: number) => mins.some((m) => M.inTimeRange(h * 60 + m, bounds));
+  // Each hour offers the minutes on the step from midnight (M.minuteOptions), as the list of times does.
+  const inRange = (h: number) => M.minuteOptions(step, h).filter((m) => M.inTimeRange(h * 60 + m, bounds));
+  const fits = (h: number) => inRange(h).length > 0;
   const pickAt = (h: number, m: number) => onPick(M.clampTime(h * 60 + m, bounds));
   const hours = use24
     ? Array.from({ length: 24 }, (_, h) => ({ h, label: pad2(h) }))
@@ -128,12 +129,12 @@ export const timeColumns = ({
         label,
         selected: h === hour,
         disabled: !fits(h),
-        onClick: () => pickAt(h, minute ?? mins.find((m) => M.inTimeRange(h * 60 + m, bounds)) ?? 0),
+        onClick: () => pickAt(h, minute !== null && inRange(h).includes(minute) ? minute : inRange(h)[0] ?? 0),
       })),
     },
     {
       label: 'Minutes',
-      options: mins.map((m) => ({
+      options: M.minuteOptions(step, baseHour).map((m) => ({
         key: `m${m}`,
         label: pad2(m),
         selected: m === minute,
@@ -158,7 +159,7 @@ export const timeColumns = ({
           disabled: !half(isPm),
           onClick: () => {
             const h = hour === null ? (isPm ? 12 : 0) : (hour % 12) + (isPm ? 12 : 0);
-            pickAt(h, minute ?? 0);
+            pickAt(h, M.minuteInHour(step, h, minute));
           },
         };
       }),

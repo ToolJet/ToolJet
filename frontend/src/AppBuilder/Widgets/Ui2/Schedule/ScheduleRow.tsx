@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
-import { bookingFace, slotValue } from './scheduleModel';
+import { MAX_ROW_BOOKINGS, bookingFace, slotAvailability, slotValue } from './scheduleModel';
 import type {
   PlacedBooking,
   PlacedBookings,
@@ -74,9 +74,10 @@ interface ScheduleRowProps {
   hasSlotClick: boolean;
   hourFormat: unknown;
   width: number;
-  slotCount: number;
-  clickSlot: (resource: ScheduleResource, slot: ScheduleSlot, index: number) => void;
-  clickBooking: (item: PlacedBooking) => void;
+  /** The slots' grid tracks (slotTracks). */
+  slotTracks: string;
+  clickSlot: (resource: ScheduleResource, slot: ScheduleSlot) => void;
+  clickBooking: (resource: ScheduleResource, item: PlacedBooking) => void;
 }
 
 export const ScheduleRow = ({
@@ -92,7 +93,7 @@ export const ScheduleRow = ({
   hasSlotClick,
   hourFormat,
   width,
-  slotCount,
+  slotTracks,
   clickSlot,
   clickBooking,
 }: ScheduleRowProps) => {
@@ -120,21 +121,23 @@ export const ScheduleRow = ({
         </span>
       </div>
       <div className="tw-relative tw-min-w-0 tw-flex-1" style={{ height: rowH }}>
-        <div
-          className="tw-absolute tw-inset-0 tw-grid"
-          style={{ gridTemplateColumns: `repeat(${slotCount}, minmax(0, 1fr))` }}
-        >
+        <div className="tw-absolute tw-inset-0 tw-grid" style={{ gridTemplateColumns: slotTracks }}>
           {range.slots.map((slot, j) => {
             const isSelected =
               highlight && selected?.kind === 'slot' && selected.resource === r.key && selected.index === j;
             const todayColumn = range.scale === 'days' && range.columns[j]?.today;
+            // A slot says what is in it; one bookings cover entirely is not offered as free (by keyboard either).
+            const { state, titles } = slotAvailability(slot, entry?.items);
+            const status =
+              state === 'free' ? 'free' : `${state === 'booked' ? 'booked' : 'partly booked'}: ${titles.join(', ')}`;
             return (
               <button
                 key={j}
                 type="button"
-                disabled={disabled}
-                onClick={() => clickSlot(r, slot, j)}
-                aria-label={`${r.name}, ${slotValue(r, slot, hourFormat, range.scale).label}, free`}
+                disabled={disabled || state === 'booked'}
+                onClick={() => clickSlot(r, slot)}
+                aria-label={`${r.name}, ${slotValue(r, slot, hourFormat, range.scale).label}, ${status}`}
+                data-availability={state}
                 className={cn(
                   'sc-slot tw-h-full tw-min-w-0 tw-outline-none tw-transition-colors tw-duration-100 focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))] disabled:tw-cursor-default',
                   j > 0 && slot.edge && 'tw-border-l',
@@ -147,9 +150,10 @@ export const ScheduleRow = ({
             );
           })}
         </div>
-        {(entry?.items || []).map((b) => {
+        {(entry?.items || []).slice(0, MAX_ROW_BOOKINGS).map((b) => {
           const tone = b.tone ? TONE_VAR[b.tone] : ACCENT;
-          const isSelected = highlight && selected?.kind === 'booking' && selected.key === b.key;
+          const isSelected =
+            highlight && selected?.kind === 'booking' && selected.resource === r.key && selected.key === b.key;
           const cancelled = /\bcancel/i.test(b.status);
           const second = [b.time, b.subtitle].filter(Boolean).join(' · ');
           const face = bookingFace(((Number(width) || 0) - rw) * (b.width / 100) - 4, laneHeight, !!second);
@@ -159,7 +163,7 @@ export const ScheduleRow = ({
               key={b.key}
               type="button"
               disabled={disabled}
-              onClick={() => clickBooking(b)}
+              onClick={() => clickBooking(r, b)}
               title={[b.title, second, b.status].filter(Boolean).join(' · ')}
               aria-pressed={isSelected}
               data-selected={isSelected || undefined}
@@ -195,6 +199,17 @@ export const ScheduleRow = ({
             </button>
           );
         })}
+        {/* Bookings past what a row draws (the latest ones) are counted here, never left out without a trace. */}
+        {(entry?.items.length ?? 0) > MAX_ROW_BOOKINGS ? (
+          <span
+            className="tw-absolute tw-bottom-0.5 tw-right-1 tw-z-[2] tw-rounded-ui2-md tw-px-1.5 tw-text-[11px] tw-font-medium tw-tabular-nums"
+            style={{ background: SURFACE, color: LABEL }}
+            data-more-bookings=""
+            role="note"
+          >
+            +{(entry?.items.length ?? 0) - MAX_ROW_BOOKINGS} more
+          </span>
+        ) : null}
       </div>
     </div>
   );

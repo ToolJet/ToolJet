@@ -222,4 +222,70 @@ describe('UI 2.0 Calendar', () => {
     expect(root.style.getPropertyValue('--sc-primary')).toBe('#e11d48');
     expect(root.style.getPropertyValue('--lk-cell')).toBe('40px');
   });
+
+  // Audit 76: the calendar once kept only the first 2,000 disabled dates, so the 2,001st stayed pickable.
+  test('[ShadCalendar-PROP-010] a disabled date after the first two thousand entries cannot be picked', async () => {
+    const earlier = Array.from({ length: 2000 }, (_, i) => {
+      const d = new Date(2020, 0, 1 + i);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
+    render({ properties: { disabledDates: binding(`{{${JSON.stringify([...earlier, '2026-10-17'])}}}`) } });
+    widget.setEvents(setVariableOn(ID, 'onSelect', { key: 'picked', value: '{{components.calendar1.value}}' }));
+
+    expect(day(17)).toBeDisabled();
+    await clickDay(17);
+    expect(exposed().value).toBe('2026-10-09');
+    expect(widget.variables().picked).toBeUndefined();
+  });
+
+  // Audit 57: with minDate and maxDate the calendar drew the nearest allowed month, but visibleMonth, visibleStart and
+  // visibleEnd still described the month asked for, so a query on them loaded another period than the one shown.
+  describe('months limited by minDate and maxDate', () => {
+    const LIMITS = {
+      defaultMonth: binding('2026-10-01'),
+      minDate: binding('2026-10-01'),
+      maxDate: binding('2026-12-31'),
+    };
+    const draw = async (properties = {}) => {
+      render({ properties: { ...LIMITS, ...properties } });
+      await screen.findAllByRole('grid');
+    };
+
+    test('[ShadCalendar-PROP-011] a month before minDate or after maxDate shows and exposes the nearest allowed one', async () => {
+      await draw({ defaultMonth: binding('2025-01-01') });
+      expect(screen.getByText('October 2026')).toBeInTheDocument();
+      expect(exposed().visibleMonth).toBe('2026-10');
+
+      await widget.act('setMonth', '2027-02-01');
+      expect(screen.getByText('December 2026')).toBeInTheDocument();
+      expect(exposed()).toMatchObject({
+        visibleMonth: '2026-12',
+        visibleStart: '2026-12-01',
+        visibleEnd: '2026-12-31',
+      });
+    });
+
+    test('[ShadCalendar-PROP-012] two months at maxDate start a month earlier, and say so', async () => {
+      await draw({ numberOfMonths: binding('{{2}}') });
+      await widget.act('setMonth', '2026-12-01');
+
+      expect(screen.getByText('November 2026')).toBeInTheDocument();
+      expect(screen.getByText('December 2026')).toBeInTheDocument();
+      expect(exposed()).toMatchObject({
+        visibleMonth: '2026-11',
+        visibleStart: '2026-11-01',
+        visibleEnd: '2026-12-31',
+      });
+    });
+
+    test('[ShadCalendar-PROP-013] a maxDate moved before the month shown moves both the view and the period', async () => {
+      await draw();
+      await widget.act('setMonth', '2026-11-01');
+      expect(exposed().visibleMonth).toBe('2026-11');
+
+      act(() => widget.setComponentProperty(ID, 'maxDate', '2026-10-31', 'properties'));
+      await screen.findByText('October 2026');
+      await waitFor(() => expect(exposed().visibleMonth).toBe('2026-10'));
+    });
+  });
 });

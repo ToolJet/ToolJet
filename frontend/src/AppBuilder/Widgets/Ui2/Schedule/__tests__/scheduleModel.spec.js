@@ -295,3 +295,130 @@ describe('resourceHeading', () => {
     expect(resourceHeading('')).toBe('');
   });
 });
+
+// Audit 54: repeated ids were made unique by trying ~1, ~2 ... from the start for every repeat, so n rows with one id
+// took n(n+1)/2 checks before the schedule drew. The next free suffix is now remembered per id.
+describe('repeated ids', () => {
+  const room = { key: 'room', id: 'room', name: 'Room', caption: '', avatar: '' };
+  const range = () => scheduleRange({ date: '2026-10-12', dayStart: 9, dayEnd: 10 }, at(8));
+
+  it('keeps every key unique, next to ids that already carry a suffix', () => {
+    const keys = scheduleResources(['a', 'a', 'a~1', 'a', { id: 'a~2', name: 'Two' }, 'a'], [], '').map((r) => r.key);
+    expect(keys).toEqual(['a', 'a~1', 'a~1~1', 'a~2', 'a~2~1', 'a~3']);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('gives 30,000 resources or bookings with one id their keys in linear time', () => {
+    const started = Date.now();
+    const resources = scheduleResources(
+      Array.from({ length: 30000 }, () => ({ id: 'x', name: 'X' })),
+      [],
+      ''
+    );
+    const rows = Array.from({ length: 30000 }, () => ({ id: 'b', room: 'room', from: '2026-10-12 09:00' }));
+    const placed = placeBookings(rows, { resourceField: 'room', startField: 'from' }, range(), [room]);
+    expect(Date.now() - started).toBeLessThan(1500);
+    expect(new Set(resources.map((r) => r.key)).size).toBe(30000);
+    const keys = placed.room.items.map((b) => b.key);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+});
+
+// Audit 53: after 2,000 bookings in range every later row was left out, whichever resource it belonged to, so a
+// shown resource lost a booking because a resource further down had many.
+describe('many bookings', () => {
+  const fields = { idField: 'id', resourceField: 'room', startField: 'from', endField: 'to', titleField: 'title' };
+  const range = () => scheduleRange({ date: '2026-10-17', dayStart: 9, dayEnd: 10, slotMinutes: 60 }, at(8, 0, 17));
+  const rooms = scheduleResources(
+    [
+      { id: 'front', name: 'Front' },
+      { id: 'back', name: 'Back' },
+    ],
+    [],
+    ''
+  );
+  const bulk = Array.from({ length: 2500 }, (_, i) => ({
+    id: `bulk-${i}`,
+    room: 'back',
+    from: '2026-10-17 09:00',
+    to: '2026-10-17 10:00',
+  }));
+  const target = {
+    id: 'target',
+    room: 'front',
+    title: 'Board meeting',
+    from: '2026-10-17 09:00',
+    to: '2026-10-17 10:00',
+  };
+
+  it('places every booking in range, wherever it comes in the list', () => {
+    const placed = placeBookings([...bulk, target], fields, range(), rooms);
+    expect(placed.front.items.map((b) => b.id)).toEqual(['target']);
+    expect(placed.back.items).toHaveLength(2500);
+  });
+});
+
+// Audit 74: across a clock change the hours were built from wall times, so on the day the clocks went forward the
+// slot 02:30 normalised to 03:30 and ran backwards to 03:00; and a day column was placed by elapsed time while every
+// column is drawn the same width, so a booking on a 23- or 25-hour day overran or fell short of its day. These hold in
+// any zone; npm run test:ui2-dates-tz runs them where the clocks change (America/Los_Angeles: 8 March and 1 November
+// 2026).
+describe('days the clocks change', () => {
+  const DATES = ['2026-03-08', '2026-11-01'];
+  const room = { key: 'room', id: 'room', name: 'Room', caption: '', avatar: '' };
+  const fields = { resourceField: 'resource', startField: 'start', endField: 'end', idField: 'id' };
+  const local = (s) => {
+    const [y, m, d] = s.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  };
+  const nextMidnight = (s) => {
+    const d = local(s);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
+  };
+  const place = (row, range) =>
+    placeBookings([{ id: 'one', resource: 'room', ...row }], fields, range, [room]).room.items[0];
+  const zoneChanges = new Date(2026, 0, 1).getTimezoneOffset() !== new Date(2026, 6, 1).getTimezoneOffset();
+
+  it.each(DATES)('%s: every hour column and slot runs forwards, one after another', (date) => {
+    const range = scheduleRange({ date, dayStart: 0, dayEnd: 4, slotMinutes: 30 });
+    for (const [i, slot] of range.slots.entries()) {
+      expect(slot.end).toBeGreaterThan(slot.start);
+      if (i) expect(slot.start).toBe(range.slots[i - 1].end);
+    }
+    for (const column of range.columns) expect(column.end).toBeGreaterThan(column.start);
+    expect(range.slots[range.slots.length - 1].end).toBe(range.end);
+    expect(new Set(range.columns.map((c) => c.key)).size).toBe(range.columns.length);
+  });
+
+  it.each(DATES)('%s: a booking at 03:00 starts where the 03:00 column is drawn', (date) => {
+    const range = scheduleRange({ date, dayStart: 0, dayEnd: 4, slotMinutes: 30 });
+    const booking = place({ start: `${date} 03:00`, end: `${date} 04:00` }, range);
+    const column = range.columns.findIndex((c) => c.start === booking.start);
+    expect(column).toBeGreaterThan(-1);
+    expect(booking.left).toBeCloseTo((column / range.columns.length) * 100, 5);
+    expect(positionOf(range, booking.start)).toBeCloseTo(booking.left, 5);
+  });
+
+  it.each(DATES)('%s: a day booking covers its calendar day, half of a two-day view', (date) => {
+    const range = scheduleRange({ scale: 'days', date, days: 2 });
+    for (const row of [{ start: date }, { start: date, end: date }, { start: `${date} 09:00`, end: `${date} 10:00` }]) {
+      const booking = place(row, range);
+      expect(booking.spanEnd).toBe(nextMidnight(date));
+      expect(booking.width).toBeCloseTo(50, 5);
+    }
+    expect(place({ start: date }, range).end).toBe(nextMidnight(date));
+  });
+
+  (zoneChanges ? it : it.skip)('the hour the clocks skip is not on the axis; the hour they repeat is, twice', () => {
+    const spring = scheduleRange({ date: '2026-03-08', dayStart: 0, dayEnd: 4, hourFormat: '24h' });
+    expect(spring.columns.map((c) => c.label)).toEqual(['00:00', '01:00', '03:00']);
+    const fall = scheduleRange({ date: '2026-11-01', dayStart: 0, dayEnd: 4, hourFormat: '24h' });
+    expect(fall.columns.map((c) => c.label)).toEqual(['00:00', '01:00', '01:00 (2nd)', '02:00', '03:00']);
+  });
+
+  it('never gives a range that runs backwards or not at all', () => {
+    const range = scheduleRange({ date: '2026-03-08', dayStart: 2, dayEnd: 3 });
+    expect(range.end).toBeGreaterThan(range.start);
+    expect(range.slots.length).toBeGreaterThan(0);
+  });
+});

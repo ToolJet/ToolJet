@@ -256,4 +256,31 @@ describe('UI 2.0 Time picker', () => {
     const panel = column('Hours').closest('[data-radix-popper-content-wrapper] > *');
     expect(panel.style.getPropertyValue('--sc-popover')).toBe('#fef3c7');
   });
+
+  // A minute step means a time every that many minutes from midnight, in the list and in the columns alike. With a
+  // step of 45 between 09:00 and 11:30 the list offered 09:00, 09:45, 10:30, 11:15 while the columns offered 09:00,
+  // 09:45, 10:00, 10:45, 11:00 (their minutes restarted every hour). Steps that divide an hour are unchanged.
+  describe('a minute step that does not divide an hour', () => {
+    const STEP = { minuteStep: binding('{{45}}'), minTime: binding('09:00'), maxTime: binding('11:30') };
+
+    test('[ShadTimePicker-PROP-005] the list offers a time every 45 minutes', async () => {
+      render({ properties: { ...STEP, pickerStyle: binding('list'), timeFormat: binding('24h') } });
+      await open();
+
+      expect(labels('Times')).toEqual(['09:00', '09:45', '10:30', '11:15']);
+    });
+
+    test('[ShadTimePicker-PROP-006] the columns offer the same times, each hour its own minutes', async () => {
+      render({ properties: { ...STEP, defaultValue: binding('09:45'), timeFormat: binding('24h') } });
+      await open();
+      expect(labels('Minutes')).toEqual(['00', '45']);
+
+      await choose('Hours', '10');
+      await waitFor(() => expect(exposed().value).toBe('10:30'));
+      expect(labels('Minutes')).toEqual(['30']);
+      await choose('Hours', '11');
+      await waitFor(() => expect(exposed().value).toBe('11:15'));
+      expect(labels('Minutes')).toEqual(['15']);
+    });
+  });
 });

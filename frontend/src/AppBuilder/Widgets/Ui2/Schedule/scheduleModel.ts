@@ -4,7 +4,7 @@
 import { chipTone } from '@/AppBuilder/Widgets/Ui2/_shared/chipTone';
 import type {
   BookingFields,
-  ParsedTime,
+  PlacedBooking,
   PlacedBookings,
   Row,
   ScheduleColumn,
@@ -14,89 +14,44 @@ import type {
   SlotSelection,
 } from './scheduleTypes';
 import { clampNumber, isNonBlankString, pad2, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import {
+  addDays,
+  clockText,
+  dayKey,
+  hourOf,
+  hourText,
+  int,
+  midnight,
+  nextMidnight,
+  parseTime,
+  startDay,
+} from './scheduleTime';
+
+export { clockText, dayKey, parseTime, startDay };
 
 const HOUR = 3600000;
-const DAY = 24 * HOUR;
 export const MAX_DAYS = 31;
 export const MAX_SLOTS = 96;
 export const MAX_LANES = 4;
-export const MAX_BOOKINGS = 2000;
+/** The bookings a resource's row draws; it says how many more it has (every booking is placed). */
+export const MAX_ROW_BOOKINGS = 200;
 
-const int = (v: unknown, fallback: number): number => {
-  if (v === null || v === undefined || v === '' || typeof v === 'boolean') return fallback;
-  const n = Math.round(Number(v));
-  return Number.isFinite(n) ? n : fallback;
-};
-/** An hour of the day from a number (9) or a clock time ('09:00', '5:30 PM'); an end rounds up to the next hour
- *  ('17:30' ends after 17:00-18:00). dayStart="09:00" fell back to 8 (2026-10-14). */
-const hourOf = (v: unknown, fallback: number, roundUp: boolean): number => {
-  const clock = typeof v === 'string' ? v.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*([ap]\.?m\.?)?$/i) : null;
-  if (!clock) return int(v, fallback);
-  let h = Number(clock[1]) % (clock[3] ? 12 : 24);
-  if (clock[3] && /^p/i.test(clock[3])) h += 12;
-  if (!clock[3] && Number(clock[1]) === 24) h = 24;
-  return roundUp && Number(clock[2] || 0) > 0 ? h + 1 : h;
-};
-const midnight = (d: Date): Date => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
-/** A local day as YYYY-MM-DD. */
-export const dayKey = (d: Date): string => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-
-/** A time from what a binding gives: a Date, a timestamp, 'YYYY-MM-DD' (a day, local), 'HH:mm' or '9:30 am' (that
- *  time on `day`), or any date text Date reads. { time, dateOnly } in ms, or null when it is not a time. */
-export const parseTime = (v: unknown, day?: Date): ParsedTime | null => {
-  if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : { time: v.getTime(), dateOnly: false };
-  if (typeof v === 'number') return Number.isFinite(v) ? { time: v, dateOnly: false } : null;
-  if (!isNonBlankString(v) || v.length > 64) return null;
-  const s = v.trim();
-  const date = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (date) {
-    const d = new Date(Number(date[1]), Number(date[2]) - 1, Number(date[3]));
-    return Number.isNaN(d.getTime()) || d.getMonth() !== Number(date[2]) - 1
-      ? null
-      : { time: d.getTime(), dateOnly: true };
-  }
-  const clock = s.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
-  if (clock && (clock[2] !== undefined || clock[3])) {
-    let h = Number(clock[1]);
-    const m = Number(clock[2] || 0);
-    if (clock[3]) {
-      if (h < 1 || h > 12) return null;
-      h = (h % 12) + (/pm/i.test(clock[3]) ? 12 : 0);
+/** Hands out unique keys: an id the first time, then id~1, id~2 ... remembering per id where the search stopped, so
+ *  n repeats of one id cost n checks, not n(n+1)/2 (a key that already exists, such as an id 'a~1', is skipped). */
+const keyAllocator = () => {
+  const taken = new Set<string>();
+  const nextSuffix = new Map<string, number>();
+  return (base: string): string => {
+    let key = base;
+    if (taken.has(key)) {
+      let n = nextSuffix.get(base) ?? 1;
+      while (taken.has(`${base}~${n}`)) n++;
+      key = `${base}~${n}`;
+      nextSuffix.set(base, n + 1);
     }
-    if (h > 24 || m > 59 || (h === 24 && m > 0)) return null;
-    const base = day instanceof Date && !Number.isNaN(day.getTime()) ? day : midnight(new Date());
-    return { time: new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, m).getTime(), dateOnly: false };
-  }
-  // 'YYYY-MM-DD HH:mm' reads as local time (Date reads the space form inconsistently across browsers).
-  const local = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-  if (local) {
-    const d = new Date(+local[1], +local[2] - 1, +local[3], +local[4], +local[5], +(local[6] || 0));
-    return Number.isNaN(d.getTime()) ? null : { time: d.getTime(), dateOnly: false };
-  }
-  // Other date text needs a four-digit year: Date reads 'Room 42' or 'Sample 7' as a date in 2042 or 2001.
-  if (!/\d{4}/.test(s)) return null;
-  const d = new Date(s);
-  return Number.isNaN(d.getTime()) ? null : { time: d.getTime(), dateOnly: false };
-};
-
-/** The first day shown: `date` (a Date, a day or date text) at local midnight, else today. */
-export const startDay = (date: unknown, now: number = Date.now()): Date => {
-  const parsed = parseTime(date);
-  return midnight(new Date(parsed ? parsed.time : now));
-};
-
-const hourText = (h: number, m: number, format: unknown): string => {
-  if (format === '24h') return `${pad2(h % 24)}:${pad2(m)}`;
-  const suffix = h % 24 < 12 ? 'AM' : 'PM';
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  return m ? `${h12}:${pad2(m)} ${suffix}` : `${h12} ${suffix}`;
-};
-
-/** A time of day as text: '9:30 AM' (12h) or '09:30' (24h). */
-export const clockText = (ms: number, format: unknown = '12h'): string => {
-  const d = new Date(ms);
-  return hourText(d.getHours(), d.getMinutes(), format);
+    taken.add(key);
+    return key;
+  };
 };
 
 const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -151,33 +106,66 @@ export const scheduleRange = (
   }
   const from = clampNumber(hourOf(dayStart, 8, false), 0, 23);
   const to = clampNumber(hourOf(dayEnd, 18, true), from + 1, 24);
-  const at = (h: number, m = 0): number =>
-    new Date(first.getFullYear(), first.getMonth(), first.getDate(), h, m).getTime();
-  const columns = Array.from({ length: to - from }, (_, i) => ({
-    key: String(from + i),
-    start: at(from + i),
-    end: at(from + i + 1),
-    label: hourText(from + i, 0, hourFormat),
-    sub: '',
-    today: false,
-  }));
-  const span = (to - from) * 60;
+  const at = (h: number): number => new Date(first.getFullYear(), first.getMonth(), first.getDate(), h).getTime();
+  // The hours run in elapsed time from dayStart to dayEnd. Where the clocks change, the hour they skip is not on the
+  // axis and the hour they repeat is on it twice (the second labelled so); a wall time built for each slot instead
+  // normalised 02:30 to 03:30 on the day the clocks went forward and gave a slot that ran backwards.
+  const start = at(from);
+  const end = Math.max(at(to), start + HOUR); // never empty, even for hours the clocks skip altogether
+  const seen = new Map<string, number>();
+  const columns: ScheduleColumn[] = [];
+  for (let t = start; t < end; t += HOUR) {
+    const d = new Date(t);
+    const label = hourText(d.getHours(), d.getMinutes(), hourFormat);
+    const repeat = (seen.get(label) ?? 0) + 1;
+    seen.set(label, repeat);
+    columns.push({
+      key: repeat === 1 ? String(d.getHours()) : `${d.getHours()}~${repeat}`,
+      start: t,
+      end: Math.min(end, t + HOUR),
+      label: repeat === 1 ? label : `${label} (2nd)`,
+      sub: '',
+      today: false,
+    });
+  }
+  const span = Math.round((end - start) / 60000);
   // Slots divide the hour evenly where they can, and never number more than MAX_SLOTS.
   let step = clampNumber(int(slotMinutes, 30), 5, 240);
   step = Math.max(step, Math.ceil(span / MAX_SLOTS));
   const slots: ScheduleSlot[] = [];
   for (let m = 0; m < span; m += step) {
-    const end = Math.min(span, m + step);
-    slots.push({ start: at(from, m), end: at(from, end), edge: m % 60 === 0 });
+    const slotStart = start + m * 60000;
+    slots.push({
+      start: slotStart,
+      end: Math.min(end, start + (m + step) * 60000),
+      edge: new Date(slotStart).getMinutes() === 0,
+    });
   }
-  return { scale: 'hours', start: at(from), end: at(to), columns, slots, today: dayKey(first) === todayKey };
+  return { scale: 'hours', start, end, columns, slots, today: dayKey(first) === todayKey };
 };
 
-/** Where `ms` falls in the range, 0 to 100, or null outside it. */
+/** Where `ms` falls in the range, 0 to 100, or null outside it. The columns are drawn the same width, so a time is
+ *  placed in its column by the part of that column it has reached: a day where the clocks change has 23 or 25 hours,
+ *  and an elapsed-time share of the whole range put its bookings past or short of its column. */
 export const positionOf = (range: ScheduleRange | null | undefined, ms: number): number | null => {
   if (!range || !Number.isFinite(ms) || ms < range.start || ms > range.end) return null;
-  return ((ms - range.start) / (range.end - range.start)) * 100;
+  const { columns } = range;
+  if (!columns.length) return ((ms - range.start) / (range.end - range.start)) * 100;
+  let i = columns.findIndex((c) => ms < c.end);
+  if (i === -1) i = columns.length - 1;
+  const c = columns[i];
+  const within = c.end > c.start ? Math.min(1, Math.max(0, (ms - c.start) / (c.end - c.start))) : 0;
+  return ((i + within) / columns.length) * 100;
 };
+
+/** The slots' widths as grid tracks, on the same axis as positionOf (a short last slot is drawn short). */
+export const slotTracks = (range: ScheduleRange): string =>
+  range.slots
+    .map(
+      (s) =>
+        `minmax(0, ${Math.max(0, (positionOf(range, s.end) ?? 0) - (positionOf(range, s.start) ?? 0)).toFixed(4)}fr)`
+    )
+    .join(' ');
 
 /** Resources down the side: [{ key, id, name, caption, avatar }] from ['Room A'] or [{ id, name (or label, title),
  *  caption (or subtitle, role), avatar }]. With none given, the distinct values of the bookings' resourceField, in
@@ -200,7 +188,7 @@ export const scheduleResources = (
       if (list.length >= 1000) break;
     }
   }
-  const keys = new Set<string>();
+  const uniqueKey = keyAllocator();
   return list.flatMap((r, index): ScheduleResource[] => {
     let entry: Omit<ScheduleResource, 'key'>;
     if (typeof r === 'string' || typeof r === 'number') {
@@ -218,10 +206,7 @@ export const scheduleResources = (
         avatar: toText(r.avatar ?? r.image).trim(),
       };
     } else return [];
-    let key = entry.id || String(index);
-    for (let n = 1; keys.has(key); n++) key = `${entry.id}~${n}`;
-    keys.add(key);
-    return [{ key, ...entry }];
+    return [{ key: uniqueKey(entry.id || String(index)), ...entry }];
   });
 };
 
@@ -258,32 +243,32 @@ export const placeBookings = (
   const day = new Date(range.start);
   const days = range.scale === 'days';
   const field = (row: Row, name: unknown): unknown => (isNonBlankString(name) ? row[name] : undefined);
-  let count = 0;
   bookings.forEach((row: Row, index: number) => {
-    if (count >= MAX_BOOKINGS || !row || typeof row !== 'object' || Array.isArray(row)) return;
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return;
     const resourceKey = byId.get(toText(field(row, f.resourceField)).trim());
     if (resourceKey === undefined) return;
     const start = parseTime(field(row, f.startField), day);
     if (!start) return;
     const endParsed = parseTime(field(row, f.endField), new Date(start.time));
     let end: number;
-    if (endParsed) end = endParsed.dateOnly && days ? endParsed.time + DAY : endParsed.time;
-    else end = start.dateOnly || days ? start.time + DAY : start.time + HOUR;
-    if (end <= start.time) end = start.time + (days ? DAY : HOUR / 2);
+    // A day is a calendar day (to the next local midnight), not 24 hours: a day can have 23 or 25.
+    const dayAfter = start.dateOnly ? nextMidnight(start.time) : addDays(start.time, 1);
+    if (endParsed) end = endParsed.dateOnly && days ? nextMidnight(endParsed.time) : endParsed.time;
+    else end = start.dateOnly || days ? dayAfter : start.time + HOUR;
+    if (end <= start.time) end = days ? dayAfter : start.time + HOUR / 2;
     if (end <= range.start || start.time >= range.end) return;
     // On the days scale a timed booking shorter than a day fills its day: placed by its time of day, a one-hour class
     // was a 10px sliver with no room for its title (a gym's week, 2026-10-14). Its own time stays in `time`.
-    const wholeDay = days && !start.dateOnly && end - start.time < DAY;
+    const wholeDay = days && !start.dateOnly && end < dayAfter;
     const spanStart = wholeDay ? midnight(new Date(start.time)).getTime() : start.time;
-    const spanEnd = wholeDay ? spanStart + DAY : end;
-    const from = Math.max(spanStart, range.start);
-    const to = Math.min(spanEnd, range.end);
+    const spanEnd = wholeDay ? nextMidnight(spanStart) : end;
+    const left = positionOf(range, Math.max(spanStart, range.start)) ?? 0;
+    const right = positionOf(range, Math.min(spanEnd, range.end)) ?? 100;
     const status = toText(field(row, f.statusField)).trim();
     const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
     const fmt = f.hourFormat === '24h' ? '24h' : '12h';
     const time =
       days && (start.dateOnly || endParsed?.dateOnly) ? '' : `${clockText(start.time, fmt)} to ${clockText(end, fmt)}`;
-    count += 1;
     if (!out[resourceKey]) out[resourceKey] = { lanes: 1, items: [] };
     out[resourceKey].items.push({
       key: toText(id) || `#${index}`,
@@ -298,8 +283,8 @@ export const placeBookings = (
       end,
       spanStart,
       spanEnd,
-      left: ((from - range.start) / (range.end - range.start)) * 100,
-      width: ((to - from) / (range.end - range.start)) * 100,
+      left,
+      width: right - left,
       time,
       lane: 0,
     });
@@ -307,20 +292,36 @@ export const placeBookings = (
   for (const entry of Object.values(out)) {
     entry.items.sort((a, b) => a.start - b.start || b.end - a.end);
     const laneEnds: number[] = [];
-    const keys = new Set<string>();
+    const uniqueKey = keyAllocator();
     for (const item of entry.items) {
       let lane = laneEnds.findIndex((t) => t <= item.spanStart);
       if (lane === -1) lane = laneEnds.length < MAX_LANES ? laneEnds.length : MAX_LANES - 1;
       laneEnds[lane] = Math.max(laneEnds[lane] ?? 0, item.spanEnd);
       item.lane = lane;
-      let key = item.key;
-      for (let n = 1; keys.has(key); n++) key = `${item.key}~${n}`;
-      keys.add(key);
-      item.key = key;
+      item.key = uniqueKey(item.key);
     }
     entry.lanes = Math.max(1, laneEnds.length);
   }
   return out;
+};
+
+/** A slot's availability on its resource: 'booked' when bookings cover all of it, 'partly' when they cover some,
+ *  else 'free', with the titles of the bookings in it. A booking's own times count, not the whole day it is drawn
+ *  across on the days scale, and a cancelled booking takes no time. */
+export const slotAvailability = (
+  slot: ScheduleSlot,
+  items: readonly PlacedBooking[] = []
+): { state: 'free' | 'partly' | 'booked'; titles: string[] } => {
+  const inSlot = items
+    .filter((b) => !/\bcancel/i.test(b.status) && b.start < slot.end && b.end > slot.start)
+    .sort((a, b) => a.start - b.start);
+  if (!inSlot.length) return { state: 'free', titles: [] };
+  let reached = slot.start;
+  for (const b of inSlot) if (b.start <= reached) reached = Math.max(reached, b.end);
+  return {
+    state: reached >= slot.end ? 'booked' : 'partly',
+    titles: [...new Set(inSlot.map((b) => b.title || 'Booking'))],
+  };
 };
 
 /** A slot as the app reads it: the resource, ISO start and end, the local day and times, and a label ('9:30 AM to

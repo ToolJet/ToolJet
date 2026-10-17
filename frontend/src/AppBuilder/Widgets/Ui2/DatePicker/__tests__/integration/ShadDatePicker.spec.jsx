@@ -280,4 +280,80 @@ describe('UI 2.0 Date picker', () => {
     expect(root.style.getPropertyValue('--sc-primary')).toBe('#e11d48');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('12px');
   });
+
+  // Audit 76: the rules once kept only the first 1,000 disabled dates, so a blocked day later in a longer list
+  // validated and submitted, and the same list in another order blocked it.
+  describe('a long disabled-dates list', () => {
+    const blocked = (target, count) => [
+      ...Array.from({ length: count - 1 }, (_, i) => dayjs('2020-01-01').add(i, 'day').format('YYYY-MM-DD')),
+      target,
+    ];
+
+    test('[ShadDatePicker-VAL-005] blocks a date that comes after the first thousand entries', async () => {
+      render({
+        properties: {
+          defaultValue: binding('2026-10-17'),
+          disabledDates: binding(`{{${JSON.stringify(blocked('2026-10-17', 1001))}}}`),
+        },
+      });
+
+      await waitFor(() => expect(exposed().isValid).toBe(false));
+      expect(exposed().value).toBe('2026-10-17');
+      await open();
+      expect(day(17)).toBeDisabled();
+    });
+
+    test('[ShadDatePicker-VAL-006] blocks it in a range and through setDisabledDates too', async () => {
+      render({ properties: { mode: binding('range'), defaultValue: binding("{{['2026-10-17', '2026-10-19']}}") } });
+      await waitFor(() => expect(exposed().isValid).toBe(true));
+
+      await widget.act('setDisabledDates', blocked('2026-10-17', 1001));
+      await waitFor(() => expect(exposed().isValid).toBe(false));
+      await widget.act('setDisabledDates', blocked('2026-10-01', 1001));
+      await waitFor(() => expect(exposed().isValid).toBe(true));
+    });
+  });
+
+  // Audit 47: a range whose end came before its start reported valid and reached Form.onSubmit.
+  describe('a range in the wrong order', () => {
+    const rangeOf = (start, end) => ({ mode: binding('range'), defaultValue: binding(`{{['${start}', '${end}']}}`) });
+
+    test('[ShadDatePicker-VAL-007] a default given end first is put in order, as setDateRange does', async () => {
+      render({ properties: rangeOf('2026-10-20', '2026-10-09') });
+
+      await waitFor(() => expect(exposed().value).toEqual(['2026-10-09', '2026-10-20']));
+      expect(exposed().isValid).toBe(true);
+      await widget.act('setDateRange', '2026-10-25', '2026-10-21');
+      await waitFor(() => expect(exposed().value).toEqual(['2026-10-21', '2026-10-25']));
+    });
+
+    test('[ShadDatePicker-VAL-008] moving one end past the other makes the range invalid until it is fixed', async () => {
+      render({ properties: rangeOf('2026-10-09', '2026-10-20') });
+      await waitFor(() => expect(exposed().isValid).toBe(true));
+
+      await widget.act('setStartDate', '2026-10-25');
+      await waitFor(() => expect(exposed().isValid).toBe(false));
+      expect(exposed().value).toEqual(['2026-10-25', '2026-10-20']);
+      await open();
+      await act(async () => fireEvent.keyDown(document.activeElement, { key: 'Escape' }));
+      expect(await screen.findByText('Pick an end date on or after the start date')).toBeInTheDocument();
+
+      await widget.act('setEndDate', '2026-10-28');
+      await waitFor(() => expect(exposed().isValid).toBe(true));
+      await widget.act('setEndDate', '2026-10-01');
+      await waitFor(() => expect(exposed().isValid).toBe(false));
+    });
+  });
+
+  // Audit 48: 30 February became 2 March, as a default and through setValue.
+  test('[ShadDatePicker-PROP-004] a date that does not exist is not read as another date', async () => {
+    render({ properties: { defaultValue: binding('2026-02-30T09:30') } });
+    await waitFor(() => expect(exposed().setValue).toBeInstanceOf(Function));
+    expect(exposed().value).toBe('');
+
+    await widget.act('setValue', '2026-10-15');
+    await waitFor(() => expect(exposed().value).toBe('2026-10-15'));
+    await widget.act('setValue', '2026-02-30T09:30');
+    expect(exposed().value).toBe('2026-10-15');
+  });
 });

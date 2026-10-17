@@ -80,12 +80,21 @@ export const timeSlots = (step: unknown, minTime?: unknown, maxTime?: unknown): 
   return out;
 };
 
-/** The minutes of an hour column: 0, step, 2*step ... below 60. */
-export const minuteOptions = (step: unknown): number[] => {
+/** The minutes of `hour`'s column. A minute step means a time every `step` minutes from midnight, as the list of
+ *  times offers them (timeSlots), so a step that does not divide an hour gives each hour its own minutes: with 45,
+ *  09:00 and 09:45, then 10:30, then 11:15. A step that divides an hour gives every hour 0, step, 2*step ... */
+export const minuteOptions = (step: unknown, hour: unknown = 0): number[] => {
   const s = minuteStep(step);
+  const h = typeof hour === 'number' && Number.isInteger(hour) ? ((hour % 24) + 24) % 24 : 0;
   const out: number[] = [];
-  for (let m = 0; m < 60; m += s) out.push(m);
+  for (let m = (s - ((h * 60) % s)) % s; m < 60; m += s) out.push(m);
   return out;
+};
+
+/** `minute` when it falls on the step in `hour`, else the first minute that does. */
+export const minuteInHour = (step: unknown, hour: number, minute: number | null): number => {
+  const options = minuteOptions(step, hour);
+  return minute !== null && options.includes(minute) ? minute : options[0] ?? 0;
 };
 
 /** The nearest time within the bounds. */
@@ -94,22 +103,36 @@ export const clampTime = (minutes: number, bounds: TimeBounds): number =>
 
 // ---- Date and time -------------------------------------------------------------------------------------------------
 
-const DATE_INPUT_FORMATS = [
+// ISO text means one date whatever a widget's display format is, so it is read before that format.
+const ISO_INPUT_FORMATS = [
   'YYYY-MM-DDTHH:mm:ss',
   'YYYY-MM-DDTHH:mm',
   'YYYY-MM-DD HH:mm:ss',
   'YYYY-MM-DD HH:mm',
   'YYYY-MM-DD h:mm A',
   'YYYY-MM-DD',
-  'DD/MM/YYYY HH:mm',
-  'DD/MM/YYYY',
-  'MM/DD/YYYY HH:mm',
-  'MM/DD/YYYY',
 ];
+// Day-first and month-first text is ambiguous: the display format, when it reads the text, decides.
+const LOCAL_INPUT_FORMATS = ['DD/MM/YYYY HH:mm', 'DD/MM/YYYY', 'MM/DD/YYYY HH:mm', 'MM/DD/YYYY'];
+
+// Text that starts like an ISO date, with an optional time: year, month, day, hour, minute, second.
+const ISO_FIELDS = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/;
+
+/** False for text that starts like an ISO date but names a day or time that does not exist (30 February, month 13,
+ *  hour 25, minute 60): dayjs would roll it into another date. True for any other text. */
+export const isRealDateText = (text: string): boolean => {
+  const m = ISO_FIELDS.exec(text.trim());
+  if (!m) return true;
+  const [year, month, day, hour, minute, second] = m.slice(1).map((f) => (f === undefined ? 0 : Number(f)));
+  if (month < 1 || month > 12 || day < 1 || day > new Date(year, month, 0).getDate()) return false;
+  return hour <= 23 && minute <= 59 && second <= 59;
+};
 
 /** A date (dayjs) from ISO text, 'YYYY-MM-DD HH:mm', text in the display `format`, a unix timestamp (seconds or
- *  milliseconds) or a Date; null otherwise. */
-export const parseDateTime = (v: unknown, format?: unknown): Dayjs | null => {
+ *  milliseconds) or a Date; null otherwise, and for a day or time that does not exist. ISO text is read as ISO before
+ *  the display format; `formatFirst` reads with `format` first, for a format given with the value (an action's
+ *  argument). */
+export const parseDateTime = (v: unknown, format?: unknown, formatFirst = false): Dayjs | null => {
   if (v === undefined || v === null || v === '' || typeof v === 'boolean') return null;
   if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : dayjs(v);
   if (typeof v === 'number') {
@@ -120,12 +143,16 @@ export const parseDateTime = (v: unknown, format?: unknown): Dayjs | null => {
   if (typeof v !== 'string') return null;
   const s = v.trim();
   if (/^\d{9,13}$/.test(s)) return parseDateTime(Number(s));
-  const formats = isBlank(format) ? DATE_INPUT_FORMATS : [String(format), ...DATE_INPUT_FORMATS];
+  const given = isBlank(format) ? [] : [String(format)];
+  const formats = formatFirst
+    ? [...given, ...ISO_INPUT_FORMATS, ...LOCAL_INPUT_FORMATS]
+    : [...ISO_INPUT_FORMATS, ...given, ...LOCAL_INPUT_FORMATS];
   for (const f of formats) {
     const d = dayjs(s, f, true);
     if (d.isValid()) return d;
   }
-  if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+  // ISO text the formats above do not cover (an offset, a fraction of a second), when it names a real date and time.
+  if (/^\d{4}-\d{2}-\d{2}T/.test(s) && isRealDateText(s)) {
     const d = dayjs(s);
     if (d.isValid()) return d;
   }
@@ -198,21 +225,22 @@ export interface DateRuleInput {
   format?: unknown;
 }
 
-/** The calendar's rules: first and last pickable day (start of day) and the disabled days as 'YYYY-MM-DD'. */
+/** The calendar's rules: first and last pickable day (start of day) and the disabled days as 'YYYY-MM-DD'. Every
+ *  disabled date is kept: a rule left out would let that day validate and submit. */
 export interface DateRules {
   min: Dayjs | null;
   max: Dayjs | null;
-  disabled: string[];
+  disabled: ReadonlySet<string>;
 }
 
 export const dateRules = ({ minDate, maxDate, disabledDates, format }: DateRuleInput = {}): DateRules => {
   const min = parseDateTime(minDate, format)?.startOf('day') ?? null;
   const max = parseDateTime(maxDate, format)?.startOf('day') ?? null;
-  const disabled = (Array.isArray(disabledDates) ? disabledDates : [])
-    .slice(0, 1000)
-    .map((d) => parseDateTime(d, format))
-    .filter((d): d is Dayjs => !!d)
-    .map((d) => d.format('YYYY-MM-DD'));
+  const disabled = new Set<string>();
+  for (const raw of Array.isArray(disabledDates) ? disabledDates : []) {
+    const d = parseDateTime(raw, format);
+    if (d) disabled.add(d.format('YYYY-MM-DD'));
+  }
   return { min, max, disabled };
 };
 
@@ -222,7 +250,7 @@ export const dateProblem = (d: Dayjs | null | undefined, rules: DateRules | null
   const day = d.startOf('day');
   if (rules.min && day.isBefore(rules.min)) return `Pick a date on or after ${rules.min.format('DD MMM YYYY')}`;
   if (rules.max && day.isAfter(rules.max)) return `Pick a date on or before ${rules.max.format('DD MMM YYYY')}`;
-  if (rules.disabled.includes(day.format('YYYY-MM-DD'))) return 'This date is not available';
+  if (rules.disabled.has(day.format('YYYY-MM-DD'))) return 'This date is not available';
   return '';
 };
 
@@ -233,11 +261,12 @@ export const atTime = (date: Dayjs, minutes: number): Dayjs =>
     .hour(Math.floor(minutes / 60))
     .minute(minutes % 60);
 
-/** react-day-picker's disabled matchers for the rules: before the minimum, after the maximum, each disabled day. */
+/** react-day-picker's disabled matchers for the rules: before the minimum, after the maximum, and one lookup for the
+ *  disabled days (a matcher per day would be checked against every day drawn). */
 export const dayMatchers = (rules: DateRules) => [
   ...(rules.min ? [{ before: rules.min.toDate() }] : []),
   ...(rules.max ? [{ after: rules.max.toDate() }] : []),
-  ...rules.disabled.map((d) => dayjs(d).toDate()),
+  ...(rules.disabled.size ? [(date: Date) => rules.disabled.has(dayjs(date).format('YYYY-MM-DD'))] : []),
 ];
 
 /** The date pickers' bound actions; each sets its property until the property itself changes. */

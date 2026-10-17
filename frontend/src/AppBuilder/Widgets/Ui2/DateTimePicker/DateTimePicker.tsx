@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarIcon, Clock } from 'lucide-react';
 import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
@@ -72,30 +72,38 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
   const dateFormat =
     typeof properties.dateFormat === 'string' && properties.dateFormat.trim() ? properties.dateFormat : 'DD MMM YYYY';
   const use24 = M.is24h(properties.timeFormat);
-  const displayFormat = `${dateFormat} ${use24 ? 'HH:mm' : 'h:mm A'}`;
+  // One format shows the value and reads text written in it (a default, setValue, minDate): dayjs tokens, with a
+  // date-fns format ('dd MMM yyyy') read as dayjs's ('DD MMM YYYY') for both, as in the Date picker.
+  const dayFormat = M.toDayjsFormat(dateFormat);
+  const displayFormat = `${dayFormat} ${use24 ? 'HH:mm' : 'h:mm A'}`;
   const step = M.minuteStep(properties.minuteStep, 5);
   const minDate = useStable(properties.minDate);
   const maxDate = useStable(properties.maxDate);
   const disabledDates = useStable(properties.disabledDates);
   const rules = useMemo(
-    () => M.dateRules({ minDate, maxDate, disabledDates, format: dateFormat }),
-    [minDate, maxDate, disabledDates, dateFormat]
+    () => M.dateRules({ minDate, maxDate, disabledDates, format: dayFormat }),
+    [minDate, maxDate, disabledDates, dayFormat]
   );
-  const initial = M.parseDateTime(properties.defaultValue, displayFormat)?.valueOf() ?? null;
-  const [ts, setTs] = useState(initial);
-  useEffect(() => setTs(initial), [initial]);
+  // A new default value resets the value; a new display format only changes how it is shown (the default is read
+  // with the format in force when the default itself changes).
+  const formatRef = useLatest(displayFormat);
+  const rawDefault = useStable(properties.defaultValue);
+  const readDefault = () => M.parseDateTime(rawDefault, displayFormat)?.valueOf() ?? null;
+  const [ts, setTs] = useState(readDefault);
+  const [defaultRead, setDefaultRead] = useState(rawDefault);
+  if (defaultRead !== rawDefault) {
+    setDefaultRead(rawDefault);
+    setTs(readDefault());
+  }
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   const date = ts === null ? null : dayjs(ts);
   const exposed = M.dateTimeExposed(date, displayFormat);
   const tsRef = useLatest(ts);
-  const formatRef = useLatest(displayFormat);
   const setDate = (v: unknown, format: unknown) => {
-    const d = M.parseDateTime(
-      v,
-      isBlank(format) || typeof format !== 'string' ? formatRef.current : M.toDayjsFormat(format)
-    );
+    const explicit = !isBlank(format) && typeof format === 'string';
+    const d = M.parseDateTime(v, explicit ? M.toDayjsFormat(format) : formatRef.current, explicit);
     if (d || isBlank(v)) setTs(d ? d.valueOf() : null);
   };
   const blankArg = (v: unknown) => v === undefined || v === null || v === '';
@@ -150,7 +158,8 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
   const hour = minutes === null ? null : Math.floor(minutes / 60);
   const minute = minutes === null ? null : minutes % 60;
   const pm = hour !== null && hour >= 12;
-  const minuteChoices = M.minuteOptions(step);
+  // Each hour offers the minutes on the step from midnight, as the Time picker does.
+  const minuteChoices = M.minuteOptions(step, hour ?? Math.floor(nowMinutes / 60));
   if (minute !== null && !minuteChoices.includes(minute)) minuteChoices.push(minute);
   minuteChoices.sort((a, b) => a - b);
   const hourOptions = use24
@@ -209,7 +218,10 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
               style={vars}
               value={hour === null ? '' : String(use24 ? hour : hour % 12)}
               options={hourOptions}
-              onChange={(h) => setTime(((Number(h) % 24) + (!use24 && pm ? 12 : 0)) * 60 + (minute ?? 0))}
+              onChange={(h) => {
+                const next = (Number(h) % 24) + (!use24 && pm ? 12 : 0);
+                setTime(next * 60 + M.minuteInHour(step, next, minute));
+              }}
             />
             <span className="tw-text-ui2-sm tw-text-ui2-muted-foreground">:</span>
             <TimeSelect
@@ -241,7 +253,8 @@ export const ShadDateTimePicker = (props: WidgetProps) => {
                       onClick={() => {
                         const base = minutes ?? nowMinutes;
                         const h = Math.floor(base / 60) % 12;
-                        setTime((h + (label === 'PM' ? 12 : 0)) * 60 + (base % 60));
+                        const next = h + (label === 'PM' ? 12 : 0);
+                        setTime(next * 60 + M.minuteInHour(step, next, base % 60));
                       }}
                     >
                       {label}

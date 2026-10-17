@@ -259,4 +259,83 @@ describe('UI 2.0 Date and time picker', () => {
     const panel = screen.getByRole('grid').closest('[data-radix-popper-content-wrapper] > *');
     expect(panel.style.getPropertyValue('--sc-popover')).toBe('#fef3c7');
   });
+
+  // Audit 76: the rules once kept only the first 1,000 disabled dates.
+  test('[ShadDateTimePicker-VAL-004] blocks a date that comes after the first thousand disabled dates', async () => {
+    const earlier = Array.from({ length: 1000 }, (_, i) => {
+      const d = new Date(2020, 0, 1 + i);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
+    render({
+      properties: {
+        defaultValue: binding('2026-10-17T09:30'),
+        disabledDates: binding(`{{${JSON.stringify([...earlier, '2026-10-17'])}}}`),
+      },
+    });
+
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+    expect(exposed().value).toBe('2026-10-17T09:30');
+  });
+
+  // Audit 48: 30 February became 2 March and hour 25 the next day, as a default and through setValue.
+  test('[ShadDateTimePicker-PROP-006] a date or time that does not exist is not read as another', async () => {
+    render({ properties: { defaultValue: binding('2026-02-30T09:30') } });
+    await waitFor(() => expect(exposed().setValue).toBeInstanceOf(Function));
+    expect(exposed().value).toBe('');
+
+    await widget.act('setValue', '2026-10-15T09:30');
+    await waitFor(() => expect(exposed().value).toBe('2026-10-15T09:30'));
+    await widget.act('setValue', '2026-02-30T09:30');
+    await widget.act('setValue', '2026-10-15T25:30');
+    expect(exposed().value).toBe('2026-10-15T09:30');
+  });
+
+  // Audit 69: under the display format 'YYYY-DD-MM' the default 2026-10-09 14:30 read as 10 September, and changing
+  // only the display format put a picked value back to the default.
+  describe('the display format', () => {
+    const DEFAULT_ISO = { defaultValue: binding('2026-10-09 14:30'), timeFormat: binding('24h') };
+
+    test('[ShadDateTimePicker-PROP-007] does not change how an ISO value is read', async () => {
+      render({ properties: { ...DEFAULT_ISO, dateFormat: binding('YYYY-DD-MM') } });
+
+      await waitFor(() => expect(exposed().value).toBe('2026-10-09T14:30'));
+      await widget.act('setValue', '2026-10-09 14:30', 'YYYY-DD-MM HH:mm');
+      await waitFor(() => expect(exposed().value).toBe('2026-09-10T14:30'));
+    });
+
+    test('[ShadDateTimePicker-PROP-008] changing it keeps the value picked since', async () => {
+      render({ properties: DEFAULT_ISO });
+      await waitFor(() => expect(exposed().value).toBe('2026-10-09T14:30'));
+      await widget.act('setValue', '2026-10-21T14:30');
+      await waitFor(() => expect(exposed().value).toBe('2026-10-21T14:30'));
+
+      act(() => widget.setComponentProperty(ID, 'dateFormat', 'YYYY-DD-MM', 'properties'));
+      await waitFor(() => expect(exposed().dateFormat).toBe('YYYY-DD-MM'));
+      expect(exposed().value).toBe('2026-10-21T14:30');
+      expect(exposed().displayValue).toBe('2026-21-10 14:30');
+    });
+  });
+
+  // The minute step means a time every that many minutes from midnight, as in the Time picker.
+  test('[ShadDateTimePicker-PROP-009] a 45-minute step offers each hour the minutes that fall on it', async () => {
+    render({ properties: { defaultValue: binding('2026-10-15 10:30'), minuteStep: binding('{{45}}') } });
+    await open();
+
+    const minutes = await openSelect('Minute');
+    expect(minutes.map((o) => o.textContent)).toEqual(['30']);
+  });
+
+  // Audit 69's open question: a date-fns dateFormat ('dd MMM yyyy') was shown right but text in it was not read, so
+  // a default or setValue written that way gave no value and a minDate written that way no bound. One format, the
+  // display format, now shows and reads text alike, as in the Date picker.
+  test('[ShadDateTimePicker-PROP-010] text in a date-fns date format is read as it is shown', async () => {
+    const unicode = { dateFormat: binding('dd MMM yyyy'), timeFormat: binding('24h') };
+    render({ properties: { ...unicode, defaultValue: binding('21 Oct 2026 09:30'), minDate: binding('20 Oct 2026') } });
+
+    await waitFor(() => expect(exposed().value).toBe('2026-10-21T09:30'));
+    expect(exposed()).toMatchObject({ displayValue: '21 Oct 2026 09:30', minDate: '2026-10-20', isValid: true });
+    await widget.act('setValue', '19 Oct 2026 08:00');
+    await waitFor(() => expect(exposed().value).toBe('2026-10-19T08:00'));
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+  });
 });

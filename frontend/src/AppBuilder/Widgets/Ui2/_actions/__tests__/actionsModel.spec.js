@@ -21,6 +21,7 @@ import {
   calendarExposed,
   calendarSelection,
   disabledMatchers,
+  shownMonth,
   markersByDay,
   toDate,
   visiblePeriod,
@@ -253,5 +254,37 @@ describe('carousel logic', () => {
     expect(aspectRatio('fill')).toBeNull();
     expect(aspectRatio(2)).toBe(2);
     expect(aspectRatio('junk')).toBeCloseTo(16 / 9);
+  });
+
+  // Audit 76: the calendar once kept only the first 2,000 disabled dates.
+  it('blocks every disabled date, however long the list', () => {
+    const dates = Array.from({ length: 3000 }, (_, i) => {
+      const d = new Date(2020, 0, 1 + i);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
+    const [blocks] = disabledMatchers({ disabledDates: [...dates, '2040-05-05'] });
+    expect(blocks(new Date(2040, 4, 5))).toBe(true);
+    expect(blocks(new Date(2020, 0, 1))).toBe(true);
+    expect(blocks(new Date(2040, 4, 6))).toBe(false);
+  });
+
+  // Audit 48: the calendar read 30 February as 2 March.
+  it('reads no day from a date that does not exist', () => {
+    expect(toDate('2026-02-30')).toBeUndefined();
+    expect(toDate('2026-02-30T09:30')).toBeUndefined();
+    expect(toDate('2026-13-01')).toBeUndefined();
+    expect(ymd(toDate('2028-02-29'))).toBe('2028-02-29');
+    expect(ymd(toDate('2026-10-09T14:30:00'))).toBe('2026-10-09');
+  });
+
+  // Audit 57: the month the calendar draws, inside minDate and maxDate.
+  it('moves the first month shown inside the allowed months', () => {
+    const at = (month, n, min, max) => ymd(shownMonth(new Date(month), n, min, max));
+    expect(at('2025-01-15T00:00', 1, '2026-10-01', '2026-12-31')).toBe('2026-10-01');
+    expect(at('2027-02-01T00:00', 1, '2026-10-01', '2026-12-31')).toBe('2026-12-01');
+    expect(at('2026-12-01T00:00', 2, '2026-10-01', '2026-12-31')).toBe('2026-11-01');
+    expect(at('2026-11-20T00:00', 2, '2026-10-01', '2026-12-31')).toBe('2026-11-01');
+    expect(at('2026-11-01T00:00', 3, '2026-11-01', '2026-11-30')).toBe('2026-11-01');
+    expect(at('2025-01-01T00:00', 1, '', '')).toBe('2025-01-01');
   });
 });

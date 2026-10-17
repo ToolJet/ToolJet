@@ -106,6 +106,12 @@ jobs:
         if: steps.scope.outputs.frontend == 'true'
         run: npm run test:ci
 
+      # The runner is in UTC, where no clock change ever happens. The UI 2.0 date, time, Calendar and Schedule specs
+      # run again in a zone with daylight saving, where a day can have 23 or 25 hours and an hour can repeat.
+      - name: Run the UI 2.0 date and schedule specs in America/Los_Angeles
+        if: steps.scope.outputs.frontend == 'true'
+        run: npm run test:ui2-dates-tz
+
       # Fails if an App Builder source file is not assigned to a subsystem in
       # app-builder-coverage-manifest.json. The harness contract spec is NOT run
       # here — testMatch already picks it up in the full suite above, so running

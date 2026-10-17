@@ -2,6 +2,7 @@
 // author data as it comes and never throws.
 import dayjs from 'dayjs';
 import { text, unwrap } from './actionsModel';
+import { isRealDateText } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import type { ConfigType } from 'dayjs';
 import type { DateRange, Matcher } from 'react-day-picker';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -32,6 +33,8 @@ export const toDate = (v: unknown): Date | undefined => {
   const raw = unwrap(v);
   if (raw === undefined || raw === null || raw === '' || typeof raw === 'boolean') return undefined;
   if (!(raw instanceof Date) && typeof raw !== 'string' && typeof raw !== 'number') return undefined;
+  // dayjs rolls a day that does not exist into another (30 February is 2 March); it is not a date.
+  if (typeof raw === 'string' && !isRealDateText(raw)) return undefined;
   const d = dayjs(raw);
   return d.isValid() ? d.startOf('day').toDate() : undefined;
 };
@@ -101,6 +104,23 @@ export const visiblePeriod = (
   };
 };
 
+/** The first month the calendar shows: `month`, moved inside the months minDate and maxDate allow, so that the last
+ *  of `numberOfMonths` months is not after maxDate's month (when they cannot all fit, minDate's month). The calendar
+ *  is drawn from it and its visible period exposed from it, so the two describe the same months. */
+export const shownMonth = (month: ConfigType, numberOfMonths: number, minDate?: unknown, maxDate?: unknown): Date => {
+  let start = (dayjs(month).isValid() ? dayjs(month) : dayjs()).startOf('month');
+  const min = toDate(minDate);
+  const max = toDate(maxDate);
+  if (max) {
+    const latest = dayjs(max)
+      .startOf('month')
+      .subtract(Math.max(1, numberOfMonths) - 1, 'month');
+    if (start.isAfter(latest)) start = latest;
+  }
+  if (min && start.isBefore(dayjs(min).startOf('month'))) start = dayjs(min).startOf('month');
+  return start.toDate();
+};
+
 /** Markers by day ('YYYY-MM-DD' -> [{ label, color }]): `[{ date, label?, color? }]`, or plain dates. */
 export const markersByDay = (markers: unknown): Map<string, Marker[]> => {
   const map = new Map<string, Marker[]>();
@@ -119,8 +139,8 @@ export const markersByDay = (markers: unknown): Map<string, Marker[]> => {
 
 const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-/** react-day-picker's disabled matchers from min and max dates, a list of disabled dates and disabled weekdays
- *  (0 to 6 or names). */
+/** react-day-picker's disabled matchers from min and max dates, a list of disabled dates (one lookup) and disabled
+ *  weekdays (0 to 6 or names). */
 export const disabledMatchers = ({
   minDate,
   maxDate,
@@ -132,11 +152,9 @@ export const disabledMatchers = ({
   const max = toDate(maxDate);
   if (min) matchers.push({ before: min });
   if (max) matchers.push({ after: max });
-  const dates = list(disabledDates)
-    .slice(0, 2000)
-    .map(toDate)
-    .filter((d): d is Date => !!d);
-  if (dates.length) matchers.push(...dates);
+  // Every disabled date is kept (a rule left out would let that day be picked), behind one lookup.
+  const dates = new Set(list(disabledDates).map(toDate).filter(Boolean).map(ymd));
+  if (dates.size) matchers.push((date: Date) => dates.has(ymd(date)));
   const days = list(disabledDays)
     .map((d) => (typeof d === 'string' && WEEKDAYS.includes(d.toLowerCase()) ? WEEKDAYS.indexOf(d.toLowerCase()) : d))
     .map(Number)

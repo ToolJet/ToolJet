@@ -2,7 +2,7 @@ export const shadDateTimePickerConfig = {
   name: 'ShadDateTimePicker',
   displayName: 'Date and time picker',
   description:
-    "Date and time picker: a field opening a calendar with a time row (hour, minute every minuteStep, AM/PM). Exposes value as 'YYYY-MM-DDTHH:mm' (local time, '' when empty), selectedDate 'YYYY-MM-DD', selectedTime 'HH:mm', unixTimestamp (ms) and displayValue (dateFormat plus the time). defaultValue takes ISO text, 'YYYY-MM-DD HH:mm' or a unix timestamp; minDate/maxDate ('YYYY-MM-DD') and disabledDates (array) block days. Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message",
+    "Date and time picker: a field opening a calendar with a time row (hour, minute, AM/PM; a time every minuteStep minutes from midnight). Exposes value as 'YYYY-MM-DDTHH:mm' (local time, '' when empty), selectedDate 'YYYY-MM-DD', selectedTime 'HH:mm', unixTimestamp (ms) and displayValue (dateFormat plus the time). defaultValue takes ISO text, 'YYYY-MM-DD HH:mm' or a unix timestamp; minDate/maxDate ('YYYY-MM-DD') and disabledDates (array) block days. Height: 64px with a label (label above the control), 36px without; add 24px for help text or a validation message",
   component: 'ShadDateTimePicker',
   defaultSize: {
     width: 12,
