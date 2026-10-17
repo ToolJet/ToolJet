@@ -12,6 +12,7 @@ import {
   percentScale,
   wholeNumbers,
   seriesLabelMap,
+  seriesSlots,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { comboSeries } from './comboModel';
 import {
@@ -107,7 +108,10 @@ export const ShadComboChart = (props: WidgetProps) => {
           series.map((s) => s.field)
         ),
       names: series.map((s) => seriesLabel(s.field, labels)),
-      fills: series.map((_, i) => seriesColor(colors, i)),
+      fills: seriesSlots(
+        named.map((n) => n.field),
+        series.map((s) => s.field)
+      ).map((slot) => seriesColor(colors, slot)),
       hasRight: rightKeys.size > 0,
       left,
       right,
