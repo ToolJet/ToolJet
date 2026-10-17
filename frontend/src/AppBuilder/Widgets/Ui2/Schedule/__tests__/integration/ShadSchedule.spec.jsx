@@ -290,4 +290,31 @@ describe('UI 2.0 Schedule', () => {
       expect(resourceRow('busy').querySelector('[data-more-bookings]')).toHaveTextContent('+5 more');
     });
   });
+
+  // Audit 74: on the day the clocks went forward the slot after 02:00 ran from 03:30 back to 03:00, and its click sent
+  // that backwards interval to onSlotClicked. (Exercised in a zone with the change by npm run test:ui2-dates-tz.)
+  test('[ShadSchedule-EVT-003] on the day the clocks change, every slot clicked ends after it starts', async () => {
+    render({
+      properties: {
+        date: binding('2026-03-08'),
+        dayStart: binding('{{0}}'),
+        dayEnd: binding('{{4}}'),
+        slotMinutes: binding('{{30}}'),
+        resources: binding("{{[{ id: 'room', name: 'Room' }]}}"),
+        bookings: binding('{{[]}}'),
+      },
+    });
+    widget.setEvents(
+      setVariableOn(ID, 'onSlotClicked', { key: 'picked', value: '{{components.schedule1.selectedSlot}}' })
+    );
+    await waitFor(() => expect(slots('room').length).toBeGreaterThan(0));
+
+    for (const slot of slots('room')) {
+      fireEvent.click(slot);
+      await waitFor(() => expect(widget.variables().picked).toEqual(exposed().selectedSlot));
+      const { start, end, date } = exposed().selectedSlot;
+      expect(new Date(end).getTime()).toBeGreaterThan(new Date(start).getTime());
+      expect(date).toBe('2026-03-08');
+    }
+  });
 });

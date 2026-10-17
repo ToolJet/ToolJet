@@ -11,6 +11,7 @@ import {
   positionOf,
   scheduleRange,
   scheduleResources,
+  slotTracks,
   slotValue,
   startDay,
 } from './scheduleModel';
@@ -98,6 +99,7 @@ export const ShadSchedule = (props: WidgetProps) => {
     ]
   );
 
+  const tracks = useMemo(() => slotTracks(range), [range]);
   const [shownCount, showMore] = useShownCount(RESOURCES_PER_STEP, resources);
   const [selected, setSelected] = useState<ScheduleSelected | null>(null);
   const selection = (next: ScheduleSelected | null) => ({
@@ -227,7 +229,6 @@ export const ShadSchedule = (props: WidgetProps) => {
     );
   } else {
     const shown = resources.slice(0, shownCount);
-    const slotCount = range.slots.length;
     body = (
       <div className="sc-schedule tw-overflow-hidden tw-border" style={frame} data-scale={range.scale}>
         <div className="tw-overflow-x-auto">
@@ -275,7 +276,7 @@ export const ShadSchedule = (props: WidgetProps) => {
                   disabled={disabled}
                   hasSlotClick={hasSlotClick}
                   hourFormat={p.hourFormat}
-                  slotCount={slotCount}
+                  slotTracks={tracks}
                   width={props.width}
                   clickSlot={clickSlot}
                   clickBooking={clickBooking}
