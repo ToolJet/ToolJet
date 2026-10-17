@@ -222,4 +222,19 @@ describe('UI 2.0 Calendar', () => {
     expect(root.style.getPropertyValue('--sc-primary')).toBe('#e11d48');
     expect(root.style.getPropertyValue('--lk-cell')).toBe('40px');
   });
+
+  // Audit 76: the calendar once kept only the first 2,000 disabled dates, so the 2,001st stayed pickable.
+  test('[ShadCalendar-PROP-010] a disabled date after the first two thousand entries cannot be picked', async () => {
+    const earlier = Array.from({ length: 2000 }, (_, i) => {
+      const d = new Date(2020, 0, 1 + i);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
+    render({ properties: { disabledDates: binding(`{{${JSON.stringify([...earlier, '2026-10-17'])}}}`) } });
+    widget.setEvents(setVariableOn(ID, 'onSelect', { key: 'picked', value: '{{components.calendar1.value}}' }));
+
+    expect(day(17)).toBeDisabled();
+    await clickDay(17);
+    expect(exposed().value).toBe('2026-10-09');
+    expect(widget.variables().picked).toBeUndefined();
+  });
 });

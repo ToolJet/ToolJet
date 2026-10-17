@@ -67,3 +67,24 @@ describe('date and time', () => {
     expect(M.atTime(dayjs('2026-10-09'), 870).format('YYYY-MM-DD HH:mm')).toBe('2026-10-09 14:30');
   });
 });
+
+// Audit 76: the rules once kept only the first 1,000 disabled dates. Every one is a rule.
+describe('disabled dates', () => {
+  const days = (n) => Array.from({ length: n }, (_, i) => dayjs('2020-01-01').add(i, 'day').format('YYYY-MM-DD'));
+
+  it('keeps every disabled date, however long the list', () => {
+    const rules = M.dateRules({ disabledDates: [...days(5000), '2040-05-05'] });
+    expect(M.dateProblem(M.parseDateTime('2040-05-05'), rules)).toMatch(/not available/);
+    expect(M.dateProblem(M.parseDateTime('2040-05-06'), rules)).toBe('');
+  });
+
+  it('gives the calendar one matcher that blocks each of them', () => {
+    const rules = M.dateRules({ minDate: '2019-01-01', disabledDates: [...days(5000), '2040-05-05'] });
+    const matchers = M.dayMatchers(rules);
+    expect(matchers).toHaveLength(2);
+    const blocks = matchers.find((m) => typeof m === 'function');
+    expect(blocks(new Date(2040, 4, 5))).toBe(true);
+    expect(blocks(new Date(2040, 4, 6))).toBe(false);
+    expect(M.dayMatchers(M.dateRules({}))).toEqual([]);
+  });
+});

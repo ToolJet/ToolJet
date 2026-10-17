@@ -280,4 +280,37 @@ describe('UI 2.0 Date picker', () => {
     expect(root.style.getPropertyValue('--sc-primary')).toBe('#e11d48');
     expect(root.style.getPropertyValue('--lk-radius')).toBe('12px');
   });
+
+  // Audit 76: the rules once kept only the first 1,000 disabled dates, so a blocked day later in a longer list
+  // validated and submitted, and the same list in another order blocked it.
+  describe('a long disabled-dates list', () => {
+    const blocked = (target, count) => [
+      ...Array.from({ length: count - 1 }, (_, i) => dayjs('2020-01-01').add(i, 'day').format('YYYY-MM-DD')),
+      target,
+    ];
+
+    test('[ShadDatePicker-VAL-005] blocks a date that comes after the first thousand entries', async () => {
+      render({
+        properties: {
+          defaultValue: binding('2026-10-17'),
+          disabledDates: binding(`{{${JSON.stringify(blocked('2026-10-17', 1001))}}}`),
+        },
+      });
+
+      await waitFor(() => expect(exposed().isValid).toBe(false));
+      expect(exposed().value).toBe('2026-10-17');
+      await open();
+      expect(day(17)).toBeDisabled();
+    });
+
+    test('[ShadDatePicker-VAL-006] blocks it in a range and through setDisabledDates too', async () => {
+      render({ properties: { mode: binding('range'), defaultValue: binding("{{['2026-10-17', '2026-10-19']}}") } });
+      await waitFor(() => expect(exposed().isValid).toBe(true));
+
+      await widget.act('setDisabledDates', blocked('2026-10-17', 1001));
+      await waitFor(() => expect(exposed().isValid).toBe(false));
+      await widget.act('setDisabledDates', blocked('2026-10-01', 1001));
+      await waitFor(() => expect(exposed().isValid).toBe(true));
+    });
+  });
 });

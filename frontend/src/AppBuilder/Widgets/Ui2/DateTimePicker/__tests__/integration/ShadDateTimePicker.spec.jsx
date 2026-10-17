@@ -259,4 +259,21 @@ describe('UI 2.0 Date and time picker', () => {
     const panel = screen.getByRole('grid').closest('[data-radix-popper-content-wrapper] > *');
     expect(panel.style.getPropertyValue('--sc-popover')).toBe('#fef3c7');
   });
+
+  // Audit 76: the rules once kept only the first 1,000 disabled dates.
+  test('[ShadDateTimePicker-VAL-004] blocks a date that comes after the first thousand disabled dates', async () => {
+    const earlier = Array.from({ length: 1000 }, (_, i) => {
+      const d = new Date(2020, 0, 1 + i);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
+    render({
+      properties: {
+        defaultValue: binding('2026-10-17T09:30'),
+        disabledDates: binding(`{{${JSON.stringify([...earlier, '2026-10-17'])}}}`),
+      },
+    });
+
+    await waitFor(() => expect(exposed().isValid).toBe(false));
+    expect(exposed().value).toBe('2026-10-17T09:30');
+  });
 });

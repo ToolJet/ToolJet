@@ -198,21 +198,22 @@ export interface DateRuleInput {
   format?: unknown;
 }
 
-/** The calendar's rules: first and last pickable day (start of day) and the disabled days as 'YYYY-MM-DD'. */
+/** The calendar's rules: first and last pickable day (start of day) and the disabled days as 'YYYY-MM-DD'. Every
+ *  disabled date is kept: a rule left out would let that day validate and submit. */
 export interface DateRules {
   min: Dayjs | null;
   max: Dayjs | null;
-  disabled: string[];
+  disabled: ReadonlySet<string>;
 }
 
 export const dateRules = ({ minDate, maxDate, disabledDates, format }: DateRuleInput = {}): DateRules => {
   const min = parseDateTime(minDate, format)?.startOf('day') ?? null;
   const max = parseDateTime(maxDate, format)?.startOf('day') ?? null;
-  const disabled = (Array.isArray(disabledDates) ? disabledDates : [])
-    .slice(0, 1000)
-    .map((d) => parseDateTime(d, format))
-    .filter((d): d is Dayjs => !!d)
-    .map((d) => d.format('YYYY-MM-DD'));
+  const disabled = new Set<string>();
+  for (const raw of Array.isArray(disabledDates) ? disabledDates : []) {
+    const d = parseDateTime(raw, format);
+    if (d) disabled.add(d.format('YYYY-MM-DD'));
+  }
   return { min, max, disabled };
 };
 
@@ -222,7 +223,7 @@ export const dateProblem = (d: Dayjs | null | undefined, rules: DateRules | null
   const day = d.startOf('day');
   if (rules.min && day.isBefore(rules.min)) return `Pick a date on or after ${rules.min.format('DD MMM YYYY')}`;
   if (rules.max && day.isAfter(rules.max)) return `Pick a date on or before ${rules.max.format('DD MMM YYYY')}`;
-  if (rules.disabled.includes(day.format('YYYY-MM-DD'))) return 'This date is not available';
+  if (rules.disabled.has(day.format('YYYY-MM-DD'))) return 'This date is not available';
   return '';
 };
 
@@ -233,11 +234,12 @@ export const atTime = (date: Dayjs, minutes: number): Dayjs =>
     .hour(Math.floor(minutes / 60))
     .minute(minutes % 60);
 
-/** react-day-picker's disabled matchers for the rules: before the minimum, after the maximum, each disabled day. */
+/** react-day-picker's disabled matchers for the rules: before the minimum, after the maximum, and one lookup for the
+ *  disabled days (a matcher per day would be checked against every day drawn). */
 export const dayMatchers = (rules: DateRules) => [
   ...(rules.min ? [{ before: rules.min.toDate() }] : []),
   ...(rules.max ? [{ after: rules.max.toDate() }] : []),
-  ...rules.disabled.map((d) => dayjs(d).toDate()),
+  ...(rules.disabled.size ? [(date: Date) => rules.disabled.has(dayjs(date).format('YYYY-MM-DD'))] : []),
 ];
 
 /** The date pickers' bound actions; each sets its property until the property itself changes. */
