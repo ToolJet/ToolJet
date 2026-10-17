@@ -111,7 +111,7 @@ const UI2_RENAMES: Record<string, Ui2Renames> = {
 
 /** The renames for one widget type (its own plus the common ones), or null for a type that is not a UI 2.0 widget. */
 const renamesFor = (type: string): Required<Ui2Renames> | null => {
-  if (!type || !type.startsWith('Shad')) return null;
+  if (typeof type !== 'string' || !type.startsWith('Shad')) return null;
   const own = UI2_RENAMES[type] ?? {};
   return {
     events: { ...own.events },
@@ -163,7 +163,8 @@ const buildRenamesByComponentRef = (
     idsByName.set(component.name, ids);
   }
 
-  const byRef: Ui2RenamesByComponentRef = {};
+  // No prototype: a reference to `components.constructor` (or a component named `__proto__`) is just a key.
+  const byRef: Ui2RenamesByComponentRef = Object.create(null);
   for (const component of components) {
     const renames = renamesFor(component?.type);
     if (!renames) continue;
@@ -207,7 +208,11 @@ const rewriteReferences = (text: string, renamesByComponentName: Ui2RenamesByCom
   let match: RegExpExecArray | null;
   while ((match = re.exec(text)) !== null) {
     const [whole, dotRef, , bracketRef, member, dotPrefix, dotKey, bracketPrefix, quote, bracketKey] = match;
-    const renames = renamesByComponentName[dotRef ?? bracketRef];
+    const ref = dotRef ?? bracketRef;
+    // Own keys only: plain text naming `components.constructor.name` must not reach Object.prototype.
+    const renames = Object.prototype.hasOwnProperty.call(renamesByComponentName, ref)
+      ? renamesByComponentName[ref]
+      : undefined;
     const key = dotKey ?? bracketKey;
     if (!renames || !key) continue;
 
@@ -309,13 +314,29 @@ type ComponentRow = {
   general_properties: any;
   styles: any;
   general_styles: any;
+  display_preferences: any;
   validation: any;
 };
 type EventRow = { id: string; name: string; event: any; source_id: string };
 
-const JSON_COLUMNS = ['properties', 'general_properties', 'styles', 'general_styles', 'validation'] as const;
+const JSON_COLUMNS = [
+  'properties',
+  'general_properties',
+  'styles',
+  'general_styles',
+  'display_preferences',
+  'validation',
+] as const;
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const BATCH_SIZE = 100;
+// Undo/redo history (app_history.change_payload, jsonb) that names a UI 2.0 widget type or the removed Ant card. A
+// version whose history mentions either can restore pre-rename contracts, even when its current rows needed no rewrite
+// or the widget has since been deleted. Every component a delta touches appears with its type in the version's base
+// snapshot or in its create delta, so matching the type is enough to find the version.
+const HISTORY_PATTERNS = ['"(type|componentType)":\\s*"Shad', '"antCard"'];
+// No UI 2.0 widget type or Ant card existed before this date, so older history rows cannot name one. Bounds the
+// text scan to recent rows (app_history has no index that could narrow it).
+const HISTORY_SINCE = '2026-10-01';
 
 export class RenameUi2PackNames1792158590141 implements MigrationInterface {
   /**
@@ -325,17 +346,20 @@ export class RenameUi2PackNames1792158590141 implements MigrationInterface {
    * with a Shad* component this rewrites, in place:
    *  - event handlers: a Shad* source's event id (and the handler name when it was that id); a control-component
    *    action on a Shad* target, from any source;
-   *  - references in every string of event JSON, component properties/general/styles/general styles/validation and
-   *    data query options: `components.<id or name>.<old exposed>` and `components.<id or name>.<old action>(`. The
+   *  - references in every string of event JSON, component properties/general/styles/general styles/display
+   *    preferences/validation and data query options: `components.<id or name>.<old exposed>` and `components.<id or name>.<old action>(`. The
    *    editor stores `{{ }}` bindings by component id; RunJS code and older apps use the name, which is rewritten only
    *    when exactly one component in the version has it;
    *  - Shad* property keys, only where the new key is absent.
    * Separately, for every app: a FlexContainer drawn with the removed Ant Design card (`cardStyle: { value: 'antCard' }`)
    * becomes the shadcn card.
+   * Then undo/redo history is cleared for every version with a UI 2.0 widget or an Ant card, now or in its history.
    * Only rows that change are written, and every rewrite maps old names to names that are never old names of the same
    * type, so a second run changes nothing.
    */
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Versions whose undo/redo history is cleared at the end: every version with a UI 2.0 widget or an Ant card, now
+    // or in its history.
     const touchedVersionIds = new Set<string>();
 
     await this.migrateAntCards(queryRunner, touchedVersionIds);
@@ -364,15 +388,25 @@ export class RenameUi2PackNames1792158590141 implements MigrationInterface {
         );
         if (versions.length === 0) break;
         for (const { app_version_id } of versions) {
-          if (await this.migrateVersion(queryRunner, app_version_id)) touchedVersionIds.add(app_version_id);
+          await this.migrateVersion(queryRunner, app_version_id);
+          touchedVersionIds.add(app_version_id);
           progress.show();
         }
         offset += BATCH_SIZE;
       }
     }
 
-    // Event ids, action handles and property keys move: stale undo/redo snapshots would bring the old names back.
-    // Scoped to the versions actually rewritten.
+    // Event ids, action handles and property keys move: an undo/redo entry saved before this migration would restore
+    // the old names (and the Ant card) on top of the rewritten rows. History is not rewritten (a delta holds only the
+    // fields it changed, so it cannot be renamed reliably); it is cleared for every version that has a UI 2.0 widget
+    // or an Ant card now, or whose history names one (a widget since deleted, a card already moved). History is
+    // per version and is not carried by import, export or a new version, so this covers every restore path.
+    const fromHistory: { app_version_id: string }[] = await queryRunner.query(
+      `SELECT DISTINCT app_version_id FROM app_history
+        WHERE created_at >= $1 AND (change_payload::text ~ $2 OR change_payload::text ~ $3)`,
+      [HISTORY_SINCE, ...HISTORY_PATTERNS]
+    );
+    for (const { app_version_id } of fromHistory) touchedVersionIds.add(app_version_id);
     if (touchedVersionIds.size > 0) {
       await deleteAppHistoryForStructuralMigration(
         queryRunner.manager,
@@ -380,7 +414,7 @@ export class RenameUi2PackNames1792158590141 implements MigrationInterface {
         MIGRATION_NAME
       );
     }
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Rewrote ${touchedVersionIds.size} app versions.`);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Checked ${touchedVersionIds.size} app versions.`);
   }
 
   /** FlexContainer `antCard` -> `shadcnCard`, in every app. `properties` is `json`, so the filter is a text match. */
@@ -406,7 +440,7 @@ export class RenameUi2PackNames1792158590141 implements MigrationInterface {
     let changed = false;
     const components: ComponentRow[] = await queryRunner.query(
       `SELECT c.id, c.name, c.type, c.page_id, c.properties, c.general_properties, c.styles, c.general_styles,
-              c.validation
+              c.display_preferences, c.validation
          FROM components c JOIN pages p ON p.id = c.page_id
         WHERE p.app_version_id = $1`,
       [versionId]

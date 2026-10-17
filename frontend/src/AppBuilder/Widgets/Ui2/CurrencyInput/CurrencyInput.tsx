@@ -1,8 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  runNow,
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
@@ -18,6 +24,7 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Currency input ------------------------------------------------------------------------------------------------
 
@@ -33,7 +40,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
+  const { properties, setExposedVariables, fireEvent, componentType, styles } = props;
   const locale = M.isBlank(properties.locale) || typeof properties.locale !== 'string' ? 'en-US' : properties.locale;
   const options = M.toCurrencyList(properties.currencyOptions);
   const initialCurrency = M.toCurrency(properties.currency, options[0] ?? 'USD');
@@ -46,7 +53,13 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
     M.parseNumber(properties.defaultValue, locale),
     M.currencyDecimals(initialCurrency, properties.decimalPlaces)
   );
-  const box = useNumberBox(props, { initial, round, parse: (v) => M.parseNumber(v, locale) });
+  const box = useNumberBox(props, {
+    initial,
+    round,
+    parse: (v) => M.parseNumber(v, locale),
+    seed: properties.defaultValue,
+    precision: decimals,
+  });
   const { value, draft, setDraft } = box;
   const formatted = (n: number | null, code = currency) =>
     M.formatCurrency(n, { currency: code, locale, decimals: M.currencyDecimals(code, properties.decimalPlaces) });
@@ -71,7 +84,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
     },
   });
   const commit = (next: number | null) => box.commit(next, (n) => ({ formattedValue: formatted(n) }));
-  const check = useValidation(props, value, () => commit(null));
+  const check = useValidation(props, value, () => box.clearTyped((n) => ({ formattedValue: formatted(n) })));
   const textBox = useTextBox(props, check.touch);
   const disabled = busy(properties);
   const display = ['symbol', 'narrowSymbol', 'code'].includes(properties.currencyDisplay)
@@ -97,11 +110,12 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
               const next = M.toCurrency(code, currency);
               if (next === currency) return;
               const rounded = M.roundTo(value, M.currencyDecimals(next, properties.decimalPlaces));
-              setCurrency(next);
-              box.valueRef.current = rounded;
-              box.set(rounded);
-              setExposedVariables({ currency: next, value: rounded, formattedValue: formatted(rounded, next) });
-              fireEvent('onChange');
+              // box.set fires the one onChange, once the new currency and amount are published.
+              runNow(() => {
+                setCurrency(next);
+                box.set(rounded);
+                setExposedVariables({ currency: next, value: rounded, formattedValue: formatted(rounded, next) });
+              });
             }}
           >
             <SelectTrigger
@@ -129,7 +143,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
         ) : null}
         {showSign && !sign.after ? <span className={cn(AFFIX, 'tw-pl-3')}>{sign.sign}</span> : null}
         <input
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           {...numberTextProps(
             setDraft,
             textBox,
@@ -146,7 +160,7 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
           value={shown}
           placeholder={toText(properties.placeholder)}
           disabled={disabled}
-          onKeyDown={(e) => e.key === 'Enter' && fireEvent('onEnterPressed')}
+          onKeyDown={(e) => isEnter(e) && fireEvent('onEnterPressed')}
         />
         {showSign && sign.after ? <span className={cn(AFFIX, 'tw-pr-3')}>{sign.sign}</span> : null}
       </Group>

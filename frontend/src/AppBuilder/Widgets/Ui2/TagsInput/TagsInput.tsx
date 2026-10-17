@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { useFocusEvent, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
+  runNow,
   toOptions,
   useAutoHeight,
   useExposed,
+  useLatest,
   useStable,
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -16,11 +18,12 @@ import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 import { Chip, ClearButton, MENU_SURFACE } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isComposing } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Tags input ----------------------------------------------------------------------------------------------------
 
 export const ShadTagsInput = (props: WidgetProps) => {
-  const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
+  const { properties, styles, setExposedVariables, fireEvent, componentType } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -31,12 +34,19 @@ export const ShadTagsInput = (props: WidgetProps) => {
     pattern: properties.tagPattern,
     patternError: properties.patternError,
   };
-  const initial = useStable(M.addTags([], M.toTags(properties.defaultValue), rules).tags);
-  const [tags, setTags] = useState(initial);
-  useEffect(() => setTags(initial), [initial]);
+  // A new default starts the tags again; a new limit keeps what the user entered (only cut to fit a lower one).
+  const defaultTags = useStable(M.toTags(properties.defaultValue));
+  const rulesNow = useLatest(rules);
+  const [tags, setTags] = useState(() => M.addTags([], defaultTags, rules).tags);
+  useEffect(() => setTags(M.addTags([], defaultTags, rulesNow.current).tags), [defaultTags, rulesNow]);
+  const maxTags = M.clampLimit(rules.maxTags);
+  useEffect(() => {
+    if (maxTags > 0) setTags((t) => (t.length > maxTags ? t.slice(0, maxTags) : t));
+  }, [maxTags]);
   const [text, setText] = useState('');
   const [tagError, setTagError] = useState('');
   const [focused, setFocused] = useState(false);
+  const focusEvent = useFocusEvent(fireEvent);
   const [dismissed, setDismissed] = useState(false);
   const [active, setActive] = useState(-1);
   const rulesRef = useRef(rules);
@@ -58,12 +68,19 @@ export const ShadTagsInput = (props: WidgetProps) => {
       const gone = M.toTags(t);
       setTags((cur) => cur.filter((tag) => !gone.some((g) => M.sameTag(g, tag, rulesRef.current.caseSensitive))));
     },
-    clear: async () => setTags([]),
+    // Clearing drops the unfinished text too, or leaving the box would add it as a tag.
+    clear: async () => {
+      setTags([]);
+      setText('');
+      setTagError('');
+    },
     setFocus: async () => inputRef.current?.focus(),
     setBlur: async () => inputRef.current?.blur(),
   });
   const check = useValidation(props, tags, () => {
     setTags([]);
+    setText('');
+    setTagError('');
     setExposedVariables(tagNames([]));
   });
   const disabled = busy(properties);
@@ -77,15 +94,16 @@ export const ShadTagsInput = (props: WidgetProps) => {
     .slice(0, 50);
   const menuOpen = focused && !dismissed && !disabled && visible.length > 0;
 
-  const commit = (next: string[], event: 'onTagAdded' | 'onTagDeleted', tag: string) => {
-    setTags(next);
-    setExposedVariables({
-      ...tagNames(next),
-      ...(event === 'onTagAdded' ? { lastAddedTag: tag } : { lastRemovedTag: tag }),
+  const commit = (next: string[], event: 'onTagAdded' | 'onTagDeleted', tag: string) =>
+    runNow(() => {
+      setTags(next);
+      setExposedVariables({
+        ...tagNames(next),
+        ...(event === 'onTagAdded' ? { lastAddedTag: tag } : { lastRemovedTag: tag }),
+      });
+      fireEvent(event);
+      fireEvent('onChange');
     });
-    fireEvent(event);
-    fireEvent('onChange');
-  };
   /** Adds typed or picked tags; true when at least one was added. */
   const add = (candidates: unknown) => {
     let wanted = M.toTags(candidates);
@@ -122,6 +140,8 @@ export const ShadTagsInput = (props: WidgetProps) => {
     setActive(-1);
   };
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // Keys that belong to an IME composition (the Enter that confirms it) are the input method's, not the field's.
+    if (isComposing(e)) return;
     if (e.key === 'Enter') {
       e.preventDefault();
       if (menuOpen && active >= 0 && visible[active]) {
@@ -163,7 +183,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
             ))}
             <input
               ref={inputRef}
-              id={`shad-${id}`}
+              id={fieldIdOf(props)}
               type="text"
               role="combobox"
               aria-expanded={menuOpen}
@@ -178,7 +198,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
               onFocus={() => {
                 setFocused(true);
                 setDismissed(false);
-                setTimeout(() => fireEvent('onFocus'), 0);
+                focusEvent();
               }}
               onBlur={() => {
                 setFocused(false);

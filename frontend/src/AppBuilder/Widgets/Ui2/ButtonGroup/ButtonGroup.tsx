@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import {
+  runNow,
   useAutoHeight,
   useExposed,
   useLatest,
   useStable,
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { Field, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { Field, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
@@ -93,22 +94,23 @@ export const ShadButtonGroup = (props: WidgetProps) => {
   const orientation = properties.orientation === 'vertical' ? 'vertical' : 'horizontal';
   const fullWidth = properties.fullWidth === true;
   const disabled = busy(properties);
-  const click = (button: GroupButton) => {
-    const info = { label: button.label, value: button.value };
-    setLastClicked(info);
-    setExposedVariable('lastClicked', info);
-    const next = toggleSelection(selected, String(button.value), mode, properties.allowDeselect === true);
-    const changed = !isEqual(next, selected);
-    if (changed) apply(next);
-    check.touch();
-    fireEvent('onClick');
-    if (changed) fireEvent('onChange');
-  };
+  const click = (button: GroupButton) =>
+    runNow(() => {
+      const info = { label: button.label, value: button.value };
+      setLastClicked(info);
+      setExposedVariable('lastClicked', info);
+      const next = toggleSelection(selected, String(button.value), mode, properties.allowDeselect === true);
+      const changed = !isEqual(next, selected);
+      if (changed) apply(next);
+      check.touch();
+      fireEvent('onClick');
+      if (changed) fireEvent('onChange');
+    });
   const on = new Set(selected);
   return (
     <Shell {...props} innerRef={ref}>
       <Field
-        id={`shad-${props.id}`}
+        id={fieldIdOf(props)}
         label={properties.label}
         description={properties.description}
         error={check.error}
@@ -117,7 +119,7 @@ export const ShadButtonGroup = (props: WidgetProps) => {
         {buttons.length ? (
           <div className={cn('tw-flex tw-items-center tw-gap-3', fullWidth && 'tw-w-full')}>
             <div
-              id={`shad-${props.id}`}
+              id={fieldIdOf(props)}
               role="group"
               aria-label={properties.label ? String(properties.label) : 'Button group'}
               {...controlAria(props, check.error)}

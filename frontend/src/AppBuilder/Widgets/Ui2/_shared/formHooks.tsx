@@ -1,10 +1,10 @@
 // State, validation and focus behaviour the UI 2.0 inputs share.
 import React, { useEffect, useRef, useState } from 'react';
-import { useExposed, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { fromEffect, runNow, useExposed, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { truthy } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { isFilled, validationInput } from '@/AppBuilder/Widgets/Ui2/_shared/values';
-import { CONTROL, FieldLabel, FieldNote, INVALID_VARS, controlAria, fieldName } from './field';
+import { CONTROL, FieldLabel, FieldNote, INVALID_VARS, controlAria, fieldName, fieldIdOf } from './field';
 import { busy } from './Shell';
 import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from 'react';
 import type { Exposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -13,29 +13,43 @@ import type { ValidationResult, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_sh
 /** What the value hooks read of the widget's props. */
 export type ValueProps = Pick<WidgetProps, 'properties' | 'setExposedVariable' | 'setExposedVariables' | 'fireEvent'>;
 
-/** Sets the value as the user does: publishes it and fires `event` (onChange by default). */
+/** Sets the value as the user does: publishes it, and everything derived from it (isValid, a selected option), then
+ *  fires `event` (onChange by default), so the event's handlers read the new state (runNow). */
 export type ChangeValue<T> = (value: T, event?: string) => void;
 
 /** A single-value input: local state seeded from defaultValue, published as `value` (through `toExposed`, for
- *  controls that key options by string), plus actions built from the setter. */
+ *  controls that key options by string), plus actions built from the setter. Returns the value, `change` (as the user
+ *  sets it, with its event) and `set` (no event: for fitting the value to a new configuration). */
 export const useValue = <T,>(
   props: ValueProps,
   initial: T,
   actions: (set: Dispatch<SetStateAction<T>>) => Exposed = () => ({}),
-  toExposed: (value: T) => unknown = (v) => v
-): [T, ChangeValue<T>] => {
+  toExposed: (value: T) => unknown = (v) => v,
+  /** What starts the value again when it changes (by content): the default as authored. Defaults to `initial`; a
+   *  widget whose start value also depends on its configuration (a Rating's maximum) passes the bare default, so a
+   *  configuration change keeps what the user set (the widget fits it with `set`). */
+  seedKey: unknown = initial
+): [T, ChangeValue<T>, Dispatch<SetStateAction<T>>] => {
   const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   const [value, setValue] = useState(initial);
   // A new default (by content) resets the value, as the native inputs do.
-  const seed = useStable(initial);
-  useEffect(() => setValue(seed), [seed]);
+  const seed = useStable(seedKey);
+  const start = useLatest(initial);
+  useEffect(() => setValue(start.current), [seed, start]);
   useExposed(setExposedVariables, properties, { value: toExposed(value) ?? '', ...actions(setValue) });
-  const change: ChangeValue<T> = (v, event = 'onChange') => {
-    setValue(v);
-    setExposedVariable('value', toExposed(v) ?? '');
-    fireEvent(event);
-  };
-  return [value, change];
+  const change: ChangeValue<T> = (v, event = 'onChange') =>
+    runNow(() => {
+      setValue(v);
+      setExposedVariable('value', toExposed(v) ?? '');
+      fireEvent(event);
+    });
+  return [value, change, setValue];
+};
+
+/** Runs `clear` when a Form around the control clears (clearForm), for every value control, validating or not, as the
+ *  native inputs do. The signal arrives in an effect, so the change runs there without a flush (fromEffect). */
+export const useFormClearNow = (clear?: () => void): void => {
+  useFormClear(() => fromEffect(() => clear?.()));
 };
 
 /** Validation the native way: validate(value) (the widget's Validation section) gives isValid and the message, both
@@ -65,7 +79,7 @@ export const useValidation = (
   const isMandatory = validation?.mandatory === true;
   const [touched, setTouched] = useState(false);
   useShowValidationOnFormSubmit(setTouched);
-  useFormClear(() => {
+  useFormClearNow(() => {
     clear?.();
     setTouched(false);
   });
@@ -84,6 +98,18 @@ export const useValidation = (
   };
 };
 
+/** onFocus a tick after focus, as the native inputs fire it (a click that focuses a box reads in order); a widget
+ *  unmounted before the tick fires nothing. Call the returned function from the control's focus handler. */
+export const useFocusEvent = (fireEvent: WidgetProps['fireEvent']): (() => void) => {
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const fire = useLatest(fireEvent);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  return () => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => fire.current('onFocus'), 0);
+  };
+};
+
 /** Text box events and actions shared by Input and Textarea: focus and blur (events and actions), and blur marks
  *  the field touched for validation. */
 export interface TextBox<E extends HTMLElement> {
@@ -98,6 +124,7 @@ export const useTextBox = <E extends HTMLElement = HTMLInputElement>(
 ): TextBox<E> => {
   const { fireEvent, setExposedVariables, properties } = props;
   const ref = useRef<E>(null);
+  const focusEvent = useFocusEvent(fireEvent);
   // The native inputs expose their label.
   useExposed(setExposedVariables, properties, { label: String(properties.label ?? '') });
   const publish = useLatest(setExposedVariables);
@@ -109,7 +136,7 @@ export const useTextBox = <E extends HTMLElement = HTMLInputElement>(
   }, [publish]);
   return {
     ref,
-    onFocus: () => setTimeout(() => fireEvent('onFocus'), 0),
+    onFocus: focusEvent,
     onBlur: () => {
       touch();
       fireEvent('onBlur');
@@ -138,7 +165,7 @@ export const useTextField = <E extends HTMLInputElement | HTMLTextAreaElement>(p
   const box = useTextBox<E>(props, check.touch);
   const fieldProps = {
     ref: box.ref,
-    id: `shad-${props.id}`,
+    id: fieldIdOf(props),
     className: CONTROL,
     value,
     ...controlAria(props, check.error),
@@ -161,13 +188,14 @@ export const useChecked = (props: ValueProps & Pick<WidgetProps, 'componentType'
   useEffect(() => setChecked(!!properties.defaultChecked), [properties.defaultChecked]);
   const checkedRef = useRef(checked);
   checkedRef.current = checked;
-  const change: ChangeChecked = (v) => {
-    checkedRef.current = v === true;
-    setChecked(v === true);
-    setExposedVariable('value', v === true);
-    fireEvent('onChange');
-    if (props.componentType === 'ShadCheckbox') fireEvent(v === true ? 'onCheck' : 'onUnCheck');
-  };
+  const change: ChangeChecked = (v) =>
+    runNow(() => {
+      checkedRef.current = v === true;
+      setChecked(v === true);
+      setExposedVariable('value', v === true);
+      fireEvent('onChange');
+      if (props.componentType === 'ShadCheckbox') fireEvent(v === true ? 'onCheck' : 'onUnCheck');
+    });
   // The native Checkbox and Toggle switch actions, with the native events, every time: a Checkbox's setValue fires
   // onCheck or onUnCheck (not onChange) and its toggle fires onChange; a Switch's setValue fires nothing and its toggle
   // fires onChange.

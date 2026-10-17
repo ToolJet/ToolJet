@@ -6,6 +6,7 @@ import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 export const MAX_CRUMBS = 8;
 
@@ -42,7 +43,7 @@ export const ShadBreadcrumb = (props: WidgetProps) => {
                 onClick={() => clickItem(trail[i], indexes[i])}
                 role={clickable && item !== ELLIPSIS ? 'button' : undefined}
                 tabIndex={clickable && item !== ELLIPSIS ? 0 : undefined}
-                onKeyDown={(e) => clickable && e.key === 'Enter' && clickItem(trail[i], indexes[i])}
+                onKeyDown={clickable ? onKeyActivate(() => clickItem(trail[i], indexes[i])) : undefined}
                 className={cn(
                   i === items.length - 1
                     ? 'tw-font-normal tw-text-[color:var(--lk-current,var(--sc-foreground))]'

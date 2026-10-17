@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 import isEqual from 'lodash/isEqual';
 import type { FocusEvent } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -25,6 +26,17 @@ export const useOverrides = (properties: Resolved): [Resolved, Override] => {
       return next;
     });
   }, []);
+  // An override ends once its property moves off the value it replaced (a binding updates, an inspector edit), as the
+  // native setters do: the property coming back to that value later shows the property, not the old override.
+  useEffect(() => {
+    setOver((o) => {
+      const ended = Object.keys(o).filter((k) => !isEqual(properties?.[k] ?? null, o[k].base));
+      if (!ended.length) return o;
+      const next = { ...o };
+      ended.forEach((k) => delete next[k]);
+      return next;
+    });
+  }, [properties]);
   const effective = useMemo(() => {
     const keys = Object.keys(over).filter((k) => isEqual(properties?.[k] ?? null, over[k].base));
     if (!keys.length) return properties;
@@ -33,7 +45,6 @@ export const useOverrides = (properties: Resolved): [Resolved, Override] => {
   return [effective, override];
 };
 
-/** Whether the app wires `eventId` on this widget (a pointer cursor then shows it is clickable). */
 /** The part of the store's events slice useHasEvent reads. */
 interface EventsState {
   eventsSlice?: {
@@ -41,16 +52,35 @@ interface EventsState {
   };
 }
 
-export const useHasEvent = (id: string | undefined, eventId: string): boolean =>
-  useStore((state: EventsState) => {
-    const modules = state?.eventsSlice?.module;
-    if (!modules || !id) return false;
-    return Object.values(modules).some((m) =>
-      (Array.isArray(m?.events) ? m.events : []).some(
-        (e) => e?.sourceId === id && e?.event?.eventId === eventId && !e?.event?.disabled
-      )
-    );
+/** Whether the app wires `eventId` on this widget (a pointer cursor then shows it is clickable). Read from the
+ *  widget's own module: component ids are local to a module, so another module's handler on the same id is not this
+ *  widget's. */
+export const useHasEvent = (id: string | undefined, eventId: string): boolean => {
+  const moduleId = useModuleId();
+  return useStore((state: EventsState) => {
+    const events = state?.eventsSlice?.module?.[moduleId]?.events;
+    if (!id || !Array.isArray(events)) return false;
+    return events.some((e) => e?.sourceId === id && e?.event?.eventId === eventId && !e?.event?.disabled);
   });
+};
+
+/** A picker's popup, owned by the picker: open only while the picker takes choices (not disabled, not loading,
+ *  visible), and closed for good when it stops, so a popup left open cannot change a control the app turned off.
+ *  `blocked` is for the picker's choice handlers too: a choice can arrive before the closed popup has rendered. */
+export interface PickerPopup {
+  open: boolean;
+  blocked: boolean;
+  setOpen: (next: boolean) => void;
+}
+
+export const usePickerPopup = (properties: Resolved): PickerPopup => {
+  const blocked = !!properties?.disabledState || !!properties?.loadingState || properties?.visibility === false;
+  const [open, setOpenState] = useState(false);
+  useEffect(() => {
+    if (blocked) setOpenState(false);
+  }, [blocked]);
+  return { open: open && !blocked, blocked, setOpen: (next: boolean) => setOpenState(next && !blocked) };
+};
 
 /** A toggle action's argument as a boolean: `{{false}}`, false, 'false', 0 and null are off; anything else is on
  *  (the native setters take the value as given, so a junk value left the widget half disabled). */

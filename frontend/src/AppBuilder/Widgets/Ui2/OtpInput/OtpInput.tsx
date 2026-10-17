@@ -1,9 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Minus } from 'lucide-react';
-import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { useFocusEvent, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import {
+  runNow,
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  useStable,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { EDGE, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
@@ -26,16 +33,24 @@ export const ShadOtpInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariables, fireEvent, id } = props;
+  const { properties, setExposedVariables, fireEvent } = props;
   const length = M.otpLength(properties.length);
   const characters = properties.characters === 'alphanumeric' ? 'alphanumeric' : 'numeric';
-  const initial = M.otpSanitize(properties.defaultValue, length, characters);
-  const [value, setValue] = useState(initial);
-  useEffect(() => setValue(initial), [initial]);
+  // A new default starts the code again; a new length or kind of character keeps what the user typed, with the
+  // characters that no longer fit dropped (AB1234 in a digits-only box is 1234, not complete).
+  const defaultCode = useStable(properties.defaultValue);
+  const kind = useLatest({ length, characters });
+  const [value, setValue] = useState(() => M.otpSanitize(defaultCode, length, characters));
+  useEffect(
+    () => setValue(M.otpSanitize(defaultCode, kind.current.length, kind.current.characters)),
+    [defaultCode, kind]
+  );
+  useEffect(() => setValue((v) => M.otpSanitize(v, length, characters)), [length, characters]);
   const code = value.slice(0, length);
   const isComplete = code.length === length;
   const inputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
+  const focusEvent = useFocusEvent(fireEvent);
   const lengthRef = useLatest({ length, characters });
   useExposed(setExposedVariables, properties, {
     value: code,
@@ -56,11 +71,13 @@ export const ShadOtpInput = (props: WidgetProps) => {
   const change = (raw: string) => {
     const next = M.otpSanitize(raw, length, characters);
     if (next === code) return;
-    setValue(next);
-    const done = next.length === length;
-    setExposedVariables({ value: next, isComplete: done });
-    fireEvent('onChange');
-    if (done) fireEvent('onComplete');
+    runNow(() => {
+      setValue(next);
+      const done = next.length === length;
+      setExposedVariables({ value: next, isComplete: done });
+      fireEvent('onChange');
+      if (done) fireEvent('onComplete');
+    });
   };
   const check = useValidation(
     withRule(props, (v) => (v && String(v).length < length ? `Enter all ${length} characters` : '')),
@@ -136,7 +153,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
         ))}
         <input
           ref={inputRef}
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           aria-label={toText(properties.label) || 'One-time code'}
           {...controlAria(props, check.error)}
           inputMode={characters === 'numeric' ? 'numeric' : 'text'}
@@ -149,7 +166,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
           onChange={(e) => change(e.target.value)}
           onFocus={() => {
             setFocused(true);
-            setTimeout(() => fireEvent('onFocus'), 0);
+            focusEvent();
           }}
           onBlur={() => {
             setFocused(false);

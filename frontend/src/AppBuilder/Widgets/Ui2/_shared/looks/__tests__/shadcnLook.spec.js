@@ -130,3 +130,22 @@ describe('chart series on dark and mid-tone primaries', () => {
     expect([s2, s3, s4].map((v) => +v.toFixed(2))).toEqual([0.72, 0.5, 0.82]);
   });
 });
+
+// Release audit 70: letter spacing may be negative (tighter text); a bare negative number reached CSS without a unit,
+// which the browser ignores. Sizes that cannot be negative keep the unsigned rule.
+describe.each([
+  ['ShadHeading', 'letterSpacing', '--lk-tracking'],
+  ['ShadText', 'letterSpacing', '--lk-tracking'],
+  ['ShadStat', 'labelLetterSpacing', '--lk-label-tracking'],
+])('[UI2-LOOK-070] %s %s takes negative spacing', (type, key, variable) => {
+  it.each([
+    [2, '2px'],
+    [0, '0px'],
+    [-1, '-1px'],
+    [-0.5, '-0.5px'],
+    ['-0.5px', '-0.5px'],
+    ['-0.025em', '-0.025em'],
+  ])('%s is written %s', (value, expected) => {
+    expect(lookVars(type, { [key]: value })[variable]).toBe(expected);
+  });
+});

@@ -1,19 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronsUpDown } from 'lucide-react';
-import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  runNow,
+  toOptions,
+  useAutoHeight,
+  useExposed,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
-import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import {
   ClearButton,
   MENU_SURFACE,
   OptionIcon,
   OptionsMenu,
   PLACEHOLDER,
+  useKeptSelection,
   useSearch,
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -22,18 +29,21 @@ import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 // ---- Combobox ------------------------------------------------------------------------------------------------------
 
 export const ShadCombobox = (props: WidgetProps) => {
-  const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
+  const { properties, styles, setExposedVariables, fireEvent, componentType } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const options = toOptions(properties.options);
   const initial = M.initialKey(properties.defaultValue);
   const [key, setKey] = useState(initial);
   useEffect(() => setKey(initial), [initial]);
-  const [open, setOpen] = useState(false);
+  const popup = usePickerPopup(properties);
+  const { open } = popup;
   const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   const [search, onSearch] = useSearch(props);
-  const selected = key === null ? undefined : options.find((o) => M.keyOf(o.value) === key);
+  const [selected] = useKeptSelection(options, key === null ? [] : [key], properties.serverSideSearch === true) as [
+    Option | undefined
+  ];
   const value = selected ? selected.value : '';
   useExposed(setExposedVariables, properties, {
     value,
@@ -67,26 +77,30 @@ export const ShadCombobox = (props: WidgetProps) => {
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
   const openChange = (next: boolean) => {
-    if (next && disabled) return;
-    setOpen(next);
+    if (next && popup.blocked) return;
+    popup.setOpen(next);
     focus.opened(next);
     if (!next) {
       check.touch();
       if (search) onSearch('');
     }
   };
-  const pick = (option: Option) => {
-    setKey(M.keyOf(option.value));
-    setExposedVariables({ value: option.value, selectedOption: option });
-    openChange(false);
-    fireEvent('onSelect');
-  };
-  const clear = () => {
-    setKey(null);
-    setExposedVariables({ value: '', selectedOption: {} });
-    check.touch();
-    fireEvent('onSelect');
-  };
+  const pick = (option: Option) =>
+    !popup.blocked &&
+    runNow(() => {
+      setKey(M.keyOf(option.value));
+      setExposedVariables({ value: option.value, selectedOption: option });
+      openChange(false);
+      fireEvent('onSelect');
+    });
+  const clear = () =>
+    !popup.blocked &&
+    runNow(() => {
+      setKey(null);
+      setExposedVariables({ value: '', selectedOption: {} });
+      check.touch();
+      fireEvent('onSelect');
+    });
   const showClear = properties.showClearBtn !== false && !!selected && !disabled;
   return (
     <FormField props={props} properties={properties} check={check} innerRef={ref}>
@@ -95,7 +109,7 @@ export const ShadCombobox = (props: WidgetProps) => {
           <PopoverTrigger asChild>
             <Button
               ref={triggerRef}
-              id={`shad-${id}`}
+              id={fieldIdOf(props)}
               type="button"
               variant="outline"
               role="combobox"

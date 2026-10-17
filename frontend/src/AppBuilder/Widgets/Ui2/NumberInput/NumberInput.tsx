@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { ChevronDown, ChevronUp, Minus, Plus } from 'lucide-react';
-import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -9,6 +9,7 @@ import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { AFFIX, EDGE, Group, INNER, numberTextProps, useNumberBox } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // Stepper buttons attached to the box.
 export const STEP =
@@ -20,11 +21,17 @@ export const ShadNumberInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, validation, setExposedVariables, fireEvent, id } = props;
+  const { properties, validation, setExposedVariables, fireEvent } = props;
   const decimals = M.clampInt(properties.decimalPlaces, 0, 10, 2);
   const round = (n: unknown) => M.roundTo(n, decimals);
   const initial = round(M.parseNumber(properties.defaultValue));
-  const box = useNumberBox(props, { initial, round, parse: (v) => M.parseNumber(v) });
+  const box = useNumberBox(props, {
+    initial,
+    round,
+    parse: (v) => M.parseNumber(v),
+    seed: properties.defaultValue,
+    precision: decimals,
+  });
   const { value, draft, setDraft } = box;
   const latest = useLatest({ round });
   useExposed(setExposedVariables, properties, {
@@ -39,7 +46,7 @@ export const ShadNumberInput = (props: WidgetProps) => {
     },
   });
   const commit = (next: number | null) => box.commit(next, () => ({}));
-  const check = useValidation(props, value, () => commit(null));
+  const check = useValidation(props, value, () => box.clearTyped(() => ({})));
   const textBox = useTextBox(props, check.touch);
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
@@ -80,7 +87,7 @@ export const ShadNumberInput = (props: WidgetProps) => {
           </span>
         ) : null}
         <input
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           {...numberTextProps(
             setDraft,
             textBox,
@@ -102,7 +109,7 @@ export const ShadNumberInput = (props: WidgetProps) => {
           placeholder={toText(properties.placeholder)}
           disabled={disabled}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') fireEvent('onEnterPressed');
+            if (isEnter(e)) fireEvent('onEnterPressed');
             else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
               e.preventDefault();
               step(e.key === 'ArrowUp' ? 1 : -1);

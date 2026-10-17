@@ -5,7 +5,7 @@ import { sliderBounds, sliderValues } from './sliderModel';
 import type { SliderBounds } from './sliderModel';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Field, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
-import { useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { useFormClearNow, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
@@ -30,25 +30,42 @@ export const ShadSlider = (props: WidgetProps) => {
     initial,
     value: isRange ? initial : initial[0],
   });
-  const [value, change] = useValue(props, isRange ? initial : initial[0], (set) => ({
-    setValue: async (n: unknown) => {
-      const { bounds: b, isRange: range, value: current } = latest.current;
-      if (!numeric(n)) return;
-      const [v] = sliderValues(Number(n), b);
-      change(range ? sliderValues([v, Math.max(v, list(current)[1] ?? v)], b) : v);
-    },
-    setRangeValue: async (a: unknown, z: unknown) => {
-      const { bounds: b, isRange: range } = latest.current;
-      if (!numeric(a) || !numeric(z)) return;
-      const pair = sliderValues([Number(a), Number(z)], b);
-      change(range ? pair : pair[0]);
-    },
-    reset: async () => {
-      const { initial: start, isRange: range } = latest.current;
-      set(range ? start : start[0]);
-    },
-  }));
+  const [value, change, setValue] = useValue(
+    props,
+    isRange ? initial : initial[0],
+    (set) => ({
+      setValue: async (n: unknown) => {
+        const { bounds: b, isRange: range, value: current } = latest.current;
+        if (!numeric(n)) return;
+        const [v] = sliderValues(Number(n), b);
+        change(range ? sliderValues([v, Math.max(v, list(current)[1] ?? v)], b) : v);
+      },
+      setRangeValue: async (a: unknown, z: unknown) => {
+        const { bounds: b, isRange: range } = latest.current;
+        if (!numeric(a) || !numeric(z)) return;
+        const pair = sliderValues([Number(a), Number(z)], b);
+        change(range ? pair : pair[0]);
+      },
+      reset: async () => {
+        const { initial: start, isRange: range } = latest.current;
+        set(range ? start : start[0]);
+      },
+    }),
+    undefined,
+    raw
+  );
+  // New bounds (a smaller maximum, a larger minimum) fit the value the user set, so what is exposed is what is drawn.
+  useEffect(() => {
+    const fitted = sliderValues(value, bounds);
+    const next = isRange ? fitted : fitted[0];
+    if (JSON.stringify(next) !== JSON.stringify(value)) setValue(next);
+  }, [value, bounds, isRange, setValue]);
   latest.current = { bounds, isRange, initial, value };
+  // A Form's clearForm sets it to its minimum (a range to minimum and minimum), as the native Range slider.
+  useFormClearNow(() => {
+    const { bounds: b, isRange: range } = latest.current;
+    change(range ? [b.min, b.min] : b.min);
+  });
   useExposed(props.setExposedVariables, properties, { label: String(properties.label ?? '') });
   // The thumbs shown while dragging; a new value or new bounds put them back on the value.
   const [live, setLive] = useState(initial);

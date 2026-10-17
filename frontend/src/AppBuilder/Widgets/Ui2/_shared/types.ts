@@ -39,6 +39,8 @@ export interface WidgetProps {
   dataCy?: string;
   parentId?: string;
   subContainerIndex?: number;
+  /** The control's DOM id (withControlState): `shad-<id>`, with an instance suffix inside repeated rows. */
+  domId?: string;
   setExposedVariable: (key: string, value: unknown) => void;
   setExposedVariables: (values: Record<string, unknown>) => void;
   fireEvent: (event: string, options?: unknown) => void;

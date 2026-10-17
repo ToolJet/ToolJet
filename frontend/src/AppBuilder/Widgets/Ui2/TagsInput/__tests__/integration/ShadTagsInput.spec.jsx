@@ -204,6 +204,19 @@ describe('UI 2.0 Tags input', () => {
     expect(chips()).toEqual(['a', 'c', 'extra']);
   });
 
+  // Release audit 62: clear emptied the tags but left unfinished typed text, which leaving the box then added as a tag.
+  test('[ShadTagsInput-ACT-003] clear drops unfinished typed text too, so leaving the box adds nothing', async () => {
+    render({ properties: { addOnBlur: binding('{{true}}') } });
+    widget.setEvents(countInvocationsOn(ID, 'onTagAdded', { key: 'added' }));
+    await act(async () => input().focus());
+    await type('unfinished');
+    await widget.act('clear');
+    expect(input()).toHaveValue('');
+    await act(async () => input().blur());
+    expect(exposed().values).toEqual([]);
+    expect(widget.variables().added ?? 0).toBe(0);
+  });
+
   test('[ShadTagsInput-ACT-002] clear removes every tag, and setFocus and setBlur move focus to and from the box', async () => {
     render();
 

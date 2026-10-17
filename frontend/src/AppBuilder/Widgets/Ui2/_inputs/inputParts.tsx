@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { CONTROL } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from './dateModel';
-import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { runNow, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { numericText } from './inputsModel';
 import type { ChangeEvent, ReactNode } from 'react';
@@ -73,27 +73,39 @@ export interface NumberBoxOptions {
   initial: number | null;
   round: (n: number | null) => number | null;
   parse: (text: unknown) => number | null;
+  /** The default as authored: a new one starts the box again. A change of the decimal places alone (`precision`)
+   *  keeps the number the user entered, rounded to them. */
+  seed?: unknown;
+  precision?: number;
 }
 
 export const useNumberBox = (
   props: Pick<WidgetProps, 'setExposedVariables' | 'fireEvent'>,
-  { initial, round, parse }: NumberBoxOptions
+  { initial, round, parse, seed, precision }: NumberBoxOptions
 ) => {
   const { setExposedVariables, fireEvent } = props;
   const [value, setValue] = useState(initial);
   const [draft, setDraft] = useState<string | null>(null);
+  const start = useLatest({ initial, round });
+  const seedKey = useStable(seed === undefined ? initial : seed);
   useEffect(() => {
-    setValue(initial);
+    setValue(start.current.initial);
     setDraft(null);
-  }, [initial]);
+  }, [seedKey, start]);
+  // New decimal places round the number the user entered; they never bring the default back.
+  useEffect(() => {
+    setValue((v) => start.current.round(v));
+  }, [precision, start]);
   const valueRef = useLatest(value);
   /** Sets the value as the user does; `extra` gives the exposed values that go with it. */
   const commit = (next: number | null, extra: (value: number | null) => Exposed) => {
     if (next === valueRef.current) return;
-    valueRef.current = next;
-    setValue(next);
-    setExposedVariables({ value: next, ...extra(next) });
-    fireEvent('onChange');
+    runNow(() => {
+      valueRef.current = next;
+      setValue(next);
+      setExposedVariables({ value: next, ...extra(next) });
+      fireEvent('onChange');
+    });
   };
   /** Sets the value from an action, as the native number inputs' setText, setValue and clear do: onChange, every
    *  time. The value is published by the action's flush before the event fires (runNow). */
@@ -104,7 +116,13 @@ export const useNumberBox = (
     setValue(next);
     fireEvent('onChange');
   };
-  return { value, valueRef, draft, setDraft, commit, set };
+  /** Empties the box as a Form's clearForm does: the value, and the text being typed when the box has focus (else the
+   *  next digit typed would append to the old text: 42, clear, 1 gave 421). */
+  const clearTyped = (extra: (value: number | null) => Exposed) => {
+    setDraft((d) => (d === null ? null : ''));
+    commit(null, extra);
+  };
+  return { value, valueRef, draft, setDraft, commit, set, clearTyped };
 };
 
 /** A number box's text field, spread on its input: while focused it holds the text as typed (starting from

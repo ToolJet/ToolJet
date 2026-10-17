@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Command } from 'cmdk';
 import PhoneNumberInput from 'react-phone-number-input/input';
 import flags from 'react-phone-number-input/flags';
 import { isValidPhoneNumber } from 'react-phone-number-input';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
-import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -23,6 +23,7 @@ import type { Country } from 'react-phone-number-input';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { SECONDARY_ON_HIGHLIGHT } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 export const BareInput = React.forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>((props, ref) => (
   <input ref={ref} {...props} />
@@ -54,7 +55,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariables, fireEvent, id, componentType, styles } = props;
+  const { properties, setExposedVariables, fireEvent, componentType, styles } = props;
   // A new default number, country or country list starts the input again.
   const defaultValue = useStable(properties.defaultValue);
   const defaultCountry = useStable(properties.defaultCountry);
@@ -68,6 +69,16 @@ export const ShadPhoneInput = (props: WidgetProps) => {
   useEffect(() => setState({ value: start.value, country: start.country }), [start]);
   const stateRef = useLatest(state);
   const info = M.phoneInfo(state.value, state.country);
+  // Typing reaches update() from inside the phone library's effect, where React cannot render isValid before the
+  // event fires (runNow cannot flush there). Its onChange waits for the next commit instead, after the effects that
+  // publish isValid (the effect that fires it is declared after useValidation).
+  const queued = useRef<string[]>([]);
+  const [, setQueuedCount] = useState(0);
+  const fireAfterCommit = (event: string) => {
+    queued.current.push(event);
+    setQueuedCount((n) => n + 1);
+  };
+  /** Sets the number as the user does (typing, picking a country). */
   const update = (next: PhoneState, fire = true) => {
     const prev = stateRef.current;
     if (next.value === prev.value && next.country === prev.country) return;
@@ -75,18 +86,27 @@ export const ShadPhoneInput = (props: WidgetProps) => {
     setState(next);
     if (!fire) return;
     setExposedVariables(M.phoneInfo(next.value, next.country));
-    fireEvent('onChange');
+    fireAfterCommit('onChange');
   };
   // The phone library keeps its own copy of `value` and `country`, synced in effects that report the copy back through
   // onChange. Those effects' updates run after an action's render (React gives them a later lane), so the copy from one
   // action would land after the next (`await setValue(...); await clear()` ended with the number set again). An action
-  // starts the library afresh (a new key) from the state it sets, so there is no copy left to report.
+  // that changes the number or the country starts the library afresh (a new key) from that state, so there is no copy
+  // left to report; one that changes nothing leaves it alone. A box the user was typing in keeps focus, with the caret
+  // at the end.
   const [revision, setRevision] = useState(0);
+  const refocus = useRef(false);
+  const restart = (prev: PhoneState, next: PhoneState) => {
+    if (next.value === prev.value && next.country === prev.country) return;
+    refocus.current = !!textBox.ref.current && document.activeElement === textBox.ref.current;
+    setRevision((r) => r + 1);
+  };
   /** Sets the number from an action, as the native Phone input's setValue and clear do: onChange, every time. */
   const set = (next: PhoneState) => {
+    const prev = stateRef.current;
     stateRef.current = next;
     setState(next);
-    setRevision((r) => r + 1);
+    restart(prev, next);
     setExposedVariables(M.phoneInfo(next.value, next.country));
     fireEvent('onChange');
   };
@@ -107,8 +127,10 @@ export const ShadPhoneInput = (props: WidgetProps) => {
     setCountryCode: async (c: unknown) => {
       const country = M.countryFromInput(c, countries);
       if (!country) return;
-      update(toCountry(country), false);
-      setRevision((r) => r + 1);
+      const prev = stateRef.current;
+      const next = toCountry(country);
+      update(next, false);
+      restart(prev, next);
     },
     clear: async () => set({ ...stateRef.current, value: '' }),
   });
@@ -118,6 +140,20 @@ export const ShadPhoneInput = (props: WidgetProps) => {
     () => update({ ...stateRef.current, value: '' })
   );
   const textBox = useTextBox(props, check.touch);
+  const boxRef = textBox.ref;
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    if (!refocus.current || !box) return;
+    refocus.current = false;
+    box.focus();
+    box.setSelectionRange(box.value.length, box.value.length);
+  }, [revision, boxRef]);
+  useEffect(() => {
+    const events = queued.current;
+    if (events.length === 0) return;
+    queued.current = [];
+    events.forEach((event) => fireEvent(event));
+  });
   const [open, setOpen] = useState(false);
   const disabled = busy(properties);
   const canChange = properties.isCountryChangeEnabled !== false && countries.length > 1;
@@ -206,7 +242,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
         <PhoneNumberInput
           key={revision}
           ref={textBox.ref}
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           country={state.country}
           international={false}
           value={state.value || undefined}
@@ -219,7 +255,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
           onFocus={textBox.onFocus}
           onBlur={textBox.onBlur}
           onChange={(v) => update({ ...stateRef.current, value: v || '' })}
-          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && fireEvent('onEnterPressed')}
+          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => isEnter(e) && fireEvent('onEnterPressed')}
         />
       </Group>
     </FormField>

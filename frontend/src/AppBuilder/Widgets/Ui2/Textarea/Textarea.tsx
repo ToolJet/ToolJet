@@ -2,12 +2,13 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Textarea } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { Field, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useTextField } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 export const ShadTextarea = (props: WidgetProps) => {
-  const { properties, id, height, fireEvent } = props;
+  const { properties, height, fireEvent } = props;
   const { check, fieldProps } = useTextField<HTMLTextAreaElement>(props);
   // The label, help text and message take what they draw and the text area the rest of the box. A one-line estimate
   // (22px label, 24px help) let a label or help text that wraps push the text area past the box's bottom edge.
@@ -34,7 +35,7 @@ export const ShadTextarea = (props: WidgetProps) => {
     <Shell {...props}>
       <div ref={fieldRef}>
         <Field
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           label={properties.label}
           description={properties.description}
           error={check.error}
@@ -43,7 +44,7 @@ export const ShadTextarea = (props: WidgetProps) => {
           <Textarea
             {...fieldProps}
             style={{ height: Math.max(60, (Number(height) || 96) - chrome) }}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && fireEvent('onEnterPressed')}
+            onKeyDown={(e) => isEnter(e) && !e.shiftKey && fireEvent('onEnterPressed')}
           />
         </Field>
       </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useId, useMemo, useRef } from 'react';
 import isEqual from 'lodash/isEqual';
 import { flushSync } from 'react-dom';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -41,19 +41,35 @@ type Action = (...args: unknown[]) => unknown;
 /** Events fired while an action runs wait here until it has published (runNow). */
 let actionDepth = 0;
 let deferredEvents: Array<() => void> = [];
+/** Above 0 while a widget hook runs a callback from inside an effect (fromEffect), where React cannot flush. */
+let effectDepth = 0;
 
-/** Runs an action so that the state it sets is rendered, and the effects that publish from it (the value, isValid,
- *  every derived exposed value) have run, before the call returns. A query reads them on its next line
- *  (`await components.input1.setText('a'); components.input1.value`), as the native actions publish at once; without
- *  this the value arrived in a later effect and the next line read the old one. The events the action fires are held
- *  until then and fired in order, so their handlers read the new values too, as the native actions publish first. */
-const runNow = (action: () => unknown): unknown => {
-  let result: unknown;
+/** Runs `callback` from inside an effect (a Form's clear signal arrives in one): runNow there runs its change without
+ *  flushSync, which React refuses inside an effect; its events still wait until the change has run. */
+export const fromEffect = (callback: () => void): void => {
+  effectDepth += 1;
+  try {
+    callback();
+  } finally {
+    effectDepth -= 1;
+  }
+};
+
+/** Runs an action, or a user's change, so that the state it sets is rendered, and the effects that publish from it
+ *  (the value, isValid, every derived exposed value) have run, before the call returns. A query reads them on its next
+ *  line (`await components.input1.setText('a'); components.input1.value`), as the native actions publish at once;
+ *  without this the value arrived in a later effect and the next line read the old one. The events it fires are held
+ *  until then and fired in order, so their handlers read the new values too (isValid, selectedOption), as the native
+ *  widgets publish first. Widgets call it in their user handlers (typing, a click); actions get it from useExposed. */
+export const runNow = <T>(action: () => T): T => {
+  let result = undefined as T;
   actionDepth += 1;
   try {
-    flushSync(() => {
-      result = action();
-    });
+    if (effectDepth > 0) result = action();
+    else
+      flushSync(() => {
+        result = action();
+      });
   } finally {
     actionDepth -= 1;
     if (actionDepth === 0) {
@@ -150,7 +166,11 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
       [properties, isVisible, isLoading, isDisabled]
     );
     const fireEvent = useActionFire(props.fireEvent);
-    return React.createElement(Widget, { ...props, properties: effective, fireEvent });
+    // The control's DOM id (labels, help notes): component ids repeat in List view and Kanban rows, so a widget in a
+    // row adds its instance's id, or the second row's label would name the first row's control.
+    const instance = useId().replace(/[^\w-]/g, '');
+    const domId = props.subContainerIndex == null ? `shad-${props.id}` : `shad-${props.id}-${instance}`;
+    return React.createElement(Widget, { ...props, properties: effective, fireEvent, domId });
   };
   Controlled.displayName = `Controlled(${Widget.displayName || Widget.name || 'Widget'})`;
   return Controlled;

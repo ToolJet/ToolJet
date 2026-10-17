@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Check, Search, X } from 'lucide-react';
 import { TablerIcon } from '@/AppBuilder/Widgets/Ui2/_shared/TablerIcon';
@@ -142,6 +142,28 @@ const OptionText = ({ option }: { option: Option }) => (
 );
 
 /** The search text of an options menu: kept locally, exposed as searchText, with onSearchTextChanged. */
+/** The selected options, by key. With server-side search (`keep`) the app replaces `options` with each search's
+ *  results, so a selected option can be off the current page: it keeps the record it had when last seen, and the
+ *  selection (and what a Form submits) stays whole, in the order it was picked (option order means nothing when the
+ *  options change with every search). Without server-side search the options are the whole list: the selection is in
+ *  option order, and a key no option has any more was deleted and drops out. Only selected keys are kept, so
+ *  searching does not grow the memory. */
+export const keptOptions = (options: Option[], keys: string[], kept: Map<string, Option> | null): Option[] => {
+  if (!kept) return M.selectedOf(options, keys);
+  const here = new Map(options.map((o) => [M.keyOf(o.value), o] as [string, Option]));
+  return keys.flatMap((k) => {
+    const option = here.get(k) ?? kept.get(k);
+    return option ? [option] : [];
+  });
+};
+
+export const useKeptSelection = (options: Option[], keys: string[], keep: boolean): Option[] => {
+  const kept = useRef(new Map<string, Option>());
+  const selected = keptOptions(options, keys, keep ? kept.current : null);
+  kept.current = new Map(selected.map((o) => [M.keyOf(o.value), o] as [string, Option]));
+  return selected;
+};
+
 export const useSearch = ({
   setExposedVariable,
   fireEvent,

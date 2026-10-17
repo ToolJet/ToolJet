@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { CONTROL, FormField, controlAria, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria, fieldName, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
+  runNow,
   toOptions,
   useAutoHeight,
   useExposed,
+  useLatest,
   useStable,
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -15,16 +17,18 @@ import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
-import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import {
   Chip,
   ClearButton,
   CommandGroup,
   CommandItem,
+  keptOptions,
   MENU_SURFACE,
   MUTED,
   OptionsMenu,
   PLACEHOLDER,
+  useKeptSelection,
   useSearch,
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -38,16 +42,19 @@ const MenuRule = () => <div aria-hidden="true" className="-tw-mx-1 tw-h-px tw-bg
 
 /** A field that anchors a popover without being its trigger button (it holds chips with their own buttons): opens on
  *  click, Enter, Space or ArrowDown; a click on it while open closes the menu instead of reopening it. */
-const useAnchoredMenu = (disabled: boolean, onClose?: () => void) => {
+const useAnchoredMenu = (properties: WidgetProps['properties'], onClose?: () => void) => {
   const anchorRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
+  const popup = usePickerPopup(properties);
+  const { open } = popup;
+  const disabled = busy(properties);
   const change = (next: boolean) => {
-    if (next && disabled) return;
-    setOpen(next);
+    if (next && popup.blocked) return;
+    popup.setOpen(next);
     if (!next) onClose?.();
   };
   return {
     open,
+    blocked: popup.blocked,
     change,
     anchorRef,
     anchorProps: {
@@ -73,20 +80,23 @@ const useAnchoredMenu = (disabled: boolean, onClose?: () => void) => {
 export const MAX_CHIPS = 50;
 
 export const ShadMultiselect = (props: WidgetProps) => {
-  const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
+  const { properties, styles, setExposedVariables, fireEvent, componentType } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const options = toOptions(properties.options);
   const limit = M.clampLimit(properties.maxSelections);
-  const initial = useStable(
-    [...new Set(M.toValueList(properties.defaultValue).map(M.keyOf))].slice(0, limit || undefined)
-  );
-  const [keys, setKeys] = useState(initial);
-  useEffect(() => setKeys(initial), [initial]);
+  // A new default starts the selection again; a new limit keeps what the user chose (only cut to fit a lower one).
+  const defaultKeys = useStable([...new Set(M.toValueList(properties.defaultValue).map(M.keyOf))]);
+  const limitRef = useLatest(limit);
+  const [keys, setKeys] = useState(() => defaultKeys.slice(0, limit || undefined));
+  useEffect(() => setKeys(defaultKeys.slice(0, limitRef.current || undefined)), [defaultKeys, limitRef]);
+  useEffect(() => {
+    if (limit > 0) setKeys((k) => (k.length > limit ? k.slice(0, limit) : k));
+  }, [limit]);
   const latest = useRef({ options, limit });
   latest.current = { options, limit };
   const [search, onSearch] = useSearch(props);
-  const selectedOptions = M.selectedOf(options, keys);
+  const selectedOptions = useKeptSelection(options, keys, properties.serverSideSearch === true);
   const values = selectedOptions.map((o) => o.value);
   useExposed(setExposedVariables, properties, {
     values,
@@ -101,7 +111,9 @@ export const ShadMultiselect = (props: WidgetProps) => {
     setBlur: async () => menu.anchorRef.current?.blur(),
   });
   const publish = (next: string[]) => {
-    const picked = M.selectedOf(options, next);
+    // As the rendered selection resolves them: with server-side search, kept records stand in for options off the page.
+    const kept = new Map(selectedOptions.map((o) => [M.keyOf(o.value), o] as [string, Option]));
+    const picked = keptOptions(options, next, properties.serverSideSearch === true ? kept : null);
     setExposedVariables({ values: picked.map((o) => o.value), selectedOptions: picked });
   };
   const check = useValidation(props, values, () => {
@@ -111,8 +123,8 @@ export const ShadMultiselect = (props: WidgetProps) => {
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
   const focus = useFocusEvents(fireEvent);
-  const menuId = `shad-${id}-menu`;
-  const menu = useAnchoredMenu(disabled, () => {
+  const menuId = `${fieldIdOf(props)}-menu`;
+  const menu = useAnchoredMenu(properties, () => {
     check.touch();
     if (search) onSearch('');
   });
@@ -120,11 +132,13 @@ export const ShadMultiselect = (props: WidgetProps) => {
     menu.change(next);
     if (!(next && disabled)) focus.opened(next);
   };
-  const commit = (next: string[]) => {
-    setKeys(next);
-    publish(next);
-    fireEvent('onSelect');
-  };
+  const commit = (next: string[]) =>
+    !menu.blocked &&
+    runNow(() => {
+      setKeys(next);
+      publish(next);
+      fireEvent('onSelect');
+    });
   const selectedKeys = new Set(selectedOptions.map((o) => M.keyOf(o.value)));
   const isOn = (o: Option) => selectedKeys.has(M.keyOf(o.value));
   const full = limit > 0 && selectedOptions.length >= limit;
@@ -156,7 +170,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
             {...menu.anchorProps}
             {...focus.handlers}
             onClick={() => menuChange(!menu.open)}
-            id={`shad-${id}`}
+            id={fieldIdOf(props)}
             role="combobox"
             aria-controls={menu.open ? menuId : undefined}
             // A div takes no name from <label for>: the label's text, else the placeholder, names it.

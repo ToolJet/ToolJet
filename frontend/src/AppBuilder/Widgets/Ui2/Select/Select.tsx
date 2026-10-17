@@ -1,10 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  runNow,
+  toOptions,
+  useAutoHeight,
+  useExposed,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
-import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { CONTROL, FormField, HELP, controlAria, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, HELP, controlAria, fieldName, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { choiceKey, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -16,7 +22,7 @@ export const ShadSelect = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { properties, setExposedVariable, setExposedVariables, fireEvent, id } = props;
+  const { properties, setExposedVariable, setExposedVariables, fireEvent } = props;
   // Radix Select keys its items by string; keep the original values for the exposed value. An option valued '' (an
   // "All" choice) gets its own key (choiceKey): '' means nothing selected.
   const options = toOptions(properties.options);
@@ -31,6 +37,7 @@ export const ShadSelect = (props: WidgetProps) => {
   const shown = shownOptions(options, byKey.get(key), MAX_SELECT_OPTIONS);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
+  const popup = usePickerPopup(properties);
   useExposed(setExposedVariables, properties, {
     value: selectedOption.value ?? '',
     selectedOption,
@@ -66,20 +73,26 @@ export const ShadSelect = (props: WidgetProps) => {
       <Select
         value={key}
         disabled={busy(properties)}
+        open={popup.open}
         onOpenChange={(open) => {
+          if (open && popup.blocked) return;
+          popup.setOpen(open);
           focus.opened(open);
           if (!open) check.touch();
         }}
-        onValueChange={(next) => {
-          setKey(next);
-          setExposedVariable('value', byKey.get(next)?.value ?? '');
-          setExposedVariable('selectedOption', byKey.get(next) || {});
-          fireEvent('onSelect');
-        }}
+        onValueChange={(next) =>
+          !popup.blocked &&
+          runNow(() => {
+            setKey(next);
+            setExposedVariable('value', byKey.get(next)?.value ?? '');
+            setExposedVariable('selectedOption', byKey.get(next) || {});
+            fireEvent('onSelect');
+          })
+        }
       >
         <SelectTrigger
           ref={triggerRef}
-          id={`shad-${id}`}
+          id={fieldIdOf(props)}
           // role="combobox" takes no name from its content: without a label, the placeholder names it.
           aria-label={fieldName(props, 'Select')}
           {...controlAria(props, check.error)}

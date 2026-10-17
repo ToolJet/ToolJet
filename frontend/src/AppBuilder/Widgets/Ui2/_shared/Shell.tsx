@@ -1,5 +1,5 @@
 // The root every UI 2.0 widget renders in: theme tokens, style variables, visibility and the loading look.
-import React, { createContext } from 'react';
+import React, { createContext, useCallback, useRef } from 'react';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { GROUP_LOADING } from '@/AppBuilder/Widgets/Ui2/_shared/looks/groups';
@@ -126,8 +126,30 @@ export interface ShellProps {
   children?: React.ReactNode;
 }
 
+/** A native Form that is disabled wraps its children in `<fieldset disabled>`. That disables native form controls but
+ *  not the pack's own (a Slider thumb, Rating stars, Multiselect chips), so the widget root swallows input that would
+ *  change them: every key but Tab (moving on stays possible) and every press or click, including in its popups
+ *  (React events from a portal pass through the root). */
+const ALLOWED_KEYS = new Set(['Tab']);
+const inDisabledFieldset = (el: HTMLElement | null) => !!el?.closest?.('fieldset[disabled]');
+
 export const Shell = (props: ShellProps) => {
   const { properties, styles, componentType, dataCy, children, innerRef, className } = props;
+  const root = useRef<HTMLDivElement | null>(null);
+  const setRoot = useCallback(
+    (el: HTMLDivElement | null) => {
+      root.current = el;
+      if (typeof innerRef === 'function') innerRef(el);
+      else if (innerRef) (innerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+    },
+    [innerRef]
+  );
+  const blockInput = (e: React.SyntheticEvent) => {
+    if (!inDisabledFieldset(root.current)) return;
+    if (e.type === 'keydown' && ALLOWED_KEYS.has((e as React.KeyboardEvent).key)) return;
+    e.preventDefault();
+    e.stopPropagation();
+  };
   const loading = !!properties.loadingState;
   const look: LoadingLook = LOADING_LOOK[componentType] || GROUP_LOADING[componentType] || 'block';
   let content = children;
@@ -159,8 +181,12 @@ export const Shell = (props: ShellProps) => {
   }
   return (
     <div
-      ref={innerRef}
+      ref={setRoot}
       data-cy={dataCy}
+      onKeyDownCapture={blockInput}
+      onPointerDownCapture={blockInput}
+      onMouseDownCapture={blockInput}
+      onClickCapture={blockInput}
       aria-busy={loading || undefined}
       className={cn('tj-shadcn', className)}
       style={{

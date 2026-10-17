@@ -1,16 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, Pipette } from 'lucide-react';
-import { CONTROL, Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, Field, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Input, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
-import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { MENU_SURFACE, PLACEHOLDER } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import type { Hsv } from '@/AppBuilder/Widgets/Ui2/_pickers/colorModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
+import { useFormClearNow } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 
 // ---- Color picker --------------------------------------------------------------------------------------------------
 
@@ -75,14 +77,15 @@ export const useDrag = (onMove: (point: { x: number; y: number }) => void, onEnd
 };
 
 export const ShadColorPicker = (props: WidgetProps) => {
-  const { properties, styles, setExposedVariables, fireEvent, id, componentType } = props;
+  const { properties, styles, setExposedVariables, fireEvent, componentType } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const alpha = properties.allowAlpha === true;
   const initial = M.normalizeHex(properties.defaultValue, alpha) || '';
   const [value, setValue] = useState(initial);
   useEffect(() => setValue(initial), [initial]);
-  const [open, setOpen] = useState(false);
+  const popup = usePickerPopup(properties);
+  const { open } = popup;
   const [hsva, setHsvaState] = useState(() => toHsva(initial));
   const hsvaRef = useRef(hsva);
   const [draft, setDraft] = useState(initial);
@@ -110,6 +113,17 @@ export const ShadColorPicker = (props: WidgetProps) => {
     },
   });
   const hexOf = (c: Hsva) => M.rgbaToHex({ ...M.hsvToRgb(c), a: c.a }, alpha);
+  // A color set from outside while the popup is open (setColor, a new default) reaches the open editor and its hex
+  // field; otherwise leaving the field applied its old text and undid the change. The user's own picks already match.
+  useEffect(() => {
+    if (!open) return;
+    const c = hsvaRef.current;
+    if (M.rgbaToHex({ ...M.hsvToRgb(c), a: c.a }, alphaRef.current) === value) return;
+    const next = toHsva(value, c.h);
+    hsvaRef.current = next;
+    setHsvaState(next);
+    setDraft(value);
+  }, [open, value]);
   const live = open ? hexOf(hsva) : value;
   const setHsva = (next: Hsva) => {
     hsvaRef.current = next;
@@ -117,12 +131,20 @@ export const ShadColorPicker = (props: WidgetProps) => {
     setDraft(hexOf(next));
   };
   const commit = (hex: string) => {
-    if (!hex || hex === value) return;
+    if (!hex || hex === value || popup.blocked) return;
     setValue(hex);
     setExposedVariables(colorExposed(hex));
     fireEvent('onChange');
   };
+  // A Form's clearForm empties it, as the native Color picker.
+  useFormClearNow(() => {
+    if (value === '') return;
+    setValue('');
+    setExposedVariables(colorExposed(''));
+    fireEvent('onChange');
+  });
   const pickHex = (hex: string) => {
+    if (popup.blocked) return;
     setHsva(toHsva(hex, hsvaRef.current.h));
     setDraft(hex);
     commit(hex);
@@ -133,14 +155,14 @@ export const ShadColorPicker = (props: WidgetProps) => {
     else setDraft(value);
   };
   const openChange = (next: boolean) => {
-    if (next && busy(properties)) return;
+    if (next && popup.blocked) return;
     if (next) {
       const start = toHsva(value);
       hsvaRef.current = start;
       setHsvaState(start);
       setDraft(value);
     }
-    setOpen(next);
+    popup.setOpen(next);
     focus.opened(next);
   };
   const commitLive = () => commit(hexOf(hsvaRef.current));
@@ -181,12 +203,12 @@ export const ShadColorPicker = (props: WidgetProps) => {
   const disabled = busy(properties);
   return (
     <Shell {...props} innerRef={ref}>
-      <Field id={`shad-${id}`} label={properties.label} description={properties.description}>
+      <Field id={fieldIdOf(props)} label={properties.label} description={properties.description}>
         <Popover open={open} onOpenChange={openChange}>
           <PopoverTrigger asChild>
             <Button
               ref={triggerRef}
-              id={`shad-${id}`}
+              id={fieldIdOf(props)}
               type="button"
               variant="outline"
               disabled={disabled}
@@ -301,7 +323,7 @@ export const ShadColorPicker = (props: WidgetProps) => {
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onBlur={applyDraft}
-                onKeyDown={(e) => e.key === 'Enter' && applyDraft()}
+                onKeyDown={(e) => isEnter(e) && applyDraft()}
                 className="tw-h-8 tw-border-[color:var(--sc-input)] tw-font-mono tw-text-xs tw-uppercase"
               />
               {canEyeDrop ? (
