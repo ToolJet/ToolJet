@@ -10,7 +10,8 @@ import {
   seriesRows,
   resolveChartFields,
   seriesLabel,
-  seriesLabelMap,
+  drawnLabelMap,
+  seriesSlots,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { AXIS_FILL, GRID, SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { clamp, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -31,7 +32,8 @@ export const ShadRadarChart = (props: WidgetProps) => {
       fieldList(yFields)
     );
     const rows = seriesRows(bound, fields.x, fields.series).slice(0, MAX_AXES);
-    const labels = seriesLabelMap(seriesLabels, fields.series);
+    const labels = drawnLabelMap(seriesLabels, fieldList(yFields), fields.series);
+    const slots = seriesSlots(fieldList(yFields), fields.series);
     return {
       category: fields.x,
       series: fields.series,
@@ -39,7 +41,7 @@ export const ShadRadarChart = (props: WidgetProps) => {
       plotted: rows.map((r) => ({ ...r, ...Object.fromEntries(fields.series.map((s) => [s, r[s] ?? 0])) })),
       empty: !fields.series.length || !hasValues(rows, fields.series),
       names: fields.series.map((s) => seriesLabel(s, labels)),
-      fills: fields.series.map((_, i) => seriesColor(colors, i)),
+      fills: fields.series.map((_, i) => seriesColor(colors, slots[i])),
     };
   }, [bound, p.categoryField, yFields, seriesLabels, colors]);
   const max = num(p.maxValue);

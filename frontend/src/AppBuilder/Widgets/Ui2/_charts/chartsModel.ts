@@ -111,6 +111,17 @@ export const seriesLabelMap = (labels: unknown, series: string[] | undefined): R
   return labels && typeof labels === 'object' ? (labels as Record<string, unknown>) : {};
 };
 
+/** Each drawn series' place among the configured fields (yFields), which its positional label and colour belong to: a
+ *  series keeps its own when another configured field is missing from the data (rows without revenue drew cost as
+ *  "Revenue", in Revenue's colour). A series the author did not configure (a fallback) takes its place among those
+ *  drawn. */
+export const seriesSlots = (configured: string[], drawn: string[]): number[] =>
+  drawn.map((key, i) => (configured.includes(key) ? configured.indexOf(key) : i));
+
+/** seriesLabelMap for the drawn series, read against the configured fields (see seriesSlots). */
+export const drawnLabelMap = (labels: unknown, configured: string[], drawn: string[]): Record<string, unknown> =>
+  seriesLabelMap(labels, configured.length ? configured : drawn);
+
 export const seriesLabel = (key: unknown, labels?: unknown): string => {
   const own = isRecord(labels) ? labels[String(key)] : undefined;
   // Text or a number only: a label bound to an object (a list of rows by mistake) read "[object Object]" in the legend.
