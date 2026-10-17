@@ -53,8 +53,9 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
 
       if (app.type === APP_TYPES.MODULE) {
         // Module queries require authentication unless the module is embedded in a public parent app.
+        let authed: boolean;
         try {
-          return await super.canActivate(context);
+          authed = (await super.canActivate(context)) as boolean;
         } catch {
           // If the module is embedded in a public parent app, allow access and mark the module app as public
           const parentApp = await this.dataQueryRepository.findPublicParentAppForModuleQuery(app.id, id);
@@ -69,10 +70,14 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
             })
           );
         }
+        // Reject modules outside the caller's workspace.
+        this.validateUserBelongsToAppOrg(request, app);
+        return authed;
       }
       // Throw a custom exception if the app is not public
+      let authed: boolean;
       try {
-        return await super.canActivate(context);
+        authed = (await super.canActivate(context)) as boolean;
       } catch {
         throw new UnauthorizedException(
           JSON.stringify({
@@ -80,8 +85,26 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
           })
         );
       }
+      // Reject apps outside the caller's workspace.
+      this.validateUserBelongsToAppOrg(request, app);
+      return authed;
     } finally {
       this.transactionLogger.log(`QueryAuthGuard completed at ${new Date().toISOString()} for app id ${id}`);
+    }
+  }
+
+  // Rejects a request whose caller does not belong to the app's workspace.
+  private validateUserBelongsToAppOrg(
+    request: { user?: { organizationId?: string } },
+    app: { organizationId?: string }
+  ) {
+    const user = request.user;
+    if (!user || !app?.organizationId || user.organizationId !== app.organizationId) {
+      throw new UnauthorizedException(
+        JSON.stringify({
+          message: 'You do not have permission to access this resource.',
+        })
+      );
     }
   }
 }
