@@ -3,61 +3,109 @@
   "properties": {
     "collapseWhenHidden": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "defaultCountry": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "US",
       "initial": "US"
     },
     "defaultValue": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "",
       "initial": ""
     },
     "description": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "",
       "initial": ""
     },
     "disabledState": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "isCountryChangeEnabled": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": true,
       "initial": "{{true}}"
     },
     "label": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "Phone number",
       "initial": "Phone number"
     },
     "loadingState": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "onlyCountries": {
       "type": "array",
+      "schema": {
+        "optional": true,
+        "type": "array"
+      },
       "default": [],
       "initial": "{{[]}}"
     },
     "placeholder": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "",
       "initial": ""
     },
     "showFlag": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": true,
       "initial": "{{true}}"
     },
     "tooltip": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "initial": ""
     },
     "tooltipFormat": {
@@ -67,60 +115,144 @@
     },
     "visibility": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": true,
       "initial": "{{true}}"
     }
   },
   "styles": {
     "accentColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "backgroundColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "borderColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "borderRadius": {
-      "type": "union<string|number>"
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
     },
     "boxShadow": {
       "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
       "default": "0px 0px 0px 0px #00000040",
       "initial": "0px 0px 0px 0px #00000040"
     },
     "countryBackgroundColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "countryTextColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "errorColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "helpTextColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "hoverColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "labelColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "placeholderColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "popoverBackgroundColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "popoverTextColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "selectedTextColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "textColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     }
   },
   "validation": {

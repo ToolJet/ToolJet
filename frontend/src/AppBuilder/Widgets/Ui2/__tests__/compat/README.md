@@ -14,9 +14,14 @@ jest run, the third on demand.
 ## 1. Frozen contract
 
 `npm run ui2:contracts` (in `frontend`) writes one file per widget from its config: property, style and validation keys
-with value type, default (what an app that never set the key gets) and initial value (what a new widget starts with);
-event ids; action handles with their parameter names in order (saved control-component calls pass arguments by
-position); exposed value keys.
+with value type, the whole value schema (pattern, size, optional, an object's fields: the rules a saved value is checked
+against), default (what an app that never set the key gets) and initial value (what a new widget starts with); event
+ids; action handles with their parameter names in order (saved control-component calls pass arguments by position);
+exposed value keys. The keys include those only a config's definition has (Tabs' `tabItems`, Dialog's `headerHeight`),
+which the editor saves with every component too.
+
+A changed rule within the same type (a pattern added, a maximum length lowered, `optional` dropped) is a break, as a
+saved value it rejects falls back to the default. One that only loosens is accepted with that reason.
 
 When `contracts.spec.js` fails:
 

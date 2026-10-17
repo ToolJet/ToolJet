@@ -3,41 +3,73 @@
   "properties": {
     "collapseWhenHidden": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "defaultValue": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "",
       "initial": ""
     },
     "description": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "",
       "initial": ""
     },
     "disabledState": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "label": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "",
       "initial": ""
     },
     "loadingState": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": false,
       "initial": "{{false}}"
     },
     "placeholder": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "default": "",
       "initial": ""
     },
     "tooltip": {
       "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      },
       "initial": ""
     },
     "tooltipFormat": {
@@ -47,42 +79,102 @@
     },
     "visibility": {
       "type": "boolean",
+      "schema": {
+        "optional": true,
+        "type": "boolean"
+      },
       "default": true,
       "initial": "{{true}}"
     }
   },
   "styles": {
     "accentColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "backgroundColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "borderColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "borderRadius": {
-      "type": "union<string|number>"
+      "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      }
     },
     "boxShadow": {
       "type": "union<string|number>",
+      "schema": {
+        "optional": true,
+        "schemas": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "type": "union"
+      },
       "default": "0px 0px 0px 0px #00000040",
       "initial": "0px 0px 0px 0px #00000040"
     },
     "errorColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "helpTextColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "labelColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "placeholderColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     },
     "textColor": {
-      "type": "string"
+      "type": "string",
+      "schema": {
+        "optional": true,
+        "type": "string"
+      }
     }
   },
   "validation": {

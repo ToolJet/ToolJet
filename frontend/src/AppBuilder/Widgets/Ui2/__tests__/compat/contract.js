@@ -24,17 +24,34 @@ const defaultOf = (def) => {
   return value !== null && typeof value === 'object' && !Array.isArray(value) && 'value' in value ? value.value : value;
 };
 
+/** A schema with its keys in order, so two configs with the same rules freeze to the same text. */
+const canonical = (value) => {
+  if (Array.isArray(value)) return value.map(canonical);
+  if (value === null || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((k) => [k, canonical(value[k])])
+  );
+};
+
+/** The keys a saved component carries: the inspector's, and those only its definition has (Tabs' tabItems, Dialog's
+ *  headerHeight), which the editor saves too. */
+const savedKeys = (defs, created) => [...new Set([...Object.keys(defs || {}), ...Object.keys(created || {})])].sort();
+
 const keyed = (defs, created) =>
   Object.fromEntries(
-    Object.keys(defs || {})
-      .sort()
-      .map((key) => {
-        const entry = { type: schemaType(defs[key]?.validation?.schema) };
-        const fallback = defaultOf(defs[key]);
-        if (fallback !== undefined) entry.default = fallback;
-        if (created?.[key]?.value !== undefined) entry.initial = created[key].value;
-        return [key, entry];
-      })
+    savedKeys(defs, created).map((key) => {
+      const schema = defs?.[key]?.validation?.schema;
+      // The type summary reads at a glance; the whole schema (pattern, size, optional, an object's fields) is what a
+      // saved value is checked against.
+      const entry = { type: schemaType(schema) };
+      if (schema) entry.schema = canonical(schema);
+      const fallback = defaultOf(defs?.[key]);
+      if (fallback !== undefined) entry.default = fallback;
+      if (created?.[key]?.value !== undefined) entry.initial = created[key].value;
+      return [key, entry];
+    })
   );
 
 /** The contract of one widget config, in the shape written to __contracts__/<Type>.json. */
@@ -45,12 +62,10 @@ export function contractOf(config) {
     properties: keyed(config.properties, definition.properties),
     styles: keyed(config.styles, definition.styles),
     validation: Object.fromEntries(
-      Object.keys(config.validation || {})
-        .sort()
-        .map((key) => [
-          key,
-          definition.validation?.[key]?.value !== undefined ? { initial: definition.validation[key].value } : {},
-        ])
+      savedKeys(config.validation, definition.validation).map((key) => [
+        key,
+        definition.validation?.[key]?.value !== undefined ? { initial: definition.validation[key].value } : {},
+      ])
     ),
     events: Object.keys(config.events || {}).sort(),
     actions: Object.fromEntries(
@@ -78,7 +93,8 @@ const namesIn = (contract, area) => {
 
 /**
  * Every difference between a frozen contract and the live one, as
- * `{ type, area, key, change, from, to }` with change one of: added, removed, default, initial, valueType, params.
+ * `{ type, area, key, change, from, to }` with change one of: added, removed, default, initial, valueType, rules,
+ * params.
  * A whole widget appearing or disappearing is area 'widget'.
  */
 export function diffContract(frozen, live) {
@@ -103,6 +119,9 @@ export function diffContract(frozen, live) {
       ]) {
         if (!same(was[field], now[field])) changes.push({ type, area, key, change, from: was[field], to: now[field] });
       }
+      // Rules within the same type (a pattern, a size, optional, an object's fields); a type change says it already.
+      if (same(was.type, now.type) && !same(was.schema, now.schema))
+        changes.push({ type, area, key, change: 'rules', from: was.schema, to: now.schema });
     }
   }
   return changes;
@@ -199,6 +218,12 @@ export function explainBreak(c) {
       `${what} changed its parameters from ${show(c.from)} to ${show(c.to)}.`,
       '  Saved control-component handlers pass parameters by position, so every saved call would now pass its',
       '  arguments to the wrong parameter. Keep the order and add new parameters at the end.'
+    );
+  } else if (c.change === 'rules') {
+    lines.push(
+      `${what} changed its value rules from ${show(c.from)} to ${show(c.to)}.`,
+      '  A saved value the old rules accepted and the new ones reject falls back to the default, so saved apps would',
+      '  lose it. If the new rules accept every value the old ones did (they only loosen), accept it with that reason.'
     );
   } else if (c.change === 'valueType') {
     lines.push(
