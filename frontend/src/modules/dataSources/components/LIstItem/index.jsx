@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
 import { DataSourceTypes } from '../../../common/components/DataSourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import { resolvePluginKind } from '@/_helpers/pluginKind';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
@@ -68,13 +69,21 @@ export const ListItem = ({
 
   const sourceMeta = getSourceMetaData(dataSource);
 
+  // sourceMeta is missing `kind` for tj:version manifests (they use `tj:source`,
+  // not legacy `source`), so fall back to the data source's own identifiers.
+  const iconKind = resolvePluginKind({
+    kind: sourceMeta?.kind ?? dataSource?.kind,
+    pluginId: dataSource?.pluginId,
+    plugin_id: dataSource?.plugin_id,
+  });
+
   // sourceMeta would be missing on development setup when switching between branches
   // if ds is already in branch while not available in another
   const icon =
     dataSource.type === DATA_SOURCE_TYPE.SAMPLE ? (
       <img src="assets/images/tj-logo.svg" style={{ padding: '0px' }} />
     ) : (
-      getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data)
+      getSvgIcon(iconKind, 24, 24, dataSource?.plugin?.iconFile?.data)
     );
 
   const focusModal = () => {

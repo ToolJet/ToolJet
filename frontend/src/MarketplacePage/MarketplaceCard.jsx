@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { pluginsService } from '@/_services';
 import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
 import Icon from '@/_ui/Icon/SolidIcons';
+import { PluginIcon } from '@/_ui/PluginIcon';
 
 export const MarketplaceCard = ({ id, name, repo, description, version, isInstalled = false }) => {
   const [installed, setInstalled] = React.useState(isInstalled);
@@ -57,7 +58,7 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
           <div className="row align-items-center">
             <div className="col-auto">
               <span className="text-white app-icon-main">
-                <img height="40" width="40" src={iconSrc} />
+                <PluginIcon pluginKind={id} src={iconSrc} alt={name} height={40} width={40} />
               </span>
             </div>
             <div className="col">
