@@ -76,10 +76,16 @@ Each widget loads in its own chunk, the first time a page shows it.
   the exposed values right after the action resolves.
 - **0 and false are values.** `useValidation` judges `validationInput(present, value)`: a field holds a value unless
   it is undefined, null, '' or an empty list, and a widget passes `present` where that differs (a Select or Radio group
-  once an option is picked, a Checkbox once checked, a Rating once it has a star).
+  once an option is picked, a Checkbox once checked, a Rating once it has a star). `falsyValues.spec.jsx` checks each
+  input and picker with 0, false and an option valued ''.
 - **Selection after a data change.** A widget keeps its selection by the item's key (its id field, else its position).
   When the data changes it re-publishes the selection from the fresh record at its new place, and clears it when the
-  key is gone. No event fires for either.
+  key is gone. No event fires for either. `selectionRefresh.spec.jsx` renames, reorders and removes a selected item in
+  each selecting widget.
+- **An element is always truthy.** Never test a JSX element (`const icon = <Icon />`, or a prop typed `JSX.Element`) to
+  decide what to show: the component may render nothing. Return `null` from a function instead (`actionIconOf` in
+  the Table's row actions). Render conditionally with a ternary or a boolean (`{count > 0 && ...}`, never
+  `{count && ...}`, which shows 0); ESLint's `react/jsx-no-leaked-render` enforces the second for UI 2.0.
 
 ## Checks that keep it this way
 
