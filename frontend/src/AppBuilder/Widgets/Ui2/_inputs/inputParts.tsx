@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { CONTROL } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from './dateModel';
-import { runNow, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { runNow, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { numericText } from './inputsModel';
 import type { ChangeEvent, ReactNode } from 'react';
@@ -73,19 +73,29 @@ export interface NumberBoxOptions {
   initial: number | null;
   round: (n: number | null) => number | null;
   parse: (text: unknown) => number | null;
+  /** The default as authored: a new one starts the box again. A change of the decimal places alone (`precision`)
+   *  keeps the number the user entered, rounded to them. */
+  seed?: unknown;
+  precision?: number;
 }
 
 export const useNumberBox = (
   props: Pick<WidgetProps, 'setExposedVariables' | 'fireEvent'>,
-  { initial, round, parse }: NumberBoxOptions
+  { initial, round, parse, seed, precision }: NumberBoxOptions
 ) => {
   const { setExposedVariables, fireEvent } = props;
   const [value, setValue] = useState(initial);
   const [draft, setDraft] = useState<string | null>(null);
+  const start = useLatest({ initial, round });
+  const seedKey = useStable(seed === undefined ? initial : seed);
   useEffect(() => {
-    setValue(initial);
+    setValue(start.current.initial);
     setDraft(null);
-  }, [initial]);
+  }, [seedKey, start]);
+  // New decimal places round the number the user entered; they never bring the default back.
+  useEffect(() => {
+    setValue((v) => start.current.round(v));
+  }, [precision, start]);
   const valueRef = useLatest(value);
   /** Sets the value as the user does; `extra` gives the exposed values that go with it. */
   const commit = (next: number | null, extra: (value: number | null) => Exposed) => {

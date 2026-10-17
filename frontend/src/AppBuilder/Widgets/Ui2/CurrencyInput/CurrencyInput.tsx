@@ -53,7 +53,13 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
     M.parseNumber(properties.defaultValue, locale),
     M.currencyDecimals(initialCurrency, properties.decimalPlaces)
   );
-  const box = useNumberBox(props, { initial, round, parse: (v) => M.parseNumber(v, locale) });
+  const box = useNumberBox(props, {
+    initial,
+    round,
+    parse: (v) => M.parseNumber(v, locale),
+    seed: properties.defaultValue,
+    precision: decimals,
+  });
   const { value, draft, setDraft } = box;
   const formatted = (n: number | null, code = currency) =>
     M.formatCurrency(n, { currency: code, locale, decimals: M.currencyDecimals(code, properties.decimalPlaces) });

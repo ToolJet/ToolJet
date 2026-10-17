@@ -8,6 +8,7 @@ import {
   toOptions,
   useAutoHeight,
   useExposed,
+  useLatest,
   useStable,
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -33,9 +34,15 @@ export const ShadTagsInput = (props: WidgetProps) => {
     pattern: properties.tagPattern,
     patternError: properties.patternError,
   };
-  const initial = useStable(M.addTags([], M.toTags(properties.defaultValue), rules).tags);
-  const [tags, setTags] = useState(initial);
-  useEffect(() => setTags(initial), [initial]);
+  // A new default starts the tags again; a new limit keeps what the user entered (only cut to fit a lower one).
+  const defaultTags = useStable(M.toTags(properties.defaultValue));
+  const rulesNow = useLatest(rules);
+  const [tags, setTags] = useState(() => M.addTags([], defaultTags, rules).tags);
+  useEffect(() => setTags(M.addTags([], defaultTags, rulesNow.current).tags), [defaultTags, rulesNow]);
+  const maxTags = M.clampLimit(rules.maxTags);
+  useEffect(() => {
+    if (maxTags > 0) setTags((t) => (t.length > maxTags ? t.slice(0, maxTags) : t));
+  }, [maxTags]);
   const [text, setText] = useState('');
   const [tagError, setTagError] = useState('');
   const [focused, setFocused] = useState(false);

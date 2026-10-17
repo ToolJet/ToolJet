@@ -9,6 +9,7 @@ import {
   toOptions,
   useAutoHeight,
   useExposed,
+  useLatest,
   useStable,
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -82,11 +83,14 @@ export const ShadMultiselect = (props: WidgetProps) => {
   useAutoHeight(props, ref);
   const options = toOptions(properties.options);
   const limit = M.clampLimit(properties.maxSelections);
-  const initial = useStable(
-    [...new Set(M.toValueList(properties.defaultValue).map(M.keyOf))].slice(0, limit || undefined)
-  );
-  const [keys, setKeys] = useState(initial);
-  useEffect(() => setKeys(initial), [initial]);
+  // A new default starts the selection again; a new limit keeps what the user chose (only cut to fit a lower one).
+  const defaultKeys = useStable([...new Set(M.toValueList(properties.defaultValue).map(M.keyOf))]);
+  const limitRef = useLatest(limit);
+  const [keys, setKeys] = useState(() => defaultKeys.slice(0, limit || undefined));
+  useEffect(() => setKeys(defaultKeys.slice(0, limitRef.current || undefined)), [defaultKeys, limitRef]);
+  useEffect(() => {
+    if (limit > 0) setKeys((k) => (k.length > limit ? k.slice(0, limit) : k));
+  }, [limit]);
   const latest = useRef({ options, limit });
   latest.current = { options, limit };
   const [search, onSearch] = useSearch(props);
