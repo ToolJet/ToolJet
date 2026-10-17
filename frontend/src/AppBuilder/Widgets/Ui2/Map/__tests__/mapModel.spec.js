@@ -282,6 +282,24 @@ describe('mapModel', () => {
     });
   });
 
+  describe('a tileUrl that is not a tile template', () => {
+    // An AI build set tileUrl to about:blank (2026-10-17): the map drew no tiles at all, only its pins.
+    it.each(['about:blank', 'https://tiles.example/map.png', 'https://example.com/{z}/{x}.png'])(
+      'treats %s as unset, so the install tiles or the default draw',
+      (tileUrl) => {
+        const config = { MAP_TILE_URL: 'https://tiles.internal/{z}/{x}/{y}.png', MAP_TILE_ATTRIBUTION: 'Internal' };
+        expect(tileSource({ tileUrl, config })).toMatchObject({ url: config.MAP_TILE_URL, attribution: 'Internal' });
+        expect(tileSource({ tileUrl }).url).toBe(tileSource({}).url);
+      }
+    );
+
+    it('keeps a template with subdomains or a flipped y', () => {
+      expect(tileSource({ tileUrl: 'https://{s}.tiles.example/{z}/{x}/{-y}.png' }).url).toBe(
+        'https://{s}.tiles.example/{z}/{x}/{-y}.png'
+      );
+    });
+  });
+
   describe('colours', () => {
     it('accepts only safe CSS colours: hex, rgb() and hsl(), a colour name or a tone name', () => {
       expect(safeColor('#e11d48')).toBe('#e11d48');
