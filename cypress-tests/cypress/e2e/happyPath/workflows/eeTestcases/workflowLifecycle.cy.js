@@ -52,7 +52,7 @@ describe("Workflows - dashboard CRUD", () => {
     }).should("contain.text", data.workflowName);
   });
 
-  it("The workflow card menu offers the workflow-specific actions", () => {
+  it("The workflow card menu offers the workflow-specific actions and no Clone", () => {
     cy.apiCreateWorkflow(data.workflowName);
     openWorkflowsDashboard();
 
@@ -72,13 +72,8 @@ describe("Workflows - dashboard CRUD", () => {
     cy.get(
       commonSelectors.appCardOptions(workflowsText.deleteWorkflowOption)
     ).verifyVisibleElement("have.text", workflowsText.deleteWorkflowOption);
-  });
 
-  it("The workflow card menu does not offer Clone", () => {
-    cy.apiCreateWorkflow(data.workflowName);
-    openWorkflowsDashboard();
-
-    viewAppCardOptions(data.workflowName);
+    // Clone is an app-only action and must not be offered for workflows.
     cy.get(workflowSelector.cardOptions).should("be.visible");
     cy.get(workflowSelector.cardOptions).should(
       "not.contain.text",
@@ -116,11 +111,16 @@ describe("Workflows - dashboard CRUD", () => {
     cy.get(workflowSelector.createWorkFlowsButton).should("be.disabled");
 
     // Duplicate name must be refused rather than creating a second workflow
-    // sharing the name.
+    // sharing the name. The name pre-check answers 400 "This app name is
+    // already taken." (shown as a toast); a DB-constraint clash answers 409,
+    // shown inline as "Workflow name already exists".
+    cy.intercept("POST", "/api/workflows").as("createWorkflow");
     cy.get(workflowSelector.workFlowNameInputField).type(data.workflowName);
     cy.get(workflowSelector.createWorkFlowsButton).click();
-    cy.wait(2000);
-    cy.get("body").should("contain.text", "already exists");
+    cy.wait("@createWorkflow")
+      .its("response.statusCode")
+      .should("be.oneOf", [400, 409]);
+    cy.contains(/already (taken|exists)/).should("be.visible");
   });
 
   it("Deleting a workflow from the dashboard removes its card after confirmation", () => {
