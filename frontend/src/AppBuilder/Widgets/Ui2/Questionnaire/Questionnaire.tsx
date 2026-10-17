@@ -141,6 +141,18 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
     if (el && typeof el.focus === 'function') el.focus();
   };
 
+  // A step the user takes from the buttons puts focus in the new question once it is drawn (its fieldset is a new
+  // one), so the keyboard is where the screen moved; goTo, an action, leaves focus where it is.
+  const focusNext = useRef(false);
+  useEffect(() => {
+    if (!focusNext.current) return;
+    focusNext.current = false;
+    focusFirst();
+  }, [at]);
+  const step = (to: number, extra?: Partial<QuestionnaireState>) => {
+    focusNext.current = true;
+    move(to, extra);
+  };
   const next = () => {
     if (!answer) return;
     const why = problem(item, answer);
@@ -149,13 +161,13 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
       focusFirst();
       return;
     }
-    move(at + 1);
+    step(at + 1);
   };
   // Skip leaves the question unanswered and moves on.
   const skip = () => {
     const cleared = { ...answers, [item.name]: emptyAnswer(item) };
     setAnswers(cleared);
-    move(at + 1, { answers: answersOf(items, cleared) });
+    step(at + 1, { answers: answersOf(items, cleared) });
   };
   const submit = () => {
     const missing = firstProblem(items, answers);
@@ -340,7 +352,7 @@ export const ShadQuestionnaire = (props: WidgetProps) => {
         </fieldset>
         <div className="tw-mt-6 tw-flex tw-items-center tw-gap-2">
           {at > 0 ? (
-            <Button variant="outline" disabled={disabled} onClick={() => move(at - 1)}>
+            <Button variant="outline" disabled={disabled} onClick={() => step(at - 1)}>
               Previous
             </Button>
           ) : null}
