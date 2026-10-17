@@ -131,3 +131,20 @@ describe('which format reads a value', () => {
     expect(M.parseDateTime('2026-10-09 14:30', 'YYYY-DD-MM HH:mm', true).format('YYYY-MM-DD')).toBe('2026-09-10');
   });
 });
+
+// One meaning for a minute step: a time every that many minutes from midnight.
+describe('minute steps', () => {
+  it('offers each hour the minutes that fall on the step', () => {
+    expect(M.minuteOptions(45, 9)).toEqual([0, 45]);
+    expect(M.minuteOptions(45, 10)).toEqual([30]);
+    expect(M.minuteOptions(45, 11)).toEqual([15]);
+    expect(M.minuteOptions(15, 13)).toEqual([0, 15, 30, 45]);
+    expect(M.minuteOptions(60, 7)).toEqual([0]);
+    expect(M.minuteOptions(20)).toEqual([0, 20, 40]);
+  });
+
+  it('agrees with the list of times', () => {
+    const fromColumns = [9, 10, 11].flatMap((h) => M.minuteOptions(45, h).map((m) => h * 60 + m));
+    expect(fromColumns.filter((t) => t <= 690)).toEqual(M.timeSlots(45, '09:00', '11:30'));
+  });
+});

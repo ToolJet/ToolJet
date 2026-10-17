@@ -80,12 +80,21 @@ export const timeSlots = (step: unknown, minTime?: unknown, maxTime?: unknown): 
   return out;
 };
 
-/** The minutes of an hour column: 0, step, 2*step ... below 60. */
-export const minuteOptions = (step: unknown): number[] => {
+/** The minutes of `hour`'s column. A minute step means a time every `step` minutes from midnight, as the list of
+ *  times offers them (timeSlots), so a step that does not divide an hour gives each hour its own minutes: with 45,
+ *  09:00 and 09:45, then 10:30, then 11:15. A step that divides an hour gives every hour 0, step, 2*step ... */
+export const minuteOptions = (step: unknown, hour: unknown = 0): number[] => {
   const s = minuteStep(step);
+  const h = typeof hour === 'number' && Number.isInteger(hour) ? ((hour % 24) + 24) % 24 : 0;
   const out: number[] = [];
-  for (let m = 0; m < 60; m += s) out.push(m);
+  for (let m = (s - ((h * 60) % s)) % s; m < 60; m += s) out.push(m);
   return out;
+};
+
+/** `minute` when it falls on the step in `hour`, else the first minute that does. */
+export const minuteInHour = (step: unknown, hour: number, minute: number | null): number => {
+  const options = minuteOptions(step, hour);
+  return minute !== null && options.includes(minute) ? minute : options[0] ?? 0;
 };
 
 /** The nearest time within the bounds. */
