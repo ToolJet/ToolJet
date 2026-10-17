@@ -104,3 +104,31 @@ describe('[UI2-FIELD-009] a repeated input’s label and note belong to its own 
     }
   });
 });
+
+// Release audit 8 (fixed before this round, kept as a regression check): the visible label names the control.
+const NAMED = [
+  ['ShadMultiselect', 'combobox'],
+  ['ShadRadioGroup', 'radiogroup'],
+];
+const named = Object.fromEntries(
+  NAMED.map(([type]) => [
+    type,
+    createWidgetHarness({ componentType: type, id: 'field1', handle: 'field1', preload: [type] }),
+  ])
+);
+describe('[UI2-FIELD-008] the visible label is the accessible name', () => {
+  it.each(NAMED)('%s', async (type, role) => {
+    const widget = named[type];
+    await widget.setup();
+    try {
+      widget.render({
+        currentMode: 'view',
+        properties: { label: binding('Department'), options: binding('{{[{ label: "Support", value: "support" }]}}') },
+      });
+      await waitFor(() => expect(document.querySelector(`[role=${role}]`)).not.toBeNull());
+      expect(document.querySelector(`[role=${role}]`)).toHaveAccessibleName('Department');
+    } finally {
+      widget.teardown();
+    }
+  });
+});
