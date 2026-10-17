@@ -88,6 +88,25 @@ describe('mapModel', () => {
       expect(points.map((p) => p.id)).toEqual([1, 3, 3, null]);
     });
 
+    it('keys repeated ids in linear work, keeping suffixes clear of ids that already have one', () => {
+      // Release audit 54: each repeat searched its suffix from ~1 again, 2,001,000 key checks for 2,000 equal ids.
+      const same = Array.from({ length: 2000 }, () => ({ id: 'A', lat: 1, lng: 2 }));
+      const has = jest.spyOn(Set.prototype, 'has');
+      const { points } = mapPoints(same);
+      const probes = has.mock.calls.length;
+      has.mockRestore();
+      expect(probes).toBeLessThan(10 * same.length);
+      expect(new Set(points.map((p) => p.key)).size).toBe(2000);
+      expect(points.slice(0, 3).map((p) => p.key)).toEqual(['A', 'A~1', 'A~2']);
+
+      const suffixed = [{ id: 'A' }, { id: 'A~1' }, { id: 'A' }, { id: 'A' }, { id: 'A~1' }].map((r) => ({
+        ...r,
+        lat: 1,
+        lng: 2,
+      }));
+      expect(mapPoints(suffixed).points.map((p) => p.key)).toEqual(['A', 'A~1', 'A~2', 'A~3', 'A~1~1']);
+    });
+
     it('reads the fields it is told to', () => {
       const data = [{ code: 'A', y: 10, x: 20, state: 'Failed' }];
       const { points } = mapPoints(data, { latField: 'y', lngField: 'x', titleField: 'code', statusField: 'state' });
