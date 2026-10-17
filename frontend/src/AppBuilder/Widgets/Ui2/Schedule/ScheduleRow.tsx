@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
-import { bookingFace, slotValue } from './scheduleModel';
+import { MAX_ROW_BOOKINGS, bookingFace, slotValue } from './scheduleModel';
 import type {
   PlacedBooking,
   PlacedBookings,
@@ -147,7 +147,7 @@ export const ScheduleRow = ({
             );
           })}
         </div>
-        {(entry?.items || []).map((b) => {
+        {(entry?.items || []).slice(0, MAX_ROW_BOOKINGS).map((b) => {
           const tone = b.tone ? TONE_VAR[b.tone] : ACCENT;
           const isSelected = highlight && selected?.kind === 'booking' && selected.key === b.key;
           const cancelled = /\bcancel/i.test(b.status);
@@ -195,6 +195,17 @@ export const ScheduleRow = ({
             </button>
           );
         })}
+        {/* Bookings past what a row draws (the latest ones) are counted here, never left out without a trace. */}
+        {(entry?.items.length ?? 0) > MAX_ROW_BOOKINGS ? (
+          <span
+            className="tw-absolute tw-bottom-0.5 tw-right-1 tw-z-[2] tw-rounded-ui2-md tw-px-1.5 tw-text-[11px] tw-font-medium tw-tabular-nums"
+            style={{ background: SURFACE, color: LABEL }}
+            data-more-bookings=""
+            role="note"
+          >
+            +{(entry?.items.length ?? 0) - MAX_ROW_BOOKINGS} more
+          </span>
+        ) : null}
       </div>
     </div>
   );

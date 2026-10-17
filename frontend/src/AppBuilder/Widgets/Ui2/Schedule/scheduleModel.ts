@@ -20,7 +20,8 @@ const DAY = 24 * HOUR;
 export const MAX_DAYS = 31;
 export const MAX_SLOTS = 96;
 export const MAX_LANES = 4;
-export const MAX_BOOKINGS = 2000;
+/** The bookings a resource's row draws; it says how many more it has (every booking is placed). */
+export const MAX_ROW_BOOKINGS = 200;
 
 const int = (v: unknown, fallback: number): number => {
   if (v === null || v === undefined || v === '' || typeof v === 'boolean') return fallback;
@@ -273,9 +274,8 @@ export const placeBookings = (
   const day = new Date(range.start);
   const days = range.scale === 'days';
   const field = (row: Row, name: unknown): unknown => (isNonBlankString(name) ? row[name] : undefined);
-  let count = 0;
   bookings.forEach((row: Row, index: number) => {
-    if (count >= MAX_BOOKINGS || !row || typeof row !== 'object' || Array.isArray(row)) return;
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return;
     const resourceKey = byId.get(toText(field(row, f.resourceField)).trim());
     if (resourceKey === undefined) return;
     const start = parseTime(field(row, f.startField), day);
@@ -298,7 +298,6 @@ export const placeBookings = (
     const fmt = f.hourFormat === '24h' ? '24h' : '12h';
     const time =
       days && (start.dateOnly || endParsed?.dateOnly) ? '' : `${clockText(start.time, fmt)} to ${clockText(end, fmt)}`;
-    count += 1;
     if (!out[resourceKey]) out[resourceKey] = { lanes: 1, items: [] };
     out[resourceKey].items.push({
       key: toText(id) || `#${index}`,
