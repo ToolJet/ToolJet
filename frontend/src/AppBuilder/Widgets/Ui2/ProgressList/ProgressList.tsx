@@ -65,7 +65,7 @@ export const ShadProgressList = (props: WidgetProps) => {
   );
   // The first rows and a button for the next ones: a 10,000-row binding froze the page in the other lists.
   const [shownCount, showMore] = useShownCount(PROGRESS_ROWS_PER_STEP, rows);
-  const { click } = useItemSelection<ProgressItem>(props, 'onItemClicked');
+  const { click } = useItemSelection<ProgressItem>(props, 'onItemClicked', rows);
   const clickable = useHasEvent(id, 'onItemClicked') && !busy(p);
   const barHeight = BAR_HEIGHT[p.barSize] || BAR_HEIGHT.default;
   const card = p.listStyle !== 'plain';
