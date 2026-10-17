@@ -14,6 +14,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import { useFlexWidgetLayout } from '@/AppBuilder/Widgets/FlexContainer/useFlexWidgetLayout';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import { syncSelectionCorner } from './selectionCorner';
 
 const DYNAMIC_HEIGHT_AUTO_LIST = [
   'CodeEditor',
@@ -200,6 +201,12 @@ const WidgetWrapper = memo(
       layoutV2: flexLayoutV2,
     });
 
+    // Hovering measures the flex container's corner for the selection outline; a child selected from the layers
+    // list was never hovered, so selecting it measures it too.
+    useEffect(() => {
+      if (isFlexLayout && isWidgetActive) syncSelectionCorner(flexLayout.wrapperRef.current);
+    }, [isFlexLayout, isWidgetActive, flexLayout.wrapperRef]);
+
     if (!canShowInCurrentLayout || !layoutData) {
       return null;
     }
@@ -326,6 +333,7 @@ const WidgetWrapper = memo(
             if (isDragging || isModuleContainer) return;
             if (isFlexLayout) {
               flexLayout.refreshConfigWidgetTop();
+              syncSelectionCorner(flexLayout.wrapperRef.current);
             }
             setHoveredComponentForGrid(id);
           }}
