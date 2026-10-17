@@ -29,6 +29,9 @@ export const ShadText = (props: WidgetProps) => {
           'tw-whitespace-pre-line',
           whenSet(props.styles, 'textColor', 'tw-text-[color:var(--lk-fg)]'),
           typeClasses(props.styles),
+          // A custom font size takes a line height in proportion: the tone's is fixed (a paragraph's 28px, small's
+          // none), and text at 64px drew its wrapped lines over each other.
+          typeClasses(props.styles).includes('lk-size') && 'tw-leading-normal',
           clickable && 'tw-cursor-pointer'
         )}
         style={{ textAlign: textAlign(props.styles) }}

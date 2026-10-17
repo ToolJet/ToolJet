@@ -105,6 +105,14 @@ describe('UI 2.0 Heading', () => {
     expect(container.querySelector('.tj-shadcn').style.getPropertyValue('--lk-font')).toBe('');
   });
 
+  // A custom size kept the level's fixed line height: an h2 at 64px drew 36px lines over each other (release audit 40).
+  test('[ShadHeading-STY-003] a custom font size takes a line height in proportion, not the fixed one of its level', async () => {
+    render({ properties: { level: binding('h2') } });
+    expect(await screen.findByRole('heading', { level: 2 })).not.toHaveClass('tw-leading-[1.2]');
+    render({ properties: { level: binding('h2') }, styles: { fontSize: binding('{{64}}') } });
+    await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveClass('lk-size', 'tw-leading-[1.2]'));
+  });
+
   test('[ShadHeading-STY-002] colour, alignment and typeface styles reach the heading', async () => {
     const { container } = render({
       properties: { level: binding('h1') },
