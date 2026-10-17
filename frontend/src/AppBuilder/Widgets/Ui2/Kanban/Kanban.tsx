@@ -28,7 +28,7 @@ import { CardBody, CustomCardBody } from './KanbanCard';
 import type { CardFields } from './KanbanCard';
 import { KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
 import { useBoardSize } from './useBoardSize';
-import { isSet, list, px } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { cssLength, isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** What the board's actions read later, without going stale. */
 interface KanbanLive {
@@ -139,7 +139,7 @@ export const ShadKanban = (props: WidgetProps) => {
       return next;
     });
   const collapsedHeight = isSet(properties.collapsedHeight) ? properties.collapsedHeight : '';
-  const columnWidth = isSet(properties.columnWidth) ? px(properties.columnWidth) : undefined;
+  const columnWidth = cssLength(properties.columnWidth);
 
   // Actions run later, from event handlers and queries: they read the board and the widget's callbacks from refs.
   const live = useRef<KanbanLive>({ columns, setExposedVariable, fireEvent, statusField, idField });

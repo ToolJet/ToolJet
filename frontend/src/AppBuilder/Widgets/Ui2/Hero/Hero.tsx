@@ -9,7 +9,7 @@ import { resolveIcon } from '@/AppBuilder/Widgets/Ui2/_display/iconModel';
 import { heroAside, heroMeta } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
 import { ACCENT, ACCENT_INK, TITLE_FONT } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 import type { StyleWithVars, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { safeImageUrl, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ---- Hero ------------------------------------------------------------------------------------------------------------
 
@@ -37,11 +37,12 @@ export const heroPanel = (background: string, imageUrl: unknown): StyleWithVars 
         background: `linear-gradient(135deg, color-mix(in srgb, ${ACCENT} 78%, #000) 0%, color-mix(in srgb, ${ACCENT} 55%, #000) 100%)`,
       };
     case 'image':
-      return imageUrl
+      return safeImageUrl(imageUrl)
         ? {
-            backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.35) 70%, rgba(0,0,0,0.2) 100%), url("${String(
+            // Quotes, backslashes and line breaks are encoded, so the URL cannot end the CSS string it sits in.
+            backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.35) 70%, rgba(0,0,0,0.2) 100%), url("${safeImageUrl(
               imageUrl
-            ).replace(/"/g, '%22')}")`,
+            ).replace(/["\\\n\r]/g, encodeURIComponent)}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }

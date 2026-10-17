@@ -21,6 +21,35 @@ export const isEmptyValue = (v: unknown): boolean =>
 
 /** A value as text; '' for unset or an object, so junk never renders [object Object]. */
 export const toText = (v: unknown): string => (v === null || v === undefined || typeof v === 'object' ? '' : String(v));
+// The URL schemes a bound link may use; anything else (javascript:, vbscript:, data:, file:) could run script or read
+// local files. A URL without a scheme (a path, an anchor, //host, www.) is relative and kept.
+const LINK_SCHEMES = new Set(['http', 'https', 'mailto', 'tel', 'sms']);
+// Spaces and control characters, which browsers ignore inside a scheme ('java\tscript:'), so they are ignored here too.
+// eslint-disable-next-line no-control-regex
+const IGNORED_IN_SCHEME = /[\s\u0000-\u001f]/g;
+const schemeOf = (url: string): string | null =>
+  url
+    .replace(IGNORED_IN_SCHEME, '')
+    .match(/^([a-z][a-z0-9+.-]*):/i)?.[1]
+    .toLowerCase() ?? null;
+/** A bound value as a URL a link or window.open may take; '' when it is not text or could run script. */
+export const safeUrl = (v: unknown): string => {
+  const url = toText(v).trim();
+  const scheme = schemeOf(url);
+  return scheme === null || LINK_SCHEMES.has(scheme) ? url : '';
+};
+/** safeUrl for an image's src, which may also be data:image or a blob: (an image never runs script). */
+export const safeImageUrl = (v: unknown): string => {
+  const url = toText(v).trim();
+  return /^data:image\//i.test(url) || schemeOf(url) === 'blob' ? url : safeUrl(url);
+};
+/** A CSS length from a bound value: a bare number in px, or a number with a unit; undefined for anything else, so
+ *  text that is not a length never reaches a style. */
+export const cssLength = (v: unknown): string | undefined => {
+  const s = toText(v).trim();
+  if (/^\d+(\.\d+)?$/.test(s)) return `${s}px`;
+  return /^\d+(\.\d+)?(px|%|r?em|vw|vh|ch)$/.test(s) ? s : undefined;
+};
 /** A CSS length: a bare number in px ('12' reads 12px), anything else as written. */
 export const px = (v: unknown): string => (/^\d+(\.\d+)?$/.test(String(v).trim()) ? `${v}px` : String(v));
 /** A number padded to two digits (clock parts). */

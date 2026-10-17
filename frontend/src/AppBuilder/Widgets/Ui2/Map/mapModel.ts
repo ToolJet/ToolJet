@@ -16,7 +16,7 @@ import type {
   PickedLocation,
   MapConfig,
 } from './mapTypes';
-import { isNonBlankString, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isNonBlankString, safeUrl, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_LAT = 85.0511287798;
 export const MIN_ZOOM = 1;
@@ -323,7 +323,7 @@ export const tileSource = ({
         }
       : { url: SATELLITE.url, attribution: SATELLITE.attribution, basemap: null, labels: SATELLITE.labels };
   }
-  const own = isNonBlankString(tileUrl) ? tileUrl.trim() : '';
+  const own = safeUrl(tileUrl);
   const installed = (darkMode && isNonBlankString(c.MAP_TILE_URL_DARK) ? c.MAP_TILE_URL_DARK : c.MAP_TILE_URL) || '';
   const attribution = isNonBlankString(tileAttribution)
     ? tileAttribution.trim()
