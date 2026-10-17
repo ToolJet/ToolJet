@@ -344,4 +344,16 @@ describe('UI 2.0 Date picker', () => {
       await waitFor(() => expect(exposed().isValid).toBe(false));
     });
   });
+
+  // Audit 48: 30 February became 2 March, as a default and through setValue.
+  test('[ShadDatePicker-PROP-004] a date that does not exist is not read as another date', async () => {
+    render({ properties: { defaultValue: binding('2026-02-30T09:30') } });
+    await waitFor(() => expect(exposed().setValue).toBeInstanceOf(Function));
+    expect(exposed().value).toBe('');
+
+    await widget.act('setValue', '2026-10-15');
+    await waitFor(() => expect(exposed().value).toBe('2026-10-15'));
+    await widget.act('setValue', '2026-02-30T09:30');
+    expect(exposed().value).toBe('2026-10-15');
+  });
 });

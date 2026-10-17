@@ -107,8 +107,21 @@ const DATE_INPUT_FORMATS = [
   'MM/DD/YYYY',
 ];
 
+// Text that starts like an ISO date, with an optional time: year, month, day, hour, minute, second.
+const ISO_FIELDS = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/;
+
+/** False for text that starts like an ISO date but names a day or time that does not exist (30 February, month 13,
+ *  hour 25, minute 60): dayjs would roll it into another date. True for any other text. */
+export const isRealDateText = (text: string): boolean => {
+  const m = ISO_FIELDS.exec(text.trim());
+  if (!m) return true;
+  const [year, month, day, hour, minute, second] = m.slice(1).map((f) => (f === undefined ? 0 : Number(f)));
+  if (month < 1 || month > 12 || day < 1 || day > new Date(year, month, 0).getDate()) return false;
+  return hour <= 23 && minute <= 59 && second <= 59;
+};
+
 /** A date (dayjs) from ISO text, 'YYYY-MM-DD HH:mm', text in the display `format`, a unix timestamp (seconds or
- *  milliseconds) or a Date; null otherwise. */
+ *  milliseconds) or a Date; null otherwise, and for a day or time that does not exist. */
 export const parseDateTime = (v: unknown, format?: unknown): Dayjs | null => {
   if (v === undefined || v === null || v === '' || typeof v === 'boolean') return null;
   if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : dayjs(v);
@@ -125,7 +138,8 @@ export const parseDateTime = (v: unknown, format?: unknown): Dayjs | null => {
     const d = dayjs(s, f, true);
     if (d.isValid()) return d;
   }
-  if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+  // ISO text the formats above do not cover (an offset, a fraction of a second), when it names a real date and time.
+  if (/^\d{4}-\d{2}-\d{2}T/.test(s) && isRealDateText(s)) {
     const d = dayjs(s);
     if (d.isValid()) return d;
   }

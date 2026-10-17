@@ -2,6 +2,7 @@
 // author data as it comes and never throws.
 import dayjs from 'dayjs';
 import { text, unwrap } from './actionsModel';
+import { isRealDateText } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import type { ConfigType } from 'dayjs';
 import type { DateRange, Matcher } from 'react-day-picker';
 import type { Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -32,6 +33,8 @@ export const toDate = (v: unknown): Date | undefined => {
   const raw = unwrap(v);
   if (raw === undefined || raw === null || raw === '' || typeof raw === 'boolean') return undefined;
   if (!(raw instanceof Date) && typeof raw !== 'string' && typeof raw !== 'number') return undefined;
+  // dayjs rolls a day that does not exist into another (30 February is 2 March); it is not a date.
+  if (typeof raw === 'string' && !isRealDateText(raw)) return undefined;
   const d = dayjs(raw);
   return d.isValid() ? d.startOf('day').toDate() : undefined;
 };

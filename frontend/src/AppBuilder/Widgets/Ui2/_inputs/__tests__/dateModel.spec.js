@@ -88,3 +88,32 @@ describe('disabled dates', () => {
     expect(M.dayMatchers(M.dateRules({}))).toEqual([]);
   });
 });
+
+// Audit 48: text naming a day or time that does not exist became another date (30 February as 2 March, hour 25 as
+// 01:00 the next day). It is not a date.
+describe('impossible dates', () => {
+  it.each([
+    '2026-02-29T09:30',
+    '2026-02-30T09:30',
+    '2026-13-01T09:30',
+    '2026-10-09T25:30',
+    '2026-10-09T09:60',
+    '2026-10-32',
+    '2026-00-10',
+  ])('%s is not a date', (text) => {
+    expect(M.parseDateTime(text)).toBeNull();
+  });
+
+  it.each([
+    ['2028-02-29T09:30', '2028-02-29T09:30'],
+    ['2026-10-09T14:30:15', '2026-10-09T14:30'],
+    ['2026-10-09', '2026-10-09T00:00'],
+  ])('%s still is', (text, local) => {
+    expect(M.parseDateTime(text).format('YYYY-MM-DDTHH:mm')).toBe(local);
+  });
+
+  it('still reads an offset or a fraction of a second', () => {
+    expect(M.parseDateTime('2026-10-09T14:30:00.000Z').valueOf()).toBe(Date.UTC(2026, 9, 9, 14, 30));
+    expect(M.parseDateTime('2026-10-09T14:30:00+05:30').valueOf()).toBe(Date.UTC(2026, 9, 9, 9, 0));
+  });
+});
