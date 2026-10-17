@@ -1,12 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { ShowMoreBar, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const MAX_ACCORDION_ITEMS = 200;
+
+/** The open sections as drawn: those that exist (fewer sections drop the rest) and, single-open, only the first. */
+const openOf = (open: string[], count: number, multiple: boolean): string[] => {
+  const valid = open.filter((k, i) => Number(k) < count && open.indexOf(k) === i);
+  return multiple ? valid : valid.slice(0, 1);
+};
 
 export const ShadAccordion = (props: WidgetProps) => {
   const { properties, setExposedVariables, fireEvent } = props;
@@ -14,14 +21,21 @@ export const ShadAccordion = (props: WidgetProps) => {
   useAutoHeight(props, ref);
   const multiple = properties.multiple === true;
   const initial = useStable(list(properties.defaultOpen).map(String));
-  const [open, setOpen] = useState<string[]>(initial);
+  const [stored, setOpen] = useState<string[]>(initial);
   useEffect(() => setOpen(initial), [initial]);
-  // An accordion of thousands of sections is a binding mistake, and drawing them all freezes the page.
-  const items = list(properties.items).slice(0, MAX_ACCORDION_ITEMS);
+  const all = useStable(list(properties.items));
+  // What is open is read against the sections there are now: openIndexes and isExpanded never name a section that is
+  // gone, or more than the one a single-open accordion draws. Not a user change, so no event.
+  const open = useMemo(() => openOf(stored, all.length, multiple), [stored, all.length, multiple]);
+  // Drawn MAX_ACCORDION_ITEMS at a time, with Show more for the rest (thousands of sections froze the page); an open
+  // section past them is drawn too.
+  const [shownCount, showMore] = useShownCount(MAX_ACCORDION_ITEMS, all);
+  const drawn = Math.max(shownCount, ...open.map((k) => Number(k) + 1));
+  const items = all.slice(0, drawn);
   const openRef = useRef(open);
   openRef.current = open;
-  const shape = useRef({ multiple, count: items.length });
-  shape.current = { multiple, count: items.length };
+  const shape = useRef({ multiple, count: all.length });
+  shape.current = { multiple, count: all.length };
   // The native Accordion's events: onExpand when a section opens, onCollapse when one closes (with onChange after).
   const apply = (next: string[], fire = true) => {
     const prev = openRef.current;
@@ -82,6 +96,12 @@ export const ShadAccordion = (props: WidgetProps) => {
           </AccordionItem>
         ))}
       </Accordion>
+      <ShowMoreBar
+        remaining={all.length - items.length}
+        step={MAX_ACCORDION_ITEMS}
+        onMore={showMore}
+        borderColor="transparent"
+      />
     </Shell>
   );
 };

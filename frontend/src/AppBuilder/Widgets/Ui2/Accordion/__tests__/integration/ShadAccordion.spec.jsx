@@ -90,14 +90,14 @@ describe('UI 2.0 Accordion', () => {
     expect(screen.getByText('One bag each')).toBeInTheDocument();
   });
 
-  // Thousands of sections (a query's rows bound by mistake) froze the page drawing them all.
-  test('[ShadAccordion-PROP-005] draws at most 200 sections of a very long list', async () => {
+  // Thousands of sections (a query's rows bound by mistake) froze the page drawing them all; the rest are a press away.
+  test('[ShadAccordion-PROP-005] draws 200 sections of a very long list, and Show more for the rest', async () => {
     const items = Array.from({ length: 300 }, (_, i) => ({ title: `Section ${i}`, content: `Text ${i}` }));
     render({ properties: { items: binding(`{{${JSON.stringify(items)}}}`) } });
 
     expect(await screen.findByRole('button', { name: 'Section 199' })).toBeInTheDocument();
-    expect(screen.getAllByRole('button')).toHaveLength(200);
     expect(screen.queryByRole('button', { name: 'Section 200' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show 100 more of 100' })).toBeInTheDocument();
   });
 
   test('[ShadAccordion-EVT-001] opening a section fires onExpand and then onChange, which read the open sections', async () => {
