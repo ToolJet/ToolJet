@@ -12,7 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import { createFileFieldRef, registerFileHandle, releaseFileHandle } from '@/AppBuilder/_utils/fileHandleRegistry';
-import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { controlAria, fieldIdOf, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
@@ -114,7 +114,7 @@ export const DROPZONE =
   'tw-flex tw-cursor-pointer tw-flex-col tw-items-center tw-justify-center tw-gap-1 tw-rounded-[var(--lk-radius,var(--sc-radius))] tw-border-2 tw-border-dashed tw-border-[color:var(--lk-invalid,var(--lk-drop-border,var(--sc-input)))] tw-bg-[color:var(--lk-drop-bg,transparent)] tw-px-6 tw-py-5 tw-text-center tw-outline-none tw-transition-colors hover:tw-bg-[color:color-mix(in_srgb,var(--sc-muted)_50%,transparent)] focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring';
 
 export const ShadFileUpload = (props: WidgetProps) => {
-  const { properties, setExposedVariables, fireEvent, id } = props;
+  const { properties, setExposedVariables, fireEvent } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   const [files, setFiles] = useState<ReadFile[]>([]);
@@ -292,7 +292,7 @@ export const ShadFileUpload = (props: WidgetProps) => {
             ),
           })}
         >
-          <input {...getInputProps({ id: `shad-${id}` })} />
+          <input {...getInputProps({ id: fieldIdOf(props) })} />
           <div className="tw-mb-1 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-full tw-bg-[color:var(--lk-icon-bg,var(--sc-muted))]">
             {properties.loadingState || parsing ? (
               <Spinner />

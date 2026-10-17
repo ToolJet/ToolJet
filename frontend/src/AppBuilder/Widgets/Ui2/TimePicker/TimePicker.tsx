@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Clock } from 'lucide-react';
-import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, controlAria, fieldIdOf, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -8,7 +8,7 @@ import { Button, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilde
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import { isBlank } from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
-import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
+import { useFocusEvents, useOverrides, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { ICON, TRIGGER, parseTimeArg, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
 import type { TimeBounds } from '@/AppBuilder/Widgets/Ui2/_inputs/dateModel';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -172,7 +172,7 @@ export const ShadTimePicker = (props: WidgetProps) => {
   // Fields fit their content (label, help text, validation message), so nothing below is overlapped.
   const fit = useRef<HTMLDivElement>(null);
   useAutoHeight(props, fit);
-  const { setExposedVariables, fireEvent, id, componentType, styles } = props;
+  const { setExposedVariables, fireEvent, componentType, styles } = props;
   // setMinTime and setMaxTime change those properties until they change themselves.
   const [properties, override] = useOverrides(props.properties);
   const use24 = M.is24h(properties.timeFormat);
@@ -181,7 +181,9 @@ export const ShadTimePicker = (props: WidgetProps) => {
   const initial = M.parseTime(properties.defaultValue);
   const [minutes, setMinutes] = useState(initial);
   useEffect(() => setMinutes(initial), [initial]);
-  const [open, setOpen] = useState(false);
+  // The popup is open only while the picker takes choices (usePickerPopup): disabling, loading or hiding it closes it.
+  const popup = usePickerPopup(properties);
+  const { open } = popup;
   const triggerRef = useRef<HTMLButtonElement>(null);
   const focus = useFocusEvents(fireEvent);
   const exposed = (m: number | null) => ({ value: M.toHHmm(m), formattedValue: M.formatTime(m, use24) });
@@ -222,7 +224,8 @@ export const ShadTimePicker = (props: WidgetProps) => {
   // Every close (Escape, a click outside, a pick from the list) goes through here, so a close after a pick also marks
   // the field touched and lets the focus tracking fire onBlur once focus leaves.
   const openChange = (next: boolean) => {
-    setOpen(next);
+    if (next && popup.blocked) return;
+    popup.setOpen(next);
     focus.opened(next);
     if (!next) check.touch();
   };
@@ -235,7 +238,7 @@ export const ShadTimePicker = (props: WidgetProps) => {
         <PopoverTrigger asChild>
           <Button
             ref={triggerRef}
-            id={`shad-${id}`}
+            id={fieldIdOf(props)}
             variant="outline"
             disabled={disabled}
             {...controlAria(props, check.error)}
@@ -265,12 +268,12 @@ export const ShadTimePicker = (props: WidgetProps) => {
                 key: t,
                 label: M.formatTime(t, use24),
                 selected: t === minutes,
-                onClick: () => pick(t, true),
+                onClick: () => !popup.blocked && pick(t, true),
               }))}
             />
           ) : (
             <div className="tw-flex tw-divide-x tw-divide-[color:var(--sc-border)]">
-              {timeColumns({ minutes, use24, step, bounds, onPick: (m) => pick(m) }).map((col) => (
+              {timeColumns({ minutes, use24, step, bounds, onPick: (m) => !popup.blocked && pick(m) }).map((col) => (
                 <OptionColumn key={col.label} label={col.label} options={col.options} />
               ))}
             </div>

@@ -8,7 +8,7 @@
  *    hex field; leaving the field then applied the old text and undid the change.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { binding, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
@@ -65,6 +65,39 @@ const CASES = [
       return search;
     },
     (e) => JSON.stringify(e.values),
+  ],
+  [
+    'ShadDatePicker',
+    { defaultValue: '2026-10-15', format: 'YYYY-MM-DD' },
+    'onSelect',
+    async () => {
+      fireEvent.click(document.getElementById(`shad-${ID}`));
+      const grid = (await screen.findAllByRole('grid'))[0];
+      return within(grid).getByText('20').closest('button');
+    },
+    (e) => e.value,
+  ],
+  [
+    'ShadDateTimePicker',
+    { defaultValue: '2026-10-15T09:00:00' },
+    'onSelect',
+    async () => {
+      fireEvent.click(document.getElementById(`shad-${ID}`));
+      const grid = (await screen.findAllByRole('grid'))[0];
+      return within(grid).getByText('20').closest('button');
+    },
+    (e) => e.value,
+  ],
+  [
+    'ShadTimePicker',
+    { defaultValue: '09:00', timeFormat: '24h', pickerStyle: 'list' },
+    'onSelect',
+    async () => {
+      fireEvent.click(document.getElementById(`shad-${ID}`));
+      const times = await screen.findByRole('listbox', { name: 'Times' });
+      return within(times).getByRole('option', { name: '10:00' });
+    },
+    (e) => e.value,
   ],
 ];
 
