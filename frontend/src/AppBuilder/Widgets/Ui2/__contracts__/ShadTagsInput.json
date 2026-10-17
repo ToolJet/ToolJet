@@ -24,7 +24,7 @@
     "defaultValue": {
       "type": "array",
       "default": [],
-      "initial": "{{['react', 'typescript']}}"
+      "initial": "{{[]}}"
     },
     "description": {
       "type": "string",
