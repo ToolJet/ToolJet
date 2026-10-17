@@ -71,7 +71,7 @@ export const ShadRadarChart = (props: WidgetProps) => {
               fill={fills[i]}
               fillOpacity={opacity}
               dot={p.showDots === true ? { r: 3, fillOpacity: 1, fill: fills[i] } : false}
-              isAnimationActive={animated(p)}
+              isAnimationActive={animated(p, plotted.length)}
             />
           ))}
         </RadarChart>

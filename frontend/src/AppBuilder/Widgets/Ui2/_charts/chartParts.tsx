@@ -285,7 +285,10 @@ export const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true,
 };
 
 export const AXIS_FILL = AXIS.tick.fill;
-export const animated = (p: Resolved): boolean => p.animate !== false;
+/** Charts animate their entrance unless turned off, and only up to this many points: every animation frame redraws
+ *  every point (1,000 scatter points spent about 600ms in long tasks while animating). */
+export const MAX_ANIMATED_POINTS = 300;
+export const animated = (p: Resolved, points = 0): boolean => p.animate !== false && points <= MAX_ANIMATED_POINTS;
 /** A formatter that multiplies by scale first (a percent axis over fractions, percentScale). */
 export const scaled = (format: (v: unknown) => string, scale: number): ((v: unknown) => string) =>
   scale === 1

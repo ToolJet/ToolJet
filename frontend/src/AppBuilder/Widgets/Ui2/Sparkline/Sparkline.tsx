@@ -114,7 +114,7 @@ export const ShadSparkline = (props: WidgetProps) => {
             dot={dot}
             activeDot={p.showTooltip === true ? { r: dotRadius, strokeWidth: 0, fill: color } : false}
             connectNulls
-            isAnimationActive={animated(p)}
+            isAnimationActive={animated(p, points.length)}
           />
         </Chart>
       )}

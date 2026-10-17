@@ -93,7 +93,7 @@ export const RadialBody = ({ width, height, p, rings, progress, centre, onDatum 
           dataKey="value"
           background={p.showTrack !== false ? { fill: 'var(--lk-track, var(--sc-muted))' } : false}
           cornerRadius={radius}
-          isAnimationActive={animated(p)}
+          isAnimationActive={animated(p, rings.length)}
           onClick={(entry) => onDatum(entry?.payload?.row ?? entry?.row)}
         >
           {rings.map((g, i) => (

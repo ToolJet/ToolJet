@@ -166,7 +166,10 @@ export const ShadScatterChart = (props: WidgetProps) => {
               fill={fills[i]}
               fillOpacity={opacity}
               stroke={bubbles ? fills[i] : 'none'}
-              isAnimationActive={animated(p)}
+              isAnimationActive={animated(
+                p,
+                groups.reduce((n, group) => n + group.points.length, 0)
+              )}
               onClick={(pt) => onDatum(pt?.payload?.row ?? pt?.row)}
             />
           ))}

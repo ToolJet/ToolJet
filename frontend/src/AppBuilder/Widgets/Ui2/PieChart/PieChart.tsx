@@ -4,7 +4,7 @@ import { Cell, Label as ChartLabel, Legend, Pie, PieChart, Tooltip } from 'recha
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { statusColors, centreValueFit } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import { ChartFrame, ChartTooltip, LegendContent } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { animated, ChartFrame, ChartTooltip, LegendContent } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { affixFormatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
@@ -39,6 +39,7 @@ export const ShadPieChart = (props: WidgetProps) => {
             strokeWidth={donut ? 4 : 1}
             stroke="var(--lk-slice-border, var(--sc-background))"
             onClick={(slice) => onDatum(slice?.payload)}
+            isAnimationActive={animated(p, data.length)}
           >
             {data.map((d, i) => (
               <Cell key={i} fill={d.fill} />

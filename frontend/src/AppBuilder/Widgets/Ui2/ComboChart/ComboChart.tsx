@@ -182,7 +182,7 @@ export const ShadComboChart = (props: WidgetProps) => {
                 radius={stackedBars ? 0 : [4, 4, 0, 0]}
                 stackId={stackedBars ? 'bars' : undefined}
                 maxBarSize={56}
-                isAnimationActive={animated(p)}
+                isAnimationActive={animated(p, rows.length)}
               />
             ) : (
               <Line
@@ -195,7 +195,7 @@ export const ShadComboChart = (props: WidgetProps) => {
                 strokeWidth={clamp(p.strokeWidth, 0.5, 12, 2)}
                 dot={p.showDots !== false ? { r: 3, fill: fills[i], strokeWidth: 0 } : false}
                 activeDot={{ r: 5, strokeWidth: 0 }}
-                isAnimationActive={animated(p)}
+                isAnimationActive={animated(p, rows.length)}
               />
             )
           )}

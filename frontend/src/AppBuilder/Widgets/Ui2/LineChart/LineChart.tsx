@@ -121,7 +121,7 @@ export const ShadLineChart = (props: WidgetProps) => {
               strokeDasharray={dashed.includes(s) ? '6 4' : undefined}
               dot={p.showDots === true ? { r: 3, fill: fills[i], strokeWidth: 0 } : false}
               activeDot={{ r: 5, strokeWidth: 0 }}
-              isAnimationActive={animated(p)}
+              isAnimationActive={animated(p, rows.length)}
             />
           ))}
         </LineChart>

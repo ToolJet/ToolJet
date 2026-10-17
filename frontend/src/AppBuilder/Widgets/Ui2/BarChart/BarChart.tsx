@@ -4,12 +4,13 @@ import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { highlightIndexes, type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
+  animated,
   AXIS,
   ChartFrame,
-  GRID,
-  MAX_BARS,
   dateTicks,
+  GRID,
   isCompactChart,
+  MAX_BARS,
   useAffixes,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import {
@@ -253,6 +254,7 @@ export const ShadBarChart = (props: WidgetProps) => {
               fill={fills[i]}
               radius={stacked ? 0 : horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
               stackId={stacked ? 'a' : undefined}
+              isAnimationActive={animated(p, data.length)}
             >
               {cells(i)}
             </Bar>

@@ -4,10 +4,11 @@ import { Area, AreaChart, CartesianGrid, Line, LineChart, XAxis } from 'recharts
 import { withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { curveOf, MAX_ROWS } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
+  animated,
   AXIS,
   ChartFrame,
-  GRID,
   dateTicks,
+  GRID,
   isCompactChart,
   useAffixes,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
@@ -68,6 +69,7 @@ export const ShadAreaChart = (props: WidgetProps) => {
                 stroke={fills[i]}
                 strokeWidth={2}
                 dot={false}
+                isAnimationActive={animated(p, data.length)}
               />
             ) : (
               <Area
@@ -79,6 +81,7 @@ export const ShadAreaChart = (props: WidgetProps) => {
                 strokeWidth={2}
                 fill={`url(#sc-fill-${props.id}-${i})`}
                 stackId={p.stack === true ? 'a' : undefined}
+                isAnimationActive={animated(p, data.length)}
               />
             )
           )}
