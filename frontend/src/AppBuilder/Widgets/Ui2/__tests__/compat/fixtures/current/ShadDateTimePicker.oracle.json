@@ -25,26 +25,27 @@
         "value": "2026-06-18T14:30",
         "selectedDate": "2026-06-18",
         "selectedTime": "14:30",
-        "unixTimestamp": 1781818200000,
+        "unixTimestamp": "local 2026-06-18T14:30:00.000",
         "displayValue": "18 Jun 2026 14:30"
       }
     },
     {
       "call": "setValueInTimestamp",
-      "changed": {
-        "value": "2026-06-09T03:13",
-        "selectedDate": "2026-06-09",
-        "selectedTime": "03:13",
-        "unixTimestamp": 1781000000000,
-        "displayValue": "09 Jun 2026 03:13"
-      }
+      "instant": 1781000000000,
+      "changedKeys": [
+        "displayValue",
+        "selectedDate",
+        "selectedTime",
+        "unixTimestamp",
+        "value"
+      ]
     },
     {
       "call": "setTime",
       "changed": {
         "value": "2026-06-09T09:15",
         "selectedTime": "09:15",
-        "unixTimestamp": 1781021700000,
+        "unixTimestamp": "local 2026-06-09T09:15:00.000",
         "displayValue": "09 Jun 2026 09:15"
       }
     },

@@ -6,11 +6,50 @@ import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager/component
 
 const UUID = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
 
-/** Exposed values as a builder can read them: no functions, JSON only, generated ids masked. */
+const pad = (n, size = 2) => String(n).padStart(size, '0');
+/** A moment as the wall-clock time it is here: the same text in every time zone for a time the widgets build from a
+ *  local date (a picked day's midnight), which an epoch number or a UTC ISO string is not. */
+const wallClock = (ms) => {
+  const d = new Date(ms);
+  return `local ${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(
+    d.getMinutes()
+  )}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(), 3)}`;
+};
+const TIME_KEY = /unix|timestamp/i;
+const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
+/** Time values recorded the same in every zone: epoch numbers under a time key (unixTimestamp, startDateInUnix ...)
+ *  and UTC ISO strings become local wall-clock text. */
+const zoneFree = (key, v) => {
+  if (typeof v === 'number' && Number.isFinite(v) && TIME_KEY.test(key)) return wallClock(v);
+  if (typeof v === 'string' && ISO_UTC.test(v)) return wallClock(Date.parse(v));
+  return v;
+};
+
+/** Steps whose result is an absolute moment shown as local time, so its wall-clock values differ by zone: the
+ *  Date time picker's setValueInTimestamp(1781000000000) is 03:13 in Los Angeles and 10:13 in UTC. Such a step is
+ *  recorded as the moment itself and the names of the values it changed. (The Date picker's version is a local day,
+ *  the same in every zone, and is compared as usual.) */
+const ZONE_DEPENDENT_STEPS = new Set(['ShadDateTimePicker.setValueInTimestamp']);
+
+/** Exposed values as a builder can read them: no functions, JSON only, generated ids masked, times as local wall-clock
+ *  text (zoneFree). */
 export const readable = (value) =>
   JSON.parse(
-    JSON.stringify(value ?? {}, (key, v) => (typeof v === 'function' ? undefined : v)).replace(UUID, '<uuid>')
+    JSON.stringify(value ?? {}, (key, v) => (typeof v === 'function' ? undefined : zoneFree(key, v))).replace(
+      UUID,
+      '<uuid>'
+    )
   );
+
+/** A bound text as read: JSON text (the probe's) made zone-free like the exposed values, other text as it is. */
+const readableText = (text) => {
+  if (typeof text !== 'string') return text ?? null;
+  try {
+    return JSON.stringify(readable(JSON.parse(text)));
+  } catch {
+    return text.replace(UUID, '<uuid>');
+  }
+};
 
 const changes = (before, after) => {
   const changed = {};
@@ -141,7 +180,7 @@ export async function replay(harness, app, original, { MODULE_ID, store, drain }
 
   const observed = { loaded: readable(exposed()), probe: null, steps: [], runJs: null };
   const probeText = store().getResolvedComponent(probe.id, null, MODULE_ID)?.properties?.text;
-  observed.probe = typeof probeText === 'string' ? probeText.replace(UUID, '<uuid>') : probeText ?? null;
+  observed.probe = readableText(probeText);
 
   // Every saved event handler on the widget still dispatches: the event is one the widget has, and firing it runs the
   // handler's action on the marker.
@@ -186,7 +225,12 @@ export async function replay(harness, app, original, { MODULE_ID, store, drain }
     } catch (error) {
       problems.push(`${type}: the saved action ${label} threw: ${error?.message ?? error}`);
     }
-    observed.steps.push({ call: handle, changed: changes(before, readable(exposed())) });
+    const changed = changes(before, readable(exposed()));
+    observed.steps.push(
+      ZONE_DEPENDENT_STEPS.has(`${type}.${handle}`)
+        ? { call: handle, instant: exposed().unixTimestamp ?? null, changedKeys: Object.keys(changed).sort() }
+        : { call: handle, changed }
+    );
   }
 
   // The RunJS query: calls the actions and reads the values by component name.
