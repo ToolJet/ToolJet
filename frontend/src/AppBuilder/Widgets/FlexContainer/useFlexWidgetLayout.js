@@ -138,6 +138,8 @@ export const useFlexWidgetLayout = ({
     widgetHeight,
     wrapperRef,
     configWidgetTop,
+    // Whether the child takes a share of the line (fill) or the width it was given (fixed); widgets read it as boxFit.
+    fillWidth,
     configWidgetHeight: effectiveHeightPx || flexLayoutData.height,
     configHandleClassName: 'flex-child-config-handle',
     isStretched,

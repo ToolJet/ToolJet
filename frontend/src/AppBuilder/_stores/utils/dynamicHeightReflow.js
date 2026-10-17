@@ -11,10 +11,19 @@ import {
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
-import { heightHeldInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import {
+  heightHeldInView,
+  isUi2PerRowType,
+  UI2_ROW_CHROME,
+  ui2RowFloor,
+} from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
 const TABS_TAB_BAR_HEIGHT = 50;
+
+// A UI 2.0 Kanban custom card with part of it hidden fits what is left, down to this (a collapsed deal card drawn at
+// 272px stayed 272px and mostly empty).
+const SHRUNK_CARD_MIN_HEIGHT = 40;
 
 // ═════════════════════════════════════════════════════════════════════════════
 // Dynamic-Height Reflow — max-over-all-blockers layout engine.
@@ -314,10 +323,12 @@ export const resolveWidgetVisibility = ({
 //   - Tabs: flat 40px for the tab bar.
 //   - Listview row context: subtract 40 to normalize against the widget-level
 //     allowance added elsewhere.
+//   - A UI 2.0 List view row or Kanban card: UI2_ROW_CHROME.
 const getExtraContainerHeight = ({
   componentId,
   componentType,
   contextIndices,
+  isUi2RowContext = false,
   element,
   currentMax,
   getResolvedComponent,
@@ -401,6 +412,9 @@ const getExtraContainerHeight = ({
     // a sub-pixel/safety margin against children that report `scrollHeight`
     // a few px past their `offsetHeight` (e.g. label-bumped TextArea).
     extraHeight = 15;
+  } else if (isUi2RowContext) {
+    // A UI 2.0 List view row or Kanban card keeps a little space under its lowest component.
+    extraHeight = UI2_ROW_CHROME;
   }
 
   return { extraHeight, currentMax: nextCurrentMax, skipContentHeightCalculation };
@@ -502,12 +516,20 @@ export const resolveContainerHeight = ({
   const context = normalizeLayoutContext(contextIndices);
   const scopedWrapperElement = document.querySelector(getDynamicElementSelector(componentId, context));
   const isScopedContextRenderable = !!scopedWrapperElement;
+  // A UI 2.0 List view or Kanban asked at a context it is not itself drawn at
+  // is being asked for one of its rows (or cards).
+  const isUi2RowContext = isUi2PerRowType(componentType) && !!context && !isScopedContextRenderable;
 
   // A Listview inside a context whose DOM isn't available (e.g., inactive tab)
   // falls back to the configured row height.
   if (componentType === 'Listview' && context && !isScopedContextRenderable) {
     const component = getResolvedComponent(componentId, context);
     containerHeight = component?.properties?.rowHeight ?? containerHeight;
+  }
+  // A UI 2.0 row or card is floored at its row (card) height the same way.
+  if (isUi2RowContext) {
+    const component = getResolvedComponent(componentId, context);
+    containerHeight = ui2RowFloor(componentType, component?.properties);
   }
 
   // Explicit dynamic-height opt-out: the container stays at its authored
@@ -678,9 +700,15 @@ export const resolveContainerHeight = ({
         canonical: childLayout,
         effective: effectiveLayout,
         inFlow: childInFlow,
+        visible: childVisibility,
       },
     };
   }, {});
+
+  // A UI 2.0 Kanban card leaves out what is hidden on it, slot and all: whether a card shows a component is decided
+  // per card (from cardData), while collapseWhenHidden is one setting for every card.
+  const isShrinkingCard = componentType === 'ShadKanban' && isUi2RowContext;
+  const anyChildHidden = Object.values(componentLayouts).some((entry) => !entry.visible);
 
   // Floor each child's flow height at `calculateMoveableBoxHeightWithId` —
   // for top-label input widgets this adds the +20px label bump that
@@ -690,7 +718,7 @@ export const resolveContainerHeight = ({
   // clipping the bottom of the control.
   let currentMax = Object.entries(componentLayouts).reduce((maxHeight, [childId, layoutEntry]) => {
     const effectiveLayout = layoutEntry?.effective;
-    if (!effectiveLayout) {
+    if (!effectiveLayout || (isShrinkingCard && !layoutEntry.visible)) {
       return maxHeight;
     }
 
@@ -722,6 +750,7 @@ export const resolveContainerHeight = ({
     componentId: modifiedComponentId,
     componentType,
     contextIndices: isTabsType(componentType) ? null : context,
+    isUi2RowContext,
     element,
     currentMax,
     getResolvedComponent,
@@ -756,6 +785,10 @@ export const resolveContainerHeight = ({
   // `dynamicHeight` already reflects the consuming ModuleViewer instance.
   if (componentType === 'ModuleContainer' && component?.properties?.dynamicHeight === true) {
     return currentMax + extraHeight;
+  }
+  // A Kanban card with something hidden on it may go below its card height.
+  if (isShrinkingCard && anyChildHidden) {
+    return Math.max(SHRUNK_CARD_MIN_HEIGHT, currentMax + extraHeight);
   }
   return Math.max(currentMax + extraHeight, containerHeight);
 };
