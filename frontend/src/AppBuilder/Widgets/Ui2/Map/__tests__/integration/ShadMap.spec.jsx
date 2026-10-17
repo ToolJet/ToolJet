@@ -488,6 +488,30 @@ describe('UI 2.0 Map', () => {
       fireEvent.keyDown(input, { key: 'Enter' });
       expect(exposed().pickedLocation).toEqual({ lat: 10, lng: 20, address: 'Beta result' });
     }, 10000);
+
+    test('[ShadMap-ACT-005] an address lookup still running when the map unmounts writes nothing, not even into a new mount', async () => {
+      // Release audit 43: the old mount's answer arrived after a remount and wrote its address into the new map.
+      let answer;
+      fetchMock.mockImplementation(() => new Promise((resolve) => (answer = resolve)));
+      const props = {
+        properties: {
+          pickLocation: binding('{{true}}'),
+          reverseGeocoderUrl: binding('https://geo.example/act-005/reverse?lat={lat}&lon={lng}'),
+        },
+      };
+      render(props);
+      await widget.act('setPickedLocation', 12, 22);
+      await waitFor(() => expect(answer).toBeInstanceOf(Function), { timeout: 4000 });
+
+      act(() => widget.session.render(React.createElement(React.Fragment)));
+      render(props);
+      expect(exposed().pickedLocation).toEqual({});
+      await act(async () =>
+        answer({ ok: true, json: () => Promise.resolve([{ lat: '12', lon: '22', display_name: 'Old mount address' }]) })
+      );
+      await settle();
+      expect(exposed().pickedLocation).toEqual({});
+    }, 10000);
   });
 
   test('[ShadMap-STY-001] background, border, accent, cluster colour and radius reach the map as CSS variables', async () => {

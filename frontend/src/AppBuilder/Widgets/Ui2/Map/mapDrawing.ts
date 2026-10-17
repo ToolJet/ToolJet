@@ -294,10 +294,16 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
     if (!quiet && next) live.current.fireEvent('onLocationPicked');
     if (next && !address) lookUpAddress(next);
   };
+  // The address lookups this mount started. dispose() (the map unmounting) stops them: an answer that arrived later
+  // wrote its address into the store, over the location of the map mounted next (release audit 43).
+  const lookups = new Set<AbortController>();
   const lookUpAddress = (at: LatLng) => {
     if (typeof fetch !== 'function') return;
-    geocode(live.current.geocoder.reverse, { lat: at.lat, lng: at.lng })
+    const lookup = new AbortController();
+    lookups.add(lookup);
+    geocode(live.current.geocoder.reverse, { lat: at.lat, lng: at.lng }, lookup.signal)
       .then((places) => {
+        if (lookup.signal.aborted) return;
         const label = places?.[0]?.label;
         const now = live.current.picked;
         if (!label || !now || now.lat !== at.lat || now.lng !== at.lng) return;
@@ -306,7 +312,12 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
         live.current.picked = next;
         live.current.setExposedVariables({ pickedLocation: pickedValue(next) });
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => lookups.delete(lookup));
+  };
+  const dispose = () => {
+    lookups.forEach((lookup) => lookup.abort());
+    lookups.clear();
   };
   const drawPicked = () => {
     const map = mapRef.current;
@@ -348,5 +359,6 @@ export const mapDrawing = ({ refs, live, setSelectedKey, setShape, setPicked }: 
     pick,
     lookUpAddress,
     drawPicked,
+    dispose,
   };
 };
