@@ -33,8 +33,10 @@ jest.mock(
 const ROOT = path.join(__dirname, '../compat/fixtures');
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
 const RECORD = process.env.UI2_COMPAT_RECORD === '1';
-// Saved apps meet dates through the widgets' own defaults (a calendar opens on today); pin today and the time zone.
-const NOW = new Date('2026-06-15T09:00:00.000Z');
+// Saved apps meet dates through the widgets' own defaults (a calendar opens on today): today is pinned to the same
+// wall-clock moment in every time zone (09:00 local, 15 June 2026), and times are compared as local wall-clock text
+// (savedAppReplay's readable), so the oracles hold in UTC on CI and in any zone on a laptop.
+const NOW = new Date(2026, 5, 15, 9, 0, 0);
 const NOT_DATE = [
   'hrtime',
   'nextTick',
@@ -89,7 +91,6 @@ describe.each(Object.keys(manifest.fixtures))('saved app %s', (name) => {
   const harness = harnessFor(payload, createWidgetHarness);
 
   beforeEach(async () => {
-    process.env.TZ = 'UTC';
     jest.useFakeTimers({ now: NOW, doNotFake: NOT_DATE });
     await harness.setup();
   });
