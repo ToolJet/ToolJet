@@ -16,6 +16,8 @@ const widget = createWidgetHarness({
   id: ID,
   widgetHeight: 64,
   widgetWidth: 360,
+  // A new Currency input starts empty (DEF-002); these scenarios start from an amount.
+  defaultProperties: { defaultValue: binding('{{1250}}') },
 });
 
 const render = (options = {}) => widget.render({ currentMode: 'view', ...options });
@@ -58,6 +60,15 @@ describe('UI 2.0 Currency input', () => {
       isValid: true,
       isMandatory: false,
     });
+  });
+
+  test('[ShadCurrencyInput-DEF-002] with no default value it starts empty, showing its placeholder', async () => {
+    render({ properties: { defaultValue: binding(''), placeholder: binding('Enter an amount') } });
+
+    expect(await screen.findByRole('textbox', { name: /^Amount/ })).toHaveValue('');
+    expect(box()).toHaveAttribute('placeholder', 'Enter an amount');
+    await waitFor(() => expect(exposed()).toMatchObject({ formattedValue: '', isValid: true }));
+    expect(exposed().value ?? null).toBeNull();
   });
 
   test('[ShadCurrencyInput-PROP-001] defaultValue, currency and locale write the amount and sign where the locale puts them', async () => {

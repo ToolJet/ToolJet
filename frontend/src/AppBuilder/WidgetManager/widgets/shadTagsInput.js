@@ -573,7 +573,7 @@ export const shadTagsInputConfig = {
         value: 'Add a tag...',
       },
       defaultValue: {
-        value: "{{['react', 'typescript']}}",
+        value: '{{[]}}',
       },
       suggestions: {
         value: "{{['react', 'typescript', 'node', 'python', 'design', 'devops']}}",
