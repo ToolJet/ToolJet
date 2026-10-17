@@ -92,6 +92,18 @@ export const useValidation = (
   };
 };
 
+/** onFocus a tick after focus, as the native inputs fire it (a click that focuses a box reads in order); a widget
+ *  unmounted before the tick fires nothing. Call the returned function from the control's focus handler. */
+export const useFocusEvent = (fireEvent: WidgetProps['fireEvent']): (() => void) => {
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const fire = useLatest(fireEvent);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  return () => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => fire.current('onFocus'), 0);
+  };
+};
+
 /** Text box events and actions shared by Input and Textarea: focus and blur (events and actions), and blur marks
  *  the field touched for validation. */
 export interface TextBox<E extends HTMLElement> {
@@ -106,6 +118,7 @@ export const useTextBox = <E extends HTMLElement = HTMLInputElement>(
 ): TextBox<E> => {
   const { fireEvent, setExposedVariables, properties } = props;
   const ref = useRef<E>(null);
+  const focusEvent = useFocusEvent(fireEvent);
   // The native inputs expose their label.
   useExposed(setExposedVariables, properties, { label: String(properties.label ?? '') });
   const publish = useLatest(setExposedVariables);
@@ -117,7 +130,7 @@ export const useTextBox = <E extends HTMLElement = HTMLInputElement>(
   }, [publish]);
   return {
     ref,
-    onFocus: () => setTimeout(() => fireEvent('onFocus'), 0),
+    onFocus: focusEvent,
     onBlur: () => {
       touch();
       fireEvent('onBlur');

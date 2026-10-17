@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Minus } from 'lucide-react';
 import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { useFocusEvent, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
   runNow,
   useAutoHeight,
@@ -42,6 +42,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
   const isComplete = code.length === length;
   const inputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
+  const focusEvent = useFocusEvent(fireEvent);
   const lengthRef = useLatest({ length, characters });
   useExposed(setExposedVariables, properties, {
     value: code,
@@ -157,7 +158,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
           onChange={(e) => change(e.target.value)}
           onFocus={() => {
             setFocused(true);
-            setTimeout(() => fireEvent('onFocus'), 0);
+            focusEvent();
           }}
           onBlur={() => {
             setFocused(false);
