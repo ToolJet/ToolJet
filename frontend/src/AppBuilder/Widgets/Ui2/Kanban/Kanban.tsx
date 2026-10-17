@@ -1,33 +1,25 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  closestCorners,
-  pointerWithin,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import type { CollisionDetection, DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
-import useStore from '@/AppBuilder/_stores/store';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import type { DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { useOwnContextPath } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 import { addCard, boardCards, boardColumns, deleteCard, moveCard, updateCard } from './kanbanBoard';
 import { KANBAN_INSTRUCTIONS, KANBAN_KEYS, kanbanAnnouncements, kanbanCoordinates } from './kanbanKeyboard';
 import { SHADOWS, kanbanLook } from '@/AppBuilder/Widgets/Ui2/_shared/looks/kanbanLook';
 import { fitsContentInView, kanbanCardHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import type { BoardCard, BoardColumn, CardMove, CardRow } from './kanbanBoard';
+import type { BoardCard, BoardColumn, CardMove } from './kanbanBoard';
 import { CardBody, CustomCardBody } from './KanbanCard';
 import type { CardFields } from './KanbanCard';
 import { KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
 import { useBoardSize } from './useBoardSize';
+import { useCustomCards } from './useCustomCards';
+import { RIGHT_FADE, columnMinimum, fieldName, kanbanCollision, strip } from './kanbanLayout';
 import { cssLength, isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 /** What the board's actions read later, without going stale. */
@@ -40,9 +32,6 @@ interface KanbanLive {
 }
 
 /** What the board reads from the app store. */
-type KanbanStore = {
-  updateCustomResolvables: (id: string, values: Record<string, unknown>[], key: string, moduleId: string) => void;
-};
 
 // ToolJet UI 2.0 Kanban: a data-driven board. Columns are values of a status field and cards are rows
 // of data shown by the fields the author maps (title, description, badge, tags, progress, meta, avatar), so an agent
@@ -51,40 +40,7 @@ type KanbanStore = {
 // updated or removed card, and an event) for a query to save; the board follows the data again when the data
 // changes. Own lazy chunk (dnd-kit).
 
-// A field name is text (or a number): anything else bound there (a list of rows) was turned into a 150 KB key for
-// every card, which froze the board.
-const fieldName = (value: unknown, fallback: string): string =>
-  typeof value === 'string' && value.trim() ? value : typeof value === 'number' ? String(value) : fallback;
-
-/** The narrowest a column gets before the board scrolls: 200px, 160px on a board of six or more stages, and down to
- *  140px when that lets every stage fit the board (three stages in a 620px half of a page cut the third at the edge,
- *  2026-10-14). 16px gaps between columns. */
-export const columnMinimum = (count: number, boardWidth: number): number => {
-  const base = count >= 6 ? 160 : 200;
-  if (!(boardWidth > 0) || count < 1) return base;
-  const share = Math.floor((boardWidth - 16 * (count - 1)) / count);
-  return Math.max(140, Math.min(base, share));
-};
-
-const strip = (card: BoardCard | null): CardRow => {
-  if (!card) return {};
-  const { __key, ...plain } = card;
-  return plain;
-};
-
-const RIGHT_FADE = {
-  maskImage: 'linear-gradient(to right, #000 calc(100% - 48px), transparent)',
-  WebkitMaskImage: 'linear-gradient(to right, #000 calc(100% - 48px), transparent)',
-};
-
-/** Where a drop lands: what is under the pointer, a card first, then a column (a folded column is a 44px strip that
- *  closestCorners passed over for a card nearby, so drops on it were lost); off the board, the nearest corners. */
-export const kanbanCollision: CollisionDetection = (args) => {
-  const within = pointerWithin(args);
-  const cards = within.filter((c) => c.data?.droppableContainer?.data?.current?.type === 'card');
-  if (cards.length) return cards;
-  return within.length ? within : closestCorners(args);
-};
+export { columnMinimum, kanbanCollision } from './kanbanLayout';
 
 export const ShadKanban = (props: WidgetProps) => {
   const { properties, styles, setExposedVariable, setExposedVariables, fireEvent } = props;
@@ -147,6 +103,9 @@ export const ShadKanban = (props: WidgetProps) => {
       else next.add(columnId);
       return next;
     });
+  // The first MAX_BOARD_COLUMNS columns, then Show more for the rest (a 10k-item list bound as the columns froze the
+  // page; past the cap, columns and their cards were dropped without a sign). Back to the first ones for new columns.
+  const [shownColumns, showMoreColumns] = useShownCount(MAX_BOARD_COLUMNS, useStable(properties.columns));
   const collapsedHeight = isSet(properties.collapsedHeight) ? properties.collapsedHeight : '';
   const columnWidth = cssLength(properties.columnWidth);
 
@@ -172,7 +131,12 @@ export const ShadKanban = (props: WidgetProps) => {
   const doUpdate = (id: unknown, values: unknown) => {
     const { columns: cols, statusField: sf, idField: idf } = live.current;
     const result = updateCard(cols, id, values ?? {}, sf, idf);
-    if (result.card) commit(result.columns, { lastUpdatedCard: result.card }, 'onCardUpdated');
+    if (!result.card) return;
+    // A changed id changes the card's key: its selection and open details follow it.
+    const follow = (key: string | null) => (key === String(id ?? '') ? result.key : key);
+    setSelectedKey(follow);
+    setOpenKey(follow);
+    commit(result.columns, { lastUpdatedCard: result.card }, 'onCardUpdated');
   };
   const doDelete = (id: unknown) => {
     const result = deleteCard(live.current.columns, id);
@@ -180,8 +144,8 @@ export const ShadKanban = (props: WidgetProps) => {
     commit(result.columns, { lastRemovedCard: result.card }, 'onCardRemoved');
   };
   const doMove = (id: unknown, toColumnId: unknown, beforeKey: unknown = null) => {
-    const { columns: cols, statusField: sf } = live.current;
-    const { columns: next, move } = moveCard(cols, id, toColumnId, beforeKey, sf);
+    const { columns: cols, statusField: sf, idField: idf } = live.current;
+    const { columns: next, move } = moveCard(cols, id, toColumnId, beforeKey, sf, idf);
     if (!move) return;
     setLastMove(move);
     commit(next, { lastCardMovement: move }, 'onCardMoved');
@@ -198,39 +162,17 @@ export const ShadKanban = (props: WidgetProps) => {
     deleteCard: async (id: unknown) => doDelete(id),
   });
 
-  // Custom card content: every card renders the board's one card canvas (the components dropped on the first card)
-  // with its own row of cardData, as a list view renders its rows. The canvas is laid out at the card's width.
-  const { moduleId } = useModuleContext();
-  const updateCustomResolvables = useStore((state: KanbanStore) => state.updateCustomResolvables);
   const custom = properties.cardLayout === 'custom';
   const editing = props.currentMode === 'edit';
   const cardHeight = kanbanCardHeight(properties);
-  const order = useMemo(
-    () => new Map(columns.flatMap((c) => c.cards).map((card, index) => [card.__key, index])),
-    [columns]
-  );
-  useLayoutEffect(() => {
-    if (!custom) return;
-    // Published only once there are cards, the native Listview's way: publishing an empty board (data still loading)
-    // shrank every card component's per-card entries to none, and the cards built later lacked the component's own
-    // settings (show on desktop), so custom card content rendered blank. Card children keep object exposed values
-    // (not the Listview's per-row arrays): sizing them as arrays crashed the app on their next write.
-    const cards = boardCards(columns);
-    if (!cards.length) return;
-    updateCustomResolvables(
-      props.id,
-      cards.map((card) => ({ cardData: card })),
-      'cardData',
-      moduleId
-    );
-  }, [custom, columns, props.id, moduleId, updateCustomResolvables]);
-  const { boardNode, moreRight, boardWidth, cardWidth } = useBoardSize(custom, columns.length, collapsedColumns);
-  // Cards fit their components only on a top-level board: inside another row-scoped widget (a native Kanban card, a
-  // List view row) the card canvas has no context of its own yet, so a card's height would share the board's layout
-  // key and grow with it. There a card keeps its set height.
+  // Cards are rows of the board only at the top level: inside another row-scoped widget (a native Kanban card, a List
+  // view row) the card canvas has no context of its own yet. There cards keep their set height (a card's height would
+  // share the board's layout key and grow with it) and their components one entry.
   const ownPath = useOwnContextPath(props.subContainerIndex, props.parentId);
-  const fitCards =
-    custom && !editing && ownPath.length === 0 && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
+  const scoped = ownPath.length === 0;
+  const { board, order } = useCustomCards(props.id, custom, scoped, columns);
+  const { boardNode, moreRight, boardWidth, cardWidth } = useBoardSize(custom, columns.length, collapsedColumns);
+  const fitCards = custom && !editing && scoped && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
   const renderBody = custom
     ? (card: BoardCard) => (
         <CustomCardBody
@@ -241,6 +183,7 @@ export const ShadKanban = (props: WidgetProps) => {
           height={cardHeight}
           fit={fitCards}
           editing={editing}
+          scoped={scoped}
           currentLayout={props.currentLayout}
           darkMode={props.darkMode}
         />
@@ -257,9 +200,11 @@ export const ShadKanban = (props: WidgetProps) => {
       );
   const padding = custom ? 'tw-p-0' : compact ? 'tw-p-2.5' : 'tw-p-3';
 
-  const enabled = !properties.disabledState;
+  // Disabled or loading, the board takes no input: a card or button that already had focus kept its keys (Enter
+  // selected a card, Delete removed one during a reload), and a drag under way still dropped.
+  const enabled = !properties.disabledState && !properties.loadingState;
   // Custom cards don't drag in the editor, where a press edits the card's components.
-  const draggable = properties.allowDrag !== false && enabled && !properties.loadingState && !(custom && editing);
+  const draggable = properties.allowDrag !== false && enabled && !(custom && editing);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: kanbanCoordinates, keyboardCodes: KANBAN_KEYS })
@@ -284,23 +229,30 @@ export const ShadKanban = (props: WidgetProps) => {
   };
   const activeCard = activeKey ? columns.flatMap((c) => c.cards).find((c) => c.__key === activeKey) : null;
   const select = (card: BoardCard) => {
+    if (!enabled) return;
     if (fields.details) setOpenKey((current) => (current === card.__key ? null : card.__key));
     setSelectedKey(card.__key);
     setExposedVariable('lastSelectedCard', strip(card));
     fireEvent('onCardSelected');
   };
+  // The add and delete buttons stay while the board reloads (a focused one keeps its focus) but do nothing.
   const onAdd =
-    properties.allowAdd === true && enabled
+    properties.allowAdd === true && !properties.disabledState
       ? (column: BoardColumn) => {
+          if (!enabled) return;
           setExposedVariable('addCardColumn', column.id);
           fireEvent('onAddCardClick');
         }
       : undefined;
-  const onDelete = properties.allowDelete === true && enabled ? (card: BoardCard) => doDelete(card.__key) : undefined;
+  const onDelete =
+    properties.allowDelete === true && !properties.disabledState
+      ? (card: BoardCard) => enabled && doDelete(card.__key)
+      : undefined;
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveKey(null);
     const target = over?.data?.current;
-    if (!target) return;
+    // Checked at the drop too: the board may have been disabled, set loading or locked since the pick-up.
+    if (!target || !draggable) return;
     doMove(active.id, target.columnId, target.type === 'card' ? target.key : null);
   };
   // Reloading a board that has cards (a query refetching after a move) keeps the board on screen under a spinner,
@@ -339,7 +291,7 @@ export const ShadKanban = (props: WidgetProps) => {
             reloading && 'tw-pointer-events-none'
           )}
         >
-          {columns.slice(0, MAX_BOARD_COLUMNS).map((column) => (
+          {board.slice(0, shownColumns).map((column) => (
             <KanbanColumn
               key={column.id}
               column={column}
@@ -362,9 +314,15 @@ export const ShadKanban = (props: WidgetProps) => {
               onAdd={onAdd}
               fixed={fixed}
               maxHeight={!fixed && Number(props.height) > 0 ? Number(props.height) : undefined}
-              minColumn={columnMinimum(columns.length, boardWidth)}
+              minColumn={columnMinimum(Math.min(columns.length, shownColumns), boardWidth)}
             />
           ))}
+          <ShowMore
+            remaining={columns.length - shownColumns}
+            step={MAX_BOARD_COLUMNS}
+            onMore={showMoreColumns}
+            className="tw-shrink-0 tw-self-start tw-whitespace-nowrap tw-rounded-ui2-md tw-px-3 tw-py-1.5 tw-text-ui2-sm tw-text-ui2-muted-foreground tw-transition-colors hover:tw-bg-ui2-muted hover:tw-text-ui2-foreground"
+          />
         </div>
         {/* The preview renders at the body: ToolJet places widgets with CSS transforms, and position: fixed inside a
             transformed ancestor is offset by it, so the card trailed far from the pointer. The portal root carries

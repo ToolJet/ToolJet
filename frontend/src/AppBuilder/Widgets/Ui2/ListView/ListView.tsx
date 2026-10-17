@@ -17,13 +17,15 @@ import {
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
-import { listLook, pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
+import { itemKey, listLook, pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { fitsContentInView, listRowHeight } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
+import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 import { useListSelection } from './useListSelection';
+import { takeRowValues } from '@/AppBuilder/Widgets/Ui2/_shared/rowValues';
 
 type ListMode = 'list' | 'grid';
 
@@ -99,17 +101,22 @@ const Row = ({
     height: rowHeight,
     currentLayout,
   });
+  const activate = onKeyActivate(() => onPick(index));
   const contextValue = useMemo(
     () => ({ contextPath: [...parentPath, { containerId: id, index }] }),
     [parentPath, id, index]
   );
   return (
     <SubcontainerContext.Provider value={contextValue}>
+      {/* A tab stop like RecordList's rows: Enter or Space on the row itself picks it (keys typed in its components
+          stay theirs). */}
       <div
         role="listitem"
+        tabIndex={0}
         onClickCapture={() => onPick(index)}
+        onKeyDown={(e) => e.target === e.currentTarget && activate(e)}
         className={cn(
-          'tw-relative tw-overflow-hidden tw-transition-colors hover:tw-bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
+          'tw-relative tw-overflow-hidden tw-outline-none tw-transition-colors focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--sc-ring)] hover:tw-bg-[color:var(--lv-hover-bg,color-mix(in_srgb,var(--sc-muted)_50%,transparent))]',
           selected &&
             'tw-bg-[color:var(--lv-selected-bg,color-mix(in_srgb,var(--sc-primary)_8%,transparent))] tw-ring-1 tw-ring-inset tw-ring-ui2-primary',
           look.framed && 'tw-border tw-border-[color:var(--lv-item-border,var(--sc-border))]',
@@ -197,18 +204,24 @@ export const ShadListView = (props: WidgetProps) => {
     exposeOne.current('data', Array.isArray(data) ? data : []);
   }, [data, exposeOne]);
   const hiddenRows = paged.items.length - items.length;
-  // Client-side data shorter than the current page: follow the clamp.
+  // Client-side data shorter than the current page: follow the clamp, and publish it (no event: the user did not page).
   useEffect(() => {
-    if (paged.page !== page) setPage(paged.page);
-  }, [paged.page, page]);
+    if (paged.page === page) return;
+    setPage(paged.page);
+    exposeOne.current('pageIndex', paged.page);
+  }, [paged.page, page, exposeOne]);
 
   // Each row reads its item as {{listItem}}, written when the page's items, the row template or the nesting changes.
   // Written in a layout effect, not during render (the native Listview's way), which updated the store, and so other
   // components, while this one rendered: React warned, and it risked a render loop. The layout effect runs before
-  // paint and before the rows' mount effects; the rows wait for the first write, and after a change they re-render
-  // with the new items before the page paints.
-  const [published, setPublished] = useState(false);
+  // paint and before the rows' mount effects. Rows are drawn from the items already written (shown), keyed by record:
+  // a row that moves never resolves another record's {{listItem}}, which reset its components (an edited Input took
+  // its default again). When records move, their rows' component values move with them (takeRowValues).
+  const keys = useMemo(() => items.map((item, index) => itemKey(item, idField, index)), [items, idField]);
+  const [shown, setShown] = useState<{ items: unknown[]; keys: string[] }>({ items: [], keys: [] });
+  const shownKeys = useRef<string[]>([]);
   useLayoutEffect(() => {
+    const moveRowValues = takeRowValues(id, moduleId, parentIndices, shownKeys.current, keys);
     if (items.length) {
       updateCustomResolvables(
         id,
@@ -217,19 +230,34 @@ export const ShadListView = (props: WidgetProps) => {
         moduleId,
         parentIndices
       );
-      initExposedValueArrayForChildren(id, items.length, moduleId, parentIndices);
     }
-    setPublished(true);
+    // Sized for no rows too: an emptied list kept its last rows' values (and actions) in children.
+    initExposedValueArrayForChildren(id, items.length, moduleId, parentIndices);
+    moveRowValues?.();
+    if (!items.length) exposeOne.current('children', {});
+    shownKeys.current = keys;
+    setShown({ items, keys });
     // childCount: a component added to the row template needs its per-row values too.
-  }, [items, childCount, parentIndices, id, moduleId, updateCustomResolvables, initExposedValueArrayForChildren]);
+  }, [
+    items,
+    keys,
+    childCount,
+    parentIndices,
+    id,
+    moduleId,
+    updateCustomResolvables,
+    initExposedValueArrayForChildren,
+    exposeOne,
+  ]);
   useExposedValueBatch(items.length);
 
-  const { keys, selectedIndex, pick, clearSelection } = useListSelection({
+  const { selectedIndex, pick, clearSelection } = useListSelection({
     id,
     moduleId,
     parentIndices,
     data,
     items,
+    keys,
     idField,
     setExposedVariables,
     fireEvent,
@@ -315,9 +343,9 @@ export const ShadListView = (props: WidgetProps) => {
             gap: mode === 'list' && properties.showBorder ? 0 : gap,
           }}
         >
-          {(published ? items : []).map((item, index) => (
+          {shown.items.map((item, index) => (
             <Row
-              key={keys[index]}
+              key={shown.keys[index]}
               id={id}
               index={index}
               item={item}

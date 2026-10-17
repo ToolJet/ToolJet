@@ -1,8 +1,9 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import { SubContainer } from '@/AppBuilder/Widgets/Ui2/_shared/SubContainer';
+import { SubcontainerContext } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 import { useFittedRowHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Avatar, AvatarFallback, Badge, Progress, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -310,6 +311,8 @@ interface CustomCardBodyProps {
   height: number;
   fit: boolean;
   editing: boolean;
+  /** The card is a row of the board (a top-level board, useCustomCards): its components belong to it. */
+  scoped: boolean;
   currentLayout?: string;
   darkMode?: boolean;
 }
@@ -325,6 +328,7 @@ export const CustomCardBody = ({
   height: cardHeight,
   fit,
   editing,
+  scoped,
   currentLayout,
   darkMode,
 }: CustomCardBodyProps) => {
@@ -338,20 +342,24 @@ export const CustomCardBody = ({
     height: cardHeight,
     currentLayout,
   });
+  // The card's components read and write their values at this card, as a List view row's do.
+  const contextValue = useMemo(() => ({ contextPath: [{ containerId: id, index }] }), [id, index]);
+  const canvas =
+    width > 0 ? (
+      <SubContainer
+        id={id}
+        index={index}
+        canvasWidth={width}
+        canvasHeight={height}
+        componentType="ShadKanban"
+        styles={{ backgroundColor: 'transparent' }}
+        darkMode={darkMode}
+      />
+    ) : null;
   return (
     // In the editor, a press inside the card edits its components instead of starting a card drag.
     <div data-card-canvas="" style={{ height }} onPointerDown={editing ? (e) => e.stopPropagation() : undefined}>
-      {width > 0 ? (
-        <SubContainer
-          id={id}
-          index={index}
-          canvasWidth={width}
-          canvasHeight={height}
-          componentType="ShadKanban"
-          styles={{ backgroundColor: 'transparent' }}
-          darkMode={darkMode}
-        />
-      ) : null}
+      {scoped ? <SubcontainerContext.Provider value={contextValue}>{canvas}</SubcontainerContext.Provider> : canvas}
     </div>
   );
 };

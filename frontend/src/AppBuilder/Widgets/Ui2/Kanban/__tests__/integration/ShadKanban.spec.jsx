@@ -469,7 +469,8 @@ describe('UI 2.0 Kanban', () => {
       const anyKey = () => (rand(10) === 0 ? junk[rand(junk.length)] : keys[rand(keys.length)]);
       const anyColumn = () => (rand(10) === 0 ? junk[rand(junk.length)] : statuses[rand(statuses.length)]);
       const op = rand(4);
-      if (op === 0) cols = moveCard(cols, anyKey(), anyColumn(), rand(3) === 0 ? null : anyKey(), 'status').columns;
+      if (op === 0)
+        cols = moveCard(cols, anyKey(), anyColumn(), rand(3) === 0 ? null : anyKey(), 'status', 'id').columns;
       else if (op === 1) {
         cols = addCard(
           cols,

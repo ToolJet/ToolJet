@@ -14,7 +14,7 @@ const COUNT_BADGE =
   'tw-bg-[color:var(--kb-count-bg,var(--sc-accent-soft))] tw-text-[color:var(--kb-count-fg,var(--sc-primary-ink))]';
 
 // A board draws this many cards a column at first, then this many more per "Show more" click (10k cards froze the
-// page); and at most MAX_BOARD_COLUMNS columns (a 10k-item list bound as the columns).
+// page); the board draws MAX_BOARD_COLUMNS columns at a time the same way (a 10k-item list bound as the columns).
 const CARDS_PER_STEP = 100;
 export const MAX_BOARD_COLUMNS = 50;
 
