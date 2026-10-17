@@ -5,6 +5,7 @@
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { screen, waitFor } from '@testing-library/react';
+import { binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'tab1';
 const widget = createWidgetHarness({
@@ -15,7 +16,7 @@ const widget = createWidgetHarness({
   widgetWidth: 640,
   capabilities: { dnd: true },
 });
-const render = () => widget.render({ currentMode: 'view' });
+const render = () => widget.render({ currentMode: 'view', properties: { defaultTab: binding('t0') } });
 const panelOf = (tab) => document.getElementById(tab.getAttribute('aria-controls'));
 
 describe('UI 2.0 Tabs relationships and disabled panels', () => {
