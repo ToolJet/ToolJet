@@ -40,6 +40,7 @@ const toTables = (app) => {
       general_properties: clone(c.general ?? null),
       styles: clone(c.styles ?? null),
       general_styles: clone(c.generalStyles ?? null),
+      display_preferences: clone(c.displayPreferences ?? null),
       validation: clone(c.validation ?? null),
     })),
     event_handlers: app.events.map((e) => ({
@@ -82,8 +83,13 @@ function standInQueryRunner(db) {
           .map((v) => ({ app_version_id: v })),
     ],
     [
-      /^SELECT c\.id, c\.name, c\.type, c\.page_id, c\.properties, c\.general_properties, c\.styles, c\.general_styles, c\.validation FROM components c JOIN pages p ON p\.id = c\.page_id WHERE p\.app_version_id = \$1$/,
+      /^SELECT c\.id, c\.name, c\.type, c\.page_id, c\.properties, c\.general_properties, c\.styles, c\.general_styles, c\.display_preferences, c\.validation FROM components c JOIN pages p ON p\.id = c\.page_id WHERE p\.app_version_id = \$1$/,
       ([version]) => clone(db.components.filter((c) => versionOf(c) === version)),
+    ],
+    [
+      // The rename clears undo/redo history for versions whose history names a UI 2.0 type; the fixtures carry none.
+      /^SELECT DISTINCT app_version_id FROM app_history WHERE created_at >= \$1 AND \(change_payload::text ~ \$2 OR change_payload::text ~ \$3\)$/,
+      () => [],
     ],
     [
       /^UPDATE components SET (.+) WHERE id = \$(\d+)$/,
@@ -153,6 +159,9 @@ export async function migrate(app) {
       general: row.general_properties,
       styles: row.styles,
       generalStyles: row.general_styles,
+      ...(row.display_preferences !== null || 'displayPreferences' in c
+        ? { displayPreferences: row.display_preferences }
+        : {}),
       validation: row.validation,
     });
   }
