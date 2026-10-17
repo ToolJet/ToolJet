@@ -1,9 +1,7 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
-import useStore from '@/AppBuilder/_stores/store';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useAutoHeight, useExposed, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { useOwnContextPath } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -20,6 +18,7 @@ import { CardBody, CustomCardBody } from './KanbanCard';
 import type { CardFields } from './KanbanCard';
 import { KanbanColumn, MAX_BOARD_COLUMNS } from './KanbanColumn';
 import { useBoardSize } from './useBoardSize';
+import { useCustomCards } from './useCustomCards';
 import { RIGHT_FADE, columnMinimum, fieldName, kanbanCollision, strip } from './kanbanLayout';
 import { cssLength, isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
@@ -33,9 +32,6 @@ interface KanbanLive {
 }
 
 /** What the board reads from the app store. */
-type KanbanStore = {
-  updateCustomResolvables: (id: string, values: Record<string, unknown>[], key: string, moduleId: string) => void;
-};
 
 // ToolJet UI 2.0 Kanban: a data-driven board. Columns are values of a status field and cards are rows
 // of data shown by the fields the author maps (title, description, badge, tags, progress, meta, avatar), so an agent
@@ -166,39 +162,17 @@ export const ShadKanban = (props: WidgetProps) => {
     deleteCard: async (id: unknown) => doDelete(id),
   });
 
-  // Custom card content: every card renders the board's one card canvas (the components dropped on the first card)
-  // with its own row of cardData, as a list view renders its rows. The canvas is laid out at the card's width.
-  const { moduleId } = useModuleContext();
-  const updateCustomResolvables = useStore((state: KanbanStore) => state.updateCustomResolvables);
   const custom = properties.cardLayout === 'custom';
   const editing = props.currentMode === 'edit';
   const cardHeight = kanbanCardHeight(properties);
-  const order = useMemo(
-    () => new Map(columns.flatMap((c) => c.cards).map((card, index) => [card.__key, index])),
-    [columns]
-  );
-  useLayoutEffect(() => {
-    if (!custom) return;
-    // Published only once there are cards, the native Listview's way: publishing an empty board (data still loading)
-    // shrank every card component's per-card entries to none, and the cards built later lacked the component's own
-    // settings (show on desktop), so custom card content rendered blank. Card children keep object exposed values
-    // (not the Listview's per-row arrays): sizing them as arrays crashed the app on their next write.
-    const cards = boardCards(columns);
-    if (!cards.length) return;
-    updateCustomResolvables(
-      props.id,
-      cards.map((card) => ({ cardData: card })),
-      'cardData',
-      moduleId
-    );
-  }, [custom, columns, props.id, moduleId, updateCustomResolvables]);
-  const { boardNode, moreRight, boardWidth, cardWidth } = useBoardSize(custom, columns.length, collapsedColumns);
-  // Cards fit their components only on a top-level board: inside another row-scoped widget (a native Kanban card, a
-  // List view row) the card canvas has no context of its own yet, so a card's height would share the board's layout
-  // key and grow with it. There a card keeps its set height.
+  // Cards are rows of the board only at the top level: inside another row-scoped widget (a native Kanban card, a List
+  // view row) the card canvas has no context of its own yet. There cards keep their set height (a card's height would
+  // share the board's layout key and grow with it) and their components one entry.
   const ownPath = useOwnContextPath(props.subContainerIndex, props.parentId);
-  const fitCards =
-    custom && !editing && ownPath.length === 0 && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
+  const scoped = ownPath.length === 0;
+  const { board, order } = useCustomCards(props.id, custom, scoped, columns);
+  const { boardNode, moreRight, boardWidth, cardWidth } = useBoardSize(custom, columns.length, collapsedColumns);
+  const fitCards = custom && !editing && scoped && fitsContentInView(props.componentType ?? 'ShadKanban', properties);
   const renderBody = custom
     ? (card: BoardCard) => (
         <CustomCardBody
@@ -209,6 +183,7 @@ export const ShadKanban = (props: WidgetProps) => {
           height={cardHeight}
           fit={fitCards}
           editing={editing}
+          scoped={scoped}
           currentLayout={props.currentLayout}
           darkMode={props.darkMode}
         />
@@ -316,7 +291,7 @@ export const ShadKanban = (props: WidgetProps) => {
             reloading && 'tw-pointer-events-none'
           )}
         >
-          {columns.slice(0, shownColumns).map((column) => (
+          {board.slice(0, shownColumns).map((column) => (
             <KanbanColumn
               key={column.id}
               column={column}
