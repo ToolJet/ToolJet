@@ -357,3 +357,68 @@ describe('many bookings', () => {
     expect(placed.back.items).toHaveLength(2500);
   });
 });
+
+// Audit 74: across a clock change the hours were built from wall times, so on the day the clocks went forward the
+// slot 02:30 normalised to 03:30 and ran backwards to 03:00; and a day column was placed by elapsed time while every
+// column is drawn the same width, so a booking on a 23- or 25-hour day overran or fell short of its day. These hold in
+// any zone; npm run test:ui2-dates-tz runs them where the clocks change (America/Los_Angeles: 8 March and 1 November
+// 2026).
+describe('days the clocks change', () => {
+  const DATES = ['2026-03-08', '2026-11-01'];
+  const room = { key: 'room', id: 'room', name: 'Room', caption: '', avatar: '' };
+  const fields = { resourceField: 'resource', startField: 'start', endField: 'end', idField: 'id' };
+  const local = (s) => {
+    const [y, m, d] = s.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  };
+  const nextMidnight = (s) => {
+    const d = local(s);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
+  };
+  const place = (row, range) =>
+    placeBookings([{ id: 'one', resource: 'room', ...row }], fields, range, [room]).room.items[0];
+  const zoneChanges = new Date(2026, 0, 1).getTimezoneOffset() !== new Date(2026, 6, 1).getTimezoneOffset();
+
+  it.each(DATES)('%s: every hour column and slot runs forwards, one after another', (date) => {
+    const range = scheduleRange({ date, dayStart: 0, dayEnd: 4, slotMinutes: 30 });
+    for (const [i, slot] of range.slots.entries()) {
+      expect(slot.end).toBeGreaterThan(slot.start);
+      if (i) expect(slot.start).toBe(range.slots[i - 1].end);
+    }
+    for (const column of range.columns) expect(column.end).toBeGreaterThan(column.start);
+    expect(range.slots[range.slots.length - 1].end).toBe(range.end);
+    expect(new Set(range.columns.map((c) => c.key)).size).toBe(range.columns.length);
+  });
+
+  it.each(DATES)('%s: a booking at 03:00 starts where the 03:00 column is drawn', (date) => {
+    const range = scheduleRange({ date, dayStart: 0, dayEnd: 4, slotMinutes: 30 });
+    const booking = place({ start: `${date} 03:00`, end: `${date} 04:00` }, range);
+    const column = range.columns.findIndex((c) => c.start === booking.start);
+    expect(column).toBeGreaterThan(-1);
+    expect(booking.left).toBeCloseTo((column / range.columns.length) * 100, 5);
+    expect(positionOf(range, booking.start)).toBeCloseTo(booking.left, 5);
+  });
+
+  it.each(DATES)('%s: a day booking covers its calendar day, half of a two-day view', (date) => {
+    const range = scheduleRange({ scale: 'days', date, days: 2 });
+    for (const row of [{ start: date }, { start: date, end: date }, { start: `${date} 09:00`, end: `${date} 10:00` }]) {
+      const booking = place(row, range);
+      expect(booking.spanEnd).toBe(nextMidnight(date));
+      expect(booking.width).toBeCloseTo(50, 5);
+    }
+    expect(place({ start: date }, range).end).toBe(nextMidnight(date));
+  });
+
+  (zoneChanges ? it : it.skip)('the hour the clocks skip is not on the axis; the hour they repeat is, twice', () => {
+    const spring = scheduleRange({ date: '2026-03-08', dayStart: 0, dayEnd: 4, hourFormat: '24h' });
+    expect(spring.columns.map((c) => c.label)).toEqual(['00:00', '01:00', '03:00']);
+    const fall = scheduleRange({ date: '2026-11-01', dayStart: 0, dayEnd: 4, hourFormat: '24h' });
+    expect(fall.columns.map((c) => c.label)).toEqual(['00:00', '01:00', '01:00 (2nd)', '02:00', '03:00']);
+  });
+
+  it('never gives a range that runs backwards or not at all', () => {
+    const range = scheduleRange({ date: '2026-03-08', dayStart: 2, dayEnd: 3 });
+    expect(range.end).toBeGreaterThan(range.start);
+    expect(range.slots.length).toBeGreaterThan(0);
+  });
+});

@@ -74,7 +74,8 @@ interface ScheduleRowProps {
   hasSlotClick: boolean;
   hourFormat: unknown;
   width: number;
-  slotCount: number;
+  /** The slots' grid tracks (slotTracks). */
+  slotTracks: string;
   clickSlot: (resource: ScheduleResource, slot: ScheduleSlot, index: number) => void;
   clickBooking: (item: PlacedBooking) => void;
 }
@@ -92,7 +93,7 @@ export const ScheduleRow = ({
   hasSlotClick,
   hourFormat,
   width,
-  slotCount,
+  slotTracks,
   clickSlot,
   clickBooking,
 }: ScheduleRowProps) => {
@@ -120,10 +121,7 @@ export const ScheduleRow = ({
         </span>
       </div>
       <div className="tw-relative tw-min-w-0 tw-flex-1" style={{ height: rowH }}>
-        <div
-          className="tw-absolute tw-inset-0 tw-grid"
-          style={{ gridTemplateColumns: `repeat(${slotCount}, minmax(0, 1fr))` }}
-        >
+        <div className="tw-absolute tw-inset-0 tw-grid" style={{ gridTemplateColumns: slotTracks }}>
           {range.slots.map((slot, j) => {
             const isSelected =
               highlight && selected?.kind === 'slot' && selected.resource === r.key && selected.index === j;
