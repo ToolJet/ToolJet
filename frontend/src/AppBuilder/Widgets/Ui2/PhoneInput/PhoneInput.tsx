@@ -4,7 +4,7 @@ import PhoneNumberInput from 'react-phone-number-input/input';
 import flags from 'react-phone-number-input/flags';
 import { isValidPhoneNumber } from 'react-phone-number-input';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
-import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -133,6 +133,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
               </button>
             </PopoverTrigger>
             <PopoverContent
+              aria-label="Choose a country"
               className="tw-w-[300px] tw-p-0"
               align="start"
               style={vars}
@@ -195,7 +196,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
           value={state.value || undefined}
           inputComponent={BareInput}
           autoComplete="tel"
-          aria-invalid={!!check.error || undefined}
+          {...controlAria(props, check.error)}
           className={INNER}
           placeholder={toText(properties.placeholder)}
           disabled={disabled}

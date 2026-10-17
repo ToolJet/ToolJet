@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import { Command as CommandPrimitive } from 'cmdk';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria, fieldName } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -13,6 +12,7 @@ import {
   withControlState,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
 import { useFocusEvents } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
@@ -30,12 +30,9 @@ import {
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
-export const CommandSeparator = ({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>) => (
-  <CommandPrimitive.Separator className={cn('-tw-mx-1 tw-h-px tw-bg-[color:var(--sc-border)]', className)} {...props} />
-);
+/** A rule between the options and the selection's own commands: drawn only, since a list of options may hold only
+ *  options and groups (cmdk's Separator is role="separator"). */
+const MenuRule = () => <div aria-hidden="true" className="-tw-mx-1 tw-h-px tw-bg-[color:var(--sc-border)]" />;
 
 // ---- Multiselect ---------------------------------------------------------------------------------------------------
 
@@ -114,6 +111,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
   const disabled = busy(properties);
   const loading = !!properties.loadingState;
   const focus = useFocusEvents(fireEvent);
+  const menuId = `shad-${id}-menu`;
   const menu = useAnchoredMenu(disabled, () => {
     check.touch();
     if (search) onSearch('');
@@ -160,7 +158,10 @@ export const ShadMultiselect = (props: WidgetProps) => {
             onClick={() => menuChange(!menu.open)}
             id={`shad-${id}`}
             role="combobox"
-            aria-invalid={!!check.error || undefined}
+            aria-controls={menu.open ? menuId : undefined}
+            // A div takes no name from <label for>: the label's text, else the placeholder, names it.
+            aria-label={toText(properties.label) || fieldName(props, 'Select options')}
+            {...controlAria(props, check.error)}
             onKeyDown={(e) => {
               if (disabled) return;
               if (['Enter', ' ', 'ArrowDown'].includes(e.key)) {
@@ -201,6 +202,8 @@ export const ShadMultiselect = (props: WidgetProps) => {
         </PopoverPrimitive.Anchor>
         <PopoverPrimitive.Portal container={getPortalRoot()}>
           <PopoverPrimitive.Content
+            id={menuId}
+            aria-label="Options"
             align="start"
             sideOffset={4}
             {...menu.contentProps}
@@ -241,7 +244,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
               bottom={
                 selectedOptions.length > 0 || limit > 0 ? (
                   <>
-                    <CommandSeparator />
+                    <MenuRule />
                     <CommandGroup>
                       {limit > 0 ? (
                         <div className={cn('tw-px-2 tw-py-1 tw-text-xs', MUTED)}>

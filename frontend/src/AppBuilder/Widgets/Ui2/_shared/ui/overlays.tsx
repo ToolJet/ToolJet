@@ -101,21 +101,22 @@ SelectItem.displayName = 'SelectItem';
 
 export const Popover = PopoverPrimitive.Root;
 export const PopoverTrigger = PopoverPrimitive.Trigger;
-export const PopoverContent = React.forwardRef<
-  React.ElementRef<typeof PopoverPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
->(({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
-  <PopoverPrimitive.Portal container={getPortalRoot()}>
-    <PopoverPrimitive.Content
-      ref={ref}
-      align={align}
-      sideOffset={sideOffset}
-      className={cn(
-        'tw-z-[1060] tw-w-72 tw-rounded-ui2-md tw-border tw-bg-ui2-popover tw-p-4 tw-text-ui2-popover-foreground tw-shadow-md tw-outline-none data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95',
-        className
-      )}
-      {...props}
-    />
-  </PopoverPrimitive.Portal>
-));
+/** A popover's name is required: Radix gives its content role="dialog", which a screen reader announces by name. */
+type PopoverContentProps = React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> & { 'aria-label': string };
+export const PopoverContent = React.forwardRef<React.ElementRef<typeof PopoverPrimitive.Content>, PopoverContentProps>(
+  ({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
+    <PopoverPrimitive.Portal container={getPortalRoot()}>
+      <PopoverPrimitive.Content
+        ref={ref}
+        align={align}
+        sideOffset={sideOffset}
+        className={cn(
+          'tw-z-[1060] tw-w-72 tw-rounded-ui2-md tw-border tw-bg-ui2-popover tw-p-4 tw-text-ui2-popover-foreground tw-shadow-md tw-outline-none data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-zoom-out-95 data-[state=open]:tw-zoom-in-95',
+          className
+        )}
+        {...props}
+      />
+    </PopoverPrimitive.Portal>
+  )
+);
 PopoverContent.displayName = 'PopoverContent';

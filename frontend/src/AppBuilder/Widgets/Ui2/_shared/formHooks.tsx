@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useExposed, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { truthy } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
-import { CONTROL, FieldLabel, FieldNote, INVALID_VARS, fieldName } from './field';
+import { CONTROL, FieldLabel, FieldNote, INVALID_VARS, controlAria, fieldName } from './field';
 import { busy } from './Shell';
 import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from 'react';
 import type { Exposed } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -127,7 +127,7 @@ export const useTextField = <E extends HTMLInputElement | HTMLTextAreaElement>(p
     id: `shad-${props.id}`,
     className: CONTROL,
     value,
-    'aria-invalid': !!check.error || undefined,
+    ...controlAria(props, check.error),
     'aria-label': fieldName(props),
     onFocus: box.onFocus,
     onBlur: box.onBlur,
@@ -186,7 +186,7 @@ export const CheckedRow = ({ id, control, label, description, error, required }:
     {control}
     <div className="tw-grid tw-gap-1.5 tw-leading-none">
       <FieldLabel id={id} text={String(label ?? '')} required={required} />
-      <FieldNote error={error} description={description} size="tw-text-ui2-sm" />
+      <FieldNote error={error} description={description} size="tw-text-ui2-sm" controlId={id} />
     </div>
   </div>
 );

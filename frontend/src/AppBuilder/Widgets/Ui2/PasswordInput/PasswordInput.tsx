@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { FormField, HELP } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, HELP, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -54,7 +54,7 @@ export const ShadPasswordInput = (props: WidgetProps) => {
           id={`shad-${id}`}
           type={visible ? 'text' : 'password'}
           autoComplete={properties.showStrength === true ? 'new-password' : 'current-password'}
-          aria-invalid={!!check.error || undefined}
+          {...controlAria(props, check.error)}
           className={cn(INNER, properties.showToggle !== false && 'tw-pr-1')}
           value={value}
           placeholder={toText(properties.placeholder)}

@@ -63,3 +63,12 @@ export const openOverlay = async (exposed, scope = document) => {
     else if (trigger) press(trigger);
   });
 };
+
+/** The page's canvas, which ModalV2 (the Dialog) opens into; returns its removal. */
+export const addPageCanvas = () => {
+  const host = document.createElement('div');
+  host.className = 'canvas-container page-container';
+  host.innerHTML = '<div class="canvas-content"><div class="tj-canvas-area real-canvas"></div></div>';
+  document.body.appendChild(host);
+  return () => host.remove();
+};

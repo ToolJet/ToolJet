@@ -209,7 +209,7 @@ export const renderCell = ({
       const pct = Math.max(0, Math.min(100, (n / (column.maxValue || 100)) * 100));
       return (
         <span className="tw-flex tw-min-w-[96px] tw-items-center tw-gap-2">
-          <Progress value={pct} className="tw-h-1.5" />
+          <Progress aria-label="Progress" value={pct} className="tw-h-1.5" />
           <span className={cn('tw-w-9 tw-text-right tw-text-xs tw-tabular-nums', MUTED)}>{Math.round(pct)}%</span>
         </span>
       );

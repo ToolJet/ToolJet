@@ -99,73 +99,74 @@ export const ShadRecordList = (props: WidgetProps) => {
       {rows.slice(0, shownCount).map((row, i) => {
         const isSelected = p.highlightSelected !== false && selected?.key === row.key;
         return (
-          <li
-            key={row.key}
-            role="button"
-            tabIndex={0}
-            onClick={() => click(row)}
-            onKeyDown={onKeyActivate(() => click(row))}
-            className={cn(
-              'tw-flex tw-min-w-0 tw-items-center tw-gap-3 tw-outline-none tw-transition-colors tw-duration-150 focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))]',
-              inset,
-              density.pad,
-              divided(i),
-              clickable &&
-                'tw-cursor-pointer hover:tw-bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
-            )}
-            style={{
-              borderColor: LIST_BORDER,
-              background: isSelected ? `color-mix(in srgb, ${ACCENT} 9%, transparent)` : undefined,
-              boxShadow: isSelected ? `inset 3px 0 0 ${ACCENT}` : undefined,
-            }}
-            data-selected={isSelected || undefined}
-          >
-            {showAvatar ? (
-              <RecordAvatar src={row.image} name={row.avatarName} size={density.avatar} shape={p.avatarShape} />
-            ) : null}
-            <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-0.5">
-              {/* Two lines before it clips: in a narrow column beside a chip and a time, one line left titles such as
-                      "Workspace setti…" that said nothing (a content calendar's drafts list, 2026-10-14). */}
-              <span
-                className={cn('tw-line-clamp-2 tw-break-words tw-font-medium tw-leading-snug', density.title)}
-                title={typeof row.title === 'string' ? row.title : undefined}
-                style={{
-                  color: 'var(--lk-title,var(--sc-foreground))',
-                  fontFamily: TITLE_FONT,
-                }}
-              >
-                {row.title}
-              </span>
-              {row.meta ? (
+          <li key={row.key}>
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => click(row)}
+              onKeyDown={onKeyActivate(() => click(row))}
+              className={cn(
+                'tw-flex tw-min-w-0 tw-items-center tw-gap-3 tw-outline-none tw-transition-colors tw-duration-150 focus-visible:tw-ring-2 focus-visible:tw-ring-inset focus-visible:tw-ring-[color:var(--lk-accent,var(--sc-ring))]',
+                inset,
+                density.pad,
+                divided(i),
+                clickable &&
+                  'tw-cursor-pointer hover:tw-bg-[color:color-mix(in_srgb,var(--sc-foreground)_4%,transparent)]'
+              )}
+              style={{
+                borderColor: LIST_BORDER,
+                background: isSelected ? `color-mix(in srgb, ${ACCENT} 9%, transparent)` : undefined,
+                boxShadow: isSelected ? `inset 3px 0 0 ${ACCENT}` : undefined,
+              }}
+              data-selected={isSelected || undefined}
+            >
+              {showAvatar ? (
+                <RecordAvatar src={row.image} name={row.avatarName} size={density.avatar} shape={p.avatarShape} />
+              ) : null}
+              <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-0.5">
+                {/* Two lines before it clips: in a narrow column beside a chip and a time, one line left titles such as
+                    "Workspace setti…" that said nothing (a content calendar's drafts list, 2026-10-14). */}
                 <span
-                  className={cn('tw-truncate tw-tabular-nums tw-leading-snug', density.meta)}
+                  className={cn('tw-line-clamp-2 tw-break-words tw-font-medium tw-leading-snug', density.title)}
+                  title={typeof row.title === 'string' ? row.title : undefined}
                   style={{
-                    color: 'var(--lk-fg,var(--sc-muted-foreground))',
+                    color: 'var(--lk-title,var(--sc-foreground))',
+                    fontFamily: TITLE_FONT,
                   }}
                 >
-                  {row.meta}
+                  {row.title}
+                </span>
+                {row.meta ? (
+                  <span
+                    className={cn('tw-truncate tw-tabular-nums tw-leading-snug', density.meta)}
+                    style={{
+                      color: 'var(--lk-fg,var(--sc-muted-foreground))',
+                    }}
+                  >
+                    {row.meta}
+                  </span>
+                ) : null}
+                {row.progress !== null ? (
+                  <InlineProgress pct={row.progress} className="tw-mt-1 tw-max-w-[240px]" />
+                ) : null}
+              </div>
+              {row.status ? (
+                <span className="tw-flex tw-min-w-0 tw-max-w-[40%] tw-shrink-0 tw-justify-end">
+                  <Chip value={row.status} />
                 </span>
               ) : null}
-              {row.progress !== null ? (
-                <InlineProgress pct={row.progress} className="tw-mt-1 tw-max-w-[240px]" />
+              {row.value ? (
+                <span
+                  className={cn('tw-shrink-0 tw-text-right tw-font-semibold tw-tabular-nums', density.title)}
+                  style={{
+                    color: 'var(--lk-title,var(--sc-foreground))',
+                    minWidth: '4.5rem',
+                  }}
+                >
+                  {row.value}
+                </span>
               ) : null}
             </div>
-            {row.status ? (
-              <span className="tw-flex tw-min-w-0 tw-max-w-[40%] tw-shrink-0 tw-justify-end">
-                <Chip value={row.status} />
-              </span>
-            ) : null}
-            {row.value ? (
-              <span
-                className={cn('tw-shrink-0 tw-text-right tw-font-semibold tw-tabular-nums', density.title)}
-                style={{
-                  color: 'var(--lk-title,var(--sc-foreground))',
-                  minWidth: '4.5rem',
-                }}
-              >
-                {row.value}
-              </span>
-            ) : null}
           </li>
         );
       })}

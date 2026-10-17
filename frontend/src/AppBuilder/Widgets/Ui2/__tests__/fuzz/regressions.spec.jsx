@@ -717,7 +717,7 @@ describe('Record list and summary strip', () => {
       { id: 2, name: 'Oakland Ice Rink' },
     ];
     const plain = await mount('ShadRecordList', { data, titleField: 'name', listStyle: 'plain' });
-    const row = document.querySelector('li[role=button]');
+    const row = document.querySelector('li > [role=button]');
     expect(row.className).toMatch(/\bpx-3\b/);
     plain.unmount();
     const fixed = await mount('ShadRecordList', {
@@ -726,7 +726,7 @@ describe('Record list and summary strip', () => {
       listStyle: 'plain',
       highlightSelected: false,
     });
-    expect(document.querySelector('li[role=button]').className).toMatch(/\bpx-1\b/);
+    expect(document.querySelector('li > [role=button]').className).toMatch(/\bpx-1\b/);
     fixed.unmount();
   });
 
@@ -741,7 +741,7 @@ describe('Record list and summary strip', () => {
       titleField: 'name',
       statusField: 'status',
     });
-    const rows = document.querySelectorAll('li[role=button]');
+    const rows = document.querySelectorAll('li > [role=button]');
     expect(rows[0].className).not.toMatch(/border-t/);
     expect(rows[1].className).toMatch(/\bborder-t\b/);
     expect(rows[1].closest('ul').parentElement.className).toMatch(/\bborder\b/);

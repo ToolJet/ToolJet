@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Circle, Heart, Star } from 'lucide-react';
-import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -87,6 +87,7 @@ export const ShadRating = (props: WidgetProps) => {
           aria-label={isStringOrNumber(properties.label) && properties.label ? String(properties.label) : 'Rating'}
           aria-readonly={readOnly || undefined}
           aria-disabled={busy(properties) || undefined}
+          {...controlAria(props, check.error)}
           className={cn('tw-inline-flex tw-items-center', size >= 28 ? 'tw-gap-1.5' : 'tw-gap-1')}
           onMouseLeave={() => setHover(null)}
         >

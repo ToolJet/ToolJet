@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -168,7 +168,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
               role="combobox"
               aria-expanded={menuOpen}
               aria-autocomplete="list"
-              aria-invalid={!!(tagError || check.error) || undefined}
+              {...controlAria(props, tagError || check.error)}
               autoComplete="off"
               value={text}
               disabled={disabled}
@@ -205,6 +205,7 @@ export const ShadTagsInput = (props: WidgetProps) => {
         </PopoverPrimitive.Anchor>
         <PopoverPrimitive.Portal container={getPortalRoot()}>
           <PopoverPrimitive.Content
+            aria-label="Suggestions"
             align="start"
             sideOffset={4}
             onOpenAutoFocus={(e) => e.preventDefault()}

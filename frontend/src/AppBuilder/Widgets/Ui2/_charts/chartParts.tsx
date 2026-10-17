@@ -117,6 +117,25 @@ export const useExposedClick = (props: WidgetProps) => {
 /** The chart a frame draws, given the handler for a clicked datum. */
 type ChartRender = (onDatum: (datum: unknown) => void) => React.ReactElement;
 
+/** A chart's name for assistive tech, from its type: ShadScatterChart reads "Scatter chart". */
+export const chartName = (componentType?: string): string => {
+  const words = String(componentType || '')
+    .replace(/^Shad/, '')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .toLowerCase();
+  return words ? words[0].toUpperCase() + words.slice(1) : 'Chart';
+};
+
+/** The drawn chart, read by assistive tech as one image named `label`. Recharts marks each scatter point and pie or
+ *  radial sector role="img" with no name, and a screen reader cannot use the shapes one by one. */
+const ChartArea = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div role="img" aria-label={label} className="tw-h-full tw-w-full">
+    <div aria-hidden="true" className="tw-h-full tw-w-full">
+      {children}
+    </div>
+  </div>
+);
+
 export const ChartFrame = ({
   props,
   empty,
@@ -140,9 +159,11 @@ export const ChartFrame = ({
             {String(properties.emptyText || 'No data')}
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            {children(onDatum)}
-          </ResponsiveContainer>
+          <ChartArea label={chartName(props.componentType)}>
+            <ResponsiveContainer width="100%" height="100%">
+              {children(onDatum)}
+            </ResponsiveContainer>
+          </ChartArea>
         )}
       </div>
     </Shell>
@@ -248,13 +269,15 @@ export const EmptyChart = ({ text, small }: { text: string; small?: boolean }) =
 interface SafeFrameProps {
   props: WidgetProps;
   empty: boolean;
+  /** The chart's name for assistive tech, when its type alone says too little (a gauge's value). */
+  label?: string;
   small?: boolean;
   exposed?: Record<string, unknown>;
   clickable?: boolean;
   children: ChartRender;
 }
 
-export const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true, children }: SafeFrameProps) => {
+export const SafeFrame = ({ props, empty, label, small, exposed = {}, clickable = true, children }: SafeFrameProps) => {
   const { properties, setExposedVariables, height } = props;
   const click = useClickedDatum(props);
   useExposed(setExposedVariables, properties, clickable ? { ...click.exposed, ...exposed } : exposed);
@@ -275,9 +298,11 @@ export const SafeFrame = ({ props, empty, small, exposed = {}, clickable = true,
           emptyView
         ) : (
           <ChartBoundary resetKey={properties} fallback={emptyView}>
-            <ResponsiveContainer width="100%" height="100%">
-              {children(onDatum)}
-            </ResponsiveContainer>
+            <ChartArea label={label || chartName(props.componentType)}>
+              <ResponsiveContainer width="100%" height="100%">
+                {children(onDatum)}
+              </ResponsiveContainer>
+            </ChartArea>
           </ChartBoundary>
         )}
       </div>

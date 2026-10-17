@@ -2,7 +2,8 @@ import React, { useRef } from 'react';
 import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Label, RadioGroup, RadioGroupItem } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { Field, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { MAX_CHOICES, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -34,12 +35,16 @@ export const ShadRadioGroup = (props: WidgetProps) => {
   return (
     <Shell {...props} innerRef={fit}>
       <Field
+        id={`shad-${id}`}
         label={properties.label}
         description={properties.description}
         error={check.error}
         required={check.required}
       >
         <RadioGroup
+          id={`shad-${id}`}
+          aria-label={toText(properties.label) || undefined}
+          {...controlAria(props, check.error)}
           value={key}
           disabled={busy(properties)}
           className={properties.horizontal === true ? 'tw-flex tw-flex-wrap tw-gap-4' : undefined}

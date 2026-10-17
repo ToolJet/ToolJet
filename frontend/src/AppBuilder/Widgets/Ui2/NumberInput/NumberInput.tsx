@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { ChevronDown, ChevronUp, Minus, Plus } from 'lucide-react';
-import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -85,7 +85,7 @@ export const ShadNumberInput = (props: WidgetProps) => {
           aria-valuenow={value ?? undefined}
           aria-valuemin={lo ?? undefined}
           aria-valuemax={hi ?? undefined}
-          aria-invalid={!!check.error || undefined}
+          {...controlAria(props, check.error)}
           className={cn(
             INNER,
             prefix && 'tw-pl-1.5',

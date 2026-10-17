@@ -3,6 +3,7 @@ import { useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_share
 import { Checkbox } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CheckedRow, useChecked, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
+import { controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 export const ShadCheckbox = (props: WidgetProps) => {
@@ -29,7 +30,7 @@ export const ShadCheckbox = (props: WidgetProps) => {
               change(v);
               check.touch();
             }}
-            aria-invalid={!!check.error || undefined}
+            {...controlAria(props, check.error)}
             className="data-[state=unchecked]:tw-border-[color:var(--lk-invalid,var(--lk-border,var(--sc-primary)))]"
           />
         }

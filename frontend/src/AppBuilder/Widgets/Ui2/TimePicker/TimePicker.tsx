@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Clock } from 'lucide-react';
-import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useExposed, useAutoHeight, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -237,7 +237,7 @@ export const ShadTimePicker = (props: WidgetProps) => {
             id={`shad-${id}`}
             variant="outline"
             disabled={disabled}
-            aria-invalid={!!check.error || undefined}
+            {...controlAria(props, check.error)}
             {...focus.handlers}
             className={cn(
               TRIGGER,
@@ -251,6 +251,7 @@ export const ShadTimePicker = (props: WidgetProps) => {
           </Button>
         </PopoverTrigger>
         <PopoverContent
+          aria-label="Choose a time"
           align="start"
           style={lookVars(componentType, styles)}
           className={listMode ? 'tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[9rem] tw-p-0' : 'tw-w-auto tw-p-0'}

@@ -15,7 +15,7 @@ import React from 'react';
 import { act } from '@testing-library/react';
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 import { binding, createWidgetHarness } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { OPENS, OVERLAY, boxOf, openOverlay, press } from '../packWidgets';
+import { OPENS, OVERLAY, addPageCanvas, boxOf, openOverlay, press } from '../packWidgets';
 import { installProbes } from './leakProbes';
 
 const CYCLES = Number(process.env.LEAK_CYCLES) || 50;
@@ -137,11 +137,7 @@ export const measureWidget = async (name, variant = {}) => {
     capabilities: { dnd: true },
     preload: ['ShadText'],
   });
-  // The page's canvas, which ModalV2 (the Dialog) opens into.
-  const canvasHost = document.createElement('div');
-  canvasHost.className = 'canvas-container page-container';
-  canvasHost.innerHTML = '<div class="canvas-content"><div class="tj-canvas-area real-canvas"></div></div>';
-  document.body.appendChild(canvasHost);
+  const removeCanvas = addPageCanvas();
   await widget.setup();
   // Recharts warns about its first, unmeasured render on every mount; React's errors are kept for the report.
   const errors = [];
@@ -297,7 +293,7 @@ export const measureWidget = async (name, variant = {}) => {
     error.mockRestore();
     probes.restore();
     widget.teardown();
-    canvasHost.remove();
+    removeCanvas();
   }
 };
 
