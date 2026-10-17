@@ -1,5 +1,4 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { isEqual } from 'lodash';
 import { TJDefaultTheme } from '@modules/organization-themes/constants';
 import { shippedThemes } from '@modules/organization-themes/constants/shipped-themes';
 
@@ -75,23 +74,22 @@ export const firstShippedDefinition = (name: string): unknown => {
 
 /** Gives existing workspaces the shipped themes' tinted neutrals (constants/shipped-themes.ts): a shipped theme is
  *  updated only while its definition is still exactly as it was shipped, so a theme someone edited, or made with the
- *  same name, is left alone. */
+ *  same name, is left alone. One set-based statement: every workspace has these rows, so the cloud has many of them,
+ *  and comparing as jsonb ignores key order. */
 export class RetuneShippedThemeNeutrals1792170000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const names = shippedThemes.map((theme) => theme.name);
-    const rows: Array<{ id: string; name: string; definition: unknown }> = await queryRunner.query(
-      `SELECT id, name, definition FROM organization_themes WHERE name = ANY($1)`,
-      [names]
+    const themes = shippedThemes.map((theme) => ({
+      name: theme.name,
+      first: firstShippedDefinition(theme.name),
+      next: theme.definition,
+    }));
+    await queryRunner.query(
+      `UPDATE organization_themes AS t
+          SET definition = v.next::json, updated_at = now()
+         FROM jsonb_to_recordset($1::jsonb) AS v(name text, first jsonb, next jsonb)
+        WHERE t.name = v.name AND t.definition::jsonb = v.first`,
+      [JSON.stringify(themes.filter((theme) => theme.first))]
     );
-    for (const row of rows) {
-      const current = typeof row.definition === 'string' ? JSON.parse(row.definition) : row.definition;
-      if (!isEqual(current, firstShippedDefinition(row.name))) continue;
-      const next = shippedThemes.find((theme) => theme.name === row.name);
-      await queryRunner.query(`UPDATE organization_themes SET definition = $1, updated_at = now() WHERE id = $2`, [
-        JSON.stringify(next.definition),
-        row.id,
-      ]);
-    }
   }
 
   public async down(): Promise<void> {}
