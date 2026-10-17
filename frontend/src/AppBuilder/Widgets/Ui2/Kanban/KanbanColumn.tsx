@@ -190,7 +190,9 @@ export const KanbanColumn = ({
         className={cn(
           'tw-flex tw-flex-col',
           compact ? 'tw-gap-1.5' : 'tw-gap-2',
-          scrolls && '-tw-mx-1 tw-min-h-0 tw-flex-1 tw-overflow-y-auto tw-px-1 [&>*]:tw-shrink-0'
+          // The selected card's ring draws outside it: the scrolling list keeps a 4px margin on every side so it does
+          // not clip the first or last card's ring.
+          scrolls && '-tw-m-1 tw-min-h-0 tw-flex-1 tw-overflow-y-auto tw-p-1 [&>*]:tw-shrink-0'
         )}
       >
         {column.cards.length ? (

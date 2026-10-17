@@ -368,7 +368,10 @@ describe('UI 2.0 Kanban', () => {
 
     // RenderWidget draws the widget 4px shorter than its 500px box.
     await waitFor(() => expect(columns()[0].style.maxHeight).toBe('496px'));
-    expect(columns()[0].querySelector('.tw-overflow-y-auto')).toBeTruthy();
+    const list = columns()[0].querySelector('.tw-overflow-y-auto');
+    expect(list).toBeTruthy();
+    // The selected card's ring draws outside it: the scrolling list pads every side, so no card's ring is clipped.
+    expect(list).toHaveClass('-tw-m-1', 'tw-p-1');
   });
 
   describe('custom card content', () => {
