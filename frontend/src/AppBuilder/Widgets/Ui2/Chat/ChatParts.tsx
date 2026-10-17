@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import ReactMarkdown, { type Components, type ExtraProps } from 'react-markdown';
+import ReactMarkdown, { type Components, type ExtraProps, type Options } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import toast from 'react-hot-toast';
 import { AlertCircle, Check, Copy } from 'lucide-react';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
@@ -11,6 +12,7 @@ import { avatarHue } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import type { ReactNode } from 'react';
 import type { RunRow } from './chatModel';
 import { useCopied } from '@/AppBuilder/Widgets/Ui2/_shared/useCopied';
+import { safeImageUrl } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 // ToolJet UI 2.0 Chat (Chat.tsx): its message rows, the typing dots, the loading skeleton and the header's buttons.
 
@@ -23,10 +25,10 @@ const LOADED_AT = new Date().toISOString();
 const ChatAvatar = ({ src, name, size = 32 }: { src: string; name: string; size?: number }) => {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
-  if (src && !failed) {
+  if (safeImageUrl(src) && !failed) {
     return (
       <img
-        src={src}
+        src={safeImageUrl(src)}
         alt=""
         onError={() => setFailed(true)}
         className="tw-shrink-0 tw-rounded-full tw-object-cover"
@@ -53,7 +55,11 @@ const ChatAvatar = ({ src, name, size = 32 }: { src: string; name: string; size?
 };
 
 // Markdown in replies (the native Chat's renderer: GitHub tables and lists, raw HTML), styled by .sc-markdown in
-// shadcn.scss. Code blocks keep their language as a label.
+// shadcn.scss. Code blocks keep their language as a label. Raw HTML is sanitised to what GitHub allows in a comment:
+// a reply is data (often a model's output), and unsanitised it ran `<iframe srcdoc>` scripts in the app's origin, styled
+// the whole page through `<style>` and drew forms. A style element is dropped with its text.
+export const CHAT_MARKDOWN_SCHEMA = { ...defaultSchema, strip: ['script', 'style'] };
+export const CHAT_REHYPE_PLUGINS: Options['rehypePlugins'] = [rehypeRaw, [rehypeSanitize, CHAT_MARKDOWN_SCHEMA]];
 const domProps = <P extends ExtraProps>({ node, ...rest }: P) => rest; // eslint-disable-line @typescript-eslint/no-unused-vars
 const MD_COMPONENTS: Components = {
   a: (props) => <a {...domProps(props)} target="_blank" rel="noopener noreferrer" />,
@@ -61,7 +67,7 @@ const MD_COMPONENTS: Components = {
 };
 const Markdown = React.memo(({ content }: { content: string }) => (
   <div className="sc-markdown">
-    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={MD_COMPONENTS}>
+    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={CHAT_REHYPE_PLUGINS} components={MD_COMPONENTS}>
       {content}
     </ReactMarkdown>
   </div>

@@ -97,7 +97,7 @@ export const CardBody = ({ card, fields, compact, badgeColors, progressStyle, ex
           style={progressStyle}
           className={cn('tw-flex tw-items-center tw-gap-2', compact ? 'tw-mt-1.5' : 'tw-mt-2.5')}
         >
-          <Progress value={Math.max(0, Math.min(100, progress))} className="tw-h-1.5" />
+          <Progress aria-label="Progress" value={Math.max(0, Math.min(100, progress))} className="tw-h-1.5" />
           <span className={cn('tw-text-[11px] tw-tabular-nums', SECONDARY_TEXT)}>{Math.round(progress)}%</span>
         </div>
       ) : null}

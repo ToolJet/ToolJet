@@ -21,8 +21,8 @@ const widget = createWidgetHarness({
 const PEOPLE =
   "{{[{ ref: 'A-1', name: 'Union Square Hotel', owner: 'Maya Chen', photo: 'https://example.com/maya.png', city: 'Oslo', done: 40, amount: 1250.5, state: 'Paid' }, { ref: 'A-2', name: 'Oakland Ice Rink', owner: 'Owen Hart', photo: '', city: 'Bergen', done: '75%', amount: 980, state: 'Overdue' }]}}";
 const render = (options = {}) => widget.render({ currentMode: 'view', ...options });
-const rows = () => [...document.querySelectorAll('li[role=button]')];
-const row = (title) => screen.getByText(title).closest('li');
+const rows = () => [...document.querySelectorAll('li > [role=button]')];
+const row = (title) => screen.getByText(title).closest('[role=button]');
 const exposed = () => widget.exposed() ?? {};
 const people = (extra = {}) => ({
   data: binding(PEOPLE),

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronsUpDown } from 'lucide-react';
-import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -100,7 +100,7 @@ export const ShadCombobox = (props: WidgetProps) => {
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              aria-invalid={!!check.error || undefined}
+              {...controlAria(props, check.error)}
               disabled={disabled}
               {...focus.handlers}
               className={cn('tw-w-full tw-justify-between tw-gap-2 tw-px-3 tw-font-normal', CONTROL)}
@@ -124,6 +124,7 @@ export const ShadCombobox = (props: WidgetProps) => {
           ) : null}
         </div>
         <PopoverContent
+          aria-label="Options"
           align="start"
           className={cn('tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[12rem] tw-p-0', MENU_SURFACE)}
           style={lookVars(componentType, styles)}

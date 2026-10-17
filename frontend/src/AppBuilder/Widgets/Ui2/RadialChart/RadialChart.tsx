@@ -4,7 +4,7 @@ import { Cell, PolarAngleAxis, RadialBar, RadialBarChart, Tooltip } from 'rechar
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { type Row } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import { arcAngles, arcBox, radialRows } from './radialModel';
-import { LegendContent, SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { LegendContent, SafeFrame, animated, chartName } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -184,7 +184,12 @@ export const ShadRadialChart = (props: WidgetProps) => {
     p.valueSuffix,
   ]);
   return (
-    <SafeFrame props={props} empty={!rings.length}>
+    <SafeFrame
+      props={props}
+      empty={!rings.length}
+      // The centre figure is part of the drawing: in the name, a gauge reads as its label and value.
+      label={[chartName(props.componentType), centre.label, centre.value].filter(Boolean).join(', ')}
+    >
       {(onDatum) => <RadialBody p={p} rings={rings} progress={progress} centre={centre} onDatum={onDatum} />}
     </SafeFrame>
   );

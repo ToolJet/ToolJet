@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Minus } from 'lucide-react';
-import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
@@ -138,7 +138,7 @@ export const ShadOtpInput = (props: WidgetProps) => {
           ref={inputRef}
           id={`shad-${id}`}
           aria-label={toText(properties.label) || 'One-time code'}
-          aria-invalid={!!check.error || undefined}
+          {...controlAria(props, check.error)}
           inputMode={characters === 'numeric' ? 'numeric' : 'text'}
           autoComplete="one-time-code"
           autoCapitalize="characters"

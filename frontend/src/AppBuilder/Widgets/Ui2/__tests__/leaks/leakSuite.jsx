@@ -12,18 +12,15 @@
 //  - every Leaflet map made is removed; a chart leaves no Recharts node behind.
 // KNOWN lists the leaks found in code outside this folder. probes.spec.jsx checks that each probe sees a leak.
 import React from 'react';
-import { act, fireEvent } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { shadcnConfigs } from '@/AppBuilder/WidgetManager/widgets/shadcn';
 import { binding, createWidgetHarness } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { OPENS, OVERLAY, addPageCanvas, boxOf, openOverlay, press } from '../packWidgets';
 import { installProbes } from './leakProbes';
 
 const CYCLES = Number(process.env.LEAK_CYCLES) || 50;
 const WARMUP = 2;
 const BASELINE_CYCLES = 3;
-// A grid column is about 30 px on a 1290 px canvas.
-const COLUMN_PX = 30;
-
-const CONFIGS = Object.fromEntries(shadcnConfigs.map((c) => [c.name, c]));
 // The charts drawn with Recharts (the funnel and the heatmap are the pack's own SVG).
 const RECHARTS = /^Shad(Area|Bar|Line|Pie|Radar|Radial|Scatter|Combo)Chart$|^ShadSparkline$/;
 
@@ -105,21 +102,6 @@ export const FAMILIES = {
 };
 FAMILIES.display = shadcnConfigs.map((c) => c.name).filter((n) => !Object.values(FAMILIES).flat().includes(n));
 
-// Widgets with an overlay: each cycle opens it (the `open` action, or a press on the trigger) before the unmount, since
-// an overlay unmounted while open is where portals, outside-press listeners and focus timers are left behind.
-const OPENS = new Set([
-  'ShadSelect',
-  'ShadCombobox',
-  'ShadMultiselect',
-  'ShadDatePicker',
-  'ShadDateTimePicker',
-  'ShadTimePicker',
-  'ShadColorPicker',
-  'ShadDropdownMenu',
-  'ShadDialog',
-]);
-const OVERLAY = '[data-radix-popper-content-wrapper], [role="dialog"], [role="listbox"], [role="menu"], .modal';
-
 // Paths the defaults leave dormant that hold a timer or a page-level listener while active: each runs as one more case
 // of its widget, with these properties over the defaults and, when given, a press on `press` before the unmount.
 const VARIANTS = {
@@ -136,18 +118,6 @@ const VARIANTS = {
       press: 'button[aria-label="Full screen"]',
     },
   ],
-};
-
-const press = (node) => {
-  fireEvent.pointerDown(node, { button: 0, pointerType: 'mouse' });
-  fireEvent.mouseDown(node, { button: 0 });
-  fireEvent.pointerUp(node, { button: 0, pointerType: 'mouse' });
-  fireEvent.click(node);
-};
-
-const boxOf = (name) => {
-  const size = CONFIGS[name]?.defaultSize || {};
-  return { width: Math.max(240, (Number(size.width) || 10) * COLUMN_PX), height: Number(size.height) || 300 };
 };
 
 const delta = (label, before, after, describe) =>
@@ -167,11 +137,7 @@ export const measureWidget = async (name, variant = {}) => {
     capabilities: { dnd: true },
     preload: ['ShadText'],
   });
-  // The page's canvas, which ModalV2 (the Dialog) opens into.
-  const canvasHost = document.createElement('div');
-  canvasHost.className = 'canvas-container page-container';
-  canvasHost.innerHTML = '<div class="canvas-content"><div class="tj-canvas-area real-canvas"></div></div>';
-  document.body.appendChild(canvasHost);
+  const removeCanvas = addPageCanvas();
   await widget.setup();
   // Recharts warns about its first, unmeasured render on every mount; React's errors are kept for the report.
   const errors = [];
@@ -198,13 +164,10 @@ export const measureWidget = async (name, variant = {}) => {
     if (empty) await act(async () => widget.session.render(<></>));
     else await act(async () => widget.render({ currentMode: 'view', properties: variant.properties }));
     await settle();
+    // A widget with an overlay opens it in every cycle, since an overlay unmounted while open is where portals,
+    // outside-press listeners and focus timers are left behind.
     if (!empty && OPENS.has(name)) {
-      const open = widget.exposed()?.open;
-      const trigger = document.querySelector('[aria-haspopup], [role="combobox"], button.tj-shad-trigger');
-      await act(async () => {
-        if (typeof open === 'function') await open();
-        else if (trigger) press(trigger);
-      });
+      await openOverlay(widget.exposed());
       await settle();
       overlaysOpened += document.querySelector(OVERLAY) ? 1 : 0;
     }
@@ -330,7 +293,7 @@ export const measureWidget = async (name, variant = {}) => {
     error.mockRestore();
     probes.restore();
     widget.teardown();
-    canvasHost.remove();
+    removeCanvas();
   }
 };
 

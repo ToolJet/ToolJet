@@ -5,6 +5,9 @@ import { isRecord, isSet, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 const round1 = (v: number) => Math.round(v * 10) / 10;
 
+/** A funnel draws at most this many stages. */
+export const MAX_STAGES = 24;
+
 /** A funnel's stages in data order: label, value (negative reads as 0, a non-number as null), width (share of the
  *  widest stage, 0 to 1), ofFirst and ofPrevious (percent of the first stage and of the stage before, null when that
  *  stage is empty) and the source row. A stage or value field the data lacks falls back to the data's own. */

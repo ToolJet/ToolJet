@@ -7,7 +7,7 @@ import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Skeleton, cn, getPortalRoot } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { isSet, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { isSet, safeImageUrl, toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 
 // ---- Image -----------------------------------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ export const ShadImage = (props: WidgetProps) => {
   // With a ratio the image sizes itself from the width and the widget fits it; "auto" fills the drawn height instead.
   const ratio = ratioOf(p.aspectRatio);
   useAutoHeight({ ...props, properties: { ...p, dynamicHeight: ratio ? p.dynamicHeight : false } }, ref);
-  const src = String(p.source ?? '').trim();
+  const src = safeImageUrl(p.source);
   const alt = String(p.alternativeText ?? '');
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>(src ? 'loading' : 'error');
   const [open, setOpen] = useState(false);

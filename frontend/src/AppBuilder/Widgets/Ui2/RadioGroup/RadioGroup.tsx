@@ -2,7 +2,8 @@ import React, { useRef } from 'react';
 import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Label, RadioGroup, RadioGroupItem } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { Field } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { Field, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { useValidation, useValue } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
   MAX_CHOICES,
@@ -41,15 +42,20 @@ export const ShadRadioGroup = (props: WidgetProps) => {
   return (
     <Shell {...props} innerRef={fit}>
       <Field
+        id={`shad-${id}`}
         label={properties.label}
         description={properties.description}
         error={check.error}
         required={check.required}
       >
         <RadioGroup
+          id={`shad-${id}`}
+          aria-label={toText(properties.label) || undefined}
+          {...controlAria(props, check.error)}
           value={key}
           disabled={busy(properties)}
-          className={properties.horizontal === true ? 'tw-flex tw-flex-wrap tw-gap-4' : undefined}
+          // Each label is a 24px touch target (WCAG 2.5.8), as tall as a 16px row and the list's old 8px gap.
+          className={properties.horizontal === true ? 'tw-flex tw-flex-wrap tw-gap-x-4' : 'tw-gap-0'}
           onValueChange={(next) => {
             change(next, 'onSelectionChange');
             check.touch();
@@ -64,7 +70,10 @@ export const ShadRadioGroup = (props: WidgetProps) => {
                   id={itemId}
                   className="tw-border-[color:var(--lk-invalid,var(--sc-primary))]"
                 />
-                <Label htmlFor={itemId} className="tw-font-normal tw-text-[color:var(--lk-fg,var(--sc-foreground))]">
+                <Label
+                  htmlFor={itemId}
+                  className="tw-flex tw-min-h-6 tw-items-center tw-font-normal tw-text-[color:var(--lk-fg,var(--sc-foreground))]"
+                >
                   {o.label}
                 </Label>
               </div>

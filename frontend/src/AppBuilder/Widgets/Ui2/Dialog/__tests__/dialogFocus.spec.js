@@ -45,11 +45,19 @@ describe('dialog focus', () => {
     expect(tab()).toEqual({ handled: false, prevented: false });
     expect(document.activeElement).toBe(outside);
   });
-  it('ignores other keys and a dialog with nothing to focus', () => {
+  it('ignores other keys and a missing dialog', () => {
     expect(trapTab(new KeyboardEvent('keydown', { key: 'Enter' }), root)).toBe(false);
     expect(trapTab(new KeyboardEvent('keydown', { key: 'Tab' }), null)).toBe(false);
+  });
+  it('keeps Tab on a dialog with nothing to focus, instead of walking out to the page behind it', () => {
     root.innerHTML = '<p>text only</p>';
-    expect(tab().handled).toBe(false);
+    root.tabIndex = -1;
+    root.focus();
+    expect(tab()).toEqual({ handled: true, prevented: true });
+    expect(document.activeElement).toBe(root);
+    document.activeElement.blur();
+    expect(tab()).toEqual({ handled: true, prevented: true });
+    expect(document.activeElement).toBe(root);
   });
 
   // Focus goes back to what opened the dialog: the last element focused or pressed outside any dialog (react-bootstrap
@@ -69,5 +77,19 @@ describe('dialog focus', () => {
     expect(openerOf()).toBe(pressed);
     pressed.remove();
     expect(openerOf()).toBeNull();
+  });
+  // Safari does not focus a pressed button, but it does focus the nearest tabindex="-1" container (the canvas), and
+  // that focusin overwrote the button: focus went back to the canvas, not the trigger (found in WebKit).
+  it('keeps a pressed button over the container Safari focuses after the press', () => {
+    watchOpeners();
+    const canvas = document.createElement('div');
+    canvas.tabIndex = -1;
+    const pressed = document.createElement('button');
+    canvas.append(pressed);
+    document.body.append(canvas);
+    pressed.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    canvas.focus();
+    expect(openerOf()).toBe(pressed);
+    canvas.remove();
   });
 });

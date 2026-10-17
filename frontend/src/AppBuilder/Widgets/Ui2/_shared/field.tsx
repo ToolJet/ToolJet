@@ -27,15 +27,40 @@ export const FieldLabel = ({ id, text, required }: { id?: string; text: string; 
   </Label>
 );
 
-/** The validation message, else the help text, under a control; `size` is the text size class. */
-export const FieldNote = ({ error, description, size }: { error?: string; description?: unknown; size: string }) =>
-  error ? (
-    <p role="alert" className={cn(size, 'tw-font-medium', ERROR)}>
+/** The id of the note under a widget's control (its validation message, else its help text). */
+export const noteIdOf = (widgetId: string) => `shad-${widgetId}-note`;
+
+/** What a widget's form control carries for assistive tech: invalid while `error` shows, and described by the note
+ *  under it (the error, else the help text), so a screen reader reads both with the control. */
+export const controlAria = (props: { id?: string; properties?: Resolved }, error: unknown) => ({
+  'aria-invalid': !!error || undefined,
+  'aria-describedby': props.id && (error || props.properties?.description) ? noteIdOf(props.id) : undefined,
+});
+
+/** The validation message, else the help text, under a control; `size` is the text size class. `controlId` (the
+ *  control's `shad-<id>`) gives the note the id controlAria points at. */
+export const FieldNote = ({
+  error,
+  description,
+  size,
+  controlId,
+}: {
+  error?: string;
+  description?: unknown;
+  size: string;
+  controlId?: string;
+}) => {
+  const id = controlId ? `${controlId}-note` : undefined;
+  return error ? (
+    <p id={id} role="alert" className={cn(size, 'tw-font-medium', ERROR)}>
       {String(error)}
     </p>
   ) : description ? (
-    <p className={cn(size, HELP)}>{String(description)}</p>
+    <p id={id} className={cn(size, HELP)}>
+      {String(description)}
+    </p>
   ) : null;
+};
 
 /** shadcn's form field: label above (with a mark when mandatory), control, then the validation error or the help
  *  text below. While loading, a spinner sits inside the control. An error also turns the control's border to the
@@ -65,7 +90,7 @@ export const Field = ({ id, label, description, error, required, children }: Fie
       ) : (
         children
       )}
-      <FieldNote error={error} description={description} size="tw-text-[0.8rem]" />
+      <FieldNote error={error} description={description} size="tw-text-[0.8rem]" controlId={id} />
     </div>
   );
 };

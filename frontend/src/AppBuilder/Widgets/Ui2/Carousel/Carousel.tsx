@@ -10,6 +10,7 @@ import {
   clampUnwrapped,
   moveIndex,
 } from '@/AppBuilder/Widgets/Ui2/_actions/actionsModel';
+import { safeImageUrl, safeUrl } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
 // ---- Carousel ----------------------------------------------------------------------------------------------------
@@ -87,8 +88,8 @@ export const ShadCarousel = (props: WidgetProps) => {
     const slide = slides[i];
     setExposedVariable('clickedSlide', { ...slide, index: i });
     fireEvent('onSlideClicked');
-    if (slide?.link && currentMode !== 'edit' && typeof window !== 'undefined') {
-      window.open(slide.link, '_blank', 'noopener,noreferrer');
+    if (safeUrl(slide?.link) && currentMode !== 'edit' && typeof window !== 'undefined') {
+      window.open(safeUrl(slide.link), '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -153,7 +154,7 @@ export const ShadCarousel = (props: WidgetProps) => {
             style={{ columnGap: gap, transform: `translateX(calc(-1 * ${index} * ${step}))` }}
           >
             {slides.map((slide, i) => {
-              const showImage = slide.image && !failed[i];
+              const showImage = !!safeImageUrl(slide.image) && !failed[i];
               const visible = i >= index && i < index + perView;
               return (
                 <div
@@ -177,7 +178,7 @@ export const ShadCarousel = (props: WidgetProps) => {
                   >
                     {showImage ? (
                       <img
-                        src={slide.image}
+                        src={safeImageUrl(slide.image)}
                         alt={slide.title || `Slide ${i + 1}`}
                         loading={i <= index + perView ? 'eager' : 'lazy'}
                         draggable={false}
@@ -257,7 +258,7 @@ export const ShadCarousel = (props: WidgetProps) => {
           ) : null}
         </div>
         {properties.showDots !== false && positions > 1 ? (
-          <div className="tw-flex tw-h-7 tw-shrink-0 tw-items-center tw-justify-center tw-gap-1.5">
+          <div className="tw-flex tw-h-7 tw-shrink-0 tw-items-center tw-justify-center">
             {Array.from({ length: Math.min(positions, 30) }, (_, i) => (
               <button
                 key={i}
@@ -266,13 +267,18 @@ export const ShadCarousel = (props: WidgetProps) => {
                 aria-current={i === index ? 'true' : undefined}
                 disabled={disabled}
                 onClick={() => go(i)}
-                className={cn(
-                  'tw-h-1.5 tw-rounded-full tw-border-0 tw-p-0 tw-transition-all focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring focus-visible:tw-ring-offset-2',
-                  i === index
-                    ? 'tw-w-4 tw-bg-[color:var(--lk-dot-active,var(--sc-primary))]'
-                    : 'tw-w-1.5 tw-bg-[color:var(--lk-dot,color-mix(in_srgb,var(--sc-foreground)_20%,transparent))] hover:tw-bg-[color:var(--lk-dot-active,color-mix(in_srgb,var(--sc-foreground)_40%,transparent))]'
-                )}
-              />
+                // A 24px touch target (WCAG 2.5.8) around the small dot it draws.
+                className="tw-group tw-inline-flex tw-h-6 tw-w-6 tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-p-0 focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ui2-ring"
+              >
+                <span
+                  className={cn(
+                    'tw-h-1.5 tw-rounded-full tw-transition-all',
+                    i === index
+                      ? 'tw-w-4 tw-bg-[color:var(--lk-dot-active,var(--sc-primary))]'
+                      : 'tw-w-1.5 tw-bg-[color:var(--lk-dot,color-mix(in_srgb,var(--sc-foreground)_20%,transparent))] group-hover:tw-bg-[color:var(--lk-dot-active,color-mix(in_srgb,var(--sc-foreground)_40%,transparent))]'
+                  )}
+                />
+              </button>
             ))}
           </div>
         ) : null}

@@ -241,6 +241,6 @@ describe('UI 2.0 Carousel', () => {
       '--lk-gap': '8px',
     };
     Object.entries(vars).forEach(([name, value]) => expect(root.style.getPropertyValue(name)).toBe(value));
-    expect(screen.getByRole('button', { name: 'Go to slide 1' }).className).toContain('var(--lk-dot-active');
+    expect(screen.getByRole('button', { name: 'Go to slide 1' }).firstChild.className).toContain('var(--lk-dot-active');
   });
 });

@@ -51,7 +51,9 @@ export const Calendar = ({
       selected:
         '[&>button]:tw-bg-ui2-primary [&>button]:tw-text-ui2-primary-foreground [&>button]:hover:tw-bg-ui2-primary [&>button]:hover:tw-text-ui2-primary-foreground',
       today: '[&>button]:tw-bg-ui2-accent [&>button]:tw-text-ui2-accent-foreground',
-      outside: 'tw-text-ui2-muted-foreground tw-opacity-50',
+      // Days of the next and last month are selectable, so they keep the muted colour's contrast (no extra opacity,
+      // which left them at 2:1); disabled days are exempt and fade.
+      outside: 'tw-text-ui2-muted-foreground',
       disabled: 'tw-text-ui2-muted-foreground tw-opacity-50',
       hidden: 'tw-invisible',
       ...classNames,
@@ -138,25 +140,26 @@ export const AvatarFallback = React.forwardRef<
 ));
 AvatarFallback.displayName = 'AvatarFallback';
 
-export const Progress = React.forwardRef<
-  React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
->(({ className, value, ...props }, ref) => (
-  <ProgressPrimitive.Root
-    ref={ref}
-    className={cn(
-      'tw-relative tw-h-2 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_20%,transparent))]',
-      className
-    )}
-    value={value}
-    {...props}
-  >
-    <ProgressPrimitive.Indicator
-      className="tw-h-full tw-w-full tw-flex-1 tw-bg-ui2-primary tw-transition-all"
-      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-    />
-  </ProgressPrimitive.Root>
-));
+/** A progress bar's name is required: role="progressbar" without one reads as an unnamed bar. */
+type ProgressProps = React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & { 'aria-label': string };
+export const Progress = React.forwardRef<React.ElementRef<typeof ProgressPrimitive.Root>, ProgressProps>(
+  ({ className, value, ...props }, ref) => (
+    <ProgressPrimitive.Root
+      ref={ref}
+      className={cn(
+        'tw-relative tw-h-2 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-[color:var(--lk-track,color-mix(in_srgb,var(--sc-primary)_20%,transparent))]',
+        className
+      )}
+      value={value}
+      {...props}
+    >
+      <ProgressPrimitive.Indicator
+        className="tw-h-full tw-w-full tw-flex-1 tw-bg-ui2-primary tw-transition-all"
+        style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+      />
+    </ProgressPrimitive.Root>
+  )
+);
 Progress.displayName = 'Progress';
 
 export const Separator = React.forwardRef<

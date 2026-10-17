@@ -215,6 +215,7 @@ export const ShadColorPicker = (props: WidgetProps) => {
             </Button>
           </PopoverTrigger>
           <PopoverContent
+            aria-label="Choose a colour"
             align="start"
             className={cn('tw-flex tw-w-64 tw-flex-col tw-gap-3 tw-p-3', MENU_SURFACE)}
             style={lookVars(componentType, styles)}

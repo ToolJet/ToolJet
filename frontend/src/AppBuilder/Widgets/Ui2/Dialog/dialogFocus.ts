@@ -18,19 +18,30 @@ const hidden = (el: Element, root: Element): boolean => {
   return false;
 };
 
+/** The open dialog's root (ModalV2's .modal) for the Dialog `id`, once it is in the page. */
+export const modalOf = (id: string): Element | null =>
+  typeof document === 'undefined'
+    ? null
+    : document.querySelector(`.modal-dialog[component-id="${id}"]`)?.closest('.modal') ?? null;
+
 /** The elements Tab reaches inside `root`, in order. */
 export const focusables = (root: Element | null | undefined): HTMLElement[] =>
   root ? [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => !hidden(el, root)) : [];
 
 /** A keydown handler's work: Tab from the last field goes to the first, Shift+Tab from the first to the last, and Tab
- *  with focus lost to the page body comes back into the dialog. Focus elsewhere (a popover, the editor) is left. */
+ *  with focus lost to the page body comes back into the dialog; a dialog with nothing to focus keeps focus on itself.
+ *  Focus elsewhere (a popover, the editor) is left. */
 export const trapTab = (event: KeyboardEvent, root: Element | null | undefined): boolean => {
   if (event.key !== 'Tab' || !root) return false;
   const active = typeof document !== 'undefined' ? document.activeElement : null;
   const inside = !!active && root.contains(active);
   if (!inside && active && active !== document.body) return false;
   const list = focusables(root);
-  if (!list.length) return false;
+  if (!list.length) {
+    event.preventDefault();
+    if (root instanceof HTMLElement) root.focus();
+    return true;
+  }
   const first = list[0];
   const last = list[list.length - 1];
   let target: HTMLElement | null = null;
@@ -48,8 +59,12 @@ export const trapTab = (event: KeyboardEvent, root: Element | null | undefined):
 let lastOutside: Focusable | null = null;
 let listening = false;
 const remember = (e: Event) => {
-  const el = e.target instanceof Element ? e.target.closest(FOCUSABLE) || e.target : null;
-  if (el && !el.closest('.modal, [data-radix-popper-content-wrapper]')) lastOutside = el;
+  const target = e.target instanceof Element ? e.target : null;
+  if (!target || target.closest('.modal, [data-radix-popper-content-wrapper]')) return;
+  // Focus landing on something Tab does not reach (Safari focuses a pressed button's tabindex="-1" container, not the
+  // button) is not an opener; a press on anything is.
+  const el = target.closest(FOCUSABLE) || (e.type === 'pointerdown' ? target : null);
+  if (el) lastOutside = el;
 };
 export const watchOpeners = () => {
   if (listening || typeof document === 'undefined') return;

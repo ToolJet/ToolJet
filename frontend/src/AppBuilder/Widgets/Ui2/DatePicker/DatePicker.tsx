@@ -15,7 +15,7 @@ import {
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { useFocusEvents, useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { CONTROL, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import type { DateRange } from 'react-day-picker';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
@@ -199,6 +199,7 @@ export const ShadDatePicker = (props: WidgetProps) => {
             id={`shad-${id}`}
             variant="outline"
             disabled={busy(properties)}
+            {...controlAria(props, check.error)}
             {...focus.handlers}
             className={cn(
               'tw-w-full tw-justify-start tw-text-left tw-font-normal',
@@ -210,7 +211,12 @@ export const ShadDatePicker = (props: WidgetProps) => {
             {text || String(properties.placeholder ?? '')}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="tw-w-auto tw-p-0" align="start" style={lookVars(props.componentType, props.styles)}>
+        <PopoverContent
+          aria-label={range ? 'Choose dates' : 'Choose a date'}
+          className="tw-w-auto tw-p-0"
+          align="start"
+          style={lookVars(props.componentType, props.styles)}
+        >
           {range ? (
             <Calendar {...calendar} mode="range" selected={{ from, to }} onSelect={pick} />
           ) : (

@@ -2,7 +2,8 @@ import React, { useEffect, useMemo } from 'react';
 import { ModalV2 } from '@/AppBuilder/Widgets/Ui2/_shared/ModalV2';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { openerOf, trapTab, watchOpeners } from './dialogFocus';
+import { modalOf, openerOf, trapTab, watchOpeners } from './dialogFocus';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { shadDialogConfig } from '@/AppBuilder/WidgetManager/widgets/shadDialog';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
@@ -67,7 +68,7 @@ type DialogStore = {
   };
 };
 
-const useDialogFocus = (id: string, currentMode?: string) => {
+const useDialogFocus = (id: string, currentMode?: string, name = 'Dialog') => {
   const { moduleId } = useModuleContext();
   const show = useStore(
     (state: DialogStore) => state.resolvedStore?.modules?.[moduleId]?.exposedValues?.components?.[id]?.show === true
@@ -76,18 +77,31 @@ const useDialogFocus = (id: string, currentMode?: string) => {
   useEffect(() => {
     if (!show || currentMode === 'edit' || typeof document === 'undefined') return undefined;
     const opener = openerOf();
-    const root = () => document.querySelector(`.modal-dialog[component-id="${id}"]`)?.closest('.modal');
-    const onKey = (e: KeyboardEvent) => trapTab(e, root());
+    const onKey = (e: KeyboardEvent) => trapTab(e, modalOf(id));
     document.addEventListener('keydown', onKey, true);
     return () => {
       document.removeEventListener('keydown', onKey, true);
       if (opener?.isConnected && typeof opener.focus === 'function') opener.focus({ preventScroll: true });
     };
   }, [show, currentMode, id]);
+  // ModalV2 gives the open dialog role="dialog" and no name, so a screen reader announces an unnamed dialog: it reads
+  // as the Dialog's title. The modal mounts a commit or two after `show` turns on, so this waits for it (20 frames).
+  useEffect(() => {
+    if (!show) return undefined;
+    let tries = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const label = () => {
+      const modal = modalOf(id);
+      if (modal) modal.setAttribute('aria-label', name);
+      else if ((tries += 1) < 20) timer = setTimeout(label, 16);
+    };
+    label();
+    return () => clearTimeout(timer);
+  }, [show, id, name]);
 };
 
 export const ShadDialog = (props: WidgetProps) => {
-  useDialogFocus(props.id, props.currentMode);
+  useDialogFocus(props.id, props.currentMode, toText(props.properties?.title) || 'Dialog');
   const properties = useMemo(() => sanitizeDialog(props.properties, 'properties'), [props.properties]);
   const styles = useMemo(() => sanitizeDialog(props.styles, 'styles'), [props.styles]);
   return <ModalV2 {...props} properties={properties} styles={styles} />;

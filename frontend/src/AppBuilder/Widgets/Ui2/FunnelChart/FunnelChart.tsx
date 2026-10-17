@@ -4,7 +4,7 @@ import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/pa
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { funnelStages, type FunnelStage } from './funnelModel';
+import { funnelStages, MAX_STAGES, type FunnelStage } from './funnelModel';
 import {
   ChartBoundary,
   EmptyChart,
@@ -27,7 +27,7 @@ export const ShadFunnelChart = (props: WidgetProps) => {
   const showConversion = p.showConversion !== false;
   // The stages and the label and value column widths are worked out again only when what they read changes.
   const stages = useMemo(
-    () => funnelStages(bound, p.stageField, p.valueField).slice(0, 24),
+    () => funnelStages(bound, p.stageField, p.valueField).slice(0, MAX_STAGES),
     [bound, p.stageField, p.valueField]
   );
   const format = useMemo(() => formatter(options, options.format === 'compact'), [options]);

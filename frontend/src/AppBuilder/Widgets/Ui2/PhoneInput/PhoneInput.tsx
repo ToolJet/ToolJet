@@ -4,7 +4,7 @@ import PhoneNumberInput from 'react-phone-number-input/input';
 import flags from 'react-phone-number-input/flags';
 import { isValidPhoneNumber } from 'react-phone-number-input';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
-import { FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -22,6 +22,7 @@ import type { InputHTMLAttributes, KeyboardEvent } from 'react';
 import type { Country } from 'react-phone-number-input';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { SECONDARY_ON_HIGHLIGHT } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 
 export const BareInput = React.forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>((props, ref) => (
   <input ref={ref} {...props} />
@@ -32,8 +33,7 @@ BareInput.displayName = 'BareInput';
 
 const POPOVER_LIST = 'tw-max-h-[300px] tw-overflow-y-auto tw-overflow-x-hidden';
 
-export const COMMAND_ITEM =
-  'tw-relative tw-flex tw-cursor-default tw-select-none tw-items-center tw-gap-2 tw-rounded-ui2-sm tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-outline-none data-[disabled=true]:tw-pointer-events-none data-[selected=true]:tw-bg-ui2-accent data-[selected=true]:tw-text-ui2-accent-foreground data-[disabled=true]:tw-opacity-50';
+export const COMMAND_ITEM = `tw-relative tw-flex tw-cursor-default tw-select-none tw-items-center tw-gap-2 tw-rounded-ui2-sm tw-px-2 tw-py-1.5 tw-text-ui2-sm tw-outline-none data-[disabled=true]:tw-pointer-events-none data-[selected=true]:tw-bg-ui2-accent data-[selected=true]:tw-text-ui2-accent-foreground data-[disabled=true]:tw-opacity-50 ${SECONDARY_ON_HIGHLIGHT}`;
 
 export const FlagIcon = ({ country, title }: { country: Country; title: string }) => {
   const Flag = flags[country];
@@ -140,6 +140,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
               </button>
             </PopoverTrigger>
             <PopoverContent
+              aria-label="Choose a country"
               className="tw-w-[300px] tw-p-0"
               align="start"
               style={vars}
@@ -175,7 +176,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
                         >
                           {showFlag ? <FlagIcon country={c} title={label} /> : null}
                           <span className="tw-flex-1 tw-truncate">{label}</span>
-                          <span className="tw-text-xs tw-tabular-nums tw-text-ui2-muted-foreground">
+                          <span data-secondary className="tw-text-xs tw-tabular-nums tw-text-ui2-muted-foreground">
                             +{M.callingCode(c)}
                           </span>
                           <Check
@@ -202,7 +203,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
           value={state.value || undefined}
           inputComponent={BareInput}
           autoComplete="tel"
-          aria-invalid={!!check.error || undefined}
+          {...controlAria(props, check.error)}
           className={INNER}
           placeholder={toText(properties.placeholder)}
           disabled={disabled}

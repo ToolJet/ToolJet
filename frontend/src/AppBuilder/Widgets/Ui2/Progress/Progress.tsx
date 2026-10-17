@@ -5,6 +5,7 @@ import { Progress, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { useOverrides } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { HELP, LABEL } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
 export const ShadProgress = (props: WidgetProps) => {
   const { setExposedVariables } = props;
@@ -23,7 +24,11 @@ export const ShadProgress = (props: WidgetProps) => {
             {properties.showValue ? <span className={cn('tw-tabular-nums', HELP)}>{Math.round(value)}%</span> : null}
           </div>
         ) : null}
-        <Progress value={value} className="tw-h-[var(--lk-height,0.5rem)]" />
+        <Progress
+          value={value}
+          aria-label={toText(properties.label) || 'Progress'}
+          className="tw-h-[var(--lk-height,0.5rem)]"
+        />
       </div>
     </Shell>
   );
