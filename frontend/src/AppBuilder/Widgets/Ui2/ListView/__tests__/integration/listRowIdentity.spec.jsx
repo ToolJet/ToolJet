@@ -6,7 +6,7 @@
  * Real store, real RenderWidget, real widgets; jsdom's missing layout is given a width so rows mount their canvas.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
 import { binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
@@ -85,4 +85,25 @@ describe('UI 2.0 List view row identity', () => {
     await waitFor(() => expect(screen.getByText('Page 1 of 1')).toBeInTheDocument());
     await waitFor(() => expect(exposed().pageIndex).toBe(1));
   });
+
+  test.each(['setPage', 'the Next button'])(
+    '[finding 28] after a page turn by %s, the selection pairs no other record with the selected item',
+    async (how) => {
+      await render([ALPHA, BETA, GAMMA, DELTA], paged, 2);
+      await widget.act('selectItem', 'b');
+      expect(exposed().selectedRecord.field1.value).toBe('Beta');
+
+      if (how === 'setPage') await widget.act('setPage', 2);
+      else fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+      await waitFor(() => expect(published()).toEqual(['Gamma', 'Delta']));
+      // Beta stays selected (by its id), but no row on this page is its record.
+      await waitFor(() => expect(exposed().selectedRecordId).toBeNull());
+      expect(exposed().selectedItem).toEqual(BETA);
+      expect(exposed().selectedRecord).toEqual({});
+
+      await widget.act('setPage', 1);
+      await waitFor(() => expect(exposed().selectedRecord?.field1?.value).toBe('Beta'));
+      expect(exposed().selectedRecordId).toBe(1);
+    }
+  );
 });

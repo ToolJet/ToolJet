@@ -19,8 +19,9 @@ export interface ListSelectionArgs {
 
 /** The List view's selection, kept by item key (its idField, else its position on the page), so it survives a
  *  refetch that reorders or reloads the data. A click picks a row (onRecordClicked); a data change (an edit, a removal,
- *  a reorder) re-publishes the selection from the fresh record at its new row and clears it when the item is gone,
- *  with no event (README, "Selection after a data change"). */
+ *  a reorder) or a page turn re-publishes the selection from the fresh record at its new row, with no record while the
+ *  item is on another page, and clears it when the item is gone, with no event (README, "Selection after a data
+ *  change"). */
 export const useListSelection = (args: ListSelectionArgs) => {
   const { data, items, idField } = args;
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -57,7 +58,8 @@ export const useListSelection = (args: ListSelectionArgs) => {
       selectedRecordId: null,
     });
   };
-  // Runs for data changes only, not for a page turn.
+  // Runs when the data or the shown rows change (a page turn, "Show more"). selectedRecordId is a row on this page:
+  // off its page, the selected item has no row, so it has no record either (the row there belonged to another item).
   const reconcile = useLatest(() => {
     if (selectedKey === null) return;
     const all = list(data);
@@ -75,6 +77,6 @@ export const useListSelection = (args: ListSelectionArgs) => {
       selectedRecordId: shownAt >= 0 ? shownAt : null,
     });
   });
-  useEffect(() => reconcile.current(), [data, reconcile]);
+  useEffect(() => reconcile.current(), [data, items, reconcile]);
   return { keys, selectedIndex, pick, clearSelection };
 };
