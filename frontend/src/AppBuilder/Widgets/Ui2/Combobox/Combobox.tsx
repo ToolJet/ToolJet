@@ -3,7 +3,13 @@ import { ChevronsUpDown } from 'lucide-react';
 import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { toOptions, useAutoHeight, useExposed, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  runNow,
+  toOptions,
+  useAutoHeight,
+  useExposed,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Button, Popover, PopoverContent, PopoverTrigger, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_pickers/pickersModel';
@@ -75,18 +81,20 @@ export const ShadCombobox = (props: WidgetProps) => {
       if (search) onSearch('');
     }
   };
-  const pick = (option: Option) => {
-    setKey(M.keyOf(option.value));
-    setExposedVariables({ value: option.value, selectedOption: option });
-    openChange(false);
-    fireEvent('onSelect');
-  };
-  const clear = () => {
-    setKey(null);
-    setExposedVariables({ value: '', selectedOption: {} });
-    check.touch();
-    fireEvent('onSelect');
-  };
+  const pick = (option: Option) =>
+    runNow(() => {
+      setKey(M.keyOf(option.value));
+      setExposedVariables({ value: option.value, selectedOption: option });
+      openChange(false);
+      fireEvent('onSelect');
+    });
+  const clear = () =>
+    runNow(() => {
+      setKey(null);
+      setExposedVariables({ value: '', selectedOption: {} });
+      check.touch();
+      fireEvent('onSelect');
+    });
   const showClear = properties.showClearBtn !== false && !!selected && !disabled;
   return (
     <FormField props={props} properties={properties} check={check} innerRef={ref}>

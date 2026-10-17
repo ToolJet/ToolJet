@@ -106,12 +106,19 @@ describe('UI 2.0 Currency input', () => {
     render({
       properties: { currencyOptions: binding("{{['USD', 'EUR', 'JPY']}}"), defaultValue: binding('{{12.5}}') },
     });
-    widget.setEvents(setVariableOn(ID, 'onChange', { value: '{{components.currency1.currency}}' }));
+    widget.setEvents([
+      ...setVariableOn(ID, 'onChange', {
+        value: '{{({ currency: components.currency1.currency, formattedValue: components.currency1.formattedValue })}}',
+      }),
+      ...countInvocationsOn(ID, 'onChange', { key: 'changes' }),
+    ]);
     expect(await screen.findByRole('combobox', { name: 'Currency' })).toHaveTextContent('USD');
 
     await pickCurrency('JPY');
 
-    await waitFor(() => expect(widget.variables().seen).toBe('JPY'));
+    // One onChange (a pick fired it twice), and its handler reads the new currency and amount.
+    await waitFor(() => expect(widget.variables().seen).toEqual({ currency: 'JPY', formattedValue: '¥13' }));
+    expect(widget.variables().changes).toBe(1);
     expect(exposed()).toMatchObject({ value: 13, formattedValue: '¥13' });
     expect(box()).toHaveValue('13');
   });

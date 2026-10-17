@@ -2,7 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useTextBox, useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  runNow,
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
@@ -97,11 +103,12 @@ export const ShadCurrencyInput = (props: WidgetProps) => {
               const next = M.toCurrency(code, currency);
               if (next === currency) return;
               const rounded = M.roundTo(value, M.currencyDecimals(next, properties.decimalPlaces));
-              setCurrency(next);
-              box.valueRef.current = rounded;
-              box.set(rounded);
-              setExposedVariables({ currency: next, value: rounded, formattedValue: formatted(rounded, next) });
-              fireEvent('onChange');
+              // box.set fires the one onChange, once the new currency and amount are published.
+              runNow(() => {
+                setCurrency(next);
+                box.set(rounded);
+                setExposedVariables({ currency: next, value: rounded, formattedValue: formatted(rounded, next) });
+              });
             }}
           >
             <SelectTrigger

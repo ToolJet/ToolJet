@@ -3,7 +3,13 @@ import { Minus } from 'lucide-react';
 import { FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
-import { useAutoHeight, useExposed, useLatest, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  runNow,
+  useAutoHeight,
+  useExposed,
+  useLatest,
+  withControlState,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from '@/AppBuilder/Widgets/Ui2/_inputs/inputsModel';
 import { EDGE, withRule } from '@/AppBuilder/Widgets/Ui2/_inputs/inputParts';
@@ -56,11 +62,13 @@ export const ShadOtpInput = (props: WidgetProps) => {
   const change = (raw: string) => {
     const next = M.otpSanitize(raw, length, characters);
     if (next === code) return;
-    setValue(next);
-    const done = next.length === length;
-    setExposedVariables({ value: next, isComplete: done });
-    fireEvent('onChange');
-    if (done) fireEvent('onComplete');
+    runNow(() => {
+      setValue(next);
+      const done = next.length === length;
+      setExposedVariables({ value: next, isComplete: done });
+      fireEvent('onChange');
+      if (done) fireEvent('onComplete');
+    });
   };
   const check = useValidation(
     withRule(props, (v) => (v && String(v).length < length ? `Enter all ${length} characters` : '')),

@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { CONTROL } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import * as M from './dateModel';
-import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { runNow, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { numericText } from './inputsModel';
 import type { ChangeEvent, ReactNode } from 'react';
@@ -90,10 +90,12 @@ export const useNumberBox = (
   /** Sets the value as the user does; `extra` gives the exposed values that go with it. */
   const commit = (next: number | null, extra: (value: number | null) => Exposed) => {
     if (next === valueRef.current) return;
-    valueRef.current = next;
-    setValue(next);
-    setExposedVariables({ value: next, ...extra(next) });
-    fireEvent('onChange');
+    runNow(() => {
+      valueRef.current = next;
+      setValue(next);
+      setExposedVariables({ value: next, ...extra(next) });
+      fireEvent('onChange');
+    });
   };
   /** Sets the value from an action, as the native number inputs' setText, setValue and clear do: onChange, every
    *  time. The value is published by the action's flush before the event fires (runNow). */

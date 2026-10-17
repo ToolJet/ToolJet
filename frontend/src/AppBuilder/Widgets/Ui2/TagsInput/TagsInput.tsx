@@ -4,6 +4,7 @@ import { CONTROL, FormField, controlAria } from '@/AppBuilder/Widgets/Ui2/_share
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
+  runNow,
   toOptions,
   useAutoHeight,
   useExposed,
@@ -77,15 +78,16 @@ export const ShadTagsInput = (props: WidgetProps) => {
     .slice(0, 50);
   const menuOpen = focused && !dismissed && !disabled && visible.length > 0;
 
-  const commit = (next: string[], event: 'onTagAdded' | 'onTagDeleted', tag: string) => {
-    setTags(next);
-    setExposedVariables({
-      ...tagNames(next),
-      ...(event === 'onTagAdded' ? { lastAddedTag: tag } : { lastRemovedTag: tag }),
+  const commit = (next: string[], event: 'onTagAdded' | 'onTagDeleted', tag: string) =>
+    runNow(() => {
+      setTags(next);
+      setExposedVariables({
+        ...tagNames(next),
+        ...(event === 'onTagAdded' ? { lastAddedTag: tag } : { lastRemovedTag: tag }),
+      });
+      fireEvent(event);
+      fireEvent('onChange');
     });
-    fireEvent(event);
-    fireEvent('onChange');
-  };
   /** Adds typed or picked tags; true when at least one was added. */
   const add = (candidates: unknown) => {
     let wanted = M.toTags(candidates);

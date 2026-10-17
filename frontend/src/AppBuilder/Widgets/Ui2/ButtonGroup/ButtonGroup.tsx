@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import {
+  runNow,
   useAutoHeight,
   useExposed,
   useLatest,
@@ -93,17 +94,18 @@ export const ShadButtonGroup = (props: WidgetProps) => {
   const orientation = properties.orientation === 'vertical' ? 'vertical' : 'horizontal';
   const fullWidth = properties.fullWidth === true;
   const disabled = busy(properties);
-  const click = (button: GroupButton) => {
-    const info = { label: button.label, value: button.value };
-    setLastClicked(info);
-    setExposedVariable('lastClicked', info);
-    const next = toggleSelection(selected, String(button.value), mode, properties.allowDeselect === true);
-    const changed = !isEqual(next, selected);
-    if (changed) apply(next);
-    check.touch();
-    fireEvent('onClick');
-    if (changed) fireEvent('onChange');
-  };
+  const click = (button: GroupButton) =>
+    runNow(() => {
+      const info = { label: button.label, value: button.value };
+      setLastClicked(info);
+      setExposedVariable('lastClicked', info);
+      const next = toggleSelection(selected, String(button.value), mode, properties.allowDeselect === true);
+      const changed = !isEqual(next, selected);
+      if (changed) apply(next);
+      check.touch();
+      fireEvent('onClick');
+      if (changed) fireEvent('onChange');
+    });
   const on = new Set(selected);
   return (
     <Shell {...props} innerRef={ref}>
