@@ -77,7 +77,7 @@ export const FlexContainer = ({
   const isStretched = useStore((state) => {
     const parentId = state.getComponentDefinition?.(id, moduleId)?.component?.parent;
     if (!parentId) return false;
-    const parent = state.getResolvedComponent?.(parentId);
+    const parent = state.getResolvedComponent?.(parentId, null, moduleId);
     return parent?.properties?.alignItems === 'stretch' && (parent?.properties?.direction ?? 'column') === 'row';
   }, shallow);
 
