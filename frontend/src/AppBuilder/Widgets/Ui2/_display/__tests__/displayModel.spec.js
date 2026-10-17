@@ -189,7 +189,7 @@ describe('steps', () => {
       [1, 'step 1', true, false],
       [2, 'Two', false, false],
       [3, 'Three', true, false],
-      ['1-5', 'dup', true, false],
+      ['1~3', 'dup', true, false],
     ]);
     expect(normalizeSteps('[{"name":"A"}]')[0]).toMatchObject({ id: 1, name: 'A' });
     expect(normalizeSteps('A, B').map((s) => s.name)).toEqual(['A', 'B']);
