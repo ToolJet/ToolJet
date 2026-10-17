@@ -87,6 +87,9 @@ const STILL_CHARTS = Object.fromEntries(
 const inputOf = (id) => page.elementOf(id)?.querySelector('input');
 
 describe('UI 2.0 re-renders on a page of every widget', () => {
+  // The first setup loads all 80 widgets' modules (on a cold cache, a transform each: over jest's 5 s hook limit);
+  // later setups find them loaded. A test's own setup renders the page and waits for it to come to rest.
+  beforeAll(() => page.harness.setup(), 120000);
   beforeEach(async () => {
     await page.harness.setup();
     store().dataQuery.setQueries(
@@ -101,7 +104,7 @@ describe('UI 2.0 re-renders on a page of every widget', () => {
     store().setResolvedQuery('q2', { data: { total: 7 }, isLoading: false }, MODULE_ID);
     page.render(STILL_CHARTS);
     await quiet();
-  });
+  }, 30000);
   afterEach(page.harness.teardown);
 
   test('[Ui2Page-RND-001] the page is still at rest: nothing re-renders without input', async () => {
