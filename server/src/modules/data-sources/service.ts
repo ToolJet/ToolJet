@@ -308,9 +308,16 @@ export class DataSourcesService implements IDataSourcesService {
     testDataSourceDto: TestDataSourceDto,
     organization_id: string,
     dataSourceId?: string,
-    branchId?: string
+    branchId?: string,
+    context?: { dataSource?: DataSource; canEditDataSource?: boolean }
   ): Promise<object> {
-    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, organization_id, dataSourceId, branchId);
+    return await this.dataSourcesUtilService.testConnection(
+      testDataSourceDto,
+      organization_id,
+      dataSourceId,
+      branchId,
+      context
+    );
   }
 
   async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
@@ -321,6 +328,8 @@ export class DataSourcesService implements IDataSourcesService {
       user.defaultOrganizationId
     );
     testDataSourceDto.options = dataSource.options;
+    testDataSourceDto.kind = dataSource.kind;
+    testDataSourceDto.plugin_id = dataSource.pluginId;
     return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
   }
 
