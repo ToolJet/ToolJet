@@ -23,6 +23,20 @@ export function parseParentIdAndSuffix(parentId: string) {
   return match ? { baseId: match[1], suffix: match[2] } : { baseId: parentId || null, suffix: null };
 }
 
+/**
+ * Widget types that keep their children in a named slot, stored on the child as `{parentId}-{slotId}`: a tab of
+ * Tabs or of the UI 2.0 ShadTabs, a Calendar's popover. Copies remap the base id and keep the slot.
+ */
+export const SLOTTED_PARENT_TYPES = ['Tabs', 'ShadTabs', 'Calendar'];
+
+/** Whether `parentId` names a slot (`{id}-{slotId}`) of a slotted parent among `components` ({ id, type }). */
+export function isChildOfSlottedParent(parentId: string, components: { id: string; type?: string }[]) {
+  const { baseId, suffix } = parseParentIdAndSuffix(parentId);
+  if (!baseId || !suffix) return false;
+  const parent = components.find((component) => component.id === baseId);
+  return !!parent && SLOTTED_PARENT_TYPES.includes(parent.type);
+}
+
 /** Skip components with corrupt parents (e.g. `undefined-t0`). */
 export function shouldSkipComponentOnVersionCopy(component: { parent?: string | null }) {
   return !!component.parent?.startsWith('undefined');

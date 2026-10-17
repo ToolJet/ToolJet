@@ -189,6 +189,9 @@ export const Inspector = ({
   };
 
   const isModuleContainer = componentMeta.component === 'ModuleContainer';
+  // A saved component whose type this build does not register (a widget from a newer ToolJet) has no config to edit.
+  // The panel says so; the header still renames and deletes it.
+  const isUnavailableWidget = !!allComponents?.[selectedComponentId] && !tempComponentMeta;
 
   const component = {
     id: selectedComponentId,
@@ -470,6 +473,7 @@ export const Inspector = ({
   };
   const buildGeneralStyle = () => {
     if (
+      isUnavailableWidget ||
       !componentMeta?.definition?.generalStyles ||
       componentMeta?.styles?.boxShadow ||
       ['ModuleContainer', 'ModuleViewer'].includes(componentMeta?.component)
@@ -501,6 +505,7 @@ export const Inspector = ({
   };
 
   const renderDocumentationLink = () => {
+    if (isUnavailableWidget) return null;
     return (
       <span className="widget-documentation-link">
         <a
@@ -622,6 +627,16 @@ export const Inspector = ({
   };
 
   const renderTabs = () => {
+    if (isUnavailableWidget) {
+      return (
+        <div className="p-3 text-muted" data-cy="inspector-unavailable-widget">
+          {t(
+            'widget.common.widgetNotAvailable',
+            'This widget is not available in this version of ToolJet. You can rename or delete it.'
+          )}
+        </div>
+      );
+    }
     return (
       <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
         <Tab eventKey="properties" title="Properties">

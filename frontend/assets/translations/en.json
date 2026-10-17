@@ -590,7 +590,8 @@
             "documentation": "Read documentation for {{componentMeta}}",
             "widgetNameEmptyError": "Widget name cannot be empty",
             "componentNameExistsError": "Component name already exists",
-            "invalidWidgetName": "Invalid widget name. Should be unique and only include letters, numbers and underscore."
+            "invalidWidgetName": "Invalid widget name. Should be unique and only include letters, numbers and underscore.",
+            "widgetNotAvailable": "This widget is not available in this version of ToolJet. You can rename or delete it."
         },
         "commonProperties": {
             "visibility": "Visibility",

@@ -29,7 +29,10 @@ import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
+import {
+  remapFlexContainerChildOrder,
+  SLOTTED_PARENT_TYPES,
+} from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -3564,11 +3567,8 @@ const isChildOfTabsOrCalendar = (
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
     if (parentComponent) {
-      if (!isNormalizedAppDefinitionSchema) {
-        return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
-      }
-
-      return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+      const type = isNormalizedAppDefinitionSchema ? parentComponent.type : parentComponent.component.component;
+      return SLOTTED_PARENT_TYPES.includes(type);
     }
   }
 

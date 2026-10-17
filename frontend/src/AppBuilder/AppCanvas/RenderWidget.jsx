@@ -72,6 +72,28 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];
 
+// A saved component whose type this build does not register (a widget from a newer ToolJet): a quiet box in its slot
+// instead of an error that takes the page down.
+const UnavailableWidget = () => (
+  <div
+    data-cy="unavailable-widget"
+    style={{
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      border: '1px dashed var(--cc-weak-border, #d0d5dd)',
+      borderRadius: 6,
+      color: 'var(--cc-placeholder-text, #667085)',
+      fontSize: 12,
+      textAlign: 'center',
+      padding: 4,
+    }}
+  >
+    This widget is not available
+  </div>
+);
+
 const RenderWidget = ({
   id,
   widgetHeight,
@@ -345,32 +367,36 @@ const RenderWidget = ({
       data-cy={`draggable-widget-${componentName}`}
     >
       <TrackedSuspense fallback={null}>
-        <ComponentToRender
-          id={id}
-          key={key}
-          {...obj}
-          currentLayout={currentLayout}
-          setExposedVariable={setExposedVariable}
-          setExposedVariables={setExposedVariables}
-          height={widgetHeight - 4}
-          width={widgetWidth}
-          parentId={parentId}
-          fireEvent={fireEventWrapper}
-          validate={validate}
-          resetComponent={resetComponent}
-          resetExposedVariables={resetExposedVariables}
-          onComponentClick={onComponentClick}
-          darkMode={darkMode}
-          componentName={componentName}
-          componentCount={componentCount}
-          dataCy={`${componentName}`}
-          currentMode={currentMode}
-          subContainerIndex={subContainerIndex}
-          componentType={componentType}
-          {...(selfScopesTooltip && {
-            tooltipProps: { content: userTooltipContent, format: userTooltipFormat, show: hasUserTooltip },
-          })}
-        />
+        {ComponentToRender === undefined ? (
+          <UnavailableWidget />
+        ) : (
+          <ComponentToRender
+            id={id}
+            key={key}
+            {...obj}
+            currentLayout={currentLayout}
+            setExposedVariable={setExposedVariable}
+            setExposedVariables={setExposedVariables}
+            height={widgetHeight - 4}
+            width={widgetWidth}
+            parentId={parentId}
+            fireEvent={fireEventWrapper}
+            validate={validate}
+            resetComponent={resetComponent}
+            resetExposedVariables={resetExposedVariables}
+            onComponentClick={onComponentClick}
+            darkMode={darkMode}
+            componentName={componentName}
+            componentCount={componentCount}
+            dataCy={`${componentName}`}
+            currentMode={currentMode}
+            subContainerIndex={subContainerIndex}
+            componentType={componentType}
+            {...(selfScopesTooltip && {
+              tooltipProps: { content: userTooltipContent, format: userTooltipFormat, show: hasUserTooltip },
+            })}
+          />
+        )}
       </TrackedSuspense>
     </div>
   );

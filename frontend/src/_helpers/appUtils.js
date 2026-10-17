@@ -196,6 +196,9 @@ export const buildComponentMetaDefinition = (components = {}) => {
       componentTypes.find((comp) => currentComponentData.component.component === comp.component)
     );
 
+    // A type this build does not register (a widget from a newer ToolJet) has no defaults to merge: keep it as sent.
+    if (!componentMeta) continue;
+
     const mergedDefinition = {
       ...componentMeta.definition,
       properties: mergeWith(
