@@ -77,10 +77,16 @@ export const ShadPhoneInput = (props: WidgetProps) => {
     setExposedVariables(M.phoneInfo(next.value, next.country));
     fireEvent('onChange');
   };
+  // The phone library keeps its own copy of `value` and `country`, synced in effects that report the copy back through
+  // onChange. Those effects' updates run after an action's render (React gives them a later lane), so the copy from one
+  // action would land after the next (`await setValue(...); await clear()` ended with the number set again). An action
+  // starts the library afresh (a new key) from the state it sets, so there is no copy left to report.
+  const [revision, setRevision] = useState(0);
   /** Sets the number from an action, as the native Phone input's setValue and clear do: onChange, every time. */
   const set = (next: PhoneState) => {
     stateRef.current = next;
     setState(next);
+    setRevision((r) => r + 1);
     setExposedVariables(M.phoneInfo(next.value, next.country));
     fireEvent('onChange');
   };
@@ -100,7 +106,9 @@ export const ShadPhoneInput = (props: WidgetProps) => {
     },
     setCountryCode: async (c: unknown) => {
       const country = M.countryFromInput(c, countries);
-      if (country) update(toCountry(country), false);
+      if (!country) return;
+      update(toCountry(country), false);
+      setRevision((r) => r + 1);
     },
     clear: async () => set({ ...stateRef.current, value: '' }),
   });
@@ -196,6 +204,7 @@ export const ShadPhoneInput = (props: WidgetProps) => {
           </span>
         )}
         <PhoneNumberInput
+          key={revision}
           ref={textBox.ref}
           id={`shad-${id}`}
           country={state.country}

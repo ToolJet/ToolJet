@@ -73,7 +73,11 @@ Each widget loads in its own chunk, the first time a page shows it.
   change, except moving through views (Carousel `goTo` fires `onSlideChanged`, as Tabs and Pagination do). Events an
   action fires wait until it has published (`useActionFire`), so their handlers read the new values.
   `__tests__/integration/actionContract.spec.jsx` checks every value-changing action, with `widget.actNow`, which reads
-  the exposed values right after the action resolves.
+  the exposed values right after the action resolves, and runs a set then a clear or reset in one query
+  (`widget.runQuery`), as RunJS does. `flushSync` renders only what the action sets: updates scheduled in effects run
+  later, after the next action. So a widget never lets a child copy its value into the child's own state in an effect
+  and report it back; where a third-party input does (the Phone input's library), an action starts it afresh with a new
+  `key`.
 - **0 and false are values.** `useValidation` judges `validationInput(present, value)`: a field holds a value unless
   it is undefined, null, '' or an empty list, and a widget passes `present` where that differs (a Select or Radio group
   once an option is picked, a Checkbox once checked, a Rating once it has a star). `falsyValues.spec.jsx` checks each
