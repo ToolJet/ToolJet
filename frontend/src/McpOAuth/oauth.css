@@ -1,91 +1,227 @@
 .mcp-oauth-page {
-  min-height: 100vh;
+  /* The sign-in page can leave body scrolling disabled after returning here. */
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
   display: grid;
   place-items: center;
   padding: 32px 16px;
-  background: #f6f8fb;
-  color: #202b3d;
-  font: 15px/1.6 system-ui, sans-serif;
+  background: var(--page-default);
+  color: var(--text-default);
+  font: 14px/1.5 var(--font-family-inter);
+}
+.mcp-oauth-page,
+.mcp-oauth-page * {
+  box-sizing: border-box;
 }
 .mcp-oauth-card {
-  background: white;
-  border: 1px solid #dfe4eb;
-  border-radius: 16px;
-  padding: 36px;
+  background: var(--background-surface-layer-01);
+  border: 1px solid var(--border-weak);
+  border-radius: var(--radius-xl);
+  padding: 32px;
   width: 100%;
-  max-width: 560px;
-  box-shadow: 0 10px 36px #202b3d0b;
+  max-width: 620px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  box-shadow: 0 8px 16px rgba(48, 50, 51, 0.05);
 }
-.mcp-oauth-brand {
-  color: #4361ee;
-  font-size: 20px;
+.mcp-oauth-card p,
+.mcp-oauth-card h1,
+.mcp-oauth-card h2,
+.mcp-oauth-card h3 {
+  margin: 0;
+}
+.mcp-oauth-card .mcp-oauth-brand {
+  color: var(--text-brand);
+  font-size: 24px;
   font-weight: 700;
+  letter-spacing: -0.6px;
+  margin-bottom: 24px;
 }
 .mcp-oauth-card h1 {
-  font-size: 26px;
+  font-size: 24px;
+  font-weight: 600;
   line-height: 1.3;
-  margin: 20px 0;
+  letter-spacing: -0.48px;
+  margin-bottom: 12px;
 }
-.mcp-oauth-card p {
-  margin: 16px 0;
-}
-.mcp-oauth-card ul {
-  padding-left: 22px;
-}
-.mcp-oauth-card li {
-  margin: 10px 0;
-}
-.mcp-oauth-card dt {
+.mcp-oauth-card strong {
   font-weight: 600;
 }
-.mcp-oauth-card dd {
-  margin: 4px 0;
-  overflow-wrap: anywhere;
-  font-size: 13px;
+.mcp-oauth-account,
+.mcp-oauth-access-note {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--border-weak);
+  border-radius: var(--radius-lg);
+  background: var(--background-surface-layer-02);
+  padding: 16px;
+}
+.mcp-oauth-account {
+  margin: 24px 0;
+}
+.mcp-oauth-account > div,
+.mcp-oauth-permissions li > div {
+  min-width: 0;
+}
+.mcp-oauth-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background: var(--background-accent-weak);
+  color: var(--icon-brand);
+}
+.mcp-oauth-permissions h2 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  margin-bottom: 12px;
+}
+.mcp-oauth-permissions ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--border-weak);
+  border-radius: var(--radius-lg);
+}
+.mcp-oauth-permissions li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+.mcp-oauth-permissions li + li {
+  border-top: 1px solid var(--border-weak);
+}
+.mcp-oauth-permissions h3 {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  margin-bottom: 4px;
 }
 .mcp-oauth-muted {
-  color: #576277;
+  color: var(--text-placeholder);
   font-size: 13px;
+  line-height: 20px;
 }
-.mcp-oauth-error {
-  color: #a4192d;
+.mcp-oauth-access-note {
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 16px;
+  color: var(--text-placeholder);
+  font-size: 13px;
+  line-height: 20px;
+}
+.mcp-oauth-access-note svg {
+  flex-shrink: 0;
+}
+.mcp-oauth-card .mcp-oauth-disconnect {
+  margin-top: 16px;
+}
+.mcp-oauth-disconnect a {
+  color: var(--text-brand);
+  text-decoration: none;
+}
+.mcp-oauth-disconnect a:hover {
+  text-decoration: underline;
+}
+.mcp-oauth-card .mcp-oauth-error {
+  color: var(--text-danger);
+  background: var(--background-error-weak);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  margin: 16px 0;
+}
+.mcp-oauth-footer {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  border-top: 1px solid var(--border-weak);
+  padding-top: 20px;
+  margin-top: 20px;
+}
+.mcp-oauth-trust-note {
+  flex: 1;
+  font-size: 12px;
+  line-height: 18px;
 }
 .mcp-oauth-actions {
   display: flex;
+  flex-shrink: 0;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 28px;
+  gap: 8px;
 }
 .mcp-oauth-actions button,
 .mcp-oauth-signin {
-  border: 1px solid #c9d1df;
-  background: white;
-  padding: 10px 18px;
-  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-default);
+  background: var(--button-secondary);
+  color: var(--text-default);
+  min-height: 40px;
+  padding: 9px 20px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  font: inherit;
+  font: 500 14px/20px var(--font-family-inter);
+  white-space: nowrap;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+}
+.mcp-oauth-actions button:hover:not(:disabled) {
+  background: var(--button-outline-hover);
+}
+.mcp-oauth-actions button:active:not(:disabled) {
+  background: var(--button-outline-pressed);
 }
 .mcp-oauth-actions .mcp-oauth-primary,
 .mcp-oauth-signin {
-  background: #4361ee;
-  border-color: #4361ee;
-  color: white;
+  background: var(--button-primary);
+  border-color: transparent;
+  color: var(--text-on-solid);
+}
+.mcp-oauth-actions .mcp-oauth-primary:hover:not(:disabled),
+.mcp-oauth-signin:hover {
+  background: var(--button-primary-hover);
+}
+.mcp-oauth-actions .mcp-oauth-primary:active:not(:disabled),
+.mcp-oauth-signin:active {
+  background: var(--button-primary-pressed);
 }
 .mcp-oauth-actions button:disabled {
   cursor: wait;
   opacity: 0.6;
 }
-.mcp-oauth-actions button:focus-visible,
-.mcp-oauth-signin:focus-visible {
-  outline: 3px solid #96a7ff;
+.mcp-oauth-page button:focus-visible,
+.mcp-oauth-page a:focus-visible {
+  outline: 2px solid var(--interactive-focus-outline);
   outline-offset: 3px;
 }
 .mcp-oauth-signin {
-  display: inline-block;
+  margin-top: 12px;
   text-decoration: none;
 }
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .mcp-oauth-card {
     padding: 24px;
+  }
+  .mcp-oauth-footer {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+@media (max-width: 380px) {
+  .mcp-oauth-card {
+    padding: 20px;
+  }
+  .mcp-oauth-account,
+  .mcp-oauth-permissions li {
+    gap: 12px;
+    padding: 12px;
   }
 }

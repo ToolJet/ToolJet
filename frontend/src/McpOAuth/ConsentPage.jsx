@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import config from 'config';
+import { Database, Info, LayoutGrid, UserRound, UsersRound, Workflow } from 'lucide-react';
+import '@/_styles/componentdesign.scss';
+import '@/_styles/typography.scss';
 import './oauth.css';
 import { captureMcpOAuthBootstrap, clearMcpOAuthBootstrap, getMcpOAuthBootstrap } from './bootstrap';
 
 export const SCOPE_LABELS = {
   apps: 'Create and manage apps and their components',
-  data: 'Access datasources, run queries, and manage ToolJet Database',
+  data: 'Access data sources, run queries, and manage ToolJet Database',
   workflows: 'Create, manage, and run workflows',
   workspace_users: 'Manage workspace users and custom groups',
+};
+const SCOPE_PRESENTATION = {
+  apps: { title: 'Apps', icon: LayoutGrid },
+  data: { title: 'Data sources & database', icon: Database },
+  workflows: { title: 'Workflows', icon: Workflow },
+  workspace_users: { title: 'Workspace members', icon: UsersRound },
 };
 const api = () => `${config.apiUrl.replace(/\/$/, '')}/mcp-oauth`;
 
@@ -144,7 +153,7 @@ export default function ConsentPage() {
     <main className="mcp-oauth-page">
       <section className="mcp-oauth-card" aria-labelledby="mcp-oauth-title">
         <p className="mcp-oauth-brand">ToolJet</p>
-        <h1 id="mcp-oauth-title">{email ? 'Authorize an AI client' : 'Connect to ToolJet'}</h1>
+        <h1 id="mcp-oauth-title">{email && flow ? `Connect ${flow.clientName} to ToolJet` : 'Connect to ToolJet'}</h1>
         {error && (
           <p role="alert" className="mcp-oauth-error">
             {error}
@@ -152,36 +161,67 @@ export default function ConsentPage() {
         )}
         {flow && email && (
           <>
-            <p>
+            <p className="mcp-oauth-subtitle">
               <strong>{flow.clientName}</strong> is requesting access to <strong>{flow.organizationName}</strong>.
             </p>
-            <p className="mcp-oauth-muted">
-              Client names are supplied by the client. Continue only if you started this connection.
-            </p>
-            <dl>
-              <dt>Callback address</dt>
-              <dd>{flow.redirectUri}</dd>
-            </dl>
-            <ul>
-              {flow.scopes.map((scope) => (
-                <li key={scope}>{SCOPE_LABELS[scope] || scope}</li>
-              ))}
-            </ul>
-            <p>
-              The client can perform the actions listed above, including changes and deletions, only within your current
-              permissions in this workspace. You can disconnect it in Profile settings.
-            </p>
-            <p>
-              Signed in as <strong>{email}</strong>
-            </p>
-            <div className="mcp-oauth-actions">
-              <button disabled={busy} onClick={() => decide(false)}>
-                Cancel
-              </button>
-              <button className="mcp-oauth-primary" disabled={busy} onClick={() => decide(true)}>
-                {busy ? 'Please wait…' : 'Allow access'}
-              </button>
+            <div className="mcp-oauth-account">
+              <span className="mcp-oauth-icon">
+                <UserRound size={22} aria-hidden="true" />
+              </span>
+              <div>
+                <p className="mcp-oauth-muted">Signed in as</p>
+                <strong>{email}</strong>
+              </div>
             </div>
+            <section className="mcp-oauth-permissions" aria-labelledby="mcp-oauth-permissions-title">
+              <h2 id="mcp-oauth-permissions-title">Requested permissions</h2>
+              <ul>
+                {flow.scopes.map((scope) => {
+                  const { title, icon: Icon } = SCOPE_PRESENTATION[scope] || { title: scope, icon: Info };
+                  return (
+                    <li key={scope}>
+                      <span className="mcp-oauth-icon">
+                        <Icon size={22} aria-hidden="true" />
+                      </span>
+                      <div>
+                        <h3>{title}</h3>
+                        {SCOPE_LABELS[scope] && <p className="mcp-oauth-muted">{SCOPE_LABELS[scope]}.</p>}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+            <div className="mcp-oauth-access-note">
+              <Info size={20} aria-hidden="true" />
+              <p>{flow.clientName} can make changes and deletions only within your existing workspace permissions.</p>
+            </div>
+            <p className="mcp-oauth-disconnect mcp-oauth-muted">
+              You can disconnect it anytime in{' '}
+              <a
+                href={`${(window.public_config?.SUB_PATH || '').replace(/\/$/, '')}/${encodeURIComponent(
+                  flow.organizationId
+                )}/profile-settings`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Profile settings
+              </a>
+              .
+            </p>
+            <footer className="mcp-oauth-footer">
+              <p className="mcp-oauth-trust-note mcp-oauth-muted">
+                Only continue if you started this connection. Client names are supplied by the client.
+              </p>
+              <div className="mcp-oauth-actions">
+                <button type="button" disabled={busy} onClick={() => decide(false)}>
+                  Cancel
+                </button>
+                <button type="button" className="mcp-oauth-primary" disabled={busy} onClick={() => decide(true)}>
+                  {busy ? 'Please wait…' : 'Allow access'}
+                </button>
+              </div>
+            </footer>
           </>
         )}
         {flow && needsLogin && (

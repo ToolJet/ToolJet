@@ -13,6 +13,7 @@ const flow = {
   csrfToken: 'synthetic-csrf',
   loginUrl: 'https://tooljet.synthetic.example/login/garden?redirectTo=consent',
 };
+const consentTitle = `Connect ${flow.clientName} to ToolJet`;
 const result = (data, status = 200) => Promise.resolve({ ok: status < 400, status, json: async () => data });
 const originalFetch = global.fetch;
 beforeEach(() => {
@@ -31,7 +32,7 @@ test('keeps consent hidden until the workspace session has been verified', async
   });
   global.fetch.mockImplementationOnce(() => result(flow)).mockImplementationOnce(() => session);
   render(<ConsentPage />);
-  expect(screen.queryByRole('heading', { name: 'Authorize an AI client' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: consentTitle })).not.toBeInTheDocument();
   await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
   expect(screen.getByRole('status')).toHaveTextContent('Connecting to ToolJet');
   expect(screen.queryByText(flow.clientName)).not.toBeInTheDocument();
@@ -41,7 +42,7 @@ test('keeps consent hidden until the workspace session has been verified', async
   await act(async () => {
     resolveSession(await result({ email: 'builder@synthetic.example' }));
   });
-  expect(screen.getByRole('heading', { name: 'Authorize an AI client' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: consentTitle })).toBeInTheDocument();
   expect(screen.getByText(flow.clientName)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Allow access' })).toBeEnabled();
   expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -56,7 +57,7 @@ test('redirects a signed-out browser without displaying the authorization screen
   await waitFor(() => expect(window.location.hash).toBe('#workspace-login'));
   expect(sessionStorage.getItem(`tj_mcp_login_${requestId}`)).toBe('1');
   expect(screen.getByRole('status')).toHaveTextContent('Connecting to ToolJet');
-  expect(screen.queryByRole('heading', { name: 'Authorize an AI client' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: consentTitle })).not.toBeInTheDocument();
   expect(screen.queryByText(flow.clientName)).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
 });
@@ -67,7 +68,7 @@ test('offers manual sign-in without consent details when browser storage is unav
   global.fetch.mockImplementationOnce(() => result(flow)).mockImplementationOnce(() => result({}, 401));
   render(<ConsentPage />);
   expect(await screen.findByRole('link', { name: 'Sign in to this workspace' })).toHaveAttribute('href', flow.loginUrl);
-  expect(screen.queryByRole('heading', { name: 'Authorize an AI client' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: consentTitle })).not.toBeInTheDocument();
   expect(screen.queryByText(flow.clientName)).not.toBeInTheDocument();
   expect(screen.queryByRole('status')).not.toBeInTheDocument();
 });
@@ -97,19 +98,23 @@ test('reads the runtime API URL after custom-domain configuration changes', asyn
   expect(global.fetch.mock.calls[0][0]).toBe(`/installation/api/mcp-oauth/interactions/${requestId}`);
   config.apiUrl = originalApiUrl;
 });
-test('shows the workspace, callback, approved scopes and signed-in user before consent', async () => {
+test('shows requested permissions and the signed-in workspace while keeping the callback hidden', async () => {
   global.fetch
     .mockImplementationOnce(() => result(flow))
     .mockImplementationOnce(() => result({ email: 'builder@synthetic.example' }));
   render(<ConsentPage />);
   expect(await screen.findByText('builder@synthetic.example')).toBeInTheDocument();
   expect(screen.getByText('Garden operations')).toBeInTheDocument();
-  expect(screen.getByText(flow.redirectUri)).toBeInTheDocument();
-  expect(screen.getByText('Create, manage, and run workflows')).toBeInTheDocument();
-  expect(screen.getByText('Manage workspace users and custom groups')).toBeInTheDocument();
-  expect(screen.getByText(/including changes and deletions/)).toBeInTheDocument();
+  expect(screen.queryByText(flow.redirectUri)).not.toBeInTheDocument();
+  expect(screen.queryByText('Callback address')).not.toBeInTheDocument();
+  expect(screen.getByRole('region', { name: 'Requested permissions' })).toBeInTheDocument();
+  expect(screen.getAllByRole('listitem')).toHaveLength(flow.scopes.length);
+  expect(screen.getByText('Create, manage, and run workflows.')).toBeInTheDocument();
+  expect(screen.getByText('Manage workspace users and custom groups.')).toBeInTheDocument();
+  expect(screen.getByText(/changes and deletions only within your existing workspace permissions/)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Allow access' })).toBeEnabled();
   expect(global.fetch.mock.calls[1][1].headers['tj-workspace-id']).toBe('garden-id');
+  expect(screen.getByRole('link', { name: 'Profile settings' })).toHaveAttribute('href', '/garden-id/profile-settings');
 });
 test('sends a browser-bound cancellation and displays server failure without leaking details', async () => {
   global.fetch
@@ -132,7 +137,7 @@ test('offers the correct workspace login after an unsuccessful login attempt', a
   });
   await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
   expect(link).toHaveAttribute('href', flow.loginUrl);
-  expect(screen.queryByRole('heading', { name: 'Authorize an AI client' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: consentTitle })).not.toBeInTheDocument();
   expect(screen.queryByText(flow.clientName)).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
 });
@@ -154,7 +159,7 @@ test('does not present approval when the authenticated user lacks workspace acce
   global.fetch.mockImplementationOnce(() => result(flow)).mockImplementationOnce(() => result({}, 403));
   render(<ConsentPage />);
   expect(await screen.findByRole('alert')).toHaveTextContent('do not have access');
-  expect(screen.queryByRole('heading', { name: 'Authorize an AI client' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: consentTitle })).not.toBeInTheDocument();
   expect(screen.queryByText(flow.clientName)).not.toBeInTheDocument();
   expect(screen.queryByRole('button')).not.toBeInTheDocument();
 });
