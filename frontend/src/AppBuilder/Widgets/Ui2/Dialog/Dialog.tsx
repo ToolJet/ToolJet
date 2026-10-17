@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { ModalV2 } from '@/AppBuilder/Widgets/Ui2/_shared/ModalV2';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useOwnContextPath } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 import { modalOf, openerOf, trapTab, watchOpeners } from './dialogFocus';
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { shadDialogConfig } from '@/AppBuilder/WidgetManager/widgets/shadDialog';
@@ -63,16 +64,25 @@ export const sanitizeDialog = (values: unknown, section: DialogSection): Resolve
  *  back to what opened it (a row's button, a trigger), as a dialog should for keyboard and screen reader users. */
 /** What the dialog reads from the app store: whether it is open. */
 type DialogStore = {
-  resolvedStore?: {
-    modules?: Record<string, { exposedValues?: { components?: Record<string, { show?: unknown } | undefined> } }>;
-  };
+  resolvedStore?: { modules?: Record<string, { exposedValues?: { components?: Record<string, unknown> } }> };
 };
 
-const useDialogFocus = (id: string, currentMode?: string, name = 'Dialog') => {
+const useDialogFocus = (
+  id: string,
+  currentMode?: string,
+  name = 'Dialog',
+  subContainerIndex?: unknown,
+  parentId?: string
+) => {
   const { moduleId } = useModuleContext();
-  const show = useStore(
-    (state: DialogStore) => state.resolvedStore?.modules?.[moduleId]?.exposedValues?.components?.[id]?.show === true
-  );
+  // In a List view row (or a nested one) the dialog's values are kept per row, components[id][row]: whether it is open
+  // is read from its own row, as its open action writes it. The flat entry is never `show` there.
+  const path = useOwnContextPath(subContainerIndex, parentId);
+  const show = useStore((state: DialogStore) => {
+    let own: unknown = state.resolvedStore?.modules?.[moduleId]?.exposedValues?.components?.[id];
+    for (const { index } of path) if (Array.isArray(own)) own = own[index];
+    return (own as { show?: unknown } | undefined)?.show === true;
+  });
   useEffect(() => watchOpeners(), []);
   useEffect(() => {
     if (!show || currentMode === 'edit' || typeof document === 'undefined') return undefined;
@@ -101,7 +111,13 @@ const useDialogFocus = (id: string, currentMode?: string, name = 'Dialog') => {
 };
 
 export const ShadDialog = (props: WidgetProps) => {
-  useDialogFocus(props.id, props.currentMode, toText(props.properties?.title) || 'Dialog');
+  useDialogFocus(
+    props.id,
+    props.currentMode,
+    toText(props.properties?.title) || 'Dialog',
+    props.subContainerIndex,
+    props.parentId
+  );
   const properties = useMemo(() => sanitizeDialog(props.properties, 'properties'), [props.properties]);
   const styles = useMemo(() => sanitizeDialog(props.styles, 'styles'), [props.styles]);
   return <ModalV2 {...props} properties={properties} styles={styles} />;
