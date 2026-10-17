@@ -7,7 +7,7 @@ import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useDynamicHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
-import { tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
+import { tabIds, tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
 import { asActions, useActionFire, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
@@ -49,10 +49,17 @@ export const STEP_NAV_HEIGHT = 56;
 /** One tab's panel: its canvas, or a spinner while the tab is loading. Memoised on its own inputs, so switching
  *  tabs re-renders only the two panels whose visibility changes. */
 const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, background }: TabPanelProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  // A disabled tab's panel blocks the keyboard as it blocks the mouse: inert takes its fields out of the tab order.
+  useDisableInert(ref, tab.disable);
   if (tab.visible === false) return null;
   return (
     <div
+      ref={ref}
       role="tabpanel"
+      id={tabIds(id, tab.id).panel}
+      aria-labelledby={tabIds(id, tab.id).tab}
+      aria-disabled={tab.disable || undefined}
       // activetab is ToolJet's own attribute on a tab pane (as on the native Tabs), not one React's types know.
       {...{ activetab: tab.id }}
       data-disabled={tab.disable}
@@ -271,6 +278,8 @@ export const ShadTabs = (props: WidgetProps) => {
         </div>
       ) : properties.hideTabs ? null : (
         <TabStrip
+          widgetId={id}
+          onlyActivePanel={!!properties.renderOnlyActiveTab}
           tabs={shown}
           currentTab={currentTab}
           variant={variant}
