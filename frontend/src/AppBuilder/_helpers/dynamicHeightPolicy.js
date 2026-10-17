@@ -27,3 +27,41 @@ export const heightHeldInView = (componentType, properties = {}) => {
   }
   return properties.dynamicHeight === false;
 };
+
+// UI 2.0 widgets whose rows (or cards) each take their own height in the reflow, the way the native Listview's rows
+// do: a child growing in row r writes the row's height under the widget's id at that row's context. The native
+// Listview keeps its own branches in the reflow; these names are only ever true for UI 2.0 types.
+const UI2_PER_ROW_TYPES = ['ShadListView', 'ShadKanban'];
+
+/**
+ * Whether a widget is a UI 2.0 List view or Kanban, whose rows or cards are sized from the components on them.
+ * @param {string | undefined} componentType
+ * @returns {boolean}
+ */
+export const isUi2PerRowType = (componentType) => UI2_PER_ROW_TYPES.includes(componentType);
+
+/**
+ * The UI 2.0 List view's row height: its rowHeight property, 72 when unset, kept between 24 and 4000.
+ * @param {Record<string, unknown>} [properties]
+ * @returns {number}
+ */
+export const listRowHeight = (properties) => Math.min(4000, Math.max(24, Number(properties?.rowHeight) || 72));
+
+/**
+ * The UI 2.0 Kanban's custom card height: its cardHeight property, 96 when unset.
+ * @param {Record<string, unknown>} [properties]
+ * @returns {number}
+ */
+export const kanbanCardHeight = (properties) => Number(properties?.cardHeight) || 96;
+
+/**
+ * The height a UI 2.0 row or card never goes below when it fits its components: the author's row or card height.
+ * @param {string} componentType
+ * @param {Record<string, unknown>} [properties]
+ * @returns {number}
+ */
+export const ui2RowFloor = (componentType, properties) =>
+  componentType === 'ShadKanban' ? kanbanCardHeight(properties) : listRowHeight(properties);
+
+/** Space a UI 2.0 row or card keeps under its lowest component. */
+export const UI2_ROW_CHROME = 8;
