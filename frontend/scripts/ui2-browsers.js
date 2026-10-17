@@ -55,8 +55,9 @@ const OVERLAY = '[data-radix-popper-content-wrapper], .modal.show [role=dialog],
 // Problems found in code outside the UI 2.0 widgets (each an exact problem string). Delete an entry once it is fixed.
 const KNOWN = new Set([
   // The viewer's AI slice fetches the LLM preference for an anonymous viewer of a public app, gets a 401, and rejects
-  // with a plain object (aiSlice.js: "Failed to fetch LLM preference").
-  'page error: a plain object',
+  // with a plain object (aiSlice.js: "Failed to fetch LLM preference"). Only a plain-object error seen beside that
+  // console error is this one; any other stays a problem (pageErrors).
+  'page error: a plain object, after the viewer failed to fetch the LLM preference',
 ]);
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -76,12 +77,14 @@ async function openGallery(browserType, { mode, phone }) {
   );
   await context.addInitScript((dark) => localStorage.setItem('darkMode', String(dark)), mode === 'dark');
   const page = await context.newPage();
+  // Collected for the whole run (the checks raise errors too) and read once they are done.
   const errors = [];
-  // A promise rejected with a plain object reads "Object", "[object Object]" or "Object { ... }" by browser.
-  const plain = /^(Object|\[object Object\]|Object \{.*\})$/;
-  page.on('pageerror', (e) =>
-    errors.push(`page error: ${plain.test(e.message) ? 'a plain object' : String(e.message).slice(0, 200)}`)
-  );
+  let preferenceFailed = false;
+  page.on('pageerror', (e) => errors.push(e?.message));
+  page.on('console', (m) => {
+    if (m.type() === 'error' && m.text().includes('Failed to fetch LLM preference')) preferenceFailed = true;
+  });
+  const pageErrors = () => pageErrorLines(errors, preferenceFailed);
   await page.goto(`${BASE}/applications/${APP}/${PAGE}`, { waitUntil: 'domcontentloaded', timeout: 180000 });
   let shown = 0;
   for (let i = 0; i < 240 && shown < WIDGETS; i += 1) {
@@ -89,8 +92,17 @@ async function openGallery(browserType, { mode, phone }) {
     if (shown < WIDGETS) await sleep(500);
   }
   await sleep(5000);
-  return { browser, page, errors, shown };
+  return { browser, page, pageErrors, shown };
 }
+
+// A promise rejected with a plain object reads "Object", "[object Object]" or "Object { ... }" by browser.
+const PLAIN = /^(Object|\[object Object\]|Object \{.*\})$/;
+const pageErrorLines = (messages, preferenceFailed) =>
+  messages.map((message) =>
+    PLAIN.test(String(message))
+      ? `page error: a plain object${preferenceFailed ? ', after the viewer failed to fetch the LLM preference' : ''}`
+      : `page error: ${String(message).slice(0, 200)}`
+  );
 
 /** axe over `include` (a selector, default every widget on the page, not the viewer around them): one line per
  *  violation and the widgets it was found in. */
@@ -298,8 +310,8 @@ async function run() {
   for (const { b, mode, phone } of runs) {
     const key = phone ? `${b} ${phone}px` : `${b} ${mode}`;
     process.stdout.write(`${key}... `);
-    const { browser, page, errors, shown } = await openGallery(playwright[b], { mode, phone });
-    const problems = [...errors];
+    const { browser, page, pageErrors, shown } = await openGallery(playwright[b], { mode, phone });
+    const problems = [];
     try {
       if (shown < WIDGETS) problems.push(`only ${shown} of ${WIDGETS} widgets on the page`);
       const unavailable = await page.locator('[data-cy="unavailable-widget"]').count();
@@ -321,8 +333,8 @@ async function run() {
     } finally {
       await browser.close();
     }
-    report[key] = problems;
-    const fresh = problems.filter((p) => !KNOWN.has(p));
+    report[key] = [...pageErrors(), ...problems];
+    const fresh = report[key].filter((p) => !KNOWN.has(p));
     console.log(fresh.length ? `${fresh.length} problems` : 'ok');
     for (const p of fresh) console.log(`  - ${p}`);
   }

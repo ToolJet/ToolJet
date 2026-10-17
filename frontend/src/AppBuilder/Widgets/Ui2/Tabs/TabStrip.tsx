@@ -3,6 +3,7 @@ import type { KeyboardEvent } from 'react';
 import { Check } from 'lucide-react';
 import { TablerIcon } from '@/AppBuilder/Widgets/Ui2/_shared/TablerIcon';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
+import { tabIds } from './tabsModel';
 import type { Tab, TabId } from './tabsModel';
 
 export type TabsVariant = 'pills' | 'underline' | 'steps';
@@ -14,6 +15,9 @@ const TabIcon = ({ tab }: { tab: Tab }) =>
 
 /** A tab in the strip: selected by click, and a Tab stop only while selected (tabKeys moves between tabs). */
 interface TabButtonProps {
+  widgetId: string;
+  /** Whether its panel is in the page (renderOnlyActiveTab draws only the active one). */
+  hasPanel: boolean;
   tab: Tab;
   active: boolean;
   disabled: boolean;
@@ -22,10 +26,12 @@ interface TabButtonProps {
   children: React.ReactNode;
 }
 
-const TabButton = ({ tab, active, disabled, onPick, className, children }: TabButtonProps) => (
+const TabButton = ({ widgetId, hasPanel, tab, active, disabled, onPick, className, children }: TabButtonProps) => (
   <button
     type="button"
     role="tab"
+    id={tabIds(widgetId, tab.id).tab}
+    aria-controls={hasPanel ? tabIds(widgetId, tab.id).panel : undefined}
     aria-selected={active}
     data-tab-id={tab.id}
     tabIndex={active ? 0 : -1}
@@ -73,6 +79,10 @@ const TAB_RING = 'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-vi
 
 /** The tab strip in one of the three styles. Stays 50px tall (the reflow's TABS_TAB_BAR_HEIGHT). */
 interface TabStripProps {
+  /** The Tabs widget's id, for the ids that tie each tab to its panel. */
+  widgetId: string;
+  /** Only the active tab's panel is in the page (renderOnlyActiveTab). */
+  onlyActivePanel?: boolean;
   tabs: Tab[];
   currentTab: TabId | undefined;
   variant: TabsVariant;
@@ -82,7 +92,17 @@ interface TabStripProps {
   onPick: (tab: Tab) => void;
 }
 
-export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, onPick }: TabStripProps) => {
+export const TabStrip = ({
+  widgetId,
+  onlyActivePanel = false,
+  tabs,
+  currentTab,
+  variant,
+  align,
+  stepIndex,
+  linear,
+  onPick,
+}: TabStripProps) => {
   const justify = align === 'center' ? 'tw-justify-center' : 'tw-justify-start';
   const stretch = align === 'stretch';
   const canPick = (tab: Tab) => !tab.disable && (variant !== 'steps' || !linear || tabs.indexOf(tab) <= stepIndex);
@@ -110,6 +130,8 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
                 />
               ) : null}
               <TabButton
+                widgetId={widgetId}
+                hasPanel={!onlyActivePanel || active}
                 tab={tab}
                 active={active}
                 disabled={!!tab.disable || !reachable}
@@ -148,6 +170,8 @@ export const TabStrip = ({ tabs, currentTab, variant, align, stepIndex, linear, 
       return (
         <TabButton
           key={tab.id}
+          widgetId={widgetId}
+          hasPanel={!onlyActivePanel || active}
           tab={tab}
           active={active}
           disabled={!!tab.disable}

@@ -48,6 +48,9 @@ export const ShadHeading = (props: WidgetProps) => {
           HEADING[level],
           'tw-text-[color:var(--lk-fg,var(--sc-foreground))]',
           typeClasses(props.styles),
+          // A custom font size takes a line height in proportion: the level's is fixed in px (an h2's 36px), and an h2
+          // at 64px drew its wrapped lines over each other.
+          typeClasses(props.styles).includes('lk-size') && 'tw-leading-[1.2]',
           clickable && 'tw-cursor-pointer'
         )}
         style={{ textAlign: textAlign(props.styles), ...clamped }}

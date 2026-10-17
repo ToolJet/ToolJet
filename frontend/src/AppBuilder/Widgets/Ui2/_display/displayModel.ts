@@ -3,6 +3,7 @@
 import { stringify } from '@/AppBuilder/Widgets/Ui2/_shared/packJson';
 import type { ColumnFormat } from '@/AppBuilder/Widgets/Ui2/Table/types';
 import { formatCell } from '@/AppBuilder/Widgets/Ui2/_shared/format';
+import { uniqueKeys } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
 import {
   clampCoerce,
   isEmptyValue,
@@ -278,31 +279,41 @@ export const normalizeSteps = (steps: unknown): Step[] => {
       source = steps.trim() ? steps.split(',') : [];
     }
   }
-  const seen = new Set<string>();
-  return (Array.isArray(source) ? source : []).slice(0, 100).flatMap((entry: unknown, index: number): Step[] => {
-    let step: Entry;
-    if (isScalar(entry)) step = { name: String(entry).trim() };
-    else if (isRecord(entry)) step = { ...entry };
-    else return [];
-    const rawId = unwrap(step.id);
-    let id: StepId = isScalar(rawId) && String(rawId) !== '' ? rawId : index + 1;
-    if (seen.has(String(id))) id = `${id}-${index + 1}`;
-    seen.add(String(id));
-    const name = unwrap(step.name ?? step.title ?? step.label);
-    const description = unwrap(step.description);
-    const tooltip = unwrap(step.tooltip);
-    return [
-      {
-        ...step,
-        id,
-        name: isScalar(name) ? String(name) : '',
-        description: isScalar(description) ? String(description) : '',
-        tooltip: isScalar(tooltip) ? String(tooltip) : '',
-        visible: truthy(step.visible, true),
-        disabled: truthy(step.disabled, false),
-      },
-    ];
-  });
+  const fromId: boolean[] = [];
+  const drafts = (Array.isArray(source) ? source : [])
+    .slice(0, 100)
+    .flatMap((entry: unknown, index: number): Step[] => {
+      let step: Entry;
+      if (isScalar(entry)) step = { name: String(entry).trim() };
+      else if (isRecord(entry)) step = { ...entry };
+      else return [];
+      const rawId = unwrap(step.id);
+      const authored = isScalar(rawId) && String(rawId) !== '';
+      const id: StepId = authored ? rawId : index + 1;
+      fromId.push(authored);
+      const name = unwrap(step.name ?? step.title ?? step.label);
+      const description = unwrap(step.description);
+      const tooltip = unwrap(step.tooltip);
+      return [
+        {
+          ...step,
+          id,
+          name: isScalar(name) ? String(name) : '',
+          description: isScalar(description) ? String(description) : '',
+          tooltip: isScalar(tooltip) ? String(tooltip) : '',
+          visible: truthy(step.visible, true),
+          disabled: truthy(step.disabled, false),
+        },
+      ];
+    });
+  // Ids are allocated by uniqueKeys: authored ids claim theirs first, and a repeated one (or a position that is
+  // another step's id) is suffixed until it is free; repaired once, ['a-3', 'a', 'a'] gave two steps the id a-3, and a
+  // click on the third selected the first. An id that needed no repair keeps its value (a number stays a number).
+  const keyed = uniqueKeys(
+    drafts.map((step) => ({ key: String(step.id) })),
+    fromId
+  );
+  return drafts.map((step, i) => (keyed[i].key === String(step.id) ? step : { ...step, id: keyed[i].key }));
 };
 
 /** The index of the step whose id matches (loosely: 2 and '2' match) among `steps`, or -1. */

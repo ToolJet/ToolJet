@@ -13,7 +13,8 @@ import {
   percentScale,
   wholeNumbers,
   wholeTicks,
-  seriesLabelMap,
+  drawnLabelMap,
+  seriesSlots,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
 import {
   AXIS,
@@ -55,7 +56,8 @@ export const ShadLineChart = (props: WidgetProps) => {
       const longest = extremes.length
         ? Math.max(String(short(Math.max(...extremes))).length, String(short(Math.min(...extremes))).length)
         : 3;
-      const labels = seriesLabelMap(seriesLabels, fields.series);
+      const labels = drawnLabelMap(seriesLabels, fieldList(yFields), fields.series);
+      const slots = seriesSlots(fieldList(yFields), fields.series);
       return {
         rows: plotted,
         xField: fields.x,
@@ -63,7 +65,7 @@ export const ShadLineChart = (props: WidgetProps) => {
         empty: !fields.series.length || !hasValues(plotted, fields.series),
         dashed: fieldList(dashedFields),
         names: fields.series.map((s) => seriesLabel(s, labels)),
-        fills: fields.series.map((_, i) => seriesColor(colors, i)),
+        fills: fields.series.map((_, i) => seriesColor(colors, slots[i])),
         tick: short,
         full: scaled(formatter(format, false), lineScale),
         yWidth: Math.min(88, Math.max(32, longest * 7 + 10)),

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { ResponsiveContainer } from 'recharts';
 import { useExposed, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
-import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
+import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { MAX_SERIES } from './chartsModel';
@@ -92,10 +92,13 @@ export const LegendContent = ({ payload }: { payload?: LegendItem[] }) => (
 
 /** The clicked datum and the native Chart's events and actions: a click on a datum exposes it (clickedDataPoint) and
  *  fires onClick; a double click fires onDoubleClick (the datum is the one its
- *  first click picked); clearClickedPoint() empties it. */
+ *  first click picked); clearClickedPoint() empties it. Disabled or loading, the chart takes no clicks (RenderWidget
+ *  leaves UI 2.0 widgets to enforce their own state); clearClickedPoint, an action, still works. */
 export const useClickedDatum = (props: WidgetProps) => {
   const [clicked, setClicked] = useState<unknown>({});
+  const inactive = busy(props.properties);
   const pick = (datum: unknown) => {
+    if (inactive) return;
     setClicked(datum);
     props.setExposedVariables?.({ clickedDataPoint: datum });
     props.fireEvent?.('onClick');
@@ -103,7 +106,8 @@ export const useClickedDatum = (props: WidgetProps) => {
   return {
     pick,
     exposed: { clickedDataPoint: clicked, clearClickedPoint: async () => setClicked({}) },
-    onDoubleClick: () => props.fireEvent?.('onDoubleClick'),
+    onClick: () => (inactive ? undefined : props.fireEvent?.('onClick')),
+    onDoubleClick: () => (inactive ? undefined : props.fireEvent?.('onDoubleClick')),
   };
 };
 
@@ -291,7 +295,7 @@ export const SafeFrame = ({ props, empty, label, small, exposed = {}, clickable 
       <div
         style={{ height }}
         className="tw-w-full tw-text-xs"
-        onClick={clickable ? undefined : () => props.fireEvent?.('onClick')}
+        onClick={clickable ? undefined : click.onClick}
         onDoubleClick={click.onDoubleClick}
       >
         {empty ? (

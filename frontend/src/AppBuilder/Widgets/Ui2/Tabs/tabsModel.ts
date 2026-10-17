@@ -97,3 +97,10 @@ export const tabsLook = (styles: Resolved = {}) => {
     panelBackground: isSet(styles.panelBackground) ? styles.panelBackground : 'transparent',
   };
 };
+
+/** The DOM ids that tie a tab to its panel (aria-controls, aria-labelledby): a tab id may hold any text, so whitespace
+ *  becomes _. Distinct from the panel canvas's own id (`<widget>-<tab>`). */
+export const tabIds = (widgetId: string, tabId: unknown) => {
+  const safe = String(tabId).replace(/\s/g, '_');
+  return { tab: `${widgetId}-tab-${safe}`, panel: `${widgetId}-panel-${safe}` };
+};

@@ -1,4 +1,5 @@
 import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { uniqueKeys } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
 // ToolJet UI 2.0 Chat (Chat.tsx): the message and scroll logic, kept free of React so it can be tested. The
 // message shape and the validation are the native Chat's (Widgets/Chat/utils/helpers.js).
 
@@ -55,18 +56,19 @@ export const ANCHOR_PEEK = 64;
 export const messageText = (v: unknown): string => (typeof v === 'string' ? v : toText(v));
 
 /** The history as rows to draw: only objects, a known type (else a reply), and a key unique in the list (the
- *  messageId, else the position), so React never sees two rows with one key. */
+ *  messageId, else the position), so React never sees two rows with one key. Keys are allocated by uniqueKeys: ids
+ *  claim theirs first, and a repeated one is suffixed until it is free (repaired once, ['a#2', 'a', 'a'] gave two
+ *  rows the key a#2, and a refresh left a removed message on screen). */
 export const toRows = (history: unknown): ChatRow[] => {
   const list: unknown[] = Array.isArray(history) ? history : [];
-  const seen = new Set<string>();
   const rows: ChatRow[] = [];
+  const fromId: boolean[] = [];
   list.forEach((entry, index) => {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
     const m = entry as ChatEntry;
     const type = typeof m.type === 'string' && MESSAGE_TYPES.includes(m.type) ? (m.type as MessageType) : 'response';
-    let key = toText(m.messageId) || `#${index}`;
-    if (seen.has(key)) key = `${key}#${index}`;
-    seen.add(key);
+    const key = toText(m.messageId) || `#${index}`;
+    fromId.push(!!toText(m.messageId));
     rows.push({
       key,
       type,
@@ -77,7 +79,7 @@ export const toRows = (history: unknown): ChatRow[] => {
       source: m,
     });
   });
-  return rows;
+  return uniqueKeys(rows, fromId);
 };
 
 /** Who sent a row: its own name and avatar, else the chat's user or respondent ones. */

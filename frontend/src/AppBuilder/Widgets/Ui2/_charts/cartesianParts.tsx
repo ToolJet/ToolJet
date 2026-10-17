@@ -8,7 +8,15 @@ import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { isSet } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import type { Bound, Resolved } from '@/AppBuilder/Widgets/Ui2/_shared/types';
-import { resolveChartFields, seriesLabel, seriesLabelMap, statusColors, wholeNumbers, wholeTicks } from './chartsModel';
+import {
+  drawnLabelMap,
+  resolveChartFields,
+  seriesLabel,
+  seriesSlots,
+  statusColors,
+  wholeNumbers,
+  wholeTicks,
+} from './chartsModel';
 import { AXIS, ChartTooltip, LegendContent, seriesOf, valueAxisWidth } from './chartParts';
 import { affixFormatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
@@ -46,16 +54,18 @@ export const useSeriesInputs = (p: Resolved) => ({
 
 export const seriesSetup = (rows: Bound[], props: SeriesProps): SeriesSetup => {
   const { yFields, seriesLabels, colors, affixes, stacked } = props;
-  const fields = resolveChartFields(rows, props.xField, seriesOf({ yFields }));
-  const labels = seriesLabelMap(seriesLabels, fields.series);
+  const configured = seriesOf({ yFields });
+  const fields = resolveChartFields(rows, props.xField, configured);
+  const labels = drawnLabelMap(seriesLabels, configured, fields.series);
   const names = fields.series.map((s) => seriesLabel(s, labels));
   const states = isSet(colors) ? null : statusColors(names);
+  const slots = seriesSlots(configured, fields.series);
   const tick = affixFormatter(affixes, true);
   return {
     xField: fields.x,
     series: fields.series,
     names,
-    fills: fields.series.map((_, i) => states?.[i] ?? seriesColor(colors, i)),
+    fills: fields.series.map((_, i) => states?.[i] ?? seriesColor(colors, slots[i])),
     tick,
     full: affixFormatter(affixes, false),
     yWidth: valueAxisWidth(rows, fields.series, tick, stacked),

@@ -23,7 +23,7 @@ describe('toRows', () => {
       msg('a', 'response'),
       { message: 'no id', type: 'nonsense' },
     ]);
-    expect(rows.map((r) => r.key)).toEqual(['a', 'a#4', '#5']);
+    expect(rows.map((r) => r.key)).toEqual(['a', 'a~1', '#5']);
     expect(rows.map((r) => r.type)).toEqual(['message', 'response', 'response']);
   });
 
