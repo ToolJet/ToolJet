@@ -25,6 +25,7 @@ import { ButtonPropertiesTab } from './ButtonPropertiesTab';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { ArrowLeft, Minus, ArrowRight } from 'lucide-react';
+import { buttonDisplayOf } from '@/AppBuilder/Widgets/NewTable/_utils/rowActionIcon';
 
 const CustomOption = (props) => {
   const ColumnIcon = getColumnIcon(props.data.value);
@@ -65,6 +66,21 @@ const CustomValueContainer = ({ data, ...props }) => {
     </div>
   );
 };
+
+// How a button column draws its buttons in the ToolJet UI 2.0 look: labelled buttons, icon buttons (the label as a
+// tooltip), or one "..." menu. The ToolJet look always draws labelled buttons.
+const ButtonDisplayControl = ({ value, onChange }) => (
+  <div className="d-flex pin-column-control" data-cy="button-column-display">
+    <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+      Show as
+    </label>
+    <ToggleGroup defaultValue={buttonDisplayOf(value)} onValueChange={onChange} style={{ width: '58%' }}>
+      <ToggleGroupItem value="buttons">Buttons</ToggleGroupItem>
+      <ToggleGroupItem value="icons">Icons</ToggleGroupItem>
+      <ToggleGroupItem value="menu">Menu</ToggleGroupItem>
+    </ToggleGroup>
+  </div>
+);
 
 const PinColumnControl = ({ value, onChange }) => {
   return (
@@ -261,6 +277,12 @@ export const PropertiesTabElements = ({
                 paramMeta={{ type: 'toggle', displayName: 'Visibility' }}
                 paramType="properties"
               />
+              {component?.component?.definition?.styles?.tableLook?.value === 'shadcn' ? (
+                <ButtonDisplayControl
+                  value={column.buttonDisplay}
+                  onChange={(value) => value && onColumnItemChange(index, 'buttonDisplay', value)}
+                />
+              ) : null}
             </div>
           </div>
           <ButtonListManager
@@ -379,6 +401,76 @@ export const PropertiesTabElements = ({
             popOverCallback={(showing) => {
               setColumnPopoverRootCloseBlocker('decimalPlaces', showing);
             }}
+          />
+        </div>
+      )}
+      {column.columnType === 'number' &&
+        [
+          ['prefix', 'Prefix', '$'],
+          ['suffix', 'Suffix', '%'],
+        ].map(([property, label, placeholder]) => (
+          <div className="field mb-2 px-3" key={property}>
+            <label className="form-label">{label}</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column?.[property]}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={placeholder}
+              onChange={(value) => onColumnItemChange(index, property, value)}
+              componentName={getPopoverFieldSource(column.columnType, property)}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker(property, showing);
+              }}
+            />
+          </div>
+        ))}
+      {column.columnType === 'string' && (
+        <div className="field mb-2 px-3">
+          <ProgramaticallyHandleProperties
+            label="Show as status chip"
+            currentState={currentState}
+            index={index}
+            darkMode={darkMode}
+            callbackFunction={onColumnItemChange}
+            property="displayAsChip"
+            props={column}
+            component={component}
+            paramMeta={{ type: 'toggle', displayName: 'Show as status chip' }}
+            paramType="properties"
+          />
+        </div>
+      )}
+      {column.columnType === 'string' && (
+        <div className="field mb-2 px-3">
+          <ProgramaticallyHandleProperties
+            label="Show avatar"
+            currentState={currentState}
+            index={index}
+            darkMode={darkMode}
+            callbackFunction={onColumnItemChange}
+            property="displayAvatar"
+            props={column}
+            component={component}
+            paramMeta={{ type: 'toggle', displayName: 'Show avatar' }}
+            paramType="properties"
+          />
+        </div>
+      )}
+      {column.columnType === 'number' && (
+        <div className="field mb-2 px-3">
+          <ProgramaticallyHandleProperties
+            label="Thousands separator"
+            currentState={currentState}
+            index={index}
+            darkMode={darkMode}
+            callbackFunction={onColumnItemChange}
+            property="thousandSeparator"
+            props={column}
+            component={component}
+            paramMeta={{ type: 'toggle', displayName: 'Thousands separator' }}
+            paramType="properties"
           />
         </div>
       )}

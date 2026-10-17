@@ -1,0 +1,462 @@
+// The Table's shadcn/ui look (styles.tableLook = 'shadcn'): the same table, drawn like shadcn's data table. Only
+// appearance changes; every property, column type, event and action behaves as in the ToolJet look. Colours come
+// from the app theme (--cc-*), so the look follows light, dark and brand themes. The frame overrides the Table's own
+// radius, border and shadow styles, which the ToolJet look keeps.
+$shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$radius: var(--cc-radius-default, 6px);
+
+.jet-table.tj-table-look-shadcn {
+  // A container, so the footer can compact itself in a narrow table (four tables in a row of cards).
+  container-type: inline-size;
+  container-name: tj-shadcn-table;
+  border: 1px solid var(--cc-weak-border) !important;
+  border-radius: calc(var(--cc-radius-default, 8px) + 4px) !important;
+  box-shadow: $shadow-sm !important;
+  background: var(--cc-surface1-surface) !important;
+  overflow: hidden;
+  // The card hugs its rows: a page with fewer rows than the box holds ended the card in 60-220px of empty table above
+  // the pager (seven apps in one round, 2026-10-14). Now the pager follows the last row and the rest of the box is page
+  // space. The box is still the most it takes: more rows than fit scroll inside, as before.
+  height: auto !important;
+  max-height: 100% !important;
+  > .table-responsive {
+    flex: 0 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  // Toolbar: search first, like shadcn's data table, then the filter and column buttons.
+  .table-card-header {
+    flex-direction: row-reverse;
+    padding: 16px 16px 12px !important;
+    min-height: 64px;
+  }
+  .table-global-search {
+    height: 36px !important;
+    width: 280px !important;
+    max-width: 100%;
+    padding: 0 10px;
+    border: 1px solid var(--cc-default-border) !important;
+    border-radius: $radius !important;
+    background: var(--cc-surface1-surface);
+    box-shadow: $shadow-sm;
+    &:focus-within {
+      outline: 2px solid color-mix(in srgb, var(--cc-primary-brand) 30%, transparent);
+      outline-offset: 1px;
+    }
+  }
+  .table-card-header .tj-base-btn {
+    height: 36px !important;
+    min-width: 36px;
+    border: 1px solid var(--cc-default-border) !important;
+    border-radius: $radius !important;
+    background: var(--cc-surface1-surface) !important;
+    color: var(--cc-primary-text) !important;
+    box-shadow: $shadow-sm;
+    font-size: 14px !important;
+    font-weight: 500;
+  }
+
+  // Header: quiet, muted labels on the table surface (the dark theme's filled header row included).
+  thead tr {
+    background: transparent !important;
+  }
+  thead th {
+    height: 40px !important;
+    padding: 0 12px !important;
+    background: transparent !important;
+    border-bottom: 1px solid var(--cc-weak-border) !important;
+    // ToolJet's header hover draws a box (borders, 1px less padding); with the look's fixed padding the border pushed
+    // the label 1px and the box jumped from column to column. A soft fill only, like a row's hover.
+    &:hover,
+    &.th:hover {
+      border-top: none !important;
+      border-left: none !important;
+      border-right: none !important;
+      background: color-mix(in srgb, var(--cc-surface3-surface) 55%, transparent) !important;
+    }
+    .header-text {
+      color: var(--cc-placeholder-text) !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+    }
+  }
+
+  // Columns fill the table's width, as shadcn's data table does: each keeps its set width as a minimum and the
+  // columns share what is left, instead of an empty band at the right (room names wrapped in 130px beside 700px of
+  // nothing). Frozen columns and the selection checkbox keep their width, so sticky offsets hold; header and body
+  // cells use the same rule, so they stay aligned.
+  thead th:not(.pinned-column):not(.selector-header):not(.compact-actions),
+  tbody td:not(.pinned-column):not(.selector-column):not(.compact-actions) {
+    flex-grow: 1 !important;
+  }
+  // Row actions drawn as icons or a "..." menu keep their column narrow, its buttons against the table's right edge,
+  // as shadcn's data table draws its row actions.
+  thead th.compact-actions,
+  tbody td.compact-actions {
+    flex-grow: 0 !important;
+    .tj-row-actions {
+      justify-content: flex-end;
+    }
+  }
+
+  // Rows: hairline dividers and a soft hover.
+  tbody tr.table-row {
+    border-bottom: 1px solid var(--cc-weak-border) !important;
+    transition: background-color 0.15s;
+    &:hover {
+      background: color-mix(in srgb, var(--cc-surface3-surface) 55%, transparent) !important;
+    }
+  }
+  // The last row drops its divider, as shadcn's data table does: above the footer's own rule it drew a second line a
+  // few pixels off, which read as a sliver of a hidden row (2026-10-14, five apps). Transparent, so heights hold.
+  tbody tr.table-row:last-of-type {
+    border-bottom-color: transparent !important;
+  }
+  // The selected row (highlightSelectedRow): a soft tint of the brand colour, as shadcn's data table marks it.
+  tbody tr.table-row.selected,
+  tbody tr.table-row.selected:hover {
+    background: color-mix(in srgb, var(--cc-primary-brand) 9%, transparent) !important;
+  }
+  tbody td {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    color: var(--cc-primary-text);
+  }
+
+  // A long unbroken token (an email, a URL) stays on one line with an ellipsis; the cell's title shows it whole.
+  tbody td .tj-cell-token {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  // A date cell's picker wraps its text in an inline-block, whose baseline gap lifted dates 3px above the row's text.
+  tbody td .react-datepicker__input-container {
+    display: block;
+  }
+
+  // Row action buttons keep their configured colours; the size and shape follow shadcn's small button.
+  tbody td button {
+    height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: $radius !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    box-shadow: $shadow-sm;
+  }
+
+  // An outline row action is drawn as shadcn's ghost button: a bordered button repeated down every row was the
+  // noisiest thing on the page ("Mark complete" x 12). Its label keeps its colour; hovering gives it a soft fill.
+  tbody td button.tj-row-action-outline {
+    border-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 8px !important;
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--cc-surface3-surface) 80%, transparent) !important;
+    }
+  }
+
+  // Row actions as icons (a button column's buttonDisplay 'icons' or 'menu'): shadcn's ghost icon button, 32px, the
+  // label as its tooltip; a destructive action (Delete, Reject) turns red on hover.
+  tbody td .tj-row-actions {
+    gap: 4px;
+  }
+  tbody td button.tj-row-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    min-width: 32px;
+    height: 32px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--cc-placeholder-text, #737373);
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+    &.tj-row-action-icon--text {
+      width: auto;
+      padding: 0 8px !important;
+      font-size: 13px;
+      color: var(--cc-primary-text);
+    }
+    &:hover:not(:disabled),
+    &[data-state='open'] {
+      background: color-mix(in srgb, var(--cc-surface3-surface) 85%, transparent) !important;
+      color: var(--cc-primary-text);
+    }
+    &.tj-row-action-destructive:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--cc-error-systemStatus, #dc2626) 10%, transparent) !important;
+      color: var(--cc-error-systemStatus, #dc2626);
+    }
+    &:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--cc-primary-brand) 55%, transparent);
+      outline-offset: 1px;
+    }
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  // Selection checkboxes: shadcn's square checkbox, an input-grey edge filled with the brand colour when checked. The
+  // colours are !important: the ToolJet look's cell rule (.card.jet-table.table-component .table-cell ...) is more
+  // specific, so rows drew a grey box on a grey fill while the header drew a blue edge.
+  input[type='checkbox'] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    border: 1px solid var(--cc-default-border, #d4d4d8) !important;
+    border-radius: 4px !important;
+    background: var(--cc-surface1-surface) center / 12px no-repeat !important;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    cursor: pointer;
+    &:hover {
+      border-color: color-mix(in srgb, var(--cc-primary-brand) 55%, var(--cc-default-border, #d4d4d8)) !important;
+    }
+    &:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--cc-primary-brand) 45%, transparent);
+      outline-offset: 2px;
+    }
+    &:checked {
+      border-color: var(--cc-primary-brand) !important;
+      background-color: var(--cc-primary-brand) !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") !important;
+    }
+    &:indeterminate {
+      border-color: var(--cc-primary-brand) !important;
+      background-color: var(--cc-primary-brand) !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E") !important;
+    }
+  }
+  // The look draws its own check mark (the background image above): the ToolJet look's overlay icon would sit in the
+  // flow under the header's box and lift it 7px off the header's centre line.
+  .table-selector-checkbox > svg {
+    display: none;
+  }
+  // The header's select-all box on the header's centre line, level with the column titles and the row boxes.
+  thead th.selector-header {
+    align-items: center;
+    .thead-editable-icon-header-text-wrapper,
+    .header-text,
+    .table-selector-checkbox {
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  // Footer and pagination: shadcn's outline page buttons.
+  .table-footer {
+    font-size: 14px;
+    color: var(--cc-placeholder-text);
+  }
+  .table-pagination-btn {
+    height: 32px !important;
+    min-width: 32px !important;
+    border-radius: $radius !important;
+    color: var(--cc-primary-text) !important;
+    font-weight: 500;
+    &.selected {
+      border: 1px solid var(--cc-default-border) !important;
+      background: var(--cc-surface1-surface) !important;
+      box-shadow: $shadow-sm;
+    }
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+}
+
+// Inside a card (a surfaced FlexContainer) the table sits flush: the card is the frame.
+.jet-table.tj-table-look-shadcn.tj-table-look-flat {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+
+  .table-card-header {
+    padding: 4px 0 12px !important;
+    min-height: 0;
+  }
+  // The sticky header row needs an opaque fill: the card's, not the theme surface.
+  thead {
+    background-color: var(--tj-table-surface, var(--cc-surface1-surface)) !important;
+  }
+  thead th:first-child,
+  tbody td:first-child {
+    padding-left: 4px !important;
+  }
+}
+
+// A narrow table (a quarter-width card): the footer keeps one line. First and last page buttons go, the record count
+// does not wrap ("14 / Records"), and the page buttons tighten.
+@container tj-shadcn-table (max-width: 440px) {
+  .jet-table.tj-table-look-shadcn {
+    .pagination-container > button:first-child,
+    .pagination-container > button:last-child {
+      display: none !important;
+    }
+    .table-pagination-btn {
+      min-width: 28px !important;
+      padding: 0 6px !important;
+    }
+    .table-footer {
+      gap: 8px;
+      span {
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+// Status chips for html columns and Html blocks: <span class="tj-chip tj-chip-success">Paid</span>. Tinted from the
+// app theme's status colours, so one snippet reads right in light and dark mode (the fixed light tints a build wrote
+// glowed on dark tables). Variants: success, warning, danger, info (a fixed blue) and neutral.
+.tj-chip {
+  --chip: var(--cc-placeholder-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  background: color-mix(in srgb, var(--chip) 14%, transparent);
+  color: color-mix(in srgb, var(--chip) 78%, var(--cc-primary-text));
+}
+.tj-chip-success {
+  --chip: var(--cc-success-systemStatus, #16a34a);
+}
+.tj-chip-warning {
+  --chip: var(--cc-warning-systemStatus, #d97706);
+}
+.tj-chip-danger {
+  --chip: var(--cc-error-systemStatus, #dc2626);
+}
+// Info is a fixed blue, as the pack's charts and map draw it: in the brand colour, Open and In progress read as Pending
+// under an orange theme and as Completed under a green one (helpdesk, pet salon, 2026-10-14).
+.tj-chip-info {
+  --chip: #2563eb;
+}
+.theme-dark .tj-chip-info,
+.dark-theme .tj-chip-info {
+  --chip: #60a5fa;
+}
+.tj-chip-neutral {
+  --chip: var(--cc-placeholder-text, #64748b);
+}
+
+// A person's avatar in a string column ("Show avatar"): initials in a circle tinted from the name's hue, theme-aware
+// in light and dark mode like the chips.
+.tj-cell-avatar {
+  --tj-cell-avatar: hsl(var(--tj-cell-avatar-hue, 220) 62% 50%);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: color-mix(in srgb, var(--tj-cell-avatar) 16%, transparent);
+  color: color-mix(in srgb, var(--tj-cell-avatar) 75%, var(--cc-primary-text));
+}
+
+// Outside the shadcn look a long token wraps as any cell text does.
+.jet-table:not(.tj-table-look-shadcn) .tj-cell-token {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+// Rows of one line (contentWrap off, the shadcn look's default from the MCP): a long subject ends in an ellipsis instead of
+// being cut mid-word at the cell edge. With wrapping on, white-space is normal and nothing here applies.
+.tj-table-look-shadcn td .td-container > .d-flex > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// The row actions menu (buttonDisplay 'menu'): shadcn's dropdown menu. It renders in a portal at the body, so it is
+// styled here at the top level; colours come from the app theme on the document root.
+.tj-row-action-menu {
+  z-index: 1100;
+  min-width: 10rem;
+  padding: 4px;
+  border: 1px solid var(--cc-weak-border, #e5e5e5);
+  border-radius: calc(var(--cc-radius-default, 6px) + 2px);
+  background: var(--cc-surface1-surface, #ffffff);
+  color: var(--cc-primary-text, #0a0a0a);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  font-size: 14px;
+  animation: tj-row-action-menu-in 120ms ease-out;
+}
+.tj-row-action-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--cc-radius-default, 6px);
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+  &[data-highlighted] {
+    background: var(--cc-surface3-surface, #f5f5f5);
+  }
+  &[data-disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  &.tj-row-action-destructive {
+    color: var(--cc-error-systemStatus, #dc2626);
+    &[data-highlighted] {
+      background: color-mix(in srgb, var(--cc-error-systemStatus, #dc2626) 10%, transparent);
+    }
+  }
+}
+.tj-row-action-item-icon {
+  display: inline-flex;
+  width: 16px;
+  justify-content: center;
+  color: var(--cc-placeholder-text, #737373);
+  .tj-row-action-destructive & {
+    color: inherit;
+  }
+}
+.tj-row-action-separator {
+  height: 1px;
+  margin: 4px -4px;
+  background: var(--cc-weak-border, #e5e5e5);
+}
+.tj-row-action-spin {
+  animation: tj-row-action-spin 0.8s linear infinite;
+}
+@keyframes tj-row-action-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes tj-row-action-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tj-row-action-menu,
+  .tj-row-action-spin {
+    animation: none;
+  }
+}
