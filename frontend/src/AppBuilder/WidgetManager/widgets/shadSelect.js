@@ -327,7 +327,6 @@ export const shadSelectConfig = {
     isValid: true,
     isMandatory: false,
     value: '',
-    selectedOption: {},
     options: [],
     label: '',
   },
