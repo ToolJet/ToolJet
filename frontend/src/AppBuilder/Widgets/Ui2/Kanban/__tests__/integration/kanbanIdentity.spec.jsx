@@ -5,6 +5,7 @@
  * Real store, real RenderWidget, real widget.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
+import { fireEvent, screen } from '@testing-library/react';
 import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'kb1';
@@ -75,6 +76,41 @@ describe('UI 2.0 Kanban card identity', () => {
       const { cardId } = widget.variables().movement;
       await widget.act('moveCard', cardId, 'todo');
       expect(cards()[0].stage).toBe('todo');
+    });
+  });
+
+  describe('[finding 78] an id changed by updateCardData addresses the card from then on', () => {
+    test('in its own column', async () => {
+      render([{ id: 'A', title: 'Alpha', stage: 'todo' }]);
+      await widget.act('updateCardData', 'A', { id: 'RENAMED' });
+      expect(cards()[0].id).toBe('RENAMED');
+      await widget.act('moveCard', 'RENAMED', 'done');
+      expect(cards()[0].stage).toBe('done');
+      await widget.act('moveCard', 'A', 'todo');
+      expect(cards()[0].stage).toBe('done');
+    });
+
+    test('keeping the card selected', async () => {
+      render([
+        { id: 'A', title: 'Alpha', stage: 'todo' },
+        { id: 'B', title: 'Beta', stage: 'todo' },
+      ]);
+      fireEvent.click(screen.getByText('Alpha'));
+      expect(exposed().lastSelectedCard.id).toBe('A');
+      await widget.act('updateCardData', 'A', { id: 'RENAMED' });
+      expect(exposed().lastSelectedCard).toMatchObject({ id: 'RENAMED', title: 'Alpha' });
+    });
+
+    test('like a duplicate id in the data, a rename onto another card keeps both cards', async () => {
+      render([
+        { id: 'A', title: 'Alpha', stage: 'todo' },
+        { id: 'B', title: 'Beta', stage: 'todo' },
+      ]);
+      await widget.act('updateCardData', 'A', { id: 'B' });
+      expect(cards().map((card) => [card.id, card.title])).toEqual([
+        ['B', 'Alpha'],
+        ['B', 'Beta'],
+      ]);
     });
   });
 });

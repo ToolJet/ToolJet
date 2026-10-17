@@ -128,7 +128,7 @@ export const addCard = (
   columnId: unknown,
   statusField: string,
   idField: string
-): { columns: BoardColumn[]; card: CardRow } => {
+): { columns: BoardColumn[]; card: CardRow; key: string } => {
   const card: CardRow = isRecord(rawCard) ? rawCard : {};
   const keys = new Set(columns.flatMap((c) => c.cards.map((x) => x.__key)));
   let id = card[idField];
@@ -145,8 +145,9 @@ export const addCard = (
     target = { id: status, title: status, cards: [] };
     next.push(target);
   }
-  target.cards.push({ ...added, __key: uniqueKey(keys, keyOf(id)) });
-  return { columns: next, card: added };
+  const key = uniqueKey(keys, keyOf(id));
+  target.cards.push({ ...added, __key: key });
+  return { columns: next, card: added, key };
 };
 
 /** Removes the card with this id. Returns the new columns and the removed card (null when there is none). */
@@ -160,25 +161,32 @@ export const deleteCard = (
   return { columns: columns.map((c) => ({ ...c, cards: c.cards.filter((x) => x.__key !== key) })), card: plain(card) };
 };
 
-/** Merges `values` into the card with this id, in place; a changed status moves it to the end of that column. */
+/** Merges `values` into the card with this id, in place; a changed status moves it to the end of that column. A
+ *  changed id gives the card the key of its new id (suffixed when another card has it, as duplicate ids in the data
+ *  are), so the new id addresses it. Returns the card's key after the update (`key`) with the card. */
 export const updateCard = (
   columns: BoardColumn[],
   cardId: unknown,
   values: unknown,
   statusField: string,
   idField: string
-): { columns: BoardColumn[]; card: CardRow | null } => {
+): { columns: BoardColumn[]; card: CardRow | null; key: string | null } => {
   const key = keyOf(cardId);
   const card = columns.flatMap((c) => c.cards).find((x) => x.__key === key);
-  if (!card) return { columns, card: null };
+  if (!card) return { columns, card: null, key: null };
   const updated: BoardCard = { ...card, ...(isRecord(values) ? values : {}), __key: key };
   if (keyOf(updated[statusField]) === keyOf(card[statusField])) {
+    if (hasId(updated[idField]) && keyOf(updated[idField]) !== keyOf(card[idField])) {
+      const others = new Set(columns.flatMap((c) => c.cards.map((x) => x.__key)).filter((k) => k !== key));
+      updated.__key = uniqueKey(others, keyOf(updated[idField]));
+    }
     const next = columns.map((c) => ({ ...c, cards: c.cards.map((x) => (x.__key === key ? updated : x)) }));
-    return { columns: next, card: plain(updated) };
+    return { columns: next, card: plain(updated), key: updated.__key };
   }
   const removed = deleteCard(columns, cardId).columns;
   const { __key, ...rest } = updated;
-  return { columns: addCard(removed, rest, undefined, statusField, idField).columns, card: plain(updated) };
+  const added = addCard(removed, rest, undefined, statusField, idField);
+  return { columns: added.columns, card: plain(updated), key: added.key };
 };
 
 /** Whether a card's content collapses to `collapsedHeight` px (empty: never) given its full `contentHeight`, and the
