@@ -12,6 +12,8 @@ export interface ListSelectionArgs {
   /** All the list's records, and the rows shown (this page, up to "Show more"). */
   data: unknown;
   items: unknown[];
+  /** The shown rows' item keys (itemKey: the idField, else the position on the page). */
+  keys: string[];
   idField: string;
   setExposedVariables: WidgetProps['setExposedVariables'];
   fireEvent: WidgetProps['fireEvent'];
@@ -23,11 +25,10 @@ export interface ListSelectionArgs {
  *  item is on another page, and clears it when the item is gone, with no event (README, "Selection after a data
  *  change"). */
 export const useListSelection = (args: ListSelectionArgs) => {
-  const { data, items, idField } = args;
+  const { data, items, keys, idField } = args;
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const keys = items.map((item, index) => itemKey(item, idField, index));
   const selectedIndex = selectedKey === null ? -1 : keys.indexOf(selectedKey);
-  const live = useLatest({ ...args, keys });
+  const live = useLatest(args);
   /** The components' values of the shown row `index`, as the store holds them. */
   const recordAt = (index: number) => {
     const { id, moduleId, parentIndices } = live.current;
@@ -78,5 +79,5 @@ export const useListSelection = (args: ListSelectionArgs) => {
     });
   });
   useEffect(() => reconcile.current(), [data, items, reconcile]);
-  return { keys, selectedIndex, pick, clearSelection };
+  return { selectedIndex, pick, clearSelection };
 };

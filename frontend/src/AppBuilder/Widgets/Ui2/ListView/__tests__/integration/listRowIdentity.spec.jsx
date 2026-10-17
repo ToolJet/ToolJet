@@ -6,7 +6,7 @@
  * Real store, real RenderWidget, real widgets; jsdom's missing layout is given a width so rows mount their canvas.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
 import { binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
@@ -43,6 +43,8 @@ const exposed = () => widget.exposed() ?? {};
 /** The Input values the store holds per row, in row order. */
 const published = () => Object.values(exposed().children ?? {}).map((row) => row.field1?.value);
 const boxes = () => screen.queryAllByRole('textbox');
+const values = () => boxes().map((box) => box.value);
+const labels = () => screen.queryAllByRole('listitem').map((row) => row.querySelector('label')?.textContent);
 
 /** Renders the list and waits for its first `rows` rows (all records by default) to publish their values. */
 const render = async (records, properties = {}, rows = records.length) => {
@@ -106,4 +108,55 @@ describe('UI 2.0 List view row identity', () => {
       expect(exposed().selectedRecordId).toBe(1);
     }
   );
+
+  describe('[finding 67] when records move, their rows keep their values in the store', () => {
+    // Alpha's Input is edited, then the records move: each row's exposed values follow its record, as the drawn row does.
+    const editAlpha = async (records = [ALPHA, BETA]) => {
+      await render(records);
+      await act(async () => fireEvent.change(boxes()[0], { target: { value: 'Alpha edited' } }));
+      await waitFor(() => expect(published()[0]).toBe('Alpha edited'));
+    };
+    const move = async (records) => {
+      setData(records);
+      await waitFor(() => expect(labels()).toEqual(records.map((record) => record.name)));
+    };
+
+    test('a reorder', async () => {
+      await editAlpha();
+      await move([BETA, ALPHA]);
+      expect(values()).toEqual(['Beta', 'Alpha edited']);
+      await waitFor(() => expect(published()).toEqual(['Beta', 'Alpha edited']));
+    });
+
+    test("a row's action after a reorder changes that row", async () => {
+      await editAlpha();
+      await move([BETA, ALPHA]);
+      await waitFor(() => expect(published()).toEqual(['Beta', 'Alpha edited']));
+      await act(async () => exposed().children[0].field1.setText('Beta set'));
+      await waitFor(() => expect(values()).toEqual(['Beta set', 'Alpha edited']));
+      expect(published()).toEqual(['Beta set', 'Alpha edited']);
+    });
+
+    test('a selection after a reorder reads the selected record', async () => {
+      await editAlpha();
+      await move([BETA, ALPHA]);
+      await widget.act('selectItem', 'b');
+      await waitFor(() => expect(exposed().selectedRecord?.field1?.value).toBe('Beta'));
+      expect(exposed().selectedItem).toEqual(BETA);
+    });
+
+    test('a record inserted before it', async () => {
+      await editAlpha();
+      await move([GAMMA, ALPHA, BETA]);
+      expect(values()).toEqual(['Gamma', 'Alpha edited', 'Beta']);
+      await waitFor(() => expect(published()).toEqual(['Gamma', 'Alpha edited', 'Beta']));
+    });
+
+    test('its own removal leaves nothing of it in the rows that stay', async () => {
+      await editAlpha();
+      await move([BETA]);
+      expect(values()).toEqual(['Beta']);
+      await waitFor(() => expect(published()).toEqual(['Beta']));
+    });
+  });
 });
