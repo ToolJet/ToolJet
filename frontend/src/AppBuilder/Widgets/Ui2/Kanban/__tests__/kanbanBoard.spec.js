@@ -54,7 +54,7 @@ describe('moveCard', () => {
   const cols = () => boardColumns(cards, ['todo', 'doing', 'done'], 'status', 'id');
 
   it('moves a card to the end of another column when dropped on the column', () => {
-    const { columns, move } = moveCard(cols(), 1, 'done', null, 'status');
+    const { columns, move } = moveCard(cols(), 1, 'done', null, 'status', 'id');
     expect(columns.find((c) => c.id === 'done').cards.map((x) => x.id)).toEqual([4, 1]);
     expect(columns.find((c) => c.id === 'todo').cards.map((x) => x.id)).toEqual([3]);
     expect(move).toMatchObject({ cardId: 1, from: 'todo', to: 'done', toIndex: 1 });
@@ -62,19 +62,19 @@ describe('moveCard', () => {
   });
 
   it('inserts before the card it was dropped on', () => {
-    const { columns, move } = moveCard(cols(), 2, 'todo', 3, 'status');
+    const { columns, move } = moveCard(cols(), 2, 'todo', 3, 'status', 'id');
     expect(columns.find((c) => c.id === 'todo').cards.map((x) => x.id)).toEqual([1, 2, 3]);
     expect(move.toIndex).toBe(1);
   });
 
   it('reorders within a column', () => {
-    const { columns, move } = moveCard(cols(), 3, 'todo', 1, 'status');
+    const { columns, move } = moveCard(cols(), 3, 'todo', 1, 'status', 'id');
     expect(columns.find((c) => c.id === 'todo').cards.map((x) => x.id)).toEqual([3, 1]);
     expect(move).toMatchObject({ from: 'todo', to: 'todo', toIndex: 0 });
   });
 
   it('returns nothing to do for a drop where the card already is', () => {
-    expect(moveCard(cols(), 4, 'done', null, 'status').move).toBeNull();
+    expect(moveCard(cols(), 4, 'done', null, 'status', 'id').move).toBeNull();
   });
 });
 
@@ -115,7 +115,7 @@ describe('editing cards', () => {
   });
 
   it('lists the board as plain cards in board order', () => {
-    const { columns } = moveCard(cols(), 2, 'todo', 3, 'status');
+    const { columns } = moveCard(cols(), 2, 'todo', 3, 'status', 'id');
     expect(boardCards(columns).map((c) => [c.id, c.status])).toEqual([
       [1, 'todo'],
       [2, 'todo'],

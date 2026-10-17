@@ -180,8 +180,8 @@ export const ShadKanban = (props: WidgetProps) => {
     commit(result.columns, { lastRemovedCard: result.card }, 'onCardRemoved');
   };
   const doMove = (id: unknown, toColumnId: unknown, beforeKey: unknown = null) => {
-    const { columns: cols, statusField: sf } = live.current;
-    const { columns: next, move } = moveCard(cols, id, toColumnId, beforeKey, sf);
+    const { columns: cols, statusField: sf, idField: idf } = live.current;
+    const { columns: next, move } = moveCard(cols, id, toColumnId, beforeKey, sf, idf);
     if (!move) return;
     setLastMove(move);
     commit(next, { lastCardMovement: move }, 'onCardMoved');
