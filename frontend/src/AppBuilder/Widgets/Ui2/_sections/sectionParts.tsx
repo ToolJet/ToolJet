@@ -47,9 +47,19 @@ export const EmptyText = ({ text, fallback }: { text: unknown; fallback: string 
 
 /** A clicked row as selectedItem (its data) and selectedItemId (its idField value), and the click that selects it and
  *  fires `event`; nothing while the widget is disabled or loading. */
-export const useItemSelection = <T extends { row?: Resolved }>(props: WidgetProps, event: string) => {
+export const useItemSelection = <T extends { key: string; row?: Resolved }>(
+  props: WidgetProps,
+  event: string,
+  items: readonly T[]
+) => {
   const { properties: p, setExposedVariables, fireEvent } = props;
-  const [selected, setSelected] = useState<T | null>(null);
+  // The selection is kept by the item's key and read from the current items, so a data refresh re-publishes it from
+  // the fresh record and clears it when the item is gone, with no event (README, "Selection after a data change").
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const selected = selectedKey === null ? null : items.find((item) => item.key === selectedKey) ?? null;
+  useEffect(() => {
+    if (selectedKey !== null && !selected) setSelectedKey(null);
+  }, [selectedKey, selected]);
   const idKey = toText(p.idField) || 'id';
   const selection = (row: T | null) => ({
     selectedItem: row?.row ?? {},
@@ -58,7 +68,7 @@ export const useItemSelection = <T extends { row?: Resolved }>(props: WidgetProp
   useExposed(setExposedVariables, p, selection(selected));
   const click = (row: T) => {
     if (busy(p)) return;
-    setSelected(row);
+    setSelectedKey(row.key);
     setExposedVariables(selection(row));
     fireEvent(event);
   };

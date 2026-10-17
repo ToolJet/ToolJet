@@ -112,7 +112,16 @@ export const ShadKanban = (props: WidgetProps) => {
   );
   const [columns, setColumns] = useState(fromData);
   useEffect(() => setColumns(fromData), [fromData]);
-  const [selected, setSelected] = useState<BoardCard | null>(null);
+  // The selection is kept by card key and read from the current board, so a data refresh re-publishes the fresh card
+  // and a removed card clears it (README, "Selection after a data change").
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const selected = useMemo(
+    () => (selectedKey === null ? null : columns.flatMap((c) => c.cards).find((c) => c.__key === selectedKey) ?? null),
+    [columns, selectedKey]
+  );
+  useEffect(() => {
+    if (selectedKey !== null && !selected) setSelectedKey(null);
+  }, [selectedKey, selected]);
   // The card whose details show (a details field is mapped): a click opens a card's details, a second click closes them.
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [lastMove, setLastMove] = useState<CardMove | null>(null);
@@ -168,7 +177,6 @@ export const ShadKanban = (props: WidgetProps) => {
   const doDelete = (id: unknown) => {
     const result = deleteCard(live.current.columns, id);
     if (!result.card) return;
-    setSelected((current) => (current && current.__key === String(id) ? null : current));
     commit(result.columns, { lastRemovedCard: result.card }, 'onCardRemoved');
   };
   const doMove = (id: unknown, toColumnId: unknown, beforeKey: unknown = null) => {
@@ -277,7 +285,7 @@ export const ShadKanban = (props: WidgetProps) => {
   const activeCard = activeKey ? columns.flatMap((c) => c.cards).find((c) => c.__key === activeKey) : null;
   const select = (card: BoardCard) => {
     if (fields.details) setOpenKey((current) => (current === card.__key ? null : card.__key));
-    setSelected(card);
+    setSelectedKey(card.__key);
     setExposedVariable('lastSelectedCard', strip(card));
     fireEvent('onCardSelected');
   };

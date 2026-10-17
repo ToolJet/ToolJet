@@ -1,13 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { LoadingBox, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import { Shell, busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import {
-  rootWidth,
-  useAutoHeight,
-  useExposed,
-  useStable,
-  withControlState,
-} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import { rootWidth, useAutoHeight, useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { initials } from '@/AppBuilder/Widgets/Ui2/_shared/avatarHue';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { cardItems, gridColumns, type CardItem } from '@/AppBuilder/Widgets/Ui2/_sections/sectionsModel';
@@ -21,9 +15,9 @@ import {
   InlineProgress,
   RecordAvatar,
   TITLE_FONT,
+  useItemSelection,
 } from '@/AppBuilder/Widgets/Ui2/_sections/sectionParts';
 import { useHasEvent } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
-import { toText } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { onKeyActivate } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 import { ShowMore, useShownCount } from '@/AppBuilder/Widgets/Ui2/_shared/ShowMore';
 
@@ -98,7 +92,7 @@ export const CARD_STYLE: Record<string, string> = {
 export const CARDS_PER_STEP = 48;
 
 export const ShadCardGrid = (props: WidgetProps) => {
-  const { properties: p, setExposedVariables, setExposedVariable, fireEvent, id } = props;
+  const { properties: p, id } = props;
   const ref = useRef<HTMLDivElement>(null);
   useAutoHeight(props, ref);
   // The root has no padding of its own, so its width is the box's.
@@ -141,11 +135,7 @@ export const ShadCardGrid = (props: WidgetProps) => {
   // A grid draws its first CARDS_PER_STEP cards and a button for the next ones: a 10,000-row binding drew every card
   // (over 100,000 elements) and froze the page. A new data binding starts again from the first step.
   const [shownCount, showMore] = useShownCount(CARDS_PER_STEP, cards);
-  const [selected, setSelected] = useState<CardItem | null>(null);
-  useExposed(setExposedVariables, p, {
-    selectedItem: selected?.row ?? {},
-    selectedItemId: selected ? selected.row?.[toText(p.idField) || 'id'] ?? null : null,
-  });
+  const { selected, click } = useItemSelection<CardItem>(props, 'onCardClicked', cards);
   const hasClick = useHasEvent(id, 'onCardClicked');
   const columns = gridColumns(p.columns, width || Number(props.width) || 960, p.minCardWidth);
   const aspect = ['16/9', '4/3', '1/1'].includes(p.imageAspect) ? p.imageAspect.replace('/', ' / ') : '4 / 3';
@@ -154,14 +144,6 @@ export const ShadCardGrid = (props: WidgetProps) => {
   const showImage = p.showImage !== false && typeof p.imageField === 'string' && p.imageField.trim() !== '';
   const style = ['elevated', 'outline', 'flat'].includes(p.cardStyle) ? p.cardStyle : 'elevated';
   const row = p.layout === 'row';
-
-  const click = (card: CardItem) => {
-    if (busy(p)) return;
-    setSelected(card);
-    setExposedVariable('selectedItem', card.row);
-    setExposedVariable('selectedItemId', card.row?.[toText(p.idField) || 'id'] ?? null);
-    fireEvent('onCardClicked');
-  };
 
   let body;
   if (p.loadingState && !wantsSkeleton(p)) {

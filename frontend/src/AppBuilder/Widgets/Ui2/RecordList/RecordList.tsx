@@ -53,7 +53,7 @@ export const ShadRecordList = (props: WidgetProps) => {
   // The first ROWS_PER_STEP rows and a button for the next ones, as the card grid does: a 10,000-row binding froze the
   // page. A new data binding starts again from the first step.
   const [shownCount, showMore] = useShownCount(ROWS_PER_STEP, rows);
-  const { selected, click } = useItemSelection<RecordItem>(props, 'onItemClicked');
+  const { selected, click } = useItemSelection<RecordItem>(props, 'onItemClicked', rows);
   const hasClick = useHasEvent(id, 'onItemClicked');
   const density = DENSITY[p.density] || DENSITY.default;
   const showAvatar = p.showAvatar !== false;
