@@ -295,3 +295,31 @@ describe('resourceHeading', () => {
     expect(resourceHeading('')).toBe('');
   });
 });
+
+// Audit 54: repeated ids were made unique by trying ~1, ~2 ... from the start for every repeat, so n rows with one id
+// took n(n+1)/2 checks before the schedule drew. The next free suffix is now remembered per id.
+describe('repeated ids', () => {
+  const room = { key: 'room', id: 'room', name: 'Room', caption: '', avatar: '' };
+  const range = () => scheduleRange({ date: '2026-10-12', dayStart: 9, dayEnd: 10 }, at(8));
+
+  it('keeps every key unique, next to ids that already carry a suffix', () => {
+    const keys = scheduleResources(['a', 'a', 'a~1', 'a', { id: 'a~2', name: 'Two' }, 'a'], [], '').map((r) => r.key);
+    expect(keys).toEqual(['a', 'a~1', 'a~1~1', 'a~2', 'a~2~1', 'a~3']);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('gives 30,000 resources or bookings with one id their keys in linear time', () => {
+    const started = Date.now();
+    const resources = scheduleResources(
+      Array.from({ length: 30000 }, () => ({ id: 'x', name: 'X' })),
+      [],
+      ''
+    );
+    const rows = Array.from({ length: 30000 }, () => ({ id: 'b', room: 'room', from: '2026-10-12 09:00' }));
+    const placed = placeBookings(rows, { resourceField: 'room', startField: 'from' }, range(), [room]);
+    expect(Date.now() - started).toBeLessThan(1500);
+    expect(new Set(resources.map((r) => r.key)).size).toBe(30000);
+    const keys = placed.room.items.map((b) => b.key);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+});

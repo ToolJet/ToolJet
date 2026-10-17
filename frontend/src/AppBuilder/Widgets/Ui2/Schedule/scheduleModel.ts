@@ -39,6 +39,24 @@ const hourOf = (v: unknown, fallback: number, roundUp: boolean): number => {
 };
 const midnight = (d: Date): Date => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
+/** Hands out unique keys: an id the first time, then id~1, id~2 ... remembering per id where the search stopped, so
+ *  n repeats of one id cost n checks, not n(n+1)/2 (a key that already exists, such as an id 'a~1', is skipped). */
+const keyAllocator = () => {
+  const taken = new Set<string>();
+  const nextSuffix = new Map<string, number>();
+  return (base: string): string => {
+    let key = base;
+    if (taken.has(key)) {
+      let n = nextSuffix.get(base) ?? 1;
+      while (taken.has(`${base}~${n}`)) n++;
+      key = `${base}~${n}`;
+      nextSuffix.set(base, n + 1);
+    }
+    taken.add(key);
+    return key;
+  };
+};
+
 /** A local day as YYYY-MM-DD. */
 export const dayKey = (d: Date): string => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
@@ -200,7 +218,7 @@ export const scheduleResources = (
       if (list.length >= 1000) break;
     }
   }
-  const keys = new Set<string>();
+  const uniqueKey = keyAllocator();
   return list.flatMap((r, index): ScheduleResource[] => {
     let entry: Omit<ScheduleResource, 'key'>;
     if (typeof r === 'string' || typeof r === 'number') {
@@ -218,10 +236,7 @@ export const scheduleResources = (
         avatar: toText(r.avatar ?? r.image).trim(),
       };
     } else return [];
-    let key = entry.id || String(index);
-    for (let n = 1; keys.has(key); n++) key = `${entry.id}~${n}`;
-    keys.add(key);
-    return [{ key, ...entry }];
+    return [{ key: uniqueKey(entry.id || String(index)), ...entry }];
   });
 };
 
@@ -307,16 +322,13 @@ export const placeBookings = (
   for (const entry of Object.values(out)) {
     entry.items.sort((a, b) => a.start - b.start || b.end - a.end);
     const laneEnds: number[] = [];
-    const keys = new Set<string>();
+    const uniqueKey = keyAllocator();
     for (const item of entry.items) {
       let lane = laneEnds.findIndex((t) => t <= item.spanStart);
       if (lane === -1) lane = laneEnds.length < MAX_LANES ? laneEnds.length : MAX_LANES - 1;
       laneEnds[lane] = Math.max(laneEnds[lane] ?? 0, item.spanEnd);
       item.lane = lane;
-      let key = item.key;
-      for (let n = 1; keys.has(key); n++) key = `${item.key}~${n}`;
-      keys.add(key);
-      item.key = key;
+      item.key = uniqueKey(item.key);
     }
     entry.lanes = Math.max(1, laneEnds.length);
   }
