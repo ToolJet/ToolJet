@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
+import { flushSync } from 'react-dom';
+import { taskQueue } from '@/AppBuilder/_engines/data/taskQueue';
 import { createSizeIndex } from './sizeIndex';
 import { anchorOf, createScrollModel, itemTop, listShape, windowTop } from './scrollModel';
 
@@ -29,14 +31,14 @@ const noop = () => {};
  *   key's item again. Without it, nothing is measured or observed.
  * - `listRef`: the list element, when something else in the scroll element comes before it (a sticky header): items
  *   are placed below it.
- * - `mountBudgetMs`: once the list is on screen, items new to the window mount within about this much time per frame,
- *   those nearest the view first; the rest mount on the next frames (`pending`). Infinity mounts them all at once.
+ * - `aheadBudgetMs`: items in view, and those the last scroll step's distance ahead (the next frame's), always render
+ *   at once. With a budget, the rest of the window (overscan and lead) mounts in the tasks after, about this much time
+ *   each, those ahead in the scrolling direction first; without one (Infinity), everything renders at once.
  *
  * Each item is `{ index, key, start }`; its element's CSS `top` is `itemTop(start)`. Keep the item's content in a
  * component that doesn't take `start`, so moving an item doesn't re-render its content.
  *
- * Returns `{ items, height, itemTop, sizeAt, inView, measureElement, resizeItem, scrollToIndex, isScrolling,
- * pending, tick }`,
+ * Returns `{ items, height, itemTop, sizeAt, startOf, inView, measureElement, resizeItem, scrollToIndex, isScrolling, tick }`,
  * where `tick` changes whenever the window itself re-rendered the list.
  */
 export function useWindow({
@@ -48,7 +50,7 @@ export function useWindow({
   indexOfKey = null,
   overscan = 400,
   measure = false,
-  mountBudgetMs = Infinity,
+  aheadBudgetMs = Infinity,
 }) {
   const [tick, rerender] = useReducer((n) => n + 1, 0);
   const model = useRef(null);
@@ -85,8 +87,9 @@ export function useWindow({
   const sizesRef = useRef(sizes);
   sizesRef.current = sizes;
 
-  // The viewport's height, how far down the scroll element the list starts, and the scrolling direction and speed.
-  const viewport = useRef({ height: FIRST_VIEWPORT, margin: 0, direction: 0, speed: 0, at: 0 });
+  // The viewport's height, how far down the scroll element the list starts, and the scrolling direction, speed and
+  // last step.
+  const viewport = useRef({ height: FIRST_VIEWPORT, margin: 0, direction: 0, speed: 0, step: 0, at: 0 });
   const shapeOf = (index = sizesRef.current) =>
     listShape(index.total(), viewport.current.height, undefined, viewport.current.margin);
   const listRefRef = useRef(listRef);
@@ -147,6 +150,7 @@ export function useWindow({
       margin: viewport.current.margin,
       direction: moved === 0 ? current.direction : Math.sign(moved),
       speed: elapsed > SETTLE_MS ? 0 : current.speed * 0.5 + speed * 0.5,
+      step: moved === 0 ? current.step : Math.min(Math.abs(moved), height),
       at: now,
     };
     const was = rendered.current;
@@ -168,7 +172,7 @@ export function useWindow({
     clearTimeout(settle.current);
     settle.current = setTimeout(() => {
       scrolling.current = false;
-      viewport.current = { ...viewport.current, speed: 0, direction: 0 };
+      viewport.current = { ...viewport.current, speed: 0, direction: 0, step: 0 };
       const el = element.current;
       const top = el ? model.current.resync(shapeOf(), viewport.current.height) : null;
       if (top !== null) {
@@ -273,38 +277,50 @@ export function useWindow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The items of the window, and which of them mount now (see mountBudgetMs).
+  // The items of the window. With a budget, those needed for this frame and the next render now; those already
+  // mounted stay; the rest come in the tasks after (see aheadBudgetMs), `ahead.grant` of them per task.
   const all = [];
   for (let i = view.first; i <= view.last; i++) {
     all.push({ index: i, key: getItemKey(i), start: sizes.offsetOf(i) - view.anchor });
   }
   const mounted = useRef(new Set());
-  const costPerItem = useRef(0);
-  const renderStart = useRef(0);
-  const freshCount = useRef(0);
+  const ahead = useRef({ grant: 0, granted: 0, perTask: 8, waiting: 0, scheduled: false, queue: null });
   let items = all;
-  let pending = false;
-  if (mountBudgetMs !== Infinity && mounted.current.size > 0 && costPerItem.current > 0) {
-    const fresh = all.filter((item) => !mounted.current.has(item.key));
-    const allowed = Math.max(1, Math.floor(mountBudgetMs / costPerItem.current));
-    if (fresh.length > allowed) {
-      const middle = model.current.offset - view.anchor + viewport.current.height / 2;
-      const distance = (item) => Math.abs(item.start + sizes.sizeAt(item.index) / 2 - middle);
-      const now = new Set(
-        fresh
-          .sort((a, b) => distance(a) - distance(b))
-          .slice(0, allowed)
-          .map((item) => item.key)
-      );
-      items = all.filter((item) => mounted.current.has(item.key) || now.has(item.key));
-      pending = true;
+  ahead.current.granted = 0;
+  ahead.current.waiting = 0;
+  if (aheadBudgetMs !== Infinity && mounted.current.size > 0) {
+    const { offset } = model.current;
+    const { height, direction, step } = viewport.current;
+    const needTop = offset - (direction < 0 ? step : 0);
+    const needBottom = offset + height + (direction > 0 ? step : 0);
+    const needed = (item) => {
+      const top = sizes.offsetOf(item.index);
+      return top + sizes.sizeAt(item.index) > needTop && top < needBottom;
+    };
+    const keep = new Set();
+    const later = [];
+    for (const item of all) {
+      if (needed(item) || mounted.current.has(item.key)) keep.add(item.key);
+      else later.push(item);
+    }
+    if (later.length > 0) {
+      // Ahead in the scrolling direction first, nearest first; then behind.
+      const distance = (item) => {
+        const top = sizes.offsetOf(item.index);
+        const along = direction >= 0 ? top - needBottom : needTop - (top + sizes.sizeAt(item.index));
+        return along >= 0 ? along : sizes.total() - along;
+      };
+      later.sort((a, b) => distance(a) - distance(b));
+      const now = later.slice(0, ahead.current.grant);
+      for (const item of now) keep.add(item.key);
+      items = all.filter((item) => keep.has(item.key));
+      ahead.current.granted = now.length;
+      ahead.current.waiting = later.length - now.length;
     }
   }
-  freshCount.current = items.reduce((n, item) => n + (mounted.current.has(item.key) ? 0 : 1), 0);
-  renderStart.current = performance.now();
 
   // After each render: follow the scroll element (it mounts and unmounts with the items), line `--tj-window-top` up
-  // with this render's anchor, learn what mounting costs, and stop observing items that left.
+  // with this render's anchor, and stop observing items that left.
   const listen = (el, on) => {
     const method = on ? 'addEventListener' : 'removeEventListener';
     el[method]('scroll', onScroll, { passive: true });
@@ -338,10 +354,7 @@ export function useWindow({
     }
   });
   useLayoutEffect(() => {
-    if (freshCount.current > 0) {
-      const cost = (performance.now() - renderStart.current) / freshCount.current;
-      costPerItem.current = costPerItem.current ? costPerItem.current * 0.5 + cost * 0.5 : cost;
-    }
+    ahead.current.grant = 0;
     mounted.current = new Set(items.map((item) => item.key));
     rendered.current = view;
     attach();
@@ -354,13 +367,32 @@ export function useWindow({
     }
   });
 
+  // Items still to come mount a task at a time. Each task mounts as many as about `aheadBudgetMs` takes, judged by the
+  // whole of the last task (half to twice as many as then), so one slow task (a GC pause) never holds the count down.
+  const mountAhead = useCallback(() => {
+    const state = ahead.current;
+    state.scheduled = false;
+    if (!element.current || state.waiting === 0) return;
+    state.grant = Math.max(1, Math.round(state.perTask));
+    const start = performance.now();
+    flushSync(rerender);
+    const spent = Math.max(1, performance.now() - start);
+    const n = state.granted;
+    if (n > 0) state.perTask = Math.min(n * 2, Math.max(n / 2, (n * aheadBudgetMsRef.current) / spent));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const aheadBudgetMsRef = useRef(aheadBudgetMs);
+  aheadBudgetMsRef.current = aheadBudgetMs;
   useEffect(() => {
-    if (!pending) return undefined;
-    const frame = requestAnimationFrame(rerender);
-    return () => cancelAnimationFrame(frame);
+    const state = ahead.current;
+    if (state.waiting === 0 || state.scheduled) return;
+    state.scheduled = true;
+    state.queue ??= taskQueue();
+    state.queue.schedule(mountAhead);
   });
 
   useEffect(() => {
+    const aheadState = ahead.current;
     window.addEventListener('pointerup', onPointerUp);
     window.addEventListener('pointercancel', onPointerUp);
     return () => {
@@ -368,6 +400,10 @@ export function useWindow({
       window.removeEventListener('pointercancel', onPointerUp);
       if (element.current) listen(element.current, false);
       clearTimeout(settle.current);
+      // Closed for good: a remount (StrictMode) starts a new queue.
+      aheadState.queue?.close();
+      aheadState.queue = null;
+      aheadState.scheduled = false;
       viewportObserver.current?.disconnect();
       resizeObserver.current?.disconnect();
       resizeObserver.current = null;
@@ -382,6 +418,8 @@ export function useWindow({
     height: shape.height,
     itemTop: (start) => itemTop(shape, start),
     sizeAt: (i) => sizes.sizeAt(i),
+    // Any item's `start`, for items kept rendered outside the window.
+    startOf: (i) => sizes.offsetOf(i) - view.anchor,
     // Whether any part of item i is in the viewport.
     inView: (i) => {
       const top = sizes.offsetOf(i);
@@ -392,7 +430,6 @@ export function useWindow({
     resizeItem,
     scrollToIndex,
     isScrolling: scrolling.current,
-    pending,
     tick,
   };
 }

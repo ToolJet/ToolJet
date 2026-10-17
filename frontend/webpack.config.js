@@ -333,6 +333,13 @@ module.exports = {
         resourceQuery: { not: [/url/] }, // exclude react component if path has *.svg?url
       },
       {
+        // Bootstrap's `legend+*`, rewritten as src/_styles/tabler.scss writes its own copy (see there).
+        test: /\.css$/,
+        include: path.resolve(__dirname, 'node_modules/bootstrap'),
+        enforce: 'pre',
+        use: [path.resolve(__dirname, 'scripts/legend-selector-loader.js')],
+      },
+      {
         test: /\.css$/,
         use: [
           environment === 'production' ? MiniCssExtractPlugin.loader : { loader: 'style-loader' },

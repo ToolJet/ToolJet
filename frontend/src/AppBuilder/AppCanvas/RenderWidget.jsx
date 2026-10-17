@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TrackedSuspense } from './SuspenseTracker';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -237,8 +237,19 @@ const RenderWidget = ({
   }, [id, moduleId, resetComponentExposedValues, resetComponentExposedValuesPerRow, nearestListviewId, resolveIndex]);
 
   const ComponentToRender = useMemo(() => getComponentToRender(componentType), [componentType]);
+  // A row's widget that has unmounted (its row scrolled out of a long ListView, or another page shown) writes nothing:
+  // its row slot may hold another row by then. Its exposed functions (setText…) can outlive it in the ListView's
+  // children.
+  const unmounted = useRef(false);
+  useEffect(() => {
+    unmounted.current = false; // mounted again (StrictMode remounts effects)
+    return () => {
+      unmounted.current = true;
+    };
+  }, []);
   const setExposedVariable = useCallback(
     (key, value) => {
+      if (nearestListviewId && unmounted.current) return;
       if (nearestListviewId && resolveIndex) {
         // Inside a ListView — per-row store write
         const indices = Array.isArray(resolveIndex) ? resolveIndex : [resolveIndex];
@@ -268,6 +279,7 @@ const RenderWidget = ({
   );
   const setExposedVariables = useCallback(
     (exposedValues) => {
+      if (nearestListviewId && unmounted.current) return;
       if (nearestListviewId && resolveIndex) {
         // Inside a ListView — per-row store write
         const indices = Array.isArray(resolveIndex) ? resolveIndex : [resolveIndex];

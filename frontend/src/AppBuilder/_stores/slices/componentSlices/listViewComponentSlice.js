@@ -67,8 +67,15 @@ export const listViewComponentSlice = (set, get) => {
     return { rowData, clonedRowData: removeFunctionObjects(deepClone(rowData)) };
   };
 
+  // A ListView with many rows renders only a window of them in a few slots (see Listview.jsx): its children's per-row
+  // values are stored by slot, and slot s shows data row `slots[s]`. Its children/data stay keyed by data row. Null for
+  // any other ListView (rows and slots are the same).
+  const slotsOf = (listviewId, outerIndices, moduleId) =>
+    outerIndices.length === 0 ? (get().resolvedStore.modules[moduleId]?.listviewSlots?.[listviewId] ?? null) : null;
+
   // Writes a derived row into the draft; true when it is the ListView's selected row (kept in sync).
-  const writeRow = (state, { listviewId, rowIndex, outerIndices, moduleId }, { rowData, clonedRowData }) => {
+  const writeRow = (state, { listviewId, dataRow, outerIndices, moduleId }, { rowData, clonedRowData }) => {
+    const rowIndex = dataRow;
     const exposed = state.resolvedStore.modules[moduleId].exposedValues.components;
 
     // Navigate to the correct target for this ListView's exposed values
@@ -118,8 +125,15 @@ export const listViewComponentSlice = (set, get) => {
    * per row: each write copies the ListView's `children` and `data` (one key per row), so a write per row made N rows
    * cost N². Deepest first: an outer ListView's row reads its inner ListViews' rows, derived just before.
    */
-  const deriveRows = (rows) => {
+  const deriveRows = (allRows) => {
     const levels = new Map();
+    const rows = [];
+    allRows.forEach((row) => {
+      const slots = slotsOf(row.listviewId, row.outerIndices, row.moduleId);
+      const dataRow = slots ? slots[row.rowIndex] : row.rowIndex;
+      // A slot showing no row (freed while scrolling) has nothing to write.
+      if (dataRow !== undefined && dataRow >= 0) rows.push({ ...row, dataRow });
+    });
     rows.forEach((row) => {
       const depth = row.outerIndices.length;
       if (!levels.has(depth)) levels.set(depth, new Map());
@@ -390,7 +404,15 @@ export const listViewComponentSlice = (set, get) => {
     },
 
     // Initialize exposed value arrays for all children of a ListView
-    initExposedValueArrayForChildren: (listviewId, rowCount, moduleId = 'canvas', parentIndices = []) => {
+    // `keepRows`: rows of the ListView's own children/data to keep (its data rows; more than `rowCount` when it renders
+    // its rows in slots).
+    initExposedValueArrayForChildren: (
+      listviewId,
+      rowCount,
+      moduleId = 'canvas',
+      parentIndices = [],
+      keepRows = rowCount
+    ) => {
       const { getContainerChildrenMapping } = get();
       const childComponents = getContainerChildrenMapping(listviewId, moduleId);
       let pruned = false;
@@ -439,7 +461,7 @@ export const listViewComponentSlice = (set, get) => {
         }
         if (lvExposed && !Array.isArray(lvExposed) && lvExposed.children) {
           Object.keys(lvExposed.children).forEach((key) => {
-            if (parseInt(key) >= rowCount) {
+            if (parseInt(key) >= keepRows) {
               delete lvExposed.children[key];
               if (lvExposed.data) delete lvExposed.data[key];
               pruned = true;
@@ -461,6 +483,53 @@ export const listViewComponentSlice = (set, get) => {
           if (outerListviewId) get()._deriveListviewChain(outerListviewId, parentIndices, moduleId);
         }
       });
+    },
+
+    /**
+     * A ListView rendering a window of its rows in slots: `slots[s]` is the data row slot s shows (-1: none). Slots in
+     * `resetSlots` changed rows: their children's values for the previous row are cleared, so nothing of it is read as
+     * the new row's before the new row's widgets have mounted. The previous row keeps its derived children/data.
+     */
+    setListviewSlots: (listviewId, slots, resetSlots = [], moduleId = 'canvas') => {
+      const childComponents = get().getContainerChildrenMapping(listviewId, moduleId);
+      set(
+        (state) => {
+          const mod = state.resolvedStore.modules[moduleId];
+          if (!mod.listviewSlots) mod.listviewSlots = {};
+          mod.listviewSlots[listviewId] = slots;
+          if (!resetSlots.length) return;
+          const exposed = mod.exposedValues.components;
+          childComponents.forEach((childId) => {
+            const rows = exposed[childId];
+            if (!Array.isArray(rows)) return;
+            resetSlots.forEach((slot) => {
+              if (slot < rows.length) rows[slot] = {};
+            });
+          });
+        },
+        false,
+        { type: 'setListviewSlots', payload: { listviewId, moduleId } }
+      );
+    },
+
+    // `resetRows`: also clear the children's per-row values the slots held (they would be read as data rows).
+    clearListviewSlots: (listviewId, moduleId = 'canvas', resetRows = false) => {
+      const slots = get().resolvedStore.modules[moduleId]?.listviewSlots?.[listviewId];
+      if (!slots) return;
+      const childComponents = resetRows ? get().getContainerChildrenMapping(listviewId, moduleId) : [];
+      set(
+        (state) => {
+          const mod = state.resolvedStore.modules[moduleId];
+          delete mod.listviewSlots[listviewId];
+          childComponents.forEach((childId) => {
+            const rows = mod.exposedValues.components[childId];
+            if (!Array.isArray(rows)) return;
+            for (let slot = 0; slot < Math.min(slots.length, rows.length); slot++) rows[slot] = {};
+          });
+        },
+        false,
+        { type: 'clearListviewSlots', payload: { listviewId, moduleId } }
+      );
     },
 
     // ─── Row-Scoped Component Resolution ───────────────────────────────────────

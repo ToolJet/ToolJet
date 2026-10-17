@@ -1,11 +1,10 @@
 import React from 'react';
 import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { useTrail } from 'react-spring';
 import RatingIcon from '@/AppBuilder/Widgets/Rating/RatingIcon';
 import useTextColor from '../DataTypes/_hooks/useTextColor';
-import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
+import { useTableCellSettings } from '../TableData/TableCellSettings';
 
 export const RatingColumn = ({
   isEditable,
@@ -28,7 +27,7 @@ export const RatingColumn = ({
   const selectedBgColorStars = getResolvedValue(column.selectedBgColorStars) || '#EFB82D';
   const selectedBgColorHearts = getResolvedValue(column.selectedBgColorHearts) || '#EE5B67';
   const unselectedBgColor = getResolvedValue(column.unselectedBgColor) || 'var(--cc-surface3-surface)';
-  const contentWrap = useTableStore((state) => state.getTableStyles(id)?.contentWrap, shallow);
+  const { contentWrap } = useTableCellSettings(id);
 
   const [announceValue, setAnnounceValue] = React.useState('');
 

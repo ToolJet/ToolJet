@@ -2727,17 +2727,19 @@ export const createComponentsSlice = (set, get) => ({
       autoComputeLayout: value,
     });
   },
-  setWidgetDeleteConfirmation: (value, second = null) => {
+  setWidgetDeleteConfirmation: (value, second = null, isModuleEditor) => {
     set((state) => {
       state.showWidgetDeleteConfirmation = value;
       if (!value) {
         state.widgetDeleteConfirmationTargets = null;
         return;
       }
-      // Canvas/hotkey/inspector pass a boolean isModuleEditor. The component tree
-      // passes an explicit id list so it can delete without stealing canvas selection.
+      // Hotkey/inspector pass a boolean isModuleEditor. The component tree and a component's
+      // handle pass an explicit id list so they can delete without stealing canvas selection
+      // (the handle also passes isModuleEditor).
       if (Array.isArray(second)) {
         state.widgetDeleteConfirmationTargets = second;
+        if (isModuleEditor !== undefined) state.deleteTargetIsModuleEditor = Boolean(isModuleEditor);
       } else {
         state.deleteTargetIsModuleEditor = Boolean(second);
         state.widgetDeleteConfirmationTargets = null;

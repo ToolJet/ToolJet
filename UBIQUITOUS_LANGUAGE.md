@@ -56,7 +56,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Custom CSS** | User-defined free-form CSS applied at component or app level | Custom Styling (related but different — see Flagged Ambiguities) |
 | **Theme** | A workspace-wide color and font scheme (EE feature) | — |
 | **Data engine** | The App-Builder's in-browser layer for data of any size: freezing, propagation in slices, change detection, template caching, copies for scripts, memory budget (`frontend/src/AppBuilder/_engines/data/`) | — |
-| **Rendering engine** | The App-Builder's in-browser layer for drawing large lists and pages: windowed Table rows and menus, one store subscription per widget, a large page mounted in batches (`frontend/src/AppBuilder/_engines/rendering/`) | Windowing, virtualization |
+| **Rendering engine** | The App-Builder's in-browser layer for drawing large lists and pages: windowed lists and menus, ListView row slots, one store subscription per widget, a large page mounted in batches (`frontend/src/AppBuilder/_engines/rendering/`) | Windowing, virtualization |
+| **Row slot** | One of the rows a windowed ListView mounts; the store sees slots as rows, each showing a data row (`Widgets/Listview/rowSlots.js`) | — |
 
 ## Events & Actions
 

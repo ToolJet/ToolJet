@@ -108,11 +108,12 @@ const WidgetHandle = ({
 
   let height = visibility === false ? 10 : widgetHeight;
 
+  // Deletes this handle's component, and the rest of the selection when it is part of it. Pressing the handle's buttons
+  // doesn't select the component (the canvas leaves them to their own clicks), so the selection alone may be another one.
   const deleteComponents = () => {
     const selectedComponents = getSelectedComponents();
-    if (selectedComponents.length > 0) {
-      setWidgetDeleteConfirmation(true, isModuleEditor);
-    }
+    const targets = selectedComponents.includes(id) ? selectedComponents : [id];
+    setWidgetDeleteConfirmation(true, targets, isModuleEditor);
   };
 
   const getTooltip = () => {

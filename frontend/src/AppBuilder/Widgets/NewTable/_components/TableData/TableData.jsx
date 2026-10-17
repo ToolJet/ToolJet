@@ -3,6 +3,7 @@ import { LoadingState } from './_components/LoadingState';
 import { EmptyState } from './_components/EmptyState';
 import { TableHeader } from './_components/TableHeader';
 import { TableRow } from './_components/TableRow';
+import { TableCellSettingsProvider } from './TableCellSettings';
 import { ExpandedRowContainer } from './_components/ExpandedRowContainer';
 import { useWindow } from '@/AppBuilder/_engines/rendering/useWindow';
 import useTableStore from '../../_stores/tableStore';
@@ -14,9 +15,9 @@ const CONDENSED_ROW_HEIGHT = 40;
 const DEFAULT_ROW_HEIGHT = 46;
 // Rows rendered beyond each edge of the view, so a scroll that starts fast still has rows ready.
 const OVERSCAN_ROWS = 10;
-// Once the table is on screen, rows new to the window mount within about this much time per frame (nearest the view
-// first), so scrolling fast never blocks the page; placeholder rows show until the rest mount.
-const MOUNT_BUDGET_MS = 8;
+// Rows in view always render at once; the rows beyond them (overscan, lead) mount in the tasks after, about this much
+// time each, ahead of the scrolling first (see useWindow's aheadBudgetMs).
+const AHEAD_BUDGET_MS = 8;
 
 // Placeholder rows, drawn as the body's background so they are wherever the browser scrolls before rows render (it
 // scrolls on its own thread): each row's bottom border (Regular, Bordered), or the stripes (Striped, where rows are
@@ -161,7 +162,7 @@ export const TableData = (props) => {
     indexOfKey,
     overscan: OVERSCAN_ROWS * rowHeight,
     measure: !!contentWrap,
-    mountBudgetMs: MOUNT_BUDGET_MS,
+    aheadBudgetMs: AHEAD_BUDGET_MS,
   });
 
   // Rows are memoized: scrolling renders only the rows coming into view. Anything else that re-renders the table (new
@@ -172,6 +173,13 @@ export const TableData = (props) => {
   lastRender.current.tick = rowWindow.tick;
   const renderVersion = lastRender.current.version;
   const tableState = table.getState();
+  // What the cells of a column share, built by the first of them for this render of the rows (see TableRow.jsx); also
+  // rebuilt when column widths, pinning or order change, which a scroll render can carry.
+  const columnPlans = useMemo(
+    () => new Map(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [renderVersion, tableState.columnSizing, tableState.columnPinning, tableState.columnOrder]
+  );
 
   // Handles row click for row selection
   const handleRowClick = useCallback(
@@ -203,6 +211,7 @@ export const TableData = (props) => {
         setColumnOrder={setColumnOrder}
         fireEvent={fireEvent}
         setExposedVariables={setExposedVariables}
+        renderVersion={renderVersion}
       />
     );
   };
@@ -223,12 +232,15 @@ export const TableData = (props) => {
     );
   }
 
-  // Placeholder rows for rows of one height, lined up with the rows: the pattern starts at the first rendered row.
+  // Placeholder rows for rows of one height, lined up with the rows: the pattern starts at the first rendered row. It
+  // repeats every row (every two when striped), so it is placed by the first row's position within that period: the
+  // same pattern, and a style that stays the same while scrolling (a change restyles the whole body).
+  const placeholderPeriod = rowStyle === 'table-striped' ? 2 * rowHeight : rowHeight;
   const placeholderStyle =
     !contentWrap && !enableExpandableRows
       ? {
           backgroundImage: placeholderBackground(rowStyle, rowHeight),
-          backgroundPosition: `0 ${rowWindow.itemTop(rowWindow.items[0]?.start ?? 0)}`,
+          backgroundPosition: `0 ${rowWindow.itemTop((rowWindow.items[0]?.start ?? 0) % placeholderPeriod)}`,
         }
       : null;
 
@@ -238,66 +250,69 @@ export const TableData = (props) => {
       style={{ maxHeight: '100%', position: 'relative' }}
       ref={tableBodyRef}
     >
-      <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
-        <thead style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: containerBackgroundColor }}>
-          {renderTableHeader()}
-        </thead>
-        <tbody
-          ref={listRef}
-          style={{
-            position: 'relative',
-            height: `${rowWindow.height}px`,
-            ...placeholderStyle,
-          }}
-        >
-          {rowWindow.items.map((item) => {
-            const entry = itemAt(item.index);
-            if (!entry) return null;
+      <TableCellSettingsProvider id={id}>
+        <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
+          <thead style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: containerBackgroundColor }}>
+            {renderTableHeader()}
+          </thead>
+          <tbody
+            ref={listRef}
+            style={{
+              position: 'relative',
+              height: `${rowWindow.height}px`,
+              ...placeholderStyle,
+            }}
+          >
+            {rowWindow.items.map((item) => {
+              const entry = itemAt(item.index);
+              if (!entry) return null;
 
-            if (entry.type === 'expansion') {
+              if (entry.type === 'expansion') {
+                return (
+                  <ExpandedRowContainer
+                    key={`${entry.rowIndex}-expansion`}
+                    tableId={id}
+                    rowIndex={entry.rowIndex}
+                    top={rowWindow.itemTop(item.start)}
+                    darkMode={darkMode}
+                    canvasWidth={canvasWidth}
+                    expansionHeight={expansionHeight}
+                    resizeItem={rowWindow.resizeItem}
+                    virtualItemIndex={item.index}
+                  />
+                );
+              }
+
+              const row = view.getRow(entry.rowIndex);
               return (
-                <ExpandedRowContainer
-                  key={`${entry.rowIndex}-expansion`}
-                  tableId={id}
-                  rowIndex={entry.rowIndex}
+                <TableRow
+                  id={id}
+                  key={row.id}
+                  row={row}
+                  index={item.index}
                   top={rowWindow.itemTop(item.start)}
-                  darkMode={darkMode}
-                  canvasWidth={canvasWidth}
-                  expansionHeight={expansionHeight}
-                  resizeItem={rowWindow.resizeItem}
-                  virtualItemIndex={item.index}
+                  isSelected={row.getIsSelected()}
+                  tableState={tableState}
+                  renderVersion={renderVersion}
+                  columnPlans={columnPlans}
+                  cellHeight={cellHeight}
+                  getResolvedValue={getResolvedValue}
+                  handleRowClick={handleRowClick}
+                  allowSelection={allowSelection}
+                  contentWrap={contentWrap}
+                  highlightSelectedRow={highlightSelectedRow}
+                  setExposedVariables={setExposedVariables}
+                  fireEvent={fireEvent}
+                  rowStyles={rowStyles}
+                  measureElement={rowWindow.measureElement}
+                  componentName={componentName}
+                  table={table}
                 />
               );
-            }
-
-            const row = view.getRow(entry.rowIndex);
-            return (
-              <TableRow
-                id={id}
-                key={row.id}
-                row={row}
-                index={item.index}
-                top={rowWindow.itemTop(item.start)}
-                isSelected={row.getIsSelected()}
-                tableState={tableState}
-                renderVersion={renderVersion}
-                cellHeight={cellHeight}
-                getResolvedValue={getResolvedValue}
-                handleRowClick={handleRowClick}
-                allowSelection={allowSelection}
-                contentWrap={contentWrap}
-                highlightSelectedRow={highlightSelectedRow}
-                setExposedVariables={setExposedVariables}
-                fireEvent={fireEvent}
-                rowStyles={rowStyles}
-                measureElement={rowWindow.measureElement}
-                componentName={componentName}
-                table={table}
-              />
-            );
-          })}
-        </tbody>
-      </table>
+            })}
+          </tbody>
+        </table>
+      </TableCellSettingsProvider>
     </div>
   );
 };

@@ -45,6 +45,8 @@ const ModuleContainerBlank = lazy(() =>
 
 /*
   index - used to identify the subcontainer index
+  rowIndex - the row's index in the data, when it differs from `index` (a long ListView's rows sit in slots): only
+    the first row of a ListView, Kanban or Table row container can be edited
   onOptionChange - used to pass the onOptionChange function to the child components and pass the exposedValues to the parent component
 */
 const Container = React.memo(
@@ -53,6 +55,7 @@ const Container = React.memo(
     canvasWidth,
     canvasHeight,
     index = null,
+    rowIndex = index,
     onOptionChange = null,
     onOptionsChange = null,
     allowContainerSelect = false,
@@ -109,8 +112,8 @@ const Container = React.memo(
     const gridWidth = Math.max(0, Math.floor(containerCanvasWidth) - 1) / NO_OF_GRIDS;
 
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
-    }, [index, componentType, currentMode]);
+      return (rowIndex !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
+    }, [rowIndex, componentType, currentMode]);
 
     // A drop target for the components panel, so the browser shows a drop is possible. Where a dragged component
     // lands is the canvas interaction engine's business (interaction/engine.js).

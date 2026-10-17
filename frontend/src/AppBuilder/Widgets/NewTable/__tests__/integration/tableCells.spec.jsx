@@ -1,6 +1,8 @@
 /**
- * Table cells of every kind of column: classes in their order, styles, data-cy, editability and background whether
- * fixed or read from the row, pinned columns, validation. Any change to how cells are built must keep this output.
+ * Table cells: what every cell of a column shares is worked out once for the column (TableRow.jsx, columnPlan), and
+ * the table settings cells read come from one subscription for the table (TableCellSettings.jsx). The cells must come
+ * out exactly as when each built them itself: classes in the same order, styles, data-cy, editability and background
+ * whether fixed or read from the row, pinned columns, validation.
  */
 import React from 'react';
 import { waitFor } from '@testing-library/react';

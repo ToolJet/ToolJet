@@ -6,8 +6,13 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
+// `index` is the row's place in the store: its row, or its slot in a long ListView rendering only some rows (then
+// `rowIndex` is its row, `placement` positions it and `onRowTouched` keeps it rendered once the user touches it).
 export const ListviewSubcontainer = ({
   index,
+  rowIndex = index,
+  placement = null,
+  onRowTouched = null,
   moduleId,
   mode,
   rowHeight,
@@ -66,15 +71,24 @@ export const ListviewSubcontainer = ({
           padding: '0px',
           overflow: 'hidden',
           ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
+          ...placement,
         }}
         key={index}
-        data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
+        data-cy={`${String(dataCy).toLowerCase()}-row-${rowIndex}`}
         onClickCapture={(_event) => {
-          onRecordOrRowClicked(index);
+          onRecordOrRowClicked(rowIndex);
         }}
+        {...(onRowTouched && {
+          onPointerDownCapture: (event) => onRowTouched(rowIndex, event.target),
+          onFocusCapture: (event) => onRowTouched(rowIndex, event.target),
+          onKeyDownCapture: (event) => onRowTouched(rowIndex, event.target),
+          onInputCapture: (event) => onRowTouched(rowIndex, event.target),
+          onChangeCapture: (event) => onRowTouched(rowIndex, event.target),
+        })}
       >
         <SubContainer
           index={index}
+          rowIndex={rowIndex}
           id={id}
           key={`${id}-${index}`}
           canvasHeight={transformedRowHeight}

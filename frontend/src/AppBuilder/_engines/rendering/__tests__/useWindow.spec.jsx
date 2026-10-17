@@ -83,27 +83,65 @@ describe('useWindow', () => {
     expect(shown()).toEqual([]);
   });
 
-  test('a mount budget mounts new items over several frames, nearest the view first', () => {
-    jest.useFakeTimers();
-    const now = jest.spyOn(performance, 'now');
-    let clock = 0;
-    now.mockImplementation(() => clock);
-    // Every render costs 10 ms per item mounted.
-    const onRender = (view) => (clock += 10 * view.items.length);
-    try {
-      const { el, shown } = renderList({ count: 1000, overscan: 0, mountBudgetMs: 25, onRender });
-      expect(shown()).toHaveLength(11); // all at once on the first render
-      act(() => setScroll(el, 4000));
-      // 2–3 items' worth of budget: the ones in the middle of the view first.
-      const partial = shown();
-      expect(partial.length).toBeLessThan(11);
-      expect(partial.length).toBeGreaterThan(0);
-      for (const index of partial) expect(index).toBeGreaterThanOrEqual(100);
-      for (let frame = 0; frame < 20; frame++) act(() => jest.advanceTimersByTime(20));
-      expect(shown()).toEqual(Array.from({ length: 11 }, (_, i) => 100 + i));
-    } finally {
-      now.mockRestore();
+  describe('with a budget for the items beyond the view', () => {
+    // Tasks run on timers here (the task queue uses setTimeout without a MessageChannel), and time is mocked.
+    let clock;
+    let channel;
+    beforeEach(() => {
+      jest.useFakeTimers();
+      channel = global.MessageChannel;
+      global.MessageChannel = undefined;
+      clock = 0;
+      jest.spyOn(performance, 'now').mockImplementation(() => clock);
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+      global.MessageChannel = channel;
       jest.useRealTimers();
-    }
+    });
+    const nextTask = () => act(() => jest.advanceTimersByTime(1));
+    const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+
+    test('items in view render at once, however slow mounting is; the rest come in the tasks after, ahead first', () => {
+      // Every item mounted costs 10 ms: a budget of 25 ms fits 2 of them.
+      let shownBefore = new Set();
+      const onRender = (view) => {
+        const fresh = view.items.filter((item) => !shownBefore.has(item.index)).length;
+        clock += 10 * fresh;
+        shownBefore = new Set(view.items.map((item) => item.index));
+      };
+      const { el, shown } = renderList({ count: 1000, overscan: 200, aheadBudgetMs: 25, onRender });
+      act(() => setScroll(el, 4000));
+      // In view (100…109) and the next step's distance ahead (110…119): all there, in one render.
+      expect(shown()).toEqual(expect.arrayContaining(range(100, 119)));
+      expect(shown()).not.toContain(95); // behind the view: later
+      // The next task brings items ahead of the scrolling before those behind it.
+      nextTask();
+      const added = shown().filter((i) => i < 100 || i > 119);
+      expect(added.length).toBeGreaterThan(0);
+      expect(added.every((i) => i > 119)).toBe(true);
+      // Eventually the whole window.
+      for (let task = 0; task < 60; task++) nextTask();
+      expect(shown()).toEqual(expect.arrayContaining(range(95, 124)));
+    });
+
+    test('one slow task does not hold the count down: the next tasks mount more again', () => {
+      // Rendering costs 1 ms, except during the fourth task, which takes 300 ms (a GC pause, say).
+      let renderCost = 1;
+      const onRender = () => (clock += renderCost);
+      const { el, shown } = renderList({ count: 100000, overscan: 40000, aheadBudgetMs: 25, onRender });
+      act(() => setScroll(el, 400000));
+      const perTask = [];
+      let before = shown().length;
+      for (let task = 0; task < 8; task++) {
+        renderCost = task === 3 ? 300 : 1;
+        nextTask();
+        perTask.push(shown().length - before);
+        before = shown().length;
+      }
+      // Half as many right after the slow task, never down to one; then twice as many per task again.
+      expect(perTask[4]).toBe(perTask[3] / 2);
+      expect(perTask[5]).toBe(perTask[4] * 2);
+    });
   });
 });
