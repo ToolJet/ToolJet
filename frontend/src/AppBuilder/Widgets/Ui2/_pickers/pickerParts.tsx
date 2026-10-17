@@ -27,8 +27,9 @@ export const MENU_SURFACE =
 const CHIP =
   'tw-bg-[color:var(--lk-chip-bg,var(--sc-secondary))] tw-text-[color:var(--lk-chip-fg,var(--sc-secondary-foreground))]';
 // A small icon button inside a field (remove a chip, clear): p-0 and no border keep ToolJet's global button styles out.
+// A 24px touch target (WCAG 2.5.8; a chip's 16px button sat between its neighbours) that takes 16px of the line.
 const ICON_BUTTON =
-  'tw-inline-flex tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-sm tw-border-0 tw-bg-transparent tw-p-0.5 tw-opacity-60 tw-outline-none tw-transition-opacity hover:tw-opacity-100 focus-visible:tw-opacity-100 focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring';
+  'tw-inline-flex tw-h-6 tw-w-6 -tw-m-1 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-ui2-sm tw-border-0 tw-bg-transparent tw-p-0 tw-opacity-60 tw-outline-none tw-transition-opacity hover:tw-opacity-100 focus-visible:tw-opacity-100 focus-visible:tw-ring-1 focus-visible:tw-ring-ui2-ring';
 
 /** Keeps a pointer press on a control inside a trigger from opening or closing the trigger's menu. */
 const stopPress = (e: SyntheticEvent) => {

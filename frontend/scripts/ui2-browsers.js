@@ -210,12 +210,27 @@ const phoneProblems = (page) =>
         cs.visibility !== 'hidden' && cs.display !== 'none' && Number(cs.opacity) > 0 && r.width > 1 && r.height > 1
       );
     };
-    const scrollsX = (el, root) => {
+    // Inside a box that scrolls or clips sideways (a table's scroll area, a progress track), so not drawn outside.
+    const contained = (el, root) => {
       for (let n = el.parentElement; n && n !== root.parentElement; n = n.parentElement) {
-        if (/(auto|scroll)/.test(getComputedStyle(n).overflowX)) return true;
+        if (/(auto|scroll|hidden|clip)/.test(getComputedStyle(n).overflowX)) return true;
       }
       return false;
     };
+    // A control's target is the control and its labels (a label activates its control).
+    const targetRect = (el) => {
+      const rects = [el.getBoundingClientRect(), ...[...(el.labels || [])].map((l) => l.getBoundingClientRect())];
+      const left = Math.min(...rects.map((r) => r.left));
+      const top = Math.min(...rects.map((r) => r.top));
+      const right = Math.max(...rects.map((r) => r.right));
+      const bottom = Math.max(...rects.map((r) => r.bottom));
+      return { left, top, right, bottom, width: right - left, height: bottom - top };
+    };
+    // WCAG 2.5.8's inline exception: a link inside a line of text.
+    const inline = (el) =>
+      el.tagName === 'A' &&
+      getComputedStyle(el).display === 'inline' &&
+      [...(el.parentElement?.childNodes || [])].some((n) => n.nodeType === 3 && n.textContent.trim());
     const TARGETS =
       'button, a[href], input:not([type=hidden]), select, textarea, [role=button], [role=checkbox], [role=radio], [role=switch], [role=tab], [role=slider], [role=combobox], [role=option], [role=menuitem], [tabindex="0"]';
     for (const box of document.querySelectorAll('[data-cy^="draggable-widget-"]')) {
@@ -228,7 +243,7 @@ const phoneProblems = (page) =>
       for (const el of box.querySelectorAll('*')) {
         if (!visible(el) || el.closest('[aria-hidden=true], .sr-only, .leaflet-pane')) continue;
         const r = el.getBoundingClientRect();
-        if ((r.right > br.right + 1 || r.left < br.left - 1) && !scrollsX(el, box))
+        if ((r.right > br.right + 1 || r.left < br.left - 1) && !contained(el, box))
           escaping.add(
             el.tagName.toLowerCase() +
               (el.className && typeof el.className === 'string' ? `.${el.className.split(' ')[0]}` : '')
@@ -247,9 +262,9 @@ const phoneProblems = (page) =>
       if (escaping.size) out.push(`${name}: draws outside its box: ${[...escaping].slice(0, 4).join(', ')}`);
       if (clipped.size) out.push(`${name}: text cut off without an ellipsis: ${[...clipped].slice(0, 3).join(' | ')}`);
       const targets = [...box.querySelectorAll(TARGETS)].filter(
-        (el) => visible(el) && !el.closest('[aria-hidden=true]') && !el.disabled
+        (el) => visible(el) && !el.closest('[aria-hidden=true]') && !el.disabled && !inline(el)
       );
-      const rects = targets.map((el) => el.getBoundingClientRect());
+      const rects = targets.map(targetRect);
       const small = new Set();
       targets.forEach((el, i) => {
         const r = rects[i];

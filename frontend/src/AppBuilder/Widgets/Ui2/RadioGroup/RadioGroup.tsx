@@ -47,7 +47,8 @@ export const ShadRadioGroup = (props: WidgetProps) => {
           {...controlAria(props, check.error)}
           value={key}
           disabled={busy(properties)}
-          className={properties.horizontal === true ? 'tw-flex tw-flex-wrap tw-gap-4' : undefined}
+          // Each label is a 24px touch target (WCAG 2.5.8), as tall as a 16px row and the list's old 8px gap.
+          className={properties.horizontal === true ? 'tw-flex tw-flex-wrap tw-gap-x-4' : 'tw-gap-0'}
           onValueChange={(next) => {
             change(next, 'onSelectionChange');
             check.touch();
@@ -62,7 +63,10 @@ export const ShadRadioGroup = (props: WidgetProps) => {
                   id={itemId}
                   className="tw-border-[color:var(--lk-invalid,var(--sc-primary))]"
                 />
-                <Label htmlFor={itemId} className="tw-font-normal tw-text-[color:var(--lk-fg,var(--sc-foreground))]">
+                <Label
+                  htmlFor={itemId}
+                  className="tw-flex tw-min-h-6 tw-items-center tw-font-normal tw-text-[color:var(--lk-fg,var(--sc-foreground))]"
+                >
                   {o.label}
                 </Label>
               </div>
