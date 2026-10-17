@@ -8,7 +8,8 @@
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
-import { binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import userEvent from '@testing-library/user-event';
+import { binding, countInvocationsOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 'list1';
 const widget = createWidgetHarness({
@@ -158,5 +159,29 @@ describe('UI 2.0 List view row identity', () => {
       expect(values()).toEqual(['Beta']);
       await waitFor(() => expect(published()).toEqual(['Beta']));
     });
+  });
+
+  test('[finding 27] a row is reached and picked from the keyboard; keys typed in its components do not pick it', async () => {
+    await render([ALPHA, BETA]);
+    widget.setEvents(countInvocationsOn(ID, 'onRecordClicked'));
+    const user = userEvent.setup({ delay: null });
+    const rows = () => screen.getAllByRole('listitem');
+
+    await user.tab();
+    expect(document.activeElement).toBe(rows()[0]);
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(exposed().selectedItem).toEqual(ALPHA));
+    expect(widget.variables().calls).toBe(1);
+
+    await user.tab();
+    expect(document.activeElement).toBe(boxes()[0]);
+    await user.keyboard('{Enter} ');
+    expect(widget.variables().calls).toBe(1);
+
+    await user.tab();
+    expect(document.activeElement).toBe(rows()[1]);
+    await user.keyboard(' ');
+    await waitFor(() => expect(exposed().selectedItem).toEqual(BETA));
+    expect(widget.variables().calls).toBe(2);
   });
 });
