@@ -70,7 +70,8 @@ export const ShadComboChart = (props: WidgetProps) => {
     const drawn = list(bound).filter(isRecord).slice(0, MAX_BARS);
     const fields = resolveChartFields(drawn, isSet(p.xField) ? String(p.xField) : undefined, []);
     const xField = fields.x;
-    const lacking = named.filter((s) => !drawn.some((row) => s.field in row)).map((s) => s.field);
+    // Empty data lacks nothing (a query that has not run yet): only rows can miss a series, as in resolveChartFields.
+    const lacking = drawn.length ? named.filter((s) => !drawn.some((row) => s.field in row)).map((s) => s.field) : [];
     const series = named.filter((s) => !lacking.includes(s.field));
     const rows = seriesRows(
       bound,
