@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Spinner } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
+import { isEnter } from '@/AppBuilder/Widgets/Ui2/_shared/keyboard';
 import { GeocoderAnswerTooLarge, geocode } from './mapLayers';
 import { hasSize } from './mapIcons';
 import type { MutableRefObject } from 'react';
@@ -124,8 +125,9 @@ export const MapSearch = ({
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => {
           if (disabled) return;
-          if (e.key === 'Enter' && results[0]) choosePlace(results[0]);
-          else if (e.key === 'Enter' && !typeAhead) setSubmitted(query.trim());
+          // The Enter that confirms IME characters (Japanese, Chinese, Korean) neither searches nor picks a place.
+          if (isEnter(e) && results[0]) choosePlace(results[0]);
+          else if (isEnter(e) && !typeAhead) setSubmitted(query.trim());
           if (e.key === 'Escape') setResults([]);
         }}
       />

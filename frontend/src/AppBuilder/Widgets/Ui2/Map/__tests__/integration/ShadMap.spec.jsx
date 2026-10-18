@@ -532,6 +532,26 @@ describe('UI 2.0 Map', () => {
       10000
     );
 
+    test('[ShadMap-KBD-003] the Enter that ends an IME composition neither searches nor picks a place', async () => {
+      // Release audit round 2: typing an address in Japanese, the Enter that confirms the characters searched or chose.
+      fetchMock.mockImplementation(answerByQuery);
+      render({
+        properties: {
+          showSearch: binding('{{true}}'),
+          pickLocation: binding('{{true}}'),
+          geocoderUrl: binding('https://geo.example/kbd-003/search?q={query}'),
+        },
+      });
+      const input = await screen.findByRole('searchbox');
+      fireEvent.change(input, { target: { value: 'とうきょう' } });
+      await screen.findByRole('button', { name: 'とうきょう result' }, { timeout: 4000 });
+      fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+      fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 });
+      expect(exposed().pickedLocation).toEqual({});
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(exposed().pickedLocation).toEqual({ lat: 10, lng: 20, address: 'とうきょう result' });
+    }, 10000);
+
     test('[ShadMap-EVT-005] Enter on a new query picks nothing from the previous query, then picks the new place', async () => {
       // Release audit 42: Enter during the pause after typing Beta picked Alpha's place and fired onLocationPicked.
       fetchMock.mockImplementation(answerByQuery);
