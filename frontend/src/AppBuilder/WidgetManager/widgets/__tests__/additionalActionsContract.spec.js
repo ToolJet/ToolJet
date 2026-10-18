@@ -20,6 +20,7 @@ const CONTRACT = {
   AudioRecorder: ['visibility', 'disabledState', 'loadingState'],
   Camera: ['visibility', 'disabledState'],
   CircularProgressBar: ['visibility', 'loadingState'],
+  FileButton: ['visibility', 'disabledState', 'loadingState'],
 };
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);
