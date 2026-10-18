@@ -175,7 +175,8 @@ export const ShadTagsInput = (props: WidgetProps) => {
           >
             {tags.map((tag, i) => (
               <Chip
-                key={`${tag}-${i}`}
+                // Tags are unique (addTags), so a chip keeps its identity when one before it is removed.
+                key={tag}
                 label={tag}
                 removeLabel={`Remove ${tag}`}
                 onRemove={disabled ? undefined : () => remove(i)}

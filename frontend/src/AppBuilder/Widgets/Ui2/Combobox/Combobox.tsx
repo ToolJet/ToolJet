@@ -20,6 +20,7 @@ import {
   OptionIcon,
   OptionsMenu,
   PLACEHOLDER,
+  useDropRemovedChoices,
   useKeptSelection,
   useSearch,
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
@@ -35,6 +36,13 @@ export const ShadCombobox = (props: WidgetProps) => {
   const options = toOptions(properties.options);
   const initial = M.initialKey(properties.defaultValue);
   const [key, setKey] = useState(initial);
+  // An option that is removed takes its choice with it (unless it is only off a server-side search page).
+  useDropRemovedChoices(
+    options.map((o) => M.keyOf(o.value)),
+    key === null ? [] : [key],
+    () => setKey(null),
+    properties.serverSideSearch === true
+  );
   useEffect(() => setKey(initial), [initial]);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popup = usePickerPopup(properties, triggerRef);

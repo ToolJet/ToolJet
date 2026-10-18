@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Check, Search, X } from 'lucide-react';
 import { TablerIcon } from '@/AppBuilder/Widgets/Ui2/_shared/TablerIcon';
@@ -10,6 +10,7 @@ import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { isStringOrNumber } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 
 // ToolJet UI 2.0: the pickers widgets. Combobox and Multiselect are shadcn's Popover + Command (cmdk)
 // recipe; Tags input, Color picker and Rating follow shadcn's field look; File upload is react-dropzone in shadcn
@@ -162,6 +163,31 @@ export const useKeptSelection = (options: Option[], keys: string[], keep: boolea
   const selected = keptOptions(options, keys, keep ? kept.current : null);
   kept.current = new Map(selected.map((o) => [M.keyOf(o.value), o] as [string, Option]));
   return selected;
+};
+
+/** Drops selected keys whose option was there and is gone, so a removed choice does not come back selected when an
+ *  option of that value reappears, and does not count against a limit while it is gone. A key whose option was never
+ *  seen stays (a default whose options are still loading). With server-side search nothing is dropped: a missing
+ *  option is off the current result page, not deleted (useKeptSelection keeps it). No event: the data changed, not
+ *  the user's choice. */
+export const useDropRemovedChoices = (
+  optionKeys: string[],
+  selectedKeys: string[],
+  drop: (gone: Set<string>) => void,
+  keep: boolean
+) => {
+  const seen = useRef<Set<string>>(new Set());
+  const latest = useLatest({ selectedKeys, drop, keep });
+  const signature = optionKeys.join('\u0000');
+  useEffect(() => {
+    const present = new Set(signature ? signature.split('\u0000') : []);
+    const { selectedKeys: selected, drop: dropKeys, keep: kept } = latest.current;
+    if (!kept) {
+      const gone = new Set(selected.filter((k) => seen.current.has(k) && !present.has(k)));
+      if (gone.size) dropKeys(gone);
+    }
+    seen.current = present;
+  }, [signature, latest]);
 };
 
 export const useSearch = ({

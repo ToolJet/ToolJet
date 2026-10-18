@@ -13,6 +13,7 @@ import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { CONTROL, FormField, HELP, controlAria, fieldName, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { choiceKey, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
+import { useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
 import type { Option } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import type { WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 
@@ -30,6 +31,13 @@ export const ShadSelect = (props: WidgetProps) => {
   const byKey = optionsByKey(options);
   const initial = defaultKey(properties.defaultValue);
   const [key, setKey] = useState(initial);
+  // An option that is removed takes its choice with it, so it does not come back selected when it reappears.
+  useDropRemovedChoices(
+    options.map((o) => optionKey(o.value)),
+    key ? [key] : [],
+    () => setKey(''),
+    false
+  );
   useEffect(() => setKey(initial), [initial]);
   const selectedOption: Partial<Option> = byKey.get(key) || {};
   // Radix mounts every item even while closed, so a 10k-option binding froze the page: the list shows the first

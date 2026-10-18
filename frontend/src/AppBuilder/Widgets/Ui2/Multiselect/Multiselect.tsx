@@ -28,6 +28,7 @@ import {
   MUTED,
   OptionsMenu,
   PLACEHOLDER,
+  useDropRemovedChoices,
   useKeptSelection,
   useSearch,
 } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
@@ -95,6 +96,14 @@ export const ShadMultiselect = (props: WidgetProps) => {
   const defaultKeys = useStable([...new Set(M.toValueList(properties.defaultValue).map(M.keyOf))]);
   const limitRef = useLatest(limit);
   const [keys, setKeys] = useState(() => defaultKeys.slice(0, limit || undefined));
+  // An option that is removed takes its choice with it (unless it is only off a server-side search page), so it neither
+  // comes back selected nor counts against maxSelections while it is gone.
+  useDropRemovedChoices(
+    options.map((o) => M.keyOf(o.value)),
+    keys,
+    (gone) => setKeys((k) => k.filter((x) => !gone.has(x))),
+    properties.serverSideSearch === true
+  );
   useEffect(() => setKeys(defaultKeys.slice(0, limitRef.current || undefined)), [defaultKeys, limitRef]);
   useEffect(() => {
     if (limit > 0) setKeys((k) => (k.length > limit ? k.slice(0, limit) : k));
