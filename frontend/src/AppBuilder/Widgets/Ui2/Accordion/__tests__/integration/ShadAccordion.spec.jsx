@@ -182,6 +182,46 @@ describe('UI 2.0 Accordion', () => {
     await waitFor(() => expect(exposed()).toMatchObject({ openIndexes: [], isExpanded: false }));
   });
 
+  // The Radix root was never told the widget was disabled: a disabled accordion still opened, closed and fired its
+  // events. Like the other UI 2.0 controls it now takes no clicks while disabled or loading (busy).
+  test('[ShadAccordion-STATE-009] disabled, its sections take no clicks and fire nothing; expand and collapse still work', async () => {
+    render({ properties: { disabledState: binding('{{true}}'), defaultOpen: binding('{{[0]}}') } });
+    await handle([
+      ...countInvocationsOn(ID, 'onExpand', { key: 'expands' }),
+      ...countInvocationsOn(ID, 'onCollapse', { key: 'collapses' }),
+      ...countInvocationsOn(ID, 'onChange', { key: 'changes' }),
+    ]);
+
+    await screen.findByRole('button', { name: 'Inclusions' });
+    expect(['Inclusions', 'Cancellation', 'Deposit'].map((t) => section(t).disabled)).toEqual([true, true, true]);
+    await toggle('Cancellation');
+    await toggle('Inclusions');
+
+    expect(['Inclusions', 'Cancellation'].map(isOpen)).toEqual([true, false]);
+    expect(exposed().openIndexes).toEqual([0]);
+    expect(widget.variables()).toEqual({});
+    // The app can still open and close it, as the native Accordion's expand() and collapse() do while disabled.
+    await widget.act('expand', 2);
+    await waitFor(() => expect(isOpen('Deposit')).toBe(true));
+    expect(widget.variables()).toEqual({ expands: 1 });
+  });
+
+  test('[ShadAccordion-STATE-010] setDisable(true) stops clicks at run time; setDisable(false) gives them back', async () => {
+    render();
+    await handle(countInvocationsOn(ID, 'onChange', { key: 'changes' }));
+    await screen.findByRole('button', { name: 'Inclusions' });
+
+    await widget.act('setDisable', true);
+    await toggle('Deposit');
+    expect(isOpen('Deposit')).toBe(false);
+    expect(widget.variables().changes).toBeUndefined();
+
+    await widget.act('setDisable', false);
+    await toggle('Deposit');
+    await waitFor(() => expect(widget.variables().changes).toBe(1));
+    expect(isOpen('Deposit')).toBe(true);
+  });
+
   test('[ShadAccordion-STY-001] title, text, divider and icon colours reach the sections as CSS variables', async () => {
     const { container } = render({
       styles: {
