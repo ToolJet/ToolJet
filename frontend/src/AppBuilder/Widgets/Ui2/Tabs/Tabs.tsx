@@ -46,13 +46,13 @@ interface TabPanelProps {
 // as dynamicHeightReflow expects; the wizard footer adds STEP_NAV_HEIGHT.
 export const STEP_NAV_HEIGHT = 56;
 
-/** One tab's panel: its canvas, or a spinner while the tab is loading. Memoised on its own inputs, so switching
- *  tabs re-renders only the two panels whose visibility changes. */
+/** One tab's panel: its canvas, with a spinner in its place while the tab is loading. A hidden or loading tab keeps
+ *  its canvas mounted, only out of sight, so what was typed in its components survives (it was unmounted and lost).
+ *  Memoised on its own inputs, so switching tabs re-renders only the two panels whose visibility changes. */
 const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, background }: TabPanelProps) {
   const ref = useRef<HTMLDivElement>(null);
   // A disabled tab's panel blocks the keyboard as it blocks the mouse: inert takes its fields out of the tab order.
   useDisableInert(ref, tab.disable);
-  if (tab.visible === false) return null;
   return (
     <div
       ref={ref}
@@ -73,10 +73,11 @@ const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, backg
       }}
     >
       {tab.loading ? (
-        <div className="tw-flex tw-h-full tw-items-center tw-justify-center">
+        <div className="tw-flex tw-h-full tw-items-center tw-justify-center" aria-busy="true">
           <Spinner />
         </div>
-      ) : (
+      ) : null}
+      <div className="tw-h-full tw-w-full" hidden={tab.loading}>
         <SubContainer
           id={`${id}-${tab.id}`}
           canvasHeight={dynamic ? '100%' : '200'}
@@ -90,7 +91,7 @@ const TabPanel = memo(function TabPanel({ id, tab, width, active, dynamic, backg
           }}
           componentType="ShadTabs"
         />
-      )}
+      </div>
     </div>
   );
 });
@@ -301,7 +302,9 @@ export const ShadTabs = (props: WidgetProps) => {
             <Spinner />
           </div>
         ) : (
-          shown.map((tab) =>
+          // Every tab's panel, hidden ones too (out of sight, keeping their components), unless only the current one is
+          // rendered.
+          tabs.map((tab) =>
             properties.renderOnlyActiveTab && tab.id != currentTab ? null : (
               <TabPanel
                 key={tab.id}

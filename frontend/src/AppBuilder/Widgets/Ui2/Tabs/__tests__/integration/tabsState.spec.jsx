@@ -48,6 +48,25 @@ describe('UI 2.0 Tabs state', () => {
   beforeEach(() => widget.setup());
   afterEach(widget.teardown);
 
+  describe.each([
+    ['setTabLoading', true, false],
+    ['setTabVisibility', false, true],
+  ])("a tab's edits survive %s and back", (action, on, off) => {
+    test('with every tab mounted (renderOnlyActiveTab off)', async () => {
+      render(ABC, {}, { field1: inputIn('b') });
+      await widget.act('setTab', 'b');
+      const box = await screen.findByRole('textbox');
+      await act(async () => fireEvent.change(box, { target: { value: 'my draft' } }));
+      await waitFor(() => expect(fieldValue()).toBe('my draft'));
+
+      await widget.act(action, 'b', on);
+      await widget.act(action, 'b', off);
+      await widget.act('setTab', 'b');
+      expect(screen.getByRole('textbox')).toHaveValue('my draft');
+      expect(fieldValue()).toBe('my draft');
+    });
+  });
+
   describe('tab ids that differ only in whitespace and underscores', () => {
     test('give each tab and panel its own DOM id', async () => {
       render([
