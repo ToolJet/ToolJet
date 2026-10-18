@@ -126,4 +126,16 @@ describe('[finding 13] UI 2.0 Kanban custom card components belong to their card
     await press('Update Beta');
     await waitFor(() => expect(values()).toEqual(['updated', 'updated']));
   });
+
+  // Audit round 2: a card's components outlive its column being folded for a while.
+  test('collapsing and opening its column keeps what was typed on a card', async () => {
+    await render();
+    await act(async () => fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: 'Alpha edited' } }));
+    await press('Collapse todo');
+    await waitFor(() => expect(values()).toEqual(['beta']));
+    await press('Expand todo');
+    await waitFor(() => expect(values()).toEqual(['Alpha edited', 'beta']));
+    await press('Update Alpha');
+    await waitFor(() => expect(values()).toEqual(['updated', 'beta']));
+  });
 });

@@ -98,9 +98,11 @@ export const tabsLook = (styles: Resolved = {}) => {
   };
 };
 
-/** The DOM ids that tie a tab to its panel (aria-controls, aria-labelledby): a tab id may hold any text, so whitespace
- *  becomes _. Distinct from the panel canvas's own id (`<widget>-<tab>`). */
+/** The DOM ids that tie a tab to its panel (aria-controls, aria-labelledby). A tab id may hold any text: every
+ *  character other than a letter, digit or - is written as _<hex code>_, so two distinct tab ids never share a DOM id
+ *  (replacing whitespace with _ made "a b" and "a_b" one id). The stored tab id and the panel canvas's own id
+ *  (`<widget>-<tab>`) are unchanged. */
 export const tabIds = (widgetId: string, tabId: unknown) => {
-  const safe = String(tabId).replace(/\s/g, '_');
+  const safe = String(tabId).replace(/[^A-Za-z0-9-]/g, (char) => `_${char.charCodeAt(0).toString(16)}_`);
   return { tab: `${widgetId}-tab-${safe}`, panel: `${widgetId}-panel-${safe}` };
 };

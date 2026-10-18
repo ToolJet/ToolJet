@@ -14,6 +14,8 @@ type RowValuesStore = {
   findNearestSubcontainerAncestor: (parentId: string, moduleId: string) => string | null;
   setExposedValuesPerRow: (componentId: string, values: Row, indices: number[], moduleId: string) => void;
   resetComponentExposedValuesPerRow: (componentId: string, indices: number[], moduleId: string) => void;
+  startExposedValueBatch: () => void;
+  flushExposedValueBatch: () => void;
 };
 
 const isRow = (value: unknown): value is Row => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -54,14 +56,21 @@ export const takeRowValues = (
   };
   const taken = new Map(members.map((componentId) => [componentId, rowsOf(componentId)]));
 
+  // Written in one batch, flushed at once: outside a batch the store queues a row write to a later microtask, where it
+  // could land after a later reset of that row and bring the moved values back.
   return () => {
-    for (const [componentId, rows] of taken) {
-      for (const [to, from] of moves) {
-        const indices = [...parentIndices, to];
-        const row = from === undefined ? undefined : rows[from];
-        if (isRow(row)) state.setExposedValuesPerRow(componentId, row, indices, moduleId);
-        else state.resetComponentExposedValuesPerRow(componentId, indices, moduleId);
+    state.startExposedValueBatch();
+    try {
+      for (const [componentId, rows] of taken) {
+        for (const [to, from] of moves) {
+          const indices = [...parentIndices, to];
+          const row = from === undefined ? undefined : rows[from];
+          if (isRow(row)) state.setExposedValuesPerRow(componentId, row, indices, moduleId);
+          else state.resetComponentExposedValuesPerRow(componentId, indices, moduleId);
+        }
       }
+    } finally {
+      state.flushExposedValueBatch();
     }
   };
 };
