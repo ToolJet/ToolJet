@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import {
+  missingIsGone,
   runNow,
   useAutoHeight,
   useExposed,
@@ -87,6 +88,8 @@ export const ShadButtonGroup = (props: WidgetProps) => {
       setSelected(initialSelection(live.current.defaultValue, live.current.mode, live.current.buttons));
       return;
     }
+    // An empty set of buttons (a query rerunning) removes nothing: the choice comes back with its button.
+    if (!missingIsGone(keys.length)) return;
     setSelected((current) =>
       current.every((k) => keys.includes(k)) ? current : current.filter((k) => keys.includes(k))
     );

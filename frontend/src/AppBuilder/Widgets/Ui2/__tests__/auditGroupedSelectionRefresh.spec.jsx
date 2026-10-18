@@ -60,12 +60,15 @@ describe.each(['ShadToggleGroup', 'ShadButtonGroup'])('%s selection refresh', (t
     expect(w.exposed().value).toBe('');
     expect(w.variables().calls).toBe(1);
   });
-  test('empty options then restored options must not silently reselect', async () => {
+  // Changed on 18 Oct from "must not silently reselect": an empty list is not a removal. A query's data is [] while it
+  // reruns, so treating it as one dropped the choice on every refresh (README, "Selection after a data change"). While
+  // the list is empty nothing is chosen; the choice comes back with its option, with no onChange.
+  test('empty options then restored options bring the choice back silently', async () => {
     await mount();
     refresh([]);
     expect(w.exposed().value).toBe('');
     refresh(opts);
-    expect({ value: w.exposed().value, calls: w.variables().calls }).toEqual({ value: '', calls: 1 });
+    expect({ value: w.exposed().value, calls: w.variables().calls }).toEqual({ value: 'b', calls: 1 });
   });
   test('remove selected value then restore does not resurrect it', async () => {
     await mount();
