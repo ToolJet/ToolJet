@@ -187,6 +187,7 @@ export const flexContainerConfig = {
   exposedVariables: {
     isVisible: true,
     isDisabled: false,
+    isLoading: false,
   },
   actions: [
     {
@@ -198,6 +199,11 @@ export const flexContainerConfig = {
       handle: 'setDisable',
       displayName: 'Set disable',
       params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
   ],
   definition: {
