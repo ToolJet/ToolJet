@@ -4,7 +4,13 @@ import { Cell, Label as ChartLabel, Legend, Pie, PieChart, Tooltip } from 'recha
 import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { seriesColor } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { statusColors, centreValueFit } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import { animated, ChartFrame, ChartTooltip, LegendContent } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import {
+  animated,
+  ChartFrame,
+  ChartTooltip,
+  LegendContent,
+  withChartRecovery,
+} from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { affixFormatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 import { isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 
@@ -89,4 +95,4 @@ export const ShadPieChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadPieChart);
+export default withControlState(withChartRecovery(ShadPieChart));

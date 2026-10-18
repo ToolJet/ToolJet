@@ -11,6 +11,7 @@ import {
   GRID,
   isCompactChart,
   useAffixes,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import {
   seriesSetup,
@@ -91,4 +92,4 @@ export const ShadAreaChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadAreaChart);
+export default withControlState(withChartRecovery(ShadAreaChart));

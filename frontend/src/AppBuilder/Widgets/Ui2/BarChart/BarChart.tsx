@@ -12,6 +12,7 @@ import {
   isCompactChart,
   MAX_BARS,
   useAffixes,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import {
   seriesSetup,
@@ -265,4 +266,4 @@ export const ShadBarChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadBarChart);
+export default withControlState(withChartRecovery(ShadBarChart));

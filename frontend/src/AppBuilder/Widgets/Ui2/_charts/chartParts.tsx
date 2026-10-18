@@ -140,6 +140,7 @@ const ChartArea = ({ label, children }: { label: string; children: React.ReactNo
   </div>
 );
 
+/** The frame of a Recharts chart: SafeFrame with its defaults (a click on a datum exposes it and fires onClick). */
 export const ChartFrame = ({
   props,
   empty,
@@ -148,31 +149,11 @@ export const ChartFrame = ({
   props: WidgetProps;
   empty: boolean;
   children: ChartRender;
-}) => {
-  const { properties, height } = props;
-  const click = useExposedClick(props);
-  const onDatum = (datum: unknown) => {
-    if (!datum) return;
-    click.pick(datum);
-  };
-  return (
-    <Shell {...props}>
-      <div style={{ height }} className="tw-w-full tw-text-xs" onDoubleClick={click.onDoubleClick}>
-        {empty ? (
-          <div className="tw-flex tw-h-full tw-items-center tw-justify-center tw-text-ui2-sm tw-text-ui2-muted-foreground">
-            {String(properties.emptyText || 'No data')}
-          </div>
-        ) : (
-          <ChartArea label={chartName(props.componentType)}>
-            <ResponsiveContainer width="100%" height="100%">
-              {children(onDatum)}
-            </ResponsiveContainer>
-          </ChartArea>
-        )}
-      </div>
-    </Shell>
-  );
-};
+}) => (
+  <SafeFrame props={props} empty={empty}>
+    {children}
+  </SafeFrame>
+);
 
 /** A value axis as wide as its longest tick label (a suffix such as " seats" or a currency needs more than a fixed
  *  48px, or the labels wrap and the top one clips). The top tick is the max rounded up the way the axis rounds it. */
@@ -257,8 +238,42 @@ export class ChartBoundary extends React.Component<ChartBoundaryProps, { failed:
   }
 }
 
+/** What a chart that threw while drawing shows: not the empty state, which says there is no data. */
+const ChartError = () => (
+  <div
+    role="alert"
+    data-chart-state="error"
+    className="tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-px-3 tw-text-center tw-text-ui2-sm tw-text-[color:var(--sc-muted-foreground)]"
+  >
+    This chart could not be drawn from its data
+  </div>
+);
+
+/** The one recovery policy of the charts: an error while a chart draws (its model or its renderer) shows ChartError in
+ *  the chart's box, and the chart draws again by itself when any of its properties changes, as when a query corrects
+ *  its data (a Line chart showed "No data" for an error; a Bar chart the native error box, until a manual retry). */
+export const withChartRecovery = (Chart: React.ComponentType<WidgetProps>) => {
+  const Recovering = (props: WidgetProps) => (
+    <ChartBoundary
+      resetKey={props.properties}
+      fallback={
+        <Shell {...props}>
+          <div style={{ height: props.height }} className="tw-w-full">
+            <ChartError />
+          </div>
+        </Shell>
+      }
+    >
+      <Chart {...props} />
+    </ChartBoundary>
+  );
+  Recovering.displayName = Chart.displayName || Chart.name;
+  return Recovering;
+};
+
 export const EmptyChart = ({ text, small }: { text: string; small?: boolean }) => (
   <div
+    data-chart-state="empty"
     className={cn(
       'tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-text-[color:var(--sc-muted-foreground)]',
       small ? 'tw-text-xs' : 'tw-text-ui2-sm'
@@ -301,13 +316,11 @@ export const SafeFrame = ({ props, empty, label, small, exposed = {}, clickable 
         {empty ? (
           emptyView
         ) : (
-          <ChartBoundary resetKey={properties} fallback={emptyView}>
-            <ChartArea label={label || chartName(props.componentType)}>
-              <ResponsiveContainer width="100%" height="100%">
-                {children(onDatum)}
-              </ResponsiveContainer>
-            </ChartArea>
-          </ChartBoundary>
+          <ChartArea label={label || chartName(props.componentType)}>
+            <ResponsiveContainer width="100%" height="100%">
+              {children(onDatum)}
+            </ResponsiveContainer>
+          </ChartArea>
         )}
       </div>
     </Shell>

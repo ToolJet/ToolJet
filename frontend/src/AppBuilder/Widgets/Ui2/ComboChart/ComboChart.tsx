@@ -28,6 +28,7 @@ import {
   isCompactChart,
   scaled,
   useValueFormat,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { clamp, isSet, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
@@ -209,4 +210,4 @@ export const ShadComboChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadComboChart);
+export default withControlState(withChartRecovery(ShadComboChart));

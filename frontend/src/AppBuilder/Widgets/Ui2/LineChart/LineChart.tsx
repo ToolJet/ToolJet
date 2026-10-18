@@ -25,6 +25,7 @@ import {
   isCompactChart,
   scaled,
   useValueFormat,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { tooltipAndLegend, useSeriesInputs, valueAxis } from '@/AppBuilder/Widgets/Ui2/_charts/cartesianParts';
 import { clamp, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
@@ -132,4 +133,4 @@ export const ShadLineChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadLineChart);
+export default withControlState(withChartRecovery(ShadLineChart));

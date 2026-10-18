@@ -4,10 +4,10 @@ import { useStable, withControlState } from '@/AppBuilder/Widgets/Ui2/_shared/pa
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { heatmapGrid } from './heatmapModel';
 import {
-  ChartBoundary,
   EmptyChart,
   useExposedClick,
   useValueFormat,
+  withChartRecovery,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { clamp } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
@@ -65,7 +65,7 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
         {empty ? (
           emptyView
         ) : (
-          <ChartBoundary resetKey={p} fallback={emptyView}>
+          <>
             <div
               className="tw-grid tw-min-h-0 tw-flex-1"
               style={{ gridTemplateColumns: columns, gap, gridAutoRows: '1fr' }}
@@ -135,11 +135,11 @@ export const ShadHeatmapChart = (props: WidgetProps) => {
                 <span className="tw-tabular-nums">{format(grid.max)}</span>
               </div>
             ) : null}
-          </ChartBoundary>
+          </>
         )}
       </div>
     </Shell>
   );
 };
 
-export default withControlState(ShadHeatmapChart);
+export default withControlState(withChartRecovery(ShadHeatmapChart));

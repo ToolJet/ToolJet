@@ -13,7 +13,7 @@ import {
   drawnLabelMap,
   seriesSlots,
 } from '@/AppBuilder/Widgets/Ui2/_charts/chartsModel';
-import { AXIS_FILL, GRID, SafeFrame, animated } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
+import { AXIS_FILL, GRID, SafeFrame, animated, withChartRecovery } from '@/AppBuilder/Widgets/Ui2/_charts/chartParts';
 import { clamp, isSet, list, num } from '@/AppBuilder/Widgets/Ui2/_shared/values';
 import { formatter } from '@/AppBuilder/Widgets/Ui2/_shared/format';
 
@@ -86,4 +86,4 @@ export const ShadRadarChart = (props: WidgetProps) => {
   );
 };
 
-export default withControlState(ShadRadarChart);
+export default withControlState(withChartRecovery(ShadRadarChart));
