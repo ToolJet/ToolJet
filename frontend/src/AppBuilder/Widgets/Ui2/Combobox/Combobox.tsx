@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronsUpDown } from 'lucide-react';
-import { CONTROL, controlAria, fieldIdOf, fieldName, FormField } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import {
+  CONTROL,
+  controlAria,
+  fieldIdOf,
+  fieldName,
+  FormField,
+  requiredAria,
+} from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -130,6 +137,7 @@ export const ShadCombobox = (props: WidgetProps) => {
               role="combobox"
               aria-expanded={open}
               {...controlAria(props, check.error)}
+              {...requiredAria(props)}
               disabled={disabled}
               {...focus.handlers}
               className={cn('tw-w-full tw-justify-between tw-gap-2 tw-px-3 tw-font-normal', CONTROL)}

@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { CONTROL, FormField, controlAria, fieldName, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import {
+  CONTROL,
+  controlAria,
+  fieldIdOf,
+  fieldName,
+  FormField,
+  requiredAria,
+} from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import {
@@ -198,6 +205,7 @@ export const ShadMultiselect = (props: WidgetProps) => {
             // so the placeholder or component name does, as for the Select.
             aria-label={toText(properties.label).trim() || fieldName(props, 'Select options')}
             {...controlAria(props, check.error)}
+            {...requiredAria(props)}
             onKeyDown={(e) => {
               if (disabled) return;
               if (!isComposing(e) && ['Enter', ' ', 'ArrowDown'].includes(e.key)) {

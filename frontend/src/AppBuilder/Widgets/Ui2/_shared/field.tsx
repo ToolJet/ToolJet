@@ -33,6 +33,12 @@ export const fieldIdOf = (props: { id?: string; domId?: string }): string => pro
 /** The id of the note under a widget's control (its validation message, else its help text). */
 export const noteIdOf = (props: { id?: string; domId?: string }) => `${fieldIdOf(props)}-note`;
 
+/** A mandatory combobox (a picker's trigger) says so to assistive tech before it is touched too; the label's mark is
+ *  only visual. Only for roles that take aria-required (combobox, textbox, listbox, radiogroup), not a button. */
+export const requiredAria = (props: { validation?: Resolved }) => ({
+  'aria-required': props.validation?.mandatory === true || undefined,
+});
+
 /** What a widget's form control carries for assistive tech: invalid while `error` shows, and described by the note
  *  under it (the error, else the help text), so a screen reader reads both with the control. */
 export const controlAria = (props: { id?: string; domId?: string; properties?: Resolved }, error: unknown) => ({

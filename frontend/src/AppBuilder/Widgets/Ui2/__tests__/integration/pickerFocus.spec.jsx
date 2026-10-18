@@ -5,8 +5,8 @@
  *  - Escape closing an open Select, Combobox or Multiselect fired onBlur then onFocus, though focus never left the
  *    control (it went to its popup and came back). Confirmed in a real browser.
  *  - setBlur while the popup was open did nothing: focus was in the popup, and only the trigger was blurred.
- *  - A required picker opened and closed without a choice showed its message, but its closed trigger did not say it
- *    was invalid (aria-invalid, described by the message).
+ *  - A required picker's closed trigger did not say it was required (aria-required); once touched and invalid it says
+ *    so (aria-invalid, described by the message), which is kept as a control.
  */
 import { createWidgetHarness } from '@/AppBuilder/Widgets/Ui2/__tests__/ui2Harness';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
@@ -77,6 +77,15 @@ describe.each(TYPES)('%s around its popup', (type) => {
     await settle();
     expect(trigger().contains(document.activeElement)).toBe(false);
     expect(widget.variables().blurs).toBe(1);
+  });
+
+  it('[UI2-VALID-104] a required picker’s closed trigger says it is required', async () => {
+    render(widget);
+    await waitFor(() => expect(trigger()).not.toBeNull());
+    expect(trigger()).toHaveAttribute('aria-required', 'true');
+    // The control: an optional picker does not.
+    widget.setComponentProperty(ID, 'mandatory', '{{false}}', 'validation');
+    await waitFor(() => expect(trigger()).not.toHaveAttribute('aria-required'));
   });
 
   it('[UI2-VALID-103] a required picker closed without a choice says it is invalid', async () => {

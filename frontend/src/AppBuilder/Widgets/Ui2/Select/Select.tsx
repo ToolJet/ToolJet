@@ -10,7 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } fro
 import { lookVars } from '@/AppBuilder/Widgets/Ui2/_shared/looks/shadcnLook';
 import { useFocusEvents, usePickerPopup } from '@/AppBuilder/Widgets/Ui2/_shared/parity';
 import { busy } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
-import { CONTROL, FormField, HELP, controlAria, fieldName, fieldIdOf } from '@/AppBuilder/Widgets/Ui2/_shared/field';
+import {
+  CONTROL,
+  controlAria,
+  fieldIdOf,
+  fieldName,
+  FormField,
+  HELP,
+  requiredAria,
+} from '@/AppBuilder/Widgets/Ui2/_shared/field';
 import { useValidation } from '@/AppBuilder/Widgets/Ui2/_shared/formHooks';
 import { choiceKey, defaultKey, optionsByKey, shownOptions } from '@/AppBuilder/Widgets/Ui2/_shared/choices';
 import { useDropRemovedChoices } from '@/AppBuilder/Widgets/Ui2/_pickers/pickerParts';
@@ -111,6 +119,7 @@ export const ShadSelect = (props: WidgetProps) => {
           // role="combobox" takes no name from its content: without a label, the placeholder names it.
           aria-label={fieldName(props, 'Select')}
           {...controlAria(props, check.error)}
+          {...requiredAria(props)}
           {...focus.handlers}
           className={cn(CONTROL, 'data-[placeholder]:tw-text-[color:var(--lk-placeholder,var(--sc-muted-foreground))]')}
         >
