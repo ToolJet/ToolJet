@@ -11,6 +11,7 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
 import { binding, setVariableOn } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
+import { takeRowValues } from '@/AppBuilder/Widgets/Ui2/_shared/rowValues';
 
 const ID = 'list1';
 const OPTIONS = "{{[{ label: 'One', value: 'one' }, { label: 'Two', value: 'two' }]}}";
@@ -113,6 +114,20 @@ describe.each(PICKERS)('$type in a List view row', ({ type, pick, key, value }) 
     });
     expect(seen).toEqual({ row: value, list: value });
     expect(derivedRow(1)[key]).not.toEqual(value);
+  });
+
+  test('values moved with their rows are written at once, so a later reset of a row stays reset', async () => {
+    await render();
+    await act(async () => action(0)(...pick.slice(1)));
+    let movedAtOnce;
+    await act(async () => {
+      takeRowValues(ID, 'canvas', [], ['a', 'b'], ['b', 'a'])();
+      movedAtOnce = rawRow(1)?.[key];
+      useStore.getState().resetComponentExposedValuesPerRow('picker1', [1], 'canvas');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(movedAtOnce).toEqual(value);
+    expect(rawRow(1)?.[key]).toBeUndefined();
   });
 
   test('an action that is not awaited has written its row by the time the call returns', async () => {
