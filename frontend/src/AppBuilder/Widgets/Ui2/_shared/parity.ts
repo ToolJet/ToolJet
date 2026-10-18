@@ -71,6 +71,11 @@ export interface PickerPopup {
   open: boolean;
   blocked: boolean;
   setOpen: (next: boolean) => void;
+  /** setBlur: takes focus away from the control and its open popup, and closes the popup without handing focus back
+   *  to the trigger (blurring only the trigger did nothing while focus was in the popup). */
+  blurAway: (trigger?: HTMLElement | null) => void;
+  /** Spread on the popup content (Radix onCloseAutoFocus): after blurAway, focus stays away. */
+  onCloseAutoFocus: (e: Event) => void;
 }
 
 export const usePickerPopup = (properties: Resolved): PickerPopup => {
@@ -79,7 +84,24 @@ export const usePickerPopup = (properties: Resolved): PickerPopup => {
   useEffect(() => {
     if (blocked) setOpenState(false);
   }, [blocked]);
-  return { open: open && !blocked, blocked, setOpen: (next: boolean) => setOpenState(next && !blocked) };
+  const leaving = useRef(false);
+  return {
+    open: open && !blocked,
+    blocked,
+    setOpen: (next: boolean) => setOpenState(next && !blocked),
+    blurAway: (trigger) => {
+      leaving.current = open;
+      const active = typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
+      active?.blur?.();
+      trigger?.blur();
+      setOpenState(false);
+    },
+    onCloseAutoFocus: (e) => {
+      if (!leaving.current) return;
+      leaving.current = false;
+      e.preventDefault();
+    },
+  };
 };
 
 /** A toggle action's argument as a boolean: `{{false}}`, false, 'false', 0 and null are off; anything else is on
@@ -117,13 +139,17 @@ export const useFocusEvents = (fireEvent: WidgetProps['fireEvent']): FocusEvents
     state.current.inside = true;
     state.current.focusTimer = setTimeout(() => fireEvent('onFocus'), 0);
   };
-  const leave = () => {
+  const leave = (inTransit = true) => {
     clearTimeout(state.current.timer);
     state.current.timer = setTimeout(() => {
       const s = state.current;
       if (s.open || !s.inside) return;
       const el = typeof document !== 'undefined' ? document.activeElement : null;
       if (el && s.trigger && (el === s.trigger || s.trigger.contains?.(el))) return;
+      // Focus in transit: a popup that has just closed hands focus back to its trigger a moment later (Radix restores
+      // it in a timer of its own), so focus on nothing is looked at once more before it counts as leaving. Escape fired
+      // onBlur and then onFocus though focus never left the control.
+      if (inTransit && (!el || el === document.body)) return leave(false);
       s.inside = false;
       fireEvent('onBlur');
     }, 0);
@@ -135,7 +161,7 @@ export const useFocusEvents = (fireEvent: WidgetProps['fireEvent']): FocusEvents
         clearTimeout(state.current.timer);
         if (!state.current.inside) focused();
       },
-      onBlur: leave,
+      onBlur: () => leave(),
     },
     opened: (isOpen: boolean) => {
       state.current.open = !!isOpen;

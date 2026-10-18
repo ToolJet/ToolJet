@@ -63,7 +63,12 @@ export const ShadCombobox = (props: WidgetProps) => {
     },
     clear: async () => setKey(null),
     setFocus: async () => triggerRef.current?.focus(),
-    setBlur: async () => triggerRef.current?.blur(),
+    // Closes an open popup too (focus is in it then), the way the popup's own close does: touched, onBlur once.
+    setBlur: async () => {
+      const wasOpen = popup.open;
+      popup.blurAway(triggerRef.current);
+      if (wasOpen) openChange(false);
+    },
   });
   const check = useValidation(
     props,
@@ -144,6 +149,7 @@ export const ShadCombobox = (props: WidgetProps) => {
           align="start"
           className={cn('tw-w-[var(--radix-popover-trigger-width)] tw-min-w-[12rem] tw-p-0', MENU_SURFACE)}
           style={lookVars(componentType, styles)}
+          onCloseAutoFocus={popup.onCloseAutoFocus}
         >
           <OptionsMenu
             properties={properties}

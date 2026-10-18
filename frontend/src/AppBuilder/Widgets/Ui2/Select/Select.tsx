@@ -55,7 +55,14 @@ export const ShadSelect = (props: WidgetProps) => {
     },
     clear: async () => setKey(''),
     setFocus: async () => triggerRef.current?.focus(),
-    setBlur: async () => triggerRef.current?.blur(),
+    // Closes an open popup too (focus is in it then), the way the popup's own close does: touched, onBlur once.
+    setBlur: async () => {
+      const wasOpen = popup.open;
+      popup.blurAway(triggerRef.current);
+      if (!wasOpen) return;
+      focus.opened(false);
+      check.touch();
+    },
   });
   // A picked option counts even when its value is false, 0 or '' (an "All" choice); only no pick is empty.
   const check = useValidation(
@@ -102,7 +109,7 @@ export const ShadSelect = (props: WidgetProps) => {
           <SelectValue placeholder={String(properties.placeholder ?? '')} />
         </SelectTrigger>
         {/* The list opens in the pack's portal root, outside the widget: it takes the widget's style variables itself. */}
-        <SelectContent style={lookVars(props.componentType, props.styles)}>
+        <SelectContent style={lookVars(props.componentType, props.styles)} onCloseAutoFocus={popup.onCloseAutoFocus}>
           {shown.map((o) => (
             <SelectItem key={optionKey(o.value)} value={optionKey(o.value)}>
               {o.label}

@@ -56,6 +56,7 @@ const useAnchoredMenu = (properties: WidgetProps['properties'], onClose?: () => 
   return {
     open,
     blocked: popup.blocked,
+    blurAway: () => popup.blurAway(anchorRef.current),
     change,
     anchorRef,
     anchorProps: {
@@ -71,6 +72,8 @@ const useAnchoredMenu = (properties: WidgetProps['properties'], onClose?: () => 
         if (e.target instanceof Node && anchorRef.current?.contains(e.target)) e.preventDefault();
       },
       onCloseAutoFocus: (e: Event) => {
+        popup.onCloseAutoFocus(e);
+        if (e.defaultPrevented) return;
         e.preventDefault();
         anchorRef.current?.focus();
       },
@@ -109,7 +112,12 @@ export const ShadMultiselect = (props: WidgetProps) => {
     deselectOptions: async (v: unknown) => setKeys((k) => M.removeKeys(k, v)),
     clear: async () => setKeys([]),
     setFocus: async () => menu.anchorRef.current?.focus(),
-    setBlur: async () => menu.anchorRef.current?.blur(),
+    // Closes an open menu too (focus is in it then), the way the menu's own close does: touched, onBlur once.
+    setBlur: async () => {
+      const wasOpen = menu.open;
+      menu.blurAway();
+      if (wasOpen) menuChange(false);
+    },
   });
   const publish = (next: string[]) => {
     // As the rendered selection resolves them: with server-side search, kept records stand in for options off the page.

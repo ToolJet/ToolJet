@@ -266,6 +266,8 @@ describe('UI 2.0 Date picker', () => {
     await open();
 
     await clickDay(20);
+    // The closing popup hands focus back to the field a moment later; leaving means leaving from there.
+    await waitFor(() => expect(document.activeElement).toBe(trigger()));
     await act(async () => trigger().blur());
 
     expect(await screen.findByText('We are closed then', {}, { timeout: 300 })).toBeInTheDocument();
