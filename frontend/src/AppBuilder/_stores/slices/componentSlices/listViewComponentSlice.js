@@ -97,6 +97,11 @@ export const listViewComponentSlice = (set, get) => {
     }
   };
 
+  // The shadcn List view publishes data as its records (pages count them, (components.list.data || []).length), not
+  // as its rows' component values: the store derives and trims children for it, never data.
+  const keepsRecords = (listviewId, moduleId) =>
+    get().getComponentTypeFromId?.(listviewId, moduleId) === 'ShadListView';
+
   return {
     // Per-row exposed value write for ListView children.
     // After writing, derives the parent ListView's children/data directly in the store.
@@ -239,6 +244,7 @@ export const listViewComponentSlice = (set, get) => {
     initExposedValueArrayForChildren: (listviewId, rowCount, moduleId = 'canvas', parentIndices = []) => {
       const { getContainerChildrenMapping } = get();
       const childComponents = getContainerChildrenMapping(listviewId, moduleId);
+      const trimsData = !keepsRecords(listviewId, moduleId);
       set((state) => {
         const components = state.resolvedStore.modules[moduleId].exposedValues.components;
         childComponents.forEach((childId) => {
@@ -283,7 +289,7 @@ export const listViewComponentSlice = (set, get) => {
             Object.keys(lvExposed.children).forEach((key) => {
               if (parseInt(key) >= rowCount) {
                 delete lvExposed.children[key];
-                if (lvExposed.data) delete lvExposed.data[key];
+                if (trimsData && lvExposed.data) delete lvExposed.data[key];
               }
             });
           }
@@ -403,10 +409,9 @@ export const listViewComponentSlice = (set, get) => {
     // For outerIndices=[] (top-level): writes to exposedValues.components[listviewId].children[rowIndex]
     // For outerIndices=[i] (nested): writes to exposedValues.components[listviewId][i].children[rowIndex]
     deriveListviewExposedData: (listviewId, rowIndex, outerIndices, moduleId = 'canvas') => {
-      const { getContainerChildrenMapping, getComponentNameFromId, getComponentTypeFromId } = get();
-      // The shadcn List view publishes data as its records (pages count them, (components.list.data || []).length);
-      // deriving data from its rows' components replaced that with an object of row values. children is derived.
-      const keepsRecords = getComponentTypeFromId?.(listviewId, moduleId) === 'ShadListView';
+      const { getContainerChildrenMapping, getComponentNameFromId } = get();
+      // Deriving data from a ShadListView's rows replaced its records with an object of row values.
+      const derivesData = !keepsRecords(listviewId, moduleId);
       const childIds = getContainerChildrenMapping(listviewId);
       const exposedComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
 
@@ -466,7 +471,7 @@ export const listViewComponentSlice = (set, get) => {
         // because ![] is false (arrays are truthy), and numeric indices get set on the array.
         if (!target.children || Array.isArray(target.children)) target.children = {};
         target.children[rowIndex] = rowData;
-        if (!keepsRecords) {
+        if (derivesData) {
           if (!target.data || Array.isArray(target.data)) target.data = {};
           target.data[rowIndex] = clonedRowData;
         }
@@ -484,7 +489,7 @@ export const listViewComponentSlice = (set, get) => {
       });
 
       get().updateDependencyValues(`components.${listviewId}.children`, moduleId, []);
-      if (!keepsRecords) get().updateDependencyValues(`components.${listviewId}.data`, moduleId, []);
+      if (derivesData) get().updateDependencyValues(`components.${listviewId}.data`, moduleId, []);
       if (selectionUpdated) {
         get().updateDependencyValues(`components.${listviewId}.selectedRecord`, moduleId, []);
         get().updateDependencyValues(`components.${listviewId}.selectedRow`, moduleId, []);

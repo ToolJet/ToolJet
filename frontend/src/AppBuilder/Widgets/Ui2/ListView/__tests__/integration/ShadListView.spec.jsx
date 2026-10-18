@@ -225,6 +225,30 @@ describe('UI 2.0 List view', () => {
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
   });
 
+  // A page turn sized the rows' values to the new page and deleted the list's data at every row index past it, as if
+  // data held row values (the native Listview's): with 5 records and 3 per page, page 2 left [a, b, <hole>, d, e],
+  // and page 1 kept the hole.
+  test('[ShadListView-PROP-012] a page turn keeps every record in data', async () => {
+    const five =
+      "{{[{ key: 'a', name: 'Ada' }, { key: 'b', name: 'Grace' }, { key: 'c', name: 'Alan' }, { key: 'd', name: 'Edsger' }, { key: 'e', name: 'Barbara' }]}}";
+    render({
+      properties: people({ data: binding(five), enablePagination: binding('{{true}}'), rowsPerPage: binding('{{3}}') }),
+    });
+    const keys = () => (exposed().data || []).map((record) => record?.key ?? null);
+
+    await waitFor(() => expect(exposed().children?.[2]?.rowText?.text).toBe('Alan'));
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    await waitFor(() => expect(names()).toEqual(['Edsger', 'Barbara']));
+    await settle();
+    expect(keys()).toEqual(['a', 'b', 'c', 'd', 'e']);
+    expect(Object.keys(exposed().children)).toEqual(['0', '1']);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Previous page' }));
+    await waitFor(() => expect(names()).toEqual(['Ada', 'Grace', 'Alan']));
+    await settle();
+    expect(keys()).toEqual(['a', 'b', 'c', 'd', 'e']);
+  });
+
   test('[ShadListView-PROP-007] serverSidePagination shows the data as the page and counts pages from totalRecords', async () => {
     render({
       properties: people({
