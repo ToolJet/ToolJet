@@ -14,6 +14,7 @@ import {
   useAutoHeight,
   useLatest,
   useStable,
+  withOwnedActions,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Pager } from '@/AppBuilder/Widgets/Ui2/_shared/Pager';
@@ -391,4 +392,4 @@ export const ShadListView = (props: WidgetProps) => {
   );
 };
 
-export default ShadListView;
+export default withOwnedActions(ShadListView);

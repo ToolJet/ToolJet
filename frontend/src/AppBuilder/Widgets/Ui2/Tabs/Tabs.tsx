@@ -8,7 +8,13 @@ import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useDynamicHeight } from '@/AppBuilder/Widgets/Ui2/_shared/useDynamicHeight';
 import { Button, Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { tabIds, tabsLook, visibleTabs, tabsFromProperties, neighbourTab } from './tabsModel';
-import { asActions, useActionFire, useLatest, useStable } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  asActions,
+  useActionFire,
+  useLatest,
+  useStable,
+  withOwnedActions,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Spinner, wantsSkeleton } from '@/AppBuilder/Widgets/Ui2/_shared/loadingLook';
 import '@/AppBuilder/Widgets/Ui2/_shared/styles/shadcn.scss';
 import { TabStrip } from './TabStrip';
@@ -352,4 +358,4 @@ export const ShadTabs = (props: WidgetProps) => {
   );
 };
 
-export default ShadTabs;
+export default withOwnedActions(ShadTabs);

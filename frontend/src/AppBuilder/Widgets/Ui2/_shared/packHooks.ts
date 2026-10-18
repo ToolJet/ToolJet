@@ -146,9 +146,62 @@ export const useExposed = (
  *  the native useExposeState works. The widget receives the effective values as its properties, so it reads
  *  properties.visibility / loadingState / disabledState as before. An unset property means its default (visible,
  *  enabled, not loading): a widget created through the MCP carries only the properties it was given. */
+/** The widget's publishers, with every published function made an owned action (runNow, and nothing once `alive` is
+ *  false). Values pass through as they are. */
+const useOwnedPublish = (
+  props: Pick<WidgetProps, 'setExposedVariables' | 'setExposedVariable'>,
+  alive: MutableRefObject<boolean>
+) => {
+  const { setExposedVariables, setExposedVariable } = props;
+  return useMemo(() => {
+    const owned = (value: unknown) =>
+      typeof value === 'function'
+        ? (...args: unknown[]) => (alive.current ? runNow(() => (value as Action)(...args)) : undefined)
+        : value;
+    return {
+      setExposedVariables: ((values: Record<string, unknown>) =>
+        setExposedVariables(
+          Object.fromEntries(Object.entries(values || {}).map(([key, value]) => [key, owned(value)]))
+        )) as WidgetProps['setExposedVariables'],
+      setExposedVariable: ((key: string, value: unknown) =>
+        setExposedVariable(key, owned(value))) as WidgetProps['setExposedVariable'],
+    };
+  }, [setExposedVariables, setExposedVariable, alive]);
+};
+
+/** Whether the component is still mounted. */
+const useAlive = (): MutableRefObject<boolean> => {
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+  return alive;
+};
+
+/** For the few widgets that keep their control state themselves (Table, List view, Tabs) or draw a native widget that
+ *  publishes its own actions (the Dialog's ModalV2): the same owned actions withControlState gives every other widget,
+ *  so their setLoading / setDisable / setVisibility publish before the awaited call returns, and an unmounted
+ *  instance's actions do nothing. */
+export const withOwnedActions = <P extends WidgetProps>(Widget: React.ComponentType<P>) => {
+  const Owned = (props: P) => {
+    const publish = useOwnedPublish(props, useAlive());
+    return React.createElement(Widget, { ...props, ...publish });
+  };
+  Owned.displayName = `Owned(${Widget.displayName || Widget.name || 'Widget'})`;
+  return Owned;
+};
+
 export const withControlState = <P extends WidgetProps>(Widget: React.ComponentType<P>) => {
   const Controlled = (props: P) => {
-    const { properties, setExposedVariables, setExposedVariable } = props;
+    const { properties } = props;
+    // Every action this instance publishes (its own, and setVisibility / setLoading / setDisable from the shared
+    // control state, which only schedules React state) runs through runNow, so what it changes is published when the
+    // awaited call returns; and it belongs to this instance: once it unmounts (a removed or paged-away List view row,
+    // a replaced widget), a retained reference to its action does nothing instead of writing over its successor.
+    const { setExposedVariables, setExposedVariable } = useOwnedPublish(props, useAlive());
     const { isVisible, isLoading, isDisabled } = useExposeState(
       properties.loadingState === true,
       properties.visibility !== false,
@@ -170,7 +223,14 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
     // row adds its instance's id, or the second row's label would name the first row's control.
     const instance = useId().replace(/[^\w-]/g, '');
     const domId = props.subContainerIndex == null ? `shad-${props.id}` : `shad-${props.id}-${instance}`;
-    return React.createElement(Widget, { ...props, properties: effective, fireEvent, domId });
+    return React.createElement(Widget, {
+      ...props,
+      properties: effective,
+      fireEvent,
+      domId,
+      setExposedVariables,
+      setExposedVariable,
+    });
   };
   Controlled.displayName = `Controlled(${Widget.displayName || Widget.name || 'Widget'})`;
   return Controlled;

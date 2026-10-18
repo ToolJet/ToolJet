@@ -1,7 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
-import { runNow, useActionFire, useAutoHeight, useLatest } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
+import {
+  runNow,
+  useActionFire,
+  useAutoHeight,
+  useLatest,
+  withOwnedActions,
+} from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
 import { Shell } from '@/AppBuilder/Widgets/Ui2/_shared/Shell';
 import { pageGoTo, pageOf } from '@/AppBuilder/Widgets/Ui2/_shared/listModel';
@@ -390,4 +396,4 @@ export const ShadTable = (props: WidgetProps) => {
   );
 };
 
-export default ShadTable;
+export default withOwnedActions(ShadTable);
