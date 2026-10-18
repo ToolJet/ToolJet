@@ -191,6 +191,9 @@ interface KanbanCardProps {
   collapse: CardCollapse;
   selected: boolean;
   draggable: boolean;
+  /** In a folded column: kept mounted (its components keep their values) but out of sight, so it neither drags nor
+   *  takes a drop. */
+  hidden?: boolean;
   onSelect: (card: BoardCard) => void;
   onDelete?: (card: BoardCard) => void;
 }
@@ -204,12 +207,13 @@ export const KanbanCard = ({
   collapse,
   selected,
   draggable,
+  hidden = false,
   onSelect,
   onDelete,
 }: KanbanCardProps) => {
   const data = { type: 'card', key: card.__key, columnId };
-  const drag = useDraggable({ id: card.__key, data, disabled: !draggable });
-  const drop = useDroppable({ id: `drop-${card.__key}`, data });
+  const drag = useDraggable({ id: card.__key, data, disabled: !draggable || hidden });
+  const drop = useDroppable({ id: `drop-${card.__key}`, data, disabled: hidden });
   // Collapsed height: the content's natural height decides whether the card collapses at all.
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState(0);
