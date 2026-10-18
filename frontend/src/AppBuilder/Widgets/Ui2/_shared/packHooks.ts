@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useMemo, useRef } from 'react';
 import isEqual from 'lodash/isEqual';
 import { flushSync } from 'react-dom';
+import useStore from '@/AppBuilder/_stores/store';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
@@ -38,6 +39,9 @@ export const useLatest = <T>(value: T): MutableRefObject<T> => {
 
 type Action = (...args: unknown[]) => unknown;
 
+/** The store's exposed-value batch, which runNow opens around an action. */
+type ExposedBatchStore = { startExposedValueBatch: () => void; flushExposedValueBatch: () => void };
+
 /** Events fired while an action runs wait here until it has published (runNow). */
 let actionDepth = 0;
 let deferredEvents: Array<() => void> = [];
@@ -63,6 +67,13 @@ export const fromEffect = (callback: () => void): void => {
  *  widgets publish first. Widgets call it in their user handlers (typing, a click); actions get it from useExposed. */
 export const runNow = <T>(action: () => T): T => {
   let result = undefined as T;
+  // What the action publishes is gathered in one exposed-value batch and settled before its events fire. In a List view
+  // row a widget's values are written per row, and outside a batch the store queued that write, and the list's children
+  // derived from it, to later microtasks: onSelect read the old value through the row and through the list, and the line
+  // after `await` read the new row but old children. The batch's flush writes the rows and derives the list at once.
+  const { startExposedValueBatch, flushExposedValueBatch } = useStore.getState() as unknown as ExposedBatchStore;
+  const outermost = actionDepth === 0;
+  if (outermost) startExposedValueBatch();
   actionDepth += 1;
   try {
     if (effectDepth > 0) result = action();
@@ -72,7 +83,8 @@ export const runNow = <T>(action: () => T): T => {
       });
   } finally {
     actionDepth -= 1;
-    if (actionDepth === 0) {
+    if (outermost) {
+      flushExposedValueBatch();
       const queued = deferredEvents;
       deferredEvents = [];
       queued.forEach((fire) => fire());
