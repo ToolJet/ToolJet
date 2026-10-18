@@ -30,9 +30,6 @@ const KNOWN = {
   // The native ModalV2's sizing effect (Widgets/ModalV2/Components/Modal.jsx) schedules a 100 ms timeout on every
   // change of its inputs and never clears it; the fix is to clear it in the effect's cleanup.
   ShadDialog: /^timers still scheduled after unmount: [\s\S]*ModalV2\/Components\/Modal\.jsx/,
-  // @tanstack/virtual-core debounces its isScrolling reset (150 ms) from the first offset read, and its cleanup removes
-  // the scroll listener but not that timeout.
-  ShadTable: /^timers still scheduled after unmount: [\s\S]*virtual-core/,
 };
 
 // Every widget, in exactly one family (one spec file each, so the families run in parallel).
