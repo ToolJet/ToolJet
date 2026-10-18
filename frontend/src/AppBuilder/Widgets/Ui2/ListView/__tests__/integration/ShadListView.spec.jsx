@@ -330,6 +330,49 @@ describe('UI 2.0 List view', () => {
     // Draws 200 real rows through the store: about 4 s on a loaded CI runner, so it gets more than jest's 5 s default.
   }, 20000);
 
+  // Each widget in a row publishes its values at once (usePublishNow), and each of those writes re-derived its row's
+  // children in a store update of its own: 5 updates a row for two Texts, so 100 rows took seconds to fill (each
+  // update re-runs every mounted widget's store selectors). The rows drawn in one go publish inside one batch, which
+  // derives each row once.
+  describe('rows drawn in one go derive each row once', () => {
+    let derived;
+    let derive;
+    beforeEach(() => {
+      derived = [];
+      derive = useStore.getState().deriveListviewExposedData;
+      useStore.setState({
+        deriveListviewExposedData: (...args) => {
+          derived.push(args[1]);
+          return derive(...args);
+        },
+      });
+    });
+    afterEach(() => useStore.setState({ deriveListviewExposedData: derive }));
+    const twoTexts = () => {
+      const note = rowText();
+      note.id = 'rowNote';
+      note.name = 'rowNote';
+      note.component.name = 'rowNote';
+      note.layouts = { desktop: { top: 40, left: 0, width: 20, height: 30 } };
+      return { rowText: rowText(), rowNote: note };
+    };
+    const many = (count) => binding(`{{Array.from({ length: ${count} }, (_, i) => ({ id: i, name: 'Row ' + i }))}}`);
+    const noteAt = (row) => exposed().children?.[row]?.rowNote?.text;
+
+    test('[ShadListView-DEF-004] on the first draw and on Show more', async () => {
+      render({ properties: { data: many(130) }, extraComponents: twoTexts() });
+      await waitFor(() => expect(noteAt(99)).toBe('Row 99'));
+      await settle();
+      expect(derived).toHaveLength(100);
+
+      derived.length = 0;
+      fireEvent.click(screen.getByText('Show 30 more of 30'));
+      await waitFor(() => expect(noteAt(129)).toBe('Row 129'));
+      await settle();
+      expect([...derived].sort((a, b) => a - b)).toEqual(Array.from({ length: 30 }, (_, i) => 100 + i));
+    }, 20000);
+  });
+
   // The rows' {{listItem}} values were written to the store during the list's render: React warned that another
   // component updated while this one rendered, and it risked a render loop.
   test('[ShadListView-DEF-003] writes its rows to the store outside render', async () => {

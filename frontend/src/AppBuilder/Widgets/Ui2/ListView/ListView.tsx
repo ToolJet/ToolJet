@@ -136,7 +136,12 @@ export const ShadListView = (props: WidgetProps) => {
   // a row that moves never resolves another record's {{listItem}}, which reset its components (an edited Input took
   // its default again). When records move, their rows' component values move with them (takeRowValues).
   const keys = useMemo(() => items.map((item, index) => itemKey(item, idField, index)), [items, idField]);
-  const [shown, setShown] = useState<{ items: unknown[]; keys: string[] }>({ items: [], keys: [] });
+  // drawn counts the times rows of new records were drawn (first draw, "Show more", a page turn), for the batch below.
+  const [shown, setShown] = useState<{ items: unknown[]; keys: string[]; drawn: number }>({
+    items: [],
+    keys: [],
+    drawn: 0,
+  });
   const shownKeys = useRef<string[]>([]);
   useLayoutEffect(() => {
     const moveRowValues = takeRowValues(id, moduleId, parentIndices, shownKeys.current, keys);
@@ -153,8 +158,10 @@ export const ShadListView = (props: WidgetProps) => {
     initExposedValueArrayForChildren(id, items.length, moduleId, parentIndices);
     moveRowValues?.();
     if (!items.length) exposeOne.current('children', {});
+    const before = new Set(shownKeys.current);
+    const fresh = keys.some((key) => !before.has(key));
     shownKeys.current = keys;
-    setShown({ items, keys });
+    setShown((last) => ({ items, keys, drawn: fresh ? last.drawn + 1 : last.drawn }));
     // childCount: a component added to the row template needs its per-row values too.
   }, [
     items,
@@ -167,7 +174,6 @@ export const ShadListView = (props: WidgetProps) => {
     initExposedValueArrayForChildren,
     exposeOne,
   ]);
-  useExposedValueBatch(items.length);
 
   const { selectedIndex, pick, clearSelection } = useListSelection({
     id,
@@ -219,6 +225,13 @@ export const ShadListView = (props: WidgetProps) => {
     observer.observe(el);
     return () => observer.disconnect();
   }, [columns, gap, isLoading, hasItems]);
+
+  // Each component in a row publishes at once (usePublishNow), and each publish re-derived its row's children in a
+  // store update of its own: five a row for two Texts, so 100 rows took seconds to fill. New rows' components publish
+  // in one batch instead, which derives each row once. It opens in the commit that mounts them: rows are drawn from
+  // `shown`, a render after their items, and only once the width is known (keyed to items.length, the batch had
+  // already closed).
+  useExposedValueBatch(itemWidth > 0 ? shown.drawn : 0);
 
   const showPager = properties.enablePagination && !isLoading && (items.length > 0 || paged.page > 1);
 
