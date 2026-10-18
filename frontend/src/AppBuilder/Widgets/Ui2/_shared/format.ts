@@ -37,11 +37,25 @@ export interface FormatOptions {
   suffix?: unknown;
 }
 
+// Intl.NumberFormat is costly to build; a table formats every cell on each search, and a list every row's figures
+// (a 10,000-row currency progress list built 30,000), so formatters are reused, one per locale and options.
+const FORMATTERS = new Map<string, Intl.NumberFormat>();
+const numberFormatter = (locale: string | undefined, options: Intl.NumberFormatOptions): Intl.NumberFormat => {
+  const key = `${locale ?? ''}|${stringify(options)}`;
+  let cached = FORMATTERS.get(key);
+  if (!cached) {
+    if (FORMATTERS.size > 200) FORMATTERS.clear();
+    cached = new Intl.NumberFormat(locale, options);
+    FORMATTERS.set(key, cached);
+  }
+  return cached;
+};
+
 const intl = (options: Intl.NumberFormatOptions): Intl.NumberFormat => {
   try {
-    return new Intl.NumberFormat(undefined, options);
+    return numberFormatter(undefined, options);
   } catch {
-    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
+    return numberFormatter(undefined, { maximumFractionDigits: 2 });
   }
 };
 
@@ -170,11 +184,7 @@ export const formatValue = (value: unknown, format: unknown = 'auto', currency?:
     const code =
       isNonBlankString(currency) && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
     try {
-      return new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: code,
-        minimumFractionDigits: 2,
-      }).format(n);
+      return numberFormatter(undefined, { style: 'currency', currency: code, minimumFractionDigits: 2 }).format(n);
     } catch {
       return formatter({ format, currency })(n);
     }
@@ -183,19 +193,6 @@ export const formatValue = (value: unknown, format: unknown = 'auto', currency?:
 };
 
 // ---- Table cells (Table, Key-value list) -----------------------------------------------------------------------------
-
-// Intl.NumberFormat is costly to build; a table formats every cell on each search, so formatters are reused.
-const FORMATTERS = new Map<string, Intl.NumberFormat>();
-const numberFormatter = (locale: string, options: Intl.NumberFormatOptions): Intl.NumberFormat => {
-  const key = `${locale}|${stringify(options)}`;
-  let cached = FORMATTERS.get(key);
-  if (!cached) {
-    if (FORMATTERS.size > 200) FORMATTERS.clear();
-    cached = new Intl.NumberFormat(locale, options);
-    FORMATTERS.set(key, cached);
-  }
-  return cached;
-};
 
 const DEFAULT_DATE = 'DD MMM YYYY';
 const DEFAULT_DATETIME = 'DD MMM YYYY, HH:mm';
