@@ -123,6 +123,42 @@ describe('Timeline: hideDate and visibility', () => {
   });
 });
 
+describe('Timeline: setVisibility CSA', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+
+  test('[Timeline-CSA-001] setVisibility hides and restores the Timeline and publishes isVisible', async () => {
+    // Break this catches: the CSA not being registered on mount, or toggling the DOM without publishing isVisible.
+    const { container } = widget.render();
+    const card = () => container.querySelector('.card');
+    await waitFor(() => expect(items(container)).toHaveLength(3));
+    await waitFor(() => expect(widget.exposed()).toMatchObject({ isVisible: true }));
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(card()).toHaveStyle({ display: 'none' }));
+    expect(widget.exposed()).toMatchObject({ isVisible: false });
+
+    await widget.act('setVisibility', true);
+    await waitFor(() => expect(card()).not.toHaveStyle({ display: 'none' }));
+    expect(widget.exposed()).toMatchObject({ isVisible: true });
+  });
+
+  test('[Timeline-CSA-002] a visibility property change overrides an earlier setVisibility', async () => {
+    // Break this catches: local CSA state no longer yielding to a later change of the Visibility property.
+    const { container } = widget.render();
+    const card = () => container.querySelector('.card');
+    await waitFor(() => expect(items(container)).toHaveLength(3));
+
+    await widget.act('setVisibility', false);
+    await waitFor(() => expect(card()).toHaveStyle({ display: 'none' }));
+
+    await setProperty('visibility', false);
+    await setProperty('visibility', true);
+    await waitFor(() => expect(card()).not.toHaveStyle({ display: 'none' }));
+    expect(widget.exposed()).toMatchObject({ isVisible: true });
+  });
+});
+
 describe('Timeline: dynamic data', () => {
   beforeEach(() => widget.setup());
   afterEach(() => widget.teardown());

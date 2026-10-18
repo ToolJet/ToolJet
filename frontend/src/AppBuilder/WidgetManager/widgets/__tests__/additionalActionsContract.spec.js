@@ -31,6 +31,7 @@ const CONTRACT = {
   VerticalDivider: ['visibility'],
   Steps: ['visibility', 'disabledState'],
   FlexContainer: ['visibility', 'disabledState', 'loadingState'],
+  Timeline: ['visibility'],
 };
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);
