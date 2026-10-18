@@ -22,6 +22,7 @@ const CONTRACT = {
   CircularProgressBar: ['visibility', 'loadingState'],
   FileButton: ['visibility', 'disabledState', 'loadingState'],
   FileInput: ['visibility', 'disabledState', 'loadingState'],
+  Icon: ['visibility', 'disabledState', 'loadingState'],
 };
 
 const asList = (exports) => Object.values(exports).filter((w) => w && typeof w === 'object' && w.component);
