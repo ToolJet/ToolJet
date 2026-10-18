@@ -71,6 +71,29 @@ describe('UI 2.0 Carousel transitions', () => {
     }
   );
 
+  // The arrows, dots, keys and swipes stopped while disabled, but a slide click still fired onSlideClicked and
+  // opened the slide's link. (Loading draws a skeleton in place of the slides, so there is nothing to click.)
+  test.each(['the disabledState property', 'setDisable'])(
+    '[ShadCarousel-BUSY-002] disabled by %s, a slide click fires nothing and opens no link',
+    async (how) => {
+      const open = jest.spyOn(window, 'open').mockImplementation(() => null);
+      try {
+        const linked = ROWS.slice(0, 2).map((row) => ({ ...row, link: 'https://example.com/slide' }));
+        mount(linked, how === 'setDisable' ? {} : { disabledState: binding('{{true}}') });
+        if (how === 'setDisable') await widget.act('setDisable', true);
+        widget.setEvents(countInvocationsOn(ID, 'onSlideClicked'));
+        const slide = await screen.findByRole('group', { name: '1 of 2' });
+        await act(async () => fireEvent.click(slide.firstElementChild));
+
+        expect(widget.variables().calls).toBeUndefined();
+        expect(exposed().clickedSlide ?? {}).toEqual({});
+        expect(open).not.toHaveBeenCalled();
+      } finally {
+        open.mockRestore();
+      }
+    }
+  );
+
   test('[ShadCarousel-POS-001] slides added after the picked one keep the picked slide, with no event', async () => {
     mount();
     await pickGamma();

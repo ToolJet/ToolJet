@@ -92,7 +92,8 @@ export const ShadCarousel = (props: WidgetProps) => {
   const canNext = positions > 1 && (loop || index < positions - 1);
 
   const clickSlide = (i: number) => {
-    if (drag.current.swiped) return;
+    // Disabled, a slide is not clickable either (no onSlideClicked, no link), as the arrows, dots and keys.
+    if (drag.current.swiped || disabled) return;
     const slide = slides[i];
     setExposedVariable('clickedSlide', { ...slide, index: i });
     fireEvent('onSlideClicked');
@@ -181,7 +182,7 @@ export const ShadCarousel = (props: WidgetProps) => {
                       'tw-relative tw-overflow-hidden tw-bg-[color:var(--lk-slide-bg,var(--sc-muted))]',
                       SLIDE_RADIUS,
                       fill && 'tw-min-h-0 tw-flex-1',
-                      'tw-cursor-pointer'
+                      !disabled && 'tw-cursor-pointer'
                     )}
                     style={fill ? undefined : { aspectRatio: ratio }}
                     onClick={() => clickSlide(i)}
