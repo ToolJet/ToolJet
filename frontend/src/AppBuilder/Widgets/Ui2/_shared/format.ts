@@ -194,6 +194,28 @@ export const formatValue = (value: unknown, format: unknown = 'auto', currency?:
 
 // ---- Table cells (Table, Key-value list) -----------------------------------------------------------------------------
 
+/** A cell's number format in its locale and currency, or, when Intl cannot use them (a typo, an object), in en-US and
+ *  as a plain amount: a bad locale or currency blanked every number and currency cell. No other currency's symbol is
+ *  put on the amount. */
+const usableFormatter = (locale: unknown, options: Intl.NumberFormatOptions): Intl.NumberFormat => {
+  const plain = {
+    minimumFractionDigits: options.minimumFractionDigits,
+    maximumFractionDigits: options.maximumFractionDigits,
+  };
+  for (const [l, o] of [
+    [locale || 'en-US', options],
+    ['en-US', options],
+    ['en-US', plain],
+  ] as [string, Intl.NumberFormatOptions][]) {
+    try {
+      return numberFormatter(typeof l === 'string' ? l : 'en-US', o);
+    } catch {
+      // Not usable; the next one is.
+    }
+  }
+  return numberFormatter('en-US', {});
+};
+
 const DEFAULT_DATE = 'DD MMM YYYY';
 const DEFAULT_DATETIME = 'DD MMM YYYY, HH:mm';
 
@@ -216,7 +238,7 @@ export const formatCell = (value: unknown, column: ColumnLike = {}): string => {
               maximumFractionDigits: digits ?? 2,
             }
           : { minimumFractionDigits: digits ?? 0, maximumFractionDigits: digits ?? 2 };
-      return wrap(numberFormatter(format.locale || 'en-US', options).format(n));
+      return wrap(usableFormatter(format.locale, options).format(n));
     }
     if (type === 'date' || type === 'datetime') {
       const parsed = toDayjs(value);
