@@ -154,7 +154,8 @@ describe('placeBookings', () => {
     const out = placeBookings(
       [
         { id: 1, room: 'a', start: '09:00' },
-        { id: 1, room: 'a', start: '13:00', end: '12:00' },
+        // Zero length: drawn half an hour long. (One ending before it starts is reported instead: 'malformed dates'.)
+        { id: 1, room: 'a', start: '13:00', end: '13:00' },
       ],
       fields,
       range,
@@ -420,5 +421,49 @@ describe('days the clocks change', () => {
     const range = scheduleRange({ date: '2026-03-08', dayStart: 2, dayEnd: 3 });
     expect(range.end).toBeGreaterThan(range.start);
     expect(range.slots.length).toBeGreaterThan(0);
+  });
+});
+
+// Audit round 2: a booking with a malformed date was placed somewhere else or not at all, without a trace: 30 February
+// and 25:00 rolled into other days, an unreadable end became a one-hour booking, an end before the start was replaced,
+// an unreadable start dropped the row. Such a row is not placed and is reported.
+describe('malformed dates', () => {
+  const room = { key: 'room', id: 'room', name: 'Room', caption: '', avatar: '' };
+  const fields = { idField: 'id', resourceField: 'room', startField: 'from', endField: 'to', titleField: 'title' };
+  const range = () => scheduleRange({ scale: 'days', date: '2026-10-12', days: 31 }, at(8));
+  const row = (id, from, to) => ({ id, room: 'room', title: `Booking ${id}`, from, to });
+
+  it('reads no time from a date or time that does not exist', () => {
+    expect(parseTime('2026-02-30 09:00')).toBeNull();
+    expect(parseTime('2026-10-17 25:00')).toBeNull();
+    expect(parseTime('2026-10-17T09:60')).toBeNull();
+    expect(parseTime('2026-10-17 09:00').time).toBe(new Date(2026, 9, 17, 9).getTime());
+  });
+
+  it('places no booking with a malformed date, and says which and why', () => {
+    const problems = [];
+    const placed = placeBookings(
+      [
+        row('ok', '2026-10-17 09:00', '2026-10-17 10:00'),
+        row('bad-start', 'next Tuesday', ''),
+        row('impossible', '2026-02-30 09:00', ''),
+        row('bad-end', '2026-10-17 09:00', 'later'),
+        row('backwards', '2026-10-17 10:00', '2026-10-17 09:00'),
+        row('no-start', '', ''),
+        { id: 'elsewhere', room: 'other room', from: 'junk' },
+      ],
+      fields,
+      range(),
+      [room],
+      problems
+    );
+    expect(placed.room.items.map((b) => b.id)).toEqual(['ok']);
+    expect(problems.map((p) => [p.id, p.problem])).toEqual([
+      ['bad-start', 'its start is not a date'],
+      ['impossible', 'its start is not a date'],
+      ['bad-end', 'its end is not a date'],
+      ['backwards', 'it ends before it starts'],
+      ['no-start', 'it has no start'],
+    ]);
   });
 });
