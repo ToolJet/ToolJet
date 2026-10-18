@@ -13,6 +13,7 @@ import {
   useActionFire,
   useAutoHeight,
   useLatest,
+  usePublishNow,
   useStable,
 } from '@/AppBuilder/Widgets/Ui2/_shared/packHooks';
 import { Skeleton, cn } from '@/AppBuilder/Widgets/Ui2/_shared/ui';
@@ -145,7 +146,9 @@ const Row = ({
 const ROWS_PER_STEP = 100;
 
 export const ShadListView = (props: WidgetProps) => {
-  const { id, properties, styles, setExposedVariable, setExposedVariables, darkMode, dataCy } = props;
+  const { id, properties, styles, darkMode, dataCy } = props;
+  // A list in another list's row publishes its selection at once, as a row widget does (usePublishNow).
+  const { setExposedVariable, setExposedVariables } = usePublishNow(props);
   // Events an action fires wait until it has published (useActionFire).
   const fireEvent = useActionFire(props.fireEvent);
   // A pack widget created through the MCP carries only the properties it was given (the server has no defaults to

@@ -126,3 +126,66 @@ describe.each(PICKERS)('$type in a List view row', ({ type, pick, key, value }) 
     expect(seen).toEqual(value);
   });
 });
+
+// Collections that select on a plain click (no action): their selection is published by the widget's setter.
+describe.each([
+  ['ShadRecordList', 'onItemClicked'],
+  ['ShadProgressList', 'onItemClicked'],
+  ['ShadCardGrid', 'onCardClicked'],
+])('a %s click in a List view row', (type, event) => {
+  const widget = createWidgetHarness({
+    componentType: 'ShadListView',
+    handle: 'list1',
+    id: ID,
+    widgetHeight: 600,
+    widgetWidth: 600,
+    capabilities: { dnd: true },
+    preload: [type],
+  });
+  let restoreWidth;
+  beforeAll(() => {
+    const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth');
+    Object.defineProperty(Element.prototype, 'clientWidth', { configurable: true, get: () => 600 });
+    restoreWidth = () => Object.defineProperty(Element.prototype, 'clientWidth', descriptor);
+  });
+  afterAll(() => restoreWidth?.());
+  beforeEach(() => widget.setup());
+  afterEach(widget.teardown);
+
+  test('fires its event with the clicked item readable through the row and the list, on the first click', async () => {
+    const section = componentDefinition('section1', 'section1', type, {
+      data: binding('{{listItem.items}}'),
+      idField: binding('id'),
+      titleField: binding('name'),
+      labelField: binding('name'),
+      valueField: binding('done'),
+      targetField: binding('total'),
+    });
+    section.component.parent = ID;
+    section.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
+    section.layouts = { desktop: { top: 0, left: 0, width: 30, height: 180 } };
+    const rows = [
+      { id: 'outerA', items: [{ id: 'a', name: 'Alpha item', done: 1, total: 5 }] },
+      { id: 'outerB', items: [{ id: 'b', name: 'Beta item', done: 2, total: 5 }] },
+    ];
+    widget.render({
+      currentMode: 'view',
+      extraComponents: { section1: section },
+      properties: { data: binding(`{{${JSON.stringify(rows)}}}`), idField: binding('id') },
+    });
+    await waitFor(() => expect(widget.exposed().children?.[1]?.section1?.selectedItemId).toBeNull());
+    widget.setEvents(
+      [
+        ...setVariableOn('section1', event, { key: 'row', value: '{{components.section1[1].selectedItemId}}' }),
+        ...setVariableOn('section1', event, {
+          key: 'list',
+          value: '{{components.list1.children[1].section1.selectedItemId}}',
+        }),
+      ].map((handler, index) => ({ ...handler, id: `seen-${index}` }))
+    );
+    await act(async () => fireEvent.click(screen.getByText('Beta item')));
+    await waitFor(() => expect(widget.variables().list).toBeDefined());
+    expect(widget.variables()).toMatchObject({ row: 'b', list: 'b' });
+    expect(widget.exposed().children[0].section1.selectedItemId).toBeNull();
+  });
+});

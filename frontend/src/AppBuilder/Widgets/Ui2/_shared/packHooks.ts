@@ -11,6 +11,7 @@ import { stringify } from './packJson';
 import type { MutableRefObject, RefObject } from 'react';
 import type { Resolved, WidgetProps } from '@/AppBuilder/Widgets/Ui2/_shared/types';
 import { isScalar, list } from '@/AppBuilder/Widgets/Ui2/_shared/values';
+import { useSubcontainerContext } from '@/AppBuilder/Widgets/Ui2/_shared/SubcontainerContext';
 
 export { stringify };
 
@@ -158,9 +159,43 @@ export const useExposed = (
  *  the native useExposeState works. The widget receives the effective values as its properties, so it reads
  *  properties.visibility / loadingState / disabledState as before. An unset property means its default (visible,
  *  enabled, not loading): a widget created through the MCP carries only the properties it was given. */
+/** Runs `write` inside one exposed-value batch, flushed before it returns (nested in an action's batch, runNow's flush
+ *  settles it). */
+const inBatch =
+  <A extends unknown[], R>(write: (...args: A) => R) =>
+  (...args: A): R => {
+    const { startExposedValueBatch, flushExposedValueBatch } = useStore.getState() as unknown as ExposedBatchStore;
+    startExposedValueBatch();
+    try {
+      return write(...args);
+    } finally {
+      flushExposedValueBatch();
+    }
+  };
+
+/** The widget's setExposedVariable(s), publishing at once in a List view row or a Kanban card. There a widget's values
+ *  are written per row, and the store queues that write to a microtask (outside a batch), and the list's children
+ *  derived from it to another: an event fired after the write, from a click that is not an action (a record list's
+ *  row, a picker), read the old row through components.<child>[row] and components.<list>.children[row]. Each write in a
+ *  row lands, with the list's children, before the setter returns; outside rows the setters are the widget's own. */
+export const usePublishNow = ({
+  setExposedVariable,
+  setExposedVariables,
+}: Pick<WidgetProps, 'setExposedVariable' | 'setExposedVariables'>) => {
+  const inRow = useSubcontainerContext().contextPath.length > 0;
+  return useMemo(
+    () =>
+      inRow
+        ? { setExposedVariable: inBatch(setExposedVariable), setExposedVariables: inBatch(setExposedVariables) }
+        : { setExposedVariable, setExposedVariables },
+    [inRow, setExposedVariable, setExposedVariables]
+  );
+};
+
 export const withControlState = <P extends WidgetProps>(Widget: React.ComponentType<P>) => {
   const Controlled = (props: P) => {
-    const { properties, setExposedVariables, setExposedVariable } = props;
+    const { properties } = props;
+    const { setExposedVariables, setExposedVariable } = usePublishNow(props);
     const { isVisible, isLoading, isDisabled } = useExposeState(
       properties.loadingState === true,
       properties.visibility !== false,
@@ -182,7 +217,14 @@ export const withControlState = <P extends WidgetProps>(Widget: React.ComponentT
     // row adds its instance's id, or the second row's label would name the first row's control.
     const instance = useId().replace(/[^\w-]/g, '');
     const domId = props.subContainerIndex == null ? `shad-${props.id}` : `shad-${props.id}-${instance}`;
-    return React.createElement(Widget, { ...props, properties: effective, fireEvent, domId });
+    return React.createElement(Widget, {
+      ...props,
+      properties: effective,
+      fireEvent,
+      domId,
+      setExposedVariable,
+      setExposedVariables,
+    });
   };
   Controlled.displayName = `Controlled(${Widget.displayName || Widget.name || 'Widget'})`;
   return Controlled;
